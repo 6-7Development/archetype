@@ -2,7 +2,7 @@ import express from "express";
 import multer from "multer";
 import AdmZip from "adm-zip";
 import { storage } from "../storage";
-import { requireAuth } from "../universalAuth";
+import { isAuthenticated } from "../universalAuth";
 import path from "path";
 
 const router = express.Router();
@@ -12,7 +12,7 @@ const upload = multer({
 });
 
 // Upload and import project from ZIP
-router.post('/upload', requireAuth, upload.single('project'), async (req, res) => {
+router.post('/upload', isAuthenticated, upload.single('project'), async (req: any, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -22,7 +22,7 @@ router.post('/upload', requireAuth, upload.single('project'), async (req, res) =
       return res.status(400).json({ error: 'Only ZIP files are supported' });
     }
 
-    const userId = req.user!.id;
+    const userId = req.authenticatedUserId;
     const zip = new AdmZip(req.file.buffer);
     const zipEntries = zip.getEntries();
 
