@@ -1,0 +1,41 @@
+# Multi-stage build for production
+
+# Stage 1: Build frontend
+FROM node:20-alpine AS frontend-builder
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Build frontend
+RUN npm run build
+
+# Stage 2: Production runtime
+FROM node:20-alpine AS production
+WORKDIR /app
+
+# Install all dependencies (including tsx for TypeScript execution)
+COPY package*.json ./
+RUN npm ci
+
+# Copy built frontend from builder stage
+COPY --from=frontend-builder /app/dist ./dist
+
+# Copy server code (TypeScript)
+COPY server ./server
+COPY shared ./shared
+COPY tsconfig.json ./
+COPY drizzle.config.ts ./
+
+# Expose port
+EXPOSE 5000
+
+# Set environment to production
+ENV NODE_ENV=production
+
+# Start the server using tsx to run TypeScript
+CMD ["npx", "tsx", "server/index.ts"]

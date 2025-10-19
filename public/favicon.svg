@@ -1,0 +1,14 @@
+<svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="fGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fef3c7" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+  </defs>
+  <rect width="100" height="100" fill="#1e293b" />
+  <rect x="30" y="25" width="40" height="50" fill="url(#fGrad)" />
+  <rect x="25" y="20" width="50" height="5" fill="#fef3c7" />
+  <rect x="25" y="75" width="50" height="5" fill="#f59e0b" />
+  <circle cx="50" cy="50" r="12" fill="none" stroke="#06b6d4" stroke-width="2" />
+  <text x="50" y="58" text-anchor="middle" fill="white" font-size="18" font-weight="bold">α</text>
+</svg>

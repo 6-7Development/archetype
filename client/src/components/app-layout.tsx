@@ -1,0 +1,258 @@
+import { useState } from "react";
+import { useLocation } from "wouter";
+import {
+  LayoutDashboard,
+  Terminal,
+  ShoppingCart,
+  User as UserIcon,
+  Sparkles,
+  LogIn,
+  LogOut,
+  Shield,
+  Menu,
+  X,
+  Users,
+  Key,
+  Headphones
+} from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/useAuth";
+import { queryClient } from "@/lib/queryClient";
+import { cn } from "@/lib/utils";
+import type { User } from "@shared/schema";
+import logoPath from "@assets/logo.svg";
+
+interface AppLayoutProps {
+  children: React.ReactNode;
+}
+
+const navigationItems = [
+  {
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    path: "/dashboard",
+    testId: "nav-dashboard",
+  },
+  {
+    label: "Builder",
+    icon: Terminal,
+    path: "/builder",
+    testId: "nav-builder",
+  },
+  {
+    label: "Marketplace",
+    icon: ShoppingCart,
+    path: "/marketplace",
+    testId: "nav-marketplace",
+  },
+  {
+    label: "Analytics",
+    icon: Sparkles,
+    path: "/analytics",
+    testId: "nav-analytics",
+  },
+  {
+    label: "Team",
+    icon: Users,
+    path: "/team",
+    testId: "nav-team",
+  },
+  {
+    label: "API Keys",
+    icon: Key,
+    path: "/api-keys",
+    testId: "nav-api-keys",
+  },
+  {
+    label: "Support",
+    icon: Headphones,
+    path: "/support",
+    testId: "nav-support",
+  },
+  {
+    label: "Account",
+    icon: UserIcon,
+    path: "/account",
+    testId: "nav-account",
+  },
+];
+
+export function AppLayout({ children }: AppLayoutProps) {
+  const [location, setLocation] = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, isLoading, isAuthenticated } = useAuth();
+
+  const handleLogin = () => {
+    setLocation('/auth');
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      // Invalidate all queries to clear cached auth state
+      queryClient.clear();
+      setLocation('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  const handleNavigation = (path: string) => {
+    setLocation(path);
+    setMobileMenuOpen(false); // Close mobile menu after navigation
+  };
+
+  return (
+    <div className="flex h-screen bg-background relative">
+      {/* Mobile Menu Button - Only visible on mobile */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="fixed top-4 left-4 z-50 lg:hidden"
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        data-testid="button-mobile-menu"
+      >
+        {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+      </Button>
+
+      {/* Mobile Overlay - Closes menu when clicking outside */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={cn(
+        "w-64 border-r bg-card/30 backdrop-blur-sm flex flex-col",
+        "fixed lg:relative inset-y-0 left-0 z-40",
+        "transition-transform duration-300 ease-in-out lg:translate-x-0",
+        mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        {/* Logo - PROUD & PROMINENT! */}
+        <div className="h-20 border-b flex items-center px-4 gap-4">
+          <img src={logoPath} alt="ARCHETYPE" className="w-12 h-12 rounded-xl shadow-lg shadow-cyan-500/30" />
+          <div>
+            <div className="text-lg font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
+              ARCHETYPE
+            </div>
+            <div className="text-xs text-muted-foreground font-medium">AI Code Generation</div>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 p-4 space-y-2">
+          {navigationItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location === item.path || (item.path === "/builder" && location.startsWith("/builder"));
+            
+            return (
+              <Button
+                key={item.path}
+                variant="ghost"
+                className={cn(
+                  "w-full justify-start gap-3 hover-elevate active-elevate-2",
+                  isActive && "bg-primary/10 text-primary"
+                )}
+                onClick={() => handleNavigation(item.path)}
+                data-testid={item.testId}
+              >
+                <Icon className="w-5 h-5" />
+                <span>{item.label}</span>
+              </Button>
+            );
+          })}
+
+          {/* Admin Navigation - Only for Admin Users */}
+          {isAuthenticated && (user as User)?.role === 'admin' && (
+            <Button
+              variant="ghost"
+              className={cn(
+                "w-full justify-start gap-3 hover-elevate active-elevate-2",
+                location === "/admin" && "bg-primary/10 text-primary"
+              )}
+              onClick={() => handleNavigation("/admin")}
+              data-testid="nav-admin"
+            >
+              <Shield className="w-5 h-5" />
+              <span>Admin</span>
+            </Button>
+          )}
+        </nav>
+
+        {/* Bottom Section */}
+        <div className="p-4 border-t space-y-3">
+          {/* User Info / Login */}
+          {isLoading ? (
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <div className="space-y-2 flex-1">
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-2 w-32" />
+              </div>
+            </div>
+          ) : isAuthenticated && user ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={(user as User).profileImageUrl || undefined} alt={(user as User).firstName || 'User'} />
+                  <AvatarFallback className="bg-primary/10 text-primary">
+                    {(user as User).firstName?.charAt(0) || (user as User).email?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate" data-testid="text-user-name">
+                    {(user as User).firstName && (user as User).lastName 
+                      ? `${(user as User).firstName} ${(user as User).lastName}`
+                      : (user as User).firstName || 'User'}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate" data-testid="text-user-email">
+                    {(user as User).email}
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full hover-elevate active-elevate-2"
+                onClick={handleLogout}
+                data-testid="button-logout"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="default"
+              className="w-full hover-elevate active-elevate-2"
+              onClick={handleLogin}
+              data-testid="button-login"
+            >
+              <LogIn className="w-4 h-4 mr-2" />
+              Sign In
+            </Button>
+          )}
+
+          {/* AI Agent Badge & Theme */}
+          <div className="flex items-center justify-between pt-2">
+            <Badge variant="secondary" className="font-mono text-xs">
+              SySop AI
+            </Badge>
+            <ThemeToggle />
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content - Full width on mobile, with margin on desktop */}
+      <main className="flex-1 flex flex-col overflow-hidden w-full lg:w-auto">
+        {children}
+      </main>
+    </div>
+  );
+}

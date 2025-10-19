@@ -1,0 +1,47 @@
+<svg width="180" height="200" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="colGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fef3c7" />
+      <stop offset="50%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+    <linearGradient id="colGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#8b5cf6" />
+    </linearGradient>
+  </defs>
+  
+  <ellipse cx="100" cy="60" rx="50" ry="8" fill="#fef3c7" />
+  <rect x="55" y="55" width="90" height="12" fill="#fbbf24" rx="2" />
+  
+  <circle cx="60" cy="61" r="8" fill="none" stroke="#f59e0b" stroke-width="2" />
+  <circle cx="60" cy="61" r="4" fill="none" stroke="#f59e0b" stroke-width="2" />
+  <circle cx="140" cy="61" r="8" fill="none" stroke="#f59e0b" stroke-width="2" />
+  <circle cx="140" cy="61" r="4" fill="none" stroke="#f59e0b" stroke-width="2" />
+  
+  <rect x="75" y="67" width="50" height="80" fill="url(#colGrad1)" />
+  <line x1="82" y1="67" x2="82" y2="147" stroke="#f59e0b" stroke-width="1" opacity="0.4" />
+  <line x1="90" y1="67" x2="90" y2="147" stroke="#f59e0b" stroke-width="1" opacity="0.4" />
+  <line x1="100" y1="67" x2="100" y2="147" stroke="#f59e0b" stroke-width="1" opacity="0.4" />
+  <line x1="110" y1="67" x2="110" y2="147" stroke="#f59e0b" stroke-width="1" opacity="0.4" />
+  <line x1="118" y1="67" x2="118" y2="147" stroke="#f59e0b" stroke-width="1" opacity="0.4" />
+  
+  <rect x="70" y="147" width="60" height="8" fill="#f59e0b" />
+  <rect x="65" y="155" width="70" height="8" fill="#d97706" />
+  
+  <g opacity="0.6">
+    <circle cx="100" cy="90" r="20" fill="none" stroke="url(#colGrad2)" stroke-width="2" />
+    <circle cx="100" cy="90" r="4" fill="#06b6d4" />
+    <line x1="100" y1="70" x2="100" y2="75" stroke="#06b6d4" stroke-width="2" />
+    <line x1="100" y1="105" x2="100" y2="110" stroke="#06b6d4" stroke-width="2" />
+    <line x1="80" y1="90" x2="85" y2="90" stroke="#8b5cf6" stroke-width="2" />
+    <line x1="115" y1="90" x2="120" y2="90" stroke="#8b5cf6" stroke-width="2" />
+    <circle cx="100" cy="70" r="3" fill="#06b6d4" />
+    <circle cx="100" cy="110" r="3" fill="#06b6d4" />
+    <circle cx="80" cy="90" r="3" fill="#8b5cf6" />
+    <circle cx="120" cy="90" r="3" fill="#8b5cf6" />
+  </g>
+  
+  <text x="100" y="132" text-anchor="middle" fill="white" font-size="28" font-weight="bold">α</text>
+  <text x="100" y="195" text-anchor="middle" fill="#fbbf24" font-size="24" font-weight="bold" letter-spacing="3">ARCHETYPE</text>
+</svg>

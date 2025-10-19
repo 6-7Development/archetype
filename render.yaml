@@ -1,0 +1,88 @@
+# Render Blueprint for Archetype Platform
+# Enables one-click deployment to Render.com
+
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: archetype-db
+    plan: starter # $7/mo - upgrade from free for production
+    region: oregon # Change to preferred region
+    databaseName: archetype
+    databaseUser: archetype_user
+    ipAllowList: [] # Only allow internal connections
+
+  # Web Service (Node.js + Express + React)
+  - type: web
+    name: archetype
+    runtime: node
+    plan: starter # $7/mo - 512MB RAM, auto-scaling
+    region: oregon # Same region as database for low latency
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      # Auto-linked database URL
+      - key: DATABASE_URL
+        fromDatabase:
+          name: archetype-db
+          property: connectionString
+
+      # Node environment
+      - key: NODE_ENV
+        value: production
+
+      # Session secret (CHANGE THIS - generate new secret)
+      - key: SESSION_SECRET
+        generateValue: true # Render auto-generates secure secret
+
+      # Application URL (auto-set by Render)
+      - key: APP_URL
+        value: https://archetype.onrender.com # Update with your actual URL
+
+      # Admin secret (CHANGE THIS - generate new secret)
+      - key: ADMIN_SECRET_KEY
+        generateValue: true # Render auto-generates secure secret
+
+      # Required: Add your Anthropic API key manually after deployment
+      # Get from: https://console.anthropic.com
+      - key: ANTHROPIC_API_KEY
+        sync: false # Manual input required
+
+      # Optional: Stripe (add manually if using billing)
+      - key: STRIPE_SECRET_KEY
+        sync: false
+
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+
+      - key: STRIPE_PRICE_ID_STARTER
+        sync: false
+
+      - key: STRIPE_PRICE_ID_PRO
+        sync: false
+
+      - key: STRIPE_PRICE_ID_BUSINESS
+        sync: false
+
+      - key: STRIPE_PRICE_ID_ENTERPRISE
+        sync: false
+
+      # Optional: Tavily for web search (add manually if using)
+      - key: TAVILY_API_KEY
+        sync: false
+
+      # Optional: OpenAI (add manually if using)
+      - key: OPENAI_API_KEY
+        sync: false
+
+      # Optional: Orb for usage-based billing (add manually if using)
+      - key: ORB_API_KEY
+        sync: false
+
+# Post-deployment instructions
+# After deploying:
+# 1. Add ANTHROPIC_API_KEY in Render Dashboard → Environment
+# 2. Open Render Shell and run: npm run db:push
+# 3. (Optional) Add Stripe keys for billing features
+# 4. (Optional) Configure custom domain in Settings
+# 5. Visit /health to verify deployment

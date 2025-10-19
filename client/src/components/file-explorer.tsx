@@ -1,0 +1,109 @@
+import { File, Folder, ChevronRight, ChevronDown, Plus, FileCode } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import type { File as FileType } from "@shared/schema";
+import { Badge } from "@/components/ui/badge";
+
+interface FileExplorerProps {
+  files: FileType[];
+  activeFileId: string | null;
+  onFileSelect: (file: FileType) => void;
+  onCreateFile: () => void;
+}
+
+export function FileExplorer({ files, activeFileId, onFileSelect, onCreateFile }: FileExplorerProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  const getLanguageBadgeColor = (language: string) => {
+    const colors: Record<string, string> = {
+      javascript: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
+      typescript: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+      python: "bg-green-500/10 text-green-600 dark:text-green-400",
+      html: "bg-orange-500/10 text-orange-600 dark:text-orange-400",
+      css: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+    };
+    return colors[language] || "bg-muted text-muted-foreground";
+  };
+
+  return (
+    <div className="h-full flex flex-col">
+      <div className="flex items-center justify-between h-14 px-4 border-b border-card-border bg-card/50">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => setIsExpanded(!isExpanded)}
+            data-testid="button-toggle-explorer"
+          >
+            {isExpanded ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+          </Button>
+          <div className="flex items-center gap-2">
+            <Folder className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold tracking-tight">Files</span>
+          </div>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={onCreateFile}
+          data-testid="button-create-file"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {isExpanded && (
+        <ScrollArea className="flex-1">
+          <div className="p-4">
+            {files.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="p-4 bg-muted/50 rounded-xl mb-4">
+                  <FileCode className="h-12 w-12 text-muted-foreground" />
+                </div>
+                <p className="text-sm font-medium mb-1">No files yet</p>
+                <p className="text-xs text-muted-foreground">Click + to create your first file</p>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {files.map((file) => (
+                  <button
+                    key={file.id}
+                    onClick={() => onFileSelect(file)}
+                    className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm transition-all hover-elevate active-elevate-2 ${
+                      activeFileId === file.id
+                        ? "bg-primary/10 border border-primary/20"
+                        : "border border-transparent"
+                    }`}
+                    data-testid={`file-item-${file.id}`}
+                  >
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <File className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                      <span className={`truncate font-medium ${
+                        activeFileId === file.id ? "text-primary" : ""
+                      }`}>
+                        {file.filename}
+                      </span>
+                    </div>
+                    <Badge 
+                      variant="outline" 
+                      className={`text-xs px-1.5 py-0 h-5 ${getLanguageBadgeColor(file.language)}`}
+                    >
+                      {file.language.slice(0, 2).toUpperCase()}
+                    </Badge>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+      )}
+    </div>
+  );
+}
