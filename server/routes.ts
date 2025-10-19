@@ -14,6 +14,7 @@ import { aiLimiter, webhookLimiter } from "./rateLimiting";
 import { stripe, isStripeConfigured, getPriceIdForPlan, STRIPE_WEBHOOK_SECRET, getPlanNameFromPriceId } from "./stripe";
 import { aiQueue } from './priority-queue';
 import toolsRouter from './routes/tools';
+import uploadRouter from './routes/upload';
 import multer from "multer";
 import AdmZip from "adm-zip";
 import path from "path";
@@ -68,7 +69,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Admin emergency endpoint (requires ADMIN_SECRET_KEY)
   app.get('/admin/emergency', async (req, res) => {
-    const adminSecret = req.headers['x-admin-secret'];
+    const adminSecret = req.query.secret || req.headers['x-admin-secret'];
     
     if (!adminSecret || adminSecret !== process.env.ADMIN_SECRET_KEY) {
       return res.status(403).json({ error: 'Forbidden - Invalid admin secret' });
@@ -120,6 +121,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register tools router for SySop autonomous capabilities
   app.use('/api/tools', toolsRouter);
+  
+  // Register upload router for project imports
+  app.use('/api/projects', uploadRouter);
 
   // Stripe webhook endpoint (raw body parser applied in server/index.ts)
   app.post(
