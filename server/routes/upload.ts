@@ -35,15 +35,48 @@ router.post('/upload', isAuthenticated, upload.single('project'), async (req: an
       type: 'webapp',
     });
 
+    // Security: Track decompression size to prevent zip bombs
+    let totalUncompressedSize = 0;
+    const MAX_TOTAL_SIZE = 100 * 1024 * 1024; // 100MB uncompressed limit
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB per file limit
+    
     // Extract and import files
     let filesImported = 0;
     const filePromises = zipEntries
       .filter(entry => !entry.isDirectory && !entry.name.includes('__MACOSX'))
       .map(async (entry) => {
         const filePath = entry.entryName;
+        
+        // SECURITY: Validate path - reject absolute paths and path traversal attempts
+        if (filePath.startsWith('/') || filePath.includes('..')) {
+          console.warn(`Rejected malicious path: ${filePath}`);
+          return;
+        }
+        
+        // SECURITY: Check uncompressed size before extracting
+        const uncompressedSize = entry.header.size;
+        totalUncompressedSize += uncompressedSize;
+        
+        if (uncompressedSize > MAX_FILE_SIZE) {
+          console.warn(`Rejected oversized file: ${filePath} (${uncompressedSize} bytes)`);
+          return;
+        }
+        
+        if (totalUncompressedSize > MAX_TOTAL_SIZE) {
+          throw new Error('ZIP archive exceeds maximum uncompressed size (100MB). Possible zip bomb detected.');
+        }
+        
         const fileName = path.basename(filePath);
         const folderPath = path.dirname(filePath);
-        const content = entry.getData().toString('utf8');
+        
+        // Extract content safely
+        let content: string;
+        try {
+          content = entry.getData().toString('utf8');
+        } catch (error) {
+          console.warn(`Failed to extract ${filePath}: ${error}`);
+          return;
+        }
         
         // Determine language from extension
         const ext = path.extname(fileName).toLowerCase();
