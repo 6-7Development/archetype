@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AIChat } from "@/components/ai-chat";
+import { ProjectUpload } from "@/components/project-upload";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -139,6 +140,11 @@ export default function Builder() {
             {/* Build Tab (Main Interface) */}
             <TabsContent value="build" className="h-full m-0" data-testid="content-build">
               <div className="h-full flex flex-col bg-muted/20">
+                {/* Project Upload Section */}
+                <div className="p-3 sm:p-4 border-b bg-card">
+                  <ProjectUpload />
+                </div>
+                
                 {/* AI Chat Component (Full Height) */}
                 <div className="flex-1 overflow-hidden">
                   <AIChat onProjectGenerated={handleProjectGenerated} />
