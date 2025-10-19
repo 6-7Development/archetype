@@ -1,0 +1,45 @@
+Run `npm audit` for details.
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+vite v5.4.20 building for production...
+transforming...
+Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+✓ 3352 modules transformed.
+rendering chunks...
+computing gzip size...
+../dist/public/index.html                     0.91 kB │ gzip:   0.50 kB
+../dist/public/assets/index-Bx_-6fb4.css    102.80 kB │ gzip:  16.12 kB
+../dist/public/assets/index-_g7SZmMI.js   1,239.58 kB │ gzip: 354.87 kB
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 7.89s
+  dist/index.js  258.1kb
+⚡ Done in 16ms
+==> Uploading build...
+==> Uploaded in 8.4s. Compression took 4.3s
+==> Build successful 🎉
+==> Deploying...
+==> Running 'npm start'
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.js
+🔍 Testing database connection...
+⚠️ Retry attempt 1/5 failed. Retrying in 1000ms...
+⚠️ Retry attempt 2/5 failed. Retrying in 2000ms...
+⚠️ Retry attempt 3/5 failed. Retrying in 4000ms...
+⚠️ Retry attempt 4/5 failed. Retrying in 8000ms...
+⚠️ Retry attempt 5/5 failed. Retrying in 16000ms...
+==> Your service is live 🎉
+==> 
+==> ///////////////////////////////////////////////////////////
+==> 
+==> Available at your primary URL https://archetype-x8b5.onrender.com
+==> 
+==> ///////////////////////////////////////////////////////////
+❌ Database connection failed after retries: connect ECONNREFUSED 10.230.44.114:443
+⚠️ Starting server in degraded mode (database unavailable)
+11:18:31 PM [express] serving on port 10000
