@@ -98,38 +98,14 @@ export default function EnhancedAuth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4 relative overflow-hidden">
-      {/* Animated Background */}
-      <motion.div
-        className="absolute inset-0 opacity-30 pointer-events-none"
-        animate={{
-          background: [
-            "radial-gradient(circle at 20% 50%, rgba(6, 182, 212, 0.3), transparent 50%)",
-            "radial-gradient(circle at 80% 50%, rgba(139, 92, 246, 0.3), transparent 50%)",
-            "radial-gradient(circle at 20% 50%, rgba(6, 182, 212, 0.3), transparent 50%)",
-          ],
-        }}
-        transition={{ duration: 10, repeat: Infinity }}
-        aria-hidden="true"
-      />
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md relative z-10"
-      >
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4">
+      <div className="w-full max-w-md">
         <Card className="border-2">
           <CardHeader className="space-y-4 text-center">
             {/* Logo */}
-            <motion.div
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.3 }}
-              className="flex justify-center"
-            >
+            <div className="flex justify-center">
               <img src={logoPath} alt="ARCHETYPE" className="w-16 h-16 rounded-xl shadow-lg" />
-            </motion.div>
+            </div>
 
             <div>
               <CardTitle className="text-3xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
@@ -351,7 +327,7 @@ export default function EnhancedAuth() {
             ← Back to Home
           </a>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
