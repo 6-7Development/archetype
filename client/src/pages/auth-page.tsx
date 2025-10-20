@@ -167,6 +167,7 @@ export default function AuthPage() {
                           placeholder="you@example.com" 
                           data-testid="input-register-email"
                           autoComplete="email"
+                          autoFocus
                         />
                       </FormControl>
                       <FormMessage />
