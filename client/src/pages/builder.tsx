@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { AIChat } from "@/components/ai-chat";
 import { ProjectUpload } from "@/components/project-upload";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   Sparkles, 
   LayoutDashboard, 
@@ -14,7 +16,9 @@ import {
   FolderTree, 
   Eye,
   Activity,
-  History
+  History,
+  LogIn,
+  User
 } from "lucide-react";
 import { Command } from "@shared/schema";
 import VersionHistory from "./version-history";
@@ -22,6 +26,7 @@ import VersionHistory from "./version-history";
 export default function Builder() {
   const [activeTab, setActiveTab] = useState("build");
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
+  const { isAuthenticated } = useAuth();
 
   const { data: commands = [] } = useQuery<Command[]>({
     queryKey: ["/api/commands"],
@@ -38,14 +43,17 @@ export default function Builder() {
       {/* Mobile-First Top Bar */}
       <header className="h-14 border-b bg-card flex items-center justify-between px-3 md:px-4" data-testid="header-builder">
         <div className="flex items-center gap-2 md:gap-3">
-          {/* Archetype Logo Button - Icon only on mobile (44px touch target) */}
+          {/* Archetype Logo - Links to home */}
           <Button 
             variant="default" 
             className="bg-primary hover:bg-primary/90 gap-2 font-semibold min-h-[44px] min-w-[44px] md:min-w-auto px-2 md:px-4"
             data-testid="button-archetype-logo"
+            asChild
           >
-            <Sparkles className="w-4 h-4" />
-            <span className="hidden md:inline">Archetype</span>
+            <Link href="/">
+              <Sparkles className="w-4 h-4" />
+              <span className="hidden md:inline">Archetype</span>
+            </Link>
           </Button>
           
           {/* SySop AI Badge - Hidden on very small screens */}
@@ -58,8 +66,37 @@ export default function Builder() {
           </Badge>
         </div>
 
-        {/* Theme Toggle */}
-        <ThemeToggle />
+        {/* Right Side Actions */}
+        <div className="flex items-center gap-2">
+          {!isAuthenticated ? (
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="min-h-[44px] min-w-[44px]"
+              data-testid="button-login"
+              asChild
+            >
+              <Link href="/auth">
+                <LogIn className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Login</span>
+              </Link>
+            </Button>
+          ) : (
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="min-h-[44px] min-w-[44px]"
+              data-testid="button-account"
+              asChild
+            >
+              <Link href="/dashboard">
+                <User className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Dashboard</span>
+              </Link>
+            </Button>
+          )}
+          <ThemeToggle />
+        </div>
       </header>
 
       {/* Tab-Based Navigation (Replit Style) */}

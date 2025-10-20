@@ -1,4 +1,4 @@
-import { Link, useLocation } from "wouter";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MobileNav } from "@/components/mobile-nav";
@@ -7,7 +7,6 @@ import logoPath from "@assets/logo.svg";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { MotionToggle } from "@/components/motion-toggle";
-import { isMobileDevice } from "@/utils/device-detection";
 import { LeadCaptureForm } from "@/components/lead-capture-form";
 
 const FloatingParticle = ({ delay = 0, duration = 20 }: { delay?: number; duration?: number }) => {
@@ -105,15 +104,7 @@ const RotatingText = () => {
 };
 
 export default function Landing() {
-  const [, setLocation] = useLocation();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-  // Redirect mobile users to mobile-optimized page
-  useEffect(() => {
-    if (isMobileDevice()) {
-      setLocation('/mobile');
-    }
-  }, [setLocation]);
 
   useEffect(() => {
     let rafId: number;
