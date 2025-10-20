@@ -101,7 +101,7 @@ export default function EnhancedAuth() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4 relative overflow-hidden">
       {/* Animated Background */}
       <motion.div
-        className="absolute inset-0 opacity-30"
+        className="absolute inset-0 opacity-30 pointer-events-none"
         animate={{
           background: [
             "radial-gradient(circle at 20% 50%, rgba(6, 182, 212, 0.3), transparent 50%)",
