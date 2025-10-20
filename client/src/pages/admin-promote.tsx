@@ -15,19 +15,22 @@ export default function AdminPromotePage() {
     mutationFn: async (adminSecret: string) => {
       return await apiRequest("POST", "/api/admin/promote", { adminSecret });
     },
-    onSuccess: () => {
-      // Invalidate user cache to refresh admin status
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-      
+    onSuccess: async () => {
       toast({
         title: "Success!",
-        description: "You now have admin privileges. Redirecting...",
+        description: "Admin privileges granted. Logging you out...",
       });
       
-      // Wait for cache to refresh before redirecting
-      setTimeout(() => {
-        window.location.href = "/admin";
-      }, 2000);
+      // Log out to clear session
+      setTimeout(async () => {
+        try {
+          await apiRequest("POST", "/api/auth/logout");
+        } catch (e) {
+          // Ignore errors
+        }
+        // Redirect to auth page
+        window.location.href = "/auth";
+      }, 1500);
     },
     onError: (error: any) => {
       toast({
