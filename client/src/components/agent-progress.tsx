@@ -11,14 +11,25 @@ export interface ProgressStep {
   collapsible?: boolean;
 }
 
+export interface ProgressMetrics {
+  filesCreated?: number;
+  filesModified?: number;
+  linesAdded?: number;
+  linesRemoved?: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  estimatedCost?: number;
+}
+
 interface AgentProgressProps {
   steps: ProgressStep[];
   isWorking?: boolean;
   onStop?: () => void;
   showTeachingEmojis?: boolean; // For SySop teaching context only
+  metrics?: ProgressMetrics; // Live metrics like Replit Agent
 }
 
-export function AgentProgress({ steps, isWorking, onStop, showTeachingEmojis = false }: AgentProgressProps) {
+export function AgentProgress({ steps, isWorking, onStop, showTeachingEmojis = false, metrics }: AgentProgressProps) {
   const [expandedSteps, setExpandedSteps] = useState<Set<string>>(new Set());
 
   const toggleStep = (stepId: string) => {
@@ -108,6 +119,41 @@ export function AgentProgress({ steps, isWorking, onStop, showTeachingEmojis = f
           </div>
         );
       })}
+
+      {/* Enhanced Progress Metrics - Replit Agent Style */}
+      {metrics && (
+        <div className="pt-2 border-t border-border/50 mt-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+            {(metrics.filesCreated || 0) + (metrics.filesModified || 0) > 0 && (
+              <div className="flex items-center gap-1.5">
+                <FileCode className="w-3 h-3 text-muted-foreground" />
+                <span className="text-muted-foreground">
+                  {metrics.filesCreated || 0} created, {metrics.filesModified || 0} modified
+                </span>
+              </div>
+            )}
+            {((metrics.linesAdded || 0) + (metrics.linesRemoved || 0) > 0) && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-green-500 font-mono">+{metrics.linesAdded || 0}</span>
+                <span className="text-red-500 font-mono">-{metrics.linesRemoved || 0}</span>
+                <span className="text-muted-foreground">lines</span>
+              </div>
+            )}
+            {((metrics.inputTokens || 0) + (metrics.outputTokens || 0) > 0) && (
+              <div className="flex items-center gap-1.5 col-span-2 sm:col-span-1">
+                <span className="text-muted-foreground">
+                  {((metrics.inputTokens || 0) + (metrics.outputTokens || 0)).toLocaleString()} tokens
+                  {metrics.estimatedCost && metrics.estimatedCost > 0 && (
+                    <span className="ml-1 text-primary">
+                      (${metrics.estimatedCost.toFixed(4)})
+                    </span>
+                  )}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Working status with Stop button */}
       {isWorking && (
