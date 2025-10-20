@@ -1,5 +1,5 @@
-import EnhancedAuth from "@/components/enhanced-auth";
+import ModernAuth from "@/components/modern-auth";
 
 export default function AuthPage() {
-  return <EnhancedAuth />;
+  return <ModernAuth />;
 }
