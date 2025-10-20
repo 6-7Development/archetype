@@ -41,6 +41,7 @@ type Project = {
   name: string;
   description: string;
   createdAt: string;
+  fileCount?: number;
 };
 
 export default function Dashboard() {
@@ -229,8 +230,7 @@ export default function Dashboard() {
                     </div>
                     <Badge variant="secondary" className="shrink-0">
                       <FileCode className="w-3 h-3 mr-1" />
-                      {/* TODO: Add file count */}
-                      0
+                      {project.fileCount || 0}
                     </Badge>
                   </div>
                 </CardHeader>

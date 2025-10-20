@@ -330,11 +330,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getProjects(userId: string): Promise<Project[]> {
-    return await db
+    const projectsList = await db
       .select()
       .from(projects)
       .where(eq(projects.userId, userId))
       .orderBy(desc(projects.updatedAt));
+    
+    // Fetch file counts for each project
+    const projectsWithCounts = await Promise.all(
+      projectsList.map(async (project) => {
+        const [countResult] = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(files)
+          .where(and(eq(files.projectId, project.id), eq(files.userId, userId)));
+        
+        return {
+          ...project,
+          fileCount: Number(countResult?.count || 0)
+        };
+      })
+    );
+    
+    return projectsWithCounts;
   }
 
   async getProject(id: string, userId: string): Promise<Project | undefined> {
