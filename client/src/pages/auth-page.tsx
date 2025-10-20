@@ -154,6 +154,25 @@ export default function AuthPage() {
           ) : (
             <Form {...registerForm}>
               <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
+                <FormField
+                  control={registerForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          type="email" 
+                          placeholder="you@example.com" 
+                          data-testid="input-register-email"
+                          autoComplete="email"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={registerForm.control}
@@ -166,6 +185,7 @@ export default function AuthPage() {
                             {...field} 
                             placeholder="John" 
                             data-testid="input-register-firstname"
+                            autoComplete="given-name"
                           />
                         </FormControl>
                         <FormMessage />
@@ -183,6 +203,7 @@ export default function AuthPage() {
                             {...field} 
                             placeholder="Doe" 
                             data-testid="input-register-lastname"
+                            autoComplete="family-name"
                           />
                         </FormControl>
                         <FormMessage />
@@ -190,24 +211,6 @@ export default function AuthPage() {
                     )}
                   />
                 </div>
-                <FormField
-                  control={registerForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          type="email" 
-                          placeholder="you@example.com" 
-                          data-testid="input-register-email"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
                 <FormField
                   control={registerForm.control}
                   name="password"
