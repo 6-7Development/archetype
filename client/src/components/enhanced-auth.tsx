@@ -99,23 +99,13 @@ export default function EnhancedAuth() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md relative z-10"
-      >
+      <div className="w-full max-w-md">
         <Card className="border-2">
           <CardHeader className="space-y-4 text-center">
             {/* Logo */}
-            <motion.div
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.3 }}
-              className="flex justify-center"
-            >
+            <div className="flex justify-center">
               <img src={logoPath} alt="ARCHETYPE" className="w-16 h-16 rounded-xl shadow-lg" />
-            </motion.div>
+            </div>
 
             <div>
               <CardTitle className="text-3xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
@@ -337,7 +327,7 @@ export default function EnhancedAuth() {
             ← Back to Home
           </a>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
