@@ -13,6 +13,7 @@ import LandingMobile from "@/pages/landing-mobile";
 import Pricing from "@/pages/pricing";
 import PricingSuccess from "@/pages/pricing-success";
 import AuthPage from "@/pages/auth-page";
+import AdminPromotePage from "@/pages/admin-promote";
 import Dashboard from "@/pages/dashboard";
 import Builder from "@/pages/builder";
 import Workspace from "@/pages/workspace";
@@ -42,6 +43,7 @@ function Router() {
       <Route path="/pricing" component={Pricing} />
       <Route path="/pricing/success" component={PricingSuccess} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/admin-promote" component={AdminPromotePage} />
       
       {/* Protected routes (with layout) */}
       <Route path="/dashboard">
