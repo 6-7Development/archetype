@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { Link, useRoute } from "wouter";
 import { AIChat } from "@/components/ai-chat";
 import { ProjectUpload } from "@/components/project-upload";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -27,6 +27,16 @@ export default function Builder() {
   const [activeTab, setActiveTab] = useState("build");
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const { isAuthenticated } = useAuth();
+  
+  // Check if projectId is in the URL (/builder/:projectId)
+  const [match, params] = useRoute("/builder/:projectId");
+  
+  // Set currentProjectId from URL params
+  useEffect(() => {
+    if (match && params?.projectId) {
+      setCurrentProjectId(params.projectId);
+    }
+  }, [match, params]);
 
   const { data: commands = [] } = useQuery<Command[]>({
     queryKey: ["/api/commands"],
@@ -184,7 +194,10 @@ export default function Builder() {
                 
                 {/* AI Chat Component (Full Height) */}
                 <div className="flex-1 overflow-hidden">
-                  <AIChat onProjectGenerated={handleProjectGenerated} />
+                  <AIChat 
+                    onProjectGenerated={handleProjectGenerated}
+                    currentProjectId={currentProjectId}
+                  />
                 </div>
               </div>
             </TabsContent>
