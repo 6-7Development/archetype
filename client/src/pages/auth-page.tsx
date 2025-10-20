@@ -102,7 +102,7 @@ export default function AuthPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {mode === "login" ? (
-            <Form {...loginForm}>
+            <Form {...loginForm} key="login-form">
               <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
                 <FormField
                   control={loginForm.control}
@@ -116,6 +116,7 @@ export default function AuthPage() {
                           type="email" 
                           placeholder="you@example.com" 
                           data-testid="input-login-email"
+                          autoComplete="off"
                         />
                       </FormControl>
                       <FormMessage />
@@ -152,7 +153,7 @@ export default function AuthPage() {
               </form>
             </Form>
           ) : (
-            <Form {...registerForm}>
+            <Form {...registerForm} key="register-form">
               <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
                 <FormField
                   control={registerForm.control}
@@ -166,8 +167,7 @@ export default function AuthPage() {
                           type="email" 
                           placeholder="you@example.com" 
                           data-testid="input-register-email"
-                          autoComplete="email"
-                          autoFocus
+                          autoComplete="off"
                         />
                       </FormControl>
                       <FormMessage />
