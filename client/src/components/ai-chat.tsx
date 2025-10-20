@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { AgentProgress, type ProgressStep } from "@/components/agent-progress";
 import { AiStreamingIndicator } from "@/components/ai-streaming-indicator";
 import { useWebSocketStream } from "@/hooks/use-websocket-stream";
@@ -52,10 +53,13 @@ interface AIChatProps {
 }
 
 export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
+  const { user } = useAuth(); // Get current user to check if admin
+  const isAdmin = user?.role === 'admin';
+  
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hi! I'm SySop, your AI coding agent powered by Claude Sonnet 4.\n\nI use a comprehensive 12-step workflow:\n• Deep understanding of your requirements\n• Intelligent architecture & build\n• Rigorous self-testing (syntax, logic, security)\n• Iterative refinement for quality\n\nI'm expert in:\n• Full Stack Web (React, Vue, APIs, databases, auth, real-time, PWA)\n• Professional Game Development (Phaser 3, Three.js, Babylon.js, 2D/3D)\n• Learning & adapting to new technologies\n• Multi-vendor marketplaces, booking systems, e-commerce platforms\n\n⚡ SECURITY FIRST: I'll never generate fake API keys or passwords. If your project needs sensitive credentials, I'll ask you to provide them securely.\n\n✨ REAL-TIME STREAMING: I now show my thoughts and actions as I work!\n\nTell me what you want to build, and I'll create production-ready code!",
+      content: "👋 Hey there! I'm SySop, your friendly AI coding buddy powered by Claude Sonnet 4!\n\n✨ Here's how I work (explained simply):\n🧠 I read your mind... well, your requirements!\n🏗️ I build smart architectures (fancy word for \"organized code\")\n🧪 I test everything myself (like a chef tasting food before serving)\n🔧 I fix issues and make it perfect!\n\n💪 What I'm really good at:\n🌐 Full-Stack Websites (the whole thing - front, back, database!)\n🎮 Professional Games (2D & 3D - think cool indie games)\n📦 Marketplace Platforms (like Etsy or Airbnb)\n🔐 Secure Login Systems (I take security seriously!)\n\n🛡️ SECURITY PROMISE: I'll NEVER make up fake passwords or API keys. If you need real credentials, I'll ask you nicely to provide them securely.\n\n⚡ REAL-TIME MAGIC: Watch me think and work live - no more black boxes!\n\nSo... what awesome thing should we build together today? 🚀",
       timestamp: new Date(),
     },
   ]);
@@ -373,8 +377,8 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                   <p className="whitespace-pre-wrap leading-relaxed break-words">{message.content}</p>
                 </div>
                 
-                {/* Display checkpoint data for assistant messages (ALL AI usage billed) */}
-                {message.role === "assistant" && message.checkpoint && (
+                {/* Display checkpoint data for assistant messages (hide for admins - they have unlimited free access) */}
+                {!isAdmin && message.role === "assistant" && message.checkpoint && (
                   <div className="text-xs text-muted-foreground bg-muted/50 rounded px-3 py-2 space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="font-medium">Checkpoint: {message.checkpoint.complexity.toUpperCase()}</span>

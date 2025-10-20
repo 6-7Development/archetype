@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { MonacoEditor } from "@/components/monaco-editor";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AIChat } from "@/components/ai-chat";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { 
   Code2, 
   Play, 
@@ -19,7 +21,12 @@ import {
   Terminal as TerminalIcon,
   Loader2,
   PanelLeftClose,
-  PanelLeft
+  PanelLeft,
+  Home,
+  LogOut,
+  User,
+  LayoutDashboard,
+  Sparkles
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -136,22 +143,34 @@ export default function Workspace() {
 
   return (
     <div className="h-screen flex flex-col bg-background">
-      {/* Top Bar (Replit-style) */}
-      <header className="h-11 border-b flex items-center justify-between px-3 bg-card">
+      {/* Top Navigation Bar (Replit-style with Navigation) */}
+      <header className="h-12 border-b flex items-center justify-between px-4 bg-card" data-testid="header-workspace">
         <div className="flex items-center gap-3">
+          {/* Archetype Logo - Links to home */}
+          <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+            <Link href="/">
+              <Sparkles className="h-4 w-4 text-primary" />
+            </Link>
+          </Button>
+          
+          {/* File tree toggle */}
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7"
+            className="h-8 w-8"
             onClick={() => setShowFileTree(!showFileTree)}
             data-testid="button-toggle-filetree"
           >
             {showFileTree ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
           </Button>
+          
+          {/* Project Name */}
           <div className="flex items-center gap-2">
             <Code2 className="h-4 w-4 text-primary" data-testid="icon-logo" />
             <h1 className="font-semibold text-sm" data-testid="text-app-name">Archetype IDE</h1>
           </div>
+          
+          {/* Active File */}
           {activeFile && (
             <div className="flex items-center gap-2 pl-3 border-l">
               <FileCode className="h-3.5 w-3.5 text-muted-foreground" />
@@ -159,14 +178,16 @@ export default function Workspace() {
             </div>
           )}
         </div>
+        
         <div className="flex items-center gap-2">
+          {/* Save Button */}
           <Button
             size="sm"
             variant="outline"
             onClick={handleSave}
             disabled={!activeFile || saveFileMutation.isPending}
             data-testid="button-save"
-            className="h-7 text-xs"
+            className="h-8 text-xs"
           >
             {saveFileMutation.isPending ? (
               <Loader2 className="h-3 w-3 animate-spin" />
@@ -174,13 +195,15 @@ export default function Workspace() {
               "Save"
             )}
           </Button>
+          
+          {/* Run/Stop Button */}
           <Button
             size="sm"
             variant={isRunning ? "secondary" : "default"}
             onClick={isRunning ? handleStop : handleRun}
             disabled={!activeFile}
             data-testid="button-run"
-            className="h-7 text-xs gap-1.5"
+            className="h-8 text-xs gap-1.5"
           >
             {isRunning ? (
               <>
@@ -194,7 +217,49 @@ export default function Workspace() {
               </>
             )}
           </Button>
+          
           <ThemeToggle />
+          
+          {/* User Menu - Dashboard & Logout */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8" data-testid="button-user-menu">
+                <User className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              {user && (
+                <>
+                  <div className="px-2 py-1.5">
+                    <p className="text-xs font-medium">{user.email}</p>
+                    {user.role === 'admin' && (
+                      <Badge variant="secondary" className="text-[10px] mt-1">Admin</Badge>
+                    )}
+                  </div>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard" className="cursor-pointer">
+                  <LayoutDashboard className="h-4 w-4 mr-2" />
+                  Dashboard
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/" className="cursor-pointer">
+                  <Home className="h-4 w-4 mr-2" />
+                  Home
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <a href="/api/auth/logout" className="cursor-pointer text-destructive flex items-center">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </a>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
