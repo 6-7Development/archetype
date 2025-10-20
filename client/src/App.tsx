@@ -26,6 +26,8 @@ import Support from "@/pages/support";
 import Admin from "@/pages/admin";
 import Publishing from "@/pages/publishing";
 import NotFound from "@/pages/not-found";
+import Error403 from "@/pages/error-403";
+import Error500 from "@/pages/error-500";
 
 function Router() {
   const [location] = useLocation();
@@ -106,6 +108,12 @@ function Router() {
           <Publishing />
         </AppLayout>
       </Route>
+      
+      {/* Error pages */}
+      <Route path="/error/403" component={Error403} />
+      <Route path="/error/500" component={Error500} />
+      
+      {/* 404 - Must be last */}
       <Route component={NotFound} />
     </Switch>
   );

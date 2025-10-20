@@ -218,7 +218,7 @@ export default function LandingMobile() {
             </Link>
           </div>
           <p className="text-xs text-slate-500">
-            © 2025 ARCHETYPE. All rights reserved.
+            © 2025 <span className="font-semibold text-slate-400">Drill Consulting 360 LLC</span>. All rights reserved.
           </p>
         </div>
       </footer>
