@@ -1,17 +1,17 @@
-# Design Guidelines: Archetype - Console-First Interface
+# Design Guidelines: Archetype - Professional IDE Workspace
 
 ## Design Approach
 
-**Selected Approach**: Command Console-Based (Terminal/CLI Inspired + Fortune 500 Polish)
+**Selected Approach**: Replit-Style IDE Workspace + Fortune 500 Professional Design
 
-**Rationale**: AI-powered website/webapp builder where users give natural language commands. The console is the hero element - center stage, large, and prominent. Drawing inspiration from professional terminal interfaces (iTerm2, Hyper) combined with enterprise sophistication.
+**Rationale**: AI-powered development platform combining Replit's proven IDE layout with enterprise-grade visual polish. Professional file-based workspace with AI assistance, code editing, live preview, and comprehensive tooling.
 
 **Core Principles**:
-- Console-first interaction: Large, prominent command input as primary UI
-- Command history visibility: Clear display of past commands and results
-- Result preview: Generated code displayed elegantly post-command
-- Enterprise sophistication: Polished visuals with corporate aesthetics
-- Trust through design: Professional interface signals reliability
+- IDE-first workspace: File tree, editor, preview - professional development environment
+- AI-enhanced development: Integrated AI chat and code generation alongside traditional IDE features
+- Enterprise sophistication: Polished visuals with Fortune 500 corporate aesthetics
+- Professional tooling: Run buttons, terminal, file management, deployment controls
+- Trust through design: Enterprise interface signals reliability and production-readiness
 
 ## Core Design Elements
 
