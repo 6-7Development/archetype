@@ -147,39 +147,24 @@ export default function Landing() {
         ))}
       </div>
 
-      {/* Navigation */}
+      {/* Navigation - Simplified for Mobile */}
       <nav className="fixed top-0 w-full z-50 border-b border-white/10 bg-slate-950/90 backdrop-blur-xl">
-        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
-          <div className="flex items-center justify-between gap-2 sm:gap-3">
-            <Link href="/" data-testid="link-home" className="flex items-center gap-2 sm:gap-3 lg:gap-4 flex-1 min-w-0 max-w-[55%] lg:max-w-[65%]">
-              <motion.img 
+        <div className="container mx-auto px-3 sm:px-6 py-2 sm:py-3">
+          <div className="flex items-center justify-between gap-2">
+            {/* Logo - Simplified on mobile */}
+            <Link href="/" data-testid="link-home" className="flex items-center gap-2 flex-shrink-0">
+              <img 
                 src={logoPath} 
                 alt="ARCHETYPE" 
-                className="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 flex-shrink-0 rounded-xl"
-                animate={{ 
-                  boxShadow: [
-                    "0 0 30px rgba(6, 182, 212, 0.6)",
-                    "0 0 60px rgba(6, 182, 212, 0.9)",
-                    "0 0 30px rgba(6, 182, 212, 0.6)",
-                  ]
-                }}
-                transition={{ duration: 2, repeat: Infinity }}
-                whileHover={{ scale: 1.05, rotate: 5 }}
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg"
               />
-              <div className="min-w-0 flex-1">
-                <motion.div 
-                  className="text-base sm:text-xl lg:text-2xl xl:text-3xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent truncate"
-                  animate={{ backgroundPosition: ["0%", "100%", "0%"] }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                  style={{ backgroundSize: "200% 200%" }}
-                >
-                  ARCHETYPE
-                </motion.div>
-                <div className="text-xs sm:text-sm text-slate-400 font-medium hidden sm:block truncate">AI Code Generation Platform</div>
-              </div>
+              <span className="text-sm sm:text-lg font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent hidden xs:inline">
+                ARCHETYPE
+              </span>
             </Link>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <MotionToggle />
+            
+            {/* Right Side - Clean */}
+            <div className="flex items-center gap-1 sm:gap-2">
               <MobileNav
                 links={[
                   { href: "/", label: "Home" },
@@ -196,17 +181,12 @@ export default function Landing() {
                   </div>
                 }
               />
-              <Button variant="ghost" className="hidden lg:inline-flex min-h-[44px]" data-testid="button-nav-pricing" asChild>
-                <Link href="/pricing">Pricing</Link>
-              </Button>
-              <Button variant="outline" className="min-h-[44px] hidden sm:inline-flex" data-testid="button-nav-login" asChild>
+              <Button variant="outline" className="min-h-[44px] hidden md:inline-flex" data-testid="button-nav-login" asChild>
                 <Link href="/auth">Login</Link>
               </Button>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button variant="default" size="sm" className="min-h-[44px]" data-testid="button-nav-builder" asChild>
-                  <Link href="/builder">Get Started</Link>
-                </Button>
-              </motion.div>
+              <Button variant="default" className="min-h-[44px] hidden sm:inline-flex" data-testid="button-nav-builder" asChild>
+                <Link href="/builder">Get Started</Link>
+              </Button>
             </div>
           </div>
         </div>
