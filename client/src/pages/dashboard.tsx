@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TemplateGallery } from "@/components/template-gallery";
+import { ProjectUpload } from "@/components/project-upload";
 
 type Project = {
   id: string;
@@ -98,6 +99,9 @@ export default function Dashboard() {
             </Button>
           </div>
         </div>
+
+        {/* Project Upload */}
+        <ProjectUpload />
 
         {/* Search and View Controls */}
         <div className="flex flex-col sm:flex-row gap-3">
