@@ -36,10 +36,10 @@ The user interface features a tab-based workspace (Overview, Build, Files, Previ
 - **Enhanced Progress Display**: Visual collapsible task sections with live progress, progress bars, work metrics, and real-time token/cost tracking.
 - **Autonomous AI System**: SySop is equipped with self-testing, self-correction, and architectural guidance capabilities:
   - **Core Autonomous Tools**: Browser Testing (Playwright), Web Search (Tavily API), Vision Analysis (Claude Vision), Architect Consult.
-  - **Automatic Reflection Loop**: MANDATORY after every code generation; frontend/UI code verified with `browser_test`, backend/API code tested with sample requests.
-  - **Self-Correction Protocol**: If tests find issues, SySop fixes and retests; if it fails 3+ times, it invokes `architect_consult`.
+  - **Automatic Reflection Loop**: Server-enforced after every code generation; frontend/UI code verified with `browser_test`, backend/API code tested with sample requests.
+  - **Self-Correction Protocol**: Server-side retry loop - if tests find issues, SySop fixes and retests automatically; after 3 failed attempts, server automatically invokes `architect_consult`.
   - **Autonomous Troubleshooting**: Proactively diagnoses issues using `browser_test`, searches for solutions, fixes, and verifies.
-  - **Human Intervention Points**: SySop requests external API keys/credentials, clarifies ambiguous requirements, and invokes `architect_consult` after 3+ failed fix attempts.
+  - **Human Intervention Points**: SySop requests external API keys/credentials, clarifies ambiguous requirements, and server escalates to `architect_consult` after 3+ failed fix attempts.
 - **Secrets Management**: Zero-knowledge credential handling for API keys.
 - **Advanced AI Capabilities**: SySop can build complex marketplace platforms, professional-grade 2D/3D games, implement Orb usage-based billing, and can self-test, search docs, and analyze visuals.
 - **Command System**: Natural language commands processed by Anthropic Claude 3.5 Sonnet generate project structures as JSON.
