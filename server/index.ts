@@ -19,7 +19,11 @@ async function retryWithBackoff<T>(
     } catch (error: any) {
       lastError = error;
       const delay = initialDelay * Math.pow(2, attempt);
-      console.warn(`⚠️ Retry attempt ${attempt + 1}/${maxRetries} failed. Retrying in ${delay}ms...`);
+      console.error(`⚠️ Retry attempt ${attempt + 1}/${maxRetries} failed:`, {
+        code: error.code,
+        message: error.message,
+        nextRetryIn: `${delay}ms`
+      });
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
