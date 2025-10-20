@@ -39,7 +39,7 @@ export default function AuthPage() {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginUser) => {
-      return await apiRequest("/api/auth/login", "POST", data);
+      return await apiRequest("POST", "/api/auth/login", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
@@ -60,7 +60,7 @@ export default function AuthPage() {
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterUser) => {
-      return await apiRequest("/api/auth/register", "POST", data);
+      return await apiRequest("POST", "/api/auth/register", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
