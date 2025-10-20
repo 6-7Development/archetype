@@ -16,16 +16,26 @@ const SALT_ROUNDS = 12; // Bcrypt salt rounds (higher = more secure, slower)
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
   const pgStore = connectPg(session);
-  const sessionStore = new pgStore({
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: false,
-    ttl: sessionTtl,
-    tableName: "sessions",
-    // SSL required for Render PostgreSQL in production
-    ...(process.env.NODE_ENV === 'production' && {
-      ssl: { rejectUnauthorized: false }
-    }),
-  });
+  
+  // SSL configuration for production (Render PostgreSQL requires SSL)
+  const storeConfig = process.env.NODE_ENV === 'production'
+    ? {
+        conObject: {
+          connectionString: process.env.DATABASE_URL,
+          ssl: { rejectUnauthorized: false },
+        },
+        createTableIfMissing: false,
+        ttl: sessionTtl,
+        tableName: "sessions",
+      }
+    : {
+        conString: process.env.DATABASE_URL,
+        createTableIfMissing: false,
+        ttl: sessionTtl,
+        tableName: "sessions",
+      };
+  
+  const sessionStore = new pgStore(storeConfig);
   
   return session({
     secret: process.env.SESSION_SECRET!,
