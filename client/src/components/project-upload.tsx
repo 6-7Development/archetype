@@ -138,7 +138,7 @@ export function ProjectUpload() {
               {isDragging ? "Drop your ZIP file here" : "Click to upload or drag and drop"}
             </p>
             <p className="text-xs text-muted-foreground">
-              .zip files only (max 50MB)
+              .zip files only (max 100MB)
             </p>
             <input
               ref={fileInputRef}

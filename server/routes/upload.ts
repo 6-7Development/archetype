@@ -8,7 +8,7 @@ import path from "path";
 const router = express.Router();
 const upload = multer({ 
   storage: multer.memoryStorage(),
-  limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
+  limits: { fileSize: 100 * 1024 * 1024 } // 100MB limit (increased for platform testing)
 });
 
 // Upload and import project from ZIP
