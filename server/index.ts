@@ -71,19 +71,6 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Test database connection with retry logic
-  console.log('🔍 Testing database connection...');
-  try {
-    await retryWithBackoff(async () => {
-      await db.select().from(files).limit(1);
-    }, 5, 1000);
-    console.log('✅ Database connected successfully');
-  } catch (error: any) {
-    console.error('❌ Database connection failed after retries:', error.message);
-    console.error('⚠️ Starting server in degraded mode (database unavailable)');
-    // Continue startup - graceful degradation will handle missing database
-  }
-
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -108,6 +95,8 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
+  
+  // START SERVER IMMEDIATELY - Don't wait for database!
   server.listen({
     port,
     host: "0.0.0.0",
@@ -115,4 +104,17 @@ app.use((req, res, next) => {
   }, () => {
     log(`serving on port ${port}`);
   });
+
+  // Test database connection AFTER server starts (non-blocking)
+  console.log('🔍 Testing database connection...');
+  try {
+    await retryWithBackoff(async () => {
+      await db.select().from(files).limit(1);
+    }, 5, 1000);
+    console.log('✅ Database connected successfully');
+  } catch (error: any) {
+    console.error('❌ Database connection failed after retries:', error.message);
+    console.error('⚠️ Running in degraded mode (database unavailable)');
+    // Continue - graceful degradation will handle missing database
+  }
 })();
