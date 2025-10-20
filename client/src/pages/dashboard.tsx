@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +35,7 @@ import {
 import { cn } from "@/lib/utils";
 import { TemplateGallery } from "@/components/template-gallery";
 import { ProjectUpload } from "@/components/project-upload";
+import { OnboardingTour } from "@/components/onboarding-tour";
 
 type Project = {
   id: string;
@@ -50,7 +52,16 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showTemplateGallery, setShowTemplateGallery] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const { toast } = useToast();
+
+  // Check if this is first time user
+  useEffect(() => {
+    const hasSeenOnboarding = localStorage.getItem('archetype_onboarding_complete');
+    if (!hasSeenOnboarding) {
+      setShowOnboarding(true);
+    }
+  }, []);
 
   const { data: projects = [], isLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
@@ -90,9 +101,25 @@ export default function Dashboard() {
     setLocation(`/builder/${projectId}`);
   };
 
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('archetype_onboarding_complete', 'true');
+    setShowOnboarding(false);
+    
+    // Check if there's a quickstart prompt
+    const quickstartPrompt = localStorage.getItem('archetype_quickstart_prompt');
+    if (quickstartPrompt) {
+      localStorage.setItem('archetype_ai_prompt', quickstartPrompt);
+      localStorage.removeItem('archetype_quickstart_prompt');
+      setLocation('/builder');
+    }
+  };
+
   return (
-    <div className="flex-1 overflow-y-auto p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <>
+      {showOnboarding && <OnboardingTour onComplete={handleOnboardingComplete} />}
+      
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+        <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
@@ -298,6 +325,7 @@ export default function Dashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+      </div>
+    </>
   );
 }
