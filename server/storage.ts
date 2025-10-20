@@ -100,6 +100,7 @@ export interface IStorage {
   getProjects(userId: string): Promise<Project[]>;
   getProject(id: string, userId: string): Promise<Project | undefined>;
   createProject(project: InsertProjectWithUser): Promise<Project>;
+  deleteProject(id: string, userId: string): Promise<void>;
   
   getCommands(userId: string, projectId: string | null): Promise<Command[]>;
   createCommand(command: InsertCommandWithUser): Promise<Command>;
@@ -349,6 +350,22 @@ export class DatabaseStorage implements IStorage {
       .values(insertProject)
       .returning();
     return project;
+  }
+
+  async deleteProject(id: string, userId: string): Promise<void> {
+    // Delete all related data first (files, commands, chat messages, etc.)
+    await db.delete(files).where(
+      and(eq(files.projectId, id), eq(files.userId, userId))
+    );
+    
+    await db.delete(commands).where(
+      and(eq(commands.projectId, id), eq(commands.userId, userId))
+    );
+    
+    // Delete the project itself
+    await db.delete(projects).where(
+      and(eq(projects.id, id), eq(projects.userId, userId))
+    );
   }
 
   async getCommands(userId: string, projectId: string | null): Promise<Command[]> {

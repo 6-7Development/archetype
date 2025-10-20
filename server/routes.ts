@@ -595,6 +595,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/projects/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.authenticatedUserId;
+      const { id } = req.params;
+      
+      // Verify project exists and belongs to user
+      const project = await storage.getProject(id, userId);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      await storage.deleteProject(id, userId);
+      res.json({ success: true, message: "Project deleted successfully" });
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      res.status(500).json({ error: "Failed to delete project" });
+    }
+  });
+
   // Template Reviews API
   app.get("/api/templates/:id/reviews", async (req: Request, res: Response) => {
     try {
