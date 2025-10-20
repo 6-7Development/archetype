@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Rocket, Code, Eye, CheckCircle2, ArrowRight } from "lucide-react";
+import { Sparkles, Rocket, Code, Eye, CheckCircle2, ArrowRight, Palette, BarChart3, CheckSquare, Briefcase } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface OnboardingTourProps {
@@ -62,25 +62,25 @@ const quickstartTemplates = [
     name: "Landing Page",
     description: "Modern landing page with hero section",
     prompt: "Build a professional landing page for a SaaS product with hero section, features, pricing, and contact form. Use modern design with gradients and animations.",
-    icon: "🎨"
+    icon: Palette
   },
   {
     name: "Dashboard",
     description: "Analytics dashboard with charts",
     prompt: "Create an analytics dashboard with charts, metrics cards, and data tables. Include dark mode support and responsive design.",
-    icon: "📊"
+    icon: BarChart3
   },
   {
     name: "Todo App",
     description: "Task manager with categories",
     prompt: "Build a todo application with task categories, due dates, priority levels, and local storage persistence. Include a clean, minimal UI.",
-    icon: "✅"
+    icon: CheckSquare
   },
   {
     name: "Portfolio",
     description: "Personal portfolio website",
     prompt: "Create a professional portfolio website with project showcase, about section, skills, and contact form. Use a clean, modern design.",
-    icon: "💼"
+    icon: Briefcase
   }
 ];
 
@@ -182,22 +182,27 @@ export function OnboardingTour({ onComplete }: OnboardingTourProps) {
               </DialogHeader>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 my-6">
-                {quickstartTemplates.map((template, idx) => (
-                  <Card
-                    key={idx}
-                    className="cursor-pointer hover-elevate active-elevate-2 transition-all"
-                    onClick={() => handleTemplateSelect(template)}
-                    data-testid={`template-${template.name.toLowerCase().replace(/\s+/g, '-')}`}
-                  >
-                    <CardHeader className="pb-3">
-                      <div className="text-3xl mb-2">{template.icon}</div>
-                      <CardTitle className="text-lg">{template.name}</CardTitle>
-                      <CardDescription className="text-sm">
-                        {template.description}
-                      </CardDescription>
-                    </CardHeader>
-                  </Card>
-                ))}
+                {quickstartTemplates.map((template, idx) => {
+                  const TemplateIcon = template.icon;
+                  return (
+                    <Card
+                      key={idx}
+                      className="cursor-pointer hover-elevate active-elevate-2 transition-all"
+                      onClick={() => handleTemplateSelect(template)}
+                      data-testid={`template-${template.name.toLowerCase().replace(/\s+/g, '-')}`}
+                    >
+                      <CardHeader className="pb-3">
+                        <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
+                          <TemplateIcon className="w-6 h-6 text-primary" />
+                        </div>
+                        <CardTitle className="text-lg">{template.name}</CardTitle>
+                        <CardDescription className="text-sm">
+                          {template.description}
+                        </CardDescription>
+                      </CardHeader>
+                    </Card>
+                  );
+                })}
               </div>
 
               <DialogFooter>

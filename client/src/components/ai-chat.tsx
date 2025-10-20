@@ -87,6 +87,15 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
+  // Check for quickstart prompt from onboarding
+  useEffect(() => {
+    const quickstartPrompt = localStorage.getItem('archetype_ai_prompt');
+    if (quickstartPrompt) {
+      setInput(quickstartPrompt);
+      localStorage.removeItem('archetype_ai_prompt');
+    }
+  }, []);
+
   // WebSocket streaming for AI chat (use anonymous if not logged in)
   const streamState = useWebSocketStream(sessionId, "demo-user");
   
