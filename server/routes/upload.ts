@@ -14,15 +14,22 @@ const upload = multer({
 // Upload and import project from ZIP
 router.post('/upload', isAuthenticated, upload.single('project'), async (req: any, res) => {
   try {
+    console.log('🔵 Upload endpoint hit!');
+    console.log('  User:', req.authenticatedUserId);
+    console.log('  File:', req.file ? req.file.originalname : 'NO FILE');
+    
     if (!req.file) {
+      console.log('❌ No file in request');
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
     if (!req.file.originalname.endsWith('.zip')) {
+      console.log('❌ Not a ZIP file');
       return res.status(400).json({ error: 'Only ZIP files are supported' });
     }
 
     const userId = req.authenticatedUserId;
+    console.log('✅ File accepted, processing...');
     const zip = new AdmZip(req.file.buffer);
     const zipEntries = zip.getEntries();
 
