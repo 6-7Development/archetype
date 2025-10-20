@@ -103,9 +103,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       },
     };
     
-    // Test database connection
+    // Test database connection with timeout
     try {
-      const result = await db.select().from(files).limit(1);
+      const dbPromise = db.select().from(files).limit(1);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Database timeout')), 3000)
+      );
+      
+      const result = await Promise.race([dbPromise, timeoutPromise]) as any[];
       diagnostics.database.status = 'connected';
       diagnostics.database.tableCount = result.length;
     } catch (error: any) {
