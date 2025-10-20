@@ -20,6 +20,7 @@ interface StreamOptions {
   system: string;
   messages: any[];
   tools?: any[]; // Tool definitions for Claude tool use
+  signal?: AbortSignal; // Abort signal for cancellation
   onChunk?: (chunk: any) => void;
   onThought?: (thought: string) => void;
   onAction?: (action: string) => void;
@@ -39,6 +40,7 @@ export async function streamAnthropicResponse(options: StreamOptions) {
     system,
     messages,
     tools,
+    signal,
     onChunk,
     onThought,
     onAction,
@@ -53,8 +55,14 @@ export async function streamAnthropicResponse(options: StreamOptions) {
   let usage: any = null;
   let stream: any = null;
   let toolUses: any[] = []; // Track tool uses for execution
+  let abortHandler: (() => void) | null = null; // Declare early to avoid ReferenceError
 
   try {
+    // Check for abort before starting
+    if (signal?.aborted) {
+      throw new Error('Request aborted before starting');
+    }
+
     // Create stream with error handling (include tools if provided)
     const streamParams: any = {
       model,
@@ -69,6 +77,16 @@ export async function streamAnthropicResponse(options: StreamOptions) {
     }
     
     stream = await anthropic.messages.stream(streamParams);
+    
+    // Set up abort handler after stream creation succeeds
+    if (signal) {
+      abortHandler = () => {
+        if (stream) {
+          stream.controller?.abort();
+        }
+      };
+      signal.addEventListener('abort', abortHandler);
+    }
 
     // Process stream events with defensive parsing
     for await (const event of stream) {
@@ -250,6 +268,11 @@ export async function streamAnthropicResponse(options: StreamOptions) {
       error: error instanceof Error ? error.message : String(error)
     };
   } finally {
+    // Clean up abort event listener to prevent memory leaks
+    if (signal && abortHandler) {
+      signal.removeEventListener('abort', abortHandler);
+    }
+    
     // Clean up stream if it exists
     try {
       if (stream && typeof stream.controller?.abort === 'function') {

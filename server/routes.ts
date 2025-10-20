@@ -2064,14 +2064,28 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
           }
         };
 
+        // Create abort controller for this session
+        // If there's an existing generation, abort it first
+        const existingController = activeGenerations.get(sessionId);
+        if (existingController) {
+          existingController.abort();
+          activeGenerations.delete(sessionId);
+        }
+        
+        const abortController = new AbortController();
+        activeGenerations.set(sessionId, abortController);
+
         // Stream with priority queue
-        const result = await aiQueue.enqueue(userId, plan, async () => {
-          return await streamAnthropicResponse({
-            system: systemPrompt,
-            messages: [{ role: "user", content: command }],
-            maxTokens: 4096,
-            tools: SYSOP_TOOLS as any, // Enable SySop autonomous tools
-            onToolUse: executeToolInternal, // Execute tools when Claude requests them
+        let result: any;
+        try {
+          result = await aiQueue.enqueue(userId, plan, async () => {
+            return await streamAnthropicResponse({
+              system: systemPrompt,
+              messages: [{ role: "user", content: command }],
+              maxTokens: 4096,
+              tools: SYSOP_TOOLS as any, // Enable SySop autonomous tools
+              onToolUse: executeToolInternal, // Execute tools when Claude requests them
+              signal: abortController.signal, // Pass abort signal
             onChunk: (chunk) => {
               broadcastToSession(sessionId, {
                 type: 'ai-chunk',
@@ -2109,6 +2123,31 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
             },
           });
         });
+        } catch (abortError: any) {
+          // Clean up abort controller
+          activeGenerations.delete(sessionId);
+          
+          // Check if this was an abort error
+          if (abortError.name === 'AbortError' || abortError.message?.includes('abort')) {
+            await storage.updateCommand(
+              savedCommand.id,
+              userId,
+              "failed",
+              JSON.stringify({ error: "Generation aborted by user" })
+            );
+            
+            broadcastToSession(sessionId, {
+              type: 'ai-aborted',
+              commandId: savedCommand.id,
+              message: 'Generation stopped by user',
+            });
+            
+            return res.json({ success: true, aborted: true });
+          }
+          
+          // Re-throw if not an abort error
+          throw abortError;
+        }
 
         const computeTimeMs = Date.now() - computeStartTime;
 
@@ -2159,6 +2198,9 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
 
         const usageStats = await getUserUsageStats(userId);
 
+        // Clean up abort controller on success
+        activeGenerations.delete(sessionId);
+
         res.json({
           commandId: savedCommand.id,
           result: { ...parsedResult, projectId: project.id },
@@ -2171,6 +2213,9 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
           },
         });
       } catch (aiError: any) {
+        // Clean up abort controller on error
+        activeGenerations.delete(sessionId);
+        
         await storage.updateCommand(
           savedCommand.id,
           userId,
@@ -2187,8 +2232,44 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
         throw aiError;
       }
     } catch (error: any) {
+      // Final cleanup in case of outer error
+      if (sessionId) {
+        activeGenerations.delete(sessionId);
+      }
       console.error('Streaming command error:', error);
       res.status(500).json({ error: error.message || 'Failed to execute streaming command' });
+    }
+  });
+
+  // POST /api/commands/abort - Abort running AI generation
+  app.post("/api/commands/abort", isAuthenticated, async (req: any, res) => {
+    try {
+      const { sessionId } = req.body;
+      
+      if (!sessionId) {
+        return res.status(400).json({ error: "sessionId is required" });
+      }
+
+      // Check if there's an active generation for this session
+      const controller = activeGenerations.get(sessionId);
+      if (controller) {
+        // Abort the generation
+        controller.abort();
+        activeGenerations.delete(sessionId);
+        
+        // Broadcast abort message
+        broadcastToSession(sessionId, {
+          type: 'ai-aborted',
+          message: 'Generation stopped by user',
+        });
+        
+        return res.json({ success: true, message: 'Generation aborted successfully' });
+      } else {
+        return res.json({ success: false, message: 'No active generation found for this session' });
+      }
+    } catch (error: any) {
+      console.error('Abort command error:', error);
+      res.status(500).json({ error: error.message || 'Failed to abort command' });
     }
   });
 

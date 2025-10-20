@@ -424,10 +424,23 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                   steps={currentProgress}
                   isWorking={isGenerating}
                   showTeachingEmojis={true}
-                  onStop={() => {
-                    setIsGenerating(false);
-                    setCurrentProgress([]);
-                    toast({ description: "Generation stopped" });
+                  onStop={async () => {
+                    // Call abort API
+                    try {
+                      await apiRequest("POST", "/api/commands/abort", { sessionId });
+                      setIsGenerating(false);
+                      setCurrentProgress([]);
+                      toast({ description: "Generation stopped successfully" });
+                    } catch (error: any) {
+                      console.error('Failed to abort generation:', error);
+                      // Still update UI even if API call fails
+                      setIsGenerating(false);
+                      setCurrentProgress([]);
+                      toast({ 
+                        variant: "destructive",
+                        description: "Failed to stop generation" 
+                      });
+                    }
                   }}
                 />
               </div>

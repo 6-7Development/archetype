@@ -28,10 +28,11 @@ The user interface features a tab-based workspace (Overview, Build, Files, Previ
 
 ### Technical Implementations
 - **AI Architecture**: SySop (AI Coding Agent) uses a 12-step workflow with built-in Architect consultation for architectural validation.
-- **Real-Time AI Streaming**: Production-grade streaming with Anthropic's API and WebSocket broadcasting.
+- **Real-Time AI Streaming**: Production-grade streaming with Anthropic's API and WebSocket broadcasting with abort capability.
+- **Stop/Abort System**: Users can stop AI generation mid-process with server-side AbortController integration (POST /api/commands/abort).
 - **AI Billing**: Comprehensive billing for all AI usage, including effort-based and conversational checkpoint pricing, with auto-fix capabilities.
 - **Enhanced SySop System Prompt**: Optimized prompt emphasizing high quality through a 14-step workflow, improved JSON formatting, and expertise in full-stack web, professional games, self-testing, and Orb usage-based billing.
-- **Professional Communication**: SySop communicates with emojis, "explain like I'm 5" approach, step-by-step progress updates, and transparent issue reporting.
+- **Professional Communication**: SySop uses teaching emojis (🧠🔨✅) for beginner-friendly progress, "explain like I'm 5" approach, step-by-step updates, and transparent issue reporting.
 - **Enhanced Progress Display**: Visual collapsible task sections with live progress, progress bars, work metrics, and real-time token/cost tracking.
 - **Autonomous AI System**: SySop is equipped with self-testing, self-correction, and architectural guidance capabilities:
   - **Core Autonomous Tools**: Browser Testing (Playwright), Web Search (Tavily API), Vision Analysis (Claude Vision), Architect Consult.
