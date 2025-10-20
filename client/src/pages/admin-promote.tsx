@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { useLocation } from "wouter";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,7 +9,6 @@ import { Loader2, Shield } from "lucide-react";
 
 export default function AdminPromotePage() {
   const [secret, setSecret] = useState("");
-  const [, setLocation] = useLocation();
   const { toast } = useToast();
 
   const promoteMutation = useMutation({
@@ -18,11 +16,18 @@ export default function AdminPromotePage() {
       return await apiRequest("POST", "/api/admin/promote", { adminSecret });
     },
     onSuccess: () => {
+      // Invalidate user cache to refresh admin status
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      
       toast({
         title: "Success!",
         description: "You now have admin privileges. Redirecting...",
       });
-      setTimeout(() => setLocation("/admin"), 1500);
+      
+      // Wait for cache to refresh before redirecting
+      setTimeout(() => {
+        window.location.href = "/admin";
+      }, 2000);
     },
     onError: (error: any) => {
       toast({
