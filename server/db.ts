@@ -15,14 +15,6 @@ const maskedUrl = `${parsed.protocol}//${parsed.username ? "***@" : ""}${parsed.
 console.info(`[db] Environment: NODE_ENV=${process.env.NODE_ENV}, PORT=${process.env.PORT}`);
 console.info(`[db] Using DATABASE_URL: ${maskedUrl}`);
 
-if (!parsed.hostname.endsWith('.render.internal')) {
-  console.warn('⚠️ [db] WARNING: Database host is NOT using Render internal network (.render.internal)');
-  console.warn('⚠️ [db] You should use the INTERNAL DATABASE URL for Render web service → database connections');
-  console.warn('⚠️ [db] Find it in: Render Dashboard → Database → Connections → Internal Database URL');
-} else {
-  console.info('✅ [db] Using Render internal network');
-}
-
 export const pool = new Pool({ 
   connectionString: rawUrl,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
