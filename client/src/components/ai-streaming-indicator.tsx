@@ -10,6 +10,7 @@ interface AiStreamingIndicatorProps {
   currentStep: number;
   totalSteps: number;
   fullMessage: string;
+  showTeachingEmojis?: boolean; // For SySop teaching context only
 }
 
 export function AiStreamingIndicator({
@@ -19,6 +20,7 @@ export function AiStreamingIndicator({
   currentStep,
   totalSteps,
   fullMessage,
+  showTeachingEmojis = false,
 }: AiStreamingIndicatorProps) {
   if (!status && !currentAction && !currentThought) {
     return null;
@@ -35,7 +37,7 @@ export function AiStreamingIndicator({
             <div className="p-1.5 bg-primary/10 rounded-lg">
               <Loader2 className="w-4 h-4 text-primary animate-spin" />
             </div>
-            <span className="text-sm font-semibold">SySop AI Working...</span>
+            <span className="text-sm font-semibold">{showTeachingEmojis ? '🔨 ' : ''}Building your project...</span>
           </div>
           {currentStep > 0 && (
             <Badge variant="outline" className="text-xs" data-testid="step-counter">

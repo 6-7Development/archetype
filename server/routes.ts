@@ -34,6 +34,9 @@ export const FEATURES = {
   STRIPE_BILLING: !!process.env.STRIPE_SECRET_KEY,
 };
 
+// Track active AI generation sessions for stop/abort functionality
+const activeGenerations = new Map<string, AbortController>();
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint (no auth required - for monitoring)
   app.get('/health', async (_req, res) => {
