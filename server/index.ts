@@ -33,6 +33,15 @@ async function retryWithBackoff<T>(
 
 const app = express();
 
+// Force HTTPS redirect in production (Render provides free SSL)
+app.use((req, res, next) => {
+  // Check if we're in production and request is not secure
+  if (process.env.NODE_ENV === 'production' && req.headers['x-forwarded-proto'] !== 'https') {
+    return res.redirect(301, `https://${req.headers.host}${req.url}`);
+  }
+  next();
+});
+
 // Apply raw body parser for Stripe webhooks BEFORE global JSON parser
 app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));
 
