@@ -108,15 +108,15 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className="flex h-screen bg-background relative">
-      {/* Mobile Menu Button - Only visible on mobile */}
+      {/* Mobile Menu Button - Only visible on mobile - PROMINENT */}
       <Button
-        variant="ghost"
+        variant="default"
         size="icon"
-        className="fixed top-4 left-4 z-50 lg:hidden"
+        className="fixed top-3 left-3 z-50 lg:hidden min-h-[48px] min-w-[48px] shadow-lg"
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         data-testid="button-mobile-menu"
       >
-        {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
       </Button>
 
       {/* Mobile Overlay - Closes menu when clicking outside */}
