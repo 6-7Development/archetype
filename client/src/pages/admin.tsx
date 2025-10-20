@@ -6,6 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useLocation } from "wouter";
 import { Users, DollarSign, Activity, TrendingUp, BarChart3, Clock } from "lucide-react";
 import { useState } from "react";
 import {
@@ -93,9 +95,28 @@ interface UsageLog {
 
 export default function Admin() {
   const { toast } = useToast();
+  const { user, isLoading: authLoading, isAuthenticated } = useAuth();
+  const [, setLocation] = useLocation();
   const [selectedUser, setSelectedUser] = useState<UserWithDetails | null>(null);
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [newRole, setNewRole] = useState<string>("");
+
+  // SECURITY: Redirect if not authenticated or not admin
+  if (!authLoading && (!isAuthenticated || user?.role !== 'admin')) {
+    setLocation('/dashboard');
+    return null;
+  }
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="text-lg font-semibold">Loading...</div>
+        </div>
+      </div>
+    );
+  }
 
   // Fetch admin stats
   const { data: stats, isLoading: statsLoading } = useQuery<AdminStats>({
