@@ -2180,6 +2180,53 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
             });
           }
           await updateStorageUsage(userId);
+          
+          // AUTO-TEST LOOP: Enforce testing after code generation (Replit Agent-style)
+          try {
+            const { runAutoTestLoop } = await import('./auto-test-loop');
+            
+            broadcastToSession(sessionId, {
+              type: 'ai-action',
+              commandId: savedCommand.id,
+              action: '🧪 Running automatic tests on generated code...',
+              step: stepCount + 1,
+              totalSteps: 12,
+            });
+            
+            const testResult = await runAutoTestLoop(
+              parsedResult.files,
+              undefined, // No deployed URL yet for browser testing
+              (message) => {
+                broadcastToSession(sessionId, {
+                  type: 'ai-action',
+                  commandId: savedCommand.id,
+                  action: message,
+                  step: stepCount + 1,
+                  totalSteps: 12,
+                });
+              }
+            );
+            
+            broadcastToSession(sessionId, {
+              type: 'ai-action',
+              commandId: savedCommand.id,
+              action: testResult.passed 
+                ? `✅ Auto-test passed: ${testResult.details}`
+                : `⚠️ Auto-test completed with issues: ${testResult.details}`,
+              step: stepCount + 1,
+              totalSteps: 12,
+            });
+          } catch (testError: any) {
+            console.error('Auto-test loop error:', testError);
+            // Don't fail the whole generation if testing fails
+            broadcastToSession(sessionId, {
+              type: 'ai-action',
+              commandId: savedCommand.id,
+              action: `⚠️ Auto-test skipped: ${testError.message}`,
+              step: stepCount + 1,
+              totalSteps: 12,
+            });
+          }
         }
 
         // Track usage

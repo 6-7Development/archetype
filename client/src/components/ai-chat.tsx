@@ -89,6 +89,17 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
 
   // WebSocket streaming for AI chat (use anonymous if not logged in)
   const streamState = useWebSocketStream(sessionId, "demo-user");
+  
+  // Update metrics from WebSocket usage data
+  useEffect(() => {
+    if (streamState.usage) {
+      setCurrentMetrics({
+        inputTokens: streamState.usage.inputTokens,
+        outputTokens: streamState.usage.outputTokens,
+        estimatedCost: ((streamState.usage.inputTokens * 0.003) + (streamState.usage.outputTokens * 0.015)) / 1000,
+      });
+    }
+  }, [streamState.usage]);
 
   // Complexity detection mutation
   const complexityMutation = useMutation<any, Error, { command: string }>({
