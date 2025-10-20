@@ -208,7 +208,7 @@ export default function Landing() {
               <Button variant="ghost" className="hidden lg:inline-flex min-h-[44px]" data-testid="button-nav-pricing" asChild>
                 <Link href="/pricing">Pricing</Link>
               </Button>
-              <Button variant="ghost" className="hidden lg:inline-flex min-h-[44px]" data-testid="button-nav-login" asChild>
+              <Button variant="outline" className="min-h-[44px] hidden sm:inline-flex" data-testid="button-nav-login" asChild>
                 <Link href="/auth">Login</Link>
               </Button>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
