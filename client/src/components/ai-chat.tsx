@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { AgentProgress, type ProgressStep } from "@/components/agent-progress";
+import { AgentProgress, type ProgressStep, type ProgressMetrics } from "@/components/agent-progress";
 import { AiStreamingIndicator } from "@/components/ai-streaming-indicator";
 import { useWebSocketStream } from "@/hooks/use-websocket-stream";
 import { ConnectionStatus } from "@/components/connection-status";
@@ -68,6 +68,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   const [secretsInput, setSecretsInput] = useState<Record<string, string>>({});
   const [lastCommand, setLastCommand] = useState<string>("");
   const [currentProgress, setCurrentProgress] = useState<ProgressStep[]>([]);
+  const [currentMetrics, setCurrentMetrics] = useState<ProgressMetrics>({});
   const [isGenerating, setIsGenerating] = useState(false);
   const [sessionId] = useState(() => nanoid());
   const [showCostPreview, setShowCostPreview] = useState(false);
@@ -424,18 +425,21 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                   steps={currentProgress}
                   isWorking={isGenerating}
                   showTeachingEmojis={true}
+                  metrics={currentMetrics}
                   onStop={async () => {
                     // Call abort API
                     try {
                       await apiRequest("POST", "/api/commands/abort", { sessionId });
                       setIsGenerating(false);
                       setCurrentProgress([]);
+                      setCurrentMetrics({});
                       toast({ description: "Generation stopped successfully" });
                     } catch (error: any) {
                       console.error('Failed to abort generation:', error);
                       // Still update UI even if API call fails
                       setIsGenerating(false);
                       setCurrentProgress([]);
+                      setCurrentMetrics({});
                       toast({ 
                         variant: "destructive",
                         description: "Failed to stop generation" 
