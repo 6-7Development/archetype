@@ -21,6 +21,10 @@ export function getSession() {
     createTableIfMissing: false,
     ttl: sessionTtl,
     tableName: "sessions",
+    // SSL required for Render PostgreSQL in production
+    ...(process.env.NODE_ENV === 'production' && {
+      ssl: { rejectUnauthorized: false }
+    }),
   });
   
   return session({
