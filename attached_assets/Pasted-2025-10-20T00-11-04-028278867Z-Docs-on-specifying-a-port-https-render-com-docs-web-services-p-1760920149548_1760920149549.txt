@@ -1,0 +1,50 @@
+2025-10-20T00:11:04.028278867Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2025-10-20T00:11:04.336888894Z ==> Port scan timeout reached, no open ports detected. Bind your service to at least one port. If you don't need to receive traffic on any port, create a background worker instead.
+2025-10-20T00:11:04.434020841Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2025-10-20T00:12:44.547045211Z ⚠️ Retry attempt 3/5 failed. Retrying in 4000ms...
+2025-10-20T00:14:18.17128173Z 12:14:18 AM [express] GET /api/admin/usage-logs 200 in 2ms
+2025-10-20T00:14:18.286931018Z 12:14:18 AM [express] GET /api/admin/analytics 200 in 1ms
+2025-10-20T00:14:21.778273765Z 12:14:21 AM [express] GET /api/auth/me 401 in 0ms :: {"error":"Not authenticated"}
+2025-10-20T00:14:21.786740639Z 12:14:21 AM [express] GET /api/admin/analytics 200 in 1ms
+2025-10-20T00:14:21.827855456Z 12:14:21 AM [express] GET /api/admin/stats 200 in 1ms
+2025-10-20T00:14:21.942855007Z 12:14:21 AM [express] GET /api/admin/users 200 in 1ms
+2025-10-20T00:14:21.994551644Z 12:14:21 AM [express] GET /api/admin/usage-logs 200 in 1ms
+2025-10-20T00:15:03.811047097Z ⚠️ Retry attempt 4/5 failed. Retrying in 8000ms...
+2025-10-20T00:17:23.36740479Z ==> Timed out: Port scan timeout reached, no open ports detected. Bind your service to at least one port. If you don't need to receive traffic on any port, create a background worker instead.
+2025-10-20T00:17:23.388323679Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+2025-10-20T00:17:27.171175982Z ⚠️ Retry attempt 5/5 failed. Retrying in 16000ms...
+2025-10-20T00:17:43.186763019Z ❌ Database connection failed after retries: connect ETIMEDOUT 35.227.164.209:443
+2025-10-20T00:17:43.18679137Z ⚠️ Starting server in degraded mode (database unavailable)
+2025-10-20T00:17:43.218762855Z 12:17:43 AM [express] serving on port 10000
+2025-10-20T00:23:34.2873279Z ==> Deploying...
+2025-10-20T00:23:51.605622315Z ==> Running 'npm start'
+2025-10-20T00:23:51.742695614Z 
+2025-10-20T00:23:51.742717895Z > rest-express@1.0.0 start
+2025-10-20T00:23:51.742723025Z > NODE_ENV=production node dist/index.js
+2025-10-20T00:23:51.742725135Z 
+2025-10-20T00:23:53.140599871Z 🔍 Testing database connection...
+2025-10-20T00:23:53.199692255Z 12:23:53 AM [express] serving on port 10000
+2025-10-20T00:23:56.282191855Z ==> Your service is live 🎉
+2025-10-20T00:23:56.315367493Z ==> 
+2025-10-20T00:23:56.347088951Z ==> ///////////////////////////////////////////////////////////
+2025-10-20T00:23:56.376598189Z ==> 
+2025-10-20T00:23:56.405356907Z ==> Available at your primary URL https://archetype-x8b5.onrender.com
+2025-10-20T00:23:56.536456228Z ==> 
+2025-10-20T00:23:56.617909273Z ==> ///////////////////////////////////////////////////////////
+2025-10-20T00:24:46.17833224Z ==> Deploying...
+2025-10-20T00:25:05.151162877Z ==> Running 'npm start'
+2025-10-20T00:25:05.266925402Z 
+2025-10-20T00:25:05.266949303Z > rest-express@1.0.0 start
+2025-10-20T00:25:05.266953303Z > NODE_ENV=production node dist/index.js
+2025-10-20T00:25:05.266955053Z 
+2025-10-20T00:25:06.748017434Z 🔍 Testing database connection...
+2025-10-20T00:25:06.801940657Z 12:25:06 AM [express] serving on port 10000
+2025-10-20T00:25:17.345770078Z ==> Your service is live 🎉
+2025-10-20T00:25:17.490233589Z ==> 
+2025-10-20T00:25:17.515889947Z ==> ///////////////////////////////////////////////////////////
+2025-10-20T00:25:17.539360426Z ==> 
+2025-10-20T00:25:17.565563774Z ==> Available at your primary URL https://archetype-x8b5.onrender.com
+2025-10-20T00:25:17.591984152Z ==> 
+2025-10-20T00:25:17.616027421Z ==> ///////////////////////////////////////////////////////////
+2025-10-20T00:26:07.447500229Z ⚠️ Retry attempt 1/5 failed. Retrying in 1000ms...
+2025-10-20T00:27:20.441504835Z ⚠️ Retry attempt 1/5 failed. Retrying in 1000ms...
