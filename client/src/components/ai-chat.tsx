@@ -48,9 +48,10 @@ interface SecretsRequest {
 
 interface AIChatProps {
   onProjectGenerated?: (result: any) => void;
+  currentProjectId?: string | null;
 }
 
-export function AIChat({ onProjectGenerated }: AIChatProps) {
+export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -204,7 +205,7 @@ export function AIChat({ onProjectGenerated }: AIChatProps) {
       {
         command,
         userId: "demo-user",
-        projectId: null,
+        projectId: currentProjectId || null,
         secrets,
       },
       {
