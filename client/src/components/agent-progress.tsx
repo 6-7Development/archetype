@@ -15,9 +15,10 @@ interface AgentProgressProps {
   steps: ProgressStep[];
   isWorking?: boolean;
   onStop?: () => void;
+  showTeachingEmojis?: boolean; // For SySop teaching context only
 }
 
-export function AgentProgress({ steps, isWorking, onStop }: AgentProgressProps) {
+export function AgentProgress({ steps, isWorking, onStop, showTeachingEmojis = false }: AgentProgressProps) {
   const [expandedSteps, setExpandedSteps] = useState<Set<string>>(new Set());
 
   const toggleStep = (stepId: string) => {
@@ -31,6 +32,25 @@ export function AgentProgress({ steps, isWorking, onStop }: AgentProgressProps) 
   };
 
   const getIcon = (type: ProgressStep["type"]) => {
+    // Use teaching emojis for SySop, Lucide icons for everything else
+    if (showTeachingEmojis) {
+      switch (type) {
+        case "thinking":
+          return <span className="text-base">🧠</span>;
+        case "action":
+          return <span className="text-base">🔨</span>;
+        case "success":
+          return <span className="text-base">✅</span>;
+        case "error":
+          return <span className="text-base">❌</span>;
+        case "warning":
+          return <span className="text-base">⚠️</span>;
+        default:
+          return <span className="text-base">🧠</span>;
+      }
+    }
+    
+    // Default Lucide icons for non-teaching contexts
     switch (type) {
       case "thinking":
         return <Brain className="w-4 h-4 text-muted-foreground" />;
@@ -92,7 +112,7 @@ export function AgentProgress({ steps, isWorking, onStop }: AgentProgressProps) 
       {/* Working status with Stop button */}
       {isWorking && (
         <div className="flex items-center justify-between pt-2 border-t border-border/50 mt-2">
-          <span className="text-sm text-muted-foreground">Working...</span>
+          <span className="text-sm text-muted-foreground">Building your project...</span>
           {onStop && (
             <Button
               variant="ghost"
