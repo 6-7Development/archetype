@@ -51,6 +51,9 @@ export default function LandingMobile() {
               <Button variant="ghost" className="w-full justify-start min-h-[44px]" asChild data-testid="menu-link-pricing">
                 <Link href="/pricing" onClick={() => setMenuOpen(false)}>Pricing</Link>
               </Button>
+              <Button variant="outline" className="w-full min-h-[44px]" asChild data-testid="menu-link-login">
+                <Link href="/auth" onClick={() => setMenuOpen(false)}>Login</Link>
+              </Button>
               <Button variant="default" className="w-full min-h-[44px]" asChild data-testid="menu-link-builder">
                 <Link href="/builder" onClick={() => setMenuOpen(false)}>Get Started</Link>
               </Button>
