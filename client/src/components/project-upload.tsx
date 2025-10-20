@@ -1,10 +1,12 @@
 import { useState, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Upload, FileArchive, X, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { queryClient } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 
 export function ProjectUpload() {
@@ -13,6 +15,7 @@ export function ProjectUpload() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   const uploadMutation = useMutation({
     mutationFn: async (zipFile: File) => {
@@ -39,6 +42,12 @@ export function ProjectUpload() {
       });
       setFile(null);
       setUploadProgress(0);
+      
+      // Invalidate projects cache and redirect to dashboard
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      setTimeout(() => {
+        setLocation('/dashboard');
+      }, 1000); // Brief delay to show success message
     },
     onError: (error: Error) => {
       toast({
