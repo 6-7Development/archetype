@@ -1,35 +1,12 @@
 import { Router } from 'express';
 import { platformHealing } from './platformHealing';
 import { platformAudit } from './platformAudit';
+import { isAuthenticated, isAdmin } from './universalAuth';
 import Anthropic from '@anthropic-ai/sdk';
 
 const router = Router();
 
-const isAdmin = (req: any, res: any, next: any) => {
-  if (!req.authenticatedUserId) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  const { users } = require('@shared/schema');
-  const { db } = require('./db');
-  const { eq } = require('drizzle-orm');
-
-  db.select()
-    .from(users)
-    .where(eq(users.id, req.authenticatedUserId))
-    .then((result: any[]) => {
-      if (result.length === 0 || result[0].role !== 'admin') {
-        return res.status(403).json({ error: 'Forbidden - Admin access required' });
-      }
-      req.adminUser = result[0];
-      next();
-    })
-    .catch((error: any) => {
-      res.status(500).json({ error: 'Internal server error' });
-    });
-};
-
-router.post('/heal', isAdmin, async (req: any, res) => {
+router.post('/heal', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
     const { issue, autoCommit = false, autoPush = false } = req.body;
     const userId = req.authenticatedUserId;
@@ -284,7 +261,7 @@ Analyze the issue, identify the root cause, and provide the fix.`;
   }
 });
 
-router.post('/rollback', isAdmin, async (req: any, res) => {
+router.post('/rollback', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
     const { backupId } = req.body;
     const userId = req.authenticatedUserId;
@@ -328,7 +305,7 @@ router.post('/rollback', isAdmin, async (req: any, res) => {
   }
 });
 
-router.get('/backups', isAdmin, async (req: any, res) => {
+router.get('/backups', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
     const backups = await platformHealing.listBackups();
     res.json({ backups });
@@ -337,7 +314,7 @@ router.get('/backups', isAdmin, async (req: any, res) => {
   }
 });
 
-router.get('/audit', isAdmin, async (req: any, res) => {
+router.get('/audit', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
     const limit = parseInt(req.query.limit as string) || 50;
     const logs = await platformAudit.getHistory(limit);
@@ -347,7 +324,7 @@ router.get('/audit', isAdmin, async (req: any, res) => {
   }
 });
 
-router.get('/status', isAdmin, async (req: any, res) => {
+router.get('/status', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
     const diff = await platformHealing.getDiff();
     const safety = await platformHealing.validateSafety();
