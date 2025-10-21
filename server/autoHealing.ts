@@ -103,7 +103,13 @@ class AutoHealingService {
         return;
       }
       
-      console.log('[AUTO-HEAL] Known fix applied successfully');
+      // Commit the known fix
+      await platformHealing.commitChanges(
+        `Auto-heal: Known fix for ${error.type} error`,
+        [{ path: fixData.path, operation: 'modify' as const }]
+      );
+      
+      console.log('[AUTO-HEAL] Known fix applied and committed successfully');
       this.errorBuffer = []; // Clear buffer
       
     } catch (error) {
@@ -342,11 +348,17 @@ Fix these errors with minimal changes. Explain each fix clearly.`;
 
         console.log('[AUTO-HEAL] Fix committed:', commitHash);
 
-        // Learn this fix for future use
+        // Learn this fix for future use - CRITICAL: Store the solution
         if (this.errorBuffer.length > 0 && changes.length > 0) {
           const primaryError = this.errorBuffer[0];
-          const fixData = JSON.stringify(changes[0]); // Store first change as the fix
+          // Store the complete fix pattern
+          const fixData = JSON.stringify({
+            path: changes[0].path,
+            content: changes[0].content,
+            issue: issue.slice(0, 200), // Include context
+          });
           this.learnFix(primaryError, fixData);
+          console.log('[AUTO-HEAL] Learned fix for future use:', this.getErrorSignature(primaryError));
         }
 
         await platformAudit.log({
