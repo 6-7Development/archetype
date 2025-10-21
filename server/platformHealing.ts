@@ -1,9 +1,9 @@
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 interface PlatformBackup {
   id: string;
@@ -37,13 +37,23 @@ export class PlatformHealingService {
       const backupId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const branchName = `${this.BACKUP_BRANCH_PREFIX}${backupId}`;
 
-      await execAsync('git add -A', { cwd: this.PROJECT_ROOT });
+      await execFileAsync('git', ['add', '-A'], { cwd: this.PROJECT_ROOT });
       
-      await execAsync(`git commit -m "[Meta-SySop Backup] ${description}"`, { cwd: this.PROJECT_ROOT });
+      const commitMessage = `[Meta-SySop Backup] ${description}`;
       
-      const { stdout: commitHash } = await execAsync('git rev-parse HEAD', { cwd: this.PROJECT_ROOT });
+      try {
+        await execFileAsync('git', ['commit', '-m', commitMessage], { cwd: this.PROJECT_ROOT });
+      } catch (commitError: any) {
+        if (commitError.message.includes('nothing to commit')) {
+          console.log('[PLATFORM-BACKUP] No changes to commit, creating backup at current HEAD');
+        } else {
+          throw commitError;
+        }
+      }
       
-      await execAsync(`git branch ${branchName}`, { cwd: this.PROJECT_ROOT });
+      const { stdout: commitHash } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: this.PROJECT_ROOT });
+      
+      await execFileAsync('git', ['branch', branchName], { cwd: this.PROJECT_ROOT });
 
       console.log(`[PLATFORM-BACKUP] Created backup: ${backupId} at commit ${commitHash.trim()}`);
 
@@ -65,14 +75,14 @@ export class PlatformHealingService {
       const sanitizedId = this.sanitizeBackupId(backupId);
       const branchName = `${this.BACKUP_BRANCH_PREFIX}${sanitizedId}`;
 
-      const { stdout: branches } = await execAsync('git branch --list', { cwd: this.PROJECT_ROOT });
+      const { stdout: branches } = await execFileAsync('git', ['branch', '--list'], { cwd: this.PROJECT_ROOT });
       if (!branches.includes(branchName)) {
         throw new Error(`Backup branch ${branchName} not found`);
       }
 
-      await execAsync('git stash', { cwd: this.PROJECT_ROOT });
+      await execFileAsync('git', ['stash'], { cwd: this.PROJECT_ROOT });
       
-      await execAsync(`git reset --hard ${branchName}`, { cwd: this.PROJECT_ROOT });
+      await execFileAsync('git', ['reset', '--hard', branchName], { cwd: this.PROJECT_ROOT });
 
       console.log(`[PLATFORM-ROLLBACK] Rolled back to backup: ${sanitizedId}`);
     } catch (error: any) {
@@ -83,7 +93,7 @@ export class PlatformHealingService {
 
   async listBackups(): Promise<PlatformBackup[]> {
     try {
-      const { stdout } = await execAsync('git branch --list', { cwd: this.PROJECT_ROOT });
+      const { stdout } = await execFileAsync('git', ['branch', '--list'], { cwd: this.PROJECT_ROOT });
       const backupBranches = stdout
         .split('\n')
         .map(b => b.trim())
@@ -92,14 +102,8 @@ export class PlatformHealingService {
       const backups: PlatformBackup[] = [];
       for (const branch of backupBranches) {
         const backupId = branch.replace(this.BACKUP_BRANCH_PREFIX, '');
-        const { stdout: commitHash } = await execAsync(
-          `git rev-parse ${branch}`,
-          { cwd: this.PROJECT_ROOT }
-        );
-        const { stdout: commitMsg } = await execAsync(
-          `git log -1 --pretty=%B ${branch}`,
-          { cwd: this.PROJECT_ROOT }
-        );
+        const { stdout: commitHash } = await execFileAsync('git', ['rev-parse', branch], { cwd: this.PROJECT_ROOT });
+        const { stdout: commitMsg } = await execFileAsync('git', ['log', '-1', '--pretty=%B', branch], { cwd: this.PROJECT_ROOT });
 
         backups.push({
           id: backupId,
@@ -119,9 +123,13 @@ export class PlatformHealingService {
 
   async readPlatformFile(filePath: string): Promise<string> {
     try {
-      const fullPath = path.join(this.PROJECT_ROOT, filePath);
+      if (path.isAbsolute(filePath)) {
+        throw new Error('Absolute paths are not allowed');
+      }
       
-      if (!fullPath.startsWith(this.PROJECT_ROOT)) {
+      const fullPath = path.resolve(this.PROJECT_ROOT, filePath);
+      
+      if (!fullPath.startsWith(this.PROJECT_ROOT + path.sep) && fullPath !== this.PROJECT_ROOT) {
         throw new Error('Invalid file path - path traversal detected');
       }
 
@@ -134,9 +142,13 @@ export class PlatformHealingService {
 
   async writePlatformFile(filePath: string, content: string): Promise<void> {
     try {
-      const fullPath = path.join(this.PROJECT_ROOT, filePath);
+      if (path.isAbsolute(filePath)) {
+        throw new Error('Absolute paths are not allowed');
+      }
       
-      if (!fullPath.startsWith(this.PROJECT_ROOT)) {
+      const fullPath = path.resolve(this.PROJECT_ROOT, filePath);
+      
+      if (!fullPath.startsWith(this.PROJECT_ROOT + path.sep) && fullPath !== this.PROJECT_ROOT) {
         throw new Error('Invalid file path - path traversal detected');
       }
 
@@ -168,10 +180,29 @@ export class PlatformHealingService {
 
   async deletePlatformFile(filePath: string): Promise<void> {
     try {
-      const fullPath = path.join(this.PROJECT_ROOT, filePath);
+      if (path.isAbsolute(filePath)) {
+        throw new Error('Absolute paths are not allowed');
+      }
       
-      if (!fullPath.startsWith(this.PROJECT_ROOT)) {
+      const fullPath = path.resolve(this.PROJECT_ROOT, filePath);
+      
+      if (!fullPath.startsWith(this.PROJECT_ROOT + path.sep) && fullPath !== this.PROJECT_ROOT) {
         throw new Error('Invalid file path - path traversal detected');
+      }
+
+      const dangerousPatterns = [
+        /\.git\//,
+        /node_modules\//,
+        /\.env$/,
+        /package\.json$/,
+        /package-lock\.json$/,
+        /vite\.config\.ts$/,
+        /server\/vite\.ts$/,
+        /drizzle\.config\.ts$/,
+      ];
+
+      if (dangerousPatterns.some(pattern => pattern.test(filePath))) {
+        throw new Error(`Deleting ${filePath} is not allowed for safety reasons`);
       }
 
       await fs.unlink(fullPath);
@@ -184,9 +215,13 @@ export class PlatformHealingService {
 
   async listPlatformFiles(directory: string = '.'): Promise<string[]> {
     try {
-      const fullPath = path.join(this.PROJECT_ROOT, directory);
+      if (path.isAbsolute(directory)) {
+        throw new Error('Absolute paths are not allowed');
+      }
       
-      if (!fullPath.startsWith(this.PROJECT_ROOT)) {
+      const fullPath = path.resolve(this.PROJECT_ROOT, directory);
+      
+      if (!fullPath.startsWith(this.PROJECT_ROOT + path.sep) && fullPath !== this.PROJECT_ROOT) {
         throw new Error('Invalid directory path - path traversal detected');
       }
 
@@ -216,16 +251,13 @@ export class PlatformHealingService {
 
   async commitChanges(message: string, changes: FileChange[]): Promise<string> {
     try {
-      await execAsync('git add -A', { cwd: this.PROJECT_ROOT });
+      await execFileAsync('git', ['add', '-A'], { cwd: this.PROJECT_ROOT });
 
       const commitMessage = `[Meta-SySop] ${message}\n\nChanges:\n${changes.map(c => `- ${c.operation} ${c.path}`).join('\n')}`;
 
-      const { stdout } = await execAsync(
-        `git commit -m "${commitMessage.replace(/"/g, '\\"')}"`,
-        { cwd: this.PROJECT_ROOT }
-      );
+      await execFileAsync('git', ['commit', '-m', commitMessage], { cwd: this.PROJECT_ROOT });
 
-      const { stdout: commitHash } = await execAsync('git rev-parse HEAD', { cwd: this.PROJECT_ROOT });
+      const { stdout: commitHash } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: this.PROJECT_ROOT });
 
       console.log(`[PLATFORM-HEAL] Auto-committed changes: ${commitHash.trim()}`);
 
@@ -241,7 +273,7 @@ export class PlatformHealingService {
 
   async pushToRemote(): Promise<void> {
     try {
-      await execAsync('git push origin main', { cwd: this.PROJECT_ROOT });
+      await execFileAsync('git', ['push', 'origin', 'main'], { cwd: this.PROJECT_ROOT });
       console.log('[PLATFORM-HEAL] Pushed changes to remote (will trigger Render deployment)');
     } catch (error: any) {
       throw new Error(`Failed to push to remote: ${error.message}`);
@@ -250,7 +282,7 @@ export class PlatformHealingService {
 
   async getDiff(): Promise<string> {
     try {
-      const { stdout } = await execAsync('git diff', { cwd: this.PROJECT_ROOT });
+      const { stdout } = await execFileAsync('git', ['diff'], { cwd: this.PROJECT_ROOT });
       return stdout;
     } catch (error: any) {
       return '';
@@ -271,7 +303,7 @@ export class PlatformHealingService {
         issues.push('Changes contain destructive database operations');
       }
 
-      const { stdout: status } = await execAsync('git status --porcelain', { cwd: this.PROJECT_ROOT });
+      const { stdout: status } = await execFileAsync('git', ['status', '--porcelain'], { cwd: this.PROJECT_ROOT });
       const modifiedFiles = status.split('\n').filter(l => l.trim());
       
       if (modifiedFiles.some(f => f.includes('.git/'))) {
