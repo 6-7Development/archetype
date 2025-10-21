@@ -1082,11 +1082,12 @@ Keep it under 150 words. Be factual and specific.`,
         },
         bundle: true,
         write: false,
-        format: 'iife',
+        format: 'esm',
         platform: 'browser',
         target: ['es2020'],
         jsx: 'automatic',
         jsxDev: false,
+        jsxImportSource: 'https://esm.sh/react@18.2.0',
         plugins: [
           {
             name: 'virtual-fs',
@@ -1115,8 +1116,16 @@ Keep it under 150 words. Be factual and specific.`,
                   }
                 }
                 
-                // External package - use CDN
-                return { path: args.path, external: true };
+                // External package - rewrite to use esm.sh CDN
+                if (args.path === 'react') {
+                  return { path: 'https://esm.sh/react@18.2.0', external: true };
+                }
+                if (args.path === 'react-dom' || args.path === 'react-dom/client') {
+                  return { path: 'https://esm.sh/react-dom@18.2.0', external: true };
+                }
+                
+                // Other packages - use esm.sh
+                return { path: `https://esm.sh/${args.path}`, external: true };
               });
               
               build.onLoad({ filter: /.*/, namespace: 'virtual-fs' }, (args) => {
@@ -1169,13 +1178,19 @@ Keep it under 150 words. Be factual and specific.`,
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: system-ui, -apple-system, sans-serif; }
   </style>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 </head>
 <body>
   <div id="root"></div>
   <script type="module">
     ${bundled}
+  </script>
+  <script>
+    window.addEventListener('error', (e) => {
+      console.error('Preview runtime error:', e.error || e.message);
+    });
+    window.addEventListener('unhandledrejection', (e) => {
+      console.error('Preview unhandled rejection:', e.reason);
+    });
   </script>
 </body>
 </html>
@@ -1412,7 +1427,14 @@ Keep it under 150 words. Be factual and specific.`,
         }
 
         // Build system prompt with mode and secrets context
-        let systemPrompt = `You are SySop, an autonomous AI coding agent. Like Replit Agent 3, you're intelligent about when to act vs. when to ask.
+        let systemPrompt = `You are SySop - THE CODER for the Archetype platform. You build web applications for users, and you can also heal/fix the Archetype platform itself when needed.
+
+🎯 YOUR IDENTITY:
+• **Platform:** Archetype - an AI-powered web development platform
+• **Your Role:** THE CODER - You write code, build features, fix bugs
+• **Architect:** Your consultant (I AM) - helps when you're stuck  
+• **Users:** People building web apps through Archetype
+
 
 🎯 CORE BEHAVIOR (Replit Agent 3 style):
 • **THINK FIRST** - Does this request make sense with the current project?
@@ -1420,20 +1442,23 @@ Keep it under 150 words. Be factual and specific.`,
 • **THEN ACT FAST** - Once you understand, build immediately without over-explaining  
 • **BE HELPFUL** - Use simple language and emoji symbols (\ud83e\udde0\ud83d\udcdd\u2705\ud83d\udd28)
 
-🔧 META-SYSOP MODE (Platform vs Project):
-AUTO-DETECT from user's words:
+🔧 AUTO-DETECT: Platform vs Project Work
+You can work on TWO types of projects:
 
-**PROJECT WORK** (default):
+**PROJECT WORK** (default - 95% of requests):
 • "Build me a todo app" → Generate their project files
 • "Add login" → Add to their project  
 • "Fix the button" → Fix in their project
+• **YOU BUILD WHAT USERS ASK FOR**
 
-**PLATFORM WORK** (Meta-SySop):
+**PLATFORM WORK** (Meta-SySop - YOU CAN DO THIS):
 • "Fix the Archetype header" → Use platform tools (read_platform_file, write_platform_file)
-• "The platform is broken" → Platform work
-• Mentions "Archetype", "platform", "our dashboard" → Platform mode
+• "The platform is broken" → FIX IT using platform tools
+• "Platform header is sticky" → FIX THE PLATFORM
+• Mentions "Archetype", "platform", "our dashboard" → YOU CAN FIX THESE
+• **YOU CAN HEAL ARCHETYPE ITSELF** - You're not limited to user projects!
 
-**Default:** Assume PROJECT work (safer)
+**Default:** Assume PROJECT work unless they mention Archetype/platform
 
 EXPERTISE (2025):
 • Complex Marketplaces & Platforms: Multi-vendor (Airbnb, Etsy, Fiverr), booking systems (Resy, OpenTable), e-commerce, payments, ratings, search, vendor/admin dashboards
@@ -2390,7 +2415,7 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
         type: 'ai-status',
         commandId: savedCommand.id,
         status: 'starting',
-        message: 'Initializing SySop AI...',
+        message: '🧠 Getting ready...',
       });
 
       try {
@@ -2831,7 +2856,7 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
       // Wrap AI call in priority queue
       const completion = await aiQueue.enqueue(userId, plan, async () => {
         // Build system prompt with project context
-        let systemPrompt = `You are SySop - Archetype's AI coding agent. Ultra-concise. Action-first.
+        let systemPrompt = `You are SySop - THE CODER for the Archetype platform. Ultra-concise. Action-first.
 
 🧠 **WHO YOU ARE:**
 You're the AI brain inside Archetype, an enterprise-grade platform for rapid web development. You understand:

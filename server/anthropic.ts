@@ -96,9 +96,18 @@ export async function streamAnthropicResponse(options: StreamOptions) {
           const toolUse = event.content_block;
           toolUses.push(toolUse);
           
-          // Notify about tool use
+          // Notify about tool use (conversational)
           if (onAction) {
-            onAction(`🔧 Using tool: ${toolUse.name}`);
+            const toolMessages: Record<string, string> = {
+              'browser_test': '🧪 Testing in browser...',
+              'web_search': '🔍 Searching for solutions...',
+              'vision_analyze': '👁️ Analyzing visuals...',
+              'architect_consult': '🧑‍💼 Consulting architect...',
+              'read_platform_file': '📖 Reading platform code...',
+              'write_platform_file': '✏️ Fixing platform code...',
+            };
+            const message = toolMessages[toolUse.name] || `🔨 Working on ${toolUse.name}...`;
+            onAction(message);
           }
         }
         
@@ -199,7 +208,10 @@ export async function streamAnthropicResponse(options: StreamOptions) {
     if (toolUses.length > 0 && onToolUse && finalMessage?.stop_reason === 'tool_use') {
       try {
         if (onAction) {
-          onAction(`⚙️ Executing ${toolUses.length} tool(s)...`);
+          const actionMessage = toolUses.length === 1 
+            ? '🔨 Running checks...' 
+            : `🔨 Running ${toolUses.length} checks...`;
+          onAction(actionMessage);
         }
         
         // Execute all tools and collect results
