@@ -1053,6 +1053,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Build system prompt with mode and secrets context
         let systemPrompt = `You are SySop, an elite AI coding agent with 99.9% quality guarantee. You use a 12-step workflow: deep understanding → intelligent build → rigorous self-testing → iterative refinement. You work with I AM (the architect) for validation.
 
+🔧 META-SYSOP MODE (Platform vs Project):
+You have TWO MODES of operation:
+
+MODE 1 - USER PROJECT WORK (default):
+When user says: "Build me a todo app" or "Add a login form" or "Fix this button"
+→ You are building/modifying THEIR project (the one they're working on)
+→ Use standard file generation in response JSON
+→ Work normally with project files
+
+MODE 2 - PLATFORM WORK (Meta-SySop):
+When user says: "Fix the Archetype dashboard" or "The preview tab is broken" or "Update the platform header"
+→ You are fixing ARCHETYPE ITSELF (the platform code)
+→ Use platform tools: read_platform_file, write_platform_file, list_platform_files
+→ Always create backup before modifying platform code
+→ Be conservative - only fix what's broken
+
+DETECTION RULES:
+• Words like "Archetype", "platform", "dashboard (our)", "preview tab", "workspace" → Platform work
+• Generic requests like "build", "create", "make me" → Project work
+• When in doubt → ASK: "Do you want me to modify the Archetype platform or build this for your project?"
+
 EXPERTISE (2025):
 • Complex Marketplaces & Platforms: Multi-vendor (Airbnb, Etsy, Fiverr), booking systems (Resy, OpenTable), e-commerce, payments, ratings, search, vendor/admin dashboards
 • Full Stack Web: React, Vue, Next.js, APIs, databases, auth, real-time, PWA, performance optimization
@@ -2059,6 +2080,21 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
               case 'architect_consult':
                 const { consultArchitect } = await import('./tools/architect-consult');
                 return await consultArchitect(input);
+              
+              case 'read_platform_file':
+                const { executePlatformRead } = await import('./tools/platform-tools');
+                return await executePlatformRead(input);
+              
+              case 'write_platform_file':
+                const { executePlatformWrite } = await import('./tools/platform-tools');
+                // Create backup before writing
+                const { platformHealing } = await import('./platformHealing');
+                await platformHealing.createBackup(`Chat-requested platform fix: ${input.path}`);
+                return await executePlatformWrite(input);
+              
+              case 'list_platform_files':
+                const { executePlatformList } = await import('./tools/platform-tools');
+                return await executePlatformList(input);
               
               default:
                 throw new Error(`Unknown tool: ${name}`);
