@@ -97,7 +97,7 @@ export default function WorkingAuth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative">
+    <div className="min-h-screen flex items-center justify-center p-4 relative dark">
       {/* Brand Layer - Decorative Background (no pointer events) */}
       <div className="fixed inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 pointer-events-none" style={{ zIndex: 0 }} />
       
@@ -148,7 +148,7 @@ export default function WorkingAuth() {
             </div>
 
             {/* Professional Badge */}
-            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground pt-2">
+            <div className="flex items-center justify-center gap-2 text-xs text-slate-400 pt-2">
               <Building2 className="w-3.5 h-3.5" />
               <span className="font-medium">Enterprise-Grade Development Platform</span>
             </div>
@@ -159,7 +159,7 @@ export default function WorkingAuth() {
             <div className="space-y-2.5">
               <Button 
                 variant="outline" 
-                className="w-full h-11" 
+                className="w-full h-11 text-white border-slate-600 hover:bg-slate-700" 
                 onClick={() => handleSocialLogin("Google")}
                 data-testid="button-google-login"
                 type="button"
@@ -169,7 +169,7 @@ export default function WorkingAuth() {
               </Button>
               <Button 
                 variant="outline" 
-                className="w-full h-11"
+                className="w-full h-11 text-white border-slate-600 hover:bg-slate-700"
                 onClick={() => handleSocialLogin("GitHub")}
                 data-testid="button-github-login"
                 type="button"
@@ -185,7 +185,7 @@ export default function WorkingAuth() {
                 <Separator />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-3 text-muted-foreground font-medium">Or continue with email</span>
+                <span className="bg-slate-800 px-3 text-slate-400 font-medium">Or continue with email</span>
               </div>
             </div>
 
@@ -193,42 +193,42 @@ export default function WorkingAuth() {
             {mode === "login" ? (
               <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="login-email">Email Address</Label>
+                  <Label htmlFor="login-email" className="text-slate-200">Email Address</Label>
                   <Input 
                     id="login-email"
                     type="email" 
                     placeholder="you@example.com" 
                     data-testid="input-login-email"
                     autoComplete="email"
-                    className="h-11"
+                    className="h-11 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
                     {...loginForm.register("email")}
                   />
                   {loginForm.formState.errors.email && (
-                    <p className="text-sm font-medium text-destructive">
+                    <p className="text-sm font-medium text-red-400">
                       {loginForm.formState.errors.email.message}
                     </p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="login-password">Password</Label>
+                  <Label htmlFor="login-password" className="text-slate-200">Password</Label>
                   <Input 
                     id="login-password"
                     type="password" 
                     placeholder="••••••••" 
                     data-testid="input-login-password"
                     autoComplete="current-password"
-                    className="h-11"
+                    className="h-11 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
                     {...loginForm.register("password")}
                   />
                   {loginForm.formState.errors.password && (
-                    <p className="text-sm font-medium text-destructive">
+                    <p className="text-sm font-medium text-red-400">
                       {loginForm.formState.errors.password.message}
                     </p>
                   )}
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full h-11" 
+                  className="w-full h-11 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold" 
                   disabled={loginMutation.isPending}
                   data-testid="button-login"
                 >
@@ -240,75 +240,75 @@ export default function WorkingAuth() {
               <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <Label htmlFor="register-firstname">First Name</Label>
+                    <Label htmlFor="register-firstname" className="text-slate-200">First Name</Label>
                     <Input 
                       id="register-firstname"
                       placeholder="John" 
                       data-testid="input-register-firstname"
                       autoComplete="given-name"
-                      className="h-11"
+                      className="h-11 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
                       {...registerForm.register("firstName")}
                     />
                     {registerForm.formState.errors.firstName && (
-                      <p className="text-sm font-medium text-destructive">
+                      <p className="text-sm font-medium text-red-400">
                         {registerForm.formState.errors.firstName.message}
                       </p>
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="register-lastname">Last Name</Label>
+                    <Label htmlFor="register-lastname" className="text-slate-200">Last Name</Label>
                     <Input 
                       id="register-lastname"
                       placeholder="Doe" 
                       data-testid="input-register-lastname"
                       autoComplete="family-name"
-                      className="h-11"
+                      className="h-11 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
                       {...registerForm.register("lastName")}
                     />
                     {registerForm.formState.errors.lastName && (
-                      <p className="text-sm font-medium text-destructive">
+                      <p className="text-sm font-medium text-red-400">
                         {registerForm.formState.errors.lastName.message}
                       </p>
                     )}
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="register-email">Email Address</Label>
+                  <Label htmlFor="register-email" className="text-slate-200">Email Address</Label>
                   <Input 
                     id="register-email"
                     type="email" 
                     placeholder="you@example.com" 
                     data-testid="input-register-email"
                     autoComplete="email"
-                    className="h-11"
+                    className="h-11 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
                     {...registerForm.register("email")}
                   />
                   {registerForm.formState.errors.email && (
-                    <p className="text-sm font-medium text-destructive">
+                    <p className="text-sm font-medium text-red-400">
                       {registerForm.formState.errors.email.message}
                     </p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="register-password">Password</Label>
+                  <Label htmlFor="register-password" className="text-slate-200">Password</Label>
                   <Input 
                     id="register-password"
                     type="password" 
                     placeholder="••••••••" 
                     data-testid="input-register-password"
                     autoComplete="new-password"
-                    className="h-11"
+                    className="h-11 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
                     {...registerForm.register("password")}
                   />
                   {registerForm.formState.errors.password && (
-                    <p className="text-sm font-medium text-destructive">
+                    <p className="text-sm font-medium text-red-400">
                       {registerForm.formState.errors.password.message}
                     </p>
                   )}
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full h-11" 
+                  className="w-full h-11 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold" 
                   disabled={registerMutation.isPending}
                   data-testid="button-register"
                 >
@@ -320,13 +320,13 @@ export default function WorkingAuth() {
 
             {/* Toggle Mode */}
             <div className="text-center text-sm pt-2">
-              <span className="text-muted-foreground">
+              <span className="text-slate-400">
                 {mode === "login" ? "Don't have an account?" : "Already have an account?"}
               </span>
               {" "}
               <button
                 type="button"
-                className="font-semibold text-primary hover:underline focus:outline-none focus:underline"
+                className="font-semibold text-cyan-400 hover:text-cyan-300 hover:underline focus:outline-none focus:underline"
                 onClick={() => {
                   setMode(mode === "login" ? "register" : "login");
                   loginForm.reset();
@@ -339,8 +339,8 @@ export default function WorkingAuth() {
             </div>
 
             {/* Trust Badge */}
-            <div className="pt-4 border-t">
-              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            <div className="pt-4 border-t border-slate-700">
+              <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
                 <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
                 <span>Powered by Claude 4.5 Sonnet</span>
               </div>
@@ -352,7 +352,7 @@ export default function WorkingAuth() {
         <div className="mt-6 text-center text-sm">
           <a 
             href="/" 
-            className="text-slate-400 hover:text-slate-200 transition-colors inline-flex items-center gap-1.5 hover:underline"
+            className="text-slate-300 hover:text-white transition-colors inline-flex items-center gap-1.5 hover:underline font-medium"
           >
             ← Back to Home
           </a>
