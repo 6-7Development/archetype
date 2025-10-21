@@ -92,9 +92,9 @@ Analyze the issue, identify the root cause, and provide the fix.`;
         name: 'readPlatformFile',
         description: 'Read a platform source file',
         input_schema: {
-          type: 'object',
+          type: 'object' as const,
           properties: {
-            path: { type: 'string', description: 'File path relative to project root' },
+            path: { type: 'string' as const, description: 'File path relative to project root' },
           },
           required: ['path'],
         },
@@ -103,10 +103,10 @@ Analyze the issue, identify the root cause, and provide the fix.`;
         name: 'writePlatformFile',
         description: 'Write content to a platform file',
         input_schema: {
-          type: 'object',
+          type: 'object' as const,
           properties: {
-            path: { type: 'string', description: 'File path relative to project root' },
-            content: { type: 'string', description: 'New file content' },
+            path: { type: 'string' as const, description: 'File path relative to project root' },
+            content: { type: 'string' as const, description: 'New file content' },
           },
           required: ['path', 'content'],
         },
@@ -115,9 +115,9 @@ Analyze the issue, identify the root cause, and provide the fix.`;
         name: 'listPlatformFiles',
         description: 'List files in a directory',
         input_schema: {
-          type: 'object',
+          type: 'object' as const,
           properties: {
-            directory: { type: 'string', description: 'Directory path' },
+            directory: { type: 'string' as const, description: 'Directory path' },
           },
           required: ['directory'],
         },
