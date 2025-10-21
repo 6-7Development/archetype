@@ -1166,7 +1166,7 @@ Keep it under 150 words. Be factual and specific.`,
       // Get the bundled JavaScript
       const bundled = result.outputFiles[0].text;
 
-      // Create HTML with bundled code
+      // Create HTML with bundled code wrapped in DOMContentLoaded handler
       const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -1182,7 +1182,15 @@ Keep it under 150 words. Be factual and specific.`,
 <body>
   <div id="root"></div>
   <script type="module">
-    ${bundled}
+    // Wrap bundled code in DOMContentLoaded to prevent null element errors
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        ${bundled}
+      });
+    } else {
+      // DOM already loaded, run immediately
+      ${bundled}
+    }
   </script>
   <script>
     window.addEventListener('error', (e) => {
