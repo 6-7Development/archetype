@@ -75,6 +75,33 @@ The user interface features a tab-based workspace (Overview, Build, Files, Previ
 - **Security & Production Readiness**: Full authentication/authorization with Replit Auth, PostgreSQL sessions, protected API routes, rate limiting, and bcrypt-hashed API keys.
 - **Deployment & Hosting System**: Supports public hosting of deployed projects under unique subdomains with status and visit tracking.
 
+## Recent Changes
+### Meta-SySop Production Fixes (October 2025)
+All Meta-SySop platform healing features are now production-ready with comprehensive security hardening:
+
+**Authentication & Authorization**
+- Fixed broken isAdmin middleware in `server/platformRoutes.ts` - replaced custom DB async query with proper `universalAuth.isAdmin`
+- Fixed AdminGuard component (`client/src/components/admin-guard.tsx`):
+  - Corrected API endpoint from `/api/user` to `/api/auth/me`
+  - Fixed response parsing to extract `data?.user` instead of direct `data`
+  - Moved redirect logic to `useEffect` to eliminate React render warnings
+- All platform endpoints (`/heal`, `/rollback`, `/backups`, `/audit`, `/status`) now properly enforce admin-only access
+
+**Git Operations**
+- Configured git identity for Meta-SySop commits using inline config flags
+- Both `createBackup()` and `commitChanges()` now use: `-c user.name=Meta-SySop -c user.email=meta-sysop@archetype.platform`
+- Eliminates "unable to auto-detect email address" failures
+- All commits attributed to Meta-SySop service identity
+
+**Security**
+- All git commands use `execFileAsync` with argument arrays (prevents shell injection)
+- Path traversal protection via `path.resolve()` with `startsWith()` validation
+- Dangerous file patterns blocked: `.git/`, `node_modules/`, `.env`, `package.json`, `vite.config.ts`, `server/vite.ts`, `drizzle.config.ts`
+- Absolute paths rejected in all file operations
+- Safety validation runs before auto-commit/push with automatic rollback on failure
+
+**Status**: PASS from Architect Review - all fixes verified production-ready
+
 ## External Dependencies
 - **Frontend**: React, TypeScript, Monaco Editor, Tailwind CSS, Shadcn UI
 - **Backend**: Express.js, PostgreSQL (Neon), WebSocket
