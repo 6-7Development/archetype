@@ -20,9 +20,10 @@ export function ProjectUpload() {
   const uploadMutation = useMutation({
     mutationFn: async (zipFile: File) => {
       const formData = new FormData();
-      formData.append('project', zipFile);
+      formData.append('file', zipFile);
+      formData.append('projectName', zipFile.name.replace('.zip', ''));
 
-      const response = await fetch('/api/projects/upload', {
+      const response = await fetch('/api/import/zip', {
         method: 'POST',
         body: formData,
         credentials: 'include',
@@ -30,23 +31,23 @@ export function ProjectUpload() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Upload failed');
+        throw new Error(error.error || 'Upload failed');
       }
 
       return response.json();
     },
     onSuccess: (data) => {
       toast({
-        title: "Project Uploaded! 🎉",
-        description: `${data.filesImported} files imported successfully`,
+        title: "Project Imported!",
+        description: `${data.importedCount} files imported successfully`,
       });
       setFile(null);
       setUploadProgress(0);
       
-      // Invalidate projects cache and redirect to dashboard
+      // Invalidate projects cache and redirect to builder with new project
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
       setTimeout(() => {
-        setLocation('/dashboard');
+        setLocation(`/builder/${data.project.id}`);
       }, 1000); // Brief delay to show success message
     },
     onError: (error: Error) => {
