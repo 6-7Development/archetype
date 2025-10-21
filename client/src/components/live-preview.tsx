@@ -2,112 +2,68 @@ import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, Maximize2, Eye, EyeOff } from "lucide-react";
+import { RefreshCw, Maximize2, Eye, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 
 interface LivePreviewProps {
-  files: Array<{
-    filename: string;
-    content: string;
-    language: string;
-  }>;
+  projectId: string | null;
+  fileCount?: number;
 }
 
-export function LivePreview({ files }: LivePreviewProps) {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+export function LivePreview({ projectId, fileCount = 0 }: LivePreviewProps) {
   const [iframeKey, setIframeKey] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [previewStatus, setPreviewStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const renderPreview = () => {
-    if (!iframeRef.current) return;
-
-    // Find HTML file (or create default)
-    let htmlFile = files.find(f => f.language === 'html' || f.filename.endsWith('.html'));
-    let cssFiles = files.filter(f => f.language === 'css' || f.filename.endsWith('.css'));
-    let jsFiles = files.filter(f => f.language === 'javascript' || f.language === 'typescript' || f.filename.endsWith('.js'));
-
-    let htmlContent = htmlFile?.content || '<!DOCTYPE html><html><head></head><body></body></html>';
-
-    // Inject CSS into <head>
-    if (cssFiles.length > 0) {
-      const cssContent = cssFiles.map(f => `<style>\n${f.content}\n</style>`).join('\n');
-      if (htmlContent.includes('</head>')) {
-        htmlContent = htmlContent.replace('</head>', `${cssContent}\n</head>`);
-      } else {
-        htmlContent = htmlContent.replace('<html>', `<html><head>${cssContent}</head>`);
-      }
-    }
-
-    // Inject JavaScript before </body>
-    if (jsFiles.length > 0) {
-      const jsContent = jsFiles.map(f => `<script>\n${f.content}\n</script>`).join('\n');
-      if (htmlContent.includes('</body>')) {
-        htmlContent = htmlContent.replace('</body>', `${jsContent}\n</body>`);
-      } else {
-        htmlContent = htmlContent + jsContent;
-      }
-    }
-
-    // Write to iframe
-    const iframeDoc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
-    if (iframeDoc) {
-      iframeDoc.open();
-      iframeDoc.write(htmlContent);
-      iframeDoc.close();
-    }
-  };
-
+  // Auto-refresh when projectId changes
   useEffect(() => {
-    if (files && files.length > 0) {
-      renderPreview();
+    if (projectId) {
+      setPreviewStatus('loading');
+      setErrorMessage(null);
+      setIframeKey(prev => prev + 1);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [files]);
+  }, [projectId]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
+    setPreviewStatus('loading');
+    setErrorMessage(null);
     setIframeKey(prev => prev + 1);
     setTimeout(() => {
-      renderPreview();
       setIsRefreshing(false);
-    }, 300);
+    }, 500);
   };
 
-  const handleFullscreen = () => {
-    if (iframeRef.current) {
-      iframeRef.current.requestFullscreen();
-    }
+  const handleIframeLoad = () => {
+    setPreviewStatus('ready');
+    setIsRefreshing(false);
+  };
+
+  const handleIframeError = () => {
+    setPreviewStatus('error');
+    setErrorMessage('Failed to load preview');
+    setIsRefreshing(false);
   };
 
   const openInNewTab = () => {
-    // Create a new window with the bundled content
-    let htmlFile = files.find(f => f.language === 'html' || f.filename.endsWith('.html'));
-    let cssFiles = files.filter(f => f.language === 'css' || f.filename.endsWith('.css'));
-    let jsFiles = files.filter(f => f.language === 'javascript' || f.language === 'typescript' || f.filename.endsWith('.js'));
-
-    let htmlContent = htmlFile?.content || '<!DOCTYPE html><html><head></head><body></body></html>';
-
-    if (cssFiles.length > 0) {
-      const cssContent = cssFiles.map(f => `<style>\n${f.content}\n</style>`).join('\n');
-      if (htmlContent.includes('</head>')) {
-        htmlContent = htmlContent.replace('</head>', `${cssContent}\n</head>`);
-      } else {
-        htmlContent = htmlContent.replace('<html>', `<html><head>${cssContent}</head>`);
-      }
+    if (projectId) {
+      window.open(`/api/preview/${projectId}`, '_blank');
     }
-
-    if (jsFiles.length > 0) {
-      const jsContent = jsFiles.map(f => `<script>\n${f.content}\n</script>`).join('\n');
-      if (htmlContent.includes('</body>')) {
-        htmlContent = htmlContent.replace('</body>', `${jsContent}\n</body>`);
-      } else {
-        htmlContent = htmlContent + jsContent;
-      }
-    }
-
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
   };
+
+  if (!projectId) {
+    return (
+      <div className="h-full flex items-center justify-center p-6">
+        <div className="text-center max-w-md">
+          <Eye className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+          <h3 className="text-lg font-semibold mb-2">No Project Selected</h3>
+          <p className="text-sm text-muted-foreground">
+            Select or create a project to see a live preview
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col">
@@ -116,10 +72,35 @@ export function LivePreview({ files }: LivePreviewProps) {
         <div className="flex items-center gap-2">
           <Eye className="w-4 h-4 text-primary" />
           <span className="text-sm font-semibold">Live Preview</span>
-          <Badge variant="outline" className="text-xs border-primary/20">
-            {files.length} files
-          </Badge>
+          
+          {previewStatus === 'loading' && (
+            <Badge variant="outline" className="text-xs border-blue-500/20 text-blue-600 dark:text-blue-400">
+              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+              Compiling...
+            </Badge>
+          )}
+          
+          {previewStatus === 'ready' && (
+            <Badge variant="outline" className="text-xs border-green-500/20 text-green-600 dark:text-green-400">
+              <CheckCircle2 className="w-3 h-3 mr-1" />
+              Ready
+            </Badge>
+          )}
+          
+          {previewStatus === 'error' && (
+            <Badge variant="outline" className="text-xs border-red-500/20 text-red-600 dark:text-red-400">
+              <AlertCircle className="w-3 h-3 mr-1" />
+              Error
+            </Badge>
+          )}
+          
+          {fileCount > 0 && (
+            <Badge variant="outline" className="text-xs border-primary/20">
+              {fileCount} files
+            </Badge>
+          )}
         </div>
+
         <div className="flex items-center gap-2">
           <Button
             size="sm"
@@ -141,16 +122,31 @@ export function LivePreview({ files }: LivePreviewProps) {
         </div>
       </div>
 
+      {/* Error Display */}
+      {previewStatus === 'error' && errorMessage && (
+        <div className="mx-4 mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-destructive">Preview Error</p>
+              <p className="text-xs text-muted-foreground mt-1">{errorMessage}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Preview Frame */}
       <div className="flex-1 p-4 overflow-hidden">
         <Card className="h-full overflow-hidden border-primary/10">
           <iframe
             key={iframeKey}
-            ref={iframeRef}
+            src={`/api/preview/${projectId}`}
             className="w-full h-full border-0 bg-white dark:bg-gray-900"
-            sandbox="allow-scripts allow-same-origin allow-modals allow-forms"
+            sandbox="allow-scripts allow-same-origin allow-modals allow-forms allow-popups"
             title="Live Preview"
             data-testid="iframe-preview"
+            onLoad={handleIframeLoad}
+            onError={handleIframeError}
           />
         </Card>
       </div>

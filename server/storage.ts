@@ -168,7 +168,7 @@ export interface IStorage {
   restoreProjectVersion(versionId: string, userId: string): Promise<void>;
   
   // Iterative project operations
-  getProjectFiles(projectId: string, userId: string): Promise<File[]>;
+  getProjectFiles(projectId: string, userId?: string): Promise<File[]>;
   batchUpdateProjectFiles(projectId: string, userId: string, filesToUpdate: Array<{ filename: string; content: string; language: string }>): Promise<File[]>;
   
   // Team Workspace operations
@@ -1127,11 +1127,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Iterative project operations
-  async getProjectFiles(projectId: string, userId: string): Promise<File[]> {
+  async getProjectFiles(projectId: string, userId?: string): Promise<File[]> {
+    const conditions = [eq(files.projectId, projectId)];
+    if (userId) {
+      conditions.push(eq(files.userId, userId));
+    }
     return await db
       .select()
       .from(files)
-      .where(and(eq(files.projectId, projectId), eq(files.userId, userId)))
+      .where(and(...conditions))
       .orderBy(files.filename);
   }
 
