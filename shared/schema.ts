@@ -120,8 +120,9 @@ export type Command = typeof commands.$inferSelect;
 export const chatMessages = pgTable("chat_messages", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
+  projectId: varchar("project_id"), // Link messages to projects
   fileId: varchar("file_id"),
-  role: text("role").notNull(),
+  role: text("role").notNull(), // 'user' | 'assistant'
   content: text("content").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });

@@ -579,6 +579,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get chat history for a project
+  app.get("/api/chat/history/:projectId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.authenticatedUserId;
+      const { projectId } = req.params;
+      const messages = await storage.getChatMessagesByProject(userId, projectId);
+      res.json({ messages });
+    } catch (error) {
+      console.error('Error fetching chat history:', error);
+      res.status(500).json({ error: "Failed to fetch chat history" });
+    }
+  });
+
+  // Save a chat message
+  app.post("/api/chat/messages", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.authenticatedUserId;
+      const validated = insertChatMessageSchema.parse(req.body);
+      const message = await storage.createChatMessage({ ...validated, userId });
+      res.json({ message });
+    } catch (error) {
+      console.error('Error saving chat message:', error);
+      res.status(400).json({ error: "Failed to save message" });
+    }
+  });
+
   // Project endpoints
   app.get("/api/projects", isAuthenticated, async (req: any, res) => {
     try {
