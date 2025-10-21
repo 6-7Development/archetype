@@ -124,6 +124,7 @@ export const chatMessages = pgTable("chat_messages", {
   fileId: varchar("file_id"),
   role: text("role").notNull(), // 'user' | 'assistant' | 'system'
   content: text("content").notNull(),
+  images: jsonb("images"), // Array of image URLs/paths for Vision API support
   isSummary: boolean("is_summary").notNull().default(false), // True for compressed conversation summaries
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
