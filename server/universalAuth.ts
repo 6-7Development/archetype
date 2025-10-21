@@ -77,30 +77,41 @@ export async function setupAuth(app: Express) {
       },
       async (email, password, done) => {
         try {
+          console.log("[AUTH] Login attempt for email:", email);
+          
           // Find user by email
           const users = await storage.getUserByEmail(email);
+          console.log("[AUTH] Found users:", users ? users.length : 0);
           
           if (!users || users.length === 0) {
+            console.log("[AUTH] No user found with email:", email);
             return done(null, false, { message: "Invalid email or password" });
           }
           
           const user = users[0];
+          console.log("[AUTH] User found:", user.email, "has password:", !!user.password);
           
           // Check if user has password set (local auth)
           if (!user.password) {
+            console.log("[AUTH] User has no password set");
             return done(null, false, { message: "Please use OAuth to login" });
           }
           
           // Verify password
+          console.log("[AUTH] Verifying password...");
           const isValid = await verifyPassword(password, user.password);
+          console.log("[AUTH] Password valid:", isValid);
           
           if (!isValid) {
+            console.log("[AUTH] Password verification failed");
             return done(null, false, { message: "Invalid email or password" });
           }
           
           // Success - return user
+          console.log("[AUTH] Authentication successful for:", email);
           return done(null, user);
         } catch (error) {
+          console.error("[AUTH] Authentication error:", error);
           return done(error);
         }
       }
