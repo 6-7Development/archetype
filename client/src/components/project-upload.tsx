@@ -30,8 +30,16 @@ export function ProjectUpload() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Upload failed');
+        let errorMessage = 'Upload failed';
+        try {
+          const error = await response.json();
+          errorMessage = error.error || errorMessage;
+        } catch {
+          // If response isn't JSON, try to get text
+          const text = await response.text();
+          errorMessage = text || `Upload failed with status ${response.status}`;
+        }
+        throw new Error(errorMessage);
       }
 
       return response.json();
