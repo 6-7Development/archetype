@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useRoute } from "wouter";
+import { Link, useRoute, useLocation } from "wouter";
 import { AIChat } from "@/components/ai-chat";
 import { ProjectUpload } from "@/components/project-upload";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -23,7 +23,8 @@ import {
   User,
   ChevronDown,
   ArrowLeft,
-  Plus
+  Plus,
+  FileCode
 } from "lucide-react";
 import { Command, Project, File } from "@shared/schema";
 import VersionHistory from "./version-history";
@@ -32,6 +33,7 @@ export default function Builder() {
   const [activeTab, setActiveTab] = useState("build");
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const { isAuthenticated } = useAuth();
+  const [, setLocation] = useLocation();
   
   // Check if projectId is in the URL (/builder/:projectId)
   const [match, params] = useRoute("/builder/:projectId");
@@ -67,7 +69,14 @@ export default function Builder() {
   const handleProjectGenerated = (result: any) => {
     if (result?.projectId) {
       setCurrentProjectId(result.projectId);
+      // Update URL to persist project selection
+      setLocation(`/builder/${result.projectId}`);
     }
+  };
+
+  const handleProjectSwitch = (projectId: string) => {
+    setCurrentProjectId(projectId);
+    setLocation(`/builder/${projectId}`);
   };
 
   return (
@@ -89,8 +98,8 @@ export default function Builder() {
             </Link>
           </Button>
           
-          {/* Project Switcher */}
-          {isAuthenticated && projects.length > 0 && (
+          {/* Project Switcher - Always show when authenticated */}
+          {isAuthenticated && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 
@@ -101,25 +110,33 @@ export default function Builder() {
                   <div className="flex items-center gap-2 min-w-0">
                     <Code className="w-4 h-4 flex-shrink-0" />
                     <span className="truncate text-sm">
-                      {currentProject?.name || "Select Project"}
+                      {currentProject?.name || (projects.length > 0 ? "Select Project" : "No Projects")}
                     </span>
                   </div>
                   <ChevronDown className="w-4 h-4 flex-shrink-0" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-[250px]">
-                {projects.map((project) => (
-                  <DropdownMenuItem
-                    key={project.id}
-                    onClick={() => setCurrentProjectId(project.id)}
-                    className="gap-2"
-                    data-testid={`project-item-${project.id}`}
-                  >
-                    <Code className="w-4 h-4" />
-                    <span className="truncate">{project.name}</span>
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuSeparator />
+                {projects.length > 0 ? (
+                  <>
+                    {projects.map((project) => (
+                      <DropdownMenuItem
+                        key={project.id}
+                        onClick={() => handleProjectSwitch(project.id)}
+                        className="gap-2"
+                        data-testid={`project-item-${project.id}`}
+                      >
+                        <Code className="w-4 h-4" />
+                        <span className="truncate">{project.name}</span>
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                  </>
+                ) : (
+                  <div className="px-2 py-6 text-center text-sm text-muted-foreground">
+                    No projects yet. Create one below!
+                  </div>
+                )}
                 <DropdownMenuItem asChild>
                   <Link href="/dashboard" className="gap-2">
                     <Plus className="w-4 h-4" />
@@ -146,89 +163,44 @@ export default function Builder() {
         </div>
       </header>
 
-      {/* Tab-Based Navigation (Replit Style) */}
+      {/* Tab-Based Navigation (Simplified like Replit) */}
       <div className="flex-1 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-          {/* Tab Bar - Mobile Optimized (Icon-only < 640px) */}
+          {/* Tab Bar - Clean and Minimal */}
           <div className="border-b bg-card px-2 sm:px-4">
-            <TabsList className="bg-transparent h-12 p-0 gap-1 sm:gap-2 w-full justify-start overflow-x-auto" data-testid="tabs-main">
-              <TabsTrigger 
-                value="overview" 
-                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground gap-2 rounded-t rounded-b-none min-h-[44px] min-w-[44px] px-3 sm:px-4 flex-shrink-0"
-                data-testid="tab-overview"
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                <span className="hidden sm:inline">Overview</span>
-              </TabsTrigger>
+            <TabsList className="bg-transparent h-12 p-0 gap-1 w-full justify-start overflow-x-auto" data-testid="tabs-main">
               <TabsTrigger 
                 value="build" 
-                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground gap-2 rounded-t rounded-b-none min-h-[44px] min-w-[44px] px-3 sm:px-4 flex-shrink-0"
+                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground gap-2 rounded-t rounded-b-none min-h-[44px] px-4 flex-shrink-0"
                 data-testid="tab-build"
               >
                 <Code className="w-4 h-4" />
-                <span className="hidden sm:inline">Build</span>
+                <span>AI Build</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="preview" 
+                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground gap-2 rounded-t rounded-b-none min-h-[44px] px-4 flex-shrink-0"
+                data-testid="tab-preview"
+              >
+                <Eye className="w-4 h-4" />
+                <span>Preview</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="files" 
-                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground gap-2 rounded-t rounded-b-none min-h-[44px] min-w-[44px] px-3 sm:px-4 flex-shrink-0"
+                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground gap-2 rounded-t rounded-b-none min-h-[44px] px-4 flex-shrink-0"
                 data-testid="tab-files"
               >
                 <FolderTree className="w-4 h-4" />
                 <span className="hidden sm:inline">Files</span>
               </TabsTrigger>
-              <TabsTrigger 
-                value="preview" 
-                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground gap-2 rounded-t rounded-b-none min-h-[44px] min-w-[44px] px-3 sm:px-4 flex-shrink-0"
-                data-testid="tab-preview"
-              >
-                <Eye className="w-4 h-4" />
-                <span className="hidden sm:inline">Preview</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="activity" 
-                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground gap-2 rounded-t rounded-b-none min-h-[44px] min-w-[44px] px-3 sm:px-4 flex-shrink-0"
-                data-testid="tab-activity"
-              >
-                <Activity className="w-4 h-4" />
-                <span className="hidden sm:inline">Activity</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="versions" 
-                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground gap-2 rounded-t rounded-b-none min-h-[44px] min-w-[44px] px-3 sm:px-4 flex-shrink-0"
-                data-testid="tab-versions"
-              >
-                <History className="w-4 h-4" />
-                <span className="hidden sm:inline">Versions</span>
-              </TabsTrigger>
             </TabsList>
           </div>
 
-          {/* Tab Content - Mobile Optimized Padding */}
+          {/* Tab Content */}
           <div className="flex-1 overflow-hidden">
-            {/* Overview Tab */}
-            <TabsContent value="overview" className="h-full m-0 p-3 sm:p-6" data-testid="content-overview">
-              <Card className="p-4 sm:p-6">
-                <h2 className="text-2xl font-bold mb-4">Welcome to Archetype</h2>
-                <p className="text-muted-foreground mb-4">
-                  Build complete web applications using natural language commands powered by Claude Sonnet 4.
-                </p>
-                <div className="space-y-2">
-                  <p className="text-sm">✨ Generate full-stack applications</p>
-                  <p className="text-sm">🎨 Professional designs by default</p>
-                  <p className="text-sm">🚀 Deploy with one click</p>
-                  <p className="text-sm">💬 Chat with AI to refine your project</p>
-                </div>
-              </Card>
-            </TabsContent>
-
             {/* Build Tab (Main Interface) */}
             <TabsContent value="build" className="h-full m-0" data-testid="content-build">
-              <div className="h-full flex flex-col bg-muted/20">
-                {/* Project Upload Section */}
-                <div className="p-3 sm:p-4 border-b bg-card">
-                  <ProjectUpload />
-                </div>
-                
+              <div className="h-full flex flex-col">
                 {/* AI Chat Component (Full Height) */}
                 <div className="flex-1 overflow-hidden">
                   <AIChat 
@@ -239,78 +211,48 @@ export default function Builder() {
               </div>
             </TabsContent>
 
-            {/* Files Tab */}
-            <TabsContent value="files" className="h-full m-0 p-3 sm:p-6" data-testid="content-files">
-              <Card className="p-4 sm:p-6">
-                <h2 className="text-xl font-semibold mb-4">Project Files</h2>
-                {commands.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">
-                    No files yet. Use the Build tab to generate your first project.
-                  </p>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    {commands.length} command{commands.length !== 1 ? 's' : ''} in history
-                  </p>
-                )}
-              </Card>
-            </TabsContent>
-
             {/* Preview Tab */}
             <TabsContent value="preview" className="h-full m-0" data-testid="content-preview">
               {files.length > 0 ? (
                 <LivePreview files={files} />
               ) : (
                 <div className="h-full flex items-center justify-center p-6">
-                  <Card className="p-8 text-center max-w-md">
+                  <div className="text-center max-w-md">
                     <Eye className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                    <h2 className="text-xl font-semibold mb-2">No Project Files</h2>
-                    <p className="text-muted-foreground">
-                      Generate a project in the Build tab or select a project from the dropdown to see a live preview here.
+                    <h2 className="text-xl font-semibold mb-2">No Project Selected</h2>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Select a project from the dropdown above or create a new one in the AI Build tab.
                     </p>
-                  </Card>
+                  </div>
                 </div>
               )}
             </TabsContent>
 
-            {/* Activity Tab */}
-            <TabsContent value="activity" className="h-full m-0 p-3 sm:p-6" data-testid="content-activity">
-              <Card className="p-4 sm:p-6">
-                <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-                {commands.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">
-                    No activity yet. Start building to see your command history here.
+            {/* Files Tab */}
+            <TabsContent value="files" className="h-full m-0 p-6" data-testid="content-files">
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Project Files</h2>
+                {files.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-12">
+                    No files yet. Use the AI Build tab to generate your project.
                   </p>
                 ) : (
-                  <div className="space-y-3">
-                    {commands.slice(0, 10).map((cmd) => (
-                      <div key={cmd.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                        <Code className="w-4 h-4 mt-0.5 text-muted-foreground" />
+                  <div className="space-y-2">
+                    {files.map((file) => (
+                      <div key={file.id} className="flex items-center gap-3 p-3 rounded-lg hover-elevate bg-card border">
+                        <FileCode className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{cmd.command}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {cmd.status} • {new Date(cmd.createdAt).toLocaleString()}
-                          </p>
+                          <p className="text-sm font-medium truncate">{file.filename}</p>
+                          {file.path && (
+                            <p className="text-xs text-muted-foreground truncate">{file.path}</p>
+                          )}
                         </div>
+                        <Badge variant="secondary" className="text-xs">{file.language}</Badge>
                       </div>
                     ))}
                   </div>
                 )}
-              </Card>
-            </TabsContent>
-
-            {/* Versions Tab */}
-            <TabsContent value="versions" className="h-full m-0" data-testid="content-versions">
-              {currentProjectId ? (
-                <VersionHistory projectId={currentProjectId} />
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full p-6">
-                  <History className="w-16 h-16 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Project Selected</h3>
-                  <p className="text-sm text-muted-foreground text-center max-w-md">
-                    Generate a project in the Build tab to access version history and snapshots
-                  </p>
-                </div>
-              )}
+              </div>
             </TabsContent>
           </div>
         </Tabs>
