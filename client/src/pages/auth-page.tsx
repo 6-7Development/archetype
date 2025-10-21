@@ -1,5 +1,5 @@
-import ModernAuth from "@/components/modern-auth";
+import WorkingAuth from "@/components/working-auth";
 
 export default function AuthPage() {
-  return <ModernAuth />;
+  return <WorkingAuth />;
 }
