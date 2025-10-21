@@ -42,7 +42,11 @@ export class PlatformHealingService {
       const commitMessage = `[Meta-SySop Backup] ${description}`;
       
       try {
-        await execFileAsync('git', ['commit', '-m', commitMessage], { cwd: this.PROJECT_ROOT });
+        await execFileAsync('git', [
+          '-c', 'user.name=Meta-SySop',
+          '-c', 'user.email=meta-sysop@archetype.platform',
+          'commit', '-m', commitMessage
+        ], { cwd: this.PROJECT_ROOT });
       } catch (commitError: any) {
         if (commitError.message.includes('nothing to commit')) {
           console.log('[PLATFORM-BACKUP] No changes to commit, creating backup at current HEAD');
@@ -255,7 +259,11 @@ export class PlatformHealingService {
 
       const commitMessage = `[Meta-SySop] ${message}\n\nChanges:\n${changes.map(c => `- ${c.operation} ${c.path}`).join('\n')}`;
 
-      await execFileAsync('git', ['commit', '-m', commitMessage], { cwd: this.PROJECT_ROOT });
+      await execFileAsync('git', [
+        '-c', 'user.name=Meta-SySop',
+        '-c', 'user.email=meta-sysop@archetype.platform',
+        'commit', '-m', commitMessage
+      ], { cwd: this.PROJECT_ROOT });
 
       const { stdout: commitHash } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: this.PROJECT_ROOT });
 
