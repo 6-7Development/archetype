@@ -128,7 +128,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     },
   });
 
-  const chatMutation = useMutation<{ response: string; shouldGenerate?: boolean; command?: string; checkpoint?: CheckpointData }, Error, { message: string }>({
+  const chatMutation = useMutation<{ response: string; shouldGenerate?: boolean; command?: string; checkpoint?: CheckpointData }, Error, { message: string; projectId?: number }>({
     mutationFn: async (data) => {
       return await apiRequest<{ response: string; shouldGenerate?: boolean; command?: string; checkpoint?: CheckpointData }>("POST", "/api/ai-chat-conversation", data);
     },
@@ -347,7 +347,10 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       },
     ]);
     setInput("");
-    chatMutation.mutate({ message: userMessage });
+    chatMutation.mutate({ 
+      message: userMessage,
+      projectId: currentProjectId ? parseInt(currentProjectId) : undefined
+    });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
