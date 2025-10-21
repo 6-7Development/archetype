@@ -17,15 +17,15 @@ function PlatformHealingContent() {
   const [autoPush, setAutoPush] = useState(false);
   const { toast } = useToast();
 
-  const { data: status } = useQuery({
+  const { data: status } = useQuery<any>({
     queryKey: ['/api/platform/status'],
   });
 
-  const { data: backupsData } = useQuery({
+  const { data: backupsData } = useQuery<any>({
     queryKey: ['/api/platform/backups'],
   });
 
-  const { data: auditData } = useQuery({
+  const { data: auditData } = useQuery<any>({
     queryKey: ['/api/platform/audit'],
   });
 
