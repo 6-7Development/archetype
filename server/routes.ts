@@ -372,6 +372,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }
 
+  // Helper to summarize old messages using Anthropic API (memory optimization like Agent 3)
+  async function summarizeMessages(messages: any[]): Promise<string> {
+    try {
+      // Build conversation history for summarization
+      const conversationText = messages.map(msg => {
+        return `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`;
+      }).join('\n\n');
+
+      const result = await anthropic.messages.create({
+        model: DEFAULT_MODEL,
+        max_tokens: 200, // Keep summary concise to save tokens
+        system: `You are a conversation summarizer. Create a brief, informative summary of this chat conversation. Focus on:
+- What the user is building/working on
+- Key decisions and features discussed
+- Current state of the project
+- Important context for future messages
+
+Format: "Project context: [concise summary]"
+Keep it under 150 words. Be factual and specific.`,
+        messages: [
+          {
+            role: "user",
+            content: `Summarize this conversation:\n\n${conversationText}`,
+          },
+        ],
+      });
+
+      const summaryText = result.content[0].type === 'text' ? result.content[0].text : "Previous conversation summarized.";
+      console.log(`✅ Summarized ${messages.length} messages into ${summaryText.length} chars`);
+      return summaryText;
+    } catch (error) {
+      console.error('Error summarizing messages:', error);
+      return `Previous conversation: ${messages.length} messages discussing project development.`;
+    }
+  }
+
   // Auth user endpoint (for useAuth hook)
   // Note: Global apiLimiter already applied in server/index.ts
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
@@ -579,12 +615,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get chat history for a project
+  // Get chat history for a project (with automatic summarization for long conversations)
   app.get("/api/chat/history/:projectId", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.authenticatedUserId;
       const { projectId } = req.params;
-      const messages = await storage.getChatMessagesByProject(userId, projectId);
+      let messages = await storage.getChatMessagesByProject(userId, projectId);
+      
+      // Smart memory optimization: Summarize old messages if conversation is long (>10 messages)
+      if (messages.length > 10) {
+        const KEEP_RECENT = 5; // Always keep last 5 messages for immediate context
+        
+        // Check if we already have a summary
+        const hasSummary = messages.some(m => m.isSummary);
+        
+        if (!hasSummary) {
+          // Split messages: old ones to summarize, recent ones to keep
+          const oldMessages = messages.slice(0, messages.length - KEEP_RECENT);
+          const recentMessages = messages.slice(messages.length - KEEP_RECENT);
+          
+          // Only summarize user/assistant messages (skip system messages if any)
+          const messagesForSummary = oldMessages.filter(m => m.role === 'user' || m.role === 'assistant');
+          
+          if (messagesForSummary.length > 0) {
+            console.log(`📊 Summarizing ${messagesForSummary.length} old messages (keeping ${KEEP_RECENT} recent)`);
+            
+            // Create summary using Anthropic
+            const summaryContent = await summarizeMessages(messagesForSummary);
+            
+            // Save summary as a special system message
+            const summaryMessage = await storage.createChatMessage({
+              userId,
+              projectId,
+              role: 'system',
+              content: summaryContent,
+              isSummary: true,
+            });
+            
+            // Delete old messages from database (they're now in the summary)
+            for (const oldMsg of oldMessages) {
+              await storage.deleteChatMessage(oldMsg.id, userId);
+            }
+            
+            // Return summary + recent messages
+            messages = [summaryMessage, ...recentMessages];
+            console.log(`✅ Chat optimized: ${messagesForSummary.length} → 1 summary + ${KEEP_RECENT} recent = ${messages.length} total`);
+          }
+        }
+      }
+      
       res.json({ messages });
     } catch (error) {
       console.error('Error fetching chat history:', error);
@@ -2400,6 +2479,49 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
         }
       }
 
+      // Load chat history for memory-optimized conversation (auto-summarized if >10 messages)
+      let chatHistory: any[] = [];
+      if (projectId) {
+        try {
+          chatHistory = await storage.getChatMessagesByProject(userId, projectId);
+          
+          // Apply same summarization logic as /api/chat/history endpoint
+          if (chatHistory.length > 10) {
+            const KEEP_RECENT = 5;
+            const hasSummary = chatHistory.some(m => m.isSummary);
+            
+            if (!hasSummary) {
+              const oldMessages = chatHistory.slice(0, chatHistory.length - KEEP_RECENT);
+              const recentMessages = chatHistory.slice(chatHistory.length - KEEP_RECENT);
+              const messagesForSummary = oldMessages.filter(m => m.role === 'user' || m.role === 'assistant');
+              
+              if (messagesForSummary.length > 0) {
+                console.log(`📊 Summarizing ${messagesForSummary.length} messages for AI context`);
+                const summaryContent = await summarizeMessages(messagesForSummary);
+                
+                const summaryMessage = await storage.createChatMessage({
+                  userId,
+                  projectId,
+                  role: 'system',
+                  content: summaryContent,
+                  isSummary: true,
+                });
+                
+                for (const oldMsg of oldMessages) {
+                  await storage.deleteChatMessage(oldMsg.id, userId);
+                }
+                
+                chatHistory = [summaryMessage, ...recentMessages];
+                console.log(`✅ Chat optimized: ${messagesForSummary.length} → 1 summary + ${KEEP_RECENT} recent`);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error loading chat history:', error);
+          // Continue without history - don't fail the chat
+        }
+      }
+
       // Conversational AI with checkpoint billing (bill for ALL AI usage like Replit)
       const computeStartTime = Date.now();
       
@@ -2470,16 +2592,32 @@ ${content}
           systemPrompt += `\nWhen user asks about the project, you can see these files and answer questions about them directly.`;
         }
 
+        // Build messages array with chat history (memory-optimized with auto-summarization)
+        const messages: any[] = [];
+        
+        // Add chat history (may include summary if conversation was long)
+        for (const historyMsg of chatHistory) {
+          // Convert system/summary messages to user role for Anthropic API compatibility
+          // Summary messages go first and provide context
+          messages.push({
+            role: historyMsg.role === 'system' ? 'user' : historyMsg.role,
+            content: historyMsg.isSummary ? `[Previous conversation summary]: ${historyMsg.content}` : historyMsg.content,
+          });
+        }
+        
+        // Add current user message
+        messages.push({
+          role: "user",
+          content: message,
+        });
+        
+        console.log(`💬 Sending ${messages.length} messages to Anthropic (history: ${chatHistory.length}, new: 1)`);
+
         const result = await anthropic.messages.create({
           model: DEFAULT_MODEL,
           max_tokens: 1024,
           system: systemPrompt,
-          messages: [
-            {
-              role: "user",
-              content: message,
-            },
-          ],
+          messages: messages,
         });
         return result;
       });

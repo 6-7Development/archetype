@@ -122,8 +122,9 @@ export const chatMessages = pgTable("chat_messages", {
   userId: varchar("user_id").notNull(),
   projectId: varchar("project_id"), // Link messages to projects
   fileId: varchar("file_id"),
-  role: text("role").notNull(), // 'user' | 'assistant'
+  role: text("role").notNull(), // 'user' | 'assistant' | 'system'
   content: text("content").notNull(),
+  isSummary: boolean("is_summary").notNull().default(false), // True for compressed conversation summaries
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
