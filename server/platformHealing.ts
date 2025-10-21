@@ -21,8 +21,15 @@ interface FileChange {
 }
 
 export class PlatformHealingService {
-  private readonly PROJECT_ROOT = '/home/runner/workspace';
+  private readonly PROJECT_ROOT = process.cwd();
   private readonly BACKUP_BRANCH_PREFIX = 'backup/meta-sysop-';
+  
+  private sanitizeBackupId(backupId: string): string {
+    if (!/^[A-Za-z0-9_-]+$/.test(backupId)) {
+      throw new Error('Invalid backup ID format');
+    }
+    return backupId;
+  }
 
   async createBackup(description: string): Promise<PlatformBackup> {
     try {
@@ -31,6 +38,8 @@ export class PlatformHealingService {
       const branchName = `${this.BACKUP_BRANCH_PREFIX}${backupId}`;
 
       await execAsync('git add -A', { cwd: this.PROJECT_ROOT });
+      
+      await execAsync(`git commit -m "[Meta-SySop Backup] ${description}"`, { cwd: this.PROJECT_ROOT });
       
       const { stdout: commitHash } = await execAsync('git rev-parse HEAD', { cwd: this.PROJECT_ROOT });
       
@@ -53,7 +62,8 @@ export class PlatformHealingService {
 
   async rollback(backupId: string): Promise<void> {
     try {
-      const branchName = `${this.BACKUP_BRANCH_PREFIX}${backupId}`;
+      const sanitizedId = this.sanitizeBackupId(backupId);
+      const branchName = `${this.BACKUP_BRANCH_PREFIX}${sanitizedId}`;
 
       const { stdout: branches } = await execAsync('git branch --list', { cwd: this.PROJECT_ROOT });
       if (!branches.includes(branchName)) {
@@ -64,7 +74,7 @@ export class PlatformHealingService {
       
       await execAsync(`git reset --hard ${branchName}`, { cwd: this.PROJECT_ROOT });
 
-      console.log(`[PLATFORM-ROLLBACK] Rolled back to backup: ${backupId}`);
+      console.log(`[PLATFORM-ROLLBACK] Rolled back to backup: ${sanitizedId}`);
     } catch (error: any) {
       console.error('[PLATFORM-ROLLBACK] Rollback failed:', error);
       throw new Error(`Rollback failed: ${error.message}`);
@@ -136,6 +146,9 @@ export class PlatformHealingService {
         /\.env$/,
         /package\.json$/,
         /package-lock\.json$/,
+        /vite\.config\.ts$/,
+        /server\/vite\.ts$/,
+        /drizzle\.config\.ts$/,
       ];
 
       if (dangerousPatterns.some(pattern => pattern.test(filePath))) {

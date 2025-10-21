@@ -3,6 +3,8 @@
 ## Overview
 Archetype is an AI-powered platform for rapid web development, featuring both a command-based project generator and a professional IDE Workspace. Its core is SySop, an advanced AI coding agent with architect-level consultation capabilities, providing an enterprise-grade tool for autonomous code generation with built-in quality validation. The platform offers a console-first interface, real-time preview, and a tab-based workspace. Archetype includes comprehensive monetization infrastructure with subscription tiers, usage-based billing, a template marketplace with creator revenue sharing, and professional development services. A subsidiary of Drill Consulting 360 LLC, it targets Fortune 500 production readiness and fully portable deployment to any cloud platform.
 
+**Meta-SySop (Platform Self-Healing):** Archetype features autonomous platform self-healing through Meta-SySop, which allows SySop to fix bugs, improve UI/UX, and modify Archetype's own source code on Render production. This system includes automatic git backups before changes, rollback capability, comprehensive audit logging, and admin-only access controls. Admins can submit platform issues via `/platform-healing` and SySop will autonomously diagnose, fix, test, and optionally auto-commit/push changes to production.
+
 ## User Preferences
 ### API Configuration
 - Using Claude 3.5 Sonnet (Anthropic) for AI code generation
