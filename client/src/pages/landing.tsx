@@ -181,10 +181,10 @@ export default function Landing() {
                   </div>
                 }
               />
-              <Button variant="outline" className="min-h-[44px] hidden md:inline-flex" data-testid="button-nav-login" asChild>
+              <Button variant="outline" className="min-h-[44px] hidden md:inline-flex text-white border-slate-600 hover:bg-slate-800" data-testid="button-nav-login" asChild>
                 <Link href="/auth">Login</Link>
               </Button>
-              <Button variant="default" className="min-h-[44px] hidden sm:inline-flex" data-testid="button-nav-builder" asChild>
+              <Button className="min-h-[44px] hidden sm:inline-flex bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold" data-testid="button-nav-builder" asChild>
                 <Link href="/builder">Get Started</Link>
               </Button>
             </div>
