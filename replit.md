@@ -131,8 +131,8 @@ Complete overhaul of chat interface and AI behavior to match Replit Agent's prof
 - Memory-efficient conversation handling
 - Professional, beginner-friendly communication style
 - **Ultra-concise greeting**: "Hey! I'm SySop. What are we building?" (no long paragraphs)
-- **Clear limitations**: SySop explicitly knows it CANNOT run bash commands, browse files, or fix the Archetype platform
 - **Action-first**: Builds immediately when request is clear, only asks questions when genuinely confused
+- **Platform Healing**: When users report platform issues, SySop directs them to /platform-healing for Meta-SySop self-repair
 
 **Status**: All features tested and verified production-ready via E2E testing
 
