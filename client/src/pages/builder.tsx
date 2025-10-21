@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link, useRoute, useLocation } from "wouter";
 import { AIChat } from "@/components/ai-chat";
 import { ProjectUpload } from "@/components/project-upload";
@@ -12,6 +12,11 @@ import { Card } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { LivePreview } from "@/components/live-preview";
+import { MonacoEditor } from "@/components/monaco-editor";
+import { FileExplorer } from "@/components/file-explorer";
+import { NewFileDialog } from "@/components/new-file-dialog";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import { 
   Sparkles, 
   LayoutDashboard, 
@@ -25,7 +30,9 @@ import {
   ChevronDown,
   ArrowLeft,
   Plus,
-  FileCode
+  FileCode,
+  Save,
+  CheckCircle2
 } from "lucide-react";
 import { Command, Project, File } from "@shared/schema";
 import VersionHistory from "./version-history";
@@ -34,7 +41,12 @@ export default function Builder() {
   const [activeTab, setActiveTab] = useState("build");
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
+  const [showNewFileDialog, setShowNewFileDialog] = useState(false);
+  const [activeFileId, setActiveFileId] = useState<string | null>(null);
+  const [fileContent, setFileContent] = useState<string>("");
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
   const [, setLocation] = useLocation();
   
   // Check if projectId is in the URL (/builder/:projectId)
@@ -79,6 +91,61 @@ export default function Builder() {
   const handleProjectSwitch = (projectId: string) => {
     setCurrentProjectId(projectId);
     setLocation(`/builder/${projectId}`);
+    setActiveFileId(null);
+    setFileContent("");
+    setHasUnsavedChanges(false);
+  };
+
+  const activeFile = files.find(f => f.id === activeFileId);
+
+  // File save mutation
+  const saveFileMutation = useMutation({
+    mutationFn: async ({ fileId, content }: { fileId: string; content: string }) => {
+      return await apiRequest("PUT", `/api/files/${fileId}`, { content });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+      setHasUnsavedChanges(false);
+      toast({
+        title: "File saved",
+        description: "Your changes have been saved successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Save failed",
+        description: error.message || "Failed to save file",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleFileSelect = (file: File) => {
+    // Save current file if there are unsaved changes
+    if (hasUnsavedChanges && activeFileId) {
+      saveFileMutation.mutate({ fileId: activeFileId, content: fileContent });
+    }
+    
+    setActiveFileId(file.id);
+    setFileContent(file.content);
+    setHasUnsavedChanges(false);
+  };
+
+  const handleFileContentChange = (value: string | undefined) => {
+    if (value !== undefined) {
+      setFileContent(value);
+      setHasUnsavedChanges(value !== activeFile?.content);
+    }
+  };
+
+  const handleSaveFile = () => {
+    if (activeFileId && hasUnsavedChanges) {
+      saveFileMutation.mutate({ fileId: activeFileId, content: fileContent });
+    }
+  };
+
+  const handleCreateFile = () => {
+    setShowNewFileDialog(true);
   };
 
   return (
@@ -220,30 +287,85 @@ export default function Builder() {
               <LivePreview projectId={currentProjectId} fileCount={files.length} />
             </TabsContent>
 
-            {/* Files Tab */}
-            <TabsContent value="files" className="h-full m-0 p-6" data-testid="content-files">
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Project Files</h2>
-                {files.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-12">
-                    No files yet. Use the AI Build tab to generate your project.
-                  </p>
-                ) : (
-                  <div className="space-y-2">
-                    {files.map((file) => (
-                      <div key={file.id} className="flex items-center gap-3 p-3 rounded-lg hover-elevate bg-card border">
-                        <FileCode className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{file.filename}</p>
-                          {file.path && (
-                            <p className="text-xs text-muted-foreground truncate">{file.path}</p>
+            {/* Files Tab - File Explorer + Monaco Editor */}
+            <TabsContent value="files" className="h-full m-0" data-testid="content-files">
+              <div className="h-full flex">
+                {/* File Explorer Sidebar */}
+                <div className="w-64 border-r bg-card/50">
+                  <FileExplorer
+                    files={files}
+                    activeFileId={activeFileId}
+                    onFileSelect={handleFileSelect}
+                    onCreateFile={handleCreateFile}
+                  />
+                </div>
+
+                {/* Monaco Editor */}
+                <div className="flex-1 flex flex-col">
+                  {activeFile ? (
+                    <>
+                      {/* Editor Header */}
+                      <div className="h-14 border-b px-4 flex items-center justify-between bg-card/50">
+                        <div className="flex items-center gap-2">
+                          <FileCode className="w-4 h-4 text-primary" />
+                          <span className="text-sm font-semibold">{activeFile.filename}</span>
+                          {activeFile.path && (
+                            <span className="text-xs text-muted-foreground">/{activeFile.path}</span>
+                          )}
+                          {hasUnsavedChanges && (
+                            <Badge variant="outline" className="text-xs border-yellow-500/20 text-yellow-600 dark:text-yellow-400">
+                              Unsaved
+                            </Badge>
                           )}
                         </div>
-                        <Badge variant="secondary" className="text-xs">{file.language}</Badge>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={handleSaveFile}
+                            disabled={!hasUnsavedChanges || saveFileMutation.isPending}
+                            data-testid="button-save-file"
+                          >
+                            {saveFileMutation.isPending ? (
+                              <>
+                                <CheckCircle2 className="w-4 h-4 mr-2 animate-spin" />
+                                Saving...
+                              </>
+                            ) : (
+                              <>
+                                <Save className="w-4 h-4 mr-2" />
+                                Save
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                )}
+
+                      {/* Editor */}
+                      <div className="flex-1 overflow-hidden">
+                        <MonacoEditor
+                          value={fileContent}
+                          onChange={handleFileContentChange}
+                          language={activeFile.language}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <div className="h-full flex items-center justify-center p-6">
+                      <div className="text-center max-w-md">
+                        <FileCode className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                        <h3 className="text-lg font-semibold mb-2">
+                          {files.length === 0 ? "No Files Yet" : "Select a File"}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {files.length === 0 
+                            ? "Use the AI Build tab to generate your project, or create a new file"
+                            : "Click on a file in the explorer to view and edit it"}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </TabsContent>
           </div>
@@ -254,6 +376,16 @@ export default function Builder() {
       <NewProjectDialog 
         open={showNewProjectDialog} 
         onOpenChange={setShowNewProjectDialog}
+      />
+
+      {/* New File Dialog */}
+      <NewFileDialog
+        open={showNewFileDialog}
+        onOpenChange={setShowNewFileDialog}
+        onCreateFile={(filename, language) => {
+          console.log("Create file:", filename, language);
+          toast({ description: "File creation coming soon!" });
+        }}
       />
     </div>
   );
