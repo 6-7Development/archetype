@@ -1,7 +1,8 @@
+import { type ReactNode } from "react";
 import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "next-themes";
 
 type ThemeProviderProps = {
-  children: React.ReactNode;
+  children: ReactNode;
   defaultTheme?: "dark" | "light";
 };
 
