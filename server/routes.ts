@@ -124,6 +124,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(diagnostics);
   });
 
+  // ONE-TIME PASSWORD RESET ENDPOINT (for fixing root@getdc360.com)
+  app.post('/api/emergency-password-reset', async (req, res) => {
+    try {
+      const { email, newPassword } = req.body;
+      
+      // Only allow for root@getdc360.com
+      if (email !== 'root@getdc360.com') {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+      
+      // Hash the new password
+      const bcrypt = await import('bcrypt');
+      const hashedPassword = await bcrypt.hash(newPassword, 12);
+      
+      // Update the user's password
+      const { users } = await import('@shared/schema');
+      await db.update(users)
+        .set({ password: hashedPassword })
+        .where(eq(users.email, email));
+      
+      res.json({ success: true, message: 'Password reset successfully' });
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Setup OAuth authentication (must be before routes)
   await setupAuth(app);
 
