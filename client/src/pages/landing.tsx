@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { MotionToggle } from "@/components/motion-toggle";
 import { LeadCaptureForm } from "@/components/lead-capture-form";
+import { DeploymentStatus } from "@/components/deployment-status";
 
 const FloatingParticle = ({ delay = 0, duration = 20 }: { delay?: number; duration?: number }) => {
   const randomX = Math.random() * 100;
@@ -660,21 +661,24 @@ export default function Landing() {
 
       {/* Footer */}
       <footer className="py-12 px-6 border-t border-white/10">
-        <div className="container mx-auto max-w-6xl text-center text-slate-500">
-          <motion.div 
-            className="flex items-center justify-center gap-3 mb-4"
-            whileHover={{ scale: 1.05 }}
-          >
-            <motion.img 
-              src={logoPath} 
-              alt="ARCHETYPE" 
-              className="w-12 h-12 rounded-xl shadow-lg shadow-cyan-500/20"
-              whileHover={{ rotate: 360 }}
-              transition={{ duration: 0.6 }}
-            />
-            <span className="text-lg font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">ARCHETYPE</span>
-          </motion.div>
-          <p className="text-sm">© 2025 ARCHETYPE. AI-Powered Code Generation Platform.</p>
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center text-slate-500">
+            <motion.div 
+              className="flex items-center justify-center gap-3 mb-4"
+              whileHover={{ scale: 1.05 }}
+            >
+              <motion.img 
+                src={logoPath} 
+                alt="ARCHETYPE" 
+                className="w-12 h-12 rounded-xl shadow-lg shadow-cyan-500/20"
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.6 }}
+              />
+              <span className="text-lg font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">ARCHETYPE</span>
+            </motion.div>
+            <p className="text-sm mb-4">© 2025 ARCHETYPE. AI-Powered Code Generation Platform.</p>
+            <DeploymentStatus />
+          </div>
         </div>
       </footer>
     </div>

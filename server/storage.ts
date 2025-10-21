@@ -40,6 +40,8 @@ import {
   type InsertServiceMilestone,
   type ServiceProgressLog,
   type InsertServiceProgressLog,
+  type SatisfactionSurvey,
+  type InsertSatisfactionSurvey,
   users,
   files,
   chatMessages,
@@ -66,7 +68,8 @@ import {
   serviceRequests,
   serviceMessages,
   serviceMilestones,
-  serviceProgressLogs
+  serviceProgressLogs,
+  satisfactionSurveys
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, isNull, sql } from "drizzle-orm";
@@ -2117,6 +2120,55 @@ export class DatabaseStorage implements IStorage {
     }
 
     console.log(`✅ Rolled back project ${projectId} to snapshot "${snapshot.label}" (${snapshotFiles.length} files restored)`);
+  }
+
+  // Satisfaction Survey methods
+  async createSatisfactionSurvey(survey: InsertSatisfactionSurvey): Promise<SatisfactionSurvey> {
+    const [result] = await db.insert(satisfactionSurveys).values(survey).returning();
+    return result;
+  }
+
+  async getSatisfactionStats(): Promise<any> {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // Overall stats
+    const totalSurveys = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(satisfactionSurveys)
+      .where(sql`created_at >= ${thirtyDaysAgo}`);
+
+    const avgRating = await db
+      .select({ avg: sql<number>`avg(rating)` })
+      .from(satisfactionSurveys)
+      .where(sql`created_at >= ${thirtyDaysAgo}`);
+
+    const categoryBreakdown = await db
+      .select({
+        category: satisfactionSurveys.category,
+        count: sql<number>`count(*)`,
+        avgRating: sql<number>`avg(rating)`,
+      })
+      .from(satisfactionSurveys)
+      .where(sql`created_at >= ${thirtyDaysAgo}`)
+      .groupBy(satisfactionSurveys.category);
+
+    const ratingDistribution = await db
+      .select({
+        rating: satisfactionSurveys.rating,
+        count: sql<number>`count(*)`,
+      })
+      .from(satisfactionSurveys)
+      .where(sql`created_at >= ${thirtyDaysAgo}`)
+      .groupBy(satisfactionSurveys.rating)
+      .orderBy(satisfactionSurveys.rating);
+
+    return {
+      totalSurveys: Number(totalSurveys[0]?.count || 0),
+      averageRating: Number(avgRating[0]?.avg || 0).toFixed(2),
+      categoryBreakdown,
+      ratingDistribution,
+    };
   }
 }
 

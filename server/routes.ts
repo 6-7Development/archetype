@@ -19,6 +19,7 @@ import platformRouter from './platformRoutes';
 import multer from "multer";
 import AdmZip from "adm-zip";
 import path from "path";
+import { getDeploymentInfo } from './deploymentInfo';
 
 // Configure multer for file uploads (in-memory storage)
 const upload = multer({
@@ -3751,6 +3752,61 @@ ALWAYS include checkpoint data in your response:
     } catch (error: any) {
       console.error('Error assigning ticket:', error);
       res.status(500).json({ error: error.message || "Failed to assign ticket" });
+    }
+  });
+
+  // Deployment info endpoint (public - for status page)
+  app.get('/api/deployment-info', async (_req, res) => {
+    try {
+      const info = await getDeploymentInfo();
+      res.json(info);
+    } catch (error) {
+      console.error('Error getting deployment info:', error);
+      res.status(500).json({ error: 'Failed to get deployment info' });
+    }
+  });
+
+  // User satisfaction survey routes
+  app.post('/api/satisfaction-survey', async (req: any, res) => {
+    try {
+      const userId = req.session?.claims?.sub || req.session?.user?.id || null;
+      const { rating, category, feedback, wouldRecommend, featureRequests } = req.body;
+
+      if (!rating || !category) {
+        return res.status(400).json({ error: 'Rating and category are required' });
+      }
+
+      if (rating < 1 || rating > 5) {
+        return res.status(400).json({ error: 'Rating must be between 1 and 5' });
+      }
+
+      const browserInfo = req.headers['user-agent'] || 'unknown';
+
+      const survey = await storage.createSatisfactionSurvey({
+        userId,
+        rating,
+        category,
+        feedback: feedback || null,
+        wouldRecommend: wouldRecommend || null,
+        featureRequests: featureRequests || null,
+        browserInfo,
+      });
+
+      res.json({ success: true, survey });
+    } catch (error: any) {
+      console.error('Error submitting satisfaction survey:', error);
+      res.status(500).json({ error: error.message || 'Failed to submit survey' });
+    }
+  });
+
+  // Get satisfaction survey stats (admin only)
+  app.get('/api/admin/satisfaction-stats', isAuthenticated, isAdmin, async (_req, res) => {
+    try {
+      const stats = await storage.getSatisfactionStats();
+      res.json(stats);
+    } catch (error: any) {
+      console.error('Error getting satisfaction stats:', error);
+      res.status(500).json({ error: error.message || 'Failed to get stats' });
     }
   });
 
