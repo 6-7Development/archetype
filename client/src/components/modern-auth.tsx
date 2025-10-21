@@ -194,19 +194,19 @@ export default function ModernAuth() {
                   <FormField
                     control={loginForm.control}
                     name="email"
-                    render={({ field }) => (
+                    render={({ field, fieldState }) => (
                       <FormItem>
-                        <FormLabel>Email Address</FormLabel>
-                        <FormControl>
-                          <Input 
-                            {...field} 
-                            type="email" 
-                            placeholder="you@example.com" 
-                            data-testid="input-login-email"
-                            autoComplete="email"
-                            className="h-11"
-                          />
-                        </FormControl>
+                        <FormLabel htmlFor="login-email">Email Address</FormLabel>
+                        <Input 
+                          id="login-email"
+                          {...field} 
+                          type="email" 
+                          placeholder="you@example.com" 
+                          data-testid="input-login-email"
+                          autoComplete="email"
+                          className="h-11"
+                          aria-invalid={!!fieldState.error}
+                        />
                         <FormMessage />
                       </FormItem>
                     )}
@@ -288,19 +288,19 @@ export default function ModernAuth() {
                   <FormField
                     control={registerForm.control}
                     name="email"
-                    render={({ field }) => (
+                    render={({ field, fieldState }) => (
                       <FormItem>
-                        <FormLabel>Email Address</FormLabel>
-                        <FormControl>
-                          <Input 
-                            {...field} 
-                            type="email" 
-                            placeholder="you@example.com" 
-                            data-testid="input-register-email"
-                            autoComplete="email"
-                            className="h-11"
-                          />
-                        </FormControl>
+                        <FormLabel htmlFor="register-email">Email Address</FormLabel>
+                        <Input 
+                          id="register-email"
+                          {...field} 
+                          type="email" 
+                          placeholder="you@example.com" 
+                          data-testid="input-register-email"
+                          autoComplete="email"
+                          className="h-11"
+                          aria-invalid={!!fieldState.error}
+                        />
                         <FormMessage />
                       </FormItem>
                     )}
