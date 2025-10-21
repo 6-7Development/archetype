@@ -27,11 +27,12 @@ interface CheckpointData {
 }
 
 interface Message {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "system";
   content: string;
   timestamp?: Date;
   progressSteps?: ProgressStep[];
   checkpoint?: CheckpointData; // Checkpoint billing data
+  isSummary?: boolean; // Memory optimization: marks summarized old messages
 }
 
 interface RequiredSecret {
@@ -446,9 +447,14 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
               )}
               data-testid={`chat-message-${idx}`}
             >
-              {message.role === "assistant" && (
+              {message.role === "assistant" && !message.isSummary && (
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                </div>
+              )}
+              {message.isSummary && (
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                  <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
                 </div>
               )}
               <div className="flex-1 max-w-[85%] sm:max-w-[80%] space-y-2">
@@ -457,9 +463,14 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                     "rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 text-sm",
                     message.role === "user"
                       ? "bg-primary text-primary-foreground"
+                      : message.isSummary
+                      ? "bg-muted/50 text-muted-foreground border border-border/50"
                       : "bg-muted text-foreground"
                   )}
                 >
+                  {message.isSummary && (
+                    <p className="text-xs font-medium mb-1 opacity-70">💾 Previous conversation summary</p>
+                  )}
                   <p className="whitespace-pre-wrap leading-relaxed break-words">{message.content}</p>
                 </div>
                 

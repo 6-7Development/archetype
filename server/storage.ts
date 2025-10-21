@@ -100,6 +100,7 @@ export interface IStorage {
   getChatMessages(userId: string, fileId?: string): Promise<ChatMessage[]>;
   getChatMessagesByProject(userId: string, projectId: string): Promise<ChatMessage[]>;
   createChatMessage(message: InsertChatMessageWithUser): Promise<ChatMessage>;
+  deleteChatMessage(id: string, userId: string): Promise<void>;
   
   getProjects(userId: string): Promise<Project[]>;
   getProject(id: string, userId: string): Promise<Project | undefined>;
@@ -339,6 +340,12 @@ export class DatabaseStorage implements IStorage {
       .values(insertMessage)
       .returning();
     return message;
+  }
+
+  async deleteChatMessage(id: string, userId: string): Promise<void> {
+    await db.delete(chatMessages).where(
+      and(eq(chatMessages.id, id), eq(chatMessages.userId, userId))
+    );
   }
 
   async getProjects(userId: string): Promise<Project[]> {
