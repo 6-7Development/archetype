@@ -36,6 +36,7 @@ import { cn } from "@/lib/utils";
 import { TemplateGallery } from "@/components/template-gallery";
 import { ProjectUpload } from "@/components/project-upload";
 import { OnboardingTour } from "@/components/onboarding-tour";
+import { NewProjectDialog } from "@/components/new-project-dialog";
 
 type Project = {
   id: string;
@@ -51,6 +52,7 @@ export default function Dashboard() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [showTemplateGallery, setShowTemplateGallery] = useState(false);
+  const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const { toast } = useToast();
@@ -94,7 +96,7 @@ export default function Dashboard() {
   );
 
   const handleCreateProject = () => {
-    setLocation("/builder");
+    setShowNewProjectDialog(true);
   };
 
   const handleOpenProject = (projectId: string) => {
@@ -301,6 +303,12 @@ export default function Dashboard() {
       <TemplateGallery 
         open={showTemplateGallery} 
         onOpenChange={setShowTemplateGallery}
+      />
+
+      {/* New Project Dialog */}
+      <NewProjectDialog 
+        open={showNewProjectDialog} 
+        onOpenChange={setShowNewProjectDialog}
       />
 
       {/* Delete Confirmation Dialog */}

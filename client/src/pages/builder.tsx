@@ -4,6 +4,7 @@ import { Link, useRoute, useLocation } from "wouter";
 import { AIChat } from "@/components/ai-chat";
 import { ProjectUpload } from "@/components/project-upload";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { NewProjectDialog } from "@/components/new-project-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -32,6 +33,7 @@ import VersionHistory from "./version-history";
 export default function Builder() {
   const [activeTab, setActiveTab] = useState("build");
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
+  const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
   const { isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
   
@@ -137,11 +139,13 @@ export default function Builder() {
                     No projects yet. Create one below!
                   </div>
                 )}
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard" className="gap-2">
-                    <Plus className="w-4 h-4" />
-                    <span>New Project</span>
-                  </Link>
+                <DropdownMenuItem
+                  onClick={() => setShowNewProjectDialog(true)}
+                  className="gap-2"
+                  data-testid="button-new-project"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>New Project</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -257,6 +261,12 @@ export default function Builder() {
           </div>
         </Tabs>
       </div>
+
+      {/* New Project Dialog */}
+      <NewProjectDialog 
+        open={showNewProjectDialog} 
+        onOpenChange={setShowNewProjectDialog}
+      />
     </div>
   );
 }
