@@ -24,7 +24,7 @@ import { getDeploymentInfo } from './deploymentInfo';
 // Configure multer for file uploads (in-memory storage)
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
 });
 
 // Feature flags for graceful degradation
@@ -2365,10 +2365,21 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
   app.post("/api/ai-chat-conversation", async (req: Request, res: Response) => {
     try {
       const userId = req.session?.claims?.sub || req.session?.user?.id || 'demo-user';
-      const { message } = req.body;
+      const { message, projectId } = req.body;
 
       if (!message || typeof message !== 'string' || !message.trim()) {
         return res.status(400).json({ error: "Message is required" });
+      }
+
+      // Load project files if projectId provided
+      let projectFiles: any[] = [];
+      if (projectId) {
+        try {
+          projectFiles = await storage.getProjectFiles(projectId, userId);
+        } catch (error) {
+          console.error('Error loading project files for chat:', error);
+          // Continue without files - don't fail the chat
+        }
       }
 
       // Conversational AI with checkpoint billing (bill for ALL AI usage like Replit)
@@ -2380,40 +2391,75 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
 
       // Wrap AI call in priority queue
       const completion = await aiQueue.enqueue(userId, plan, async () => {
+        // Build system prompt with project context
+        let systemPrompt = `You are SySop, a helpful AI coding assistant. Be direct, concise, and action-oriented like Replit Agent.
+
+**CORE BEHAVIOR:**
+• Just do the work - don't ask questions unless absolutely necessary
+• Be brief and conversational (2-3 sentences max for simple responses)
+• If user says "fix X" - just acknowledge and indicate you'll build it
+• Skip the verbose explanations unless the user explicitly asks for them
+
+**WHEN TO BUILD:**
+User says things like:
+• "Fix the header to be sticky" → Respond: "I'll make the header sticky for you." + {"shouldGenerate": true, "command": "make platform header sticky"}
+• "Build me a todo app" → Respond: "I'll build a todo app for you." + {"shouldGenerate": true, "command": "create todo app"}
+• "Add dark mode" → Respond: "I'll add dark mode." + {"shouldGenerate": true, "command": "implement dark mode"}
+
+**WHEN TO CHAT:**
+User asks questions:
+• "What can you do?" → Answer briefly
+• "How does X work?" → Explain concisely
+• "Which is better, X or Y?" → Provide direct recommendation
+
+**RESPONSE FORMAT:**
+Keep it natural and brief. If building, include:
+{"shouldGenerate": true, "command": "clear description of what to build"}
+
+Include checkpoint (for billing):
+{"checkpoint": {"complexity": "simple|standard|complex", "cost": 0.20|0.40|0.80}}
+
+Be helpful, not chatty. More action, fewer words.`;
+
+        // Add project files context if available
+        if (projectFiles.length > 0) {
+          systemPrompt += `\n\n📁 **PROJECT FILES** (${projectFiles.length} total):
+You have access to the user's project files. You can see them, modify them, and answer questions about them.
+
+`;
+          // Include file contents (with smart truncation)
+          let totalChars = 0;
+          const maxTotalChars = 30000; // Keep it reasonable for chat
+          
+          for (const file of projectFiles) {
+            let content = file.content || '';
+            const maxFileSize = 2000; // 2k chars per file max for chat
+            const truncated = content.length > maxFileSize;
+            if (truncated) {
+              content = content.substring(0, maxFileSize) + '\n... [truncated]';
+            }
+            
+            const fileEntrySize = content.length + file.filename.length + 100;
+            if (totalChars + fileEntrySize > maxTotalChars) {
+              const remainingCount = projectFiles.length - projectFiles.indexOf(file);
+              systemPrompt += `\n... and ${remainingCount} more files (too many to show in chat)\n`;
+              break;
+            }
+            
+            systemPrompt += `--- ${file.path ? file.path + '/' : ''}${file.filename} ---
+${content}
+
+`;
+            totalChars += fileEntrySize;
+          }
+          
+          systemPrompt += `\nWhen user asks about the project, you can see these files and answer questions about them directly.`;
+        }
+
         const result = await anthropic.messages.create({
           model: DEFAULT_MODEL,
           max_tokens: 1024,
-          system: `You are SySop, an elite AI coding assistant with architect-level code review capabilities. When users describe a project, you can either:
-1. Ask clarifying questions to better understand their needs
-2. Review code and identify errors/issues (like an architect)
-3. If you have enough information, indicate you're ready to build
-
-**ERROR DETECTION & CODE REVIEW** (architect-level capabilities):
-When reviewing code or discussing technical issues:
-• Architecture errors: Layer separation, circular dependencies, tight coupling
-• Security issues: SQL injection, XSS, CSRF, hardcoded secrets, auth bypass
-• Performance problems: N+1 queries, missing indexes, large bundles
-• Accessibility violations: Missing alt text, keyboard traps, poor contrast
-• Logic errors: Edge cases, race conditions, error handling gaps
-
-Communicate issues clearly: "❌ Critical Issue Found: [issue]. Fix: [solution]"
-
-**CHECKPOINT BILLING**: Every interaction is billed based on complexity:
-- SIMPLE ($0.20): Brief answers, single questions
-- STANDARD ($0.40): Detailed explanations, multi-part answers (MOST COMMON)
-- COMPLEX ($0.80): Technical deep-dives, architecture discussions, code reviews
-
-Respond conversationally. If you decide to build, include: {"shouldGenerate": true, "command": "user's request reformulated as a clear command"}
-
-ALWAYS include checkpoint data in your response:
-{
-  "checkpoint": {
-    "complexity": "simple|standard|complex",
-    "cost": 0.20|0.40|0.80,
-    "estimatedTime": "< 1 minute",
-    "actions": ["Answered user question", "Reviewed code for errors", "Provided code examples", "Explained concepts"]
-  }
-}`,
+          system: systemPrompt,
           messages: [
             {
               role: "user",
