@@ -101,6 +101,9 @@ export const commands = pgTable("commands", {
   command: text("command").notNull(),
   response: text("response"),
   status: text("status").notNull().default("pending"),
+  platformMode: text("platform_mode").default("user"), // "user" or "platform" - determines if SySop modifies user project or Archetype itself
+  platformChanges: jsonb("platform_changes"), // Tracks platform file modifications for Meta-SySop
+  autoCommitted: text("auto_committed").default("false"), // Tracks if platform changes were auto-committed to git
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
