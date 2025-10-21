@@ -240,68 +240,68 @@ export default function WorkingAuth() {
               <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <Label htmlFor="register-firstname">First Name</Label>
+                    <Label htmlFor="register-firstname" className="text-slate-200">First Name</Label>
                     <Input 
                       id="register-firstname"
                       placeholder="John" 
                       data-testid="input-register-firstname"
                       autoComplete="given-name"
-                      className="h-11"
+                      className="h-11 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
                       {...registerForm.register("firstName")}
                     />
                     {registerForm.formState.errors.firstName && (
-                      <p className="text-sm font-medium text-destructive">
+                      <p className="text-sm font-medium text-red-400">
                         {registerForm.formState.errors.firstName.message}
                       </p>
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="register-lastname">Last Name</Label>
+                    <Label htmlFor="register-lastname" className="text-slate-200">Last Name</Label>
                     <Input 
                       id="register-lastname"
                       placeholder="Doe" 
                       data-testid="input-register-lastname"
                       autoComplete="family-name"
-                      className="h-11"
+                      className="h-11 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
                       {...registerForm.register("lastName")}
                     />
                     {registerForm.formState.errors.lastName && (
-                      <p className="text-sm font-medium text-destructive">
+                      <p className="text-sm font-medium text-red-400">
                         {registerForm.formState.errors.lastName.message}
                       </p>
                     )}
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="register-email">Email Address</Label>
+                  <Label htmlFor="register-email" className="text-slate-200">Email Address</Label>
                   <Input 
                     id="register-email"
                     type="email" 
                     placeholder="you@example.com" 
                     data-testid="input-register-email"
                     autoComplete="email"
-                    className="h-11"
+                    className="h-11 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
                     {...registerForm.register("email")}
                   />
                   {registerForm.formState.errors.email && (
-                    <p className="text-sm font-medium text-destructive">
+                    <p className="text-sm font-medium text-red-400">
                       {registerForm.formState.errors.email.message}
                     </p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="register-password">Password</Label>
+                  <Label htmlFor="register-password" className="text-slate-200">Password</Label>
                   <Input 
                     id="register-password"
                     type="password" 
                     placeholder="••••••••" 
                     data-testid="input-register-password"
                     autoComplete="new-password"
-                    className="h-11"
+                    className="h-11 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
                     {...registerForm.register("password")}
                   />
                   {registerForm.formState.errors.password && (
-                    <p className="text-sm font-medium text-destructive">
+                    <p className="text-sm font-medium text-red-400">
                       {registerForm.formState.errors.password.message}
                     </p>
                   )}
