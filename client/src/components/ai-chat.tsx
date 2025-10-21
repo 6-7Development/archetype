@@ -98,7 +98,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   // Default greeting message
   const DEFAULT_GREETING: Message = {
     role: "assistant",
-    content: "Hi there! I'm SySop - your personal AI coding teacher and builder.\n\n**I specialize in teaching!** I'll explain everything step-by-step in plain English. No confusing technical jargon - I promise.\n\n**Here's my process:**\n\n**Step 1: Listen carefully** - Tell me what you want to build, even if you don't know the technical terms\n\n**Step 2: Plan it out** - I'll organize everything systematically (like sorting building blocks before construction)\n\n**Step 3: Build it** - I write all the code while explaining what each piece does\n\n**Step 4: Test it** - I verify everything works perfectly (comprehensive quality checks)\n\n**Step 5: Fix any issues** - If something's not right, I'll fix it and explain what I did\n\n**What can I build for you?**\n\n• **Websites** - Online stores, blogs, portfolios (complete full-stack applications)\n• **Games** - 2D or 3D games that run in your browser\n• **Apps** - Todo lists, calculators, dashboards, anything you imagine\n• **Business tools** - Systems to streamline your business operations\n\n**Security Notice**: I'll never create fake credentials or security keys. If you need real ones, I'll guide you through obtaining them safely from the proper sources.\n\n**Real-time visibility**: You can watch me work - I'll show you each step as I progress!\n\nWhat would you like to build today? Don't worry if you're unsure how to explain it - just describe your idea and I'll help you bring it to life!",
+    content: "Hey! I'm SySop. What are we building?",
     timestamp: new Date(),
   };
 
