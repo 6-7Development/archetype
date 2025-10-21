@@ -24,7 +24,7 @@ import { getDeploymentInfo } from './deploymentInfo';
 // Configure multer for file uploads (in-memory storage)
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
 });
 
 // Feature flags for graceful degradation
