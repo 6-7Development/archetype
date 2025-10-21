@@ -134,8 +134,8 @@ export function AgentProgress({ steps, isWorking, onStop, showTeachingEmojis = f
             })}
           </div>
 
-          {/* Metrics footer */}
-          {metrics && (
+          {/* Metrics footer - only show after completion (not during build) */}
+          {metrics && !isWorking && (
             <div className="border-t border-border/50 px-3 py-2">
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                 {((metrics.inputTokens || 0) + (metrics.outputTokens || 0) > 0) && (
