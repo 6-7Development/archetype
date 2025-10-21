@@ -105,66 +105,118 @@ ${Object.keys(fileContents).map(f => `- ${f}`).join('\n')}
 
 Analyze the issue, identify the root cause, and provide the fix.`;
 
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 8000,
-      system: systemPrompt,
-      messages: [{
-        role: 'user',
-        content: `Fix this platform issue: ${issue}\n\nAvailable files:\n${Object.entries(fileContents).slice(0, 3).map(([path, content]) => `\n=== ${path} ===\n${content.slice(0, 1000)}`).join('\n')}`,
-      }],
-      tools: [
-        {
-          name: 'readPlatformFile',
-          description: 'Read a platform source file',
-          input_schema: {
-            type: 'object',
-            properties: {
-              path: { type: 'string', description: 'File path relative to project root' },
-            },
-            required: ['path'],
+    let conversationMessages: any[] = [{
+      role: 'user',
+      content: `Fix this platform issue: ${issue}\n\nAvailable files:\n${Object.entries(fileContents).slice(0, 3).map(([path, content]) => `\n=== ${path} ===\n${content.slice(0, 1000)}`).join('\n')}`,
+    }];
+
+    const tools = [
+      {
+        name: 'readPlatformFile',
+        description: 'Read a platform source file',
+        input_schema: {
+          type: 'object',
+          properties: {
+            path: { type: 'string', description: 'File path relative to project root' },
           },
+          required: ['path'],
         },
-        {
-          name: 'writePlatformFile',
-          description: 'Write content to a platform file',
-          input_schema: {
-            type: 'object',
-            properties: {
-              path: { type: 'string', description: 'File path relative to project root' },
-              content: { type: 'string', description: 'New file content' },
-            },
-            required: ['path', 'content'],
+      },
+      {
+        name: 'writePlatformFile',
+        description: 'Write content to a platform file',
+        input_schema: {
+          type: 'object',
+          properties: {
+            path: { type: 'string', description: 'File path relative to project root' },
+            content: { type: 'string', description: 'New file content' },
           },
+          required: ['path', 'content'],
         },
-        {
-          name: 'listPlatformFiles',
-          description: 'List files in a directory',
-          input_schema: {
-            type: 'object',
-            properties: {
-              directory: { type: 'string', description: 'Directory path' },
-            },
-            required: ['directory'],
+      },
+      {
+        name: 'listPlatformFiles',
+        description: 'List files in a directory',
+        input_schema: {
+          type: 'object',
+          properties: {
+            directory: { type: 'string', description: 'Directory path' },
           },
+          required: ['directory'],
         },
-      ],
-    });
+      },
+    ];
 
     const changes: Array<{ path: string; operation: string }> = [];
     let fixDescription = '';
+    let continueLoop = true;
+    let iterationCount = 0;
+    const MAX_ITERATIONS = 5;
 
-    for (const block of response.content) {
-      if (block.type === 'text') {
-        fixDescription += block.text;
-      } else if (block.type === 'tool_use') {
-        const { name, input } = block;
+    while (continueLoop && iterationCount < MAX_ITERATIONS) {
+      iterationCount++;
 
-        if (name === 'writePlatformFile') {
-          const typedInput = input as { path: string; content: string };
-          await platformHealing.writePlatformFile(typedInput.path, typedInput.content);
-          changes.push({ path: typedInput.path, operation: 'modify' });
+      const response = await client.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 8000,
+        system: systemPrompt,
+        messages: conversationMessages,
+        tools,
+      });
+
+      conversationMessages.push({
+        role: 'assistant',
+        content: response.content,
+      });
+
+      const toolResults: any[] = [];
+
+      for (const block of response.content) {
+        if (block.type === 'text') {
+          fixDescription += block.text;
+        } else if (block.type === 'tool_use') {
+          const { name, input, id } = block;
+
+          try {
+            let toolResult: any = null;
+
+            if (name === 'readPlatformFile') {
+              const typedInput = input as { path: string };
+              toolResult = await platformHealing.readPlatformFile(typedInput.path);
+            } else if (name === 'writePlatformFile') {
+              const typedInput = input as { path: string; content: string };
+              await platformHealing.writePlatformFile(typedInput.path, typedInput.content);
+              changes.push({ path: typedInput.path, operation: 'modify' });
+              toolResult = 'File written successfully';
+            } else if (name === 'listPlatformFiles') {
+              const typedInput = input as { directory: string };
+              const files = await platformHealing.listPlatformFiles(typedInput.directory);
+              toolResult = files.join('\n');
+            }
+
+            toolResults.push({
+              type: 'tool_result',
+              tool_use_id: id,
+              content: toolResult || 'Success',
+            });
+          } catch (error: any) {
+            toolResults.push({
+              type: 'tool_result',
+              tool_use_id: id,
+              is_error: true,
+              content: error.message,
+            });
+          }
         }
+      }
+
+      if (toolResults.length > 0) {
+        conversationMessages.push({
+          role: 'user',
+          content: toolResults,
+        });
+      } else {
+        continueLoop = false;
       }
     }
 

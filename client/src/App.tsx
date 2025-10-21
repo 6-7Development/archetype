@@ -25,6 +25,7 @@ import APIKeys from "@/pages/api-keys";
 import Support from "@/pages/support";
 import Admin from "@/pages/admin";
 import Publishing from "@/pages/publishing";
+import PlatformHealing from "@/pages/platform-healing";
 import NotFound from "@/pages/not-found";
 import Error403 from "@/pages/error-403";
 import Error500 from "@/pages/error-500";
@@ -101,6 +102,11 @@ function Router() {
       <Route path="/admin">
         <AppLayout>
           <Admin />
+        </AppLayout>
+      </Route>
+      <Route path="/platform-healing">
+        <AppLayout>
+          <PlatformHealing />
         </AppLayout>
       </Route>
       <Route path="/publishing">
