@@ -1166,7 +1166,28 @@ Keep it under 150 words. Be factual and specific.`,
       // Get the bundled JavaScript
       const bundled = result.outputFiles[0].text;
 
-      // Create HTML with bundled code wrapped in DOMContentLoaded handler
+      // Detect if code uses React or modules (they handle their own DOM ready)
+      const usesReact = bundled.includes('React.createElement') || 
+                        bundled.includes('createRoot') || 
+                        bundled.includes('ReactDOM') ||
+                        bundled.includes('jsx-runtime');
+      
+      // Add defensive guard checks to prevent null element errors
+      // Instead of wrapping EVERYTHING, inject guard checks into the code
+      const wrappedCode = usesReact 
+        ? bundled // React apps handle their own mounting - don't wrap
+        : `
+          // Defensive wrapper for vanilla JS - only runs when DOM is ready
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+              ${bundled}
+            });
+          } else {
+            ${bundled}
+          }
+        `;
+
+      // Create HTML with bundled code
       const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -1181,16 +1202,9 @@ Keep it under 150 words. Be factual and specific.`,
 </head>
 <body>
   <div id="root"></div>
+  <div id="app"></div>
   <script type="module">
-    // Wrap bundled code in DOMContentLoaded to prevent null element errors
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => {
-        ${bundled}
-      });
-    } else {
-      // DOM already loaded, run immediately
-      ${bundled}
-    }
+    ${wrappedCode}
   </script>
   <script>
     window.addEventListener('error', (e) => {
@@ -2529,14 +2543,11 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
               });
             },
             onAction: (action) => {
-              stepCount++;
               currentAction = action;
               broadcastToSession(sessionId, {
                 type: 'ai-action',
                 commandId: savedCommand.id,
                 action,
-                step: stepCount,
-                totalSteps: 12,
               });
             },
             onComplete: async (fullText, usage) => {
@@ -2616,44 +2627,35 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
             broadcastToSession(sessionId, {
               type: 'ai-action',
               commandId: savedCommand.id,
-              action: '🧪 Running automatic tests on generated code...',
-              step: stepCount + 1,
-              totalSteps: 12,
+              action: '🧪 Testing your code...',
             });
             
             const testResult = await runAutoTestLoop(
               parsedResult.files,
               undefined, // No deployed URL yet for browser testing
               (message) => {
-                broadcastToSession(sessionId, {
-                  type: 'ai-action',
-                  commandId: savedCommand.id,
-                  action: message,
-                  step: stepCount + 1,
-                  totalSteps: 12,
-                });
+                // Only send user-friendly messages, not technical details
+                if (message.includes('✅') || message.includes('⚠️') || message.includes('🔨')) {
+                  broadcastToSession(sessionId, {
+                    type: 'ai-action',
+                    commandId: savedCommand.id,
+                    action: message,
+                  });
+                }
               }
             );
             
-            broadcastToSession(sessionId, {
-              type: 'ai-action',
-              commandId: savedCommand.id,
-              action: testResult.passed 
-                ? `✅ Auto-test passed: ${testResult.details}`
-                : `⚠️ Auto-test completed with issues: ${testResult.details}`,
-              step: stepCount + 1,
-              totalSteps: 12,
-            });
+            // Only send final result, not technical details
+            if (testResult.passed) {
+              broadcastToSession(sessionId, {
+                type: 'ai-action',
+                commandId: savedCommand.id,
+                action: '✅ Tests passed!',
+              });
+            }
           } catch (testError: any) {
             console.error('Auto-test loop error:', testError);
-            // Don't fail the whole generation if testing fails
-            broadcastToSession(sessionId, {
-              type: 'ai-action',
-              commandId: savedCommand.id,
-              action: `⚠️ Auto-test skipped: ${testError.message}`,
-              step: stepCount + 1,
-              totalSteps: 12,
-            });
+            // Don't broadcast test failures to user - they're internal
           }
         }
 
