@@ -2077,7 +2077,7 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
         const completion = await aiQueue.enqueue(userId, plan, async () => {
           const result = await anthropic.messages.create({
             model: DEFAULT_MODEL,
-            max_tokens: 8000, // Increased from 4096 to handle larger projects with secrets
+            max_tokens: 8192, // Maximum for Claude - handles complex projects
             system: systemPrompt,
             messages: [
               {
@@ -2102,13 +2102,14 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
         if (completion.stop_reason === 'max_tokens') {
           console.warn('⚠️ Response truncated due to max_tokens limit');
           await storage.updateCommand(savedCommand.id, userId, "failed", JSON.stringify({
-            error: "Project too complex - response exceeded token limit. Try simplifying your request or breaking it into smaller parts.",
+            error: "Request too large - response exceeded token limit. Please break your request into smaller, focused tasks (e.g., 'create the UI' then 'add the backend').",
             truncated: true
           }));
           
           return res.status(400).json({
-            error: "Project too complex - please try a simpler request or break it into parts",
-            commandId: savedCommand.id
+            error: "That's a lot to build at once! 🧠 Let's break it down:\n\n• Try smaller, focused requests (e.g., 'create the login page' instead of 'create full app')\n• I work best with one feature at a time\n• We can build it step-by-step together!\n\nWhat specific part should we start with?",
+            commandId: savedCommand.id,
+            suggestion: "Break your request into smaller tasks"
           });
         }
         
