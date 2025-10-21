@@ -2,6 +2,7 @@ export { executeBrowserTest } from './browser-test';
 export { executeWebSearch, searchDocumentation, searchCodeExamples } from './web-search';
 export { executeVisionAnalysis, analyzeUIScreenshot, compareDesignToImplementation } from './vision-analyze';
 export { consultArchitect } from './architect-consult';
+export { executePlatformRead, executePlatformWrite, executePlatformList } from './platform-tools';
 
 /**
  * Tool definitions for Claude
@@ -148,6 +149,52 @@ export const SYSOP_TOOLS = [
         },
       },
       required: ['problem', 'context', 'previousAttempts'],
+    },
+  },
+  {
+    name: 'read_platform_file',
+    description: 'Read Archetype platform source code files. Use this when the user asks to fix/modify the platform itself (not their project). Example: "Fix the dashboard layout" or "The preview is broken".',
+    input_schema: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'File path relative to platform root (e.g., "client/src/pages/dashboard.tsx", "server/routes.ts")',
+        },
+      },
+      required: ['path'],
+    },
+  },
+  {
+    name: 'write_platform_file',
+    description: 'Modify Archetype platform source code. Use when user requests platform changes. ALWAYS create a backup first. Example: "Update the header design" or "Fix the login bug".',
+    input_schema: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'File path relative to platform root',
+        },
+        content: {
+          type: 'string',
+          description: 'Complete new file content',
+        },
+      },
+      required: ['path', 'content'],
+    },
+  },
+  {
+    name: 'list_platform_files',
+    description: 'List Archetype platform source files in a directory. Use when exploring platform code structure.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        directory: {
+          type: 'string',
+          description: 'Directory path (e.g., "client/src/pages", "server")',
+        },
+      },
+      required: ['directory'],
     },
   },
 ] as const;

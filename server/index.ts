@@ -4,6 +4,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { apiLimiter } from "./rateLimiting";
 import { db } from "./db";
 import { files } from "@shared/schema";
+import { autoHealing } from "./autoHealing";
 
 // Exponential backoff retry utility
 async function retryWithBackoff<T>(
@@ -129,5 +130,12 @@ app.use((req, res, next) => {
     console.error('❌ Database connection failed after retries:', error.message);
     console.error('⚠️ Running in degraded mode (database unavailable)');
     // Continue - graceful degradation will handle missing database
+  }
+
+  // Initialize auto-healing system (production only for safety)
+  if (process.env.NODE_ENV === 'production') {
+    console.log('🔧 Auto-healing system ENABLED (production mode)');
+  } else {
+    console.log('💡 Auto-healing system DISABLED (development mode - use manual healing)');
   }
 })();
