@@ -26,7 +26,8 @@ import {
   LogOut,
   User,
   LayoutDashboard,
-  Sparkles
+  Sparkles,
+  ArrowLeft
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -146,10 +147,11 @@ export default function Workspace() {
       {/* Top Navigation Bar (Replit-style with Navigation) */}
       <header className="h-12 border-b flex items-center justify-between px-4 bg-card" data-testid="header-workspace">
         <div className="flex items-center gap-3">
-          {/* Archetype Logo - Links to home */}
-          <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-            <Link href="/">
-              <Sparkles className="h-4 w-4 text-primary" />
+          {/* Back to Dashboard */}
+          <Button variant="ghost" size="sm" className="h-8 gap-2" asChild data-testid="button-back-dashboard">
+            <Link href="/dashboard">
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs">Dashboard</span>
             </Link>
           </Button>
           
@@ -163,12 +165,6 @@ export default function Workspace() {
           >
             {showFileTree ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
           </Button>
-          
-          {/* Project Name */}
-          <div className="flex items-center gap-2">
-            <Code2 className="h-4 w-4 text-primary" data-testid="icon-logo" />
-            <h1 className="font-semibold text-sm" data-testid="text-app-name">Archetype IDE</h1>
-          </div>
           
           {/* Active File */}
           {activeFile && (
