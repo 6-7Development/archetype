@@ -1,7 +1,8 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, integer, decimal, jsonb, index, bigint } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, integer, decimal, jsonb, index, bigint, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+export { satisfactionSurveys, insertSatisfactionSurveySchema, type InsertSatisfactionSurvey, type SatisfactionSurvey } from "../shared/satisfactionSchema";
 
 // Session storage table for OAuth authentication
 // (IMPORTANT) This table is mandatory for authentication, don't drop it.
