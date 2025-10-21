@@ -990,6 +990,215 @@ Keep it under 150 words. Be factual and specific.`,
     }
   });
 
+  // Live Preview endpoint - Compiles and serves project in iframe
+  app.get("/api/preview/:projectId", async (req: any, res) => {
+    try {
+      const { projectId } = req.params;
+      
+      // Get all project files (no auth required for preview - anyone can view shared projects)
+      const files = await storage.getProjectFiles(projectId);
+      
+      if (!files || files.length === 0) {
+        return res.status(404).send(`
+          <!DOCTYPE html>
+          <html>
+            <head><title>No Files</title></head>
+            <body style="font-family: system-ui; padding: 2rem; text-align: center;">
+              <h2>No files found in this project</h2>
+              <p>Create some files to see a preview</p>
+            </body>
+          </html>
+        `);
+      }
+
+      // Build file system map for esbuild
+      const fileSystem: Record<string, string> = {};
+      let entryPoint = 'index.tsx'; // Default entry
+      
+      for (const file of files) {
+        const filePath = file.path ? `${file.path}/${file.filename}` : file.filename;
+        fileSystem[filePath] = file.content;
+        
+        // Detect entry point (index.tsx, index.jsx, index.ts, index.js, or App.tsx)
+        if (
+          file.filename === 'index.tsx' ||
+          file.filename === 'index.jsx' ||
+          file.filename === 'index.ts' ||
+          file.filename === 'index.js' ||
+          file.filename === 'App.tsx' ||
+          file.filename === 'main.tsx' ||
+          file.filename === 'main.jsx'
+        ) {
+          entryPoint = filePath;
+        }
+      }
+
+      // Check if entry point exists
+      if (!fileSystem[entryPoint]) {
+        // Fallback: find first .tsx, .jsx, .ts, or .js file
+        const firstCodeFile = files.find(f => 
+          f.filename.endsWith('.tsx') || 
+          f.filename.endsWith('.jsx') || 
+          f.filename.endsWith('.ts') || 
+          f.filename.endsWith('.js')
+        );
+        
+        if (firstCodeFile) {
+          entryPoint = firstCodeFile.path 
+            ? `${firstCodeFile.path}/${firstCodeFile.filename}` 
+            : firstCodeFile.filename;
+        } else {
+          // No code files - serve HTML only
+          const htmlFile = files.find(f => 
+            f.language === 'html' || f.filename.endsWith('.html')
+          );
+          
+          if (htmlFile) {
+            return res.send(htmlFile.content);
+          }
+          
+          return res.status(400).send(`
+            <!DOCTYPE html>
+            <html>
+              <head><title>No Entry Point</title></head>
+              <body style="font-family: system-ui; padding: 2rem; text-align: center;">
+                <h2>No entry point found</h2>
+                <p>Create an index.tsx, index.jsx, App.tsx, or index.html file</p>
+              </body>
+            </html>
+          `);
+        }
+      }
+
+      // Use esbuild to bundle in-memory
+      const build = await import('esbuild');
+      
+      const result = await build.build({
+        stdin: {
+          contents: fileSystem[entryPoint],
+          resolveDir: '.',
+          sourcefile: entryPoint,
+          loader: entryPoint.endsWith('.tsx') || entryPoint.endsWith('.jsx') ? 'tsx' : 'ts',
+        },
+        bundle: true,
+        write: false,
+        format: 'iife',
+        platform: 'browser',
+        target: ['es2020'],
+        jsx: 'automatic',
+        jsxDev: false,
+        plugins: [
+          {
+            name: 'virtual-fs',
+            setup(build) {
+              // Resolve imports from our virtual file system
+              build.onResolve({ filter: /.*/ }, (args) => {
+                if (args.path.startsWith('.') || args.path.startsWith('/')) {
+                  // Relative import
+                  let resolvedPath = args.path;
+                  
+                  // Handle extensions
+                  const extensions = ['.tsx', '.ts', '.jsx', '.js', ''];
+                  for (const ext of extensions) {
+                    const testPath = resolvedPath + ext;
+                    if (fileSystem[testPath]) {
+                      return { path: testPath, namespace: 'virtual-fs' };
+                    }
+                  }
+                  
+                  // Try with /index
+                  for (const ext of ['.tsx', '.ts', '.jsx', '.js']) {
+                    const testPath = `${resolvedPath}/index${ext}`;
+                    if (fileSystem[testPath]) {
+                      return { path: testPath, namespace: 'virtual-fs' };
+                    }
+                  }
+                }
+                
+                // External package - use CDN
+                return { path: args.path, external: true };
+              });
+              
+              build.onLoad({ filter: /.*/, namespace: 'virtual-fs' }, (args) => {
+                const contents = fileSystem[args.path];
+                if (!contents) {
+                  return { errors: [{ text: `File not found: ${args.path}` }] };
+                }
+                
+                const loader = args.path.endsWith('.tsx') || args.path.endsWith('.jsx') 
+                  ? 'tsx' 
+                  : args.path.endsWith('.ts') 
+                  ? 'ts' 
+                  : args.path.endsWith('.css')
+                  ? 'css'
+                  : 'js';
+                
+                return { contents, loader };
+              });
+            },
+          },
+        ],
+      });
+
+      if (result.errors.length > 0) {
+        console.error('Build errors:', result.errors);
+        return res.status(500).send(`
+          <!DOCTYPE html>
+          <html>
+            <head><title>Build Error</title></head>
+            <body style="font-family: monospace; padding: 2rem; background: #1e1e1e; color: #ff6b6b;">
+              <h2>Build Error</h2>
+              <pre>${result.errors.map(e => e.text).join('\n')}</pre>
+            </body>
+          </html>
+        `);
+      }
+
+      // Get the bundled JavaScript
+      const bundled = result.outputFiles[0].text;
+
+      // Create HTML with bundled code
+      const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, sans-serif; }
+  </style>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module">
+    ${bundled}
+  </script>
+</body>
+</html>
+      `;
+
+      res.setHeader('Content-Type', 'text/html');
+      res.send(html);
+    } catch (error: any) {
+      console.error('Preview compilation error:', error);
+      res.status(500).send(`
+        <!DOCTYPE html>
+        <html>
+          <head><title>Compilation Error</title></head>
+          <body style="font-family: monospace; padding: 2rem; background: #1e1e1e; color: #ff6b6b;">
+            <h2>Compilation Error</h2>
+            <pre>${error.message}</pre>
+            <pre>${error.stack}</pre>
+          </body>
+        </html>
+      `);
+    }
+  });
+
   // Project version endpoints
   app.get("/api/projects/:projectId/versions", isAuthenticated, async (req: any, res) => {
     try {

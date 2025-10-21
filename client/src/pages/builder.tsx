@@ -217,19 +217,7 @@ export default function Builder() {
 
             {/* Preview Tab */}
             <TabsContent value="preview" className="h-full m-0" data-testid="content-preview">
-              {files.length > 0 ? (
-                <LivePreview files={files} />
-              ) : (
-                <div className="h-full flex items-center justify-center p-6">
-                  <div className="text-center max-w-md">
-                    <Eye className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                    <h2 className="text-xl font-semibold mb-2">No Project Selected</h2>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Select a project from the dropdown above or create a new one in the AI Build tab.
-                    </p>
-                  </div>
-                </div>
-              )}
+              <LivePreview projectId={currentProjectId} fileCount={files.length} />
             </TabsContent>
 
             {/* Files Tab */}
