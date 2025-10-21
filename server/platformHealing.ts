@@ -1,0 +1,279 @@
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import fs from 'fs/promises';
+import path from 'path';
+
+const execAsync = promisify(exec);
+
+interface PlatformBackup {
+  id: string;
+  timestamp: string;
+  commitHash: string;
+  branch: string;
+  description: string;
+}
+
+interface FileChange {
+  path: string;
+  operation: 'create' | 'modify' | 'delete';
+  contentBefore?: string;
+  contentAfter?: string;
+}
+
+export class PlatformHealingService {
+  private readonly PROJECT_ROOT = '/home/runner/workspace';
+  private readonly BACKUP_BRANCH_PREFIX = 'backup/meta-sysop-';
+
+  async createBackup(description: string): Promise<PlatformBackup> {
+    try {
+      const timestamp = new Date().toISOString();
+      const backupId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const branchName = `${this.BACKUP_BRANCH_PREFIX}${backupId}`;
+
+      await execAsync('git add -A', { cwd: this.PROJECT_ROOT });
+      
+      const { stdout: commitHash } = await execAsync('git rev-parse HEAD', { cwd: this.PROJECT_ROOT });
+      
+      await execAsync(`git branch ${branchName}`, { cwd: this.PROJECT_ROOT });
+
+      console.log(`[PLATFORM-BACKUP] Created backup: ${backupId} at commit ${commitHash.trim()}`);
+
+      return {
+        id: backupId,
+        timestamp,
+        commitHash: commitHash.trim(),
+        branch: branchName,
+        description,
+      };
+    } catch (error: any) {
+      console.error('[PLATFORM-BACKUP] Backup creation failed:', error);
+      throw new Error(`Backup creation failed: ${error.message}`);
+    }
+  }
+
+  async rollback(backupId: string): Promise<void> {
+    try {
+      const branchName = `${this.BACKUP_BRANCH_PREFIX}${backupId}`;
+
+      const { stdout: branches } = await execAsync('git branch --list', { cwd: this.PROJECT_ROOT });
+      if (!branches.includes(branchName)) {
+        throw new Error(`Backup branch ${branchName} not found`);
+      }
+
+      await execAsync('git stash', { cwd: this.PROJECT_ROOT });
+      
+      await execAsync(`git reset --hard ${branchName}`, { cwd: this.PROJECT_ROOT });
+
+      console.log(`[PLATFORM-ROLLBACK] Rolled back to backup: ${backupId}`);
+    } catch (error: any) {
+      console.error('[PLATFORM-ROLLBACK] Rollback failed:', error);
+      throw new Error(`Rollback failed: ${error.message}`);
+    }
+  }
+
+  async listBackups(): Promise<PlatformBackup[]> {
+    try {
+      const { stdout } = await execAsync('git branch --list', { cwd: this.PROJECT_ROOT });
+      const backupBranches = stdout
+        .split('\n')
+        .map(b => b.trim())
+        .filter(b => b.startsWith(this.BACKUP_BRANCH_PREFIX));
+
+      const backups: PlatformBackup[] = [];
+      for (const branch of backupBranches) {
+        const backupId = branch.replace(this.BACKUP_BRANCH_PREFIX, '');
+        const { stdout: commitHash } = await execAsync(
+          `git rev-parse ${branch}`,
+          { cwd: this.PROJECT_ROOT }
+        );
+        const { stdout: commitMsg } = await execAsync(
+          `git log -1 --pretty=%B ${branch}`,
+          { cwd: this.PROJECT_ROOT }
+        );
+
+        backups.push({
+          id: backupId,
+          timestamp: new Date().toISOString(),
+          commitHash: commitHash.trim(),
+          branch,
+          description: commitMsg.trim(),
+        });
+      }
+
+      return backups;
+    } catch (error: any) {
+      console.error('[PLATFORM-BACKUP] List backups failed:', error);
+      return [];
+    }
+  }
+
+  async readPlatformFile(filePath: string): Promise<string> {
+    try {
+      const fullPath = path.join(this.PROJECT_ROOT, filePath);
+      
+      if (!fullPath.startsWith(this.PROJECT_ROOT)) {
+        throw new Error('Invalid file path - path traversal detected');
+      }
+
+      const content = await fs.readFile(fullPath, 'utf-8');
+      return content;
+    } catch (error: any) {
+      throw new Error(`Failed to read platform file ${filePath}: ${error.message}`);
+    }
+  }
+
+  async writePlatformFile(filePath: string, content: string): Promise<void> {
+    try {
+      const fullPath = path.join(this.PROJECT_ROOT, filePath);
+      
+      if (!fullPath.startsWith(this.PROJECT_ROOT)) {
+        throw new Error('Invalid file path - path traversal detected');
+      }
+
+      const dangerousPatterns = [
+        /\.git\//,
+        /node_modules\//,
+        /\.env$/,
+        /package\.json$/,
+        /package-lock\.json$/,
+      ];
+
+      if (dangerousPatterns.some(pattern => pattern.test(filePath))) {
+        throw new Error(`Modifying ${filePath} is not allowed for safety reasons`);
+      }
+
+      const dir = path.dirname(fullPath);
+      await fs.mkdir(dir, { recursive: true });
+
+      await fs.writeFile(fullPath, content, 'utf-8');
+
+      console.log(`[PLATFORM-HEAL] Wrote platform file: ${filePath}`);
+    } catch (error: any) {
+      throw new Error(`Failed to write platform file ${filePath}: ${error.message}`);
+    }
+  }
+
+  async deletePlatformFile(filePath: string): Promise<void> {
+    try {
+      const fullPath = path.join(this.PROJECT_ROOT, filePath);
+      
+      if (!fullPath.startsWith(this.PROJECT_ROOT)) {
+        throw new Error('Invalid file path - path traversal detected');
+      }
+
+      await fs.unlink(fullPath);
+
+      console.log(`[PLATFORM-HEAL] Deleted platform file: ${filePath}`);
+    } catch (error: any) {
+      throw new Error(`Failed to delete platform file ${filePath}: ${error.message}`);
+    }
+  }
+
+  async listPlatformFiles(directory: string = '.'): Promise<string[]> {
+    try {
+      const fullPath = path.join(this.PROJECT_ROOT, directory);
+      
+      if (!fullPath.startsWith(this.PROJECT_ROOT)) {
+        throw new Error('Invalid directory path - path traversal detected');
+      }
+
+      const entries = await fs.readdir(fullPath, { withFileTypes: true });
+      
+      const files: string[] = [];
+      for (const entry of entries) {
+        const relativePath = path.join(directory, entry.name);
+        
+        if (entry.name.startsWith('.') || entry.name === 'node_modules') {
+          continue;
+        }
+
+        if (entry.isDirectory()) {
+          const subFiles = await this.listPlatformFiles(relativePath);
+          files.push(...subFiles);
+        } else {
+          files.push(relativePath);
+        }
+      }
+
+      return files;
+    } catch (error: any) {
+      throw new Error(`Failed to list platform files: ${error.message}`);
+    }
+  }
+
+  async commitChanges(message: string, changes: FileChange[]): Promise<string> {
+    try {
+      await execAsync('git add -A', { cwd: this.PROJECT_ROOT });
+
+      const commitMessage = `[Meta-SySop] ${message}\n\nChanges:\n${changes.map(c => `- ${c.operation} ${c.path}`).join('\n')}`;
+
+      const { stdout } = await execAsync(
+        `git commit -m "${commitMessage.replace(/"/g, '\\"')}"`,
+        { cwd: this.PROJECT_ROOT }
+      );
+
+      const { stdout: commitHash } = await execAsync('git rev-parse HEAD', { cwd: this.PROJECT_ROOT });
+
+      console.log(`[PLATFORM-HEAL] Auto-committed changes: ${commitHash.trim()}`);
+
+      return commitHash.trim();
+    } catch (error: any) {
+      if (error.message.includes('nothing to commit')) {
+        console.log('[PLATFORM-HEAL] No changes to commit');
+        return '';
+      }
+      throw new Error(`Failed to commit changes: ${error.message}`);
+    }
+  }
+
+  async pushToRemote(): Promise<void> {
+    try {
+      await execAsync('git push origin main', { cwd: this.PROJECT_ROOT });
+      console.log('[PLATFORM-HEAL] Pushed changes to remote (will trigger Render deployment)');
+    } catch (error: any) {
+      throw new Error(`Failed to push to remote: ${error.message}`);
+    }
+  }
+
+  async getDiff(): Promise<string> {
+    try {
+      const { stdout } = await execAsync('git diff', { cwd: this.PROJECT_ROOT });
+      return stdout;
+    } catch (error: any) {
+      return '';
+    }
+  }
+
+  async validateSafety(): Promise<{ safe: boolean; issues: string[] }> {
+    const issues: string[] = [];
+
+    try {
+      const diff = await this.getDiff();
+
+      if (diff.includes('DATABASE_URL') || diff.includes('ANTHROPIC_API_KEY')) {
+        issues.push('Changes appear to expose secrets');
+      }
+
+      if (diff.includes('DROP TABLE') || diff.includes('DELETE FROM')) {
+        issues.push('Changes contain destructive database operations');
+      }
+
+      const { stdout: status } = await execAsync('git status --porcelain', { cwd: this.PROJECT_ROOT });
+      const modifiedFiles = status.split('\n').filter(l => l.trim());
+      
+      if (modifiedFiles.some(f => f.includes('.git/'))) {
+        issues.push('Changes attempt to modify .git directory');
+      }
+
+      return {
+        safe: issues.length === 0,
+        issues,
+      };
+    } catch (error: any) {
+      issues.push(`Safety validation failed: ${error.message}`);
+      return { safe: false, issues };
+    }
+  }
+}
+
+export const platformHealing = new PlatformHealingService();
