@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Send, Loader2, Sparkles, User, Key, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -56,13 +56,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   const { user } = useAuth(); // Get current user to check if admin
   const isAdmin = user?.role === 'admin';
   
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: "Hi there! I'm SySop - your personal AI coding teacher and builder.\n\n**I specialize in teaching!** I'll explain everything step-by-step in plain English. No confusing technical jargon - I promise.\n\n**Here's my process:**\n\n**Step 1: Listen carefully** - Tell me what you want to build, even if you don't know the technical terms\n\n**Step 2: Plan it out** - I'll organize everything systematically (like sorting building blocks before construction)\n\n**Step 3: Build it** - I write all the code while explaining what each piece does\n\n**Step 4: Test it** - I verify everything works perfectly (comprehensive quality checks)\n\n**Step 5: Fix any issues** - If something's not right, I'll fix it and explain what I did\n\n**What can I build for you?**\n\n• **Websites** - Online stores, blogs, portfolios (complete full-stack applications)\n• **Games** - 2D or 3D games that run in your browser\n• **Apps** - Todo lists, calculators, dashboards, anything you imagine\n• **Business tools** - Systems to streamline your business operations\n\n**Security Notice**: I'll never create fake credentials or security keys. If you need real ones, I'll guide you through obtaining them safely from the proper sources.\n\n**Real-time visibility**: You can watch me work - I'll show you each step as I progress!\n\nWhat would you like to build today? Don't worry if you're unsure how to explain it - just describe your idea and I'll help you bring it to life!",
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [secretsRequest, setSecretsRequest] = useState<SecretsRequest | null>(null);
   const [secretsInput, setSecretsInput] = useState<Record<string, string>>({});
@@ -70,7 +64,17 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   const [currentProgress, setCurrentProgress] = useState<ProgressStep[]>([]);
   const [currentMetrics, setCurrentMetrics] = useState<ProgressMetrics>({});
   const [isGenerating, setIsGenerating] = useState(false);
-  const [sessionId] = useState(() => nanoid());
+  
+  // Fix sessionId persistence - scoped to project, survives remount
+  const [sessionId] = useState(() => {
+    const storageKey = `chat-session-${currentProjectId || 'default'}`;
+    const existing = localStorage.getItem(storageKey);
+    if (existing) return existing;
+    
+    const newSessionId = nanoid();
+    localStorage.setItem(storageKey, newSessionId);
+    return newSessionId;
+  });
   const [showCostPreview, setShowCostPreview] = useState(false);
   const [showComplexityError, setShowComplexityError] = useState(false);
   const [complexityErrorMessage, setComplexityErrorMessage] = useState("");
@@ -86,6 +90,46 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  
+  // Default greeting message
+  const DEFAULT_GREETING: Message = {
+    role: "assistant",
+    content: "Hi there! I'm SySop - your personal AI coding teacher and builder.\n\n**I specialize in teaching!** I'll explain everything step-by-step in plain English. No confusing technical jargon - I promise.\n\n**Here's my process:**\n\n**Step 1: Listen carefully** - Tell me what you want to build, even if you don't know the technical terms\n\n**Step 2: Plan it out** - I'll organize everything systematically (like sorting building blocks before construction)\n\n**Step 3: Build it** - I write all the code while explaining what each piece does\n\n**Step 4: Test it** - I verify everything works perfectly (comprehensive quality checks)\n\n**Step 5: Fix any issues** - If something's not right, I'll fix it and explain what I did\n\n**What can I build for you?**\n\n• **Websites** - Online stores, blogs, portfolios (complete full-stack applications)\n• **Games** - 2D or 3D games that run in your browser\n• **Apps** - Todo lists, calculators, dashboards, anything you imagine\n• **Business tools** - Systems to streamline your business operations\n\n**Security Notice**: I'll never create fake credentials or security keys. If you need real ones, I'll guide you through obtaining them safely from the proper sources.\n\n**Real-time visibility**: You can watch me work - I'll show you each step as I progress!\n\nWhat would you like to build today? Don't worry if you're unsure how to explain it - just describe your idea and I'll help you bring it to life!",
+    timestamp: new Date(),
+  };
+
+  // Load chat history on mount
+  const { data: chatHistory, isLoading: isLoadingHistory } = useQuery<{ messages: Message[] }>({
+    queryKey: ['/api/chat/history', currentProjectId],
+    enabled: !!currentProjectId,
+  });
+
+  // Hydrate messages from API response or show default greeting
+  useEffect(() => {
+    if (chatHistory?.messages && chatHistory.messages.length > 0) {
+      setMessages(chatHistory.messages.map(msg => ({
+        ...msg,
+        timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
+      })));
+    } else if (!isLoadingHistory && currentProjectId) {
+      // No history found, show default greeting
+      setMessages([DEFAULT_GREETING]);
+    } else if (!currentProjectId) {
+      // No project selected, show greeting
+      setMessages([DEFAULT_GREETING]);
+    }
+  }, [chatHistory, isLoadingHistory, currentProjectId]);
+
+  // Mutation to save messages to database
+  const saveMessageMutation = useMutation<void, Error, { projectId: string; role: string; content: string }>({
+    mutationFn: async (data) => {
+      await apiRequest("POST", "/api/chat/messages", data);
+    },
+    onSuccess: () => {
+      // Invalidate chat history to keep it in sync
+      queryClient.invalidateQueries({ queryKey: ['/api/chat/history', currentProjectId] });
+    },
+  });
 
   // Check for quickstart prompt from onboarding
   useEffect(() => {
@@ -96,8 +140,8 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     }
   }, []);
 
-  // WebSocket streaming for AI chat (use anonymous if not logged in)
-  const streamState = useWebSocketStream(sessionId, "demo-user");
+  // WebSocket streaming for AI chat - use actual user ID
+  const streamState = useWebSocketStream(sessionId, user?.id || 'anonymous');
   
   // Update metrics from WebSocket usage data
   useEffect(() => {
@@ -133,15 +177,23 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       return await apiRequest<{ response: string; shouldGenerate?: boolean; command?: string; checkpoint?: CheckpointData }>("POST", "/api/ai-chat-conversation", data);
     },
     onSuccess: (data) => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
+      const assistantMessage = {
+        role: "assistant" as const,
+        content: data.response,
+        timestamp: new Date(),
+        checkpoint: data.checkpoint, // Include checkpoint data for billing display
+      };
+      
+      setMessages((prev) => [...prev, assistantMessage]);
+      
+      // Persist assistant message to database
+      if (currentProjectId) {
+        saveMessageMutation.mutate({
+          projectId: currentProjectId,
+          role: 'assistant',
           content: data.response,
-          timestamp: new Date(),
-          checkpoint: data.checkpoint, // Include checkpoint data for billing display
-        },
-      ]);
+        });
+      }
       
       // If AI decides to generate code, show cost preview first
       if (data.shouldGenerate && data.command) {
@@ -229,7 +281,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     commandMutation.mutate(
       {
         command,
-        userId: "demo-user",
+        userId: user?.id || "anonymous",
         projectId: currentProjectId || null,
         secrets,
       },
@@ -347,6 +399,16 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       },
     ]);
     setInput("");
+    
+    // Persist user message to database
+    if (currentProjectId) {
+      saveMessageMutation.mutate({
+        projectId: currentProjectId,
+        role: 'user',
+        content: userMessage,
+      });
+    }
+    
     chatMutation.mutate({ 
       message: userMessage,
       projectId: currentProjectId ? parseInt(currentProjectId) : undefined
