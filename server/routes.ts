@@ -15,6 +15,7 @@ import { stripe, isStripeConfigured, getPriceIdForPlan, STRIPE_WEBHOOK_SECRET, g
 import { aiQueue } from './priority-queue';
 import toolsRouter from './routes/tools';
 import uploadRouter from './routes/upload';
+import platformRouter from './platformRoutes';
 import multer from "multer";
 import AdmZip from "adm-zip";
 import path from "path";
@@ -132,6 +133,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register upload router for project imports
   app.use('/api/projects', uploadRouter);
+
+  // Register platform healing router for Meta-SySop self-healing
+  app.use('/api/platform', platformRouter);
 
   // Stripe webhook endpoint (raw body parser applied in server/index.ts)
   app.post(

@@ -791,3 +791,25 @@ export const insertServiceProgressLogSchema = createInsertSchema(serviceProgress
 
 export type InsertServiceProgressLog = z.infer<typeof insertServiceProgressLogSchema>;
 export type ServiceProgressLog = typeof serviceProgressLogs.$inferSelect;
+
+// Platform Audit Log - Track all platform self-healing operations
+export const platformAuditLog = pgTable("platform_audit_log", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  action: text("action").notNull(), // 'heal', 'rollback', 'backup', 'restore'
+  description: text("description").notNull(),
+  changes: jsonb("changes"), // File changes made
+  backupId: varchar("backup_id"), // Reference to backup created/restored
+  commitHash: varchar("commit_hash"), // Git commit hash
+  status: text("status").notNull(), // 'success', 'failure', 'pending'
+  error: text("error"), // Error message if failed
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertPlatformAuditLogSchema = createInsertSchema(platformAuditLog).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertPlatformAuditLog = z.infer<typeof insertPlatformAuditLogSchema>;
+export type PlatformAuditLog = typeof platformAuditLog.$inferSelect;
