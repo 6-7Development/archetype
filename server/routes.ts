@@ -684,6 +684,53 @@ Keep it under 150 words. Be factual and specific.`,
     }
   });
 
+  // Upload chat image for Vision API
+  app.post("/api/chat/upload-image", isAuthenticated, upload.single('image'), async (req: any, res) => {
+    try {
+      const userId = req.authenticatedUserId;
+      const imageFile = req.file;
+
+      if (!imageFile) {
+        return res.status(400).json({ error: "No image file uploaded" });
+      }
+
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(imageFile.mimetype)) {
+        return res.status(400).json({ error: "Invalid file type. Only JPG, PNG, GIF, and WebP are allowed." });
+      }
+
+      // Validate file size (5MB max)
+      const maxSize = 5 * 1024 * 1024;
+      if (imageFile.size > maxSize) {
+        return res.status(400).json({ error: "File too large. Maximum size is 5MB." });
+      }
+
+      // Generate unique filename
+      const timestamp = Date.now();
+      const extension = imageFile.mimetype.split('/')[1];
+      const filename = `${userId}_${timestamp}.${extension}`;
+      const filepath = path.join('attached_assets', 'chat_images', filename);
+
+      // Write file to disk
+      const fs = await import('fs/promises');
+      await fs.writeFile(filepath, imageFile.buffer);
+
+      // Return relative URL path
+      const imageUrl = `/attached_assets/chat_images/${filename}`;
+      res.json({ 
+        success: true, 
+        imageUrl,
+        filename,
+        size: imageFile.size,
+        mimeType: imageFile.mimetype
+      });
+    } catch (error: any) {
+      console.error('Error uploading chat image:', error);
+      res.status(500).json({ error: "Failed to upload image" });
+    }
+  });
+
   // Project endpoints
   app.get("/api/projects", isAuthenticated, async (req: any, res) => {
     try {
@@ -2462,10 +2509,52 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
   app.post("/api/ai-chat-conversation", async (req: Request, res: Response) => {
     try {
       const userId = req.session?.claims?.sub || req.session?.user?.id || 'demo-user';
-      const { message, projectId } = req.body;
+      const { message, projectId, images } = req.body;
 
       if (!message || typeof message !== 'string' || !message.trim()) {
         return res.status(400).json({ error: "Message is required" });
+      }
+
+      // Process images if provided (Vision API support)
+      const imageBlocks: any[] = [];
+      if (images && Array.isArray(images) && images.length > 0) {
+        const fs = await import('fs/promises');
+        const path = await import('path');
+        
+        for (const imageUrl of images) {
+          try {
+            // Convert URL to file path (e.g., /attached_assets/chat_images/file.png -> attached_assets/chat_images/file.png)
+            const filepath = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
+            
+            // Read image file
+            const imageBuffer = await fs.readFile(filepath);
+            const base64Image = imageBuffer.toString('base64');
+            
+            // Determine mime type from file extension
+            const ext = path.extname(filepath).toLowerCase();
+            const mimeTypes: Record<string, string> = {
+              '.jpg': 'image/jpeg',
+              '.jpeg': 'image/jpeg',
+              '.png': 'image/png',
+              '.gif': 'image/gif',
+              '.webp': 'image/webp',
+            };
+            const mediaType = mimeTypes[ext] || 'image/jpeg';
+            
+            // Add image block for Anthropic Vision API
+            imageBlocks.push({
+              type: "image",
+              source: {
+                type: "base64",
+                media_type: mediaType,
+                data: base64Image,
+              },
+            });
+          } catch (error) {
+            console.error(`Error processing image ${imageUrl}:`, error);
+            // Continue with other images even if one fails
+          }
+        }
       }
 
       // Load project files if projectId provided
@@ -2555,7 +2644,9 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
 For build: {"shouldGenerate": true, "command": "brief description"}
 Always include: {"checkpoint": {"complexity": "simple|medium|complex", "cost": 0.20|0.40|0.80}}
 
-**YOU HAVE THE CODE** - Explore files yourself. Don't ask what user has - you can see it!`;
+**YOU HAVE THE CODE** - Explore files yourself. Don't ask what user has - you can see it!
+
+**VISION SUPPORT** - You can see images! When users send screenshots or images, analyze them carefully to understand visual issues, layout problems, or errors shown in the image. Describe what you see and provide intelligent debugging help.`;
 
         // Add project files context if available
         if (projectFiles.length > 0) {
@@ -2605,13 +2696,29 @@ ${content}
           });
         }
         
-        // Add current user message
-        messages.push({
-          role: "user",
-          content: message,
-        });
+        // Add current user message with images if present
+        if (imageBlocks.length > 0) {
+          // For Vision API: content must be array of blocks (text + images)
+          const contentBlocks: any[] = [
+            {
+              type: "text",
+              text: message,
+            },
+            ...imageBlocks,
+          ];
+          messages.push({
+            role: "user",
+            content: contentBlocks,
+          });
+        } else {
+          // Text-only message
+          messages.push({
+            role: "user",
+            content: message,
+          });
+        }
         
-        console.log(`💬 Sending ${messages.length} messages to Anthropic (history: ${chatHistory.length}, new: 1)`);
+        console.log(`💬 Sending ${messages.length} messages to Anthropic (history: ${chatHistory.length}, new: 1, images: ${imageBlocks.length})`);
 
         const result = await anthropic.messages.create({
           model: DEFAULT_MODEL,

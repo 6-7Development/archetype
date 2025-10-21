@@ -33,6 +33,7 @@ interface Message {
   progressSteps?: ProgressStep[];
   checkpoint?: CheckpointData; // Checkpoint billing data
   isSummary?: boolean; // Memory optimization: marks summarized old messages
+  images?: string[]; // Array of image URLs for Vision API support
 }
 
 interface RequiredSecret {
@@ -59,6 +60,8 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [pendingImages, setPendingImages] = useState<string[]>([]); // Image URLs to send with next message
+  const [zoomImage, setZoomImage] = useState<string | null>(null); // For image zoom modal
   const [secretsRequest, setSecretsRequest] = useState<SecretsRequest | null>(null);
   const [secretsInput, setSecretsInput] = useState<Record<string, string>>({});
   const [lastCommand, setLastCommand] = useState<string>("");
@@ -132,6 +135,35 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     },
   });
 
+  // Mutation to upload chat images
+  const uploadImageMutation = useMutation<{ imageUrl: string }, Error, File>({
+    mutationFn: async (file) => {
+      const formData = new FormData();
+      formData.append('image', file);
+      const response = await fetch('/api/chat/upload-image', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to upload image');
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Add uploaded image URL to pending images
+      setPendingImages((prev) => [...prev, data.imageUrl]);
+      toast({ description: "Image uploaded successfully!" });
+    },
+    onError: (error) => {
+      toast({ 
+        variant: "destructive",
+        description: error.message || "Failed to upload image" 
+      });
+    },
+  });
+
   // Check for quickstart prompt from onboarding
   useEffect(() => {
     const quickstartPrompt = localStorage.getItem('archetype_ai_prompt');
@@ -173,7 +205,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     },
   });
 
-  const chatMutation = useMutation<{ response: string; shouldGenerate?: boolean; command?: string; checkpoint?: CheckpointData }, Error, { message: string; projectId?: number }>({
+  const chatMutation = useMutation<{ response: string; shouldGenerate?: boolean; command?: string; checkpoint?: CheckpointData }, Error, { message: string; projectId?: number; images?: string[] }>({
     mutationFn: async (data) => {
       return await apiRequest<{ response: string; shouldGenerate?: boolean; command?: string; checkpoint?: CheckpointData }>("POST", "/api/ai-chat-conversation", data);
     },
@@ -391,15 +423,19 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     if (!input.trim() || chatMutation.isPending) return;
 
     const userMessage = input.trim();
+    const messagesToSend = pendingImages.length > 0 ? [...pendingImages] : undefined;
+    
     setMessages((prev) => [
       ...prev,
       {
         role: "user",
         content: userMessage,
         timestamp: new Date(),
+        images: messagesToSend,
       },
     ]);
     setInput("");
+    setPendingImages([]); // Clear pending images after sending
     
     // Persist user message to database
     if (currentProjectId) {
@@ -412,8 +448,35 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     
     chatMutation.mutate({ 
       message: userMessage,
-      projectId: currentProjectId ? parseInt(currentProjectId) : undefined
+      projectId: currentProjectId ? parseInt(currentProjectId) : undefined,
+      images: messagesToSend,
     });
+  };
+
+  // Handle image paste from clipboard
+  const handlePaste = async (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      
+      // Check if item is an image
+      if (item.type.indexOf('image') !== -1) {
+        e.preventDefault(); // Prevent default paste behavior for images
+        
+        const file = item.getAsFile();
+        if (file) {
+          // Upload image immediately
+          uploadImageMutation.mutate(file);
+        }
+      }
+    }
+  };
+
+  // Remove an image from pending images
+  const removeImage = (imageUrl: string) => {
+    setPendingImages((prev) => prev.filter((url) => url !== imageUrl));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -431,99 +494,119 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Messages - Mobile-First Scrollable Area */}
+      {/* Messages - Clean Scrollable Area */}
       <div 
         ref={scrollRef} 
-        className="flex-1 overflow-y-auto px-2 sm:px-4 py-3 sm:py-6 scroll-smooth"
+        className="flex-1 overflow-y-auto px-4 py-6 scroll-smooth"
         style={{ scrollBehavior: 'smooth' }}
       >
-        <div className="space-y-4 sm:space-y-6 max-w-4xl mx-auto">
+        <div className="space-y-3 max-w-3xl mx-auto">
           {messages.map((message, idx) => (
             <div
               key={idx}
               className={cn(
-                "flex gap-2 sm:gap-3 items-start",
-                message.role === "user" && "justify-end"
+                "flex gap-3 items-start",
+                message.role === "user" && "flex-row-reverse"
               )}
               data-testid={`chat-message-${idx}`}
             >
+              {/* Avatar */}
               {message.role === "assistant" && !message.isSummary && (
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
+                  <Sparkles className="w-3.5 h-3.5 text-primary" />
                 </div>
               )}
               {message.isSummary && (
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                  <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
+                <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-1">
+                  <AlertCircle className="w-3.5 h-3.5 text-muted-foreground" />
                 </div>
               )}
-              <div className="flex-1 max-w-[85%] sm:max-w-[80%] space-y-2">
+              {message.role === "user" && (
+                <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-1">
+                  <User className="w-3.5 h-3.5 text-primary-foreground" />
+                </div>
+              )}
+
+              {/* Message Content */}
+              <div className={cn("flex-1 space-y-2", message.role === "user" && "flex flex-col items-end")}>
                 <div
                   className={cn(
-                    "rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 text-sm",
+                    "inline-block rounded-md px-3 py-2 text-sm max-w-[85%]",
                     message.role === "user"
                       ? "bg-primary text-primary-foreground"
                       : message.isSummary
-                      ? "bg-muted/50 text-muted-foreground border border-border/50"
-                      : "bg-muted text-foreground"
+                      ? "bg-muted/30 text-muted-foreground"
+                      : "bg-muted/50 text-foreground"
                   )}
                 >
                   {message.isSummary && (
-                    <p className="text-xs font-medium mb-1 opacity-70">💾 Previous conversation summary</p>
+                    <p className="text-xs font-medium mb-1.5 opacity-70">Previous conversation summary</p>
                   )}
                   <p className="whitespace-pre-wrap leading-relaxed break-words">{message.content}</p>
+                  
+                  {/* Display images if present */}
+                  {message.images && message.images.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {message.images.map((imageUrl, imgIdx) => (
+                        <img
+                          key={imgIdx}
+                          src={imageUrl}
+                          alt={`Attachment ${imgIdx + 1}`}
+                          className="max-w-xs max-h-48 object-contain rounded border border-border cursor-pointer hover-elevate transition-all"
+                          onClick={() => setZoomImage(imageUrl)}
+                          data-testid={`message-image-${idx}-${imgIdx}`}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
                 
-                {/* Display checkpoint data for assistant messages (hide for admins - they have unlimited free access) */}
+                {/* Checkpoint billing info */}
                 {!isAdmin && message.role === "assistant" && message.checkpoint && (
-                  <div className="text-xs text-muted-foreground bg-muted/50 rounded px-3 py-2 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">Checkpoint: {message.checkpoint.complexity.toUpperCase()}</span>
+                  <div className="text-xs text-muted-foreground bg-muted/30 rounded-md px-3 py-2 space-y-1 max-w-[85%]">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium">{message.checkpoint.complexity.toUpperCase()}</span>
                       <span className="font-semibold">${message.checkpoint.cost.toFixed(2)}</span>
                     </div>
-                    <div className="text-[10px] opacity-70">{message.checkpoint.estimatedTime}</div>
+                    <div className="text-[11px] opacity-70">{message.checkpoint.estimatedTime}</div>
                     {message.checkpoint.actions && message.checkpoint.actions.length > 0 && (
-                      <div className="pt-1 border-t border-border/50">
+                      <div className="pt-1 border-t border-border/30 space-y-0.5">
                         {message.checkpoint.actions.map((action, i) => (
-                          <div key={i} className="text-[10px] opacity-70">• {action}</div>
+                          <div key={i} className="text-[11px] opacity-70">• {action}</div>
                         ))}
                       </div>
                     )}
                   </div>
                 )}
               </div>
-              {message.role === "user" && (
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                  <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
-                </div>
-              )}
             </div>
           ))}
+
+          {/* Loading indicator */}
           {chatMutation.isPending && (
-            <div className="flex gap-2 sm:gap-3 items-start">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary animate-pulse" />
+            <div className="flex gap-3 items-start">
+              <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
+                <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" />
               </div>
-              <div className="bg-muted rounded-lg px-3 sm:px-4 py-2 sm:py-2.5">
+              <div className="bg-muted/50 rounded-md px-3 py-2">
                 <Loader2 className="w-4 h-4 animate-spin text-primary" />
               </div>
             </div>
           )}
           
-          {/* Replit-style Progress Display - Mobile Optimized */}
+          {/* Progress Display */}
           {currentProgress.length > 0 && (
-            <div className="flex gap-2 sm:gap-3 items-start">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary animate-pulse" />
+            <div className="flex gap-3 items-start">
+              <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
+                <Sparkles className="w-3.5 h-3.5 text-primary" />
               </div>
-              <div className="flex-1 max-w-[85%] sm:max-w-[80%]">
+              <div className="flex-1 max-w-[85%]">
                 <AgentProgress
                   steps={currentProgress}
                   isWorking={isGenerating}
                   showTeachingEmojis={true}
                   metrics={currentMetrics}
                   onStop={async () => {
-                    // Call abort API
                     try {
                       await apiRequest("POST", "/api/commands/abort", { sessionId });
                       setIsGenerating(false);
@@ -532,7 +615,6 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                       toast({ description: "Generation stopped successfully" });
                     } catch (error: any) {
                       console.error('Failed to abort generation:', error);
-                      // Still update UI even if API call fails
                       setIsGenerating(false);
                       setCurrentProgress([]);
                       setCurrentMetrics({});
@@ -614,31 +696,59 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
         </div>
       </div>
 
-      {/* Input - Mobile-First Bottom Area (44px touch targets) */}
-      <div className="border-t bg-background p-2 sm:p-4 safe-area-bottom">
-        <div className="max-w-4xl mx-auto flex gap-2 items-end">
-          <Textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Describe what you want to build..."
-            className="min-h-[44px] max-h-[120px] resize-none text-sm sm:text-base"
-            disabled={chatMutation.isPending}
-            data-testid="input-chat-message"
-          />
-          <Button
-            onClick={handleSend}
-            disabled={!input.trim() || chatMutation.isPending}
-            size="icon"
-            className="flex-shrink-0 min-h-[44px] min-w-[44px]"
-            data-testid="button-send-chat"
-          >
-            {chatMutation.isPending ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Send className="w-4 h-4" />
-            )}
-          </Button>
+      {/* Input - Clean Bottom Toolbar */}
+      <div className="border-t border-border/50 bg-background/95 backdrop-blur-sm">
+        <div className="max-w-3xl mx-auto p-3">
+          {/* Image Preview Section */}
+          {pendingImages.length > 0 && (
+            <div className="mb-3 flex flex-wrap gap-2">
+              {pendingImages.map((imageUrl, index) => (
+                <div key={index} className="relative group">
+                  <img
+                    src={imageUrl}
+                    alt={`Preview ${index + 1}`}
+                    className="h-20 w-20 object-cover rounded border border-border"
+                    data-testid={`image-preview-${index}`}
+                  />
+                  <button
+                    onClick={() => removeImage(imageUrl)}
+                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    data-testid={`button-remove-image-${index}`}
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          <div className="flex gap-2 items-end">
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
+              placeholder="Describe what you want to build or paste a screenshot..."
+              className="min-h-[40px] max-h-[120px] resize-none text-sm border-border/50 focus-visible:ring-1"
+              disabled={chatMutation.isPending}
+              data-testid="input-chat-message"
+            />
+            <Button
+              onClick={handleSend}
+              disabled={!input.trim() || chatMutation.isPending}
+              size="icon"
+              className="flex-shrink-0 h-10 w-10"
+              data-testid="button-send-chat"
+            >
+              {chatMutation.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -713,6 +823,29 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
               Proceed Without Preview
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Image Zoom Modal */}
+      <Dialog open={!!zoomImage} onOpenChange={() => setZoomImage(null)}>
+        <DialogContent className="max-w-[95vw] sm:max-w-4xl p-0">
+          <div className="relative">
+            <img
+              src={zoomImage || ''}
+              alt="Zoomed image"
+              className="w-full h-auto max-h-[90vh] object-contain"
+              data-testid="zoomed-image"
+            />
+            <button
+              onClick={() => setZoomImage(null)}
+              className="absolute top-2 right-2 bg-background/80 hover:bg-background text-foreground rounded-full p-2"
+              data-testid="button-close-zoom"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
