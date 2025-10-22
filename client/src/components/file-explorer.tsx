@@ -26,6 +26,24 @@ export function FileExplorer({ files, activeFileId, onFileSelect, onCreateFile }
     return colors[language] || "bg-muted text-muted-foreground";
   };
 
+  const getFileStatus = (file: FileType): 'new' | 'modified' | 'unchanged' => {
+    const now = new Date().getTime();
+    const fiveMinutesAgo = now - (5 * 60 * 1000);
+    
+    const createdAt = file.createdAt ? new Date(file.createdAt).getTime() : 0;
+    const updatedAt = file.updatedAt ? new Date(file.updatedAt).getTime() : 0;
+    
+    if (createdAt > fiveMinutesAgo) {
+      return 'new';
+    }
+    
+    if (updatedAt > fiveMinutesAgo && updatedAt > createdAt + 1000) {
+      return 'modified';
+    }
+    
+    return 'unchanged';
+  };
+
   return (
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between h-14 px-4 border-b border-card-border bg-card/50">
@@ -72,33 +90,56 @@ export function FileExplorer({ files, activeFileId, onFileSelect, onCreateFile }
               </div>
             ) : (
               <div className="space-y-1">
-                {files.map((file) => (
-                  <button
-                    key={file.id}
-                    onClick={() => onFileSelect(file)}
-                    className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm transition-all hover-elevate active-elevate-2 ${
-                      activeFileId === file.id
-                        ? "bg-primary/10 border border-primary/20"
-                        : "border border-transparent"
-                    }`}
-                    data-testid={`file-item-${file.id}`}
-                  >
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <File className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                      <span className={`truncate font-medium ${
-                        activeFileId === file.id ? "text-primary" : ""
-                      }`}>
-                        {file.filename}
-                      </span>
-                    </div>
-                    <Badge 
-                      variant="outline" 
-                      className={`text-xs px-1.5 py-0 h-5 ${getLanguageBadgeColor(file.language)}`}
+                {files.map((file) => {
+                  const status = getFileStatus(file);
+                  return (
+                    <button
+                      key={file.id}
+                      onClick={() => onFileSelect(file)}
+                      className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-sm transition-all hover-elevate active-elevate-2 ${
+                        activeFileId === file.id
+                          ? "bg-primary/10 border border-primary/20"
+                          : "border border-transparent"
+                      }`}
+                      data-testid={`file-item-${file.id}`}
                     >
-                      {file.language.slice(0, 2).toUpperCase()}
-                    </Badge>
-                  </button>
-                ))}
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <File className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                        <span className={`truncate font-medium ${
+                          activeFileId === file.id ? "text-primary" : ""
+                        }`}>
+                          {file.filename}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        {status === 'new' && (
+                          <Badge 
+                            variant="outline" 
+                            className="text-[10px] px-1.5 py-0 h-4 bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20"
+                            data-testid={`badge-new-${file.id}`}
+                          >
+                            NEW
+                          </Badge>
+                        )}
+                        {status === 'modified' && (
+                          <Badge 
+                            variant="outline" 
+                            className="text-[10px] px-1.5 py-0 h-4 bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                            data-testid={`badge-modified-${file.id}`}
+                          >
+                            MOD
+                          </Badge>
+                        )}
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs px-1.5 py-0 h-5 ${getLanguageBadgeColor(file.language)}`}
+                        >
+                          {file.language.slice(0, 2).toUpperCase()}
+                        </Badge>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>

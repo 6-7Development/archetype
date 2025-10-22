@@ -83,12 +83,14 @@ export const files = pgTable("files", {
   path: text("path").notNull().default(""), // Folder path (e.g., "src/components/")
   content: text("content").notNull().default(""),
   language: text("language").notNull().default("javascript"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const insertFileSchema = createInsertSchema(files).omit({
   id: true,
   userId: true, // Server-injected from auth session
+  createdAt: true,
   updatedAt: true,
 });
 
