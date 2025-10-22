@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Send, Loader2, Sparkles, User, Key, AlertCircle } from "lucide-react";
@@ -70,16 +70,16 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   const [currentMetrics, setCurrentMetrics] = useState<ProgressMetrics>({});
   const [isGenerating, setIsGenerating] = useState(false);
   
-  // Fix sessionId persistence - scoped to project, survives remount
-  const [sessionId] = useState(() => {
+  // Fix sessionId persistence - scoped to project, recomputes when project changes
+  const sessionId = useMemo(() => {
     const storageKey = `chat-session-${currentProjectId || 'default'}`;
-    const existing = localStorage.getItem(storageKey);
-    if (existing) return existing;
-    
-    const newSessionId = nanoid();
-    localStorage.setItem(storageKey, newSessionId);
-    return newSessionId;
-  });
+    let id = localStorage.getItem(storageKey);
+    if (!id) {
+      id = nanoid();
+      localStorage.setItem(storageKey, id);
+    }
+    return id;
+  }, [currentProjectId]);
   const [showCostPreview, setShowCostPreview] = useState(false);
   const [showComplexityError, setShowComplexityError] = useState(false);
   const [complexityErrorMessage, setComplexityErrorMessage] = useState("");
