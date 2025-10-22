@@ -78,9 +78,10 @@ export default function Builder() {
     enabled: isAuthenticated,
   });
 
-  const { data: allFiles = [] } = useQuery<File[]>({
-    queryKey: ["/api/files"],
-    enabled: isAuthenticated, // Fetch files when authenticated
+  // Fetch files for the current project only (project-scoped endpoint)
+  const { data: files = [], refetch: refetchFiles } = useQuery<File[]>({
+    queryKey: ["/api/projects", currentProjectId, "files"],
+    enabled: isAuthenticated && !!currentProjectId, // Only fetch when authenticated AND we have a projectId
     refetchInterval: 5000, // Auto-refresh every 5 seconds to catch SySop file changes
   });
 
@@ -106,10 +107,42 @@ export default function Builder() {
     }
   }, [currentProjectId, projectsFetched, projectsFetching, currentProject, match, toast, setLocation]);
 
-  // Filter files by current project
-  const files = currentProjectId 
-    ? allFiles.filter(f => f.projectId === currentProjectId)
-    : [];
+  // Listen for WebSocket file updates
+  useEffect(() => {
+    if (!currentProjectId) return;
+
+    const ws = new WebSocket(import.meta.env.VITE_WS_URL || `ws://${window.location.host}`);
+    
+    ws.onopen = () => {
+      console.log('🔌 WebSocket connected for file updates');
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        // Refetch files when they're updated for this project
+        if (data.type === 'files_updated' && data.projectId === currentProjectId) {
+          console.log(`📡 Received files_updated event for project ${currentProjectId}, refetching...`);
+          refetchFiles();
+        }
+      } catch (error) {
+        console.error('WebSocket message parse error:', error);
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    ws.onclose = () => {
+      console.log('🔌 WebSocket disconnected');
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, [currentProjectId, refetchFiles]);
 
   const handleProjectGenerated = (result: any) => {
     if (result?.projectId) {
@@ -139,7 +172,8 @@ export default function Builder() {
       return await apiRequest("PUT", `/api/files/${fileId}`, { content });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+      // Invalidate project-specific files query
+      queryClient.invalidateQueries({ queryKey: ["/api/projects", currentProjectId, "files"] });
       setHasUnsavedChanges(false);
       toast({
         title: "File saved",
