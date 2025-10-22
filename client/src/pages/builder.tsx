@@ -111,10 +111,15 @@ export default function Builder() {
   useEffect(() => {
     if (!currentProjectId) return;
 
-    const ws = new WebSocket(import.meta.env.VITE_WS_URL || `ws://${window.location.host}`);
+    // Derive protocol from current page (use wss:// on https, ws:// on http)
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = import.meta.env.VITE_WS_URL || `${protocol}//${window.location.host}`;
+    
+    console.log(`🔌 Connecting WebSocket to ${wsUrl}`);
+    const ws = new WebSocket(wsUrl);
     
     ws.onopen = () => {
-      console.log('🔌 WebSocket connected for file updates');
+      console.log('✅ WebSocket connected for file updates');
     };
 
     ws.onmessage = (event) => {
@@ -132,7 +137,7 @@ export default function Builder() {
     };
 
     ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
+      console.error('❌ WebSocket error:', error);
     };
 
     ws.onclose = () => {
