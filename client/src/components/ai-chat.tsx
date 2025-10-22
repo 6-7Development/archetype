@@ -188,6 +188,17 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     }
   }, [streamState.usage]);
 
+  // Auto-clear file summary after 5 seconds
+  useEffect(() => {
+    if (streamState.fileSummary && !streamState.currentFile) {
+      const timer = setTimeout(() => {
+        streamState.resetState();
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [streamState.fileSummary, streamState.currentFile, streamState]);
+
   // Complexity detection mutation
   const complexityMutation = useMutation<any, Error, { command: string }>({
     mutationFn: async (data) => {
@@ -808,6 +819,47 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       {/* Input - Clean Bottom Toolbar */}
       <div className="border-t border-border/50 bg-background/95 backdrop-blur-sm">
         <div className="max-w-3xl mx-auto p-3">
+          {/* File Status Display */}
+          {streamState.currentFile && (
+            <div className="mb-3 px-4 py-2 bg-primary/5 border-l-4 border-primary rounded-r-md" data-testid="file-status-display">
+              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                {streamState.currentFile.action === 'creating' && (
+                  <>
+                    <span className="text-base">📝</span>
+                    <span>Creating</span>
+                  </>
+                )}
+                {streamState.currentFile.action === 'updating' && (
+                  <>
+                    <span className="text-base">✏️</span>
+                    <span>Editing</span>
+                  </>
+                )}
+                {streamState.currentFile.action === 'deleting' && (
+                  <>
+                    <span className="text-base">🗑️</span>
+                    <span>Deleting</span>
+                  </>
+                )}
+                <code className="text-primary font-mono text-sm">{streamState.currentFile.filename}</code>
+                <Loader2 className="w-3 h-3 animate-spin ml-auto" />
+              </p>
+            </div>
+          )}
+          
+          {/* File Summary Display */}
+          {streamState.fileSummary && !streamState.currentFile && (
+            <div className="mb-3 px-4 py-2 bg-green-500/10 border-l-4 border-green-500 rounded-r-md" data-testid="file-summary-display">
+              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                <span className="text-base">✅</span>
+                <span>
+                  Saved {streamState.fileSummary.filesChanged} file{streamState.fileSummary.filesChanged !== 1 ? 's' : ''}
+                  {' '}({streamState.fileSummary.linesAdded.toLocaleString()} line{streamState.fileSummary.linesAdded !== 1 ? 's' : ''})
+                </span>
+              </p>
+            </div>
+          )}
+          
           {/* Image Preview Section */}
           {(pendingImages.length > 0 || uploadingImages.size > 0) && (
             <div className="mb-3 flex flex-wrap gap-2">

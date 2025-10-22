@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 interface StreamMessage {
-  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered';
+  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary';
   commandId?: string;
   status?: string;
   message?: string;
@@ -16,6 +16,11 @@ interface StreamMessage {
   };
   error?: string;
   sessionId?: string;
+  filename?: string;
+  language?: string;
+  filesChanged?: number;
+  linesAdded?: number;
+  linesRemoved?: number;
 }
 
 interface StreamState {
@@ -33,6 +38,16 @@ interface StreamState {
     outputTokens: number;
   } | null;
   error: string | null;
+  currentFile: {
+    action: string;
+    filename: string;
+    language: string;
+  } | null;
+  fileSummary: {
+    filesChanged: number;
+    linesAdded: number;
+    linesRemoved?: number;
+  } | null;
 }
 
 const MAX_RECONNECT_ATTEMPTS = 5;
@@ -57,6 +72,8 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
     fullMessage: '',
     usage: null,
     error: null,
+    currentFile: null,
+    fileSummary: null,
   });
 
   const calculateBackoff = useCallback((attempt: number): number => {
@@ -164,6 +181,29 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
                 currentStatus: 'failed',
               }));
               break;
+
+            case 'file_status':
+              setStreamState(prev => ({
+                ...prev,
+                currentFile: {
+                  action: message.action || 'processing',
+                  filename: message.filename || '',
+                  language: message.language || 'plaintext',
+                },
+              }));
+              break;
+
+            case 'file_summary':
+              setStreamState(prev => ({
+                ...prev,
+                fileSummary: {
+                  filesChanged: message.filesChanged || 0,
+                  linesAdded: message.linesAdded || 0,
+                  linesRemoved: message.linesRemoved,
+                },
+                currentFile: null, // Clear current file when summary arrives
+              }));
+              break;
           }
         } catch (error) {
           console.error('❌ WebSocket message parse error:', error);
@@ -252,6 +292,8 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
       fullMessage: '',
       usage: null,
       error: null,
+      currentFile: null,
+      fileSummary: null,
     }));
   }, []);
 
