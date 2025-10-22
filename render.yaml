@@ -17,7 +17,8 @@ services:
     runtime: node
     plan: starter # $7/mo - 512MB RAM, auto-scaling
     region: oregon # Same region as database for low latency
-    buildCommand: npm install && npm run build
+    installCommand: npm install --include=dev
+    buildCommand: npm run build
     startCommand: npm start
     healthCheckPath: /health
     envVars:
