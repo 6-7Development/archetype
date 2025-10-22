@@ -61,6 +61,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [pendingImages, setPendingImages] = useState<string[]>([]); // Image URLs to send with next message
+  const [uploadingImages, setUploadingImages] = useState<Map<string, boolean>>(new Map()); // Track uploading images by temp ID
   const [zoomImage, setZoomImage] = useState<string | null>(null); // For image zoom modal
   const [secretsRequest, setSecretsRequest] = useState<SecretsRequest | null>(null);
   const [secretsInput, setSecretsInput] = useState<Record<string, string>>({});
@@ -521,6 +522,9 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     const items = e.clipboardData?.items;
     if (!items) return;
 
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    const ALLOWED_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       
@@ -529,10 +533,52 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
         e.preventDefault(); // Prevent default paste behavior for images
         
         const file = item.getAsFile();
-        if (file) {
-          // Upload image immediately
-          uploadImageMutation.mutate(file);
+        if (!file) continue;
+
+        // Validate file format
+        if (!ALLOWED_FORMATS.includes(file.type)) {
+          toast({
+            variant: "destructive",
+            description: `Unsupported image format. Please use: JPG, PNG, GIF, or WebP`
+          });
+          continue;
         }
+
+        // Validate file size (5MB max)
+        if (file.size > MAX_FILE_SIZE) {
+          const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+          toast({
+            variant: "destructive",
+            description: `Image too large (${sizeMB}MB). Maximum size is 5MB`
+          });
+          continue;
+        }
+
+        // Generate temporary ID for tracking upload progress
+        const tempId = nanoid();
+        
+        // Add to uploading state
+        setUploadingImages(prev => new Map(prev).set(tempId, true));
+        
+        // Upload image with temp ID for progress tracking
+        uploadImageMutation.mutate(file, {
+          onSuccess: () => {
+            // Remove from uploading state
+            setUploadingImages(prev => {
+              const next = new Map(prev);
+              next.delete(tempId);
+              return next;
+            });
+          },
+          onError: () => {
+            // Remove from uploading state on error
+            setUploadingImages(prev => {
+              const next = new Map(prev);
+              next.delete(tempId);
+              return next;
+            });
+          },
+        });
       }
     }
   };
@@ -763,8 +809,23 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       <div className="border-t border-border/50 bg-background/95 backdrop-blur-sm">
         <div className="max-w-3xl mx-auto p-3">
           {/* Image Preview Section */}
-          {pendingImages.length > 0 && (
+          {(pendingImages.length > 0 || uploadingImages.size > 0) && (
             <div className="mb-3 flex flex-wrap gap-2">
+              {/* Show uploading images with loading spinner */}
+              {Array.from(uploadingImages.keys()).map((tempId) => (
+                <div key={tempId} className="relative">
+                  <div className="h-20 w-20 rounded border border-border bg-muted/50 flex items-center justify-center">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
+                      Uploading...
+                    </span>
+                  </div>
+                </div>
+              ))}
+              
+              {/* Show uploaded images with remove button */}
               {pendingImages.map((imageUrl, index) => (
                 <div key={index} className="relative group">
                   <img
@@ -778,7 +839,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                     className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                     data-testid={`button-remove-image-${index}`}
                   >
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
