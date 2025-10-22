@@ -295,23 +295,61 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     setLastCommand(command);
     setIsGenerating(true);
     
-    // Simulate progress steps
+    // Track start time for elapsed time calculation
+    const startTime = Date.now();
+    
+    // Simulate progress steps with progress tracking
     const progressSteps: ProgressStep[] = [
-      { id: "1", type: "thinking", message: "Analyzing your request..." },
-      { id: "2", type: "thinking", message: "Designing project architecture..." },
-      { id: "3", type: "action", message: "Generating code files..." },
-      { id: "4", type: "action", message: "Testing syntax and logic..." },
-      { id: "5", type: "action", message: "Validating security..." },
+      { id: "1", type: "thinking", message: "Analyzing your request...", progress: 0 },
+      { id: "2", type: "thinking", message: "Designing project architecture...", progress: 0 },
+      { id: "3", type: "action", message: "Generating code files...", progress: 0 },
+      { id: "4", type: "action", message: "Testing syntax and logic...", progress: 0 },
+      { id: "5", type: "action", message: "Validating security...", progress: 0 },
     ];
     
-    // Simulate step-by-step progress
+    // Simulate step-by-step progress with percentage updates
     let currentStep = 0;
+    let currentStepProgress = 0;
+    
     const progressInterval = setInterval(() => {
+      // Calculate elapsed time
+      const elapsed = Date.now() - startTime;
+      const minutes = Math.floor(elapsed / 60000);
+      const seconds = Math.floor((elapsed % 60000) / 1000);
+      const timeElapsed = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+      
       if (currentStep < progressSteps.length) {
-        setCurrentProgress(progressSteps.slice(0, currentStep + 1));
-        currentStep++;
+        // Update current step progress (0% -> 25% -> 50% -> 75% -> 100%)
+        currentStepProgress += 25;
+        
+        if (currentStepProgress > 100) {
+          // Move to next step
+          currentStepProgress = 25;
+          currentStep++;
+        }
+        
+        // Update progress for all steps
+        const updatedSteps = progressSteps.map((step, index) => {
+          if (index < currentStep) {
+            // Completed steps
+            return { ...step, type: "success" as const, progress: 100 };
+          } else if (index === currentStep) {
+            // Current in-progress step
+            return { ...step, progress: currentStepProgress };
+          }
+          // Pending steps
+          return step;
+        });
+        
+        setCurrentProgress(updatedSteps);
+        
+        // Update metrics with time elapsed
+        setCurrentMetrics((prev) => ({
+          ...prev,
+          timeElapsed,
+        }));
       }
-    }, 600);
+    }, 400); // Update every 400ms for smooth animation
     
     commandMutation.mutate(
       {
@@ -325,16 +363,39 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
           clearInterval(progressInterval);
           setIsGenerating(false);
           
+          // Calculate final elapsed time
+          const elapsed = Date.now() - startTime;
+          const minutes = Math.floor(elapsed / 60000);
+          const seconds = Math.floor((elapsed % 60000) / 1000);
+          const timeElapsed = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+          
           // Show final success step
+          const completedSteps = progressSteps.map(step => ({
+            ...step,
+            type: "success" as const,
+            progress: 100,
+          }));
+          
           setCurrentProgress([
-            ...progressSteps,
-            { id: "6", type: "success", message: "Project generated successfully!" },
+            ...completedSteps,
+            { id: "6", type: "success", message: "Project generated successfully!", progress: 100 },
           ]);
           
-          // Clear progress after 2 seconds
+          // Update final metrics
+          setCurrentMetrics((prev) => ({
+            ...prev,
+            timeElapsed,
+            filesCreated: 5, // Simulated - could come from API response
+            filesModified: 2,
+            linesAdded: 247,
+            linesRemoved: 18,
+          }));
+          
+          // Clear progress after 3 seconds
           setTimeout(() => {
             setCurrentProgress([]);
-          }, 2000);
+            setCurrentMetrics({});
+          }, 3000);
         },
       }
     );
