@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { useAuth } from "@/hooks/useAuth";
 import { LivePreview } from "@/components/live-preview";
 import { MonacoEditor } from "@/components/monaco-editor";
@@ -42,9 +43,17 @@ export default function Builder() {
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
   const [showNewFileDialog, setShowNewFileDialog] = useState(false);
+  
+  // Files tab state (full editing)
   const [activeFileId, setActiveFileId] = useState<string | null>(null);
   const [fileContent, setFileContent] = useState<string>("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  
+  // Build tab inline preview state (separate from Files tab)
+  const [inlineFileId, setInlineFileId] = useState<string | null>(null);
+  const [inlineFileContent, setInlineFileContent] = useState<string>("");
+  const [inlineHasUnsavedChanges, setInlineHasUnsavedChanges] = useState(false);
+  
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
@@ -114,9 +123,13 @@ export default function Builder() {
     setActiveFileId(null);
     setFileContent("");
     setHasUnsavedChanges(false);
+    setInlineFileId(null);
+    setInlineFileContent("");
+    setInlineHasUnsavedChanges(false);
   };
 
   const activeFile = files.find(f => f.id === activeFileId);
+  const inlineFile = files.find(f => f.id === inlineFileId);
 
   // File save mutation
   const saveFileMutation = useMutation({
@@ -166,6 +179,30 @@ export default function Builder() {
 
   const handleCreateFile = () => {
     setShowNewFileDialog(true);
+  };
+
+  // Inline file handlers for Build tab
+  const handleInlineFileSelect = (file: File) => {
+    if (inlineHasUnsavedChanges && inlineFileId) {
+      saveFileMutation.mutate({ fileId: inlineFileId, content: inlineFileContent });
+    }
+    
+    setInlineFileId(file.id);
+    setInlineFileContent(file.content);
+    setInlineHasUnsavedChanges(false);
+  };
+
+  const handleInlineFileContentChange = (value: string | undefined) => {
+    if (value !== undefined) {
+      setInlineFileContent(value);
+      setInlineHasUnsavedChanges(value !== inlineFile?.content);
+    }
+  };
+
+  const handleInlineSaveFile = () => {
+    if (inlineFileId && inlineHasUnsavedChanges) {
+      saveFileMutation.mutate({ fileId: inlineFileId, content: inlineFileContent });
+    }
   };
 
   return (
@@ -289,17 +326,98 @@ export default function Builder() {
 
           {/* Tab Content */}
           <div className="flex-1 overflow-hidden">
-            {/* Build Tab (Main Interface) */}
+            {/* Build Tab (Split-Pane: Chat + Files) */}
             <TabsContent value="build" className="h-full m-0" data-testid="content-build">
-              <div className="h-full flex flex-col">
-                {/* AI Chat Component (Full Height) */}
-                <div className="flex-1 overflow-hidden">
-                  <AIChat 
-                    onProjectGenerated={handleProjectGenerated}
-                    currentProjectId={currentProjectId}
-                  />
-                </div>
-              </div>
+              <ResizablePanelGroup direction="horizontal" className="h-full">
+                {/* Left Panel: AI Chat (60%) */}
+                <ResizablePanel defaultSize={60} minSize={40}>
+                  <div className="h-full overflow-hidden">
+                    <AIChat 
+                      onProjectGenerated={handleProjectGenerated}
+                      currentProjectId={currentProjectId}
+                    />
+                  </div>
+                </ResizablePanel>
+
+                {/* Resize Handle */}
+                <ResizableHandle withHandle />
+
+                {/* Right Panel: File Explorer + Inline Monaco (40%) */}
+                <ResizablePanel defaultSize={40} minSize={30}>
+                  <div className="h-full flex flex-col">
+                    {/* File Explorer (top portion) */}
+                    <div className="h-64 border-b bg-card/50">
+                      <FileExplorer
+                        files={files}
+                        activeFileId={inlineFileId}
+                        onFileSelect={handleInlineFileSelect}
+                        onCreateFile={handleCreateFile}
+                      />
+                    </div>
+
+                    {/* Inline Monaco Editor (bottom portion) */}
+                    <div className="flex-1 overflow-hidden">
+                      {inlineFile ? (
+                        <div className="h-full flex flex-col">
+                          {/* Compact Editor Header */}
+                          <div className="h-12 border-b px-3 flex items-center justify-between bg-card/50">
+                            <div className="flex items-center gap-2">
+                              <FileCode className="w-4 h-4 text-primary" />
+                              <span className="text-sm font-medium">{inlineFile.filename}</span>
+                              {inlineHasUnsavedChanges && (
+                                <Badge variant="outline" className="text-xs border-yellow-500/20 text-yellow-600 dark:text-yellow-400">
+                                  Unsaved
+                                </Badge>
+                              )}
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={handleInlineSaveFile}
+                              disabled={!inlineHasUnsavedChanges || saveFileMutation.isPending}
+                              data-testid="button-save-inline-file"
+                            >
+                              {saveFileMutation.isPending ? (
+                                <>
+                                  <CheckCircle2 className="w-3 h-3 mr-1 animate-spin" />
+                                  <span className="text-xs">Saving...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Save className="w-3 h-3 mr-1" />
+                                  <span className="text-xs">Save</span>
+                                </>
+                              )}
+                            </Button>
+                          </div>
+
+                          {/* Compact Monaco Editor */}
+                          <div className="flex-1 overflow-hidden">
+                            <MonacoEditor
+                              value={inlineFileContent}
+                              onChange={handleInlineFileContentChange}
+                              language={inlineFile.language}
+                              compact={true}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="h-full flex items-center justify-center p-4">
+                          <div className="text-center max-w-xs">
+                            <FileCode className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+                            <p className="text-sm font-medium mb-1">No file selected</p>
+                            <p className="text-xs text-muted-foreground">
+                              {files.length === 0 
+                                ? "Generate files with AI chat to get started"
+                                : "Click a file above to preview it here"}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </ResizablePanel>
+              </ResizablePanelGroup>
             </TabsContent>
 
             {/* Preview Tab */}
