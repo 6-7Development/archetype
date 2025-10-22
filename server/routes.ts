@@ -713,8 +713,12 @@ Keep it under 150 words. Be factual and specific.`,
       const filename = `${userId}_${timestamp}.${extension}`;
       const filepath = path.join('attached_assets', 'chat_images', filename);
 
-      // Write file to disk
+      // Ensure directory exists before writing
       const fs = await import('fs/promises');
+      const dirPath = path.join('attached_assets', 'chat_images');
+      await fs.mkdir(dirPath, { recursive: true });
+
+      // Write file to disk
       await fs.writeFile(filepath, imageFile.buffer);
 
       // Return relative URL path
@@ -1907,7 +1911,7 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
         const completion = await aiQueue.enqueue(userId, plan, async () => {
           const result = await anthropic.messages.create({
             model: DEFAULT_MODEL,
-            max_tokens: 8192, // Maximum for Claude - handles complex projects
+            max_tokens: 8192, // Maximum output tokens for Claude Sonnet 4 (API hard limit)
             system: systemPrompt,
             messages: [
               {
@@ -1945,19 +1949,70 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
         
         // Strip markdown code fences if present (Claude sometimes wraps JSON in ```json ... ```)
         let cleanedText = responseText.trim();
+        const originalText = cleanedText; // Preserve for fallback
         
-        // Remove markdown code fences (```json ... ``` or ``` ... ```)
-        if (cleanedText.startsWith('```')) {
-          const lines = cleanedText.split('\n');
-          // Remove first line if it's ```json or ```
-          if (lines[0].match(/^```(json)?$/i)) {
-            lines.shift();
+        // First, try to extract from code fences (most reliable)
+        const codeFenceMatch = cleanedText.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (codeFenceMatch) {
+          cleanedText = codeFenceMatch[1].trim();
+          console.log("✅ Extracted JSON from code fence");
+        } else {
+          // No code fence found - extract JSON object with STRING-AWARE parsing
+          // Strategy: Find the LARGEST valid JSON object (handles emojis/text before JSON)
+          // Must respect quoted strings to avoid breaking on {"text":"use } braces"}
+          const allMatches: string[] = [];
+          let depth = 0;
+          let startIdx = -1;
+          let inString = false;
+          let escapeNext = false;
+          
+          for (let i = 0; i < cleanedText.length; i++) {
+            const char = cleanedText[i];
+            
+            // Handle escape sequences
+            if (escapeNext) {
+              escapeNext = false;
+              continue;
+            }
+            if (char === '\\') {
+              escapeNext = true;
+              continue;
+            }
+            
+            // Track string boundaries
+            if (char === '"') {
+              inString = !inString;
+              continue;
+            }
+            
+            // Only count braces outside of strings
+            if (!inString) {
+              if (char === '{') {
+                if (depth === 0) startIdx = i;
+                depth++;
+              } else if (char === '}') {
+                depth--;
+                if (depth === 0 && startIdx !== -1) {
+                  allMatches.push(cleanedText.substring(startIdx, i + 1));
+                  startIdx = -1;
+                }
+                // Guard against stray closing braces in preamble (e.g., "Use } to close")
+                // Clamp depth to 0 and reset startIdx if depth goes negative
+                if (depth < 0) {
+                  depth = 0;
+                  startIdx = -1;
+                }
+              }
+            }
           }
-          // Remove last line if it's ```
-          if (lines[lines.length - 1].trim() === '```') {
-            lines.pop();
+          
+          // Pick the largest match (most likely to be the actual JSON payload)
+          if (allMatches.length > 0) {
+            cleanedText = allMatches.reduce((longest, current) => 
+              current.length > longest.length ? current : longest
+            );
+            console.log(`✅ Extracted largest JSON object (${cleanedText.length} chars from ${allMatches.length} candidates)`);
           }
-          cleanedText = lines.join('\n').trim();
         }
         
         console.log("=== Cleaned Text (first 200 chars) ===");
@@ -1970,12 +2025,12 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
           console.error("JSON Parse Error:", parseError.message);
           console.log("Failed text (first 500 chars):", cleanedText.substring(0, 500));
           
-          // Try to extract JSON object from the text using regex
-          const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
+          // Final fallback: Try simple greedy regex on ORIGINAL text (not modified cleanedText)
+          const jsonMatch = originalText.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
             try {
               result = JSON.parse(jsonMatch[0]);
-              console.log("Successfully extracted JSON using regex");
+              console.log("✅ Successfully extracted JSON using fallback regex on original text");
             } catch (regexError) {
               throw new Error(`Failed to parse AI response as JSON: ${parseError.message}`);
             }
