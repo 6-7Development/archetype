@@ -276,6 +276,8 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       
       // Normal project generation success
       queryClient.invalidateQueries({ queryKey: ["/api/commands"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
       toast({ description: "Project generated successfully!" });
       if (onProjectGenerated && data.result) {
         onProjectGenerated(data.result);
