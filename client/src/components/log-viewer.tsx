@@ -35,7 +35,7 @@ interface LogViewerProps {
 
 export function LogViewer({ projectId }: LogViewerProps) {
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [filters, setFilters] = useState<Set<LogLevel>>(new Set(['error', 'warning', 'info', 'success', 'ai', 'database', 'websocket']));
+  const [filters, setFilters] = useState<Set<LogLevel>>(new Set<LogLevel>(['error', 'warning', 'info', 'success', 'ai', 'database', 'websocket']));
   const [autoScroll, setAutoScroll] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
