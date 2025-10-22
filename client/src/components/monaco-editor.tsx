@@ -7,9 +7,10 @@ interface MonacoEditorProps {
   onChange: OnChange;
   language: string;
   readOnly?: boolean;
+  compact?: boolean;
 }
 
-export function MonacoEditor({ value, onChange, language, readOnly = false }: MonacoEditorProps) {
+export function MonacoEditor({ value, onChange, language, readOnly = false, compact = false }: MonacoEditorProps) {
   const { theme } = useTheme();
 
   return (
@@ -20,8 +21,8 @@ export function MonacoEditor({ value, onChange, language, readOnly = false }: Mo
       onChange={onChange}
       theme={theme === "dark" ? "vs-dark" : "light"}
       options={{
-        minimap: { enabled: false },
-        fontSize: 14,
+        minimap: { enabled: !compact },
+        fontSize: compact ? 13 : 14,
         lineNumbers: "on",
         roundedSelection: false,
         scrollBeyondLastLine: false,
@@ -30,7 +31,7 @@ export function MonacoEditor({ value, onChange, language, readOnly = false }: Mo
         tabSize: 2,
         wordWrap: "on",
         fontFamily: "var(--font-mono)",
-        padding: { top: 16, bottom: 16 },
+        padding: { top: compact ? 8 : 16, bottom: compact ? 8 : 16 },
       }}
       loading={
         <div className="flex items-center justify-center h-full">
