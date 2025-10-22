@@ -16,6 +16,7 @@ import { LivePreview } from "@/components/live-preview";
 import { MonacoEditor } from "@/components/monaco-editor";
 import { FileExplorer } from "@/components/file-explorer";
 import { NewFileDialog } from "@/components/new-file-dialog";
+import { LogViewer } from "@/components/log-viewer";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { 
@@ -80,6 +81,7 @@ export default function Builder() {
   const { data: allFiles = [] } = useQuery<File[]>({
     queryKey: ["/api/files"],
     enabled: isAuthenticated, // Fetch files when authenticated
+    refetchInterval: 5000, // Auto-refresh every 5 seconds to catch SySop file changes
   });
 
   // Find current project
@@ -320,6 +322,14 @@ export default function Builder() {
               >
                 <FolderTree className="w-4 h-4" />
                 <span className="hidden sm:inline">Files</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="logs" 
+                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground gap-2 rounded-t rounded-b-none min-h-[44px] px-4 flex-shrink-0"
+                data-testid="tab-logs"
+              >
+                <Activity className="w-4 h-4" />
+                <span className="hidden sm:inline">Logs</span>
               </TabsTrigger>
             </TabsList>
           </div>
