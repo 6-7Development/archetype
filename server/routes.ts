@@ -20,6 +20,7 @@ import multer from "multer";
 import AdmZip from "adm-zip";
 import path from "path";
 import { getDeploymentInfo } from './deploymentInfo';
+import type Stripe from 'stripe';
 
 // Configure multer for file uploads (in-memory storage)
 const upload = multer({
@@ -2387,9 +2388,14 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
 
   // POST /api/commands/stream - Streaming AI command execution
   app.post("/api/commands/stream", aiLimiter, isAuthenticated, async (req: any, res) => {
+    let sessionId: string | undefined;
     try {
       const userId = req.authenticatedUserId;
-      const { command, projectId, secrets, sessionId } = req.body;
+      const extractedData = req.body;
+      const command = extractedData.command;
+      const projectId = extractedData.projectId;
+      const secrets = extractedData.secrets;
+      sessionId = extractedData.sessionId;
       
       if (!command || typeof command !== 'string') {
         return res.status(400).json({ error: "command is required and must be a string" });
@@ -2398,6 +2404,9 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
       if (!sessionId) {
         return res.status(400).json({ error: "sessionId is required for streaming" });
       }
+
+      // TypeScript type narrowing: sessionId is guaranteed to be string after the check above
+      const validSessionId: string = sessionId;
 
       // Check if AI generation is available (graceful degradation)
       if (!FEATURES.AI_GENERATION) {
@@ -2433,7 +2442,7 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
       const savedCommand = await storage.createCommand({ ...validated, userId });
 
       // Send initial status
-      broadcastToSession(sessionId, {
+      broadcastToSession(validSessionId, {
         type: 'ai-status',
         commandId: savedCommand.id,
         status: 'starting',
@@ -2508,14 +2517,14 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
 
         // Create abort controller for this session
         // If there's an existing generation, abort it first
-        const existingController = activeGenerations.get(sessionId);
+        const existingController = activeGenerations.get(validSessionId);
         if (existingController) {
           existingController.abort();
-          activeGenerations.delete(sessionId);
+          activeGenerations.delete(validSessionId);
         }
         
         const abortController = new AbortController();
-        activeGenerations.set(sessionId, abortController);
+        activeGenerations.set(validSessionId, abortController);
 
         // Stream with priority queue
         let result: any;
@@ -2529,14 +2538,14 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
               onToolUse: executeToolInternal, // Execute tools when Claude requests them
               signal: abortController.signal, // Pass abort signal
             onChunk: (chunk) => {
-              broadcastToSession(sessionId, {
+              broadcastToSession(validSessionId, {
                 type: 'ai-chunk',
                 commandId: savedCommand.id,
                 content: chunk.content,
               });
             },
             onThought: (thought) => {
-              broadcastToSession(sessionId, {
+              broadcastToSession(validSessionId, {
                 type: 'ai-thought',
                 commandId: savedCommand.id,
                 thought,
@@ -2544,14 +2553,14 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
             },
             onAction: (action) => {
               currentAction = action;
-              broadcastToSession(sessionId, {
+              broadcastToSession(validSessionId, {
                 type: 'ai-action',
                 commandId: savedCommand.id,
                 action,
               });
             },
             onComplete: async (fullText, usage) => {
-              broadcastToSession(sessionId, {
+              broadcastToSession(validSessionId, {
                 type: 'ai-complete',
                 commandId: savedCommand.id,
                 usage: {
@@ -2564,7 +2573,7 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
         });
         } catch (abortError: any) {
           // Clean up abort controller
-          activeGenerations.delete(sessionId);
+          activeGenerations.delete(validSessionId);
           
           // Check if this was an abort error
           if (abortError.name === 'AbortError' || abortError.message?.includes('abort')) {
@@ -2575,7 +2584,7 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
               JSON.stringify({ error: "Generation aborted by user" })
             );
             
-            broadcastToSession(sessionId, {
+            broadcastToSession(validSessionId, {
               type: 'ai-aborted',
               commandId: savedCommand.id,
               message: 'Generation stopped by user',
@@ -2624,7 +2633,7 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
           try {
             const { runAutoTestLoop } = await import('./auto-test-loop');
             
-            broadcastToSession(sessionId, {
+            broadcastToSession(validSessionId, {
               type: 'ai-action',
               commandId: savedCommand.id,
               action: '🧪 Testing your code...',
@@ -2636,7 +2645,7 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
               (message) => {
                 // Only send user-friendly messages, not technical details
                 if (message.includes('✅') || message.includes('⚠️') || message.includes('🔨')) {
-                  broadcastToSession(sessionId, {
+                  broadcastToSession(validSessionId, {
                     type: 'ai-action',
                     commandId: savedCommand.id,
                     action: message,
@@ -2647,7 +2656,7 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
             
             // Only send final result, not technical details
             if (testResult.passed) {
-              broadcastToSession(sessionId, {
+              broadcastToSession(validSessionId, {
                 type: 'ai-action',
                 commandId: savedCommand.id,
                 action: '✅ Tests passed!',
@@ -2676,7 +2685,7 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
         const usageStats = await getUserUsageStats(userId);
 
         // Clean up abort controller on success
-        activeGenerations.delete(sessionId);
+        activeGenerations.delete(validSessionId);
 
         res.json({
           commandId: savedCommand.id,
@@ -2691,7 +2700,7 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
         });
       } catch (aiError: any) {
         // Clean up abort controller on error
-        activeGenerations.delete(sessionId);
+        activeGenerations.delete(validSessionId);
         
         await storage.updateCommand(
           savedCommand.id,
@@ -2700,7 +2709,7 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
           JSON.stringify({ error: aiError.message || "AI processing failed" })
         );
         
-        broadcastToSession(sessionId, {
+        broadcastToSession(validSessionId, {
           type: 'ai-error',
           commandId: savedCommand.id,
           error: aiError.message,
@@ -2753,7 +2762,7 @@ Your mission: Generate flawless, Fortune 500-grade secure, accessible, performan
   // POST /api/ai-chat-conversation
   app.post("/api/ai-chat-conversation", async (req: Request, res: Response) => {
     try {
-      const userId = req.session?.claims?.sub || req.session?.user?.id || 'demo-user';
+      const userId = (req.user as any)?.id || 'demo-user';
       const { message, projectId, images } = req.body;
 
       if (!message || typeof message !== 'string' || !message.trim()) {
@@ -3266,7 +3275,7 @@ ${content}
 
   app.post("/api/projects/:id/git/sync", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.session?.claims?.sub || req.session?.user?.id;
+      const userId = req.authenticatedUserId;
       const { id } = req.params;
       const { status } = req.body;
 
@@ -3280,7 +3289,7 @@ ${content}
 
   app.delete("/api/projects/:id/git", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.session?.claims?.sub || req.session?.user?.id;
+      const userId = req.authenticatedUserId;
       const { id } = req.params;
 
       await storage.deleteGitRepository(id, userId);
@@ -3293,7 +3302,7 @@ ${content}
 
   app.post("/api/deployments", async (req: Request, res: Response) => {
     try {
-      const userId = req.session?.claims?.sub || req.session?.user?.id || 'demo-user';
+      const userId = (req.user as any)?.id || 'demo-user';
       const { projectId, subdomain } = req.body;
 
       if (!projectId || !subdomain) {
@@ -3339,7 +3348,7 @@ ${content}
       const files = await storage.getProjectFiles(deployment.projectId);
       
       // Track deployment visit for billing
-      await incrementDeploymentVisits(deployment.userId);
+      await storage.incrementDeploymentVisits(deployment.id);
 
       // Build HTML with injected files
       const htmlFile = files.find(f => f.filename === 'index.html');
@@ -3374,7 +3383,7 @@ ${content}
   // GET /api/deployments - Get all user deployments
   app.get("/api/deployments", async (req: Request, res: Response) => {
     try {
-      const userId = req.session?.claims?.sub || req.session?.user?.id || 'demo-user';
+      const userId = (req.user as any)?.id || 'demo-user';
       const deployments = await storage.getDeployments(userId);
       res.json(deployments);
     } catch (error: any) {
@@ -3386,7 +3395,7 @@ ${content}
   // POST /api/deployments/publish - Publish/redeploy a project
   app.post("/api/deployments/publish", async (req: Request, res: Response) => {
     try {
-      const userId = req.session?.claims?.sub || req.session?.user?.id || 'demo-user';
+      const userId = (req.user as any)?.id || 'demo-user';
       const { projectId, subdomain } = req.body;
 
       // Create or update deployment
@@ -3424,7 +3433,7 @@ ${content}
   // POST /api/deployments/pause - Pause a deployment
   app.post("/api/deployments/pause", async (req: Request, res: Response) => {
     try {
-      const userId = req.session?.claims?.sub || req.session?.user?.id || 'demo-user';
+      const userId = (req.user as any)?.id || 'demo-user';
       const { deploymentId } = req.body;
 
       if (!deploymentId) {
@@ -3495,19 +3504,19 @@ ${content}
   // GET /api/admin/dashboard - Admin dashboard data
   app.get("/api/admin/dashboard", requireAdmin, async (req: Request, res: Response) => {
     try {
-      const userId = req.session?.claims?.sub || req.session?.user?.id || 'demo-user';
+      const userId = (req.user as any)?.id || 'demo-user';
       
       // Get all usage logs for analysis
-      const logs = await storage.getAllUsageLogs();
+      const logs = await storage.getRecentUsageLogs(1000);
       
       // Calculate total costs
-      const totalCosts = logs.reduce((sum, log) => sum + log.cost, 0);
+      const totalCosts = logs.reduce((sum: number, log: any) => sum + (Number(log.cost) || 0), 0);
       
       // Get unique active users (users with at least one log)
-      const activeUsers = new Set(logs.map(log => log.userId)).size;
+      const activeUsers = new Set(logs.map((log: any) => log.userId)).size;
       
       // Calculate total AI requests
-      const aiRequests = logs.filter(log => log.type === 'ai_generation').length;
+      const aiRequests = logs.filter((log: any) => log.type === 'ai_generation').length;
       
       // Calculate revenue from subscriptions (simplified)
       const revenue = activeUsers * 20; // Assume $20/month per active user
@@ -4418,7 +4427,7 @@ ${content}
  * Require admin middleware
  */
 function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  const userId = req.session?.claims?.sub || req.session?.user?.id;
+  const userId = (req.user as any)?.id;
   
   // Simple admin check - in production, check against admin user list in database
   const ADMIN_USERS = ['admin', 'demo-user']; // demo-user is admin for testing
