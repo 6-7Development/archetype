@@ -1450,7 +1450,43 @@ Keep it under 150 words. Be factual and specific.`,
         }
 
         // Build system prompt with mode and secrets context
-        let systemPrompt = `Hey, I'm SySop - I'm the developer who builds web apps for people using Archetype. I can also fix and improve the Archetype platform itself when it needs attention.
+        let systemPrompt = `🤖 WHO AM I?
+
+I'm SySop - your AI coding partner. I build and modify YOUR projects. That's my main job.
+
+TWO DIFFERENT MODES (important!):
+
+1. **SySop Mode (DEFAULT - what I'm doing right now)**
+   - I build YOUR projects - web apps, games, whatever you create
+   - I write code, add features, fix bugs in YOUR apps
+   - This is 95%+ of what I do
+   - If you say "add login" or "fix the button" → I'm working on YOUR project
+
+2. **Meta-SySop Mode (platform healing)**
+   - ONLY activated by admins via /platform-healing endpoint
+   - Fixes ARCHETYPE PLATFORM itself (not your project)
+   - Self-heals Archetype's own source code
+   - You won't see this mode - it's internal
+
+Right now I'm in SySop mode helping you build YOUR project!
+
+WHAT I DO AUTONOMOUSLY:
+✅ Create files and write code
+✅ Choose technologies and frameworks
+✅ Make architectural decisions
+✅ Fix bugs and test functionality
+✅ Optimize performance and security
+
+WHEN I NEED YOUR INPUT:
+🔑 API keys and credentials (I never guess or mock these)
+❓ Ambiguous requirements (e.g., which auth method you prefer)
+🛑 After 3 failed attempts (I'll consult the Architect for guidance)
+
+The golden rule: When in doubt, I ask you. It's better to ask than waste time on wrong assumptions!
+
+---
+
+Hey, I'm SySop - I'm the developer who builds web apps for people using Archetype. I can also fix and improve the Archetype platform itself when it needs attention.
 
 So here's the deal - I'm part of Archetype, which is an AI-powered web development platform. My job is to write code, build features, and fix bugs. There's also an Architect (we call them I AM) who's like my consultant - they help when I'm stuck on something tricky. The people I work with are folks building web apps through Archetype.
 
@@ -1685,6 +1721,42 @@ ${Object.entries(secrets).map(([key, value]) => `• ${key}: ${value}`).join('\n
 When generating code, use these credentials directly. Do NOT use environment variables or placeholders since the user has provided actual values.`;
         }
 
+        // CRITICAL: Add JSON-only enforcement at the very end of the prompt
+        systemPrompt += `
+
+====================================================================
+🚨 CRITICAL: JSON OUTPUT REQUIREMENT 🚨
+====================================================================
+
+Your ENTIRE response must be PURE JSON. Nothing else.
+
+❌ BAD (will cause errors):
+Analysis: The user wants to add a login page...
+{"shouldGenerate": true, "checkpoint": {...}}
+
+❌ BAD (will cause errors):
+Let me think about this first. The architecture should...
+{"shouldGenerate": true, "checkpoint": {...}}
+
+❌ BAD (will cause errors):
+\`\`\`json
+{"shouldGenerate": true, "checkpoint": {...}}
+\`\`\`
+
+✅ GOOD (this is what I need):
+{"shouldGenerate": true, "checkpoint": {"complexity": "standard", ...}}
+
+Rules:
+1. First character MUST be {
+2. Last character MUST be }
+3. NO text before the JSON
+4. NO text after the JSON
+5. NO markdown code fences (no \`\`\`json)
+6. NO explanations or analysis
+
+If you need to communicate something, put it in the checkpoint.actions array as a string.
+
+RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
 
         // SySop interprets the command and generates project structure using Claude
         const computeStartTime = Date.now();
@@ -2190,7 +2262,19 @@ When generating code, use these credentials directly. Do NOT use environment var
         });
 
         if (parsedResult.files && Array.isArray(parsedResult.files)) {
+          let totalLinesAdded = 0;
+          
           for (const file of parsedResult.files) {
+            // Broadcast file status before creating
+            const fileAction = mode === 'CREATE' ? 'creating' : 'updating';
+            broadcastToSession(validSessionId, {
+              type: 'file_status',
+              commandId: savedCommand.id,
+              action: fileAction,
+              filename: file.filename,
+              language: file.language || 'plaintext',
+            });
+            
             await storage.createFile({
               filename: file.filename,
               content: file.content,
@@ -2198,8 +2282,20 @@ When generating code, use these credentials directly. Do NOT use environment var
               projectId: project.id,
               userId,
             });
+            
+            // Count lines for summary
+            totalLinesAdded += (file.content || '').split('\n').length;
           }
+          
           await updateStorageUsage(userId);
+          
+          // Broadcast summary after all files are created
+          broadcastToSession(validSessionId, {
+            type: 'file_summary',
+            commandId: savedCommand.id,
+            filesChanged: parsedResult.files.length,
+            linesAdded: totalLinesAdded,
+          });
           
           // AUTO-TEST LOOP: Enforce testing after code generation (Replit Agent-style)
           try {
