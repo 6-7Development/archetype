@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Upload, FileArchive, X, Loader2, CheckCircle2 } from "lucide-react";
@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
+import { UploadLoader } from "@/components/upload-loader";
 
 export function ProjectUpload() {
   const [isDragging, setIsDragging] = useState(false);
@@ -45,16 +46,19 @@ export function ProjectUpload() {
       return response.json();
     },
     onSuccess: (data) => {
+      // Complete progress
+      setUploadProgress(100);
+      
       toast({
         title: "Project Imported!",
         description: `${data.importedCount} files imported successfully`,
       });
-      setFile(null);
-      setUploadProgress(0);
       
       // Invalidate projects cache and redirect to builder with new project
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
       setTimeout(() => {
+        setFile(null);
+        setUploadProgress(0);
         setLocation(`/builder/${data.project.id}`);
       }, 1000); // Brief delay to show success message
     },
@@ -67,6 +71,20 @@ export function ProjectUpload() {
       setUploadProgress(0);
     },
   });
+
+  // Simulate progress during upload
+  useEffect(() => {
+    if (uploadMutation.isPending) {
+      const interval = setInterval(() => {
+        setUploadProgress((prev) => {
+          if (prev >= 95) return prev;
+          return prev + Math.random() * 15;
+        });
+      }, 500);
+      
+      return () => clearInterval(interval);
+    }
+  }, [uploadMutation.isPending]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -125,16 +143,19 @@ export function ProjectUpload() {
   };
 
   return (
-    <Card className="p-4">
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <FileArchive className="w-5 h-5 text-primary" />
-          <h3 className="font-semibold">Import Existing Project</h3>
-        </div>
-        
-        <p className="text-sm text-muted-foreground">
-          Upload a ZIP file of your project to continue working on it with SySop AI
-        </p>
+    <>
+      <UploadLoader isOpen={uploadMutation.isPending} progress={uploadProgress} />
+      
+      <Card className="p-4">
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <FileArchive className="w-5 h-5 text-primary" />
+            <h3 className="font-semibold">Import Existing Project</h3>
+          </div>
+          
+          <p className="text-sm text-muted-foreground">
+            Upload a ZIP file of your project to continue working on it with SySop AI
+          </p>
 
         {!file ? (
           <div
@@ -225,5 +246,6 @@ export function ProjectUpload() {
         )}
       </div>
     </Card>
+    </>
   );
 }
