@@ -1,7 +1,7 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
-import rehypeRaw from 'rehype-raw';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import { cn } from "@/lib/utils";
 
 interface MarkdownRendererProps {
@@ -10,11 +10,35 @@ interface MarkdownRendererProps {
 }
 
 export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
+  // Custom sanitize schema that preserves className for syntax highlighting
+  // while still protecting against XSS attacks
+  const sanitizeSchema = {
+    ...defaultSchema,
+    attributes: {
+      ...defaultSchema.attributes,
+      code: [
+        ...(defaultSchema.attributes?.code || []),
+        ['className', /^language-/] // Allow className starting with "language-" for syntax highlighting
+      ],
+      span: [
+        ...(defaultSchema.attributes?.span || []),
+        ['className'] // Allow className for syntax highlighting spans
+      ],
+      pre: [
+        ...(defaultSchema.attributes?.pre || []),
+        ['className'] // Allow className for pre blocks
+      ]
+    }
+  };
+
   return (
     <div className={cn("prose dark:prose-invert max-w-none", className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeHighlight, rehypeRaw]}
+        rehypePlugins={[
+          rehypeHighlight, // First: add syntax highlighting classes
+          [rehypeSanitize, sanitizeSchema] // Then: sanitize while preserving highlighting classes
+        ]}
         components={{
         // Custom styling for code blocks
         code({ node, inline, className, children, ...props }: any) {
