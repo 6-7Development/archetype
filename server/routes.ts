@@ -1312,10 +1312,30 @@ Keep it under 150 words. Be factual and specific.`,
     try {
       const userId = req.authenticatedUserId;
       const { projectId } = req.params;
+      
+      console.log(`📂 [GET /api/projects/${projectId}/files] Fetching files for user ${userId}`);
+      
+      // Verify project exists and user has access
+      const project = await storage.getProject(projectId, userId);
+      if (!project) {
+        console.warn(`⚠️  Project ${projectId} not found or access denied for user ${userId}`);
+        return res.status(404).json({ error: "Project not found or access denied" });
+      }
+      
       const files = await storage.getProjectFiles(projectId, userId);
+      
+      console.log(`✅ [GET /api/projects/${projectId}/files] Found ${files.length} files for project "${project.name}"`);
+      if (files.length > 0) {
+        console.log(`   Files: ${files.map(f => f.filename).join(', ')}`);
+      } else {
+        console.log(`   ℹ️  No files in project yet`);
+      }
+      
       res.json(files);
-    } catch (error) {
-      console.error('Error fetching project files:', error);
+    } catch (error: any) {
+      console.error(`❌ [GET /api/projects/:projectId/files] Error:`, error);
+      console.error(`   Error details: ${error.message}`);
+      console.error(`   Stack: ${error.stack}`);
       res.status(500).json({ error: "Failed to fetch project files" });
     }
   });
@@ -1447,6 +1467,49 @@ Keep it under 150 words. Be factual and specific.`,
         // If MODIFY mode, fetch existing project files for context
         if (mode === 'MODIFY') {
           existingFiles = await storage.getProjectFiles(projectId, userId);
+        }
+
+        // Load chat history for conversation memory (just like /api/ai-chat-conversation does)
+        let chatHistory: any[] = [];
+        if (projectId) {
+          try {
+            chatHistory = await storage.getChatMessagesByProject(userId, projectId);
+            
+            // Apply same summarization logic as /api/ai-chat-conversation endpoint
+            if (chatHistory.length > 10) {
+              const KEEP_RECENT = 5;
+              const hasSummary = chatHistory.some(m => m.isSummary);
+              
+              if (!hasSummary) {
+                const oldMessages = chatHistory.slice(0, chatHistory.length - KEEP_RECENT);
+                const recentMessages = chatHistory.slice(chatHistory.length - KEEP_RECENT);
+                const messagesForSummary = oldMessages.filter(m => m.role === 'user' || m.role === 'assistant');
+                
+                if (messagesForSummary.length > 0) {
+                  console.log(`📊 Summarizing ${messagesForSummary.length} messages for command context`);
+                  const summaryContent = await summarizeMessages(messagesForSummary);
+                  
+                  const summaryMessage = await storage.createChatMessage({
+                    userId,
+                    projectId,
+                    role: 'system',
+                    content: summaryContent,
+                    isSummary: true,
+                  });
+                  
+                  for (const oldMsg of oldMessages) {
+                    await storage.deleteChatMessage(oldMsg.id, userId);
+                  }
+                  
+                  chatHistory = [summaryMessage, ...recentMessages];
+                  console.log(`✅ Chat optimized for command: ${messagesForSummary.length} → 1 summary + ${KEEP_RECENT} recent`);
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Error loading chat history for command:', error);
+            // Continue without history - don't fail the command
+          }
         }
 
         // Build system prompt with mode and secrets context
@@ -1713,6 +1776,22 @@ ${content}
 IMPORTANT: Only return files that actually CHANGE. Leave unchanged files out of your response to save tokens.`;
         }
 
+        // Add conversation history for memory/context
+        if (chatHistory.length > 0) {
+          systemPrompt += `\n\n💬 PREVIOUS CONVERSATION HISTORY (${chatHistory.length} messages):
+
+`;
+          
+          for (const msg of chatHistory) {
+            const roleLabel = msg.role === 'user' ? 'USER' : msg.role === 'assistant' ? 'SYSOP (you)' : 'SUMMARY';
+            systemPrompt += `[${roleLabel}]: ${msg.content}\n\n`;
+          }
+          
+          systemPrompt += `This is what we've discussed so far. Use this context to understand what the user wants and what you've already done.
+
+`;
+        }
+
         // Add secrets context if provided
         if (secrets && Object.keys(secrets).length > 0) {
           systemPrompt += `\n\n✅ USER PROVIDED SECRETS (use these in your generated code):
@@ -1914,13 +1993,22 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
 
         // Handle files based on mode
         if (result.files && Array.isArray(result.files)) {
+          console.log(`💾 Processing ${result.files.length} files for project ${project.id} (mode: ${mode})`);
+          
+          let createdCount = 0;
+          let updatedCount = 0;
+          let deletedCount = 0;
+          
           for (const file of result.files) {
             // Check if this is a delete operation
             if (file.action === 'delete') {
               // Delete the file
               const existingFile = existingFiles.find(f => f.filename === file.filename);
               if (existingFile) {
+                console.log(`🗑️  Deleting file: ${file.filename} from project ${project.id}`);
                 await storage.deleteFile(existingFile.id, userId);
+                deletedCount++;
+                console.log(`✅ File deleted: ${file.filename}`);
               }
               continue;
             }
@@ -1931,31 +2019,59 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
               
               if (existingFile) {
                 // Update existing file (only content can be updated via this method)
+                console.log(`📝 Updating file: ${file.filename} (${file.content?.length || 0} chars) in project ${project.id}`);
                 await storage.updateFile(existingFile.id, userId, file.content);
+                updatedCount++;
+                console.log(`✅ File updated: ${file.filename} with ID ${existingFile.id}`);
               } else {
                 // Create new file (added to project)
-                await storage.createFile({
+                console.log(`➕ Creating new file: ${file.filename} (${file.content?.length || 0} chars) in project ${project.id}`);
+                const savedFile = await storage.createFile({
                   userId,
                   projectId: project.id,
                   filename: file.filename,
                   content: file.content,
                   language: file.language || "plaintext",
                 });
+                createdCount++;
+                console.log(`✅ File created: ${file.filename} with ID ${savedFile.id}`);
               }
             } else {
               // CREATE mode: Create all files
-              await storage.createFile({
+              console.log(`➕ Creating file: ${file.filename} (${file.content?.length || 0} chars) in project ${project.id}`);
+              const savedFile = await storage.createFile({
                 userId,
                 projectId: project.id,
                 filename: file.filename,
                 content: file.content,
                 language: file.language || "plaintext",
               });
+              createdCount++;
+              console.log(`✅ File created: ${file.filename} with ID ${savedFile.id}`);
             }
           }
           
+          console.log(`📊 File operation summary for project ${project.id}: ${createdCount} created, ${updatedCount} updated, ${deletedCount} deleted`);
+          
           // Track storage usage for billing after creating all files
           await updateStorageUsage(userId);
+          
+          // Broadcast files update to all connected clients via WebSocket
+          console.log(`📡 Broadcasting files_updated event for project ${project.id}`);
+          wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+              client.send(JSON.stringify({
+                type: 'files_updated',
+                projectId: project.id,
+                userId: userId,
+                fileCount: result.files.length,
+                created: createdCount,
+                updated: updatedCount,
+                deleted: deletedCount,
+              }));
+            }
+          });
+          console.log(`✅ WebSocket broadcast complete for project ${project.id}`);
           
           // Auto-create snapshot after successful code generation
           try {
