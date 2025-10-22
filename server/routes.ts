@@ -996,21 +996,35 @@ Keep it under 150 words. Be factual and specific.`,
     try {
       const { projectId } = req.params;
       
+      console.log(`🎬 [PREVIEW] Starting preview compilation for project ${projectId}`);
+      
       // Get all project files (no auth required for preview - anyone can view shared projects)
       const files = await storage.getProjectFiles(projectId);
       
+      console.log(`📁 [PREVIEW] Found ${files?.length || 0} files in project ${projectId}`);
+      
       if (!files || files.length === 0) {
+        console.warn(`⚠️  [PREVIEW] No files found in project ${projectId}`);
         return res.status(404).send(`
           <!DOCTYPE html>
           <html>
             <head><title>No Files</title></head>
-            <body style="font-family: system-ui; padding: 2rem; text-align: center;">
-              <h2>No files found in this project</h2>
-              <p>Create some files to see a preview</p>
+            <body style="font-family: system-ui; padding: 2rem; text-align: center; background: #f5f5f5;">
+              <div style="max-width: 500px; margin: 4rem auto; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <h2 style="color: #666; margin-bottom: 1rem;">No Files Found</h2>
+                <p style="color: #999;">This project doesn't have any files yet. Create some files in the AI Build tab to see a preview.</p>
+              </div>
             </body>
           </html>
         `);
       }
+      
+      console.log(`📄 [PREVIEW] Files in project:`, files.map(f => ({ 
+        filename: f.filename, 
+        path: f.path,
+        language: f.language,
+        size: f.content?.length || 0 
+      })));
 
       // Build file system map for esbuild
       const fileSystem: Record<string, string> = {};
@@ -1031,11 +1045,14 @@ Keep it under 150 words. Be factual and specific.`,
           file.filename === 'main.jsx'
         ) {
           entryPoint = filePath;
+          console.log(`🎯 [PREVIEW] Detected entry point: ${entryPoint}`);
         }
       }
 
       // Check if entry point exists
       if (!fileSystem[entryPoint]) {
+        console.warn(`⚠️  [PREVIEW] Default entry point '${entryPoint}' not found, searching for alternatives...`);
+        
         // Fallback: find first .tsx, .jsx, .ts, or .js file
         const firstCodeFile = files.find(f => 
           f.filename.endsWith('.tsx') || 
@@ -1048,30 +1065,47 @@ Keep it under 150 words. Be factual and specific.`,
           entryPoint = firstCodeFile.path 
             ? `${firstCodeFile.path}/${firstCodeFile.filename}` 
             : firstCodeFile.filename;
+          console.log(`🎯 [PREVIEW] Using fallback entry point: ${entryPoint}`);
         } else {
+          console.warn(`⚠️  [PREVIEW] No code files found, checking for HTML...`);
+          
           // No code files - serve HTML only
           const htmlFile = files.find(f => 
             f.language === 'html' || f.filename.endsWith('.html')
           );
           
           if (htmlFile) {
+            console.log(`📄 [PREVIEW] Serving static HTML file: ${htmlFile.filename}`);
             return res.send(htmlFile.content);
           }
           
+          console.error(`❌ [PREVIEW] No entry point found in project ${projectId}`);
           return res.status(400).send(`
             <!DOCTYPE html>
             <html>
               <head><title>No Entry Point</title></head>
-              <body style="font-family: system-ui; padding: 2rem; text-align: center;">
-                <h2>No entry point found</h2>
-                <p>Create an index.tsx, index.jsx, App.tsx, or index.html file</p>
+              <body style="font-family: system-ui; padding: 2rem; text-align: center; background: #f5f5f5;">
+                <div style="max-width: 500px; margin: 4rem auto; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                  <h2 style="color: #666; margin-bottom: 1rem;">No Entry Point Found</h2>
+                  <p style="color: #999; margin-bottom: 1rem;">Create one of these files to see a preview:</p>
+                  <ul style="color: #999; text-align: left; list-style-position: inside;">
+                    <li>index.tsx or index.jsx (React)</li>
+                    <li>App.tsx (React component)</li>
+                    <li>index.html (Static HTML)</li>
+                  </ul>
+                </div>
               </body>
             </html>
           `);
         }
+      } else {
+        console.log(`✅ [PREVIEW] Using entry point: ${entryPoint}`);
       }
 
       // Use esbuild to bundle in-memory
+      console.log(`🔧 [PREVIEW] Starting esbuild compilation for entry point: ${entryPoint}`);
+      console.log(`📦 [PREVIEW] File system contains ${Object.keys(fileSystem).length} files`);
+      
       const build = await import('esbuild');
       
       const result = await build.build({
@@ -1151,7 +1185,7 @@ Keep it under 150 words. Be factual and specific.`,
       });
 
       if (result.errors.length > 0) {
-        console.error('Build errors:', result.errors);
+        console.error(`❌ [PREVIEW] Build errors for project ${projectId}:`, result.errors);
         return res.status(500).send(`
           <!DOCTYPE html>
           <html>
@@ -1159,13 +1193,29 @@ Keep it under 150 words. Be factual and specific.`,
             <body style="font-family: monospace; padding: 2rem; background: #1e1e1e; color: #ff6b6b;">
               <h2>Build Error</h2>
               <pre>${result.errors.map(e => e.text).join('\n')}</pre>
+              <p style="color: #999; margin-top: 2rem; font-size: 14px;">Check the server logs for more details</p>
             </body>
           </html>
         `);
       }
 
       // Get the bundled JavaScript
+      if (!result.outputFiles || result.outputFiles.length === 0) {
+        console.error(`❌ [PREVIEW] No output files generated for project ${projectId}`);
+        return res.status(500).send(`
+          <!DOCTYPE html>
+          <html>
+            <head><title>Build Error</title></head>
+            <body style="font-family: monospace; padding: 2rem; background: #1e1e1e; color: #ff6b6b;">
+              <h2>Build Error</h2>
+              <pre>No output files generated by esbuild</pre>
+            </body>
+          </html>
+        `);
+      }
+      
       const bundled = result.outputFiles[0].text;
+      console.log(`✅ [PREVIEW] Build successful! Generated ${bundled.length} bytes of JavaScript`);
 
       // Detect if code uses React or modules (they handle their own DOM ready)
       const usesReact = bundled.includes('React.createElement') || 
@@ -1219,10 +1269,15 @@ Keep it under 150 words. Be factual and specific.`,
 </html>
       `;
 
+      console.log(`🚀 [PREVIEW] Sending preview HTML for project ${projectId} (${html.length} bytes)`);
+      
       res.setHeader('Content-Type', 'text/html');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.send(html);
     } catch (error: any) {
-      console.error('Preview compilation error:', error);
+      console.error(`❌ [PREVIEW] Compilation error for project ${projectId}:`, error);
+      console.error(`❌ [PREVIEW] Error stack:`, error.stack);
+      
       res.status(500).send(`
         <!DOCTYPE html>
         <html>
@@ -1230,7 +1285,11 @@ Keep it under 150 words. Be factual and specific.`,
           <body style="font-family: monospace; padding: 2rem; background: #1e1e1e; color: #ff6b6b;">
             <h2>Compilation Error</h2>
             <pre>${error.message}</pre>
-            <pre>${error.stack}</pre>
+            <details style="margin-top: 1rem; color: #999;">
+              <summary>Stack Trace</summary>
+              <pre style="margin-top: 0.5rem; font-size: 12px;">${error.stack}</pre>
+            </details>
+            <p style="color: #999; margin-top: 2rem; font-size: 14px;">Check the server logs for more details</p>
           </body>
         </html>
       `);
@@ -1992,6 +2051,11 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
         }
 
         // Handle files based on mode
+        // Track file changes for change tracking UI
+        const createdFiles: string[] = [];
+        const modifiedFiles: string[] = [];
+        const deletedFiles: string[] = [];
+        
         if (result.files && Array.isArray(result.files)) {
           console.log(`💾 Processing ${result.files.length} files for project ${project.id} (mode: ${mode})`);
           
@@ -2007,6 +2071,7 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
               if (existingFile) {
                 console.log(`🗑️  Deleting file: ${file.filename} from project ${project.id}`);
                 await storage.deleteFile(existingFile.id, userId);
+                deletedFiles.push(file.filename);
                 deletedCount++;
                 console.log(`✅ File deleted: ${file.filename}`);
               }
@@ -2021,6 +2086,7 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
                 // Update existing file (only content can be updated via this method)
                 console.log(`📝 Updating file: ${file.filename} (${file.content?.length || 0} chars) in project ${project.id}`);
                 await storage.updateFile(existingFile.id, userId, file.content);
+                modifiedFiles.push(file.filename);
                 updatedCount++;
                 console.log(`✅ File updated: ${file.filename} with ID ${existingFile.id}`);
               } else {
@@ -2033,6 +2099,7 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
                   content: file.content,
                   language: file.language || "plaintext",
                 });
+                createdFiles.push(file.filename);
                 createdCount++;
                 console.log(`✅ File created: ${file.filename} with ID ${savedFile.id}`);
               }
@@ -2046,6 +2113,7 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
                 content: file.content,
                 language: file.language || "plaintext",
               });
+              createdFiles.push(file.filename);
               createdCount++;
               console.log(`✅ File created: ${file.filename} with ID ${savedFile.id}`);
             }
@@ -2115,6 +2183,14 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
         // Get updated usage stats to return to client
         const usageStats = await getUserUsageStats(userId);
 
+        // Build changes metadata for change tracking UI
+        const changes = {
+          created: createdFiles,
+          modified: modifiedFiles,
+          deleted: deletedFiles,
+          summary: checkpointData.actions?.join('\n') || 'Files generated successfully',
+        };
+
         res.json({
           commandId: savedCommand.id,
           result: {
@@ -2122,6 +2198,7 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
             projectId: project.id  // Include projectId in result for frontend
           },
           projectId: project.id,
+          changes,  // Include changes metadata for UI
           usage: {
             tokensUsed: inputTokens + outputTokens,
             cost: usageTracking.cost,
@@ -2377,6 +2454,11 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
           userId,
         });
 
+        // Track file changes for change tracking UI
+        const createdFiles: string[] = [];
+        const modifiedFiles: string[] = [];
+        const deletedFiles: string[] = [];
+
         if (parsedResult.files && Array.isArray(parsedResult.files)) {
           let totalLinesAdded = 0;
           
@@ -2398,6 +2480,9 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
               projectId: project.id,
               userId,
             });
+            
+            // Track created files
+            createdFiles.push(file.filename);
             
             // Count lines for summary
             totalLinesAdded += (file.content || '').split('\n').length;
@@ -2468,6 +2553,15 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
 
         const usageStats = await getUserUsageStats(userId);
 
+        // Build changes metadata for change tracking UI
+        const checkpointData = parsedResult.checkpoint || { actions: [] };
+        const changes = {
+          created: createdFiles,
+          modified: modifiedFiles,
+          deleted: deletedFiles,
+          summary: checkpointData.actions?.join('\n') || 'Files generated successfully',
+        };
+
         // Clean up abort controller on success
         activeGenerations.delete(validSessionId);
 
@@ -2475,6 +2569,7 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
           commandId: savedCommand.id,
           result: { ...parsedResult, projectId: project.id },
           projectId: project.id,
+          changes,  // Include changes metadata for UI
           usage: {
             tokensUsed: result.usage.input_tokens + result.usage.output_tokens,
             cost: 0, // Calculate from tracking
