@@ -18,6 +18,7 @@ import { useWebSocketStream } from "@/hooks/use-websocket-stream";
 import { ConnectionStatus } from "@/components/connection-status";
 import { nanoid } from "nanoid";
 import CostPreview from "@/components/cost-preview";
+import { ChangesPanel } from "@/components/changes-panel";
 
 interface CheckpointData {
   complexity: string;
@@ -69,6 +70,12 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   const [currentProgress, setCurrentProgress] = useState<ProgressStep[]>([]);
   const [currentMetrics, setCurrentMetrics] = useState<ProgressMetrics>({});
   const [isGenerating, setIsGenerating] = useState(false);
+  const [lastChanges, setLastChanges] = useState<{
+    created: string[];
+    modified: string[];
+    deleted: string[];
+    summary: string;
+  } | null>(null);
   
   // Fix sessionId persistence - scoped to project, recomputes when project changes
   const sessionId = useMemo(() => {
@@ -249,7 +256,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   });
 
   const commandMutation = useMutation<
-    { commandId: string; result?: any; needsSecrets?: boolean; message?: string; requiredSecrets?: RequiredSecret[] }, 
+    { commandId: string; result?: any; needsSecrets?: boolean; message?: string; requiredSecrets?: RequiredSecret[]; changes?: { created: string[]; modified: string[]; deleted: string[]; summary: string; } }, 
     Error, 
     { command: string; userId: string; projectId: string | null; secrets?: Record<string, string> }
   >({
@@ -291,6 +298,14 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       queryClient.invalidateQueries({ queryKey: ["/api/files"] });
       toast({ description: "Project generated successfully!" });
+      
+      // Display changes panel if changes data is available
+      if (data.changes) {
+        setLastChanges(data.changes);
+        // Auto-dismiss after 10 seconds
+        setTimeout(() => setLastChanges(null), 10000);
+      }
+      
       if (onProjectGenerated && data.result) {
         onProjectGenerated(data.result);
       }
@@ -613,7 +628,17 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-background relative">
+      {/* Changes Panel - Fixed Overlay */}
+      {lastChanges && (
+        <div className="absolute top-4 right-4 z-50 w-full max-w-md" data-testid="changes-panel-overlay">
+          <ChangesPanel 
+            changes={lastChanges} 
+            onClose={() => setLastChanges(null)} 
+          />
+        </div>
+      )}
+      
       {/* Messages - Clean Scrollable Area */}
       <div 
         ref={scrollRef} 
