@@ -20,6 +20,15 @@ Archetype is an AI-powered platform for rapid web development, featuring an AI c
 - Dark mode with enterprise-grade polish
 - Subtle micro-interactions and hover effects
 
+## Recent Changes
+### Production Bug Fixes (October 2025)
+- **Image Upload Directory Creation**: Fixed ENOENT errors by ensuring `attached_assets/chat_images/` directory exists with recursive mkdir before writing files
+- **Robust JSON Parsing Pipeline**: Implemented string-aware brace tracking to handle SySop responses with emoji prefixes (🧠🔨✅), literal braces in strings, and stray closing braces in preamble
+  - 3-tier extraction: Code fences → String-aware brace tracking → Fallback regex
+  - Edge cases handled: Escaped quotes, negative depth guard, largest object selection
+  - All edge cases tested and architect-approved
+- **Max Tokens Optimization**: Clarified Claude Sonnet 4 already at API maximum (8192 output tokens) for optimal response generation
+
 ## System Architecture
 The platform is built with a React frontend, an Express.js backend, and PostgreSQL for data persistence.
 
