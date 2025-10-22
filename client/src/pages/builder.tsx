@@ -63,22 +63,42 @@ export default function Builder() {
     queryKey: ["/api/commands"],
   });
 
-  const { data: projects = [] } = useQuery<Project[]>({
+  const { data: projects = [], isFetched: projectsFetched, isFetching: projectsFetching } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
     enabled: isAuthenticated,
   });
 
   const { data: allFiles = [] } = useQuery<File[]>({
     queryKey: ["/api/files"],
-    enabled: isAuthenticated,
+    enabled: isAuthenticated, // Fetch files when authenticated
   });
+
+  // Find current project
+  const currentProject = projects.find(p => p.id === currentProjectId);
+
+  // Validate project existence after projects query completes
+  // Now that we properly invalidate projects cache after creation, this should work reliably
+  useEffect(() => {
+    // Only validate if:
+    // 1. We have a projectId from URL
+    // 2. Projects query has completed AND is not currently refetching (isFetched && !isFetching)
+    // 3. Project doesn't exist in the list
+    // 4. We're at a builder route (not just /builder)
+    if (currentProjectId && projectsFetched && !projectsFetching && !currentProject && match) {
+      // Project doesn't exist - show error and redirect
+      toast({
+        title: "Project not found",
+        description: "The project you're looking for doesn't exist or you don't have access to it.",
+        variant: "destructive",
+      });
+      setLocation("/dashboard");
+    }
+  }, [currentProjectId, projectsFetched, projectsFetching, currentProject, match, toast, setLocation]);
 
   // Filter files by current project
   const files = currentProjectId 
     ? allFiles.filter(f => f.projectId === currentProjectId)
     : [];
-
-  const currentProject = projects.find(p => p.id === currentProjectId);
 
   const handleProjectGenerated = (result: any) => {
     if (result?.projectId) {
