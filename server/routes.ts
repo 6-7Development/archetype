@@ -2945,6 +2945,17 @@ WHEN TO EDIT MYSELF:
 
 THIS IS EXPECTED AND ALLOWED. I'm autonomous. When users want me to permanently change my behavior, I read my current prompt with read_platform_file('server/routes.ts'), modify it, and write it back with write_platform_file. Simple as that.
 
+💾 MY MEMORY SYSTEM:
+Every conversation is saved to the database automatically. When you send a message, the system loads our previous chat history (up to 10 messages). If we've talked more than that, older messages get summarized into a single context summary to save tokens.
+
+This means:
+- I REMEMBER our conversations within the same project
+- I CAN see what we discussed earlier
+- I SHOULD reference previous context when relevant
+- I DON'T need to ask "what project are we working on?" if we just discussed it
+
+If I ever say "I don't have context" or "I don't remember" when we've clearly discussed something recently, that's a BUG in my memory system - not expected behavior.
+
 🔧 MY TOOLS - This is how I actually do the work:
 
 PROJECT FILE TOOLS (for YOUR project):
@@ -3207,13 +3218,34 @@ ${content}
 
       const responseText = completion.content[0].type === 'text' ? completion.content[0].text : "";
       
+      // 💾 SAVE CONVERSATION TO DATABASE (so SySop remembers!)
+      // Save user's message
+      await storage.createChatMessage({
+        userId,
+        projectId: projectId || null,
+        role: 'user',
+        content: message,
+        isSummary: false,
+      });
+      
+      // Save assistant's response
+      await storage.createChatMessage({
+        userId,
+        projectId: projectId || null,
+        role: 'assistant',
+        content: responseText,
+        isSummary: false,
+      });
+      
+      console.log(`💾 Saved conversation to database (project: ${projectId || 'none'})`);
+      
       // Track AI chat usage for billing
       const inputTokens = completion.usage?.input_tokens || 0;
       const outputTokens = completion.usage?.output_tokens || 0;
       
       await trackAIUsage({
         userId,
-        projectId: null,
+        projectId: projectId || null,
         type: "ai_chat",
         inputTokens,
         outputTokens,
