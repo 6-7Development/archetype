@@ -3749,6 +3749,17 @@ Keep your reflection brief (2-3 sentences).`
       });
     } catch (error: any) {
       console.error('AI chat error:', error);
+      
+      // Broadcast error to frontend to clear progress indicators
+      const { sessionId } = req.body;
+      if (sessionId) {
+        broadcastToSession(sessionId, {
+          type: 'chat-complete',
+          status: 'error',
+          message: error.message || 'Failed to process message',
+        });
+      }
+      
       res.status(500).json({ error: error.message || 'Failed to process message' });
     }
   });
