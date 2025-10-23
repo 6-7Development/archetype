@@ -51,40 +51,59 @@ export class PlatformHealingService {
       const backupId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const branchName = `${this.BACKUP_BRANCH_PREFIX}${backupId}`;
 
-      await execFileAsync('git', ['add', '-A'], { cwd: this.PROJECT_ROOT });
-      
-      const commitMessage = `[Meta-SySop Backup] ${description}`;
-      
+      // Try git operations, but don't fail if git unavailable
       try {
-        await execFileAsync('git', [
-          '-c', 'user.name=Meta-SySop',
-          '-c', 'user.email=meta-sysop@archetype.platform',
-          'commit', '-m', commitMessage
-        ], { cwd: this.PROJECT_ROOT });
-      } catch (commitError: any) {
-        if (commitError.message.includes('nothing to commit')) {
-          console.log('[PLATFORM-BACKUP] No changes to commit, creating backup at current HEAD');
-        } else {
-          throw commitError;
+        await execFileAsync('git', ['add', '-A'], { cwd: this.PROJECT_ROOT });
+        
+        const commitMessage = `[Meta-SySop Backup] ${description}`;
+        
+        try {
+          await execFileAsync('git', [
+            '-c', 'user.name=Meta-SySop',
+            '-c', 'user.email=meta-sysop@archetype.platform',
+            'commit', '-m', commitMessage
+          ], { cwd: this.PROJECT_ROOT });
+        } catch (commitError: any) {
+          if (commitError.message.includes('nothing to commit')) {
+            console.log('[PLATFORM-BACKUP] No changes to commit');
+          } else {
+            throw commitError;
+          }
         }
+        
+        const { stdout: commitHash } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: this.PROJECT_ROOT });
+        await execFileAsync('git', ['branch', branchName], { cwd: this.PROJECT_ROOT });
+
+        console.log(`[PLATFORM-BACKUP] ✅ Created backup: ${backupId}`);
+
+        return {
+          id: backupId,
+          timestamp,
+          commitHash: commitHash.trim(),
+          branch: branchName,
+          description,
+        };
+      } catch (gitError: any) {
+        // Git not available (Render) - create dummy backup and continue
+        console.warn(`[PLATFORM-BACKUP] ⚠️ Git unavailable, skipping backup: ${gitError.message}`);
+        return {
+          id: backupId,
+          timestamp,
+          commitHash: 'no-git',
+          branch: 'no-git',
+          description: `${description} (git unavailable)`,
+        };
       }
-      
-      const { stdout: commitHash } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: this.PROJECT_ROOT });
-      
-      await execFileAsync('git', ['branch', branchName], { cwd: this.PROJECT_ROOT });
-
-      console.log(`[PLATFORM-BACKUP] Created backup: ${backupId} at commit ${commitHash.trim()}`);
-
-      return {
-        id: backupId,
-        timestamp,
-        commitHash: commitHash.trim(),
-        branch: branchName,
-        description,
-      };
     } catch (error: any) {
-      console.error('[PLATFORM-BACKUP] Backup creation failed:', error);
-      throw new Error(`Backup creation failed: ${error.message}`);
+      console.error('[PLATFORM-BACKUP] ❌ Backup system error:', error);
+      // Return dummy backup instead of throwing
+      return {
+        id: `fallback-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        commitHash: 'error',
+        branch: 'error',
+        description: `Backup failed: ${error.message}`,
+      };
     }
   }
 
