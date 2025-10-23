@@ -637,7 +637,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-full bg-background relative">
+    <div className="flex flex-col h-full bg-[hsl(220,20%,12%)] relative">
       {/* Changes Panel - Fixed Overlay */}
       {lastChanges && (
         <div className="absolute top-4 right-4 z-50 w-full max-w-md" data-testid="changes-panel-overlay">
@@ -651,7 +651,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       {/* Messages - Clean Scrollable Area */}
       <div 
         ref={scrollRef} 
-        className="flex-1 overflow-y-auto px-6 py-8 scroll-smooth"
+        className="flex-1 overflow-y-auto px-6 py-8 scroll-smooth bg-[hsl(220,20%,12%)]"
         style={{ scrollBehavior: 'smooth' }}
       >
         <div className="space-y-4 max-w-4xl mx-auto pb-4">
@@ -670,13 +670,13 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                   <div className={cn(
                     "w-8 h-8 rounded-full flex items-center justify-center",
                     message.isSummary 
-                      ? "bg-muted" 
-                      : "bg-primary"
+                      ? "bg-[hsl(220,18%,16%)] border border-[hsl(220,15%,28%)]" 
+                      : "bg-[hsl(220,70%,60%)]"
                   )}>
                     {message.isSummary ? (
-                      <AlertCircle className="w-4 h-4 text-muted-foreground" />
+                      <AlertCircle className="w-4 h-4 text-[hsl(220,12%,55%)]" />
                     ) : (
-                      <Sparkles className="w-4 h-4 text-primary-foreground" />
+                      <Sparkles className="w-4 h-4 text-[hsl(220,8%,98%)]" />
                     )}
                   </div>
                 </div>
@@ -689,7 +689,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
               )}>
                 {/* Timestamp */}
                 {message.timestamp && (
-                  <div className="text-xs text-muted-foreground px-3">
+                  <div className="text-[11px] text-[hsl(220,12%,55%)]/60 px-2">
                     {new Date(message.timestamp).toLocaleTimeString()}
                   </div>
                 )}
@@ -697,16 +697,16 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                 {/* Message Content Bubble */}
                 <div
                   className={cn(
-                    "px-4 py-3 shadow-sm text-sm prose dark:prose-invert max-w-none",
+                    "px-3 py-2 text-sm prose dark:prose-invert max-w-none",
                     message.role === "user"
-                      ? "bg-primary text-primary-foreground rounded-2xl rounded-tr-sm"
+                      ? "bg-[hsl(220,70%,60%)] text-[hsl(220,8%,98%)] rounded-2xl rounded-tr-sm"
                       : message.isSummary
-                      ? "bg-muted/50 rounded-2xl rounded-tl-sm"
-                      : "bg-muted rounded-2xl rounded-tl-sm"
+                      ? "bg-[hsl(220,18%,16%)] text-[hsl(220,8%,98%)] rounded-2xl rounded-tl-sm border border-[hsl(220,15%,28%)]"
+                      : "bg-[hsl(220,16%,20%)] text-[hsl(220,8%,98%)] rounded-2xl rounded-tl-sm border border-[hsl(220,15%,28%)]"
                   )}
                 >
                   {message.isSummary && (
-                    <p className="text-xs font-medium mb-2 text-muted-foreground border-b border-border pb-1">
+                    <p className="text-xs font-medium mb-2 text-[hsl(220,12%,55%)] border-b border-[hsl(220,15%,28%)] pb-1">
                       📝 Previous conversation summary
                     </p>
                   )}
@@ -715,13 +715,13 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                   
                   {/* Display images if present */}
                   {message.images && message.images.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-2 border-t border-border/50 pt-3">
+                    <div className="mt-3 flex flex-wrap gap-2 border-t border-[hsl(220,15%,28%)]/50 pt-3">
                       {message.images.map((imageUrl, imgIdx) => (
                         <img
                           key={imgIdx}
                           src={imageUrl}
                           alt={`Attachment ${imgIdx + 1}`}
-                          className="max-w-xs rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                          className="max-w-xs rounded-lg cursor-pointer hover:opacity-90 transition-opacity border border-[hsl(220,15%,28%)]"
                           onClick={() => setZoomImage(imageUrl)}
                           data-testid={`message-image-${idx}-${imgIdx}`}
                         />
@@ -732,16 +732,16 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                 
                 {/* Checkpoint billing info */}
                 {!isAdmin && message.role === "assistant" && message.checkpoint && (
-                  <div className="text-xs text-muted-foreground bg-muted/30 rounded-md px-3 py-2 space-y-1 max-w-[85%]">
+                  <div className="text-xs text-[hsl(220,10%,72%)] bg-[hsl(220,18%,16%)] rounded-md px-3 py-2 space-y-1 max-w-[85%] border border-[hsl(220,15%,28%)]">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-medium">{message.checkpoint.complexity.toUpperCase()}</span>
-                      <span className="font-semibold">${message.checkpoint.cost.toFixed(2)}</span>
+                      <span className="font-medium text-[hsl(220,8%,98%)]">{message.checkpoint.complexity.toUpperCase()}</span>
+                      <span className="font-semibold text-[hsl(220,70%,60%)]">${message.checkpoint.cost.toFixed(2)}</span>
                     </div>
-                    <div className="text-[11px] opacity-70">{message.checkpoint.estimatedTime}</div>
+                    <div className="text-[11px] text-[hsl(220,12%,55%)]">{message.checkpoint.estimatedTime}</div>
                     {message.checkpoint.actions && message.checkpoint.actions.length > 0 && (
-                      <div className="pt-1 border-t border-border/30 space-y-0.5">
+                      <div className="pt-1 border-t border-[hsl(220,15%,28%)] space-y-0.5">
                         {message.checkpoint.actions.map((action, i) => (
-                          <div key={i} className="text-[11px] opacity-70">• {action}</div>
+                          <div key={i} className="text-[11px] text-[hsl(220,12%,55%)]">• {action}</div>
                         ))}
                       </div>
                     )}
@@ -752,8 +752,8 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
               {/* Avatar - User Side */}
               {message.role === "user" && (
                 <div className="flex-shrink-0">
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                    <User className="w-4 h-4 text-primary-foreground" />
+                  <div className="w-8 h-8 rounded-full bg-[hsl(220,70%,60%)] flex items-center justify-center">
+                    <User className="w-4 h-4 text-[hsl(220,8%,98%)]" />
                   </div>
                 </div>
               )}
@@ -764,19 +764,19 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
           {chatMutation.isPending && (
             <div className="flex gap-3 items-start">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-primary-foreground animate-pulse" />
+                <div className="w-8 h-8 rounded-full bg-[hsl(220,70%,60%)] flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-[hsl(220,8%,98%)] animate-pulse" />
                 </div>
               </div>
-              <div className="bg-muted rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm min-w-[200px]">
+              <div className="bg-[hsl(220,16%,20%)] border border-[hsl(220,15%,28%)] rounded-2xl rounded-tl-sm px-3 py-2 min-w-[200px]">
                 <div className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                  <span className="text-sm text-muted-foreground">
+                  <Loader2 className="w-4 h-4 animate-spin text-[hsl(220,70%,60%)]" />
+                  <span className="text-sm text-[hsl(220,10%,72%)]">
                     {streamState.chatProgress?.message || 'Thinking...'}
                   </span>
                 </div>
                 {streamState.chatProgress?.filesModified !== undefined && streamState.chatProgress.filesModified > 0 && (
-                  <div className="text-xs text-muted-foreground mt-2 pl-6">
+                  <div className="text-xs text-[hsl(220,12%,55%)] mt-2 pl-6">
                     Modified {streamState.chatProgress.filesModified} {streamState.chatProgress.filesModified === 1 ? 'file' : 'files'}
                   </div>
                 )}
@@ -784,73 +784,71 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
             </div>
           )}
           
-          {/* Progress Display - Prominent Card */}
+          {/* Progress Display - Clean and Minimal */}
           {currentProgress.length > 0 && (
             <div className="flex gap-3 items-start">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-primary-foreground" />
+                <div className="w-8 h-8 rounded-full bg-[hsl(220,70%,60%)] flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-[hsl(220,8%,98%)]" />
                 </div>
               </div>
-              <Card className="flex-1 max-w-[85%] shadow-md border-primary/20">
-                <CardContent className="p-4">
-                  <AgentProgress
-                    steps={currentProgress}
-                    isWorking={isGenerating}
-                    showTeachingEmojis={true}
-                    metrics={currentMetrics}
-                    onStop={async () => {
-                      try {
-                        await apiRequest("POST", "/api/commands/abort", { sessionId });
-                        setIsGenerating(false);
-                        setCurrentProgress([]);
-                        setCurrentMetrics({});
-                        toast({ description: "Generation stopped successfully" });
-                      } catch (error: any) {
-                        console.error('Failed to abort generation:', error);
-                        setIsGenerating(false);
-                        setCurrentProgress([]);
-                        setCurrentMetrics({});
-                        toast({ 
-                          variant: "destructive",
-                          description: "Failed to stop generation" 
-                        });
-                      }
-                    }}
-                  />
-                </CardContent>
-              </Card>
+              <div className="flex-1 max-w-[85%] bg-[hsl(220,16%,20%)] border border-[hsl(220,15%,28%)] rounded-2xl rounded-tl-sm p-3">
+                <AgentProgress
+                  steps={currentProgress}
+                  isWorking={isGenerating}
+                  showTeachingEmojis={true}
+                  metrics={currentMetrics}
+                  onStop={async () => {
+                    try {
+                      await apiRequest("POST", "/api/commands/abort", { sessionId });
+                      setIsGenerating(false);
+                      setCurrentProgress([]);
+                      setCurrentMetrics({});
+                      toast({ description: "Generation stopped successfully" });
+                    } catch (error: any) {
+                      console.error('Failed to abort generation:', error);
+                      setIsGenerating(false);
+                      setCurrentProgress([]);
+                      setCurrentMetrics({});
+                      toast({ 
+                        variant: "destructive",
+                        description: "Failed to stop generation" 
+                      });
+                    }
+                  }}
+                />
+              </div>
             </div>
           )}
           
           {/* Secrets Request Form */}
           {secretsRequest && (
-            <Card className="border-primary/50 bg-card" data-testid="secrets-request-card">
+            <Card className="border-[hsl(220,15%,28%)] bg-[hsl(220,18%,16%)]" data-testid="secrets-request-card">
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <Key className="w-5 h-5 text-primary" />
-                  <CardTitle className="text-lg">Secure Credentials Required</CardTitle>
+                  <Key className="w-5 h-5 text-[hsl(220,70%,60%)]" />
+                  <CardTitle className="text-lg text-[hsl(220,8%,98%)]">Secure Credentials Required</CardTitle>
                 </div>
-                <CardDescription>
+                <CardDescription className="text-[hsl(220,10%,72%)]">
                   {secretsRequest.message}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription className="text-sm">
+                <Alert className="bg-[hsl(220,16%,20%)] border-[hsl(220,15%,28%)]">
+                  <AlertCircle className="h-4 w-4 text-[hsl(220,70%,60%)]" />
+                  <AlertDescription className="text-sm text-[hsl(220,10%,72%)]">
                     Your credentials will be stored securely as environment variables and never exposed in generated code.
                   </AlertDescription>
                 </Alert>
                 
                 {secretsRequest.requiredSecrets.map((secret) => (
                   <div key={secret.key} className="space-y-2">
-                    <Label htmlFor={secret.key} className="text-sm font-medium">
+                    <Label htmlFor={secret.key} className="text-sm font-medium text-[hsl(220,8%,98%)]">
                       {secret.key}
                     </Label>
-                    <p className="text-xs text-muted-foreground">{secret.description}</p>
+                    <p className="text-xs text-[hsl(220,10%,72%)]">{secret.description}</p>
                     {secret.getInstructions && (
-                      <p className="text-xs text-primary">
+                      <p className="text-xs text-[hsl(220,70%,60%)]">
                         Get it from: <a href={secret.getInstructions} target="_blank" rel="noopener noreferrer" className="underline">{secret.getInstructions}</a>
                       </p>
                     )}
@@ -860,7 +858,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                       value={secretsInput[secret.key] || ""}
                       onChange={(e) => setSecretsInput({ ...secretsInput, [secret.key]: e.target.value })}
                       placeholder={`Enter your ${secret.key}`}
-                      className="font-mono text-sm"
+                      className="font-mono text-sm bg-[hsl(220,16%,20%)] border-[hsl(220,15%,28%)] text-[hsl(220,8%,98%)]"
                       data-testid={`input-secret-${secret.key}`}
                     />
                   </div>
@@ -891,41 +889,38 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       </div>
 
       {/* Input - Sticky Bottom Toolbar */}
-      <div className="sticky bottom-0 left-0 right-0 border-t border-border/50 bg-background/95 backdrop-blur-sm z-10">
+      <div className="sticky bottom-0 left-0 right-0 border-t border-[hsl(220,15%,28%)] bg-[hsl(220,20%,12%)] z-10">
         <div className="max-w-4xl mx-auto p-4">
           {/* File Status Display */}
           {streamState.currentFile && (
-            <div className="mb-3 px-4 py-2 bg-primary/5 border-l-4 border-primary rounded-r-md" data-testid="file-status-display">
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
+            <div className="mb-2 px-3 py-1.5 bg-[hsl(220,16%,20%)] border-l-2 border-[hsl(220,70%,60%)] rounded text-xs" data-testid="file-status-display">
+              <p className="text-[hsl(220,10%,72%)] flex items-center gap-2">
                 {streamState.currentFile.action === 'creating' && (
                   <>
-                    <span className="text-base">📝</span>
                     <span>Creating</span>
                   </>
                 )}
                 {streamState.currentFile.action === 'updating' && (
                   <>
-                    <span className="text-base">✏️</span>
                     <span>Editing</span>
                   </>
                 )}
                 {streamState.currentFile.action === 'deleting' && (
                   <>
-                    <span className="text-base">🗑️</span>
                     <span>Deleting</span>
                   </>
                 )}
-                <code className="text-primary font-mono text-sm">{streamState.currentFile.filename}</code>
-                <Loader2 className="w-3 h-3 animate-spin ml-auto" />
+                <code className="text-[hsl(220,70%,60%)] font-mono">{streamState.currentFile.filename}</code>
+                <Loader2 className="w-3 h-3 animate-spin ml-auto text-[hsl(220,70%,60%)]" />
               </p>
             </div>
           )}
           
           {/* File Summary Display */}
           {streamState.fileSummary && !streamState.currentFile && (
-            <div className="mb-3 px-4 py-2 bg-green-500/10 border-l-4 border-green-500 rounded-r-md" data-testid="file-summary-display">
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <span className="text-base">✅</span>
+            <div className="mb-2 px-3 py-1.5 bg-[hsl(220,16%,20%)] border-l-2 border-green-500/60 rounded text-xs" data-testid="file-summary-display">
+              <p className="text-[hsl(220,10%,72%)] flex items-center gap-2">
+                <span>✓</span>
                 <span>
                   Saved {streamState.fileSummary.filesChanged} file{streamState.fileSummary.filesChanged !== 1 ? 's' : ''}
                   {' '}({streamState.fileSummary.linesAdded.toLocaleString()} line{streamState.fileSummary.linesAdded !== 1 ? 's' : ''})
@@ -936,38 +931,35 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
           
           {/* WebSocket Stream: Thinking Display */}
           {streamState.currentThought && (
-            <div className="mb-3 px-4 py-2 bg-blue-500/10 border-l-4 border-blue-500 rounded-r-md" data-testid="stream-thinking-display">
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <span className="text-base">🧠</span>
+            <div className="mb-2 px-3 py-1.5 bg-[hsl(220,16%,20%)] border-l-2 border-blue-500/60 rounded text-xs" data-testid="stream-thinking-display">
+              <p className="text-[hsl(220,10%,72%)] flex items-center gap-2">
                 <span className="italic">{streamState.currentThought}</span>
-                <Loader2 className="w-3 h-3 animate-spin ml-auto" />
+                <Loader2 className="w-3 h-3 animate-spin ml-auto text-[hsl(220,70%,60%)]" />
               </p>
             </div>
           )}
           
           {/* WebSocket Stream: Status Display */}
           {streamState.currentStatus && (
-            <div className="mb-3 px-4 py-2 bg-amber-500/10 border-l-4 border-amber-500 rounded-r-md" data-testid="stream-status-display">
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <span className="text-base">📊</span>
+            <div className="mb-2 px-3 py-1.5 bg-[hsl(220,16%,20%)] border-l-2 border-amber-500/60 rounded text-xs" data-testid="stream-status-display">
+              <p className="text-[hsl(220,10%,72%)] flex items-center gap-2">
                 <span>{streamState.currentStatus}</span>
                 {streamState.currentStep > 0 && streamState.totalSteps > 0 && (
-                  <span className="ml-auto text-xs font-mono">
+                  <span className="ml-auto font-mono">
                     {streamState.currentStep}/{streamState.totalSteps}
                   </span>
                 )}
-                <Loader2 className="w-3 h-3 animate-spin" />
+                <Loader2 className="w-3 h-3 animate-spin text-[hsl(220,70%,60%)]" />
               </p>
             </div>
           )}
           
           {/* WebSocket Stream: Action Display */}
           {streamState.currentAction && (
-            <div className="mb-3 px-4 py-2 bg-purple-500/10 border-l-4 border-purple-500 rounded-r-md" data-testid="stream-action-display">
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <span className="text-base">🔨</span>
+            <div className="mb-2 px-3 py-1.5 bg-[hsl(220,16%,20%)] border-l-2 border-purple-500/60 rounded text-xs" data-testid="stream-action-display">
+              <p className="text-[hsl(220,10%,72%)] flex items-center gap-2">
                 <span>{streamState.currentAction}</span>
-                <Loader2 className="w-3 h-3 animate-spin ml-auto" />
+                <Loader2 className="w-3 h-3 animate-spin ml-auto text-[hsl(220,70%,60%)]" />
               </p>
             </div>
           )}
@@ -978,11 +970,11 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
               {/* Show uploading images with loading spinner */}
               {Array.from(uploadingImages.keys()).map((tempId) => (
                 <div key={tempId} className="relative">
-                  <div className="h-20 w-20 rounded border border-border bg-muted/50 flex items-center justify-center">
-                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  <div className="h-20 w-20 rounded border border-[hsl(220,15%,28%)] bg-[hsl(220,18%,16%)] flex items-center justify-center">
+                    <Loader2 className="w-6 h-6 animate-spin text-[hsl(220,70%,60%)]" />
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
+                    <span className="text-xs text-[hsl(220,12%,55%)] bg-[hsl(220,20%,12%)]/80 px-2 py-1 rounded">
                       Uploading...
                     </span>
                   </div>
@@ -995,7 +987,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                   <img
                     src={imageUrl}
                     alt={`Preview ${index + 1}`}
-                    className="h-20 w-20 object-cover rounded border border-border"
+                    className="h-20 w-20 object-cover rounded border border-[hsl(220,15%,28%)]"
                     data-testid={`image-preview-${index}`}
                   />
                   <button
@@ -1012,14 +1004,14 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
             </div>
           )}
           
-          <div className="flex gap-3 items-end">
+          <div className="flex gap-2 items-end">
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               onPaste={handlePaste}
               placeholder="Message SySop..."
-              className="min-h-[44px] max-h-[200px] resize-none text-base border-border/50 focus-visible:ring-1 rounded-2xl px-4 py-3"
+              className="min-h-[44px] max-h-[200px] resize-none text-base bg-[hsl(220,18%,16%)] border-[hsl(220,15%,28%)] text-[hsl(220,8%,98%)] placeholder:text-[hsl(220,12%,55%)] focus-visible:ring-1 focus-visible:ring-[hsl(220,70%,60%)] rounded-2xl px-4 py-3"
               disabled={chatMutation.isPending}
               data-testid="input-chat-message"
               rows={1}
@@ -1028,7 +1020,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
               onClick={handleSend}
               disabled={!input.trim() || chatMutation.isPending}
               size="icon"
-              className="flex-shrink-0 h-11 w-11 rounded-full shadow-md"
+              className="flex-shrink-0 h-11 w-11 rounded-full bg-[hsl(220,70%,60%)] hover:bg-[hsl(220,70%,65%)] text-[hsl(220,8%,98%)]"
               data-testid="button-send-chat"
             >
               {chatMutation.isPending ? (
