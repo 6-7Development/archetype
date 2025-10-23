@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { 
   Code2, 
   Play, 
@@ -27,10 +28,12 @@ import {
   User,
   LayoutDashboard,
   Sparkles,
-  ArrowLeft
+  ArrowLeft,
+  Menu
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { File } from "@shared/schema";
 import { cn } from "@/lib/utils";
@@ -41,9 +44,11 @@ export default function Workspace() {
   const [isRunning, setIsRunning] = useState(false);
   const [consoleOutput, setConsoleOutput] = useState<string[]>([]);
   const [showFileTree, setShowFileTree] = useState(true);
+  const [showMobileFileExplorer, setShowMobileFileExplorer] = useState(false);
   const consoleRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user, isLoading: isAuthLoading } = useAuth();
+  const isMobile = useIsMobile();
 
   const { data: files = [] } = useQuery<File[]>({
     queryKey: ["/api/files"],
@@ -155,16 +160,31 @@ export default function Workspace() {
             </Link>
           </Button>
           
-          {/* File tree toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => setShowFileTree(!showFileTree)}
-            data-testid="button-toggle-filetree"
-          >
-            {showFileTree ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
-          </Button>
+          {/* Hamburger menu (mobile only) */}
+          {isMobile && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 md:hidden"
+              onClick={() => setShowMobileFileExplorer(true)}
+              data-testid="button-mobile-menu"
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
+          )}
+          
+          {/* File tree toggle (desktop only) */}
+          {!isMobile && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 hidden md:flex"
+              onClick={() => setShowFileTree(!showFileTree)}
+              data-testid="button-toggle-filetree"
+            >
+              {showFileTree ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
+            </Button>
+          )}
           
           {/* Active File */}
           {activeFile && (
@@ -259,11 +279,63 @@ export default function Workspace() {
         </div>
       </header>
 
+      {/* Mobile File Explorer Sheet */}
+      <Sheet open={showMobileFileExplorer} onOpenChange={setShowMobileFileExplorer}>
+        <SheetContent side="left" className="w-64 p-0">
+          <div className="h-full flex flex-col bg-card">
+            <div className="h-14 flex items-center justify-between px-4 border-b">
+              <div className="flex items-center gap-2">
+                <Folder className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold">Files</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleCreateFile}
+                data-testid="button-create-file-mobile"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <ScrollArea className="flex-1">
+              <div className="p-3 space-y-1">
+                {files.length === 0 ? (
+                  <div className="text-center py-8">
+                    <FileCode className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">No files</p>
+                  </div>
+                ) : (
+                  files.map((file) => (
+                    <button
+                      key={file.id}
+                      onClick={() => {
+                        setActiveFile(file);
+                        setShowMobileFileExplorer(false);
+                      }}
+                      className={cn(
+                        "w-full flex items-center gap-2 px-3 py-2 rounded text-sm hover-elevate active-elevate-2 transition-colors",
+                        activeFile?.id === file.id && "bg-accent"
+                      )}
+                      data-testid={`file-mobile-${file.filename}`}
+                    >
+                      {getFileIcon(file.filename)}
+                      <span className="flex-1 text-left truncate">{file.filename}</span>
+                    </button>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+          </div>
+        </SheetContent>
+      </Sheet>
+
       {/* AGENT 3 LAYOUT: 4-Panel Split */}
       <div className="flex-1 flex overflow-hidden">
-        {/* LEFT: File Tree (Collapsible) */}
-        {showFileTree && (
-          <div className="w-48 border-r flex flex-col bg-card">
+        {/* LEFT: File Tree (Desktop only - Collapsible) */}
+        {!isMobile && showFileTree && (
+          <div className="w-48 border-r flex flex-col bg-card hidden md:flex">
             <div className="h-9 flex items-center justify-between px-2 border-b">
               <div className="flex items-center gap-1.5">
                 <Folder className="h-3.5 w-3.5 text-primary" />
