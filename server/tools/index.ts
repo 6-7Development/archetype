@@ -5,6 +5,9 @@ export { consultArchitect } from './architect-consult';
 export { performDiagnosis } from './diagnosis';
 export { executePlatformRead, executePlatformWrite, executePlatformList } from './platform-tools';
 export { executeProjectList, executeProjectRead, executeProjectWrite, executeProjectDelete } from './project-tools';
+export { createTaskList, updateTask, readTaskList } from './task-management';
+export { spawnSubAgent, checkSubAgentStatus } from './sub-agent';
+export { requestArchitectReview } from './architect-review';
 
 /**
  * Tool definitions for Claude
@@ -294,6 +297,172 @@ export const SYSOP_TOOLS = [
         },
       },
       required: ['projectId', 'filename'],
+    },
+  },
+  // Task Management Tools
+  {
+    name: 'create_task_list',
+    description: 'Break down complex user requests into a task list with manageable steps. Use this at the start of any non-trivial work to organize and track progress. Creates a visible task list in the chat interface.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        title: {
+          type: 'string',
+          description: 'Title of the task list (e.g., "Build Authentication System")',
+        },
+        description: {
+          type: 'string',
+          description: 'Overall description of the work to be done',
+        },
+        tasks: {
+          type: 'array',
+          description: 'Array of individual tasks',
+          items: {
+            type: 'object',
+            properties: {
+              title: {
+                type: 'string',
+                description: 'Task title',
+              },
+              description: {
+                type: 'string',
+                description: 'Detailed task description',
+              },
+              status: {
+                type: 'string',
+                enum: ['pending', 'in_progress'],
+                description: 'Initial status (default: pending, use in_progress for first task)',
+              },
+            },
+            required: ['title'],
+          },
+        },
+      },
+      required: ['title', 'tasks'],
+    },
+  },
+  {
+    name: 'update_task',
+    description: 'Update task status and progress. Mark tasks as in_progress, completed_pending_review, or completed. ALWAYS mark tasks completed immediately after finishing work.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        taskId: {
+          type: 'string',
+          description: 'Task ID to update',
+        },
+        status: {
+          type: 'string',
+          enum: ['pending', 'in_progress', 'completed_pending_review', 'completed', 'cancelled'],
+          description: 'New task status',
+        },
+        architectReviewed: {
+          type: 'string',
+          enum: ['yes', 'no', 'not_applicable'],
+          description: 'Whether architect has reviewed this task',
+        },
+        architectReviewReason: {
+          type: 'string',
+          description: 'Reason for architect review status',
+        },
+        result: {
+          type: 'string',
+          description: 'Result summary',
+        },
+        error: {
+          type: 'string',
+          description: 'Error message if task failed',
+        },
+      },
+      required: ['taskId'],
+    },
+  },
+  {
+    name: 'read_task_list',
+    description: 'Get current task list and task statuses. Use this to check progress.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        taskListId: {
+          type: 'string',
+          description: 'Specific task list ID to read',
+        },
+      },
+    },
+  },
+  // Sub-Agent Delegation Tools
+  {
+    name: 'spawn_sub_agent',
+    description: 'Delegate specialized work to a sub-agent. Use this for parallel execution, specialized analysis, or isolated tasks. Sub-agents are autonomous and will complete the work independently.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        agentType: {
+          type: 'string',
+          enum: ['architect', 'specialist', 'tester', 'reviewer', 'analyzer'],
+          description: 'Type of sub-agent to spawn',
+        },
+        task: {
+          type: 'string',
+          description: 'Clear, specific task for the sub-agent to complete',
+        },
+        context: {
+          type: 'object',
+          description: 'Relevant context and data for the sub-agent',
+        },
+        systemPrompt: {
+          type: 'string',
+          description: 'Optional custom system prompt for the sub-agent',
+        },
+      },
+      required: ['agentType', 'task'],
+    },
+  },
+  {
+    name: 'check_sub_agent_status',
+    description: 'Check the status and results of a spawned sub-agent.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        subAgentId: {
+          type: 'string',
+          description: 'Sub-agent ID to check',
+        },
+      },
+      required: ['subAgentId'],
+    },
+  },
+  // Architect Review Tool
+  {
+    name: 'request_architect_review',
+    description: 'Request proactive code review and improvement suggestions from The Architect. Use this BEFORE completing tasks (not just when stuck) to get expert feedback. Architect can suggest better approaches that align with goals without breaking the app.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        reviewType: {
+          type: 'string',
+          enum: ['proactive', 'requested', 'post_completion'],
+          description: 'Type of review (use proactive for continuous improvement)',
+        },
+        workDescription: {
+          type: 'string',
+          description: 'Clear description of the work to review',
+        },
+        codeChanges: {
+          type: 'string',
+          description: 'Code changes made (use git diff or file contents)',
+        },
+        currentApproach: {
+          type: 'string',
+          description: 'Your current approach/implementation strategy',
+        },
+        constraints: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Constraints to consider (e.g., "Must not break existing auth", "Performance critical")',
+        },
+      },
+      required: ['reviewType', 'workDescription'],
     },
   },
 ] as const;
