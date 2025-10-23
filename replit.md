@@ -22,6 +22,15 @@ Archetype is an AI-powered platform for rapid web development, featuring an AI c
 
 ## Recent Changes
 ### Production Bug Fixes (October 2025)
+- **Chat Progress Indicators**: Implemented real-time WebSocket broadcasting to show what SySop is doing during chat conversations
+  - Progress messages display tool execution ("Reading file...", "Updating file...", "Modified 3 files")
+  - Clear error handling and progress cleanup on completion/failure
+  - Tested with Playwright - all tests passing
+- **Platform Modification Guardrails**: Added production safety checks for Meta-SySop platform healing
+  - **CRITICAL**: Platform file modifications are DISABLED in production (Render)
+  - Render uses ephemeral containers - file changes are lost on restart
+  - Clear error messages guide users to use local development for platform modifications
+  - Reading platform files still works in production for diagnostics
 - **Image Upload Directory Creation**: Fixed ENOENT errors by ensuring `attached_assets/chat_images/` directory exists with recursive mkdir before writing files
 - **Robust JSON Parsing Pipeline**: Implemented string-aware brace tracking to handle SySop responses with emoji prefixes (🧠🔨✅), literal braces in strings, and stray closing braces in preamble
   - 3-tier extraction: Code fences → String-aware brace tracking → Fallback regex

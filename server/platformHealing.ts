@@ -178,6 +178,25 @@ export class PlatformHealingService {
   }
 
   async writePlatformFile(filePath: string, content: string): Promise<void> {
+    // CRITICAL: Platform modifications are DISABLED in production (Render)
+    // Render has an ephemeral filesystem - changes are lost on container restart
+    // Users must use local development environment for platform modifications
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        `❌ PLATFORM MODIFICATIONS DISABLED IN PRODUCTION\n\n` +
+        `Platform file writes are disabled on Render because:\n` +
+        `• Render uses ephemeral containers - file changes are lost on restart\n` +
+        `• The real codebase is in GitHub, not on this running server\n` +
+        `• Changes here won't persist or affect the actual platform\n\n` +
+        `To modify Archetype's code:\n` +
+        `1. Clone the repository locally\n` +
+        `2. Run in development mode (npm run dev)\n` +
+        `3. Make changes and push to GitHub\n` +
+        `4. Redeploy on Render to apply changes\n\n` +
+        `Attempted to modify: ${filePath}`
+      );
+    }
+    
     try {
       if (path.isAbsolute(filePath)) {
         throw new Error('Absolute paths are not allowed');
@@ -216,6 +235,16 @@ export class PlatformHealingService {
   }
 
   async deletePlatformFile(filePath: string): Promise<void> {
+    // CRITICAL: Platform modifications are DISABLED in production (Render)
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        `❌ PLATFORM MODIFICATIONS DISABLED IN PRODUCTION\n\n` +
+        `Platform file operations are disabled on Render.\n` +
+        `Use local development environment to modify Archetype's codebase.\n\n` +
+        `Attempted to delete: ${filePath}`
+      );
+    }
+    
     try {
       if (path.isAbsolute(filePath)) {
         throw new Error('Absolute paths are not allowed');
