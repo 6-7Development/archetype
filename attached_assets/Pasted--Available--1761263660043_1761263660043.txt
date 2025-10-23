@@ -1,0 +1,67 @@
+     ==> ///////////////////////////////////////////////////////////
+     ==> 
+     ==> Available at your primary URL https://archetype-x8b5.onrender.com
+     ==> 
+     ==> ///////////////////////////////////////////////////////////
+11:52:33 PM [express] GET /api/deployment-info 200 in 24ms :: {"version":"1.0.0","commitHash":"42b797…
+[AUTH] Login attempt for email: root@getdc360.com
+[AUTH] Found users: 1
+[AUTH] User found: root@getdc360.com has password: true
+[AUTH] Verifying password...
+[AUTH] Password valid: true
+[AUTH] Authentication successful for: root@getdc360.com
+11:52:37 PM [express] POST /api/auth/login 200 in 604ms :: {"success":true,"user":{"id":"729e1c3d-018…
+11:52:37 PM [express] GET /api/projects 304 in 108ms :: []
+11:52:38 PM [express] GET /api/auth/me 304 in 334ms :: {"user":{"id":"729e1c3d-0186-4804-935c-8dec400…
+📝 [CHAT-HISTORY] Fetching history for project general, user 729e1c3d-0186-4804-935c-8dec400276ec
+📝 [CHAT-HISTORY] Found 246 messages for project general
+11:52:39 PM [express] GET /api/chat/history/general 304 in 161ms :: [{"id":"680ace3b-5c28-4561-9c2d-f…
+✅ WebSocket client connected
+[GET /api/commands] Fetching for userId: 729e1c3d-0186-4804-935c-8dec400276ec, projectId: null
+[GET /api/commands] Found 5 commands
+11:52:39 PM [express] GET /api/commands 304 in 115ms :: [{"id":"a77b6dae-7649-453f-b04f-37cbeebd0ede"…
+💬 [AI-CHAT-CONVERSATION] User 729e1c3d-0186-4804-935c-8dec400276ec sending message for project general
+📚 [AI-CHAT-CONVERSATION] Loaded 246 messages from history for general chat
+🤖 [AI-CHAT-CONVERSATION] Calling Claude API...
+[QUEUE] Enqueued free user 729e1c3d-0186-4804-935c-8dec400276ec | Queue: 1
+[QUEUE] Processing free user 729e1c3d-0186-4804-935c-8dec400276ec | Active: 1 | Queue: 0
+11:53:38 PM [express] POST /api/chat/messages 200 in 868ms :: {"id":"249af2b1-c931-4bcd-9ba2-172d7631…
+[QUEUE] Completed request | Active: 0 | Queue: 0
+❌ [AI-CHAT-CONVERSATION] Error: BadRequestError: 400 {"type":"error","error":{"type":"invalid_request_error","message":"messages.49: all messages must have non-empty content except for the optional final assistant message"},"request_id":"req_011CUR2kpxdy2qoQUYULdQds"}
+    at APIError.generate (file:///opt/render/project/src/node_modules/@anthropic-ai/sdk/core/error.mjs:37:20)
+    at Anthropic.makeStatusError (file:///opt/render/project/src/node_modules/@anthropic-ai/sdk/client.mjs:152:32)
+    at Anthropic.makeRequest (file:///opt/render/project/src/node_modules/@anthropic-ai/sdk/client.mjs:306:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Object.execute (file:///opt/render/project/src/dist/index.js:6044:24)
+    at async PriorityQueue.processQueue (file:///opt/render/project/src/dist/index.js:5458:22) {
+  status: 400,
+  headers: Headers {
+    date: 'Thu, 23 Oct 2025 23:53:38 GMT',
+    'content-type': 'application/json',
+    'content-length': '215',
+    connection: 'keep-alive',
+    'cf-ray': '993527ade8cdcfa2-PDX',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CUR2kpxdy2qoQUYULdQds',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': '60f9e9aa-d58b-44f4-aa91-af881dd8f26a',
+    'x-envoy-upstream-service-time': '39',
+    via: '1.1 google',
+    'cf-cache-status': 'DYNAMIC',
+    'x-robots-tag': 'none',
+    server: 'cloudflare'
+  },
+  requestID: 'req_011CUR2kpxdy2qoQUYULdQds',
+  error: {
+    type: 'error',
+    error: {
+      type: 'invalid_request_error',
+      message: 'messages.49: all messages must have non-empty content except for the optional final assistant message'
+    },
+    request_id: 'req_011CUR2kpxdy2qoQUYULdQds'
+  }
+}
+11:53:38 PM [express] POST /api/ai-chat-conversation 500 in 1033ms :: {"error":"400 {\"type\":\"error…
+📝 [CHAT-HISTORY] Fetching history for project general, user 729e1c3d-0186-4804-935c-8dec400276ec
+📝 [CHAT-HISTORY] Found 247 messages for project general
+11:53:38 PM [express] GET /api/chat/history/general 200 in 171ms :: [{"id":"680ace3b-5c28-4561-9c2d-f…
