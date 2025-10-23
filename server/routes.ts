@@ -3408,14 +3408,20 @@ ${content}
             // No tools used - SySop wants to finish
             // 🔒 ENFORCEMENT: Check quality gates before allowing completion
             
+            // Helper: Check if result has text content
+            const hasTextContent = result.content.some((block: any) => block.type === 'text' && block.text?.trim());
+            
             // 🔒 TASK 4: Detect stuck loop (3+ reads without writes)
             if (sessionState.readWithoutWriteCount >= 3 && !sessionState.filesWritten.length) {
               console.log(`🔒 Enforcement: STUCK LOOP detected (${sessionState.readWithoutWriteCount} reads without writes)`);
               
-              messages.push({
-                role: 'assistant',
-                content: result.content as any,
-              });
+              // Only push assistant message if it has text content
+              if (hasTextContent) {
+                messages.push({
+                  role: 'assistant',
+                  content: result.content as any,
+                });
+              }
               
               messages.push({
                 role: 'user',
@@ -3443,10 +3449,13 @@ Do NOT read more files. Take action now.`
             if (sessionState.filesWritten.length > 0 && !sessionState.selfReviewAsked) {
               sessionState.selfReviewAsked = true;
               
-              messages.push({
-                role: 'assistant',
-                content: result.content as any,
-              });
+              // Only push assistant message if it has text content
+              if (hasTextContent) {
+                messages.push({
+                  role: 'assistant',
+                  content: result.content as any,
+                });
+              }
               
               // Inject self-review prompt
               messages.push({
@@ -3471,10 +3480,13 @@ If you find issues, fix them. If everything looks good, proceed with completion.
             if (sessionState.frontendChanges && !sessionState.browserTestPassed) {
               console.log(`🔒 Enforcement: Frontend detected - browser test required`);
               
-              messages.push({
-                role: 'assistant',
-                content: result.content as any,
-              });
+              // Only push assistant message if it has text content
+              if (hasTextContent) {
+                messages.push({
+                  role: 'assistant',
+                  content: result.content as any,
+                });
+              }
               
               messages.push({
                 role: 'user',
@@ -3499,10 +3511,13 @@ You made frontend changes. You must call browser_test to verify the UI works cor
             if (incompleteTasks.length > 0) {
               console.log(`🔒 Enforcement: INCOMPLETE TASKS detected (${incompleteTasks.length} tasks)`);
               
-              messages.push({
-                role: 'assistant',
-                content: result.content as any,
-              });
+              // Only push assistant message if it has text content
+              if (hasTextContent) {
+                messages.push({
+                  role: 'assistant',
+                  content: result.content as any,
+                });
+              }
               
               messages.push({
                 role: 'user',
@@ -3528,10 +3543,13 @@ Do not finish without addressing these tasks.`
             if (sessionState.filesWritten.length > 0 && !sessionState.reflectionLogged) {
               sessionState.reflectionLogged = true;
               
-              messages.push({
-                role: 'assistant',
-                content: result.content as any,
-              });
+              // Only push assistant message if it has text content
+              if (hasTextContent) {
+                messages.push({
+                  role: 'assistant',
+                  content: result.content as any,
+                });
+              }
               
               messages.push({
                 role: 'user',
