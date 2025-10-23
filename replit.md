@@ -47,6 +47,24 @@ Archetype is an AI-powered platform for rapid web development, featuring an AI c
   - All edge cases tested and architect-approved
 - **Max Tokens Optimization**: Clarified Claude Sonnet 4 already at API maximum (8192 output tokens) for optimal response generation
 
+### Multi-Agent Task Management System (October 23, 2025)
+- **Replit Agent-Style Capabilities**: Built foundation for autonomous task breakdown, sub-agent delegation, and architect reviews
+  - **Database Schema**: New tables for task_lists, tasks, sub_agents, architect_reviews
+  - **Six New SySop Tools**: 
+    - `create_task_list` - Break down complex requests into structured tasks
+    - `update_task` - Track progress and mark tasks complete
+    - `read_task_list` - Query task status and details
+    - `spawn_sub_agent` - Delegate specialized work to sub-agents
+    - `check_sub_agent_status` - Monitor sub-agent progress
+    - `request_architect_review` - Get proactive improvement suggestions
+  - **Production-Grade Security**: 4 rounds of architect review iterations
+    - Cross-tenant isolation with joined ownership queries
+    - Project/task/taskList ownership verification on all operations
+    - Schema validation with Drizzle Zod
+    - Enum validation for status/agentType fields
+    - Transactional safety with graceful error handling
+  - **Remaining Integration**: API endpoints, frontend components, WebSocket broadcasting, system prompt updates, and end-to-end testing
+
 ### Mobile & Diagnostics Enhancements (October 23, 2025)
 - **Mobile-Responsive File Explorer**: Implemented Sheet overlay for mobile devices
   - File explorer hidden by default on mobile (<768px viewport)
