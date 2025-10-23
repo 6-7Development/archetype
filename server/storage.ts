@@ -334,6 +334,14 @@ export class DatabaseStorage implements IStorage {
       .orderBy(chatMessages.createdAt);
   }
 
+  async getNonProjectChatMessages(userId: string): Promise<ChatMessage[]> {
+    return await db
+      .select()
+      .from(chatMessages)
+      .where(and(eq(chatMessages.userId, userId), sql`${chatMessages.projectId} IS NULL`))
+      .orderBy(chatMessages.createdAt);
+  }
+
   async createChatMessage(insertMessage: InsertChatMessageWithUser): Promise<ChatMessage> {
     const [message] = await db
       .insert(chatMessages)

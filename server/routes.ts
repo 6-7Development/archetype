@@ -2919,45 +2919,49 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
 
       // Load chat history for memory-optimized conversation (auto-summarized if >10 messages)
       let chatHistory: any[] = [];
-      if (projectId) {
-        try {
+      try {
+        // Load history based on whether this is a project chat or general chat
+        if (projectId) {
           chatHistory = await storage.getChatMessagesByProject(userId, projectId);
+        } else {
+          // Load non-project chat messages (where projectId IS NULL)
+          chatHistory = await storage.getNonProjectChatMessages(userId);
+        }
+        
+        // Apply same summarization logic as /api/chat/history endpoint
+        if (chatHistory.length > 10) {
+          const KEEP_RECENT = 5;
+          const hasSummary = chatHistory.some(m => m.isSummary);
           
-          // Apply same summarization logic as /api/chat/history endpoint
-          if (chatHistory.length > 10) {
-            const KEEP_RECENT = 5;
-            const hasSummary = chatHistory.some(m => m.isSummary);
+          if (!hasSummary) {
+            const oldMessages = chatHistory.slice(0, chatHistory.length - KEEP_RECENT);
+            const recentMessages = chatHistory.slice(chatHistory.length - KEEP_RECENT);
+            const messagesForSummary = oldMessages.filter(m => m.role === 'user' || m.role === 'assistant');
             
-            if (!hasSummary) {
-              const oldMessages = chatHistory.slice(0, chatHistory.length - KEEP_RECENT);
-              const recentMessages = chatHistory.slice(chatHistory.length - KEEP_RECENT);
-              const messagesForSummary = oldMessages.filter(m => m.role === 'user' || m.role === 'assistant');
+            if (messagesForSummary.length > 0) {
+              console.log(`📊 Summarizing ${messagesForSummary.length} messages for AI context`);
+              const summaryContent = await summarizeMessages(messagesForSummary);
               
-              if (messagesForSummary.length > 0) {
-                console.log(`📊 Summarizing ${messagesForSummary.length} messages for AI context`);
-                const summaryContent = await summarizeMessages(messagesForSummary);
-                
-                const summaryMessage = await storage.createChatMessage({
-                  userId,
-                  projectId,
-                  role: 'system',
-                  content: summaryContent,
-                  isSummary: true,
-                });
-                
-                for (const oldMsg of oldMessages) {
-                  await storage.deleteChatMessage(oldMsg.id, userId);
-                }
-                
-                chatHistory = [summaryMessage, ...recentMessages];
-                console.log(`✅ Chat optimized: ${messagesForSummary.length} → 1 summary + ${KEEP_RECENT} recent`);
+              const summaryMessage = await storage.createChatMessage({
+                userId,
+                projectId: projectId || null,
+                role: 'system',
+                content: summaryContent,
+                isSummary: true,
+              });
+              
+              for (const oldMsg of oldMessages) {
+                await storage.deleteChatMessage(oldMsg.id, userId);
               }
+              
+              chatHistory = [summaryMessage, ...recentMessages];
+              console.log(`✅ Chat optimized: ${messagesForSummary.length} → 1 summary + ${KEEP_RECENT} recent`);
             }
           }
-        } catch (error) {
-          console.error('Error loading chat history:', error);
-          // Continue without history - don't fail the chat
         }
+      } catch (error) {
+        console.error('Error loading chat history:', error);
+        // Continue without history - don't fail the chat
       }
 
       // Conversational AI with checkpoint billing (bill for ALL AI usage like Replit)
