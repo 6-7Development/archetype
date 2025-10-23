@@ -3166,6 +3166,12 @@ ${content}
         
         // Add chat history (may include summary if conversation was long)
         for (const historyMsg of chatHistory) {
+          // 🔒 SAFETY: Skip messages with empty content (from old bugs)
+          if (!historyMsg.content || (typeof historyMsg.content === 'string' && !historyMsg.content.trim())) {
+            console.log(`⚠️ Skipping empty message from history (role: ${historyMsg.role})`);
+            continue;
+          }
+          
           // Convert system/summary messages to user role for Anthropic API compatibility
           // Summary messages go first and provide context
           messages.push({
@@ -3341,6 +3347,9 @@ ${content}
             console.log(`🔄 Chat Turn ${turnCount}: ${toolUses.length} tool(s) used, continuing...`);
             
             // Add assistant's response (with tool_use blocks)
+            // NOTE: We MUST include this even if there's no text, because Anthropic requires
+            // the assistant message with tool_use blocks before we can send tool_results.
+            // The API allows assistant messages with ONLY tool_use blocks (no text).
             messages.push({
               role: 'assistant',
               content: result.content as any,
