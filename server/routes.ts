@@ -3016,12 +3016,146 @@ ${content}
         
         console.log(`💬 Sending ${messages.length} messages to Anthropic (history: ${chatHistory.length}, new: 1, images: ${imageBlocks.length})`);
 
+        // Tool executor for chat mode (same as command mode)
+        const executeToolInternal = async (toolUse: any) => {
+          const { name, input } = toolUse;
+          
+          try {
+            switch (name) {
+              case 'browser_test':
+                const { executeBrowserTest } = await import('./tools/browser-test');
+                return await executeBrowserTest(input);
+              
+              case 'web_search':
+                const { executeWebSearch } = await import('./tools/web-search');
+                return await executeWebSearch(input);
+              
+              case 'vision_analyze':
+                const { executeVisionAnalysis } = await import('./tools/vision-analyze');
+                return await executeVisionAnalysis(input);
+              
+              case 'architect_consult':
+                const { consultArchitect } = await import('./tools/architect-consult');
+                return await consultArchitect(input);
+              
+              case 'read_platform_file':
+                const { executePlatformRead } = await import('./tools/platform-tools');
+                return await executePlatformRead(input);
+              
+              case 'write_platform_file':
+                const { executePlatformWrite } = await import('./tools/platform-tools');
+                // Create backup before writing
+                const { platformHealing } = await import('./platformHealing');
+                await platformHealing.createBackup(`Chat-requested platform fix: ${input.path}`);
+                return await executePlatformWrite(input);
+              
+              case 'list_platform_files':
+                const { executePlatformList } = await import('./tools/platform-tools');
+                return await executePlatformList(input);
+              
+              case 'list_project_files':
+                const { executeProjectList } = await import('./tools/project-tools');
+                // Inject projectId from context
+                return await executeProjectList({ ...input, projectId, userId });
+              
+              case 'read_project_file':
+                const { executeProjectRead } = await import('./tools/project-tools');
+                // Inject projectId from context
+                return await executeProjectRead({ ...input, projectId, userId });
+              
+              case 'write_project_file':
+                const { executeProjectWrite } = await import('./tools/project-tools');
+                // Inject projectId from context
+                return await executeProjectWrite({ ...input, projectId, userId });
+              
+              case 'delete_project_file':
+                const { executeProjectDelete } = await import('./tools/project-tools');
+                // Inject projectId from context
+                return await executeProjectDelete({ ...input, projectId, userId });
+              
+              default:
+                throw new Error(`Unknown tool: ${name}`);
+            }
+          } catch (error) {
+            console.error(`❌ Tool execution error (${name}):`, error);
+            throw error;
+          }
+        };
+
         const result = await anthropic.messages.create({
           model: DEFAULT_MODEL,
-          max_tokens: 1024,
+          max_tokens: 2048,
           system: systemPrompt,
           messages: messages,
+          tools: SYSOP_TOOLS as any, // Enable all SySop tools in chat mode
+          tool_choice: { type: "auto" }, // Let Claude decide when to use tools
         });
+        
+        // Handle tool use if Claude requested it
+        if (result.stop_reason === 'tool_use') {
+          const toolUses = result.content.filter((c: any) => c.type === 'tool_use') as any[];
+          
+          for (const toolUse of toolUses) {
+            console.log(`🔧 Chat mode using tool: ${toolUse.name}`);
+            try {
+              const toolResult = await executeToolInternal(toolUse as any);
+              console.log(`✅ Tool ${toolUse.name} completed:`, toolResult);
+              
+              // Continue conversation with tool result
+              messages.push({
+                role: 'assistant',
+                content: result.content as any,
+              });
+              
+              messages.push({
+                role: 'user',
+                content: [{
+                  type: 'tool_result',
+                  tool_use_id: toolUse.id,
+                  content: JSON.stringify(toolResult),
+                }] as any,
+              });
+              
+              // Get final response after tool execution
+              const finalResult = await anthropic.messages.create({
+                model: DEFAULT_MODEL,
+                max_tokens: 2048,
+                system: systemPrompt,
+                messages: messages,
+                tools: SYSOP_TOOLS as any,
+              });
+              
+              return finalResult;
+            } catch (error: any) {
+              console.error(`❌ Tool execution failed:`, error);
+              // Return error but continue chat
+              messages.push({
+                role: 'assistant',
+                content: result.content as any,
+              });
+              
+              messages.push({
+                role: 'user',
+                content: [{
+                  type: 'tool_result',
+                  tool_use_id: toolUse.id,
+                  content: JSON.stringify({ error: error.message }),
+                  is_error: true,
+                }] as any,
+              });
+              
+              const errorResult = await anthropic.messages.create({
+                model: DEFAULT_MODEL,
+                max_tokens: 2048,
+                system: systemPrompt,
+                messages: messages,
+              });
+              
+              return errorResult;
+            }
+          }
+        }
+        
         return result;
       });
       
