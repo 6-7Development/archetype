@@ -537,7 +537,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
     
-    ws.on('message', async (message) => {
+    ws.on('message', async (message: any) => {
       try {
         const data = JSON.parse(message.toString());
         
@@ -2715,6 +2715,10 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
                 const { consultArchitect } = await import('./tools/architect-consult');
                 return await consultArchitect(input);
               
+              case 'perform_diagnosis':
+                const { performDiagnosis } = await import('./tools/diagnosis');
+                return await performDiagnosis(input);
+              
               case 'read_platform_file':
                 const { executePlatformRead } = await import('./tools/platform-tools');
                 return await executePlatformRead(input);
@@ -3487,6 +3491,10 @@ ${content}
               case 'architect_consult':
                 const { consultArchitect } = await import('./tools/architect-consult');
                 return await consultArchitect(input);
+              
+              case 'perform_diagnosis':
+                const { performDiagnosis } = await import('./tools/diagnosis');
+                return await performDiagnosis(input);
               
               case 'read_platform_file':
                 const { executePlatformRead } = await import('./tools/platform-tools');

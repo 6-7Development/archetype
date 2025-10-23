@@ -2,6 +2,7 @@ export { executeBrowserTest } from './browser-test';
 export { executeWebSearch, searchDocumentation, searchCodeExamples } from './web-search';
 export { executeVisionAnalysis, analyzeUIScreenshot, compareDesignToImplementation } from './vision-analyze';
 export { consultArchitect } from './architect-consult';
+export { performDiagnosis } from './diagnosis';
 export { executePlatformRead, executePlatformWrite, executePlatformList } from './platform-tools';
 export { executeProjectList, executeProjectRead, executeProjectWrite, executeProjectDelete } from './project-tools';
 
@@ -150,6 +151,26 @@ export const SYSOP_TOOLS = [
         },
       },
       required: ['problem', 'context', 'previousAttempts'],
+    },
+  },
+  {
+    name: 'perform_diagnosis',
+    description: 'Diagnose performance, security, memory, or database issues by analyzing actual code. Returns evidence-based findings with real metrics (file sizes, pattern counts, actual code issues). Use this to verify claims with concrete data instead of theoretical diagnosis.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        target: {
+          type: 'string',
+          enum: ['performance', 'security', 'memory', 'database', 'all'],
+          description: 'Type of diagnosis to perform. Use "all" for comprehensive analysis.',
+        },
+        focus: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Optional: specific files to analyze (e.g., ["server/routes.ts"]). If not provided, analyzes common files.',
+        },
+      },
+      required: ['target'],
     },
   },
   {
