@@ -1,0 +1,146 @@
+11:16:32 PM [express] GET /api/chat/history/general 304 in 116ms :: []
+[QUEUE] Completed request | Active: 0 | Queue: 0
+✅ [AI-CHAT-CONVERSATION] Claude responded in 7310ms (992 chars)
+📝 [AI-CHAT-CONVERSATION] Plain text response (no JSON detected)
+📊 [AI-CHAT-CONVERSATION] Usage tracked: 3543 tokens
+11:16:39 PM [express] POST /api/ai-chat-conversation 200 in 7938ms :: {"response":"I understand you w…
+11:16:39 PM [express] POST /api/chat/messages 200 in 109ms :: {"id":"3bfaeeb7-dd5c-4a1b-8f95-e724285b…
+📝 [CHAT-HISTORY] Fetching history for project general, user 729e1c3d-0186-4804-935c-8dec400276ec
+📝 [CHAT-HISTORY] Found 0 messages for project general
+11:16:39 PM [express] GET /api/chat/history/general 304 in 108ms :: []
+💬 [AI-CHAT-CONVERSATION] User 729e1c3d-0186-4804-935c-8dec400276ec sending message for project general
+📚 [AI-CHAT-CONVERSATION] Loaded 0 messages from history for general chat
+🤖 [AI-CHAT-CONVERSATION] Calling Claude API...
+[QUEUE] Enqueued free user 729e1c3d-0186-4804-935c-8dec400276ec | Queue: 1
+[QUEUE] Processing free user 729e1c3d-0186-4804-935c-8dec400276ec | Active: 1 | Queue: 0
+11:17:30 PM [express] POST /api/chat/messages 200 in 540ms :: {"id":"b808e4be-0fa0-4036-b4b7-504951ff…
+📝 [CHAT-HISTORY] Fetching history for project general, user 729e1c3d-0186-4804-935c-8dec400276ec
+📝 [CHAT-HISTORY] Found 0 messages for project general
+11:17:31 PM [express] GET /api/chat/history/general 304 in 99ms :: []
+[QUEUE] Completed request | Active: 0 | Queue: 0
+✅ [AI-CHAT-CONVERSATION] Claude responded in 6618ms (932 chars)
+📝 [AI-CHAT-CONVERSATION] Plain text response (no JSON detected)
+📊 [AI-CHAT-CONVERSATION] Usage tracked: 3535 tokens
+11:17:37 PM [express] POST /api/ai-chat-conversation 200 in 7254ms :: {"response":"I understand you w…
+11:17:37 PM [express] POST /api/chat/messages 200 in 102ms :: {"id":"007afde7-723a-491f-b60a-73ea7bcb…
+📝 [CHAT-HISTORY] Fetching history for project general, user 729e1c3d-0186-4804-935c-8dec400276ec
+📝 [CHAT-HISTORY] Found 0 messages for project general
+11:17:38 PM [express] GET /api/chat/history/general 304 in 99ms :: []
+[CACHE] Stats: {
+  user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+  project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+  subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+  response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+}
+💬 [AI-CHAT-CONVERSATION] User 729e1c3d-0186-4804-935c-8dec400276ec sending message for project general
+11:18:32 PM [express] POST /api/chat/messages 200 in 519ms :: {"id":"c140d8f7-8c12-49b6-b593-47110146…
+📚 [AI-CHAT-CONVERSATION] Loaded 0 messages from history for general chat
+🤖 [AI-CHAT-CONVERSATION] Calling Claude API...
+[QUEUE] Enqueued free user 729e1c3d-0186-4804-935c-8dec400276ec | Queue: 1
+[QUEUE] Processing free user 729e1c3d-0186-4804-935c-8dec400276ec | Active: 1 | Queue: 0
+📝 [CHAT-HISTORY] Fetching history for project general, user 729e1c3d-0186-4804-935c-8dec400276ec
+📝 [CHAT-HISTORY] Found 0 messages for project general
+11:18:32 PM [express] GET /api/chat/history/general 304 in 132ms :: []
+[QUEUE] Completed request | Active: 0 | Queue: 0
+✅ [AI-CHAT-CONVERSATION] Claude responded in 6182ms (822 chars)
+📝 [AI-CHAT-CONVERSATION] Plain text response (no JSON detected)
+📊 [AI-CHAT-CONVERSATION] Usage tracked: 3534 tokens
+11:18:38 PM [express] POST /api/ai-chat-conversation 200 in 6859ms :: {"response":"✅ **CONFIRMED: Pla…
+11:18:38 PM [express] POST /api/chat/messages 200 in 114ms :: {"id":"f421bbb6-a633-4fe7-8f96-2a089d7b…
+📝 [CHAT-HISTORY] Fetching history for project general, user 729e1c3d-0186-4804-935c-8dec400276ec
+📝 [CHAT-HISTORY] Found 0 messages for project general
+11:18:39 PM [express] GET /api/chat/history/general 304 in 114ms :: []
+💬 [AI-CHAT-CONVERSATION] User 729e1c3d-0186-4804-935c-8dec400276ec sending message for project general
+📚 [AI-CHAT-CONVERSATION] Loaded 0 messages from history for general chat
+🤖 [AI-CHAT-CONVERSATION] Calling Claude API...
+[QUEUE] Enqueued free user 729e1c3d-0186-4804-935c-8dec400276ec | Queue: 1
+[QUEUE] Processing free user 729e1c3d-0186-4804-935c-8dec400276ec | Active: 1 | Queue: 0
+11:20:12 PM [express] POST /api/chat/messages 200 in 520ms :: {"id":"d463d885-9a1d-4307-b239-77a85256…
+📝 [CHAT-HISTORY] Fetching history for project general, user 729e1c3d-0186-4804-935c-8dec400276ec
+📝 [CHAT-HISTORY] Found 0 messages for project general
+11:20:12 PM [express] GET /api/chat/history/general 304 in 111ms :: []
+[QUEUE] Completed request | Active: 0 | Queue: 0
+✅ [AI-CHAT-CONVERSATION] Claude responded in 4490ms (625 chars)
+✅ [AI-CHAT-CONVERSATION] Extracted JSON from code block
+🔨 [AI-CHAT-CONVERSATION] SySop wants to build: YES
+📋 [AI-CHAT-CONVERSATION] Build command: Redesign the entire Archetype platform interface with modern, interactive UI - add smooth animations, better visual hierarchy, engaging micro-interactions, improved typography, vibrant color scheme, responsive design, and make the SySop chat experience feel more alive and dynamic
+📊 [AI-CHAT-CONVERSATION] Usage tracked: 3482 tokens
+11:20:17 PM [express] POST /api/ai-chat-conversation 200 in 5208ms :: {"response":"✅ I'll completely …
+11:20:17 PM [express] POST /api/chat/messages 200 in 109ms :: {"id":"8c5a405b-6b04-457a-bc6a-c3b7b864…
+📝 [CHAT-HISTORY] Fetching history for project general, user 729e1c3d-0186-4804-935c-8dec400276ec
+11:20:17 PM [express] POST /api/analyze-complexity 200 in 317ms :: {"complexity":"complex","estimated…
+📝 [CHAT-HISTORY] Found 0 messages for project general
+11:20:17 PM [express] GET /api/chat/history/general 304 in 149ms :: []
+[POST /api/commands] Creating command for userId: 729e1c3d-0186-4804-935c-8dec400276ec
+[QUEUE] Enqueued free user 729e1c3d-0186-4804-935c-8dec400276ec | Queue: 1
+[QUEUE] Processing free user 729e1c3d-0186-4804-935c-8dec400276ec | Active: 1 | Queue: 0
+💬 [AI-CHAT-CONVERSATION] User 729e1c3d-0186-4804-935c-8dec400276ec sending message for project general
+📚 [AI-CHAT-CONVERSATION] Loaded 0 messages from history for general chat
+🤖 [AI-CHAT-CONVERSATION] Calling Claude API...
+[QUEUE] Enqueued free user 729e1c3d-0186-4804-935c-8dec400276ec | Queue: 1
+[QUEUE] Processing free user 729e1c3d-0186-4804-935c-8dec400276ec | Active: 2 | Queue: 0
+11:20:49 PM [express] POST /api/chat/messages 200 in 481ms :: {"id":"a0332394-3d02-4043-86a7-b5d40f3f…
+📝 [CHAT-HISTORY] Fetching history for project general, user 729e1c3d-0186-4804-935c-8dec400276ec
+📝 [CHAT-HISTORY] Found 0 messages for project general
+11:20:49 PM [express] GET /api/chat/history/general 304 in 132ms :: []
+[QUEUE] Completed request | Active: 1 | Queue: 0
+✅ [AI-CHAT-CONVERSATION] Claude responded in 9125ms (1130 chars)
+📝 [AI-CHAT-CONVERSATION] Plain text response (no JSON detected)
+📊 [AI-CHAT-CONVERSATION] Usage tracked: 3600 tokens
+11:20:58 PM [express] POST /api/ai-chat-conversation 200 in 9837ms :: {"response":"Hey! I understand …
+11:20:58 PM [express] POST /api/chat/messages 200 in 120ms :: {"id":"70f73f99-6f22-49a0-82bb-c64685fd…
+📝 [CHAT-HISTORY] Fetching history for project general, user 729e1c3d-0186-4804-935c-8dec400276ec
+📝 [CHAT-HISTORY] Found 0 messages for project general
+11:20:58 PM [express] GET /api/chat/history/general 304 in 118ms :: []
+[QUEUE] Completed request | Active: 0 | Queue: 0
+=== Claude Response (first 200 chars) ===
+🧠 **Analyzing Request**
+You want me to redesign the entire Archetype platform interface! This is a platform-level modification, so I'll use my Meta-SySop capabilities to enhance the core Archetype ex
+=== Response length: 28115 chars ===
+=== Stop reason: max_tokens ===
+⚠️ Response truncated due to max_tokens limit
+11:21:45 PM [express] POST /api/commands 400 in 86178ms :: {"error":"That's a lot to build at once! �…
+💬 [AI-CHAT-CONVERSATION] User 729e1c3d-0186-4804-935c-8dec400276ec sending message for project general
+11:25:28 PM [express] POST /api/chat/messages 200 in 488ms :: {"id":"bf931d19-36fd-45bd-b423-7391df3e…
+📚 [AI-CHAT-CONVERSATION] Loaded 0 messages from history for general chat
+🤖 [AI-CHAT-CONVERSATION] Calling Claude API...
+[QUEUE] Enqueued free user 729e1c3d-0186-4804-935c-8dec400276ec | Queue: 1
+[QUEUE] Processing free user 729e1c3d-0186-4804-935c-8dec400276ec | Active: 1 | Queue: 0
+📝 [CHAT-HISTORY] Fetching history for project general, user 729e1c3d-0186-4804-935c-8dec400276ec
+📝 [CHAT-HISTORY] Found 0 messages for project general
+11:25:28 PM [express] GET /api/chat/history/general 304 in 109ms :: []
+[QUEUE] Completed request | Active: 0 | Queue: 0
+✅ [AI-CHAT-CONVERSATION] Claude responded in 6252ms (843 chars)
+✅ [AI-CHAT-CONVERSATION] Extracted JSON from code block
+📝 [AI-CHAT-CONVERSATION] SySop is chatting (no build trigger)
+📊 [AI-CHAT-CONVERSATION] Usage tracked: 3551 tokens
+11:25:34 PM [express] POST /api/ai-chat-conversation 200 in 6923ms :: {"response":"No changes made ye…
+11:25:34 PM [express] POST /api/chat/messages 200 in 109ms :: {"id":"5b510f1e-5764-44e8-bb4c-ce53893e…
+📝 [CHAT-HISTORY] Fetching history for project general, user 729e1c3d-0186-4804-935c-8dec400276ec
+📝 [CHAT-HISTORY] Found 0 messages for project general
+11:25:35 PM [express] GET /api/chat/history/general 304 in 109ms :: []
+💬 [AI-CHAT-CONVERSATION] User 729e1c3d-0186-4804-935c-8dec400276ec sending message for project general
+📚 [AI-CHAT-CONVERSATION] Loaded 0 messages from history for general chat
+🤖 [AI-CHAT-CONVERSATION] Calling Claude API...
+[QUEUE] Enqueued free user 729e1c3d-0186-4804-935c-8dec400276ec | Queue: 1
+[QUEUE] Processing free user 729e1c3d-0186-4804-935c-8dec400276ec | Active: 1 | Queue: 0
+11:26:31 PM [express] POST /api/chat/messages 200 in 795ms :: {"id":"bb3a122d-b43f-45bc-8751-b2523bff…
+📝 [CHAT-HISTORY] Fetching history for project general, user 729e1c3d-0186-4804-935c-8dec400276ec
+📝 [CHAT-HISTORY] Found 0 messages for project general
+11:26:31 PM [express] GET /api/chat/history/general 304 in 107ms :: []
+[QUEUE] Completed request | Active: 0 | Queue: 0
+✅ [AI-CHAT-CONVERSATION] Claude responded in 4217ms (460 chars)
+✅ [AI-CHAT-CONVERSATION] Extracted JSON from code block
+📝 [AI-CHAT-CONVERSATION] SySop is chatting (no build trigger)
+📊 [AI-CHAT-CONVERSATION] Usage tracked: 3437 tokens
+11:26:35 PM [express] POST /api/ai-chat-conversation 200 in 5056ms :: {"response":"You're right - I'm…
+11:26:35 PM [express] POST /api/chat/messages 200 in 109ms :: {"id":"7ca95ab8-95a8-43ea-a6e2-88dc36d7…
+📝 [CHAT-HISTORY] Fetching history for project general, user 729e1c3d-0186-4804-935c-8dec400276ec
+📝 [CHAT-HISTORY] Found 0 messages for project general
+11:26:36 PM [express] GET /api/chat/history/general 304 in 114ms :: []
+[CACHE] Stats: {
+  user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+  project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+  subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+  response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+}

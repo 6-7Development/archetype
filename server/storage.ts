@@ -101,7 +101,7 @@ export interface IStorage {
   
   getChatMessages(userId: string, fileId?: string): Promise<ChatMessage[]>;
   getChatMessagesByProject(userId: string, projectId: string): Promise<ChatMessage[]>;
-  getChatHistory(userId: string, projectId: string): Promise<ChatMessage[]>;
+  getChatHistory(userId: string, projectId: string | null): Promise<ChatMessage[]>;
   createChatMessage(message: InsertChatMessageWithUser): Promise<ChatMessage>;
   deleteChatMessage(id: string, userId: string): Promise<void>;
   
@@ -342,8 +342,12 @@ export class DatabaseStorage implements IStorage {
       .orderBy(chatMessages.createdAt);
   }
 
-  async getChatHistory(userId: string, projectId: string): Promise<ChatMessage[]> {
-    // Wrapper for getChatMessagesByProject - consistent userId-first parameter order
+  async getChatHistory(userId: string, projectId: string | null): Promise<ChatMessage[]> {
+    // Handle NULL/undefined/"general" projectIds for general chat
+    if (!projectId || projectId === 'general') {
+      return this.getNonProjectChatMessages(userId);
+    }
+    // Otherwise get project-specific chat
     return this.getChatMessagesByProject(userId, projectId);
   }
 
