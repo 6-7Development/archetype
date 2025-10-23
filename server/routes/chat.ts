@@ -177,19 +177,10 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
         console.log(`=== Response length: ${responseText.length} chars ===`);
         console.log(`=== Stop reason: ${completion.stop_reason} ===`);
         
-        // Check if response was truncated
+        // Log if response was truncated (but don't block - just proceed)
         if (completion.stop_reason === 'max_tokens') {
-          console.warn('⚠️ Response truncated due to max_tokens limit');
-          await storage.updateCommand(savedCommand.id, userId, "failed", JSON.stringify({
-            error: "Request too large - response exceeded token limit. Please break your request into smaller, focused tasks (e.g., 'create the UI' then 'add the backend').",
-            truncated: true
-          }));
-          
-          return res.status(400).json({
-            error: "That's a lot to build at once! 🧠 Let's break it down:\n\n• Try smaller, focused requests (e.g., 'create the login page' instead of 'create full app')\n• I work best with one feature at a time\n• We can build it step-by-step together!\n\nWhat specific part should we start with?",
-            commandId: savedCommand.id,
-            suggestion: "Break your request into smaller tasks"
-          });
+          console.warn('⚠️ Response truncated due to max_tokens limit - continuing anyway (autonomous mode)');
+          // Note: We proceed with partial response instead of blocking
         }
         
         // Strip markdown code fences if present
