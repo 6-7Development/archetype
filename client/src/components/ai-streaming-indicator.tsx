@@ -26,7 +26,7 @@ export function AiStreamingIndicator({
     return null;
   }
 
-  const progress = totalSteps > 0 ? (currentStep / totalSteps) * 100 : 0;
+  const progress = totalSteps > 0 ? Math.min((currentStep / totalSteps) * 100, 100) : 0;
 
   return (
     <Card className="p-4 border-primary/20 bg-gradient-to-r from-primary/5 to-transparent" data-testid="ai-streaming-indicator">

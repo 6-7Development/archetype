@@ -101,12 +101,12 @@ export function UploadLoader({ isOpen, progress = 0 }: UploadLoaderProps) {
               {/* Progress Bar */}
               <div className="space-y-2">
                 <Progress 
-                  value={progress} 
+                  value={Math.min(progress, 100)} 
                   className="h-2"
                   data-testid="upload-progress"
                 />
                 <p className="text-xs text-center text-muted-foreground">
-                  {progress > 0 ? `${Math.round(progress)}%` : 'Starting upload...'}
+                  {progress > 0 ? `${Math.min(Math.round(progress), 100)}%` : 'Starting upload...'}
                 </p>
               </div>
 

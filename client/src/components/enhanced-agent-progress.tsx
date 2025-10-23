@@ -109,7 +109,7 @@ export function EnhancedAgentProgress({
   };
 
   const completedSteps = steps.filter(s => s.type === 'success').length;
-  const progressPercentage = totalSteps > 0 ? (currentStep / totalSteps) * 100 : 0;
+  const progressPercentage = totalSteps > 0 ? Math.min((currentStep / totalSteps) * 100, 100) : 0;
 
   return (
     <Card className="bg-muted/30 border-primary/20" data-testid="enhanced-agent-progress">
