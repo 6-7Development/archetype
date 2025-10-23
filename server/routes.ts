@@ -2858,6 +2858,17 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
     }
   });
 
+  // 🔒 TASK 5: Completion State Tracking Helper Functions
+  function registerTaskStart(sessionState: any, taskId: string) {
+    sessionState.tasksStarted.add(taskId);
+    console.log(`📋 Task started: ${taskId}`);
+  }
+
+  function registerTaskComplete(sessionState: any, taskId: string) {
+    sessionState.tasksCompleted.add(taskId);
+    console.log(`✅ Task completed: ${taskId}`);
+  }
+
   // POST /api/ai-chat-conversation
   app.post("/api/ai-chat-conversation", async (req: Request, res: Response) => {
     try {
@@ -3189,10 +3200,23 @@ ${content}
 
         // 🔒 SERVER-SIDE SYSOP ENFORCEMENT - Hard-coded quality gates (defined before tools so they can access it)
         const sessionState = {
+          // Existing
           filesWritten: [] as string[],
           selfReviewAsked: false,
           browserTestPassed: false,
           frontendChanges: false,
+          // NEW: Deduplication
+          toolCalls: new Map<string, number>(), // hash -> call count
+          // NEW: Read/Write tracking
+          filesRead: [] as string[],
+          readWithoutWriteCount: 0,
+          consecutiveReadCount: 0,
+          // NEW: Task tracking
+          tasksStarted: new Set<string>(),
+          tasksCompleted: new Set<string>(),
+          // NEW: Reflection
+          reflectionLogged: false,
+          lastAction: '' as string,
         };
 
         // Tool executor for chat mode (same as command mode)
@@ -3219,12 +3243,23 @@ ${content}
               
               case 'read_platform_file':
                 const { executePlatformRead } = await import('./tools/platform-tools');
-                return await executePlatformRead(input);
+                const platformReadResult = await executePlatformRead(input);
+                // 🔒 Track file reads for enforcement
+                sessionState.filesRead.push(input.path);
+                sessionState.readWithoutWriteCount++;
+                sessionState.consecutiveReadCount++;
+                sessionState.lastAction = 'read';
+                console.log(`📖 Read detected: ${input.path} (readWithoutWriteCount: ${sessionState.readWithoutWriteCount})`);
+                return platformReadResult;
               
               case 'write_platform_file':
                 const { executePlatformWrite } = await import('./tools/platform-tools');
                 // 🔒 Track file writes for enforcement
                 sessionState.filesWritten.push(input.path);
+                sessionState.readWithoutWriteCount = 0; // Reset!
+                sessionState.consecutiveReadCount = 0;
+                sessionState.lastAction = 'write';
+                console.log(`✍️ Write detected: ${input.path} (reset readWithoutWriteCount)`);
                 if (input.path.includes('client/src') || input.path.includes('client/')) {
                   sessionState.frontendChanges = true;
                 }
@@ -3245,12 +3280,23 @@ ${content}
               case 'read_project_file':
                 const { executeProjectRead } = await import('./tools/project-tools');
                 // Inject projectId from context
-                return await executeProjectRead({ ...input, projectId, userId });
+                const projectReadResult = await executeProjectRead({ ...input, projectId, userId });
+                // 🔒 Track file reads for enforcement
+                sessionState.filesRead.push(input.path);
+                sessionState.readWithoutWriteCount++;
+                sessionState.consecutiveReadCount++;
+                sessionState.lastAction = 'read';
+                console.log(`📖 Read detected: ${input.path} (readWithoutWriteCount: ${sessionState.readWithoutWriteCount})`);
+                return projectReadResult;
               
               case 'write_project_file':
                 const { executeProjectWrite } = await import('./tools/project-tools');
                 // 🔒 Track file writes for enforcement
                 sessionState.filesWritten.push(input.path);
+                sessionState.readWithoutWriteCount = 0; // Reset!
+                sessionState.consecutiveReadCount = 0;
+                sessionState.lastAction = 'write';
+                console.log(`✍️ Write detected: ${input.path} (reset readWithoutWriteCount)`);
                 if (input.path.includes('client/src') || input.path.includes('client/')) {
                   sessionState.frontendChanges = true;
                 }
@@ -3303,6 +3349,22 @@ ${content}
             // Execute all tools and collect results
             const toolResults: any[] = [];
             for (const toolUse of toolUses as any[]) {
+              // 🔒 TASK 2: Tool Call Deduplication
+              // Compute deterministic hash from tool name + sorted args
+              const toolHash = `${toolUse.name}:${JSON.stringify(toolUse.input, Object.keys(toolUse.input || {}).sort())}`;
+              
+              // Check for duplicates
+              if (sessionState.toolCalls.has(toolHash)) {
+                const count = sessionState.toolCalls.get(toolHash)!;
+                console.log(`⚠️ Duplicate tool call detected: ${toolUse.name} (${count} times) - executing anyway`);
+                // Don't block - just log and continue (Anthropic requires tool_result for every tool_use)
+                // Increment count but allow execution
+                sessionState.toolCalls.set(toolHash, count + 1);
+              } else {
+                // Record call
+                sessionState.toolCalls.set(toolHash, 1);
+              }
+              
               console.log(`🔧 Executing tool: ${toolUse.name}`);
               try {
                 const toolResult = await executeToolInternal(toolUse);
@@ -3346,6 +3408,37 @@ ${content}
             // No tools used - SySop wants to finish
             // 🔒 ENFORCEMENT: Check quality gates before allowing completion
             
+            // 🔒 TASK 4: Detect stuck loop (3+ reads without writes)
+            if (sessionState.readWithoutWriteCount >= 3 && !sessionState.filesWritten.length) {
+              console.log(`🔒 Enforcement: STUCK LOOP detected (${sessionState.readWithoutWriteCount} reads without writes)`);
+              
+              messages.push({
+                role: 'assistant',
+                content: result.content as any,
+              });
+              
+              messages.push({
+                role: 'user',
+                content: [{
+                  type: 'text',
+                  text: `⚠️ **STUCK LOOP DETECTED**
+
+You've read ${sessionState.readWithoutWriteCount} files without writing any fixes:
+${sessionState.filesRead.map(f => `- ${f}`).join('\n')}
+
+**You must now:**
+1. Either write the necessary fixes using write_project_file/write_platform_file
+2. OR explain why no changes are needed and complete the task
+
+Do NOT read more files. Take action now.`
+                }] as any,
+              });
+              
+              // Reset to prevent infinite enforcement
+              sessionState.readWithoutWriteCount = 0;
+              continue;
+            }
+            
             // NEW: Self-review prompt after files written
             if (sessionState.filesWritten.length > 0 && !sessionState.selfReviewAsked) {
               sessionState.selfReviewAsked = true;
@@ -3386,16 +3479,76 @@ If you find issues, fix them. If everything looks good, proceed with completion.
               messages.push({
                 role: 'user',
                 content: [{
-                  type: 'tool_result',
-                  tool_use_id: `enforcement_${Date.now()}`,
-                  content: JSON.stringify({
-                    enforcement: 'MANDATORY_BROWSER_TEST',
-                    message: `🔒 SERVER-SIDE ENFORCEMENT: You made frontend changes. You must call browser_test to verify the UI works.`,
-                    instruction: 'Call browser_test to verify the changes render correctly in the browser.'
-                  })
+                  type: 'text',
+                  text: `🔒 **MANDATORY BROWSER TEST REQUIRED**
+
+You made frontend changes. You must call browser_test to verify the UI works correctly.
+
+**Action required:** Call browser_test to verify the changes render correctly in the browser.`
                 }] as any,
               });
               
+              continue;
+            }
+            
+            // 🔒 TASK 5: Check if all started tasks are complete
+            const incompleteTasks = Array.from(sessionState.tasksStarted).filter(
+              t => !sessionState.tasksCompleted.has(t)
+            );
+            
+            if (incompleteTasks.length > 0) {
+              console.log(`🔒 Enforcement: INCOMPLETE TASKS detected (${incompleteTasks.length} tasks)`);
+              
+              messages.push({
+                role: 'assistant',
+                content: result.content as any,
+              });
+              
+              messages.push({
+                role: 'user',
+                content: [{
+                  type: 'text',
+                  text: `⚠️ **INCOMPLETE TASKS**
+
+You started these tasks but haven't completed them:
+${incompleteTasks.map(t => `- ${t}`).join('\n')}
+
+**You must:**
+1. Complete each task or explicitly mark it as done
+2. If tasks are no longer needed, explain why
+
+Do not finish without addressing these tasks.`
+                }] as any,
+              });
+              
+              continue; // Block completion
+            }
+            
+            // 🔒 TASK 6: Autonomous Reflection (after completion)
+            if (sessionState.filesWritten.length > 0 && !sessionState.reflectionLogged) {
+              sessionState.reflectionLogged = true;
+              
+              messages.push({
+                role: 'assistant',
+                content: result.content as any,
+              });
+              
+              messages.push({
+                role: 'user',
+                content: [{
+                  type: 'text',
+                  text: `🧠 **AUTONOMOUS LEARNING**
+
+You successfully completed this task! Before finishing:
+1. What did you learn from this implementation?
+2. What would you do differently next time?
+3. Any patterns or best practices to remember?
+
+Keep your reflection brief (2-3 sentences).`
+                }] as any,
+              });
+              
+              console.log('🧠 Enforcement: Requesting autonomous learning reflection');
               continue;
             }
             
