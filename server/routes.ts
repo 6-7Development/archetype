@@ -130,6 +130,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup OAuth authentication (must be before routes)
   await setupAuth(app);
 
+  // Owner middleware - checks if user is platform owner
+  const requireOwner = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.isAuthenticated || !req.isAuthenticated()) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const user = req.user as any;
+    if (!user.isOwner) {
+      return res.status(403).json({ 
+        error: 'Forbidden - Owner access required',
+        message: 'Only the platform owner can perform this action'
+      });
+    }
+
+    next();
+  };
+
+  // Maintenance Mode API
+  app.get('/api/maintenance-mode/status', async (_req, res) => {
+    try {
+      const mode = await storage.getMaintenanceMode();
+      res.json({
+        enabled: mode.enabled,
+        reason: mode.reason,
+        enabledAt: mode.enabledAt,
+        enabledBy: mode.enabledBy,
+      });
+    } catch (error: any) {
+      console.error('Failed to get maintenance mode status:', error);
+      res.status(500).json({ error: 'Failed to get maintenance mode status' });
+    }
+  });
+
+  app.post('/api/maintenance-mode/enable', isAuthenticated, requireOwner, async (req, res) => {
+    try {
+      const { reason } = req.body;
+      const user = req.user as any;
+      
+      const mode = await storage.enableMaintenanceMode(user.id, reason);
+      
+      console.log(`[MAINTENANCE-MODE] ✅ Enabled by ${user.email} (Owner)`);
+      console.log(`[MAINTENANCE-MODE] Reason: ${reason || 'Platform maintenance in progress'}`);
+      
+      res.json({
+        success: true,
+        enabled: mode.enabled,
+        reason: mode.reason,
+        enabledAt: mode.enabledAt,
+        message: 'Maintenance mode enabled. Platform modifications now commit to GitHub.',
+      });
+    } catch (error: any) {
+      console.error('Failed to enable maintenance mode:', error);
+      res.status(500).json({ error: 'Failed to enable maintenance mode' });
+    }
+  });
+
+  app.post('/api/maintenance-mode/disable', isAuthenticated, requireOwner, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const mode = await storage.disableMaintenanceMode();
+      
+      console.log(`[MAINTENANCE-MODE] ✅ Disabled by ${user.email} (Owner)`);
+      
+      res.json({
+        success: true,
+        enabled: mode.enabled,
+        message: 'Maintenance mode disabled. Platform modifications blocked in production.',
+      });
+    } catch (error: any) {
+      console.error('Failed to disable maintenance mode:', error);
+      res.status(500).json({ error: 'Failed to disable maintenance mode' });
+    }
+  });
+
   // Register tools router for SySop autonomous capabilities
   app.use('/api/tools', toolsRouter);
   

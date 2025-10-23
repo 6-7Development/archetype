@@ -4,6 +4,8 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { getGitHubService, isGitHubServiceAvailable } from './githubService';
+import { storage } from './storage';
 
 const execFileAsync = promisify(execFile);
 
@@ -177,58 +179,109 @@ export class PlatformHealingService {
     }
   }
 
-  async writePlatformFile(filePath: string, content: string): Promise<void> {
-    // CRITICAL: Platform modifications are DISABLED in production (Render)
-    // Render has an ephemeral filesystem - changes are lost on container restart
-    // Users must use local development environment for platform modifications
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error(
-        `❌ PLATFORM MODIFICATIONS DISABLED IN PRODUCTION\n\n` +
-        `Platform file writes are disabled on Render because:\n` +
-        `• Render uses ephemeral containers - file changes are lost on restart\n` +
-        `• The real codebase is in GitHub, not on this running server\n` +
-        `• Changes here won't persist or affect the actual platform\n\n` +
-        `To modify Archetype's code:\n` +
-        `1. Clone the repository locally\n` +
-        `2. Run in development mode (npm run dev)\n` +
-        `3. Make changes and push to GitHub\n` +
-        `4. Redeploy on Render to apply changes\n\n` +
-        `Attempted to modify: ${filePath}`
-      );
+  async writePlatformFile(filePath: string, content: string): Promise<{ success: boolean; message: string; commitHash?: string; commitUrl?: string }> {
+    // Validate file path
+    if (path.isAbsolute(filePath)) {
+      throw new Error('Absolute paths are not allowed');
     }
     
+    const fullPath = path.resolve(this.PROJECT_ROOT, filePath);
+    
+    if (!fullPath.startsWith(this.PROJECT_ROOT + path.sep) && fullPath !== this.PROJECT_ROOT) {
+      throw new Error('Invalid file path - path traversal detected');
+    }
+
+    // Dangerous files that should never be modified by SySop
+    const dangerousPatterns = [
+      /\.git\//,
+      /node_modules\//,
+      /\.env$/,
+      /package\.json$/,
+      /package-lock\.json$/,
+      /vite\.config\.ts$/,
+      /server\/vite\.ts$/,
+      /drizzle\.config\.ts$/,
+    ];
+
+    if (dangerousPatterns.some(pattern => pattern.test(filePath))) {
+      throw new Error(`Modifying ${filePath} is not allowed for safety reasons`);
+    }
+
+    // PRODUCTION MODE: Check maintenance mode and use GitHub service
+    if (process.env.NODE_ENV === 'production') {
+      // Check maintenance mode status
+      const maintenanceMode = await storage.getMaintenanceMode();
+      
+      if (!maintenanceMode.enabled) {
+        throw new Error(
+          `❌ PLATFORM MODIFICATIONS DISABLED IN PRODUCTION\n\n` +
+          `Platform file writes require MAINTENANCE MODE to be enabled.\n\n` +
+          `Why maintenance mode is required:\n` +
+          `• Render uses ephemeral containers - direct file changes are lost on restart\n` +
+          `• Changes must be committed to GitHub to persist\n` +
+          `• Auto-deployment will apply changes to production\n\n` +
+          `To enable platform modifications:\n` +
+          `1. Ask the platform owner to enable maintenance mode\n` +
+          `2. Maintenance mode commits changes directly to GitHub\n` +
+          `3. Render auto-deploys from GitHub commits\n\n` +
+          `Attempted to modify: ${filePath}`
+        );
+      }
+
+      // Check if GitHub service is configured
+      if (!isGitHubServiceAvailable()) {
+        throw new Error(
+          `❌ GITHUB SERVICE NOT CONFIGURED\n\n` +
+          `Maintenance mode is enabled, but GitHub integration is missing.\n\n` +
+          `Required environment variables:\n` +
+          `• GITHUB_TOKEN - GitHub personal access token with repo permissions\n` +
+          `• GITHUB_REPO - Repository in format "username/repo-name"\n` +
+          `• GITHUB_BRANCH - Target branch (default: "main")\n\n` +
+          `Contact the platform owner to configure GitHub integration.`
+        );
+      }
+
+      // Use GitHub service to commit the file
+      try {
+        const githubService = getGitHubService();
+        const commitMessage = `Update ${filePath} via Platform-SySop`;
+        
+        console.log(`[PLATFORM-WRITE] 🔧 Committing to GitHub: ${filePath}`);
+        console.log(`[PLATFORM-WRITE] Maintenance mode: ENABLED`);
+        console.log(`[PLATFORM-WRITE] Reason: ${maintenanceMode.reason}`);
+        
+        const result = await githubService.commitFile(filePath, content, commitMessage);
+        
+        console.log(`[PLATFORM-WRITE] ✅ Committed to GitHub successfully`);
+        console.log(`[PLATFORM-WRITE] Commit: ${result.commitHash}`);
+        console.log(`[PLATFORM-WRITE] URL: ${result.commitUrl}`);
+        console.log(`[PLATFORM-WRITE] ⏳ Render will auto-deploy from GitHub...`);
+        
+        return {
+          success: true,
+          message: `File committed to GitHub successfully. Render will auto-deploy shortly.`,
+          commitHash: result.commitHash,
+          commitUrl: result.commitUrl,
+        };
+      } catch (error: any) {
+        console.error('[PLATFORM-WRITE] ❌ GitHub commit failed:', error);
+        throw new Error(`Failed to commit to GitHub: ${error.message}`);
+      }
+    }
+    
+    // DEVELOPMENT MODE: Write directly to filesystem
     try {
-      if (path.isAbsolute(filePath)) {
-        throw new Error('Absolute paths are not allowed');
-      }
-      
-      const fullPath = path.resolve(this.PROJECT_ROOT, filePath);
-      
-      if (!fullPath.startsWith(this.PROJECT_ROOT + path.sep) && fullPath !== this.PROJECT_ROOT) {
-        throw new Error('Invalid file path - path traversal detected');
-      }
-
-      const dangerousPatterns = [
-        /\.git\//,
-        /node_modules\//,
-        /\.env$/,
-        /package\.json$/,
-        /package-lock\.json$/,
-        /vite\.config\.ts$/,
-        /server\/vite\.ts$/,
-        /drizzle\.config\.ts$/,
-      ];
-
-      if (dangerousPatterns.some(pattern => pattern.test(filePath))) {
-        throw new Error(`Modifying ${filePath} is not allowed for safety reasons`);
-      }
-
       const dir = path.dirname(fullPath);
       await fs.mkdir(dir, { recursive: true });
 
       await fs.writeFile(fullPath, content, 'utf-8');
 
       console.log(`[PLATFORM-HEAL] Wrote platform file: ${filePath}`);
+      
+      return {
+        success: true,
+        message: `File written successfully in development mode.`,
+      };
     } catch (error: any) {
       throw new Error(`Failed to write platform file ${filePath}: ${error.message}`);
     }
