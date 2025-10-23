@@ -87,7 +87,7 @@ export function registerFileRoutes(app: Express) {
       
       console.log(`📝 [CHAT-HISTORY] Fetching history for project ${projectId}, user ${userId}`);
       
-      const history = await storage.getChatHistory(projectId, userId);
+      const history = await storage.getChatHistory(userId, projectId);
       
       console.log(`📝 [CHAT-HISTORY] Found ${history?.length || 0} messages for project ${projectId}`);
       

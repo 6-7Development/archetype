@@ -1,0 +1,28 @@
+    at Route.dispatch (/opt/render/project/src/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/opt/render/project/src/node_modules/express/lib/router/layer.js:95:5)
+    at /opt/render/project/src/node_modules/express/lib/router/index.js:284:15
+    at param (/opt/render/project/src/node_modules/express/lib/router/index.js:365:14)
+9:12:41 PM [express] GET /api/chat/history/general 500 in 92ms :: {"error":"Failed to fetch chat his…
+[IMAGE UPLOAD] Processing image: {
+  originalName: 'image.png',
+  mimetype: 'image/png',
+  size: 101936,
+  userId: '729e1c3d-0186-4804-935c-8dec400276ec'
+}
+[IMAGE UPLOAD] Successfully saved image to: /opt/render/project/src/attached_assets/chat_images/chat_image_1761253976229.png
+9:12:56 PM [express] POST /api/chat/upload-image 200 in 609ms :: {"url":"/attached_assets/chat_image…
+9:13:19 PM [express] POST /api/ai-chat-conversation 200 in 476ms
+9:13:19 PM [express] POST /api/chat/messages 200 in 560ms :: {"id":"6a351c77-8458-4d67-9aa5-488f357c…
+📝 [CHAT-HISTORY] Fetching history for project general, user 729e1c3d-0186-4804-935c-8dec400276ec
+Error fetching chat history: TypeError: storage.getChatHistory is not a function
+    at file:///opt/render/project/src/dist/index.js:5022:37
+    at Layer.handle [as handle_request] (/opt/render/project/src/node_modules/express/lib/router/layer.js:95:5)
+    at next (/opt/render/project/src/node_modules/express/lib/router/route.js:149:13)
+    at isAuthenticated (file:///opt/render/project/src/dist/index.js:2771:3)
+    at Layer.handle [as handle_request] (/opt/render/project/src/node_modules/express/lib/router/layer.js:95:5)
+    at next (/opt/render/project/src/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/opt/render/project/src/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/opt/render/project/src/node_modules/express/lib/router/layer.js:95:5)
+    at /opt/render/project/src/node_modules/express/lib/router/index.js:284:15
+    at param (/opt/render/project/src/node_modules/express/lib/router/index.js:365:14)
+9:13:19 PM [express] GET /api/chat/history/general 500 in 153ms :: {"error":"Failed to fetch chat hi…
