@@ -519,13 +519,23 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
       const subscription = await storage.getSubscription(userId);
       const plan = subscription?.plan || 'free';
 
+      // Filter out messages with empty content (Claude API requirement)
+      const validMessages = chatHistory.filter((m: any) => {
+        const hasContent = m.content && typeof m.content === 'string' && m.content.trim().length > 0;
+        if (!hasContent) {
+          console.warn(`⚠️ [AI-CHAT] Filtering out message with empty content (ID: ${m.id})`);
+        }
+        return hasContent;
+      });
+
+      console.log(`🤖 [AI-CHAT] Calling Claude API with ${validMessages.length} valid messages (filtered ${chatHistory.length - validMessages.length} empty)...`);
       const completion = await aiQueue.enqueue(userId, plan, async () => {
         const result = await anthropic.messages.create({
           model: DEFAULT_MODEL,
           max_tokens: 4096,
           system: systemPrompt,
           messages: [
-            ...chatHistory.map((m: any) => ({
+            ...validMessages.map((m: any) => ({
               role: m.role === 'system' ? 'user' : m.role,
               content: m.content
             })),
@@ -681,14 +691,23 @@ Remember: **You're a BUILDER first, conversationalist second!**`;
       const subscription = await storage.getSubscription(userId);
       const plan = subscription?.plan || 'free';
 
-      console.log(`🤖 [AI-CHAT-CONVERSATION] Calling Claude API...`);
+      // Filter out messages with empty content (Claude API requirement)
+      const validMessages = chatHistory.filter((m: any) => {
+        const hasContent = m.content && typeof m.content === 'string' && m.content.trim().length > 0;
+        if (!hasContent) {
+          console.warn(`⚠️ [AI-CHAT-CONVERSATION] Filtering out message with empty content (ID: ${m.id})`);
+        }
+        return hasContent;
+      });
+
+      console.log(`🤖 [AI-CHAT-CONVERSATION] Calling Claude API with ${validMessages.length} valid messages (filtered ${chatHistory.length - validMessages.length} empty)...`);
       const completion = await aiQueue.enqueue(userId, plan, async () => {
         const result = await anthropic.messages.create({
           model: DEFAULT_MODEL,
           max_tokens: 4096,
           system: systemPrompt,
           messages: [
-            ...chatHistory.map((m: any) => ({
+            ...validMessages.map((m: any) => ({
               role: m.role === 'system' ? 'user' : m.role,
               content: m.content
             })),

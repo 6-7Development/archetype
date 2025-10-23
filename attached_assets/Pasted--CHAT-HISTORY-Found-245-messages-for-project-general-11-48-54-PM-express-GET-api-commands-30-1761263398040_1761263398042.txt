@@ -1,0 +1,50 @@
+📝 [CHAT-HISTORY] Found 245 messages for project general
+11:48:54 PM [express] GET /api/commands 304 in 472ms :: [{"id":"a77b6dae-7649-453f-b04f-37cbeebd0ede"…
+11:48:54 PM [express] GET /api/chat/history/general 304 in 509ms :: [{"id":"680ace3b-5c28-4561-9c2d-f…
+✅ WebSocket client connected
+❌ WebSocket client disconnected
+11:49:28 PM [express] POST /api/chat/messages 200 in 697ms :: {"id":"129105ef-d99b-42d4-a23b-778c5127…
+📝 [CHAT-HISTORY] Fetching history for project general, user 729e1c3d-0186-4804-935c-8dec400276ec
+💬 [AI-CHAT-CONVERSATION] User 729e1c3d-0186-4804-935c-8dec400276ec sending message for project general
+📝 [CHAT-HISTORY] Found 246 messages for project general
+11:49:29 PM [express] GET /api/chat/history/general 200 in 191ms :: [{"id":"680ace3b-5c28-4561-9c2d-f…
+📚 [AI-CHAT-CONVERSATION] Loaded 246 messages from history for general chat
+🤖 [AI-CHAT-CONVERSATION] Calling Claude API...
+[QUEUE] Enqueued free user 729e1c3d-0186-4804-935c-8dec400276ec | Queue: 1
+[QUEUE] Processing free user 729e1c3d-0186-4804-935c-8dec400276ec | Active: 1 | Queue: 0
+[QUEUE] Completed request | Active: 0 | Queue: 0
+❌ [AI-CHAT-CONVERSATION] Error: BadRequestError: 400 {"type":"error","error":{"type":"invalid_request_error","message":"messages.49: all messages must have non-empty content except for the optional final assistant message"},"request_id":"req_011CUR2SUnCRFTB5D4KMxDnJ"}
+    at APIError.generate (file:///opt/render/project/src/node_modules/@anthropic-ai/sdk/core/error.mjs:37:20)
+    at Anthropic.makeStatusError (file:///opt/render/project/src/node_modules/@anthropic-ai/sdk/client.mjs:152:32)
+    at Anthropic.makeRequest (file:///opt/render/project/src/node_modules/@anthropic-ai/sdk/client.mjs:306:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Object.execute (file:///opt/render/project/src/dist/index.js:6044:24)
+    at async PriorityQueue.processQueue (file:///opt/render/project/src/dist/index.js:5458:22) {
+  status: 400,
+  headers: Headers {
+    date: 'Thu, 23 Oct 2025 23:49:29 GMT',
+    'content-type': 'application/json',
+    'content-length': '215',
+    connection: 'keep-alive',
+    'cf-ray': '9935219a4e368636-PDX',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CUR2SUnCRFTB5D4KMxDnJ',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': '60f9e9aa-d58b-44f4-aa91-af881dd8f26a',
+    'x-envoy-upstream-service-time': '28',
+    via: '1.1 google',
+    'cf-cache-status': 'DYNAMIC',
+    'x-robots-tag': 'none',
+    server: 'cloudflare'
+  },
+  requestID: 'req_011CUR2SUnCRFTB5D4KMxDnJ',
+  error: {
+    type: 'error',
+    error: {
+      type: 'invalid_request_error',
+      message: 'messages.49: all messages must have non-empty content except for the optional final assistant message'
+    },
+    request_id: 'req_011CUR2SUnCRFTB5D4KMxDnJ'
+  }
+}
+11:49:29 PM [express] POST /api/ai-chat-conversation 500 in 1173ms :: {"error":"400 {\"type\":\"error…
