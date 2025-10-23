@@ -688,22 +688,28 @@ Keep it under 150 words. Be factual and specific.`,
   // Upload chat image for Vision API
   app.post("/api/chat/upload-image", isAuthenticated, upload.single('image'), async (req: any, res) => {
     try {
+      console.log('[IMAGE UPLOAD] Request received');
       const userId = req.authenticatedUserId;
+      console.log('[IMAGE UPLOAD] User ID:', userId);
       const imageFile = req.file;
+      console.log('[IMAGE UPLOAD] File:', imageFile ? `${imageFile.originalname} (${imageFile.size} bytes)` : 'NONE');
 
       if (!imageFile) {
+        console.error('[IMAGE UPLOAD] No file in request');
         return res.status(400).json({ error: "No image file uploaded" });
       }
 
       // Validate file type
       const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
       if (!allowedTypes.includes(imageFile.mimetype)) {
+        console.error('[IMAGE UPLOAD] Invalid file type:', imageFile.mimetype);
         return res.status(400).json({ error: "Invalid file type. Only JPG, PNG, GIF, and WebP are allowed." });
       }
 
       // Validate file size (5MB max)
       const maxSize = 5 * 1024 * 1024;
       if (imageFile.size > maxSize) {
+        console.error('[IMAGE UPLOAD] File too large:', imageFile.size);
         return res.status(400).json({ error: "File too large. Maximum size is 5MB." });
       }
 
@@ -712,6 +718,8 @@ Keep it under 150 words. Be factual and specific.`,
       const extension = imageFile.mimetype.split('/')[1];
       const filename = `${userId}_${timestamp}.${extension}`;
       const filepath = path.join('attached_assets', 'chat_images', filename);
+
+      console.log('[IMAGE UPLOAD] Saving to:', filepath);
 
       // Ensure directory exists before writing
       const fs = await import('fs/promises');
@@ -723,6 +731,8 @@ Keep it under 150 words. Be factual and specific.`,
 
       // Return relative URL path
       const imageUrl = `/attached_assets/chat_images/${filename}`;
+      console.log('[IMAGE UPLOAD] Success! URL:', imageUrl);
+      
       res.json({ 
         success: true, 
         imageUrl,
@@ -731,8 +741,9 @@ Keep it under 150 words. Be factual and specific.`,
         mimeType: imageFile.mimetype
       });
     } catch (error: any) {
-      console.error('Error uploading chat image:', error);
-      res.status(500).json({ error: "Failed to upload image" });
+      console.error('[IMAGE UPLOAD] ERROR:', error);
+      console.error('[IMAGE UPLOAD] Stack:', error.stack);
+      res.status(500).json({ error: error.message || "Failed to upload image" });
     }
   });
 
