@@ -1008,8 +1008,8 @@ Keep it under 150 words. Be factual and specific.`,
 
   // Live Preview endpoint - Compiles and serves project in iframe
   app.get("/api/preview/:projectId", async (req: any, res) => {
+    const { projectId } = req.params;
     try {
-      const { projectId } = req.params;
       
       console.log(`🎬 [PREVIEW] Starting preview compilation for project ${projectId}`);
       
@@ -2925,13 +2925,26 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
 
 Here's what I do: I'm the AI that powers Archetype, which is basically a platform that helps people build web apps super fast. I know React, Express, PostgreSQL, TypeScript - all that stuff. I can see your project files and actually edit them directly to build what you need.
 
-I can:
-- Build new features and write code from scratch
-- Edit your project files directly (yes, I actually write the code!)
-- Fix bugs and broken stuff
-- Answer questions about your project
-- Look at screenshots if you paste them
-- Explain how things work
+🔧 MY TOOLS - This is how I actually do the work:
+
+PROJECT FILE TOOLS (for YOUR project):
+- list_project_files: See all files in your project
+- read_project_file: Read any file to see what's inside
+- write_project_file: Create new files or update existing ones
+- delete_project_file: Remove files you don't need
+
+PLATFORM TOOLS (for fixing Archetype itself if it's broken):
+- read_platform_file: Read Archetype's source code
+- write_platform_file: Fix bugs in Archetype itself
+- list_platform_files: Browse Archetype's codebase
+
+ADVANCED CAPABILITIES:
+- browser_test: Test your app in a real browser with Playwright
+- web_search: Look up documentation, APIs, best practices
+- vision_analyze: Analyze screenshots and UI designs you paste
+- architect_consult: Get help from "The Architect" when I'm stuck
+
+IMPORTANT: I MUST use these tools to actually read and write files. When you ask me to "add a feature" or "fix a bug", I'll use read_project_file to see the current code, then write_project_file to make changes. I have FULL ACCESS to read and modify your project files through these tools.
 
 The important thing to know: I'm not just here to give advice - I actually build and fix things. If something's broken, I'll fix it. If you need a feature, I'll code it. That's my job.
 
