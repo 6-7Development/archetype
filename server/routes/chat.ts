@@ -592,6 +592,104 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
     }
   });
 
+  // POST /api/ai-chat-conversation - AI chat conversation endpoint (non-streaming, no auto-save)
+  app.post("/api/ai-chat-conversation", aiLimiter, isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.authenticatedUserId;
+      const { message, projectId } = req.body;
+
+      if (!message || typeof message !== 'string') {
+        return res.status(400).json({ error: "message is required and must be a string" });
+      }
+
+      console.log(`💬 [AI-CHAT-CONVERSATION] User ${userId} sending message for project ${projectId || 'general'}`);
+
+      // Check if AI generation is available (graceful degradation)
+      if (!FEATURES.AI_GENERATION) {
+        return res.status(503).json({ 
+          error: "AI chat temporarily unavailable. Anthropic API key not configured.",
+          feature: 'AI_GENERATION',
+          available: false
+        });
+      }
+
+      // Check usage limits
+      const limitCheck = await checkUsageLimits(userId);
+      if (!limitCheck.allowed) {
+        return res.status(403).json({ 
+          error: limitCheck.reason,
+          usageLimitReached: true,
+        });
+      }
+
+      // Get chat history for context (supports both project-scoped and general chat)
+      const chatHistory = await storage.getChatHistory(userId, projectId || null);
+      console.log(`📚 [AI-CHAT-CONVERSATION] Loaded ${chatHistory.length} messages from history for ${projectId ? `project ${projectId}` : 'general chat'}`);
+
+      // Build system prompt
+      const systemPrompt = buildSystemPrompt('MODIFY', [], chatHistory, {});
+
+      // Call Claude API
+      const computeStartTime = Date.now();
+      
+      const subscription = await storage.getSubscription(userId);
+      const plan = subscription?.plan || 'free';
+
+      console.log(`🤖 [AI-CHAT-CONVERSATION] Calling Claude API...`);
+      const completion = await aiQueue.enqueue(userId, plan, async () => {
+        const result = await anthropic.messages.create({
+          model: DEFAULT_MODEL,
+          max_tokens: 4096,
+          system: systemPrompt,
+          messages: [
+            ...chatHistory.map((m: any) => ({
+              role: m.role === 'system' ? 'user' : m.role,
+              content: m.content
+            })),
+            {
+              role: "user",
+              content: message,
+            },
+          ],
+        });
+        return result;
+      });
+
+      const computeTimeMs = Date.now() - computeStartTime;
+      const responseText = completion.content[0].type === 'text' ? completion.content[0].text : "";
+
+      console.log(`✅ [AI-CHAT-CONVERSATION] Claude responded in ${computeTimeMs}ms (${responseText.length} chars)`);
+
+      // Track usage
+      const inputTokens = completion.usage?.input_tokens || 0;
+      const outputTokens = completion.usage?.output_tokens || 0;
+      
+      await trackAIUsage({
+        userId,
+        projectId: projectId || null,
+        type: "ai_chat",
+        inputTokens,
+        outputTokens,
+        computeTimeMs,
+        metadata: { message },
+      });
+
+      console.log(`📊 [AI-CHAT-CONVERSATION] Usage tracked: ${inputTokens + outputTokens} tokens`);
+
+      // Return response only (frontend handles message saving)
+      res.json({
+        response: responseText,
+        usage: {
+          inputTokens,
+          outputTokens,
+        },
+      });
+    } catch (error: any) {
+      console.error('❌ [AI-CHAT-CONVERSATION] Error:', error);
+      res.status(500).json({ error: error.message || 'Failed to process message' });
+    }
+  });
+
   // GET /api/usage/stats - Get current user's usage statistics
   app.get("/api/usage/stats", isAuthenticated, async (req: any, res) => {
     try {
