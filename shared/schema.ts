@@ -131,11 +131,15 @@ export const chatMessages = pgTable("chat_messages", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
-  id: true,
-  userId: true, // Server-injected from auth session
-  createdAt: true,
-});
+export const insertChatMessageSchema = createInsertSchema(chatMessages)
+  .omit({
+    id: true,
+    userId: true, // Server-injected from auth session
+    createdAt: true,
+  })
+  .extend({
+    projectId: z.string().nullable().optional(), // Allow null for general chat conversations
+  });
 
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
