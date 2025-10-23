@@ -26,6 +26,7 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role").notNull().default("user"), // user, admin
+  isOwner: boolean("is_owner").notNull().default(false), // Platform owner (can modify platform in production)
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -53,6 +54,24 @@ export const loginUserSchema = z.object({
 });
 
 export type LoginUser = z.infer<typeof loginUserSchema>;
+
+// Maintenance Mode - Controls platform modification access
+export const maintenanceMode = pgTable("maintenance_mode", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  enabled: boolean("enabled").notNull().default(false),
+  enabledBy: varchar("enabled_by"), // User ID who enabled maintenance mode
+  enabledAt: timestamp("enabled_at"),
+  reason: text("reason"),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertMaintenanceModeSchema = createInsertSchema(maintenanceMode).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export type InsertMaintenanceMode = z.infer<typeof insertMaintenanceModeSchema>;
+export type MaintenanceMode = typeof maintenanceMode.$inferSelect;
 
 export const projects = pgTable("projects", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

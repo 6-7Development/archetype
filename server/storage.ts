@@ -42,6 +42,7 @@ import {
   type InsertServiceProgressLog,
   type SatisfactionSurvey,
   type InsertSatisfactionSurvey,
+  type MaintenanceMode,
   users,
   files,
   chatMessages,
@@ -69,7 +70,8 @@ import {
   serviceMessages,
   serviceMilestones,
   serviceProgressLogs,
-  satisfactionSurveys
+  satisfactionSurveys,
+  maintenanceMode
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, isNull, sql } from "drizzle-orm";
@@ -137,6 +139,11 @@ export interface IStorage {
   updateUserRole(userId: string, role: string): Promise<User>;
   getUsageAnalytics(months?: number): Promise<any>;
   getRecentUsageLogs(limit?: number): Promise<any[]>;
+  
+  // Maintenance Mode operations
+  getMaintenanceMode(): Promise<any>;
+  enableMaintenanceMode(userId: string, reason?: string): Promise<any>;
+  disableMaintenanceMode(): Promise<any>;
   
   // Template operations
   getTemplates(): Promise<Template[]>;
@@ -739,6 +746,61 @@ export class DatabaseStorage implements IStorage {
       ...log,
       cost: Number(log.cost),
     }));
+  }
+
+  // Maintenance Mode operations
+  async getMaintenanceMode(): Promise<any> {
+    const modes = await db
+      .select()
+      .from(maintenanceMode)
+      .limit(1);
+
+    if (modes.length === 0) {
+      // Create default maintenance mode entry if it doesn't exist
+      const [newMode] = await db
+        .insert(maintenanceMode)
+        .values({ enabled: false })
+        .returning();
+      return newMode;
+    }
+
+    return modes[0];
+  }
+
+  async enableMaintenanceMode(userId: string, reason?: string): Promise<any> {
+    const existing = await this.getMaintenanceMode();
+
+    const [updated] = await db
+      .update(maintenanceMode)
+      .set({
+        enabled: true,
+        enabledBy: userId,
+        enabledAt: new Date(),
+        reason: reason || 'Platform maintenance in progress',
+        updatedAt: new Date(),
+      })
+      .where(eq(maintenanceMode.id, existing.id))
+      .returning();
+
+    return updated;
+  }
+
+  async disableMaintenanceMode(): Promise<any> {
+    const existing = await this.getMaintenanceMode();
+
+    const [updated] = await db
+      .update(maintenanceMode)
+      .set({
+        enabled: false,
+        enabledBy: null,
+        enabledAt: null,
+        reason: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(maintenanceMode.id, existing.id))
+      .returning();
+
+    return updated;
   }
 
   // Deployment operations

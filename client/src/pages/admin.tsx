@@ -8,8 +8,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
-import { Users, DollarSign, Activity, TrendingUp, BarChart3, Clock } from "lucide-react";
+import { Users, DollarSign, Activity, TrendingUp, BarChart3, Clock, Settings, AlertTriangle, CheckCircle, Github } from "lucide-react";
 import { useState } from "react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -93,6 +96,13 @@ interface UsageLog {
   createdAt: string;
 }
 
+interface MaintenanceModeStatus {
+  enabled: boolean;
+  reason: string | null;
+  enabledAt: string | null;
+  enabledBy: string | null;
+}
+
 export default function Admin() {
   const { toast } = useToast();
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
@@ -100,6 +110,7 @@ export default function Admin() {
   const [selectedUser, setSelectedUser] = useState<UserWithDetails | null>(null);
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [newRole, setNewRole] = useState<string>("");
+  const [maintenanceReason, setMaintenanceReason] = useState<string>("");
 
   // SECURITY: Redirect if not authenticated or not admin
   if (!authLoading && (!isAuthenticated || user?.role !== 'admin')) {
@@ -136,6 +147,54 @@ export default function Admin() {
   // Fetch usage logs
   const { data: usageLogs, isLoading: logsLoading } = useQuery<UsageLog[]>({
     queryKey: ["/api/admin/usage-logs"],
+  });
+
+  // Fetch maintenance mode status
+  const { data: maintenanceMode, isLoading: maintenanceModeLoading } = useQuery<MaintenanceModeStatus>({
+    queryKey: ["/api/maintenance-mode/status"],
+  });
+
+  // Enable maintenance mode mutation
+  const enableMaintenanceModeMutation = useMutation({
+    mutationFn: async (reason: string) => {
+      return await apiRequest("POST", "/api/maintenance-mode/enable", { reason });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/maintenance-mode/status"] });
+      toast({
+        title: "Maintenance Mode Enabled",
+        description: "Platform modifications will now commit to GitHub",
+      });
+      setMaintenanceReason("");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to enable maintenance mode",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Disable maintenance mode mutation
+  const disableMaintenanceModeMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("POST", "/api/maintenance-mode/disable", {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/maintenance-mode/status"] });
+      toast({
+        title: "Maintenance Mode Disabled",
+        description: "Platform modifications blocked in production",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to disable maintenance mode",
+        variant: "destructive",
+      });
+    },
   });
 
   // Update user role mutation
@@ -263,6 +322,115 @@ export default function Admin() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Maintenance Mode Card - Owner Only */}
+          {(user as any)?.isOwner && (
+            <Card data-testid="card-maintenance-mode">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Maintenance Mode
+                  {maintenanceMode?.enabled ? (
+                    <Badge variant="default" className="ml-auto" data-testid="badge-maintenance-enabled">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Enabled
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary" className="ml-auto" data-testid="badge-maintenance-disabled">
+                      Disabled
+                    </Badge>
+                  )}
+                </CardTitle>
+                <CardDescription>
+                  Control platform modifications on production (GitHub integration)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {maintenanceMode?.enabled ? (
+                  <>
+                    <div className="rounded-lg bg-primary/10 p-4 space-y-2" data-testid="maintenance-active-info">
+                      <div className="flex items-start gap-2">
+                        <Github className="h-5 w-5 text-primary mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">Platform modifications enabled</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            SySop can now modify platform files. Changes will be committed to GitHub and auto-deployed.
+                          </p>
+                        </div>
+                      </div>
+                      {maintenanceMode.reason && (
+                        <div className="mt-2 pt-2 border-t">
+                          <p className="text-xs font-medium">Reason:</p>
+                          <p className="text-xs text-muted-foreground">{maintenanceMode.reason}</p>
+                        </div>
+                      )}
+                      {maintenanceMode.enabledAt && (
+                        <div className="text-xs text-muted-foreground">
+                          Enabled {new Date(maintenanceMode.enabledAt).toLocaleString()}
+                        </div>
+                      )}
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => disableMaintenanceModeMutation.mutate()}
+                      disabled={disableMaintenanceModeMutation.isPending}
+                      className="w-full"
+                      data-testid="button-disable-maintenance"
+                    >
+                      {disableMaintenanceModeMutation.isPending ? "Disabling..." : "Disable Maintenance Mode"}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="rounded-lg bg-muted p-4 space-y-2" data-testid="maintenance-disabled-info">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="h-5 w-5 text-muted-foreground mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">Platform modifications blocked</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Enable maintenance mode to allow SySop to modify platform files and commit to GitHub.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="maintenance-reason">Reason (optional)</Label>
+                      <Textarea
+                        id="maintenance-reason"
+                        placeholder="e.g., Deploying new feature, fixing critical bug..."
+                        value={maintenanceReason}
+                        onChange={(e) => setMaintenanceReason(e.target.value)}
+                        className="resize-none"
+                        rows={2}
+                        data-testid="input-maintenance-reason"
+                      />
+                    </div>
+                    <Button
+                      onClick={() => {
+                        const reason = maintenanceReason.trim() || "Platform maintenance in progress";
+                        enableMaintenanceModeMutation.mutate(reason);
+                      }}
+                      disabled={enableMaintenanceModeMutation.isPending}
+                      className="w-full"
+                      data-testid="button-enable-maintenance"
+                    >
+                      {enableMaintenanceModeMutation.isPending ? "Enabling..." : "Enable Maintenance Mode"}
+                    </Button>
+                  </>
+                )}
+                
+                <div className="rounded-lg bg-muted/50 p-3 space-y-1 text-xs text-muted-foreground">
+                  <p className="font-medium">How it works:</p>
+                  <ul className="list-disc list-inside space-y-0.5 ml-2">
+                    <li>Maintenance mode commits platform changes to GitHub</li>
+                    <li>Render auto-deploys from GitHub commits</li>
+                    <li>Changes persist across container restarts</li>
+                    <li>Owner-only access for security</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Users Tab */}

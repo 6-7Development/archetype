@@ -138,4 +138,42 @@ app.use((req, res, next) => {
   } else {
     console.log('💡 Auto-healing system DISABLED (development mode - use manual healing)');
   }
+
+  // Check GitHub integration configuration for owner-controlled platform modifications
+  console.log('\n🔍 Checking GitHub integration configuration...');
+  const missingEnvVars: string[] = [];
+  
+  if (!process.env.GITHUB_TOKEN) {
+    missingEnvVars.push('GITHUB_TOKEN');
+  }
+  if (!process.env.GITHUB_REPO) {
+    missingEnvVars.push('GITHUB_REPO');
+  }
+  if (!process.env.OWNER_USER_ID) {
+    missingEnvVars.push('OWNER_USER_ID (optional - for automatic owner assignment)');
+  }
+
+  if (missingEnvVars.length > 0) {
+    console.log('⚠️  GitHub integration NOT configured - platform modifications in production will be disabled');
+    console.log('📝 Missing environment variables:');
+    missingEnvVars.forEach(varName => {
+      console.log(`   - ${varName}`);
+    });
+    console.log('\n💡 To enable owner-controlled platform modifications on Render:');
+    console.log('   1. Set GITHUB_TOKEN (GitHub personal access token with repo permissions)');
+    console.log('   2. Set GITHUB_REPO (format: "username/repo-name")');
+    console.log('   3. Set GITHUB_BRANCH (optional, default: "main")');
+    console.log('   4. Set OWNER_USER_ID (optional - Replit Auth ID of the owner)');
+    console.log('   5. Owner can enable maintenance mode to commit changes to GitHub');
+    console.log('   6. Render auto-deploys from GitHub commits\n');
+  } else {
+    console.log('✅ GitHub integration configured successfully');
+    console.log(`   - Repository: ${process.env.GITHUB_REPO}`);
+    console.log(`   - Branch: ${process.env.GITHUB_BRANCH || 'main'}`);
+    console.log(`   - Token: ✓ (configured)`);
+    if (process.env.OWNER_USER_ID) {
+      console.log(`   - Owner User ID: ${process.env.OWNER_USER_ID}`);
+    }
+    console.log('   - Maintenance mode: Available for owner\n');
+  }
 })();
