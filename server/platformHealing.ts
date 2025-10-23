@@ -2,8 +2,17 @@ import { execFile } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
 const execFileAsync = promisify(execFile);
+
+// Get the project root directory reliably in both development and production
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+// In dev: __dirname = /path/to/project/server, so go up 1 level
+// In prod: __dirname = /path/to/project/dist, so go up 1 level  
+const PROJECT_ROOT = path.resolve(__dirname, '..');
 
 interface PlatformBackup {
   id: string;
@@ -21,8 +30,13 @@ interface FileChange {
 }
 
 export class PlatformHealingService {
-  private readonly PROJECT_ROOT = process.cwd();
+  private readonly PROJECT_ROOT = PROJECT_ROOT;
   private readonly BACKUP_BRANCH_PREFIX = 'backup/meta-sysop-';
+  
+  constructor() {
+    // Log PROJECT_ROOT for debugging
+    console.log(`[PLATFORM-HEALING] PROJECT_ROOT: ${this.PROJECT_ROOT}`);
+  }
   
   private sanitizeBackupId(backupId: string): string {
     if (!/^[A-Za-z0-9_-]+$/.test(backupId)) {
