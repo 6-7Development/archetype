@@ -3189,14 +3189,10 @@ ${content}
 
         // 🔒 SERVER-SIDE SYSOP ENFORCEMENT - Hard-coded quality gates (defined before tools so they can access it)
         const sessionState = {
-          phase: 'coding' as 'coding' | 'review' | 'remediation',
           filesWritten: [] as string[],
-          attemptCount: 0,
-          maxAttempts: 3,
-          architectReviewPassed: false,
+          selfReviewAsked: false,
           browserTestPassed: false,
           frontendChanges: false,
-          architectIssues: [] as string[],
         };
 
         // Tool executor for chat mode (same as command mode)
@@ -3312,19 +3308,6 @@ ${content}
                 const toolResult = await executeToolInternal(toolUse);
                 console.log(`✅ Tool ${toolUse.name} completed`);
                 
-                // 🔒 Track architect_consult results for enforcement
-                if (toolUse.name === 'architect_consult') {
-                  if (toolResult.success && (!toolResult.recommendations || toolResult.recommendations.length === 0)) {
-                    sessionState.architectReviewPassed = true;
-                    console.log('✅ Enforcement: Architect review PASSED');
-                  } else if (toolResult.recommendations && toolResult.recommendations.length > 0) {
-                    sessionState.architectIssues = toolResult.recommendations;
-                    sessionState.attemptCount++;
-                    sessionState.phase = 'remediation';
-                    console.log(`🔒 Enforcement: Architect found ${toolResult.recommendations.length} issues (attempt ${sessionState.attemptCount}/${sessionState.maxAttempts})`);
-                  }
-                }
-                
                 // 🔒 Track browser_test results for enforcement
                 if (toolUse.name === 'browser_test') {
                   if (toolResult.success) {
@@ -3363,46 +3346,36 @@ ${content}
             // No tools used - SySop wants to finish
             // 🔒 ENFORCEMENT: Check quality gates before allowing completion
             
-            // Check if files were written and architect review is required
-            if (sessionState.filesWritten.length > 0 && !sessionState.architectReviewPassed) {
-              console.log(`🔒 Enforcement: Blocking completion - architect review required for ${sessionState.filesWritten.length} files`);
-              
-              // Check retry limit
-              if (sessionState.attemptCount >= sessionState.maxAttempts) {
-                console.log(`⚠️ Enforcement: Max attempts (${sessionState.maxAttempts}) reached - allowing completion anyway`);
-                finalResult = result;
-                break;
-              }
-              
-              // Force architect_consult call
-              sessionState.phase = 'review';
-              const filesContext = sessionState.filesWritten.slice(0, 5).join(', ') + 
-                                   (sessionState.filesWritten.length > 5 ? `... (${sessionState.filesWritten.length} total)` : '');
+            // NEW: Self-review prompt after files written
+            if (sessionState.filesWritten.length > 0 && !sessionState.selfReviewAsked) {
+              sessionState.selfReviewAsked = true;
               
               messages.push({
                 role: 'assistant',
                 content: result.content as any,
               });
               
+              // Inject self-review prompt
               messages.push({
                 role: 'user',
                 content: [{
-                  type: 'tool_result',
-                  tool_use_id: `enforcement_${Date.now()}`,
-                  content: JSON.stringify({
-                    enforcement: 'MANDATORY_REVIEW',
-                    message: `🔒 SERVER-SIDE ENFORCEMENT: You must call architect_consult to review your changes before completion.`,
-                    filesModified: filesContext,
-                    instruction: 'Call architect_consult with the problem you solved, context about the changes, and any concerns.'
-                  })
-                }] as any,
+                  type: 'text',
+                  text: `🔍 Before completing, please verify your code for:
+- Security issues (SQL injection, XSS, CSRF)
+- Accessibility (ARIA labels, keyboard nav)
+- Edge cases and error handling
+- Performance bottlenecks
+
+If you find issues, fix them. If everything looks good, proceed with completion.`
+                }] as any
               });
               
-              continue;
+              console.log('🔍 Enforcement: Requesting self-review of generated code');
+              continue; // Force another turn
             }
             
             // Check if frontend changes require browser test
-            if (sessionState.frontendChanges && sessionState.architectReviewPassed && !sessionState.browserTestPassed) {
+            if (sessionState.frontendChanges && !sessionState.browserTestPassed) {
               console.log(`🔒 Enforcement: Frontend detected - browser test required`);
               
               messages.push({
@@ -3426,42 +3399,10 @@ ${content}
               continue;
             }
             
-            // Check if architect found issues and we need remediation
-            if (sessionState.architectIssues.length > 0 && sessionState.attemptCount < sessionState.maxAttempts) {
-              console.log(`🔒 Enforcement: Architect found ${sessionState.architectIssues.length} issues - requiring fixes (attempt ${sessionState.attemptCount}/${sessionState.maxAttempts})`);
-              
-              messages.push({
-                role: 'assistant',
-                content: result.content as any,
-              });
-              
-              messages.push({
-                role: 'user',
-                content: [{
-                  type: 'tool_result',
-                  tool_use_id: `enforcement_${Date.now()}`,
-                  content: JSON.stringify({
-                    enforcement: 'MANDATORY_FIXES',
-                    message: `🔒 SERVER-SIDE ENFORCEMENT: Architect review found issues. You must fix them before completion.`,
-                    issues: sessionState.architectIssues,
-                    attemptCount: sessionState.attemptCount,
-                    maxAttempts: sessionState.maxAttempts,
-                    instruction: 'Address each issue and then run architect_consult again to verify the fixes.'
-                  })
-                }] as any,
-              });
-              
-              // Reset architect issues for next attempt
-              sessionState.architectIssues = [];
-              sessionState.architectReviewPassed = false;
-              
-              continue;
-            }
-            
             // All quality gates passed - allow completion
             console.log(`✅ Enforcement: All quality gates passed - allowing completion`);
             if (sessionState.filesWritten.length > 0) {
-              console.log(`  - Architect review: ${sessionState.architectReviewPassed ? '✅ PASSED' : '⏭️ SKIPPED'}`);
+              console.log(`  - Self-review: ${sessionState.selfReviewAsked ? '✅ COMPLETED' : '⏭️ SKIPPED'}`);
               console.log(`  - Browser test: ${sessionState.browserTestPassed ? '✅ PASSED' : (sessionState.frontendChanges ? '⏭️ SKIPPED' : 'N/A')}`);
             }
             
