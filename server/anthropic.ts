@@ -243,6 +243,7 @@ export async function streamAnthropicResponse(options: StreamOptions) {
           fullText, 
           usage: usage || { inputTokens: 0, outputTokens: 0 },
           toolResults,
+          assistantContent: finalMessage.content, // Full content blocks for message continuation
           needsContinuation: true, // Indicate we need another turn
         };
       } catch (toolExecError) {

@@ -2530,51 +2530,100 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
         const abortController = new AbortController();
         activeGenerations.set(validSessionId, abortController);
 
-        // Stream with priority queue
+        // Multi-turn agentic loop for tool execution
+        let messages: any[] = [{ role: "user", content: command }];
         let result: any;
+        let totalUsage = { inputTokens: 0, outputTokens: 0 };
+        const maxTurns = 10; // Safety limit to prevent infinite loops
+        let turnCount = 0;
+        
         try {
-          result = await aiQueue.enqueue(userId, plan, async () => {
-            return await streamAnthropicResponse({
-              system: systemPrompt,
-              messages: [{ role: "user", content: command }],
-              maxTokens: 4096,
-              tools: SYSOP_TOOLS as any, // Enable SySop autonomous tools
-              onToolUse: executeToolInternal, // Execute tools when Claude requests them
-              signal: abortController.signal, // Pass abort signal
-            onChunk: (chunk) => {
-              broadcastToSession(validSessionId, {
-                type: 'ai-chunk',
-                commandId: savedCommand.id,
-                content: chunk.content,
-              });
-            },
-            onThought: (thought) => {
-              broadcastToSession(validSessionId, {
-                type: 'ai-thought',
-                commandId: savedCommand.id,
-                thought,
-              });
-            },
-            onAction: (action) => {
-              currentAction = action;
-              broadcastToSession(validSessionId, {
-                type: 'ai-action',
-                commandId: savedCommand.id,
-                action,
-              });
-            },
-            onComplete: async (fullText, usage) => {
-              broadcastToSession(validSessionId, {
-                type: 'ai-complete',
-                commandId: savedCommand.id,
-                usage: {
-                  inputTokens: usage.input_tokens,
-                  outputTokens: usage.output_tokens,
+          while (turnCount < maxTurns) {
+            turnCount++;
+            
+            const turnResult = await aiQueue.enqueue(userId, plan, async () => {
+              return await streamAnthropicResponse({
+                system: systemPrompt,
+                messages,
+                maxTokens: 4096,
+                tools: SYSOP_TOOLS as any,
+                onToolUse: executeToolInternal,
+                signal: abortController.signal,
+                onChunk: (chunk) => {
+                  broadcastToSession(validSessionId, {
+                    type: 'ai-chunk',
+                    commandId: savedCommand.id,
+                    content: chunk.content,
+                  });
                 },
+                onThought: (thought) => {
+                  broadcastToSession(validSessionId, {
+                    type: 'ai-thought',
+                    commandId: savedCommand.id,
+                    thought,
+                  });
+                },
+                onAction: (action) => {
+                  currentAction = action;
+                  broadcastToSession(validSessionId, {
+                    type: 'ai-action',
+                    commandId: savedCommand.id,
+                    action,
+                  });
+                },
+                // DON'T call onComplete here - we'll broadcast after the full loop completes
               });
+            });
+            
+            // Accumulate usage
+            totalUsage.inputTokens += turnResult.usage.inputTokens || 0;
+            totalUsage.outputTokens += turnResult.usage.outputTokens || 0;
+            
+            // Check if we need to continue (tool use detected)
+            if (turnResult.needsContinuation && turnResult.toolResults && turnResult.assistantContent) {
+              console.log(`🔄 Turn ${turnCount}: Tools used, continuing conversation...`);
+              
+              // Add assistant's response (with tool_use blocks)
+              messages.push({
+                role: "assistant",
+                content: turnResult.assistantContent,
+              });
+              
+              // Add tool results
+              messages.push({
+                role: "user",
+                content: turnResult.toolResults,
+              });
+              
+              // Continue loop for next turn
+              continue;
+            } else {
+              // No more tools - we have final response
+              console.log(`✅ Turn ${turnCount}: Final response received`);
+              result = turnResult;
+              break;
+            }
+          }
+          
+          if (turnCount >= maxTurns) {
+            throw new Error(`Exceeded maximum turns (${maxTurns}) - possible infinite loop`);
+          }
+          
+          // Update result with accumulated usage
+          result = {
+            ...result,
+            usage: totalUsage,
+          };
+          
+          // NOW broadcast completion with final accumulated usage
+          broadcastToSession(validSessionId, {
+            type: 'ai-complete',
+            commandId: savedCommand.id,
+            usage: {
+              inputTokens: totalUsage.inputTokens,
+              outputTokens: totalUsage.outputTokens,
             },
           });
-        });
         } catch (abortError: any) {
           // Clean up abort controller
           activeGenerations.delete(validSessionId);
@@ -3196,81 +3245,79 @@ ${content}
           }
         };
 
-        const result = await anthropic.messages.create({
-          model: DEFAULT_MODEL,
-          max_tokens: 2048,
-          system: systemPrompt,
-          messages: messages,
-          tools: SYSOP_TOOLS as any, // Enable all SySop tools in chat mode
-          tool_choice: { type: "auto" }, // Let Claude decide when to use tools
-        });
+        // Multi-turn agentic loop for tool execution (same as command mode)
+        let finalResult: any;
+        const maxTurns = 10; // Safety limit
+        let turnCount = 0;
         
-        // Handle tool use if Claude requested it
-        if (result.stop_reason === 'tool_use') {
-          const toolUses = result.content.filter((c: any) => c.type === 'tool_use') as any[];
+        while (turnCount < maxTurns) {
+          turnCount++;
           
-          for (const toolUse of toolUses) {
-            console.log(`🔧 Chat mode using tool: ${toolUse.name}`);
-            try {
-              const toolResult = await executeToolInternal(toolUse as any);
-              console.log(`✅ Tool ${toolUse.name} completed:`, toolResult);
-              
-              // Continue conversation with tool result
-              messages.push({
-                role: 'assistant',
-                content: result.content as any,
-              });
-              
-              messages.push({
-                role: 'user',
-                content: [{
+          const result = await anthropic.messages.create({
+            model: DEFAULT_MODEL,
+            max_tokens: 2048,
+            system: systemPrompt,
+            messages: messages,
+            tools: SYSOP_TOOLS as any,
+            tool_choice: { type: "auto" },
+          });
+          
+          // Check if tools were used
+          if (result.stop_reason === 'tool_use') {
+            const toolUses = result.content.filter((c: any) => c.type === 'tool_use');
+            
+            console.log(`🔄 Chat Turn ${turnCount}: ${toolUses.length} tool(s) used, continuing...`);
+            
+            // Add assistant's response (with tool_use blocks)
+            messages.push({
+              role: 'assistant',
+              content: result.content as any,
+            });
+            
+            // Execute all tools and collect results
+            const toolResults: any[] = [];
+            for (const toolUse of toolUses as any[]) {
+              console.log(`🔧 Executing tool: ${toolUse.name}`);
+              try {
+                const toolResult = await executeToolInternal(toolUse);
+                console.log(`✅ Tool ${toolUse.name} completed`);
+                toolResults.push({
                   type: 'tool_result',
                   tool_use_id: toolUse.id,
                   content: JSON.stringify(toolResult),
-                }] as any,
-              });
-              
-              // Get final response after tool execution
-              const finalResult = await anthropic.messages.create({
-                model: DEFAULT_MODEL,
-                max_tokens: 2048,
-                system: systemPrompt,
-                messages: messages,
-                tools: SYSOP_TOOLS as any,
-              });
-              
-              return finalResult;
-            } catch (error: any) {
-              console.error(`❌ Tool execution failed:`, error);
-              // Return error but continue chat
-              messages.push({
-                role: 'assistant',
-                content: result.content as any,
-              });
-              
-              messages.push({
-                role: 'user',
-                content: [{
+                });
+              } catch (error: any) {
+                console.error(`❌ Tool ${toolUse.name} failed:`, error);
+                toolResults.push({
                   type: 'tool_result',
                   tool_use_id: toolUse.id,
                   content: JSON.stringify({ error: error.message }),
                   is_error: true,
-                }] as any,
-              });
-              
-              const errorResult = await anthropic.messages.create({
-                model: DEFAULT_MODEL,
-                max_tokens: 2048,
-                system: systemPrompt,
-                messages: messages,
-              });
-              
-              return errorResult;
+                });
+              }
             }
+            
+            // Add tool results to conversation
+            messages.push({
+              role: 'user',
+              content: toolResults as any,
+            });
+            
+            // Continue loop for next turn
+            continue;
+          } else {
+            // No tools used - final response
+            console.log(`✅ Chat Turn ${turnCount}: Final response received`);
+            finalResult = result;
+            break;
           }
         }
         
-        return result;
+        if (turnCount >= maxTurns) {
+          throw new Error(`Exceeded maximum turns (${maxTurns}) in chat`);
+        }
+        
+        return finalResult;
       });
       
       const computeTimeMs = Date.now() - computeStartTime;
