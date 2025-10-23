@@ -626,8 +626,63 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
       const chatHistory = await storage.getChatHistory(userId, projectId || null);
       console.log(`📚 [AI-CHAT-CONVERSATION] Loaded ${chatHistory.length} messages from history for ${projectId ? `project ${projectId}` : 'general chat'}`);
 
-      // Build system prompt
-      const systemPrompt = buildSystemPrompt('MODIFY', [], chatHistory, {});
+      // Build system prompt with autonomous building instructions
+      const systemPrompt = buildSystemPrompt('MODIFY', [], chatHistory, {}) + `
+
+🤖 **AUTONOMOUS BUILDING MODE**
+
+You're in conversational mode, but you have FULL AUTONOMOUS BUILDING POWERS!
+
+When the user asks you to build, fix, add, or modify something:
+1. **Just do it!** Don't ask for permission.
+2. Return JSON with this structure:
+
+\`\`\`json
+{
+  "response": "✅ I'll build that for you! [Brief explanation of what you're building]",
+  "shouldGenerate": true,
+  "command": "[Clear, specific build command that describes what to create/fix]"
+}
+\`\`\`
+
+**Examples:**
+
+User: "Create a todo app with authentication"
+You return:
+\`\`\`json
+{
+  "response": "✅ I'll build a todo app with authentication! Creating full-stack app with React frontend, Express backend, and PostgreSQL database.",
+  "shouldGenerate": true,
+  "command": "Create a complete todo app with user authentication (Replit Auth), full CRUD operations, and responsive UI with dark mode"
+}
+\`\`\`
+
+User: "Fix the chat conversations disappearing when I switch screens"
+You return:
+\`\`\`json
+{
+  "response": "✅ I'll fix the chat persistence issue! Implementing proper state management and session storage.",
+  "shouldGenerate": true,
+  "command": "Fix chat conversation persistence - implement session storage, proper state management, and ensure conversations persist across screen switches"
+}
+\`\`\`
+
+User: "How does authentication work in React?"
+You return (NO code generation needed):
+\`\`\`json
+{
+  "response": "[Detailed explanation of React authentication patterns...]"
+}
+\`\`\`
+
+**Key Rules:**
+- Build requests → Set \`shouldGenerate: true\`
+- Questions/discussions → Just respond normally (no shouldGenerate)
+- Be specific in the \`command\` field - it's what I'll use to build
+- Always respond conversationally first, THEN trigger building
+- You're like Replit Agent - autonomous and action-oriented!
+
+Remember: **You're a BUILDER first, conversationalist second!**`;
 
       // Call Claude API
       const computeStartTime = Date.now();
@@ -660,6 +715,115 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
 
       console.log(`✅ [AI-CHAT-CONVERSATION] Claude responded in ${computeTimeMs}ms (${responseText.length} chars)`);
 
+      // Parse response - check if SySop wants to build something (ROBUST PARSING)
+      let parsedResponse: any = { response: responseText };
+      let jsonExtracted = false;
+      
+      // Try multiple extraction strategies for maximum reliability
+      try {
+        // Strategy 1: Try parsing entire response as JSON (fastest if it's pure JSON)
+        try {
+          const candidate = JSON.parse(responseText);
+          if (candidate && typeof candidate === 'object') {
+            parsedResponse = candidate;
+            jsonExtracted = true;
+            console.log(`✅ [AI-CHAT-CONVERSATION] Parsed full response as JSON`);
+          }
+        } catch (e) {
+          // Not pure JSON, try other strategies
+        }
+        
+        // Strategy 2: Extract from ```json``` code block
+        if (!jsonExtracted) {
+          const jsonMatch = responseText.match(/```json\s*([\s\S]*?)```/);
+          if (jsonMatch) {
+            parsedResponse = JSON.parse(jsonMatch[1].trim());
+            jsonExtracted = true;
+            console.log(`✅ [AI-CHAT-CONVERSATION] Extracted JSON from code block`);
+          }
+        }
+        
+        // Strategy 3: Find JSON object anywhere in response (handles text before/after)
+        if (!jsonExtracted) {
+          // String-aware brace matching (same robust logic as command parsing)
+          let depth = 0;
+          let startIdx = -1;
+          let inString = false;
+          let escapeNext = false;
+          const allMatches: string[] = [];
+          
+          for (let i = 0; i < responseText.length; i++) {
+            const char = responseText[i];
+            
+            if (escapeNext) {
+              escapeNext = false;
+              continue;
+            }
+            if (char === '\\') {
+              escapeNext = true;
+              continue;
+            }
+            if (char === '"') {
+              inString = !inString;
+              continue;
+            }
+            if (!inString) {
+              if (char === '{') {
+                if (depth === 0) startIdx = i;
+                depth++;
+              } else if (char === '}') {
+                depth--;
+                if (depth === 0 && startIdx !== -1) {
+                  allMatches.push(responseText.substring(startIdx, i + 1));
+                  startIdx = -1;
+                }
+              }
+            }
+          }
+          
+          // Try parsing each match, prefer the one with shouldGenerate=true
+          for (const match of allMatches) {
+            try {
+              const candidate = JSON.parse(match);
+              if (candidate && typeof candidate === 'object') {
+                parsedResponse = candidate;
+                jsonExtracted = true;
+                console.log(`✅ [AI-CHAT-CONVERSATION] Extracted JSON object from mixed response`);
+                // If this has shouldGenerate, use it and stop searching
+                if (candidate.shouldGenerate) break;
+              }
+            } catch (e) {
+              // Invalid JSON, try next match
+            }
+          }
+        }
+        
+        // Validate the extracted JSON has expected structure
+        if (jsonExtracted) {
+          if (parsedResponse.shouldGenerate === true) {
+            if (!parsedResponse.command || typeof parsedResponse.command !== 'string') {
+              console.warn(`⚠️ [AI-CHAT-CONVERSATION] shouldGenerate=true but missing valid command`);
+              // Treat as plain text if command is missing
+              parsedResponse = { response: parsedResponse.response || responseText };
+              jsonExtracted = false;
+            } else {
+              console.log(`🔨 [AI-CHAT-CONVERSATION] SySop wants to build: YES`);
+              console.log(`📋 [AI-CHAT-CONVERSATION] Build command: ${parsedResponse.command}`);
+            }
+          } else {
+            console.log(`📝 [AI-CHAT-CONVERSATION] SySop is chatting (no build trigger)`);
+          }
+        } else {
+          console.log(`📝 [AI-CHAT-CONVERSATION] Plain text response (no JSON detected)`);
+        }
+        
+      } catch (parseError: any) {
+        // Final fallback - treat as plain text
+        console.warn(`⚠️ [AI-CHAT-CONVERSATION] JSON parsing error: ${parseError.message}`);
+        console.log(`📝 [AI-CHAT-CONVERSATION] Falling back to plain text response`);
+        parsedResponse = { response: responseText };
+      }
+
       // Track usage
       const inputTokens = completion.usage?.input_tokens || 0;
       const outputTokens = completion.usage?.output_tokens || 0;
@@ -671,14 +835,20 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
         inputTokens,
         outputTokens,
         computeTimeMs,
-        metadata: { message },
+        metadata: { 
+          message,
+          shouldGenerate: parsedResponse.shouldGenerate || false,
+          command: parsedResponse.command || null,
+        },
       });
 
       console.log(`📊 [AI-CHAT-CONVERSATION] Usage tracked: ${inputTokens + outputTokens} tokens`);
 
-      // Return response only (frontend handles message saving)
+      // Return response with optional build trigger (frontend handles message saving and build execution)
       res.json({
-        response: responseText,
+        response: parsedResponse.response || responseText,
+        shouldGenerate: parsedResponse.shouldGenerate || false,
+        command: parsedResponse.command || undefined,
         usage: {
           inputTokens,
           outputTokens,
