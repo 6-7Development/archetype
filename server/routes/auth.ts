@@ -22,7 +22,7 @@ export function registerAuthRoutes(app: Express) {
   app.post("/api/auth/logout", (req: any, res) => {
     req.logout((err: any) => {
       if (err) {
-        console.error('Logout error:', error);
+        console.error('Logout error:', err);
         return res.status(500).json({ error: "Logout failed" });
       }
       req.session.destroy((err: any) => {
