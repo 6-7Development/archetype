@@ -517,7 +517,7 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
       }
 
       // Get chat history for context
-      const chatHistory = projectId ? await storage.getChatHistory(projectId, userId) : [];
+      const chatHistory = projectId ? await storage.getChatHistory(userId, projectId) : [];
 
       // Build system prompt
       const systemPrompt = buildSystemPrompt('MODIFY', [], chatHistory, {});
