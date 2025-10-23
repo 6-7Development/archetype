@@ -891,6 +891,44 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
             </div>
           )}
           
+          {/* WebSocket Stream: Thinking Display */}
+          {streamState.currentThought && (
+            <div className="mb-3 px-4 py-2 bg-blue-500/10 border-l-4 border-blue-500 rounded-r-md" data-testid="stream-thinking-display">
+              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                <span className="text-base">🧠</span>
+                <span className="italic">{streamState.currentThought}</span>
+                <Loader2 className="w-3 h-3 animate-spin ml-auto" />
+              </p>
+            </div>
+          )}
+          
+          {/* WebSocket Stream: Status Display */}
+          {streamState.currentStatus && (
+            <div className="mb-3 px-4 py-2 bg-amber-500/10 border-l-4 border-amber-500 rounded-r-md" data-testid="stream-status-display">
+              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                <span className="text-base">📊</span>
+                <span>{streamState.currentStatus}</span>
+                {streamState.currentStep > 0 && streamState.totalSteps > 0 && (
+                  <span className="ml-auto text-xs font-mono">
+                    {streamState.currentStep}/{streamState.totalSteps}
+                  </span>
+                )}
+                <Loader2 className="w-3 h-3 animate-spin" />
+              </p>
+            </div>
+          )}
+          
+          {/* WebSocket Stream: Action Display */}
+          {streamState.currentAction && (
+            <div className="mb-3 px-4 py-2 bg-purple-500/10 border-l-4 border-purple-500 rounded-r-md" data-testid="stream-action-display">
+              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                <span className="text-base">🔨</span>
+                <span>{streamState.currentAction}</span>
+                <Loader2 className="w-3 h-3 animate-spin ml-auto" />
+              </p>
+            </div>
+          )}
+          
           {/* Image Preview Section */}
           {(pendingImages.length > 0 || uploadingImages.size > 0) && (
             <div className="mb-3 flex flex-wrap gap-2">
