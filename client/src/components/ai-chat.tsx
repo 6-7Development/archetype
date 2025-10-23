@@ -236,6 +236,9 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       
       setMessages((prev) => [...prev, assistantMessage]);
       
+      // Clear chat progress when mutation completes
+      streamState.resetState();
+      
       // Persist assistant message to database (save to general chat if no project)
       saveMessageMutation.mutate({
         projectId: currentProjectId || null,
@@ -248,6 +251,17 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
         // Analyze complexity before executing
         complexityMutation.mutate({ command: data.command });
       }
+    },
+    onError: (error) => {
+      // Clear progress indicators on failure
+      streamState.resetState();
+      
+      // Show error toast
+      toast({
+        variant: "destructive",
+        title: "Chat Error",
+        description: error.message || "Failed to send message. Please try again.",
+      });
     },
   });
 
