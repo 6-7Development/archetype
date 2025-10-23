@@ -842,3 +842,96 @@ export const insertPlatformAuditLogSchema = createInsertSchema(platformAuditLog)
 
 export type InsertPlatformAuditLog = z.infer<typeof insertPlatformAuditLogSchema>;
 export type PlatformAuditLog = typeof platformAuditLog.$inferSelect;
+
+// Task Lists - Container for breaking down complex work
+export const taskLists = pgTable("task_lists", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  projectId: varchar("project_id"), // Optional - can be for platform work too
+  chatMessageId: varchar("chat_message_id"), // Link to the user request
+  title: text("title").notNull(),
+  description: text("description"),
+  status: text("status").notNull().default("active"), // active, completed, cancelled
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  completedAt: timestamp("completed_at"),
+});
+
+export const insertTaskListSchema = createInsertSchema(taskLists).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertTaskList = z.infer<typeof insertTaskListSchema>;
+export type TaskList = typeof taskLists.$inferSelect;
+
+// Tasks - Individual work items within a task list
+export const tasks = pgTable("tasks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  taskListId: varchar("task_list_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: text("status").notNull().default("pending"), // pending, in_progress, completed_pending_review, completed, cancelled
+  architectReviewed: text("architect_reviewed"), // yes, no, not_applicable
+  architectReviewReason: text("architect_review_reason"),
+  subAgentId: varchar("sub_agent_id"), // If delegated to a sub-agent
+  result: text("result"), // Result summary
+  error: text("error"), // Error message if failed
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+});
+
+export const insertTaskSchema = createInsertSchema(tasks).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertTask = z.infer<typeof insertTaskSchema>;
+export type Task = typeof tasks.$inferSelect;
+
+// Sub Agents - Track delegated work
+export const subAgents = pgTable("sub_agents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  projectId: varchar("project_id"),
+  taskId: varchar("task_id"), // Link to parent task if spawned for a task
+  agentType: text("agent_type").notNull(), // architect, specialist, tester, etc.
+  task: text("task").notNull(), // What the sub-agent was asked to do
+  context: jsonb("context"), // Context passed to sub-agent
+  status: text("status").notNull().default("running"), // running, completed, failed, cancelled
+  result: text("result"), // Final result/output
+  error: text("error"), // Error if failed
+  tokensUsed: integer("tokens_used").default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  completedAt: timestamp("completed_at"),
+});
+
+export const insertSubAgentSchema = createInsertSchema(subAgents).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertSubAgent = z.infer<typeof insertSubAgentSchema>;
+export type SubAgent = typeof subAgents.$inferSelect;
+
+// Architect Reviews - Proactive feedback and suggestions
+export const architectReviews = pgTable("architect_reviews", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  projectId: varchar("project_id"),
+  taskId: varchar("task_id"), // Link to task being reviewed
+  taskListId: varchar("task_list_id"),
+  reviewType: text("review_type").notNull(), // proactive, requested, post_completion
+  findings: text("findings").notNull(), // Review findings and suggestions
+  severity: text("severity").notNull(), // info, warning, critical
+  status: text("status").notNull().default("pending"), // pending, addressed, dismissed
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertArchitectReviewSchema = createInsertSchema(architectReviews).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertArchitectReview = z.infer<typeof insertArchitectReviewSchema>;
+export type ArchitectReview = typeof architectReviews.$inferSelect;
