@@ -3,6 +3,7 @@ export { executeWebSearch, searchDocumentation, searchCodeExamples } from './web
 export { executeVisionAnalysis, analyzeUIScreenshot, compareDesignToImplementation } from './vision-analyze';
 export { consultArchitect } from './architect-consult';
 export { executePlatformRead, executePlatformWrite, executePlatformList } from './platform-tools';
+export { executeProjectList, executeProjectRead, executeProjectWrite, executeProjectDelete } from './project-tools';
 
 /**
  * Tool definitions for Claude
@@ -195,6 +196,83 @@ export const SYSOP_TOOLS = [
         },
       },
       required: ['directory'],
+    },
+  },
+  // Project File Tools (for user projects)
+  {
+    name: 'list_project_files',
+    description: 'List all files in the user\'s project. Use this to see what files exist before reading or modifying them.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        projectId: {
+          type: 'string',
+          description: 'Project ID from the current context',
+        },
+      },
+      required: ['projectId'],
+    },
+  },
+  {
+    name: 'read_project_file',
+    description: 'Read a file from the user\'s project. Use this to see current code before making changes.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        projectId: {
+          type: 'string',
+          description: 'Project ID from the current context',
+        },
+        filename: {
+          type: 'string',
+          description: 'File name to read (e.g., "App.tsx", "server.js")',
+        },
+      },
+      required: ['projectId', 'filename'],
+    },
+  },
+  {
+    name: 'write_project_file',
+    description: 'Create or update a file in the user\'s project. Use this to add features or fix bugs.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        projectId: {
+          type: 'string',
+          description: 'Project ID from the current context',
+        },
+        filename: {
+          type: 'string',
+          description: 'File name to write (e.g., "App.tsx", "server.js")',
+        },
+        content: {
+          type: 'string',
+          description: 'Complete file content',
+        },
+        language: {
+          type: 'string',
+          description: 'Programming language (e.g., "typescript", "javascript", "python")',
+        },
+      },
+      required: ['projectId', 'filename', 'content'],
+    },
+  },
+  {
+    name: 'delete_project_file',
+    description: 'Delete a file from the user\'s project. Use with caution.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        projectId: {
+          type: 'string',
+          description: 'Project ID from the current context',
+        },
+        filename: {
+          type: 'string',
+          description: 'File name to delete',
+        },
+      },
+      required: ['projectId', 'filename'],
     },
   },
 ] as const;

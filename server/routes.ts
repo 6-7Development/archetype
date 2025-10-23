@@ -2483,6 +2483,22 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
                 const { executePlatformList } = await import('./tools/platform-tools');
                 return await executePlatformList(input);
               
+              case 'list_project_files':
+                const { executeProjectList } = await import('./tools/project-tools');
+                return await executeProjectList({ ...input, userId });
+              
+              case 'read_project_file':
+                const { executeProjectRead } = await import('./tools/project-tools');
+                return await executeProjectRead({ ...input, userId });
+              
+              case 'write_project_file':
+                const { executeProjectWrite } = await import('./tools/project-tools');
+                return await executeProjectWrite({ ...input, userId });
+              
+              case 'delete_project_file':
+                const { executeProjectDelete } = await import('./tools/project-tools');
+                return await executeProjectDelete({ ...input, userId });
+              
               default:
                 throw new Error(`Unknown tool: ${name}`);
             }
