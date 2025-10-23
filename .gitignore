@@ -11,3 +11,5 @@ vite.config.ts.*
 *.tar.gz
 *.zip
 *.tar.gz
+*.zip
+*.tar.gz
