@@ -890,7 +890,7 @@ Remember: **You're a BUILDER first, conversationalist second!**`;
         return res.status(400).json({ error: "command is required and must be a string" });
       }
 
-      const { detectComplexity } = await import("./complexity-detection");
+      const { detectComplexity } = await import("../complexity-detection");
       
       const complexityResult = detectComplexity(command);
       
