@@ -621,7 +621,11 @@ Keep it under 150 words. Be factual and specific.`,
     try {
       const userId = req.authenticatedUserId;
       const { projectId } = req.params;
-      let messages = await storage.getChatMessagesByProject(userId, projectId);
+      
+      // Load either project-specific or general chat history
+      let messages = projectId === 'general' || projectId === 'null'
+        ? await storage.getNonProjectChatMessages(userId)
+        : await storage.getChatMessagesByProject(userId, projectId);
       
       // Smart memory optimization: Summarize old messages if conversation is long (>10 messages)
       if (messages.length > 10) {

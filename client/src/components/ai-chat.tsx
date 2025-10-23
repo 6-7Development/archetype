@@ -111,10 +111,10 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     timestamp: new Date(),
   };
 
-  // Load chat history on mount
+  // Load chat history on mount (always enabled - loads general or project-specific chat)
+  const effectiveProjectId = currentProjectId || 'general';
   const { data: chatHistory, isLoading: isLoadingHistory } = useQuery<{ messages: Message[] }>({
-    queryKey: ['/api/chat/history', currentProjectId],
-    enabled: !!currentProjectId,
+    queryKey: ['/api/chat/history', effectiveProjectId],
   });
 
   // Hydrate messages from API response or show default greeting
@@ -124,23 +124,20 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
         ...msg,
         timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
       })));
-    } else if (!isLoadingHistory && currentProjectId) {
+    } else if (!isLoadingHistory) {
       // No history found, show default greeting
       setMessages([DEFAULT_GREETING]);
-    } else if (!currentProjectId) {
-      // No project selected, show greeting
-      setMessages([DEFAULT_GREETING]);
     }
-  }, [chatHistory, isLoadingHistory, currentProjectId]);
+  }, [chatHistory, isLoadingHistory]);
 
   // Mutation to save messages to database
-  const saveMessageMutation = useMutation<void, Error, { projectId: string; role: string; content: string }>({
+  const saveMessageMutation = useMutation<void, Error, { projectId: string | null; role: string; content: string }>({
     mutationFn: async (data) => {
       await apiRequest("POST", "/api/chat/messages", data);
     },
     onSuccess: () => {
       // Invalidate chat history to keep it in sync
-      queryClient.invalidateQueries({ queryKey: ['/api/chat/history', currentProjectId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/chat/history', effectiveProjectId] });
     },
   });
 
@@ -239,14 +236,12 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       
       setMessages((prev) => [...prev, assistantMessage]);
       
-      // Persist assistant message to database
-      if (currentProjectId) {
-        saveMessageMutation.mutate({
-          projectId: currentProjectId,
-          role: 'assistant',
-          content: data.response,
-        });
-      }
+      // Persist assistant message to database (save to general chat if no project)
+      saveMessageMutation.mutate({
+        projectId: currentProjectId || null,
+        role: 'assistant',
+        content: data.response,
+      });
       
       // If AI decides to generate code, show cost preview first
       if (data.shouldGenerate && data.command) {
@@ -528,14 +523,12 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     setInput("");
     setPendingImages([]); // Clear pending images after sending
     
-    // Persist user message to database
-    if (currentProjectId) {
-      saveMessageMutation.mutate({
-        projectId: currentProjectId,
-        role: 'user',
-        content: userMessage,
-      });
-    }
+    // Persist user message to database (save to general chat if no project)
+    saveMessageMutation.mutate({
+      projectId: currentProjectId || null,
+      role: 'user',
+      content: userMessage,
+    });
     
     chatMutation.mutate({ 
       message: userMessage,
