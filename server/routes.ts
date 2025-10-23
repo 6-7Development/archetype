@@ -2873,10 +2873,19 @@ RESPOND WITH ONLY JSON - START YOUR RESPONSE WITH { RIGHT NOW`;
   app.post("/api/ai-chat-conversation", async (req: Request, res: Response) => {
     try {
       const userId = (req.user as any)?.id || 'demo-user';
-      const { message, projectId, images } = req.body;
+      const { message, projectId, images, sessionId } = req.body;
 
       if (!message || typeof message !== 'string' || !message.trim()) {
         return res.status(400).json({ error: "Message is required" });
+      }
+      
+      // Broadcast initial status if sessionId provided
+      if (sessionId) {
+        broadcastToSession(sessionId, {
+          type: 'chat-progress',
+          status: 'thinking',
+          message: 'Understanding your request...',
+        });
       }
 
       // Process images if provided (Vision API support)
@@ -3375,9 +3384,42 @@ ${content}
               }
               
               console.log(`🔧 Executing tool: ${toolUse.name}`);
+              
+              // Broadcast tool execution progress
+              if (sessionId) {
+                const toolMessages: Record<string, string> = {
+                  'read_platform_file': `Reading ${toolUse.input?.path || 'file'}...`,
+                  'write_platform_file': `Updating ${toolUse.input?.path || 'file'}...`,
+                  'list_platform_files': 'Browsing platform files...',
+                  'read_project_file': `Reading ${toolUse.input?.filename || 'file'}...`,
+                  'write_project_file': `Writing ${toolUse.input?.filename || 'file'}...`,
+                  'list_project_files': 'Listing project files...',
+                  'browser_test': 'Testing in browser...',
+                  'web_search': 'Searching documentation...',
+                  'vision_analyze': 'Analyzing screenshot...',
+                  'architect_consult': 'Consulting architect...',
+                };
+                broadcastToSession(sessionId, {
+                  type: 'chat-progress',
+                  status: 'working',
+                  message: toolMessages[toolUse.name] || `${toolUse.name}...`,
+                  tool: toolUse.name,
+                  details: toolUse.input,
+                });
+              }
+              
               try {
                 const toolResult = await executeToolInternal(toolUse);
                 console.log(`✅ Tool ${toolUse.name} completed`);
+                
+                // Broadcast tool completion
+                if (sessionId && (toolUse.name === 'write_platform_file' || toolUse.name === 'write_project_file')) {
+                  broadcastToSession(sessionId, {
+                    type: 'chat-progress',
+                    status: 'success',
+                    message: `Updated ${toolUse.input?.path || toolUse.input?.filename || 'file'}`,
+                  });
+                }
                 
                 // 🔒 Track browser_test results for enforcement
                 if (toolUse.name === 'browser_test') {
@@ -3595,12 +3637,13 @@ Keep your reflection brief (2-3 sentences).`
           throw new Error(`Exceeded maximum turns (${maxTurns}) in chat`);
         }
         
-        return finalResult;
+        // Return result with sessionState for completion broadcast
+        return { finalResult, filesWritten: sessionState.filesWritten };
       });
       
       const computeTimeMs = Date.now() - computeStartTime;
 
-      const responseText = completion.content[0].type === 'text' ? completion.content[0].text : "";
+      const responseText = completion.finalResult.content[0].type === 'text' ? completion.finalResult.content[0].text : "";
       
       // 💾 SAVE CONVERSATION TO DATABASE (so SySop remembers!)
       // Save user's message
@@ -3624,8 +3667,8 @@ Keep your reflection brief (2-3 sentences).`
       console.log(`💾 Saved conversation to database (project: ${projectId || 'none'})`);
       
       // Track AI chat usage for billing
-      const inputTokens = completion.usage?.input_tokens || 0;
-      const outputTokens = completion.usage?.output_tokens || 0;
+      const inputTokens = completion.finalResult.usage?.input_tokens || 0;
+      const outputTokens = completion.finalResult.usage?.output_tokens || 0;
       
       await trackAIUsage({
         userId,
@@ -3684,6 +3727,20 @@ Keep your reflection brief (2-3 sentences).`
         };
       }
 
+      // Broadcast completion to frontend
+      if (sessionId) {
+        broadcastToSession(sessionId, {
+          type: 'chat-complete',
+          status: 'done',
+          message: 'Response ready',
+          filesModified: completion.filesWritten.length,
+          usage: {
+            inputTokens,
+            outputTokens,
+          },
+        });
+      }
+      
       res.json({
         response: responseText,
         shouldGenerate,
