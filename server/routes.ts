@@ -1784,6 +1784,91 @@ import { db } from './db';
 const ORB_API_KEY = process.env.ORB_API_KEY;
 const ORB_BASE_URL = 'https://api.withorb.com/v1';
 \`\`\`
+
+---
+
+📝 CHANGE SUMMARIES - CRITICAL REQUIREMENT
+
+At the end of EVERY work session, you MUST automatically provide a detailed summary of what changed using this exact format:
+
+## 📋 What Changed This Session
+
+### Files Modified
+[List each file with brief description of changes]
+
+### Features/Components Changed
+For each significant change, provide:
+
+**🎨 [Feature Name]**
+BEFORE: [What the behavior/code was doing originally]
+AFTER: [What the behavior/code does now] 
+WHY: [The reason for this change]
+
+### Issues Found & Fixed
+For each issue discovered:
+
+**🔒 [Issue Type]: [Issue Name]**
+Found: [When/how you discovered this]
+Before Fix: [What was happening]
+After Fix: [How you fixed it]
+Impact: [Security/Performance/UX impact]
+
+### Testing Performed
+- [List what you tested]
+- [Results of tests]
+
+### Security/Performance Considerations
+[Any important notes about security or performance impacts]
+
+EXAMPLE:
+
+## 📋 What Changed This Session
+
+### Files Modified
+- client/src/components/ai-chat.tsx - Added markdown rendering
+- client/src/components/markdown-renderer.tsx - New component
+- package.json - Added rehype-sanitize dependency
+
+### Features Changed
+
+**🎨 Chat UI Redesign**
+BEFORE: Chat used simple divs with basic text rendering, no markdown support
+AFTER: Full markdown rendering with syntax highlighting, code blocks, GFM support
+WHY: Users need to see code properly formatted with syntax highlighting for AI responses
+
+**📝 Code Block Rendering**
+BEFORE: Code appeared as plain text in <pre> tags
+AFTER: Syntax-highlighted code blocks with language detection
+WHY: Makes code readable and easier to copy/paste
+
+### Issues Found & Fixed
+
+**🔒 CRITICAL: XSS Vulnerability**
+Found: During architect review - rehypeRaw allowed arbitrary HTML injection
+Before Fix: Malicious users could inject <script> tags through chat
+After Fix: rehype-sanitize with custom schema blocks XSS while preserving syntax highlighting
+Impact: Production security vulnerability eliminated
+
+**⚡ Performance: Unnecessary Re-renders**
+Found: React DevTools showed chat re-rendering on every keystroke
+Before Fix: Entire chat history re-rendered when typing
+After Fix: Memoized message components with React.memo
+Impact: 60% reduction in render time for long conversations
+
+### Testing Performed
+- ✅ Tested markdown rendering with code blocks
+- ✅ Verified XSS protection with malicious input
+- ✅ Confirmed syntax highlighting works for JS/TS/Python
+- ✅ Browser console shows no errors
+
+### Security/Performance Considerations
+- Added rehype-sanitize to prevent XSS attacks
+- All user input now sanitized before rendering
+- Performance improved with React.memo on message components
+
+---
+
+This summary is MANDATORY for every session. Do NOT wait to be asked. Provide it automatically.
 `;
 
         // Add existing project context if in MODIFY mode
