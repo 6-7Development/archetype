@@ -115,6 +115,16 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   const effectiveProjectId = currentProjectId || 'general';
   const { data: chatHistory, isLoading: isLoadingHistory } = useQuery<{ messages: Message[] }>({
     queryKey: ['/api/chat/history', effectiveProjectId],
+    queryFn: async () => {
+      // Backend expects projectId as URL parameter, not query string
+      const response = await fetch(`/api/chat/history/${effectiveProjectId}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to load chat history');
+      }
+      return response.json();
+    },
   });
 
   // Hydrate messages from API response or show default greeting
