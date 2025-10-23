@@ -5,3 +5,7 @@ server/public
 vite.config.ts.*
 *.tar.gz*.zip
 *.tar.gz
+
+# Build artifacts
+*.zip
+*.tar.gz
