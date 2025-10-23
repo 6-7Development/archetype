@@ -47,6 +47,20 @@ Archetype is an AI-powered platform for rapid web development, featuring an AI c
   - All edge cases tested and architect-approved
 - **Max Tokens Optimization**: Clarified Claude Sonnet 4 already at API maximum (8192 output tokens) for optimal response generation
 
+### Mobile & Diagnostics Enhancements (October 23, 2025)
+- **Mobile-Responsive File Explorer**: Implemented Sheet overlay for mobile devices
+  - File explorer hidden by default on mobile (<768px viewport)
+  - Hamburger menu button in workspace header toggles overlay
+  - Auto-closes on file selection for seamless mobile UX
+  - Desktop view unchanged (sidebar always visible)
+- **Enhanced SySop Diagnostic Tool**: Added comprehensive `perform_diagnosis` capability
+  - **Security-first implementation**: Multiple architect review cycles to eliminate command injection vulnerabilities
+  - **Path validation**: Rejects absolute paths, shell metacharacters, protects sensitive files (.env, .git, database/)
+  - **Evidence-based analysis**: Reads actual file content, counts lines, detects patterns
+  - **Diagnostic targets**: Performance (sync ops, large files), Memory (leak detection), Database (N+1 queries), Security (hardcoded secrets, SQL injection)
+  - **Safe Node.js APIs**: Uses fs.readFile, fs.stat instead of shell commands
+  - **Workspace boundary enforcement**: Proper directory separation checks prevent path traversal
+
 ## System Architecture
 The platform is built with a React frontend, an Express.js backend, and PostgreSQL for data persistence.
 
