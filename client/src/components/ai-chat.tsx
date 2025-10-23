@@ -222,7 +222,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     },
   });
 
-  const chatMutation = useMutation<{ response: string; shouldGenerate?: boolean; command?: string; checkpoint?: CheckpointData }, Error, { message: string; projectId?: number; images?: string[] }>({
+  const chatMutation = useMutation<{ response: string; shouldGenerate?: boolean; command?: string; checkpoint?: CheckpointData }, Error, { message: string; projectId?: number; images?: string[]; sessionId: string }>({
     mutationFn: async (data) => {
       return await apiRequest<{ response: string; shouldGenerate?: boolean; command?: string; checkpoint?: CheckpointData }>("POST", "/api/ai-chat-conversation", data);
     },
@@ -534,6 +534,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       message: userMessage,
       projectId: currentProjectId ? parseInt(currentProjectId) : undefined,
       images: messagesToSend,
+      sessionId,
     });
   };
 
@@ -745,7 +746,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
             </div>
           ))}
 
-          {/* Loading indicator - Modern style */}
+          {/* Loading indicator - Modern style with real-time progress */}
           {chatMutation.isPending && (
             <div className="flex gap-3 items-start">
               <div className="flex-shrink-0">
@@ -753,11 +754,18 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                   <Sparkles className="w-4 h-4 text-primary-foreground animate-pulse" />
                 </div>
               </div>
-              <div className="bg-muted rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
+              <div className="bg-muted rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm min-w-[200px]">
                 <div className="flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                  <span className="text-sm text-muted-foreground">Thinking...</span>
+                  <span className="text-sm text-muted-foreground">
+                    {streamState.chatProgress?.message || 'Thinking...'}
+                  </span>
                 </div>
+                {streamState.chatProgress?.filesModified !== undefined && streamState.chatProgress.filesModified > 0 && (
+                  <div className="text-xs text-muted-foreground mt-2 pl-6">
+                    Modified {streamState.chatProgress.filesModified} {streamState.chatProgress.filesModified === 1 ? 'file' : 'files'}
+                  </div>
+                )}
               </div>
             </div>
           )}

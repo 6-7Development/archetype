@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 interface StreamMessage {
-  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary';
+  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete';
   commandId?: string;
   status?: string;
   message?: string;
@@ -21,6 +21,9 @@ interface StreamMessage {
   filesChanged?: number;
   linesAdded?: number;
   linesRemoved?: number;
+  tool?: string;
+  details?: any;
+  filesModified?: number;
 }
 
 interface StreamState {
@@ -48,6 +51,12 @@ interface StreamState {
     linesAdded: number;
     linesRemoved?: number;
   } | null;
+  chatProgress: {
+    status: string;
+    message: string;
+    tool?: string;
+    filesModified?: number;
+  } | null;
 }
 
 const MAX_RECONNECT_ATTEMPTS = 5;
@@ -74,6 +83,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
     error: null,
     currentFile: null,
     fileSummary: null,
+    chatProgress: null,
   });
 
   const calculateBackoff = useCallback((attempt: number): number => {
@@ -207,6 +217,34 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
                 currentFile: null, // Clear current file when summary arrives
               }));
               break;
+
+            case 'chat-progress':
+              console.log('📡 Chat progress:', message.message);
+              setStreamState(prev => ({
+                ...prev,
+                chatProgress: {
+                  status: message.status || 'working',
+                  message: message.message || '',
+                  tool: message.tool,
+                  filesModified: message.filesModified,
+                },
+                currentAction: message.message || '',
+              }));
+              break;
+
+            case 'chat-complete':
+              console.log('✅ Chat complete');
+              setStreamState(prev => ({
+                ...prev,
+                chatProgress: {
+                  status: 'done',
+                  message: message.message || '✅ Complete',
+                  filesModified: message.filesModified,
+                },
+                usage: message.usage || null,
+                currentStatus: 'completed',
+              }));
+              break;
           }
         } catch (error) {
           console.error('❌ WebSocket message parse error:', error);
@@ -297,6 +335,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
       error: null,
       currentFile: null,
       fileSummary: null,
+      chatProgress: null,
     }));
   }, []);
 
