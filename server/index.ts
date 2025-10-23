@@ -154,22 +154,19 @@ app.use((req, res, next) => {
 
   // Check GitHub integration configuration for owner-controlled platform modifications
   console.log('\n🔍 Checking GitHub integration configuration...');
-  const missingEnvVars: string[] = [];
+  const requiredEnvVars: string[] = [];
   
   if (!process.env.GITHUB_TOKEN) {
-    missingEnvVars.push('GITHUB_TOKEN');
+    requiredEnvVars.push('GITHUB_TOKEN');
   }
   if (!process.env.GITHUB_REPO) {
-    missingEnvVars.push('GITHUB_REPO');
-  }
-  if (!process.env.OWNER_USER_ID) {
-    missingEnvVars.push('OWNER_USER_ID (optional - for automatic owner assignment)');
+    requiredEnvVars.push('GITHUB_REPO');
   }
 
-  if (missingEnvVars.length > 0) {
+  if (requiredEnvVars.length > 0) {
     console.log('⚠️  GitHub integration NOT configured - platform modifications in production will be disabled');
-    console.log('📝 Missing environment variables:');
-    missingEnvVars.forEach(varName => {
+    console.log('📝 Missing required environment variables:');
+    requiredEnvVars.forEach(varName => {
       console.log(`   - ${varName}`);
     });
     console.log('\n💡 To enable owner-controlled platform modifications on Render:');
@@ -186,6 +183,8 @@ app.use((req, res, next) => {
     console.log(`   - Token: ✓ (configured)`);
     if (process.env.OWNER_USER_ID) {
       console.log(`   - Owner User ID: ${process.env.OWNER_USER_ID}`);
+    } else {
+      console.log('   - Owner User ID: Not set (owner must be manually marked in database)');
     }
     console.log('   - Maintenance mode: Available for owner\n');
   }
