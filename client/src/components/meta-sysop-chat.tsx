@@ -44,10 +44,10 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
     }
   }, [chatHistory]);
 
-  // Auto-scroll to bottom to show newest messages (like Replit Agent)
+  // Auto-scroll to top to show newest messages first
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      scrollRef.current.scrollTop = 0;
     }
   }, [messages, streamingContent]);
 
@@ -180,8 +180,8 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
           </div>
         )}
 
-        {/* Message list - Chronological order (oldest to newest) */}
-        {messages.map((message) => (
+        {/* Message list - Reverse chronological order (newest to oldest) */}
+        {messages.slice().reverse().map((message) => (
           <div
             key={message.id}
             className={cn(
@@ -232,9 +232,9 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
           </div>
         ))}
 
-        {/* Streaming indicator - Show at bottom (newest last) */}
+        {/* Streaming indicator - Show at top (newest first) */}
         {isStreaming && (
-          <div className="flex gap-3 justify-start">
+          <div className="flex gap-3 justify-start order-first">
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
               <Wrench className="h-4 w-4 text-primary" />
             </div>
