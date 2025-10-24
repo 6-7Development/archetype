@@ -141,12 +141,14 @@ export type Command = typeof commands.$inferSelect;
 export const chatMessages = pgTable("chat_messages", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
-  projectId: varchar("project_id"), // Link messages to projects
+  projectId: varchar("project_id"), // Link messages to projects (null for Meta-SySop platform healing)
   fileId: varchar("file_id"),
   role: text("role").notNull(), // 'user' | 'assistant' | 'system'
   content: text("content").notNull(),
   images: jsonb("images"), // Array of image URLs/paths for Vision API support
   isSummary: boolean("is_summary").notNull().default(false), // True for compressed conversation summaries
+  isPlatformHealing: boolean("is_platform_healing").notNull().default(false), // True for Meta-SySop platform healing conversations
+  platformChanges: jsonb("platform_changes"), // Track file modifications in Meta-SySop messages
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
