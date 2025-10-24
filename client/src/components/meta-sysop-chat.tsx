@@ -253,17 +253,17 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
         )}
       </div>
 
-      {/* Input area */}
-      <div className="border-t p-2 sm:p-4 bg-background">
-        <div className="flex gap-2">
+      {/* Input area - Fixed at bottom */}
+      <div className="border-t p-3 sm:p-4 bg-background flex-shrink-0">
+        <div className="flex gap-2 items-end">
           <Textarea
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Describe the platform issue to fix..."
-            className="resize-none text-sm sm:text-base"
-            rows={2}
+            className="min-h-[60px] max-h-[200px] resize-none text-base px-4 py-3 rounded-lg"
+            rows={3}
             data-testid="input-meta-sysop-message"
             disabled={isStreaming}
           />
@@ -271,13 +271,13 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
             onClick={handleSend}
             disabled={!input.trim() || isStreaming}
             size="icon"
-            className="h-auto flex-shrink-0"
+            className="h-12 w-12 flex-shrink-0 rounded-full"
             data-testid="button-send-meta-sysop-message"
           >
             {isStreaming ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
-              <Send className="h-4 w-4" />
+              <Send className="h-5 w-5" />
             )}
           </Button>
         </div>

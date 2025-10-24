@@ -1040,16 +1040,16 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
               onKeyDown={handleKeyDown}
               onPaste={handlePaste}
               placeholder="Message SySop..."
-              className="min-h-[44px] max-h-[200px] resize-none text-base bg-[hsl(220,18%,16%)] border-[hsl(220,15%,28%)] text-[hsl(220,8%,98%)] placeholder:text-[hsl(220,12%,55%)] focus-visible:ring-1 focus-visible:ring-[hsl(220,70%,60%)] rounded-2xl px-4 py-3"
+              className="min-h-[60px] max-h-[200px] resize-none text-base bg-[hsl(220,18%,16%)] border-[hsl(220,15%,28%)] text-[hsl(220,8%,98%)] placeholder:text-[hsl(220,12%,55%)] focus-visible:ring-1 focus-visible:ring-[hsl(220,70%,60%)] rounded-2xl px-4 py-3"
               disabled={chatMutation.isPending}
               data-testid="input-chat-message"
-              rows={1}
+              rows={3}
             />
             <Button
               onClick={handleSend}
               disabled={!input.trim() || chatMutation.isPending}
               size="icon"
-              className="flex-shrink-0 h-11 w-11 rounded-full bg-[hsl(220,70%,60%)] hover:bg-[hsl(220,70%,65%)] text-[hsl(220,8%,98%)]"
+              className="flex-shrink-0 h-12 w-12 rounded-full bg-[hsl(220,70%,60%)] hover:bg-[hsl(220,70%,65%)] text-[hsl(220,8%,98%)]"
               data-testid="button-send-chat"
             >
               {chatMutation.isPending ? (
