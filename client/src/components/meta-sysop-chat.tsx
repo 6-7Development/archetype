@@ -44,10 +44,10 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
     }
   }, [chatHistory]);
 
-  // Auto-scroll to bottom
+  // Auto-scroll to top to show newest messages
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      scrollRef.current.scrollTop = 0;
     }
   }, [messages, streamingContent]);
 
@@ -180,8 +180,8 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
           </div>
         )}
 
-        {/* Message list */}
-        {messages.map((message) => (
+        {/* Message list - Newest first */}
+        {messages.slice().reverse().map((message) => (
           <div
             key={message.id}
             className={cn(
