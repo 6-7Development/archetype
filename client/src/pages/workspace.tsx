@@ -379,7 +379,7 @@ export default function Workspace() {
               </Button>
             </div>
 
-            <ScrollArea className="flex-1">
+            <ScrollArea className="flex-1 min-h-0">
               <div className="p-1.5 space-y-0.5">
                 {files.length === 0 ? (
                   <div className="text-center py-6 px-2">
