@@ -1,0 +1,38 @@
+173 packages are looking for funding
+  run `npm fund` for details
+10 vulnerabilities (3 low, 7 moderate)
+To address issues that do not require attention, run:
+  npm audit fix
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+Run `npm audit` for details.
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+vite v5.4.20 building for production...
+transforming...
+Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+✓ 3846 modules transformed.
+rendering chunks...
+computing gzip size...
+../dist/public/index.html                     1.09 kB │ gzip:   0.56 kB
+../dist/public/assets/index-B7m2DvN7.css    126.81 kB │ gzip:  19.90 kB
+../dist/public/assets/index-BLm_jC4W.js   1,743.48 kB │ gzip: 499.98 kB
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 9.71s
+✘ [ERROR] Could not resolve "../lib/schema"
+    server/routes/chat.ts:4:32:
+      4 │ import { chats, messages } from '../lib/schema';
+        ╵                                 ~~~~~~~~~~~~~~~
+✘ [ERROR] Could not resolve "./schema"
+    server/lib/db.ts:4:24:
+      4 │ import * as schema from './schema';
+        ╵                         ~~~~~~~~~~
+2 errors
+==> Build failed 😞
+==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
