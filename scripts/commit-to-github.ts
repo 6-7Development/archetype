@@ -39,9 +39,9 @@ async function commitWorkspaceChanges() {
   // Initialize GitHub service
   const githubService = new GitHubService();
 
-  // Define which files were modified or deleted
+  // Define which files were modified
   const modifiedFiles: string[] = [
-    'archetype-platform-complete.zip', // DELETED - this was causing stale assets
+    'client/index.html',
   ];
 
   console.log(`📝 Preparing to commit ${modifiedFiles.length} files:\n`);

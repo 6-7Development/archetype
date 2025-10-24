@@ -24,82 +24,47 @@ Archetype is an AI-powered platform for rapid web development, featuring an AI c
 The platform is built with a React frontend, an Express.js backend, and PostgreSQL for data persistence.
 
 ### Dual-Version Architecture (Archetype + Archetype5)
-The platform implements a unified codebase with two distinct user experiences:
-
-**Archetype (Desktop Version)**
-- 4-panel layout with file tree, editor, chat, and preview
-- Optimized for large screens (≥768px width)
-- Traditional desktop IDE interactions
-- Full keyboard shortcuts and multi-panel workflow
-
-**Archetype5 (Mobile Version)**
-- Bottom tab navigation (Chat, Files, Editor, Preview)
-- Full-screen tab views for maximum screen real estate
-- Touch-optimized controls with larger touch targets
-- Optimized for mobile devices (<768px width)
-
-**Shared Resources**
-- Single codebase in React with runtime version detection
-- **VersionProvider** context detects viewport size + user agent + touch capabilities
-- All backend APIs, WebSocket connections, authentication, and database access shared
-- QueryClient, ThemeProvider, and WebSocket streams work identically for both versions
-- Task management (TaskBoard), AI chat, and file operations function the same way
-
-**Version Detection Logic**
-- Viewport width < 768px = Mobile
-- User agent contains mobile keywords + touch device = Mobile
-- Otherwise = Desktop
-- Users can manually override version (stored in localStorage)
-- Responsive updates on window resize
-
-**Implementation**
-- Entry point: `client/src/providers/version-provider.tsx`
-- Workspace routing: `client/src/pages/workspace.tsx` (conditional rendering)
-- Mobile workspace: `client/src/components/mobile-workspace.tsx`
-- Desktop workspace: Standard 4-panel layout in workspace.tsx
+The platform implements a unified codebase with two distinct user experiences: Archetype (Desktop) with a 4-panel layout, and Archetype5 (Mobile) with bottom tab navigation, optimized for touch. Both versions share a single codebase, backend APIs, WebSocket connections, authentication, and database access, with runtime detection for version switching based on viewport size, user agent, and touch capabilities.
 
 ### UI/UX Decisions
-The user interface features a tab-based workspace (Overview, Build, Files, Preview, Activity, Versions) providing an IDE-like experience. Interaction is primarily through a command console, complemented by a real-time live preview. The design adopts a professional, corporate aesthetic with a navy/slate color palette, card-based layouts, and smooth transitions, ensuring responsiveness and ADA/WCAG accessibility with `prefers-reduced-motion` support. The chat interface is redesigned with a clean, minimal aesthetic, including enhanced progress displays with individual animated progress bars and completion summaries. Mobile responsiveness for the file explorer is implemented with a Sheet overlay with proper scroll constraints (`min-h-0` on ScrollArea) for smaller viewports. **Mobile Chat Layout (Oct 2025)**: Fixed critical mobile issue where chat input boxes were pushed off-screen by implementing proper flex constraints throughout the entire component tree. Solution: `min-h-0` on all flex children to allow shrinking, `max-h-full overflow-hidden` on parent containers, ensuring chat inputs remain anchored at the bottom on all screen sizes. Applies to both Meta-SySop (Platform Healing) and Builder (SySop) chat interfaces. **Chat Message Order & Scroll Behavior (Oct 2025)**: Messages display in chronological order (oldest→newest) matching Replit Agent UX, with auto-scroll to bottom (`scrollTop = scrollHeight`). Streaming indicators (TaskBoard, Loading, Progress) positioned at bottom of message area (after messages loop) to show in-progress responses. Chat input areas enlarged: min-height increased to 60px, rows to 3, send buttons to 12x12px for better visibility and accessibility on mobile and desktop. Collapsible preview panel with toggle buttons provides optimal chat workspace. Mobile file explorer menu scrolls properly with flex constraints.
+The user interface features a tab-based workspace (Overview, Build, Files, Preview, Activity, Versions) providing an IDE-like experience, primarily through a command console and real-time live preview. The design adopts a professional, corporate aesthetic with a navy/slate color palette, card-based layouts, smooth transitions, and ADA/WCAG accessibility. Chat interfaces are clean, minimal, with enhanced progress displays, fixed mobile layout issues (input boxes remain anchored), and proper scroll behavior. Collapsible preview panels and enlarged chat input areas improve usability.
 
 ### Technical Implementations
-- **AI Architecture**: SySop (AI Coding Agent) uses a 12-step workflow with built-in Architect consultation. It includes real-time AI streaming with abort capability and comprehensive billing for AI usage. The SySop system prompt is optimized for quality and expertise in full-stack web, professional games, self-testing, and Orb usage-based billing. SySop uses teaching emojis (🧠🔨✅), an "explain like I'm 5" approach, step-by-step updates, and transparent issue reporting.
-- **Replit Agent-Style Task Management**: SySop now displays live, interactive task lists (1-12 tasks) with real-time status updates, matching Replit Agent's UX exactly. Tasks show checkmarks (✓) for completed, spinning circles (⊙) for in-progress, and empty circles (○) for pending states. TaskBoard UI component displays tasks prominently above chat with progress tracking, sub-agent indicators, and WebSocket-driven live updates. Server-side robust JSON parser extracts task plans from Claude responses using balanced-brace matching and fenced code block detection.
-- **Autonomous AI System**: SySop is equipped with self-testing (Playwright), web search (Tavily API), vision analysis (Claude Vision), and architectural guidance via I AM (The Architect). It features an automatic reflection loop, a server-side self-correction protocol, and autonomous troubleshooting. Human intervention points are defined for API keys, ambiguous requirements, and after failed fix attempts.
-- **Meta-SySop Enhanced Tools**: Meta-SySop now has access to architect_consult (I AM code reviews), web_search (documentation lookup), in addition to platform file operations. This prevents broken commits by requiring architectural approval before platform modifications.
-- **Platform Modification Guardrails**: Platform file modifications are disabled in production (Render) due to ephemeral containers. For platform self-healing, Meta-SySop can commit changes to GitHub, triggering auto-deployment, enabled by owner-controlled maintenance mode and specific environment variables.
+- **AI Architecture**: SySop (AI Coding Agent) employs a 12-step workflow with Architect consultation, real-time streaming, and comprehensive billing. It's optimized for full-stack web, professional games, self-testing, and Orb usage-based billing, providing transparent updates and issue reporting.
+- **Replit Agent-Style Task Management**: Live, interactive task lists with real-time status updates (checkmarks, spinning circles, empty circles) are displayed via a TaskBoard UI component, driven by WebSocket updates and robust JSON parsing for task plans.
+- **Autonomous AI System**: SySop integrates self-testing (Playwright), web search (Tavily API), vision analysis (Claude Vision), architectural guidance (I AM), and an automatic reflection/self-correction loop. Meta-SySop has enhanced tools including `architect_consult` and `web_search`.
+- **Platform Modification Guardrails**: Production environment file modifications are disabled; Meta-SySop commits changes to GitHub for auto-deployment under specific, secure conditions.
 - **Secrets Management**: Zero-knowledge credential handling for API keys.
-- **Advanced AI Capabilities**: SySop can build complex marketplace platforms, professional-grade 2D/3D games, implement Orb usage-based billing, self-test, search documentation, and analyze visuals.
-- **Test Data Generation & User Simulation**: SySop can generate realistic test data using faker.js (realistic names, emails, dates) and simulate user behavior with Playwright scripts. It creates seed data for databases, simulates user flows (signup → login → purchase), generates analytics events with proper timestamps, and tests tracking systems with realistic interaction patterns. Supports E2E testing with multiple concurrent simulated users.
-- **Bot & Agent Generation**: SySop can create functional chatbots and automation agents for user projects including: AI-powered chatbots for web applications (OpenAI, Anthropic), platform-specific bots (Discord.js, Slack Bolt, Telegram), automation agents (cron jobs, webhooks, data scraping), and background workers. Emphasizes API key security, rate limiting, error handling, and production best practices.
-- **Command System**: Natural language commands are processed by Anthropic Claude 3.5 Sonnet to generate project structures as JSON.
-- **File Management**: Generated files are stored in PostgreSQL, viewable and editable via a file browser and Monaco editor. Files auto-refresh every 5 seconds with WebSocket push updates for real-time synchronization. Comprehensive console logging tracks file selection, content loading, and editor updates for debugging.
-- **Conversational AI**: An AI assistant powered by Claude 3.5 Sonnet clarifies questions and explains design decisions, with automatic conversation summarization.
-- **Preview System**: Uses `esbuild` for in-memory React/TypeScript compilation to show compiled applications in an iframe, with real-time status and auto-refresh. Preview endpoint includes comprehensive logging for compilation time tracking, entry point detection, and error diagnosis. Supports both public preview sharing and authenticated project viewing.
-- **Monolithic Routes Refactoring**: The server routes were modularized to improve performance, reducing `routes.ts` significantly and creating dedicated modules for auth, projects, files, chat, subscriptions, admin, and websocket. Common middleware and utilities were extracted.
-- **Performance Optimizations**: Implemented LRU caching, system prompt caching, Gzip compression, WebSocket memory leak fixes (heartbeat, cleanup), and response caching middleware for hot endpoints.
-- **Robust JSON Parsing Pipeline**: Developed a 3-tier extraction method for AI responses to handle complex JSON structures, including emojis and braces in strings.
-- **Multi-Agent Task Management System**: Foundation for autonomous task breakdown with new database tables and six SySop tools for task list creation, updates, sub-agent delegation, and architect reviews, all with robust security and ownership verification.
-- **SySop Diagnostic Tool**: Enhanced `perform_diagnosis` capability with security-first implementation, path validation, and evidence-based analysis for performance, memory, database, and security diagnostics.
+- **Advanced AI Capabilities**: SySop can build complex marketplace platforms, 2D/3D games, implement usage-based billing, generate test data (faker.js), simulate user behavior (Playwright), and create functional chatbots/automation agents.
+- **Command System**: Natural language commands processed by Anthropic Claude 3.5 Sonnet to generate JSON project structures.
+- **File Management**: Generated files stored in PostgreSQL, editable via Monaco editor, with real-time synchronization via WebSockets.
+- **Conversational AI**: AI assistant (Claude 3.5 Sonnet) clarifies questions and explains design decisions with automatic summarization.
+- **Preview System**: Uses `esbuild` for in-memory React/TypeScript compilation to show applications in an iframe with real-time status and auto-refresh.
+- **Monolithic Routes Refactoring**: Server routes modularized into dedicated modules for improved performance.
+- **Performance Optimizations**: Includes LRU caching, system prompt caching, Gzip compression, WebSocket memory leak fixes, and response caching.
+- **Robust JSON Parsing Pipeline**: 3-tier extraction method for complex JSON structures from AI responses.
+- **Multi-Agent Task Management System**: Foundation for autonomous task breakdown with database tables and SySop tools for task list creation, updates, and reviews.
+- **SySop Diagnostic Tool**: Enhanced `perform_diagnosis` for security-first, evidence-based performance, memory, database, and security diagnostics.
 
 ### Feature Specifications
-- **Workspace Features**: Tab-based navigation (Overview, Build, Files, Preview, Activity, Versions), unified talk & build interface, Monaco editor, full project ZIP export.
+- **Workspace Features**: Tab-based navigation, unified talk & build interface, Monaco editor, full project ZIP export.
 - **Publishing/Deployment System**: Publishing page with mobile-responsive design, database migration detection, deployment management, logs, and analytics.
-- **Team Workspaces**: Collaboration infrastructure with role-based access, member invitations, and shared project access.
-- **API Key Management**: Secure API key system for Pro+ users with bcrypt hashing, usage tracking, and validation middleware.
-- **Support Ticketing**: Complete support ticket system with subject, description, priority levels, status tracking, and plan-based SLA response times.
-- **AI Request Management**: Priority processing queue with concurrent request limits, real-time cost preview, usage dashboard, and token-based pricing model.
+- **Team Workspaces**: Collaboration with role-based access, invitations, and shared project access.
+- **API Key Management**: Secure API key system for Pro+ users with hashing, usage tracking, and validation.
+- **Support Ticketing**: Complete system with subject, description, priority, status, and plan-based SLA.
+- **AI Request Management**: Priority processing queue with concurrent limits, real-time cost preview, usage dashboard, and token-based pricing.
 
 ### System Design Choices
-- **Database Architecture**: Comprehensive PostgreSQL schema for projects, commands, files, subscriptions, usage logs, templates, version control, team workspaces, API keys, and support tickets.
-- **Team Collaboration System**: Role-based access control with invitation system.
+- **Database Architecture**: Comprehensive PostgreSQL schema for all platform data (projects, users, usage, billing, etc.).
+- **Team Collaboration System**: Role-based access control with an invitation system.
 - **API Key Infrastructure**: Secure key generation with bcrypt hashing and usage tracking.
 - **Support Ticketing System**: Complete ticket lifecycle with priority levels and plan-based SLAs.
 - **AI Priority Queue**: EventEmitter-based queue with priority scoring and concurrent request limits.
-- **Usage Tracking & Billing**: 100% cost coverage tracking AI tokens, storage, deployment bandwidth, and infrastructure, with Stripe metered billing for overages.
-- **Monetization Infrastructure**: Lead capture, Stripe subscription system, webhook handling, granular usage billing, and a template marketplace commission model.
-- **Security & Production Readiness**: Full authentication/authorization with Replit Auth, PostgreSQL sessions, protected API routes, rate limiting, and bcrypt-hashed API keys.
+- **Usage Tracking & Billing**: 100% cost coverage for AI tokens, storage, deployment bandwidth, and infrastructure, with Stripe metered billing.
+- **Monetization Infrastructure**: Lead capture, Stripe subscription system, webhooks, granular usage billing, and template marketplace commission model.
+- **Security & Production Readiness**: Full authentication/authorization (Replit Auth, PostgreSQL sessions), protected API routes, rate limiting, and bcrypt-hashed API keys.
 - **Deployment & Hosting System**: Supports public hosting of deployed projects under unique subdomains with status and visit tracking.
-- **Meta-SySop Security**: Robust authentication/authorization, git operations with dedicated Meta-SySop identity, and comprehensive security measures to prevent shell injection, path traversal, and protect sensitive files during autonomous platform healing.
+- **Meta-SySop Security**: Robust authentication/authorization, dedicated Meta-SySop identity for git operations, and comprehensive security measures to prevent shell injection, path traversal, and protect sensitive files.
 
 ## External Dependencies
 - **Frontend**: React, TypeScript, Monaco Editor, Tailwind CSS, Shadcn UI, next-themes
