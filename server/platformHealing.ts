@@ -381,6 +381,44 @@ export class PlatformHealingService {
   }
 
   async commitChanges(message: string, changes: FileChange[]): Promise<string> {
+    // PRODUCTION MODE: Use GitHub service
+    if (process.env.NODE_ENV === 'production') {
+      if (!isGitHubServiceAvailable()) {
+        throw new Error('GitHub service not configured for production commits');
+      }
+
+      try {
+        const githubService = getGitHubService();
+        
+        // Filter changes to only include those with content
+        const changesWithContent = changes.filter(c => c.contentAfter);
+        
+        if (changesWithContent.length === 0) {
+          console.log('[PLATFORM-HEAL] No changes with content to commit');
+          return '';
+        }
+
+        console.log(`[PLATFORM-HEAL] Committing ${changesWithContent.length} file(s) to GitHub...`);
+        
+        const fileChanges = changesWithContent.map(c => ({
+          path: c.path,
+          content: c.contentAfter!
+        }));
+
+        const commitMessage = `${message}\n\nChanges:\n${changes.map(c => `- ${c.operation} ${c.path}`).join('\n')}`;
+        
+        const result = await githubService.commitFiles(fileChanges, commitMessage);
+        
+        console.log(`[PLATFORM-HEAL] ✅ Committed to GitHub: ${result.commitHash}`);
+        
+        return result.commitHash;
+      } catch (error: any) {
+        console.error('[PLATFORM-HEAL] ❌ GitHub commit failed:', error);
+        throw new Error(`Failed to commit to GitHub: ${error.message}`);
+      }
+    }
+
+    // DEVELOPMENT MODE: Use local git
     try {
       await execFileAsync('git', ['add', '-A'], { cwd: this.PROJECT_ROOT });
 
