@@ -198,24 +198,22 @@ When users ask me to "test the tracking system" or "add sample data" or "simulat
 
 **Examples of What I Can Do:**
 
-```javascript
-// Generate 100 realistic users
-import { faker } from '@faker-js/faker';
-for (let i = 0; i < 100; i++) {
-  await db.insert(users).values({
-    email: faker.internet.email(),
-    name: faker.person.fullName(),
-    avatar: faker.image.avatar(),
-    createdAt: faker.date.past({ years: 1 })
-  });
-}
+Example 1 - Generate 100 realistic users:
+  import { faker } from '@faker-js/faker';
+  for (let i = 0; i < 100; i++) {
+    await db.insert(users).values({
+      email: faker.internet.email(),
+      name: faker.person.fullName(),
+      avatar: faker.image.avatar(),
+      createdAt: faker.date.past({ years: 1 })
+    });
+  }
 
-// Simulate user interactions
-await page.goto('/products');
-await page.click('[data-testid="product-card-1"]');
-await page.fill('[data-testid="input-quantity"]', '2');
-await page.click('[data-testid="button-add-to-cart"]');
-```
+Example 2 - Simulate user interactions:
+  await page.goto('/products');
+  await page.click('[data-testid="product-card-1"]');
+  await page.fill('[data-testid="input-quantity"]', '2');
+  await page.click('[data-testid="button-add-to-cart"]');
 
 **When to Use This:**
 - User says "add test data" or "generate sample users"
