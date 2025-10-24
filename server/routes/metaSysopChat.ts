@@ -8,6 +8,9 @@ import { platformHealing } from '../platformHealing';
 import { platformAudit } from '../platformAudit';
 import { consultArchitect } from '../tools/architect-consult';
 import { executeWebSearch } from '../tools/web-search';
+import { GitHubService } from '../githubService';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 const router = Router();
 
@@ -110,36 +113,52 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       content: message,
     });
 
-    const systemPrompt = `You are Meta-SySop, an elite AI agent that fixes the Archetype platform itself.
+    const systemPrompt = `You are Meta-SySop, an AUTONOMOUS elite AI agent that fixes the Archetype platform itself.
 
 CRITICAL: You are modifying the PRODUCTION PLATFORM CODE, not user projects. Be extremely careful.
+
+🤖 YOUR AUTONOMOUS WORKFLOW:
+1. DIAGNOSE: Identify the issue
+2. CONSULT: Get I AM (architect_consult) approval for fixes
+3. FIX: Implement approved changes with writePlatformFile
+4. DEPLOY: Use commit_to_github to push changes to production
+5. REPORT: Tell user what you fixed
+
+DO NOT ASK PERMISSION - JUST FIX IT! You are autonomous.
 
 CURRENT PLATFORM ARCHITECTURE:
 - React frontend (client/src)
 - Express backend (server/)
 - PostgreSQL database (Drizzle ORM)
 - TypeScript throughout
-- Deployed on Render
+- Deployed on Render (auto-deploys from GitHub commits)
 
 AVAILABLE TOOLS:
 1. readPlatformFile(path) - Read platform source code
-2. writePlatformFile(path, content) - Modify platform code
+2. writePlatformFile(path, content) - Modify platform code (requires I AM approval)
 3. listPlatformFiles(directory) - List files
-4. architect_consult() - **MANDATORY** Get expert code review from I AM (The Architect)
+4. architect_consult() - **MANDATORY** Get expert code review from I AM before writing files
 5. web_search() - Search documentation and best practices
+6. commit_to_github(commitMessage) - **AUTO-DEPLOY** Push all changes to GitHub → triggers Render deployment
+
+MANDATORY WORKFLOW:
+Step 1: Read relevant files
+Step 2: Consult I AM with proposed fixes (architect_consult)
+Step 3: If approved, write files (writePlatformFile)
+Step 4: Commit and deploy (commit_to_github)
+Step 5: Report completion
 
 SAFETY RULES:
-- **CRITICAL**: ALWAYS consult I AM (architect_consult) before writing ANY platform files
+- **ALWAYS** consult I AM (architect_consult) before writing platform files
 - NEVER modify .git/, node_modules/, .env, package.json
-- ALWAYS explain what you're fixing and why
+- After fixing issues, AUTOMATICALLY call commit_to_github to deploy
 - Create minimal, surgical fixes
-- Get I AM's approval before committing
 
-CONVERSATION STYLE:
-- Be conversational and friendly
-- Explain your thought process
-- Ask clarifying questions if needed
-- Provide progress updates as you work
+AUTONOMOUS BEHAVIOR:
+- DO NOT ask "should I fix this?" - JUST FIX IT
+- DO NOT wait for permission to deploy - AUTO-DEPLOY with commit_to_github
+- DO explain what you're doing as you work
+- DO report completion when done
 
 Current user request: ${message}`;
 
@@ -206,6 +225,17 @@ Current user request: ${message}`;
             maxResults: { type: 'number' as const, description: 'Maximum number of results (default: 5)' },
           },
           required: ['query'],
+        },
+      },
+      {
+        name: 'commit_to_github',
+        description: 'CRITICAL: Commit all platform changes to GitHub and trigger production deployment. Use this after making and verifying platform fixes. This pushes changes to GitHub which auto-deploys to Render.',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            commitMessage: { type: 'string' as const, description: 'Detailed commit message explaining what was fixed' },
+          },
+          required: ['commitMessage'],
         },
       },
     ];
@@ -354,6 +384,68 @@ Current user request: ${message}`;
               toolResult = `Search Results:\n${searchResult.results.map((r: any) => 
                 `• ${r.title}\n  ${r.url}\n  ${r.content}\n`
               ).join('\n')}`;
+            } else if (name === 'commit_to_github') {
+              const typedInput = input as { commitMessage: string };
+              
+              // Verify we have file changes to commit
+              if (fileChanges.length === 0) {
+                toolResult = `❌ No file changes to commit. Make platform changes first using writePlatformFile.`;
+                sendEvent('error', { message: 'No file changes to commit' });
+              } else {
+                sendEvent('progress', { message: `📤 Committing ${fileChanges.length} files to GitHub...` });
+                
+                try {
+                  // Check if GitHub service is configured
+                  const hasToken = !!process.env.GITHUB_TOKEN;
+                  const hasRepo = !!process.env.GITHUB_REPO;
+                  
+                  if (!hasToken || !hasRepo) {
+                    toolResult = `❌ GitHub integration not configured. Required: GITHUB_TOKEN and GITHUB_REPO environment variables.`;
+                    sendEvent('error', { message: 'GitHub not configured' });
+                  } else {
+                    const githubService = new GitHubService();
+                    const PROJECT_ROOT = process.cwd();
+                    
+                    // Read file contents and prepare for commit
+                    const filesToCommit = [];
+                    for (const change of fileChanges) {
+                      if (change.contentAfter) {
+                        filesToCommit.push({
+                          path: change.path,
+                          content: change.contentAfter,
+                        });
+                      } else {
+                        // Read from filesystem if content wasn't tracked
+                        const fullPath = path.join(PROJECT_ROOT, change.path);
+                        const content = await fs.readFile(fullPath, 'utf-8');
+                        filesToCommit.push({
+                          path: change.path,
+                          content,
+                        });
+                      }
+                    }
+                    
+                    // Commit to GitHub
+                    const result = await githubService.commitFiles(
+                      filesToCommit,
+                      typedInput.commitMessage
+                    );
+                    
+                    sendEvent('progress', { message: `✅ Committed to GitHub: ${result.commitHash}` });
+                    sendEvent('progress', { message: `🚀 Render will auto-deploy in 2-3 minutes` });
+                    
+                    toolResult = `✅ SUCCESS! Committed ${fileChanges.length} files to GitHub\n\n` +
+                      `Commit: ${result.commitHash}\n` +
+                      `URL: ${result.commitUrl}\n\n` +
+                      `🚀 Render auto-deployment triggered!\n` +
+                      `⏱️ Changes will be live in 2-3 minutes\n\n` +
+                      `Files committed:\n${filesToCommit.map(f => `- ${f.path}`).join('\n')}`;
+                  }
+                } catch (error: any) {
+                  toolResult = `❌ GitHub commit failed: ${error.message}`;
+                  sendEvent('error', { message: `GitHub commit failed: ${error.message}` });
+                }
+              }
             }
 
             toolResults.push({
