@@ -77,30 +77,46 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     sendEvent('user_message', { messageId: userMsg.id });
 
-    // 🎯 OPTION 2: Pre-create task list IMMEDIATELY for instant TaskBoard feedback
-    // This guarantees users see progress even if Meta-SySop fails to create tasks
-    sendEvent('progress', { message: 'Creating task list for live tracking...' });
+    // 🎯 Check for existing active task list or create new one
+    // Prevents duplicate task lists across conversation
+    sendEvent('progress', { message: 'Preparing task tracking...' });
     
-    const initialTaskResult = await createTaskList({
-      userId,
-      projectId: undefined,
-      chatMessageId: userMsg.id,
-      title: `Platform Healing: ${message.slice(0, 50)}`,
-      description: 'Meta-SySop is analyzing your request and will update these tasks as work progresses.',
-      tasks: [
-        { title: 'Analyze request and identify files to modify', status: 'in_progress' },
-        { title: 'Read relevant platform files', status: 'pending' },
-        { title: 'Consult I AM (The Architect) for approval', status: 'pending' },
-        { title: 'Implement approved changes', status: 'pending' },
-        { title: 'Deploy to production via GitHub', status: 'pending' },
-      ],
-    });
+    const existingLists = await readTaskList({ userId, projectId: undefined });
+    let activeTaskListId: string | undefined;
     
-    if (initialTaskResult.success) {
-      sendEvent('task_list_created', { taskListId: initialTaskResult.taskListId });
-      sendEvent('progress', { message: `✅ Task list created - see live progress above!` });
-    } else {
-      console.warn('[META-SYSOP] Failed to pre-create task list:', initialTaskResult.error);
+    if (existingLists.success && existingLists.taskLists) {
+      const activeList = existingLists.taskLists.find((list: any) => list.status === 'active');
+      if (activeList) {
+        activeTaskListId = activeList.id;
+        sendEvent('progress', { message: `✅ Using existing task list - see live progress above!` });
+        sendEvent('task_list_created', { taskListId: activeList.id });
+      }
+    }
+    
+    // Only create new task list if no active one exists
+    if (!activeTaskListId) {
+      const initialTaskResult = await createTaskList({
+        userId,
+        projectId: undefined,
+        chatMessageId: userMsg.id,
+        title: `Platform Healing: ${message.slice(0, 50)}`,
+        description: 'Meta-SySop is analyzing your request and will update these tasks as work progresses.',
+        tasks: [
+          { title: 'Analyze request and identify files to modify', status: 'in_progress' },
+          { title: 'Read relevant platform files', status: 'pending' },
+          { title: 'Consult I AM (The Architect) for approval', status: 'pending' },
+          { title: 'Implement approved changes', status: 'pending' },
+          { title: 'Deploy to production via GitHub', status: 'pending' },
+        ],
+      });
+      
+      if (initialTaskResult.success) {
+        activeTaskListId = initialTaskResult.taskListId;
+        sendEvent('task_list_created', { taskListId: initialTaskResult.taskListId });
+        sendEvent('progress', { message: `✅ Task list created - see live progress above!` });
+      } else {
+        console.warn('[META-SYSOP] Failed to pre-create task list:', initialTaskResult.error);
+      }
     }
 
     // Create backup before any changes (non-blocking - continue even if it fails)
@@ -456,10 +472,10 @@ DO NOT create new tasks - UPDATE existing ones!`;
                   ).join('\n');
                   toolResult = `Current Task List (${activeList.id}):\n${taskSummary}`;
                 } else {
-                  toolResult = 'No active task list found. This should not happen - tasks are pre-created when users send messages.';
+                  toolResult = `No active task list found. A task list should have been pre-created. Proceed with your work - the task list will be available in the next turn.`;
                 }
               } else {
-                toolResult = `Error reading task list: ${result.error}`;
+                toolResult = `Error reading task list: ${result.error}. Proceed with your work anyway - task tracking is optional.`;
               }
             } else if (name === 'readPlatformFile') {
               const typedInput = input as { path: string };
