@@ -6,6 +6,8 @@ import { isAuthenticated, isAdmin } from '../universalAuth';
 import Anthropic from '@anthropic-ai/sdk';
 import { platformHealing } from '../platformHealing';
 import { platformAudit } from '../platformAudit';
+import { consultArchitect } from '../tools/architect-consult';
+import { executeWebSearch } from '../tools/web-search';
 
 const router = Router();
 
@@ -123,12 +125,15 @@ AVAILABLE TOOLS:
 1. readPlatformFile(path) - Read platform source code
 2. writePlatformFile(path, content) - Modify platform code
 3. listPlatformFiles(directory) - List files
+4. architect_consult() - **MANDATORY** Get expert code review from I AM (The Architect)
+5. web_search() - Search documentation and best practices
 
 SAFETY RULES:
+- **CRITICAL**: ALWAYS consult I AM (architect_consult) before writing ANY platform files
 - NEVER modify .git/, node_modules/, .env, package.json
 - ALWAYS explain what you're fixing and why
 - Create minimal, surgical fixes
-- Test changes before committing
+- Get I AM's approval before committing
 
 CONVERSATION STYLE:
 - Be conversational and friendly
@@ -171,6 +176,36 @@ Current user request: ${message}`;
             directory: { type: 'string' as const, description: 'Directory path' },
           },
           required: ['directory'],
+        },
+      },
+      {
+        name: 'architect_consult',
+        description: 'CRITICAL: Consult I AM (The Architect) for expert code review before making changes. ALWAYS use this before committing platform modifications.',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            problem: { type: 'string' as const, description: 'The problem you are trying to solve' },
+            context: { type: 'string' as const, description: 'Relevant context about the platform state' },
+            proposedSolution: { type: 'string' as const, description: 'Your proposed fix or changes' },
+            affectedFiles: { 
+              type: 'array' as const, 
+              items: { type: 'string' as const },
+              description: 'List of files that will be modified' 
+            },
+          },
+          required: ['problem', 'context', 'proposedSolution', 'affectedFiles'],
+        },
+      },
+      {
+        name: 'web_search',
+        description: 'Search the web for documentation, best practices, and solutions. Use this to look up proper implementations.',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            query: { type: 'string' as const, description: 'Search query for documentation or solutions' },
+            maxResults: { type: 'number' as const, description: 'Maximum number of results (default: 5)' },
+          },
+          required: ['query'],
         },
       },
     ];
@@ -241,6 +276,42 @@ Current user request: ${message}`;
               sendEvent('progress', { message: `Listing files in ${typedInput.directory}...` });
               const files = await platformHealing.listPlatformFiles(typedInput.directory);
               toolResult = files.join('\n');
+            } else if (name === 'architect_consult') {
+              const typedInput = input as { 
+                problem: string; 
+                context: string; 
+                proposedSolution: string;
+                affectedFiles: string[];
+              };
+              sendEvent('progress', { message: '🏗️ Consulting I AM (The Architect) for code review...' });
+              
+              const architectResult = await consultArchitect({
+                problem: typedInput.problem,
+                context: typedInput.context,
+                previousAttempts: [],
+                codeSnapshot: `Proposed Solution:\n${typedInput.proposedSolution}\n\nAffected Files:\n${typedInput.affectedFiles.join('\n')}`
+              });
+              
+              if (architectResult.success) {
+                sendEvent('progress', { message: '✅ I AM approved the changes' });
+                toolResult = `Architect Review:\n${architectResult.guidance}\n\nRecommendations:\n${architectResult.recommendations.join('\n')}`;
+              } else {
+                sendEvent('progress', { message: '❌ I AM rejected the changes' });
+                toolResult = `Architect rejected: ${architectResult.error}`;
+              }
+            } else if (name === 'web_search') {
+              const typedInput = input as { query: string; maxResults?: number };
+              sendEvent('progress', { message: `🔍 Searching: ${typedInput.query}...` });
+              
+              const searchResult = await executeWebSearch({
+                query: typedInput.query,
+                maxResults: typedInput.maxResults || 5
+              });
+              
+              // Format results for Meta-SySop
+              toolResult = `Search Results:\n${searchResult.results.map((r: any) => 
+                `• ${r.title}\n  ${r.url}\n  ${r.snippet}\n`
+              ).join('\n')}`;
             }
 
             toolResults.push({
