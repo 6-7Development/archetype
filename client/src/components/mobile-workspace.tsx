@@ -29,11 +29,11 @@ export function MobileWorkspace({
 
   return (
     <div className="h-full flex flex-col bg-background">
-      {/* Tab Content - Full Screen */}
-      <div className="flex-1 overflow-hidden">
+      {/* Tab Content - Full Screen with proper flex constraints */}
+      <div className="flex-1 min-h-0 overflow-hidden">
         {/* Chat Tab */}
         {activeTab === "chat" && (
-          <div className="h-full">
+          <div className="h-full min-h-0">
             <AIChat currentProjectId={projectId} />
           </div>
         )}

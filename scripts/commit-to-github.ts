@@ -41,7 +41,9 @@ async function commitWorkspaceChanges() {
 
   // Define which files were modified (you can expand this list)
   const modifiedFiles: string[] = [
+    'client/src/components/ai-chat.tsx',
     'client/src/components/meta-sysop-chat.tsx',
+    'client/src/components/mobile-workspace.tsx',
   ];
 
   console.log(`📝 Preparing to commit ${modifiedFiles.length} files:\n`);
