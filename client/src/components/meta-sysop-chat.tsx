@@ -1,301 +1,208 @@
-import { useState, useRef, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Send, Loader2, Wrench, User, FileCode, GitBranch, AlertTriangle, CheckCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { MarkdownRenderer } from "@/components/markdown-renderer";
+import { useState, useEffect, useRef } from 'react';
+import { Send, Settings, User, Loader2, X } from 'lucide-react';
 
 interface Message {
   id: string;
-  role: "user" | "assistant";
   content: string;
-  platformChanges?: {
-    files: Array<{ path: string; operation: string }>;
-  };
-  createdAt: string;
+  sender: 'user' | 'meta-sysop';
+  timestamp: Date;
 }
 
 interface MetaSySopChatProps {
-  autoCommit?: boolean;
-  autoPush?: boolean;
+  onClose: () => void;
 }
 
-export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySopChatProps) {
+export default function MetaSySopChat({ onClose }: MetaSySopChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [streamingContent, setStreamingContent] = useState("");
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [inputMessage, setInputMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Load Meta-SySop chat history
-  const { data: chatHistory, isLoading } = useQuery<{ messages: Message[] }>({
-    queryKey: ['/api/platform/chat/history'],
-  });
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
-  // Initialize messages from history
   useEffect(() => {
-    if (chatHistory?.messages) {
-      setMessages(chatHistory.messages);
-    }
-  }, [chatHistory]);
+    scrollToBottom();
+  }, [messages]);
 
-  // Auto-scroll to bottom
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages, streamingContent]);
+    // Initialize with welcome message
+    setMessages([
+      {
+        id: '1',
+        content: "Hello! I'm Meta-SySop, your platform diagnostic and maintenance AI. I can help you with platform issues, system monitoring, and technical troubleshooting. What can I help you with today?",
+        sender: 'meta-sysop',
+        timestamp: new Date()
+      }
+    ]);
+  }, []);
 
-  // Send message mutation
-  const sendMutation = useMutation({
-    mutationFn: async (userMessage: string) => {
-      // Add user message immediately
-      const userMsg: Message = {
-        id: Date.now().toString(),
-        role: "user",
-        content: userMessage,
-        createdAt: new Date().toISOString(),
-      };
-      setMessages(prev => [...prev, userMsg]);
-      setInput("");
-      setIsStreaming(true);
-      setStreamingContent("");
+  const sendMessage = async () => {
+    if (!inputMessage.trim() || isLoading) return;
 
-      // Start streaming response
-      const response = await fetch('/api/platform/chat/stream', {
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      content: inputMessage.trim(),
+      sender: 'user',
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInputMessage('');
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/meta-sysop/message', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         body: JSON.stringify({
-          message: userMessage,
-          autoCommit,
-          autoPush,
-        }),
+          message: userMessage.content
+        })
       });
 
-      if (!response.ok || !response.body) {
-        throw new Error('Failed to get streaming response');
+      if (response.ok) {
+        const sysopResponse = await response.json();
+        const sysopMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: sysopResponse.message,
+          sender: 'meta-sysop',
+          timestamp: new Date()
+        };
+        
+        setMessages(prev => [...prev, sysopMessage]);
+      } else {
+        throw new Error('Failed to send message');
       }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let fullContent = "";
-      let fileChanges: any[] = [];
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = JSON.parse(line.slice(6));
-            
-            if (data.type === 'content') {
-              fullContent += data.content;
-              setStreamingContent(fullContent);
-            } else if (data.type === 'file_change') {
-              fileChanges.push(data.file);
-            } else if (data.type === 'done') {
-              // Add complete assistant message
-              const assistantMsg: Message = {
-                id: data.messageId,
-                role: "assistant",
-                content: fullContent,
-                platformChanges: fileChanges.length > 0 ? { files: fileChanges } : undefined,
-                createdAt: new Date().toISOString(),
-              };
-              setMessages(prev => [...prev, assistantMsg]);
-              setIsStreaming(false);
-              setStreamingContent("");
-              
-              // Refresh history to persist
-              queryClient.invalidateQueries({ queryKey: ['/api/platform/chat/history'] });
-            }
-          }
-        }
-      }
-    },
-    onError: (error: any) => {
-      console.error('Meta-SySop error:', error);
-      setIsStreaming(false);
-      setStreamingContent("");
-      
-      // Add error message
-      const errorMsg: Message = {
-        id: Date.now().toString(),
-        role: "assistant",
-        content: `⚠️ **Error:** ${error.message || 'Failed to process request'}`,
-        createdAt: new Date().toISOString(),
+    } catch (error) {
+      console.error('Error sending message:', error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: 'I encountered an error processing your request. Please try again or contact support if the issue persists.',
+        sender: 'meta-sysop',
+        timestamp: new Date()
       };
-      setMessages(prev => [...prev, errorMsg]);
-    },
-  });
-
-  const handleSend = () => {
-    const trimmedInput = input.trim();
-    if (!trimmedInput || sendMutation.isPending) return;
-    sendMutation.mutate(trimmedInput);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Chat Messages */}
-      <div 
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto space-y-4 p-4"
-      >
-        {/* Welcome message */}
-        {messages.length === 0 && (
-          <div className="text-center py-8">
-            <Wrench className="h-12 w-12 mx-auto mb-4 text-primary" />
-            <h3 className="text-lg font-semibold mb-2">Meta-SySop Platform Healing</h3>
-            <p className="text-muted-foreground max-w-md mx-auto">
-              I'm Meta-SySop. I can diagnose and fix issues with the Archetype platform itself. 
-              Tell me what needs to be fixed, and I'll analyze the code, make changes, and optionally 
-              commit and deploy them.
-            </p>
-          </div>
-        )}
+    <div className="flex flex-col h-full bg-white border-l border-gray-200">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-pink-50">
+        <div className="flex items-center space-x-2">
+          <Settings className="w-5 h-5 text-purple-600" />
+          <h3 className="font-semibold text-gray-900">Meta-SySop</h3>
+          <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+            Platform AI
+          </span>
+        </div>
+        <button
+          onClick={onClose}
+          className="p-1 text-gray-400 hover:text-gray-600 rounded"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
 
-        {/* Message list */}
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={cn(
-              "flex gap-3",
-              message.role === "user" ? "justify-end" : "justify-start"
-            )}
-          >
-            {message.role === "assistant" && (
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <Wrench className="h-4 w-4 text-primary" />
-              </div>
-            )}
-            
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.length === 0 ? (
+          <div className="text-center text-gray-500 mt-8">
+            <Settings className="w-12 h-12 mx-auto mb-4 text-purple-300" />
+            <p>Meta-SySop is initializing...</p>
+          </div>
+        ) : (
+          // Display messages in reverse order (newest first)
+          [...messages].reverse().map((message) => (
             <div
-              className={cn(
-                "rounded-lg px-4 py-3 max-w-[80%]",
-                message.role === "user"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted"
-              )}
+              key={message.id}
+              className={`flex items-start space-x-3 ${
+                message.sender === 'user' ? 'justify-end' : 'justify-start'
+              }`}
             >
-              <MarkdownRenderer content={message.content} />
-              
-              {/* File changes indicator */}
-              {message.platformChanges && message.platformChanges.files.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-border space-y-1">
-                  <div className="flex items-center gap-2 text-sm font-medium mb-2">
-                    <FileCode className="h-4 w-4" />
-                    Modified Files ({message.platformChanges.files.length})
+              {message.sender === 'meta-sysop' && (
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                    <Settings className="w-4 h-4 text-white" />
                   </div>
-                  {message.platformChanges.files.map((file, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-xs">
-                      <Badge variant="outline" className="font-mono">
-                        {file.operation}
-                      </Badge>
-                      <span className="text-muted-foreground font-mono">{file.path}</span>
-                    </div>
-                  ))}
+                </div>
+              )}
+              
+              <div
+                className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                  message.sender === 'user'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gradient-to-br from-purple-50 to-pink-50 text-gray-900 border border-purple-100'
+                }`}
+              >
+                <p className="whitespace-pre-wrap">{message.content}</p>
+                <p className={`text-xs mt-1 ${
+                  message.sender === 'user' ? 'text-blue-100' : 'text-purple-600'
+                }`}>
+                  {new Date(message.timestamp).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </p>
+              </div>
+
+              {message.sender === 'user' && (
+                <div className="flex-shrink-0">
+                  <User className="w-8 h-8 text-gray-600" />
                 </div>
               )}
             </div>
-
-            {message.role === "user" && (
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                <User className="h-4 w-4" />
+          ))
+        )}
+        
+        {isLoading && (
+          <div className="flex items-start space-x-3 justify-start">
+            <div className="flex-shrink-0">
+              <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                <Settings className="w-4 h-4 text-white" />
               </div>
-            )}
-          </div>
-        ))}
-
-        {/* Streaming indicator */}
-        {isStreaming && (
-          <div className="flex gap-3 justify-start">
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <Wrench className="h-4 w-4 text-primary" />
             </div>
-            <div className="rounded-lg px-4 py-3 max-w-[80%] bg-muted">
-              {streamingContent ? (
-                <MarkdownRenderer content={streamingContent} />
-              ) : (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              )}
-              <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                Meta-SySop is thinking...
-              </div>
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 px-4 py-2 rounded-lg border border-purple-100">
+              <Loader2 className="w-4 h-4 animate-spin text-purple-600" />
             </div>
           </div>
         )}
+        
+        <div ref={messagesEndRef} />
       </div>
 
-      {/* Input area */}
-      <div className="border-t p-4 bg-background">
-        <div className="flex gap-2">
-          <Textarea
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Describe the platform issue to fix..."
-            className="resize-none"
-            rows={3}
-            data-testid="input-meta-sysop-message"
-            disabled={isStreaming}
+      {/* Input */}
+      <div className="p-4 border-t border-gray-200">
+        <div className="flex space-x-2">
+          <textarea
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Describe any platform issues or ask for system diagnostics..."
+            className="flex-1 resize-none border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            rows={2}
+            disabled={isLoading}
           />
-          <Button
-            onClick={handleSend}
-            disabled={!input.trim() || isStreaming}
-            size="icon"
-            className="h-auto"
-            data-testid="button-send-meta-sysop-message"
+          <button
+            onClick={sendMessage}
+            disabled={!inputMessage.trim() || isLoading}
+            className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
-            {isStreaming ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
-        
-        {/* Status indicators */}
-        <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-          {autoCommit && (
-            <div className="flex items-center gap-1">
-              <GitBranch className="h-3 w-3" />
-              Auto-commit enabled
-            </div>
-          )}
-          {autoPush && (
-            <div className="flex items-center gap-1">
-              <CheckCircle className="h-3 w-3" />
-              Auto-push enabled (triggers deployment)
-            </div>
-          )}
+            <Send className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </div>
