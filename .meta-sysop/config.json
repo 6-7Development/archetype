@@ -1,0 +1,205 @@
+{
+  "version": "1.0.0",
+  "description": "Meta-SySop autonomous platform healing agent configuration",
+  "lastUpdated": "2025-10-24T20:31:00Z",
+  
+  "coreInstructions": [
+    {
+      "id": "inst_001",
+      "priority": 10,
+      "active": true,
+      "instruction": "Always consult I AM architect before making platform file modifications using architect_consult tool",
+      "scope": "platform",
+      "category": "governance"
+    },
+    {
+      "id": "inst_002",
+      "priority": 9,
+      "active": true,
+      "instruction": "After fixing platform issues, automatically commit changes to GitHub using commit_to_github tool",
+      "scope": "platform",
+      "category": "deployment"
+    },
+    {
+      "id": "inst_003",
+      "priority": 8,
+      "active": true,
+      "instruction": "When debugging issues, gather evidence first using perform_diagnosis before attempting fixes",
+      "scope": "global",
+      "category": "methodology"
+    },
+    {
+      "id": "inst_004",
+      "priority": 7,
+      "active": true,
+      "instruction": "For UI/UX issues, prioritize mobile responsiveness and accessibility",
+      "scope": "platform",
+      "category": "quality"
+    },
+    {
+      "id": "inst_005",
+      "priority": 6,
+      "active": true,
+      "instruction": "Store all learned patterns and solutions in the knowledge base for future reference",
+      "scope": "global",
+      "category": "learning"
+    }
+  ],
+
+  "automationRules": [
+    {
+      "id": "auto_001",
+      "name": "Auto-fix mobile layout issues",
+      "active": true,
+      "trigger": "error_detected",
+      "conditions": {
+        "errorType": ["layout", "responsive", "mobile"],
+        "severity": ["high", "critical"]
+      },
+      "actions": [
+        {
+          "type": "diagnose",
+          "tool": "perform_diagnosis",
+          "params": { "focus": "ui" }
+        },
+        {
+          "type": "consult",
+          "tool": "architect_consult",
+          "params": { "request": "Review mobile layout issue and suggest fix" }
+        },
+        {
+          "type": "fix",
+          "tool": "writePlatformFile",
+          "requiresApproval": true
+        },
+        {
+          "type": "deploy",
+          "tool": "commit_to_github",
+          "autoExecute": true
+        }
+      ],
+      "requiresApproval": true,
+      "autoCommit": true
+    },
+    {
+      "id": "auto_002",
+      "name": "Auto-learn from I AM feedback",
+      "active": true,
+      "trigger": "architect_feedback",
+      "conditions": {
+        "feedbackType": ["pattern", "improvement", "best-practice"]
+      },
+      "actions": [
+        {
+          "type": "store_knowledge",
+          "category": "pattern",
+          "priority": 7
+        }
+      ],
+      "requiresApproval": false,
+      "autoCommit": false
+    },
+    {
+      "id": "auto_003",
+      "name": "Security vulnerability auto-response",
+      "active": true,
+      "trigger": "security_issue",
+      "conditions": {
+        "severity": ["critical", "high"]
+      },
+      "actions": [
+        {
+          "type": "alert",
+          "message": "Critical security issue detected - immediate attention required"
+        },
+        {
+          "type": "diagnose",
+          "tool": "perform_diagnosis",
+          "params": { "focus": "security" }
+        },
+        {
+          "type": "consult",
+          "tool": "architect_consult",
+          "params": { "request": "Security vulnerability analysis and recommended fix" }
+        }
+      ],
+      "requiresApproval": true,
+      "autoCommit": false
+    }
+  ],
+
+  "knowledgeRetention": {
+    "enabled": true,
+    "autoStore": true,
+    "categories": {
+      "pattern": { "enabled": true, "priority": 8, "expiryDays": null },
+      "fix": { "enabled": true, "priority": 9, "expiryDays": null },
+      "decision": { "enabled": true, "priority": 7, "expiryDays": 90 },
+      "rule": { "enabled": true, "priority": 10, "expiryDays": null },
+      "preference": { "enabled": true, "priority": 6, "expiryDays": null }
+    },
+    "memoryRetention": {
+      "conversationDays": 30,
+      "learningDays": null,
+      "feedbackDays": null
+    }
+  },
+
+  "filePatterns": {
+    "alwaysWatch": [
+      "client/src/**/*.tsx",
+      "client/src/**/*.ts",
+      "server/**/*.ts",
+      "shared/**/*.ts"
+    ],
+    "neverModify": [
+      ".git/**",
+      "node_modules/**",
+      ".env",
+      ".env.*",
+      "package.json",
+      "package-lock.json",
+      "drizzle.config.ts"
+    ],
+    "requireApproval": [
+      "server/routes/**",
+      "shared/schema.ts",
+      "server/index.ts",
+      "db/**"
+    ]
+  },
+
+  "responsePreferences": {
+    "verbosity": "balanced",
+    "includeEvidence": true,
+    "includeReasoning": true,
+    "reportProgress": true,
+    "streamUpdates": true
+  },
+
+  "integrations": {
+    "github": {
+      "enabled": true,
+      "autoCommit": true,
+      "commitMessagePrefix": "[Meta-SySop]",
+      "requireApprovalForCommit": false
+    },
+    "architect": {
+      "enabled": true,
+      "consultBeforeModification": true,
+      "storeArchitectFeedback": true
+    },
+    "tavily": {
+      "enabled": true,
+      "useForResearch": true,
+      "maxSearches": 5
+    }
+  },
+
+  "governance": {
+    "requireIAMApproval": true,
+    "auditAllChanges": true,
+    "maxAutonomousActions": 10,
+    "escalationThreshold": "high"
+  }
+}
