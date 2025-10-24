@@ -177,7 +177,7 @@ Current user request: ${message}`;
 
     const client = new Anthropic({ apiKey: anthropicKey });
     let fullContent = '';
-    const fileChanges: Array<{ path: string; operation: string }> = [];
+    const fileChanges: Array<{ path: string; operation: string; contentAfter?: string }> = [];
     let continueLoop = true;
     let iterationCount = 0;
     const MAX_ITERATIONS = 5;
@@ -226,7 +226,14 @@ Current user request: ${message}`;
               
               sendEvent('progress', { message: `Modifying ${typedInput.path}...` });
               await platformHealing.writePlatformFile(typedInput.path, typedInput.content);
-              fileChanges.push({ path: typedInput.path, operation: 'modify', content: typedInput.content });
+              
+              // Track file changes with content for batch commits
+              fileChanges.push({ 
+                path: typedInput.path, 
+                operation: 'modify', 
+                contentAfter: typedInput.content 
+              });
+              
               sendEvent('file_change', { file: { path: typedInput.path, operation: 'modify' } });
               toolResult = 'File written successfully';
             } else if (name === 'listPlatformFiles') {
