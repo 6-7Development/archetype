@@ -389,8 +389,13 @@ EXECUTE NOW - Read task list, update progress, get approval, write files, deploy
       if (iterationCount === 1) {
         const hasToolCalls = response.content.some(block => block.type === 'tool_use');
         
+        console.log('[META-SYSOP-ENFORCEMENT] Iteration 1 check:');
+        console.log('  - Has tool calls:', hasToolCalls);
+        console.log('  - Content blocks:', response.content.map(b => b.type).join(', '));
+        
         if (!hasToolCalls) {
           // Force retry - Meta-SySop typed text instead of calling tools
+          console.error('[META-SYSOP-ENFORCEMENT] ❌ No tool calls on first response - REJECTING & RETRYING');
           sendEvent('error', { message: '❌ Must call tools (not type text) - retrying...' });
           
           const errorMessage = `ERROR: Your first response must include TOOL CALLS, not just text.
@@ -413,7 +418,10 @@ RETRY NOW - Call readTaskList() first to see task IDs, then start working!`;
             content: errorMessage,
           });
           
+          console.log('[META-SYSOP-ENFORCEMENT] Added error message to conversation - continuing loop');
           continue; // Retry loop
+        } else {
+          console.log('[META-SYSOP-ENFORCEMENT] ✅ Tool calls detected on first response - proceeding');
         }
       }
 
