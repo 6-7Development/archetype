@@ -363,7 +363,7 @@ EXECUTE NOW - Create tasks, read files, get approval, write files, deploy. 3 tur
     let iterationCount = 0;
     const MAX_ITERATIONS = 5;
     
-    // Track architect approval for enforcement (per-file approval map)
+    // Track architect approval for enforcement (updated) (per-file approval map)
     const approvedFiles = new Map<string, { approved: boolean; timestamp: number }>();
     
     // Normalize file paths to prevent bypasses (./path, ../path, etc)
