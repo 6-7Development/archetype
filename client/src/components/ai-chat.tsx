@@ -643,7 +643,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      scrollRef.current.scrollTop = 0; // Scroll to top to show newest messages
     }
   }, [messages]);
 
@@ -666,7 +666,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
         style={{ scrollBehavior: 'smooth' }}
       >
         <div className="space-y-4 max-w-4xl mx-auto pb-4">
-          {messages.map((message, idx) => (
+          {messages.slice().reverse().map((message, idx) => (
             <div
               key={idx}
               className={cn(
