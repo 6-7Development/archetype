@@ -34,6 +34,7 @@ The user interface features a tab-based workspace (Overview, Build, Files, Previ
 - **Platform Modification Guardrails**: Platform file modifications are disabled in production (Render) due to ephemeral containers. For platform self-healing, Meta-SySop can commit changes to GitHub, triggering auto-deployment, enabled by owner-controlled maintenance mode and specific environment variables.
 - **Secrets Management**: Zero-knowledge credential handling for API keys.
 - **Advanced AI Capabilities**: SySop can build complex marketplace platforms, professional-grade 2D/3D games, implement Orb usage-based billing, self-test, search documentation, and analyze visuals.
+- **Test Data Generation & User Simulation**: SySop can generate realistic test data using faker.js (realistic names, emails, dates) and simulate user behavior with Playwright scripts. It creates seed data for databases, simulates user flows (signup → login → purchase), generates analytics events with proper timestamps, and tests tracking systems with realistic interaction patterns. Supports E2E testing with multiple concurrent simulated users.
 - **Command System**: Natural language commands are processed by Anthropic Claude 3.5 Sonnet to generate project structures as JSON.
 - **File Management**: Generated files are stored in PostgreSQL, viewable and editable via a file browser and Monaco editor.
 - **Conversational AI**: An AI assistant powered by Claude 3.5 Sonnet clarifies questions and explains design decisions, with automatic conversation summarization.
