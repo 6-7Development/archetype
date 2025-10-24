@@ -176,6 +176,19 @@ export default function Workspace() {
             </Button>
           )}
           
+          {/* Preview toggle (mobile) */}
+          {isMobile && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 md:hidden"
+              onClick={() => setShowPreview(!showPreview)}
+              data-testid="button-toggle-preview-mobile"
+            >
+              {showPreview ? <PanelRightClose className="h-4 w-4" /> : <PanelRight className="h-4 w-4" />}
+            </Button>
+          )}
+          
           {/* File tree toggle (desktop only) */}
           {!isMobile && (
             <>
