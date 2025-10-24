@@ -391,13 +391,30 @@ export class PlatformHealingService {
         const githubService = getGitHubService();
         
         // Map changes to file changes with content
-        // Include modifications (with contentAfter), allow empty strings, skip if undefined/null
+        // Include creates/modifies (with contentAfter) and deletes (without content)
         const fileChanges = changes
-          .filter(c => c.operation === 'modify' && c.contentAfter !== undefined && c.contentAfter !== null)
-          .map(c => ({
-            path: c.path,
-            content: c.contentAfter!
-          }));
+          .filter(c => {
+            // Include deletes
+            if (c.operation === 'delete') return true;
+            // Include creates/modifies with valid contentAfter
+            if ((c.operation === 'create' || c.operation === 'modify') && c.contentAfter !== undefined && c.contentAfter !== null) return true;
+            return false;
+          })
+          .map(c => {
+            // For deletes, omit content entirely
+            if (c.operation === 'delete') {
+              return {
+                path: c.path,
+                operation: c.operation
+              };
+            }
+            // For creates/modifies, include content
+            return {
+              path: c.path,
+              content: c.contentAfter!,
+              operation: c.operation
+            };
+          });
         
         if (fileChanges.length === 0) {
           console.log('[PLATFORM-HEAL] No file modifications to commit');

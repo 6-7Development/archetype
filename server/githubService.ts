@@ -2,7 +2,8 @@ import { Octokit } from '@octokit/rest';
 
 interface FileChange {
   path: string;
-  content: string;
+  content?: string; // Optional - not required for delete operations
+  operation?: 'create' | 'modify' | 'delete';
 }
 
 interface CommitResult {
@@ -92,10 +93,24 @@ export class GitHubService {
           commit_sha: latestCommitSha,
         });
 
-        // Step 3: Create blobs for each changed file
-        const blobs = await Promise.all(
+        // Step 3: Create tree entries for each changed file (blobs for creates/modifies, nulls for deletes)
+        const treeEntries = await Promise.all(
           changes.map(async (change, index) => {
             console.log(`[GITHUB-SERVICE] Processing file ${index + 1}/${changes.length}: ${change.path}`);
+            console.log(`[GITHUB-SERVICE] Operation: ${change.operation || 'modify'}`);
+            
+            // Handle delete operations - create tree entry with sha: null
+            if (change.operation === 'delete') {
+              console.log(`[GITHUB-SERVICE] DELETE operation - creating tree entry with sha: null`);
+              return {
+                path: change.path,
+                mode: '100644' as const,
+                type: 'blob' as const,
+                sha: null as any, // GitHub API requires null for deletes
+              };
+            }
+            
+            // Handle create/modify operations - create blob
             console.log(`[GITHUB-SERVICE] Content type: ${typeof change.content}`);
             console.log(`[GITHUB-SERVICE] Content defined: ${change.content !== undefined && change.content !== null}`);
             console.log(`[GITHUB-SERVICE] Content length: ${change.content?.length || 0} bytes`);
@@ -125,7 +140,7 @@ export class GitHubService {
           owner: this.owner,
           repo: this.repo,
           base_tree: latestCommit.tree.sha,
-          tree: blobs,
+          tree: treeEntries,
         });
 
         // Step 5: Create a new commit
