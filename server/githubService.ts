@@ -63,6 +63,10 @@ export class GitHubService {
    * Commit a single file to the repository
    */
   async commitFile(filePath: string, content: string, message: string): Promise<CommitResult> {
+    console.log(`[GITHUB-SERVICE] commitFile called with path: ${filePath}`);
+    console.log(`[GITHUB-SERVICE] Content type: ${typeof content}`);
+    console.log(`[GITHUB-SERVICE] Content defined: ${content !== undefined}`);
+    console.log(`[GITHUB-SERVICE] Content length: ${content?.length || 0} bytes`);
     return this.commitFiles([{ path: filePath, content }], message);
   }
 
@@ -90,7 +94,16 @@ export class GitHubService {
 
         // Step 3: Create blobs for each changed file
         const blobs = await Promise.all(
-          changes.map(async (change) => {
+          changes.map(async (change, index) => {
+            console.log(`[GITHUB-SERVICE] Processing file ${index + 1}/${changes.length}: ${change.path}`);
+            console.log(`[GITHUB-SERVICE] Content type: ${typeof change.content}`);
+            console.log(`[GITHUB-SERVICE] Content defined: ${change.content !== undefined}`);
+            console.log(`[GITHUB-SERVICE] Content length: ${change.content?.length || 0} bytes`);
+            
+            if (!change.content) {
+              throw new Error(`File ${change.path} has no content (${typeof change.content})`);
+            }
+            
             const { data: blob } = await this.octokit.git.createBlob({
               owner: this.owner,
               repo: this.repo,
