@@ -385,38 +385,57 @@ router.get('/status', isAuthenticated, isAdmin, async (req: any, res) => {
 
 router.get('/tasks', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
-    const logs = await platformAudit.getHistory(20);
+    const userId = req.authenticatedUserId;
+    const { readTaskList } = await import('./tools/task-management');
     
-    // Convert audit logs to task format
-    const tasks = logs
-      .filter(log => log.action === 'heal')
-      .map((log, index) => {
-        let type: 'thinking' | 'action' | 'success' | 'error' | 'warning' = 'action';
-        let progress = 0;
-        
-        if (log.status === 'success') {
-          type = 'success';
-          progress = 100;
-        } else if (log.status === 'failure') {
-          type = 'error';
-          progress = 0;
-        } else if (log.status === 'pending') {
-          type = log.description.includes('analyzing') ? 'thinking' : 'action';
-          progress = Math.min(90, (index + 1) * 20);
-        }
-        
-        return {
-          id: log.id.toString(),
-          type,
-          message: log.description,
-          details: log.error || undefined,
-          progress,
-        };
-      });
+    // Get actual task lists from task management system
+    const result = await readTaskList({ userId });
+    
+    if (!result.success || !result.taskLists) {
+      return res.json({ tasks: [] });
+    }
+    
+    // Find the most recent active task list
+    const activeList = result.taskLists
+      .filter((list: any) => list.status === 'active')
+      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+    
+    if (!activeList || !activeList.tasks) {
+      return res.json({ tasks: [] });
+    }
+    
+    // Convert tasks to AgentProgress format
+    const tasks = activeList.tasks.map((task: any) => {
+      let type: 'thinking' | 'action' | 'success' | 'error' | 'warning' = 'action';
+      let progress = 0;
+      
+      if (task.status === 'completed') {
+        type = 'success';
+        progress = 100;
+      } else if (task.status === 'cancelled') {
+        type = 'error';
+        progress = 0;
+      } else if (task.status === 'in_progress') {
+        type = 'action';
+        progress = 50;
+      } else if (task.status === 'pending') {
+        type = 'thinking';
+        progress = 0;
+      }
+      
+      return {
+        id: task.id.toString(),
+        type,
+        message: task.title,
+        details: task.description || task.result || undefined,
+        progress,
+      };
+    });
     
     res.json({ tasks });
   } catch (error: any) {
-    res.status(500).json({ error: error.message, tasks: [] });
+    console.error('[PLATFORM-TASKS] Error fetching tasks:', error);
+    res.json({ tasks: [] }); // Return empty array on error, don't fail
   }
 });
 
