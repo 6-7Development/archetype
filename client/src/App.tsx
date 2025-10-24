@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CommandPalette } from "@/components/command-palette";
 import { ThemeProvider } from "@/components/theme-provider";
+import { VersionProvider } from "@/providers/version-provider";
 import { AppLayout } from "@/components/app-layout";
 import { initGA4, trackPageView } from "@/lib/ga4";
 import Landing from "@/pages/landing";
@@ -134,11 +135,13 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark">
-        <TooltipProvider>
-          <CommandPalette />
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <VersionProvider mobileBreakpoint={768}>
+          <TooltipProvider>
+            <CommandPalette />
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </VersionProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
