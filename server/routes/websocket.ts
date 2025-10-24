@@ -40,6 +40,20 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
           }));
         }
         
+        // Handle session registration (for AI streaming)
+        if (data.type === 'register-session') {
+          ws.userId = data.userId || 'anonymous';
+          ws.sessionId = data.sessionId;
+          console.log(`📡 [WS] Session registered: userId=${ws.userId}, sessionId=${ws.sessionId}`);
+          
+          // Send confirmation
+          ws.send(JSON.stringify({
+            type: 'session-registered',
+            sessionId: ws.sessionId,
+            userId: ws.userId
+          }));
+        }
+        
         // Handle ping
         if (data.type === 'ping') {
           ws.send(JSON.stringify({ type: 'pong' }));
