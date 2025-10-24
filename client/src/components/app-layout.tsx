@@ -13,7 +13,8 @@ import {
   X,
   Users,
   Key,
-  Headphones
+  Headphones,
+  Wrench
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -181,6 +182,22 @@ export function AppLayout({ children }: AppLayoutProps) {
             >
               <Shield className="w-5 h-5" />
               <span>Admin</span>
+            </Button>
+          )}
+
+          {/* Platform Healing - Only for Platform Owner */}
+          {isAuthenticated && (user as User)?.isOwner && (
+            <Button
+              variant="ghost"
+              className={cn(
+                "w-full justify-start gap-3 hover-elevate active-elevate-2",
+                location === "/platform-healing" && "bg-primary/10 text-primary"
+              )}
+              onClick={() => handleNavigation("/platform-healing")}
+              data-testid="nav-platform-healing"
+            >
+              <Wrench className="w-5 h-5" />
+              <span>Platform Healing</span>
             </Button>
           )}
         </nav>
