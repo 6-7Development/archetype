@@ -85,6 +85,21 @@ export default function Builder() {
     refetchInterval: 5000, // Auto-refresh every 5 seconds to catch SySop file changes
   });
 
+  // Log when files are loaded (replaces deprecated onSuccess)
+  useEffect(() => {
+    if (files && files.length > 0) {
+      console.log(`📂 [FILES-LOADED] Fetched ${files.length} files for project ${currentProjectId}`, 
+        files.map((f: File) => ({ 
+          id: f.id, 
+          filename: f.filename, 
+          language: f.language,
+          hasContent: !!f.content,
+          contentLength: f.content?.length || 0
+        }))
+      );
+    }
+  }, [files, currentProjectId]);
+
   // Find current project
   const currentProject = projects.find(p => p.id === currentProjectId);
 
@@ -109,43 +124,58 @@ export default function Builder() {
 
   // Listen for WebSocket file updates
   useEffect(() => {
-    if (!currentProjectId) return;
+    if (!currentProjectId) {
+      console.log('⏸️  [WEBSOCKET] No project selected, skipping WebSocket connection');
+      return;
+    }
 
-    // Derive protocol from current page (use wss:// on https, ws:// on http)
+    // Build WebSocket URL - use /ws endpoint on same host
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = import.meta.env.VITE_WS_URL || `${protocol}//${window.location.host}`;
+    const host = window.location.host;
+    const wsUrl = `${protocol}//${host}/ws`;
     
-    console.log(`🔌 Connecting WebSocket to ${wsUrl}`);
-    const ws = new WebSocket(wsUrl);
+    console.log(`🔌 [WEBSOCKET] Connecting to ${wsUrl} for project ${currentProjectId}`);
+    
+    let ws: WebSocket;
+    try {
+      ws = new WebSocket(wsUrl);
+    } catch (error) {
+      console.error('❌ [WEBSOCKET] Failed to create WebSocket:', error);
+      return;
+    }
     
     ws.onopen = () => {
-      console.log('✅ WebSocket connected for file updates');
+      console.log('✅ [WEBSOCKET] Connected successfully for file updates');
     };
 
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
+        console.log('📨 [WEBSOCKET] Received message:', data);
         
         // Refetch files when they're updated for this project
         if (data.type === 'files_updated' && data.projectId === currentProjectId) {
-          console.log(`📡 Received files_updated event for project ${currentProjectId}, refetching...`);
+          console.log(`📡 [WEBSOCKET] Files updated for project ${currentProjectId}, refetching...`);
           refetchFiles();
         }
       } catch (error) {
-        console.error('WebSocket message parse error:', error);
+        console.error('❌ [WEBSOCKET] Message parse error:', error);
       }
     };
 
     ws.onerror = (error) => {
-      console.error('❌ WebSocket error:', error);
+      console.error('❌ [WEBSOCKET] Connection error:', error);
     };
 
-    ws.onclose = () => {
-      console.log('🔌 WebSocket disconnected');
+    ws.onclose = (event) => {
+      console.log(`🔌 [WEBSOCKET] Disconnected (code: ${event.code}, reason: ${event.reason || 'none'})`);
     };
 
     return () => {
-      ws.close();
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        console.log('🔌 [WEBSOCKET] Closing connection');
+        ws.close();
+      }
     };
   }, [currentProjectId, refetchFiles]);
 
@@ -199,6 +229,14 @@ export default function Builder() {
     if (hasUnsavedChanges && activeFileId) {
       saveFileMutation.mutate({ fileId: activeFileId, content: fileContent });
     }
+    
+    console.log(`📄 [FILE-SELECT] Selected file:`, { 
+      id: file.id, 
+      filename: file.filename, 
+      language: file.language,
+      contentLength: file.content?.length || 0,
+      contentPreview: file.content?.substring(0, 100) || '(empty)'
+    });
     
     setActiveFileId(file.id);
     setFileContent(file.content);

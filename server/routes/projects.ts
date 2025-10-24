@@ -170,7 +170,7 @@ export function registerProjectRoutes(app: Express) {
 
       // Save version files
       for (const file of projectFiles) {
-        await storage.createVersionFile({
+        await storage.createProjectVersionFile({
           versionId: version.id,
           path: file.filename,
           content: file.content,
@@ -192,7 +192,7 @@ export function registerProjectRoutes(app: Express) {
       const userId = req.authenticatedUserId;
       const { projectId, versionId } = req.params;
 
-      await storage.restoreProjectVersion(projectId, versionId, userId);
+      await storage.restoreProjectVersion(versionId, userId);
       res.json({ success: true });
     } catch (error: any) {
       console.error('Error restoring version:', error);
@@ -482,11 +482,12 @@ export function registerProjectRoutes(app: Express) {
   // Live Preview endpoint - Compiles and serves project in iframe
   app.get("/api/preview/:projectId", async (req: any, res) => {
     const { projectId } = req.params;
+    const startTime = Date.now();
+    
     try {
-      
       console.log(`🎬 [PREVIEW] Starting preview compilation for project ${projectId}`);
       
-      // Get all project files (no auth required for preview - anyone can view shared projects)
+      // Get all project files (no userId required - allows public preview access)
       const files = await storage.getProjectFiles(projectId);
       
       console.log(`📁 [PREVIEW] Found ${files?.length || 0} files in project ${projectId}`);
@@ -703,7 +704,8 @@ export function registerProjectRoutes(app: Express) {
       }
       
       const bundled = result.outputFiles[0].text;
-      console.log(`✅ [PREVIEW] Build successful! Generated ${bundled.length} bytes of JavaScript`);
+      const buildTime = Date.now() - startTime;
+      console.log(`✅ [PREVIEW] Build successful! Generated ${bundled.length} bytes of JavaScript in ${buildTime}ms`);
 
       // Detect if code uses React or modules (they handle their own DOM ready)
       const usesReact = bundled.includes('React.createElement') || 
@@ -757,10 +759,12 @@ export function registerProjectRoutes(app: Express) {
 </html>
       `;
 
-      console.log(`🚀 [PREVIEW] Sending preview HTML for project ${projectId} (${html.length} bytes)`);
+      const totalTime = Date.now() - startTime;
+      console.log(`🚀 [PREVIEW] Sending preview HTML for project ${projectId} (${html.length} bytes, total time: ${totalTime}ms)`);
       
       res.setHeader('Content-Type', 'text/html');
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('X-Preview-Build-Time', `${totalTime}ms`);
       res.send(html);
     } catch (error: any) {
       console.error(`❌ [PREVIEW] Compilation error for project ${projectId}:`, error);
