@@ -1,7 +1,15 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
+export interface Task {
+  id: string;
+  title: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'failed';
+  priority: number;
+  subAgentId?: string | null;
+}
+
 interface StreamMessage {
-  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete';
+  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn';
   commandId?: string;
   status?: string;
   message?: string;
@@ -24,6 +32,10 @@ interface StreamMessage {
   tool?: string;
   details?: any;
   filesModified?: number;
+  tasks?: Task[];
+  task?: Task;
+  subAgentId?: string;
+  subAgentPurpose?: string;
 }
 
 interface StreamState {
@@ -57,6 +69,11 @@ interface StreamState {
     tool?: string;
     filesModified?: number;
   } | null;
+  tasks: Task[];
+  subAgentActive: {
+    id: string;
+    purpose: string;
+  } | null;
 }
 
 const MAX_RECONNECT_ATTEMPTS = 5;
@@ -84,6 +101,8 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
     currentFile: null,
     fileSummary: null,
     chatProgress: null,
+    tasks: [],
+    subAgentActive: null,
   });
 
   const calculateBackoff = useCallback((attempt: number): number => {
@@ -245,6 +264,45 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
                 currentStatus: 'completed',
               }));
               break;
+
+            case 'task_plan':
+              console.log('📋 Task plan received:', message.tasks);
+              setStreamState(prev => ({
+                ...prev,
+                tasks: message.tasks || [],
+              }));
+              break;
+
+            case 'task_update':
+              console.log('✏️ Task update:', message.task);
+              if (message.task) {
+                setStreamState(prev => ({
+                  ...prev,
+                  tasks: prev.tasks.map(t => 
+                    t.id === message.task!.id ? message.task! : t
+                  ),
+                }));
+              }
+              break;
+
+            case 'task_recompile':
+              console.log('🔄 Task recompile:', message.tasks);
+              setStreamState(prev => ({
+                ...prev,
+                tasks: message.tasks || [],
+              }));
+              break;
+
+            case 'sub_agent_spawn':
+              console.log('🤖 Sub-agent spawned:', message.subAgentId);
+              setStreamState(prev => ({
+                ...prev,
+                subAgentActive: {
+                  id: message.subAgentId || '',
+                  purpose: message.subAgentPurpose || '',
+                },
+              }));
+              break;
           }
         } catch (error) {
           console.error('❌ WebSocket message parse error:', error);
@@ -336,6 +394,8 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
       currentFile: null,
       fileSummary: null,
       chatProgress: null,
+      tasks: [],
+      subAgentActive: null,
     }));
   }, []);
 
