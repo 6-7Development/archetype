@@ -41,13 +41,7 @@ async function commitWorkspaceChanges() {
 
   // Define which files were modified (you can expand this list)
   const modifiedFiles: string[] = [
-    'server/routes/websocket.ts',
-    'server/routes/chat.ts',
-    'server/routes/common.ts',
-    'client/src/providers/version-provider.tsx',
-    'client/src/App.tsx',
-    'client/src/pages/workspace.tsx',
-    'replit.md',
+    'client/src/components/meta-sysop-chat.tsx',
   ];
 
   console.log(`📝 Preparing to commit ${modifiedFiles.length} files:\n`);
