@@ -133,6 +133,14 @@ Analyze the issue, identify the root cause, and provide the fix.`;
     while (continueLoop && iterationCount < MAX_ITERATIONS) {
       iterationCount++;
 
+      // Log progress update
+      await platformAudit.log({
+        userId,
+        action: 'heal',
+        description: `Meta-SySop analyzing (iteration ${iterationCount}/${MAX_ITERATIONS})...`,
+        status: 'pending',
+      });
+
       const response = await client.messages.create({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 8000,
@@ -164,6 +172,15 @@ Analyze the issue, identify the root cause, and provide the fix.`;
               const typedInput = input as { path: string; content: string };
               await platformHealing.writePlatformFile(typedInput.path, typedInput.content);
               changes.push({ path: typedInput.path, operation: 'modify' });
+              
+              // Log file modification
+              await platformAudit.log({
+                userId,
+                action: 'heal',
+                description: `Modified file: ${typedInput.path}`,
+                status: 'pending',
+              });
+              
               toolResult = 'File written successfully';
             } else if (name === 'listPlatformFiles') {
               const typedInput = input as { directory: string };
@@ -197,6 +214,14 @@ Analyze the issue, identify the root cause, and provide the fix.`;
       }
     }
 
+    // Log safety check
+    await platformAudit.log({
+      userId,
+      action: 'heal',
+      description: `Running safety checks on ${changes.length} modified files...`,
+      status: 'pending',
+    });
+
     const safety = await platformHealing.validateSafety();
     if (!safety.safe) {
       await platformHealing.rollback(backup.id);
@@ -219,9 +244,25 @@ Analyze the issue, identify the root cause, and provide the fix.`;
 
     let commitHash = '';
     if (autoCommit && changes.length > 0) {
+      // Log commit
+      await platformAudit.log({
+        userId,
+        action: 'heal',
+        description: `Committing ${changes.length} file changes to Git...`,
+        status: 'pending',
+      });
+      
       commitHash = await platformHealing.commitChanges(`Fix: ${issue}`, changes as any);
 
       if (autoPush) {
+        // Log push
+        await platformAudit.log({
+          userId,
+          action: 'heal',
+          description: `Pushing changes to GitHub (triggering Render deployment)...`,
+          status: 'pending',
+        });
+        
         await platformHealing.pushToRemote();
       }
     }

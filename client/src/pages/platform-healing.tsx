@@ -31,7 +31,19 @@ function PlatformHealingContent() {
 
   const healMutation = useMutation({
     mutationFn: async (data: { issue: string; autoCommit: boolean; autoPush: boolean }) => {
-      return apiRequest('POST', '/api/platform/heal', data);
+      // Start polling for updates
+      const pollInterval = setInterval(() => {
+        queryClient.invalidateQueries({ queryKey: ['/api/platform/audit'] });
+      }, 2000); // Poll every 2 seconds
+
+      try {
+        const result = await apiRequest('POST', '/api/platform/heal', data);
+        clearInterval(pollInterval);
+        return result;
+      } catch (error) {
+        clearInterval(pollInterval);
+        throw error;
+      }
     },
     onSuccess: (data) => {
       toast({
@@ -44,6 +56,9 @@ function PlatformHealingContent() {
       queryClient.invalidateQueries({ queryKey: ['/api/platform/backups'] });
     },
     onError: (error: any) => {
+      // Final refresh to show error in audit log
+      queryClient.invalidateQueries({ queryKey: ['/api/platform/audit'] });
+      
       toast({
         title: 'Healing Failed',
         description: error.message || 'Failed to heal platform',
@@ -274,9 +289,23 @@ function PlatformHealingContent() {
           <CardDescription>Recent platform modifications and fixes</CardDescription>
         </CardHeader>
         <CardContent>
+          {healMutation.isPending && (
+            <div className="mb-4 p-4 bg-primary/10 rounded-lg border border-primary/20">
+              <div className="flex items-center gap-3">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                <div>
+                  <p className="font-medium text-primary">Meta-SySop is working...</p>
+                  <p className="text-sm text-muted-foreground">
+                    Watch the healing history below for real-time progress updates
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          
           {auditData?.logs && auditData.logs.length > 0 ? (
             <div className="space-y-2">
-              {auditData.logs.map((log: any) => (
+              {auditData.logs.slice().reverse().map((log: any) => (
                 <div
                   key={log.id}
                   className="flex items-start gap-3 p-3 rounded-lg border"
