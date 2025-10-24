@@ -165,7 +165,7 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
       {/* Chat Messages */}
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto space-y-4 p-4"
+        className="flex-1 overflow-y-auto space-y-3 sm:space-y-4 p-2 sm:p-4"
       >
         {/* Welcome message */}
         {messages.length === 0 && (
@@ -254,7 +254,7 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
       </div>
 
       {/* Input area */}
-      <div className="border-t p-4 bg-background">
+      <div className="border-t p-2 sm:p-4 bg-background">
         <div className="flex gap-2">
           <Textarea
             ref={inputRef}
@@ -262,8 +262,8 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Describe the platform issue to fix..."
-            className="resize-none"
-            rows={3}
+            className="resize-none text-sm sm:text-base"
+            rows={2}
             data-testid="input-meta-sysop-message"
             disabled={isStreaming}
           />
@@ -271,7 +271,7 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
             onClick={handleSend}
             disabled={!input.trim() || isStreaming}
             size="icon"
-            className="h-auto"
+            className="h-auto flex-shrink-0"
             data-testid="button-send-meta-sysop-message"
           >
             {isStreaming ? (
@@ -282,8 +282,8 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
           </Button>
         </div>
         
-        {/* Status indicators */}
-        <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+        {/* Status indicators - Hidden on mobile */}
+        <div className="hidden sm:flex items-center gap-4 mt-2 text-xs text-muted-foreground">
           {autoCommit && (
             <div className="flex items-center gap-1">
               <GitBranch className="h-3 w-3" />
