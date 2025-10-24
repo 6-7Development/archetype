@@ -390,21 +390,22 @@ export class PlatformHealingService {
       try {
         const githubService = getGitHubService();
         
-        // Filter changes to only include those with content
-        const changesWithContent = changes.filter(c => c.contentAfter);
+        // Map changes to file changes with content
+        // Include modifications (with contentAfter), allow empty strings, skip if undefined/null
+        const fileChanges = changes
+          .filter(c => c.operation === 'modify' && c.contentAfter !== undefined && c.contentAfter !== null)
+          .map(c => ({
+            path: c.path,
+            content: c.contentAfter!
+          }));
         
-        if (changesWithContent.length === 0) {
-          console.log('[PLATFORM-HEAL] No changes with content to commit');
+        if (fileChanges.length === 0) {
+          console.log('[PLATFORM-HEAL] No file modifications to commit');
           return '';
         }
 
-        console.log(`[PLATFORM-HEAL] Committing ${changesWithContent.length} file(s) to GitHub...`);
+        console.log(`[PLATFORM-HEAL] Committing ${fileChanges.length} file(s) to GitHub...`);
         
-        const fileChanges = changesWithContent.map(c => ({
-          path: c.path,
-          content: c.contentAfter!
-        }));
-
         const commitMessage = `${message}\n\nChanges:\n${changes.map(c => `- ${c.operation} ${c.path}`).join('\n')}`;
         
         const result = await githubService.commitFiles(fileChanges, commitMessage);
