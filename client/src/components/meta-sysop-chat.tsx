@@ -168,7 +168,7 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
         className="flex-1 min-h-0 overflow-y-auto space-y-3 sm:space-y-4 p-2 sm:p-4"
       >
         {/* Welcome message */}
-        {messages.length === 0 && (
+        {messages.length === 0 && !isStreaming && (
           <div className="text-center py-8">
             <Wrench className="h-12 w-12 mx-auto mb-4 text-primary" />
             <h3 className="text-lg font-semibold mb-2">Meta-SySop Platform Healing</h3>
@@ -177,6 +177,26 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
               Tell me what needs to be fixed, and I'll analyze the code, make changes, and optionally 
               commit and deploy them.
             </p>
+          </div>
+        )}
+
+        {/* Streaming indicator - Show at top (newest first) */}
+        {isStreaming && (
+          <div className="flex gap-3 justify-start">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <Wrench className="h-4 w-4 text-primary" />
+            </div>
+            <div className="rounded-lg px-4 py-3 max-w-[80%] bg-muted">
+              {streamingContent ? (
+                <MarkdownRenderer content={streamingContent} />
+              ) : (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              )}
+              <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Meta-SySop is thinking...
+              </div>
+            </div>
           </div>
         )}
 
@@ -231,26 +251,6 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
             )}
           </div>
         ))}
-
-        {/* Streaming indicator */}
-        {isStreaming && (
-          <div className="flex gap-3 justify-start">
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <Wrench className="h-4 w-4 text-primary" />
-            </div>
-            <div className="rounded-lg px-4 py-3 max-w-[80%] bg-muted">
-              {streamingContent ? (
-                <MarkdownRenderer content={streamingContent} />
-              ) : (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              )}
-              <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                Meta-SySop is thinking...
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Input area - Fixed at bottom */}
