@@ -31,7 +31,7 @@ function PlatformHealingContent() {
 
   const healMutation = useMutation({
     mutationFn: async (data: { issue: string; autoCommit: boolean; autoPush: boolean }) => {
-      return apiRequest('/api/platform/heal', 'POST', data);
+      return apiRequest('POST', '/api/platform/heal', data);
     },
     onSuccess: (data) => {
       toast({
@@ -54,7 +54,7 @@ function PlatformHealingContent() {
 
   const rollbackMutation = useMutation({
     mutationFn: async (backupId: string) => {
-      return apiRequest('/api/platform/rollback', 'POST', { backupId });
+      return apiRequest('POST', '/api/platform/rollback', { backupId });
     },
     onSuccess: () => {
       toast({
