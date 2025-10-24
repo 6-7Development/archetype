@@ -21,29 +21,29 @@ function PlatformHealingContent() {
   });
 
   return (
-    <div className="flex h-full">
+    <div className="flex flex-col lg:flex-row h-full">
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="border-b p-4 bg-background">
-          <div className="flex items-center justify-between">
+        <div className="border-b p-3 sm:p-4 bg-background">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="w-10 h-10 flex-shrink-0 rounded-full bg-primary/10 flex items-center justify-center">
                 <Wrench className="h-5 w-5 text-primary" />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold">Meta-SySop Platform Healing</h1>
-                <p className="text-sm text-muted-foreground">
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl font-bold">Meta-SySop Platform Healing</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Chat with Meta-SySop to diagnose and fix platform issues
                 </p>
               </div>
             </div>
-            <Badge variant={status?.safety?.safe ? 'default' : 'destructive'}>
+            <Badge variant={status?.safety?.safe ? 'default' : 'destructive'} className="self-start sm:self-auto">
               {status?.safety?.safe ? 'Healthy' : 'Issues Detected'}
             </Badge>
           </div>
 
           {/* Settings */}
-          <div className="flex items-center gap-6 mt-4 p-3 bg-muted/50 rounded-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 mt-4 p-3 bg-muted/50 rounded-lg">
             <div className="flex items-center gap-2">
               <Switch
                 id="auto-commit"
@@ -51,9 +51,9 @@ function PlatformHealingContent() {
                 onCheckedChange={setAutoCommit}
                 data-testid="switch-auto-commit"
               />
-              <Label htmlFor="auto-commit" className="text-sm cursor-pointer flex items-center gap-1">
-                <GitBranch className="h-3 w-3" />
-                Auto-commit changes
+              <Label htmlFor="auto-commit" className="text-xs sm:text-sm cursor-pointer flex items-center gap-1">
+                <GitBranch className="h-3 w-3 flex-shrink-0" />
+                <span>Auto-commit changes</span>
               </Label>
             </div>
 
@@ -65,9 +65,9 @@ function PlatformHealingContent() {
                 disabled={!autoCommit}
                 data-testid="switch-auto-push"
               />
-              <Label htmlFor="auto-push" className="text-sm cursor-pointer flex items-center gap-1">
-                <CheckCircle className="h-3 w-3" />
-                Auto-push to production (triggers deployment)
+              <Label htmlFor="auto-push" className="text-xs sm:text-sm cursor-pointer flex items-center gap-1">
+                <CheckCircle className="h-3 w-3 flex-shrink-0" />
+                <span className="leading-tight">Auto-push to production<span className="hidden sm:inline"> (triggers deployment)</span></span>
               </Label>
             </div>
           </div>
@@ -82,8 +82,8 @@ function PlatformHealingContent() {
         </div>
       </div>
 
-      {/* Sidebar with Platform Status */}
-      <div className="w-80 border-l p-4 bg-muted/20 overflow-y-auto space-y-4">
+      {/* Sidebar with Platform Status - Hidden on mobile */}
+      <div className="hidden lg:block lg:w-80 border-l p-4 bg-muted/20 overflow-y-auto space-y-4">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
