@@ -1,3 +1,4 @@
+// RENDER DEPLOY TEST - 2025-10-24T20:33:34.399Z
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
