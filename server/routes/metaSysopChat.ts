@@ -9,6 +9,7 @@ import { platformAudit } from '../platformAudit';
 import { consultArchitect } from '../tools/architect-consult';
 import { executeWebSearch } from '../tools/web-search';
 import { GitHubService } from '../githubService';
+import { createTaskList, updateTask, readTaskList } from '../tools/task-management';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -76,6 +77,32 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     sendEvent('user_message', { messageId: userMsg.id });
 
+    // 🎯 OPTION 2: Pre-create task list IMMEDIATELY for instant TaskBoard feedback
+    // This guarantees users see progress even if Meta-SySop fails to create tasks
+    sendEvent('progress', { message: 'Creating task list for live tracking...' });
+    
+    const initialTaskResult = await createTaskList({
+      userId,
+      projectId: undefined,
+      chatMessageId: userMsg.id,
+      title: `Platform Healing: ${message.slice(0, 50)}`,
+      description: 'Meta-SySop is analyzing your request and will update these tasks as work progresses.',
+      tasks: [
+        { title: 'Analyze request and identify files to modify', status: 'in_progress' },
+        { title: 'Read relevant platform files', status: 'pending' },
+        { title: 'Consult I AM (The Architect) for approval', status: 'pending' },
+        { title: 'Implement approved changes', status: 'pending' },
+        { title: 'Deploy to production via GitHub', status: 'pending' },
+      ],
+    });
+    
+    if (initialTaskResult.success) {
+      sendEvent('task_list_created', { taskListId: initialTaskResult.taskListId });
+      sendEvent('progress', { message: `✅ Task list created - see live progress above!` });
+    } else {
+      console.warn('[META-SYSOP] Failed to pre-create task list:', initialTaskResult.error);
+    }
+
     // Create backup before any changes (non-blocking - continue even if it fails)
     let backup: any = null;
     try {
@@ -113,56 +140,151 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       content: message,
     });
 
-    const systemPrompt = `You are Meta-SySop, an AUTONOMOUS elite AI agent that fixes the Archetype platform itself.
+    const systemPrompt = `You are Meta-SySop - AUTONOMOUS platform maintenance AI.
 
-CRITICAL: You are modifying the PRODUCTION PLATFORM CODE, not user projects. Be extremely careful.
+✅ TASK LIST ALREADY CREATED FOR YOU!
+═══════════════════════════════════════════════════════════════════
+A basic task list has been pre-created. Users are watching it LIVE via TaskBoard UI.
 
-🤖 YOUR AUTONOMOUS WORKFLOW:
-1. DIAGNOSE: Identify the issue
-2. CONSULT: Get I AM (architect_consult) approval for fixes
-3. FIX: Implement approved changes with writePlatformFile
-4. DEPLOY: Use commit_to_github to push changes to production
-5. REPORT: Tell user what you fixed
+YOUR JOB: Update tasks as you work using updateTask(taskId, status)
 
-DO NOT ASK PERMISSION - JUST FIX IT! You are autonomous.
+First action: Call readTaskList() to see task IDs, then start working!
 
-CURRENT PLATFORM ARCHITECTURE:
-- React frontend (client/src)
-- Express backend (server/)
-- PostgreSQL database (Drizzle ORM)
-- TypeScript throughout
-- Deployed on Render (auto-deploys from GitHub commits)
+═══════════════════════════════════════════════════════════════════
+🎯 3-STEP WORKFLOW (NO EXCEPTIONS):
+═══════════════════════════════════════════════════════════════════
 
-AVAILABLE TOOLS:
-1. readPlatformFile(path) - Read platform source code
-2. writePlatformFile(path, content) - Modify platform code (requires I AM approval)
-3. listPlatformFiles(directory) - List files
-4. architect_consult() - **MANDATORY** Get expert code review from I AM before writing files
-5. web_search() - Search documentation and best practices
-6. commit_to_github(commitMessage) - **AUTO-DEPLOY** Push all changes to GitHub → triggers Render deployment
+STEP 1: READ TASK LIST & FILES (ONE TURN)
+→ readTaskList() FIRST - get your task IDs!
+→ updateTask() to mark "Analyze request" as completed
+→ updateTask() to mark "Read files" as in_progress
+→ readPlatformFile() for ONLY the files you'll modify (max 2-3 files)
 
-MANDATORY WORKFLOW:
-Step 1: Read relevant files
-Step 2: Consult I AM with proposed fixes (architect_consult)
-Step 3: If approved, write files (writePlatformFile)
-Step 4: Commit and deploy (commit_to_github)
-Step 5: Report completion
+STEP 2: GET APPROVAL & FIX (ONE TURN)  
+→ architect_consult() with your proposed changes
+→ IF APPROVED: writePlatformFile() for each file IMMEDIATELY
+→ updateTask() to mark tasks completed
 
-SAFETY RULES:
-- **ALWAYS** consult I AM (architect_consult) before writing platform files
-- NEVER modify .git/, node_modules/, .env, package.json
-- After fixing issues, AUTOMATICALLY call commit_to_github to deploy
-- Create minimal, surgical fixes
+STEP 3: DEPLOY (ONE TURN)
+→ commit_to_github() with commit message
+→ DONE - report completion
 
-AUTONOMOUS BEHAVIOR:
-- DO NOT ask "should I fix this?" - JUST FIX IT
-- DO NOT wait for permission to deploy - AUTO-DEPLOY with commit_to_github
-- DO explain what you're doing as you work
-- DO report completion when done
+═══════════════════════════════════════════════════════════════════
+❌ FORBIDDEN BEHAVIORS (INSTANT FAILURE):
+═══════════════════════════════════════════════════════════════════
 
-Current user request: ${message}`;
+• Writing "### NEXT ACTIONS" or "### PLAN" as text - CALL createTaskList() instead!
+• Typing out numbered lists like "1. Fix X, 2. Do Y" - CALL createTaskList() instead!
+• Saying "Let me check..." or "I'll implement..." - CALL THE TOOLS NOW!
+• Writing "Would you like me to..." - NO! Just do it autonomously!
+• Asking "should I...?" or "What's your priority?" - YOU decide and act!
+• Describing what you "plan to do" - DO IT with tool calls instead!
+• Multiple rounds of investigation - ONE round max, then ACT!
+
+═══════════════════════════════════════════════════════════════════
+✅ CORRECT EXECUTION EXAMPLE:
+═══════════════════════════════════════════════════════════════════
+
+TURN 1 (Tasks + Read):
+createTaskList({
+  title: "Fix chat display bug",
+  tasks: [
+    { title: "Read chat component file", status: "in_progress" },
+    { title: "Get I AM approval for fix", status: "pending" },
+    { title: "Update chat component", status: "pending" },
+    { title: "Deploy to production", status: "pending" }
+  ]
+})
+readPlatformFile({ path: "client/src/components/chat.tsx" })
+readTaskList()
+
+TURN 2 (Approve + Fix):
+architect_consult({
+  problem: "Chat messages display in wrong order",
+  context: "Current code shows oldest first",
+  proposedSolution: "Reverse array before mapping: messages.reverse().map(...)",
+  affectedFiles: ["client/src/components/chat.tsx"]
+})
+// After approval:
+writePlatformFile({ path: "client/src/components/chat.tsx", content: "..." })
+updateTask({ taskId: "task-1", status: "completed" })
+updateTask({ taskId: "task-2", status: "completed" })
+updateTask({ taskId: "task-3", status: "completed" })
+
+TURN 3 (Deploy):
+commit_to_github({ commitMessage: "Fix chat message display order" })
+updateTask({ taskId: "task-4", status: "completed" })
+
+═══════════════════════════════════════════════════════════════════
+🔧 YOUR TOOLS:
+═══════════════════════════════════════════════════════════════════
+
+createTaskList() - Create 3-4 tasks, start first one
+readPlatformFile() - Read files you'll modify (max 3)
+architect_consult() - Get approval ONCE before writing
+writePlatformFile() - Modify approved files (REQUIRES approval)
+updateTask() - Mark tasks completed as you work
+commit_to_github() - Deploy changes to production
+readTaskList() - See task IDs
+listPlatformFiles() - Find files if needed
+web_search() - Look up docs (RARELY needed)
+
+═══════════════════════════════════════════════════════════════════
+📋 CURRENT REQUEST:
+═══════════════════════════════════════════════════════════════════
+
+${message}
+
+EXECUTE NOW - Create tasks, read files, get approval, write files, deploy. 3 turns maximum!`;
 
     const tools = [
+      {
+        name: 'createTaskList',
+        description: '**MANDATORY FIRST STEP** - Create a task list to show users live progress. ALWAYS call this before starting work.',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            title: { type: 'string' as const, description: 'Brief title for this task list (e.g., "Fix chat scrolling")' },
+            description: { type: 'string' as const, description: 'Detailed description of what you will do' },
+            tasks: {
+              type: 'array' as const,
+              items: {
+                type: 'object' as const,
+                properties: {
+                  title: { type: 'string' as const, description: 'Task description' },
+                  description: { type: 'string' as const, description: 'Optional task details' },
+                  status: { type: 'string' as const, description: 'Status: "pending" or "in_progress"' },
+                },
+                required: ['title'],
+              },
+              description: 'Array of tasks to complete',
+            },
+          },
+          required: ['title', 'tasks'],
+        },
+      },
+      {
+        name: 'updateTask',
+        description: 'Update task status as you work to show live progress. Call this when starting/completing tasks.',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            taskId: { type: 'string' as const, description: 'Task ID to update' },
+            status: { type: 'string' as const, description: 'New status: "pending", "in_progress", "completed", or "cancelled"' },
+            result: { type: 'string' as const, description: 'Optional result description when completing' },
+          },
+          required: ['taskId', 'status'],
+        },
+      },
+      {
+        name: 'readTaskList',
+        description: 'Read your current task list to see task IDs and statuses',
+        input_schema: {
+          type: 'object' as const,
+          properties: {},
+          required: [],
+        },
+      },
       {
         name: 'readPlatformFile',
         description: 'Read a platform source file',
@@ -279,6 +401,38 @@ Current user request: ${message}`;
         content: response.content,
       });
 
+      // 🎯 OPTION 1 ENFORCEMENT: First response should use tools (not just text)
+      if (iterationCount === 1) {
+        const hasToolCalls = response.content.some(block => block.type === 'tool_use');
+        
+        if (!hasToolCalls) {
+          // Force retry - Meta-SySop typed text instead of calling tools
+          sendEvent('error', { message: '❌ Must call tools (not type text) - retrying...' });
+          
+          const errorMessage = `ERROR: Your first response must include TOOL CALLS, not just text.
+
+Users are watching tasks in real-time via TaskBoard. A task list was PRE-CREATED for you.
+
+Instead of typing "### NEXT ACTIONS" or "Let me check...", you MUST call tools:
+
+1. readTaskList() - See your task IDs
+2. updateTask(taskId, "in_progress") - Mark progress
+3. readPlatformFile() - Read files you need
+4. architect_consult() - Get approval
+5. writePlatformFile() - Make changes
+6. commit_to_github() - Deploy
+
+RETRY NOW - Call readTaskList() first to see task IDs, then start working!`;
+
+          conversationMessages.push({
+            role: 'user',
+            content: errorMessage,
+          });
+          
+          continue; // Retry loop
+        }
+      }
+
       const toolResults: any[] = [];
 
       for (const block of response.content) {
@@ -291,7 +445,62 @@ Current user request: ${message}`;
           try {
             let toolResult: any = null;
 
-            if (name === 'readPlatformFile') {
+            if (name === 'createTaskList') {
+              const typedInput = input as { title: string; description?: string; tasks: Array<any> };
+              sendEvent('progress', { message: `📋 Creating task list: ${typedInput.title}...` });
+              
+              const result = await createTaskList({
+                userId,
+                projectId: undefined, // Meta-SySop works on platform, not user projects
+                chatMessageId: userMsg.id,
+                title: typedInput.title,
+                description: typedInput.description,
+                tasks: typedInput.tasks,
+              });
+              
+              if (result.success) {
+                toolResult = `✅ Task list created successfully (ID: ${result.taskListId}).\n\nYou can now update individual tasks as you progress. Use readTaskList() to see task IDs, then updateTask(taskId, status) to mark progress.`;
+                sendEvent('task_list_created', { taskListId: result.taskListId });
+              } else {
+                toolResult = `❌ Failed to create task list: ${result.error}`;
+                sendEvent('error', { message: `Task list creation failed: ${result.error}` });
+              }
+            } else if (name === 'updateTask') {
+              const typedInput = input as { taskId: string; status: string; result?: string };
+              sendEvent('progress', { message: `Updating task to ${typedInput.status}...` });
+              
+              const result = await updateTask({
+                userId,
+                taskId: typedInput.taskId,
+                status: typedInput.status,
+                result: typedInput.result,
+                startedAt: typedInput.status === 'in_progress' ? new Date() : undefined,
+                completedAt: typedInput.status === 'completed' ? new Date() : undefined,
+              });
+              
+              if (result.success) {
+                toolResult = `✅ Task updated to ${typedInput.status}`;
+                sendEvent('task_updated', { taskId: typedInput.taskId, status: typedInput.status });
+              } else {
+                toolResult = `❌ Failed to update task: ${result.error}`;
+              }
+            } else if (name === 'readTaskList') {
+              const result = await readTaskList({ userId });
+              
+              if (result.success && result.taskLists) {
+                const activeList = result.taskLists.find((list: any) => list.status === 'active');
+                if (activeList) {
+                  const taskSummary = activeList.tasks.map((t: any) => 
+                    `[${t.id}] ${t.title} - ${t.status}`
+                  ).join('\n');
+                  toolResult = `Current Task List (${activeList.id}):\n${taskSummary}`;
+                } else {
+                  toolResult = 'No active task list. Create one with createTaskList().';
+                }
+              } else {
+                toolResult = `Error reading task list: ${result.error}`;
+              }
+            } else if (name === 'readPlatformFile') {
               const typedInput = input as { path: string };
               sendEvent('progress', { message: `Reading ${typedInput.path}...` });
               toolResult = await platformHealing.readPlatformFile(typedInput.path);
