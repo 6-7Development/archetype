@@ -1,18 +1,35 @@
 import { useState } from 'react';
+import { Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { AdminGuard } from '@/components/admin-guard';
 import { MetaSySopChat } from '@/components/meta-sysop-chat';
 import { AgentProgress, ProgressStep } from '@/components/agent-progress';
-import { CheckCircle, AlertTriangle, GitBranch, Database, Wrench } from 'lucide-react';
+import { 
+  LayoutDashboard, 
+  Hammer, 
+  Store, 
+  TrendingUp, 
+  Users, 
+  Key, 
+  MessageSquare, 
+  Settings, 
+  Shield, 
+  Heart, 
+  LogOut,
+  Database,
+  GitBranch,
+  CheckCircle2,
+  AlertTriangle,
+  Lightbulb,
+  Activity
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 function PlatformHealingContent() {
   const [autoCommit, setAutoCommit] = useState(false);
   const [autoPush, setAutoPush] = useState(false);
 
+  // Fetch platform status
   const { data: status } = useQuery<any>({
     queryKey: ['/api/platform/status'],
   });
@@ -30,84 +47,170 @@ function PlatformHealingContent() {
   const tasks = tasksData?.tasks || [];
   const isWorking = tasks.some(t => t.type !== 'success' && t.type !== 'error');
 
+  // Navigation items
+  const navItems = [
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+    { icon: Hammer, label: 'Builder', path: '/builder' },
+    { icon: Store, label: 'Marketplace', path: '/templates' },
+    { icon: TrendingUp, label: 'Analytics', path: '/usage' },
+    { icon: Users, label: 'Team', path: '/team' },
+  ];
+
+  const platformItems = [
+    { icon: Key, label: 'API Keys', path: '/api-keys' },
+    { icon: MessageSquare, label: 'Support', path: '/support' },
+    { icon: Settings, label: 'Account', path: '/settings' },
+    { icon: Shield, label: 'Admin', path: '/admin' },
+  ];
+
   return (
-    <div className="flex flex-col lg:flex-row h-full">
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <div className="border-b p-2 sm:p-4 bg-background">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 rounded-full bg-primary/10 flex items-center justify-center">
-                <Wrench className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-base sm:text-2xl font-bold leading-tight">Meta-SySop<span className="hidden sm:inline"> Platform Healing</span></h1>
-                <p className="hidden sm:block text-sm text-muted-foreground">
-                  Chat with Meta-SySop to diagnose and fix platform issues
-                </p>
+    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      {/* LEFT SIDEBAR - 220px */}
+      <div className="w-[220px] flex-shrink-0 bg-slate-950/95 border-r border-slate-800/50 backdrop-blur-xl flex flex-col animate-in slide-in-from-left duration-500">
+        {/* Logo */}
+        <div className="p-5 border-b border-slate-800/50">
+          <div className="font-bold text-sm bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">
+            🚀 ARCHETYPE
+          </div>
+          <div className="text-[11px] text-slate-500 mt-1">AI Platform Healing</div>
+        </div>
+
+        {/* Main Navigation */}
+        <div className="flex-1 overflow-y-auto py-3">
+          <div className="space-y-1 px-2">
+            {navItems.map((item) => (
+              <Link key={item.path} href={item.path}>
+                <a className={cn(
+                  "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-all",
+                  "text-slate-400 hover:text-blue-400 hover:bg-blue-500/10"
+                )} data-testid={`nav-${item.label.toLowerCase()}`}>
+                  <item.icon className="w-[18px] h-[18px]" />
+                  <span>{item.label}</span>
+                </a>
+              </Link>
+            ))}
+          </div>
+
+          {/* Platform Section */}
+          <div className="mt-6">
+            <div className="px-4 py-2 text-[10px] font-semibold text-slate-600 uppercase tracking-wider">
+              Platform
+            </div>
+            <div className="space-y-1 px-2">
+              {platformItems.map((item) => (
+                <Link key={item.path} href={item.path}>
+                  <a className={cn(
+                    "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-all",
+                    "text-slate-400 hover:text-blue-400 hover:bg-blue-500/10"
+                  )} data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}>
+                    <item.icon className="w-[18px] h-[18px]" />
+                    <span>{item.label}</span>
+                  </a>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Platform Healing - Active */}
+          <div className="mt-6">
+            <div className="space-y-1 px-2">
+              <div className={cn(
+                "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-all",
+                "bg-blue-500/15 text-blue-400 border-r-2 border-blue-500"
+              )} data-testid="nav-platform-healing">
+                <Heart className="w-[18px] h-[18px]" />
+                <span>Platform Healing</span>
               </div>
             </div>
-            <Badge variant={status?.safety?.safe ? 'default' : 'destructive'} className="flex-shrink-0 text-xs h-6">
+          </div>
+        </div>
+
+        {/* User Section - Bottom */}
+        <div className="border-t border-slate-800/50 p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center text-sm font-semibold">
+              AD
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[13px] font-semibold text-slate-200 truncate">Admin</div>
+              <div className="text-[11px] text-slate-500 truncate">Platform Owner</div>
+            </div>
+          </div>
+          <button
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-red-400 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 transition-all"
+            data-testid="button-sign-out"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            Sign Out
+          </button>
+        </div>
+      </div>
+
+      {/* MAIN CONTENT - Flex 1 */}
+      <div className="flex-1 flex flex-col min-w-0 bg-slate-900/60">
+        {/* Top Bar */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800/50 bg-slate-950/50 backdrop-blur-xl">
+          <div className="flex items-center gap-4 flex-1">
+            <div>
+              <div className="text-xl font-semibold text-slate-100 flex items-center gap-2">
+                <Heart className="w-5 h-5 text-blue-400" />
+                Meta-SySop Platform Healing
+              </div>
+              <div className="text-[13px] text-slate-500 mt-0.5">
+                Chat with Meta-SySop to diagnose and fix platform issues
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {/* Status Badge */}
+            <div className={cn(
+              "flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all",
+              status?.safety?.safe 
+                ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/30 animate-pulse-glow"
+                : "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/30"
+            )} data-testid="status-badge">
+              <div className="w-1.5 h-1.5 rounded-full bg-white animate-ping-slow" />
               {status?.safety?.safe ? 'Healthy' : 'Issues'}
-            </Badge>
-          </div>
-
-          {/* Settings - Compact on mobile */}
-          <div className="flex items-center gap-3 sm:gap-6 mt-2 sm:mt-4 p-2 sm:p-3 bg-muted/50 rounded-lg text-xs sm:text-sm">
-            <div className="flex items-center gap-1.5">
-              <Switch
-                id="auto-commit"
-                checked={autoCommit}
-                onCheckedChange={setAutoCommit}
-                data-testid="switch-auto-commit"
-              />
-              <Label htmlFor="auto-commit" className="cursor-pointer flex items-center gap-1 leading-tight">
-                <GitBranch className="h-3 w-3 flex-shrink-0" />
-                <span>Auto-commit</span>
-              </Label>
             </div>
 
-            <div className="flex items-center gap-1.5">
-              <Switch
-                id="auto-push"
-                checked={autoPush}
-                onCheckedChange={setAutoPush}
-                disabled={!autoCommit}
-                data-testid="switch-auto-push"
-              />
-              <Label htmlFor="auto-push" className="cursor-pointer flex items-center gap-1 leading-tight">
-                <CheckCircle className="h-3 w-3 flex-shrink-0" />
-                <span>Auto-push</span>
-              </Label>
-            </div>
+            {/* Auto-commit toggle */}
+            <button
+              onClick={() => setAutoCommit(!autoCommit)}
+              className={cn(
+                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all",
+                autoCommit
+                  ? "bg-blue-500/20 text-blue-400 border-blue-500/50"
+                  : "bg-slate-800/50 text-slate-400 border-slate-700/50 hover:bg-blue-500/10 hover:text-blue-400"
+              )}
+              data-testid="toggle-auto-commit"
+            >
+              <GitBranch className="w-3.5 h-3.5" />
+              Auto-commit
+            </button>
+
+            {/* Auto-push toggle */}
+            <button
+              onClick={() => setAutoPush(!autoPush)}
+              disabled={!autoCommit}
+              className={cn(
+                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all",
+                autoPush && autoCommit
+                  ? "bg-blue-500/20 text-blue-400 border-blue-500/50"
+                  : "bg-slate-800/50 text-slate-400 border-slate-700/50",
+                !autoCommit && "opacity-50 cursor-not-allowed",
+                autoCommit && !autoPush && "hover:bg-blue-500/10 hover:text-blue-400"
+              )}
+              data-testid="toggle-auto-push"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              Auto-push
+            </button>
           </div>
         </div>
 
-        {/* Mobile Status Bar - Compact */}
-        <div className="lg:hidden border-b px-2 py-1.5 bg-muted/20 flex items-center justify-between gap-2 text-[10px] overflow-x-auto">
-          <div className="flex items-center gap-1">
-            <span className="text-muted-foreground">Status:</span>
-            {status?.safety?.safe ? (
-              <Badge variant="default" className="text-[10px] h-5 px-1.5">Safe</Badge>
-            ) : (
-              <Badge variant="destructive" className="text-[10px] h-5 px-1.5">Issues</Badge>
-            )}
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-muted-foreground">Changes:</span>
-            <Badge variant={status?.uncommittedChanges ? 'secondary' : 'outline'} className="text-[10px] h-5 px-1.5">
-              {status?.uncommittedChanges ? 'Yes' : 'No'}
-            </Badge>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-muted-foreground">Backups:</span>
-            <Badge variant="outline" className="text-[10px] h-5 px-1.5">{backupsData?.backups?.length || 0}</Badge>
-          </div>
-        </div>
-
-        {/* Live Task Progress - Shows real-time Meta-SySop work */}
+        {/* Live Task Progress */}
         {tasks.length > 0 && (
-          <div className="border-b p-2 sm:p-4 bg-muted/10">
+          <div className="border-b border-slate-800/50 p-4 bg-slate-950/30">
             <AgentProgress 
               steps={tasks}
               isWorking={isWorking}
@@ -116,7 +219,7 @@ function PlatformHealingContent() {
           </div>
         )}
 
-        {/* Chat Interface */}
+        {/* Chat Container */}
         <div className="flex-1 min-h-0 overflow-hidden">
           <MetaSySopChat 
             autoCommit={autoCommit}
@@ -125,85 +228,148 @@ function PlatformHealingContent() {
         </div>
       </div>
 
-      {/* Sidebar with Platform Status - Hidden on mobile */}
-      <div className="hidden lg:block lg:w-80 border-l p-4 bg-muted/20 overflow-y-auto space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Database className="h-4 w-4" />
-              Platform Status
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Uncommitted Changes</span>
-              <Badge variant={status?.uncommittedChanges ? 'secondary' : 'outline'}>
+      {/* RIGHT PANEL - 320px */}
+      <div className="w-[320px] flex-shrink-0 bg-slate-950/95 border-l border-slate-800/50 backdrop-blur-xl overflow-y-auto animate-in slide-in-from-right duration-500">
+        {/* Platform Status */}
+        <div className="p-5 border-b border-slate-800/50">
+          <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-300 uppercase tracking-wider mb-3.5">
+            <Database className="w-4 h-4" />
+            Platform Status
+          </div>
+          
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between py-2 text-[13px] border-b border-slate-800/30">
+              <span className="text-slate-500">Uncommitted Changes</span>
+              <span className={cn(
+                "font-semibold",
+                status?.uncommittedChanges ? "text-amber-400" : "text-emerald-400"
+              )}>
                 {status?.uncommittedChanges ? 'Yes' : 'No'}
-              </Badge>
+              </span>
             </div>
 
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Safety Status</span>
-              {status?.safety?.safe ? (
-                <Badge variant="default" className="gap-1">
-                  <CheckCircle className="h-3 w-3" />
-                  Safe
-                </Badge>
-              ) : (
-                <Badge variant="destructive" className="gap-1">
-                  <AlertTriangle className="h-3 w-3" />
-                  Issues
-                </Badge>
-              )}
+            <div className="flex items-center justify-between py-2 text-[13px] border-b border-slate-800/30">
+              <span className="text-slate-500">Safety Status</span>
+              <span className={cn(
+                "font-semibold flex items-center gap-1.5",
+                status?.safety?.safe ? "text-emerald-400" : "text-red-400"
+              )}>
+                {status?.safety?.safe ? (
+                  <><CheckCircle2 className="w-3.5 h-3.5" /> Safe</>
+                ) : (
+                  <><AlertTriangle className="w-3.5 h-3.5" /> Issues</>
+                )}
+              </span>
             </div>
 
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Backups Available</span>
-              <Badge variant="outline">{backupsData?.backups?.length || 0}</Badge>
+            <div className="flex items-center justify-between py-2 text-[13px]">
+              <span className="text-slate-500">Backups Available</span>
+              <span className="font-semibold text-slate-200">
+                {backupsData?.backups?.length || 0}
+              </span>
             </div>
+          </div>
 
-            {status?.safety?.issues && status.safety.issues.length > 0 && (
-              <div className="mt-4 p-3 bg-destructive/10 rounded-md">
-                <p className="text-xs font-medium text-destructive mb-2">Safety Issues:</p>
-                <ul className="list-disc list-inside text-xs text-destructive space-y-1">
-                  {status.safety.issues.map((issue: string, i: number) => (
-                    <li key={i}>{issue}</li>
-                  ))}
-                </ul>
+          {/* Safety Issues */}
+          {status?.safety?.issues && status.safety.issues.length > 0 && (
+            <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+              <div className="text-xs font-semibold text-red-400 mb-2 flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5" />
+                Safety Issues:
               </div>
-            )}
-          </CardContent>
-        </Card>
+              <ul className="space-y-1">
+                {status.safety.issues.map((issue: string, i: number) => (
+                  <li key={i} className="text-xs text-red-300 flex items-start gap-1.5">
+                    <span className="mt-0.5">•</span>
+                    <span>{issue}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
 
         {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Recent Healing Sessions</CardTitle>
-            <CardDescription className="text-xs">
-              Previous platform modifications
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-muted-foreground text-center py-4">
-              All healing history is now in the chat above
-            </p>
-          </CardContent>
-        </Card>
+        <div className="p-5 border-b border-slate-800/50">
+          <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-300 uppercase tracking-wider mb-3.5">
+            <Activity className="w-4 h-4" />
+            Recent Activity
+          </div>
+          
+          <div className="space-y-2">
+            {isWorking ? (
+              <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-3 cursor-pointer hover:bg-slate-800/60 hover:border-blue-500/30 transition-all">
+                <div className="text-xs font-semibold text-slate-200 mb-1.5 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                  Meta-SySop is working...
+                </div>
+                <div className="text-[11px] text-slate-500 leading-snug">
+                  {tasks.find(t => t.type !== 'success' && t.type !== 'error')?.message || 'Processing your request'}
+                </div>
+              </div>
+            ) : (
+              <div className="text-xs text-slate-500 text-center py-4">
+                All healing history is in the chat
+              </div>
+            )}
+          </div>
+        </div>
 
-        {/* Tips */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Tips</CardTitle>
-          </CardHeader>
-          <CardContent className="text-xs space-y-2 text-muted-foreground">
-            <p>• Be specific about the issue you're experiencing</p>
-            <p>• Meta-SySop can read and modify platform files</p>
-            <p>• Enable auto-commit to save changes to Git</p>
-            <p>• Enable auto-push to deploy fixes immediately</p>
-            <p>• All changes are backed up automatically</p>
-          </CardContent>
-        </Card>
+        {/* Tips Section */}
+        <div className="p-5">
+          <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-300 uppercase tracking-wider mb-3.5">
+            <Lightbulb className="w-4 h-4" />
+            Pro Tips
+          </div>
+          
+          <div className="space-y-2.5">
+            <div className="bg-blue-500/10 border-l-2 border-blue-500 rounded px-3 py-2.5 text-xs text-blue-300 leading-relaxed">
+              💡 Be specific about the issue you're experiencing
+            </div>
+            <div className="bg-blue-500/10 border-l-2 border-blue-500 rounded px-3 py-2.5 text-xs text-blue-300 leading-relaxed">
+              📁 Meta-SySop can read and modify platform files
+            </div>
+            <div className="bg-blue-500/10 border-l-2 border-blue-500 rounded px-3 py-2.5 text-xs text-blue-300 leading-relaxed">
+              ✅ Enable auto-commit to save changes to Git
+            </div>
+            <div className="bg-blue-500/10 border-l-2 border-blue-500 rounded px-3 py-2.5 text-xs text-blue-300 leading-relaxed">
+              🚀 Enable auto-push to deploy fixes immediately
+            </div>
+            <div className="bg-blue-500/10 border-l-2 border-blue-500 rounded px-3 py-2.5 text-xs text-blue-300 leading-relaxed">
+              🔄 All changes are backed up automatically
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Add custom animations */}
+      <style>{`
+        @keyframes pulse-glow {
+          0%, 100% {
+            box-shadow: 0 0 0 0 currentColor;
+          }
+          50% {
+            box-shadow: 0 0 0 8px transparent;
+          }
+        }
+        
+        @keyframes ping-slow {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.3;
+          }
+        }
+        
+        .animate-pulse-glow {
+          animation: pulse-glow 2s infinite;
+        }
+        
+        .animate-ping-slow {
+          animation: ping-slow 1.5s infinite;
+        }
+      `}</style>
     </div>
   );
 }
