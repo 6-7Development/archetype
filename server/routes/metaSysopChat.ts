@@ -173,8 +173,8 @@ STEP 3: DEPLOY (ONE TURN)
 ❌ FORBIDDEN BEHAVIORS (INSTANT FAILURE):
 ═══════════════════════════════════════════════════════════════════
 
-• Writing "### NEXT ACTIONS" or "### PLAN" as text - CALL createTaskList() instead!
-• Typing out numbered lists like "1. Fix X, 2. Do Y" - CALL createTaskList() instead!
+• Writing "### NEXT ACTIONS" or "### PLAN" as text - CALL updateTask() instead!
+• Typing out numbered lists like "1. Fix X, 2. Do Y" - CALL updateTask() instead!
 • Saying "Let me check..." or "I'll implement..." - CALL THE TOOLS NOW!
 • Writing "Would you like me to..." - NO! Just do it autonomously!
 • Asking "should I...?" or "What's your priority?" - YOU decide and act!
@@ -185,18 +185,12 @@ STEP 3: DEPLOY (ONE TURN)
 ✅ CORRECT EXECUTION EXAMPLE:
 ═══════════════════════════════════════════════════════════════════
 
-TURN 1 (Tasks + Read):
-createTaskList({
-  title: "Fix chat display bug",
-  tasks: [
-    { title: "Read chat component file", status: "in_progress" },
-    { title: "Get I AM approval for fix", status: "pending" },
-    { title: "Update chat component", status: "pending" },
-    { title: "Deploy to production", status: "pending" }
-  ]
-})
+TURN 1 (Read Tasks + Files):
+readTaskList()  // Get your task IDs first!
+updateTask({ taskId: "task-xxx-1", status: "completed" })  // Mark "Analyze" done
+updateTask({ taskId: "task-xxx-2", status: "in_progress" })  // Start "Read files"
 readPlatformFile({ path: "client/src/components/chat.tsx" })
-readTaskList()
+updateTask({ taskId: "task-xxx-2", status: "completed" })  // Mark "Read files" done
 
 TURN 2 (Approve + Fix):
 architect_consult({
