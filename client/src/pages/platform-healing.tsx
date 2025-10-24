@@ -51,9 +51,9 @@ function PlatformHealingContent() {
                 onCheckedChange={setAutoCommit}
                 data-testid="switch-auto-commit"
               />
-              <Label htmlFor="auto-commit" className="cursor-pointer flex items-center gap-1">
+              <Label htmlFor="auto-commit" className="cursor-pointer flex items-center gap-1 leading-tight">
                 <GitBranch className="h-3 w-3 flex-shrink-0" />
-                <span className="hidden sm:inline">Auto-commit</span>
+                <span>Auto-commit</span>
               </Label>
             </div>
 
@@ -65,9 +65,9 @@ function PlatformHealingContent() {
                 disabled={!autoCommit}
                 data-testid="switch-auto-push"
               />
-              <Label htmlFor="auto-push" className="cursor-pointer flex items-center gap-1">
+              <Label htmlFor="auto-push" className="cursor-pointer flex items-center gap-1 leading-tight">
                 <CheckCircle className="h-3 w-3 flex-shrink-0" />
-                <span className="hidden sm:inline">Auto-push</span>
+                <span>Auto-push</span>
               </Label>
             </div>
           </div>
