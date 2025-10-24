@@ -383,4 +383,41 @@ router.get('/status', isAuthenticated, isAdmin, async (req: any, res) => {
   }
 });
 
+router.get('/tasks', isAuthenticated, isAdmin, async (req: any, res) => {
+  try {
+    const logs = await platformAudit.getHistory(20);
+    
+    // Convert audit logs to task format
+    const tasks = logs
+      .filter(log => log.action === 'heal')
+      .map((log, index) => {
+        let type: 'thinking' | 'action' | 'success' | 'error' | 'warning' = 'action';
+        let progress = 0;
+        
+        if (log.status === 'success') {
+          type = 'success';
+          progress = 100;
+        } else if (log.status === 'failure') {
+          type = 'error';
+          progress = 0;
+        } else if (log.status === 'pending') {
+          type = log.description.includes('analyzing') ? 'thinking' : 'action';
+          progress = Math.min(90, (index + 1) * 20);
+        }
+        
+        return {
+          id: log.id.toString(),
+          type,
+          message: log.description,
+          details: log.error || undefined,
+          progress,
+        };
+      });
+    
+    res.json({ tasks });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message, tasks: [] });
+  }
+});
+
 export default router;
