@@ -27,6 +27,102 @@ async function summarizeMessages(messages: any[]): Promise<string> {
   return `Previous conversation summary: ${summary}`;
 }
 
+// Helper function to parse task plans from Claude's response
+function parseTaskPlan(text: string): { tasks: any[] } | null {
+  try {
+    // STRATEGY 1: Look for ```json code blocks (most reliable)
+    const jsonBlockRegex = /```json\s*\n([\s\S]*?)\n```/g;
+    const jsonBlocks = Array.from(text.matchAll(jsonBlockRegex));
+    
+    for (const match of jsonBlocks) {
+      try {
+        const parsed = JSON.parse(match[1]);
+        if (parsed.type === 'task_plan' && Array.isArray(parsed.tasks)) {
+          console.log(`✅ [TASK-PARSER] Found task plan with ${parsed.tasks.length} tasks (from code block)`);
+          return { tasks: parsed.tasks };
+        }
+      } catch (e) {
+        // Try next block
+      }
+    }
+    
+    // STRATEGY 2: Balanced brace matching for {"type":"task_plan"...}
+    let depth = 0;
+    let startIdx = -1;
+    let inString = false;
+    let escape = false;
+    
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      
+      // Handle string escaping
+      if (escape) {
+        escape = false;
+        continue;
+      }
+      if (char === '\\') {
+        escape = true;
+        continue;
+      }
+      
+      // Track string boundaries
+      if (char === '"') {
+        inString = !inString;
+        continue;
+      }
+      
+      // Only count braces outside strings
+      if (!inString) {
+        if (char === '{') {
+          if (depth === 0) {
+            startIdx = i;
+          }
+          depth++;
+        } else if (char === '}') {
+          depth--;
+          if (depth === 0 && startIdx !== -1) {
+            // Found complete JSON object
+            const jsonStr = text.substring(startIdx, i + 1);
+            try {
+              const parsed = JSON.parse(jsonStr);
+              if (parsed.type === 'task_plan' && Array.isArray(parsed.tasks)) {
+                console.log(`✅ [TASK-PARSER] Found task plan with ${parsed.tasks.length} tasks (balanced brace matching)`);
+                return { tasks: parsed.tasks };
+              }
+            } catch (e) {
+              // Not valid JSON, continue searching
+            }
+            startIdx = -1;
+          }
+        }
+      }
+    }
+    
+    // No valid task plan found
+    return null;
+  } catch (error) {
+    console.error('❌ [TASK-PARSER] Error parsing task plan:', error);
+    return null;
+  }
+}
+
+// Helper function to broadcast task events via WebSocket
+function broadcastTaskEvent(wss: any, userId: string, eventType: 'task_plan' | 'task_update', data: any) {
+  try {
+    wss.clients.forEach((client: WebSocket) => {
+      if (client.readyState === WebSocket.OPEN && (client as any).userId === userId) {
+        client.send(JSON.stringify({
+          type: eventType,
+          ...data,
+        }));
+      }
+    });
+    console.log(`✅ [WEBSOCKET] Broadcasted ${eventType} to user ${userId}`);
+  } catch (error) {
+    console.error(`❌ [WEBSOCKET] Error broadcasting ${eventType}:`, error);
+  }
+}
+
 export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
   const { wss } = dependencies;
 
@@ -42,6 +138,66 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
     } catch (error) {
       console.error('Error fetching commands:', error);
       res.status(500).json({ error: "Failed to fetch commands" });
+    }
+  });
+
+  // Get tasks - supports filtering by commandId or projectId
+  app.get("/api/tasks", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.authenticatedUserId;
+      const commandId = req.query.commandId as string | undefined;
+      const projectId = req.query.projectId as string | undefined;
+      
+      if (commandId) {
+        // Get tasks for a specific command
+        console.log(`[GET /api/tasks] Fetching tasks for commandId: ${commandId}`);
+        const tasks = await storage.getTasks(commandId);
+        console.log(`[GET /api/tasks] Found ${tasks.length} tasks for command`);
+        res.json(tasks);
+      } else if (projectId) {
+        // Get tasks for a specific project
+        console.log(`[GET /api/tasks] Fetching tasks for projectId: ${projectId}, userId: ${userId}`);
+        const tasks = await storage.getTasksByProject(projectId, userId);
+        console.log(`[GET /api/tasks] Found ${tasks.length} tasks for project`);
+        res.json(tasks);
+      } else {
+        res.status(400).json({ error: "Either commandId or projectId is required" });
+      }
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      res.status(500).json({ error: "Failed to fetch tasks" });
+    }
+  });
+
+  // Update task status
+  app.patch("/api/tasks/:taskId", isAuthenticated, async (req: any, res) => {
+    try {
+      const { taskId } = req.params;
+      const { status } = req.body;
+      
+      if (!status || typeof status !== 'string') {
+        return res.status(400).json({ error: "status is required and must be a string" });
+      }
+      
+      console.log(`[PATCH /api/tasks/${taskId}] Updating status to: ${status}`);
+      const updatedTask = await storage.updateTaskStatus(taskId, status);
+      
+      // Broadcast task_update event via WebSocket
+      const userId = req.authenticatedUserId;
+      broadcastTaskEvent(wss, userId, 'task_update', {
+        task: {
+          id: updatedTask.id,
+          title: updatedTask.title,
+          status: updatedTask.status,
+          priority: updatedTask.priority,
+          subAgentId: updatedTask.subAgentId,
+        },
+      });
+      
+      res.json(updatedTask);
+    } catch (error) {
+      console.error('Error updating task:', error);
+      res.status(500).json({ error: "Failed to update task" });
     }
   });
 
@@ -181,6 +337,59 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
         if (completion.stop_reason === 'max_tokens') {
           console.warn('⚠️ Response truncated due to max_tokens limit - continuing anyway (autonomous mode)');
           // Note: We proceed with partial response instead of blocking
+        }
+        
+        // 📋 TASK MANAGEMENT: Parse and store tasks from Claude's response
+        // This implements Replit Agent-style task tracking
+        try {
+          console.log('🔍 [TASK-PARSER] Attempting to parse task plan from Claude response...');
+          const taskPlan = parseTaskPlan(responseText);
+          
+          if (taskPlan && taskPlan.tasks && taskPlan.tasks.length > 0) {
+            console.log(`📋 [TASK-PARSER] Found ${taskPlan.tasks.length} tasks in response`);
+            
+            // Store each task in database with commandId linkage
+            const storedTasks = [];
+            for (const task of taskPlan.tasks) {
+              try {
+                const storedTask = await storage.createTask({
+                  userId,
+                  projectId: projectId || null,
+                  commandId: savedCommand.id,
+                  title: task.title || 'Untitled Task',
+                  status: task.status || 'pending',
+                  priority: task.priority || 1,
+                  subAgentId: task.subAgentId || null,
+                });
+                storedTasks.push(storedTask);
+                console.log(`✅ [TASK-PARSER] Stored task: ${storedTask.id} - ${storedTask.title}`);
+              } catch (taskError) {
+                console.error(`❌ [TASK-PARSER] Failed to store task:`, taskError);
+                // Continue with other tasks if one fails
+              }
+            }
+            
+            // Broadcast task_plan event via WebSocket to client
+            if (storedTasks.length > 0) {
+              broadcastTaskEvent(wss, userId, 'task_plan', {
+                commandId: savedCommand.id,
+                projectId: projectId || null,
+                tasks: storedTasks.map(t => ({
+                  id: t.id,
+                  title: t.title,
+                  status: t.status,
+                  priority: t.priority,
+                  subAgentId: t.subAgentId,
+                })),
+              });
+              console.log(`📡 [TASK-PARSER] Broadcasted task_plan with ${storedTasks.length} tasks`);
+            }
+          } else {
+            console.log('ℹ️ [TASK-PARSER] No task plan found in response (this is normal - not all commands need tasks)');
+          }
+        } catch (taskParsingError) {
+          console.error('❌ [TASK-PARSER] Error in task parsing/storage:', taskParsingError);
+          // Graceful degradation: continue with normal processing even if task parsing fails
         }
         
         // Strip markdown code fences if present
