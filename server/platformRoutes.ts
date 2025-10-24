@@ -439,4 +439,25 @@ router.get('/tasks', isAuthenticated, isAdmin, async (req: any, res) => {
   }
 });
 
+// Clear/reset all task lists for current user
+router.post('/tasks/clear', isAuthenticated, isAdmin, async (req: any, res) => {
+  try {
+    const userId = req.authenticatedUserId;
+    const { db } = await import('./db');
+    const { taskLists } = await import('@shared/schema');
+    const { eq } = await import('drizzle-orm');
+    
+    // Mark all task lists as completed
+    await db
+      .update(taskLists)
+      .set({ status: 'completed' })
+      .where(eq(taskLists.userId, userId));
+    
+    res.json({ success: true, message: 'All task lists cleared' });
+  } catch (error: any) {
+    console.error('[PLATFORM-TASKS] Error clearing tasks:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
