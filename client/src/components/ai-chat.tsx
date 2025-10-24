@@ -648,7 +648,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-full bg-[hsl(220,20%,12%)] relative">
+    <div className="flex flex-col h-full max-h-full overflow-hidden bg-[hsl(220,20%,12%)] relative">
       {/* Changes Panel - Fixed Overlay */}
       {lastChanges && (
         <div className="absolute top-4 right-4 z-50 w-full max-w-md" data-testid="changes-panel-overlay">
@@ -662,7 +662,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       {/* Messages - Clean Scrollable Area */}
       <div 
         ref={scrollRef} 
-        className="flex-1 overflow-y-auto px-6 py-8 scroll-smooth bg-[hsl(220,20%,12%)]"
+        className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4 sm:py-8 scroll-smooth bg-[hsl(220,20%,12%)]"
         style={{ scrollBehavior: 'smooth' }}
       >
         <div className="space-y-4 max-w-4xl mx-auto pb-4">
