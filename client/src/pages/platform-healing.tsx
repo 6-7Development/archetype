@@ -1,21 +1,16 @@
 import { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { apiRequest, queryClient } from '@/lib/queryClient';
-import { Button } from '@/components/ui/button';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, AlertTriangle, CheckCircle, XCircle, History, Database, FileCode, GitBranch } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { AdminGuard } from '@/components/admin-guard';
+import { MetaSySopChat } from '@/components/meta-sysop-chat';
+import { CheckCircle, AlertTriangle, GitBranch, Database, Wrench } from 'lucide-react';
 
 function PlatformHealingContent() {
-  const [issue, setIssue] = useState('');
   const [autoCommit, setAutoCommit] = useState(false);
   const [autoPush, setAutoPush] = useState(false);
-  const { toast } = useToast();
 
   const { data: status } = useQuery<any>({
     queryKey: ['/api/platform/status'],
@@ -25,185 +20,87 @@ function PlatformHealingContent() {
     queryKey: ['/api/platform/backups'],
   });
 
-  const { data: auditData } = useQuery<any>({
-    queryKey: ['/api/platform/audit'],
-  });
-
-  const healMutation = useMutation({
-    mutationFn: async (data: { issue: string; autoCommit: boolean; autoPush: boolean }) => {
-      // Start polling for updates
-      const pollInterval = setInterval(() => {
-        queryClient.invalidateQueries({ queryKey: ['/api/platform/audit'] });
-      }, 2000); // Poll every 2 seconds
-
-      try {
-        const result = await apiRequest('POST', '/api/platform/heal', data);
-        clearInterval(pollInterval);
-        return result;
-      } catch (error) {
-        clearInterval(pollInterval);
-        throw error;
-      }
-    },
-    onSuccess: (data) => {
-      toast({
-        title: 'Platform Healing Complete',
-        description: `Successfully fixed the issue. ${data.changes?.length || 0} files modified.`,
-      });
-      setIssue('');
-      queryClient.invalidateQueries({ queryKey: ['/api/platform/status'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/platform/audit'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/platform/backups'] });
-    },
-    onError: (error: any) => {
-      // Final refresh to show error in audit log
-      queryClient.invalidateQueries({ queryKey: ['/api/platform/audit'] });
-      
-      toast({
-        title: 'Healing Failed',
-        description: error.message || 'Failed to heal platform',
-        variant: 'destructive',
-      });
-    },
-  });
-
-  const rollbackMutation = useMutation({
-    mutationFn: async (backupId: string) => {
-      return apiRequest('POST', '/api/platform/rollback', { backupId });
-    },
-    onSuccess: () => {
-      toast({
-        title: 'Rollback Complete',
-        description: 'Platform restored to backup successfully',
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/platform/status'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/platform/audit'] });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Rollback Failed',
-        description: error.message || 'Failed to rollback',
-        variant: 'destructive',
-      });
-    },
-  });
-
-  const handleHeal = () => {
-    if (!issue.trim()) {
-      toast({
-        title: 'Issue Required',
-        description: 'Please describe the platform issue to fix',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    healMutation.mutate({ issue, autoCommit, autoPush });
-  };
-
-  const handleRollback = (backupId: string) => {
-    if (confirm('Are you sure you want to rollback to this backup? This will overwrite current changes.')) {
-      rollbackMutation.mutate(backupId);
-    }
-  };
-
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Meta-SySop Platform Healing</h1>
-          <p className="text-muted-foreground mt-1">
-            Let SySop self-diagnose and fix Archetype platform issues
-          </p>
-        </div>
-        <Badge variant={status?.safety?.safe ? 'default' : 'destructive'}>
-          {status?.safety?.safe ? 'Platform Healthy' : 'Issues Detected'}
-        </Badge>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileCode className="h-5 w-5" />
-              Submit Platform Issue
-            </CardTitle>
-            <CardDescription>
-              Describe a bug, UI issue, or improvement for SySop to implement
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Textarea
-              data-testid="input-platform-issue"
-              placeholder="Example: The login button on the landing page is not visible on dark backgrounds. Fix the styling to have white text and a visible border."
-              value={issue}
-              onChange={(e) => setIssue(e.target.value)}
-              className="min-h-32"
-            />
-            
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="auto-commit" className="text-sm">
-                  Auto-commit changes
-                </Label>
-                <Switch
-                  id="auto-commit"
-                  checked={autoCommit}
-                  onCheckedChange={setAutoCommit}
-                  data-testid="switch-auto-commit"
-                />
+    <div className="flex h-full">
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <div className="border-b p-4 bg-background">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Wrench className="h-5 w-5 text-primary" />
               </div>
-              
-              <div className="flex items-center justify-between">
-                <Label htmlFor="auto-push" className="text-sm">
-                  Auto-push to Render (triggers deployment)
-                </Label>
-                <Switch
-                  id="auto-push"
-                  checked={autoPush}
-                  onCheckedChange={setAutoPush}
-                  disabled={!autoCommit}
-                  data-testid="switch-auto-push"
-                />
+              <div>
+                <h1 className="text-2xl font-bold">Meta-SySop Platform Healing</h1>
+                <p className="text-sm text-muted-foreground">
+                  Chat with Meta-SySop to diagnose and fix platform issues
+                </p>
               </div>
             </div>
+            <Badge variant={status?.safety?.safe ? 'default' : 'destructive'}>
+              {status?.safety?.safe ? 'Healthy' : 'Issues Detected'}
+            </Badge>
+          </div>
 
-            <Button
-              data-testid="button-heal-platform"
-              onClick={handleHeal}
-              disabled={healMutation.isPending}
-              className="w-full"
-            >
-              {healMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  SySop is healing the platform...
-                </>
-              ) : (
-                'Heal Platform'
-              )}
-            </Button>
-          </CardContent>
-        </Card>
+          {/* Settings */}
+          <div className="flex items-center gap-6 mt-4 p-3 bg-muted/50 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Switch
+                id="auto-commit"
+                checked={autoCommit}
+                onCheckedChange={setAutoCommit}
+                data-testid="switch-auto-commit"
+              />
+              <Label htmlFor="auto-commit" className="text-sm cursor-pointer flex items-center gap-1">
+                <GitBranch className="h-3 w-3" />
+                Auto-commit changes
+              </Label>
+            </div>
 
+            <div className="flex items-center gap-2">
+              <Switch
+                id="auto-push"
+                checked={autoPush}
+                onCheckedChange={setAutoPush}
+                disabled={!autoCommit}
+                data-testid="switch-auto-push"
+              />
+              <Label htmlFor="auto-push" className="text-sm cursor-pointer flex items-center gap-1">
+                <CheckCircle className="h-3 w-3" />
+                Auto-push to production (triggers deployment)
+              </Label>
+            </div>
+          </div>
+        </div>
+
+        {/* Chat Interface */}
+        <div className="flex-1 overflow-hidden">
+          <MetaSySopChat 
+            autoCommit={autoCommit}
+            autoPush={autoPush}
+          />
+        </div>
+      </div>
+
+      {/* Sidebar with Platform Status */}
+      <div className="w-80 border-l p-4 bg-muted/20 overflow-y-auto space-y-4">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Database className="h-4 w-4" />
               Platform Status
             </CardTitle>
-            <CardDescription>Current platform health and safety checks</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Uncommitted Changes</span>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Uncommitted Changes</span>
               <Badge variant={status?.uncommittedChanges ? 'secondary' : 'outline'}>
                 {status?.uncommittedChanges ? 'Yes' : 'No'}
               </Badge>
             </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Safety Status</span>
+
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Safety Status</span>
               {status?.safety?.safe ? (
                 <Badge variant="default" className="gap-1">
                   <CheckCircle className="h-3 w-3" />
@@ -217,15 +114,15 @@ function PlatformHealingContent() {
               )}
             </div>
 
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Backups Available</span>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Backups Available</span>
               <Badge variant="outline">{backupsData?.backups?.length || 0}</Badge>
             </div>
 
             {status?.safety?.issues && status.safety.issues.length > 0 && (
               <div className="mt-4 p-3 bg-destructive/10 rounded-md">
-                <p className="text-sm font-medium text-destructive mb-2">Safety Issues:</p>
-                <ul className="list-disc list-inside text-sm text-destructive">
+                <p className="text-xs font-medium text-destructive mb-2">Safety Issues:</p>
+                <ul className="list-disc list-inside text-xs text-destructive space-y-1">
                   {status.safety.issues.map((issue: string, i: number) => (
                     <li key={i}>{issue}</li>
                   ))}
@@ -234,113 +131,36 @@ function PlatformHealingContent() {
             )}
           </CardContent>
         </Card>
+
+        {/* Recent Activity */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Recent Healing Sessions</CardTitle>
+            <CardDescription className="text-xs">
+              Previous platform modifications
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-muted-foreground text-center py-4">
+              All healing history is now in the chat above
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Tips */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Tips</CardTitle>
+          </CardHeader>
+          <CardContent className="text-xs space-y-2 text-muted-foreground">
+            <p>• Be specific about the issue you're experiencing</p>
+            <p>• Meta-SySop can read and modify platform files</p>
+            <p>• Enable auto-commit to save changes to Git</p>
+            <p>• Enable auto-push to deploy fixes immediately</p>
+            <p>• All changes are backed up automatically</p>
+          </CardContent>
+        </Card>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <GitBranch className="h-5 w-5" />
-            Backups & Rollback
-          </CardTitle>
-          <CardDescription>
-            Automatic backups created before each healing operation
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {backupsData?.backups && backupsData.backups.length > 0 ? (
-            <div className="space-y-2">
-              {backupsData.backups.slice(0, 10).map((backup: any) => (
-                <div
-                  key={backup.id}
-                  className="flex items-center justify-between p-3 rounded-lg border"
-                >
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">{backup.description}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Commit: {backup.commitHash.slice(0, 8)}
-                    </p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleRollback(backup.id)}
-                    disabled={rollbackMutation.isPending}
-                    data-testid={`button-rollback-${backup.id}`}
-                  >
-                    Rollback
-                  </Button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              No backups available yet
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <History className="h-5 w-5" />
-            Healing History
-          </CardTitle>
-          <CardDescription>Recent platform modifications and fixes</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {healMutation.isPending && (
-            <div className="mb-4 p-4 bg-primary/10 rounded-lg border border-primary/20">
-              <div className="flex items-center gap-3">
-                <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                <div>
-                  <p className="font-medium text-primary">Meta-SySop is working...</p>
-                  <p className="text-sm text-muted-foreground">
-                    Watch the healing history below for real-time progress updates
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {auditData?.logs && auditData.logs.length > 0 ? (
-            <div className="space-y-2">
-              {auditData.logs.slice().reverse().map((log: any) => (
-                <div
-                  key={log.id}
-                  className="flex items-start gap-3 p-3 rounded-lg border"
-                >
-                  {log.status === 'success' ? (
-                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
-                  ) : log.status === 'failure' ? (
-                    <XCircle className="h-4 w-4 text-destructive mt-0.5" />
-                  ) : (
-                    <Loader2 className="h-4 w-4 text-muted-foreground animate-spin mt-0.5" />
-                  )}
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium">{log.description}</p>
-                      <Badge variant="outline" className="text-xs">
-                        {log.action}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(log.createdAt).toLocaleString()}
-                    </p>
-                    {log.error && (
-                      <p className="text-xs text-destructive">{log.error}</p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              No healing history yet
-            </p>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }
