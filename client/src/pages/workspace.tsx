@@ -388,7 +388,7 @@ export default function Workspace() {
               <span className="text-xs font-semibold">AI Agent (SySop)</span>
             </div>
           </div>
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-hidden">
             <AIChat onProjectGenerated={(result) => {
               if (result?.files) {
                 queryClient.invalidateQueries({ queryKey: ["/api/files"] });
