@@ -180,6 +180,12 @@ export class PlatformHealingService {
   }
 
   async writePlatformFile(filePath: string, content: string): Promise<{ success: boolean; message: string; commitHash?: string; commitUrl?: string }> {
+    // DEBUG: Log content parameter
+    console.log(`[PLATFORM-WRITE] Called with path: ${filePath}`);
+    console.log(`[PLATFORM-WRITE] Content type: ${typeof content}`);
+    console.log(`[PLATFORM-WRITE] Content defined: ${content !== undefined}`);
+    console.log(`[PLATFORM-WRITE] Content length: ${content?.length || 0} bytes`);
+    
     // Validate file path
     if (path.isAbsolute(filePath)) {
       throw new Error('Absolute paths are not allowed');
@@ -241,6 +247,11 @@ export class PlatformHealingService {
         );
       }
 
+      // Validate content before committing
+      if (content === undefined || content === null) {
+        throw new Error(`Cannot commit file with undefined or null content: ${filePath}`);
+      }
+
       // Use GitHub service to commit the file
       try {
         const githubService = getGitHubService();
@@ -249,6 +260,7 @@ export class PlatformHealingService {
         console.log(`[PLATFORM-WRITE] 🔧 Committing to GitHub: ${filePath}`);
         console.log(`[PLATFORM-WRITE] Maintenance mode: ENABLED`);
         console.log(`[PLATFORM-WRITE] Reason: ${maintenanceMode.reason}`);
+        console.log(`[PLATFORM-WRITE] Content to commit: ${content.length} bytes`);
         
         const result = await githubService.commitFile(filePath, content, commitMessage);
         

@@ -219,9 +219,14 @@ Current user request: ${message}`;
               toolResult = await platformHealing.readPlatformFile(typedInput.path);
             } else if (name === 'writePlatformFile') {
               const typedInput = input as { path: string; content: string };
+              console.log(`[META-SYSOP] writePlatformFile called for: ${typedInput.path}`);
+              console.log(`[META-SYSOP] Content type: ${typeof typedInput.content}`);
+              console.log(`[META-SYSOP] Content defined: ${typedInput.content !== undefined}`);
+              console.log(`[META-SYSOP] Content length: ${typedInput.content?.length || 0} bytes`);
+              
               sendEvent('progress', { message: `Modifying ${typedInput.path}...` });
               await platformHealing.writePlatformFile(typedInput.path, typedInput.content);
-              fileChanges.push({ path: typedInput.path, operation: 'modify' });
+              fileChanges.push({ path: typedInput.path, operation: 'modify', content: typedInput.content });
               sendEvent('file_change', { file: { path: typedInput.path, operation: 'modify' } });
               toolResult = 'File written successfully';
             } else if (name === 'listPlatformFiles') {
