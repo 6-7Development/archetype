@@ -253,8 +253,8 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
         )}
       </div>
 
-      {/* Input area - Fixed at bottom */}
-      <div className="border-t p-3 sm:p-4 bg-background flex-shrink-0">
+      {/* Input area - Fixed at bottom, always visible */}
+      <div className="border-t p-3 sm:p-4 bg-background flex-shrink-0 min-h-0">
         <div className="flex gap-2 items-end">
           <Textarea
             ref={inputRef}
