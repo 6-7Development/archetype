@@ -73,6 +73,34 @@ function PlatformHealingContent() {
           </div>
         </div>
 
+        {/* Mobile Status Bar - Shows on mobile, hidden on desktop */}
+        <div className="lg:hidden border-b p-3 bg-muted/20 flex items-center justify-between gap-2 overflow-x-auto">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-muted-foreground whitespace-nowrap">Status:</span>
+            {status?.safety?.safe ? (
+              <Badge variant="default" className="gap-1 text-xs h-6">
+                <CheckCircle className="h-3 w-3" />
+                Safe
+              </Badge>
+            ) : (
+              <Badge variant="destructive" className="gap-1 text-xs h-6">
+                <AlertTriangle className="h-3 w-3" />
+                Issues
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-muted-foreground whitespace-nowrap">Changes:</span>
+            <Badge variant={status?.uncommittedChanges ? 'secondary' : 'outline'} className="text-xs h-6">
+              {status?.uncommittedChanges ? 'Yes' : 'No'}
+            </Badge>
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-muted-foreground whitespace-nowrap">Backups:</span>
+            <Badge variant="outline" className="text-xs h-6">{backupsData?.backups?.length || 0}</Badge>
+          </div>
+        </div>
+
         {/* Chat Interface */}
         <div className="flex-1 overflow-hidden">
           <MetaSySopChat 
