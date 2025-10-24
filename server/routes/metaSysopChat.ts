@@ -9,6 +9,7 @@ import { platformAudit } from '../platformAudit';
 import { consultArchitect } from '../tools/architect-consult';
 import { executeWebSearch } from '../tools/web-search';
 import { GitHubService } from '../githubService';
+import { createTaskList, updateTask, readTaskList } from '../tools/task-management';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -117,12 +118,29 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
 CRITICAL: You are modifying the PRODUCTION PLATFORM CODE, not user projects. Be extremely careful.
 
+🎯 **MANDATORY FIRST STEP - CREATE TASK LIST:**
+IMMEDIATELY create a task list using createTaskList() before doing anything else. Break down your work into clear tasks that users can see in real-time. This is NOT optional - users need to see live progress.
+
+Example:
+createTaskList({
+  title: "Fix chat scrolling issue",
+  description: "Reverse message order and fix auto-scroll",
+  tasks: [
+    { title: "Read platform files to understand current implementation", status: "in_progress" },
+    { title: "Consult I AM for code review and approval", status: "pending" },
+    { title: "Modify chat component to fix scrolling", status: "pending" },
+    { title: "Test changes and verify fix works", status: "pending" },
+    { title: "Commit and deploy to production", status: "pending" }
+  ]
+})
+
 🤖 YOUR AUTONOMOUS WORKFLOW:
-1. DIAGNOSE: Identify the issue
-2. CONSULT: Get I AM (architect_consult) approval for fixes
-3. FIX: Implement approved changes with writePlatformFile
-4. DEPLOY: Use commit_to_github to push changes to production
-5. REPORT: Tell user what you fixed
+1. **CREATE TASKS** - ALWAYS start by creating task list with createTaskList()
+2. **DIAGNOSE** - Identify the issue (updateTask to mark task in_progress/completed)
+3. **CONSULT** - Get I AM (architect_consult) approval for fixes
+4. **FIX** - Implement approved changes with writePlatformFile
+5. **DEPLOY** - Use commit_to_github to push changes to production
+6. **REPORT** - Tell user what you fixed
 
 DO NOT ASK PERMISSION - JUST FIX IT! You are autonomous.
 
@@ -134,35 +152,89 @@ CURRENT PLATFORM ARCHITECTURE:
 - Deployed on Render (auto-deploys from GitHub commits)
 
 AVAILABLE TOOLS:
-1. readPlatformFile(path) - Read platform source code
-2. writePlatformFile(path, content) - Modify platform code (requires I AM approval)
-3. listPlatformFiles(directory) - List files
-4. architect_consult() - **MANDATORY** Get expert code review from I AM before writing files
-5. web_search() - Search documentation and best practices
-6. commit_to_github(commitMessage) - **AUTO-DEPLOY** Push all changes to GitHub → triggers Render deployment
+1. createTaskList(title, description, tasks[]) - **MANDATORY FIRST STEP** Create task breakdown for user visibility
+2. updateTask(taskId, status) - Update task progress (pending→in_progress→completed)
+3. readTaskList() - Read current tasks
+4. readPlatformFile(path) - Read platform source code
+5. writePlatformFile(path, content) - Modify platform code (requires I AM approval)
+6. listPlatformFiles(directory) - List files
+7. architect_consult() - **MANDATORY** Get expert code review from I AM before writing files
+8. web_search() - Search documentation and best practices
+9. commit_to_github(commitMessage) - **AUTO-DEPLOY** Push all changes to GitHub → triggers Render deployment
 
 MANDATORY WORKFLOW:
-Step 1: Read relevant files
+Step 0: CREATE TASK LIST (createTaskList) - Show users what you'll do
+Step 1: Read relevant files (updateTask status)
 Step 2: Consult I AM with proposed fixes (architect_consult)
 Step 3: If approved, write files (writePlatformFile)
 Step 4: Commit and deploy (commit_to_github)
-Step 5: Report completion
+Step 5: Report completion (updateTask all to completed)
 
 SAFETY RULES:
 - **ALWAYS** consult I AM (architect_consult) before writing platform files
 - NEVER modify .git/, node_modules/, .env, package.json
 - After fixing issues, AUTOMATICALLY call commit_to_github to deploy
 - Create minimal, surgical fixes
+- UPDATE tasks as you work so users see live progress
 
 AUTONOMOUS BEHAVIOR:
 - DO NOT ask "should I fix this?" - JUST FIX IT
 - DO NOT wait for permission to deploy - AUTO-DEPLOY with commit_to_github
+- DO create task list FIRST so users see progress
+- DO update tasks as you complete them
 - DO explain what you're doing as you work
 - DO report completion when done
 
 Current user request: ${message}`;
 
     const tools = [
+      {
+        name: 'createTaskList',
+        description: '**MANDATORY FIRST STEP** - Create a task list to show users live progress. ALWAYS call this before starting work.',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            title: { type: 'string' as const, description: 'Brief title for this task list (e.g., "Fix chat scrolling")' },
+            description: { type: 'string' as const, description: 'Detailed description of what you will do' },
+            tasks: {
+              type: 'array' as const,
+              items: {
+                type: 'object' as const,
+                properties: {
+                  title: { type: 'string' as const, description: 'Task description' },
+                  description: { type: 'string' as const, description: 'Optional task details' },
+                  status: { type: 'string' as const, description: 'Status: "pending" or "in_progress"' },
+                },
+                required: ['title'],
+              },
+              description: 'Array of tasks to complete',
+            },
+          },
+          required: ['title', 'tasks'],
+        },
+      },
+      {
+        name: 'updateTask',
+        description: 'Update task status as you work to show live progress. Call this when starting/completing tasks.',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            taskId: { type: 'string' as const, description: 'Task ID to update' },
+            status: { type: 'string' as const, description: 'New status: "pending", "in_progress", "completed", or "cancelled"' },
+            result: { type: 'string' as const, description: 'Optional result description when completing' },
+          },
+          required: ['taskId', 'status'],
+        },
+      },
+      {
+        name: 'readTaskList',
+        description: 'Read your current task list to see task IDs and statuses',
+        input_schema: {
+          type: 'object' as const,
+          properties: {},
+          required: [],
+        },
+      },
       {
         name: 'readPlatformFile',
         description: 'Read a platform source file',
@@ -291,7 +363,62 @@ Current user request: ${message}`;
           try {
             let toolResult: any = null;
 
-            if (name === 'readPlatformFile') {
+            if (name === 'createTaskList') {
+              const typedInput = input as { title: string; description?: string; tasks: Array<any> };
+              sendEvent('progress', { message: `📋 Creating task list: ${typedInput.title}...` });
+              
+              const result = await createTaskList({
+                userId,
+                projectId: undefined, // Meta-SySop works on platform, not user projects
+                chatMessageId: userMsg.id,
+                title: typedInput.title,
+                description: typedInput.description,
+                tasks: typedInput.tasks,
+              });
+              
+              if (result.success) {
+                toolResult = `✅ Task list created successfully (ID: ${result.taskListId}).\n\nYou can now update individual tasks as you progress. Use readTaskList() to see task IDs, then updateTask(taskId, status) to mark progress.`;
+                sendEvent('task_list_created', { taskListId: result.taskListId });
+              } else {
+                toolResult = `❌ Failed to create task list: ${result.error}`;
+                sendEvent('error', { message: `Task list creation failed: ${result.error}` });
+              }
+            } else if (name === 'updateTask') {
+              const typedInput = input as { taskId: string; status: string; result?: string };
+              sendEvent('progress', { message: `Updating task to ${typedInput.status}...` });
+              
+              const result = await updateTask({
+                userId,
+                taskId: typedInput.taskId,
+                status: typedInput.status,
+                result: typedInput.result,
+                startedAt: typedInput.status === 'in_progress' ? new Date() : undefined,
+                completedAt: typedInput.status === 'completed' ? new Date() : undefined,
+              });
+              
+              if (result.success) {
+                toolResult = `✅ Task updated to ${typedInput.status}`;
+                sendEvent('task_updated', { taskId: typedInput.taskId, status: typedInput.status });
+              } else {
+                toolResult = `❌ Failed to update task: ${result.error}`;
+              }
+            } else if (name === 'readTaskList') {
+              const result = await readTaskList({ userId });
+              
+              if (result.success && result.taskLists) {
+                const activeList = result.taskLists.find((list: any) => list.status === 'active');
+                if (activeList) {
+                  const taskSummary = activeList.tasks.map((t: any) => 
+                    `[${t.id}] ${t.title} - ${t.status}`
+                  ).join('\n');
+                  toolResult = `Current Task List (${activeList.id}):\n${taskSummary}`;
+                } else {
+                  toolResult = 'No active task list. Create one with createTaskList().';
+                }
+              } else {
+                toolResult = `Error reading task list: ${result.error}`;
+              }
+            } else if (name === 'readPlatformFile') {
               const typedInput = input as { path: string };
               sendEvent('progress', { message: `Reading ${typedInput.path}...` });
               toolResult = await platformHealing.readPlatformFile(typedInput.path);
