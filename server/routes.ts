@@ -7,6 +7,7 @@ import { FEATURES } from "./routes/common";
 import toolsRouter from './routes/tools';
 import uploadRouter from './routes/upload';
 import platformRouter from './platformRoutes';
+import metaSySopChatRouter from './routes/metaSysopChat';
 import { getDeploymentInfo } from './deploymentInfo';
 import { storage } from "./storage";
 
@@ -182,6 +183,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Mount platform router (platform self-healing)
   app.use('/api/platform', platformRouter);
+  
+  // Mount Meta-SySop chat router (chat-based platform healing)
+  app.use('/api/platform/chat', metaSySopChatRouter);
 
   // ==================== SUPPORT TICKET ROUTES ====================
   
