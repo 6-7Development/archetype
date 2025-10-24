@@ -6,6 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { AdminGuard } from '@/components/admin-guard';
 import { MetaSySopChat } from '@/components/meta-sysop-chat';
+import { AgentProgress, ProgressStep } from '@/components/agent-progress';
 import { CheckCircle, AlertTriangle, GitBranch, Database, Wrench } from 'lucide-react';
 
 function PlatformHealingContent() {
@@ -19,6 +20,15 @@ function PlatformHealingContent() {
   const { data: backupsData } = useQuery<any>({
     queryKey: ['/api/platform/backups'],
   });
+
+  // Fetch live task progress from Meta-SySop
+  const { data: tasksData } = useQuery<{ tasks: ProgressStep[] }>({
+    queryKey: ['/api/platform/tasks'],
+    refetchInterval: 1000, // Poll every second for real-time updates
+  });
+
+  const tasks = tasksData?.tasks || [];
+  const isWorking = tasks.some(t => t.type !== 'success' && t.type !== 'error');
 
   return (
     <div className="flex flex-col lg:flex-row h-full">
@@ -94,6 +104,17 @@ function PlatformHealingContent() {
             <Badge variant="outline" className="text-[10px] h-5 px-1.5">{backupsData?.backups?.length || 0}</Badge>
           </div>
         </div>
+
+        {/* Live Task Progress - Shows real-time Meta-SySop work */}
+        {tasks.length > 0 && (
+          <div className="border-b p-2 sm:p-4 bg-muted/10">
+            <AgentProgress 
+              steps={tasks}
+              isWorking={isWorking}
+              data-testid="meta-sysop-task-progress"
+            />
+          </div>
+        )}
 
         {/* Chat Interface */}
         <div className="flex-1 min-h-0 overflow-hidden">

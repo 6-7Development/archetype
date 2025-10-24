@@ -44,10 +44,10 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
     }
   }, [chatHistory]);
 
-  // Auto-scroll to top to show newest messages first
+  // Auto-scroll to bottom to show newest messages
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = 0;
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, streamingContent]);
 
@@ -232,9 +232,9 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
           </div>
         ))}
 
-        {/* Streaming indicator - Show at top (newest first) */}
+        {/* Streaming indicator */}
         {isStreaming && (
-          <div className="flex gap-3 justify-start order-first">
+          <div className="flex gap-3 justify-start">
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
               <Wrench className="h-4 w-4 text-primary" />
             </div>
