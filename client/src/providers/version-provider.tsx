@@ -18,7 +18,11 @@ interface VersionProviderProps {
 }
 
 export function VersionProvider({ children, mobileBreakpoint = 768 }: VersionProviderProps) {
-  const [forcedVersion, setForcedVersion] = useState<Version | null>(null);
+  const [forcedVersion, setForcedVersion] = useState<Version | null>(() => {
+    // Hydrate forced version from localStorage on mount
+    const stored = localStorage.getItem('archetype-forced-version');
+    return (stored === 'desktop' || stored === 'mobile') ? stored : null;
+  });
   const [detectedVersion, setDetectedVersion] = useState<Version>('desktop');
 
   useEffect(() => {
