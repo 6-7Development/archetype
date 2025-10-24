@@ -181,7 +181,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api', uploadRouter);
   
   // Mount platform router (platform self-healing)
-  app.use('/api', platformRouter);
+  app.use('/api/platform', platformRouter);
 
   // ==================== SUPPORT TICKET ROUTES ====================
   
