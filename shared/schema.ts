@@ -138,6 +138,35 @@ export const insertCommandSchema = createInsertSchema(commands).omit({
 export type InsertCommand = z.infer<typeof insertCommandSchema>;
 export type Command = typeof commands.$inferSelect;
 
+// SySop Tasks - Replit Agent-style task tracking for AI generations
+export const sysopTasks = pgTable("sysop_tasks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  projectId: varchar("project_id"),
+  commandId: varchar("command_id"), // Links to the command that created this task
+  title: text("title").notNull(), // Task description
+  status: text("status").notNull().default("pending"), // 'pending' | 'in_progress' | 'completed' | 'failed'
+  priority: integer("priority").notNull().default(1), // 1-12, lower = higher priority
+  subAgentId: varchar("sub_agent_id"), // Nullable - tracks if delegated to sub-agent
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  completedAt: timestamp("completed_at"),
+}, (table) => [
+  index("idx_sysop_tasks_user_id").on(table.userId),
+  index("idx_sysop_tasks_project_id").on(table.projectId),
+  index("idx_sysop_tasks_command_id").on(table.commandId),
+]);
+
+export const insertSysopTaskSchema = createInsertSchema(sysopTasks).omit({
+  id: true,
+  userId: true, // Server-injected from auth session
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertSysopTask = z.infer<typeof insertSysopTaskSchema>;
+export type SysopTask = typeof sysopTasks.$inferSelect;
+
 export const chatMessages = pgTable("chat_messages", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),

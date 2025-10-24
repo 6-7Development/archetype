@@ -1,0 +1,44 @@
+==> Your service is live 🎉
+==> 
+==> ///////////////////////////////////////////////////////////
+==> 
+==> Available at your primary URL https://archetype-x8b5.onrender.com
+==> 
+==> ///////////////////////////////////////////////////////////
+1:33:02 AM [express] GET /api/deployment-info 200 in 19ms :: {"version":"1.0.0","commitHash":"3c498d…
+[AUTH] Login attempt for email: root@getdc360.com
+[AUTH] Found users: 1
+[AUTH] User found: root@getdc360.com has password: true
+[AUTH] Verifying password...
+[AUTH] Password valid: true
+[AUTH] Authentication successful for: root@getdc360.com
+1:33:19 AM [express] POST /api/auth/login 200 in 389ms :: {"success":true,"user":{"id":"729e1c3d-018…
+1:33:20 AM [express] GET /api/auth/me 304 in 258ms :: {"user":{"id":"729e1c3d-0186-4804-935c-8dec400…
+1:33:20 AM [express] GET /api/projects 304 in 292ms :: []
+📝 [CHAT-HISTORY] Fetching history for project general, user 729e1c3d-0186-4804-935c-8dec400276ec
+📝 [CHAT-HISTORY] Found 264 messages for project general
+✅ WebSocket client connected
+1:33:21 AM [express] GET /api/chat/history/general 200 in 173ms :: [{"id":"680ace3b-5c28-4561-9c2d-f…
+[GET /api/commands] Fetching for userId: 729e1c3d-0186-4804-935c-8dec400276ec, projectId: null
+[GET /api/commands] Found 5 commands
+1:33:21 AM [express] GET /api/commands 304 in 306ms :: [{"id":"a77b6dae-7649-453f-b04f-37cbeebd0ede"…
+❌ WebSocket client disconnected
+1:33:23 AM [express] GET /api/platform/chat/history 304 in 131ms :: {"messages":[{"id":"04567dc5-5e7…
+1:33:23 AM [express] GET /api/platform/backups 304 in 126ms :: {"backups":[]}
+1:33:24 AM [express] GET /api/platform/status 304 in 585ms :: {"uncommittedChanges":false,"changeCou…
+[PLATFORM-BACKUP] ⚠️ Git unavailable, skipping backup: Command failed: git -c user.name=Meta-SySop -c user.email=meta-sysop@archetype.platform commit -m [Meta-SySop Backup] Meta-SySop session: ok you had a good update but i feel your laggy aga
+[AUDIT] heal by user 729e1c3d-0186-4804-935c-8dec400276ec: Meta-SySop chat: ok you had a good update but i feel your laggy again can you diagnoze and see wahts up so we can fix - success
+1:34:14 AM [express] POST /api/platform/chat/stream 200 in 16850ms
+1:34:14 AM [express] GET /api/platform/chat/history 200 in 158ms :: {"messages":[{"id":"04567dc5-5e7…
+[PLATFORM-BACKUP] ⚠️ Git unavailable, skipping backup: Command failed: git -c user.name=Meta-SySop -c user.email=meta-sysop@archetype.platform commit -m [Meta-SySop Backup] Meta-SySop session: update and changes?
+[AUDIT] heal by user 729e1c3d-0186-4804-935c-8dec400276ec: Meta-SySop chat: update and changes? - success
+1:37:30 AM [express] POST /api/platform/chat/stream 200 in 13290ms
+1:37:31 AM [express] GET /api/platform/chat/history 200 in 149ms :: {"messages":[{"id":"04567dc5-5e7…
+==> Detected service running on port 10000
+==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+[CACHE] Stats: {
+  user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+  project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+  subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+  response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+}

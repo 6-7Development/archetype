@@ -43,11 +43,14 @@ import {
   type SatisfactionSurvey,
   type InsertSatisfactionSurvey,
   type MaintenanceMode,
+  type SysopTask,
+  type InsertSysopTask,
   users,
   files,
   chatMessages,
   projects,
   commands,
+  sysopTasks,
   subscriptions,
   usageLogs,
   monthlyUsage,
@@ -113,6 +116,12 @@ export interface IStorage {
   getCommands(userId: string, projectId: string | null): Promise<Command[]>;
   createCommand(command: InsertCommandWithUser): Promise<Command>;
   updateCommand(id: string, userId: string, status: string, response: string | null, projectId?: string | null): Promise<Command>;
+  
+  // SySop Task operations
+  getTasks(commandId: string): Promise<SysopTask[]>;
+  getTasksByProject(projectId: string, userId: string): Promise<SysopTask[]>;
+  createTask(task: InsertSysopTask & { userId: string }): Promise<SysopTask>;
+  updateTaskStatus(taskId: string, status: string): Promise<SysopTask>;
   
   // Subscription operations
   getSubscription(userId: string): Promise<Subscription | undefined>;
@@ -473,6 +482,52 @@ export class DatabaseStorage implements IStorage {
       throw new Error('Command not found or access denied');
     }
     return command;
+  }
+
+  async getTasks(commandId: string): Promise<SysopTask[]> {
+    return await db
+      .select()
+      .from(sysopTasks)
+      .where(eq(sysopTasks.commandId, commandId))
+      .orderBy(sysopTasks.priority);
+  }
+
+  async getTasksByProject(projectId: string, userId: string): Promise<SysopTask[]> {
+    return await db
+      .select()
+      .from(sysopTasks)
+      .where(and(eq(sysopTasks.projectId, projectId), eq(sysopTasks.userId, userId)))
+      .orderBy(desc(sysopTasks.createdAt));
+  }
+
+  async createTask(task: InsertSysopTask & { userId: string }): Promise<SysopTask> {
+    const [created] = await db
+      .insert(sysopTasks)
+      .values(task)
+      .returning();
+    return created;
+  }
+
+  async updateTaskStatus(taskId: string, status: string): Promise<SysopTask> {
+    const updateData: any = {
+      status,
+      updatedAt: new Date(),
+    };
+
+    if (status === 'completed') {
+      updateData.completedAt = new Date();
+    }
+
+    const [task] = await db
+      .update(sysopTasks)
+      .set(updateData)
+      .where(eq(sysopTasks.id, taskId))
+      .returning();
+    
+    if (!task) {
+      throw new Error('Task not found');
+    }
+    return task;
   }
 
   async getSubscription(userId: string): Promise<Subscription | undefined> {

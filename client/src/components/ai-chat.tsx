@@ -20,6 +20,7 @@ import { nanoid } from "nanoid";
 import CostPreview from "@/components/cost-preview";
 import { ChangesPanel } from "@/components/changes-panel";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
+import { TaskBoard } from "@/components/task-board";
 
 interface CheckpointData {
   complexity: string;
@@ -769,6 +770,24 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
               )}
             </div>
           ))}
+
+          {/* Task Board - Replit Agent Style */}
+          {(streamState.tasks.length > 0 || isGenerating) && (
+            <div className="flex gap-3 items-start">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-[hsl(220,70%,60%)] flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-[hsl(220,8%,98%)]" />
+                </div>
+              </div>
+              <div className="flex-1 max-w-[85%]">
+                <TaskBoard 
+                  tasks={streamState.tasks}
+                  isGenerating={isGenerating}
+                  subAgentActive={streamState.subAgentActive}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Loading indicator - Modern style with real-time progress */}
           {chatMutation.isPending && (
