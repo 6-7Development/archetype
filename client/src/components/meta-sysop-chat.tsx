@@ -161,11 +161,11 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full max-h-full overflow-hidden">
       {/* Chat Messages */}
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto space-y-3 sm:space-y-4 p-2 sm:p-4"
+        className="flex-1 min-h-0 overflow-y-auto space-y-3 sm:space-y-4 p-2 sm:p-4"
       >
         {/* Welcome message */}
         {messages.length === 0 && (
