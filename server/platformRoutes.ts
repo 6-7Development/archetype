@@ -383,4 +383,60 @@ router.get('/status', isAuthenticated, isAdmin, async (req: any, res) => {
   }
 });
 
+router.get('/tasks', isAuthenticated, isAdmin, async (req: any, res) => {
+  try {
+    const userId = req.authenticatedUserId;
+    const { readTaskList } = await import('./tools/task-management');
+    
+    // Get actual task lists from task management system
+    const result = await readTaskList({ userId });
+    
+    if (!result.success || !result.taskLists) {
+      return res.json({ tasks: [] });
+    }
+    
+    // Find the most recent active task list
+    const activeList = result.taskLists
+      .filter((list: any) => list.status === 'active')
+      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+    
+    if (!activeList || !activeList.tasks) {
+      return res.json({ tasks: [] });
+    }
+    
+    // Convert tasks to AgentProgress format
+    const tasks = activeList.tasks.map((task: any) => {
+      let type: 'thinking' | 'action' | 'success' | 'error' | 'warning' = 'action';
+      let progress = 0;
+      
+      if (task.status === 'completed') {
+        type = 'success';
+        progress = 100;
+      } else if (task.status === 'cancelled') {
+        type = 'error';
+        progress = 0;
+      } else if (task.status === 'in_progress') {
+        type = 'action';
+        progress = 50;
+      } else if (task.status === 'pending') {
+        type = 'thinking';
+        progress = 0;
+      }
+      
+      return {
+        id: task.id.toString(),
+        type,
+        message: task.title,
+        details: task.description || task.result || undefined,
+        progress,
+      };
+    });
+    
+    res.json({ tasks });
+  } catch (error: any) {
+    console.error('[PLATFORM-TASKS] Error fetching tasks:', error);
+    res.json({ tasks: [] }); // Return empty array on error, don't fail
+  }
+});
+
 export default router;
