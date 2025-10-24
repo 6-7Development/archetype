@@ -71,8 +71,15 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     sendEvent('user_message', { messageId: userMsg.id });
 
-    // Create backup before any changes
-    const backup = await platformHealing.createBackup(`Meta-SySop session: ${message.slice(0, 50)}`);
+    // Create backup before any changes (non-blocking - continue even if it fails)
+    let backup: any = null;
+    try {
+      backup = await platformHealing.createBackup(`Meta-SySop session: ${message.slice(0, 50)}`);
+      sendEvent('progress', { message: 'Backup created successfully' });
+    } catch (backupError: any) {
+      console.warn('[META-SYSOP-CHAT] Backup creation failed (non-critical):', backupError.message);
+      sendEvent('progress', { message: 'Proceeding without backup (production mode)' });
+    }
 
     // Get conversation history for context
     const history = await db
@@ -255,10 +262,16 @@ Current user request: ${message}`;
     const safety = await platformHealing.validateSafety();
     
     if (!safety.safe) {
-      await platformHealing.rollback(backup.id);
-      sendEvent('error', { 
-        message: `Safety check failed: ${safety.issues.join(', ')}. Changes rolled back.` 
-      });
+      if (backup?.id) {
+        await platformHealing.rollback(backup.id);
+        sendEvent('error', { 
+          message: `Safety check failed: ${safety.issues.join(', ')}. Changes rolled back.` 
+        });
+      } else {
+        sendEvent('error', { 
+          message: `Safety check failed: ${safety.issues.join(', ')}. No backup available to rollback.` 
+        });
+      }
       res.end();
       return;
     }
@@ -295,7 +308,7 @@ Current user request: ${message}`;
       action: 'heal',
       description: `Meta-SySop chat: ${message.slice(0, 100)}`,
       changes: fileChanges,
-      backupId: backup.id,
+      backupId: backup?.id || null,
       commitHash,
       status: 'success',
     });
