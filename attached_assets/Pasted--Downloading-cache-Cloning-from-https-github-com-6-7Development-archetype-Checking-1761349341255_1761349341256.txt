@@ -1,0 +1,38 @@
+==> Downloading cache...
+==> Cloning from https://github.com/6-7Development/archetype
+==> Checking out commit afc8dd71ff800a0152e70cc64e172fd7cdcc1c26 in branch main
+==> Transferred 254MB in 8s. Extraction took 4s.
+==> Using Node.js version 22.16.0 (default)
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+==> Running build command 'npm install --production=false && npm run build'...
+up to date, audited 683 packages in 2s
+173 packages are looking for funding
+  run `npm fund` for details
+10 vulnerabilities (3 low, 7 moderate)
+To address issues that do not require attention, run:
+  npm audit fix
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+Run `npm audit` for details.
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+vite v5.4.20 building for production...
+transforming...
+Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+✓ 3846 modules transformed.
+rendering chunks...
+computing gzip size...
+../dist/public/index.html                     1.09 kB │ gzip:   0.56 kB
+../dist/public/assets/index-B7m2DvN7.css    126.81 kB │ gzip:  19.90 kB
+../dist/public/assets/index-D8ta0dF8.js   1,746.94 kB │ gzip: 500.56 kB
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 9.63s
+  dist/index.js  351.7kb
+⚡ Done in 13ms
+==> Uploading build...
