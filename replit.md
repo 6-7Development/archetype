@@ -1,7 +1,7 @@
 # Archetype - AI-Powered Website Builder Platform
 
 ## Overview
-Archetype is an AI-powered platform for rapid web development, featuring an AI coding agent (SySop) for autonomous code generation and an IDE Workspace. It offers a console-first interface, real-time preview, and a tab-based workspace. The platform includes comprehensive monetization infrastructure with subscription tiers, usage-based billing, a template marketplace, and professional development services. A subsidiary of Drill Consulting 360 LLC, Archetype targets Fortune 500 production readiness and fully portable deployment to any cloud platform. It also features Meta-SySop for autonomous platform self-healing, bug fixes, and UI/UX improvements to its own source code on Render production, with built-in rollback and audit logging.
+Archetype is an AI-powered platform for rapid web development, featuring an AI coding agent (SySop) for autonomous code generation and dual-version IDE Workspaces. The platform includes **Archetype** (desktop-optimized) and **Archetype5** (mobile-optimized) versions that share all backend resources while providing tailored UX for each platform. Both versions offer a console-first interface, real-time preview, and comprehensive workspace features. The platform includes monetization infrastructure with subscription tiers, usage-based billing, a template marketplace, and professional development services. A subsidiary of Drill Consulting 360 LLC, Archetype targets Fortune 500 production readiness and fully portable deployment to any cloud platform. It also features Meta-SySop for autonomous platform self-healing, bug fixes, and UI/UX improvements to its own source code on Render production, with built-in rollback and audit logging.
 
 ## User Preferences
 ### API Configuration
@@ -22,6 +22,41 @@ Archetype is an AI-powered platform for rapid web development, featuring an AI c
 
 ## System Architecture
 The platform is built with a React frontend, an Express.js backend, and PostgreSQL for data persistence.
+
+### Dual-Version Architecture (Archetype + Archetype5)
+The platform implements a unified codebase with two distinct user experiences:
+
+**Archetype (Desktop Version)**
+- 4-panel layout with file tree, editor, chat, and preview
+- Optimized for large screens (≥768px width)
+- Traditional desktop IDE interactions
+- Full keyboard shortcuts and multi-panel workflow
+
+**Archetype5 (Mobile Version)**
+- Bottom tab navigation (Chat, Files, Editor, Preview)
+- Full-screen tab views for maximum screen real estate
+- Touch-optimized controls with larger touch targets
+- Optimized for mobile devices (<768px width)
+
+**Shared Resources**
+- Single codebase in React with runtime version detection
+- **VersionProvider** context detects viewport size + user agent + touch capabilities
+- All backend APIs, WebSocket connections, authentication, and database access shared
+- QueryClient, ThemeProvider, and WebSocket streams work identically for both versions
+- Task management (TaskBoard), AI chat, and file operations function the same way
+
+**Version Detection Logic**
+- Viewport width < 768px = Mobile
+- User agent contains mobile keywords + touch device = Mobile
+- Otherwise = Desktop
+- Users can manually override version (stored in localStorage)
+- Responsive updates on window resize
+
+**Implementation**
+- Entry point: `client/src/providers/version-provider.tsx`
+- Workspace routing: `client/src/pages/workspace.tsx` (conditional rendering)
+- Mobile workspace: `client/src/components/mobile-workspace.tsx`
+- Desktop workspace: Standard 4-panel layout in workspace.tsx
 
 ### UI/UX Decisions
 The user interface features a tab-based workspace (Overview, Build, Files, Preview, Activity, Versions) providing an IDE-like experience. Interaction is primarily through a command console, complemented by a real-time live preview. The design adopts a professional, corporate aesthetic with a navy/slate color palette, card-based layouts, and smooth transitions, ensuring responsiveness and ADA/WCAG accessibility with `prefers-reduced-motion` support. The chat interface is redesigned with a clean, minimal aesthetic, including enhanced progress displays with individual animated progress bars and completion summaries. Mobile responsiveness for the file explorer is implemented with a Sheet overlay with proper scroll constraints (`min-h-0` on ScrollArea) for smaller viewports. **Mobile Chat Layout (Oct 2025)**: Fixed critical mobile issue where chat input boxes were pushed off-screen by implementing proper flex constraints throughout the entire component tree. Solution: `min-h-0` on all flex children to allow shrinking, `max-h-full overflow-hidden` on parent containers, ensuring chat inputs remain anchored at the bottom on all screen sizes. Applies to both Meta-SySop (Platform Healing) and Builder (SySop) chat interfaces. **Chat Message Order & Scroll Behavior (Oct 2025)**: Messages display in chronological order (oldest→newest) matching Replit Agent UX, with auto-scroll to bottom (`scrollTop = scrollHeight`). Streaming indicators (TaskBoard, Loading, Progress) positioned at bottom of message area (after messages loop) to show in-progress responses. Chat input areas enlarged: min-height increased to 60px, rows to 3, send buttons to 12x12px for better visibility and accessibility on mobile and desktop. Collapsible preview panel with toggle buttons provides optimal chat workspace. Mobile file explorer menu scrolls properly with flex constraints.
