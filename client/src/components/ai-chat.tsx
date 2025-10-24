@@ -917,8 +917,8 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
         </div>
       </div>
 
-      {/* Input - Sticky Bottom Toolbar */}
-      <div className="sticky bottom-0 left-0 right-0 border-t border-[hsl(220,15%,28%)] bg-[hsl(220,20%,12%)] z-10">
+      {/* Input - Fixed Bottom Toolbar */}
+      <div className="flex-shrink-0 border-t border-[hsl(220,15%,28%)] bg-[hsl(220,20%,12%)] z-10">
         <div className="max-w-4xl mx-auto p-4">
           {/* File Status Display */}
           {streamState.currentFile && (
