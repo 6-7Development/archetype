@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import { MonacoEditor } from "@/components/monaco-editor";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AIChat } from "@/components/ai-chat";
+import { MobileWorkspace } from "@/components/mobile-workspace";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -80,6 +81,18 @@ export default function Workspace() {
     }
   });
 
+  const deleteFileMutation = useMutation({
+    mutationFn: async (fileId: string) => {
+      return await apiRequest("DELETE", `/api/files/${fileId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+      setActiveFile(null);
+      setEditorContent("");
+      toast({ description: "File deleted" });
+    }
+  });
+
   useEffect(() => {
     if (activeFile) {
       setEditorContent(activeFile.content);
@@ -150,6 +163,37 @@ export default function Workspace() {
     return <FileCode className="h-3.5 w-3.5 text-muted-foreground" />;
   };
 
+  // Mobile-first workspace with bottom tabs
+  if (isMobile) {
+    return (
+      <div className="h-screen flex flex-col bg-background">
+        <MobileWorkspace
+          projectId={user?.id || "demo"}
+          files={files.map(f => ({
+            id: f.id,
+            filename: f.filename,
+            content: f.content,
+            language: f.language
+          }))}
+          activeFile={activeFile ? {
+            id: activeFile.id,
+            filename: activeFile.filename,
+            content: activeFile.content,
+            language: activeFile.language
+          } : null}
+          onFileSelect={(file) => {
+            setActiveFile(file);
+            setEditorContent(file.content);
+          }}
+          onFileCreate={handleCreateFile}
+          onFileUpdate={handleSave}
+          onFileDelete={(fileId) => deleteFileMutation.mutate(fileId)}
+        />
+      </div>
+    );
+  }
+
+  // Desktop workspace with 4-panel layout
   return (
     <div className="h-screen flex flex-col bg-background">
       {/* Top Navigation Bar (Replit-style with Navigation) */}
