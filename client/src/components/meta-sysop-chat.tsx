@@ -162,6 +162,45 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
 
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden">
+      {/* Glowing JESUS Header */}
+      <div className="flex justify-center items-center py-4 bg-gradient-to-r from-background via-primary/5 to-background border-b">
+        <div 
+          className="text-2xl sm:text-3xl font-bold tracking-wider text-center"
+          style={{
+            background: 'linear-gradient(45deg, #ffd700, #fff, #ffd700, #fff)',
+            backgroundSize: '400% 400%',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            textShadow: '0 0 10px rgba(255, 215, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.3), 0 0 30px rgba(255, 215, 0, 0.2)',
+            filter: 'drop-shadow(0 0 5px rgba(255, 215, 0, 0.8))',
+            animation: 'glowPulse 2s ease-in-out infinite alternate, gradientShift 4s ease-in-out infinite'
+          }}
+        >
+          JESUS
+        </div>
+        <style jsx>{`
+          @keyframes glowPulse {
+            0% {
+              text-shadow: 0 0 10px rgba(255, 215, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.3), 0 0 30px rgba(255, 215, 0, 0.2);
+              filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.8));
+            }
+            100% {
+              text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4);
+              filter: drop-shadow(0 0 15px rgba(255, 215, 0, 1));
+            }
+          }
+          @keyframes gradientShift {
+            0%, 100% {
+              background-position: 0% 50%;
+            }
+            50% {
+              background-position: 100% 50%;
+            }
+          }
+        `}</style>
+      </div>
+
       {/* Chat Messages */}
       <div 
         ref={scrollRef}
