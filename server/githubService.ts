@@ -97,11 +97,12 @@ export class GitHubService {
           changes.map(async (change, index) => {
             console.log(`[GITHUB-SERVICE] Processing file ${index + 1}/${changes.length}: ${change.path}`);
             console.log(`[GITHUB-SERVICE] Content type: ${typeof change.content}`);
-            console.log(`[GITHUB-SERVICE] Content defined: ${change.content !== undefined}`);
+            console.log(`[GITHUB-SERVICE] Content defined: ${change.content !== undefined && change.content !== null}`);
             console.log(`[GITHUB-SERVICE] Content length: ${change.content?.length || 0} bytes`);
             
-            if (!change.content) {
-              throw new Error(`File ${change.path} has no content (${typeof change.content})`);
+            // Only reject undefined/null, allow empty strings
+            if (change.content === undefined || change.content === null) {
+              throw new Error(`File ${change.path} has undefined/null content (${typeof change.content})`);
             }
             
             const { data: blob } = await this.octokit.git.createBlob({
