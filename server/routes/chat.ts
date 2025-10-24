@@ -343,10 +343,14 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
         // This implements Replit Agent-style task tracking
         try {
           console.log('🔍 [TASK-PARSER] Attempting to parse task plan from Claude response...');
+          console.log('📄 [TASK-PARSER] Response preview (first 800 chars):', responseText.substring(0, 800));
+          console.log('📄 [TASK-PARSER] Searching for task_plan or tasks array...');
+          
           const taskPlan = parseTaskPlan(responseText);
           
           if (taskPlan && taskPlan.tasks && taskPlan.tasks.length > 0) {
-            console.log(`📋 [TASK-PARSER] Found ${taskPlan.tasks.length} tasks in response`);
+            console.log(`✅ [TASK-PARSER] SUCCESS! Found ${taskPlan.tasks.length} tasks in response`);
+            console.log('📋 [TASK-PARSER] Task details:', JSON.stringify(taskPlan.tasks, null, 2));
             
             // Store each task in database with commandId linkage
             const storedTasks = [];
