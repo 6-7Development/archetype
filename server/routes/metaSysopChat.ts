@@ -213,13 +213,12 @@ updateTask({ taskId: "task-4", status: "completed" })
 🔧 YOUR TOOLS:
 ═══════════════════════════════════════════════════════════════════
 
-createTaskList() - Create 3-4 tasks, start first one
+readTaskList() - Get task IDs (CALL THIS FIRST!)
+updateTask() - Mark tasks in_progress/completed as you work
 readPlatformFile() - Read files you'll modify (max 3)
 architect_consult() - Get approval ONCE before writing
 writePlatformFile() - Modify approved files (REQUIRES approval)
-updateTask() - Mark tasks completed as you work
 commit_to_github() - Deploy changes to production
-readTaskList() - See task IDs
 listPlatformFiles() - Find files if needed
 web_search() - Look up docs (RARELY needed)
 
@@ -233,28 +232,12 @@ EXECUTE NOW - Create tasks, read files, get approval, write files, deploy. 3 tur
 
     const tools = [
       {
-        name: 'createTaskList',
-        description: '**MANDATORY FIRST STEP** - Create a task list to show users live progress. ALWAYS call this before starting work.',
+        name: 'readTaskList',
+        description: '**FIRST STEP** - Read your pre-created task list to get task IDs. Tasks are already created and visible to users!',
         input_schema: {
           type: 'object' as const,
-          properties: {
-            title: { type: 'string' as const, description: 'Brief title for this task list (e.g., "Fix chat scrolling")' },
-            description: { type: 'string' as const, description: 'Detailed description of what you will do' },
-            tasks: {
-              type: 'array' as const,
-              items: {
-                type: 'object' as const,
-                properties: {
-                  title: { type: 'string' as const, description: 'Task description' },
-                  description: { type: 'string' as const, description: 'Optional task details' },
-                  status: { type: 'string' as const, description: 'Status: "pending" or "in_progress"' },
-                },
-                required: ['title'],
-              },
-              description: 'Array of tasks to complete',
-            },
-          },
-          required: ['title', 'tasks'],
+          properties: {},
+          required: [],
         },
       },
       {
@@ -268,15 +251,6 @@ EXECUTE NOW - Create tasks, read files, get approval, write files, deploy. 3 tur
             result: { type: 'string' as const, description: 'Optional result description when completing' },
           },
           required: ['taskId', 'status'],
-        },
-      },
-      {
-        name: 'readTaskList',
-        description: 'Read your current task list to see task IDs and statuses',
-        input_schema: {
-          type: 'object' as const,
-          properties: {},
-          required: [],
         },
       },
       {
@@ -363,7 +337,7 @@ EXECUTE NOW - Create tasks, read files, get approval, write files, deploy. 3 tur
     let iterationCount = 0;
     const MAX_ITERATIONS = 5;
     
-    // Track architect approval for enforcement (updated) (per-file approval map)
+    // Track architect approval for enforcement (per-file approval map)
     const approvedFiles = new Map<string, { approved: boolean; timestamp: number }>();
     
     // Normalize file paths to prevent bypasses (./path, ../path, etc)
@@ -440,25 +414,18 @@ RETRY NOW - Call readTaskList() first to see task IDs, then start working!`;
             let toolResult: any = null;
 
             if (name === 'createTaskList') {
-              const typedInput = input as { title: string; description?: string; tasks: Array<any> };
-              sendEvent('progress', { message: `📋 Creating task list: ${typedInput.title}...` });
-              
-              const result = await createTaskList({
-                userId,
-                projectId: undefined, // Meta-SySop works on platform, not user projects
-                chatMessageId: userMsg.id,
-                title: typedInput.title,
-                description: typedInput.description,
-                tasks: typedInput.tasks,
-              });
-              
-              if (result.success) {
-                toolResult = `✅ Task list created successfully (ID: ${result.taskListId}).\n\nYou can now update individual tasks as you progress. Use readTaskList() to see task IDs, then updateTask(taskId, status) to mark progress.`;
-                sendEvent('task_list_created', { taskListId: result.taskListId });
-              } else {
-                toolResult = `❌ Failed to create task list: ${result.error}`;
-                sendEvent('error', { message: `Task list creation failed: ${result.error}` });
-              }
+              // REJECT: Tasks are pre-created, Meta-SySop should use readTaskList() instead
+              toolResult = `❌ ERROR: createTaskList() is NOT available!
+
+Tasks are PRE-CREATED when users send messages. They're already visible in TaskBoard UI.
+
+You MUST:
+1. Call readTaskList() to see your pre-created task IDs
+2. Call updateTask(taskId, status) to mark progress
+
+DO NOT create new tasks - UPDATE existing ones!`;
+              sendEvent('error', { message: 'createTaskList() blocked - use readTaskList() instead' });
+              console.error('[META-SYSOP] Blocked createTaskList - tasks are pre-created!');
             } else if (name === 'updateTask') {
               const typedInput = input as { taskId: string; status: string; result?: string };
               sendEvent('progress', { message: `Updating task to ${typedInput.status}...` });
