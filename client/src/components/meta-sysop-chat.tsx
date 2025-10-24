@@ -44,10 +44,10 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
     }
   }, [chatHistory]);
 
-  // Auto-scroll to top to show newest messages
+  // Auto-scroll to bottom to show newest messages (like Replit Agent)
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = 0;
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, streamingContent]);
 
@@ -180,28 +180,8 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
           </div>
         )}
 
-        {/* Streaming indicator - Show at top (newest first) */}
-        {isStreaming && (
-          <div className="flex gap-3 justify-start">
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <Wrench className="h-4 w-4 text-primary" />
-            </div>
-            <div className="rounded-lg px-4 py-3 max-w-[80%] bg-muted">
-              {streamingContent ? (
-                <MarkdownRenderer content={streamingContent} />
-              ) : (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              )}
-              <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                Meta-SySop is thinking...
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Message list - Newest first */}
-        {messages.slice().reverse().map((message) => (
+        {/* Message list - Chronological order (oldest to newest) */}
+        {messages.map((message) => (
           <div
             key={message.id}
             className={cn(
@@ -251,6 +231,26 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
             )}
           </div>
         ))}
+
+        {/* Streaming indicator - Show at bottom (newest last) */}
+        {isStreaming && (
+          <div className="flex gap-3 justify-start">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <Wrench className="h-4 w-4 text-primary" />
+            </div>
+            <div className="rounded-lg px-4 py-3 max-w-[80%] bg-muted">
+              {streamingContent ? (
+                <MarkdownRenderer content={streamingContent} />
+              ) : (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              )}
+              <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Meta-SySop is thinking...
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Input area - Fixed at bottom */}
