@@ -6,6 +6,8 @@ import { apiLimiter } from "./rateLimiting";
 import { db } from "./db";
 import { files } from "@shared/schema";
 import { autoHealing } from "./autoHealing";
+import { createServer } from 'http';
+import { WebSocketServer, WebSocket } from 'ws';
 
 // Exponential backoff retry utility
 async function retryWithBackoff<T>(
@@ -34,6 +36,60 @@ async function retryWithBackoff<T>(
 }
 
 const app = express();
+
+// Create HTTP server for WebSocket support
+const server = createServer(app);
+
+// Initialize WebSocket server
+const wss = new WebSocketServer({ server });
+
+// Global WebSocket connections storage
+declare global {
+  var wsConnections: Map<string, WebSocket> | undefined;
+}
+
+global.wsConnections = new Map();
+
+// WebSocket connection handling
+wss.on('connection', (ws: WebSocket, req) => {
+  const wsId = crypto.randomUUID();
+  global.wsConnections?.set(wsId, ws);
+  
+  console.log(`🔌 WebSocket client connected: ${wsId}`);
+  
+  // Send connection confirmation
+  ws.send(JSON.stringify({
+    type: 'connected',
+    wsId: wsId
+  }));
+
+  // Handle client messages
+  ws.on('message', (data) => {
+    try {
+      const message = JSON.parse(data.toString());
+      console.log(`📨 WebSocket message from ${wsId}:`, message);
+      
+      // Handle ping/pong for connection keepalive
+      if (message.type === 'ping') {
+        ws.send(JSON.stringify({ type: 'pong' }));
+      }
+    } catch (error) {
+      console.error('Error parsing WebSocket message:', error);
+    }
+  });
+
+  // Handle disconnection
+  ws.on('close', () => {
+    console.log(`🔌 WebSocket client disconnected: ${wsId}`);
+    global.wsConnections?.delete(wsId);
+  });
+
+  // Handle errors
+  ws.on('error', (error) => {
+    console.error(`WebSocket error for ${wsId}:`, error);
+    global.wsConnections?.delete(wsId);
+  });
+});
 
 // PERFORMANCE: Enable gzip compression for all responses (70-80% size reduction)
 app.use(compression({
@@ -98,7 +154,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
+  await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -129,7 +185,8 @@ app.use((req, res, next) => {
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
-    log(`serving on port ${port}`);
+    log(`🚀 Server with WebSocket support running on port ${port}`);
+    console.log(`🔌 WebSocket server ready for real-time chat`);
   });
 
   // Test database connection AFTER server starts (non-blocking)
@@ -138,7 +195,7 @@ app.use((req, res, next) => {
     await retryWithBackoff(async () => {
       await db.select().from(files).limit(1);
     }, 5, 1000);
-    console.log('✅ Database connected successfully');
+    console.log('✅ Database connected successfully with connection pooling');
   } catch (error: any) {
     console.error('❌ Database connection failed after retries:', error.message);
     console.error('⚠️ Running in degraded mode (database unavailable)');
