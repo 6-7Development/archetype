@@ -216,6 +216,19 @@ Current user request: ${message}`;
     let continueLoop = true;
     let iterationCount = 0;
     const MAX_ITERATIONS = 5;
+    
+    // Track architect approval for enforcement (per-file approval map)
+    const approvedFiles = new Map<string, { approved: boolean; timestamp: number }>();
+    
+    // Normalize file paths to prevent bypasses (./path, ../path, etc)
+    const normalizePath = (filePath: string): string => {
+      // Remove leading ./ and resolve ../ patterns
+      return filePath
+        .replace(/^\.\//, '')
+        .replace(/\/\.\//g, '/')
+        .replace(/[^\/]+\/\.\.\//g, '')
+        .trim();
+    };
 
     while (continueLoop && iterationCount < MAX_ITERATIONS) {
       iterationCount++;
@@ -254,23 +267,38 @@ Current user request: ${message}`;
               toolResult = await platformHealing.readPlatformFile(typedInput.path);
             } else if (name === 'writePlatformFile') {
               const typedInput = input as { path: string; content: string };
-              console.log(`[META-SYSOP] writePlatformFile called for: ${typedInput.path}`);
-              console.log(`[META-SYSOP] Content type: ${typeof typedInput.content}`);
-              console.log(`[META-SYSOP] Content defined: ${typedInput.content !== undefined}`);
-              console.log(`[META-SYSOP] Content length: ${typedInput.content?.length || 0} bytes`);
+              const normalizedPath = normalizePath(typedInput.path);
               
-              sendEvent('progress', { message: `Modifying ${typedInput.path}...` });
-              await platformHealing.writePlatformFile(typedInput.path, typedInput.content);
+              // CRITICAL ENFORCEMENT: Check per-file approval
+              const approval = approvedFiles.get(normalizedPath);
               
-              // Track file changes with content for batch commits
-              fileChanges.push({ 
-                path: typedInput.path, 
-                operation: 'modify', 
-                contentAfter: typedInput.content 
-              });
-              
-              sendEvent('file_change', { file: { path: typedInput.path, operation: 'modify' } });
-              toolResult = 'File written successfully';
+              if (!approval) {
+                toolResult = `❌ BLOCKED: File "${normalizedPath}" has no architect approval. You must consult I AM (architect_consult) and get explicit approval for this file.`;
+                console.error(`[META-SYSOP] Blocked writePlatformFile for ${normalizedPath} - no approval found`);
+                sendEvent('error', { message: `File write blocked - no approval for ${normalizedPath}` });
+              } else if (!approval.approved) {
+                toolResult = `❌ BLOCKED: I AM rejected changes to "${normalizedPath}". You cannot proceed with this file modification.`;
+                console.error(`[META-SYSOP] Blocked writePlatformFile for ${normalizedPath} - approval was rejected`);
+                sendEvent('error', { message: `File write blocked - ${normalizedPath} was rejected` });
+              } else {
+                console.log(`[META-SYSOP] writePlatformFile called for: ${normalizedPath}`);
+                console.log(`[META-SYSOP] Content type: ${typeof typedInput.content}`);
+                console.log(`[META-SYSOP] Content defined: ${typedInput.content !== undefined}`);
+                console.log(`[META-SYSOP] Content length: ${typedInput.content?.length || 0} bytes`);
+                
+                sendEvent('progress', { message: `✅ Modifying ${normalizedPath} (I AM approved)...` });
+                await platformHealing.writePlatformFile(normalizedPath, typedInput.content);
+                
+                // Track file changes with content for batch commits
+                fileChanges.push({ 
+                  path: normalizedPath, 
+                  operation: 'modify', 
+                  contentAfter: typedInput.content 
+                });
+                
+                sendEvent('file_change', { file: { path: normalizedPath, operation: 'modify' } });
+                toolResult = `✅ File written successfully (with I AM approval at ${new Date(approval.timestamp).toISOString()})`;
+              }
             } else if (name === 'listPlatformFiles') {
               const typedInput = input as { directory: string };
               sendEvent('progress', { message: `Listing files in ${typedInput.directory}...` });
@@ -292,12 +320,26 @@ Current user request: ${message}`;
                 codeSnapshot: `Proposed Solution:\n${typedInput.proposedSolution}\n\nAffected Files:\n${typedInput.affectedFiles.join('\n')}`
               });
               
+              const timestamp = Date.now();
+              
               if (architectResult.success) {
-                sendEvent('progress', { message: '✅ I AM approved the changes' });
-                toolResult = `Architect Review:\n${architectResult.guidance}\n\nRecommendations:\n${architectResult.recommendations.join('\n')}`;
+                // Store per-file approval (normalized paths) - DON'T overwrite existing approvals
+                const normalizedFiles = typedInput.affectedFiles.map(normalizePath);
+                normalizedFiles.forEach(filePath => {
+                  approvedFiles.set(filePath, { approved: true, timestamp });
+                });
+                
+                sendEvent('progress', { message: `✅ I AM approved ${normalizedFiles.length} files` });
+                toolResult = `✅ APPROVED by I AM (The Architect)\n\n${architectResult.guidance}\n\nRecommendations:\n${architectResult.recommendations.join('\n')}\n\nYou may now proceed to modify these files:\n${normalizedFiles.map(f => `- ${f} (approved at ${new Date(timestamp).toISOString()})`).join('\n')}\n\nNote: Each file approval is tracked individually. You can modify these files in any order.`;
               } else {
-                sendEvent('progress', { message: '❌ I AM rejected the changes' });
-                toolResult = `Architect rejected: ${architectResult.error}`;
+                // Mark these files as rejected - DON'T overwrite existing approvals
+                const normalizedFiles = typedInput.affectedFiles.map(normalizePath);
+                normalizedFiles.forEach(filePath => {
+                  approvedFiles.set(filePath, { approved: false, timestamp });
+                });
+                
+                sendEvent('error', { message: `❌ I AM rejected ${normalizedFiles.length} files` });
+                toolResult = `❌ REJECTED by I AM (The Architect)\n\nReason: ${architectResult.error}\n\nRejected files:\n${normalizedFiles.map(f => `- ${f}`).join('\n')}\n\nYou CANNOT proceed with these modifications. Either:\n1. Revise your approach and consult I AM again with a different proposal\n2. Abandon these changes`;
               }
             } else if (name === 'web_search') {
               const typedInput = input as { query: string; maxResults?: number };
@@ -308,9 +350,9 @@ Current user request: ${message}`;
                 maxResults: typedInput.maxResults || 5
               });
               
-              // Format results for Meta-SySop
+              // Format results for Meta-SySop (using 'content' field from API)
               toolResult = `Search Results:\n${searchResult.results.map((r: any) => 
-                `• ${r.title}\n  ${r.url}\n  ${r.snippet}\n`
+                `• ${r.title}\n  ${r.url}\n  ${r.content}\n`
               ).join('\n')}`;
             }
 
@@ -362,11 +404,36 @@ Current user request: ${message}`;
     // Commit and push if enabled
     let commitHash = '';
     if (autoCommit && fileChanges.length > 0) {
-      sendEvent('progress', { message: `Committing ${fileChanges.length} file changes...` });
+      // CRITICAL ENFORCEMENT: Verify ALL files in fileChanges have approval
+      const unapprovedFiles: string[] = [];
+      for (const change of fileChanges) {
+        const normalizedPath = normalizePath(change.path);
+        const approval = approvedFiles.get(normalizedPath);
+        if (!approval || !approval.approved) {
+          unapprovedFiles.push(normalizedPath);
+        }
+      }
+      
+      if (unapprovedFiles.length > 0) {
+        sendEvent('error', { 
+          message: `❌ AUTO-COMMIT BLOCKED: ${unapprovedFiles.length} file(s) lack I AM approval: ${unapprovedFiles.join(', ')}` 
+        });
+        console.error('[META-SYSOP] Blocked auto-commit - unapproved files:', unapprovedFiles);
+        
+        if (backup?.id) {
+          await platformHealing.rollback(backup.id);
+          sendEvent('progress', { message: 'All changes rolled back due to unapproved files in commit' });
+        }
+        
+        res.end();
+        return;
+      }
+      
+      sendEvent('progress', { message: `✅ Committing ${fileChanges.length} file changes (all I AM approved)...` });
       commitHash = await platformHealing.commitChanges(`Fix: ${message.slice(0, 100)}`, fileChanges as any);
 
       if (autoPush) {
-        sendEvent('progress', { message: 'Pushing to GitHub (deploying to production)...' });
+        sendEvent('progress', { message: '✅ Pushing to GitHub (deploying to production - all files I AM approved)...' });
         await platformHealing.pushToRemote();
       }
     }
