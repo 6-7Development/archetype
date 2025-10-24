@@ -23,6 +23,8 @@ import {
   Loader2,
   PanelLeftClose,
   PanelLeft,
+  PanelRightClose,
+  PanelRight,
   Home,
   LogOut,
   User,
@@ -44,6 +46,7 @@ export default function Workspace() {
   const [isRunning, setIsRunning] = useState(false);
   const [consoleOutput, setConsoleOutput] = useState<string[]>([]);
   const [showFileTree, setShowFileTree] = useState(true);
+  const [showPreview, setShowPreview] = useState(true);
   const [showMobileFileExplorer, setShowMobileFileExplorer] = useState(false);
   const consoleRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -175,15 +178,26 @@ export default function Workspace() {
           
           {/* File tree toggle (desktop only) */}
           {!isMobile && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 hidden md:flex"
-              onClick={() => setShowFileTree(!showFileTree)}
-              data-testid="button-toggle-filetree"
-            >
-              {showFileTree ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
-            </Button>
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 hidden md:flex"
+                onClick={() => setShowFileTree(!showFileTree)}
+                data-testid="button-toggle-filetree"
+              >
+                {showFileTree ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 hidden md:flex"
+                onClick={() => setShowPreview(!showPreview)}
+                data-testid="button-toggle-preview"
+              >
+                {showPreview ? <PanelRightClose className="h-4 w-4" /> : <PanelRight className="h-4 w-4" />}
+              </Button>
+            </>
           )}
           
           {/* Active File */}
@@ -448,35 +462,37 @@ export default function Workspace() {
           </div>
         </div>
 
-        {/* RIGHT: Live Preview - Always Visible */}
-        <div className="w-96 border-l flex flex-col bg-card">
-          <div className="h-9 flex items-center justify-between px-3 border-b">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-500" />
-              <span className="text-xs font-semibold">Live Preview</span>
+        {/* RIGHT: Live Preview - Collapsible */}
+        {showPreview && (
+          <div className="w-96 border-l flex flex-col bg-card">
+            <div className="h-9 flex items-center justify-between px-3 border-b">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-green-500" />
+                <span className="text-xs font-semibold">Live Preview</span>
+              </div>
+            </div>
+            <div className="flex-1 p-2">
+              {activeFile && activeFile.language === 'html' ? (
+                <div className="h-full bg-white dark:bg-zinc-900 rounded border overflow-hidden">
+                  <iframe
+                    title="Preview"
+                    className="w-full h-full"
+                    srcDoc={editorContent}
+                    sandbox="allow-scripts"
+                  />
+                </div>
+              ) : (
+                <div className="h-full flex items-center justify-center border rounded bg-muted/20">
+                  <div className="text-center px-4">
+                    <Code2 className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Preview available for HTML files</p>
+                    <p className="text-xs text-muted-foreground mt-1">Select an HTML file to see live preview</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-          <div className="flex-1 p-2">
-            {activeFile && activeFile.language === 'html' ? (
-              <div className="h-full bg-white dark:bg-zinc-900 rounded border overflow-hidden">
-                <iframe
-                  title="Preview"
-                  className="w-full h-full"
-                  srcDoc={editorContent}
-                  sandbox="allow-scripts"
-                />
-              </div>
-            ) : (
-              <div className="h-full flex items-center justify-center border rounded bg-muted/20">
-                <div className="text-center px-4">
-                  <Code2 className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-xs text-muted-foreground">Preview available for HTML files</p>
-                  <p className="text-xs text-muted-foreground mt-1">Select an HTML file to see live preview</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Bottom Status Bar */}
