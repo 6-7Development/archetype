@@ -966,3 +966,132 @@ export const insertArchitectReviewSchema = createInsertSchema(architectReviews).
 
 export type InsertArchitectReview = z.infer<typeof insertArchitectReviewSchema>;
 export type ArchitectReview = typeof architectReviews.$inferSelect;
+
+// Meta-SySop Knowledge Base - Stores learned patterns, decisions, and fixes
+export const metaSysopKnowledge = pgTable("meta_sysop_knowledge", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  category: text("category").notNull(), // 'pattern' | 'fix' | 'decision' | 'rule' | 'preference'
+  title: text("title").notNull(), // Brief description of the knowledge
+  description: text("description").notNull(), // Detailed explanation
+  context: text("context"), // When/why this was learned
+  solution: text("solution"), // How to handle this situation
+  tags: text("tags").array(), // Searchable tags for quick retrieval
+  filePatterns: text("file_patterns").array(), // File patterns this applies to (e.g., ['*.tsx', 'client/**'])
+  priority: integer("priority").notNull().default(5), // 1-10, higher = more important
+  active: boolean("active").notNull().default(true), // Can be deactivated without deletion
+  usageCount: integer("usage_count").notNull().default(0), // How many times this was referenced
+  lastUsedAt: timestamp("last_used_at"),
+  createdBy: varchar("created_by"), // User ID or 'system' or 'meta-sysop'
+  approvedBy: varchar("approved_by"), // User ID who approved this knowledge (I AM architect)
+  metadata: jsonb("metadata"), // Additional structured data
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_meta_knowledge_category").on(table.category),
+  index("idx_meta_knowledge_active").on(table.active),
+  index("idx_meta_knowledge_priority").on(table.priority),
+]);
+
+export const insertMetaSysopKnowledgeSchema = createInsertSchema(metaSysopKnowledge).omit({
+  id: true,
+  usageCount: true,
+  lastUsedAt: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertMetaSysopKnowledge = z.infer<typeof insertMetaSysopKnowledgeSchema>;
+export type MetaSysopKnowledge = typeof metaSysopKnowledge.$inferSelect;
+
+// Meta-SySop Instructions - User-given permanent instructions and preferences
+export const metaSysopInstructions = pgTable("meta_sysop_instructions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  type: text("type").notNull(), // 'permanent' | 'conditional' | 'project-specific'
+  instruction: text("instruction").notNull(), // The actual instruction text
+  scope: text("scope").notNull().default("global"), // 'global' | 'platform' | 'user-projects'
+  conditions: jsonb("conditions"), // When this instruction applies (e.g., { fileType: 'tsx', operation: 'fix' })
+  priority: integer("priority").notNull().default(5), // 1-10, determines order of application
+  active: boolean("active").notNull().default(true),
+  exampleBehavior: text("example_behavior"), // Example of how to follow this instruction
+  createdBy: varchar("created_by").notNull(), // User ID who created this
+  approvedBy: varchar("approved_by"), // User ID who approved (for governance)
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_meta_instructions_type").on(table.type),
+  index("idx_meta_instructions_scope").on(table.scope),
+  index("idx_meta_instructions_active").on(table.active),
+]);
+
+export const insertMetaSysopInstructionSchema = createInsertSchema(metaSysopInstructions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertMetaSysopInstruction = z.infer<typeof insertMetaSysopInstructionSchema>;
+export type MetaSysopInstruction = typeof metaSysopInstructions.$inferSelect;
+
+// Meta-SySop Automation Rules - Automated workflows and triggers
+export const metaSysopAutomation = pgTable("meta_sysop_automation", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(), // Human-readable name for this automation
+  description: text("description").notNull(),
+  trigger: text("trigger").notNull(), // What triggers this automation (e.g., 'error_detected', 'scheduled', 'user_request')
+  triggerConditions: jsonb("trigger_conditions").notNull(), // Specific conditions that must be met
+  actions: jsonb("actions").notNull(), // Array of actions to take (e.g., [{ type: 'fix_file', params: {...} }])
+  requiresApproval: boolean("requires_approval").notNull().default(true), // Whether I AM must approve before execution
+  autoCommit: boolean("auto_commit").notNull().default(false), // Whether to auto-commit to GitHub
+  active: boolean("active").notNull().default(true),
+  executionCount: integer("execution_count").notNull().default(0),
+  lastExecutedAt: timestamp("last_executed_at"),
+  successCount: integer("success_count").notNull().default(0),
+  failureCount: integer("failure_count").notNull().default(0),
+  createdBy: varchar("created_by").notNull(),
+  approvedBy: varchar("approved_by"),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_meta_automation_trigger").on(table.trigger),
+  index("idx_meta_automation_active").on(table.active),
+]);
+
+export const insertMetaSysopAutomationSchema = createInsertSchema(metaSysopAutomation).omit({
+  id: true,
+  executionCount: true,
+  lastExecutedAt: true,
+  successCount: true,
+  failureCount: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertMetaSysopAutomation = z.infer<typeof insertMetaSysopAutomationSchema>;
+export type MetaSysopAutomation = typeof metaSysopAutomation.$inferSelect;
+
+// Meta-SySop Memory Log - Conversation memory and context retention
+export const metaSysopMemory = pgTable("meta_sysop_memory", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id"), // Groups related memories together
+  memoryType: text("memory_type").notNull(), // 'conversation' | 'decision' | 'learning' | 'feedback'
+  content: text("content").notNull(), // The actual memory content
+  context: jsonb("context"), // Additional context about this memory
+  importance: integer("importance").notNull().default(5), // 1-10, determines retention priority
+  relatedKnowledgeIds: text("related_knowledge_ids").array(), // Links to knowledge entries
+  expiresAt: timestamp("expires_at"), // Optional expiry for temporary memories
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_meta_memory_session").on(table.sessionId),
+  index("idx_meta_memory_type").on(table.memoryType),
+  index("idx_meta_memory_importance").on(table.importance),
+]);
+
+export const insertMetaSysopMemorySchema = createInsertSchema(metaSysopMemory).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertMetaSysopMemory = z.infer<typeof insertMetaSysopMemorySchema>;
+export type MetaSysopMemory = typeof metaSysopMemory.$inferSelect;
