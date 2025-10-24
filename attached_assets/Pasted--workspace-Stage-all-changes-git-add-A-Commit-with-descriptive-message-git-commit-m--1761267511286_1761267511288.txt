@@ -1,0 +1,66 @@
+~/workspace$ > # Stage all changes
+git add -A
+
+# Commit with descriptive message
+git commit -m "Meta-SySop: Real-time chat interface with streaming
+
+- Transformed Platform Healing into full chat experience
+- Added streaming SSE API for live responses
+- Conversation memory persists across sessions
+- Live file modification tracking in sidebar
+- Real-time progress updates during healing
+- Auto-commit and auto-push support
+
+Users can now chat with Meta-SySop like regular SySop,
+with full conversation history and live updates."
+
+# Push to GitHub (triggers Render auto-deploy)
+git push origin main
+error: pathspec 'Real-time' did not match any file(s) known to git
+error: pathspec 'chat' did not match any file(s) known to git
+error: pathspec 'interface' did not match any file(s) known to git
+error: pathspec 'with' did not match any file(s) known to git
+error: pathspec 'streaming' did not match any file(s) known to git
+bash: -: command not found
+bash: -: command not found
+bash: -: command not found
+bash: -: command not found
+bash: -: command not found
+bash: -: command not found
+bash: Users: command not found
+> 
+bash: syntax error near unexpected token `newline'
+On branch main
+nothing to commit, working tree clean
+Enumerating objects: 43, done.
+Counting objects: 100% (43/43), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (30/30), done.
+Writing objects: 100% (30/30), 262.35 KiB | 26.24 MiB/s, done.
+Total 30 (delta 21), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (21/21), completed with 10 local objects.
+To https://github.com/6-7Development/archetype.git
+   5c1fe29..ca5a21c  main -> main
+bash: syntax error near unexpected token `('
+bash: syntax error near unexpected token `('
+bash: syntax error near unexpected token `('
+bash: syntax error near unexpected token `('
+bash: syntax error near unexpected token `('
+bash: bash:: command not found
+bash: bash:: command not found
+bash: bash:: command not found
+bash: bash:: command not found
+bash: bash:: command not found
+bash: bash:: command not found
+bash: bash:: command not found
+bash: syntax error near unexpected token `newline'
+~/workspace$ git add -A
+~/workspace$ git commit -m "Meta-SySop: Real-time chat interface with streaming, conversation memory, and live file tracking"
+On branch main
+nothing to commit, working tree clean
+~/workspace$ git push origin main
+Everything up-to-date
+~/workspace$ git add -A && git commit -m "Meta-SySop: Real-time chat interface with streaming, conversation memory, and live file tracking" && git push origin main
+On branch main
+nothing to commit, working tree clean
+~/workspace$ 
