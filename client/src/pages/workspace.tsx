@@ -308,9 +308,9 @@ export default function Workspace() {
 
       {/* Mobile File Explorer Sheet */}
       <Sheet open={showMobileFileExplorer} onOpenChange={setShowMobileFileExplorer}>
-        <SheetContent side="left" className="w-64 p-0">
-          <div className="h-full flex flex-col bg-card">
-            <div className="h-14 flex items-center justify-between px-4 border-b">
+        <SheetContent side="left" className="w-64 p-0 h-full">
+          <div className="h-full flex flex-col bg-card overflow-hidden">
+            <div className="h-14 flex items-center justify-between px-4 border-b flex-shrink-0">
               <div className="flex items-center gap-2">
                 <Folder className="h-4 w-4 text-primary" />
                 <span className="text-sm font-semibold">Files</span>
@@ -326,7 +326,7 @@ export default function Workspace() {
               </Button>
             </div>
 
-            <ScrollArea className="flex-1">
+            <ScrollArea className="flex-1 min-h-0">
               <div className="p-3 space-y-1">
                 {files.length === 0 ? (
                   <div className="text-center py-8">
