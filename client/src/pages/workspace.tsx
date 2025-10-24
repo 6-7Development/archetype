@@ -36,7 +36,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useVersion } from "@/providers/version-provider";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { File } from "@shared/schema";
 import { cn } from "@/lib/utils";
@@ -52,7 +52,9 @@ export default function Workspace() {
   const consoleRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user, isLoading: isAuthLoading } = useAuth();
-  const isMobile = useIsMobile();
+  const { isMobile, version } = useVersion();
+  
+  console.log('[WORKSPACE] Version detection:', { version, isMobile });
 
   const { data: files = [] } = useQuery<File[]>({
     queryKey: ["/api/files"],
