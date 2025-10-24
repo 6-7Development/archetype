@@ -228,7 +228,7 @@ web_search() - Look up docs (RARELY needed)
 
 ${message}
 
-EXECUTE NOW - Create tasks, read files, get approval, write files, deploy. 3 turns maximum!`;
+EXECUTE NOW - Read task list, update progress, get approval, write files, deploy. 3 turns maximum!`;
 
     const tools = [
       {
@@ -456,7 +456,7 @@ DO NOT create new tasks - UPDATE existing ones!`;
                   ).join('\n');
                   toolResult = `Current Task List (${activeList.id}):\n${taskSummary}`;
                 } else {
-                  toolResult = 'No active task list. Create one with createTaskList().';
+                  toolResult = 'No active task list found. This should not happen - tasks are pre-created when users send messages.';
                 }
               } else {
                 toolResult = `Error reading task list: ${result.error}`;
@@ -523,7 +523,7 @@ DO NOT create new tasks - UPDATE existing ones!`;
               const timestamp = Date.now();
               
               if (architectResult.success) {
-                // Store per-file approval (normalized paths) - DON'T overwrite existing approvals
+                // Store per-file approval status (updates existing entries with latest approval)
                 const normalizedFiles = typedInput.affectedFiles.map(normalizePath);
                 normalizedFiles.forEach(filePath => {
                   approvedFiles.set(filePath, { approved: true, timestamp });
@@ -532,7 +532,7 @@ DO NOT create new tasks - UPDATE existing ones!`;
                 sendEvent('progress', { message: `✅ I AM approved ${normalizedFiles.length} files` });
                 toolResult = `✅ APPROVED by I AM (The Architect)\n\n${architectResult.guidance}\n\nRecommendations:\n${architectResult.recommendations.join('\n')}\n\nYou may now proceed to modify these files:\n${normalizedFiles.map(f => `- ${f} (approved at ${new Date(timestamp).toISOString()})`).join('\n')}\n\nNote: Each file approval is tracked individually. You can modify these files in any order.`;
               } else {
-                // Mark these files as rejected - DON'T overwrite existing approvals
+                // Store rejection status for these files
                 const normalizedFiles = typedInput.affectedFiles.map(normalizePath);
                 normalizedFiles.forEach(filePath => {
                   approvedFiles.set(filePath, { approved: false, timestamp });
