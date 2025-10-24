@@ -77,6 +77,32 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     sendEvent('user_message', { messageId: userMsg.id });
 
+    // 🎯 OPTION 2: Pre-create task list IMMEDIATELY for instant TaskBoard feedback
+    // This guarantees users see progress even if Meta-SySop fails to create tasks
+    sendEvent('progress', { message: 'Creating task list for live tracking...' });
+    
+    const initialTaskResult = await createTaskList({
+      userId,
+      projectId: undefined,
+      chatMessageId: userMsg.id,
+      title: `Platform Healing: ${message.slice(0, 50)}`,
+      description: 'Meta-SySop is analyzing your request and will update these tasks as work progresses.',
+      tasks: [
+        { title: 'Analyze request and identify files to modify', status: 'in_progress' },
+        { title: 'Read relevant platform files', status: 'pending' },
+        { title: 'Consult I AM (The Architect) for approval', status: 'pending' },
+        { title: 'Implement approved changes', status: 'pending' },
+        { title: 'Deploy to production via GitHub', status: 'pending' },
+      ],
+    });
+    
+    if (initialTaskResult.success) {
+      sendEvent('task_list_created', { taskListId: initialTaskResult.taskListId });
+      sendEvent('progress', { message: `✅ Task list created - see live progress above!` });
+    } else {
+      console.warn('[META-SYSOP] Failed to pre-create task list:', initialTaskResult.error);
+    }
+
     // Create backup before any changes (non-blocking - continue even if it fails)
     let backup: any = null;
     try {
@@ -116,23 +142,23 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     const systemPrompt = `You are Meta-SySop - AUTONOMOUS platform maintenance AI.
 
-🚨 BLOCKING RULE - YOUR FIRST RESPONSE MUST INCLUDE:
+✅ TASK LIST ALREADY CREATED FOR YOU!
 ═══════════════════════════════════════════════════════════════════
-createTaskList({ title: "...", tasks: [...] })
+A basic task list has been pre-created. Users are watching it LIVE via TaskBoard UI.
 
-If your FIRST response does NOT call createTaskList(), you FAILED.
-DO NOT write text explanations - CALL THE TOOL IMMEDIATELY!
+YOUR JOB: Update tasks as you work using updateTask(taskId, status)
 
-Users see your tasks in REAL-TIME via TaskBoard UI - this is how they track your progress!
+First action: Call readTaskList() to see task IDs, then start working!
 
 ═══════════════════════════════════════════════════════════════════
 🎯 3-STEP WORKFLOW (NO EXCEPTIONS):
 ═══════════════════════════════════════════════════════════════════
 
-STEP 1: CREATE TASKS & READ FILES (ONE TURN)
-→ createTaskList() FIRST - users see this live!
+STEP 1: READ TASK LIST & FILES (ONE TURN)
+→ readTaskList() FIRST - get your task IDs!
+→ updateTask() to mark "Analyze request" as completed
+→ updateTask() to mark "Read files" as in_progress
 → readPlatformFile() for ONLY the files you'll modify (max 2-3 files)
-→ readTaskList() to get task IDs
 
 STEP 2: GET APPROVAL & FIX (ONE TURN)  
 → architect_consult() with your proposed changes
@@ -374,6 +400,38 @@ EXECUTE NOW - Create tasks, read files, get approval, write files, deploy. 3 tur
         role: 'assistant',
         content: response.content,
       });
+
+      // 🎯 OPTION 1 ENFORCEMENT: First response should use tools (not just text)
+      if (iterationCount === 1) {
+        const hasToolCalls = response.content.some(block => block.type === 'tool_use');
+        
+        if (!hasToolCalls) {
+          // Force retry - Meta-SySop typed text instead of calling tools
+          sendEvent('error', { message: '❌ Must call tools (not type text) - retrying...' });
+          
+          const errorMessage = `ERROR: Your first response must include TOOL CALLS, not just text.
+
+Users are watching tasks in real-time via TaskBoard. A task list was PRE-CREATED for you.
+
+Instead of typing "### NEXT ACTIONS" or "Let me check...", you MUST call tools:
+
+1. readTaskList() - See your task IDs
+2. updateTask(taskId, "in_progress") - Mark progress
+3. readPlatformFile() - Read files you need
+4. architect_consult() - Get approval
+5. writePlatformFile() - Make changes
+6. commit_to_github() - Deploy
+
+RETRY NOW - Call readTaskList() first to see task IDs, then start working!`;
+
+          conversationMessages.push({
+            role: 'user',
+            content: errorMessage,
+          });
+          
+          continue; // Retry loop
+        }
+      }
 
       const toolResults: any[] = [];
 
