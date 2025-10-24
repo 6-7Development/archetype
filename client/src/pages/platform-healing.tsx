@@ -24,40 +24,40 @@ function PlatformHealingContent() {
     <div className="flex flex-col lg:flex-row h-full">
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="border-b p-3 sm:p-4 bg-background">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 flex-shrink-0 rounded-full bg-primary/10 flex items-center justify-center">
-                <Wrench className="h-5 w-5 text-primary" />
+        <div className="border-b p-2 sm:p-4 bg-background">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 rounded-full bg-primary/10 flex items-center justify-center">
+                <Wrench className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-xl sm:text-2xl font-bold">Meta-SySop Platform Healing</h1>
-                <p className="text-xs sm:text-sm text-muted-foreground">
+                <h1 className="text-base sm:text-2xl font-bold leading-tight">Meta-SySop<span className="hidden sm:inline"> Platform Healing</span></h1>
+                <p className="hidden sm:block text-sm text-muted-foreground">
                   Chat with Meta-SySop to diagnose and fix platform issues
                 </p>
               </div>
             </div>
-            <Badge variant={status?.safety?.safe ? 'default' : 'destructive'} className="self-start sm:self-auto">
-              {status?.safety?.safe ? 'Healthy' : 'Issues Detected'}
+            <Badge variant={status?.safety?.safe ? 'default' : 'destructive'} className="flex-shrink-0 text-xs h-6">
+              {status?.safety?.safe ? 'Healthy' : 'Issues'}
             </Badge>
           </div>
 
-          {/* Settings */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 mt-4 p-3 bg-muted/50 rounded-lg">
-            <div className="flex items-center gap-2">
+          {/* Settings - Compact on mobile */}
+          <div className="flex items-center gap-3 sm:gap-6 mt-2 sm:mt-4 p-2 sm:p-3 bg-muted/50 rounded-lg text-xs sm:text-sm">
+            <div className="flex items-center gap-1.5">
               <Switch
                 id="auto-commit"
                 checked={autoCommit}
                 onCheckedChange={setAutoCommit}
                 data-testid="switch-auto-commit"
               />
-              <Label htmlFor="auto-commit" className="text-xs sm:text-sm cursor-pointer flex items-center gap-1">
+              <Label htmlFor="auto-commit" className="cursor-pointer flex items-center gap-1">
                 <GitBranch className="h-3 w-3 flex-shrink-0" />
-                <span>Auto-commit changes</span>
+                <span className="hidden sm:inline">Auto-commit</span>
               </Label>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <Switch
                 id="auto-push"
                 checked={autoPush}
@@ -65,39 +65,33 @@ function PlatformHealingContent() {
                 disabled={!autoCommit}
                 data-testid="switch-auto-push"
               />
-              <Label htmlFor="auto-push" className="text-xs sm:text-sm cursor-pointer flex items-center gap-1">
+              <Label htmlFor="auto-push" className="cursor-pointer flex items-center gap-1">
                 <CheckCircle className="h-3 w-3 flex-shrink-0" />
-                <span className="leading-tight">Auto-push to production<span className="hidden sm:inline"> (triggers deployment)</span></span>
+                <span className="hidden sm:inline">Auto-push</span>
               </Label>
             </div>
           </div>
         </div>
 
-        {/* Mobile Status Bar - Shows on mobile, hidden on desktop */}
-        <div className="lg:hidden border-b p-3 bg-muted/20 flex items-center justify-between gap-2 overflow-x-auto">
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-muted-foreground whitespace-nowrap">Status:</span>
+        {/* Mobile Status Bar - Compact */}
+        <div className="lg:hidden border-b px-2 py-1.5 bg-muted/20 flex items-center justify-between gap-2 text-[10px] overflow-x-auto">
+          <div className="flex items-center gap-1">
+            <span className="text-muted-foreground">Status:</span>
             {status?.safety?.safe ? (
-              <Badge variant="default" className="gap-1 text-xs h-6">
-                <CheckCircle className="h-3 w-3" />
-                Safe
-              </Badge>
+              <Badge variant="default" className="text-[10px] h-5 px-1.5">Safe</Badge>
             ) : (
-              <Badge variant="destructive" className="gap-1 text-xs h-6">
-                <AlertTriangle className="h-3 w-3" />
-                Issues
-              </Badge>
+              <Badge variant="destructive" className="text-[10px] h-5 px-1.5">Issues</Badge>
             )}
           </div>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-muted-foreground whitespace-nowrap">Changes:</span>
-            <Badge variant={status?.uncommittedChanges ? 'secondary' : 'outline'} className="text-xs h-6">
+          <div className="flex items-center gap-1">
+            <span className="text-muted-foreground">Changes:</span>
+            <Badge variant={status?.uncommittedChanges ? 'secondary' : 'outline'} className="text-[10px] h-5 px-1.5">
               {status?.uncommittedChanges ? 'Yes' : 'No'}
             </Badge>
           </div>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-muted-foreground whitespace-nowrap">Backups:</span>
-            <Badge variant="outline" className="text-xs h-6">{backupsData?.backups?.length || 0}</Badge>
+          <div className="flex items-center gap-1">
+            <span className="text-muted-foreground">Backups:</span>
+            <Badge variant="outline" className="text-[10px] h-5 px-1.5">{backupsData?.backups?.length || 0}</Badge>
           </div>
         </div>
 
