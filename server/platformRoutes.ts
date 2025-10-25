@@ -391,7 +391,10 @@ router.get('/tasks', isAuthenticated, isAdmin, async (req: any, res) => {
     res.setHeader('Expires', '0');
     
     const userId = req.authenticatedUserId;
-    const { readTaskList } = await import('./tools/task-management');
+    const { readTaskList, updateTask } = await import('./tools/task-management');
+    const { taskLists, tasks: tasksTable } = await import('@shared/schema');
+    const { db } = await import('./db');
+    const { eq, and } = await import('drizzle-orm');
     
     // Get actual task lists from task management system
     const result = await readTaskList({ userId });
@@ -400,11 +403,49 @@ router.get('/tasks', isAuthenticated, isAdmin, async (req: any, res) => {
       return res.json({ tasks: [] });
     }
     
+    // Auto-cleanup stale active task lists (older than 15 minutes)
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+    const staleLists = result.taskLists.filter((list: any) => 
+      list.status === 'active' && new Date(list.createdAt) < fifteenMinutesAgo
+    );
+    
+    for (const staleList of staleLists) {
+      console.log(`🧹 [CLEANUP] Auto-completing stale task list: ${staleList.id} (created ${new Date(staleList.createdAt).toISOString()})`);
+      
+      // Mark all incomplete tasks as completed
+      const incompleteTasks = staleList.tasks.filter((t: any) => 
+        t.status !== 'completed' && t.status !== 'cancelled'
+      );
+      
+      for (const task of incompleteTasks) {
+        await updateTask({
+          userId,
+          taskId: task.id,
+          status: 'completed',
+          result: '⚠️ Auto-completed (stale session cleanup)',
+          completedAt: new Date()
+        });
+      }
+      
+      // Mark task list as completed
+      await db.update(taskLists)
+        .set({ 
+          status: 'completed',
+          completedAt: new Date()
+        })
+        .where(eq(taskLists.id, staleList.id));
+    }
+    
+    // Re-fetch after cleanup
+    const updatedResult = await readTaskList({ userId });
+    if (!updatedResult.success || !updatedResult.taskLists) {
+      return res.json({ tasks: [] });
+    }
+    
     // Find the most recent active OR recently completed task list (last 10 minutes)
-    // This ensures users can see tasks even after Meta-SySop finishes quickly
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
     
-    const relevantList = result.taskLists
+    const relevantList = updatedResult.taskLists
       .filter((list: any) => 
         list.status === 'active' || 
         (list.status === 'completed' && new Date(list.completedAt || list.createdAt) > tenMinutesAgo)

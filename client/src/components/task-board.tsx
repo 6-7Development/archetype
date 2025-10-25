@@ -35,6 +35,11 @@ export function TaskBoard({ tasks, isGenerating, subAgentActive, className }: Ta
   const currentTask = tasks.find(t => t.status === 'in_progress');
   const hasFailed = tasks.some(t => t.status === 'failed');
 
+  const handleReset = async () => {
+    // Force refresh by invalidating query
+    window.location.reload();
+  };
+
   return (
     <Card className={cn("border-border/50 bg-background", className)} data-testid="task-board">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -89,6 +94,20 @@ export function TaskBoard({ tasks, isGenerating, subAgentActive, className }: Ta
                     {currentTask ? "Working..." : "Starting..."}
                   </span>
                 </div>
+              )}
+              
+              {/* Refresh button when tasks are stuck */}
+              {!isGenerating && totalCount > 0 && completedCount < totalCount && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleReset();
+                  }}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  title="Refresh tasks"
+                >
+                  ↻ Reset
+                </button>
               )}
             </div>
           </div>
