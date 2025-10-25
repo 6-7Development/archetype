@@ -1,0 +1,50 @@
+2025-10-25T18:22:17.731649501Z [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-25T18:22:17.734477143Z 📡 WebSocket server initialized at /ws
+2025-10-25T18:22:17.737275285Z ✅ All routes registered successfully
+2025-10-25T18:22:17.738225309Z 🔍 Testing database connection...
+2025-10-25T18:22:17.760591671Z 6:22:17 PM [express] serving on port 10000
+2025-10-25T18:22:17.760616161Z 🌐 Server accessible at http://0.0.0.0:10000
+2025-10-25T18:22:17.806959849Z ⚠️ Retry attempt 1/5 failed: {
+2025-10-25T18:22:17.8069805Z   code: 'DEPTH_ZERO_SELF_SIGNED_CERT',
+2025-10-25T18:22:17.80698588Z   message: 'self-signed certificate',
+2025-10-25T18:22:17.80699012Z   nextRetryIn: '1000ms'
+2025-10-25T18:22:17.80699404Z }
+2025-10-25T18:22:18.815492141Z ⚠️ Retry attempt 2/5 failed: {
+2025-10-25T18:22:18.815511231Z   code: 'DEPTH_ZERO_SELF_SIGNED_CERT',
+2025-10-25T18:22:18.815515381Z   message: 'self-signed certificate',
+2025-10-25T18:22:18.815519541Z   nextRetryIn: '2000ms'
+2025-10-25T18:22:18.815523151Z }
+2025-10-25T18:22:20.826377832Z ⚠️ Retry attempt 3/5 failed: {
+2025-10-25T18:22:20.826403862Z   code: 'DEPTH_ZERO_SELF_SIGNED_CERT',
+2025-10-25T18:22:20.826408882Z   message: 'self-signed certificate',
+2025-10-25T18:22:20.826414203Z   nextRetryIn: '4000ms'
+2025-10-25T18:22:20.826418443Z }
+2025-10-25T18:22:24.837522586Z ⚠️ Retry attempt 4/5 failed: {
+2025-10-25T18:22:24.837543057Z   code: 'DEPTH_ZERO_SELF_SIGNED_CERT',
+2025-10-25T18:22:24.837547937Z   message: 'self-signed certificate',
+2025-10-25T18:22:24.837564407Z   nextRetryIn: '8000ms'
+2025-10-25T18:22:24.837566827Z }
+2025-10-25T18:22:27.336974462Z ==> Your service is live 🎉
+2025-10-25T18:22:27.366303159Z ==> 
+2025-10-25T18:22:27.392472777Z ==> ///////////////////////////////////////////////////////////
+2025-10-25T18:22:27.419319605Z ==> 
+2025-10-25T18:22:27.444969613Z ==> Available at your primary URL https://archetype-x8b5.onrender.com
+2025-10-25T18:22:27.48158681Z ==> 
+2025-10-25T18:22:27.513894218Z ==> ///////////////////////////////////////////////////////////
+2025-10-25T18:22:32.84872947Z ⚠️ Retry attempt 5/5 failed: {
+2025-10-25T18:22:32.84875475Z   code: 'DEPTH_ZERO_SELF_SIGNED_CERT',
+2025-10-25T18:22:32.84875883Z   message: 'self-signed certificate',
+2025-10-25T18:22:32.848762711Z   nextRetryIn: '16000ms'
+2025-10-25T18:22:32.848765851Z }
+2025-10-25T18:22:48.849201629Z ❌ Database connection failed after retries: self-signed certificate
+2025-10-25T18:22:48.84923213Z ⚠️ Running in degraded mode (database unavailable)
+2025-10-25T18:22:48.84924958Z 🔧 Auto-healing system ENABLED (production mode)
+2025-10-25T18:22:48.84925895Z 
+2025-10-25T18:22:48.84926242Z 🔍 Checking GitHub integration configuration...
+2025-10-25T18:22:48.84928732Z ✅ GitHub integration configured successfully
+2025-10-25T18:22:48.849291541Z    - Repository: 6-7Development/archetype
+2025-10-25T18:22:48.849297251Z    - Branch: main
+2025-10-25T18:22:48.849300631Z    - Token: ✓ (configured)
+2025-10-25T18:22:48.849343161Z    - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-25T18:22:48.849367182Z    - Maintenance mode: Available for owner
+2025-10-25T18:22:48.849371872Z 
