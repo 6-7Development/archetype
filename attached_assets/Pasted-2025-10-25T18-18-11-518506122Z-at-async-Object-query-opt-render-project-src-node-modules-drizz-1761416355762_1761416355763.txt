@@ -1,0 +1,62 @@
+2025-10-25T18:18:11.518506122Z     at async Object.query (/opt/render/project/src/node_modules/drizzle-kit/bin.cjs:80601:26)
+2025-10-25T18:18:11.518511252Z     at async fromDatabase2 (/opt/render/project/src/node_modules/drizzle-kit/bin.cjs:19253:25) {
+2025-10-25T18:18:11.518516252Z   code: 'DEPTH_ZERO_SELF_SIGNED_CERT'
+2025-10-25T18:18:11.518520062Z }
+2025-10-25T18:18:11.545569451Z 🚀 Starting production server...
+2025-10-25T18:18:13.049190693Z [db] Environment: NODE_ENV=production, PORT=10000
+2025-10-25T18:18:13.04946057Z [db] Using DATABASE_URL: postgresql://***@dpg-d3qllpodl3ps73c2jb4g-a/archetype_oeig
+2025-10-25T18:18:13.049743779Z [db] Pool config: connectionTimeoutMillis=5000, ssl=true
+2025-10-25T18:18:13.053868972Z [PERFORMANCE] System prompt base cached (16863 chars) - saves ~4KB per request
+2025-10-25T18:18:13.055393468Z [PLATFORM-HEALING] PROJECT_ROOT: /opt/render/project/src
+2025-10-25T18:18:13.058918303Z 🔒 Running on Render - SSL configured
+2025-10-25T18:18:13.058929193Z ✅ Deployment verified: All critical fixes active
+2025-10-25T18:18:13.059986915Z [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-25T18:18:13.062656985Z 📡 WebSocket server initialized at /ws
+2025-10-25T18:18:13.065554892Z ✅ All routes registered successfully
+2025-10-25T18:18:13.066342045Z 🔍 Testing database connection...
+2025-10-25T18:18:13.087956412Z 6:18:13 PM [express] serving on port 10000
+2025-10-25T18:18:13.088001583Z 🌐 Server accessible at http://0.0.0.0:10000
+2025-10-25T18:18:13.119900687Z ⚠️ Retry attempt 1/5 failed: {
+2025-10-25T18:18:13.119916048Z   code: 'DEPTH_ZERO_SELF_SIGNED_CERT',
+2025-10-25T18:18:13.119920378Z   message: 'self-signed certificate',
+2025-10-25T18:18:13.119925578Z   nextRetryIn: '1000ms'
+2025-10-25T18:18:13.119929308Z }
+2025-10-25T18:18:14.129336408Z ⚠️ Retry attempt 2/5 failed: {
+2025-10-25T18:18:14.129355708Z   code: 'DEPTH_ZERO_SELF_SIGNED_CERT',
+2025-10-25T18:18:14.129359929Z   message: 'self-signed certificate',
+2025-10-25T18:18:14.129364049Z   nextRetryIn: '2000ms'
+2025-10-25T18:18:14.129367629Z }
+2025-10-25T18:18:16.139989684Z ⚠️ Retry attempt 3/5 failed: {
+2025-10-25T18:18:16.140016315Z   code: 'DEPTH_ZERO_SELF_SIGNED_CERT',
+2025-10-25T18:18:16.140035655Z   message: 'self-signed certificate',
+2025-10-25T18:18:16.140042065Z   nextRetryIn: '4000ms'
+2025-10-25T18:18:16.140048296Z }
+2025-10-25T18:18:20.141905738Z ==> Your service is live 🎉
+2025-10-25T18:18:20.152047119Z ⚠️ Retry attempt 4/5 failed: {
+2025-10-25T18:18:20.152066939Z   code: 'DEPTH_ZERO_SELF_SIGNED_CERT',
+2025-10-25T18:18:20.152071259Z   message: 'self-signed certificate',
+2025-10-25T18:18:20.152075239Z   nextRetryIn: '8000ms'
+2025-10-25T18:18:20.15207806Z }
+2025-10-25T18:18:20.173473746Z ==> 
+2025-10-25T18:18:20.199842004Z ==> ///////////////////////////////////////////////////////////
+2025-10-25T18:18:20.461078293Z ==> 
+2025-10-25T18:18:20.488099371Z ==> Available at your primary URL https://archetype-x8b5.onrender.com
+2025-10-25T18:18:20.516298079Z ==> 
+2025-10-25T18:18:20.542603987Z ==> ///////////////////////////////////////////////////////////
+2025-10-25T18:18:28.166174199Z ⚠️ Retry attempt 5/5 failed: {
+2025-10-25T18:18:28.166224201Z   code: 'DEPTH_ZERO_SELF_SIGNED_CERT',
+2025-10-25T18:18:28.166228221Z   message: 'self-signed certificate',
+2025-10-25T18:18:28.166232231Z   nextRetryIn: '16000ms'
+2025-10-25T18:18:28.166235281Z }
+2025-10-25T18:18:44.167338866Z ❌ Database connection failed after retries: self-signed certificate
+2025-10-25T18:18:44.167383457Z ⚠️ Running in degraded mode (database unavailable)
+2025-10-25T18:18:44.167394918Z 🔧 Auto-healing system ENABLED (production mode)
+2025-10-25T18:18:44.167443969Z 
+2025-10-25T18:18:44.16745355Z 🔍 Checking GitHub integration configuration...
+2025-10-25T18:18:44.16746028Z ✅ GitHub integration configured successfully
+2025-10-25T18:18:44.167486391Z    - Repository: 6-7Development/archetype
+2025-10-25T18:18:44.167498801Z    - Branch: main
+2025-10-25T18:18:44.167503291Z    - Token: ✓ (configured)
+2025-10-25T18:18:44.167506861Z    - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-25T18:18:44.167519721Z    - Maintenance mode: Available for owner
+2025-10-25T18:18:44.167524181Z 
