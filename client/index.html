@@ -11,6 +11,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+    <script>
+      // Reduce Vite HMR reconnection logging noise
+      if (import.meta.env.DEV) {
+        const originalWarn = console.warn;
+        console.warn = (...args) => {
+          if (args[0]?.includes?.('[vite]')) return;
+          originalWarn(...args);
+        };
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

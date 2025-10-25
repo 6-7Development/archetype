@@ -17,14 +17,20 @@ console.info(`[db] Using DATABASE_URL: ${maskedUrl}`);
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-const poolConfig = {
+const poolConfig: any = {
   connectionString: process.env.DATABASE_URL,
   connectionTimeoutMillis: 5000,
-  ssl: isProduction ? { rejectUnauthorized: false } : false,
 };
+
+// Configure SSL for production (Render PostgreSQL uses self-signed certs)
+if (isProduction) {
+  poolConfig.ssl = {
+    rejectUnauthorized: false
+  };
+}
 
 export const pool = new Pool(poolConfig);
 
-console.info(`[db] Pool config: connectionTimeoutMillis=5000, ssl=${isProduction}`);
+console.info(`[db] Pool config: connectionTimeoutMillis=5000, ssl=${isProduction ? 'enabled (rejectUnauthorized: false)' : 'disabled'}`);
 
 export const db = drizzle(pool, { schema });
