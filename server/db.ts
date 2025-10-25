@@ -32,5 +32,6 @@ if (isProduction) {
 export const pool = new Pool(poolConfig);
 
 console.info(`[db] Pool config: connectionTimeoutMillis=5000, ssl=${isProduction ? 'enabled (rejectUnauthorized: false)' : 'disabled'}`);
+console.info(`[db] SSL Configuration: ${JSON.stringify(poolConfig.ssl)}`);
 
 export const db = drizzle(pool, { schema });
