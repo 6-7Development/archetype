@@ -111,9 +111,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Deployment info endpoint (public - for status page)
+  // CRITICAL: Disable caching to prevent 304 responses that break JSON parsing
   app.get('/api/deployment-info', async (_req, res) => {
     try {
       const info = await getDeploymentInfo();
+      // Prevent 304 Not Modified responses
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       res.json(info);
     } catch (error) {
       console.error('Error getting deployment info:', error);
