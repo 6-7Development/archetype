@@ -7,8 +7,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { TaskBoard } from "@/components/task-board";
-import type { Task } from "@/hooks/use-websocket-stream";
 
 interface Message {
   id: string;
@@ -182,14 +180,6 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
     queryKey: ['/api/platform/chat/history'],
   });
 
-  // Fetch live task progress
-  const { data: tasksData } = useQuery<{ tasks: Task[] }>({
-    queryKey: ['/api/platform/tasks'],
-    refetchInterval: 1000, // Poll every second for real-time updates
-  });
-
-  const tasks = tasksData?.tasks || [];
-
   // Initialize messages from history
   useEffect(() => {
     if (chatHistory?.messages) {
@@ -321,13 +311,6 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
 
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden bg-slate-900/60">
-      {/* TaskBoard - Live progress display */}
-      {tasks.length > 0 && (
-        <div className="border-b border-slate-700/50 p-4">
-          <TaskBoard tasks={tasks} isGenerating={isStreaming} />
-        </div>
-      )}
-
       {/* Chat Messages - Enhanced Scrolling */}
       <div 
         ref={scrollRef}
