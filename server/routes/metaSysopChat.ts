@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db';
-import { chatMessages } from '@shared/schema';
+import { chatMessages, taskLists } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth';
 import Anthropic from '@anthropic-ai/sdk';
@@ -373,6 +373,7 @@ EXECUTE NOW - Read task list, update progress, get approval, write files, deploy
     let continueLoop = true;
     let iterationCount = 0;
     const MAX_ITERATIONS = 5;
+    let commitSuccessful = false; // Track if commit_to_github succeeded
     
     // Track architect approval for enforcement (per-file approval map)
     const approvedFiles = new Map<string, { approved: boolean; timestamp: number }>();
@@ -488,6 +489,50 @@ DO NOT create new tasks - UPDATE existing ones!`;
             } else if (name === 'updateTask') {
               const typedInput = input as { taskId: string; status: string; result?: string };
               sendEvent('progress', { message: `Updating task to ${typedInput.status}...` });
+              
+              // 🎯 ANTI-LYING VALIDATION: Prevent completing tasks out of order
+              if (typedInput.status === 'completed') {
+                // Get current task list to validate
+                const listResult = await readTaskList({ userId });
+                if (listResult.success && listResult.taskLists) {
+                  const activeList = listResult.taskLists.find((list: any) => list.status === 'active');
+                  if (activeList) {
+                    const tasks = activeList.tasks || [];
+                    const currentTask = tasks.find((t: any) => t.id === typedInput.taskId);
+                    
+                    if (currentTask) {
+                      // SPECIAL VALIDATION: "Deploy to production via GitHub" requires actual commit success
+                      if (currentTask.title === 'Deploy to production via GitHub') {
+                        if (!commitSuccessful) {
+                          toolResult = `❌ BLOCKED: Cannot mark deployment task as completed!\n\n` +
+                            `You must successfully call commit_to_github() and receive a success response BEFORE marking this task complete.\n\n` +
+                            `Commit status: ${commitSuccessful ? 'Success' : 'Not attempted or failed'}\n` +
+                            `File changes: ${fileChanges.length}\n\n` +
+                            `You cannot claim deployment is done until GitHub actually confirms the commit!`;
+                          console.error('[META-SYSOP-ANTI-LYING] Blocked deployment task completion - commit not successful');
+                          sendEvent('error', { message: 'Cannot complete deployment - commit not successful' });
+                          break; // Skip the updateTask call entirely
+                        }
+                      }
+                      
+                      // DEPENDENCY VALIDATION: Check if prerequisite tasks are complete
+                      const currentIndex = tasks.findIndex((t: any) => t.id === typedInput.taskId);
+                      const previousTasks = tasks.slice(0, currentIndex);
+                      const incompletePrevious = previousTasks.filter((t: any) => t.status !== 'completed');
+                      
+                      if (incompletePrevious.length > 0) {
+                        toolResult = `❌ BLOCKED: Cannot complete task out of order!\n\n` +
+                          `Task "${currentTask.title}" requires these tasks to be completed first:\n` +
+                          incompletePrevious.map((t: any) => `- ${t.title} (${t.status})`).join('\n') +
+                          `\n\nComplete tasks in order!`;
+                        console.error('[META-SYSOP-ANTI-LYING] Blocked out-of-order task completion');
+                        sendEvent('error', { message: 'Tasks must be completed in order' });
+                        break; // Skip the updateTask call entirely
+                      }
+                    }
+                  }
+                }
+              }
               
               const result = await updateTask({
                 userId,
@@ -660,6 +705,7 @@ DO NOT create new tasks - UPDATE existing ones!`;
                       typedInput.commitMessage
                     );
                     
+                    commitSuccessful = true; // Track commit success for task validation
                     sendEvent('progress', { message: `✅ Committed to GitHub: ${result.commitHash}` });
                     sendEvent('progress', { message: `🚀 Render will auto-deploy in 2-3 minutes` });
                     
@@ -699,6 +745,50 @@ DO NOT create new tasks - UPDATE existing ones!`;
           content: toolResults,
         });
       } else {
+        // 🎯 FINAL VALIDATION: Don't end loop unless all tasks are actually complete
+        const finalCheck = await readTaskList({ userId });
+        
+        if (!finalCheck.success) {
+          // CRITICAL: If readTaskList fails, BLOCK session end (don't allow silent continuation)
+          console.error('[META-SYSOP-ANTI-LYING] readTaskList failed - cannot verify tasks complete!');
+          sendEvent('error', { message: 'Cannot verify task completion - retrying...' });
+          
+          const errorMessage = `❌ ERROR: Cannot verify task completion status!\n\n` +
+            `Task verification failed: ${finalCheck.error}\n\n` +
+            `You MUST ensure all tasks are completed before ending. Call readTaskList() to verify, then complete any remaining tasks.`;
+          
+          conversationMessages.push({
+            role: 'user',
+            content: errorMessage,
+          });
+          continue; // Force retry - do NOT allow loop end
+        }
+        
+        if (finalCheck.taskLists) {
+          const activeList = finalCheck.taskLists.find((list: any) => list.status === 'active');
+          if (activeList) {
+            const incompleteTasks = activeList.tasks.filter((t: any) => t.status !== 'completed');
+            if (incompleteTasks.length > 0) {
+              console.error('[META-SYSOP-ANTI-LYING] Blocked loop end - tasks incomplete:', incompleteTasks.map((t: any) => t.title));
+              sendEvent('error', { message: `Cannot finish - ${incompleteTasks.length} tasks incomplete` });
+              
+              // Force Meta-SySop to continue working
+              const errorMessage = `❌ BLOCKED: Cannot end session with incomplete tasks!\n\n` +
+                `Incomplete tasks (${incompleteTasks.length}):\n` +
+                incompleteTasks.map((t: any) => `- ${t.title} (${t.status})`).join('\n') +
+                `\n\nYou must complete ALL tasks before finishing. Call updateTask() to mark remaining tasks complete.`;
+              
+              conversationMessages.push({
+                role: 'user',
+                content: errorMessage,
+              });
+              continue; // Force another iteration
+            }
+          }
+        }
+        
+        // ✅ ALL VALIDATIONS PASSED: Tasks verified complete, safe to end session
+        console.log('[META-SYSOP-ENFORCEMENT] ✅ All tasks verified complete - ending session');
         continueLoop = false;
       }
     }
@@ -720,6 +810,57 @@ DO NOT create new tasks - UPDATE existing ones!`;
       }
       res.end();
       return;
+    }
+
+    // 🎯 POST-SAFETY CLEANUP: Clean up incomplete tasks from THIS session only
+    // CRITICAL: This now runs AFTER safety check passes, and only affects THIS session's tasks
+    // This prevents stuck tasks when Meta-SySop exits early (timeout, crash, etc)
+    if (activeTaskListId) {
+      console.log(`[META-SYSOP-CLEANUP] Safety passed - checking task list ${activeTaskListId} for incomplete tasks...`);
+      const cleanupCheck = await readTaskList({ userId });
+      if (cleanupCheck.success && cleanupCheck.taskLists) {
+        // CRITICAL: Only clean up THE SPECIFIC task list from THIS session
+        const sessionTaskList = cleanupCheck.taskLists.find((list: any) => list.id === activeTaskListId);
+        if (sessionTaskList) {
+          const incompleteTasks = sessionTaskList.tasks.filter((t: any) => t.status !== 'completed');
+          if (incompleteTasks.length > 0) {
+            console.log(`[META-SYSOP-CLEANUP] Found ${incompleteTasks.length} incomplete tasks in session task list ${activeTaskListId}`);
+            sendEvent('progress', { message: `Cleaning up ${incompleteTasks.length} incomplete tasks...` });
+            
+            // Mark each incomplete task as completed (with warning)
+            for (const task of incompleteTasks) {
+              try {
+                await updateTask({
+                  userId,
+                  taskId: task.id,
+                  status: 'completed',
+                  result: '⚠️ Auto-completed (session ended early)'
+                });
+                console.log(`[META-SYSOP-CLEANUP] Marked task "${task.title}" as completed (cleanup)`);
+              } catch (error: any) {
+                console.error(`[META-SYSOP-CLEANUP] Failed to cleanup task ${task.id}:`, error);
+              }
+            }
+            
+            // Now mark the task list as completed
+            try {
+              await db
+                .update(taskLists)
+                .set({ status: 'completed' })
+                .where(eq(taskLists.id, activeTaskListId));
+              console.log(`[META-SYSOP-CLEANUP] ✅ Task list ${activeTaskListId} marked as completed (cleanup)`);
+            } catch (error: any) {
+              console.error('[META-SYSOP-CLEANUP] Failed to cleanup task list:', error);
+            }
+          } else {
+            console.log(`[META-SYSOP-CLEANUP] ✅ All tasks already complete in session task list ${activeTaskListId}`);
+          }
+        } else {
+          console.warn(`[META-SYSOP-CLEANUP] ⚠️ Session task list ${activeTaskListId} not found - skipping cleanup`);
+        }
+      }
+    } else {
+      console.warn('[META-SYSOP-CLEANUP] ⚠️ No activeTaskListId tracked - skipping cleanup (this should not happen)');
     }
 
     // Commit and push if enabled
@@ -759,6 +900,28 @@ DO NOT create new tasks - UPDATE existing ones!`;
       }
     }
 
+    // 🎯 FINAL ANTI-LYING CHECK: Only allow completion message if we verified tasks are complete
+    let finalMessage = fullContent;
+    if (!finalMessage) {
+      // If fullContent is empty (all text suppressed), verify tasks before using default message
+      const verifyCheck = await readTaskList({ userId });
+      if (verifyCheck.success && verifyCheck.taskLists) {
+        const activeList = verifyCheck.taskLists.find((list: any) => list.status === 'active');
+        if (activeList) {
+          const allComplete = activeList.tasks.every((t: any) => t.status === 'completed');
+          if (allComplete) {
+            finalMessage = '✅ All tasks completed successfully!';
+          } else {
+            finalMessage = '⚠️ Session ended but not all tasks completed. Please review task status.';
+          }
+        } else {
+          finalMessage = '✅ Analysis complete!';
+        }
+      } else {
+        finalMessage = '⚠️ Session ended. Task verification unavailable.';
+      }
+    }
+    
     // Save assistant message
     const [assistantMsg] = await db
       .insert(chatMessages)
@@ -767,7 +930,7 @@ DO NOT create new tasks - UPDATE existing ones!`;
         projectId: null,
         fileId: null,
         role: 'assistant',
-        content: fullContent || 'Done! I\'ve analyzed and fixed the issues.',
+        content: finalMessage,
         isPlatformHealing: true,
         platformChanges: fileChanges.length > 0 ? { files: fileChanges } : null,
       })
