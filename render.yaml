@@ -33,9 +33,9 @@ services:
       - key: NODE_ENV
         value: production
       
-      # SSL certificate bypass for self-signed certs (Render PostgreSQL)
-      - key: NODE_TLS_REJECT_UNAUTHORIZED
-        value: "0"
+      # PostgreSQL SSL mode (no-verify accepts self-signed certs)
+      - key: PGSSLMODE
+        value: "no-verify"
 
       # Session secret (CHANGE THIS - generate new secret)
       - key: SESSION_SECRET
