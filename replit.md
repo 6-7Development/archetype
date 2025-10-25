@@ -66,6 +66,7 @@ The user interface features a tab-based workspace (Overview, Build, Files, Previ
 - **Security & Production Readiness**: Full authentication/authorization (Replit Auth, PostgreSQL sessions), protected API routes, rate limiting, and bcrypt-hashed API keys.
 - **Deployment & Hosting System**: Supports public hosting of deployed projects under unique subdomains with status and visit tracking.
 - **Meta-SySop Security**: Robust authentication/authorization, dedicated Meta-SySop identity for git operations, and comprehensive security measures to prevent shell injection, path traversal, and protect sensitive files.
+- **Production Owner Access (Oct 2025)**: Meta-SySop requires owner designation via `is_owner = true` in database or `OWNER_USER_ID` environment variable. Development (Replit) and production (Render) databases must be configured separately. Setup scripts provided in `production-owner-setup.sql` and `PRODUCTION_OWNER_SETUP.md` for Render deployment.
 
 ## External Dependencies
 - **Frontend**: React, TypeScript, Monaco Editor, Tailwind CSS, Shadcn UI, next-themes
