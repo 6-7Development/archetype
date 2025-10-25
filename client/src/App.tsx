@@ -149,11 +149,7 @@ function Router() {
           <Admin />
         </AppLayout>
       </Route>
-      <Route path="/platform-healing">
-        <AppLayout>
-          <PlatformHealing />
-        </AppLayout>
-      </Route>
+      <Route path="/platform-healing" component={PlatformHealing} />
       <Route path="/publishing">
         <AppLayout>
           <Publishing />
