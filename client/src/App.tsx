@@ -171,11 +171,17 @@ function Router() {
 }
 
 function App() {
+  console.log('[APP] App component rendering...');
+  
   // Initialize Google Analytics 4 on app load
   useEffect(() => {
+    console.log('[APP] useEffect running - initializing GA4');
     initGA4();
+    console.log('[APP] GA4 initialized');
   }, []);
 
+  console.log('[APP] About to return JSX tree');
+  
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
@@ -192,5 +198,7 @@ function App() {
     </ErrorBoundary>
   );
 }
+
+console.log('[APP] App module loaded successfully');
 
 export default App;
