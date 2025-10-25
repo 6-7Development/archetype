@@ -15,12 +15,23 @@ const maskedUrl = `${parsed.protocol}//${parsed.username ? "***@" : ""}${parsed.
 console.info(`[db] Environment: NODE_ENV=${process.env.NODE_ENV}, PORT=${process.env.PORT}`);
 console.info(`[db] Using DATABASE_URL: ${maskedUrl}`);
 
-export const pool = new Pool({ 
-  connectionString: rawUrl,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  connectionTimeoutMillis: 5000,
-});
+const isProduction = process.env.NODE_ENV === 'production';
 
-console.info(`[db] Pool config: connectionTimeoutMillis=5000, ssl=${process.env.NODE_ENV === 'production'}`);
+const poolConfig: any = {
+  connectionString: process.env.DATABASE_URL,
+  connectionTimeoutMillis: 5000,
+};
+
+// Configure SSL for production (Render PostgreSQL uses self-signed certs)
+if (isProduction) {
+  poolConfig.ssl = {
+    rejectUnauthorized: false
+  };
+}
+
+export const pool = new Pool(poolConfig);
+
+console.info(`[db] Pool config: connectionTimeoutMillis=5000, ssl=${isProduction ? 'enabled (rejectUnauthorized: false)' : 'disabled'}`);
+console.info(`[db] SSL Configuration: ${JSON.stringify(poolConfig.ssl)}`);
 
 export const db = drizzle(pool, { schema });
