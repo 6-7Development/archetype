@@ -185,8 +185,8 @@ export function AppLayout({ children }: AppLayoutProps) {
             </Button>
           )}
 
-          {/* Platform Healing - Only for Platform Owner */}
-          {isAuthenticated && (user as User)?.isOwner && (
+          {/* Platform Healing - Admin & Owner Access */}
+          {isAuthenticated && ((user as User)?.role === 'admin' || (user as User)?.isOwner) && (
             <Button
               variant="ghost"
               className={cn(
