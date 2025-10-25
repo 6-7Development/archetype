@@ -184,7 +184,17 @@ export class PlatformHealingService {
     console.log(`[PLATFORM-WRITE] Called with path: ${filePath}`);
     console.log(`[PLATFORM-WRITE] Content type: ${typeof content}`);
     console.log(`[PLATFORM-WRITE] Content defined: ${content !== undefined}`);
+    console.log(`[PLATFORM-WRITE] Content null: ${content === null}`);
     console.log(`[PLATFORM-WRITE] Content length: ${content?.length || 0} bytes`);
+    
+    // Strict content validation
+    if (content === undefined || content === null) {
+      throw new Error(`Cannot write file with undefined or null content: ${filePath}`);
+    }
+    
+    if (typeof content !== 'string') {
+      throw new Error(`Content must be a string, got ${typeof content}: ${filePath}`);
+    }
     
     // Validate file path
     if (path.isAbsolute(filePath)) {

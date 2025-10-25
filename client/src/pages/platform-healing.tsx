@@ -208,9 +208,9 @@ function PlatformHealingContent() {
           </div>
         </div>
 
-        {/* Live Task Progress */}
+        {/* Live Task Progress - Mobile Responsive */}
         {tasks.length > 0 && (
-          <div className="border-b border-slate-800/50 p-4 bg-slate-950/30">
+          <div className="border-b border-slate-800/50 p-2 sm:p-4 bg-slate-950/30">
             <AgentProgress 
               steps={tasks}
               isWorking={isWorking}
@@ -219,8 +219,8 @@ function PlatformHealingContent() {
           </div>
         )}
 
-        {/* Chat Container */}
-        <div className="flex-1 min-h-0 overflow-hidden">
+        {/* Chat Container - Mobile Safe Scrolling */}
+        <div className="flex-1 min-h-0 overflow-hidden touch-none">
           <MetaSySopChat 
             autoCommit={autoCommit}
             autoPush={autoPush}

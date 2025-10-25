@@ -23,6 +23,9 @@ export function TaskBoard({ tasks, isGenerating, subAgentActive, className }: Ta
     return null;
   }
 
+  // Detect mobile viewport
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   // Calculate progress
   const completedCount = tasks.filter(t => t.status === 'completed').length;
   const totalCount = tasks.length;
@@ -190,7 +193,7 @@ function TaskItem({ task, index }: TaskItemProps) {
   return (
     <div 
       className={cn(
-        "flex items-start gap-3 px-3 py-2 rounded-md transition-colors",
+        "flex items-start gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-colors text-xs sm:text-sm",
         task.status === 'in_progress' && "bg-primary/5",
         task.status === 'failed' && "bg-destructive/5"
       )}
