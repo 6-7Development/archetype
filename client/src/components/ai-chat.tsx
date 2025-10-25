@@ -60,7 +60,7 @@ interface AIChatProps {
 export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   const { user } = useAuth(); // Get current user to check if admin
   const isAdmin = user?.role === 'admin';
-  
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [pendingImages, setPendingImages] = useState<string[]>([]); // Image URLs to send with next message
@@ -78,7 +78,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     deleted: string[];
     summary: string;
   } | null>(null);
-  
+
   // Fix sessionId persistence - scoped to project, recomputes when project changes
   const sessionId = useMemo(() => {
     const storageKey = `chat-session-${currentProjectId || 'default'}`;
@@ -104,7 +104,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  
+
   // Default greeting message
   const DEFAULT_GREETING: Message = {
     role: "assistant",
@@ -192,7 +192,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
 
   // WebSocket streaming for AI chat - use actual user ID
   const streamState = useWebSocketStream(sessionId, user?.id || 'anonymous');
-  
+
   // Update metrics from WebSocket usage data
   useEffect(() => {
     if (streamState.usage) {
@@ -210,7 +210,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       const timer = setTimeout(() => {
         streamState.resetState();
       }, 5000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [streamState.fileSummary, streamState.currentFile, streamState]);
@@ -244,19 +244,19 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
         timestamp: new Date(),
         checkpoint: data.checkpoint, // Include checkpoint data for billing display
       };
-      
+
       setMessages((prev) => [...prev, assistantMessage]);
-      
+
       // Clear chat progress when mutation completes
       streamState.resetState();
-      
+
       // Persist assistant message to database (save to general chat if no project)
       saveMessageMutation.mutate({
         projectId: currentProjectId || null,
         role: 'assistant',
         content: data.response,
       });
-      
+
       // If AI decides to generate code, show cost preview first
       if (data.shouldGenerate && data.command) {
         // Analyze complexity before executing
@@ -266,7 +266,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     onError: (error) => {
       // Clear progress indicators on failure
       streamState.resetState();
-      
+
       // Show error toast
       toast({
         variant: "destructive",
@@ -293,14 +293,14 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
           message: data.message || "This project requires secure credentials",
           requiredSecrets: data.requiredSecrets || [],
         });
-        
+
         // Initialize secrets input state
         const initialSecrets: Record<string, string> = {};
         data.requiredSecrets?.forEach((secret) => {
           initialSecrets[secret.key] = "";
         });
         setSecretsInput(initialSecrets);
-        
+
         // Add message to chat
         setMessages((prev) => [
           ...prev,
@@ -310,23 +310,23 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
             timestamp: new Date(),
           },
         ]);
-        
+
         return;
       }
-      
+
       // Normal project generation success
       queryClient.invalidateQueries({ queryKey: ["/api/commands"] });
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       queryClient.invalidateQueries({ queryKey: ["/api/files"] });
       toast({ description: "Project generated successfully!" });
-      
+
       // Display changes panel if changes data is available
       if (data.changes) {
         setLastChanges(data.changes);
         // Auto-dismiss after 10 seconds
         setTimeout(() => setLastChanges(null), 10000);
       }
-      
+
       if (onProjectGenerated && data.result) {
         onProjectGenerated(data.result);
       }
@@ -342,10 +342,10 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   const executeCommand = (command: string, secrets?: Record<string, string>) => {
     setLastCommand(command);
     setIsGenerating(true);
-    
+
     // Track start time for elapsed time calculation
     const startTime = Date.now();
-    
+
     // Simulate progress steps with progress tracking
     const progressSteps: ProgressStep[] = [
       { id: "1", type: "thinking", message: "Analyzing your request...", progress: 0 },
@@ -354,28 +354,28 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       { id: "4", type: "action", message: "Testing syntax and logic...", progress: 0 },
       { id: "5", type: "action", message: "Validating security...", progress: 0 },
     ];
-    
+
     // Simulate step-by-step progress with percentage updates
     let currentStep = 0;
     let currentStepProgress = 0;
-    
+
     const progressInterval = setInterval(() => {
       // Calculate elapsed time
       const elapsed = Date.now() - startTime;
       const minutes = Math.floor(elapsed / 60000);
       const seconds = Math.floor((elapsed % 60000) / 1000);
       const timeElapsed = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
-      
+
       if (currentStep < progressSteps.length) {
         // Update current step progress (0% -> 25% -> 50% -> 75% -> 100%)
         currentStepProgress += 25;
-        
+
         if (currentStepProgress > 100) {
           // Move to next step
           currentStepProgress = 25;
           currentStep++;
         }
-        
+
         // Update progress for all steps
         const updatedSteps = progressSteps.map((step, index) => {
           if (index < currentStep) {
@@ -388,9 +388,9 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
           // Pending steps
           return step;
         });
-        
+
         setCurrentProgress(updatedSteps);
-        
+
         // Update metrics with time elapsed
         setCurrentMetrics((prev) => ({
           ...prev,
@@ -398,7 +398,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
         }));
       }
     }, 400); // Update every 400ms for smooth animation
-    
+
     commandMutation.mutate(
       {
         command,
@@ -410,25 +410,25 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
         onSettled: () => {
           clearInterval(progressInterval);
           setIsGenerating(false);
-          
+
           // Calculate final elapsed time
           const elapsed = Date.now() - startTime;
           const minutes = Math.floor(elapsed / 60000);
           const seconds = Math.floor((elapsed % 60000) / 1000);
           const timeElapsed = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
-          
+
           // Show final success step
           const completedSteps = progressSteps.map(step => ({
             ...step,
             type: "success" as const,
             progress: 100,
           }));
-          
+
           setCurrentProgress([
             ...completedSteps,
             { id: "6", type: "success", message: "Project generated successfully!", progress: 100 },
           ]);
-          
+
           // Update final metrics
           setCurrentMetrics((prev) => ({
             ...prev,
@@ -438,7 +438,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
             linesAdded: 247,
             linesRemoved: 18,
           }));
-          
+
           // Clear progress after 3 seconds
           setTimeout(() => {
             setCurrentProgress([]);
@@ -451,12 +451,12 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
 
   const handleSecretsSubmit = () => {
     if (!secretsRequest) return;
-    
+
     // Validate all secrets are provided
     const missing = secretsRequest.requiredSecrets.filter(
       (secret) => !secretsInput[secret.key]?.trim()
     );
-    
+
     if (missing.length > 0) {
       toast({
         variant: "destructive",
@@ -464,7 +464,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       });
       return;
     }
-    
+
     // Add confirmation message
     setMessages((prev) => [
       ...prev,
@@ -474,10 +474,10 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
         timestamp: new Date(),
       },
     ]);
-    
+
     // Retry command with secrets using the original command
     executeCommand(secretsRequest.command, secretsInput);
-    
+
     // Clear secrets request
     setSecretsRequest(null);
     setSecretsInput({});
@@ -485,11 +485,11 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
 
   const handleCostPreviewConfirm = () => {
     if (!pendingCommand) return;
-    
+
     // Close modal and execute command
     setShowCostPreview(false);
     executeCommand(pendingCommand);
-    
+
     // Clear cost data
     setCostData(null);
     setPendingCommand("");
@@ -500,7 +500,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     setShowCostPreview(false);
     setCostData(null);
     setPendingCommand("");
-    
+
     toast({ 
       description: "Project generation cancelled" 
     });
@@ -508,14 +508,14 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
 
   const handleRetryComplexity = () => {
     if (!pendingCommand) return;
-    
+
     setShowComplexityError(false);
     complexityMutation.mutate({ command: pendingCommand });
   };
 
   const handleProceedWithoutPreview = () => {
     if (!pendingCommand) return;
-    
+
     setShowComplexityError(false);
     executeCommand(pendingCommand);
     setPendingCommand("");
@@ -524,7 +524,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   const handleCancelComplexity = () => {
     setShowComplexityError(false);
     setPendingCommand("");
-    
+
     toast({ 
       description: "Project generation cancelled" 
     });
@@ -535,7 +535,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
 
     const userMessage = input.trim();
     const messagesToSend = pendingImages.length > 0 ? [...pendingImages] : undefined;
-    
+
     setMessages((prev) => [
       ...prev,
       {
@@ -547,14 +547,14 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     ]);
     setInput("");
     setPendingImages([]); // Clear pending images after sending
-    
+
     // Persist user message to database (save to general chat if no project)
     saveMessageMutation.mutate({
       projectId: currentProjectId || null,
       role: 'user',
       content: userMessage,
     });
-    
+
     chatMutation.mutate({ 
       message: userMessage,
       projectId: currentProjectId ? parseInt(currentProjectId) : undefined,
@@ -573,11 +573,11 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      
+
       // Check if item is an image
       if (item.type.indexOf('image') !== -1) {
         e.preventDefault(); // Prevent default paste behavior for images
-        
+
         const file = item.getAsFile();
         if (!file) continue;
 
@@ -602,10 +602,10 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
 
         // Generate temporary ID for tracking upload progress
         const tempId = nanoid();
-        
+
         // Add to uploading state
         setUploadingImages(prev => new Map(prev).set(tempId, true));
-        
+
         // Upload image with temp ID for progress tracking
         uploadImageMutation.mutate(file, {
           onSuccess: () => {
@@ -641,11 +641,31 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     }
   };
 
+  // Smooth auto-scroll to bottom to show newest messages with delay for animation
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight; // Scroll to bottom like Replit Agent
-    }
-  }, [messages]);
+    const timer = setTimeout(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTo({
+          top: scrollRef.current.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [messages, streamState.streamingContent]);
+
+  // Smooth auto-scroll to bottom to show newest messages with delay for animation
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTo({
+          top: scrollRef.current.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [messages, streamState.streamingContent]);
 
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden bg-[hsl(220,20%,12%)] relative touch-none">
@@ -658,7 +678,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
           />
         </div>
       )}
-      
+
       {/* Messages - Clean Scrollable Area */}
       <div 
         ref={scrollRef} 
@@ -704,7 +724,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                     {new Date(message.timestamp).toLocaleTimeString()}
                   </div>
                 )}
-                
+
                 {/* Message Content Bubble */}
                 <div
                   className={cn(
@@ -721,9 +741,9 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                       📝 Previous conversation summary
                     </p>
                   )}
-                  
+
                   <MarkdownRenderer content={message.content} />
-                  
+
                   {/* Display images if present */}
                   {message.images && message.images.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2 border-t border-[hsl(220,15%,28%)]/50 pt-3">
@@ -740,7 +760,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Checkpoint billing info */}
                 {!isAdmin && message.role === "assistant" && message.checkpoint && (
                   <div className="text-xs text-[hsl(220,10%,72%)] bg-[hsl(220,18%,16%)] rounded-md px-3 py-2 space-y-1 max-w-[85%] border border-[hsl(220,15%,28%)]">
@@ -759,7 +779,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                   </div>
                 )}
               </div>
-              
+
               {/* Avatar - User Side */}
               {message.role === "user" && (
                 <div className="flex-shrink-0">
@@ -812,7 +832,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
               </div>
             </div>
           )}
-          
+
           {/* Progress Display - Clean and Minimal */}
           {currentProgress.length > 0 && (
             <div className="flex gap-3 items-start">
@@ -849,7 +869,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
               </div>
             </div>
           )}
-          
+
           {/* Secrets Request Form */}
           {secretsRequest && (
             <Card className="border-[hsl(220,15%,28%)] bg-[hsl(220,18%,16%)]" data-testid="secrets-request-card">
@@ -869,7 +889,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                     Your credentials will be stored securely as environment variables and never exposed in generated code.
                   </AlertDescription>
                 </Alert>
-                
+
                 {secretsRequest.requiredSecrets.map((secret) => (
                   <div key={secret.key} className="space-y-2">
                     <Label htmlFor={secret.key} className="text-sm font-medium text-[hsl(220,8%,98%)]">
@@ -892,7 +912,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                     />
                   </div>
                 ))}
-                
+
                 <Button 
                   onClick={handleSecretsSubmit} 
                   className="w-full"
@@ -944,7 +964,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
               </p>
             </div>
           )}
-          
+
           {/* File Summary Display */}
           {streamState.fileSummary && !streamState.currentFile && (
             <div className="mb-2 px-3 py-1.5 bg-[hsl(220,16%,20%)] border-l-2 border-green-500/60 rounded text-xs" data-testid="file-summary-display">
@@ -957,7 +977,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
               </p>
             </div>
           )}
-          
+
           {/* WebSocket Stream: Thinking Display */}
           {streamState.currentThought && (
             <div className="mb-2 px-3 py-1.5 bg-[hsl(220,16%,20%)] border-l-2 border-blue-500/60 rounded text-xs" data-testid="stream-thinking-display">
@@ -967,7 +987,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
               </p>
             </div>
           )}
-          
+
           {/* WebSocket Stream: Status Display */}
           {streamState.currentStatus && (
             <div className="mb-2 px-3 py-1.5 bg-[hsl(220,16%,20%)] border-l-2 border-amber-500/60 rounded text-xs" data-testid="stream-status-display">
@@ -982,7 +1002,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
               </p>
             </div>
           )}
-          
+
           {/* WebSocket Stream: Action Display */}
           {streamState.currentAction && (
             <div className="mb-2 px-3 py-1.5 bg-[hsl(220,16%,20%)] border-l-2 border-purple-500/60 rounded text-xs" data-testid="stream-action-display">
@@ -992,7 +1012,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
               </p>
             </div>
           )}
-          
+
           {/* Image Preview Section */}
           {(pendingImages.length > 0 || uploadingImages.size > 0) && (
             <div className="mb-3 flex flex-wrap gap-2">
@@ -1009,7 +1029,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                   </div>
                 </div>
               ))}
-              
+
               {/* Show uploaded images with remove button */}
               {pendingImages.map((imageUrl, index) => (
                 <div key={index} className="relative group">
@@ -1032,7 +1052,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
               ))}
             </div>
           )}
-          
+
           <div className="flex gap-2 items-end">
             <Textarea
               value={input}
@@ -1091,7 +1111,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
               {complexityErrorMessage}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <Alert>
               <AlertCircle className="h-4 w-4" />

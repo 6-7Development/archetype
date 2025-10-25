@@ -197,10 +197,13 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
     }
   }, [chatHistory]);
 
-  // Auto-scroll to bottom to show newest messages
+  // Smooth auto-scroll to bottom to show newest messages
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
     }
   }, [messages, streamingContent]);
 
@@ -325,35 +328,45 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
         </div>
       )}
 
-      {/* Chat Messages */}
+      {/* Chat Messages - Enhanced Scrolling */}
       <div 
         ref={scrollRef}
-        className="flex-1 min-h-0 overflow-y-auto space-y-4 p-6"
+        className="flex-1 min-h-0 overflow-y-auto space-y-4 p-4 sm:p-6 scroll-smooth"
+        style={{
+          scrollBehavior: 'smooth',
+          WebkitOverflowScrolling: 'touch'
+        }}
       >
-        {/* Welcome message */}
-        {messages.length === 0 && !isStreaming && (
-          <div className="text-center py-16">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center shadow-lg shadow-slate-700/30">
-              <Wrench className="h-8 w-8 text-white" />
+        <div className="space-y-4 max-w-4xl mx-auto">
+          {/* Welcome message */}
+          {messages.length === 0 && !isStreaming && (
+            <div className="text-center py-12 sm:py-16 animate-in fade-in-up duration-700">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center shadow-lg shadow-slate-700/30 animate-in zoom-in duration-500">
+                <Wrench className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-100 mb-2">Meta-SySop Ready</h3>
+              <p className="text-slate-400 max-w-md mx-auto leading-relaxed px-4">
+                I'm Meta-SySop, your autonomous platform healing agent. I can diagnose and fix issues 
+                with the Archetype platform itself. Tell me what needs to be fixed, and I'll analyze 
+                the code, make changes, and optionally commit and deploy them.
+              </p>
             </div>
-            <h3 className="text-xl font-bold text-slate-100 mb-2">Meta-SySop Ready</h3>
-            <p className="text-slate-400 max-w-md mx-auto leading-relaxed">
-              I'm Meta-SySop, your autonomous platform healing agent. I can diagnose and fix issues 
-              with the Archetype platform itself. Tell me what needs to be fixed, and I'll analyze 
-              the code, make changes, and optionally commit and deploy them.
-            </p>
-          </div>
-        )}
+          )}
 
-        {/* Message list */}
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={cn(
-              "flex gap-3 animate-in fade-in-up duration-500",
-              message.role === "user" ? "justify-end" : "justify-start"
-            )}
-          >
+          {/* Message list */}
+          {messages.map((message, index) => (
+            <div
+              key={message.id}
+              className={cn(
+                "flex gap-3 animate-in fade-in-up slide-in-from-bottom-4",
+                message.role === "user" ? "justify-end" : "justify-start"
+              )}
+              style={{
+                animationDelay: `${index * 50}ms`,
+                animationDuration: '400ms',
+                animationFillMode: 'both'
+              }}
+            >
             {message.role === "assistant" && (
               <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center shadow-lg shadow-slate-700/20">
                 <Wrench className="h-5 w-5 text-white" />
@@ -362,10 +375,10 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
             
             <div
               className={cn(
-                "rounded-xl px-4 py-3 max-w-[75%] shadow-lg",
+                "rounded-xl px-4 py-3 max-w-[75%] shadow-lg transition-all duration-300 hover:shadow-xl",
                 message.role === "user"
-                  ? "bg-gradient-to-br from-slate-700 to-slate-600 text-white border border-slate-500/20"
-                  : "bg-slate-800/80 text-slate-200 border border-slate-700/50 backdrop-blur-sm"
+                  ? "bg-gradient-to-br from-slate-700 to-slate-600 text-white border border-slate-500/20 shadow-slate-700/30"
+                  : "bg-slate-800/90 text-slate-200 border border-slate-700/50 backdrop-blur-sm shadow-slate-900/50"
               )}
             >
               <MessageContent content={message.content} />
@@ -400,36 +413,37 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
         ))}
 
         {/* Streaming indicator */}
-        {isStreaming && (
-          <div className="flex gap-3 justify-start animate-in fade-in-up duration-500">
-            <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center shadow-lg shadow-slate-700/20">
-              <Wrench className="h-5 w-5 text-white" />
-            </div>
-            <div className="rounded-xl px-4 py-3 max-w-[75%] bg-slate-800/80 text-slate-200 border border-slate-700/50 backdrop-blur-sm shadow-lg">
-              {streamingContent ? (
-                <MessageContent content={streamingContent} />
-              ) : (
-                <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
-              )}
-              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-700/50 text-xs text-slate-400">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                Meta-SySop is thinking...
+          {isStreaming && (
+            <div className="flex gap-3 justify-start animate-in fade-in-up slide-in-from-bottom-4 duration-400">
+              <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center shadow-lg shadow-slate-700/20 animate-pulse">
+                <Wrench className="h-5 w-5 text-white" />
+              </div>
+              <div className="rounded-xl px-4 py-3 max-w-[75%] bg-slate-800/90 text-slate-200 border border-slate-700/50 backdrop-blur-sm shadow-lg shadow-slate-900/50 transition-all">
+                {streamingContent ? (
+                  <MessageContent content={streamingContent} />
+                ) : (
+                  <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+                )}
+                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-700/50 text-xs text-slate-400 animate-pulse">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Meta-SySop is thinking...
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      {/* Input area - Fixed at bottom */}
-      <div className="border-t border-slate-800/50 p-4 bg-slate-950/50 backdrop-blur-xl flex-shrink-0">
-        <div className="flex gap-3 items-end max-w-5xl mx-auto">
+      {/* Input area - Fixed at bottom with mobile optimization */}
+      <div className="border-t border-slate-800/50 p-3 sm:p-4 bg-slate-950/80 backdrop-blur-xl flex-shrink-0">
+        <div className="flex gap-2 sm:gap-3 items-end max-w-5xl mx-auto">
           <Textarea
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Describe the platform issue to fix..."
-            className="min-h-[70px] max-h-[200px] resize-none bg-slate-800/50 border-slate-700/50 text-slate-100 placeholder:text-slate-500 rounded-xl focus:border-slate-500/50 focus:ring-2 focus:ring-slate-500/20"
+            className="min-h-[60px] sm:min-h-[70px] max-h-[200px] resize-none bg-slate-800/60 border-slate-700/50 text-slate-100 placeholder:text-slate-500 rounded-xl focus:border-slate-500/50 focus:ring-2 focus:ring-slate-500/20 transition-all text-sm sm:text-base"
             rows={3}
             data-testid="input-meta-sysop-message"
             disabled={isStreaming}
@@ -438,13 +452,13 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
             onClick={handleSend}
             disabled={!input.trim() || isStreaming}
             size="icon"
-            className="h-[70px] w-[70px] flex-shrink-0 rounded-xl bg-gradient-to-br from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 shadow-lg shadow-slate-700/30 transition-all hover:scale-105 active:scale-95"
+            className="h-[60px] w-[60px] sm:h-[70px] sm:w-[70px] flex-shrink-0 rounded-xl bg-gradient-to-br from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 shadow-lg shadow-slate-700/30 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             data-testid="button-send-meta-sysop-message"
           >
             {isStreaming ? (
-              <Loader2 className="h-6 w-6 animate-spin" />
+              <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" />
             ) : (
-              <Send className="h-6 w-6" />
+              <Send className="h-5 w-5 sm:h-6 sm:w-6" />
             )}
           </Button>
         </div>
