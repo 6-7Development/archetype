@@ -1,0 +1,50 @@
+2025-10-25T18:13:23.783955123Z Using 'pg' driver for database querying
+2025-10-25T18:13:24.129004098Z [⣷] Pulling schema from database...
+2025-10-25T18:13:24.17007677Z Error: self-signed certificate
+2025-10-25T18:13:24.17009263Z     at /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+2025-10-25T18:13:24.17009546Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-25T18:13:24.17009716Z     at async Object.query (/opt/render/project/src/node_modules/drizzle-kit/bin.cjs:80601:26)
+2025-10-25T18:13:24.17009988Z     at async fromDatabase2 (/opt/render/project/src/node_modules/drizzle-kit/bin.cjs:19253:25) {
+2025-10-25T18:13:24.17010202Z   code: 'DEPTH_ZERO_SELF_SIGNED_CERT'
+2025-10-25T18:13:24.17010378Z }
+2025-10-25T18:13:24.19385622Z 🚀 Starting production server...
+2025-10-25T18:13:25.582190879Z [db] Environment: NODE_ENV=production, PORT=10000
+2025-10-25T18:13:25.582372963Z [db] Using DATABASE_URL: postgresql://***@dpg-d3qllpodl3ps73c2jb4g-a/archetype_oeig
+2025-10-25T18:13:25.582545387Z [db] Pool config: connectionTimeoutMillis=5000, ssl=true
+2025-10-25T18:13:25.586306034Z [PERFORMANCE] System prompt base cached (16863 chars) - saves ~4KB per request
+2025-10-25T18:13:25.587741297Z [PLATFORM-HEALING] PROJECT_ROOT: /opt/render/project/src
+2025-10-25T18:13:25.590828569Z 🔒 Running on Render - SSL configured
+2025-10-25T18:13:25.590835419Z ✅ Deployment verified: All critical fixes active
+2025-10-25T18:13:25.611996949Z [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-25T18:13:25.614655871Z 📡 WebSocket server initialized at /ws
+2025-10-25T18:13:25.617332123Z ✅ All routes registered successfully
+2025-10-25T18:13:25.61805857Z 🔍 Testing database connection...
+2025-10-25T18:13:25.63834419Z 6:13:25 PM [express] serving on port 10000
+2025-10-25T18:13:25.638391201Z 🌐 Server accessible at http://0.0.0.0:10000
+2025-10-25T18:13:25.667797512Z ⚠️ Retry attempt 1/5 failed: {
+2025-10-25T18:13:25.667810552Z   code: 'DEPTH_ZERO_SELF_SIGNED_CERT',
+2025-10-25T18:13:25.667812542Z   message: 'self-signed certificate',
+2025-10-25T18:13:25.667815193Z   nextRetryIn: '1000ms'
+2025-10-25T18:13:25.667816922Z }
+2025-10-25T18:13:26.678320556Z ⚠️ Retry attempt 2/5 failed: {
+2025-10-25T18:13:26.678340947Z   code: 'DEPTH_ZERO_SELF_SIGNED_CERT',
+2025-10-25T18:13:26.678344227Z   message: 'self-signed certificate',
+2025-10-25T18:13:26.678347407Z   nextRetryIn: '2000ms'
+2025-10-25T18:13:26.678349707Z }
+2025-10-25T18:13:28.690206853Z ⚠️ Retry attempt 3/5 failed: {
+2025-10-25T18:13:28.690228513Z   code: 'DEPTH_ZERO_SELF_SIGNED_CERT',
+2025-10-25T18:13:28.690231413Z   message: 'self-signed certificate',
+2025-10-25T18:13:28.690234273Z   nextRetryIn: '4000ms'
+2025-10-25T18:13:28.690236373Z }
+2025-10-25T18:13:32.703118345Z ⚠️ Retry attempt 4/5 failed: {
+2025-10-25T18:13:32.703143355Z   code: 'DEPTH_ZERO_SELF_SIGNED_CERT',
+2025-10-25T18:13:32.703147345Z   message: 'self-signed certificate',
+2025-10-25T18:13:32.703150535Z   nextRetryIn: '8000ms'
+2025-10-25T18:13:32.703152685Z }
+2025-10-25T18:13:34.025341634Z ==> Your service is live 🎉
+2025-10-25T18:13:34.050736162Z ==> 
+2025-10-25T18:13:34.07641878Z ==> ///////////////////////////////////////////////////////////
+2025-10-25T18:13:34.101161018Z ==> 
+2025-10-25T18:13:34.125352196Z ==> Available at your primary URL https://archetype-x8b5.onrender.com
+2025-10-25T18:13:34.147980605Z ==> 
+2025-10-25T18:13:34.171659673Z ==> ///////////////////////////////////////////////////////////
