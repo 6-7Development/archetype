@@ -180,21 +180,21 @@ export class PlatformHealingService {
   }
 
   async writePlatformFile(filePath: string, content: string): Promise<{ success: boolean; message: string; commitHash?: string; commitUrl?: string }> {
-    // DEBUG: Log content parameter
-    console.log(`[PLATFORM-WRITE] Called with path: ${filePath}`);
-    console.log(`[PLATFORM-WRITE] Content type: ${typeof content}`);
-    console.log(`[PLATFORM-WRITE] Content defined: ${content !== undefined}`);
-    console.log(`[PLATFORM-WRITE] Content null: ${content === null}`);
-    console.log(`[PLATFORM-WRITE] Content length: ${content?.length || 0} bytes`);
-    
-    // Strict content validation
+    // CRITICAL: Validate content before ANY processing
     if (content === undefined || content === null) {
+      console.error(`[PLATFORM-WRITE] ❌ REJECTED: undefined/null content for ${filePath}`);
       throw new Error(`Cannot write file with undefined or null content: ${filePath}`);
     }
     
     if (typeof content !== 'string') {
+      console.error(`[PLATFORM-WRITE] ❌ REJECTED: non-string content (${typeof content}) for ${filePath}`);
       throw new Error(`Content must be a string, got ${typeof content}: ${filePath}`);
     }
+    
+    // Log validated content
+    console.log(`[PLATFORM-WRITE] ✅ Content validated for ${filePath}`);
+    console.log(`[PLATFORM-WRITE] Content length: ${content.length} bytes`);
+    console.log(`[PLATFORM-WRITE] Content type: ${typeof content}`);
     
     // Validate file path
     if (path.isAbsolute(filePath)) {

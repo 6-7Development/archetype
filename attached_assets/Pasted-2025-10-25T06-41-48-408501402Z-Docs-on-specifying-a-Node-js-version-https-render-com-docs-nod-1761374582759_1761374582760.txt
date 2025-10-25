@@ -1,0 +1,50 @@
+2025-10-25T06:41:48.408501402Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2025-10-25T06:41:48.469467685Z ==> Running build command 'npm install --production=false && npm run build'...
+2025-10-25T06:41:50.221585019Z 
+2025-10-25T06:41:50.22161251Z up to date, audited 683 packages in 2s
+2025-10-25T06:41:50.2216247Z 
+2025-10-25T06:41:50.221636291Z 173 packages are looking for funding
+2025-10-25T06:41:50.22164058Z   run `npm fund` for details
+2025-10-25T06:41:50.249344336Z 
+2025-10-25T06:41:50.249367917Z 10 vulnerabilities (3 low, 7 moderate)
+2025-10-25T06:41:50.249370617Z 
+2025-10-25T06:41:50.249373757Z To address issues that do not require attention, run:
+2025-10-25T06:41:50.249376077Z   npm audit fix
+2025-10-25T06:41:50.249378087Z 
+2025-10-25T06:41:50.249380277Z To address all issues (including breaking changes), run:
+2025-10-25T06:41:50.249383137Z   npm audit fix --force
+2025-10-25T06:41:50.249385147Z 
+2025-10-25T06:41:50.249388257Z Run `npm audit` for details.
+2025-10-25T06:41:50.40236468Z 
+2025-10-25T06:41:50.40238806Z > rest-express@1.0.0 build
+2025-10-25T06:41:50.40239177Z > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+2025-10-25T06:41:50.40239539Z 
+2025-10-25T06:41:50.625205518Z vite v5.4.20 building for production...
+2025-10-25T06:41:50.67461268Z transforming...
+2025-10-25T06:41:50.956116938Z Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+2025-10-25T06:41:50.956145839Z   npx update-browserslist-db@latest
+2025-10-25T06:41:50.956151629Z   Why you should do it regularly: https://github.com/browserslist/update-db#readme
+2025-10-25T06:41:52.304128216Z 
+2025-10-25T06:41:52.304159587Z A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+2025-10-25T06:41:59.413584068Z ✓ 3844 modules transformed.
+2025-10-25T06:42:00.250730191Z rendering chunks...
+2025-10-25T06:42:00.275147556Z computing gzip size...
+2025-10-25T06:42:00.317938397Z ../dist/public/index.html                     1.09 kB │ gzip:   0.56 kB
+2025-10-25T06:42:00.318064249Z ../dist/public/assets/index-DreGKkaI.css    129.38 kB │ gzip:  20.29 kB
+2025-10-25T06:42:00.318209362Z ../dist/public/assets/index-BVl54FWI.js   1,752.14 kB │ gzip: 501.19 kB
+2025-10-25T06:42:00.318290934Z 
+2025-10-25T06:42:00.318299584Z (!) Some chunks are larger than 500 kB after minification. Consider:
+2025-10-25T06:42:00.318304764Z - Using dynamic import() to code-split the application
+2025-10-25T06:42:00.318309294Z - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+2025-10-25T06:42:00.318313534Z - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+2025-10-25T06:42:00.31862739Z ✓ built in 9.67s
+2025-10-25T06:42:00.412362231Z ✘ [ERROR] Expected ";" but found "readTaskList"
+2025-10-25T06:42:00.412409902Z 
+2025-10-25T06:42:00.412414132Z     server/routes/common.ts:107:4:
+2025-10-25T06:42:00.412416532Z       107 │ 1. `readTaskList()` - Get pre-created task IDs
+2025-10-25T06:42:00.412419642Z           │     ~~~~~~~~~~~~
+2025-10-25T06:42:00.412422352Z           ╵     ;
+2025-10-25T06:42:00.412424612Z 
+2025-10-25T06:42:00.416017808Z 1 error
+2025-10-25T06:42:00.436531032Z ==> Build failed 😞
+2025-10-25T06:42:00.436550303Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
