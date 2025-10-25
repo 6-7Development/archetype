@@ -1,0 +1,50 @@
+2025-10-25T18:33:48.302470706Z 
+2025-10-25T18:33:48.302493197Z > rest-express@1.0.0 db:push
+2025-10-25T18:33:48.302496757Z > drizzle-kit push
+2025-10-25T18:33:48.302499667Z 
+2025-10-25T18:33:48.454132586Z No config path provided, using default 'drizzle.config.ts'
+2025-10-25T18:33:48.454373781Z Reading config file '/opt/render/project/src/drizzle.config.ts'
+2025-10-25T18:33:49.09397993Z Using 'pg' driver for database querying
+2025-10-25T18:33:49.430222808Z [⣷] Pulling schema from database...
+2025-10-25T18:33:49.471539933Z Error: self-signed certificate
+2025-10-25T18:33:49.471569264Z     at /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+2025-10-25T18:33:49.471573744Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-25T18:33:49.471576944Z     at async Object.query (/opt/render/project/src/node_modules/drizzle-kit/bin.cjs:80601:26)
+2025-10-25T18:33:49.471582274Z     at async fromDatabase2 (/opt/render/project/src/node_modules/drizzle-kit/bin.cjs:19253:25) {
+2025-10-25T18:33:49.471585784Z   code: 'DEPTH_ZERO_SELF_SIGNED_CERT'
+2025-10-25T18:33:49.471588854Z }
+2025-10-25T18:33:49.536164304Z 🚀 Starting production server...
+2025-10-25T18:33:50.946690105Z [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-25T18:33:50.94691668Z [db] Environment: NODE_ENV=production, PORT=10000
+2025-10-25T18:33:50.94692822Z [db] Using DATABASE_URL: postgresql://***@dpg-d3qllpodl3ps73c2jb4g-a/archetype_oeig
+2025-10-25T18:33:50.947132224Z [db] Pool config: connectionTimeoutMillis=5000, ssl=enabled (rejectUnauthorized: false)
+2025-10-25T18:33:50.947167245Z [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-10-25T18:33:50.947194026Z [db] Connection string includes SSL params: true
+2025-10-25T18:33:50.951051423Z [PERFORMANCE] System prompt base cached (16863 chars) - saves ~4KB per request
+2025-10-25T18:33:50.952564773Z [PLATFORM-HEALING] PROJECT_ROOT: /opt/render/project/src
+2025-10-25T18:33:50.955828388Z 🔒 Running on Render - SSL configured
+2025-10-25T18:33:50.956010212Z ✅ Deployment verified: All critical fixes active
+2025-10-25T18:33:50.956972611Z [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-25T18:33:50.959358189Z 📡 WebSocket server initialized at /ws
+2025-10-25T18:33:50.961974361Z ✅ All routes registered successfully
+2025-10-25T18:33:50.962702705Z 🔍 Testing database connection...
+2025-10-25T18:33:50.983616993Z 6:33:50 PM [express] serving on port 10000
+2025-10-25T18:33:50.983647284Z 🌐 Server accessible at http://0.0.0.0:10000
+2025-10-25T18:33:51.021731765Z ✅ Database connected successfully
+2025-10-25T18:33:51.021751575Z 🔧 Auto-healing system ENABLED (production mode)
+2025-10-25T18:33:51.021754005Z 
+2025-10-25T18:33:51.021756375Z 🔍 Checking GitHub integration configuration...
+2025-10-25T18:33:51.021763545Z ✅ GitHub integration configured successfully
+2025-10-25T18:33:51.021765765Z    - Repository: 6-7Development/archetype
+2025-10-25T18:33:51.021771465Z    - Branch: main
+2025-10-25T18:33:51.021774285Z    - Token: ✓ (configured)
+2025-10-25T18:33:51.021779465Z    - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-25T18:33:51.021802056Z    - Maintenance mode: Available for owner
+2025-10-25T18:33:51.021808466Z 
+2025-10-25T18:33:58.914640869Z ==> Your service is live 🎉
+2025-10-25T18:33:58.944603616Z ==> 
+2025-10-25T18:33:58.970096064Z ==> ///////////////////////////////////////////////////////////
+2025-10-25T18:33:59.454922043Z ==> 
+2025-10-25T18:33:59.48806949Z ==> Available at your primary URL https://archetype-x8b5.onrender.com
+2025-10-25T18:33:59.515932018Z ==> 
+2025-10-25T18:33:59.544361286Z ==> ///////////////////////////////////////////////////////////
