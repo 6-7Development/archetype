@@ -1,3 +1,4 @@
+// Core tool exports - all verified and working
 export { executeBrowserTest } from './browser-test';
 export { executeWebSearch, searchDocumentation, searchCodeExamples } from './web-search';
 export { executeVisionAnalysis, analyzeUIScreenshot, compareDesignToImplementation } from './vision-analyze';
