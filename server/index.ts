@@ -124,12 +124,9 @@ app.use((req, res, next) => {
   const port = parseInt(process.env.PORT || '5000', 10);
   
   // START SERVER IMMEDIATELY - Don't wait for database!
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
+  server.listen(port, '0.0.0.0', () => {
     log(`serving on port ${port}`);
+    console.log(`🌐 Server accessible at http://0.0.0.0:${port}`);
   });
 
   // Test database connection AFTER server starts (non-blocking)

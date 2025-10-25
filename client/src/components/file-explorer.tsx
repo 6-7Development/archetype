@@ -27,16 +27,20 @@ export function FileExplorer({ files, activeFileId, onFileSelect, onCreateFile }
   };
 
   const getFileStatus = (file: FileType): 'new' | 'modified' | 'unchanged' => {
+    if (!file.createdAt) return 'unchanged';
+    
     const now = new Date().getTime();
     const fiveMinutesAgo = now - (5 * 60 * 1000);
     
-    const createdAt = file.createdAt ? new Date(file.createdAt).getTime() : 0;
-    const updatedAt = file.updatedAt ? new Date(file.updatedAt).getTime() : 0;
+    const createdAt = new Date(file.createdAt).getTime();
+    const updatedAt = file.updatedAt ? new Date(file.updatedAt).getTime() : createdAt;
     
+    // File is new if created in last 5 minutes
     if (createdAt > fiveMinutesAgo) {
       return 'new';
     }
     
+    // File is modified if updated in last 5 minutes and update is after creation
     if (updatedAt > fiveMinutesAgo && updatedAt > createdAt + 1000) {
       return 'modified';
     }
