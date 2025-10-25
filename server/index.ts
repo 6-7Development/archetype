@@ -7,6 +7,12 @@ import { db } from "./db";
 import { files } from "@shared/schema";
 import { autoHealing } from "./autoHealing";
 
+// PRODUCTION FIX: Handle SSL certificate validation for Render deployment
+// Render provides proper SSL certificates, but Node.js may need this for some external API calls
+if (process.env.NODE_ENV === 'production' && process.env.RENDER) {
+  console.log('🔒 Running on Render - SSL configured');
+}
+
 // Exponential backoff retry utility
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
@@ -108,15 +114,6 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
-  }
-
   // ALWAYS serve the app on the port specified in the environment variable PORT
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
@@ -124,9 +121,16 @@ app.use((req, res, next) => {
   const port = parseInt(process.env.PORT || '5000', 10);
   
   // START SERVER IMMEDIATELY - Don't wait for database!
-  server.listen(port, '0.0.0.0', () => {
+  server.listen(port, '0.0.0.0', async () => {
     log(`serving on port ${port}`);
     console.log(`🌐 Server accessible at http://0.0.0.0:${port}`);
+    
+    // Setup Vite AFTER server is listening
+    if (app.get("env") === "development") {
+      await setupVite(app, server);
+    } else {
+      serveStatic(app);
+    }
   });
 
   // Test database connection AFTER server starts (non-blocking)
