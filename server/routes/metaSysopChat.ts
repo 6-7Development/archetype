@@ -447,11 +447,25 @@ RETRY NOW - Call readTaskList() first to see task IDs, then start working!`;
       }
 
       const toolResults: any[] = [];
+      const hasToolUse = response.content.some(block => block.type === 'tool_use');
+      
+      // 🎯 ANTI-LYING ENFORCEMENT: If response contains tool calls, SUPPRESS all text blocks
+      // Meta-SySop must wait for tool results before claiming success
+      if (hasToolUse) {
+        console.log('[META-SYSOP-ENFORCEMENT] Response has tool calls - suppressing text blocks to prevent lying');
+        sendEvent('progress', { message: 'Executing tools...' });
+      }
 
       for (const block of response.content) {
         if (block.type === 'text') {
-          fullContent += block.text;
-          sendEvent('content', { content: block.text });
+          // Only stream text if there are NO tool calls in this response
+          // If there are tool calls, Meta-SySop must wait for results before speaking
+          if (!hasToolUse) {
+            fullContent += block.text;
+            sendEvent('content', { content: block.text });
+          } else {
+            console.log('[META-SYSOP-ENFORCEMENT] Blocked text output (has tool calls):', block.text.slice(0, 100));
+          }
         } else if (block.type === 'tool_use') {
           const { name, input, id } = block;
 
