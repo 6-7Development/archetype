@@ -146,7 +146,13 @@ export async function updateTask(params: {
 
     // Build update object (NEVER allow changing taskListId)
     const updateData: any = {};
-    if (params.status) updateData.status = params.status;
+    if (params.status) {
+      updateData.status = params.status;
+      // Auto-set completedAt when marking as completed
+      if (params.status === 'completed' && !params.completedAt) {
+        updateData.completedAt = new Date();
+      }
+    }
     if (params.architectReviewed) updateData.architectReviewed = params.architectReviewed;
     if (params.architectReviewReason) updateData.architectReviewReason = params.architectReviewReason;
     if (params.result) updateData.result = params.result;

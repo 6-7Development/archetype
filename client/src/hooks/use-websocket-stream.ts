@@ -85,7 +85,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef<number>(0);
   const shouldReconnectRef = useRef<boolean>(true);
-  
+
   const [streamState, setStreamState] = useState<StreamState>({
     isConnected: false,
     isReconnecting: false,
@@ -132,21 +132,21 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const host = window.location.host;
       const wsUrl = `${protocol}//${host}/ws`;
-      
+
       console.log('🔌 Attempting WebSocket connection to:', wsUrl);
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
         console.log('✅ WebSocket connected');
         reconnectAttemptsRef.current = 0; // Reset on successful connection
-        setStreamState(prev => ({ 
-          ...prev, 
-          isConnected: true, 
+        setStreamState(prev => ({
+          ...prev,
+          isConnected: true,
           isReconnecting: false,
           reconnectAttempt: 0,
-          error: null 
+          error: null
         }));
-        
+
         // Always register session for streaming (use default 'anonymous' if no userId)
         try {
           ws.send(JSON.stringify({
@@ -278,7 +278,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
               if (message.task) {
                 setStreamState(prev => ({
                   ...prev,
-                  tasks: prev.tasks.map(t => 
+                  tasks: prev.tasks.map(t =>
                     t.id === message.task!.id ? message.task! : t
                   ),
                 }));
@@ -324,7 +324,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
           reason: event.reason,
           wasClean: event.wasClean
         });
-        
+
         setStreamState(prev => ({ ...prev, isConnected: false }));
         wsRef.current = null;
 
@@ -332,9 +332,9 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
         if (shouldReconnectRef.current && !event.wasClean) {
           reconnectAttemptsRef.current += 1;
           const backoffDelay = calculateBackoff(reconnectAttemptsRef.current - 1);
-          
+
           console.log(`🔄 Reconnecting in ${Math.round(backoffDelay / 1000)}s (attempt ${reconnectAttemptsRef.current}/${MAX_RECONNECT_ATTEMPTS})`);
-          
+
           setStreamState(prev => ({
             ...prev,
             isReconnecting: true,
@@ -360,23 +360,23 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
 
   const disconnect = useCallback(() => {
     shouldReconnectRef.current = false; // Disable auto-reconnect
-    
+
     // Clear any pending reconnection
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
     }
-    
+
     // Close WebSocket if open
     if (wsRef.current) {
       wsRef.current.close(1000, 'Client disconnect'); // 1000 = normal closure
       wsRef.current = null;
     }
-    
-    setStreamState(prev => ({ 
-      ...prev, 
+
+    setStreamState(prev => ({
+      ...prev,
       isConnected: false,
-      isReconnecting: false 
+      isReconnecting: false
     }));
   }, []);
 
