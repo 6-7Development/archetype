@@ -98,7 +98,7 @@ export class GitHubService {
           changes.map(async (change, index) => {
             console.log(`[GITHUB-SERVICE] Processing file ${index + 1}/${changes.length}: ${change.path}`);
             console.log(`[GITHUB-SERVICE] Operation: ${change.operation || 'modify'}`);
-            
+
             // Handle delete operations - create tree entry with sha: null
             if (change.operation === 'delete') {
               console.log(`[GITHUB-SERVICE] DELETE operation - creating tree entry with sha: null`);
@@ -109,17 +109,17 @@ export class GitHubService {
                 sha: null as any, // GitHub API requires null for deletes
               };
             }
-            
+
             // Handle create/modify operations - create blob
             console.log(`[GITHUB-SERVICE] Content type: ${typeof change.content}`);
             console.log(`[GITHUB-SERVICE] Content defined: ${change.content !== undefined && change.content !== null}`);
             console.log(`[GITHUB-SERVICE] Content length: ${change.content?.length || 0} bytes`);
-            
+
             // Only reject undefined/null, allow empty strings
             if (change.content === undefined || change.content === null) {
               throw new Error(`File ${change.path} has undefined/null content (${typeof change.content})`);
             }
-            
+
             const { data: blob } = await this.octokit.git.createBlob({
               owner: this.owner,
               repo: this.repo,
@@ -161,7 +161,7 @@ export class GitHubService {
         });
 
         const commitUrl = `https://github.com/${this.owner}/${this.repo}/commit/${newCommit.sha}`;
-        
+
         console.log(`[GITHUB-SERVICE] ✅ Successfully committed ${changes.length} file(s)`);
         console.log(`[GITHUB-SERVICE] Commit: ${newCommit.sha}`);
         console.log(`[GITHUB-SERVICE] URL: ${commitUrl}`);
