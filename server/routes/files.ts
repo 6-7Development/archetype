@@ -4,6 +4,7 @@ import { storage } from "../storage";
 import { isAuthenticated } from "../universalAuth";
 import multer from "multer";
 import path from "path";
+import { promises as fs } from "fs";
 
 // Configure multer for file uploads (in-memory storage)
 const upload = multer({
@@ -129,7 +130,6 @@ export function registerFileRoutes(app: Express) {
       });
 
       // Store in attached_assets/chat_images/
-      const fs = await import('fs/promises');
       const uploadDir = path.join(process.cwd(), 'attached_assets', 'chat_images');
       
       // Ensure directory exists
