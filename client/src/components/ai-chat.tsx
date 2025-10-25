@@ -648,7 +648,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-full max-h-full overflow-hidden bg-[hsl(220,20%,12%)] relative">
+    <div className="flex flex-col h-full max-h-full overflow-hidden bg-[hsl(220,20%,12%)] relative touch-none">
       {/* Changes Panel - Fixed Overlay */}
       {lastChanges && (
         <div className="absolute top-4 right-4 z-50 w-full max-w-md" data-testid="changes-panel-overlay">

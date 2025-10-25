@@ -674,8 +674,8 @@ DO NOT create new tasks - UPDATE existing ones!`;
                   const hasRepo = !!process.env.GITHUB_REPO;
                   
                   if (!hasToken || !hasRepo) {
-                    toolResult = `❌ GitHub integration not configured. Required: GITHUB_TOKEN and GITHUB_REPO environment variables.`;
-                    sendEvent('error', { message: 'GitHub not configured' });
+                    toolResult = `❌ GitHub integration not configured.\n\nSetup instructions:\n1. Create GitHub Personal Access Token at https://github.com/settings/tokens\n2. Set environment variables:\n   - GITHUB_TOKEN=ghp_...\n   - GITHUB_REPO=owner/repo-name\n3. Render will auto-deploy on push to main branch\n\nThis enables Archetype to self-update without Replit!`;
+                    sendEvent('error', { message: 'GitHub not configured - see setup instructions' });
                   } else {
                     const githubService = new GitHubService();
                     const PROJECT_ROOT = process.cwd();
