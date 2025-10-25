@@ -21,7 +21,8 @@ import {
   CheckCircle2,
   AlertTriangle,
   Lightbulb,
-  Activity
+  Activity,
+  FileCode
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
