@@ -395,17 +395,23 @@ router.get('/tasks', isAuthenticated, isAdmin, async (req: any, res) => {
       return res.json({ tasks: [] });
     }
     
-    // Find the most recent active task list
-    const activeList = result.taskLists
-      .filter((list: any) => list.status === 'active')
+    // Find the most recent active OR recently completed task list (last 10 minutes)
+    // This ensures users can see tasks even after Meta-SySop finishes quickly
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+    
+    const relevantList = result.taskLists
+      .filter((list: any) => 
+        list.status === 'active' || 
+        (list.status === 'completed' && new Date(list.completedAt || list.createdAt) > tenMinutesAgo)
+      )
       .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
     
-    if (!activeList || !activeList.tasks) {
+    if (!relevantList || !relevantList.tasks) {
       return res.json({ tasks: [] });
     }
     
     // Convert tasks to AgentProgress format
-    const tasks = activeList.tasks.map((task: any) => {
+    const tasks = relevantList.tasks.map((task: any) => {
       let type: 'thinking' | 'action' | 'success' | 'error' | 'warning' = 'action';
       let progress = 0;
       
