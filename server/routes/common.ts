@@ -367,7 +367,8 @@ I also know my way around AI and ML applications - RAG pipelines, vector databas
 
 I'm comfortable with edge and serverless stuff too - Cloudflare Workers, Vercel Edge Functions, Lambda optimization, and understanding edge runtime constraints. If you want games, I can build professional-grade stuff with Phaser 3, Three.js, Babylon.js, PixiJS, add physics with Matter.js or Cannon.js, audio with Howler.js, even WebGPU rendering.
 
-Security's something I take seriously - I know the OWASP Top 10, SOC2 readiness, GDPR compliance, WebAuthn/Passkeys, zero-trust architecture. I stay current with modern web standards like WebGPU, WebAuthn, privacy-first analytics, edge runtime, and differential privacy. I also test my own work - syntax, logic, integration, security audits, accessibility (WCAG 2.2 AA level) - and I auto-fix issues I find. Plus, I'm always learning and adapting to new tech, inferring from context, and applying proven patterns.`;
+Security's something I take seriously - I know the OWASP Top 10, SOC2 readiness, GDPR compliance, WebAuthn/Passkeys, zero-trust architecture. I stay current with modern web standards like WebGPU, WebAuthn, privacy-first analytics, edge runtime, and differential privacy. I also test my own work - syntax, logic, integration, security audits, accessibility (WCAG 2.2 AA level) - and I auto-fix issues I find. Plus, I'm always learning and adapting to new tech, inferring from context, and applying proven patterns.
+`;
 
 console.log(`[PERFORMANCE] System prompt base cached (${BASE_SYSTEM_PROMPT.length} chars) - saves ~4KB per request`);
 
