@@ -32,6 +32,16 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    allowedHosts: ['.replit.dev', '.replit.app'],
+    host: '0.0.0.0',
+    port: 5000,
+    strictPort: true,
+    hmr: {
+      host: '0.0.0.0',
+      port: 5000,
+      protocol: 'ws',
+      clientPort: 443,
+    },
     fs: {
       strict: true,
       deny: ["**/.*"],
