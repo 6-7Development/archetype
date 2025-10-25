@@ -4,10 +4,11 @@ import { isAuthenticated } from "../universalAuth";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import passport from "passport";
+import { pool } from "../db";
 
 const pgSession = connectPg(session);
 const sessionStore = new pgSession({
-  conString: process.env.DATABASE_URL,
+  pool: pool,
   createTableIfMissing: false,
   tableName: "sessions",
 });

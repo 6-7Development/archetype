@@ -1,0 +1,34 @@
+2025-10-25T07:21:13.079019695Z ==> Your service is live 🎉
+2025-10-25T07:21:13.380544392Z ==> 
+2025-10-25T07:21:13.40596429Z ==> ///////////////////////////////////////////////////////////
+2025-10-25T07:21:13.748958353Z ==> 
+2025-10-25T07:21:13.773899272Z ==> Available at your primary URL https://archetype-x8b5.onrender.com
+2025-10-25T07:21:13.798915559Z ==> 
+2025-10-25T07:21:12.874744457Z ⚠️ Retry attempt 3/5 failed: {
+2025-10-25T07:21:12.874767858Z   code: 'DEPTH_ZERO_SELF_SIGNED_CERT',
+2025-10-25T07:21:12.874772088Z   message: 'self-signed certificate',
+2025-10-25T07:21:12.874776368Z   nextRetryIn: '4000ms'
+2025-10-25T07:21:12.874780068Z }
+2025-10-25T07:21:14.154863112Z ==> ///////////////////////////////////////////////////////////
+2025-10-25T07:21:16.883123281Z ⚠️ Retry attempt 4/5 failed: {
+2025-10-25T07:21:16.883148151Z   code: 'DEPTH_ZERO_SELF_SIGNED_CERT',
+2025-10-25T07:21:16.883152522Z   message: 'self-signed certificate',
+2025-10-25T07:21:16.883157272Z   nextRetryIn: '8000ms'
+2025-10-25T07:21:16.883160952Z }
+2025-10-25T07:21:19.84041963Z Error: self-signed certificate
+2025-10-25T07:21:19.840441841Z     at /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+2025-10-25T07:21:19.840463481Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-25T07:21:19.840467451Z     at async PGStore._asyncQuery (/opt/render/project/src/node_modules/connect-pg-simple/index.js:322:21)
+2025-10-25T07:21:23.382539418Z Error: self-signed certificate
+2025-10-25T07:21:23.382566678Z     at /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+2025-10-25T07:21:23.382570098Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-25T07:21:23.382575748Z     at async PGStore._asyncQuery (/opt/render/project/src/node_modules/connect-pg-simple/index.js:322:21)
+2025-10-25T07:21:23.548054477Z Error: self-signed certificate
+2025-10-25T07:21:23.548073918Z     at /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+2025-10-25T07:21:23.548077568Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-25T07:21:23.548082208Z     at async PGStore._asyncQuery (/opt/render/project/src/node_modules/connect-pg-simple/index.js:322:21)
+2025-10-25T07:21:24.89253341Z ⚠️ Retry attempt 5/5 failed: {
+2025-10-25T07:21:24.892557271Z   code: 'DEPTH_ZERO_SELF_SIGNED_CERT',
+2025-10-25T07:21:24.892560051Z   message: 'self-signed certificate',
+2025-10-25T07:21:24.8925626Z   nextRetryIn: '16000ms'
+2025-10-25T07:21:24.892564911Z }
