@@ -33,7 +33,7 @@ export function MobileWorkspace({
       <div className="flex-1 min-h-0 overflow-hidden">
         {/* Chat Tab */}
         {activeTab === "chat" && (
-          <div className="h-full min-h-0">
+          <div className="h-full min-h-0 flex flex-col overflow-hidden">
             <AIChat currentProjectId={projectId} />
           </div>
         )}
