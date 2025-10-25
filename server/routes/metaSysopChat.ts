@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db';
-import { chatMessages } from '@shared/schema';
+import { chatMessages, taskLists } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth';
 import Anthropic from '@anthropic-ai/sdk';
@@ -810,6 +810,57 @@ DO NOT create new tasks - UPDATE existing ones!`;
       }
       res.end();
       return;
+    }
+
+    // 🎯 POST-SAFETY CLEANUP: Clean up incomplete tasks from THIS session only
+    // CRITICAL: This now runs AFTER safety check passes, and only affects THIS session's tasks
+    // This prevents stuck tasks when Meta-SySop exits early (timeout, crash, etc)
+    if (activeTaskListId) {
+      console.log(`[META-SYSOP-CLEANUP] Safety passed - checking task list ${activeTaskListId} for incomplete tasks...`);
+      const cleanupCheck = await readTaskList({ userId });
+      if (cleanupCheck.success && cleanupCheck.taskLists) {
+        // CRITICAL: Only clean up THE SPECIFIC task list from THIS session
+        const sessionTaskList = cleanupCheck.taskLists.find((list: any) => list.id === activeTaskListId);
+        if (sessionTaskList) {
+          const incompleteTasks = sessionTaskList.tasks.filter((t: any) => t.status !== 'completed');
+          if (incompleteTasks.length > 0) {
+            console.log(`[META-SYSOP-CLEANUP] Found ${incompleteTasks.length} incomplete tasks in session task list ${activeTaskListId}`);
+            sendEvent('progress', { message: `Cleaning up ${incompleteTasks.length} incomplete tasks...` });
+            
+            // Mark each incomplete task as completed (with warning)
+            for (const task of incompleteTasks) {
+              try {
+                await updateTask({
+                  userId,
+                  taskId: task.id,
+                  status: 'completed',
+                  result: '⚠️ Auto-completed (session ended early)'
+                });
+                console.log(`[META-SYSOP-CLEANUP] Marked task "${task.title}" as completed (cleanup)`);
+              } catch (error: any) {
+                console.error(`[META-SYSOP-CLEANUP] Failed to cleanup task ${task.id}:`, error);
+              }
+            }
+            
+            // Now mark the task list as completed
+            try {
+              await db
+                .update(taskLists)
+                .set({ status: 'completed' })
+                .where(eq(taskLists.id, activeTaskListId));
+              console.log(`[META-SYSOP-CLEANUP] ✅ Task list ${activeTaskListId} marked as completed (cleanup)`);
+            } catch (error: any) {
+              console.error('[META-SYSOP-CLEANUP] Failed to cleanup task list:', error);
+            }
+          } else {
+            console.log(`[META-SYSOP-CLEANUP] ✅ All tasks already complete in session task list ${activeTaskListId}`);
+          }
+        } else {
+          console.warn(`[META-SYSOP-CLEANUP] ⚠️ Session task list ${activeTaskListId} not found - skipping cleanup`);
+        }
+      }
+    } else {
+      console.warn('[META-SYSOP-CLEANUP] ⚠️ No activeTaskListId tracked - skipping cleanup (this should not happen)');
     }
 
     // Commit and push if enabled
