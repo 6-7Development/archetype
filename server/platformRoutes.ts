@@ -392,7 +392,7 @@ router.get('/tasks', isAuthenticated, isAdmin, async (req: any, res) => {
 
     const userId = req.authenticatedUserId;
     const { readTaskList, updateTask } = await import('./tools/task-management');
-    const { taskLists, tasks as tasksTable } = await import('@shared/schema');
+    const { taskLists, tasks: tasksTable } = await import('@shared/schema');
     const { db } = await import('./db');
     const { eq, and } = await import('drizzle-orm');
 
