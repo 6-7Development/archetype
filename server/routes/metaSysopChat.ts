@@ -511,7 +511,15 @@ DO NOT create new tasks - UPDATE existing ones!`;
                             `You cannot claim deployment is done until GitHub actually confirms the commit!`;
                           console.error('[META-SYSOP-ANTI-LYING] Blocked deployment task completion - commit not successful');
                           sendEvent('error', { message: 'Cannot complete deployment - commit not successful' });
-                          break; // Skip the updateTask call entirely
+                          
+                          // CRITICAL: Don't break - add error result and continue processing other tools
+                          toolResults.push({
+                            type: 'tool_result',
+                            tool_use_id: id,
+                            is_error: true,
+                            content: toolResult,
+                          });
+                          continue; // Skip updateTask but continue processing other tools
                         }
                       }
 
@@ -527,7 +535,15 @@ DO NOT create new tasks - UPDATE existing ones!`;
                           `\n\nComplete tasks in order!`;
                         console.error('[META-SYSOP-ANTI-LYING] Blocked out-of-order task completion');
                         sendEvent('error', { message: 'Tasks must be completed in order' });
-                        break; // Skip the updateTask call entirely
+                        
+                        // CRITICAL: Don't break - add error result and continue processing other tools
+                        toolResults.push({
+                          type: 'tool_result',
+                          tool_use_id: id,
+                          is_error: true,
+                          content: toolResult,
+                        });
+                        continue; // Skip updateTask but continue processing other tools
                       }
                     }
                   }
