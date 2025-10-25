@@ -385,6 +385,11 @@ router.get('/status', isAuthenticated, isAdmin, async (req: any, res) => {
 
 router.get('/tasks', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
+    // Prevent browser caching - force fresh data on every request
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
     const userId = req.authenticatedUserId;
     const { readTaskList } = await import('./tools/task-management');
     
