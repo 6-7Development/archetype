@@ -2,14 +2,14 @@ import type { Express } from "express";
 import { storage } from "../storage";
 import { isAuthenticated } from "../universalAuth";
 import session from "express-session";
-import connectSessionKnex from "connect-session-knex";
+import connectPg from "connect-pg-simple";
 import passport from "passport";
-import pg from "pg";
 
-const pool = new pg.Pool();
-const KnexSessionStore = connectSessionKnex(session);
-const sessionStore = new KnexSessionStore({
-  knex: pool,
+const pgSession = connectPg(session);
+const sessionStore = new pgSession({
+  conString: process.env.DATABASE_URL,
+  createTableIfMissing: false,
+  tableName: "sessions",
 });
 
 export function registerAuthRoutes(app: Express) {
