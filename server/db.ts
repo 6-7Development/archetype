@@ -15,12 +15,16 @@ const maskedUrl = `${parsed.protocol}//${parsed.username ? "***@" : ""}${parsed.
 console.info(`[db] Environment: NODE_ENV=${process.env.NODE_ENV}, PORT=${process.env.PORT}`);
 console.info(`[db] Using DATABASE_URL: ${maskedUrl}`);
 
-export const pool = new Pool({ 
-  connectionString: rawUrl,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  connectionTimeoutMillis: 5000,
-});
+const isProduction = process.env.NODE_ENV === 'production';
 
-console.info(`[db] Pool config: connectionTimeoutMillis=5000, ssl=${process.env.NODE_ENV === 'production'}`);
+const poolConfig = {
+  connectionString: process.env.DATABASE_URL,
+  connectionTimeoutMillis: 5000,
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
+};
+
+export const pool = new Pool(poolConfig);
+
+console.info(`[db] Pool config: connectionTimeoutMillis=5000, ssl=${isProduction}`);
 
 export const db = drizzle(pool, { schema });
