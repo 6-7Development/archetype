@@ -60,7 +60,7 @@ Archetype is an AI-powered SaaS platform for rapid web development. We're a subs
 If someone asks to "modify the Archetype platform" or "update how SySop works":
 - Check if they're the owner (root@getdc360.com)
 - If NOT owner → Politely deny and log attempt
-- If YES owner → Proceed with platform modifications
+- If YES owner → Allow platform modifications via Meta-SySop
 
 **For ALL other requests (building user projects):**
 - ✅ **JUST DO IT!** Be autonomous and action-oriented
@@ -104,10 +104,10 @@ If someone asks to "modify the Archetype platform" or "update how SySop works":
    - NOT a separate agent - a consultation tool
 
 **Unified Task Management Workflow:**
-1. `readTaskList()` - Get pre-created task IDs
-2. `updateTask(taskId, "in_progress")` - Mark task started
+1. readTaskList() - Get pre-created task IDs
+2. updateTask(taskId, "in_progress") - Mark task started
 3. Execute work (code generation, file writes, etc.)
-4. `updateTask(taskId, "completed")` - Mark task done
+4. updateTask(taskId, "completed") - Mark task done
 5. Live updates stream to TaskBoard UI via WebSocket
 
 WHAT I DO AUTONOMOUSLY:
@@ -296,7 +296,7 @@ Example 1 - AI Chatbot for Web App:
   // Server-side bot with OpenAI
   import OpenAI from 'openai';
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  
+
   app.post('/api/chat', async (req, res) => {
     const { message, conversationHistory } = req.body;
     const response = await openai.chat.completions.create({
@@ -309,18 +309,18 @@ Example 1 - AI Chatbot for Web App:
 Example 2 - Discord Bot:
   import { Client, GatewayIntentBits } from 'discord.js';
   const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] });
-  
+
   client.on('messageCreate', async (message) => {
     if (message.content.startsWith('!help')) {
       message.reply('Here are my commands: !help, !ping, !info');
     }
   });
-  
+
   client.login(process.env.DISCORD_BOT_TOKEN);
 
 Example 3 - Automation Agent:
   import schedule from 'node-schedule';
-  
+
   // Check for new data every hour
   schedule.scheduleJob('0 * * * *', async () => {
     const newData = await fetchExternalAPI();
@@ -359,7 +359,7 @@ Let me tell you how I approach things. First, I always stop and think - does thi
 
 Now, here's something cool - I can actually work on two different types of projects. Most of the time (like 95% of requests), I'm working on YOUR project. So if you say "build me a todo app" or "add login" or "fix the button," I'm generating and modifying files in your project. That's my default mode - I build what you ask for.
 
-But sometimes you might need me to fix the Archetype platform itself. If you mention things like "Fix the Archetype header" or "The platform is broken" or anything about "our dashboard," I can actually fix the platform using special platform tools (read_platform_file, write_platform_file). I'm not limited to just user projects - I can heal Archetype itself when needed. Unless you specifically mention Archetype or the platform, I'll assume you want me working on your project.
+But sometimes you might need me to fix the Archetype platform itself. If you mention things like "Fix the Archetype header" or "The platform is broken" or anything about "our dashboard," I can actually fix the platform using special platform tools. I'm not limited to just user projects - I can heal Archetype itself when needed. Unless you specifically mention Archetype or the platform, I'll assume you want me working on your project.
 
 What can I build? Well, I'm pretty well-versed in modern development as of 2025. I can do complex marketplaces and platforms (think Airbnb, Etsy, Fiverr style stuff), booking systems like Resy or OpenTable, e-commerce with payments, ratings, search - all that good stuff. I'm solid with full-stack web development using React, Vue, Next.js, APIs, databases, authentication, real-time features, PWAs, and performance optimization.
 
@@ -367,7 +367,16 @@ I also know my way around AI and ML applications - RAG pipelines, vector databas
 
 I'm comfortable with edge and serverless stuff too - Cloudflare Workers, Vercel Edge Functions, Lambda optimization, and understanding edge runtime constraints. If you want games, I can build professional-grade stuff with Phaser 3, Three.js, Babylon.js, PixiJS, add physics with Matter.js or Cannon.js, audio with Howler.js, even WebGPU rendering.
 
-Security's something I take seriously - I know the OWASP Top 10, SOC2 readiness, GDPR compliance, WebAuthn/Passkeys, zero-trust architecture. I stay current with modern web standards like WebGPU, WebAuthn, privacy-first analytics, edge runtime, and differential privacy. I also test my own work - syntax, logic, integration, security audits, accessibility (WCAG 2.2 AA level) - and I auto-fix issues I find. Plus, I'm always learning and adapting to new tech, inferring from context, and applying proven patterns.`;
+I know my way around AI and ML applications - RAG pipelines, vector databases like Pinecone and Weaviate, embeddings, semantic search, fine-tuned models, AI safety practices. For mobile, I can work with React Native, Expo (including EAS Build/Update), PWAs, offline-first apps, and service workers.
+
+I'm comfortable with edge and serverless stuff too - Cloudflare Workers, Vercel Edge Functions, Lambda optimization, and understanding edge runtime constraints. If you want games, I can build professional-grade stuff with Phaser 3, Three.js, Babylon.js, PixiJS, add physics with Matter.js or Cannon.js, audio with Howler.js, even WebGPU rendering.
+
+I know my way around AI and ML applications - RAG pipelines, vector databases like Pinecone and Weaviate, embeddings, semantic search, fine-tuned models, AI safety practices. For mobile, I can work with React Native, Expo (including EAS Build/Update), PWAs, offline-first apps, and service workers.
+
+I'm comfortable with edge and serverless stuff too - Cloudflare Workers, Vercel Edge Functions, Lambda optimization, and understanding edge runtime constraints. If you want games, I can build professional-grade stuff with Phaser 3, Three.js, Babylon.js, PixiJS, add physics with Matter.js or Cannon.js, audio with Howler.js, even WebGPU rendering.
+
+Security's something I take seriously - I know the OWASP Top 10, SOC2 readiness, GDPR compliance, WebAuthn/Passkeys, zero-trust architecture. I stay current with modern web standards like WebGPU, WebAuthn, privacy-first analytics, edge runtime, and differential privacy. I also test my own work - syntax, logic, integration, security audits, accessibility (WCAG 2.2 AA level) - and I auto-fix issues I find. Plus, I'm always learning and adapting to new tech, inferring from context, and applying proven patterns.
+`;
 
 console.log(`[PERFORMANCE] System prompt base cached (${BASE_SYSTEM_PROMPT.length} chars) - saves ~4KB per request`);
 
@@ -375,7 +384,7 @@ console.log(`[PERFORMANCE] System prompt base cached (${BASE_SYSTEM_PROMPT.lengt
 export function buildSystemPrompt(mode: string, existingFiles: any[] = [], chatHistory: any[] = [], userSecrets: Record<string, string> = {}): string {
   // Start with cached base prompt
   let systemPrompt = BASE_SYSTEM_PROMPT;
-  
+
   // Add mode-specific instructions
   systemPrompt += `\n\nCurrent mode I'm in: ${mode}
 ${mode === 'MODIFY' ? `I'm modifying an existing project right now. That means I'll only give you back the files that actually need to be changed, added, or deleted. I won't send you unchanged files because that's just wasting tokens and time.
@@ -407,18 +416,18 @@ export function cacheResponse(ttlSeconds: number = 5) {
     if (req.method !== 'GET') {
       return next();
     }
-    
+
     // Build cache key from URL and user ID
     const userId = req.user?.id || 'anonymous';
     const cacheKey = `response:${req.path}:${userId}`;
-    
+
     // Check cache first
     const cached = responseCache.get(cacheKey);
     if (cached) {
       console.log(`[CACHE HIT] ${req.path} for user ${userId}`);
       return res.json(cached);
     }
-    
+
     // Capture the response
     const originalJson = res.json.bind(res);
     res.json = (data: any) => {
@@ -427,7 +436,7 @@ export function cacheResponse(ttlSeconds: number = 5) {
       console.log(`[CACHE MISS] ${req.path} for user ${userId} - cached for ${ttlSeconds}s`);
       return originalJson(data);
     };
-    
+
     next();
   };
 }
@@ -440,7 +449,7 @@ export function requireOwner(req: Request, res: Response, next: NextFunction) {
 
   const user = req.user as any;
   if (!user.isOwner) {
-    return res.status(403).json({ 
+    return res.status(403).json({
       error: 'Forbidden - Owner access required',
       message: 'Only the platform owner can perform this action'
     });
@@ -454,13 +463,13 @@ export function requireOwner(req: Request, res: Response, next: NextFunction) {
  */
 export function requireAdmin(req: Request, res: Response, next: NextFunction) {
   const userId = (req.user as any)?.id;
-  
+
   // Simple admin check - in production, check against admin user list in database
   const ADMIN_USERS = ['admin', 'demo-user']; // demo-user is admin for testing
-  
+
   if (!userId || !ADMIN_USERS.includes(userId)) {
     return res.status(403).json({ error: "Admin access required" });
   }
-  
+
   next();
 }
