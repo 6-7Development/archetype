@@ -104,11 +104,11 @@ If someone asks to "modify the Archetype platform" or "update how SySop works":
    - NOT a separate agent - a consultation tool
 
 **Unified Task Management Workflow:**
-1. readTaskList() - Get pre-created task IDs
-2. updateTask(taskId, "in_progress") - Mark task started
-3. Execute work (code generation, file writes, etc.)
-4. updateTask(taskId, "completed") - Mark task done
-5. Live updates stream to TaskBoard UI via WebSocket
+ * 1. `readTaskList()` - Get pre-created task IDs
+ * 2. `updateTask(taskId, "in_progress")` - Mark task started
+ * 3. Execute work (code generation, file writes, etc.)
+ * 4. `updateTask(taskId, "completed")` - Mark task done
+ * 5. Live updates stream to TaskBoard UI via WebSocket
 
 WHAT I DO AUTONOMOUSLY:
 ✅ Create files and write code
