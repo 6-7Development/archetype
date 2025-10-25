@@ -22,13 +22,17 @@ import {
   AlertTriangle,
   Lightbulb,
   Activity,
-  FileCode
+  FileCode,
+  Trash2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { apiRequest, queryClient } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 
 function PlatformHealingContent() {
   const [autoCommit, setAutoCommit] = useState(false);
   const [autoPush, setAutoPush] = useState(false);
+  const { toast } = useToast();
 
   // Fetch platform status
   const { data: status } = useQuery<any>({
@@ -47,6 +51,29 @@ function PlatformHealingContent() {
 
   const tasks = tasksData?.tasks || [];
   const isWorking = tasks.some(t => t.type !== 'success' && t.type !== 'error');
+
+  // Clear tasks handler
+  const handleClearTasks = async () => {
+    try {
+      await apiRequest('/api/platform/tasks/clear', {
+        method: 'POST',
+      });
+      
+      // Invalidate tasks query to refetch
+      await queryClient.invalidateQueries({ queryKey: ['/api/platform/tasks'] });
+      
+      toast({
+        title: 'Tasks cleared',
+        description: 'All Meta-SySop tasks have been cleared',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Failed to clear tasks',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
 
   // Navigation items
   const navItems = [
@@ -212,6 +239,23 @@ function PlatformHealingContent() {
         {/* Live Task Progress - Mobile Responsive */}
         {tasks.length > 0 && (
           <div className="border-b border-slate-800/50 p-2 sm:p-4 bg-slate-950/30">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-xs font-semibold text-slate-400">Task Progress</div>
+              <button
+                onClick={handleClearTasks}
+                disabled={isWorking}
+                className={cn(
+                  "flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium transition-all",
+                  isWorking 
+                    ? "bg-slate-800/50 text-slate-600 cursor-not-allowed opacity-50"
+                    : "bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:bg-slate-700/30 hover:text-slate-200"
+                )}
+                data-testid="button-clear-tasks"
+              >
+                <Trash2 className="w-3 h-3" />
+                Clear Tasks
+              </button>
+            </div>
             <AgentProgress 
               steps={tasks}
               isWorking={isWorking}
