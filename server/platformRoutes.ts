@@ -410,31 +410,26 @@ router.get('/tasks', isAuthenticated, isAdmin, async (req: any, res) => {
       return res.json({ tasks: [] });
     }
     
-    // Convert tasks to AgentProgress format
+    // Convert tasks to TaskBoard format (matching client/src/hooks/use-websocket-stream.ts)
     const tasks = relevantList.tasks.map((task: any) => {
-      let type: 'thinking' | 'action' | 'success' | 'error' | 'warning' = 'action';
-      let progress = 0;
-      
+      // Map database status to TaskBoard status
+      let status: 'pending' | 'in_progress' | 'completed' | 'failed' = 'pending';
       if (task.status === 'completed') {
-        type = 'success';
-        progress = 100;
-      } else if (task.status === 'cancelled') {
-        type = 'error';
-        progress = 0;
+        status = 'completed';
       } else if (task.status === 'in_progress') {
-        type = 'action';
-        progress = 50;
-      } else if (task.status === 'pending') {
-        type = 'thinking';
-        progress = 0;
+        status = 'in_progress';
+      } else if (task.status === 'cancelled') {
+        status = 'failed';
+      } else {
+        status = 'pending';
       }
       
       return {
         id: task.id.toString(),
-        type,
-        message: task.title,
-        details: task.description || task.result || undefined,
-        progress,
+        title: task.title,
+        status,
+        priority: task.order || 0,
+        subAgentId: null,
       };
     });
     
