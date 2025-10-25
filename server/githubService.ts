@@ -115,10 +115,18 @@ export class GitHubService {
             console.log(`[GITHUB-SERVICE] Content defined: ${change.content !== undefined && change.content !== null}`);
             console.log(`[GITHUB-SERVICE] Content length: ${change.content?.length || 0} bytes`);
 
-            // Only reject undefined/null, allow empty strings
+            // CRITICAL: Validate content before blob creation
             if (change.content === undefined || change.content === null) {
+              console.error(`[GITHUB-SERVICE] ❌ REJECTED: File ${change.path} has undefined/null content`);
               throw new Error(`File ${change.path} has undefined/null content (${typeof change.content})`);
             }
+            
+            if (typeof change.content !== 'string') {
+              console.error(`[GITHUB-SERVICE] ❌ REJECTED: File ${change.path} has invalid content type: ${typeof change.content}`);
+              throw new Error(`File ${change.path} must have string content, got ${typeof change.content}`);
+            }
+            
+            console.log(`[GITHUB-SERVICE] ✅ Content validated for ${change.path}`);
 
             const { data: blob } = await this.octokit.git.createBlob({
               owner: this.owner,

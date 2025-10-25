@@ -80,10 +80,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // 🎯 Check for existing active task list or create new one
     // Prevents duplicate task lists across conversation
     sendEvent('progress', { message: 'Preparing task tracking...' });
-    
+
     const existingLists = await readTaskList({ userId, projectId: undefined });
     let activeTaskListId: string | undefined;
-    
+
     if (existingLists.success && existingLists.taskLists) {
       const activeList = existingLists.taskLists.find((list: any) => list.status === 'active');
       if (activeList) {
@@ -92,7 +92,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         sendEvent('task_list_created', { taskListId: activeList.id });
       }
     }
-    
+
     // Only create new task list if no active one exists
     if (!activeTaskListId) {
       const initialTaskResult = await createTaskList({
@@ -109,7 +109,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           { title: 'Deploy to production via GitHub', status: 'pending' },
         ],
       });
-      
+
       if (initialTaskResult.success) {
         activeTaskListId = initialTaskResult.taskListId;
         sendEvent('task_list_created', { taskListId: initialTaskResult.taskListId });
@@ -374,10 +374,10 @@ EXECUTE NOW - Read task list, update progress, get approval, write files, deploy
     let iterationCount = 0;
     const MAX_ITERATIONS = 5;
     let commitSuccessful = false; // Track if commit_to_github succeeded
-    
+
     // Track architect approval for enforcement (per-file approval map)
     const approvedFiles = new Map<string, { approved: boolean; timestamp: number }>();
-    
+
     // Normalize file paths to prevent bypasses (./path, ../path, etc)
     const normalizePath = (filePath: string): string => {
       // Remove leading ./ and resolve ../ patterns
@@ -410,16 +410,16 @@ EXECUTE NOW - Read task list, update progress, get approval, write files, deploy
       // 🎯 OPTION 1 ENFORCEMENT: First response should use tools (not just text)
       if (iterationCount === 1) {
         const hasToolCalls = response.content.some(block => block.type === 'tool_use');
-        
+
         console.log('[META-SYSOP-ENFORCEMENT] Iteration 1 check:');
         console.log('  - Has tool calls:', hasToolCalls);
         console.log('  - Content blocks:', response.content.map(b => b.type).join(', '));
-        
+
         if (!hasToolCalls) {
           // Force retry - Meta-SySop typed text instead of calling tools
           console.error('[META-SYSOP-ENFORCEMENT] ❌ No tool calls on first response - REJECTING & RETRYING');
           sendEvent('error', { message: '❌ Must call tools (not type text) - retrying...' });
-          
+
           const errorMessage = `ERROR: Your first response must include TOOL CALLS, not just text.
 
 Users are watching tasks in real-time via TaskBoard. A task list was PRE-CREATED for you.
@@ -439,7 +439,7 @@ RETRY NOW - Call readTaskList() first to see task IDs, then start working!`;
             role: 'user',
             content: errorMessage,
           });
-          
+
           console.log('[META-SYSOP-ENFORCEMENT] Added error message to conversation - continuing loop');
           continue; // Retry loop
         } else {
@@ -449,7 +449,7 @@ RETRY NOW - Call readTaskList() first to see task IDs, then start working!`;
 
       const toolResults: any[] = [];
       const hasToolUse = response.content.some(block => block.type === 'tool_use');
-      
+
       // 🎯 ANTI-LYING ENFORCEMENT: If response contains tool calls, SUPPRESS all text blocks
       // Meta-SySop must wait for tool results before claiming success
       if (hasToolUse) {
@@ -489,7 +489,7 @@ DO NOT create new tasks - UPDATE existing ones!`;
             } else if (name === 'updateTask') {
               const typedInput = input as { taskId: string; status: string; result?: string };
               sendEvent('progress', { message: `Updating task to ${typedInput.status}...` });
-              
+
               // 🎯 ANTI-LYING VALIDATION: Prevent completing tasks out of order
               if (typedInput.status === 'completed') {
                 // Get current task list to validate
@@ -499,7 +499,7 @@ DO NOT create new tasks - UPDATE existing ones!`;
                   if (activeList) {
                     const tasks = activeList.tasks || [];
                     const currentTask = tasks.find((t: any) => t.id === typedInput.taskId);
-                    
+
                     if (currentTask) {
                       // SPECIAL VALIDATION: "Deploy to production via GitHub" requires actual commit success
                       if (currentTask.title === 'Deploy to production via GitHub') {
@@ -514,12 +514,12 @@ DO NOT create new tasks - UPDATE existing ones!`;
                           break; // Skip the updateTask call entirely
                         }
                       }
-                      
+
                       // DEPENDENCY VALIDATION: Check if prerequisite tasks are complete
                       const currentIndex = tasks.findIndex((t: any) => t.id === typedInput.taskId);
                       const previousTasks = tasks.slice(0, currentIndex);
                       const incompletePrevious = previousTasks.filter((t: any) => t.status !== 'completed');
-                      
+
                       if (incompletePrevious.length > 0) {
                         toolResult = `❌ BLOCKED: Cannot complete task out of order!\n\n` +
                           `Task "${currentTask.title}" requires these tasks to be completed first:\n` +
@@ -533,7 +533,7 @@ DO NOT create new tasks - UPDATE existing ones!`;
                   }
                 }
               }
-              
+
               const result = await updateTask({
                 userId,
                 taskId: typedInput.taskId,
@@ -542,7 +542,7 @@ DO NOT create new tasks - UPDATE existing ones!`;
                 startedAt: typedInput.status === 'in_progress' ? new Date() : undefined,
                 completedAt: typedInput.status === 'completed' ? new Date() : undefined,
               });
-              
+
               if (result.success) {
                 toolResult = `✅ Task updated to ${typedInput.status}`;
                 sendEvent('task_updated', { taskId: typedInput.taskId, status: typedInput.status });
@@ -551,7 +551,7 @@ DO NOT create new tasks - UPDATE existing ones!`;
               }
             } else if (name === 'readTaskList') {
               const result = await readTaskList({ userId });
-              
+
               if (result.success && result.taskLists) {
                 const activeList = result.taskLists.find((list: any) => list.status === 'active');
                 if (activeList) {
@@ -571,36 +571,50 @@ DO NOT create new tasks - UPDATE existing ones!`;
               toolResult = await platformHealing.readPlatformFile(typedInput.path);
             } else if (name === 'writePlatformFile') {
               const typedInput = input as { path: string; content: string };
-              const normalizedPath = normalizePath(typedInput.path);
-              
+
+              // CRITICAL: Validate content exists before calling platformHealing
+              if (typedInput.content === undefined || typedInput.content === null) {
+                throw new Error(`Tool writePlatformFile called without content for ${typedInput.path}`);
+              }
+
+              if (typeof typedInput.content !== 'string') {
+                throw new Error(`Tool writePlatformFile called with invalid content type (${typeof typedInput.content}) for ${typedInput.path}`);
+              }
+
+              console.log(`[META-SYSOP] Writing file: ${typedInput.path} (${typedInput.content.length} bytes)`);
+
               // CRITICAL ENFORCEMENT: Check per-file approval
-              const approval = approvedFiles.get(normalizedPath);
-              
+              const approval = approvedFiles.get(normalizePath(typedInput.path));
+
               if (!approval) {
-                toolResult = `❌ BLOCKED: File "${normalizedPath}" has no architect approval. You must consult I AM (architect_consult) and get explicit approval for this file.`;
-                console.error(`[META-SYSOP] Blocked writePlatformFile for ${normalizedPath} - no approval found`);
-                sendEvent('error', { message: `File write blocked - no approval for ${normalizedPath}` });
+                toolResult = `❌ BLOCKED: File "${typedInput.path}" has no architect approval. You must consult I AM (architect_consult) and get explicit approval for this file.`;
+                console.error(`[META-SYSOP] Blocked writePlatformFile for ${typedInput.path} - no approval found`);
+                sendEvent('error', { message: `File write blocked - no approval for ${typedInput.path}` });
               } else if (!approval.approved) {
-                toolResult = `❌ BLOCKED: I AM rejected changes to "${normalizedPath}". You cannot proceed with this file modification.`;
-                console.error(`[META-SYSOP] Blocked writePlatformFile for ${normalizedPath} - approval was rejected`);
-                sendEvent('error', { message: `File write blocked - ${normalizedPath} was rejected` });
+                toolResult = `❌ BLOCKED: I AM rejected changes to "${typedInput.path}". You cannot proceed with this file modification.`;
+                console.error(`[META-SYSOP] Blocked writePlatformFile for ${typedInput.path} - approval was rejected`);
+                sendEvent('error', { message: `File write blocked - ${typedInput.path} was rejected` });
               } else {
-                console.log(`[META-SYSOP] writePlatformFile called for: ${normalizedPath}`);
+                console.log(`[META-SYSOP] writePlatformFile called for: ${typedInput.path}`);
                 console.log(`[META-SYSOP] Content type: ${typeof typedInput.content}`);
                 console.log(`[META-SYSOP] Content defined: ${typedInput.content !== undefined}`);
                 console.log(`[META-SYSOP] Content length: ${typedInput.content?.length || 0} bytes`);
-                
-                sendEvent('progress', { message: `✅ Modifying ${normalizedPath} (I AM approved)...` });
-                await platformHealing.writePlatformFile(normalizedPath, typedInput.content);
-                
+
+                sendEvent('progress', { message: `✅ Modifying ${typedInput.path} (I AM approved)...` });
+                const writeResult = await platformHealing.writePlatformFile(
+                  typedInput.path,
+                  typedInput.content
+                );
+                toolResult = JSON.stringify(writeResult);
+
                 // Track file changes with content for batch commits
                 fileChanges.push({ 
-                  path: normalizedPath, 
+                  path: typedInput.path, 
                   operation: 'modify', 
                   contentAfter: typedInput.content 
                 });
-                
-                sendEvent('file_change', { file: { path: normalizedPath, operation: 'modify' } });
+
+                sendEvent('file_change', { file: { path: typedInput.path, operation: 'modify' } });
                 toolResult = `✅ File written successfully (with I AM approval at ${new Date(approval.timestamp).toISOString()})`;
               }
             } else if (name === 'listPlatformFiles') {
@@ -616,23 +630,23 @@ DO NOT create new tasks - UPDATE existing ones!`;
                 affectedFiles: string[];
               };
               sendEvent('progress', { message: '🏗️ Consulting I AM (The Architect) for code review...' });
-              
+
               const architectResult = await consultArchitect({
                 problem: typedInput.problem,
                 context: typedInput.context,
                 previousAttempts: [],
                 codeSnapshot: `Proposed Solution:\n${typedInput.proposedSolution}\n\nAffected Files:\n${typedInput.affectedFiles.join('\n')}`
               });
-              
+
               const timestamp = Date.now();
-              
+
               if (architectResult.success) {
                 // Store per-file approval status (updates existing entries with latest approval)
                 const normalizedFiles = typedInput.affectedFiles.map(normalizePath);
                 normalizedFiles.forEach(filePath => {
                   approvedFiles.set(filePath, { approved: true, timestamp });
                 });
-                
+
                 sendEvent('progress', { message: `✅ I AM approved ${normalizedFiles.length} files` });
                 toolResult = `✅ APPROVED by I AM (The Architect)\n\n${architectResult.guidance}\n\nRecommendations:\n${architectResult.recommendations.join('\n')}\n\nYou may now proceed to modify these files:\n${normalizedFiles.map(f => `- ${f} (approved at ${new Date(timestamp).toISOString()})`).join('\n')}\n\nNote: Each file approval is tracked individually. You can modify these files in any order.`;
               } else {
@@ -641,45 +655,45 @@ DO NOT create new tasks - UPDATE existing ones!`;
                 normalizedFiles.forEach(filePath => {
                   approvedFiles.set(filePath, { approved: false, timestamp });
                 });
-                
+
                 sendEvent('error', { message: `❌ I AM rejected ${normalizedFiles.length} files` });
                 toolResult = `❌ REJECTED by I AM (The Architect)\n\nReason: ${architectResult.error}\n\nRejected files:\n${normalizedFiles.map(f => `- ${f}`).join('\n')}\n\nYou CANNOT proceed with these modifications. Either:\n1. Revise your approach and consult I AM again with a different proposal\n2. Abandon these changes`;
               }
             } else if (name === 'web_search') {
               const typedInput = input as { query: string; maxResults?: number };
               sendEvent('progress', { message: `🔍 Searching: ${typedInput.query}...` });
-              
+
               const searchResult = await executeWebSearch({
                 query: typedInput.query,
                 maxResults: typedInput.maxResults || 5
               });
-              
+
               // Format results for Meta-SySop (using 'content' field from API)
               toolResult = `Search Results:\n${searchResult.results.map((r: any) => 
                 `• ${r.title}\n  ${r.url}\n  ${r.content}\n`
               ).join('\n')}`;
             } else if (name === 'commit_to_github') {
               const typedInput = input as { commitMessage: string };
-              
+
               // Verify we have file changes to commit
               if (fileChanges.length === 0) {
                 toolResult = `❌ No file changes to commit. Make platform changes first using writePlatformFile.`;
                 sendEvent('error', { message: 'No file changes to commit' });
               } else {
                 sendEvent('progress', { message: `📤 Committing ${fileChanges.length} files to GitHub...` });
-                
+
                 try {
                   // Check if GitHub service is configured
                   const hasToken = !!process.env.GITHUB_TOKEN;
                   const hasRepo = !!process.env.GITHUB_REPO;
-                  
+
                   if (!hasToken || !hasRepo) {
                     toolResult = `❌ GitHub integration not configured.\n\nSetup instructions:\n1. Create GitHub Personal Access Token at https://github.com/settings/tokens\n2. Set environment variables:\n   - GITHUB_TOKEN=ghp_...\n   - GITHUB_REPO=owner/repo-name\n3. Render will auto-deploy on push to main branch\n\nThis enables Archetype to self-update without Replit!`;
                     sendEvent('error', { message: 'GitHub not configured - see setup instructions' });
                   } else {
                     const githubService = new GitHubService();
                     const PROJECT_ROOT = process.cwd();
-                    
+
                     // Read file contents and prepare for commit
                     const filesToCommit = [];
                     for (const change of fileChanges) {
@@ -698,17 +712,17 @@ DO NOT create new tasks - UPDATE existing ones!`;
                         });
                       }
                     }
-                    
+
                     // Commit to GitHub
                     const result = await githubService.commitFiles(
                       filesToCommit,
                       typedInput.commitMessage
                     );
-                    
+
                     commitSuccessful = true; // Track commit success for task validation
                     sendEvent('progress', { message: `✅ Committed to GitHub: ${result.commitHash}` });
                     sendEvent('progress', { message: `🚀 Render will auto-deploy in 2-3 minutes` });
-                    
+
                     toolResult = `✅ SUCCESS! Committed ${fileChanges.length} files to GitHub\n\n` +
                       `Commit: ${result.commitHash}\n` +
                       `URL: ${result.commitUrl}\n\n` +
@@ -729,13 +743,16 @@ DO NOT create new tasks - UPDATE existing ones!`;
               content: toolResult || 'Success',
             });
           } catch (error: any) {
-            toolResults.push({
-              type: 'tool_result',
-              tool_use_id: id,
-              is_error: true,
-              content: error.message,
-            });
-          }
+              console.error(`[META-SYSOP] ❌ Tool ${name} failed:`, error);
+              console.error(`[META-SYSOP] Tool input:`, JSON.stringify(input, null, 2));
+
+              toolResults.push({
+                type: 'tool_result',
+                tool_use_id: id,
+                is_error: true,
+                content: `Error in ${name}: ${error.message}\n\nThis error has been logged for debugging.`,
+              });
+            }
         }
       }
 
@@ -747,23 +764,23 @@ DO NOT create new tasks - UPDATE existing ones!`;
       } else {
         // 🎯 FINAL VALIDATION: Don't end loop unless all tasks are actually complete
         const finalCheck = await readTaskList({ userId });
-        
+
         if (!finalCheck.success) {
           // CRITICAL: If readTaskList fails, BLOCK session end (don't allow silent continuation)
           console.error('[META-SYSOP-ANTI-LYING] readTaskList failed - cannot verify tasks complete!');
           sendEvent('error', { message: 'Cannot verify task completion - retrying...' });
-          
+
           const errorMessage = `❌ ERROR: Cannot verify task completion status!\n\n` +
             `Task verification failed: ${finalCheck.error}\n\n` +
             `You MUST ensure all tasks are completed before ending. Call readTaskList() to verify, then complete any remaining tasks.`;
-          
+
           conversationMessages.push({
             role: 'user',
             content: errorMessage,
           });
           continue; // Force retry - do NOT allow loop end
         }
-        
+
         if (finalCheck.taskLists) {
           const activeList = finalCheck.taskLists.find((list: any) => list.status === 'active');
           if (activeList) {
@@ -771,13 +788,13 @@ DO NOT create new tasks - UPDATE existing ones!`;
             if (incompleteTasks.length > 0) {
               console.error('[META-SYSOP-ANTI-LYING] Blocked loop end - tasks incomplete:', incompleteTasks.map((t: any) => t.title));
               sendEvent('error', { message: `Cannot finish - ${incompleteTasks.length} tasks incomplete` });
-              
+
               // Force Meta-SySop to continue working
               const errorMessage = `❌ BLOCKED: Cannot end session with incomplete tasks!\n\n` +
                 `Incomplete tasks (${incompleteTasks.length}):\n` +
                 incompleteTasks.map((t: any) => `- ${t.title} (${t.status})`).join('\n') +
                 `\n\nYou must complete ALL tasks before finishing. Call updateTask() to mark remaining tasks complete.`;
-              
+
               conversationMessages.push({
                 role: 'user',
                 content: errorMessage,
@@ -786,7 +803,7 @@ DO NOT create new tasks - UPDATE existing ones!`;
             }
           }
         }
-        
+
         // ✅ ALL VALIDATIONS PASSED: Tasks verified complete, safe to end session
         console.log('[META-SYSOP-ENFORCEMENT] ✅ All tasks verified complete - ending session');
         continueLoop = false;
@@ -796,7 +813,7 @@ DO NOT create new tasks - UPDATE existing ones!`;
     // Safety check
     sendEvent('progress', { message: 'Running safety checks...' });
     const safety = await platformHealing.validateSafety();
-    
+
     if (!safety.safe) {
       if (backup?.id) {
         await platformHealing.rollback(backup.id);
@@ -827,7 +844,7 @@ DO NOT create new tasks - UPDATE existing ones!`;
             if (incompleteTasks.length > 0) {
               console.log(`[META-SYSOP-CLEANUP] Found ${incompleteTasks.length} incomplete tasks in session task list ${activeTaskListId}`);
               sendEvent('progress', { message: `Cleaning up ${incompleteTasks.length} incomplete tasks...` });
-              
+
               // Mark each incomplete task as completed (with warning)
               for (const task of incompleteTasks) {
                 try {
@@ -844,7 +861,7 @@ DO NOT create new tasks - UPDATE existing ones!`;
                 }
               }
             }
-            
+
             // Now mark the task list as completed
             try {
               await db
@@ -881,22 +898,22 @@ DO NOT create new tasks - UPDATE existing ones!`;
           unapprovedFiles.push(normalizedPath);
         }
       }
-      
+
       if (unapprovedFiles.length > 0) {
         sendEvent('error', { 
           message: `❌ AUTO-COMMIT BLOCKED: ${unapprovedFiles.length} file(s) lack I AM approval: ${unapprovedFiles.join(', ')}` 
         });
         console.error('[META-SYSOP] Blocked auto-commit - unapproved files:', unapprovedFiles);
-        
+
         if (backup?.id) {
           await platformHealing.rollback(backup.id);
           sendEvent('progress', { message: 'All changes rolled back due to unapproved files in commit' });
         }
-        
+
         res.end();
         return;
       }
-      
+
       sendEvent('progress', { message: `✅ Committing ${fileChanges.length} file changes (all I AM approved)...` });
       commitHash = await platformHealing.commitChanges(`Fix: ${message.slice(0, 100)}`, fileChanges as any);
 
@@ -927,7 +944,7 @@ DO NOT create new tasks - UPDATE existing ones!`;
         finalMessage = '⚠️ Session ended. Task verification unavailable.';
       }
     }
-    
+
     // Save assistant message
     const [assistantMsg] = await db
       .insert(chatMessages)
