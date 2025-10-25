@@ -18,6 +18,7 @@ import { registerFileRoutes } from "./routes/files";
 import { registerChatRoutes } from "./routes/chat";
 import { registerSubscriptionRoutes } from "./routes/subscriptions";
 import { registerAdminRoutes } from "./routes/admin";
+import { registerOwnerSetupRoutes } from "./routes/owner-setup";
 import { setupWebSocket } from "./routes/websocket";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -168,6 +169,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register all route modules with dependencies
   registerAuthRoutes(app);
   registerAdminRoutes(app);
+  registerOwnerSetupRoutes(app);
   registerSubscriptionRoutes(app);
   registerProjectRoutes(app);
   registerFileRoutes(app);

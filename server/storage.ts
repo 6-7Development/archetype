@@ -155,6 +155,10 @@ export interface IStorage {
   enableMaintenanceMode(userId: string, reason?: string): Promise<any>;
   disableMaintenanceMode(): Promise<any>;
   
+  // Owner operations
+  getOwner(): Promise<User | undefined>;
+  setOwner(userId: string): Promise<User>;
+  
   // Template operations
   getTemplates(): Promise<Template[]>;
   getTemplate(id: string): Promise<Template | undefined>;
@@ -866,6 +870,38 @@ export class DatabaseStorage implements IStorage {
       .returning();
 
     return updated;
+  }
+
+  // Owner operations
+  async getOwner(): Promise<User | undefined> {
+    const [owner] = await db
+      .select()
+      .from(users)
+      .where(eq(users.isOwner, true))
+      .limit(1);
+    
+    return owner || undefined;
+  }
+
+  async setOwner(userId: string): Promise<User> {
+    // First, clear any existing owner
+    await db
+      .update(users)
+      .set({ isOwner: false })
+      .where(eq(users.isOwner, true));
+    
+    // Set the new owner
+    const [updatedUser] = await db
+      .update(users)
+      .set({ isOwner: true })
+      .where(eq(users.id, userId))
+      .returning();
+    
+    if (!updatedUser) {
+      throw new Error(`User ${userId} not found`);
+    }
+    
+    return updatedUser;
   }
 
   // Deployment operations
