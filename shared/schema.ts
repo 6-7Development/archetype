@@ -1095,3 +1095,170 @@ export const insertMetaSysopMemorySchema = createInsertSchema(metaSysopMemory).o
 
 export type InsertMetaSysopMemory = z.infer<typeof insertMetaSysopMemorySchema>;
 export type MetaSysopMemory = typeof metaSysopMemory.$inferSelect;
+
+// ============================================================================
+// REPLIT AGENT-STYLE FEATURES (Message Queue, Autonomy, Image Gen, etc.)
+// ============================================================================
+
+// Message Queue - Queue follow-up requests while agent is working
+export const messageQueue = pgTable("message_queue", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  projectId: varchar("project_id"),
+  message: text("message").notNull(),
+  priority: integer("priority").notNull().default(5), // 1-10, higher = more urgent
+  status: text("status").notNull().default("queued"), // queued, processing, completed, cancelled
+  queuedAt: timestamp("queued_at").notNull().defaultNow(),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  metadata: jsonb("metadata"), // Additional context
+}, (table) => [
+  index("idx_message_queue_user").on(table.userId),
+  index("idx_message_queue_status").on(table.status),
+]);
+
+export const insertMessageQueueSchema = createInsertSchema(messageQueue).omit({
+  id: true,
+  queuedAt: true,
+});
+
+export type InsertMessageQueue = z.infer<typeof insertMessageQueueSchema>;
+export type MessageQueue = typeof messageQueue.$inferSelect;
+
+// User Autonomy Settings - Configure agent behavior preferences
+export const userAutonomySettings = pgTable("user_autonomy_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().unique(),
+  autonomyLevel: text("autonomy_level").notNull().default("medium"), // low, medium, high, max
+  autoCommit: boolean("auto_commit").notNull().default(false), // Auto-commit to git
+  autoDeploy: boolean("auto_deploy").notNull().default(false), // Auto-deploy after completion
+  requireReview: boolean("require_review").notNull().default(true), // Require architect review
+  allowSubAgents: boolean("allow_sub_agents").notNull().default(true), // Allow spawning sub-agents
+  maxConcurrentTasks: integer("max_concurrent_tasks").notNull().default(3), // Max parallel tasks
+  autoTestingEnabled: boolean("auto_testing_enabled").notNull().default(true), // Run tests automatically
+  preferences: jsonb("preferences"), // Additional custom preferences
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertUserAutonomySettingsSchema = createInsertSchema(userAutonomySettings).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export type InsertUserAutonomySettings = z.infer<typeof insertUserAutonomySettingsSchema>;
+export type UserAutonomySettings = typeof userAutonomySettings.$inferSelect;
+
+// AI Image Generation History - Track generated images
+export const imageGenerations = pgTable("image_generations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  projectId: varchar("project_id"),
+  prompt: text("prompt").notNull(), // User's image generation prompt
+  model: text("model").notNull().default("gpt-image-1"), // AI model used
+  imageUrl: text("image_url"), // Stored image URL (in app storage)
+  width: integer("width"),
+  height: integer("height"),
+  quality: text("quality").default("standard"), // standard, hd
+  style: text("style"), // vivid, natural
+  status: text("status").notNull().default("pending"), // pending, completed, failed
+  tokensUsed: integer("tokens_used").default(0),
+  cost: decimal("cost", { precision: 10, scale: 4 }).default("0.0000"),
+  error: text("error"), // Error message if failed
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_image_gen_user").on(table.userId),
+  index("idx_image_gen_project").on(table.projectId),
+]);
+
+export const insertImageGenerationSchema = createInsertSchema(imageGenerations).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertImageGeneration = z.infer<typeof insertImageGenerationSchema>;
+export type ImageGeneration = typeof imageGenerations.$inferSelect;
+
+// Dynamic Intelligence Sessions - Extended thinking mode sessions
+export const dynamicIntelligenceSessions = pgTable("dynamic_intelligence_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  projectId: varchar("project_id"),
+  taskId: varchar("task_id"), // Link to task if applicable
+  mode: text("mode").notNull(), // extended_thinking, high_power
+  problem: text("problem").notNull(), // Problem being analyzed
+  analysis: text("analysis"), // Deep analysis result
+  recommendations: text("recommendations"), // Recommended solutions
+  tokensUsed: integer("tokens_used").default(0),
+  thinkingTime: integer("thinking_time").default(0), // Seconds spent thinking
+  cost: decimal("cost", { precision: 10, scale: 4 }).default("0.0000"),
+  status: text("status").notNull().default("running"), // running, completed, failed
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  completedAt: timestamp("completed_at"),
+}, (table) => [
+  index("idx_dynamic_intel_user").on(table.userId),
+  index("idx_dynamic_intel_mode").on(table.mode),
+]);
+
+export const insertDynamicIntelligenceSessionSchema = createInsertSchema(dynamicIntelligenceSessions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertDynamicIntelligenceSession = z.infer<typeof insertDynamicIntelligenceSessionSchema>;
+export type DynamicIntelligenceSession = typeof dynamicIntelligenceSessions.$inferSelect;
+
+// Task Runners - Parallel task execution workers
+export const taskRunners = pgTable("task_runners", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  projectId: varchar("project_id"),
+  taskId: varchar("task_id"), // Task being executed
+  runnerType: text("runner_type").notNull(), // parallel, sequential, background
+  status: text("status").notNull().default("idle"), // idle, running, paused, completed, failed
+  currentStep: text("current_step"), // Current operation
+  progress: integer("progress").default(0), // 0-100%
+  tokensUsed: integer("tokens_used").default(0),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  error: text("error"),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_task_runner_user").on(table.userId),
+  index("idx_task_runner_status").on(table.status),
+]);
+
+export const insertTaskRunnerSchema = createInsertSchema(taskRunners).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertTaskRunner = z.infer<typeof insertTaskRunnerSchema>;
+export type TaskRunner = typeof taskRunners.$inferSelect;
+
+// Visual Edits - Track direct UI edits in preview
+export const visualEdits = pgTable("visual_edits", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  projectId: varchar("project_id").notNull(),
+  fileId: varchar("file_id").notNull(), // File being edited
+  editType: text("edit_type").notNull(), // style, component, layout
+  selector: text("selector"), // CSS selector or component path
+  changes: jsonb("changes").notNull(), // { property: value } pairs
+  generatedCode: text("generated_code"), // Code generated from visual edit
+  applied: boolean("applied").notNull().default(false), // Whether edit was applied to source
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_visual_edits_project").on(table.projectId),
+  index("idx_visual_edits_file").on(table.fileId),
+]);
+
+export const insertVisualEditSchema = createInsertSchema(visualEdits).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertVisualEdit = z.infer<typeof insertVisualEditSchema>;
+export type VisualEdit = typeof visualEdits.$inferSelect;
