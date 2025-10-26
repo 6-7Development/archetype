@@ -194,6 +194,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Mount Meta-SySop chat router (chat-based platform healing)
   app.use('/api/platform/chat', metaSySopChatRouter);
 
+  // ==================== REPLIT AGENT-STYLE FEATURES ====================
+  
+  // Import new feature routers
+  const taskRunnerRouter = await import('./routes/taskRunner');
+  const messageQueueRouter = await import('./routes/messageQueue');
+  const autonomySettingsRouter = await import('./routes/autonomySettings');
+  const imageGenerationRouter = await import('./routes/imageGeneration');
+  const dynamicIntelligenceRouter = await import('./routes/dynamicIntelligence');
+  
+  // Mount feature routers
+  app.use('/api/task-runners', taskRunnerRouter.default);
+  app.use('/api/message-queue', messageQueueRouter.default);
+  app.use('/api/autonomy', autonomySettingsRouter.default);
+  app.use('/api/image-generation', imageGenerationRouter.default);
+  app.use('/api/dynamic-intelligence', dynamicIntelligenceRouter.default);
+
   // ==================== SUPPORT TICKET ROUTES ====================
   
   // GET /api/support/tickets - List user's tickets
