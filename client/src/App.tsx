@@ -2,6 +2,35 @@ import { useEffect, Component, ErrorInfo, ReactNode } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { CommandPalette } from "@/components/command-palette";
+import { ThemeProvider } from "@/components/theme-provider";
+import { VersionProvider } from "@/providers/version-provider";
+import { AppLayout } from "@/components/app-layout";
+import { initGA4, trackPageView } from "@/lib/ga4";
+import Landing from "@/pages/landing";
+import LandingMobile from "@/pages/landing-mobile";
+import Pricing from "@/pages/pricing";
+import PricingSuccess from "@/pages/pricing-success";
+import AuthPage from "@/pages/auth-page";
+import AdminPromotePage from "@/pages/admin-promote";
+import Dashboard from "@/pages/dashboard";
+import Builder from "@/pages/builder";
+import Workspace from "@/pages/workspace";
+import Marketplace from "@/pages/marketplace";
+import Analytics from "@/pages/analytics";
+import Account from "@/pages/account";
+import Team from "@/pages/team";
+import APIKeys from "@/pages/api-keys";
+import Support from "@/pages/support";
+import Admin from "@/pages/admin";
+import Publishing from "@/pages/publishing";
+import PlatformHealing from "@/pages/platform-healing";
+import AgentFeatures from "@/pages/agent-features";
+import NotFound from "@/pages/not-found";
+import Error403 from "@/pages/error-403";
+import Error500 from "@/pages/error-500";
 
 // Error Boundary Component
 class ErrorBoundary extends Component<
@@ -46,35 +75,6 @@ class ErrorBoundary extends Component<
     return this.props.children;
   }
 }
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { CommandPalette } from "@/components/command-palette";
-import { ThemeProvider } from "@/components/theme-provider";
-import { VersionProvider } from "@/providers/version-provider";
-import { AppLayout } from "@/components/app-layout";
-import { initGA4, trackPageView } from "@/lib/ga4";
-import Landing from "@/pages/landing";
-import LandingMobile from "@/pages/landing-mobile";
-import Pricing from "@/pages/pricing";
-import PricingSuccess from "@/pages/pricing-success";
-import AuthPage from "@/pages/auth-page";
-import AdminPromotePage from "@/pages/admin-promote";
-import Dashboard from "@/pages/dashboard";
-import Builder from "@/pages/builder";
-import Workspace from "@/pages/workspace";
-import Marketplace from "@/pages/marketplace";
-import Analytics from "@/pages/analytics";
-import Account from "@/pages/account";
-import Team from "@/pages/team";
-import APIKeys from "@/pages/api-keys";
-import Support from "@/pages/support";
-import Admin from "@/pages/admin";
-import Publishing from "@/pages/publishing";
-import PlatformHealing from "@/pages/platform-healing";
-import AgentFeatures from "@/pages/agent-features";
-import NotFound from "@/pages/not-found";
-import Error403 from "@/pages/error-403";
-import Error500 from "@/pages/error-500";
 
 function Router() {
   const [location] = useLocation();
