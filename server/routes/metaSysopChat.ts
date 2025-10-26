@@ -187,6 +187,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // Meta-SySop will create task lists ONLY when actually building
     // Not for questions, diagnostics, or exploration
     sendEvent('progress', { message: '🧠 Analyzing your request...' });
+    
+    // Track task list ID if created during conversation
+    let activeTaskListId: string | undefined;
 
     // Create backup before any changes (non-blocking - continue even if it fails)
     let backup: any = null;
