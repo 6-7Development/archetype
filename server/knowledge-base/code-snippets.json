@@ -1,0 +1,15 @@
+[
+  {
+    "id": "code-1761448630014-lpneizwlj",
+    "language": "typescript",
+    "description": "React useCallback pattern for event handlers",
+    "code": "const handleClick = useCallback(() => { console.log(\"clicked\"); }, []);",
+    "tags": [
+      "react",
+      "hooks",
+      "performance"
+    ],
+    "timestamp": "2025-10-26T03:17:10.014Z",
+    "usageCount": 0
+  }
+]
