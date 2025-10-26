@@ -1,0 +1,148 @@
+2025-10-26T18:19:24.525951634Z [inf]  
+2025-10-26T18:19:27.803837159Z [inf]  [35m[Region: us-east4][0m
+2025-10-26T18:19:27.818365539Z [inf]  [35m=========================
+2025-10-26T18:19:27.818402282Z [inf]  Using Detected Dockerfile
+2025-10-26T18:19:27.818406641Z [inf]  =========================
+2025-10-26T18:19:27.818411386Z [inf]  [0m
+2025-10-26T18:19:27.818424289Z [inf]  context: txzb-AZhN
+2025-10-26T18:19:28.001254217Z [inf]  [internal] load build definition from Dockerfile
+2025-10-26T18:19:28.001320679Z [inf]  [internal] load build definition from Dockerfile
+2025-10-26T18:19:28.001342306Z [inf]  [internal] load build definition from Dockerfile
+2025-10-26T18:19:28.001358196Z [inf]  [internal] load build definition from Dockerfile
+2025-10-26T18:19:28.013635520Z [inf]  [internal] load build definition from Dockerfile
+2025-10-26T18:19:28.016608319Z [inf]  [internal] load metadata for docker.io/library/node:20-alpine
+2025-10-26T18:19:28.072745492Z [inf]  [internal] load metadata for docker.io/library/node:20-alpine
+2025-10-26T18:19:28.073108443Z [inf]  [internal] load .dockerignore
+2025-10-26T18:19:28.073153319Z [inf]  [internal] load .dockerignore
+2025-10-26T18:19:28.073164775Z [inf]  [internal] load .dockerignore
+2025-10-26T18:19:28.088779359Z [inf]  [internal] load .dockerignore
+2025-10-26T18:19:28.093212583Z [inf]  [production 8/9] COPY tsconfig.json ./
+2025-10-26T18:19:28.093257099Z [inf]  [production 7/9] COPY shared ./shared
+2025-10-26T18:19:28.093266575Z [inf]  [production 6/9] COPY server ./server
+2025-10-26T18:19:28.093273211Z [inf]  [production 5/9] COPY --from=frontend-builder /app/dist ./dist
+2025-10-26T18:19:28.093280673Z [inf]  [frontend-builder 6/6] RUN npm run build
+2025-10-26T18:19:28.093287012Z [inf]  [frontend-builder 5/6] COPY . .
+2025-10-26T18:19:28.093292993Z [inf]  [frontend-builder 4/6] RUN npm ci
+2025-10-26T18:19:28.093299213Z [inf]  [frontend-builder 3/6] COPY package*.json ./
+2025-10-26T18:19:28.093305673Z [inf]  [internal] load build context
+2025-10-26T18:19:28.093312883Z [inf]  [frontend-builder 2/6] WORKDIR /app
+2025-10-26T18:19:28.093317893Z [inf]  [frontend-builder 1/6] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+2025-10-26T18:19:28.093328465Z [inf]  [production 9/9] COPY drizzle.config.ts ./
+2025-10-26T18:19:28.093338120Z [inf]  [frontend-builder 1/6] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+2025-10-26T18:19:28.093352745Z [inf]  [internal] load build context
+2025-10-26T18:19:28.093361386Z [inf]  [internal] load build context
+2025-10-26T18:19:28.727230534Z [inf]  [internal] load build context
+2025-10-26T18:19:28.729585575Z [inf]  [frontend-builder 3/6] COPY package*.json ./
+2025-10-26T18:19:28.812180415Z [inf]  [frontend-builder 3/6] COPY package*.json ./
+2025-10-26T18:19:28.823867153Z [inf]  [frontend-builder 4/6] RUN npm ci
+2025-10-26T18:19:34.281177475Z [inf]  npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+
+2025-10-26T18:19:34.332624502Z [inf]  npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+
+2025-10-26T18:19:40.220690885Z [inf]  
+added 682 packages, and audited 683 packages in 11s
+
+173 packages are looking for funding
+  run `npm fund` for details
+
+2025-10-26T18:19:40.255378901Z [inf]  
+10 vulnerabilities (3 low, 7 moderate)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+2025-10-26T18:19:40.256501489Z [inf]  npm notice
+npm notice New major version of npm available! 10.8.2 -> 11.6.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.2
+npm notice To update run: npm install -g npm@11.6.2
+npm notice
+
+2025-10-26T18:19:40.677807443Z [inf]  [frontend-builder 4/6] RUN npm ci
+2025-10-26T18:19:40.679366615Z [inf]  [frontend-builder 5/6] COPY . .
+2025-10-26T18:19:41.081200443Z [inf]  [frontend-builder 5/6] COPY . .
+2025-10-26T18:19:41.083212808Z [inf]  [frontend-builder 6/6] RUN npm run build
+2025-10-26T18:19:41.293941374Z [inf]  
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+
+2025-10-26T18:19:41.515400106Z [inf]  vite v5.4.20 building for production...
+
+2025-10-26T18:19:41.572943206Z [inf]  transforming...
+
+2025-10-26T18:19:41.948095308Z [inf]  Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+2025-10-26T18:19:43.518653055Z [inf]  
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+
+2025-10-26T18:19:51.851220533Z [inf]  ✓ 3847 modules transformed.
+
+2025-10-26T18:19:52.82982167Z [inf]  rendering chunks...
+
+2025-10-26T18:19:52.855077254Z [inf]  computing gzip size...
+
+2025-10-26T18:19:52.903967671Z [inf]  ../dist/public/index.html                     1.09 kB │ gzip:   0.56 kB
+../dist/public/assets/index-d3AZwmFK.css    132.29 kB │ gzip:  20.67 kB
+
+2025-10-26T18:19:52.903986443Z [inf]  ../dist/public/assets/index-DWBu1m_q.js   1,811.38 kB │ gzip: 513.82 kB
+
+2025-10-26T18:19:52.904081572Z [inf]  
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+2025-10-26T18:19:52.904406302Z [inf]  ✓ built in 11.36s
+
+2025-10-26T18:19:52.999730896Z [inf]  
+  dist/index.js  545.7kb
+
+⚡ Done in 17ms
+
+2025-10-26T18:19:53.159064539Z [inf]  [frontend-builder 6/6] RUN npm run build
+2025-10-26T18:19:53.629174065Z [inf]  [production 5/9] COPY --from=frontend-builder /app/dist ./dist
+2025-10-26T18:19:53.659860496Z [inf]  [production 5/9] COPY --from=frontend-builder /app/dist ./dist
+2025-10-26T18:19:53.661344249Z [inf]  [production 6/9] COPY server ./server
+2025-10-26T18:19:53.683273943Z [inf]  [production 6/9] COPY server ./server
+2025-10-26T18:19:53.684614311Z [inf]  [production 7/9] COPY shared ./shared
+2025-10-26T18:19:53.703935547Z [inf]  [production 7/9] COPY shared ./shared
+2025-10-26T18:19:53.705396810Z [inf]  [production 8/9] COPY tsconfig.json ./
+2025-10-26T18:19:53.720477584Z [inf]  [production 8/9] COPY tsconfig.json ./
+2025-10-26T18:19:53.722189890Z [inf]  [production 9/9] COPY drizzle.config.ts ./
+2025-10-26T18:19:53.738815509Z [inf]  [production 9/9] COPY drizzle.config.ts ./
+2025-10-26T18:20:14.437926039Z [inf]  importing to docker
+2025-10-26T18:20:17.008275379Z [inf]  [auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com
+2025-10-26T18:20:17.008329056Z [inf]  [auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com
+2025-10-26T18:20:24.215138166Z [inf]  importing to docker
+2025-10-26T18:20:45.838468661Z [inf]  [92mBuild time: 78.02 seconds[0m
+2025-10-26T18:21:04.480939304Z [inf]  
+2025-10-26T18:21:04.481067869Z [inf]  [35m====================
+Starting Healthcheck
+====================
+[0m
+2025-10-26T18:21:04.481073027Z [inf]  [37mPath: /health[0m
+2025-10-26T18:21:04.481076086Z [inf]  [37mRetry window: 5m0s[0m
+2025-10-26T18:21:04.481078203Z [inf]  
+2025-10-26T18:21:14.601046946Z [inf]  [93mAttempt #1 failed with service unavailable. Continuing to retry for 4m49s[0m
+2025-10-26T18:21:19.088983778Z [inf]  [93mAttempt #2 failed with service unavailable. Continuing to retry for 4m45s[0m
+2025-10-26T18:21:31.174251933Z [inf]  [93mAttempt #3 failed with service unavailable. Continuing to retry for 4m33s[0m
+2025-10-26T18:21:45.249217903Z [inf]  [93mAttempt #4 failed with service unavailable. Continuing to retry for 4m19s[0m
+2025-10-26T18:21:53.329005307Z [inf]  [93mAttempt #5 failed with service unavailable. Continuing to retry for 4m11s[0m
+2025-10-26T18:22:09.401734193Z [inf]  [93mAttempt #6 failed with service unavailable. Continuing to retry for 3m55s[0m
+2025-10-26T18:22:39.474248086Z [inf]  [93mAttempt #7 failed with service unavailable. Continuing to retry for 3m25s[0m
+2025-10-26T18:23:09.557681689Z [inf]  [93mAttempt #8 failed with service unavailable. Continuing to retry for 2m54s[0m
+2025-10-26T18:23:39.632212318Z [inf]  [93mAttempt #9 failed with service unavailable. Continuing to retry for 2m24s[0m
+2025-10-26T18:24:09.740103123Z [inf]  [93mAttempt #10 failed with service unavailable. Continuing to retry for 1m54s[0m
+2025-10-26T18:24:39.840031363Z [inf]  [93mAttempt #11 failed with service unavailable. Continuing to retry for 1m24s[0m
+2025-10-26T18:25:09.916976565Z [inf]  [93mAttempt #12 failed with service unavailable. Continuing to retry for 54s[0m
+2025-10-26T18:25:39.994742914Z [inf]  [93mAttempt #13 failed with service unavailable. Continuing to retry for 24s[0m
+2025-10-26T18:25:40.044732942Z [inf]  
+2025-10-26T18:25:40.044852104Z [inf]  [91m1/1 replicas never became healthy![0m
+2025-10-26T18:25:40.044857110Z [inf]  [91mHealthcheck failed![0m

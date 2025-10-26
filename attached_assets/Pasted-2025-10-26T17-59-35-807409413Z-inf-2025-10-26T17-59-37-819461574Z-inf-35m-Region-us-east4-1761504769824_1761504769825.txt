@@ -1,0 +1,129 @@
+2025-10-26T17:59:35.807409413Z [inf]  
+2025-10-26T17:59:37.819461574Z [inf]  [35m[Region: us-east4][0m
+2025-10-26T17:59:37.836424547Z [inf]  [35m=========================
+2025-10-26T17:59:37.836455323Z [inf]  Using Detected Dockerfile
+2025-10-26T17:59:37.836461059Z [inf]  =========================
+2025-10-26T17:59:37.836465207Z [inf]  [0m
+2025-10-26T17:59:37.836478780Z [inf]  context: dtw2-h0NI
+2025-10-26T17:59:38.029434632Z [inf]  [internal] load build definition from Dockerfile
+2025-10-26T17:59:38.029482534Z [inf]  [internal] load build definition from Dockerfile
+2025-10-26T17:59:38.029497997Z [inf]  [internal] load build definition from Dockerfile
+2025-10-26T17:59:38.040344309Z [inf]  [internal] load build definition from Dockerfile
+2025-10-26T17:59:38.042554505Z [inf]  [internal] load metadata for docker.io/library/node:20-alpine
+2025-10-26T17:59:38.045942043Z [inf]  [auth] library/node:pull token for registry-1.docker.io
+2025-10-26T17:59:38.045999125Z [inf]  [auth] library/node:pull token for registry-1.docker.io
+2025-10-26T17:59:38.155030182Z [inf]  [internal] load metadata for docker.io/library/node:20-alpine
+2025-10-26T17:59:38.155138186Z [inf]  [internal] load .dockerignore
+2025-10-26T17:59:38.155270691Z [inf]  [internal] load .dockerignore
+2025-10-26T17:59:38.155535983Z [inf]  [internal] load .dockerignore
+2025-10-26T17:59:38.165752861Z [inf]  [internal] load .dockerignore
+2025-10-26T17:59:38.169765356Z [inf]  [production 8/9] COPY tsconfig.json ./
+2025-10-26T17:59:38.169800486Z [inf]  [production 7/9] COPY shared ./shared
+2025-10-26T17:59:38.169813067Z [inf]  [production 6/9] COPY server ./server
+2025-10-26T17:59:38.169826261Z [inf]  [production 5/9] COPY --from=frontend-builder /app/dist ./dist
+2025-10-26T17:59:38.169836329Z [inf]  [frontend-builder 6/6] RUN npm run build
+2025-10-26T17:59:38.169846356Z [inf]  [frontend-builder 5/6] COPY . .
+2025-10-26T17:59:38.169855734Z [inf]  [frontend-builder 4/6] RUN npm ci
+2025-10-26T17:59:38.169865203Z [inf]  [frontend-builder 3/6] COPY package*.json ./
+2025-10-26T17:59:38.169881008Z [inf]  [internal] load build context
+2025-10-26T17:59:38.169890526Z [inf]  [frontend-builder 2/6] WORKDIR /app
+2025-10-26T17:59:38.169899283Z [inf]  [frontend-builder 1/6] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+2025-10-26T17:59:38.169917379Z [inf]  [production 9/9] COPY drizzle.config.ts ./
+2025-10-26T17:59:38.169934508Z [inf]  [internal] load build context
+2025-10-26T17:59:38.169954844Z [inf]  [frontend-builder 1/6] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+2025-10-26T17:59:38.169985954Z [inf]  [internal] load build context
+2025-10-26T17:59:38.851040655Z [inf]  [internal] load build context
+2025-10-26T17:59:38.855914357Z [inf]  [frontend-builder 2/6] WORKDIR /app
+2025-10-26T17:59:38.855961313Z [inf]  [frontend-builder 3/6] COPY package*.json ./
+2025-10-26T17:59:38.913162629Z [inf]  [frontend-builder 3/6] COPY package*.json ./
+2025-10-26T17:59:38.914814820Z [inf]  [frontend-builder 4/6] RUN npm ci
+2025-10-26T17:59:44.91533108Z [inf]  npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+
+2025-10-26T17:59:44.954708629Z [inf]  npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+
+2025-10-26T17:59:51.637684636Z [inf]  
+added 682 packages, and audited 683 packages in 12s
+
+2025-10-26T17:59:51.637703437Z [inf]  
+
+2025-10-26T17:59:51.637781425Z [inf]  173 packages are looking for funding
+  run `npm fund` for details
+
+2025-10-26T17:59:51.677003757Z [inf]  
+10 vulnerabilities (3 low, 7 moderate)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+2025-10-26T17:59:51.678516746Z [inf]  npm notice
+npm notice New major version of npm available! 10.8.2 -> 11.6.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.2
+npm notice To update run: npm install -g npm@11.6.2
+npm notice
+
+2025-10-26T17:59:52.178262930Z [inf]  [frontend-builder 4/6] RUN npm ci
+2025-10-26T17:59:52.184619999Z [inf]  [frontend-builder 5/6] COPY . .
+2025-10-26T17:59:52.580790507Z [inf]  [frontend-builder 5/6] COPY . .
+2025-10-26T17:59:52.584290640Z [inf]  [frontend-builder 6/6] RUN npm run build
+2025-10-26T17:59:52.841227847Z [inf]  
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+
+2025-10-26T17:59:53.090940863Z [inf]  vite v5.4.20 building for production...
+
+2025-10-26T17:59:53.153680552Z [inf]  transforming...
+
+2025-10-26T17:59:53.824066666Z [inf]  Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+2025-10-26T17:59:55.517960738Z [inf]  
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+
+2025-10-26T18:00:04.091860794Z [inf]  ✓ 3847 modules transformed.
+
+2025-10-26T18:00:05.103547247Z [inf]  rendering chunks...
+
+2025-10-26T18:00:05.129416497Z [inf]  computing gzip size...
+
+2025-10-26T18:00:05.1800654Z [inf]  ../dist/public/index.html                     1.09 kB │ gzip:   0.56 kB
+../dist/public/assets/index-d3AZwmFK.css    132.29 kB │ gzip:  20.67 kB
+
+2025-10-26T18:00:05.180110437Z [inf]  ../dist/public/assets/index-DWBu1m_q.js   1,811.38 kB │ gzip: 513.82 kB
+
+2025-10-26T18:00:05.180183877Z [inf]  
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+2025-10-26T18:00:05.18044613Z [inf]  ✓ built in 12.06s
+
+2025-10-26T18:00:05.272468045Z [inf]  
+  dist/index.js  545.7kb
+
+⚡ Done in 23ms
+
+2025-10-26T18:00:05.321435660Z [inf]  [frontend-builder 6/6] RUN npm run build
+2025-10-26T18:00:05.978141903Z [inf]  [production 5/9] COPY --from=frontend-builder /app/dist ./dist
+2025-10-26T18:00:06.006322398Z [inf]  [production 5/9] COPY --from=frontend-builder /app/dist ./dist
+2025-10-26T18:00:06.007967173Z [inf]  [production 6/9] COPY server ./server
+2025-10-26T18:00:06.046123781Z [inf]  [production 6/9] COPY server ./server
+2025-10-26T18:00:06.048346460Z [inf]  [production 7/9] COPY shared ./shared
+2025-10-26T18:00:06.117390438Z [inf]  [production 7/9] COPY shared ./shared
+2025-10-26T18:00:06.119355970Z [inf]  [production 8/9] COPY tsconfig.json ./
+2025-10-26T18:00:06.142928272Z [inf]  [production 8/9] COPY tsconfig.json ./
+2025-10-26T18:00:06.145405029Z [inf]  [production 9/9] COPY drizzle.config.ts ./
+2025-10-26T18:00:06.164291473Z [inf]  [production 9/9] COPY drizzle.config.ts ./
+2025-10-26T18:00:06.169266077Z [inf]  exporting to docker image format
+2025-10-26T18:00:11.049764982Z [inf]  [auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com
+2025-10-26T18:00:11.049839424Z [inf]  [auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com
+2025-10-26T18:00:12.453496951Z [inf]  importing to docker
+2025-10-26T18:00:20.968218648Z [inf]  importing to docker
+2025-10-26T18:00:43.587987659Z [inf]  [92mBuild time: 65.75 seconds[0m
