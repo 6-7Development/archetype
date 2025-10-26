@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { PlatformHealingChat } from '@/components/platform-healing-chat';
 import { 
   Activity, 
   AlertTriangle, 
@@ -32,6 +33,17 @@ interface HealingStep {
 
 type RunPhase = 'idle' | 'analyzing' | 'executing' | 'completed' | 'failed';
 
+interface HealMessage {
+  id: string;
+  type: 'init' | 'thought' | 'tool' | 'write-pending' | 'approved' | 'rejected' | 'completed' | 'error';
+  text?: string;
+  path?: string;
+  directory?: string;
+  diff?: string;
+  timestamp: Date;
+  sessionId?: string;
+}
+
 function PlatformHealingContent() {
   const { toast } = useToast();
   const [autoCommit, setAutoCommit] = useState(false);
@@ -43,10 +55,14 @@ function PlatformHealingContent() {
   const [meta, setMeta] = useState('');
   const [feed, setFeed] = useState<string[]>([]);
   const [issueDescription, setIssueDescription] = useState('');
+  const [healingMessages, setHealingMessages] = useState<HealMessage[]>([]);
+  const [pendingWrite, setPendingWrite] = useState<{ path: string; diff: string; sessionId: string } | null>(null);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
-  // WebSocket connection for live metrics
+  // WebSocket connection for live metrics and heal events
   const wsStream = useWebSocketStream('platform-healing', 'admin');
   const metrics = wsStream.platformMetrics;
+  const { healEvents } = wsStream;
 
   // Fallback to HTTP polling if WebSocket not connected
   const { data: httpMetrics } = useQuery<any>({
@@ -68,11 +84,14 @@ function PlatformHealingContent() {
       });
       return response;
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       toast({
         title: 'Auto-heal initiated',
         description: 'Platform healing process started successfully',
       });
+      if (data.sessionId) {
+        setCurrentSessionId(data.sessionId);
+      }
       queryClient.invalidateQueries({ queryKey: ['/api/platform/status'] });
     },
     onError: (error: any) => {
@@ -81,65 +100,136 @@ function PlatformHealingContent() {
         title: 'Auto-heal failed',
         description: error.message || 'Failed to initiate auto-heal',
       });
+      setPhase('failed');
+    },
+  });
+
+  // Approve write mutation
+  const approveMutation = useMutation({
+    mutationFn: async (sessionId: string) => {
+      return await apiRequest('POST', `/api/platform/heal/${sessionId}/approve`, {});
+    },
+    onSuccess: () => {
+      setPendingWrite(null);
+      toast({
+        title: 'Change approved',
+        description: 'Meta-SySop will apply the change and continue',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Approval failed',
+        description: error.message || 'Failed to approve change',
+      });
+    },
+  });
+
+  // Reject write mutation
+  const rejectMutation = useMutation({
+    mutationFn: async (sessionId: string) => {
+      return await apiRequest('POST', `/api/platform/heal/${sessionId}/reject`, {});
+    },
+    onSuccess: () => {
+      setPendingWrite(null);
+      toast({
+        title: 'Change rejected',
+        description: 'Meta-SySop will skip this change and continue',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Rejection failed',
+        description: error.message || 'Failed to reject change',
+      });
     },
   });
 
   function startRun(text: string) {
+    // Reset healing state
+    setHealingMessages([]);
+    setPendingWrite(null);
+    setCurrentSessionId(null);
+    setPhase('analyzing');
     setFeed(f => [`▶️ New run started: ${text.slice(0, 80)}${text.length > 80 ? '…' : ''}`, ...f]);
     
-    const list: HealingStep[] = [
-      { id: '1', name: 'Collect system diagnostics', state: 'pending' },
-      { id: '2', name: 'Analyze logs & metrics', state: 'pending' },
-      { id: '3', name: 'Detect anomalies', state: 'pending' },
-      { id: '4', name: 'Generate fix plan', state: 'pending' },
-      { id: '5', name: 'Apply fixes', state: 'pending' },
-      { id: '6', name: 'Validate & commit', state: 'pending' },
-    ];
-    
-    setSteps(list);
-    setPhase('analyzing');
-    setProgress(0);
-    setSubtitle('Collecting system diagnostics...');
-    setMeta('Step 1 of 6');
-    
-    // Trigger actual auto-heal
+    // Trigger actual auto-heal (will set sessionId in onSuccess)
     autoHealMutation.mutate(text);
-    
-    // Simulate progress for UI feedback
-    let i = 0;
-    let completed = 0;
-    
-    function advance() {
-      if (i > 0) {
-        list[i - 1].state = 'ok';
-        completed++;
-        setProgress((completed / list.length) * 100);
-      }
-      
-      if (i === list.length) {
-        setPhase('completed');
-        setSubtitle('Healing run completed successfully');
-        setMeta(`${list.length}/${list.length} steps${autoCommit ? ' • auto-commit' : ''}${autoPush ? ' • auto-push' : ''}`);
-        setFeed(f => ['✅ Run succeeded • ' + new Date().toLocaleTimeString(), ...f]);
-        setSteps([...list]);
-        return;
-      }
-      
-      list[i].state = 'running';
-      setSteps([...list]);
-      setPhase(i < 3 ? 'analyzing' : 'executing');
-      setSubtitle(list[i].name);
-      setMeta(`Step ${i + 1} of ${list.length}${autoCommit ? ' • auto-commit' : ''}${autoPush ? ' • auto-push' : ''}`);
-      i++;
-      setTimeout(advance, 800 + i * 150);
-    }
-    
-    advance();
   }
 
   useEffect(() => {
     if (!autoCommit) setAutoPush(false);
   }, [autoCommit]);
+
+  // NEW: Consume healEvents from the hook and populate UI state
+  useEffect(() => {
+    if (healEvents.length === 0) return;
+
+    // Process the latest heal event
+    const latestEvent = healEvents[healEvents.length - 1];
+    const eventType = latestEvent.type?.replace('heal:', '') as HealMessage['type'];
+
+    // Create heal message for chat UI
+    const healMsg: HealMessage = {
+      id: `${Date.now()}-${Math.random()}`,
+      type: eventType,
+      text: latestEvent.text || latestEvent.message,
+      path: latestEvent.path,
+      directory: latestEvent.directory,
+      diff: latestEvent.diff,
+      timestamp: new Date(),
+      sessionId: latestEvent.sessionId,
+    };
+
+    setHealingMessages(prev => [...prev, healMsg]);
+
+    // Update phase and state based on event type
+    switch (latestEvent.type) {
+      case 'heal:init':
+        setPhase('analyzing');
+        setCurrentSessionId(latestEvent.sessionId || '');
+        setFeed(f => [`▶️ Healing started: ${latestEvent.text}`, ...f]);
+        break;
+
+      case 'heal:thought':
+        // Just add to messages, no phase change needed
+        break;
+
+      case 'heal:tool':
+        // Just add to messages, no phase change needed
+        break;
+
+      case 'heal:write-pending':
+        setPhase('executing');
+        setPendingWrite({
+          path: latestEvent.path || '',
+          diff: latestEvent.diff || '',
+          sessionId: latestEvent.sessionId || currentSessionId || '',
+        });
+        break;
+
+      case 'heal:approved':
+        setPendingWrite(null);
+        setFeed(f => [`✅ Change approved • ${new Date().toLocaleTimeString()}`, ...f]);
+        break;
+
+      case 'heal:rejected':
+        setPendingWrite(null);
+        setFeed(f => [`❌ Change rejected • ${new Date().toLocaleTimeString()}`, ...f]);
+        break;
+
+      case 'heal:completed':
+        setPhase('completed');
+        setFeed(f => [`✅ Healing completed • ${new Date().toLocaleTimeString()}`, ...f]);
+        break;
+
+      case 'heal:error':
+        setPhase('failed');
+        setFeed(f => [`❌ Healing failed: ${latestEvent.error || 'Unknown error'} • ${new Date().toLocaleTimeString()}`, ...f]);
+        break;
+    }
+  }, [healEvents, currentSessionId]);
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-gradient-to-b from-[#0b0f15] to-[#0d121a] text-slate-100">
@@ -289,10 +379,10 @@ function PlatformHealingContent() {
             </div>
           </div>
 
-          {/* Current Run Card */}
-          <div className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl p-3 sm:p-5 overflow-hidden" data-testid="run-card">
-            <div className="flex items-center gap-2 sm:gap-3 mb-3 flex-wrap">
-              <h3 className="font-bold text-sm">Current Run</h3>
+          {/* Healing Chat Card */}
+          <div className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl overflow-hidden flex flex-col" style={{ height: '500px' }} data-testid="chat-card">
+            <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 border-b border-slate-800/50 flex-wrap">
+              <h3 className="font-bold text-sm">Meta-SySop Chat</h3>
               <Badge 
                 variant={phase === 'idle' ? 'secondary' : phase === 'completed' ? 'default' : 'outline'}
                 className={`${phase === 'analyzing' || phase === 'executing' ? 'bg-blue-500/10 text-blue-300 border-blue-500/30' : ''} shrink-0`}
@@ -302,40 +392,13 @@ function PlatformHealingContent() {
               </Badge>
             </div>
             
-            <div className="text-xs sm:text-sm text-slate-400 mb-3 break-words" data-testid="run-subtitle">{subtitle}</div>
-            
-            <div className="bg-[#1a2232] border border-slate-700/50 rounded-full h-2.5 sm:h-3 overflow-hidden mb-2">
-              <div 
-                className="h-full bg-gradient-to-r from-[#2a7dfb] to-[#4da3ff] transition-all duration-300"
-                style={{ width: `${progress}%` }}
-                data-testid="run-progress"
-              />
-            </div>
-            
-            <div className="text-xs text-slate-500 mb-3 sm:mb-4 break-words" data-testid="run-meta">{meta}</div>
-            
-            {steps.length > 0 && (
-              <ul className="space-y-2" data-testid="run-steps">
-                {steps.map(step => (
-                  <li 
-                    key={step.id} 
-                    className="flex items-center gap-2 sm:gap-3 bg-[#0f1520] border border-slate-700/50 rounded-lg p-2 sm:p-3 min-w-0"
-                    data-testid={`step-${step.id}`}
-                  >
-                    <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full shrink-0 ${
-                      step.state === 'ok' ? 'bg-emerald-500' :
-                      step.state === 'fail' ? 'bg-red-500' :
-                      step.state === 'running' ? 'bg-blue-500 animate-pulse' :
-                      'bg-slate-600'
-                    }`} />
-                    <div className="flex-1 text-xs sm:text-sm break-words min-w-0">{step.name}</div>
-                    <div className="text-xs text-slate-500 shrink-0">
-                      {step.state === 'ok' ? '✓' : step.state === 'fail' ? '×' : step.state === 'running' ? '…' : ''}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <PlatformHealingChat
+              messages={healingMessages}
+              pendingWrite={pendingWrite}
+              onApprove={(sessionId) => approveMutation.mutate(sessionId)}
+              onReject={(sessionId) => rejectMutation.mutate(sessionId)}
+              isLoading={autoHealMutation.isPending}
+            />
           </div>
 
           {/* New Run Form */}
