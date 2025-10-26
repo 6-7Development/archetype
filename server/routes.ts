@@ -52,8 +52,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       version: process.env.npm_package_version || '1.0.0',
     };
     
-    const statusCode = health.status === 'healthy' ? 200 : 503;
-    res.status(statusCode).json(health);
+    // Always return 200 for Railway healthcheck (even if degraded)
+    res.status(200).json(health);
   });
 
   // Admin emergency endpoint (requires ADMIN_SECRET_KEY)

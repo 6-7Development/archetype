@@ -1,0 +1,114 @@
+2025-10-26T21:37:11.014496448Z [inf]  
+2025-10-26T21:37:14.303360729Z [inf]  [35m[Region: us-east4][0m
+2025-10-26T21:37:14.324391841Z [inf]  [35m=========================
+2025-10-26T21:37:14.324454446Z [inf]  Using Detected Dockerfile
+2025-10-26T21:37:14.324464702Z [inf]  =========================
+2025-10-26T21:37:14.324471291Z [inf]  [0m
+2025-10-26T21:37:14.324495686Z [inf]  context: qp57-rQyZ
+2025-10-26T21:37:18.571147929Z [inf]  [internal] load build definition from Dockerfile
+2025-10-26T21:37:18.571239424Z [inf]  [internal] load build definition from Dockerfile
+2025-10-26T21:37:18.571261763Z [inf]  [internal] load build definition from Dockerfile
+2025-10-26T21:37:18.588338844Z [inf]  [internal] load build definition from Dockerfile
+2025-10-26T21:37:18.592023932Z [inf]  [internal] load metadata for docker.io/library/node:20-alpine
+2025-10-26T21:37:18.649096256Z [inf]  [internal] load metadata for docker.io/library/node:20-alpine
+2025-10-26T21:37:18.649440917Z [inf]  [internal] load .dockerignore
+2025-10-26T21:37:18.649616019Z [inf]  [internal] load .dockerignore
+2025-10-26T21:37:18.649820888Z [inf]  [internal] load .dockerignore
+2025-10-26T21:37:18.667444575Z [inf]  [internal] load .dockerignore
+2025-10-26T21:37:18.677313476Z [inf]  [production  9/12] COPY tsconfig.json ./
+2025-10-26T21:37:18.677373205Z [inf]  [production  8/12] COPY shared ./shared
+2025-10-26T21:37:18.677395382Z [inf]  [production  7/12] COPY server ./server
+2025-10-26T21:37:18.677412434Z [inf]  [production  6/12] COPY --from=frontend-builder /app/dist ./dist
+2025-10-26T21:37:18.677425572Z [inf]  [frontend-builder 6/6] RUN npm run build
+2025-10-26T21:37:18.677441536Z [inf]  [frontend-builder 1/6] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+2025-10-26T21:37:18.677452864Z [inf]  [production  5/12] RUN npm install drizzle-kit@^0.31.4
+2025-10-26T21:37:18.677463628Z [inf]  [frontend-builder 4/6] RUN npm ci
+2025-10-26T21:37:18.677472055Z [inf]  [frontend-builder 3/6] COPY package*.json ./
+2025-10-26T21:37:18.677479988Z [inf]  [internal] load build context
+2025-10-26T21:37:18.677490779Z [inf]  [frontend-builder 2/6] WORKDIR /app
+2025-10-26T21:37:18.677498295Z [inf]  [production 10/12] COPY drizzle.config.ts ./
+2025-10-26T21:37:18.677506198Z [inf]  [frontend-builder 5/6] COPY . .
+2025-10-26T21:37:18.677523686Z [inf]  [production 12/12] RUN chmod +x railway-start.sh
+2025-10-26T21:37:18.677531081Z [inf]  [production 11/12] COPY railway-start.sh ./
+2025-10-26T21:37:18.677561501Z [inf]  [internal] load build context
+2025-10-26T21:37:18.677952908Z [inf]  [frontend-builder 1/6] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+2025-10-26T21:37:18.686933161Z [inf]  [internal] load build context
+2025-10-26T21:37:19.547160199Z [inf]  [internal] load build context
+2025-10-26T21:37:19.554517937Z [inf]  [frontend-builder 2/6] WORKDIR /app
+2025-10-26T21:37:19.554623842Z [inf]  [frontend-builder 3/6] COPY package*.json ./
+2025-10-26T21:37:19.554643295Z [inf]  [frontend-builder 4/6] RUN npm ci
+2025-10-26T21:37:19.554661515Z [inf]  [frontend-builder 4/6] RUN npm ci
+2025-10-26T21:37:19.554700474Z [inf]  [frontend-builder 5/6] COPY . .
+2025-10-26T21:37:19.832364647Z [inf]  [frontend-builder 5/6] COPY . .
+2025-10-26T21:37:19.836249436Z [inf]  [frontend-builder 6/6] RUN npm run build
+2025-10-26T21:37:20.28553964Z [inf]  
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+
+2025-10-26T21:37:20.610753301Z [inf]  vite v5.4.20 building for production...
+
+2025-10-26T21:37:20.680273779Z [inf]  transforming...
+
+2025-10-26T21:37:21.747768425Z [inf]  Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+2025-10-26T21:37:23.762697593Z [inf]  
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+
+2025-10-26T21:37:35.79186623Z [inf]  ✓ 3848 modules transformed.
+
+2025-10-26T21:37:37.367220438Z [inf]  rendering chunks...
+
+2025-10-26T21:37:37.409413149Z [inf]  computing gzip size...
+
+2025-10-26T21:37:37.48119866Z [inf]  ../dist/public/index.html                     1.09 kB │ gzip:   0.56 kB
+
+2025-10-26T21:37:37.481294018Z [inf]  ../dist/public/assets/index-BNl8gVBR.css    131.89 kB │ gzip:  20.62 kB
+
+2025-10-26T21:37:37.481329544Z [inf]  ../dist/public/assets/index-qAs0r_qd.js   1,819.64 kB │ gzip: 515.26 kB
+
+2025-10-26T21:37:37.481482045Z [inf]  
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+2025-10-26T21:37:37.481924783Z [inf]  ✓ built in 16.84s
+
+2025-10-26T21:37:37.622037059Z [inf]  
+  dist/index.js  552.9kb
+
+⚡ Done in 25ms
+
+2025-10-26T21:37:37.675813862Z [inf]  [frontend-builder 6/6] RUN npm run build
+2025-10-26T21:37:39.071670491Z [inf]  [production  5/12] RUN npm install drizzle-kit@^0.31.4
+2025-10-26T21:37:39.071743094Z [inf]  [production  6/12] COPY --from=frontend-builder /app/dist ./dist
+2025-10-26T21:37:39.071760926Z [inf]  [production  7/12] COPY server ./server
+2025-10-26T21:37:39.071772538Z [inf]  [production  8/12] COPY shared ./shared
+2025-10-26T21:37:39.071790799Z [inf]  [production  9/12] COPY tsconfig.json ./
+2025-10-26T21:37:39.071798914Z [inf]  [production 10/12] COPY drizzle.config.ts ./
+2025-10-26T21:37:39.071814513Z [inf]  [production 11/12] COPY railway-start.sh ./
+2025-10-26T21:37:39.421132485Z [inf]  [production 11/12] COPY railway-start.sh ./
+2025-10-26T21:37:39.423576669Z [inf]  [production 12/12] RUN chmod +x railway-start.sh
+2025-10-26T21:37:39.603132002Z [inf]  [production 12/12] RUN chmod +x railway-start.sh
+2025-10-26T21:37:39.858838913Z [inf]  [auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com
+2025-10-26T21:37:39.858912359Z [inf]  [auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com
+2025-10-26T21:37:42.185308286Z [inf]  importing to docker
+2025-10-26T21:38:00.933839409Z [inf]  importing to docker
+2025-10-26T21:38:01.054919369Z [inf]  [92mBuild time: 46.73 seconds[0m
+2025-10-26T21:38:17.028272642Z [inf]  
+2025-10-26T21:38:17.028346838Z [inf]  [35m====================
+Starting Healthcheck
+====================
+[0m
+2025-10-26T21:38:17.028350942Z [inf]  [37mPath: /health[0m
+2025-10-26T21:38:17.028353601Z [inf]  [37mRetry window: 5m0s[0m
+2025-10-26T21:38:17.028355161Z [inf]  
+2025-10-26T21:38:20.514704441Z [inf]  [93mAttempt #1 failed with service unavailable. Continuing to retry for 4m56s[0m
+2025-10-26T21:38:21.628100843Z [inf]  [93mAttempt #2 failed with service unavailable. Continuing to retry for 4m55s[0m
+2025-10-26T21:38:23.710610860Z [inf]  [93mAttempt #3 failed with service unavailable. Continuing to retry for 4m53s[0m
+2025-10-26T21:38:27.815036540Z [inf]  [93mAttempt #4 failed with service unavailable. Continuing to retry for 4m49s[0m
+2025-10-26T21:38:35.891143206Z [inf]  [93mAttempt #5 failed with service unavailable. Continuing to retry for 4m41s[0m
+2025-10-26T21:38:52.044099985Z [inf]  [93mAttempt #6 failed with service unavailable. Continuing to retry for 4m25s[0m
