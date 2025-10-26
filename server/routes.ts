@@ -196,19 +196,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ==================== REPLIT AGENT-STYLE FEATURES ====================
   
-  // Import new feature routers
+  // Import Replit Agent feature routers (Wave 1)
   const taskRunnerRouter = await import('./routes/taskRunner');
   const messageQueueRouter = await import('./routes/messageQueue');
   const autonomySettingsRouter = await import('./routes/autonomySettings');
   const imageGenerationRouter = await import('./routes/imageGeneration');
   const dynamicIntelligenceRouter = await import('./routes/dynamicIntelligence');
   
-  // Mount feature routers
+  // Import Replit Agent feature routers (Wave 2 - 6 Missing Features)
+  const planModeRouter = await import('./routes/planMode');
+  const designPrototypeRouter = await import('./routes/designPrototype');
+  const workflowsRouter = await import('./routes/workflows');
+  const automationsRouter = await import('./routes/automations');
+  const generalAgentRouter = await import('./routes/generalAgent');
+  
+  // Mount Wave 1 feature routers
   app.use('/api/task-runners', taskRunnerRouter.default);
   app.use('/api/message-queue', messageQueueRouter.default);
   app.use('/api/autonomy', autonomySettingsRouter.default);
   app.use('/api/image-generation', imageGenerationRouter.default);
   app.use('/api/dynamic-intelligence', dynamicIntelligenceRouter.default);
+  
+  // Mount Wave 2 feature routers (100% Replit Agent Parity)
+  app.use('/api/plan-mode', planModeRouter.default);
+  app.use('/api/design-prototypes', designPrototypeRouter.default);
+  app.use('/api/workflows', workflowsRouter.default);
+  app.use('/api/automations', automationsRouter.default);
+  app.use('/api/general-agent', generalAgentRouter.default);
 
   // ==================== SUPPORT TICKET ROUTES ====================
   
