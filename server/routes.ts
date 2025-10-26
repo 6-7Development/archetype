@@ -25,35 +25,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ==================== HEALTH & DIAGNOSTICS ====================
   
   // Health check endpoint (no auth required - for monitoring)
-  app.get('/health', async (_req, res) => {
-    const startTime = Date.now();
-    
-    // Check database connection
-    let databaseStatus = 'error';
-    try {
-      await db.select().from(files).limit(1);
-      databaseStatus = 'ok';
-    } catch (error) {
-      console.error('Health check - database error:', error);
-    }
-    
-    const health = {
-      status: databaseStatus === 'ok' ? 'healthy' : 'degraded',
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      responseTime: Date.now() - startTime,
-      checks: {
-        database: databaseStatus,
-        ai_generation: FEATURES.AI_GENERATION ? 'ok' : 'disabled',
-        web_search: FEATURES.WEB_SEARCH ? 'ok' : 'disabled',
-        browser_test: FEATURES.BROWSER_TEST ? 'ok' : 'disabled',
-        stripe: FEATURES.STRIPE_BILLING ? 'ok' : 'disabled',
-      },
-      version: process.env.npm_package_version || '1.0.0',
-    };
-    
-    // Always return 200 for Railway healthcheck (even if degraded)
-    res.status(200).json(health);
+  // Ultra-simple for Railway - just return 200 OK immediately
+  app.get('/health', (_req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
   // Admin emergency endpoint (requires ADMIN_SECRET_KEY)
