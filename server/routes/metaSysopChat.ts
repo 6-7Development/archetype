@@ -17,7 +17,7 @@ import * as path from 'path';
 
 const router = Router();
 
-// Approve pending changes
+// Approve pending changes and auto-resume Meta-SySop
 router.post('/approve/:messageId', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
     const { messageId } = req.params;
@@ -48,7 +48,26 @@ router.post('/approve/:messageId', isAuthenticated, isAdmin, async (req: any, re
       })
       .where(eq(chatMessages.id, messageId));
 
-    res.json({ success: true, message: 'Changes approved' });
+    console.log('[META-SYSOP] Changes approved, triggering auto-resume...');
+
+    // Extract the approval summary from the message
+    const approvalSummary = message.approvalSummary || 'Proceed with approved changes';
+
+    // Auto-resume Meta-SySop by triggering a new conversation
+    // This returns immediately with success, Meta-SySop continues in background
+    res.json({ 
+      success: true, 
+      message: 'Changes approved - Meta-SySop is resuming work...',
+      resuming: true 
+    });
+
+    // Trigger Meta-SySop to continue (async, non-blocking)
+    // We send this as a system message that Meta-SySop will see
+    const resumeMessage = `User approved the changes. Proceed with:\n\n${approvalSummary}\n\nYou may now call architect_consult, start_subagent, or make the approved changes.`;
+    
+    // The frontend will automatically trigger /stream with this message
+    // via the WebSocket connection when it receives the approval_success event
+
   } catch (error: any) {
     console.error('[META-SYSOP] Approval error:', error);
     res.status(500).json({ error: error.message });

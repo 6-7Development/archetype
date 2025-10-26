@@ -134,15 +134,31 @@ function PlatformHealingContent() {
     mutationFn: async (messageId: string) => {
       return await apiRequest('POST', `/api/meta-sysop/approve/${messageId}`, {});
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       setApprovalRequest(null);
       setPhase('building');
       updateProgressStep('approved', 'completed');
       updateProgressStep('building', 'in_progress');
       toast({
         title: 'Changes approved',
-        description: 'Meta-SySop will now build and deploy your changes',
+        description: 'Meta-SySop is resuming work...',
       });
+
+      // Auto-resume Meta-SySop by sending a continue message
+      try {
+        await apiRequest('POST', '/api/platform/heal', {
+          issue: 'User approved the changes. Proceed with the approved modifications and deploy to production.',
+          autoCommit,
+          autoPush
+        });
+      } catch (error: any) {
+        console.error('[APPROVAL] Failed to resume Meta-SySop:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Resume failed',
+          description: 'Please manually retry the operation',
+        });
+      }
     },
     onError: (error: any) => {
       toast({
