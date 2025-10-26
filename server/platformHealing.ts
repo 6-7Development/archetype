@@ -309,6 +309,121 @@ export class PlatformHealingService {
     }
   }
 
+  async createPlatformFile(filePath: string, content: string): Promise<{ success: boolean; message: string; commitHash?: string; commitUrl?: string }> {
+    // CRITICAL: Validate content before ANY processing
+    if (content === undefined || content === null) {
+      console.error(`[PLATFORM-CREATE] ❌ REJECTED: undefined/null content for ${filePath}`);
+      throw new Error(`Cannot create file with undefined or null content: ${filePath}`);
+    }
+    
+    if (typeof content !== 'string') {
+      console.error(`[PLATFORM-CREATE] ❌ REJECTED: non-string content (${typeof content}) for ${filePath}`);
+      throw new Error(`Content must be a string, got ${typeof content}: ${filePath}`);
+    }
+    
+    // Validate file path
+    if (path.isAbsolute(filePath)) {
+      throw new Error('Absolute paths are not allowed');
+    }
+    
+    const fullPath = path.resolve(this.PROJECT_ROOT, filePath);
+    
+    if (!fullPath.startsWith(this.PROJECT_ROOT + path.sep) && fullPath !== this.PROJECT_ROOT) {
+      throw new Error('Invalid file path - path traversal detected');
+    }
+
+    // Check if file already exists
+    try {
+      await fs.access(fullPath);
+      throw new Error(`File already exists: ${filePath}. Use writePlatformFile to modify existing files.`);
+    } catch (error: any) {
+      // File doesn't exist - good, we can create it
+      if (error.code !== 'ENOENT') {
+        throw error;
+      }
+    }
+
+    // Dangerous files that should never be created by SySop
+    const dangerousPatterns = [
+      /\.git\//,
+      /node_modules\//,
+      /\.env$/,
+      /package\.json$/,
+      /package-lock\.json$/,
+      /vite\.config\.ts$/,
+      /server\/vite\.ts$/,
+      /drizzle\.config\.ts$/,
+    ];
+
+    if (dangerousPatterns.some(pattern => pattern.test(filePath))) {
+      throw new Error(`Creating ${filePath} is not allowed for safety reasons`);
+    }
+
+    // PRODUCTION MODE: Check maintenance mode and use GitHub service
+    if (process.env.NODE_ENV === 'production') {
+      const maintenanceMode = await storage.getMaintenanceMode();
+      
+      if (!maintenanceMode.enabled) {
+        throw new Error(
+          `❌ PLATFORM MODIFICATIONS DISABLED IN PRODUCTION\n\n` +
+          `Platform file creation requires MAINTENANCE MODE to be enabled.\n\n` +
+          `To enable platform modifications:\n` +
+          `1. Ask the platform owner to enable maintenance mode\n` +
+          `2. Maintenance mode commits changes directly to GitHub\n` +
+          `3. Render auto-deploys from GitHub commits\n\n` +
+          `Attempted to create: ${filePath}`
+        );
+      }
+
+      if (!isGitHubServiceAvailable()) {
+        throw new Error(
+          `❌ GITHUB SERVICE NOT CONFIGURED\n\n` +
+          `Maintenance mode is enabled, but GitHub integration is missing.\n\n` +
+          `Contact the platform owner to configure GitHub integration.`
+        );
+      }
+
+      try {
+        const githubService = getGitHubService();
+        const commitMessage = `Create ${filePath} via Platform-SySop`;
+        
+        console.log(`[PLATFORM-CREATE] 🔧 Committing to GitHub: ${filePath}`);
+        console.log(`[PLATFORM-CREATE] Content to commit: ${content.length} bytes`);
+        
+        const result = await githubService.commitFile(filePath, content, commitMessage);
+        
+        console.log(`[PLATFORM-CREATE] ✅ Committed to GitHub successfully`);
+        
+        return {
+          success: true,
+          message: `File created and committed to GitHub successfully.`,
+          commitHash: result.commitHash,
+          commitUrl: result.commitUrl,
+        };
+      } catch (error: any) {
+        console.error('[PLATFORM-CREATE] ❌ GitHub commit failed:', error);
+        throw new Error(`Failed to commit to GitHub: ${error.message}`);
+      }
+    }
+    
+    // DEVELOPMENT MODE: Write directly to filesystem
+    try {
+      const dir = path.dirname(fullPath);
+      await fs.mkdir(dir, { recursive: true });
+
+      await fs.writeFile(fullPath, content, 'utf-8');
+
+      console.log(`[PLATFORM-CREATE] Created platform file: ${filePath}`);
+      
+      return {
+        success: true,
+        message: `File created successfully in development mode.`,
+      };
+    } catch (error: any) {
+      throw new Error(`Failed to create platform file ${filePath}: ${error.message}`);
+    }
+  }
+
   async deletePlatformFile(filePath: string): Promise<void> {
     // CRITICAL: Platform modifications are DISABLED in production (Render)
     if (process.env.NODE_ENV === 'production') {
