@@ -106,31 +106,87 @@ function PlatformHealingContent() {
   // Use WebSocket metrics if available, otherwise HTTP metrics
   const status = metrics || httpMetrics;
 
-  // Auto-heal mutation
+  // Meta-SySop streaming mutation (NEW SYSTEM with all tools!)
   const autoHealMutation = useMutation({
     mutationFn: async (issue: string) => {
-      const response = await apiRequest('POST', '/api/platform/heal', {
-        issue,
-        autoCommit,
-        autoPush
+      // Use the NEW Meta-SySop stream endpoint with proper tools
+      const response = await fetch('/api/meta-sysop/stream', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          message: issue,
+          autoCommit,
+          autoPush,
+        }),
       });
-      return response;
-    },
-    onSuccess: (data: any) => {
-      toast({
-        title: 'Auto-heal initiated',
-        description: 'Platform healing process started successfully',
-      });
-      if (data.sessionId) {
-        setCurrentSessionId(data.sessionId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${await response.text()}`);
       }
+
+      // Set up SSE reading
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (reader) {
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+            const lines = chunk.split('\n');
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = JSON.parse(line.slice(6));
+                
+                // Handle different event types
+                if (data.type === 'progress') {
+                  setFeed(f => [`📋 ${data.message}`, ...f]);
+                } else if (data.type === 'approval_requested') {
+                  setPhase('awaiting_approval');
+                  updateProgressStep('analyze', 'completed');
+                  updateProgressStep('approval', 'in_progress');
+                  setApprovalRequest({
+                    messageId: data.messageId,
+                    summary: data.summary,
+                    filesChanged: data.filesChanged,
+                    estimatedImpact: data.estimatedImpact,
+                  });
+                } else if (data.type === 'task_list_created') {
+                  setFeed(f => [`✅ Task list created`, ...f]);
+                } else if (data.type === 'file_change') {
+                  setFeed(f => [`📝 ${data.file.operation}: ${data.file.path}`, ...f]);
+                } else if (data.type === 'error') {
+                  setFeed(f => [`❌ ${data.message}`, ...f]);
+                  setPhase('failed');
+                }
+              }
+            }
+          }
+        } finally {
+          reader.releaseLock();
+        }
+      }
+
+      return { success: true };
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Meta-SySop working',
+        description: 'Platform healing in progress',
+      });
       queryClient.invalidateQueries({ queryKey: ['/api/platform/status'] });
     },
     onError: (error: any) => {
       toast({
         variant: 'destructive',
-        title: 'Auto-heal failed',
-        description: error.message || 'Failed to initiate auto-heal',
+        title: 'Meta-SySop failed',
+        description: error.message || 'Failed to start healing',
       });
       setPhase('failed');
     },
@@ -167,7 +223,9 @@ function PlatformHealingContent() {
   // Reject changes mutation
   const rejectMutation = useMutation({
     mutationFn: async (messageId: string) => {
-      return await apiRequest('POST', `/api/meta-sysop/reject/${messageId}`, {});
+      return await apiRequest('POST', `/api/meta-sysop/reject/${messageId}`, {
+        sessionId: currentSessionId,
+      });
     },
     onSuccess: () => {
       setApprovalRequest(null);

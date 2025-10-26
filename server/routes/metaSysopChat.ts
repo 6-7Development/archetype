@@ -76,6 +76,7 @@ router.post('/approve/:messageId', isAuthenticated, isAdmin, async (req: any, re
 router.post('/reject/:messageId', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
     const { messageId } = req.params;
+    const { sessionId } = req.body;
     const userId = req.authenticatedUserId;
 
     // Find the message
@@ -102,6 +103,17 @@ router.post('/reject/:messageId', isAuthenticated, isAdmin, async (req: any, res
         approvedAt: new Date(),
       })
       .where(eq(chatMessages.id, messageId));
+
+    console.log('[META-SYSOP] Changes rejected for message:', messageId);
+
+    // Resolve the pending approval with false (rejected)
+    if (sessionId) {
+      const { resolvePendingApproval } = await import('../platformRoutes');
+      const resolved = resolvePendingApproval(sessionId, false);
+      if (resolved) {
+        console.log('[META-SYSOP] Resolved pending approval (rejected) for session:', sessionId);
+      }
+    }
 
     res.json({ success: true, message: 'Changes rejected' });
   } catch (error: any) {
