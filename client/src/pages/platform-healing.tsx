@@ -23,7 +23,14 @@ import {
   Loader2,
   XCircle,
   FileText,
-  GitCommit
+  GitCommit,
+  Package,
+  ChevronDown,
+  Sparkles,
+  Paperclip,
+  Infinity,
+  SlidersHorizontal,
+  ArrowUp,
 } from 'lucide-react';
 
 type StepState = 'pending' | 'running' | 'ok' | 'fail';
@@ -132,33 +139,21 @@ function PlatformHealingContent() {
   // Approve changes mutation
   const approveMutation = useMutation({
     mutationFn: async (messageId: string) => {
-      return await apiRequest('POST', `/api/meta-sysop/approve/${messageId}`, {});
+      return await apiRequest('POST', `/api/meta-sysop/approve/${messageId}`, {
+        sessionId: currentSessionId, // Pass sessionId to wire up the approval
+      });
     },
-    onSuccess: async () => {
+    onSuccess: () => {
       setApprovalRequest(null);
       setPhase('building');
       updateProgressStep('approved', 'completed');
       updateProgressStep('building', 'in_progress');
       toast({
         title: 'Changes approved',
-        description: 'Meta-SySop is resuming work...',
+        description: 'Meta-SySop is continuing work...',
       });
-
-      // Auto-resume Meta-SySop by sending a continue message
-      try {
-        await apiRequest('POST', '/api/platform/heal', {
-          issue: 'User approved the changes. Proceed with the approved modifications and deploy to production.',
-          autoCommit,
-          autoPush
-        });
-      } catch (error: any) {
-        console.error('[APPROVAL] Failed to resume Meta-SySop:', error);
-        toast({
-          variant: 'destructive',
-          title: 'Resume failed',
-          description: 'Please manually retry the operation',
-        });
-      }
+      // No need to restart - the approval resolves the pending promise
+      // and the original session continues automatically
     },
     onError: (error: any) => {
       toast({
@@ -639,46 +634,106 @@ function PlatformHealingContent() {
             />
           </div>
 
-          {/* New Run Form */}
-          <div id="issue" className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl p-3 sm:p-5 overflow-hidden">
-            <h3 className="font-bold text-sm mb-2" data-testid="form-title">Start a New Healing Run</h3>
-            <p className="text-xs sm:text-sm text-slate-400 mb-3 sm:mb-4 break-words">
-              Describe the issue. We'll propose steps before executing.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Textarea
-                value={issueDescription}
-                onChange={e => setIssueDescription(e.target.value)}
-                placeholder="e.g., API latency spiking to p95 3s since 14:05 UTC. Suspect rate limiter regression after v1.9.2."
-                className="flex-1 min-h-[100px] sm:min-h-[120px] bg-[#0c121c] border-slate-700 text-slate-100 resize-vertical text-sm"
-                data-testid="input-issue-description"
-              />
-              <Button 
-                className="bg-gradient-to-b from-[#2a7dfb] to-[#0f62f2] shadow-lg shadow-blue-500/35 sm:self-start shrink-0"
-                size="default"
-                onClick={() => {
-                  if (issueDescription.trim()) {
+          {/* Replit Agent Style Chat Input */}
+          <div id="issue" className="bg-background border border-border rounded-lg shadow-sm overflow-hidden">
+            {/* Textarea */}
+            <Textarea
+              value={issueDescription}
+              onChange={e => setIssueDescription(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                  e.preventDefault();
+                  if (issueDescription.trim() && !autoHealMutation.isPending) {
                     startRun(issueDescription.trim());
                     setIssueDescription('');
                   }
-                }}
-                disabled={!issueDescription.trim() || autoHealMutation.isPending}
-                data-testid="button-analyze-fix"
-              >
-                {autoHealMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    <span className="hidden sm:inline">Running...</span>
-                    <span className="sm:hidden">...</span>
-                  </>
-                ) : (
-                  <>
-                    <Wrench className="w-4 h-4 mr-2" />
-                    <span className="whitespace-nowrap">Analyze & Fix</span>
-                  </>
-                )}
-              </Button>
+                }
+              }}
+              placeholder="Make, test, iterate..."
+              className="min-h-[80px] border-0 border-b border-border resize-none focus-visible:ring-0 text-base bg-background rounded-none px-4 pt-4 pb-2"
+              data-testid="input-issue-description"
+            />
+            
+            {/* Toolbar */}
+            <div className="flex items-center justify-between px-2 py-2 bg-background">
+              {/* Left Side Tools */}
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 gap-1 text-foreground hover-elevate"
+                  disabled={autoHealMutation.isPending}
+                  data-testid="button-build-mode"
+                >
+                  <Package className="w-4 h-4" />
+                  <span className="text-sm font-medium">Build</span>
+                  <ChevronDown className="w-3 h-3 opacity-50" />
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 hover-elevate"
+                  disabled={autoHealMutation.isPending}
+                  data-testid="button-ai-assist"
+                >
+                  <Sparkles className="w-4 h-4" />
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 hover-elevate"
+                  disabled={autoHealMutation.isPending}
+                  data-testid="button-attach"
+                >
+                  <Paperclip className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* Right Side Actions */}
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-500"
+                  onClick={() => setAutoCommit(!autoCommit)}
+                  data-testid="button-auto-commit"
+                  title={autoCommit ? "Auto-commit enabled" : "Auto-commit disabled"}
+                >
+                  <Infinity className="w-4 h-4" />
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-500"
+                  onClick={() => setAutoPush(!autoPush)}
+                  data-testid="button-auto-push"
+                  title={autoPush ? "Auto-push enabled" : "Auto-push disabled"}
+                >
+                  <SlidersHorizontal className="w-4 h-4" />
+                </Button>
+                
+                <Button
+                  size="icon"
+                  className="h-8 w-8 bg-amber-500 hover:bg-amber-600 text-white shadow-sm"
+                  onClick={() => {
+                    if (issueDescription.trim()) {
+                      startRun(issueDescription.trim());
+                      setIssueDescription('');
+                    }
+                  }}
+                  disabled={!issueDescription.trim() || autoHealMutation.isPending}
+                  data-testid="button-send"
+                >
+                  {autoHealMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <ArrowUp className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </section>

@@ -21,6 +21,7 @@ const router = Router();
 router.post('/approve/:messageId', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
     const { messageId } = req.params;
+    const { sessionId } = req.body; // Get sessionId from request body
     const userId = req.authenticatedUserId;
 
     // Find the message
@@ -48,25 +49,22 @@ router.post('/approve/:messageId', isAuthenticated, isAdmin, async (req: any, re
       })
       .where(eq(chatMessages.id, messageId));
 
-    console.log('[META-SYSOP] Changes approved, triggering auto-resume...');
+    console.log('[META-SYSOP] Changes approved for message:', messageId);
 
-    // Extract the approval summary from the message
-    const approvalSummary = message.approvalSummary || 'Proceed with approved changes';
+    // CRITICAL: Resolve the pending approval promise from the OLD system
+    // This allows the original /api/platform/heal session to continue
+    if (sessionId) {
+      const { resolvePendingApproval } = await import('../platformRoutes');
+      const resolved = resolvePendingApproval(sessionId, true);
+      if (resolved) {
+        console.log('[META-SYSOP] Resolved pending approval for session:', sessionId);
+      }
+    }
 
-    // Auto-resume Meta-SySop by triggering a new conversation
-    // This returns immediately with success, Meta-SySop continues in background
     res.json({ 
       success: true, 
-      message: 'Changes approved - Meta-SySop is resuming work...',
-      resuming: true 
+      message: 'Changes approved - work resuming...',
     });
-
-    // Trigger Meta-SySop to continue (async, non-blocking)
-    // We send this as a system message that Meta-SySop will see
-    const resumeMessage = `User approved the changes. Proceed with:\n\n${approvalSummary}\n\nYou may now call architect_consult, start_subagent, or make the approved changes.`;
-    
-    // The frontend will automatically trigger /stream with this message
-    // via the WebSocket connection when it receives the approval_success event
 
   } catch (error: any) {
     console.error('[META-SYSOP] Approval error:', error);
