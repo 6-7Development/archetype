@@ -184,47 +184,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     sendEvent('user_message', { messageId: userMsg.id });
 
-    // 🎯 Check for existing active task list or create new one
-    // Prevents duplicate task lists across conversation
-    sendEvent('progress', { message: 'Preparing task tracking...' });
-
-    const existingLists = await readTaskList({ userId, projectId: undefined });
-    let activeTaskListId: string | undefined;
-
-    if (existingLists.success && existingLists.taskLists) {
-      const activeList = existingLists.taskLists.find((list: any) => list.status === 'active');
-      if (activeList) {
-        activeTaskListId = activeList.id;
-        sendEvent('progress', { message: `✅ Using existing task list - see live progress above!` });
-        sendEvent('task_list_created', { taskListId: activeList.id });
-      }
-    }
-
-    // Only create new task list if no active one exists
-    if (!activeTaskListId) {
-      const initialTaskResult = await createTaskList({
-        userId,
-        projectId: undefined,
-        chatMessageId: userMsg.id,
-        title: `Platform Healing: ${message.slice(0, 50)}`,
-        description: 'Meta-SySop is analyzing your request and will update these tasks as work progresses.',
-        tasks: [
-          { title: 'Analyze request and identify files to modify', status: 'in_progress' },
-          { title: 'Read relevant platform files', status: 'pending' },
-          { title: 'Consult I AM (The Architect) for approval', status: 'pending' },
-          { title: 'Implement approved changes', status: 'pending' },
-          { title: 'Deploy to production via GitHub', status: 'pending' },
-        ],
-      });
-
-      if (initialTaskResult.success) {
-        activeTaskListId = initialTaskResult.taskListId;
-        sendEvent('task_list_created', { taskListId: initialTaskResult.taskListId });
-        sendEvent('progress', { message: `✅ Task list created - see live progress above!` });
-      } else {
-        console.warn('[META-SYSOP] Failed to pre-create task list:', initialTaskResult.error);
-      }
-    }
+    // Meta-SySop will create task lists ONLY when actually building
+    // Not for questions, diagnostics, or exploration
+    sendEvent('progress', { message: '🧠 Analyzing your request...' });
 
     // Create backup before any changes (non-blocking - continue even if it fails)
     let backup: any = null;
@@ -265,6 +227,45 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     const systemPrompt = `You are Meta-SySop - AUTONOMOUS ORCHESTRATOR for platform maintenance.
 
+═══════════════════════════════════════════════════════════════════
+🧠 CONVERSATIONAL INTELLIGENCE - READ THIS FIRST!
+═══════════════════════════════════════════════════════════════════
+
+**NOT EVERY MESSAGE IS A BUILD REQUEST!**
+
+Before doing ANYTHING, classify the user's intent:
+
+📊 **QUESTION / INQUIRY** - User wants information:
+- "What's causing the high CPU usage?"
+- "Can you check if there are any errors in the logs?"
+- "What files handle authentication?"
+- "How does the payment system work?"
+→ RESPONSE: Use diagnosis/read tools, explain findings, DON'T modify anything
+
+🔍 **DIAGNOSTIC REQUEST** - User wants analysis:
+- "Diagnose the performance issues"
+- "Check for security vulnerabilities"
+- "Analyze the database schema"
+→ RESPONSE: Use perform_diagnosis(), readPlatformFile(), explain what you found
+
+💬 **EXPLORATION / DISCUSSION** - User is exploring options:
+- "How would we add a new feature X?"
+- "What's the best way to improve Y?"
+- "Should we refactor Z?"
+→ RESPONSE: Read relevant files, discuss approach, propose options, WAIT for confirmation
+
+🔨 **BUILD REQUEST** - User wants changes made:
+- "Fix the memory leak in websocket.ts"
+- "Add authentication to the API"
+- "Deploy the new feature"
+- "User approved the changes. Proceed with..."
+→ RESPONSE: Follow the ORCHESTRATION WORKFLOW below
+
+**GOLDEN RULE:**
+When in doubt → ASK! Say "Would you like me to proceed with making these changes?"
+NEVER assume a question = "build this now"
+
+═══════════════════════════════════════════════════════════════════
 🎭 YOUR ROLE: ORCHESTRATOR, NOT WORKER
 ═══════════════════════════════════════════════════════════════════
 You are a CONDUCTOR leading an orchestra, not a solo performer.
@@ -279,6 +280,7 @@ ORCHESTRATOR MINDSET:
 ❌ DON'T do everything yourself
 ❌ DON'T work sequentially when you can parallelize
 ❌ DON'T skip quality reviews
+❌ DON'T assume every message is a build request!
 
 ═══════════════════════════════════════════════════════════════════
 ✅ TASK LIST ALREADY CREATED!
