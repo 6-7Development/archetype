@@ -14,13 +14,16 @@ import {
   Users,
   Key,
   Headphones,
-  Wrench
+  Wrench,
+  ChevronDown,
+  Settings as SettingsIcon
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useAuth } from "@/hooks/useAuth";
 import { queryClient } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
@@ -31,7 +34,7 @@ interface AppLayoutProps {
   children: React.ReactNode;
 }
 
-const navigationItems = [
+const mainNavItems = [
   {
     label: "Dashboard",
     icon: LayoutDashboard,
@@ -50,6 +53,9 @@ const navigationItems = [
     path: "/marketplace",
     testId: "nav-marketplace",
   },
+];
+
+const platformNavItems = [
   {
     label: "Analytics",
     icon: Sparkles,
@@ -62,6 +68,9 @@ const navigationItems = [
     path: "/team",
     testId: "nav-team",
   },
+];
+
+const settingsNavItems = [
   {
     label: "API Keys",
     icon: Key,
@@ -85,6 +94,9 @@ const navigationItems = [
 export function AppLayout({ children }: AppLayoutProps) {
   const [location, setLocation] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [platformOpen, setPlatformOpen] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(true);
+  const [adminOpen, setAdminOpen] = useState(true);
   const { user, isLoading, isAuthenticated } = useAuth();
 
   const handleLogin = () => {
@@ -106,6 +118,9 @@ export function AppLayout({ children }: AppLayoutProps) {
     setLocation(path);
     setMobileMenuOpen(false); // Close mobile menu after navigation
   };
+
+  const isAdmin = isAuthenticated && (user as User)?.role === 'admin';
+  const isOwner = isAuthenticated && (user as User)?.isOwner;
 
   return (
     <div className="flex h-screen bg-background relative">
@@ -146,59 +161,157 @@ export function AppLayout({ children }: AppLayoutProps) {
           </div>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
-          {navigationItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location === item.path || (item.path === "/builder" && location.startsWith("/builder"));
-            
-            return (
+        {/* Navigation - Scrollable */}
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+          {/* Main Navigation - Always Visible */}
+          <div className="space-y-1">
+            {mainNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location === item.path || (item.path === "/builder" && location.startsWith("/builder"));
+              
+              return (
+                <Button
+                  key={item.path}
+                  variant="ghost"
+                  className={cn(
+                    "w-full justify-start gap-3 hover-elevate active-elevate-2",
+                    isActive && "bg-primary/10 text-primary"
+                  )}
+                  onClick={() => handleNavigation(item.path)}
+                  data-testid={item.testId}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span>{item.label}</span>
+                </Button>
+              );
+            })}
+          </div>
+
+          {/* Platform Section - Collapsible */}
+          <Collapsible open={platformOpen} onOpenChange={setPlatformOpen}>
+            <CollapsibleTrigger asChild>
               <Button
-                key={item.path}
                 variant="ghost"
-                className={cn(
-                  "w-full justify-start gap-3 hover-elevate active-elevate-2",
-                  isActive && "bg-primary/10 text-primary"
-                )}
-                onClick={() => handleNavigation(item.path)}
-                data-testid={item.testId}
+                className="w-full justify-between hover-elevate active-elevate-2 mt-4"
+                data-testid="nav-section-platform"
               >
-                <Icon className="w-5 h-5" />
-                <span>{item.label}</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Platform</span>
+                <ChevronDown className={cn(
+                  "w-4 h-4 transition-transform",
+                  platformOpen && "rotate-180"
+                )} />
               </Button>
-            );
-          })}
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-1 mt-1">
+              {platformNavItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location === item.path;
+                
+                return (
+                  <Button
+                    key={item.path}
+                    variant="ghost"
+                    className={cn(
+                      "w-full justify-start gap-3 hover-elevate active-elevate-2 pl-6",
+                      isActive && "bg-primary/10 text-primary"
+                    )}
+                    onClick={() => handleNavigation(item.path)}
+                    data-testid={item.testId}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="text-sm">{item.label}</span>
+                  </Button>
+                );
+              })}
+            </CollapsibleContent>
+          </Collapsible>
 
-          {/* Admin Navigation - Only for Admin Users */}
-          {isAuthenticated && (user as User)?.role === 'admin' && (
-            <Button
-              variant="ghost"
-              className={cn(
-                "w-full justify-start gap-3 hover-elevate active-elevate-2",
-                location === "/admin" && "bg-primary/10 text-primary"
-              )}
-              onClick={() => handleNavigation("/admin")}
-              data-testid="nav-admin"
-            >
-              <Shield className="w-5 h-5" />
-              <span>Admin</span>
-            </Button>
-          )}
+          {/* Settings Section - Collapsible */}
+          <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="ghost"
+                className="w-full justify-between hover-elevate active-elevate-2 mt-2"
+                data-testid="nav-section-settings"
+              >
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Settings</span>
+                <ChevronDown className={cn(
+                  "w-4 h-4 transition-transform",
+                  settingsOpen && "rotate-180"
+                )} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-1 mt-1">
+              {settingsNavItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location === item.path;
+                
+                return (
+                  <Button
+                    key={item.path}
+                    variant="ghost"
+                    className={cn(
+                      "w-full justify-start gap-3 hover-elevate active-elevate-2 pl-6",
+                      isActive && "bg-primary/10 text-primary"
+                    )}
+                    onClick={() => handleNavigation(item.path)}
+                    data-testid={item.testId}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="text-sm">{item.label}</span>
+                  </Button>
+                );
+              })}
+            </CollapsibleContent>
+          </Collapsible>
 
-          {/* Platform Healing - Admin & Owner Access */}
-          {isAuthenticated && ((user as User)?.role === 'admin' || (user as User)?.isOwner) && (
-            <Button
-              variant="ghost"
-              className={cn(
-                "w-full justify-start gap-3 hover-elevate active-elevate-2",
-                location === "/platform-healing" && "bg-primary/10 text-primary"
-              )}
-              onClick={() => handleNavigation("/platform-healing")}
-              data-testid="nav-platform-healing"
-            >
-              <Wrench className="w-5 h-5" />
-              <span>Platform Healing</span>
-            </Button>
+          {/* Admin Section - Collapsible - Only for Admins/Owners */}
+          {(isAdmin || isOwner) && (
+            <Collapsible open={adminOpen} onOpenChange={setAdminOpen}>
+              <CollapsibleTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-between hover-elevate active-elevate-2 mt-2"
+                  data-testid="nav-section-admin"
+                >
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Admin</span>
+                  <ChevronDown className={cn(
+                    "w-4 h-4 transition-transform",
+                    adminOpen && "rotate-180"
+                  )} />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-1 mt-1">
+                {isAdmin && (
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "w-full justify-start gap-3 hover-elevate active-elevate-2 pl-6",
+                      location === "/admin" && "bg-primary/10 text-primary"
+                    )}
+                    onClick={() => handleNavigation("/admin")}
+                    data-testid="nav-admin"
+                  >
+                    <Shield className="w-4 h-4" />
+                    <span className="text-sm">Admin Panel</span>
+                  </Button>
+                )}
+                {(isAdmin || isOwner) && (
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "w-full justify-start gap-3 hover-elevate active-elevate-2 pl-6",
+                      location === "/platform-healing" && "bg-primary/10 text-primary"
+                    )}
+                    onClick={() => handleNavigation("/platform-healing")}
+                    data-testid="nav-platform-healing"
+                  >
+                    <Wrench className="w-4 h-4" />
+                    <span className="text-sm">Platform Healing</span>
+                  </Button>
+                )}
+              </CollapsibleContent>
+            </Collapsible>
           )}
         </nav>
 
