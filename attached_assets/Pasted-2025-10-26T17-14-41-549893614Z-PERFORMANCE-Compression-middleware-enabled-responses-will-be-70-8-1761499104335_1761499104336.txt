@@ -1,0 +1,50 @@
+2025-10-26T17:14:41.549893614Z [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-26T17:14:41.552352528Z 📡 WebSocket server initialized at /ws
+2025-10-26T17:14:41.552561243Z [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-26T17:14:41.558132297Z ✅ All routes registered successfully
+2025-10-26T17:14:41.558822494Z 🔍 Testing database connection...
+2025-10-26T17:14:41.579334903Z 5:14:41 PM [express] serving on port 10000
+2025-10-26T17:14:41.579351633Z 🌐 Server accessible at http://0.0.0.0:10000
+2025-10-26T17:14:41.622962717Z ✅ Database connected successfully
+2025-10-26T17:14:41.622984898Z 🔧 Auto-healing system ENABLED (production mode)
+2025-10-26T17:14:41.622987498Z 
+2025-10-26T17:14:41.622990008Z 🔍 Checking GitHub integration configuration...
+2025-10-26T17:14:41.622992258Z ✅ GitHub integration configured successfully
+2025-10-26T17:14:41.623011509Z    - Repository: 6-7Development/archetype
+2025-10-26T17:14:41.623022029Z    - Branch: main
+2025-10-26T17:14:41.623025469Z    - Token: ✓ (configured)
+2025-10-26T17:14:41.623028399Z    - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-26T17:14:41.623030659Z    - Maintenance mode: Available for owner
+2025-10-26T17:14:41.623032809Z 
+2025-10-26T17:14:47.018204188Z ==> Your service is live 🎉
+2025-10-26T17:14:47.063233244Z ==> 
+2025-10-26T17:14:47.099855592Z ==> ///////////////////////////////////////////////////////////
+2025-10-26T17:14:47.130828769Z ==> 
+2025-10-26T17:14:47.163040097Z ==> Available at your primary URL https://archetype-x8b5.onrender.com
+2025-10-26T17:14:47.199295894Z ==> 
+2025-10-26T17:14:47.557724955Z ==> ///////////////////////////////////////////////////////////
+2025-10-26T17:15:34.844452399Z ❌ WebSocket client disconnected (user: admin)
+2025-10-26T17:15:35.519625725Z 5:15:35 PM [express] GET /api/platform/status 200 in 10ms :: {"overallHealth":100,"activeIncidents":…
+2025-10-26T17:15:35.533535204Z 5:15:35 PM [express] GET /api/auth/me 304 in 4ms :: {"user":{"id":"729e1c3d-0186-4804-935c-8dec40027…
+2025-10-26T17:15:35.653817744Z ✅ WebSocket client connected
+2025-10-26T17:15:35.730348986Z 📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-26T17:15:39.640008339Z ❌ WebSocket client disconnected (user: admin)
+2025-10-26T17:15:39.969820209Z 5:15:39 PM [express] GET /api/auth/me 304 in 5ms :: {"user":{"id":"729e1c3d-0186-4804-935c-8dec40027…
+2025-10-26T17:15:39.991324383Z 5:15:39 PM [express] GET /api/platform/status 200 in 7ms :: {"overallHealth":100,"activeIncidents":0…
+2025-10-26T17:15:40.129445503Z ✅ WebSocket client connected
+2025-10-26T17:15:40.223107827Z 📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-26T17:16:01.440680163Z ❌ WebSocket client disconnected (user: admin)
+2025-10-26T17:16:02.264932086Z 5:16:02 PM [express] GET /api/auth/me 304 in 5ms :: {"user":{"id":"729e1c3d-0186-4804-935c-8dec40027…
+2025-10-26T17:16:02.40087283Z 5:16:02 PM [express] GET /api/platform/status 200 in 8ms :: {"overallHealth":100,"activeIncidents":0…
+2025-10-26T17:16:02.413243749Z ✅ WebSocket client connected
+2025-10-26T17:16:02.497005657Z 📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-26T17:17:10.288484615Z [AUDIT] heal by user 729e1c3d-0186-4804-935c-8dec400276ec: Starting platform heal: Find all platform vunerabilities and fix them if you cant find out why and let me know so i can fix you - pending
+2025-10-26T17:17:11.782642424Z [PLATFORM-BACKUP] ✅ Created backup: 1761499030288-c8xfa99d5
+2025-10-26T17:17:11.796036449Z [AUDIT] heal by user 729e1c3d-0186-4804-935c-8dec400276ec: Meta-SySop analyzing (iteration 1/5)... - pending
+2025-10-26T17:17:14.484259703Z [AUDIT] heal by user 729e1c3d-0186-4804-935c-8dec400276ec: Meta-SySop analyzing (iteration 2/5)... - pending
+2025-10-26T17:17:17.986678121Z [AUDIT] heal by user 729e1c3d-0186-4804-935c-8dec400276ec: Meta-SySop analyzing (iteration 3/5)... - pending
+2025-10-26T17:17:21.283331587Z [AUDIT] heal by user 729e1c3d-0186-4804-935c-8dec400276ec: Meta-SySop analyzing (iteration 4/5)... - pending
+2025-10-26T17:17:23.718686573Z [AUDIT] heal by user 729e1c3d-0186-4804-935c-8dec400276ec: Meta-SySop analyzing (iteration 5/5)... - pending
+2025-10-26T17:17:26.589734189Z [AUDIT] heal by user 729e1c3d-0186-4804-935c-8dec400276ec: Running safety checks on 0 modified files... - pending
+2025-10-26T17:17:26.611340746Z [AUDIT] heal by user 729e1c3d-0186-4804-935c-8dec400276ec: Platform heal completed: Find all platform vunerabilities and fix them if you cant find out why and let me know so i can fix you - success
+2025-10-26T17:17:26.626656411Z 5:17:26 PM [express] POST /api/platform/heal 200 in 16359ms :: {"success":true,"backup":"17614990302…
