@@ -1,5 +1,9 @@
 import type { Express } from "express";
 import { storage } from "../storage";
+import { db } from "../db";
+import { users } from "@shared/schema";
+import { eq } from "drizzle-orm";
+import * as bcrypt from "bcrypt";
 
 /**
  * Owner Setup Endpoint
@@ -7,6 +11,79 @@ import { storage } from "../storage";
  * Protected by authentication
  */
 export function registerOwnerSetupRoutes(app: Express) {
+  
+  // EMERGENCY: Create root account endpoint (one-time use)
+  app.post("/api/emergency/create-root", async (req, res) => {
+    try {
+      const ROOT_EMAIL = 'root@getdc360.com';
+      const ROOT_PASSWORD = 'admin123@*';
+      
+      // Check if root account already exists
+      const existing = await db.select()
+        .from(users)
+        .where(eq(users.email, ROOT_EMAIL))
+        .limit(1);
+      
+      if (existing.length > 0) {
+        console.log(`⚠️  Root account already exists, updating...`);
+        
+        // Update to ensure admin + owner status
+        const hashedPassword = await bcrypt.hash(ROOT_PASSWORD, 10);
+        
+        await db.update(users)
+          .set({
+            password: hashedPassword,
+            role: 'admin',
+            isOwner: true,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.email, ROOT_EMAIL));
+        
+        console.log(`✅ Root account updated successfully`);
+        return res.json({
+          success: true,
+          message: "Root account updated successfully",
+          email: ROOT_EMAIL,
+          action: "updated"
+        });
+      }
+      
+      // Create new root account
+      console.log(`🔐 Creating root admin account...`);
+      const hashedPassword = await bcrypt.hash(ROOT_PASSWORD, 10);
+      
+      const [newUser] = await db.insert(users)
+        .values({
+          email: ROOT_EMAIL,
+          password: hashedPassword,
+          firstName: 'Root',
+          lastName: 'Admin',
+          role: 'admin',
+          isOwner: true,
+        })
+        .returning();
+      
+      console.log(`✅ Root account created successfully!`);
+      console.log(`   Email: ${newUser.email}`);
+      console.log(`   Role: ${newUser.role}`);
+      console.log(`   Owner: ${newUser.isOwner}`);
+      
+      res.json({
+        success: true,
+        message: "Root account created successfully! You can now login.",
+        email: ROOT_EMAIL,
+        action: "created"
+      });
+      
+    } catch (error: any) {
+      console.error('❌ Error creating root account:', error);
+      res.status(500).json({
+        success: false,
+        error: "Failed to create root account",
+        details: error.message
+      });
+    }
+  });
   // POST /api/setup-owner - Mark yourself as owner (admin only)
   app.post("/api/setup-owner", async (req: any, res) => {
     try {
