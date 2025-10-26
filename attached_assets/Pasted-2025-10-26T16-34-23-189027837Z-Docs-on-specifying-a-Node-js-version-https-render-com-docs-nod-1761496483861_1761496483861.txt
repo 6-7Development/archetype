@@ -1,0 +1,50 @@
+2025-10-26T16:34:23.189027837Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2025-10-26T16:34:23.251291652Z ==> Running build command 'npm install --production=false && npm run build'...
+2025-10-26T16:34:24.69936952Z 
+2025-10-26T16:34:24.699395511Z up to date, audited 683 packages in 1s
+2025-10-26T16:34:24.699399291Z 
+2025-10-26T16:34:24.699411601Z 173 packages are looking for funding
+2025-10-26T16:34:24.699414721Z   run `npm fund` for details
+2025-10-26T16:34:24.728236261Z 
+2025-10-26T16:34:24.728257501Z 10 vulnerabilities (3 low, 7 moderate)
+2025-10-26T16:34:24.728259731Z 
+2025-10-26T16:34:24.728262051Z To address issues that do not require attention, run:
+2025-10-26T16:34:24.728264071Z   npm audit fix
+2025-10-26T16:34:24.728265701Z 
+2025-10-26T16:34:24.728267421Z To address all issues (including breaking changes), run:
+2025-10-26T16:34:24.728269811Z   npm audit fix --force
+2025-10-26T16:34:24.728271411Z 
+2025-10-26T16:34:24.728273801Z Run `npm audit` for details.
+2025-10-26T16:34:24.895371368Z 
+2025-10-26T16:34:24.895404419Z > rest-express@1.0.0 build
+2025-10-26T16:34:24.895408449Z > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+2025-10-26T16:34:24.895414849Z 
+2025-10-26T16:34:25.099148431Z vite v5.4.20 building for production...
+2025-10-26T16:34:25.148292861Z transforming...
+2025-10-26T16:34:25.470562732Z ✓ 3 modules transformed.
+2025-10-26T16:34:25.471594061Z x Build failed in 351ms
+2025-10-26T16:34:25.471674963Z error during build:
+2025-10-26T16:34:25.471680633Z [vite:esbuild] Transform failed with 1 error:
+2025-10-26T16:34:25.471684583Z /opt/render/project/src/client/src/main.tsx:17:0: ERROR: Unexpected "<<"
+2025-10-26T16:34:25.471688083Z file: /opt/render/project/src/client/src/main.tsx:17:0
+2025-10-26T16:34:25.471690483Z 
+2025-10-26T16:34:25.471693063Z Unexpected "<<"
+2025-10-26T16:34:25.471696193Z 15 |      document.body.innerHTML = '<div style="color: white; padding: 20px; font-size: 24px;">ERROR: Root element not found</div>';
+2025-10-26T16:34:25.471698793Z 16 |    } else {
+2025-10-26T16:34:25.471701353Z 17 |  <<<<<<< HEAD
+2025-10-26T16:34:25.471704063Z    |  ^
+2025-10-26T16:34:25.471707123Z 18 |      // Suppress vite connection warnings in console
+2025-10-26T16:34:25.471709603Z 19 |      if (import.meta.env.DEV) {
+2025-10-26T16:34:25.471711714Z 
+2025-10-26T16:34:25.471715283Z     at failureErrorWithLog (/opt/render/project/src/node_modules/vite/node_modules/esbuild/lib/main.js:1472:15)
+2025-10-26T16:34:25.471718814Z     at /opt/render/project/src/node_modules/vite/node_modules/esbuild/lib/main.js:755:50
+2025-10-26T16:34:25.471722094Z     at responseCallbacks.<computed> (/opt/render/project/src/node_modules/vite/node_modules/esbuild/lib/main.js:622:9)
+2025-10-26T16:34:25.471724574Z     at handleIncomingPacket (/opt/render/project/src/node_modules/vite/node_modules/esbuild/lib/main.js:677:12)
+2025-10-26T16:34:25.471727354Z     at Socket.readFromStdout (/opt/render/project/src/node_modules/vite/node_modules/esbuild/lib/main.js:600:7)
+2025-10-26T16:34:25.471740804Z     at Socket.emit (node:events:518:28)
+2025-10-26T16:34:25.471743994Z     at addChunk (node:internal/streams/readable:561:12)
+2025-10-26T16:34:25.471746554Z     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+2025-10-26T16:34:25.471748974Z     at Readable.push (node:internal/streams/readable:392:5)
+2025-10-26T16:34:25.471751894Z     at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+2025-10-26T16:34:25.501488411Z ==> Build failed 😞
+2025-10-26T16:34:25.501530632Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys

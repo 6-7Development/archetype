@@ -3,75 +3,8 @@ import { platformHealing } from './platformHealing';
 import { platformAudit } from './platformAudit';
 import { isAuthenticated, isAdmin } from './universalAuth';
 import Anthropic from '@anthropic-ai/sdk';
-import path from 'path';
-import { execFile } from 'child_process';
-import { promisify } from 'util';
 
-const execFileAsync = promisify(execFile);
 const router = Router();
-
-// GET /api/platform/status - Platform health and metrics
-router.get('/status', isAuthenticated, isAdmin, async (req: any, res) => {
-  try {
-    const os = await import('os');
-    
-    // Get system metrics
-    const totalMemory = os.totalmem();
-    const freeMemory = os.freemem();
-    const memoryUsage = ((totalMemory - freeMemory) / totalMemory) * 100;
-    
-    const cpus = os.cpus();
-    const avgLoad = os.loadavg()[0];
-    const cpuCount = cpus.length;
-    const cpuUsage = Math.min(100, (avgLoad / cpuCount) * 100);
-    
-    const uptime = os.uptime();
-    const days = Math.floor(uptime / 86400);
-    const hours = Math.floor((uptime % 86400) / 3600);
-    const minutes = Math.floor((uptime % 3600) / 60);
-    const uptimeFormatted = `${days}d ${hours}h ${minutes}m`;
-    
-    // Check for uncommitted changes
-    let uncommittedChanges = false;
-    try {
-      const { stdout } = await execFileAsync('git', ['status', '--porcelain'], { 
-        cwd: path.resolve(__dirname, '..') 
-      });
-      uncommittedChanges = stdout.trim().length > 0;
-    } catch (error) {
-      // Git not available (Render production)
-      uncommittedChanges = false;
-    }
-    
-    // Calculate overall health (simple heuristic)
-    let healthScore = 100;
-    if (cpuUsage > 80) healthScore -= 20;
-    if (memoryUsage > 80) healthScore -= 20;
-    if (uncommittedChanges) healthScore -= 10;
-    
-    const issues: string[] = [];
-    if (cpuUsage > 80) issues.push('High CPU usage detected');
-    if (memoryUsage > 80) issues.push('High memory usage detected');
-    if (uncommittedChanges) issues.push('Uncommitted changes present');
-    
-    res.json({
-      overallHealth: Math.round(healthScore),
-      activeIncidents: issues.length,
-      uptime: uptimeFormatted,
-      cpuUsage: Math.round(cpuUsage),
-      memoryUsage: Math.round(memoryUsage),
-      uncommittedChanges,
-      safety: {
-        safe: issues.length === 0,
-        issues,
-      },
-      lastUpdate: new Date().toISOString(),
-    });
-  } catch (error: any) {
-    console.error('[PLATFORM-STATUS] Error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
 
 router.post('/heal', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
@@ -239,7 +172,7 @@ Analyze the issue, identify the root cause, and provide the fix.`;
               const typedInput = input as { path: string; content: string };
               await platformHealing.writePlatformFile(typedInput.path, typedInput.content);
               changes.push({ path: typedInput.path, operation: 'modify' });
-
+              
               // Log file modification
               await platformAudit.log({
                 userId,
@@ -247,7 +180,7 @@ Analyze the issue, identify the root cause, and provide the fix.`;
                 description: `Modified file: ${typedInput.path}`,
                 status: 'pending',
               });
-
+              
               toolResult = 'File written successfully';
             } else if (name === 'listPlatformFiles') {
               const typedInput = input as { directory: string };
@@ -292,7 +225,7 @@ Analyze the issue, identify the root cause, and provide the fix.`;
     const safety = await platformHealing.validateSafety();
     if (!safety.safe) {
       await platformHealing.rollback(backup.id);
-
+      
       await platformAudit.log({
         userId,
         action: 'heal',
@@ -318,7 +251,7 @@ Analyze the issue, identify the root cause, and provide the fix.`;
         description: `Committing ${changes.length} file changes to Git...`,
         status: 'pending',
       });
-
+      
       commitHash = await platformHealing.commitChanges(`Fix: ${issue}`, changes as any);
 
       if (autoPush) {
@@ -329,7 +262,7 @@ Analyze the issue, identify the root cause, and provide the fix.`;
           description: `Pushing changes to GitHub (triggering Render deployment)...`,
           status: 'pending',
         });
-
+        
         await platformHealing.pushToRemote();
       }
     }
@@ -437,7 +370,7 @@ router.get('/status', isAuthenticated, isAdmin, async (req: any, res) => {
     const diff = await platformHealing.getDiff();
     const safety = await platformHealing.validateSafety();
     const backups = await platformHealing.listBackups();
-
+    
     res.json({
       uncommittedChanges: diff.length > 0,
       changeCount: diff.split('\n').filter(l => l.startsWith('+') || l.startsWith('-')).length,
@@ -452,126 +385,57 @@ router.get('/status', isAuthenticated, isAdmin, async (req: any, res) => {
 
 router.get('/tasks', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
-    // Prevent browser caching - force fresh data on every request
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-
     const userId = req.authenticatedUserId;
-    const { readTaskList, updateTask } = await import('./tools/task-management');
-    const { taskLists, tasks: tasksTable } = await import('@shared/schema');
-    const { db } = await import('./db');
-    const { eq, and } = await import('drizzle-orm');
-
+    const { readTaskList } = await import('./tools/task-management');
+    
     // Get actual task lists from task management system
     const result = await readTaskList({ userId });
-
+    
     if (!result.success || !result.taskLists) {
       return res.json({ tasks: [] });
     }
-
-    // Auto-cleanup stale active task lists (older than 15 minutes)
-    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
-    const staleLists = result.taskLists.filter((list: any) => 
-      list.status === 'active' && new Date(list.createdAt) < fifteenMinutesAgo
-    );
-
-    for (const staleList of staleLists) {
-      console.log(`🧹 [CLEANUP] Auto-completing stale task list: ${staleList.id} (created ${new Date(staleList.createdAt).toISOString()})`);
-
-      // Mark all incomplete tasks as completed
-      const incompleteTasks = staleList.tasks.filter((t: any) => 
-        t.status !== 'completed' && t.status !== 'cancelled'
-      );
-
-      for (const task of incompleteTasks) {
-        await updateTask({
-          userId,
-          taskId: task.id,
-          status: 'completed',
-          result: '⚠️ Auto-completed (stale session cleanup)',
-          completedAt: new Date()
-        });
-      }
-
-      // Mark task list as completed
-      await db.update(taskLists)
-        .set({ 
-          status: 'completed',
-          completedAt: new Date()
-        })
-        .where(eq(taskLists.id, staleList.id));
-    }
-
-    // Re-fetch after cleanup
-    const updatedResult = await readTaskList({ userId });
-    if (!updatedResult.success || !updatedResult.taskLists) {
-      return res.json({ tasks: [] });
-    }
-
-    // Find the most recent active OR recently completed task list (last 10 minutes)
-    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
-
-    const relevantList = updatedResult.taskLists
-      .filter((list: any) => 
-        list.status === 'active' || 
-        (list.status === 'completed' && new Date(list.completedAt || list.createdAt) > tenMinutesAgo)
-      )
+    
+    // Find the most recent active task list
+    const activeList = result.taskLists
+      .filter((list: any) => list.status === 'active')
       .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
-
-    if (!relevantList || !relevantList.tasks) {
+    
+    if (!activeList || !activeList.tasks) {
       return res.json({ tasks: [] });
     }
-
-
-    // Convert tasks to TaskBoard format (matching client/src/hooks/use-websocket-stream.ts)
-    const tasks = relevantList.tasks.map((task: any) => {
-      // Map database status to TaskBoard status
-      let status: 'pending' | 'in_progress' | 'completed' | 'failed' = 'pending';
+    
+    // Convert tasks to AgentProgress format
+    const tasks = activeList.tasks.map((task: any) => {
+      let type: 'thinking' | 'action' | 'success' | 'error' | 'warning' = 'action';
+      let progress = 0;
+      
       if (task.status === 'completed') {
-        status = 'completed';
-      } else if (task.status === 'in_progress') {
-        status = 'in_progress';
+        type = 'success';
+        progress = 100;
       } else if (task.status === 'cancelled') {
-        status = 'failed';
-      } else {
-        status = 'pending';
+        type = 'error';
+        progress = 0;
+      } else if (task.status === 'in_progress') {
+        type = 'action';
+        progress = 50;
+      } else if (task.status === 'pending') {
+        type = 'thinking';
+        progress = 0;
       }
-
+      
       return {
         id: task.id.toString(),
-        title: task.title,
-        status,
-        priority: task.order || 0,
-        subAgentId: null,
+        type,
+        message: task.title,
+        details: task.description || task.result || undefined,
+        progress,
       };
     });
-
+    
     res.json({ tasks });
   } catch (error: any) {
     console.error('[PLATFORM-TASKS] Error fetching tasks:', error);
     res.json({ tasks: [] }); // Return empty array on error, don't fail
-  }
-});
-
-// Clear/reset all task lists for current user
-router.post('/tasks/clear', isAuthenticated, isAdmin, async (req: any, res) => {
-  try {
-    const userId = req.authenticatedUserId;
-    const { db } = await import('./db');
-    const { taskLists } = await import('@shared/schema');
-    const { eq } = await import('drizzle-orm');
-
-    // Mark all task lists as completed
-    await db
-      .update(taskLists)
-      .set({ status: 'completed' })
-      .where(eq(taskLists.userId, userId));
-
-    res.json({ success: true, message: 'All task lists cleared' });
-  } catch (error: any) {
-    console.error('[PLATFORM-TASKS] Error clearing tasks:', error);
-    res.status(500).json({ error: error.message });
   }
 });
 

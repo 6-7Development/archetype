@@ -482,6 +482,35 @@ function PlatformHealingContent() {
           </div>
         </aside>
       </div>
+
+      {/* Add custom animations */}
+      <style>{`
+        @keyframes pulse-glow {
+          0%, 100% {
+            box-shadow: 0 0 0 0 currentColor;
+          }
+          50% {
+            box-shadow: 0 0 0 8px transparent;
+          }
+        }
+        
+        @keyframes ping-slow {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.3;
+          }
+        }
+        
+        .animate-pulse-glow {
+          animation: pulse-glow 2s infinite;
+        }
+        
+        .animate-ping-slow {
+          animation: ping-slow 1.5s infinite;
+        }
+      `}</style>
     </div>
   );
 }
