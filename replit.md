@@ -60,7 +60,7 @@ The user interface features a tab-based workspace (Overview, Build, Files, Previ
     - **Dynamic Intelligence**: Extended thinking mode for complex problems, supporting standard and high-power modes.
     - **Plan Mode**: Brainstorming and planning without code modification, with full session management UI.
     - **Design Mode**: Visual prototyping and design system builder with prototype gallery and screen composer.
-    - **Workflows**: Parallel and sequential command execution engine with creation forms, execution dashboard, and run history.
+    - **Workflows**: Parallel and sequential command execution engine with creation forms, execution dashboard, and run history. Enabled by default in development, requires ENABLE_WORKFLOWS env var for production.
     - **Agents & Automations**: Template marketplace for bots, scheduled tasks, and webhooks.
     - **General Agent Mode**: Multi-project-type support beyond web apps (games, mobile apps, CLI tools, APIs, automations).
     - **Visual Editor**: Direct UI element editing in live preview (future implementation).

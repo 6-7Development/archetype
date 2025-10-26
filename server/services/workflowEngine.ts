@@ -33,13 +33,14 @@ export class WorkflowEngine extends EventEmitter {
    * STRICT MODE: Only allows single commands from allow-list, no chaining
    */
   private validateCommand(command: string): boolean {
-    // CRITICAL: Workflows are DISABLED by default for security
-    // Set ENABLE_WORKFLOWS=true to enable (development only)
+    // CRITICAL: Workflows are enabled in development, disabled in production by default
+    // Set ENABLE_WORKFLOWS=true to enable in production (development only)
     // Set ENABLE_WORKFLOWS=production for production with strict validation
-    const workflowsEnabled = process.env.ENABLE_WORKFLOWS;
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    const workflowsEnabled = process.env.ENABLE_WORKFLOWS || (isDevelopment ? 'true' : '');
     
     if (!workflowsEnabled) {
-      throw new Error('Workflows are disabled. Set ENABLE_WORKFLOWS=true to enable in development.');
+      throw new Error('Workflows are disabled. Set ENABLE_WORKFLOWS=true or ENABLE_WORKFLOWS=production to enable.');
     }
     
     // Check for command chaining attempts (RCE bypass)
