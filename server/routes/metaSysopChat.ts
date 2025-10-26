@@ -17,6 +17,82 @@ import * as path from 'path';
 
 const router = Router();
 
+// Approve pending changes
+router.post('/approve/:messageId', isAuthenticated, isAdmin, async (req: any, res) => {
+  try {
+    const { messageId } = req.params;
+    const userId = req.authenticatedUserId;
+
+    // Find the message
+    const [message] = await db
+      .select()
+      .from(chatMessages)
+      .where(eq(chatMessages.id, messageId))
+      .limit(1);
+
+    if (!message) {
+      return res.status(404).json({ error: 'Message not found' });
+    }
+
+    if (message.approvalStatus !== 'pending_approval') {
+      return res.status(400).json({ error: 'Message is not pending approval' });
+    }
+
+    // Update approval status
+    await db
+      .update(chatMessages)
+      .set({
+        approvalStatus: 'approved',
+        approvedBy: userId,
+        approvedAt: new Date(),
+      })
+      .where(eq(chatMessages.id, messageId));
+
+    res.json({ success: true, message: 'Changes approved' });
+  } catch (error: any) {
+    console.error('[META-SYSOP] Approval error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Reject pending changes
+router.post('/reject/:messageId', isAuthenticated, isAdmin, async (req: any, res) => {
+  try {
+    const { messageId } = req.params;
+    const userId = req.authenticatedUserId;
+
+    // Find the message
+    const [message] = await db
+      .select()
+      .from(chatMessages)
+      .where(eq(chatMessages.id, messageId))
+      .limit(1);
+
+    if (!message) {
+      return res.status(404).json({ error: 'Message not found' });
+    }
+
+    if (message.approvalStatus !== 'pending_approval') {
+      return res.status(400).json({ error: 'Message is not pending approval' });
+    }
+
+    // Update approval status
+    await db
+      .update(chatMessages)
+      .set({
+        approvalStatus: 'rejected',
+        approvedBy: userId,
+        approvedAt: new Date(),
+      })
+      .where(eq(chatMessages.id, messageId));
+
+    res.json({ success: true, message: 'Changes rejected' });
+  } catch (error: any) {
+    console.error('[META-SYSOP] Rejection error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get Meta-SySop chat history
 router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
@@ -191,20 +267,54 @@ PHASE 1: DIAGNOSE & PLAN (Turn 1)
 → read_logs() / execute_sql() - Gather evidence if needed
 → DECISION: Can I delegate? Is this complex enough for sub-agents?
 
-PHASE 2: DELEGATE OR EXECUTE (Turn 2)
+PHASE 2: REQUEST APPROVAL (Turn 2) 🔔 NEW!
+→ request_user_approval() - Explain proposed changes and get user approval
+→ Include: summary, filesChanged[], estimatedImpact
+→ WAIT for user approval before proceeding
+→ Do NOT make any changes until approved!
+
+PHASE 3: DELEGATE OR EXECUTE (Turn 3)
 → COMPLEX TASK? → start_subagent() to delegate specialized work
 → SIMPLE TASK? → architect_consult() + write files yourself
 → PARALLEL WORK? → Launch MULTIPLE sub-agents simultaneously
 
-PHASE 3: MONITOR & REVIEW (Turn 3)
+PHASE 4: MONITOR & REVIEW (Turn 4)
 → WHILE sub-agents work: Monitor via updateTask() 
 → AFTER completion: REVIEW their work (read files, check quality)
 → IF quality issues: Fix or delegate again
 → IF good: Proceed to deploy
 
-PHASE 4: DEPLOY (Turn 4)
+PHASE 5: DEPLOY (Turn 5)
 → commit_to_github() - Push to production
 → updateTask() all tasks to completed
+
+═══════════════════════════════════════════════════════════════════
+🔔 APPROVAL WORKFLOW (Replit Agent Style):
+═══════════════════════════════════════════════════════════════════
+
+**WHEN TO REQUEST APPROVAL:**
+✅ ALWAYS call request_user_approval() BEFORE making platform changes
+✅ After analyzing the problem and planning your solution
+✅ Before calling architect_consult or start_subagent
+
+**APPROVAL REQUEST FORMAT:**
+- Summary: Clear explanation of problem and solution
+- Files Changed: List all files to be modified/created/deleted
+- Estimated Impact: "low" (config), "medium" (features), "high" (architecture)
+
+**WHAT HAPPENS:**
+1. You call request_user_approval(summary, filesChanged, estimatedImpact)
+2. System sends request to user via UI
+3. Conversation PAUSES - you cannot continue
+4. User approves or rejects via separate endpoint
+5. If approved: Continue with changes in next conversation
+6. If rejected: Explain why and propose alternatives
+
+**CRITICAL RULES:**
+❌ DO NOT make changes before calling request_user_approval
+❌ DO NOT continue after request_user_approval (conversation pauses)
+✅ Always explain clearly what you'll change and why
+✅ Be transparent about risks and impact
 
 ═══════════════════════════════════════════════════════════════════
 🤝 WHEN TO DELEGATE vs DO YOURSELF:
@@ -274,6 +384,7 @@ DON'T TRUST - VERIFY:
 
 ORCHESTRATION:
 start_subagent() - Delegate complex work to specialists (USE THIS!)
+request_user_approval() - 🔔 Request user approval BEFORE making changes
 
 DIAGNOSIS:
 readTaskList() - Get task IDs (CALL THIS FIRST!)
@@ -284,13 +395,13 @@ execute_sql() - Query database issues
 EXECUTION:
 updateTask() - Update progress as work happens
 readPlatformFile() - Read files
-architect_consult() - Get I AM approval
-writePlatformFile() - Modify files (REQUIRES approval)
-createPlatformFile() - Create files (REQUIRES approval)
-deletePlatformFile() - Delete files (REQUIRES approval)
+architect_consult() - Get I AM approval (after user approval)
+writePlatformFile() - Modify files (REQUIRES user + I AM approval)
+createPlatformFile() - Create files (REQUIRES user + I AM approval)
+deletePlatformFile() - Delete files (REQUIRES user + I AM approval)
 
 DEPLOYMENT:
-commit_to_github() - Push to production
+commit_to_github() - Push to production (after changes complete)
 
 UTILITIES:
 listPlatformFiles() - Browse directories
@@ -490,6 +601,29 @@ EXECUTE NOW - Diagnose, delegate, monitor, review, deploy!`;
             commitMessage: { type: 'string' as const, description: 'Detailed commit message explaining what was fixed' },
           },
           required: ['commitMessage'],
+        },
+      },
+      {
+        name: 'request_user_approval',
+        description: 'Request user approval before making changes. Use this after analyzing the problem and planning your solution. Explain what you will change and why.',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            summary: { 
+              type: 'string' as const, 
+              description: 'Clear summary of what will be changed and why. Explain the problem, proposed solution, and expected outcome.' 
+            },
+            filesChanged: { 
+              type: 'array' as const,
+              items: { type: 'string' as const },
+              description: 'List of files that will be modified, created, or deleted' 
+            },
+            estimatedImpact: { 
+              type: 'string' as const, 
+              description: 'Brief estimate of the impact: "low", "medium", or "high"' 
+            },
+          },
+          required: ['summary', 'filesChanged', 'estimatedImpact'],
         },
       },
     ];
@@ -878,6 +1012,44 @@ DO NOT create new tasks - UPDATE existing ones!`;
                   sendEvent('error', { message: `GitHub commit failed: ${error.message}` });
                 }
               }
+            } else if (name === 'request_user_approval') {
+              const typedInput = input as { 
+                summary: string; 
+                filesChanged: string[]; 
+                estimatedImpact: string;
+              };
+              
+              sendEvent('progress', { message: '🔔 Requesting user approval...' });
+              
+              // Create assistant message with approval request
+              const [approvalMsg] = await db
+                .insert(chatMessages)
+                .values({
+                  userId,
+                  projectId: null,
+                  fileId: null,
+                  role: 'assistant',
+                  content: `**Approval Request**\n\n${typedInput.summary}\n\n**Files to be changed:**\n${typedInput.filesChanged.map(f => `- ${f}`).join('\n')}\n\n**Estimated impact:** ${typedInput.estimatedImpact}`,
+                  isPlatformHealing: true,
+                  approvalStatus: 'pending_approval',
+                  approvalSummary: typedInput.summary,
+                  platformChanges: { filesChanged: typedInput.filesChanged, estimatedImpact: typedInput.estimatedImpact },
+                })
+                .returning();
+              
+              // Send SSE event to notify frontend
+              sendEvent('approval_requested', { 
+                summary: typedInput.summary,
+                filesChanged: typedInput.filesChanged,
+                estimatedImpact: typedInput.estimatedImpact,
+                messageId: approvalMsg.id 
+              });
+              
+              toolResult = `✅ Approval request sent to user.\n\nSummary: ${typedInput.summary}\n\nFiles: ${typedInput.filesChanged.join(', ')}\n\nImpact: ${typedInput.estimatedImpact}\n\nWaiting for user to approve or reject...`;
+              
+              // PAUSE the conversation loop - wait for external approval
+              continueLoop = false;
+              console.log('[META-SYSOP] Approval requested - pausing conversation');
             } else if (name === 'perform_diagnosis') {
               const typedInput = input as { target: string; focus?: string[] };
               sendEvent('progress', { message: `🔍 Running ${typedInput.target} diagnosis...` });
