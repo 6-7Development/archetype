@@ -14,6 +14,17 @@ const router = Router();
 // Store pending write approvals in memory
 const pendingApprovals = new Map<string, { resolve: (approved: boolean) => void }>();
 
+// Export function to resolve pending approvals (used by Meta-SySop approval endpoint)
+export function resolvePendingApproval(sessionId: string, approved: boolean): boolean {
+  const pending = pendingApprovals.get(sessionId);
+  if (pending) {
+    pending.resolve(approved);
+    pendingApprovals.delete(sessionId);
+    return true;
+  }
+  return false;
+}
+
 // GET /api/platform/status - Platform health and metrics
 router.get('/status', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
