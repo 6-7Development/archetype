@@ -168,6 +168,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup WebSocket server and get httpServer + wss
   const { httpServer, wss } = setupWebSocket(app);
+  
+  // Initialize platform metrics broadcaster
+  const { PlatformMetricsBroadcaster } = await import('./services/platformMetricsBroadcaster');
+  const metricsBroadcaster = new PlatformMetricsBroadcaster(wss);
+  metricsBroadcaster.start();
 
   // ==================== REGISTER ROUTE MODULES ====================
   
