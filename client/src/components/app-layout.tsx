@@ -16,7 +16,8 @@ import {
   Headphones,
   Wrench,
   ChevronDown,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  Zap
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,12 @@ const mainNavItems = [
     icon: ShoppingCart,
     path: "/marketplace",
     testId: "nav-marketplace",
+  },
+  {
+    label: "Agent Features",
+    icon: Zap,
+    path: "/agent-features",
+    testId: "nav-agent-features",
   },
 ];
 
