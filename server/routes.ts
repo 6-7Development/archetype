@@ -169,6 +169,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup WebSocket server and get httpServer + wss
   const { httpServer, wss } = setupWebSocket(app);
   
+  // Wire WebSocket server to session manager for platform healing
+  const { sessionManager } = await import('./platformHealingSession');
+  sessionManager.setWebSocketServer(wss);
+  console.log('[PLATFORM-HEALING] Session manager connected to WebSocket');
+  
   // Initialize platform metrics broadcaster
   const { PlatformMetricsBroadcaster } = await import('./services/platformMetricsBroadcaster');
   const metricsBroadcaster = new PlatformMetricsBroadcaster(wss);

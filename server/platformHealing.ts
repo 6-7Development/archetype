@@ -605,6 +605,63 @@ export class PlatformHealingService {
     }
   }
 
+  async previewWrite(filePath: string, newContent: string): Promise<string> {
+    try {
+      // Try to read current file content
+      let currentContent = '';
+      try {
+        currentContent = await this.readPlatformFile(filePath);
+      } catch (error: any) {
+        // File doesn't exist - this is a new file
+        currentContent = '';
+      }
+
+      // Generate simple line-by-line diff
+      return this.generateDiff(filePath, currentContent, newContent);
+    } catch (error: any) {
+      console.error('[PLATFORM-PREVIEW] Failed to generate diff:', error);
+      return `Error generating diff: ${error.message}`;
+    }
+  }
+
+  private generateDiff(filePath: string, oldContent: string, newContent: string): string {
+    const oldLines = oldContent.split('\n');
+    const newLines = newContent.split('\n');
+
+    const diffLines: string[] = [];
+    diffLines.push(`--- ${filePath} (before)`);
+    diffLines.push(`+++ ${filePath} (after)`);
+    diffLines.push(`@@ -1,${oldLines.length} +1,${newLines.length} @@`);
+
+    // Simple diff: show all old lines as removed, all new lines as added
+    // This is not a perfect diff algorithm but works for preview purposes
+    const maxLines = Math.max(oldLines.length, newLines.length);
+    
+    for (let i = 0; i < maxLines; i++) {
+      const oldLine = oldLines[i];
+      const newLine = newLines[i];
+
+      if (oldLine !== undefined && newLine !== undefined) {
+        if (oldLine === newLine) {
+          // Line unchanged
+          diffLines.push(` ${oldLine}`);
+        } else {
+          // Line changed
+          diffLines.push(`-${oldLine}`);
+          diffLines.push(`+${newLine}`);
+        }
+      } else if (oldLine !== undefined) {
+        // Line removed
+        diffLines.push(`-${oldLine}`);
+      } else if (newLine !== undefined) {
+        // Line added
+        diffLines.push(`+${newLine}`);
+      }
+    }
+
+    return diffLines.join('\n');
+  }
+
   async validateSafety(): Promise<{ safe: boolean; issues: string[] }> {
     const issues: string[] = [];
 

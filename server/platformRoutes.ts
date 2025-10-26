@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { platformHealing } from './platformHealing';
 import { platformAudit } from './platformAudit';
 import { isAuthenticated, isAdmin } from './universalAuth';
+import { sessionManager } from './platformHealingSession';
 import Anthropic from '@anthropic-ai/sdk';
 import path from 'path';
 import { execFile } from 'child_process';
@@ -9,6 +10,9 @@ import { promisify } from 'util';
 
 const execFileAsync = promisify(execFile);
 const router = Router();
+
+// Store pending write approvals in memory
+const pendingApprovals = new Map<string, { resolve: (approved: boolean) => void }>();
 
 // GET /api/platform/status - Platform health and metrics
 router.get('/status', isAuthenticated, isAdmin, async (req: any, res) => {
@@ -87,18 +91,50 @@ router.post('/heal', isAuthenticated, isAdmin, async (req: any, res) => {
       return res.status(503).json({ error: 'Anthropic API key not configured' });
     }
 
-    await platformAudit.log({
-      userId,
-      action: 'heal',
-      description: `Starting platform heal: ${issue}`,
-      status: 'pending',
+    // Create session
+    const session = sessionManager.create(userId, issue);
+
+    // Start async healing process (don't await)
+    runHealingProcess(session.id, userId, issue, autoCommit, autoPush, anthropicKey).catch((error) => {
+      console.error('[HEAL] Process failed:', error);
+      sessionManager.fail(session.id, error.message);
+    });
+
+    // Return immediately with sessionId
+    res.json({
+      sessionId: session.id,
+      status: 'started',
+    });
+
+  } catch (error: any) {
+    console.error('[PLATFORM-HEAL] Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Async healing process that streams via WebSocket
+async function runHealingProcess(
+  sessionId: string,
+  userId: string,
+  issue: string,
+  autoCommit: boolean,
+  autoPush: boolean,
+  anthropicKey: string
+) {
+  try {
+    sessionManager.addMessage(sessionId, {
+      type: 'heal:thought',
+      text: 'Creating backup before making changes...',
     });
 
     const backup = await platformHealing.createBackup(`Pre-heal backup: ${issue}`);
 
-    const platformFiles = await platformHealing.listPlatformFiles('.');
+    sessionManager.addMessage(sessionId, {
+      type: 'heal:thought',
+      text: 'Scanning platform files...',
+    });
 
-    const fileContents: Record<string, string> = {};
+    const platformFiles = await platformHealing.listPlatformFiles('.');
     const relevantFiles = platformFiles
       .filter(f => 
         f.endsWith('.ts') || 
@@ -107,13 +143,6 @@ router.post('/heal', isAuthenticated, isAdmin, async (req: any, res) => {
         f.endsWith('.jsx')
       )
       .slice(0, 20);
-
-    for (const file of relevantFiles) {
-      try {
-        fileContents[file] = await platformHealing.readPlatformFile(file);
-      } catch (error) {
-      }
-    }
 
     const client = new Anthropic({ apiKey: anthropicKey });
 
@@ -130,28 +159,22 @@ CURRENT PLATFORM ARCHITECTURE:
 
 AVAILABLE TOOLS:
 1. readPlatformFile(path) - Read platform source code
-2. writePlatformFile(path, content) - Modify platform code
-3. deletePlatformFile(path) - Remove files
-4. listPlatformFiles(directory) - List files
+2. writePlatformFile(path, content) - Modify platform code (requires approval)
+3. listPlatformFiles(directory) - List files
 
 SAFETY RULES:
 - NEVER modify .git/, node_modules/, .env, package.json
-- ALWAYS test changes before committing
 - ALWAYS explain what you're fixing and why
 - Create minimal, surgical fixes - don't rewrite entire files
-- If unsure, ask for clarification
 
 USER ISSUE:
 ${issue}
-
-CURRENT FILES (first 20):
-${Object.keys(fileContents).map(f => `- ${f}`).join('\n')}
 
 Analyze the issue, identify the root cause, and provide the fix.`;
 
     let conversationMessages: any[] = [{
       role: 'user',
-      content: `Fix this platform issue: ${issue}\n\nAvailable files:\n${Object.entries(fileContents).slice(0, 3).map(([path, content]) => `\n=== ${path} ===\n${content.slice(0, 1000)}`).join('\n')}`,
+      content: `Fix this platform issue: ${issue}`,
     }];
 
     const tools = [
@@ -168,7 +191,7 @@ Analyze the issue, identify the root cause, and provide the fix.`;
       },
       {
         name: 'writePlatformFile',
-        description: 'Write content to a platform file',
+        description: 'Write content to a platform file (requires user approval)',
         input_schema: {
           type: 'object' as const,
           properties: {
@@ -192,20 +215,16 @@ Analyze the issue, identify the root cause, and provide the fix.`;
     ];
 
     const changes: Array<{ path: string; operation: string }> = [];
-    let fixDescription = '';
     let continueLoop = true;
     let iterationCount = 0;
-    const MAX_ITERATIONS = 5;
+    const MAX_ITERATIONS = 10;
 
     while (continueLoop && iterationCount < MAX_ITERATIONS) {
       iterationCount++;
 
-      // Log progress update
-      await platformAudit.log({
-        userId,
-        action: 'heal',
-        description: `Meta-SySop analyzing (iteration ${iterationCount}/${MAX_ITERATIONS})...`,
-        status: 'pending',
+      sessionManager.addMessage(sessionId, {
+        type: 'heal:thought',
+        text: `Analyzing (iteration ${iterationCount}/${MAX_ITERATIONS})...`,
       });
 
       const response = await client.messages.create({
@@ -225,7 +244,10 @@ Analyze the issue, identify the root cause, and provide the fix.`;
 
       for (const block of response.content) {
         if (block.type === 'text') {
-          fixDescription += block.text;
+          sessionManager.addMessage(sessionId, {
+            type: 'heal:thought',
+            text: block.text,
+          });
         } else if (block.type === 'tool_use') {
           const { name, input, id } = block;
 
@@ -234,23 +256,46 @@ Analyze the issue, identify the root cause, and provide the fix.`;
 
             if (name === 'readPlatformFile') {
               const typedInput = input as { path: string };
+              
+              sessionManager.addMessage(sessionId, {
+                type: 'heal:tool',
+                tool: 'readPlatformFile',
+                path: typedInput.path,
+              });
+
               toolResult = await platformHealing.readPlatformFile(typedInput.path);
             } else if (name === 'writePlatformFile') {
               const typedInput = input as { path: string; content: string };
-              await platformHealing.writePlatformFile(typedInput.path, typedInput.content);
-              changes.push({ path: typedInput.path, operation: 'modify' });
 
-              // Log file modification
-              await platformAudit.log({
-                userId,
-                action: 'heal',
-                description: `Modified file: ${typedInput.path}`,
-                status: 'pending',
+              // Generate diff
+              const diff = await platformHealing.previewWrite(typedInput.path, typedInput.content);
+
+              // Pause session and wait for approval
+              sessionManager.pause(sessionId, {
+                path: typedInput.path,
+                content: typedInput.content,
+                diff,
               });
 
-              toolResult = 'File written successfully';
+              // Wait for approval
+              const approved = await waitForApproval(sessionId);
+
+              if (approved) {
+                await platformHealing.writePlatformFile(typedInput.path, typedInput.content);
+                changes.push({ path: typedInput.path, operation: 'modify' });
+                toolResult = 'File written successfully after user approval';
+              } else {
+                toolResult = 'File write rejected by user';
+              }
             } else if (name === 'listPlatformFiles') {
               const typedInput = input as { directory: string };
+              
+              sessionManager.addMessage(sessionId, {
+                type: 'heal:tool',
+                tool: 'listPlatformFiles',
+                directory: typedInput.directory,
+              });
+
               const files = await platformHealing.listPlatformFiles(typedInput.directory);
               toolResult = files.join('\n');
             }
@@ -281,90 +326,58 @@ Analyze the issue, identify the root cause, and provide the fix.`;
       }
     }
 
-    // Log safety check
-    await platformAudit.log({
-      userId,
-      action: 'heal',
-      description: `Running safety checks on ${changes.length} modified files...`,
-      status: 'pending',
-    });
-
-    const safety = await platformHealing.validateSafety();
-    if (!safety.safe) {
-      await platformHealing.rollback(backup.id);
-
-      await platformAudit.log({
-        userId,
-        action: 'heal',
-        description: `Platform heal aborted - safety check failed: ${safety.issues.join(', ')}`,
-        backupId: backup.id,
-        status: 'failure',
-        error: safety.issues.join('; '),
-      });
-
-      return res.status(400).json({
-        error: 'Healing aborted - safety check failed',
-        issues: safety.issues,
-        rolledBack: true,
-      });
-    }
-
-    let commitHash = '';
-    if (autoCommit && changes.length > 0) {
-      // Log commit
-      await platformAudit.log({
-        userId,
-        action: 'heal',
-        description: `Committing ${changes.length} file changes to Git...`,
-        status: 'pending',
-      });
-
-      commitHash = await platformHealing.commitChanges(`Fix: ${issue}`, changes as any);
-
-      if (autoPush) {
-        // Log push
-        await platformAudit.log({
-          userId,
-          action: 'heal',
-          description: `Pushing changes to GitHub (triggering Render deployment)...`,
-          status: 'pending',
-        });
-
-        await platformHealing.pushToRemote();
-      }
-    }
-
-    await platformAudit.log({
-      userId,
-      action: 'heal',
-      description: `Platform heal completed: ${issue}`,
-      changes,
-      backupId: backup.id,
-      commitHash,
-      status: 'success',
-    });
-
-    res.json({
-      success: true,
-      backup: backup.id,
-      changes,
-      fix: fixDescription,
-      committed: autoCommit,
-      pushed: autoPush,
-      commitHash,
-    });
+    // Complete session
+    sessionManager.complete(sessionId, changes);
 
   } catch (error: any) {
-    console.error('[PLATFORM-HEAL] Error:', error);
+    console.error('[HEAL-PROCESS] Error:', error);
+    sessionManager.fail(sessionId, error.message);
+  }
+}
 
-    await platformAudit.log({
-      userId: req.authenticatedUserId,
-      action: 'heal',
-      description: `Platform heal failed: ${error.message}`,
-      status: 'failure',
-      error: error.message,
-    });
+// Wait for user approval
+function waitForApproval(sessionId: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    pendingApprovals.set(sessionId, { resolve });
+  });
+}
 
+// Approve write endpoint
+router.post('/heal/:id/approve', isAuthenticated, isAdmin, async (req: any, res) => {
+  try {
+    const sessionId = req.params.id;
+    const pending = pendingApprovals.get(sessionId);
+
+    if (!pending) {
+      return res.status(404).json({ error: 'No pending approval for this session' });
+    }
+
+    pending.resolve(true);
+    pendingApprovals.delete(sessionId);
+
+    res.json({ success: true, approved: true });
+  } catch (error: any) {
+    console.error('[HEAL-APPROVE] Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Reject write endpoint
+router.post('/heal/:id/reject', isAuthenticated, isAdmin, async (req: any, res) => {
+  try {
+    const sessionId = req.params.id;
+    const pending = pendingApprovals.get(sessionId);
+
+    if (!pending) {
+      return res.status(404).json({ error: 'No pending approval for this session' });
+    }
+
+    pending.resolve(false);
+    pendingApprovals.delete(sessionId);
+
+    res.json({ success: true, approved: false });
+  } catch (error: any) {
+    console.error('[HEAL-REJECT] Error:', error);
     res.status(500).json({ error: error.message });
   }
 });

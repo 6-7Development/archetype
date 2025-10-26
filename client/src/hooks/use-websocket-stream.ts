@@ -9,7 +9,7 @@ export interface Task {
 }
 
 interface StreamMessage {
-  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics';
+  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics' | 'heal:init' | 'heal:thought' | 'heal:tool' | 'heal:write-pending' | 'heal:approved' | 'heal:rejected' | 'heal:completed' | 'heal:error';
   commandId?: string;
   status?: string;
   message?: string;
@@ -49,6 +49,14 @@ interface StreamMessage {
     };
     lastUpdate: string;
   };
+  // Healing-specific fields
+  text?: string;
+  path?: string;
+  directory?: string;
+  diff?: string;
+  changes?: Array<{ path: string; operation: string }>;
+  issue?: string;
+  timestamp?: string;
 }
 
 interface StreamState {
@@ -131,6 +139,9 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
     subAgentActive: null,
     platformMetrics: null,
   });
+
+  // NEW: State to track heal:* events
+  const [healEvents, setHealEvents] = useState<StreamMessage[]>([]);
 
   const calculateBackoff = useCallback((attempt: number): number => {
     // Exponential backoff with jitter: delay = min(max_delay, base * 2^attempt + random)
@@ -337,6 +348,19 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
                 platformMetrics: message.platformMetrics || null,
               }));
               break;
+
+            case 'heal:init':
+            case 'heal:thought':
+            case 'heal:tool':
+            case 'heal:write-pending':
+            case 'heal:approved':
+            case 'heal:rejected':
+            case 'heal:completed':
+            case 'heal:error':
+              // NEW: Expose heal events to consumers
+              console.log(`🔧 [HEAL] ${message.type}:`, message);
+              setHealEvents(prev => [...prev, message]);
+              break;
           }
         } catch (error) {
           console.error('❌ WebSocket message parse error:', error);
@@ -458,6 +482,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
 
   return {
     ...streamState,
+    healEvents, // NEW: Expose heal events to consumers
     connect,
     disconnect,
     resetState,
