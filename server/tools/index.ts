@@ -9,6 +9,7 @@ export { executeProjectList, executeProjectRead, executeProjectWrite, executePro
 export { createTaskList, updateTask, readTaskList } from './task-management';
 export { spawnSubAgent, checkSubAgentStatus } from './sub-agent';
 export { requestArchitectReview } from './architect-review';
+export { knowledge_search, knowledge_store, knowledge_recall, code_search } from './knowledge';
 
 /**
  * Tool definitions for Claude
@@ -393,6 +394,29 @@ export const SYSOP_TOOLS = [
   },
   // Sub-Agent Delegation Tools
   {
+    name: 'start_subagent',
+    description: '🎯 ORCHESTRATION TOOL: Delegate complex work to specialized sub-agents. Use this for multi-file changes, refactoring, or parallel workstreams. Sub-agents work autonomously on user projects while you monitor progress.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        task: {
+          type: 'string',
+          description: 'Clear, specific task for the sub-agent. Include file paths, what to change, and success criteria. Example: "Implement user authentication with login/signup forms in auth.tsx and auth.ts"',
+        },
+        relevantFiles: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'List of files the sub-agent will work with (e.g., ["auth.tsx", "auth.ts", "schema.ts"])',
+        },
+        projectId: {
+          type: 'string',
+          description: 'Project ID from the current context',
+        },
+      },
+      required: ['task', 'relevantFiles', 'projectId'],
+    },
+  },
+  {
     name: 'spawn_sub_agent',
     description: 'Delegate specialized work to a sub-agent. Use this for parallel execution, specialized analysis, or isolated tasks. Sub-agents are autonomous and will complete the work independently.',
     input_schema: {
@@ -464,6 +488,144 @@ export const SYSOP_TOOLS = [
         },
       },
       required: ['reviewType', 'workDescription'],
+    },
+  },
+  // Knowledge Management Tools
+  {
+    name: 'knowledge_store',
+    description: 'Store knowledge for future recall by any AI agent. Use this to save learnings, patterns, solutions, and insights that could be valuable for future tasks across all agents.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        category: {
+          type: 'string',
+          description: 'Knowledge category (e.g., "bug-fixes", "architecture", "best-practices", "user-preferences")',
+        },
+        topic: {
+          type: 'string',
+          description: 'Specific topic (e.g., "authentication-patterns", "deployment-steps", "common-errors")',
+        },
+        content: {
+          type: 'string',
+          description: 'The knowledge content to store',
+        },
+        tags: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Tags for easier searching (e.g., ["react", "typescript", "error-handling"])',
+        },
+        source: {
+          type: 'string',
+          description: 'Source of knowledge (default: "sysop")',
+        },
+        confidence: {
+          type: 'number',
+          description: 'Confidence score 0-1 (default: 0.8)',
+        },
+      },
+      required: ['category', 'topic', 'content'],
+    },
+  },
+  {
+    name: 'knowledge_search',
+    description: 'Search the shared knowledge base for relevant information. Use this to find solutions, patterns, or insights saved by any agent from previous tasks.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Search query (searches in topic and content)',
+        },
+        category: {
+          type: 'string',
+          description: 'Filter by category (optional)',
+        },
+        tags: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Filter by tags (optional)',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum results to return (default: 10)',
+        },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    name: 'knowledge_recall',
+    description: 'Recall specific knowledge by category, topic, or ID. Use this to retrieve saved information when you know what you are looking for.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        category: {
+          type: 'string',
+          description: 'Recall by category (e.g., "bug-fixes")',
+        },
+        topic: {
+          type: 'string',
+          description: 'Recall by topic (partial match)',
+        },
+        id: {
+          type: 'string',
+          description: 'Recall specific entry by ID',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum results to return (default: 20)',
+        },
+      },
+    },
+  },
+  {
+    name: 'code_search',
+    description: 'Search or store reusable code snippets. Use this to save proven code patterns or find existing snippets to reuse.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Search query for finding code snippets',
+        },
+        language: {
+          type: 'string',
+          description: 'Programming language filter (e.g., "typescript", "python")',
+        },
+        tags: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Filter by tags',
+        },
+        store: {
+          type: 'object',
+          description: 'Store a new code snippet instead of searching',
+          properties: {
+            language: {
+              type: 'string',
+              description: 'Programming language',
+            },
+            description: {
+              type: 'string',
+              description: 'Description of what the code does',
+            },
+            code: {
+              type: 'string',
+              description: 'The actual code snippet',
+            },
+            tags: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Tags for categorization',
+            },
+          },
+          required: ['language', 'description', 'code'],
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum results to return (default: 10)',
+        },
+      },
     },
   },
 ] as const;
