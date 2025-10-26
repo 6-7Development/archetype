@@ -61,7 +61,7 @@ function PlatformHealingContent() {
   // Auto-heal mutation
   const autoHealMutation = useMutation({
     mutationFn: async (issue: string) => {
-      const response = await apiRequest('POST', '/api/platform/auto-heal', {
+      const response = await apiRequest('POST', '/api/platform/heal', {
         issue,
         autoCommit,
         autoPush
