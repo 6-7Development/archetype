@@ -320,9 +320,9 @@ function PlatformHealingContent() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-gradient-to-b from-[#0b0f15] to-[#0d121a] text-slate-100">
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 p-3 sm:p-4 h-full overflow-y-auto max-w-[100vw] overflow-x-hidden">
+      <div className="grid grid-cols-1 gap-4 p-3 sm:p-4 h-full overflow-y-auto max-w-[100vw] overflow-x-hidden">
         {/* Main Content */}
-        <section className="flex flex-col gap-3 sm:gap-4 min-w-0">
+        <section className="flex flex-col gap-3 sm:gap-4 min-w-0 max-w-6xl mx-auto w-full">
           {/* Header */}
           <div className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl p-3 sm:p-4">
             <div className="flex flex-col gap-3">
@@ -666,78 +666,6 @@ function PlatformHealingContent() {
             </div>
           </div>
         </section>
-
-        {/* Right Sidebar - Activity Feed (Desktop only) */}
-        <aside className="flex flex-col gap-3 sm:gap-4 hidden lg:block">
-          {/* Recent Activity */}
-          <div className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl p-4 sm:p-5 overflow-hidden">
-            <h3 className="font-bold text-sm mb-3 sm:mb-4 flex items-center gap-2" data-testid="activity-title">
-              <Clock className="w-4 h-4 shrink-0" />
-              <span>Recent Activity</span>
-            </h3>
-            <div className="space-y-2">
-              {feed.length === 0 ? (
-                <div className="bg-[#0f1520] border border-slate-700/50 rounded-lg p-3 text-sm text-slate-500 break-words" data-testid="activity-empty">
-                  No runs yet.
-                </div>
-              ) : (
-                feed.map((item, i) => (
-                  <div 
-                    key={i} 
-                    className="bg-[#0f1520] border border-slate-700/50 rounded-lg p-3 text-sm break-words"
-                    data-testid={`activity-${i}`}
-                  >
-                    {item}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Pro Tips */}
-          <div className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl p-4 sm:p-5 overflow-hidden">
-            <h3 className="font-bold text-sm mb-3 sm:mb-4" data-testid="tips-title">Pro Tips</h3>
-            <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-slate-400">
-              <div className="bg-[#0f1520] border border-slate-700/50 rounded-lg p-2.5 sm:p-3 break-words">
-                Be specific about the issue (when it started, what changed, scope).
-              </div>
-              <div className="bg-[#0f1520] border border-slate-700/50 rounded-lg p-2.5 sm:p-3 break-words">
-                Use "Analyze only" (no commit) when investigating incidents.
-              </div>
-              <div className="bg-[#0f1520] border border-slate-700/50 rounded-lg p-2.5 sm:p-3 break-words">
-                Enable Auto-commit only when your tests are reliable.
-              </div>
-              <div className="bg-[#0f1520] border border-slate-700/50 rounded-lg p-2.5 sm:p-3 break-words">
-                WebSocket provides real-time metrics updates every 5 seconds.
-              </div>
-            </div>
-          </div>
-
-          {/* System Status */}
-          <div className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl p-4 sm:p-5 overflow-hidden">
-            <h3 className="font-bold text-sm mb-3 sm:mb-4" data-testid="status-title">System Status</h3>
-            <div className="space-y-2 text-xs sm:text-sm">
-              <div className="flex justify-between items-center gap-2">
-                <span className="text-slate-400 truncate">Uptime</span>
-                <span className="font-mono text-slate-200 shrink-0" data-testid="status-uptime">
-                  {status?.uptime || 'N/A'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center gap-2">
-                <span className="text-slate-400 truncate">Last Update</span>
-                <span className="font-mono text-xs text-slate-500 shrink-0" data-testid="status-last-update">
-                  {status?.lastUpdate ? new Date(status.lastUpdate).toLocaleTimeString() : '--:--:--'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center gap-2">
-                <span className="text-slate-400 truncate">Connection</span>
-                <Badge variant={wsStream.isConnected ? 'default' : 'secondary'} className="text-xs shrink-0" data-testid="status-connection">
-                  {wsStream.isConnected ? '🟢 WS' : '🔵 HTTP'}
-                </Badge>
-              </div>
-            </div>
-          </div>
-        </aside>
       </div>
 
       {/* Add custom animations */}
