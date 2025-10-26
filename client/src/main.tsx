@@ -14,7 +14,6 @@ try {
     console.error('[MAIN] CRITICAL: Root element not found!');
     document.body.innerHTML = '<div style="color: white; padding: 20px; font-size: 24px;">ERROR: Root element not found</div>';
   } else {
-<<<<<<< HEAD
     // Suppress vite connection warnings in console
     if (import.meta.env.DEV) {
       const originalWarn = console.warn;
@@ -32,17 +31,8 @@ try {
         <App />
       </StrictMode>
     );
-=======
-    console.log('[MAIN] Creating React root...');
-    createRoot(root).render(<App />);
-    console.log('[MAIN] App render initiated');
->>>>>>> d74364740b67cf91f677c03fbf5b0f3810ead768
   }
 } catch (error) {
   console.error('[MAIN] CRITICAL ERROR:', error);
   document.body.innerHTML = `<div style="color: white; padding: 20px; font-size: 18px;">CRITICAL ERROR: ${error}</div>`;
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> d74364740b67cf91f677c03fbf5b0f3810ead768

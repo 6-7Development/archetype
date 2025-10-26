@@ -1095,7 +1095,6 @@ export const insertMetaSysopMemorySchema = createInsertSchema(metaSysopMemory).o
 
 export type InsertMetaSysopMemory = z.infer<typeof insertMetaSysopMemorySchema>;
 export type MetaSysopMemory = typeof metaSysopMemory.$inferSelect;
-<<<<<<< HEAD
 
 // ============================================================================
 // REPLIT AGENT-STYLE FEATURES (Message Queue, Autonomy, Image Gen, etc.)
@@ -1479,5 +1478,3 @@ export const insertProjectSettingsSchema = createInsertSchema(projectSettings).o
 
 export type InsertProjectSettings = z.infer<typeof insertProjectSettingsSchema>;
 export type ProjectSettings = typeof projectSettings.$inferSelect;
-=======
->>>>>>> d74364740b67cf91f677c03fbf5b0f3810ead768

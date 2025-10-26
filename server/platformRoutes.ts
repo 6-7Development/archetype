@@ -456,7 +456,6 @@ router.get('/tasks', isAuthenticated, isAdmin, async (req: any, res) => {
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
-<<<<<<< HEAD
 
     const userId = req.authenticatedUserId;
     const { readTaskList, updateTask } = await import('./tools/task-management');
@@ -514,42 +513,17 @@ router.get('/tasks', isAuthenticated, isAdmin, async (req: any, res) => {
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
 
     const relevantList = updatedResult.taskLists
-=======
-    
-    const userId = req.authenticatedUserId;
-    const { readTaskList } = await import('./tools/task-management');
-    
-    // Get actual task lists from task management system
-    const result = await readTaskList({ userId });
-    
-    if (!result.success || !result.taskLists) {
-      return res.json({ tasks: [] });
-    }
-    
-    // Find the most recent active OR recently completed task list (last 10 minutes)
-    // This ensures users can see tasks even after Meta-SySop finishes quickly
-    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
-    
-    const relevantList = result.taskLists
->>>>>>> d74364740b67cf91f677c03fbf5b0f3810ead768
       .filter((list: any) => 
         list.status === 'active' || 
         (list.status === 'completed' && new Date(list.completedAt || list.createdAt) > tenMinutesAgo)
       )
       .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
-<<<<<<< HEAD
 
     if (!relevantList || !relevantList.tasks) {
       return res.json({ tasks: [] });
     }
 
-=======
-    
-    if (!relevantList || !relevantList.tasks) {
-      return res.json({ tasks: [] });
-    }
-    
->>>>>>> d74364740b67cf91f677c03fbf5b0f3810ead768
+
     // Convert tasks to TaskBoard format (matching client/src/hooks/use-websocket-stream.ts)
     const tasks = relevantList.tasks.map((task: any) => {
       // Map database status to TaskBoard status
@@ -563,11 +537,7 @@ router.get('/tasks', isAuthenticated, isAdmin, async (req: any, res) => {
       } else {
         status = 'pending';
       }
-<<<<<<< HEAD
 
-=======
-      
->>>>>>> d74364740b67cf91f677c03fbf5b0f3810ead768
       return {
         id: task.id.toString(),
         title: task.title,
@@ -576,11 +546,7 @@ router.get('/tasks', isAuthenticated, isAdmin, async (req: any, res) => {
         subAgentId: null,
       };
     });
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> d74364740b67cf91f677c03fbf5b0f3810ead768
     res.json({ tasks });
   } catch (error: any) {
     console.error('[PLATFORM-TASKS] Error fetching tasks:', error);
@@ -595,21 +561,13 @@ router.post('/tasks/clear', isAuthenticated, isAdmin, async (req: any, res) => {
     const { db } = await import('./db');
     const { taskLists } = await import('@shared/schema');
     const { eq } = await import('drizzle-orm');
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> d74364740b67cf91f677c03fbf5b0f3810ead768
     // Mark all task lists as completed
     await db
       .update(taskLists)
       .set({ status: 'completed' })
       .where(eq(taskLists.userId, userId));
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> d74364740b67cf91f677c03fbf5b0f3810ead768
     res.json({ success: true, message: 'All task lists cleared' });
   } catch (error: any) {
     console.error('[PLATFORM-TASKS] Error clearing tasks:', error);
@@ -617,8 +575,4 @@ router.post('/tasks/clear', isAuthenticated, isAdmin, async (req: any, res) => {
   }
 });
 
-<<<<<<< HEAD
 export default router;
-=======
-export default router;
->>>>>>> d74364740b67cf91f677c03fbf5b0f3810ead768

@@ -31,15 +31,9 @@ export function MobileWorkspace({
     <div className="h-full flex flex-col bg-background">
       {/* Tab Content - Full Screen with proper flex constraints */}
       <div className="flex-1 min-h-0 overflow-hidden">
-<<<<<<< HEAD
         {/* Chat Tab - Enhanced for Mobile */}
         {activeTab === "chat" && (
           <div className="h-full min-h-0 flex flex-col overflow-hidden animate-in fade-in-up duration-300">
-=======
-        {/* Chat Tab */}
-        {activeTab === "chat" && (
-          <div className="h-full min-h-0 flex flex-col overflow-hidden">
->>>>>>> d74364740b67cf91f677c03fbf5b0f3810ead768
             <AIChat currentProjectId={projectId} />
           </div>
         )}
