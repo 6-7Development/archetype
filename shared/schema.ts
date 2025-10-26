@@ -178,6 +178,10 @@ export const chatMessages = pgTable("chat_messages", {
   isSummary: boolean("is_summary").notNull().default(false), // True for compressed conversation summaries
   isPlatformHealing: boolean("is_platform_healing").notNull().default(false), // True for Meta-SySop platform healing conversations
   platformChanges: jsonb("platform_changes"), // Track file modifications in Meta-SySop messages
+  approvalStatus: text("approval_status"), // null | 'pending_approval' | 'approved' | 'rejected' - Replit Agent-style workflow
+  approvalSummary: text("approval_summary"), // Summary of proposed changes awaiting approval
+  approvedBy: varchar("approved_by"), // User ID who approved/rejected
+  approvedAt: timestamp("approved_at"), // When approval was given
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
