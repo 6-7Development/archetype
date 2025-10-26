@@ -71,6 +71,7 @@ import Support from "@/pages/support";
 import Admin from "@/pages/admin";
 import Publishing from "@/pages/publishing";
 import PlatformHealing from "@/pages/platform-healing";
+import AgentFeatures from "@/pages/agent-features";
 import NotFound from "@/pages/not-found";
 import Error403 from "@/pages/error-403";
 import Error500 from "@/pages/error-500";
@@ -150,6 +151,11 @@ function Router() {
         </AppLayout>
       </Route>
       <Route path="/platform-healing" component={PlatformHealing} />
+      <Route path="/agent-features">
+        <AppLayout>
+          <AgentFeatures />
+        </AppLayout>
+      </Route>
       <Route path="/publishing">
         <AppLayout>
           <Publishing />
