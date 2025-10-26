@@ -1262,3 +1262,219 @@ export const insertVisualEditSchema = createInsertSchema(visualEdits).omit({
 
 export type InsertVisualEdit = z.infer<typeof insertVisualEditSchema>;
 export type VisualEdit = typeof visualEdits.$inferSelect;
+
+// ==================== PLAN MODE TABLES ====================
+// Plan Sessions - Brainstorming and planning without code modification
+export const planSessions = pgTable("plan_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  projectId: varchar("project_id"),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: text("status").notNull().default("active"), // active, completed, archived
+  metadata: jsonb("metadata"), // AI conversation context, preferences
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  completedAt: timestamp("completed_at"),
+}, (table) => [
+  index("idx_plan_sessions_user").on(table.userId),
+  index("idx_plan_sessions_project").on(table.projectId),
+]);
+
+export const insertPlanSessionSchema = createInsertSchema(planSessions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertPlanSession = z.infer<typeof insertPlanSessionSchema>;
+export type PlanSession = typeof planSessions.$inferSelect;
+
+// Plan Steps - Individual steps in a plan session
+export const planSteps = pgTable("plan_steps", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").notNull(),
+  stepNumber: integer("step_number").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: text("status").notNull().default("pending"), // pending, in_progress, completed, skipped
+  estimatedTime: integer("estimated_time"), // Estimated minutes
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  completedAt: timestamp("completed_at"),
+}, (table) => [
+  index("idx_plan_steps_session").on(table.sessionId),
+]);
+
+export const insertPlanStepSchema = createInsertSchema(planSteps).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertPlanStep = z.infer<typeof insertPlanStepSchema>;
+export type PlanStep = typeof planSteps.$inferSelect;
+
+// ==================== DESIGN PROTOTYPE TABLES ====================
+// Design Prototypes - Quick frontend prototypes from "Start with Design" mode
+export const designPrototypes = pgTable("design_prototypes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  projectId: varchar("project_id"),
+  planSessionId: varchar("plan_session_id"), // Link to plan if created from Plan Mode
+  name: text("name").notNull(),
+  description: text("description"),
+  screens: jsonb("screens").notNull(), // Array of screen definitions with components
+  designSystemTokens: jsonb("design_system_tokens"), // Colors, typography, spacing
+  generatedFiles: jsonb("generated_files"), // Files generated for this prototype
+  status: text("status").notNull().default("draft"), // draft, approved, building
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  approvedAt: timestamp("approved_at"),
+}, (table) => [
+  index("idx_design_prototypes_user").on(table.userId),
+  index("idx_design_prototypes_project").on(table.projectId),
+]);
+
+export const insertDesignPrototypeSchema = createInsertSchema(designPrototypes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertDesignPrototype = z.infer<typeof insertDesignPrototypeSchema>;
+export type DesignPrototype = typeof designPrototypes.$inferSelect;
+
+// ==================== WORKFLOWS TABLES ====================
+// Workflows - Parallel/sequential command execution definitions
+export const workflows = pgTable("workflows", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  projectId: varchar("project_id"),
+  name: text("name").notNull(),
+  description: text("description"),
+  executionMode: text("execution_mode").notNull().default("parallel"), // parallel, sequential
+  steps: jsonb("steps").notNull(), // Array of workflow steps with commands
+  environment: jsonb("environment"), // Environment variables for workflow
+  isTemplate: boolean("is_template").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_workflows_user").on(table.userId),
+  index("idx_workflows_project").on(table.projectId),
+]);
+
+export const insertWorkflowSchema = createInsertSchema(workflows).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertWorkflow = z.infer<typeof insertWorkflowSchema>;
+export type Workflow = typeof workflows.$inferSelect;
+
+// Workflow Runs - Execution history and status
+export const workflowRuns = pgTable("workflow_runs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  workflowId: varchar("workflow_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  status: text("status").notNull().default("running"), // running, completed, failed, cancelled
+  currentStep: integer("current_step").default(0),
+  totalSteps: integer("total_steps").notNull(),
+  output: text("output"), // Combined stdout/stderr
+  error: text("error"),
+  startedAt: timestamp("started_at").notNull().defaultNow(),
+  completedAt: timestamp("completed_at"),
+}, (table) => [
+  index("idx_workflow_runs_workflow").on(table.workflowId),
+  index("idx_workflow_runs_user").on(table.userId),
+]);
+
+export const insertWorkflowRunSchema = createInsertSchema(workflowRuns).omit({
+  id: true,
+  startedAt: true,
+});
+
+export type InsertWorkflowRun = z.infer<typeof insertWorkflowRunSchema>;
+export type WorkflowRun = typeof workflowRuns.$inferSelect;
+
+// ==================== AGENTS & AUTOMATIONS TABLES ====================
+// Automation Templates - Prebuilt automation definitions (Slackbot, Telegram, Cron)
+export const automationTemplates = pgTable("automation_templates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  category: text("category").notNull(), // slackbot, telegram, scheduled, webhook
+  description: text("description"),
+  icon: text("icon"), // Icon name/URL
+  connectorType: text("connector_type"), // slack, telegram, github, notion, etc.
+  configSchema: jsonb("config_schema").notNull(), // JSON schema for configuration
+  codeTemplate: text("code_template").notNull(), // Template code with placeholders
+  isOfficial: boolean("is_official").notNull().default(false),
+  usageCount: integer("usage_count").default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_automation_templates_category").on(table.category),
+]);
+
+export const insertAutomationTemplateSchema = createInsertSchema(automationTemplates).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertAutomationTemplate = z.infer<typeof insertAutomationTemplateSchema>;
+export type AutomationTemplate = typeof automationTemplates.$inferSelect;
+
+// Automation Runs - User's deployed automations
+export const automationRuns = pgTable("automation_runs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  projectId: varchar("project_id"),
+  templateId: varchar("template_id"), // Reference to template if used
+  name: text("name").notNull(),
+  category: text("category").notNull(),
+  config: jsonb("config").notNull(), // User's specific configuration
+  status: text("status").notNull().default("active"), // active, paused, stopped, error
+  lastRunAt: timestamp("last_run_at"),
+  nextRunAt: timestamp("next_run_at"), // For scheduled automations
+  executionCount: integer("execution_count").default(0),
+  errorCount: integer("error_count").default(0),
+  deploymentUrl: text("deployment_url"), // URL if deployed
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_automation_runs_user").on(table.userId),
+  index("idx_automation_runs_template").on(table.templateId),
+]);
+
+export const insertAutomationRunSchema = createInsertSchema(automationRuns).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertAutomationRun = z.infer<typeof insertAutomationRunSchema>;
+export type AutomationRun = typeof automationRuns.$inferSelect;
+
+// ==================== GENERAL AGENT MODE TABLES ====================
+// Project Settings - Extended settings for different project types
+export const projectSettings = pgTable("project_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull().unique(),
+  projectType: text("project_type").notNull().default("webapp"), // webapp, game, mobile, cli, api, automation
+  framework: text("framework"), // react, vue, unity, pygame, flutter, express, etc.
+  buildCommand: text("build_command"),
+  startCommand: text("start_command"),
+  testCommand: text("test_command"),
+  deploymentConfig: jsonb("deployment_config"),
+  customSettings: jsonb("custom_settings"), // Type-specific settings
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_project_settings_project").on(table.projectId),
+  index("idx_project_settings_type").on(table.projectType),
+]);
+
+export const insertProjectSettingsSchema = createInsertSchema(projectSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertProjectSettings = z.infer<typeof insertProjectSettingsSchema>;
+export type ProjectSettings = typeof projectSettings.$inferSelect;
