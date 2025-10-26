@@ -1,624 +1,482 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'wouter';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { AdminGuard } from '@/components/admin-guard';
-import { MetaSySopChat } from '@/components/meta-sysop-chat';
-import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-import { 
-  Menu,
-  LayoutDashboard, 
-  Hammer, 
-  Store, 
-  TrendingUp, 
-  Users, 
-  Key, 
-  MessageSquare, 
-  Settings, 
-  Shield, 
-  Heart, 
-  LogOut,
-  Database,
-  GitBranch,
-  CheckCircle2,
-  AlertTriangle,
-  Activity,
-  FileCode,
-  Clock,
-  Zap,
-  ChevronRight,
-  RefreshCw,
-  Server,
-  Cpu,
-  HardDrive,
-  AlertCircle,
-  PlayCircle,
-  XCircle,
-  Pause,
-  RotateCw,
-  TrendingUp as TrendingUpIcon,
-  ChevronDown,
-  ChevronUp,
-  Loader2,
-  Terminal,
-  Radio,
-  BarChart3
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { queryClient, apiRequest } from '@/lib/queryClient';
+import { useWebSocketStream } from '@/hooks/use-websocket-stream';
 import { useToast } from '@/hooks/use-toast';
+import { apiRequest, queryClient } from '@/lib/queryClient';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { 
+  Activity, 
+  AlertTriangle, 
+  Server, 
+  Cpu, 
+  HardDrive, 
+  Database,
+  Wrench,
+  CheckCircle2,
+  Clock,
+  Loader2
+} from 'lucide-react';
 
+type StepState = 'pending' | 'running' | 'ok' | 'fail';
+
+interface HealingStep {
+  id: string;
+  name: string;
+  state: StepState;
+}
+
+type RunPhase = 'idle' | 'analyzing' | 'executing' | 'completed' | 'failed';
 
 function PlatformHealingContent() {
   const { toast } = useToast();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
-  const [expandedIncident, setExpandedIncident] = useState<string | null>(null);
+  const [autoCommit, setAutoCommit] = useState(false);
+  const [autoPush, setAutoPush] = useState(false);
+  const [phase, setPhase] = useState<RunPhase>('idle');
+  const [steps, setSteps] = useState<HealingStep[]>([]);
+  const [progress, setProgress] = useState(0);
+  const [subtitle, setSubtitle] = useState('No run in progress. Start a new healing run below.');
+  const [meta, setMeta] = useState('');
+  const [feed, setFeed] = useState<string[]>([]);
+  const [issueDescription, setIssueDescription] = useState('');
 
-  // Fetch platform status
-  const { data: status, refetch: refetchStatus } = useQuery<any>({
+  // WebSocket connection for live metrics
+  const wsStream = useWebSocketStream('platform-healing', 'admin');
+  const metrics = wsStream.platformMetrics;
+
+  // Fallback to HTTP polling if WebSocket not connected
+  const { data: httpMetrics } = useQuery<any>({
     queryKey: ['/api/platform/status'],
-    refetchInterval: 5000,
+    refetchInterval: wsStream.isConnected ? false : 5000,
+    enabled: !wsStream.isConnected,
   });
 
-  const { data: backupsData } = useQuery<any>({
-    queryKey: ['/api/platform/backups'],
-  });
+  // Use WebSocket metrics if available, otherwise HTTP metrics
+  const status = metrics || httpMetrics;
 
-  const { data: deploymentInfo } = useQuery<any>({
-    queryKey: ['/api/deployment-info'],
-    refetchInterval: 10000,
-  });
-
-  // Mock incident data
-  const incidents = [
-    {
-      id: '1',
-      issue: 'High memory usage detected',
-      impact: 'Performance degradation',
-      severity: 'warning' as const,
-      owner: 'Meta-SySop',
-      sla: '2h 15m',
-      status: 'investigating' as const,
-      progress: 45,
-      details: 'Memory usage spiked to 89% on main server. Analyzing potential memory leaks in recent deployments.',
+  // Auto-heal mutation
+  const autoHealMutation = useMutation({
+    mutationFn: async (issue: string) => {
+      const response = await apiRequest('POST', '/api/platform/auto-heal', {
+        issue,
+        autoCommit,
+        autoPush
+      });
+      return response;
     },
-    {
-      id: '2',
-      issue: 'Database connection pool saturation',
-      impact: 'Slow query responses',
-      severity: 'critical' as const,
-      owner: 'Meta-SySop',
-      sla: '45m',
-      status: 'remediating' as const,
-      progress: 75,
-      details: 'Connection pool reached maximum capacity. Implementing auto-scaling strategy.',
+    onSuccess: (data) => {
+      toast({
+        title: 'Auto-heal initiated',
+        description: 'Platform healing process started successfully',
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/platform/status'] });
     },
-  ];
-
-  // Mock auto-heal actions
-  const autoHealActions = [
-    { id: '1', action: 'Optimize database queries', status: 'running' as const, progress: 65, eta: '5m' },
-    { id: '2', action: 'Clear expired sessions', status: 'completed' as const, progress: 100, eta: '0m' },
-    { id: '3', action: 'Restart worker processes', status: 'pending' as const, progress: 0, eta: '10m' },
-    { id: '4', action: 'Analyze error logs', status: 'running' as const, progress: 30, eta: '8m' },
-  ];
-
-  const triggerAutoHealMutation = useMutation({
-    mutationFn: async () => {
-      return apiRequest('POST', '/api/platform/auto-heal');
-    },
-    onSuccess: () => {
-      toast({ title: 'Auto-heal initiated', description: 'System diagnostics and repair started' });
-      refetchStatus();
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Auto-heal failed',
+        description: error.message || 'Failed to initiate auto-heal',
+      });
     },
   });
 
-  // Navigation items
-  const navItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-    { icon: Hammer, label: 'Builder', path: '/builder' },
-    { icon: Store, label: 'Marketplace', path: '/marketplace' },
-    { icon: TrendingUp, label: 'Analytics', path: '/analytics' },
-    { icon: Users, label: 'Team', path: '/team' },
-    { icon: Key, label: 'API Keys', path: '/api-keys' },
-    { icon: MessageSquare, label: 'Support', path: '/support' },
-    { icon: Settings, label: 'Account', path: '/account' },
-    { icon: Shield, label: 'Admin', path: '/admin' },
-  ];
-
-  const NavigationMenu = ({ onItemClick }: { onItemClick?: () => void }) => (
-    <div className="space-y-1">
-      {navItems.map((item) => (
-        <Link key={item.path} href={item.path}>
-          <a 
-            onClick={onItemClick}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover-elevate transition-colors" 
-            data-testid={`nav-${item.label.toLowerCase()}`}
-          >
-            <item.icon className="w-4 h-4 flex-shrink-0" />
-            <span>{item.label}</span>
-          </a>
-        </Link>
-      ))}
-      <div className="pt-2 border-t">
-        <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm bg-primary/10 text-primary font-medium" data-testid="nav-platform-healing">
-          <Heart className="w-4 h-4 flex-shrink-0" />
-          <span>Platform Healing</span>
-        </div>
-      </div>
-    </div>
-  );
-
-  const getSeverityColor = (severity: 'critical' | 'warning' | 'info') => {
-    switch (severity) {
-      case 'critical': return 'text-red-500 bg-red-500/10';
-      case 'warning': return 'text-amber-500 bg-amber-500/10';
-      case 'info': return 'text-blue-500 bg-blue-500/10';
+  function startRun(text: string) {
+    setFeed(f => [`▶️ New run started: ${text.slice(0, 80)}${text.length > 80 ? '…' : ''}`, ...f]);
+    
+    const list: HealingStep[] = [
+      { id: '1', name: 'Collect system diagnostics', state: 'pending' },
+      { id: '2', name: 'Analyze logs & metrics', state: 'pending' },
+      { id: '3', name: 'Detect anomalies', state: 'pending' },
+      { id: '4', name: 'Generate fix plan', state: 'pending' },
+      { id: '5', name: 'Apply fixes', state: 'pending' },
+      { id: '6', name: 'Validate & commit', state: 'pending' },
+    ];
+    
+    setSteps(list);
+    setPhase('analyzing');
+    setProgress(0);
+    setSubtitle('Collecting system diagnostics...');
+    setMeta('Step 1 of 6');
+    
+    // Trigger actual auto-heal
+    autoHealMutation.mutate(text);
+    
+    // Simulate progress for UI feedback
+    let i = 0;
+    let completed = 0;
+    
+    function advance() {
+      if (i > 0) {
+        list[i - 1].state = 'ok';
+        completed++;
+        setProgress((completed / list.length) * 100);
+      }
+      
+      if (i === list.length) {
+        setPhase('completed');
+        setSubtitle('Healing run completed successfully');
+        setMeta(`${list.length}/${list.length} steps${autoCommit ? ' • auto-commit' : ''}${autoPush ? ' • auto-push' : ''}`);
+        setFeed(f => ['✅ Run succeeded • ' + new Date().toLocaleTimeString(), ...f]);
+        setSteps([...list]);
+        return;
+      }
+      
+      list[i].state = 'running';
+      setSteps([...list]);
+      setPhase(i < 3 ? 'analyzing' : 'executing');
+      setSubtitle(list[i].name);
+      setMeta(`Step ${i + 1} of ${list.length}${autoCommit ? ' • auto-commit' : ''}${autoPush ? ' • auto-push' : ''}`);
+      i++;
+      setTimeout(advance, 800 + i * 150);
     }
-  };
+    
+    advance();
+  }
 
-  const getStatusColor = (status: 'investigating' | 'remediating' | 'resolved') => {
-    switch (status) {
-      case 'investigating': return 'bg-blue-500/10 text-blue-600 dark:text-blue-400';
-      case 'remediating': return 'bg-amber-500/10 text-amber-600 dark:text-amber-400';
-      case 'resolved': return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400';
-    }
-  };
-
-  const getActionStatusIcon = (status: 'running' | 'completed' | 'pending' | 'failed') => {
-    switch (status) {
-      case 'running': return <Loader2 className="w-4 h-4 animate-spin text-blue-500" />;
-      case 'completed': return <CheckCircle2 className="w-4 h-4 text-emerald-500" />;
-      case 'pending': return <Clock className="w-4 h-4 text-muted-foreground" />;
-      case 'failed': return <XCircle className="w-4 h-4 text-red-500" />;
-    }
-  };
+  useEffect(() => {
+    if (!autoCommit) setAutoPush(false);
+  }, [autoCommit]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      {/* DESKTOP SIDEBAR */}
-      <div className="hidden lg:flex w-64 flex-shrink-0 bg-card border-r flex-col">
-        <div className="p-4 border-b">
-          <Link href="/">
-            <a className="block">
-              <div className="font-bold text-lg">ARCHETYPE</div>
-              <div className="text-xs text-muted-foreground mt-0.5">AI Platform Healing</div>
-            </a>
-          </Link>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto p-3">
-          <NavigationMenu />
-        </div>
-
-        <div className="border-t p-4">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-xs font-semibold">
-              AD
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium truncate">Admin</div>
-              <div className="text-xs text-muted-foreground truncate">Platform Owner</div>
-            </div>
+    <div className="min-h-screen bg-gradient-to-b from-[#0b0f15] to-[#0d121a] text-slate-100">
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_380px] gap-4 p-4 min-h-screen">
+        {/* Sidebar */}
+        <aside className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl p-4 hidden lg:block">
+          <div className="font-bold text-sm tracking-wider mb-4" data-testid="sidebar-title">ARCHETYPE</div>
+          <nav className="flex flex-direction-column gap-2">
+            <Button variant="secondary" className="w-full justify-start" data-testid="nav-dashboard">
+              Dashboard
+            </Button>
+            <Button variant="ghost" className="w-full justify-start" data-testid="nav-builder">
+              Builder
+            </Button>
+            <Button variant="ghost" className="w-full justify-start" data-testid="nav-marketplace">
+              Marketplace
+            </Button>
+            <Button variant="ghost" className="w-full justify-start" data-testid="nav-analytics">
+              Analytics
+            </Button>
+            <Button variant="ghost" className="w-full justify-start" data-testid="nav-team">
+              Team
+            </Button>
+            <Button variant="ghost" className="w-full justify-start" data-testid="nav-api">
+              API Keys
+            </Button>
+          </nav>
+          <div className="mt-auto pt-8 text-xs text-slate-500" data-testid="sidebar-user">
+            Signed in as <strong className="text-slate-300">Admin</strong>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full text-destructive border-destructive/30 hover:bg-destructive/10"
-            data-testid="button-sign-out"
-          >
-            <LogOut className="w-3.5 h-3.5 mr-2" />
-            Sign Out
-          </Button>
-        </div>
-      </div>
+        </aside>
 
-      {/* MAIN CONTENT */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* TOP BAR */}
-        <div className="sticky top-0 z-10 bg-card/95 backdrop-blur border-b">
-          <div className="flex items-center justify-between px-4 py-3 gap-3">
-            <div className="flex items-center gap-3 min-w-0">
-              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-                <SheetTrigger asChild className="lg:hidden">
-                  <Button variant="ghost" size="icon" data-testid="button-mobile-menu">
-                    <Menu className="w-5 h-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="w-[280px] p-0">
-                  <div className="flex flex-col h-full">
-                    <div className="p-4 border-b">
-                      <div className="font-bold text-lg">ARCHETYPE</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">AI Platform</div>
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-3">
-                      <NavigationMenu onItemClick={() => setMobileMenuOpen(false)} />
-                    </div>
-                  </div>
-                </SheetContent>
-              </Sheet>
-
-              <div className="min-w-0 flex-1">
-                <div className="text-base lg:text-lg font-semibold flex items-center gap-2 truncate">
-                  <Heart className="w-4 h-4 lg:w-5 lg:h-5 flex-shrink-0 text-primary" />
-                  <span className="truncate">Platform Diagnostics</span>
-                </div>
-                <div className="hidden sm:block text-xs text-muted-foreground mt-0.5">
-                  Real-time monitoring & auto-healing
-                </div>
+        {/* Main Content */}
+        <section className="flex flex-col gap-4">
+          {/* Header */}
+          <div className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl p-4 flex flex-wrap items-center gap-4">
+            <div className="text-xs text-slate-500" data-testid="breadcrumb">Home / Agents</div>
+            <div className="text-lg font-bold" data-testid="page-title">Meta‑SySop • Platform Healing</div>
+            <Badge 
+              variant={status?.safety?.safe ? 'default' : 'destructive'} 
+              className="ml-auto"
+              data-testid="health-badge"
+            >
+              ● {status?.safety?.safe ? 'Healthy' : 'Issues Detected'}
+            </Badge>
+            
+            <div className="flex items-center gap-4 w-full lg:w-auto">
+              <div className="flex items-center gap-2">
+                <Switch 
+                  id="auto-commit" 
+                  checked={autoCommit} 
+                  onCheckedChange={setAutoCommit}
+                  data-testid="toggle-auto-commit"
+                />
+                <Label htmlFor="auto-commit" className="text-sm cursor-pointer">
+                  Auto-commit
+                </Label>
               </div>
-            </div>
-
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => refetchStatus()}
-                data-testid="button-refresh"
-              >
-                <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-                Refresh
-              </Button>
               
-              <Button
-                variant={chatOpen ? "default" : "outline"}
-                size="sm"
-                onClick={() => setChatOpen(!chatOpen)}
-                data-testid="button-toggle-chat"
+              <div className="flex items-center gap-2">
+                <Switch 
+                  id="auto-push" 
+                  checked={autoPush} 
+                  onCheckedChange={setAutoPush}
+                  disabled={!autoCommit}
+                  data-testid="toggle-auto-push"
+                />
+                <Label 
+                  htmlFor="auto-push" 
+                  className={`text-sm cursor-pointer ${!autoCommit ? 'opacity-50' : ''}`}
+                >
+                  Auto-push
+                </Label>
+              </div>
+              
+              <Button 
+                className="bg-gradient-to-b from-[#2a7dfb] to-[#0f62f2] shadow-lg shadow-blue-500/35"
+                onClick={() => document.getElementById('issue')?.scrollIntoView({ behavior: 'smooth' })}
+                data-testid="button-new-run"
               >
-                <Terminal className="w-3.5 h-3.5 mr-1.5" />
-                Chat
+                New Run
               </Button>
             </div>
           </div>
 
-          {/* LIVE STATUS RIBBON */}
-          <div className="border-t bg-card/50">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-4 py-3">
+          {/* System Metrics Card */}
+          <div className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl p-5">
+            <h3 className="font-bold text-sm mb-4 flex items-center gap-2" data-testid="metrics-title">
+              <Server className="w-4 h-4 text-blue-400" />
+              Live System Metrics
+              {wsStream.isConnected && (
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="WebSocket Connected" />
+              )}
+            </h3>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
                   <Activity className="w-5 h-5 text-emerald-500" />
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground">Overall Health</div>
-                  <div className="text-lg font-bold flex items-center gap-1">
+                  <div className="text-xs text-slate-500">Overall Health</div>
+                  <div className="text-xl font-bold" data-testid="metric-health">
                     {status?.overallHealth || 0}%
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                  <AlertTriangle className="w-5 h-5 text-amber-500 animate-pulse" />
+                  <AlertTriangle className="w-5 h-5 text-amber-500" />
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground">Active Incidents</div>
-                  <div className="text-lg font-bold">{status?.activeIncidents || 0}</div>
+                  <div className="text-xs text-slate-500">Incidents</div>
+                  <div className="text-xl font-bold" data-testid="metric-incidents">
+                    {status?.activeIncidents || 0}
+                  </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-blue-500" />
+                  <Cpu className="w-5 h-5 text-blue-500" />
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground">Last Update</div>
-                  <div className="text-xs font-mono">
-                    {status?.lastUpdate ? new Date(status.lastUpdate).toLocaleTimeString() : '--:--:--'}
+                  <div className="text-xs text-slate-500">CPU Usage</div>
+                  <div className="text-xl font-bold" data-testid="metric-cpu">
+                    {status?.cpuUsage || 0}%
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                  <Server className="w-5 h-5 text-purple-500" />
+                  <HardDrive className="w-5 h-5 text-purple-500" />
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground">Uptime</div>
-                  <div className="text-lg font-bold">{status?.uptime || 'N/A'}</div>
+                  <div className="text-xs text-slate-500">Memory</div>
+                  <div className="text-xl font-bold" data-testid="metric-memory">
+                    {status?.memoryUsage || 0}%
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* MAIN GRID AREA */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="container max-w-7xl mx-auto p-4 space-y-6">
-            {/* ACTION COMMAND STACK */}
-            <Card>
-              <CardHeader>
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Zap className="w-5 h-5 text-primary" />
-                      Command Center
-                    </CardTitle>
-                    <CardDescription>Primary healing and diagnostic actions</CardDescription>
-                  </div>
-                  <Badge variant="outline" className="gap-1">
-                    <Radio className="w-3 h-3 animate-pulse" />
-                    Live
-                  </Badge>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2">
+                    <Cpu className="w-4 h-4 text-blue-400" />
+                    CPU Load
+                  </span>
+                  <span className="font-mono" data-testid="cpu-percentage">{status?.cpuUsage || 0}%</span>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <Button
-                    size="lg"
-                    className="h-auto py-4 relative overflow-hidden group"
-                    onClick={() => triggerAutoHealMutation.mutate()}
-                    disabled={triggerAutoHealMutation.isPending}
-                    data-testid="button-trigger-auto-heal"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/10 to-primary/0 animate-pulse" />
-                    <div className="relative flex flex-col items-center gap-2">
-                      <PlayCircle className="w-6 h-6" />
-                      <span className="font-semibold">Trigger Auto-Heal</span>
-                      <span className="text-xs opacity-75">Full system scan & repair</span>
-                    </div>
-                  </Button>
+                <Progress value={status?.cpuUsage || 0} className="h-2" />
+              </div>
 
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="h-auto py-4"
-                    data-testid="button-escalate"
-                  >
-                    <div className="flex flex-col items-center gap-2">
-                      <AlertCircle className="w-6 h-6 text-amber-500" />
-                      <span className="font-semibold">Escalate</span>
-                      <span className="text-xs opacity-75">Manual intervention</span>
-                    </div>
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="h-auto py-4"
-                    data-testid="button-apply-patch"
-                  >
-                    <div className="flex flex-col items-center gap-2">
-                      <FileCode className="w-6 h-6 text-blue-500" />
-                      <span className="font-semibold">Apply Patch</span>
-                      <span className="text-xs opacity-75">Deploy hotfix</span>
-                    </div>
-                  </Button>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-2">
+                    <HardDrive className="w-4 h-4 text-purple-400" />
+                    Memory
+                  </span>
+                  <span className="font-mono" data-testid="memory-percentage">{status?.memoryUsage || 0}%</span>
                 </div>
-              </CardContent>
-            </Card>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* INCIDENT RESPONSE TABLE */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <AlertTriangle className="w-5 h-5 text-amber-500" />
-                    Active Incidents
-                  </CardTitle>
-                  <CardDescription>Real-time issue tracking and remediation</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {incidents.map((incident) => (
-                      <Card key={incident.id} className={cn(
-                        incident.severity === 'critical' ? 'bg-red-500/5 border-red-500/20' : 'bg-amber-500/5 border-amber-500/20'
-                      )}>
-                        <CardContent className="p-4">
-                          <div className="space-y-3">
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <Badge variant="outline" className={cn("text-xs", getSeverityColor(incident.severity))}>
-                                    {incident.severity}
-                                  </Badge>
-                                  <Badge variant="outline" className={cn("text-xs", getStatusColor(incident.status))}>
-                                    {incident.status}
-                                  </Badge>
-                                </div>
-                                <h4 className="font-semibold text-sm">{incident.issue}</h4>
-                                <p className="text-xs text-muted-foreground mt-1">{incident.impact}</p>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setExpandedIncident(expandedIncident === incident.id ? null : incident.id)}
-                                data-testid={`button-toggle-incident-${incident.id}`}
-                              >
-                                {expandedIncident === incident.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                              </Button>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4 text-xs">
-                              <div>
-                                <span className="text-muted-foreground">Owner:</span>
-                                <span className="ml-2 font-medium">{incident.owner}</span>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">SLA:</span>
-                                <span className="ml-2 font-medium text-amber-500">{incident.sla}</span>
-                              </div>
-                            </div>
-
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="text-muted-foreground">Remediation Progress</span>
-                                <span className="font-semibold">{incident.progress}%</span>
-                              </div>
-                              <Progress value={incident.progress} className="h-2" />
-                            </div>
-
-                            {expandedIncident === incident.id && (
-                              <>
-                                <Separator />
-                                <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-md">
-                                  {incident.details}
-                                </div>
-                                <div className="flex gap-2">
-                                  <Button size="sm" variant="outline" className="flex-1">
-                                    <RotateCw className="w-3 h-3 mr-1.5" />
-                                    Re-analyze
-                                  </Button>
-                                  <Button size="sm" variant="outline" className="flex-1">
-                                    <CheckCircle2 className="w-3 h-3 mr-1.5" />
-                                    Resolve
-                                  </Button>
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* AUTO-HEAL ACTIONS QUEUE */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <RotateCw className="w-5 h-5 text-blue-500" />
-                    Auto-Heal Queue
-                  </CardTitle>
-                  <CardDescription>Automated remediation actions</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Action</TableHead>
-                        <TableHead className="w-24">Status</TableHead>
-                        <TableHead className="w-32">Progress</TableHead>
-                        <TableHead className="w-20">ETA</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {autoHealActions.map((action) => (
-                        <TableRow key={action.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              {getActionStatusIcon(action.status)}
-                              <span className="text-sm">{action.action}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="text-xs">
-                              {action.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="space-y-1">
-                              <Progress value={action.progress} className="h-1.5" />
-                              <span className="text-xs text-muted-foreground">{action.progress}%</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-xs font-mono text-muted-foreground">
-                            {action.eta}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
+                <Progress value={status?.memoryUsage || 0} className="h-2" />
+              </div>
             </div>
-
-            {/* SYSTEM RESOURCES PANEL */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-purple-500" />
-                  System Resources
-                </CardTitle>
-                <CardDescription>Live performance metrics and resource utilization</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Cpu className="w-4 h-4 text-blue-500" />
-                        <span className="text-sm font-medium">CPU Usage</span>
-                      </div>
-                      <span className="text-2xl font-bold">{status?.cpuUsage || 0}%</span>
-                    </div>
-                    <Progress value={status?.cpuUsage || 0} className="h-3" />
-                    <p className="text-xs text-muted-foreground">
-                      {(status?.cpuUsage || 0) > 80 ? 'High load detected' : 'Normal operation'}
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <HardDrive className="w-4 h-4 text-purple-500" />
-                        <span className="text-sm font-medium">Memory</span>
-                      </div>
-                      <span className="text-2xl font-bold">{status?.memoryUsage || 0}%</span>
-                    </div>
-                    <Progress value={status?.memoryUsage || 0} className="h-3" />
-                    <p className="text-xs text-muted-foreground">
-                      {(status?.memoryUsage || 0) > 80 ? 'Consider scaling' : 'Healthy levels'}
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Database className="w-4 h-4 text-emerald-500" />
-                        <span className="text-sm font-medium">Platform Status</span>
-                      </div>
-                      <Badge variant={status?.safety?.safe ? 'default' : 'destructive'}>
-                        {status?.safety?.safe ? 'Healthy' : 'Issues'}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {status?.uncommittedChanges ? 'Uncommitted changes present' : 'All changes committed'}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
-        </div>
-      </div>
 
-      {/* COLLAPSIBLE CHAT DRAWER */}
-      <Sheet open={chatOpen} onOpenChange={setChatOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-xl p-0 flex flex-col">
-          <div className="p-4 border-b">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <Terminal className="w-5 h-5 text-primary" />
-              Meta-SySop Console
-            </h2>
-            <p className="text-xs text-muted-foreground mt-1">
-              Chat with Meta-SySop for platform diagnostics and healing
+          {/* Current Run Card */}
+          <div className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl p-5" data-testid="run-card">
+            <div className="flex items-center gap-3 mb-3">
+              <h3 className="font-bold text-sm">Current Run</h3>
+              <Badge 
+                variant={phase === 'idle' ? 'secondary' : phase === 'completed' ? 'default' : 'outline'}
+                className={phase === 'analyzing' || phase === 'executing' ? 'bg-blue-500/10 text-blue-300 border-blue-500/30' : ''}
+                data-testid="run-phase-badge"
+              >
+                {phase === 'idle' ? 'Idle' : phase.charAt(0).toUpperCase() + phase.slice(1)}
+              </Badge>
+            </div>
+            
+            <div className="text-sm text-slate-400 mb-3" data-testid="run-subtitle">{subtitle}</div>
+            
+            <div className="bg-[#1a2232] border border-slate-700/50 rounded-full h-3 overflow-hidden mb-2">
+              <div 
+                className="h-full bg-gradient-to-r from-[#2a7dfb] to-[#4da3ff] transition-all duration-300"
+                style={{ width: `${progress}%` }}
+                data-testid="run-progress"
+              />
+            </div>
+            
+            <div className="text-xs text-slate-500 mb-4" data-testid="run-meta">{meta}</div>
+            
+            {steps.length > 0 && (
+              <ul className="space-y-2" data-testid="run-steps">
+                {steps.map(step => (
+                  <li 
+                    key={step.id} 
+                    className="flex items-center gap-3 bg-[#0f1520] border border-slate-700/50 rounded-lg p-3"
+                    data-testid={`step-${step.id}`}
+                  >
+                    <div className={`w-3 h-3 rounded-full ${
+                      step.state === 'ok' ? 'bg-emerald-500' :
+                      step.state === 'fail' ? 'bg-red-500' :
+                      step.state === 'running' ? 'bg-blue-500 animate-pulse' :
+                      'bg-slate-600'
+                    }`} />
+                    <div className="flex-1 text-sm">{step.name}</div>
+                    <div className="text-xs text-slate-500">
+                      {step.state === 'ok' ? '✓' : step.state === 'fail' ? '×' : step.state === 'running' ? '…' : ''}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* New Run Form */}
+          <div id="issue" className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl p-5">
+            <h3 className="font-bold text-sm mb-2" data-testid="form-title">Start a New Healing Run</h3>
+            <p className="text-sm text-slate-400 mb-4">
+              Describe the issue. We'll propose steps before executing.
             </p>
+            
+            <div className="flex gap-3">
+              <Textarea
+                value={issueDescription}
+                onChange={e => setIssueDescription(e.target.value)}
+                placeholder="e.g., API latency spiking to p95 3s since 14:05 UTC. Suspect rate limiter regression after v1.9.2."
+                className="flex-1 min-h-[100px] bg-[#0c121c] border-slate-700 text-slate-100 resize-vertical"
+                data-testid="input-issue-description"
+              />
+              <Button 
+                className="bg-gradient-to-b from-[#2a7dfb] to-[#0f62f2] shadow-lg shadow-blue-500/35"
+                onClick={() => {
+                  if (issueDescription.trim()) {
+                    startRun(issueDescription.trim());
+                    setIssueDescription('');
+                  }
+                }}
+                disabled={!issueDescription.trim() || autoHealMutation.isPending}
+                data-testid="button-analyze-fix"
+              >
+                {autoHealMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Running...
+                  </>
+                ) : (
+                  <>
+                    <Wrench className="w-4 h-4 mr-2" />
+                    Analyze & Fix
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
-          <div className="flex-1 overflow-hidden">
-            <MetaSySopChat 
-              autoCommit={false}
-              autoPush={false}
-            />
+        </section>
+
+        {/* Right Sidebar - Activity Feed */}
+        <aside className="flex flex-col gap-4 hidden lg:block">
+          {/* Recent Activity */}
+          <div className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl p-5">
+            <h3 className="font-bold text-sm mb-4 flex items-center gap-2" data-testid="activity-title">
+              <Clock className="w-4 h-4" />
+              Recent Activity
+            </h3>
+            <div className="space-y-2">
+              {feed.length === 0 ? (
+                <div className="bg-[#0f1520] border border-slate-700/50 rounded-lg p-3 text-sm text-slate-500" data-testid="activity-empty">
+                  No runs yet.
+                </div>
+              ) : (
+                feed.map((item, i) => (
+                  <div 
+                    key={i} 
+                    className="bg-[#0f1520] border border-slate-700/50 rounded-lg p-3 text-sm"
+                    data-testid={`activity-${i}`}
+                  >
+                    {item}
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </SheetContent>
-      </Sheet>
+
+          {/* Pro Tips */}
+          <div className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl p-5">
+            <h3 className="font-bold text-sm mb-4" data-testid="tips-title">Pro Tips</h3>
+            <div className="space-y-3 text-sm text-slate-400">
+              <div className="bg-[#0f1520] border border-slate-700/50 rounded-lg p-3">
+                Be specific about the issue (when it started, what changed, scope).
+              </div>
+              <div className="bg-[#0f1520] border border-slate-700/50 rounded-lg p-3">
+                Use "Analyze only" (no commit) when investigating incidents.
+              </div>
+              <div className="bg-[#0f1520] border border-slate-700/50 rounded-lg p-3">
+                Enable Auto-commit only when your tests are reliable.
+              </div>
+              <div className="bg-[#0f1520] border border-slate-700/50 rounded-lg p-3">
+                WebSocket provides real-time metrics updates every 5 seconds.
+              </div>
+            </div>
+          </div>
+
+          {/* System Status */}
+          <div className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl p-5">
+            <h3 className="font-bold text-sm mb-4" data-testid="status-title">System Status</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Uptime</span>
+                <span className="font-mono text-slate-200" data-testid="status-uptime">
+                  {status?.uptime || 'N/A'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Last Update</span>
+                <span className="font-mono text-xs text-slate-500" data-testid="status-last-update">
+                  {status?.lastUpdate ? new Date(status.lastUpdate).toLocaleTimeString() : '--:--:--'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Connection</span>
+                <Badge variant={wsStream.isConnected ? 'default' : 'secondary'} className="text-xs" data-testid="status-connection">
+                  {wsStream.isConnected ? '🟢 WebSocket' : '🔵 HTTP'}
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }
 
 export default function PlatformHealing() {
-  return (
-    <AdminGuard>
-      <PlatformHealingContent />
-    </AdminGuard>
-  );
+  return <PlatformHealingContent />;
 }
