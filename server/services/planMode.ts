@@ -62,9 +62,15 @@ export class PlanModeService extends EventEmitter {
    * Add steps to a planning session
    */
   async addSteps(sessionId: string, steps: { title: string; description?: string; estimatedTime?: number }[]): Promise<PlanStep[]> {
+    // Get current max step number for this session to continue numbering
+    const existingSteps = await this.getSessionSteps(sessionId);
+    const maxStepNumber = existingSteps.length > 0 
+      ? Math.max(...existingSteps.map(s => s.stepNumber))
+      : 0;
+
     const insertData = steps.map((step, index) => ({
       sessionId,
-      stepNumber: index + 1,
+      stepNumber: maxStepNumber + index + 1,
       title: step.title,
       description: step.description,
       estimatedTime: step.estimatedTime,
