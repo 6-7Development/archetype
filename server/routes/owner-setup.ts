@@ -3,7 +3,7 @@ import { storage } from "../storage";
 import { db } from "../db";
 import { users } from "@shared/schema";
 import { eq } from "drizzle-orm";
-import * as bcrypt from "bcrypt";
+import { hashPassword } from "../universalAuth";
 
 /**
  * Owner Setup Endpoint
@@ -28,7 +28,7 @@ export function registerOwnerSetupRoutes(app: Express) {
         console.log(`⚠️  Root account already exists, updating...`);
         
         // Update to ensure admin + owner status
-        const hashedPassword = await bcrypt.hash(ROOT_PASSWORD, 10);
+        const hashedPassword = await hashPassword(ROOT_PASSWORD);
         
         await db.update(users)
           .set({
@@ -50,7 +50,7 @@ export function registerOwnerSetupRoutes(app: Express) {
       
       // Create new root account
       console.log(`🔐 Creating root admin account...`);
-      const hashedPassword = await bcrypt.hash(ROOT_PASSWORD, 10);
+      const hashedPassword = await hashPassword(ROOT_PASSWORD);
       
       const [newUser] = await db.insert(users)
         .values({
