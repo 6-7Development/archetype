@@ -120,7 +120,7 @@ export default function Dashboard() {
     <>
       {showOnboarding && <OnboardingTour onComplete={handleOnboardingComplete} />}
       
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-background">
         <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
