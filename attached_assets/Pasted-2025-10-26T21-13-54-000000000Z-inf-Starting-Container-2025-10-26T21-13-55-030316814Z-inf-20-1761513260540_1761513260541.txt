@@ -1,0 +1,121 @@
+2025-10-26T21:13:54.000000000Z [inf]  Starting Container
+2025-10-26T21:13:55.030316814Z [inf]  
+2025-10-26T21:13:55.030369212Z [inf]  
+2025-10-26T21:13:55.030378537Z [inf]  > rest-express@1.0.0 start
+2025-10-26T21:13:55.030385405Z [inf]  > NODE_ENV=production node dist/index.js
+2025-10-26T21:13:56.127027372Z [err]    nextRetryIn: '1000ms'
+2025-10-26T21:13:56.127035018Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-26T21:13:56.127037302Z [err]  }
+2025-10-26T21:13:56.127043950Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-26T21:13:56.127051277Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-26T21:13:56.127054350Z [inf]  📡 WebSocket server initialized at /ws
+2025-10-26T21:13:56.127059444Z [inf]  [db] Pool config: connectionTimeoutMillis=5000, ssl=enabled (rejectUnauthorized: false)
+2025-10-26T21:13:56.127061102Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-26T21:13:56.127067806Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-26T21:13:56.127070944Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-10-26T21:13:56.127075420Z [inf]  ✅ All routes registered successfully
+2025-10-26T21:13:56.127080213Z [inf]  [db] Connection string includes SSL params: true
+2025-10-26T21:13:56.127081809Z [inf]  🔍 Testing database connection...
+2025-10-26T21:13:56.127088876Z [inf]  [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-26T21:13:56.127090860Z [inf]  9:13:55 PM [express] serving on port 8080
+2025-10-26T21:13:56.127096940Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-26T21:13:56.127097118Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-10-26T21:13:56.127105531Z [err]  ⚠️ Retry attempt 1/5 failed: {
+2025-10-26T21:13:56.127106221Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-26T21:13:56.127111663Z [err]    code: '42P01',
+2025-10-26T21:13:56.127117155Z [err]    message: 'relation "files" does not exist',
+2025-10-26T21:13:57.133081123Z [err]  }
+2025-10-26T21:13:57.133139981Z [err]  ⚠️ Retry attempt 2/5 failed: {
+2025-10-26T21:13:57.133145990Z [err]    code: '42P01',
+2025-10-26T21:13:57.133153429Z [err]    message: 'relation "files" does not exist',
+2025-10-26T21:13:57.133160921Z [err]    nextRetryIn: '2000ms'
+2025-10-26T21:13:59.217871664Z [err]  ⚠️ Retry attempt 3/5 failed: {
+2025-10-26T21:13:59.217880448Z [err]    code: '42P01',
+2025-10-26T21:13:59.217887248Z [err]    message: 'relation "files" does not exist',
+2025-10-26T21:13:59.217893584Z [err]    nextRetryIn: '4000ms'
+2025-10-26T21:13:59.217899813Z [err]  }
+2025-10-26T21:14:01.197195729Z [err]  [MESSAGE-QUEUE] Processing error: error: relation "message_queue" does not exist
+2025-10-26T21:14:01.197202442Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-26T21:14:01.197209019Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T21:14:01.197218244Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T21:14:01.197225110Z [err]      at async MessageQueueService.dequeue (file:///app/dist/index.js:2528:26)
+2025-10-26T21:14:01.197231898Z [err]      at async MessageQueueService.processNext (file:///app/dist/index.js:2596:27)
+2025-10-26T21:14:01.197237869Z [err]      at async Timeout._onTimeout (file:///app/dist/index.js:2586:13) {
+2025-10-26T21:14:01.197244173Z [err]    length: 113,
+2025-10-26T21:14:01.197253715Z [err]    severity: 'ERROR',
+2025-10-26T21:14:01.197262139Z [err]    code: '42P01',
+2025-10-26T21:14:01.197268931Z [err]    detail: undefined,
+2025-10-26T21:14:01.197276661Z [err]    hint: undefined,
+2025-10-26T21:14:01.197285532Z [err]    position: '131',
+2025-10-26T21:14:01.197292427Z [err]    internalPosition: undefined,
+2025-10-26T21:14:01.197299908Z [err]    internalQuery: undefined,
+2025-10-26T21:14:01.197307507Z [err]    where: undefined,
+2025-10-26T21:14:01.197328132Z [err]    schema: undefined,
+2025-10-26T21:14:01.197335049Z [err]    table: undefined,
+2025-10-26T21:14:01.197343798Z [err]    column: undefined,
+2025-10-26T21:14:01.197350556Z [err]    dataType: undefined,
+2025-10-26T21:14:01.197357817Z [err]    constraint: undefined,
+2025-10-26T21:14:01.197366561Z [err]    file: 'parse_relation.c',
+2025-10-26T21:14:01.197376449Z [err]    line: '1449',
+2025-10-26T21:14:01.197383853Z [err]    routine: 'parserOpenTable'
+2025-10-26T21:14:01.197391328Z [err]  }
+2025-10-26T21:14:03.302755285Z [err]  ⚠️ Retry attempt 4/5 failed: {
+2025-10-26T21:14:03.302769526Z [err]    code: '42P01',
+2025-10-26T21:14:03.302777246Z [err]    message: 'relation "files" does not exist',
+2025-10-26T21:14:03.302784336Z [err]    nextRetryIn: '8000ms'
+2025-10-26T21:14:03.302791437Z [err]  }
+2025-10-26T21:14:06.192679632Z [err]  [MESSAGE-QUEUE] Processing error: error: relation "message_queue" does not exist
+2025-10-26T21:14:06.192684772Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-26T21:14:06.192693809Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T21:14:06.192698565Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T21:14:06.192702645Z [err]      at async MessageQueueService.dequeue (file:///app/dist/index.js:2528:26)
+2025-10-26T21:14:06.192707251Z [err]      at async MessageQueueService.processNext (file:///app/dist/index.js:2596:27)
+2025-10-26T21:14:06.192711181Z [err]      at async Timeout._onTimeout (file:///app/dist/index.js:2586:13) {
+2025-10-26T21:14:06.192715109Z [err]    length: 113,
+2025-10-26T21:14:06.192719004Z [err]    severity: 'ERROR',
+2025-10-26T21:14:06.192722763Z [err]    code: '42P01',
+2025-10-26T21:14:06.192727003Z [err]    detail: undefined,
+2025-10-26T21:14:06.192732684Z [err]    hint: undefined,
+2025-10-26T21:14:06.192736883Z [err]    position: '131',
+2025-10-26T21:14:06.192740878Z [err]    internalPosition: undefined,
+2025-10-26T21:14:06.192745408Z [err]    internalQuery: undefined,
+2025-10-26T21:14:06.192749696Z [err]    where: undefined,
+2025-10-26T21:14:06.192753555Z [err]    schema: undefined,
+2025-10-26T21:14:06.192758598Z [err]    table: undefined,
+2025-10-26T21:14:06.192764043Z [err]    column: undefined,
+2025-10-26T21:14:06.192768102Z [err]    dataType: undefined,
+2025-10-26T21:14:06.192771884Z [err]    constraint: undefined,
+2025-10-26T21:14:06.192776141Z [err]    file: 'parse_relation.c',
+2025-10-26T21:14:06.192780286Z [err]    line: '1449',
+2025-10-26T21:14:06.192784088Z [err]    routine: 'parserOpenTable'
+2025-10-26T21:14:06.192787944Z [err]  }
+2025-10-26T21:14:11.149730338Z [err]    line: '1449',
+2025-10-26T21:14:11.149742457Z [err]    routine: 'parserOpenTable'
+2025-10-26T21:14:11.149751485Z [err]  }
+2025-10-26T21:14:11.149792272Z [err]    severity: 'ERROR',
+2025-10-26T21:14:11.149811619Z [err]    code: '42P01',
+2025-10-26T21:14:11.149812757Z [err]  [MESSAGE-QUEUE] Processing error: error: relation "message_queue" does not exist
+2025-10-26T21:14:11.149818460Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-26T21:14:11.149826990Z [err]    detail: undefined,
+2025-10-26T21:14:11.149827177Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T21:14:11.149832657Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T21:14:11.149842458Z [err]    hint: undefined,
+2025-10-26T21:14:11.149843113Z [err]      at async MessageQueueService.dequeue (file:///app/dist/index.js:2528:26)
+2025-10-26T21:14:11.149855941Z [err]      at async MessageQueueService.processNext (file:///app/dist/index.js:2596:27)
+2025-10-26T21:14:11.149858649Z [err]    position: '131',
+2025-10-26T21:14:11.149864045Z [err]      at async Timeout._onTimeout (file:///app/dist/index.js:2586:13) {
+2025-10-26T21:14:11.149873965Z [err]    length: 113,
+2025-10-26T21:14:11.149875725Z [err]    internalPosition: undefined,
+2025-10-26T21:14:11.149886263Z [err]    internalQuery: undefined,
+2025-10-26T21:14:11.149893793Z [err]    where: undefined,
+2025-10-26T21:14:11.149906246Z [err]    schema: undefined,
+2025-10-26T21:14:11.149914610Z [err]    table: undefined,
+2025-10-26T21:14:11.149922399Z [err]    column: undefined,
+2025-10-26T21:14:11.149930571Z [err]    dataType: undefined,
+2025-10-26T21:14:11.149941269Z [err]    constraint: undefined,
+2025-10-26T21:14:11.149951812Z [err]    file: 'parse_relation.c',
+2025-10-26T21:14:11.332352320Z [err]  ⚠️ Retry attempt 5/5 failed: {
+2025-10-26T21:14:11.332357010Z [err]    code: '42P01',
+2025-10-26T21:14:11.332367604Z [err]    message: 'relation "files" does not exist',
+2025-10-26T21:14:11.332372816Z [err]    nextRetryIn: '16000ms'
+2025-10-26T21:14:11.332378309Z [err]  }
