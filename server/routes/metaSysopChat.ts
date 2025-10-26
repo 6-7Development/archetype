@@ -10,6 +10,7 @@ import { consultArchitect } from '../tools/architect-consult';
 import { executeWebSearch } from '../tools/web-search';
 import { GitHubService } from '../githubService';
 import { createTaskList, updateTask, readTaskList } from '../tools/task-management';
+import { performDiagnosis } from '../tools/diagnosis';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -252,9 +253,14 @@ updateTask({ taskId: "task-4", status: "completed" })
 
 readTaskList() - Get task IDs (CALL THIS FIRST!)
 updateTask() - Mark tasks in_progress/completed as you work
+perform_diagnosis() - Analyze code for performance/memory/security issues
 readPlatformFile() - Read files you'll modify (max 3)
 architect_consult() - Get approval ONCE before writing
 writePlatformFile() - Modify approved files (REQUIRES approval)
+createPlatformFile() - Create new files (REQUIRES approval)
+deletePlatformFile() - Delete obsolete files (REQUIRES approval)
+read_logs() - Read server logs to diagnose crashes
+execute_sql() - Query/fix database issues
 commit_to_github() - Deploy changes to production
 listPlatformFiles() - Find files if needed
 web_search() - Look up docs (RARELY needed)
@@ -322,6 +328,72 @@ EXECUTE NOW - Read task list, update progress, get approval, write files, deploy
             directory: { type: 'string' as const, description: 'Directory path' },
           },
           required: ['directory'],
+        },
+      },
+      {
+        name: 'perform_diagnosis',
+        description: 'Analyze platform code for performance, memory, database, and security issues. Run this BEFORE fixing to identify root causes.',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            target: { 
+              type: 'string' as const, 
+              description: 'Diagnostic target: "performance", "memory", "database", "security", or "all"' 
+            },
+            focus: { 
+              type: 'array' as const,
+              items: { type: 'string' as const },
+              description: 'Optional: specific files to analyze (default: all routes/server files)' 
+            },
+          },
+          required: ['target'],
+        },
+      },
+      {
+        name: 'createPlatformFile',
+        description: 'Create a new platform file. REQUIRES architect approval - call architect_consult first!',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            path: { type: 'string' as const, description: 'File path relative to project root' },
+            content: { type: 'string' as const, description: 'Initial file content' },
+          },
+          required: ['path', 'content'],
+        },
+      },
+      {
+        name: 'deletePlatformFile',
+        description: 'Delete an obsolete platform file. REQUIRES architect approval - call architect_consult first!',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            path: { type: 'string' as const, description: 'File path relative to project root' },
+          },
+          required: ['path'],
+        },
+      },
+      {
+        name: 'read_logs',
+        description: 'Read server logs to diagnose runtime errors, crashes, or performance issues',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            lines: { type: 'number' as const, description: 'Number of recent log lines to read (default: 100, max: 1000)' },
+            filter: { type: 'string' as const, description: 'Optional: filter logs by keyword (e.g., "ERROR", "Meta-SySop")' },
+          },
+          required: [],
+        },
+      },
+      {
+        name: 'execute_sql',
+        description: 'Execute SQL query to diagnose or fix database issues. Use SELECT for diagnosis, UPDATE/DELETE for fixes (requires I AM approval for mutations)',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            query: { type: 'string' as const, description: 'SQL query to execute' },
+            purpose: { type: 'string' as const, description: 'Explain what this query will do and why' },
+          },
+          required: ['query', 'purpose'],
         },
       },
       {
@@ -750,6 +822,232 @@ DO NOT create new tasks - UPDATE existing ones!`;
                   toolResult = `❌ GitHub commit failed: ${error.message}`;
                   sendEvent('error', { message: `GitHub commit failed: ${error.message}` });
                 }
+              }
+            } else if (name === 'perform_diagnosis') {
+              const typedInput = input as { target: string; focus?: string[] };
+              sendEvent('progress', { message: `🔍 Running ${typedInput.target} diagnosis...` });
+
+              try {
+                const diagnosisResult = await performDiagnosis({
+                  target: typedInput.target as any,
+                  focus: typedInput.focus,
+                });
+
+                if (diagnosisResult.success) {
+                  // Format findings nicely
+                  const findingsList = diagnosisResult.findings
+                    .map((f, idx) => 
+                      `${idx + 1}. [${f.severity.toUpperCase()}] ${f.category}\n` +
+                      `   Issue: ${f.issue}\n` +
+                      `   Location: ${f.location}\n` +
+                      `   Evidence: ${f.evidence}`
+                    )
+                    .join('\n\n');
+
+                  toolResult = `✅ Diagnosis Complete\n\n` +
+                    `${diagnosisResult.summary}\n\n` +
+                    `Findings:\n${findingsList || 'No issues found'}\n\n` +
+                    `Recommendations:\n${diagnosisResult.recommendations.map((r, i) => `${i + 1}. ${r}`).join('\n')}`;
+                  
+                  sendEvent('progress', { message: `✅ Found ${diagnosisResult.findings.length} issues` });
+                } else {
+                  toolResult = `❌ Diagnosis failed: ${diagnosisResult.error}`;
+                  sendEvent('error', { message: `Diagnosis failed: ${diagnosisResult.error}` });
+                }
+              } catch (error: any) {
+                toolResult = `❌ Diagnosis error: ${error.message}`;
+                sendEvent('error', { message: `Diagnosis error: ${error.message}` });
+              }
+            } else if (name === 'createPlatformFile') {
+              const typedInput = input as { path: string; content: string };
+
+              // CRITICAL: Validate content exists before calling platformHealing
+              if (typedInput.content === undefined || typedInput.content === null) {
+                throw new Error(`Tool createPlatformFile called without content for ${typedInput.path}`);
+              }
+
+              if (typeof typedInput.content !== 'string') {
+                throw new Error(`Tool createPlatformFile called with invalid content type (${typeof typedInput.content}) for ${typedInput.path}`);
+              }
+
+              console.log(`[META-SYSOP] Creating file: ${typedInput.path} (${typedInput.content.length} bytes)`);
+
+              // CRITICAL ENFORCEMENT: Check per-file approval
+              const approval = approvedFiles.get(normalizePath(typedInput.path));
+
+              if (!approval) {
+                toolResult = `❌ BLOCKED: File "${typedInput.path}" has no architect approval. You must consult I AM (architect_consult) and get explicit approval for this file.`;
+                console.error(`[META-SYSOP] Blocked createPlatformFile for ${typedInput.path} - no approval found`);
+                sendEvent('error', { message: `File creation blocked - no approval for ${typedInput.path}` });
+              } else if (!approval.approved) {
+                toolResult = `❌ BLOCKED: I AM rejected changes to "${typedInput.path}". You cannot proceed with this file creation.`;
+                console.error(`[META-SYSOP] Blocked createPlatformFile for ${typedInput.path} - approval was rejected`);
+                sendEvent('error', { message: `File creation blocked - ${typedInput.path} was rejected` });
+              } else {
+                sendEvent('progress', { message: `✅ Creating ${typedInput.path} (I AM approved)...` });
+                const createResult = await platformHealing.createPlatformFile(
+                  typedInput.path,
+                  typedInput.content
+                );
+                toolResult = JSON.stringify(createResult);
+
+                // Track file changes with content for batch commits
+                fileChanges.push({ 
+                  path: typedInput.path, 
+                  operation: 'create', 
+                  contentAfter: typedInput.content 
+                });
+
+                sendEvent('file_change', { file: { path: typedInput.path, operation: 'create' } });
+                toolResult = `✅ File created successfully (with I AM approval at ${new Date(approval.timestamp).toISOString()})`;
+              }
+            } else if (name === 'deletePlatformFile') {
+              const typedInput = input as { path: string };
+
+              console.log(`[META-SYSOP] Deleting file: ${typedInput.path}`);
+
+              // CRITICAL ENFORCEMENT: Check per-file approval
+              const approval = approvedFiles.get(normalizePath(typedInput.path));
+
+              if (!approval) {
+                toolResult = `❌ BLOCKED: File "${typedInput.path}" has no architect approval. You must consult I AM (architect_consult) and get explicit approval for this file deletion.`;
+                console.error(`[META-SYSOP] Blocked deletePlatformFile for ${typedInput.path} - no approval found`);
+                sendEvent('error', { message: `File deletion blocked - no approval for ${typedInput.path}` });
+              } else if (!approval.approved) {
+                toolResult = `❌ BLOCKED: I AM rejected deletion of "${typedInput.path}". You cannot proceed with this file deletion.`;
+                console.error(`[META-SYSOP] Blocked deletePlatformFile for ${typedInput.path} - approval was rejected`);
+                sendEvent('error', { message: `File deletion blocked - ${typedInput.path} was rejected` });
+              } else {
+                sendEvent('progress', { message: `✅ Deleting ${typedInput.path} (I AM approved)...` });
+                await platformHealing.deletePlatformFile(typedInput.path);
+
+                // Track file changes for batch commits
+                fileChanges.push({ 
+                  path: typedInput.path, 
+                  operation: 'delete'
+                });
+
+                sendEvent('file_change', { file: { path: typedInput.path, operation: 'delete' } });
+                toolResult = `✅ File deleted successfully (with I AM approval at ${new Date(approval.timestamp).toISOString()})`;
+              }
+            } else if (name === 'read_logs') {
+              const typedInput = input as { lines?: number; filter?: string };
+              const maxLines = Math.min(typedInput.lines || 100, 1000);
+              
+              sendEvent('progress', { message: 'Reading server logs...' });
+
+              try {
+                const logsDir = '/tmp/logs';
+                let logFiles: string[] = [];
+                
+                // Check if logs directory exists
+                try {
+                  await fs.access(logsDir);
+                  logFiles = await fs.readdir(logsDir);
+                } catch {
+                  toolResult = `⚠️ No logs found at ${logsDir}. The server may not have written any logs yet, or logs are stored elsewhere.`;
+                }
+
+                if (!toolResult && logFiles.length === 0) {
+                  toolResult = `⚠️ No log files found in ${logsDir}`;
+                }
+
+                // Only process logs if directory exists and has files
+                if (!toolResult && logFiles.length > 0) {
+                  // Sort by modification time and get the most recent log file
+                  const fileStats = await Promise.all(
+                    logFiles.map(async (file) => {
+                      const filePath = path.join(logsDir, file);
+                      const stats = await fs.stat(filePath);
+                      return { file, mtime: stats.mtime, path: filePath };
+                    })
+                  );
+
+                  fileStats.sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
+                  const mostRecentLog = fileStats[0];
+
+                  // Read the most recent log file
+                  const logContent = await fs.readFile(mostRecentLog.path, 'utf-8');
+                  const logLines = logContent.split('\n');
+
+                  // Filter by keyword if provided
+                  let filteredLines = logLines;
+                  if (typedInput.filter) {
+                    filteredLines = logLines.filter(line => 
+                      line.toLowerCase().includes(typedInput.filter!.toLowerCase())
+                    );
+                  }
+
+                  // Get last N lines
+                  const recentLines = filteredLines.slice(-maxLines);
+
+                  toolResult = `📋 Server Logs (${mostRecentLog.file})\n` +
+                    `Last modified: ${mostRecentLog.mtime.toISOString()}\n` +
+                    `Total lines: ${logLines.length}\n` +
+                    `Showing: ${recentLines.length} lines${typedInput.filter ? ` (filtered by "${typedInput.filter}")` : ''}\n\n` +
+                    recentLines.join('\n');
+
+                  sendEvent('progress', { message: `✅ Read ${recentLines.length} log lines` });
+                }
+              } catch (error: any) {
+                toolResult = `❌ Failed to read logs: ${error.message}`;
+                sendEvent('error', { message: `Failed to read logs: ${error.message}` });
+              }
+            } else if (name === 'execute_sql') {
+              const typedInput = input as { query: string; purpose: string };
+              
+              sendEvent('progress', { message: `Executing SQL query: ${typedInput.purpose}...` });
+
+              try {
+                // Detect mutation queries (UPDATE, DELETE, INSERT, DROP, ALTER, TRUNCATE)
+                const queryUpperCase = typedInput.query.trim().toUpperCase();
+                const isMutation = /^(UPDATE|DELETE|INSERT|DROP|ALTER|TRUNCATE|CREATE)\s/i.test(queryUpperCase);
+
+                if (isMutation) {
+                  // CRITICAL: Require architect approval for mutations
+                  // We'll use a special approval key for SQL mutations
+                  const sqlApprovalKey = `SQL_MUTATION:${typedInput.purpose}`;
+                  const approval = approvedFiles.get(sqlApprovalKey);
+
+                  if (!approval || !approval.approved) {
+                    toolResult = `❌ BLOCKED: SQL mutation requires I AM (architect) approval!\n\n` +
+                      `Query type: MUTATION (${queryUpperCase.split(/\s+/)[0]})\n` +
+                      `Purpose: ${typedInput.purpose}\n` +
+                      `Query: ${typedInput.query}\n\n` +
+                      `You must consult I AM (architect_consult) and get explicit approval before executing mutation queries.\n` +
+                      `Include this in affectedFiles: ["${sqlApprovalKey}"]`;
+                    console.error(`[META-SYSOP] Blocked SQL mutation - no approval`);
+                    sendEvent('error', { message: `SQL mutation blocked - requires I AM approval` });
+                  } else {
+                    sendEvent('progress', { message: `✅ Executing mutation (I AM approved)...` });
+                    const result = await db.execute(typedInput.query as any);
+                    
+                    toolResult = `✅ SQL mutation executed successfully (with I AM approval)\n\n` +
+                      `Purpose: ${typedInput.purpose}\n` +
+                      `Query: ${typedInput.query}\n` +
+                      `Result: ${JSON.stringify(result, null, 2)}`;
+                    
+                    sendEvent('progress', { message: `✅ Mutation completed` });
+                  }
+                } else {
+                  // SELECT queries don't need approval
+                  sendEvent('progress', { message: `Executing SELECT query...` });
+                  const result = await db.execute(typedInput.query as any);
+                  
+                  toolResult = `✅ SQL query executed successfully\n\n` +
+                    `Purpose: ${typedInput.purpose}\n` +
+                    `Query: ${typedInput.query}\n` +
+                    `Rows returned: ${Array.isArray(result) ? result.length : 'N/A'}\n` +
+                    `Result:\n${JSON.stringify(result, null, 2)}`;
+                  
+                  sendEvent('progress', { message: `✅ Query returned ${Array.isArray(result) ? result.length : 0} rows` });
+                }
+              } catch (error: any) {
+                toolResult = `❌ SQL execution failed: ${error.message}\n\n` +
+                  `Purpose: ${typedInput.purpose}\n` +
+                  `Query: ${typedInput.query}\n` +
+                  `Error details: ${error.stack || error.message}`;
+                sendEvent('error', { message: `SQL execution failed: ${error.message}` });
               }
             }
 
