@@ -55,6 +55,25 @@ The user interface features a tab-based workspace (Overview, Build, Files, Previ
 - **Support Ticketing**: Complete system with subject, description, priority, status, and plan-based SLA.
 - **AI Request Management**: Priority processing queue with concurrent limits, real-time cost preview, usage dashboard, and token-based pricing.
 
+### Replit Agent-Style Features (Oct 2025)
+Complete implementation of advanced AI development features matching and extending Replit Agent capabilities:
+
+- **Sub-Agent/Task Runner System**: Parallel task execution with worker pool management, supporting parallel/sequential/background execution modes. Features include spawn, pause, resume, progress tracking, token usage monitoring, and automatic stale runner cleanup. Database-backed with real-time status updates via EventEmitter.
+
+- **Message Queue**: Smart request queueing for follow-up tasks while AI agent is working. Priority-based queue with automatic processing every 5 seconds, individual message cancellation, and bulk queue clearing. Prevents overwhelming the AI with multiple simultaneous requests.
+
+- **Autonomy Controls**: Four-tier autonomy system (Low/Medium/High/Max) controlling AI agent permissions. Low autonomy requires approval for all changes; Medium allows file modification with approval for destructive ops; High enables sub-agent spawning and auto-testing; Max provides full autonomy with auto-commit and auto-deploy. Per-user settings with action permission validation.
+
+- **AI Image Generation**: Integration with OpenAI's gpt-image-1 model for generating images from prompts. Supports configurable width/height (default 1024x1024), quality (standard/hd), and style (vivid/natural). Features include generation history tracking, cost estimation ($0.04 standard, $0.08 HD), and project-specific image collections.
+
+- **Dynamic Intelligence**: Extended thinking mode for complex problems requiring deep analysis. Supports two modes: extended_thinking (standard) and high_power (premium). Tracks thinking time, token usage, provides detailed analysis and recommendations. Session-based architecture with completion tracking and cost monitoring.
+
+- **Visual Editor Support**: Infrastructure for direct UI element editing in live preview (frontend implementation pending).
+
+- **General Agent Mode**: Foundation for supporting all project types beyond web applications (games, mobile apps, CLI tools, etc.).
+
+All features are fully database-backed with comprehensive API routes, real-time event emitters for WebSocket integration, and production-ready error handling. Services follow singleton pattern for global access and include automatic cleanup/monitoring where appropriate.
+
 ### System Design Choices
 - **Database Architecture**: Comprehensive PostgreSQL schema for all platform data (projects, users, usage, billing, etc.).
 - **Team Collaboration System**: Role-based access control with an invitation system.
