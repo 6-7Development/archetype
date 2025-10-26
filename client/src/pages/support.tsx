@@ -308,7 +308,13 @@ export default function SupportPage() {
               <p className="text-sm text-muted-foreground">
                 Browse our comprehensive guides
               </p>
-              <Button variant="outline" size="sm" className="w-full">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => window.open('https://docs.archetype.dev', '_blank')}
+                data-testid="button-view-docs"
+              >
                 View Docs
               </Button>
             </div>
@@ -317,7 +323,13 @@ export default function SupportPage() {
               <p className="text-sm text-muted-foreground">
                 Join our community forum
               </p>
-              <Button variant="outline" size="sm" className="w-full">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => window.open('https://discord.gg/archetype', '_blank')}
+                data-testid="button-join-community"
+              >
                 Join Community
               </Button>
             </div>
@@ -326,7 +338,13 @@ export default function SupportPage() {
               <p className="text-sm text-muted-foreground">
                 Check system status
               </p>
-              <Button variant="outline" size="sm" className="w-full">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => window.open('https://status.archetype.dev', '_blank')}
+                data-testid="button-view-status"
+              >
                 View Status
               </Button>
             </div>
