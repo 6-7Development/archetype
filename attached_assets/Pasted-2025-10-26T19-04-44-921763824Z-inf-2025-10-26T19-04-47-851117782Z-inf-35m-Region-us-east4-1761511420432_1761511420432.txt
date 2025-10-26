@@ -1,0 +1,74 @@
+2025-10-26T19:04:44.921763824Z [inf]  
+2025-10-26T19:04:47.851117782Z [inf]  [35m[Region: us-east4][0m
+2025-10-26T19:04:47.868771177Z [inf]  [35m=========================
+2025-10-26T19:04:47.869179051Z [inf]  Using Detected Dockerfile
+2025-10-26T19:04:47.869206250Z [inf]  =========================
+2025-10-26T19:04:47.869216073Z [inf]  [0m
+2025-10-26T19:04:47.869237021Z [inf]  context: txzb-AZhN
+2025-10-26T19:04:48.150040884Z [inf]  [internal] load build definition from Dockerfile
+2025-10-26T19:04:48.150110207Z [inf]  [internal] load build definition from Dockerfile
+2025-10-26T19:04:48.150133959Z [inf]  [internal] load build definition from Dockerfile
+2025-10-26T19:04:48.177951002Z [inf]  [internal] load build definition from Dockerfile
+2025-10-26T19:04:48.180502580Z [inf]  [internal] load metadata for docker.io/library/node:20-alpine
+2025-10-26T19:04:48.263368019Z [inf]  [internal] load metadata for docker.io/library/node:20-alpine
+2025-10-26T19:04:48.263439770Z [inf]  [internal] load .dockerignore
+2025-10-26T19:04:48.263458491Z [inf]  [internal] load .dockerignore
+2025-10-26T19:04:48.263900975Z [inf]  [internal] load .dockerignore
+2025-10-26T19:04:48.283846323Z [inf]  [internal] load .dockerignore
+2025-10-26T19:04:48.297997490Z [inf]  [production 9/9] COPY drizzle.config.ts ./
+2025-10-26T19:04:48.298057477Z [inf]  [production 8/9] COPY tsconfig.json ./
+2025-10-26T19:04:48.298071756Z [inf]  [production 7/9] COPY shared ./shared
+2025-10-26T19:04:48.298081841Z [inf]  [production 6/9] COPY server ./server
+2025-10-26T19:04:48.298093058Z [inf]  [production 5/9] COPY --from=frontend-builder /app/dist ./dist
+2025-10-26T19:04:48.298107813Z [inf]  [frontend-builder 6/6] RUN npm run build
+2025-10-26T19:04:48.298117432Z [inf]  [frontend-builder 5/6] COPY . .
+2025-10-26T19:04:48.298126402Z [inf]  [frontend-builder 4/6] RUN npm ci
+2025-10-26T19:04:48.298136703Z [inf]  [frontend-builder 3/6] COPY package*.json ./
+2025-10-26T19:04:48.298143258Z [inf]  [internal] load build context
+2025-10-26T19:04:48.298151970Z [inf]  [frontend-builder 2/6] WORKDIR /app
+2025-10-26T19:04:48.298158773Z [inf]  [frontend-builder 1/6] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+2025-10-26T19:04:48.298173670Z [inf]  [internal] load build context
+2025-10-26T19:04:48.298179933Z [inf]  [frontend-builder 1/6] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+2025-10-26T19:04:48.298189523Z [inf]  [internal] load build context
+2025-10-26T19:04:48.311036217Z [inf]  [frontend-builder 1/6] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+2025-10-26T19:04:49.211602707Z [inf]  [internal] load build context
+2025-10-26T19:04:49.221933551Z [inf]  [frontend-builder 2/6] WORKDIR /app
+2025-10-26T19:04:49.221980712Z [inf]  [frontend-builder 3/6] COPY package*.json ./
+2025-10-26T19:04:49.221992463Z [inf]  [frontend-builder 4/6] RUN npm ci
+2025-10-26T19:04:49.222001014Z [inf]  [frontend-builder 5/6] COPY . .
+2025-10-26T19:04:49.222009897Z [inf]  [frontend-builder 6/6] RUN npm run build
+2025-10-26T19:04:49.222024577Z [inf]  [production 5/9] COPY --from=frontend-builder /app/dist ./dist
+2025-10-26T19:04:49.222032941Z [inf]  [production 6/9] COPY server ./server
+2025-10-26T19:04:49.222047815Z [inf]  [production 7/9] COPY shared ./shared
+2025-10-26T19:04:49.222059208Z [inf]  [production 8/9] COPY tsconfig.json ./
+2025-10-26T19:04:49.222068011Z [inf]  [production 9/9] COPY drizzle.config.ts ./
+2025-10-26T19:04:49.335457266Z [inf]  [auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com
+2025-10-26T19:04:49.335583702Z [inf]  [auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com
+2025-10-26T19:04:51.144543857Z [inf]  importing to docker
+2025-10-26T19:05:14.294967745Z [inf]  importing to docker
+2025-10-26T19:05:14.393449209Z [inf]  [92mBuild time: 26.52 seconds[0m
+2025-10-26T19:05:34.021379287Z [inf]  
+2025-10-26T19:05:34.021465559Z [inf]  [35m====================
+Starting Healthcheck
+====================
+[0m
+2025-10-26T19:05:34.021469508Z [inf]  [37mPath: /health[0m
+2025-10-26T19:05:34.021471806Z [inf]  [37mRetry window: 5m0s[0m
+2025-10-26T19:05:34.021473719Z [inf]  
+2025-10-26T19:05:35.201187039Z [inf]  [93mAttempt #1 failed with service unavailable. Continuing to retry for 4m58s[0m
+2025-10-26T19:05:41.409122999Z [inf]  [93mAttempt #2 failed with service unavailable. Continuing to retry for 4m52s[0m
+2025-10-26T19:05:53.491981522Z [inf]  [93mAttempt #3 failed with service unavailable. Continuing to retry for 4m40s[0m
+2025-10-26T19:05:57.588126594Z [inf]  [93mAttempt #4 failed with service unavailable. Continuing to retry for 4m36s[0m
+2025-10-26T19:06:05.686534480Z [inf]  [93mAttempt #5 failed with service unavailable. Continuing to retry for 4m28s[0m
+2025-10-26T19:06:21.762230836Z [inf]  [93mAttempt #6 failed with service unavailable. Continuing to retry for 4m12s[0m
+2025-10-26T19:06:51.878162456Z [inf]  [93mAttempt #7 failed with service unavailable. Continuing to retry for 3m42s[0m
+2025-10-26T19:07:21.952490613Z [inf]  [93mAttempt #8 failed with service unavailable. Continuing to retry for 3m12s[0m
+2025-10-26T19:07:52.029449801Z [inf]  [93mAttempt #9 failed with service unavailable. Continuing to retry for 2m42s[0m
+2025-10-26T19:08:22.099830633Z [inf]  [93mAttempt #10 failed with service unavailable. Continuing to retry for 2m11s[0m
+2025-10-26T19:08:52.171088847Z [inf]  [93mAttempt #11 failed with service unavailable. Continuing to retry for 1m41s[0m
+2025-10-26T19:09:22.267094528Z [inf]  [93mAttempt #12 failed with service unavailable. Continuing to retry for 1m11s[0m
+2025-10-26T19:09:52.342033595Z [inf]  [93mAttempt #13 failed with service unavailable. Continuing to retry for 41s[0m
+2025-10-26T19:10:22.439390663Z [inf]  [93mAttempt #14 failed with service unavailable. Continuing to retry for 11s[0m
+2025-10-26T19:10:22.571384178Z [inf]  
+2025-10-26T19:10:22.571466470Z [inf]  [91m1/1 replicas never became healthy![0m
+2025-10-26T19:10:22.571471302Z [inf]  [91mHealthcheck failed![0m
