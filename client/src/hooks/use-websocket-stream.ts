@@ -9,7 +9,7 @@ export interface Task {
 }
 
 interface StreamMessage {
-  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn';
+  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics';
   commandId?: string;
   status?: string;
   message?: string;
@@ -36,6 +36,19 @@ interface StreamMessage {
   task?: Task;
   subAgentId?: string;
   subAgentPurpose?: string;
+  platformMetrics?: {
+    overallHealth: number;
+    activeIncidents: number;
+    uptime: string;
+    cpuUsage: number;
+    memoryUsage: number;
+    uncommittedChanges: boolean;
+    safety: {
+      safe: boolean;
+      issues: string[];
+    };
+    lastUpdate: string;
+  };
 }
 
 interface StreamState {
@@ -74,6 +87,19 @@ interface StreamState {
     id: string;
     purpose: string;
   } | null;
+  platformMetrics: {
+    overallHealth: number;
+    activeIncidents: number;
+    uptime: string;
+    cpuUsage: number;
+    memoryUsage: number;
+    uncommittedChanges: boolean;
+    safety: {
+      safe: boolean;
+      issues: string[];
+    };
+    lastUpdate: string;
+  } | null;
 }
 
 const MAX_RECONNECT_ATTEMPTS = 5;
@@ -103,6 +129,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
     chatProgress: null,
     tasks: [],
     subAgentActive: null,
+    platformMetrics: null,
   });
 
   const calculateBackoff = useCallback((attempt: number): number => {
@@ -303,6 +330,13 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
                 },
               }));
               break;
+
+            case 'platform-metrics':
+              setStreamState(prev => ({
+                ...prev,
+                platformMetrics: message.platformMetrics || null,
+              }));
+              break;
           }
         } catch (error) {
           console.error('❌ WebSocket message parse error:', error);
@@ -396,6 +430,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
       chatProgress: null,
       tasks: [],
       subAgentActive: null,
+      platformMetrics: null,
     }));
   }, []);
 
