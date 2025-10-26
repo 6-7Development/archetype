@@ -3,8 +3,75 @@ import { platformHealing } from './platformHealing';
 import { platformAudit } from './platformAudit';
 import { isAuthenticated, isAdmin } from './universalAuth';
 import Anthropic from '@anthropic-ai/sdk';
+import path from 'path';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
 
+const execFileAsync = promisify(execFile);
 const router = Router();
+
+// GET /api/platform/status - Platform health and metrics
+router.get('/status', isAuthenticated, isAdmin, async (req: any, res) => {
+  try {
+    const os = await import('os');
+    
+    // Get system metrics
+    const totalMemory = os.totalmem();
+    const freeMemory = os.freemem();
+    const memoryUsage = ((totalMemory - freeMemory) / totalMemory) * 100;
+    
+    const cpus = os.cpus();
+    const avgLoad = os.loadavg()[0];
+    const cpuCount = cpus.length;
+    const cpuUsage = Math.min(100, (avgLoad / cpuCount) * 100);
+    
+    const uptime = os.uptime();
+    const days = Math.floor(uptime / 86400);
+    const hours = Math.floor((uptime % 86400) / 3600);
+    const minutes = Math.floor((uptime % 3600) / 60);
+    const uptimeFormatted = `${days}d ${hours}h ${minutes}m`;
+    
+    // Check for uncommitted changes
+    let uncommittedChanges = false;
+    try {
+      const { stdout } = await execFileAsync('git', ['status', '--porcelain'], { 
+        cwd: path.resolve(__dirname, '..') 
+      });
+      uncommittedChanges = stdout.trim().length > 0;
+    } catch (error) {
+      // Git not available (Render production)
+      uncommittedChanges = false;
+    }
+    
+    // Calculate overall health (simple heuristic)
+    let healthScore = 100;
+    if (cpuUsage > 80) healthScore -= 20;
+    if (memoryUsage > 80) healthScore -= 20;
+    if (uncommittedChanges) healthScore -= 10;
+    
+    const issues: string[] = [];
+    if (cpuUsage > 80) issues.push('High CPU usage detected');
+    if (memoryUsage > 80) issues.push('High memory usage detected');
+    if (uncommittedChanges) issues.push('Uncommitted changes present');
+    
+    res.json({
+      overallHealth: Math.round(healthScore),
+      activeIncidents: issues.length,
+      uptime: uptimeFormatted,
+      cpuUsage: Math.round(cpuUsage),
+      memoryUsage: Math.round(memoryUsage),
+      uncommittedChanges,
+      safety: {
+        safe: issues.length === 0,
+        issues,
+      },
+      lastUpdate: new Date().toISOString(),
+    });
+  } catch (error: any) {
+    console.error('[PLATFORM-STATUS] Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 router.post('/heal', isAuthenticated, isAdmin, async (req: any, res) => {
   try {

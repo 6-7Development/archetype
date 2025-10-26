@@ -53,42 +53,12 @@ import { cn } from '@/lib/utils';
 import { queryClient, apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
-// Mock live data - replace with real WebSocket data
-const useLiveMetrics = () => {
-  const [metrics, setMetrics] = useState({
-    overallHealth: 98,
-    activeIncidents: 2,
-    slaTimer: '12:45:33',
-    cpuUsage: 34,
-    memoryUsage: 56,
-    dbConnections: 12,
-    uptime: '7d 14h 23m',
-    lastUpdate: new Date().toISOString(),
-  });
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setMetrics(prev => ({
-        ...prev,
-        cpuUsage: Math.max(0, Math.min(100, prev.cpuUsage + (Math.random() - 0.5) * 10)),
-        memoryUsage: Math.max(0, Math.min(100, prev.memoryUsage + (Math.random() - 0.5) * 8)),
-        dbConnections: Math.max(0, Math.min(50, prev.dbConnections + (Math.random() - 0.5) * 3)),
-        lastUpdate: new Date().toISOString(),
-      }));
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  return metrics;
-};
 
 function PlatformHealingContent() {
   const { toast } = useToast();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [expandedIncident, setExpandedIncident] = useState<string | null>(null);
-  const liveMetrics = useLiveMetrics();
 
   // Fetch platform status
   const { data: status, refetch: refetchStatus } = useQuery<any>({
@@ -141,9 +111,7 @@ function PlatformHealingContent() {
 
   const triggerAutoHealMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest('/api/platform/auto-heal', {
-        method: 'POST',
-      });
+      return apiRequest('POST', '/api/platform/auto-heal');
     },
     onSuccess: () => {
       toast({ title: 'Auto-heal initiated', description: 'System diagnostics and repair started' });
@@ -320,7 +288,7 @@ function PlatformHealingContent() {
                 <div>
                   <div className="text-xs text-muted-foreground">Overall Health</div>
                   <div className="text-lg font-bold flex items-center gap-1">
-                    {liveMetrics.overallHealth}%
+                    {status?.overallHealth || 0}%
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   </div>
                 </div>
@@ -332,7 +300,7 @@ function PlatformHealingContent() {
                 </div>
                 <div>
                   <div className="text-xs text-muted-foreground">Active Incidents</div>
-                  <div className="text-lg font-bold">{liveMetrics.activeIncidents}</div>
+                  <div className="text-lg font-bold">{status?.activeIncidents || 0}</div>
                 </div>
               </div>
 
@@ -341,8 +309,10 @@ function PlatformHealingContent() {
                   <Clock className="w-5 h-5 text-blue-500" />
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground">SLA Timer</div>
-                  <div className="text-lg font-bold font-mono">{liveMetrics.slaTimer}</div>
+                  <div className="text-xs text-muted-foreground">Last Update</div>
+                  <div className="text-xs font-mono">
+                    {status?.lastUpdate ? new Date(status.lastUpdate).toLocaleTimeString() : '--:--:--'}
+                  </div>
                 </div>
               </div>
 
@@ -352,7 +322,7 @@ function PlatformHealingContent() {
                 </div>
                 <div>
                   <div className="text-xs text-muted-foreground">Uptime</div>
-                  <div className="text-lg font-bold">{liveMetrics.uptime}</div>
+                  <div className="text-lg font-bold">{status?.uptime || 'N/A'}</div>
                 </div>
               </div>
             </div>
@@ -438,7 +408,9 @@ function PlatformHealingContent() {
                 <CardContent>
                   <div className="space-y-3">
                     {incidents.map((incident) => (
-                      <Card key={incident.id} className="border-l-4" style={{ borderLeftColor: incident.severity === 'critical' ? '#ef4444' : '#f59e0b' }}>
+                      <Card key={incident.id} className={cn(
+                        incident.severity === 'critical' ? 'bg-red-500/5 border-red-500/20' : 'bg-amber-500/5 border-amber-500/20'
+                      )}>
                         <CardContent className="p-4">
                           <div className="space-y-3">
                             <div className="flex items-start justify-between gap-4">
@@ -576,11 +548,11 @@ function PlatformHealingContent() {
                         <Cpu className="w-4 h-4 text-blue-500" />
                         <span className="text-sm font-medium">CPU Usage</span>
                       </div>
-                      <span className="text-2xl font-bold">{Math.round(liveMetrics.cpuUsage)}%</span>
+                      <span className="text-2xl font-bold">{status?.cpuUsage || 0}%</span>
                     </div>
-                    <Progress value={liveMetrics.cpuUsage} className="h-3" />
+                    <Progress value={status?.cpuUsage || 0} className="h-3" />
                     <p className="text-xs text-muted-foreground">
-                      {liveMetrics.cpuUsage > 80 ? 'High load detected' : 'Normal operation'}
+                      {(status?.cpuUsage || 0) > 80 ? 'High load detected' : 'Normal operation'}
                     </p>
                   </div>
 
@@ -590,11 +562,11 @@ function PlatformHealingContent() {
                         <HardDrive className="w-4 h-4 text-purple-500" />
                         <span className="text-sm font-medium">Memory</span>
                       </div>
-                      <span className="text-2xl font-bold">{Math.round(liveMetrics.memoryUsage)}%</span>
+                      <span className="text-2xl font-bold">{status?.memoryUsage || 0}%</span>
                     </div>
-                    <Progress value={liveMetrics.memoryUsage} className="h-3" />
+                    <Progress value={status?.memoryUsage || 0} className="h-3" />
                     <p className="text-xs text-muted-foreground">
-                      {liveMetrics.memoryUsage > 80 ? 'Consider scaling' : 'Healthy levels'}
+                      {(status?.memoryUsage || 0) > 80 ? 'Consider scaling' : 'Healthy levels'}
                     </p>
                   </div>
 
@@ -602,13 +574,14 @@ function PlatformHealingContent() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Database className="w-4 h-4 text-emerald-500" />
-                        <span className="text-sm font-medium">DB Connections</span>
+                        <span className="text-sm font-medium">Platform Status</span>
                       </div>
-                      <span className="text-2xl font-bold">{Math.round(liveMetrics.dbConnections)}</span>
+                      <Badge variant={status?.safety?.safe ? 'default' : 'destructive'}>
+                        {status?.safety?.safe ? 'Healthy' : 'Issues'}
+                      </Badge>
                     </div>
-                    <Progress value={(liveMetrics.dbConnections / 50) * 100} className="h-3" />
                     <p className="text-xs text-muted-foreground">
-                      {liveMetrics.dbConnections > 40 ? 'Pool near capacity' : 'Connections available'}
+                      {status?.uncommittedChanges ? 'Uncommitted changes present' : 'All changes committed'}
                     </p>
                   </div>
                 </div>
