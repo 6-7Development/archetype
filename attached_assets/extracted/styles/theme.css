@@ -1,0 +1,88 @@
+:root{
+  --bg: #0e1116;
+  --panel: #141924;
+  --panel-2:#0f1520;
+  --muted:#a3adbf;
+  --text:#e7ecf3;
+  --text-weak:#bdc6d9;
+  --accent:#4da3ff;
+  --ok:#2ecc71;
+  --warn:#ffba41;
+  --danger:#ff5c5c;
+  --border:#222a38;
+  --ring:#7db7ff;
+  --radius:12px;
+  --shadow: 0 6px 20px rgba(0,0,0,.35);
+}
+
+html,body{height:100%}
+body{
+  margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+  background:linear-gradient(180deg, #0b0f15 0%, #0d121a 100%);
+  color:var(--text); line-height:1.45;
+}
+
+.container{
+  display:grid; grid-template-columns: 260px 1fr 360px; gap:16px;
+  padding:16px; min-height:100vh;
+}
+@media (max-width:1150px){ .container{grid-template-columns: 240px 1fr} .aside{display:none} }
+
+.card, .sidebar, .header, .aside{ background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); }
+.header{ padding:16px 18px; display:flex; align-items:center; gap:14px }
+.sidebar{ padding:14px }
+.main{ display:flex; flex-direction:column; gap:16px }
+.aside{ padding:16px; display:flex; flex-direction:column; gap:16px }
+.section-title{ font-weight:700; margin:0 0 10px 0 }
+.sub{ color:var(--text-weak); font-size:13px }
+
+/* Header elements */
+.crumb{ color:var(--text-weak); font-size:13px }
+.title{ font-size:18px; font-weight:700 }
+.controls{ margin-left:auto; display:flex; gap:8px; align-items:center }
+
+/* Buttons */
+.btn{ padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--panel-2); color:var(--text); cursor:pointer }
+.btn.primary{ background:linear-gradient(180deg, #2a7dfb, #0f62f2); border-color:#1256d4; box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 6px 14px rgba(17,95,241,.35) }
+.btn[aria-disabled="true"]{ opacity:.55; cursor:not-allowed }
+
+/* Run card */
+.status-badge{ font-size:12px; padding:3px 8px; border-radius:999px; border:1px solid var(--border); color:var(--text-weak) }
+.status-running{ background:rgba(77,163,255,.1); color:#cfe3ff; border-color:rgba(77,163,255,.3) }
+.status-idle{ background:#1a2232 }
+
+.progress{ margin:12px 0 8px 0; background:#1a2232; height:10px; border-radius:999px; overflow:hidden; border:1px solid var(--border) }
+.bar{ background:linear-gradient(90deg, #2a7dfb, #4da3ff); height:100%; width:0% }
+.meta{ font-size:12px; color:var(--text-weak) }
+
+/* Steps */
+.steps{ margin:10px 0 0 0; padding:0; list-style:none; display:flex; flex-direction:column; gap:8px }
+.step{ display:grid; grid-template-columns: 22px 1fr auto; gap:10px; align-items:center; background:var(--panel-2); border:1px solid var(--border); border-radius:10px; padding:8px 10px }
+.step .name{ font-size:14px }
+.step .time{ font-size:12px; color:var(--text-weak) }
+.dot{ width:10px; height:10px; border-radius:50%; background:#667085; display:inline-block }
+.dot.ok{ background:var(--ok) } .dot.fail{ background:var(--danger) } .dot.run{ background:var(--accent) }
+
+/* Feed */
+.feed{ display:flex; flex-direction:column; gap:10px }
+.feed-item{ background:var(--panel-2); border:1px solid var(--border); border-radius:10px; padding:10px }
+.muted{ color:var(--muted) }
+
+/* Form */
+.form-row{ display:flex; gap:10px; align-items:flex-start }
+textarea{ width:100%; min-height:80px; resize:vertical; border-radius:10px; border:1px solid var(--border); background:#0c121c; color:var(--text); padding:10px 12px; outline:none }
+textarea:focus{ box-shadow:0 0 0 3px rgba(125,183,255,.25) }
+:focus-visible{ outline:2px solid var(--ring); outline-offset:2px }
+
+/* Chips */
+.chip{ padding:4px 10px; border-radius:999px; font-size:12px; border:1px solid var(--border); display:inline-flex; gap:6px; align-items:center }
+.chip.ok{ background:rgba(46,204,113,.1); border-color:rgba(46,204,113,.25); color:#aef2c9 }
+.chip.warn{ background:rgba(255,186,65,.08); border-color:rgba(255,186,65,.25); color:#ffe1a6 }
+.chip.danger{ background:rgba(255,92,92,.08); border-color:rgba(255,92,92,.25); color:#ffb3b3 }
+
+.toggle{ display:inline-flex; align-items:center; gap:8px; font-size:13px; color:var(--text-weak) }
+.switch{ position:relative; width:40px; height:22px; background:#2a3242; border-radius:999px; border:1px solid var(--border) }
+.switch input{ position:absolute; opacity:0; inset:0; cursor:pointer }
+.knob{ position:absolute; top:2px; left:2px; width:18px; height:18px; background:#fff; border-radius:50%; transition:left .2s }
+.switch input:checked + .knob{ left:20px; background:#fff }
+.switch input:checked{ outline:2px solid var(--accent) }
