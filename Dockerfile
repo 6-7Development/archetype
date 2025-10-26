@@ -18,9 +18,10 @@ RUN npm run build
 FROM node:20-alpine AS production
 WORKDIR /app
 
-# Install all dependencies (including tsx for TypeScript execution)
+# Install production dependencies + drizzle-kit for migrations
 COPY package*.json ./
 RUN npm ci
+RUN npm install drizzle-kit@^0.31.4
 
 # Copy built frontend from builder stage
 COPY --from=frontend-builder /app/dist ./dist
