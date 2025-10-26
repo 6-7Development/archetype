@@ -1,7 +1,7 @@
 # Archetype - AI-Powered Website Builder Platform
 
 ## Overview
-Archetype is an AI-powered platform for rapid web development, featuring an AI coding agent (SySop) for autonomous code generation and dual-version IDE Workspaces. The platform includes **Archetype** (desktop-optimized) and **Archetype5** (mobile-optimized) versions that share all backend resources while providing tailored UX for each platform. Both versions offer a console-first interface, real-time preview, and comprehensive workspace features. The platform includes monetization infrastructure with subscription tiers, usage-based billing, a template marketplace, and professional development services. A subsidiary of Drill Consulting 360 LLC, Archetype targets Fortune 500 production readiness and fully portable deployment to any cloud platform. It also features Meta-SySop for autonomous platform self-healing, bug fixes, and UI/UX improvements to its own source code on Render production, with built-in rollback and audit logging.
+Archetype is an AI-powered platform for rapid web development, featuring an AI coding agent (SySop) for autonomous code generation and dual-version IDE Workspaces. The platform includes **Archetype** (desktop-optimized) and **Archetype5** (mobile-optimized) versions that share backend resources while providing tailored UX. Both versions offer a console-first interface, real-time preview, and comprehensive workspace features. Archetype targets Fortune 500 production readiness and fully portable deployment to any cloud platform, incorporating monetization infrastructure, a template marketplace, and professional development services. It also features Meta-SySop for autonomous platform self-healing, bug fixes, and UI/UX improvements to its own source code, with built-in rollback and audit logging.
 
 ## User Preferences
 ### API Configuration
@@ -24,23 +24,22 @@ Archetype is an AI-powered platform for rapid web development, featuring an AI c
 The platform is built with a React frontend, an Express.js backend, and PostgreSQL for data persistence.
 
 ### Dual-Version Architecture (Archetype + Archetype5)
-The platform implements a unified codebase with two distinct user experiences: Archetype (Desktop) with a 4-panel layout, and Archetype5 (Mobile) with bottom tab navigation, optimized for touch. Both versions share a single codebase, backend APIs, WebSocket connections, authentication, and database access, with runtime detection for version switching based on viewport size, user agent, and touch capabilities.
+The platform implements a unified codebase with two distinct user experiences: Archetype (Desktop) with a 4-panel layout, and Archetype5 (Mobile) with bottom tab navigation, optimized for touch. Both versions share a single codebase, backend APIs, WebSocket connections, authentication, and database access, with runtime detection for version switching.
 
 ### UI/UX Decisions
-The user interface features a tab-based workspace (Overview, Build, Files, Preview, Activity, Versions) providing an IDE-like experience, primarily through a command console and real-time live preview. The design adopts a professional, corporate aesthetic with a navy/slate color palette, card-based layouts, smooth transitions, and ADA/WCAG accessibility. Chat interfaces are clean, minimal, with enhanced progress displays, fixed mobile layout issues (input boxes remain anchored), and proper scroll behavior. Collapsible preview panels and enlarged chat input areas improve usability.
+The user interface features a tab-based workspace (Overview, Build, Files, Preview, Activity, Versions) providing an IDE-like experience, primarily through a command console and real-time live preview. The design adopts a professional, corporate aesthetic with a navy/slate color palette, card-based layouts, smooth transitions, and ADA/WCAG accessibility. Chat interfaces are clean, minimal, with enhanced progress displays, fixed mobile layout issues, and proper scroll behavior. Collapsible preview panels and enlarged chat input areas improve usability.
 
 ### Technical Implementations
-- **AI Architecture**: SySop (AI Coding Agent) employs a 12-step workflow with Architect consultation, real-time streaming, and comprehensive billing. It's optimized for full-stack web, professional games, self-testing, and Orb usage-based billing, providing transparent updates and issue reporting.
-- **Replit Agent-Style Task Management**: Live, interactive task lists with real-time status updates (checkmarks, spinning circles, empty circles) are displayed via a TaskBoard UI component, driven by WebSocket updates and robust JSON parsing for task plans.
+- **AI Architecture**: SySop (AI Coding Agent) employs a 12-step workflow with Architect consultation, real-time streaming, and comprehensive billing. It's optimized for full-stack web, professional games, self-testing, and usage-based billing.
+- **Replit Agent-Style Task Management**: Live, interactive task lists with real-time status updates are displayed via a TaskBoard UI component, driven by WebSocket updates and robust JSON parsing.
 - **Autonomous AI System**: SySop integrates self-testing (Playwright), web search (Tavily API), vision analysis (Claude Vision), architectural guidance (I AM), and an automatic reflection/self-correction loop. Meta-SySop has enhanced tools including `architect_consult`, `web_search`, and `commit_to_github`.
-- **Meta-SySop Autonomous Deployment**: Meta-SySop operates with full autonomy - it diagnoses issues, consults I AM for approval, implements fixes, and automatically commits changes to GitHub triggering Render auto-deployment. No manual intervention required. Workflow: Diagnose → Consult I AM → Fix → Auto-Deploy → Report. Changes are pushed via GitHub API (GitHubService) from Replit development environment, bypassing git command restrictions.
-- **Secrets Management**: Zero-knowledge credential handling for API keys.
-- **Advanced AI Capabilities**: SySop can build complex marketplace platforms, 2D/3D games, implement usage-based billing, generate test data (faker.js), simulate user behavior (Playwright), and create functional chatbots/automation agents.
+- **Meta-SySop Autonomous Deployment**: Meta-SySop operates with full autonomy – it diagnoses issues, consults I AM for approval, implements fixes, and automatically commits changes to GitHub triggering Render auto-deployment. Changes are pushed via GitHub API from Replit development environment.
+- **Meta-SySop Anti-Lying Enforcement**: A five-layer system prevents Meta-SySop from claiming success before actual completion, enforcing honest reporting and sequential task validation.
+- **Advanced AI Capabilities**: SySop can build complex marketplace platforms, 2D/3D games, implement usage-based billing, generate test data, simulate user behavior, and create functional chatbots/automation agents.
 - **Command System**: Natural language commands processed by Anthropic Claude 3.5 Sonnet to generate JSON project structures.
 - **File Management**: Generated files stored in PostgreSQL, editable via Monaco editor, with real-time synchronization via WebSockets.
-- **Conversational AI**: AI assistant (Claude 3.5 Sonnet) clarifies questions and explains design decisions with automatic summarization.
+- **Conversational AI**: AI assistant clarifies questions and explains design decisions with automatic summarization.
 - **Preview System**: Uses `esbuild` for in-memory React/TypeScript compilation to show applications in an iframe with real-time status and auto-refresh.
-- **Monolithic Routes Refactoring**: Server routes modularized into dedicated modules for improved performance.
 - **Performance Optimizations**: Includes LRU caching, system prompt caching, Gzip compression, WebSocket memory leak fixes, and response caching.
 - **Robust JSON Parsing Pipeline**: 3-tier extraction method for complex JSON structures from AI responses.
 - **Multi-Agent Task Management System**: Foundation for autonomous task breakdown with database tables and SySop tools for task list creation, updates, and reviews.
@@ -53,9 +52,22 @@ The user interface features a tab-based workspace (Overview, Build, Files, Previ
 - **API Key Management**: Secure API key system for Pro+ users with hashing, usage tracking, and validation.
 - **Support Ticketing**: Complete system with subject, description, priority, status, and plan-based SLA.
 - **AI Request Management**: Priority processing queue with concurrent limits, real-time cost preview, usage dashboard, and token-based pricing.
+- **Replit Agent-Style Features**: Full implementation of advanced AI development features achieving 100% Replit Agent feature parity with backend services + frontend UIs. This includes:
+    - **Sub-Agent/Task Runner System**: Parallel task execution with worker pool management, supporting parallel/sequential/background modes, with database-backed real-time status.
+    - **Message Queue**: Smart request queueing for follow-up tasks with priority-based processing.
+    - **Autonomy Controls**: Four-tier autonomy system (Low/Medium/High/Max) controlling AI agent permissions.
+    - **AI Image Generation**: Integration with OpenAI's gpt-image-1 model for generating images from prompts.
+    - **Dynamic Intelligence**: Extended thinking mode for complex problems, supporting standard and high-power modes.
+    - **Plan Mode**: Brainstorming and planning without code modification, with full session management UI.
+    - **Design Mode**: Visual prototyping and design system builder with prototype gallery and screen composer.
+    - **Workflows**: Parallel and sequential command execution engine with creation forms, execution dashboard, and run history. Enabled by default in development, requires ENABLE_WORKFLOWS env var for production.
+    - **Agents & Automations**: Template marketplace for bots, scheduled tasks, and webhooks.
+    - **General Agent Mode**: Multi-project-type support beyond web apps (games, mobile apps, CLI tools, APIs, automations).
+    - **Visual Editor**: Direct UI element editing in live preview (future implementation).
+    - **Agent Features Dashboard**: Unified `/agent-features` page with 6 feature tabs.
 
 ### System Design Choices
-- **Database Architecture**: Comprehensive PostgreSQL schema for all platform data (projects, users, usage, billing, etc.).
+- **Database Architecture**: Comprehensive PostgreSQL schema for all platform data.
 - **Team Collaboration System**: Role-based access control with an invitation system.
 - **API Key Infrastructure**: Secure key generation with bcrypt hashing and usage tracking.
 - **Support Ticketing System**: Complete ticket lifecycle with priority levels and plan-based SLAs.
@@ -63,15 +75,16 @@ The user interface features a tab-based workspace (Overview, Build, Files, Previ
 - **Usage Tracking & Billing**: 100% cost coverage for AI tokens, storage, deployment bandwidth, and infrastructure, with Stripe metered billing.
 - **Monetization Infrastructure**: Lead capture, Stripe subscription system, webhooks, granular usage billing, and template marketplace commission model.
 - **Security & Production Readiness**: Full authentication/authorization (Replit Auth, PostgreSQL sessions), protected API routes, rate limiting, and bcrypt-hashed API keys.
-- **Deployment & Hosting System**: Supports public hosting of deployed projects under unique subdomains with status and visit tracking.
-- **Meta-SySop Security**: Robust authentication/authorization, dedicated Meta-SySop identity for git operations, and comprehensive security measures to prevent shell injection, path traversal, and protect sensitive files.
+- **Deployment & Hosting System**: Supports public hosting of deployed projects under unique subdomains.
+- **Meta-SySop Security**: Robust authentication/authorization, dedicated Meta-SySop identity for git operations, and comprehensive security measures.
+- **Production Owner Access**: Meta-SySop requires owner designation via `is_owner = true` or `OWNER_USER_ID` environment variable.
 
 ## External Dependencies
 - **Frontend**: React, TypeScript, Monaco Editor, Tailwind CSS, Shadcn UI, next-themes
 - **Backend**: Express.js, PostgreSQL (Neon), WebSocket, esbuild
 - **Database ORM**: Drizzle ORM
-- **AI**: Anthropic Claude 3.5 Sonnet
-- **Deployment**: Render.com, Railway, or Docker
+- **AI**: Anthropic Claude 3.5 Sonnet, OpenAI (gpt-image-1)
+- **Deployment**: Render.com, Railway
 - **Payment Processing**: Stripe
 - **Authentication**: Passport.js, bcrypt, `connect-pg-simple`
 - **Charting**: Recharts
