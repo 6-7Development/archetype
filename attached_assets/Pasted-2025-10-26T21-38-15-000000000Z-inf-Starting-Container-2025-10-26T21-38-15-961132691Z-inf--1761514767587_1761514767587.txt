@@ -1,0 +1,45 @@
+2025-10-26T21:38:15.000000000Z [inf]  Starting Container
+2025-10-26T21:38:15.961132691Z [inf]  ======================================
+2025-10-26T21:38:15.961137543Z [inf]  🚂 RAILWAY STARTUP SCRIPT
+2025-10-26T21:38:15.961142077Z [inf]  ======================================
+2025-10-26T21:38:15.961146561Z [inf]  Time: Sun Oct 26 21:38:15 UTC 2025
+2025-10-26T21:38:15.961151504Z [inf]  
+2025-10-26T21:38:15.961156597Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-10-26T21:38:16.536164658Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-10-26T21:38:16.536170436Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-10-26T21:38:16.974680517Z [inf]  Using 'pg' driver for database querying
+2025-10-26T21:38:17.075957627Z [inf]  [⣷] Pulling schema from database...
+2025-10-26T21:38:17.214862804Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-26T21:38:17.214868689Z [inf]  [2K[1G[✓] Pulling schema from database...
+2025-10-26T21:38:17.621087440Z [inf]  [✓] Changes applied
+2025-10-26T21:38:17.640891922Z [inf]  
+2025-10-26T21:38:17.640899189Z [inf]  ✅ Database migrations completed successfully!
+2025-10-26T21:38:17.640905298Z [inf]  
+2025-10-26T21:38:17.640912029Z [inf]  🚀 Starting Node.js application...
+2025-10-26T21:38:18.651406281Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-26T21:38:18.651415574Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-26T21:38:18.651423554Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-26T21:38:18.651431168Z [inf]  [db] Pool config: connectionTimeoutMillis=5000, ssl=enabled (rejectUnauthorized: false)
+2025-10-26T21:38:18.651438856Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-10-26T21:38:18.651447515Z [inf]  [db] Connection string includes SSL params: true
+2025-10-26T21:38:18.657737401Z [inf]  [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-26T21:38:18.662932436Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-26T21:38:18.668499585Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-26T21:38:18.673613315Z [inf]  📡 WebSocket server initialized at /ws
+2025-10-26T21:38:18.673623471Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-26T21:38:18.673630916Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-26T21:38:18.685051923Z [inf]  ✅ All routes registered successfully
+2025-10-26T21:38:18.685057734Z [inf]  🔍 Testing database connection...
+2025-10-26T21:38:18.715654573Z [inf]  9:38:18 PM [express] serving on port 8080
+2025-10-26T21:38:18.715671571Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-10-26T21:38:18.828873187Z [inf]     - Token: ✓ (configured)
+2025-10-26T21:38:18.828883751Z [inf]     - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-26T21:38:18.828892896Z [inf]     - Maintenance mode: Available for owner
+2025-10-26T21:38:18.828899774Z [inf]  ✅ Database connected successfully
+2025-10-26T21:38:18.828903452Z [inf]  
+2025-10-26T21:38:18.828920251Z [inf]  🔧 Auto-healing system ENABLED (production mode)
+2025-10-26T21:38:18.828928493Z [inf]  
+2025-10-26T21:38:18.828938607Z [inf]  🔍 Checking GitHub integration configuration...
+2025-10-26T21:38:18.828945997Z [inf]  ✅ GitHub integration configured successfully
+2025-10-26T21:38:18.828952743Z [inf]     - Repository: 6-7Development/archetype
+2025-10-26T21:38:18.828959157Z [inf]     - Branch: main
