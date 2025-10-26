@@ -142,36 +142,8 @@ function PlatformHealingContent() {
   }, [autoCommit]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0b0f15] to-[#0d121a] text-slate-100">
-      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_380px] gap-4 p-3 sm:p-4 min-h-screen max-w-[100vw] overflow-x-hidden">
-        {/* Sidebar - Desktop only */}
-        <aside className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl p-4 hidden lg:block">
-          <div className="font-bold text-sm tracking-wider mb-4" data-testid="sidebar-title">ARCHETYPE</div>
-          <nav className="flex flex-col gap-2">
-            <Button variant="secondary" className="w-full justify-start" data-testid="nav-dashboard">
-              Dashboard
-            </Button>
-            <Button variant="ghost" className="w-full justify-start" data-testid="nav-builder">
-              Builder
-            </Button>
-            <Button variant="ghost" className="w-full justify-start" data-testid="nav-marketplace">
-              Marketplace
-            </Button>
-            <Button variant="ghost" className="w-full justify-start" data-testid="nav-analytics">
-              Analytics
-            </Button>
-            <Button variant="ghost" className="w-full justify-start" data-testid="nav-team">
-              Team
-            </Button>
-            <Button variant="ghost" className="w-full justify-start" data-testid="nav-api">
-              API Keys
-            </Button>
-          </nav>
-          <div className="mt-auto pt-8 text-xs text-slate-500" data-testid="sidebar-user">
-            Signed in as <strong className="text-slate-300">Admin</strong>
-          </div>
-        </aside>
-
+    <div className="flex-1 flex flex-col overflow-hidden bg-gradient-to-b from-[#0b0f15] to-[#0d121a] text-slate-100">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 p-3 sm:p-4 h-full overflow-y-auto max-w-[100vw] overflow-x-hidden">
         {/* Main Content */}
         <section className="flex flex-col gap-3 sm:gap-4 min-w-0">
           {/* Header */}
