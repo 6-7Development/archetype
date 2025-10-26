@@ -31,11 +31,15 @@ COPY shared ./shared
 COPY tsconfig.json ./
 COPY drizzle.config.ts ./
 
+# Copy startup script
+COPY railway-start.sh ./
+RUN chmod +x railway-start.sh
+
 # Expose port
 EXPOSE 5000
 
 # Set environment to production
 ENV NODE_ENV=production
 
-# Start the server using tsx to run TypeScript
-CMD ["npx", "tsx", "server/index.ts"]
+# Run migrations then start the server
+CMD ["./railway-start.sh"]
