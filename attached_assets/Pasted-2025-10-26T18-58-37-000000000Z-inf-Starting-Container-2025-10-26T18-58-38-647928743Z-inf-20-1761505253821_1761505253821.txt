@@ -1,0 +1,243 @@
+2025-10-26T18:58:37.000000000Z [inf]  Starting Container
+2025-10-26T18:58:38.647928743Z [inf]  
+2025-10-26T18:58:38.647940986Z [inf]  > rest-express@1.0.0 start
+2025-10-26T18:58:38.647949712Z [inf]  > NODE_ENV=production node dist/index.js
+2025-10-26T18:58:38.647954185Z [inf]  
+2025-10-26T18:58:38.776004187Z [err]    code: 'ERR_INVALID_URL',
+2025-10-26T18:58:38.776014289Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-26T18:58:38.776018558Z [err]    input: 'archetype-db.DATABASE_URL'
+2025-10-26T18:58:38.776030290Z [err]  node:internal/url:806
+2025-10-26T18:58:38.776032119Z [err]  }
+2025-10-26T18:58:38.776042232Z [err]      const href = bindingUrl.parse(input, base, raiseException);
+2025-10-26T18:58:38.776042394Z [err]  
+2025-10-26T18:58:38.776053791Z [err]                              ^
+2025-10-26T18:58:38.776057170Z [err]  Node.js v20.19.5
+2025-10-26T18:58:38.776062034Z [err]  
+2025-10-26T18:58:38.776067887Z [err]  TypeError: Invalid URL
+2025-10-26T18:58:38.776073694Z [err]      at new URL (node:internal/url:806:29)
+2025-10-26T18:58:38.776080466Z [err]      at server/db.ts (file:///app/dist/index.js:1562:14)
+2025-10-26T18:58:38.776088171Z [err]      at __init (file:///app/dist/index.js:4:56)
+2025-10-26T18:58:38.776095779Z [err]      at file:///app/dist/index.js:4601:1
+2025-10-26T18:58:38.776103168Z [err]      at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-10-26T18:58:38.776111841Z [err]      at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-10-26T18:58:38.776119664Z [err]      at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+2025-10-26T18:58:40.225518245Z [inf]  
+2025-10-26T18:58:40.225525173Z [inf]  > rest-express@1.0.0 start
+2025-10-26T18:58:40.225532272Z [inf]  > NODE_ENV=production node dist/index.js
+2025-10-26T18:58:40.225538030Z [inf]  
+2025-10-26T18:58:41.229444588Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-26T18:58:41.229452056Z [err]  node:internal/url:806
+2025-10-26T18:58:41.229458867Z [err]      const href = bindingUrl.parse(input, base, raiseException);
+2025-10-26T18:58:41.229468649Z [err]                              ^
+2025-10-26T18:58:41.229475646Z [err]  
+2025-10-26T18:58:41.229480498Z [err]  TypeError: Invalid URL
+2025-10-26T18:58:41.229486360Z [err]      at new URL (node:internal/url:806:29)
+2025-10-26T18:58:41.229491236Z [err]      at server/db.ts (file:///app/dist/index.js:1562:14)
+2025-10-26T18:58:41.229496029Z [err]      at __init (file:///app/dist/index.js:4:56)
+2025-10-26T18:58:41.229502131Z [err]      at file:///app/dist/index.js:4601:1
+2025-10-26T18:58:41.229507656Z [err]      at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-10-26T18:58:41.229512192Z [err]      at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-10-26T18:58:41.229518058Z [err]      at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+2025-10-26T18:58:41.229523445Z [err]    code: 'ERR_INVALID_URL',
+2025-10-26T18:58:41.229529481Z [err]    input: 'archetype-db.DATABASE_URL'
+2025-10-26T18:58:41.229535729Z [err]  }
+2025-10-26T18:58:41.229542556Z [err]  
+2025-10-26T18:58:41.229548067Z [err]  Node.js v20.19.5
+2025-10-26T18:58:42.689571139Z [inf]  
+2025-10-26T18:58:42.689575782Z [inf]  > rest-express@1.0.0 start
+2025-10-26T18:58:42.689580394Z [inf]  > NODE_ENV=production node dist/index.js
+2025-10-26T18:58:42.689584749Z [inf]  
+2025-10-26T18:58:43.719967002Z [err]      at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-10-26T18:58:43.719972289Z [err]  
+2025-10-26T18:58:43.719977083Z [err]      at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-10-26T18:58:43.719983348Z [err]      at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+2025-10-26T18:58:43.719984214Z [err]  Node.js v20.19.5
+2025-10-26T18:58:43.719990186Z [err]    code: 'ERR_INVALID_URL',
+2025-10-26T18:58:43.719996482Z [err]    input: 'archetype-db.DATABASE_URL'
+2025-10-26T18:58:43.719996853Z [err]  node:internal/url:806
+2025-10-26T18:58:43.720001765Z [err]  }
+2025-10-26T18:58:43.720008731Z [err]      const href = bindingUrl.parse(input, base, raiseException);
+2025-10-26T18:58:43.720015850Z [err]                              ^
+2025-10-26T18:58:43.720023272Z [err]  
+2025-10-26T18:58:43.720031104Z [err]  TypeError: Invalid URL
+2025-10-26T18:58:43.720038151Z [err]      at new URL (node:internal/url:806:29)
+2025-10-26T18:58:43.720044927Z [err]      at server/db.ts (file:///app/dist/index.js:1562:14)
+2025-10-26T18:58:43.720051947Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-26T18:58:43.720053339Z [err]      at __init (file:///app/dist/index.js:4:56)
+2025-10-26T18:58:43.720059836Z [err]      at file:///app/dist/index.js:4601:1
+2025-10-26T18:58:44.845087037Z [inf]  
+2025-10-26T18:58:44.845093938Z [inf]  > rest-express@1.0.0 start
+2025-10-26T18:58:44.845099094Z [inf]  > NODE_ENV=production node dist/index.js
+2025-10-26T18:58:44.845104103Z [inf]  
+2025-10-26T18:58:45.940570999Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-26T18:58:45.947609432Z [err]  node:internal/url:806
+2025-10-26T18:58:45.947617942Z [err]      const href = bindingUrl.parse(input, base, raiseException);
+2025-10-26T18:58:45.947623318Z [err]                              ^
+2025-10-26T18:58:45.947628856Z [err]  
+2025-10-26T18:58:45.947634040Z [err]  TypeError: Invalid URL
+2025-10-26T18:58:45.947639238Z [err]      at new URL (node:internal/url:806:29)
+2025-10-26T18:58:45.947644349Z [err]      at server/db.ts (file:///app/dist/index.js:1562:14)
+2025-10-26T18:58:45.947650990Z [err]      at __init (file:///app/dist/index.js:4:56)
+2025-10-26T18:58:45.947657032Z [err]      at file:///app/dist/index.js:4601:1
+2025-10-26T18:58:45.947662442Z [err]      at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-10-26T18:58:45.947667092Z [err]      at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-10-26T18:58:45.947672086Z [err]      at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+2025-10-26T18:58:45.947676907Z [err]    code: 'ERR_INVALID_URL',
+2025-10-26T18:58:45.947682017Z [err]    input: 'archetype-db.DATABASE_URL'
+2025-10-26T18:58:45.947686787Z [err]  }
+2025-10-26T18:58:45.947691235Z [err]  
+2025-10-26T18:58:45.947695650Z [err]  Node.js v20.19.5
+2025-10-26T18:58:47.267669880Z [inf]  
+2025-10-26T18:58:47.267677181Z [inf]  > rest-express@1.0.0 start
+2025-10-26T18:58:47.267683851Z [inf]  > NODE_ENV=production node dist/index.js
+2025-10-26T18:58:47.267691048Z [inf]  
+2025-10-26T18:58:48.752082601Z [err]    code: 'ERR_INVALID_URL',
+2025-10-26T18:58:48.752092080Z [err]    input: 'archetype-db.DATABASE_URL'
+2025-10-26T18:58:48.752097042Z [err]  }
+2025-10-26T18:58:48.752102282Z [err]  
+2025-10-26T18:58:48.752106845Z [err]  Node.js v20.19.5
+2025-10-26T18:58:48.752441862Z [err]                              ^
+2025-10-26T18:58:48.752446428Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-26T18:58:48.752448994Z [err]  
+2025-10-26T18:58:48.752456124Z [err]  TypeError: Invalid URL
+2025-10-26T18:58:48.752456407Z [err]  node:internal/url:806
+2025-10-26T18:58:48.752464430Z [err]      at new URL (node:internal/url:806:29)
+2025-10-26T18:58:48.752464575Z [err]      const href = bindingUrl.parse(input, base, raiseException);
+2025-10-26T18:58:48.752507984Z [err]      at server/db.ts (file:///app/dist/index.js:1562:14)
+2025-10-26T18:58:48.752520221Z [err]      at __init (file:///app/dist/index.js:4:56)
+2025-10-26T18:58:48.752527748Z [err]      at file:///app/dist/index.js:4601:1
+2025-10-26T18:58:48.752539102Z [err]      at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-10-26T18:58:48.752545391Z [err]      at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-10-26T18:58:48.752552077Z [err]      at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+2025-10-26T18:58:49.794039709Z [inf]  
+2025-10-26T18:58:49.794045815Z [inf]  > rest-express@1.0.0 start
+2025-10-26T18:58:49.794050428Z [inf]  > NODE_ENV=production node dist/index.js
+2025-10-26T18:58:49.794054433Z [inf]  
+2025-10-26T18:58:50.875914719Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-26T18:58:50.875929462Z [err]  node:internal/url:806
+2025-10-26T18:58:50.875936284Z [err]      const href = bindingUrl.parse(input, base, raiseException);
+2025-10-26T18:58:50.875943974Z [err]                              ^
+2025-10-26T18:58:50.875950825Z [err]  
+2025-10-26T18:58:50.875958042Z [err]  TypeError: Invalid URL
+2025-10-26T18:58:50.875964629Z [err]      at new URL (node:internal/url:806:29)
+2025-10-26T18:58:50.875971155Z [err]      at server/db.ts (file:///app/dist/index.js:1562:14)
+2025-10-26T18:58:50.875977603Z [err]      at __init (file:///app/dist/index.js:4:56)
+2025-10-26T18:58:50.875984429Z [err]      at file:///app/dist/index.js:4601:1
+2025-10-26T18:58:50.875991141Z [err]      at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-10-26T18:58:50.875999581Z [err]      at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-10-26T18:58:50.876006049Z [err]      at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+2025-10-26T18:58:50.876012546Z [err]    code: 'ERR_INVALID_URL',
+2025-10-26T18:58:50.876018559Z [err]    input: 'archetype-db.DATABASE_URL'
+2025-10-26T18:58:50.876024445Z [err]  }
+2025-10-26T18:58:50.876031044Z [err]  
+2025-10-26T18:58:50.876037833Z [err]  Node.js v20.19.5
+2025-10-26T18:58:52.155262652Z [inf]  
+2025-10-26T18:58:52.155270164Z [inf]  > rest-express@1.0.0 start
+2025-10-26T18:58:52.155275156Z [inf]  > NODE_ENV=production node dist/index.js
+2025-10-26T18:58:52.155280011Z [inf]  
+2025-10-26T18:58:53.224307286Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-26T18:58:53.231920767Z [err]  node:internal/url:806
+2025-10-26T18:58:53.231926689Z [err]      const href = bindingUrl.parse(input, base, raiseException);
+2025-10-26T18:58:53.231932201Z [err]                              ^
+2025-10-26T18:58:53.231938205Z [err]  
+2025-10-26T18:58:53.231944026Z [err]  TypeError: Invalid URL
+2025-10-26T18:58:53.231949072Z [err]      at new URL (node:internal/url:806:29)
+2025-10-26T18:58:53.231954626Z [err]      at server/db.ts (file:///app/dist/index.js:1562:14)
+2025-10-26T18:58:53.231959952Z [err]      at __init (file:///app/dist/index.js:4:56)
+2025-10-26T18:58:53.231965598Z [err]      at file:///app/dist/index.js:4601:1
+2025-10-26T18:58:53.231971073Z [err]      at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-10-26T18:58:53.231977733Z [err]      at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-10-26T18:58:53.231982892Z [err]      at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+2025-10-26T18:58:53.231988134Z [err]    code: 'ERR_INVALID_URL',
+2025-10-26T18:58:53.231993298Z [err]    input: 'archetype-db.DATABASE_URL'
+2025-10-26T18:58:53.231998817Z [err]  }
+2025-10-26T18:58:53.232004012Z [err]  
+2025-10-26T18:58:53.232009933Z [err]  Node.js v20.19.5
+2025-10-26T18:58:54.796933831Z [inf]  
+2025-10-26T18:58:54.796938927Z [inf]  > rest-express@1.0.0 start
+2025-10-26T18:58:54.796943562Z [inf]  > NODE_ENV=production node dist/index.js
+2025-10-26T18:58:54.796948229Z [inf]  
+2025-10-26T18:58:55.771320080Z [err]  node:internal/url:806
+2025-10-26T18:58:55.771322606Z [err]  }
+2025-10-26T18:58:55.771329001Z [err]      const href = bindingUrl.parse(input, base, raiseException);
+2025-10-26T18:58:55.771332684Z [err]  
+2025-10-26T18:58:55.771335986Z [err]                              ^
+2025-10-26T18:58:55.771339591Z [err]  Node.js v20.19.5
+2025-10-26T18:58:55.771342581Z [err]  
+2025-10-26T18:58:55.771347815Z [err]  TypeError: Invalid URL
+2025-10-26T18:58:55.771352300Z [err]      at new URL (node:internal/url:806:29)
+2025-10-26T18:58:55.771359817Z [err]      at server/db.ts (file:///app/dist/index.js:1562:14)
+2025-10-26T18:58:55.771361437Z [err]      at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-10-26T18:58:55.771366829Z [err]      at __init (file:///app/dist/index.js:4:56)
+2025-10-26T18:58:55.771368249Z [err]      at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-10-26T18:58:55.771372826Z [err]      at file:///app/dist/index.js:4601:1
+2025-10-26T18:58:55.771378832Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-26T18:58:55.771392080Z [err]      at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+2025-10-26T18:58:55.771406578Z [err]    code: 'ERR_INVALID_URL',
+2025-10-26T18:58:55.771415961Z [err]    input: 'archetype-db.DATABASE_URL'
+2025-10-26T18:58:56.907585858Z [inf]  
+2025-10-26T18:58:56.907593077Z [inf]  > rest-express@1.0.0 start
+2025-10-26T18:58:56.907598023Z [inf]  > NODE_ENV=production node dist/index.js
+2025-10-26T18:58:56.907602925Z [inf]  
+2025-10-26T18:58:57.971272612Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-26T18:58:57.978406681Z [err]  node:internal/url:806
+2025-10-26T18:58:57.978413535Z [err]      const href = bindingUrl.parse(input, base, raiseException);
+2025-10-26T18:58:57.978418019Z [err]                              ^
+2025-10-26T18:58:57.978422419Z [err]  
+2025-10-26T18:58:57.978426858Z [err]  TypeError: Invalid URL
+2025-10-26T18:58:57.978431222Z [err]      at new URL (node:internal/url:806:29)
+2025-10-26T18:58:57.978434962Z [err]      at server/db.ts (file:///app/dist/index.js:1562:14)
+2025-10-26T18:58:57.978439296Z [err]      at __init (file:///app/dist/index.js:4:56)
+2025-10-26T18:58:57.978445107Z [err]      at file:///app/dist/index.js:4601:1
+2025-10-26T18:58:57.978449499Z [err]      at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-10-26T18:58:57.978455199Z [err]      at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-10-26T18:58:57.978459359Z [err]      at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+2025-10-26T18:58:57.978463232Z [err]    code: 'ERR_INVALID_URL',
+2025-10-26T18:58:57.978467095Z [err]    input: 'archetype-db.DATABASE_URL'
+2025-10-26T18:58:57.978470858Z [err]  }
+2025-10-26T18:58:57.978475013Z [err]  
+2025-10-26T18:58:57.978479098Z [err]  Node.js v20.19.5
+2025-10-26T18:58:59.912733656Z [inf]  
+2025-10-26T18:58:59.912738872Z [inf]  > rest-express@1.0.0 start
+2025-10-26T18:58:59.912744415Z [inf]  > NODE_ENV=production node dist/index.js
+2025-10-26T18:58:59.912749783Z [inf]  
+2025-10-26T18:59:00.852555044Z [err]      at file:///app/dist/index.js:4601:1
+2025-10-26T18:59:00.852564983Z [err]      at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-10-26T18:59:00.852570276Z [err]      at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-10-26T18:59:00.852575302Z [err]      at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+2025-10-26T18:59:00.852580521Z [err]    code: 'ERR_INVALID_URL',
+2025-10-26T18:59:00.852586827Z [err]    input: 'archetype-db.DATABASE_URL'
+2025-10-26T18:59:00.852591791Z [err]  }
+2025-10-26T18:59:00.852596803Z [err]  
+2025-10-26T18:59:00.852602059Z [err]  Node.js v20.19.5
+2025-10-26T18:59:00.852611163Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-26T18:59:00.852616937Z [err]  node:internal/url:806
+2025-10-26T18:59:00.852621311Z [err]      const href = bindingUrl.parse(input, base, raiseException);
+2025-10-26T18:59:00.852626428Z [err]                              ^
+2025-10-26T18:59:00.852630656Z [err]  
+2025-10-26T18:59:00.852635038Z [err]  TypeError: Invalid URL
+2025-10-26T18:59:00.852639220Z [err]      at new URL (node:internal/url:806:29)
+2025-10-26T18:59:00.852643676Z [err]      at server/db.ts (file:///app/dist/index.js:1562:14)
+2025-10-26T18:59:00.852647951Z [err]      at __init (file:///app/dist/index.js:4:56)
+2025-10-26T18:59:02.037316904Z [inf]  
+2025-10-26T18:59:02.037322756Z [inf]  > rest-express@1.0.0 start
+2025-10-26T18:59:02.037329017Z [inf]  > NODE_ENV=production node dist/index.js
+2025-10-26T18:59:02.037334960Z [inf]  
+2025-10-26T18:59:03.149934979Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-26T18:59:03.153438028Z [err]  node:internal/url:806
+2025-10-26T18:59:03.153441448Z [err]      at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+2025-10-26T18:59:03.153449243Z [err]      const href = bindingUrl.parse(input, base, raiseException);
+2025-10-26T18:59:03.153457210Z [err]                              ^
+2025-10-26T18:59:03.153457324Z [err]    code: 'ERR_INVALID_URL',
+2025-10-26T18:59:03.153467122Z [err]    input: 'archetype-db.DATABASE_URL'
+2025-10-26T18:59:03.153468431Z [err]  
+2025-10-26T18:59:03.153476564Z [err]  TypeError: Invalid URL
+2025-10-26T18:59:03.153476845Z [err]  }
+2025-10-26T18:59:03.153485668Z [err]      at new URL (node:internal/url:806:29)
+2025-10-26T18:59:03.153486118Z [err]  
+2025-10-26T18:59:03.153493677Z [err]      at server/db.ts (file:///app/dist/index.js:1562:14)
+2025-10-26T18:59:03.153498225Z [err]  Node.js v20.19.5
+2025-10-26T18:59:03.153501249Z [err]      at __init (file:///app/dist/index.js:4:56)
+2025-10-26T18:59:03.153507365Z [err]      at file:///app/dist/index.js:4601:1
+2025-10-26T18:59:03.153513632Z [err]      at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-10-26T18:59:03.153518674Z [err]      at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
