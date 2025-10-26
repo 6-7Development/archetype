@@ -20,7 +20,10 @@ import {
   Wrench,
   CheckCircle2,
   Clock,
-  Loader2
+  Loader2,
+  XCircle,
+  FileText,
+  GitCommit
 } from 'lucide-react';
 
 type StepState = 'pending' | 'running' | 'ok' | 'fail';
@@ -31,7 +34,7 @@ interface HealingStep {
   state: StepState;
 }
 
-type RunPhase = 'idle' | 'analyzing' | 'executing' | 'completed' | 'failed';
+type RunPhase = 'idle' | 'analyzing' | 'awaiting_approval' | 'executing' | 'building' | 'committing' | 'completed' | 'failed';
 
 interface HealMessage {
   id: string;
@@ -42,6 +45,19 @@ interface HealMessage {
   diff?: string;
   timestamp: Date;
   sessionId?: string;
+}
+
+interface ApprovalRequest {
+  messageId: string;
+  summary: string;
+  filesChanged: string[];
+  estimatedImpact: string;
+}
+
+interface ProgressStep {
+  id: string;
+  label: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'failed';
 }
 
 function PlatformHealingContent() {
@@ -58,6 +74,15 @@ function PlatformHealingContent() {
   const [healingMessages, setHealingMessages] = useState<HealMessage[]>([]);
   const [pendingWrite, setPendingWrite] = useState<{ path: string; diff: string; sessionId: string } | null>(null);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [approvalRequest, setApprovalRequest] = useState<ApprovalRequest | null>(null);
+  const [progressSteps, setProgressSteps] = useState<ProgressStep[]>([
+    { id: 'analyze', label: 'Analyzed', status: 'pending' },
+    { id: 'approval', label: 'Awaiting approval', status: 'pending' },
+    { id: 'approved', label: 'Approved', status: 'pending' },
+    { id: 'building', label: 'Building changes', status: 'pending' },
+    { id: 'committing', label: 'Committing to GitHub', status: 'pending' },
+    { id: 'deployed', label: 'Deployed', status: 'pending' },
+  ]);
 
   // WebSocket connection for live metrics and heal events
   const wsStream = useWebSocketStream('platform-healing', 'admin');
@@ -104,55 +129,78 @@ function PlatformHealingContent() {
     },
   });
 
-  // Approve write mutation
+  // Approve changes mutation
   const approveMutation = useMutation({
-    mutationFn: async (sessionId: string) => {
-      return await apiRequest('POST', `/api/platform/heal/${sessionId}/approve`, {});
+    mutationFn: async (messageId: string) => {
+      return await apiRequest('POST', `/api/meta-sysop/approve/${messageId}`, {});
     },
     onSuccess: () => {
-      setPendingWrite(null);
+      setApprovalRequest(null);
+      setPhase('building');
+      updateProgressStep('approved', 'completed');
+      updateProgressStep('building', 'in_progress');
       toast({
-        title: 'Change approved',
-        description: 'Meta-SySop will apply the change and continue',
+        title: 'Changes approved',
+        description: 'Meta-SySop will now build and deploy your changes',
       });
     },
     onError: (error: any) => {
       toast({
         variant: 'destructive',
         title: 'Approval failed',
-        description: error.message || 'Failed to approve change',
+        description: error.message || 'Failed to approve changes',
       });
     },
   });
 
-  // Reject write mutation
+  // Reject changes mutation
   const rejectMutation = useMutation({
-    mutationFn: async (sessionId: string) => {
-      return await apiRequest('POST', `/api/platform/heal/${sessionId}/reject`, {});
+    mutationFn: async (messageId: string) => {
+      return await apiRequest('POST', `/api/meta-sysop/reject/${messageId}`, {});
     },
     onSuccess: () => {
-      setPendingWrite(null);
+      setApprovalRequest(null);
+      setPhase('idle');
+      updateProgressStep('approval', 'failed');
       toast({
-        title: 'Change rejected',
-        description: 'Meta-SySop will skip this change and continue',
+        title: 'Changes rejected',
+        description: 'Meta-SySop will not proceed with these changes',
       });
     },
     onError: (error: any) => {
       toast({
         variant: 'destructive',
         title: 'Rejection failed',
-        description: error.message || 'Failed to reject change',
+        description: error.message || 'Failed to reject changes',
       });
     },
   });
+
+  // Helper function to update progress steps
+  const updateProgressStep = (stepId: string, status: ProgressStep['status']) => {
+    setProgressSteps(prev => prev.map(step =>
+      step.id === stepId ? { ...step, status } : step
+    ));
+  };
 
   function startRun(text: string) {
     // Reset healing state
     setHealingMessages([]);
     setPendingWrite(null);
     setCurrentSessionId(null);
+    setApprovalRequest(null);
     setPhase('analyzing');
     setFeed(f => [`▶️ New run started: ${text.slice(0, 80)}${text.length > 80 ? '…' : ''}`, ...f]);
+    
+    // Reset progress steps
+    setProgressSteps([
+      { id: 'analyze', label: 'Analyzed', status: 'in_progress' },
+      { id: 'approval', label: 'Awaiting approval', status: 'pending' },
+      { id: 'approved', label: 'Approved', status: 'pending' },
+      { id: 'building', label: 'Building changes', status: 'pending' },
+      { id: 'committing', label: 'Committing to GitHub', status: 'pending' },
+      { id: 'deployed', label: 'Deployed', status: 'pending' },
+    ]);
     
     // Trigger actual auto-heal (will set sessionId in onSuccess)
     autoHealMutation.mutate(text);
@@ -168,6 +216,41 @@ function PlatformHealingContent() {
 
     // Process the latest heal event
     const latestEvent = healEvents[healEvents.length - 1];
+    
+    // Handle approval_requested event separately
+    if (latestEvent.type === 'approval_requested') {
+      setPhase('awaiting_approval');
+      updateProgressStep('analyze', 'completed');
+      updateProgressStep('approval', 'in_progress');
+      
+      setApprovalRequest({
+        messageId: latestEvent.messageId || '',
+        summary: latestEvent.summary || '',
+        filesChanged: Array.isArray(latestEvent.filesChanged) ? latestEvent.filesChanged : [],
+        estimatedImpact: latestEvent.estimatedImpact || 'medium',
+      });
+      
+      setFeed(f => [`🔔 Approval requested • ${new Date().toLocaleTimeString()}`, ...f]);
+      return;
+    }
+
+    // Handle progress events
+    if (latestEvent.type === 'progress') {
+      const message = latestEvent.message || '';
+      setFeed(f => [`📋 ${message} • ${new Date().toLocaleTimeString()}`, ...f]);
+      
+      // Update progress based on message content
+      if (message.includes('Committing') || message.includes('Committed')) {
+        updateProgressStep('building', 'completed');
+        updateProgressStep('committing', 'in_progress');
+        setPhase('committing');
+      } else if (message.includes('deploy') || message.includes('Deploy')) {
+        updateProgressStep('committing', 'completed');
+        updateProgressStep('deployed', 'in_progress');
+      }
+      return;
+    }
+
     const eventType = latestEvent.type?.replace('heal:', '') as HealMessage['type'];
 
     // Create heal message for chat UI
@@ -221,11 +304,15 @@ function PlatformHealingContent() {
 
       case 'heal:completed':
         setPhase('completed');
+        updateProgressStep('deployed', 'completed');
         setFeed(f => [`✅ Healing completed • ${new Date().toLocaleTimeString()}`, ...f]);
         break;
 
       case 'heal:error':
         setPhase('failed');
+        setProgressSteps(prev => prev.map(step => 
+          step.status === 'in_progress' ? { ...step, status: 'failed' as const } : step
+        ));
         setFeed(f => [`❌ Healing failed: ${latestEvent.error || 'Unknown error'} • ${new Date().toLocaleTimeString()}`, ...f]);
         break;
     }
@@ -378,6 +465,141 @@ function PlatformHealingContent() {
               </div>
             </div>
           </div>
+
+          {/* Progress Steps */}
+          {phase !== 'idle' && (
+            <div className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl p-3 sm:p-4">
+              <h3 className="font-bold text-sm mb-3" data-testid="progress-title">Build Progress</h3>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                {progressSteps.map((step, index) => (
+                  <div key={step.id} className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#0c121c] border border-slate-700/50">
+                      {step.status === 'completed' ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" data-testid={`step-icon-${step.id}-completed`} />
+                      ) : step.status === 'in_progress' ? (
+                        <Loader2 className="w-3.5 h-3.5 text-blue-400 animate-spin shrink-0" data-testid={`step-icon-${step.id}-in_progress`} />
+                      ) : step.status === 'failed' ? (
+                        <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0" data-testid={`step-icon-${step.id}-failed`} />
+                      ) : (
+                        <Clock className="w-3.5 h-3.5 text-slate-600 shrink-0" data-testid={`step-icon-${step.id}-pending`} />
+                      )}
+                      <span className={`text-xs font-medium whitespace-nowrap ${
+                        step.status === 'completed' ? 'text-emerald-400' :
+                        step.status === 'in_progress' ? 'text-blue-300' :
+                        step.status === 'failed' ? 'text-red-400' :
+                        'text-slate-500'
+                      }`} data-testid={`step-label-${step.id}`}>
+                        {step.label}
+                      </span>
+                    </div>
+                    {index < progressSteps.length - 1 && (
+                      <div className="w-2 h-0.5 bg-slate-700 hidden sm:block" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Approval Request Card */}
+          {approvalRequest && (
+            <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-2 border-blue-500/30 rounded-xl shadow-2xl p-4 sm:p-5 animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
+                  <Wrench className="w-5 h-5 text-blue-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-base mb-1" data-testid="approval-title">Approval Required</h3>
+                  <p className="text-sm text-slate-400">Meta-SySop has analyzed the issue and prepared a solution. Please review and approve.</p>
+                </div>
+              </div>
+
+              {/* Summary */}
+              <div className="mb-4 p-3 bg-[#0c121c] border border-slate-700/50 rounded-lg">
+                <h4 className="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Summary</h4>
+                <p className="text-sm text-slate-200 break-words whitespace-pre-wrap" data-testid="text-approval-summary">
+                  {approvalRequest.summary}
+                </p>
+              </div>
+
+              {/* Files Changed */}
+              <div className="mb-4 p-3 bg-[#0c121c] border border-slate-700/50 rounded-lg">
+                <h4 className="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide flex items-center gap-2">
+                  <FileText className="w-3.5 h-3.5" />
+                  Files to be Changed ({approvalRequest.filesChanged.length})
+                </h4>
+                <div className="space-y-1.5" data-testid="text-files-changed">
+                  {approvalRequest.filesChanged.map((file, index) => (
+                    <div key={index} className="flex items-center gap-2 text-sm font-mono">
+                      <div className="w-1 h-1 rounded-full bg-blue-400 shrink-0" />
+                      <span className="text-slate-300 break-all">{file}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Estimated Impact */}
+              <div className="mb-5 p-3 bg-[#0c121c] border border-slate-700/50 rounded-lg">
+                <h4 className="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Estimated Impact</h4>
+                <Badge 
+                  variant={approvalRequest.estimatedImpact === 'low' ? 'default' : 
+                          approvalRequest.estimatedImpact === 'high' ? 'destructive' : 'secondary'}
+                  className="font-semibold"
+                  data-testid="text-estimated-impact"
+                >
+                  {approvalRequest.estimatedImpact.toUpperCase()}
+                </Badge>
+                <p className="text-xs text-slate-500 mt-2">
+                  {approvalRequest.estimatedImpact === 'low' && 'Minor changes with low risk'}
+                  {approvalRequest.estimatedImpact === 'medium' && 'Moderate changes that may affect features'}
+                  {approvalRequest.estimatedImpact === 'high' && 'Significant changes requiring careful review'}
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  className="flex-1 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-semibold shadow-lg shadow-emerald-500/25"
+                  size="lg"
+                  onClick={() => approveMutation.mutate(approvalRequest.messageId)}
+                  disabled={approveMutation.isPending}
+                  data-testid="button-approve-changes"
+                >
+                  {approveMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Approving...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                      Approve & Build
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="flex-1 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 font-semibold shadow-lg shadow-red-500/25"
+                  size="lg"
+                  onClick={() => rejectMutation.mutate(approvalRequest.messageId)}
+                  disabled={rejectMutation.isPending}
+                  data-testid="button-reject-changes"
+                >
+                  {rejectMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Rejecting...
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="w-4 h-4 mr-2" />
+                      Reject
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* Healing Chat Card */}
           <div className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl overflow-hidden flex flex-col" style={{ height: '500px' }} data-testid="chat-card">

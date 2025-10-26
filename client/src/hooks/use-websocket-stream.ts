@@ -9,7 +9,7 @@ export interface Task {
 }
 
 interface StreamMessage {
-  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics' | 'heal:init' | 'heal:thought' | 'heal:tool' | 'heal:write-pending' | 'heal:approved' | 'heal:rejected' | 'heal:completed' | 'heal:error';
+  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics' | 'heal:init' | 'heal:thought' | 'heal:tool' | 'heal:write-pending' | 'heal:approved' | 'heal:rejected' | 'heal:completed' | 'heal:error' | 'approval_requested' | 'progress';
   commandId?: string;
   status?: string;
   message?: string;
@@ -26,7 +26,7 @@ interface StreamMessage {
   sessionId?: string;
   filename?: string;
   language?: string;
-  filesChanged?: number;
+  filesChanged?: number | string[];
   linesAdded?: number;
   linesRemoved?: number;
   tool?: string;
@@ -57,6 +57,10 @@ interface StreamMessage {
   changes?: Array<{ path: string; operation: string }>;
   issue?: string;
   timestamp?: string;
+  // Approval-specific fields
+  summary?: string;
+  estimatedImpact?: string;
+  messageId?: string;
 }
 
 interface StreamState {
@@ -267,7 +271,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
               setStreamState(prev => ({
                 ...prev,
                 fileSummary: {
-                  filesChanged: message.filesChanged || 0,
+                  filesChanged: typeof message.filesChanged === 'number' ? message.filesChanged : (Array.isArray(message.filesChanged) ? message.filesChanged.length : 0),
                   linesAdded: message.linesAdded || 0,
                   linesRemoved: message.linesRemoved,
                 },
@@ -357,6 +361,8 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
             case 'heal:rejected':
             case 'heal:completed':
             case 'heal:error':
+            case 'approval_requested':
+            case 'progress':
               // NEW: Expose heal events to consumers
               console.log(`🔧 [HEAL] ${message.type}:`, message);
               setHealEvents(prev => [...prev, message]);
