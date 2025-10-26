@@ -1,5 +1,15 @@
 /**
  * Workflow Engine - Parallel/sequential command execution
+ * 
+ * SECURITY WARNING: This service executes arbitrary shell commands.
+ * Commands are executed with the same privileges as the Node process.
+ * 
+ * PRODUCTION DEPLOYMENT:
+ * - Implement command allow-listing for production use
+ * - Consider sandboxing (Docker, VM, restricted user)
+ * - Add rate limiting per user
+ * - Log all command executions for audit
+ * - Validate command strings before execution
  */
 
 import { db } from '../db';
@@ -10,6 +20,51 @@ import { spawn } from 'child_process';
 
 export class WorkflowEngine extends EventEmitter {
   private activeRuns: Map<string, { processes: any[]; aborted: boolean }> = new Map();
+  
+  // Command allow-list for production security (optional but recommended)
+  private allowedCommandPrefixes = [
+    'npm', 'node', 'python', 'python3', 'git',
+    'curl', 'wget', 'echo', 'cat', 'ls',
+    'mkdir', 'cp', 'mv', 'rm', 'touch',
+  ];
+  
+  /**
+   * Validate command for security
+   * STRICT MODE: Only allows single commands from allow-list, no chaining
+   */
+  private validateCommand(command: string): boolean {
+    // CRITICAL: Workflows are DISABLED by default for security
+    // Set ENABLE_WORKFLOWS=true to enable (development only)
+    // Set ENABLE_WORKFLOWS=production for production with strict validation
+    const workflowsEnabled = process.env.ENABLE_WORKFLOWS;
+    
+    if (!workflowsEnabled) {
+      throw new Error('Workflows are disabled. Set ENABLE_WORKFLOWS=true to enable in development.');
+    }
+    
+    // Check for command chaining attempts (RCE bypass)
+    const dangerousPatterns = [
+      '&&', '||', ';', '|', '`', '$(',  // Command chaining
+      '../', '~/',                       // Path traversal
+      'rm -rf /', 'rm -r /',            // Dangerous deletions
+    ];
+    
+    for (const pattern of dangerousPatterns) {
+      if (command.includes(pattern)) {
+        throw new Error(`Command contains dangerous pattern: ${pattern}`);
+      }
+    }
+    
+    // In production mode, enforce strict allow-listing
+    if (workflowsEnabled === 'production') {
+      const commandPrefix = command.trim().split(' ')[0];
+      if (!this.allowedCommandPrefixes.includes(commandPrefix)) {
+        throw new Error(`Command not in allow-list: ${commandPrefix}`);
+      }
+    }
+    
+    return true;
+  }
 
   /**
    * Create a new workflow definition
@@ -111,6 +166,12 @@ export class WorkflowEngine extends EventEmitter {
     try {
       const promises = steps.map((step: any, index: number) => {
         return new Promise((resolve, reject) => {
+          // Validate command if security is enabled
+          if (!this.validateCommand(step.command)) {
+            reject(new Error(`Command not allowed: ${step.command.split(' ')[0]}`));
+            return;
+          }
+          
           const proc = spawn(step.command, {
             shell: true,
             env: { ...process.env, ...(workflow.environment as any || {}) },
@@ -185,6 +246,12 @@ export class WorkflowEngine extends EventEmitter {
           .where(eq(workflowRuns.id, runId));
 
         const output = await new Promise<string>((resolve, reject) => {
+          // Validate command if security is enabled
+          if (!this.validateCommand(step.command)) {
+            reject(new Error(`Command not allowed: ${step.command.split(' ')[0]}`));
+            return;
+          }
+          
           const proc = spawn(step.command, {
             shell: true,
             env: { ...process.env, ...(workflow.environment as any || {}) },

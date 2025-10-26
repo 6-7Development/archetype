@@ -93,9 +93,12 @@ export class AutomationService extends EventEmitter {
 
     // Increment template usage if from template
     if (params.templateId) {
-      await db.update(automationTemplates)
-        .set({ usageCount: db.query.automationTemplates.findFirst({ where: eq(automationTemplates.id, params.templateId) }).then(t => (t?.usageCount || 0) + 1) as any })
-        .where(eq(automationTemplates.id, params.templateId));
+      const template = await this.getTemplate(params.templateId);
+      if (template) {
+        await db.update(automationTemplates)
+          .set({ usageCount: (template.usageCount || 0) + 1 })
+          .where(eq(automationTemplates.id, params.templateId));
+      }
     }
 
     this.emit('automation:deployed', { runId, ...params });
