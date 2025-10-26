@@ -109,86 +109,110 @@ function PlatformHealingContent() {
   // Meta-SySop streaming mutation (NEW SYSTEM with all tools!)
   const autoHealMutation = useMutation({
     mutationFn: async (issue: string) => {
-      // Use the NEW Meta-SySop stream endpoint with proper tools
+      setPhase('analyzing');
+      setHealingMessages([{ 
+        id: Date.now().toString(), 
+        type: 'init', 
+        text: 'Starting Meta-SySop...', 
+        timestamp: new Date() 
+      }]);
+
       const response = await fetch('/api/meta-sysop/stream', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          message: issue,
-          autoCommit,
-          autoPush,
-        }),
+        body: JSON.stringify({ message: issue, autoCommit, autoPush }),
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+        throw new Error(`Failed to start: ${response.statusText}`);
       }
 
-      // Set up SSE reading
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
+      let buffer = '';
 
-      if (reader) {
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+      if (!reader) {
+        throw new Error('No response stream');
+      }
 
-            const chunk = decoder.decode(value);
-            const lines = chunk.split('\n');
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-            for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                const data = JSON.parse(line.slice(6));
-                
-                // Handle different event types
-                if (data.type === 'progress') {
-                  setFeed(f => [`📋 ${data.message}`, ...f]);
-                } else if (data.type === 'approval_requested') {
-                  setPhase('awaiting_approval');
-                  updateProgressStep('analyze', 'completed');
-                  updateProgressStep('approval', 'in_progress');
-                  setApprovalRequest({
-                    messageId: data.messageId,
-                    summary: data.summary,
-                    filesChanged: data.filesChanged,
-                    estimatedImpact: data.estimatedImpact,
-                  });
-                } else if (data.type === 'task_list_created') {
-                  setFeed(f => [`✅ Task list created`, ...f]);
-                } else if (data.type === 'file_change') {
-                  setFeed(f => [`📝 ${data.file.operation}: ${data.file.path}`, ...f]);
-                } else if (data.type === 'error') {
-                  setFeed(f => [`❌ ${data.message}`, ...f]);
-                  setPhase('failed');
-                }
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (!line.trim() || !line.startsWith('data: ')) continue;
+            
+            try {
+              const data = JSON.parse(line.slice(6));
+              console.log('[META-SYSOP] Event:', data.type, data);
+
+              // Add to chat messages for ALL events
+              if (data.type === 'progress' && data.message) {
+                setHealingMessages(prev => [...prev, {
+                  id: Date.now().toString(),
+                  type: 'thought',
+                  text: data.message,
+                  timestamp: new Date()
+                }]);
+                setFeed(f => [`📋 ${data.message}`, ...f]);
               }
+              
+              if (data.type === 'approval_requested') {
+                setPhase('awaiting_approval');
+                updateProgressStep('analyze', 'completed');
+                updateProgressStep('approval', 'in_progress');
+                setApprovalRequest({
+                  messageId: data.messageId,
+                  summary: data.summary,
+                  filesChanged: data.filesChanged,
+                  estimatedImpact: data.estimatedImpact,
+                });
+                setHealingMessages(prev => [...prev, {
+                  id: Date.now().toString(),
+                  type: 'thought',
+                  text: `🔔 Approval requested:\n\n${data.summary}`,
+                  timestamp: new Date()
+                }]);
+              }
+              
+              if (data.type === 'file_change') {
+                setFeed(f => [`📝 ${data.file.operation}: ${data.file.path}`, ...f]);
+                setHealingMessages(prev => [...prev, {
+                  id: Date.now().toString(),
+                  type: 'tool',
+                  text: `${data.file.operation}: ${data.file.path}`,
+                  timestamp: new Date()
+                }]);
+              }
+            } catch (err) {
+              console.error('[META-SYSOP] Parse error:', err);
             }
           }
-        } finally {
-          reader.releaseLock();
         }
+      } finally {
+        reader.releaseLock();
       }
 
       return { success: true };
     },
     onSuccess: () => {
-      toast({
-        title: 'Meta-SySop working',
-        description: 'Platform healing in progress',
-      });
+      setPhase('completed');
+      toast({ title: 'Complete', description: 'Meta-SySop finished' });
       queryClient.invalidateQueries({ queryKey: ['/api/platform/status'] });
     },
     onError: (error: any) => {
+      setPhase('failed');
       toast({
         variant: 'destructive',
-        title: 'Meta-SySop failed',
-        description: error.message || 'Failed to start healing',
+        title: 'Failed',
+        description: error.message,
       });
-      setPhase('failed');
     },
   });
 
