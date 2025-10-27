@@ -1405,51 +1405,9 @@ DO NOT create new tasks - UPDATE existing ones!`;
           content: toolResults,
         });
       } else {
-        // 🎯 FINAL VALIDATION: Only enforce task completion if Meta-SySop created a task list
-        // If just chatting (no task list), let conversation end naturally
-        const finalCheck = await readTaskList({ userId });
-
-        if (!finalCheck.success) {
-          // Task list check failed - if there's an active list we created, this is a problem
-          // If no active list, we're just chatting, so it's fine
-          console.warn('[META-SYSOP] readTaskList check failed:', finalCheck.error);
-          // Allow conversation to continue/end naturally
-          continueLoop = false;
-        } else if (finalCheck.taskLists) {
-          const activeList = finalCheck.taskLists.find((list: any) => list.status === 'active');
-          if (activeList) {
-            // Found an active task list - enforce completion
-            const incompleteTasks = activeList.tasks.filter((t: any) => t.status !== 'completed');
-            if (incompleteTasks.length > 0) {
-              console.error('[META-SYSOP-ANTI-LYING] Blocked loop end - tasks incomplete:', incompleteTasks.map((t: any) => t.title));
-              sendEvent('error', { message: `Cannot finish - ${incompleteTasks.length} tasks incomplete` });
-
-              // Force Meta-SySop to continue working
-              const errorMessage = `❌ BLOCKED: Cannot end session with incomplete tasks!\n\n` +
-                `Incomplete tasks (${incompleteTasks.length}):\n` +
-                incompleteTasks.map((t: any) => `- ${t.title} (${t.status})`).join('\n') +
-                `\n\nYou must complete ALL tasks before finishing. Call updateTask() to mark remaining tasks complete.`;
-
-              conversationMessages.push({
-                role: 'user',
-                content: errorMessage,
-              });
-              continue; // Force another iteration
-            } else {
-              // Active task list exists, all tasks complete
-              console.log('[META-SYSOP-ENFORCEMENT] ✅ All tasks verified complete - ending session');
-              continueLoop = false;
-            }
-          } else {
-            // No active task list - just a conversation, let it end naturally
-            console.log('[META-SYSOP] No active task list - conversation ending naturally');
-            continueLoop = false;
-          }
-        } else {
-          // No task lists at all - just chatting
-          console.log('[META-SYSOP] No task lists - conversation ending naturally');
-          continueLoop = false;
-        }
+        // No more tool calls - conversation ends naturally (like Replit Agent)
+        console.log('[META-SYSOP] No more tool calls - ending session naturally');
+        continueLoop = false;
       }
     }
 
