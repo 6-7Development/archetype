@@ -198,6 +198,8 @@ function App() {
         <ThemeProvider defaultTheme="dark">
           <VersionProvider mobileBreakpoint={768}>
             <TooltipProvider>
+              {/* Glowing Jesus text - Meta-SySop platform edit demonstration */}
+              <div className="jesus-glow">Jesus</div>
               <CommandPalette />
               <Toaster />
               <Router />

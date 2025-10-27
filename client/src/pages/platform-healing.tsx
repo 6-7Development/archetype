@@ -689,8 +689,8 @@ function PlatformHealingContent() {
           {/* Meta-SySop Chat - Full Chatroom Interface */}
           <div className="bg-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col" style={{ height: '600px' }} data-testid="chat-card">
             <MetaSySopChat 
-              autoCommit={false}
-              autoPush={false}
+              autoCommit={true}
+              autoPush={true}
             />
           </div>
         </section>
