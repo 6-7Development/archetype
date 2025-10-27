@@ -209,11 +209,14 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
   // Update autonomy level mutation
   const updateAutonomyMutation = useMutation({
     mutationFn: async (level: string) => {
-      return await apiRequest('/api/meta-sysop/autonomy-level', {
+      const response = await fetch('/api/meta-sysop/autonomy-level', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ level }),
       });
+      if (!response.ok) throw new Error(await response.text());
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/meta-sysop/autonomy-level'] });

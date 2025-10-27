@@ -464,6 +464,31 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         content: msg.content,
       }));
 
+    // Helper to get file extension for syntax highlighting
+    const getFileExtension = (fileName: string): string => {
+      const ext = fileName.split('.').pop()?.toLowerCase() || 'text';
+      // Map common extensions to language identifiers
+      const langMap: Record<string, string> = {
+        'js': 'javascript',
+        'ts': 'typescript',
+        'tsx': 'typescript',
+        'jsx': 'javascript',
+        'py': 'python',
+        'cpp': 'cpp',
+        'c': 'c',
+        'h': 'c',
+        'java': 'java',
+        'css': 'css',
+        'html': 'html',
+        'json': 'json',
+        'xml': 'xml',
+        'yaml': 'yaml',
+        'yml': 'yaml',
+        'sql': 'sql',
+      };
+      return langMap[ext] || ext;
+    };
+
     // Add current user message with attachments
     let userMessageContent: any = message;
     
@@ -505,31 +530,6 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       
       userMessageContent = contentBlocks;
     }
-    
-    // Helper to get file extension for syntax highlighting
-    const getFileExtension = (fileName: string): string => {
-      const ext = fileName.split('.').pop()?.toLowerCase() || 'text';
-      // Map common extensions to language identifiers
-      const langMap: Record<string, string> = {
-        'js': 'javascript',
-        'ts': 'typescript',
-        'tsx': 'typescript',
-        'jsx': 'javascript',
-        'py': 'python',
-        'cpp': 'cpp',
-        'c': 'c',
-        'h': 'c',
-        'java': 'java',
-        'css': 'css',
-        'html': 'html',
-        'json': 'json',
-        'xml': 'xml',
-        'yaml': 'yaml',
-        'yml': 'yaml',
-        'sql': 'sql',
-      };
-      return langMap[ext] || ext;
-    };
     
     conversationMessages.push({
       role: 'user',
