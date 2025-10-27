@@ -30,7 +30,10 @@ console.info(`[db] Using DATABASE_URL: ${maskedUrl}`);
 
 const poolConfig: any = {
   connectionString: connectionString,
-  connectionTimeoutMillis: 5000,
+  connectionTimeoutMillis: 30000, // 30 seconds (was 5s - too short for cloud DB)
+  max: 20, // Maximum pool size
+  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
+  statement_timeout: 60000, // 60 second query timeout
 };
 
 // ALSO configure Pool SSL for runtime (belt and suspenders approach)
@@ -42,7 +45,7 @@ if (isProduction) {
 
 export const pool = new Pool(poolConfig);
 
-console.info(`[db] Pool config: connectionTimeoutMillis=5000, ssl=${isProduction ? 'enabled (rejectUnauthorized: false)' : 'disabled'}`);
+console.info(`[db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=${isProduction ? 'enabled (rejectUnauthorized: false)' : 'disabled'}`);
 console.info(`[db] SSL Configuration: ${JSON.stringify(poolConfig.ssl)}`);
 console.info(`[db] Connection string includes SSL params: ${connectionString.includes('sslmode=')}`);
 
