@@ -1,6 +1,9 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { storage } from "../storage";
 import { isAuthenticated, isAdmin } from "../universalAuth";
+import { getGitHubService } from "../githubService";
+import { promises as fs } from 'fs';
+import * as path from 'path';
 
 // Owner middleware - checks if user is platform owner
 function requireOwner(req: Request, res: Response, next: NextFunction) {
@@ -31,6 +34,31 @@ function requireAdmin(req: Request, res: Response, next: NextFunction) {
   }
   
   next();
+}
+
+// Helper function to recursively read directory files
+async function readDirRecursive(rootDir: string, currentDir: string, excludePatterns: string[]): Promise<string[]> {
+  const files: string[] = [];
+  const entries = await fs.readdir(currentDir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(currentDir, entry.name);
+    const relativePath = path.relative(rootDir, fullPath);
+
+    // Skip excluded patterns
+    if (excludePatterns.some(pattern => relativePath.startsWith(pattern) || entry.name === pattern)) {
+      continue;
+    }
+
+    if (entry.isDirectory()) {
+      const subFiles = await readDirRecursive(rootDir, fullPath, excludePatterns);
+      files.push(...subFiles);
+    } else if (entry.isFile()) {
+      files.push(relativePath);
+    }
+  }
+
+  return files;
 }
 
 export function registerAdminRoutes(app: Express) {
@@ -275,6 +303,81 @@ export function registerAdminRoutes(app: Express) {
     } catch (error: any) {
       console.error('Error getting satisfaction stats:', error);
       res.status(500).json({ error: error.message || 'Failed to get stats' });
+    }
+  });
+
+  // Force deploy to production - commits and force pushes all workspace changes
+  app.post('/api/admin/force-deploy', isAuthenticated, requireOwner, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const { message } = req.body;
+
+      console.log(`[FORCE-DEPLOY] 🚀 Starting force deploy by ${user.email} (Owner)`);
+      
+      // Get GitHub service
+      const github = getGitHubService();
+      
+      // Project root directory
+      const PROJECT_ROOT = path.resolve(process.cwd());
+      
+      // Files/directories to exclude
+      const EXCLUDE_PATTERNS = [
+        'node_modules',
+        '.git',
+        '.replit',
+        'dist',
+        'build',
+        '.vscode',
+        '.env',
+        '.env.local',
+        'tmp',
+        'logs',
+        'attached_assets',
+        'db.sqlite',
+        'package-lock.json',
+      ];
+
+      console.log('[FORCE-DEPLOY] 📂 Reading workspace files...');
+      const allFiles = await readDirRecursive(PROJECT_ROOT, PROJECT_ROOT, EXCLUDE_PATTERNS);
+      console.log(`[FORCE-DEPLOY] Found ${allFiles.length} files to deploy`);
+
+      // Read file contents
+      const fileChanges = await Promise.all(
+        allFiles.map(async (filePath) => {
+          const fullPath = path.join(PROJECT_ROOT, filePath);
+          const content = await fs.readFile(fullPath, 'utf-8');
+          return {
+            path: filePath,
+            content,
+            operation: 'modify' as const,
+          };
+        })
+      );
+
+      console.log(`[FORCE-DEPLOY] 📦 Committing ${fileChanges.length} files to GitHub...`);
+      
+      // Commit all files
+      const commitMessage = message || 'Force deploy from Archetype platform';
+      const result = await github.commitFiles(fileChanges, commitMessage);
+
+      console.log(`[FORCE-DEPLOY] ✅ Successfully deployed!`);
+      console.log(`[FORCE-DEPLOY] Commit: ${result.commitHash}`);
+      console.log(`[FORCE-DEPLOY] URL: ${result.commitUrl}`);
+      console.log(`[FORCE-DEPLOY] 🔄 Railway will auto-deploy within 2-3 minutes`);
+
+      res.json({
+        success: true,
+        commitHash: result.commitHash,
+        commitUrl: result.commitUrl,
+        filesDeployed: fileChanges.length,
+        message: 'Force deploy successful. Railway will auto-deploy within 2-3 minutes.',
+      });
+    } catch (error: any) {
+      console.error('[FORCE-DEPLOY] ❌ Deploy failed:', error);
+      res.status(500).json({ 
+        error: 'Force deploy failed', 
+        details: error.message 
+      });
     }
   });
 }
