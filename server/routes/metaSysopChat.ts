@@ -428,6 +428,19 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     res.end();
   };
 
+  // 🔥 RAILWAY FIX: Heartbeat to prevent 502 timeout errors
+  // Railway kills connections with no data for ~2 minutes
+  // Send keepalive comment every 15 seconds to maintain connection
+  const heartbeatInterval = setInterval(() => {
+    try {
+      res.write(': keepalive\n\n'); // SSE comment (lines starting with : are ignored by EventSource)
+      console.log('[META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout');
+    } catch (error) {
+      console.error('[META-SYSOP-HEARTBEAT] Failed to send keepalive:', error);
+    }
+  }, 15000); // Every 15 seconds
+
+  console.log('[META-SYSOP-CHAT] Heartbeat started - will send keepalive every 15s');
   console.log('[META-SYSOP-CHAT] Entering try block');
   try {
 
@@ -1612,6 +1625,10 @@ Be conversational, be helpful, and only work when asked!`;
           hasSeenToolUse = true; // Mark that we've seen a tool - buffer all text after this
           const { name, input, id } = block;
 
+          // 🔥 RAILWAY FIX: Send progress event BEFORE each tool execution
+          // This keeps the connection alive during long tool operations
+          sendEvent('progress', { message: `🔧 Executing tool: ${name}...` });
+
           try {
             let toolResult: any = null;
 
@@ -2305,6 +2322,10 @@ DO NOT create new tasks - UPDATE existing ones!`;
               tool_use_id: id,
               content: toolResult || 'Success',
             });
+
+            // 🔥 RAILWAY FIX: Send progress event AFTER each tool execution
+            // This provides more frequent updates and keeps connection alive
+            sendEvent('progress', { message: `✅ Tool ${name} completed` });
           } catch (error: any) {
               console.error(`[META-SYSOP] ❌ Tool ${name} failed:`, error);
               console.error(`[META-SYSOP] Tool input:`, JSON.stringify(input, null, 2));
@@ -2315,6 +2336,9 @@ DO NOT create new tasks - UPDATE existing ones!`;
                 is_error: true,
                 content: `Error in ${name}: ${error.message}\n\nThis error has been logged for debugging.`,
               });
+
+              // 🔥 RAILWAY FIX: Send error progress event
+              sendEvent('progress', { message: `❌ Tool ${name} failed: ${error.message}` });
             }
         }
       }
@@ -2455,6 +2479,12 @@ DO NOT create new tasks - UPDATE existing ones!`;
   } catch (error: any) {
     console.error('[META-SYSOP-CHAT] Stream error:', error);
     
+    // 🔥 RAILWAY FIX: Clear heartbeat on error
+    if (heartbeatInterval) {
+      clearInterval(heartbeatInterval);
+      console.log('[META-SYSOP-HEARTBEAT] Cleared on error');
+    }
+
     // Save error message to DB
     try {
       const errorMsg = `❌ Error: ${error.message}`;
@@ -2473,6 +2503,13 @@ DO NOT create new tasks - UPDATE existing ones!`;
       // If we can't save to DB, at least send done event with generic ID
       console.error('[META-SYSOP-CHAT] Failed to save error message:', dbError);
       terminateStream('error-' + Date.now(), error.message);
+    }
+  } finally {
+    // 🔥 RAILWAY FIX: ALWAYS clear heartbeat when stream ends
+    // This ensures cleanup happens on success, error, or early termination
+    if (heartbeatInterval) {
+      clearInterval(heartbeatInterval);
+      console.log('[META-SYSOP-HEARTBEAT] Cleared on stream end');
     }
   }
 });
