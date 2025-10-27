@@ -655,6 +655,11 @@ Be conversational, be helpful, and only work when asked!`;
       },
     ];
 
+    // 🎯 AUTONOMOUS MODE: Remove approval tool when autoCommit=true
+    const availableTools = autoCommit 
+      ? tools.filter(tool => tool.name !== 'request_user_approval')
+      : tools;
+
     const client = new Anthropic({ apiKey: anthropicKey });
     let fullContent = '';
     const fileChanges: Array<{ path: string; operation: string; contentAfter?: string }> = [];
@@ -717,7 +722,7 @@ Be conversational, be helpful, and only work when asked!`;
         max_tokens: 8000,
         system: systemPrompt,
         messages: conversationMessages,
-        tools,
+        tools: availableTools,
         stream: false, // We'll handle our own streaming
       });
 
