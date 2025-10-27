@@ -772,25 +772,34 @@ RETRY NOW - Call readTaskList() first to see task IDs, then start working!`;
 
       const toolResults: any[] = [];
       const hasToolUse = response.content.some(block => block.type === 'tool_use');
+      let hasSeenToolUse = false; // Track if we've seen a tool_use block yet
+      const postToolText: string[] = []; // Buffer text that appears after tools
 
-      // 🎯 ANTI-LYING ENFORCEMENT: If response contains tool calls, SUPPRESS all text blocks
-      // Meta-SySop must wait for tool results before claiming success
+      // 🎯 SMART ANTI-LYING ENFORCEMENT:
+      // - Allow text BEFORE tools (conversational setup: "I'm going to check X...")
+      // - Buffer text AFTER tools to send in next iteration (prevents premature claims)
+      // This keeps Meta-SySop conversational while preventing lies
       if (hasToolUse) {
-        console.log('[META-SYSOP-ENFORCEMENT] Response has tool calls - suppressing text blocks to prevent lying');
-        sendEvent('progress', { message: 'Executing tools...' });
+        console.log('[META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text');
       }
 
       for (const block of response.content) {
         if (block.type === 'text') {
-          // Only stream text if there are NO tool calls in this response
-          // If there are tool calls, Meta-SySop must wait for results before speaking
-          if (!hasToolUse) {
+          // SMART BLOCKING: Only buffer text that appears AFTER we've seen tool_use blocks
+          // Text BEFORE tools is conversational setup (streamed immediately)
+          // Text AFTER tools is buffered and sent after tool execution
+          if (!hasSeenToolUse) {
+            // Text appears BEFORE any tool calls - this is conversational setup, STREAM it
             fullContent += block.text;
             sendEvent('content', { content: block.text });
+            console.log('[META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools):', block.text.slice(0, 100));
           } else {
-            console.log('[META-SYSOP-ENFORCEMENT] Blocked text output (has tool calls):', block.text.slice(0, 100));
+            // Text appears AFTER tool calls - buffer it for post-tool delivery
+            postToolText.push(block.text);
+            console.log('[META-SYSOP-ENFORCEMENT] 📦 Buffered post-tool text (will send after tools):', block.text.slice(0, 100));
           }
         } else if (block.type === 'tool_use') {
+          hasSeenToolUse = true; // Mark that we've seen a tool - buffer all text after this
           const { name, input, id } = block;
 
           try {
@@ -1402,6 +1411,14 @@ DO NOT create new tasks - UPDATE existing ones!`;
               });
             }
         }
+      }
+
+      // Send any buffered post-tool text now that tools have executed
+      if (postToolText.length > 0) {
+        const bufferedContent = postToolText.join('');
+        fullContent += bufferedContent;
+        sendEvent('content', { content: bufferedContent });
+        console.log('[META-SYSOP-CHAT] 📤 Sent buffered post-tool text:', bufferedContent.slice(0, 100));
       }
 
       if (toolResults.length > 0) {

@@ -69,8 +69,6 @@ interface ProgressStep {
 
 function PlatformHealingContent() {
   const { toast } = useToast();
-  const [autoCommit, setAutoCommit] = useState(false);
-  const [autoPush, setAutoPush] = useState(false);
   const [phase, setPhase] = useState<RunPhase>('idle');
   const [steps, setSteps] = useState<HealingStep[]>([]);
   const [progress, setProgress] = useState(0);
@@ -121,7 +119,7 @@ function PlatformHealingContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ message: issue, autoCommit, autoPush }),
+        body: JSON.stringify({ message: issue }),
       });
 
       if (!response.ok) {
@@ -153,6 +151,32 @@ function PlatformHealingContent() {
               console.log('[META-SYSOP] Event:', data.type, data);
 
               // Add to chat messages for ALL events
+              if (data.type === 'content' && data.content) {
+                // Conversational AI text - show as thought bubble with time-based aggregation
+                setHealingMessages(prev => {
+                  const last = prev[prev.length - 1];
+                  const now = Date.now();
+                  
+                  // If last message is 'thought' and was created in last 30 seconds, APPEND to it
+                  // 30 seconds handles even the longest streaming responses
+                  if (last && last.type === 'thought' && (now - last.timestamp.getTime()) < 30000) {
+                    return [...prev.slice(0, -1), {
+                      ...last,
+                      text: (last.text || '') + data.content,
+                      timestamp: new Date()
+                    }];
+                  }
+                  
+                  // Otherwise create new message
+                  return [...prev, {
+                    id: now.toString(),
+                    type: 'thought',
+                    text: data.content,
+                    timestamp: new Date()
+                  }];
+                });
+              }
+              
               if (data.type === 'progress' && data.message) {
                 setHealingMessages(prev => [...prev, {
                   id: Date.now().toString(),
@@ -299,10 +323,6 @@ function PlatformHealingContent() {
     autoHealMutation.mutate(text);
   }
 
-  useEffect(() => {
-    if (!autoCommit) setAutoPush(false);
-  }, [autoCommit]);
-
   // NEW: Consume healEvents from the hook and populate UI state
   useEffect(() => {
     if (healEvents.length === 0) return;
@@ -434,34 +454,6 @@ function PlatformHealingContent() {
               </div>
               
               <div className="flex flex-wrap items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <Switch 
-                    id="auto-commit" 
-                    checked={autoCommit} 
-                    onCheckedChange={setAutoCommit}
-                    data-testid="toggle-auto-commit"
-                  />
-                  <Label htmlFor="auto-commit" className="text-xs sm:text-sm cursor-pointer whitespace-nowrap">
-                    Auto-commit
-                  </Label>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Switch 
-                    id="auto-push" 
-                    checked={autoPush} 
-                    onCheckedChange={setAutoPush}
-                    disabled={!autoCommit}
-                    data-testid="toggle-auto-push"
-                  />
-                  <Label 
-                    htmlFor="auto-push" 
-                    className={`text-xs sm:text-sm cursor-pointer whitespace-nowrap ${!autoCommit ? 'opacity-50' : ''}`}
-                  >
-                    Auto-push
-                  </Label>
-                </div>
-                
                 <Button 
                   size="sm"
                   className="bg-gradient-to-b from-[#2a7dfb] to-[#0f62f2] shadow-lg shadow-blue-500/35 ml-auto"
@@ -775,28 +767,6 @@ function PlatformHealingContent() {
 
               {/* Right Side Actions */}
               <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-500"
-                  onClick={() => setAutoCommit(!autoCommit)}
-                  data-testid="button-auto-commit"
-                  title={autoCommit ? "Auto-commit enabled" : "Auto-commit disabled"}
-                >
-                  <Infinity className="w-4 h-4" />
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-500"
-                  onClick={() => setAutoPush(!autoPush)}
-                  data-testid="button-auto-push"
-                  title={autoPush ? "Auto-push enabled" : "Auto-push disabled"}
-                >
-                  <SlidersHorizontal className="w-4 h-4" />
-                </Button>
-                
                 <Button
                   size="icon"
                   className="h-8 w-8 bg-amber-500 hover:bg-amber-600 text-white shadow-sm"
