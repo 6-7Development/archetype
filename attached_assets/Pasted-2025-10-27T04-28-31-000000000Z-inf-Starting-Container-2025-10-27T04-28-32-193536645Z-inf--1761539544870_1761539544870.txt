@@ -1,0 +1,155 @@
+2025-10-27T04:28:31.000000000Z [inf]  Starting Container
+2025-10-27T04:28:32.193536645Z [inf]  ======================================
+2025-10-27T04:28:32.193545444Z [inf]  🚂 RAILWAY STARTUP SCRIPT
+2025-10-27T04:28:32.193550669Z [inf]  ======================================
+2025-10-27T04:28:32.193555070Z [inf]  Time: Mon Oct 27 04:28:31 UTC 2025
+2025-10-27T04:28:32.193561350Z [inf]  
+2025-10-27T04:28:32.193566784Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-10-27T04:28:32.193572222Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-10-27T04:28:32.193577223Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-10-27T04:28:32.193581798Z [inf]  Using 'pg' driver for database querying
+2025-10-27T04:28:32.193586349Z [inf]  [⣷] Pulling schema from database...
+2025-10-27T04:28:32.306807353Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-27T04:28:32.432722996Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-27T04:28:32.569858754Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-27T04:28:32.694301935Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-27T04:28:32.831196391Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-27T04:28:33.178437120Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-27T04:28:33.178445043Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-27T04:28:33.201439831Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-27T04:28:33.329498703Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-27T04:28:33.453543958Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-27T04:28:33.585849355Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-27T04:28:33.714371360Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-27T04:28:33.844224938Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-27T04:28:34.153363680Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-27T04:28:34.153383550Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-27T04:28:34.168325119Z [inf]  [2K[1G[✓] Pulling schema from database...
+2025-10-27T04:28:34.253994582Z [inf]  [i] No changes detected
+2025-10-27T04:28:34.260038999Z [inf]  
+2025-10-27T04:28:34.260045256Z [inf]  ✅ Database migrations completed successfully!
+2025-10-27T04:28:34.260050198Z [inf]  
+2025-10-27T04:28:34.260054604Z [inf]  🚀 Starting Node.js application...
+2025-10-27T04:28:35.325000096Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-27T04:28:35.325007770Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-27T04:28:35.325013965Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-27T04:28:35.325020886Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-27T04:28:35.325027394Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-10-27T04:28:35.325041435Z [inf]  [db] Connection string includes SSL params: true
+2025-10-27T04:28:35.334847669Z [inf]  [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-27T04:28:35.334855977Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-27T04:28:35.343177197Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-27T04:28:35.348915128Z [inf]  📡 WebSocket server initialized at /ws
+2025-10-27T04:28:35.348920962Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-27T04:28:35.348926666Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-27T04:28:35.372250980Z [inf]  ✅ All routes registered successfully
+2025-10-27T04:28:35.372260309Z [inf]  🔍 Testing database connection...
+2025-10-27T04:28:35.411706866Z [inf]  4:28:35 AM [express] serving on port 8080
+2025-10-27T04:28:35.411721327Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-10-27T04:28:35.503542688Z [inf]  ✅ Database connected successfully
+2025-10-27T04:28:35.503551016Z [inf]  🔧 Auto-healing system ENABLED (production mode)
+2025-10-27T04:28:35.503565656Z [inf]  
+2025-10-27T04:28:35.503571717Z [inf]  🔍 Checking GitHub integration configuration...
+2025-10-27T04:28:35.503581973Z [inf]  ✅ GitHub integration configured successfully
+2025-10-27T04:28:35.503587761Z [inf]     - Repository: 6-7Development/archetype
+2025-10-27T04:28:35.503593968Z [inf]     - Branch: main
+2025-10-27T04:28:35.503601976Z [inf]     - Token: ✓ (configured)
+2025-10-27T04:28:35.503612565Z [inf]     - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-27T04:28:35.503619262Z [inf]     - Maintenance mode: Available for owner
+2025-10-27T04:28:35.503623231Z [inf]  
+2025-10-27T04:29:15.435387694Z [err]      at genericNodeError (node:internal/errors:984:15)
+2025-10-27T04:29:15.435416670Z [err]  Failed to get git info, using defaults: Error: Command failed: git rev-parse HEAD
+2025-10-27T04:29:15.435421598Z [err]  fatal: not a git repository (or any of the parent directories): .git
+2025-10-27T04:29:15.435427074Z [err]  
+2025-10-27T04:29:15.435432661Z [err]      at genericNodeError (node:internal/errors:984:15)
+2025-10-27T04:29:15.435436847Z [err]      at wrappedFn (node:internal/errors:538:14)
+2025-10-27T04:29:15.435440992Z [err]      at ChildProcess.exithandler (node:child_process:422:12)
+2025-10-27T04:29:15.435444997Z [err]      at ChildProcess.emit (node:events:524:28)
+2025-10-27T04:29:15.435449455Z [err]      at maybeClose (node:internal/child_process:1104:16)
+2025-10-27T04:29:15.435454192Z [err]      at Socket.<anonymous> (node:internal/child_process:456:11)
+2025-10-27T04:29:15.435460556Z [err]      at Socket.emit (node:events:524:28)
+2025-10-27T04:29:15.435465004Z [err]      at Pipe.<anonymous> (node:net:343:12) {
+2025-10-27T04:29:15.435469119Z [err]    code: 128,
+2025-10-27T04:29:15.435473103Z [err]    killed: false,
+2025-10-27T04:29:15.435477294Z [err]    signal: null,
+2025-10-27T04:29:15.435481261Z [err]    cmd: 'git rev-parse HEAD',
+2025-10-27T04:29:15.435491289Z [err]    stdout: '',
+2025-10-27T04:29:15.435495803Z [err]    stderr: 'fatal: not a git repository (or any of the parent directories): .git\n'
+2025-10-27T04:29:15.435500008Z [err]  }
+2025-10-27T04:29:15.435505242Z [inf]  4:29:07 AM [express] GET /api/deployment-info 200 in 18ms :: {"version":"1.0.0","commitHash":"unknow…
+2025-10-27T04:29:15.435510178Z [err]  Failed to get git info, using defaults: Error: Command failed: git rev-parse HEAD
+2025-10-27T04:29:15.435514404Z [err]  fatal: not a git repository (or any of the parent directories): .git
+2025-10-27T04:29:15.435518714Z [err]  
+2025-10-27T04:29:15.436171136Z [err]      at wrappedFn (node:internal/errors:538:14)
+2025-10-27T04:29:15.436181769Z [err]      at ChildProcess.exithandler (node:child_process:422:12)
+2025-10-27T04:29:15.436187842Z [err]      at ChildProcess.emit (node:events:524:28)
+2025-10-27T04:29:15.436192239Z [err]      at maybeClose (node:internal/child_process:1104:16)
+2025-10-27T04:29:15.436197118Z [err]      at Socket.<anonymous> (node:internal/child_process:456:11)
+2025-10-27T04:29:15.436202325Z [err]      at Socket.emit (node:events:524:28)
+2025-10-27T04:29:15.436207271Z [err]      at Pipe.<anonymous> (node:net:343:12) {
+2025-10-27T04:29:15.436212038Z [err]    code: 128,
+2025-10-27T04:29:15.436217074Z [err]    killed: false,
+2025-10-27T04:29:15.436221955Z [err]    signal: null,
+2025-10-27T04:29:15.436226526Z [err]    cmd: 'git rev-parse HEAD',
+2025-10-27T04:29:15.436230727Z [err]    stdout: '',
+2025-10-27T04:29:15.436235531Z [err]    stderr: 'fatal: not a git repository (or any of the parent directories): .git\n'
+2025-10-27T04:29:15.436240179Z [err]  }
+2025-10-27T04:29:15.436244617Z [inf]  4:29:10 AM [express] GET /api/deployment-info 200 in 7ms :: {"version":"1.0.0","commitHash":"unknown…
+2025-10-27T04:29:15.436248879Z [inf]  [AUTH] Login attempt for email: root@getdc360.com
+2025-10-27T04:29:15.436253458Z [inf]  [AUTH] Found users: 1
+2025-10-27T04:29:15.436260152Z [inf]  [AUTH] User found: root@getdc360.com has password: true
+2025-10-27T04:29:15.436264834Z [inf]  [AUTH] Verifying password...
+2025-10-27T04:29:15.436269423Z [inf]  [AUTH] Password valid: true
+2025-10-27T04:29:15.436273653Z [inf]  [AUTH] Authentication successful for: root@getdc360.com
+2025-10-27T04:29:15.436279213Z [inf]  4:29:15 AM [express] POST /api/auth/login 200 in 281ms :: {"success":true,"user":{"id":"723e1301-c72…
+2025-10-27T04:29:15.857065573Z [inf]  4:29:15 AM [express] GET /api/projects 304 in 11ms :: []
+2025-10-27T04:29:15.860972671Z [inf]  4:29:15 AM [express] GET /api/auth/me 304 in 6ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef954…
+2025-10-27T04:29:17.543665161Z [inf]  4:29:17 AM [express] GET /api/platform/status 200 in 16ms :: {"overallHealth":100,"activeIncidents":…
+2025-10-27T04:29:17.543673548Z [inf]  4:29:17 AM [express] GET /api/meta-sysop/history 200 in 18ms :: {"messages":[{"id":"9dd044d9-5587-4e…
+2025-10-27T04:29:17.721171324Z [inf]  ✅ WebSocket client connected
+2025-10-27T04:29:17.805952702Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T04:29:26.617176579Z [inf]  [META-SYSOP-CHAT] Stream request received
+2025-10-27T04:29:26.617180056Z [inf]  [META-SYSOP-CHAT] Message: can you please do my request UserId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-10-27T04:29:26.617184203Z [inf]  [META-SYSOP-CHAT] Setting up SSE headers
+2025-10-27T04:29:26.617188032Z [inf]  [META-SYSOP-CHAT] Entering try block
+2025-10-27T04:29:29.605340761Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T04:29:29.605350263Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): I'll help you add "Jesus" in glowing colors to the webpage. Let me start by reading the current task
+2025-10-27T04:29:29.605379085Z [inf]  [META-SYSOP] Response has tool calls: true
+2025-10-27T04:29:29.605383690Z [inf]  [META-SYSOP] Content blocks: text, tool_use
+2025-10-27T04:29:32.369732492Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T04:29:32.369737294Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): Let me explore the platform structure to understand the current frontend layout:
+2025-10-27T04:29:34.664629779Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T04:29:34.664638688Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): Now let me check the client source structure:
+2025-10-27T04:29:34.664644446Z [inf]  [PLATFORM-LIST-DIR] 🔄 Source directory not in production build, fetching from GitHub: client
+2025-10-27T04:29:34.664650344Z [inf]  [GITHUB-SERVICE] Initialized for 6-7Development/archetype on branch main
+2025-10-27T04:29:34.768210203Z [inf]  [PLATFORM-LIST-DIR] ✅ Fetched 2 entries from GitHub directory: client
+2025-10-27T04:29:37.635378333Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T04:29:37.635383668Z [inf]  [PLATFORM-LIST-DIR] 🔄 Source directory not in production build, fetching from GitHub: client/src
+2025-10-27T04:29:37.681335878Z [inf]  [PLATFORM-LIST-DIR] ✅ Fetched 9 entries from GitHub directory: client/src
+2025-10-27T04:29:40.014606204Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T04:29:40.014612626Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): Let me examine the main App.tsx to understand the layout:
+2025-10-27T04:29:40.014619235Z [inf]  [PLATFORM-READ] 🔄 Source file not in production build, fetching from GitHub: client/src/App.tsx
+2025-10-27T04:29:40.178806915Z [inf]  [PLATFORM-READ] ✅ Fetched client/src/App.tsx from GitHub (6285 bytes)
+2025-10-27T04:29:40.178812868Z [err]  [META-SYSOP-CLEANUP] ⚠️ No activeTaskListId tracked - skipping cleanup
+2025-10-27T04:29:40.178818447Z [inf]  [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: Meta-SySop chat: can you please do my request - success
+2025-10-27T04:29:40.258036404Z [inf]  4:29:40 AM [express] POST /api/meta-sysop/stream 200 in 13705ms
+2025-10-27T04:29:40.334010701Z [inf]  4:29:40 AM [express] GET /api/meta-sysop/history 200 in 17ms :: {"messages":[{"id":"9dd044d9-5587-4e…
+2025-10-27T04:30:50.350147540Z [inf]  [META-SYSOP-CHAT] Stream request received
+2025-10-27T04:30:50.350151419Z [inf]  [META-SYSOP-CHAT] Message: update? UserId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-10-27T04:30:50.350156678Z [inf]  [META-SYSOP-CHAT] Setting up SSE headers
+2025-10-27T04:30:50.350160492Z [inf]  [META-SYSOP-CHAT] Entering try block
+2025-10-27T04:30:50.350166463Z [inf]  [META-SYSOP] Response has tool calls: true
+2025-10-27T04:30:50.350170524Z [inf]  [META-SYSOP] Content blocks: text, tool_use
+2025-10-27T04:30:50.350174175Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T04:30:50.350177820Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): Let me check the current status of our tasks and provide you with an update on your request to add "
+2025-10-27T04:30:53.333913928Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T04:30:53.333920187Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): Let me check the current platform state and then proceed with your request to add "Jesus" in glowing
+2025-10-27T04:30:53.333924880Z [inf]  [PLATFORM-LIST-DIR] 🔄 Source directory not in production build, fetching from GitHub: client/src
+2025-10-27T04:30:53.415374356Z [inf]  [PLATFORM-LIST-DIR] ✅ Fetched 9 entries from GitHub directory: client/src
+2025-10-27T04:30:55.491967729Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T04:30:55.491975825Z [inf]  [PLATFORM-READ] 🔄 Source file not in production build, fetching from GitHub: client/src/App.tsx
+2025-10-27T04:30:55.576406194Z [inf]  [PLATFORM-READ] ✅ Fetched client/src/App.tsx from GitHub (6285 bytes)
+2025-10-27T04:30:58.053382482Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T04:30:58.053387119Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): Now let me check the CSS file to add glowing styles:
+2025-10-27T04:30:58.053391632Z [inf]  [PLATFORM-READ] 🔄 Source file not in production build, fetching from GitHub: client/src/index.css
+2025-10-27T04:30:58.100258207Z [inf]  [PLATFORM-READ] ✅ Fetched client/src/index.css from GitHub (13631 bytes)
