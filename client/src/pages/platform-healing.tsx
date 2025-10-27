@@ -31,6 +31,10 @@ import {
   Infinity,
   SlidersHorizontal,
   ArrowUp,
+  Shield,
+  Zap,
+  Brain,
+  Lock,
 } from 'lucide-react';
 
 type StepState = 'pending' | 'running' | 'ok' | 'fail';
@@ -103,6 +107,33 @@ function PlatformHealingContent() {
 
   // Use WebSocket metrics if available, otherwise HTTP metrics
   const status = metrics || httpMetrics;
+
+  // Fetch autonomy level data
+  const { data: autonomyData, isLoading: autonomyLoading } = useQuery<any>({
+    queryKey: ['/api/meta-sysop/autonomy-level'],
+    refetchInterval: false,
+  });
+
+  // Update autonomy level mutation
+  const updateAutonomyMutation = useMutation({
+    mutationFn: async (level: string) => {
+      return await apiRequest('PUT', '/api/meta-sysop/autonomy-level', { level });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/meta-sysop/autonomy-level'] });
+      toast({
+        title: 'Autonomy level updated',
+        description: 'Your Meta-SySop autonomy level has been updated successfully.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Update failed',
+        description: error.message || 'Failed to update autonomy level',
+      });
+    },
+  });
 
   // Meta-SySop streaming mutation (NEW SYSTEM with all tools!)
   const autoHealMutation = useMutation({
@@ -682,6 +713,103 @@ function PlatformHealingContent() {
                     </>
                   )}
                 </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Autonomy Level Selector */}
+          {!autonomyLoading && autonomyData && (
+            <div className="bg-card border border-border rounded-xl shadow-lg p-4 sm:p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <SlidersHorizontal className="w-5 h-5 text-blue-400" />
+                <h3 className="font-bold text-sm sm:text-base">Meta-SySop Autonomy Level</h3>
+                <Badge variant="secondary" className="ml-auto">
+                  {autonomyData.plan}
+                </Badge>
+              </div>
+              
+              <p className="text-sm text-muted-foreground mb-4">
+                Control how much autonomy Meta-SySop has when maintaining your platform. Higher tiers unlock advanced capabilities.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {Object.entries(autonomyData.levels).map(([levelId, levelData]: [string, any]) => {
+                  const isCurrentLevel = autonomyData.currentLevel === levelId;
+                  const levelToNumber: Record<string, number> = { basic: 0, standard: 1, deep: 2, max: 3 };
+                  const maxToNumber: Record<string, number> = { basic: 0, standard: 1, deep: 2, max: 3 };
+                  const isLocked = levelToNumber[levelId] > maxToNumber[autonomyData.maxAllowedLevel];
+                  
+                  const IconComponent = levelData.icon === 'shield' ? Shield :
+                                       levelData.icon === 'zap' ? Zap :
+                                       levelData.icon === 'brain' ? Brain : Infinity;
+
+                  return (
+                    <button
+                      key={levelId}
+                      onClick={() => {
+                        if (!isLocked && !updateAutonomyMutation.isPending) {
+                          updateAutonomyMutation.mutate(levelId);
+                        }
+                      }}
+                      disabled={isLocked || updateAutonomyMutation.isPending}
+                      className={`relative p-4 rounded-lg border-2 transition-all text-left ${
+                        isCurrentLevel
+                          ? 'border-blue-500 bg-blue-500/10'
+                          : isLocked
+                          ? 'border-border bg-muted/50 opacity-60 cursor-not-allowed'
+                          : 'border-border bg-card hover-elevate active-elevate-2 cursor-pointer'
+                      }`}
+                      data-testid={`autonomy-level-${levelId}`}
+                    >
+                      {isLocked && (
+                        <div className="absolute top-2 right-2">
+                          <Lock className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center gap-2 mb-2">
+                        <IconComponent className={`w-5 h-5 ${
+                          isCurrentLevel ? 'text-blue-500' : 'text-muted-foreground'
+                        }`} />
+                        <h4 className="font-bold text-sm">{levelData.name}</h4>
+                      </div>
+                      
+                      <p className="text-xs text-muted-foreground mb-3">
+                        {levelData.description}
+                      </p>
+                      
+                      <div className="space-y-1">
+                        {levelData.features.slice(0, 2).map((feature: string, idx: number) => (
+                          <div key={idx} className="flex items-start gap-1.5">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-500 mt-0.5 shrink-0" />
+                            <span className="text-xs text-foreground/80">{feature}</span>
+                          </div>
+                        ))}
+                        {levelData.features.length > 2 && (
+                          <span className="text-xs text-muted-foreground">
+                            +{levelData.features.length - 2} more
+                          </span>
+                        )}
+                      </div>
+
+                      {isLocked && (
+                        <div className="mt-3 pt-3 border-t border-border">
+                          <span className="text-xs text-muted-foreground">
+                            Requires: {levelData.requiredPlan}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {isCurrentLevel && (
+                        <div className="mt-3 pt-3 border-t border-blue-500/30">
+                          <Badge variant="default" className="text-xs">
+                            Active
+                          </Badge>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}

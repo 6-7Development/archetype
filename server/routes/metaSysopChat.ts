@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db';
-import { chatMessages, taskLists, metaSysopAttachments } from '@shared/schema';
+import { chatMessages, taskLists, metaSysopAttachments, users, subscriptions } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth';
 import Anthropic from '@anthropic-ai/sdk';
@@ -146,6 +146,148 @@ router.post('/reject/:messageId', isAuthenticated, isAdmin, async (req: any, res
   }
 });
 
+// Get user's current autonomy level and available levels based on subscription
+router.get('/autonomy-level', isAuthenticated, isAdmin, async (req: any, res) => {
+  try {
+    const userId = req.authenticatedUserId;
+
+    // Fetch user and subscription
+    const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const [subscription] = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId)).limit(1);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Map subscription plans to max allowed autonomy level
+    const plan = subscription?.plan || 'free';
+    const planToMaxLevel: Record<string, string> = {
+      'free': 'basic',
+      'starter': 'standard',
+      'pro': 'standard',
+      'enterprise': 'deep',
+      'premium': 'max',
+    };
+    
+    const maxAllowedLevel = planToMaxLevel[plan] || 'basic';
+
+    // Define autonomy level features
+    const autonomyLevels = {
+      basic: {
+        id: 'basic',
+        name: 'Basic',
+        description: 'Manual approval required for all changes',
+        icon: 'shield',
+        features: ['Manual approval required', 'No task tracking', 'Basic diagnosis tools only'],
+        requiredPlan: 'free',
+        maxTokens: 8000,
+      },
+      standard: {
+        id: 'standard',
+        name: 'Standard',
+        description: 'Autonomous mode with full file access',
+        icon: 'zap',
+        features: ['Autonomous mode', 'Full file read/write', 'Auto-commit enabled', 'Task tracking'],
+        requiredPlan: 'pro',
+        maxTokens: 8000,
+      },
+      deep: {
+        id: 'deep',
+        name: 'Deep',
+        description: 'Extended thinking and web research',
+        icon: 'brain',
+        features: ['Everything in Standard', 'Extended thinking (16K tokens)', 'Web search via Tavily', 'Sub-agent orchestration'],
+        requiredPlan: 'enterprise',
+        maxTokens: 16000,
+      },
+      max: {
+        id: 'max',
+        name: 'Max',
+        description: 'Full autonomy with maximum intelligence',
+        icon: 'infinity',
+        features: ['Everything in Deep', 'Multi-agent orchestration', 'Advanced caching', 'I AM auto-consultation'],
+        requiredPlan: 'premium',
+        maxTokens: 16000,
+      },
+    };
+
+    res.json({
+      currentLevel: user.autonomyLevel || 'basic',
+      maxAllowedLevel,
+      plan,
+      levels: autonomyLevels,
+    });
+  } catch (error: any) {
+    console.error('[META-SYSOP] Get autonomy level error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update user's autonomy level (with subscription gating)
+router.put('/autonomy-level', isAuthenticated, isAdmin, async (req: any, res) => {
+  try {
+    const userId = req.authenticatedUserId;
+    const { level } = req.body;
+
+    if (!level || !['basic', 'standard', 'deep', 'max'].includes(level)) {
+      return res.status(400).json({ error: 'Invalid autonomy level. Must be: basic, standard, deep, or max' });
+    }
+
+    // Fetch user and subscription
+    const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const [subscription] = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId)).limit(1);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check subscription tier
+    const plan = subscription?.plan || 'free';
+    const planToMaxLevel: Record<string, number> = {
+      'free': 0,      // basic only
+      'starter': 1,   // standard
+      'pro': 1,       // standard
+      'enterprise': 2,// deep
+      'premium': 3,   // max
+    };
+
+    const levelToNumber: Record<string, number> = {
+      'basic': 0,
+      'standard': 1,
+      'deep': 2,
+      'max': 3,
+    };
+
+    const maxAllowed = planToMaxLevel[plan] || 0;
+    const requested = levelToNumber[level];
+
+    if (requested > maxAllowed) {
+      const levelNames = ['basic', 'standard', 'deep', 'max'];
+      return res.status(403).json({ 
+        error: `Your ${plan} plan only allows up to ${levelNames[maxAllowed]} autonomy level. Upgrade to access ${level} mode.`,
+        maxAllowedLevel: levelNames[maxAllowed],
+      });
+    }
+
+    // Update user's autonomy level
+    await db
+      .update(users)
+      .set({ autonomyLevel: level, updatedAt: new Date() })
+      .where(eq(users.id, userId));
+
+    console.log(`[META-SYSOP] User ${userId} autonomy level updated to: ${level}`);
+
+    res.json({ 
+      success: true, 
+      level,
+      message: `Autonomy level updated to ${level}`,
+    });
+  } catch (error: any) {
+    console.error('[META-SYSOP] Update autonomy level error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get Meta-SySop chat history
 router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
@@ -224,6 +366,20 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
   console.log('[META-SYSOP-CHAT] Entering try block');
   try {
+
+    // Fetch user's autonomy level and subscription
+    const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const autonomyLevel = user?.autonomyLevel || 'basic';
+    console.log(`[META-SYSOP-CHAT] User autonomy level: ${autonomyLevel}`);
+
+    // Determine autonomy level capabilities
+    const levelConfig = {
+      basic: { maxTokens: 8000, allowTaskTracking: false, allowWebSearch: false, allowSubAgents: false, requireApproval: true },
+      standard: { maxTokens: 8000, allowTaskTracking: true, allowWebSearch: false, allowSubAgents: false, requireApproval: false },
+      deep: { maxTokens: 16000, allowTaskTracking: true, allowWebSearch: true, allowSubAgents: true, requireApproval: false },
+      max: { maxTokens: 16000, allowTaskTracking: true, allowWebSearch: true, allowSubAgents: true, requireApproval: false },
+    };
+    const config = levelConfig[autonomyLevel as keyof typeof levelConfig] || levelConfig.basic;
 
     // Save user message
     const [userMsg] = await db
@@ -449,6 +605,42 @@ ${autoCommit
 - Maintain production stability  
 - Be conversational and helpful
 - Only work when explicitly asked
+
+═══════════════════════════════════════════════════════════════════
+⚡ YOUR AUTONOMY LEVEL: ${autonomyLevel.toUpperCase()}
+═══════════════════════════════════════════════════════════════════
+
+${autonomyLevel === 'basic' ? `
+**BASIC MODE (Free Tier):**
+- Manual approval required for ALL changes
+- No task tracking available
+- Basic diagnosis tools only
+- You MUST use request_user_approval() before any file modifications
+- System prompt: "You require approval for all changes"
+` : autonomyLevel === 'standard' ? `
+**STANDARD MODE (Pro Tier):**
+- Autonomous mode enabled
+- Full file read/write access
+- Auto-commit enabled
+- Task tracking available
+- You can make changes autonomously without approval
+` : autonomyLevel === 'deep' ? `
+**DEEP MODE (Enterprise Tier):**
+- Everything in Standard PLUS:
+- Extended thinking (16K tokens)
+- Web search enabled via Tavily
+- Sub-agent orchestration available
+- Use deep analysis and web research for complex problems
+- Consult external resources when needed
+` : `
+**MAX MODE (Premium Tier):**
+- Everything in Deep PLUS:
+- Multi-agent orchestration (parallel sub-agents)
+- Advanced caching strategies
+- Proactive I AM architect consultation
+- Full autonomy with maximum intelligence
+- Consult I AM when facing architectural decisions
+`}
 
 ═══════════════════════════════════════════════════════════════════
 🌍 ENVIRONMENT: DEVELOPMENT VS PRODUCTION
@@ -764,14 +956,35 @@ Be conversational, be helpful, and only work when asked!`;
       },
     ];
 
-    // 🎯 AUTONOMOUS MODE: Remove approval + task tracking tools when autoCommit=true
-    const availableTools = autoCommit 
-      ? tools.filter(tool => 
-          tool.name !== 'request_user_approval' && 
-          tool.name !== 'readTaskList' && 
-          tool.name !== 'updateTask'
-        )
-      : tools;
+    // 🎯 AUTONOMY LEVEL FILTERING: Filter tools based on user's autonomy level
+    let availableTools = tools;
+    
+    if (autonomyLevel === 'basic') {
+      // Basic: Manual approval required, no task tracking, no sub-agents, no web search
+      availableTools = tools.filter(tool => 
+        tool.name !== 'readTaskList' && 
+        tool.name !== 'updateTask' &&
+        tool.name !== 'start_subagent' &&
+        tool.name !== 'web_search'
+      );
+    } else if (autonomyLevel === 'standard') {
+      // Standard: Autonomous mode, has task tracking, but no sub-agents or web search
+      availableTools = tools.filter(tool => 
+        tool.name !== 'request_user_approval' &&
+        tool.name !== 'start_subagent' &&
+        tool.name !== 'web_search'
+      );
+    } else if (autonomyLevel === 'deep') {
+      // Deep: Everything in Standard + web search + sub-agents, no approval needed
+      availableTools = tools.filter(tool => 
+        tool.name !== 'request_user_approval'
+      );
+    } else {
+      // Max: ALL tools available (no filtering)
+      availableTools = tools.filter(tool => 
+        tool.name !== 'request_user_approval'
+      );
+    }
 
     const client = new Anthropic({ apiKey: anthropicKey });
     let fullContent = '';
@@ -832,7 +1045,7 @@ Be conversational, be helpful, and only work when asked!`;
 
       const response = await client.messages.create({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 8000,
+        max_tokens: config.maxTokens, // Use autonomy level's max_tokens
         system: systemPrompt,
         messages: conversationMessages,
         tools: availableTools,
