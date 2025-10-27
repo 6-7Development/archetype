@@ -159,17 +159,32 @@ router.get('/autonomy-level', isAuthenticated, isAdmin, async (req: any, res) =>
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Map subscription plans to max allowed autonomy level
-    const plan = subscription?.plan || 'free';
-    const planToMaxLevel: Record<string, string> = {
-      'free': 'basic',
-      'starter': 'standard',
-      'pro': 'standard',
-      'enterprise': 'deep',
-      'premium': 'max',
-    };
-    
-    const maxAllowedLevel = planToMaxLevel[plan] || 'basic';
+    // 🔑 Platform owners get MAX autonomy automatically (bypass subscription)
+    const isOwner = user.isOwner === true;
+    let maxAllowedLevel: string;
+    let plan: string;
+
+    if (isOwner) {
+      maxAllowedLevel = 'max';
+      plan = 'owner';
+      
+      // Auto-set owner to 'max' if not already set
+      if (!user.autonomyLevel || user.autonomyLevel === 'basic') {
+        await db.update(users).set({ autonomyLevel: 'max' }).where(eq(users.id, userId));
+        console.log(`[META-SYSOP] Owner ${userId} auto-upgraded to MAX autonomy`);
+      }
+    } else {
+      // Regular users: check subscription
+      plan = subscription?.plan || 'free';
+      const planToMaxLevel: Record<string, string> = {
+        'free': 'basic',
+        'starter': 'standard',
+        'pro': 'standard',
+        'enterprise': 'deep',
+        'premium': 'max',
+      };
+      maxAllowedLevel = planToMaxLevel[plan] || 'basic';
+    }
 
     // Define autonomy level features
     const autonomyLevels = {
@@ -212,9 +227,10 @@ router.get('/autonomy-level', isAuthenticated, isAdmin, async (req: any, res) =>
     };
 
     res.json({
-      currentLevel: user.autonomyLevel || 'basic',
+      currentLevel: isOwner ? (user.autonomyLevel || 'max') : (user.autonomyLevel || 'basic'),
       maxAllowedLevel,
       plan,
+      isOwner,
       levels: autonomyLevels,
     });
   } catch (error: any) {
@@ -241,32 +257,37 @@ router.put('/autonomy-level', isAuthenticated, isAdmin, async (req: any, res) =>
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Check subscription tier
-    const plan = subscription?.plan || 'free';
-    const planToMaxLevel: Record<string, number> = {
-      'free': 0,      // basic only
-      'starter': 1,   // standard
-      'pro': 1,       // standard
-      'enterprise': 2,// deep
-      'premium': 3,   // max
-    };
+    // 🔑 Platform owners bypass subscription checks
+    const isOwner = user.isOwner === true;
+    
+    if (!isOwner) {
+      // Regular users: check subscription tier
+      const plan = subscription?.plan || 'free';
+      const planToMaxLevel: Record<string, number> = {
+        'free': 0,      // basic only
+        'starter': 1,   // standard
+        'pro': 1,       // standard
+        'enterprise': 2,// deep
+        'premium': 3,   // max
+      };
 
-    const levelToNumber: Record<string, number> = {
-      'basic': 0,
-      'standard': 1,
-      'deep': 2,
-      'max': 3,
-    };
+      const levelToNumber: Record<string, number> = {
+        'basic': 0,
+        'standard': 1,
+        'deep': 2,
+        'max': 3,
+      };
 
-    const maxAllowed = planToMaxLevel[plan] || 0;
-    const requested = levelToNumber[level];
+      const maxAllowed = planToMaxLevel[plan] || 0;
+      const requested = levelToNumber[level];
 
-    if (requested > maxAllowed) {
-      const levelNames = ['basic', 'standard', 'deep', 'max'];
-      return res.status(403).json({ 
-        error: `Your ${plan} plan only allows up to ${levelNames[maxAllowed]} autonomy level. Upgrade to access ${level} mode.`,
-        maxAllowedLevel: levelNames[maxAllowed],
-      });
+      if (requested > maxAllowed) {
+        const levelNames = ['basic', 'standard', 'deep', 'max'];
+        return res.status(403).json({ 
+          error: `Your ${plan} plan only allows up to ${levelNames[maxAllowed]} autonomy level. Upgrade to access ${level} mode.`,
+          maxAllowedLevel: levelNames[maxAllowed],
+        });
+      }
     }
 
     // Update user's autonomy level
