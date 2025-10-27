@@ -652,20 +652,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       }
     }, 100);
     return () => clearTimeout(timer);
-  }, [messages, streamState.streamingContent]);
-
-  // Smooth auto-scroll to bottom to show newest messages with delay for animation
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (scrollRef.current) {
-        scrollRef.current.scrollTo({
-          top: scrollRef.current.scrollHeight,
-          behavior: 'smooth'
-        });
-      }
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [messages, streamState.streamingContent]);
+  }, [messages, isGenerating]);
 
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden bg-[hsl(220,20%,12%)] relative touch-none">
