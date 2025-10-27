@@ -109,6 +109,7 @@ export interface IStorage {
   deleteChatMessage(id: string, userId: string): Promise<void>;
   
   getProjects(userId: string): Promise<Project[]>;
+  getAllProjects(): Promise<Project[]>; // Admin only - get all projects across all users
   getProject(id: string, userId: string): Promise<Project | undefined>;
   createProject(project: InsertProjectWithUser): Promise<Project>;
   deleteProject(id: string, userId: string): Promise<void>;
@@ -409,6 +410,43 @@ export class DatabaseStorage implements IStorage {
     );
     
     return projectsWithCounts;
+  }
+
+  async getAllProjects(): Promise<Project[]> {
+    // Admin only - fetch all projects across all users
+    const projectsList = await db
+      .select({
+        id: projects.id,
+        userId: projects.userId,
+        name: projects.name,
+        description: projects.description,
+        type: projects.type,
+        createdAt: projects.createdAt,
+        updatedAt: projects.updatedAt,
+        templateId: projects.templateId,
+        userEmail: users.email,
+        userName: sql<string>`CONCAT(${users.firstName}, ' ', ${users.lastName})`.as('userName'),
+      })
+      .from(projects)
+      .leftJoin(users, eq(projects.userId, users.id))
+      .orderBy(desc(projects.updatedAt));
+    
+    // Fetch file counts for each project
+    const projectsWithCounts = await Promise.all(
+      projectsList.map(async (project) => {
+        const [countResult] = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(files)
+          .where(eq(files.projectId, project.id));
+        
+        return {
+          ...project,
+          fileCount: Number(countResult?.count || 0)
+        };
+      })
+    );
+    
+    return projectsWithCounts as any;
   }
 
   async getProject(id: string, userId: string): Promise<Project | undefined> {
