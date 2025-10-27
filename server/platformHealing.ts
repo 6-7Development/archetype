@@ -799,6 +799,7 @@ export class PlatformHealingService {
     const issues: string[] = [];
 
     try {
+      // Check diff for dangerous patterns (works in both dev and production)
       const diff = await this.getDiff();
 
       if (diff.includes('DATABASE_URL') || diff.includes('ANTHROPIC_API_KEY')) {
@@ -809,11 +810,19 @@ export class PlatformHealingService {
         issues.push('Changes contain destructive database operations');
       }
 
-      const { stdout: status } = await execFileAsync('git', ['status', '--porcelain'], { cwd: this.PROJECT_ROOT });
-      const modifiedFiles = status.split('\n').filter(l => l.trim());
-      
-      if (modifiedFiles.some(f => f.includes('.git/'))) {
-        issues.push('Changes attempt to modify .git directory');
+      // Git-specific checks (only in development where .git exists)
+      try {
+        const { stdout: status } = await execFileAsync('git', ['status', '--porcelain'], { cwd: this.PROJECT_ROOT });
+        const modifiedFiles = status.split('\n').filter(l => l.trim());
+        
+        if (modifiedFiles.some(f => f.includes('.git/'))) {
+          issues.push('Changes attempt to modify .git directory');
+        }
+      } catch (gitError: any) {
+        // Git not available (production) - skip git-specific checks
+        if (!gitError.message?.includes('not a git repository')) {
+          console.warn('[SAFETY] Git check failed:', gitError.message);
+        }
       }
 
       return {
