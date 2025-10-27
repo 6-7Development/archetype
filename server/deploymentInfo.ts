@@ -21,6 +21,22 @@ export async function getDeploymentInfo(): Promise<DeploymentInfo> {
     return cachedDeploymentInfo;
   }
 
+  // 🚂 RAILWAY FIX: Use Railway environment variables (no .git folder on Railway)
+  if (process.env.RAILWAY_GIT_COMMIT_SHA) {
+    console.log('[DEPLOYMENT-INFO] Using Railway environment variables');
+    cachedDeploymentInfo = {
+      version: process.env.npm_package_version || '1.0.0',
+      commitHash: process.env.RAILWAY_GIT_COMMIT_SHA.substring(0, 7),
+      commitDate: new Date().toISOString(), // Railway doesn't provide commit date
+      commitMessage: process.env.RAILWAY_GIT_COMMIT_MESSAGE || 'Railway deployment',
+      branch: process.env.RAILWAY_GIT_BRANCH || 'main',
+      environment: process.env.NODE_ENV || 'production',
+      buildTime: BUILD_TIME,
+    };
+    return cachedDeploymentInfo;
+  }
+
+  // Try git commands (Replit/local development)
   try {
     const { stdout: hash } = await execFileAsync('git', ['rev-parse', 'HEAD']);
     const { stdout: date } = await execFileAsync('git', ['log', '-1', '--format=%ai']);
@@ -39,7 +55,8 @@ export async function getDeploymentInfo(): Promise<DeploymentInfo> {
 
     return cachedDeploymentInfo;
   } catch (error) {
-    console.warn('Failed to get git info, using defaults:', error);
+    // Git commands failed - use defaults
+    console.log('[DEPLOYMENT-INFO] Git not available, using defaults');
     
     return {
       version: process.env.npm_package_version || '1.0.0',
