@@ -17,6 +17,33 @@ import * as path from 'path';
 
 const router = Router();
 
+// Session management for approval workflow
+const approvalPromises = new Map<string, { resolve: (value: boolean) => void; reject: (error: any) => void }>();
+
+export function waitForApproval(messageId: string): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    approvalPromises.set(messageId, { resolve, reject });
+    
+    // Timeout after 10 minutes
+    setTimeout(() => {
+      if (approvalPromises.has(messageId)) {
+        approvalPromises.delete(messageId);
+        reject(new Error('Approval timeout - no response after 10 minutes'));
+      }
+    }, 600000);
+  });
+}
+
+function resolveApproval(messageId: string, approved: boolean) {
+  const promise = approvalPromises.get(messageId);
+  if (promise) {
+    promise.resolve(approved);
+    approvalPromises.delete(messageId);
+    return true;
+  }
+  return false;
+}
+
 // Approve pending changes and auto-resume Meta-SySop
 router.post('/approve/:messageId', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
@@ -51,14 +78,12 @@ router.post('/approve/:messageId', isAuthenticated, isAdmin, async (req: any, re
 
     console.log('[META-SYSOP] Changes approved for message:', messageId);
 
-    // CRITICAL: Resolve the pending approval promise from the OLD system
-    // This allows the original /api/platform/heal session to continue
-    if (sessionId) {
-      const { resolvePendingApproval } = await import('../platformRoutes');
-      const resolved = resolvePendingApproval(sessionId, true);
-      if (resolved) {
-        console.log('[META-SYSOP] Resolved pending approval for session:', sessionId);
-      }
+    // CRITICAL: Resolve the approval promise to resume the SSE stream
+    const resolved = resolveApproval(messageId, true);
+    if (resolved) {
+      console.log('[META-SYSOP] Stream will resume after approval');
+    } else {
+      console.warn('[META-SYSOP] No pending stream found for message:', messageId);
     }
 
     res.json({ 
@@ -106,13 +131,12 @@ router.post('/reject/:messageId', isAuthenticated, isAdmin, async (req: any, res
 
     console.log('[META-SYSOP] Changes rejected for message:', messageId);
 
-    // Resolve the pending approval with false (rejected)
-    if (sessionId) {
-      const { resolvePendingApproval } = await import('../platformRoutes');
-      const resolved = resolvePendingApproval(sessionId, false);
-      if (resolved) {
-        console.log('[META-SYSOP] Resolved pending approval (rejected) for session:', sessionId);
-      }
+    // Resolve the pending approval with false (rejected) to resume stream
+    const resolved = resolveApproval(messageId, false);
+    if (resolved) {
+      console.log('[META-SYSOP] Stream resumed with rejection');
+    } else {
+      console.warn('[META-SYSOP] No pending stream found for message:', messageId);
     }
 
     res.json({ success: true, message: 'Changes rejected' });
@@ -301,13 +325,14 @@ PHASE 1: DIAGNOSE & PLAN (Turn 1)
 → read_logs() / execute_sql() - Gather evidence if needed
 → DECISION: Can I delegate? Is this complex enough for sub-agents?
 
-PHASE 2: REQUEST APPROVAL (Turn 2) 🔔 NEW!
-→ request_user_approval() - Explain proposed changes and get user approval
+PHASE 2: REQUEST APPROVAL (Turn 2) 🔔 
+→ request_user_approval() - Blocks until user approves/rejects
 → Include: summary, filesChanged[], estimatedImpact
-→ WAIT for user approval before proceeding
-→ Do NOT make any changes until approved!
+→ Tool waits inline for approval (no pause needed!)
+→ If approved: Continue immediately
+→ If rejected: Stop and discuss alternatives
 
-PHASE 3: DELEGATE OR EXECUTE (Turn 3)
+PHASE 3: DELEGATE OR EXECUTE (Same turn after approval!)
 → COMPLEX TASK? → start_subagent() to delegate specialized work
 → SIMPLE TASK? → architect_consult() + write files yourself
 → PARALLEL WORK? → Launch MULTIPLE sub-agents simultaneously
@@ -339,14 +364,17 @@ PHASE 5: DEPLOY (Turn 5)
 **WHAT HAPPENS:**
 1. You call request_user_approval(summary, filesChanged, estimatedImpact)
 2. System sends request to user via UI
-3. Conversation PAUSES - you cannot continue
-4. User approves or rejects via separate endpoint
-5. If approved: Continue with changes in next conversation
-6. If rejected: Explain why and propose alternatives
+3. Tool WAITS for user response (blocks until approved/rejected)
+4. Tool returns approval status:
+   - ✅ If approved: Continue with implementation
+   - ❌ If rejected: Stop and ask user what to do instead
+5. Continue in SAME conversation after approval
 
 **CRITICAL RULES:**
 ❌ DO NOT make changes before calling request_user_approval
-❌ DO NOT continue after request_user_approval (conversation pauses)
+✅ WAIT for approval - the tool will block until user responds
+✅ After approval, proceed immediately with the changes
+✅ If rejected, stop and discuss alternatives with user
 ✅ Always explain clearly what you'll change and why
 ✅ Be transparent about risks and impact
 
@@ -1079,11 +1107,32 @@ DO NOT create new tasks - UPDATE existing ones!`;
                 messageId: approvalMsg.id 
               });
               
-              toolResult = `✅ Approval request sent to user.\n\nSummary: ${typedInput.summary}\n\nFiles: ${typedInput.filesChanged.join(', ')}\n\nImpact: ${typedInput.estimatedImpact}\n\nWaiting for user to approve or reject...`;
+              console.log('[META-SYSOP] Waiting for user approval...');
+              sendEvent('progress', { message: '⏳ Waiting for your approval...' });
               
-              // PAUSE the conversation loop - wait for external approval
-              continueLoop = false;
-              console.log('[META-SYSOP] Approval requested - pausing conversation');
+              try {
+                // WAIT for user approval/rejection (blocks until resolved)
+                const approved = await waitForApproval(approvalMsg.id);
+                
+                if (approved) {
+                  toolResult = `✅ USER APPROVED! You may now proceed with the changes.\n\n` +
+                    `Approved changes:\n${typedInput.filesChanged.map(f => `- ${f}`).join('\n')}\n\n` +
+                    `Continue with implementation.`;
+                  sendEvent('progress', { message: '✅ Approved! Proceeding with changes...' });
+                  console.log('[META-SYSOP] User approved - continuing work');
+                } else {
+                  toolResult = `❌ USER REJECTED the changes.\n\n` +
+                    `The user did not approve your proposed changes. ` +
+                    `Stop this approach and ask the user what they would like to do instead.`;
+                  sendEvent('progress', { message: '❌ Rejected by user' });
+                  console.log('[META-SYSOP] User rejected - stopping work');
+                  continueLoop = false; // Stop if rejected
+                }
+              } catch (error: any) {
+                toolResult = `⏱️ Approval timeout: ${error.message}\n\nNo response from user after 10 minutes.`;
+                sendEvent('error', { message: `Approval timeout: ${error.message}` });
+                continueLoop = false;
+              }
             } else if (name === 'perform_diagnosis') {
               const typedInput = input as { target: string; focus?: string[] };
               sendEvent('progress', { message: `🔍 Running ${typedInput.target} diagnosis...` });
