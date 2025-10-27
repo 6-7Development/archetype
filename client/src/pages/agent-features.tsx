@@ -200,10 +200,7 @@ function PlanModeTab() {
 
   const createSessionMutation = useMutation({
     mutationFn: async (data: z.infer<typeof sessionSchema>) => {
-      return apiRequest('/api/plan-mode/sessions', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return apiRequest('POST', '/api/plan-mode/sessions', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/plan-mode/sessions'] });
@@ -217,9 +214,7 @@ function PlanModeTab() {
 
   const completeSessionMutation = useMutation({
     mutationFn: async (sessionId: string) => {
-      return apiRequest(`/api/plan-mode/sessions/${sessionId}/complete`, {
-        method: 'POST',
-      });
+      return apiRequest('POST', `/api/plan-mode/sessions/${sessionId}/complete`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/plan-mode/sessions'] });
@@ -443,10 +438,7 @@ function StepsTimeline({ steps, sessionId }: any) {
 
   const updateStepMutation = useMutation({
     mutationFn: async ({ stepId, status }: { stepId: string; status: string }) => {
-      return apiRequest(`/api/plan-mode/steps/${stepId}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status }),
-      });
+      return apiRequest('PATCH', `/api/plan-mode/steps/${stepId}`, { status });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/plan-mode/sessions', sessionId, 'steps'] });
@@ -574,10 +566,7 @@ function WorkflowsTab() {
 
   const createWorkflowMutation = useMutation({
     mutationFn: async (data: z.infer<typeof workflowSchema>) => {
-      return apiRequest('/api/workflows', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return apiRequest('POST', '/api/workflows', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/workflows'] });
@@ -591,9 +580,7 @@ function WorkflowsTab() {
 
   const executeWorkflowMutation = useMutation({
     mutationFn: async (workflowId: string) => {
-      return apiRequest(`/api/workflows/${workflowId}/execute`, {
-        method: 'POST',
-      });
+      return apiRequest('POST', `/api/workflows/${workflowId}/execute`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/workflows'] });
@@ -887,10 +874,7 @@ function AutomationsTab() {
 
   const deployMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest('/api/automations/deploy', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return apiRequest('POST', '/api/automations/deploy', data);
     },
     onSuccess: () => {
       toast({ title: 'Automation deployed successfully' });
@@ -1094,13 +1078,10 @@ function DesignModeTab() {
 
   const createPrototypeMutation = useMutation({
     mutationFn: async (data: z.infer<typeof prototypeSchema>) => {
-      return apiRequest('/api/design-prototypes', {
-        method: 'POST',
-        body: JSON.stringify({
-          ...data,
-          screens: [],
-          designSystemTokens: {},
-        }),
+      return apiRequest('POST', '/api/design-prototypes', {
+        ...data,
+        screens: [],
+        designSystemTokens: {},
       });
     },
     onSuccess: () => {

@@ -109,6 +109,20 @@ export async function updateTask(params: {
   completedAt?: Date;
 }): Promise<{ success: boolean; error?: string }> {
   try {
+    // First, check if user has any task lists at all
+    const userTaskLists = await db
+      .select()
+      .from(taskLists)
+      .where(eq(taskLists.userId, params.userId))
+      .limit(1);
+
+    if (userTaskLists.length === 0) {
+      return {
+        success: false,
+        error: 'No task list found. You need to read your task list with readTaskList() first to see available task IDs. Tasks are created automatically when conversations start.',
+      };
+    }
+
     // Verify ownership with joined query (per-task authorization)
     const result = await db
       .select({ task: tasks, taskList: taskLists })
@@ -118,10 +132,24 @@ export async function updateTask(params: {
       .limit(1);
 
     if (result.length === 0) {
-      return {
-        success: false,
-        error: 'Task not found or unauthorized',
-      };
+      // Check if the task exists at all (but belongs to someone else or invalid ID)
+      const taskExists = await db
+        .select()
+        .from(tasks)
+        .where(eq(tasks.id, params.taskId))
+        .limit(1);
+
+      if (taskExists.length === 0) {
+        return {
+          success: false,
+          error: `Task ID "${params.taskId}" not found. Call readTaskList() to see your current task IDs and use one of those instead.`,
+        };
+      } else {
+        return {
+          success: false,
+          error: 'Task found but does not belong to you (unauthorized)',
+        };
+      }
     }
 
     const { task, taskList } = result[0];

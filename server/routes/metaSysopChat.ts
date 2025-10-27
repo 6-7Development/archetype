@@ -8,7 +8,7 @@ import { platformHealing } from '../platformHealing';
 import { platformAudit } from '../platformAudit';
 import { consultArchitect } from '../tools/architect-consult';
 import { executeWebSearch } from '../tools/web-search';
-import { GitHubService } from '../githubService';
+import { GitHubService, getGitHubService } from '../githubService';
 import { createTaskList, updateTask, readTaskList } from '../tools/task-management';
 import { performDiagnosis } from '../tools/diagnosis';
 import { startSubagent } from '../subagentOrchestration';
@@ -1713,15 +1713,31 @@ DO NOT create new tasks - UPDATE existing ones!`;
               if (result.success && result.taskLists) {
                 const activeList = result.taskLists.find((list: any) => list.status === 'active');
                 if (activeList) {
-                  const taskSummary = activeList.tasks.map((t: any) => 
-                    `[${t.id}] ${t.title} - ${t.status}`
-                  ).join('\n');
-                  toolResult = `Current Task List (${activeList.id}):\n${taskSummary}`;
+                  const tasks = activeList.tasks || [];
+                  if (tasks.length === 0) {
+                    toolResult = `Task list found but no tasks exist yet.\n\n` +
+                      `Task List ID: ${activeList.id}\n` +
+                      `Status: ${activeList.status}\n` +
+                      `Tasks: 0\n\n` +
+                      `Note: You cannot call updateTask() until tasks are created. Proceed with your work without task tracking.`;
+                  } else {
+                    const taskSummary = tasks.map((t: any) => 
+                      `[${t.id}] ${t.title} - ${t.status}`
+                    ).join('\n');
+                    toolResult = `✅ Current Task List (${activeList.id}):\n\n${taskSummary}\n\n` +
+                      `Use these task IDs when calling updateTask(). Example: updateTask("${tasks[0].id}", "in_progress")`;
+                  }
+                } else if (result.taskLists.length > 0) {
+                  toolResult = `No active task list found (found ${result.taskLists.length} completed/cancelled lists).\n\n` +
+                    `Task tracking is optional - proceed with your work without calling updateTask().`;
                 } else {
-                  toolResult = `No active task list found. Task tracking is optional - proceed with your work without calling updateTask().`;
+                  toolResult = `No task lists exist yet.\n\n` +
+                    `Task tracking is optional - proceed with your work without calling updateTask().\n` +
+                    `Note: Tasks are usually created automatically when conversations start.`;
                 }
               } else {
-                toolResult = `Error reading task list: ${result.error}. Proceed with your work anyway - task tracking is optional.`;
+                toolResult = `Error reading task list: ${result.error}\n\n` +
+                  `Proceed with your work anyway - task tracking is optional.`;
               }
             } else if (name === 'readPlatformFile') {
               const typedInput = input as { path: string };
@@ -1974,32 +1990,36 @@ DO NOT create new tasks - UPDATE existing ones!`;
                   const hasRepo = !!process.env.GITHUB_REPO;
 
                   if (!hasToken || !hasRepo) {
-                    toolResult = `❌ GitHub integration not configured.\n\nSetup instructions:\n1. Create GitHub Personal Access Token at https://github.com/settings/tokens\n2. Set environment variables:\n   - GITHUB_TOKEN=ghp_...\n   - GITHUB_REPO=owner/repo-name\n3. Render will auto-deploy on push to main branch\n\nThis enables Archetype to self-update without Replit!`;
+                    toolResult = `❌ GitHub integration not configured.\n\nSetup instructions:\n1. Create GitHub Personal Access Token at https://github.com/settings/tokens\n2. Set environment variables:\n   - GITHUB_TOKEN=ghp_...\n   - GITHUB_REPO=owner/repo-name\n3. Railway will auto-deploy on push to main branch\n\nThis enables Archetype to self-update in production!`;
                     sendEvent('error', { message: 'GitHub not configured - see setup instructions' });
                   } else {
-                    const githubService = new GitHubService();
-                    const PROJECT_ROOT = process.cwd();
+                    // CRITICAL: Use getGitHubService() singleton - works on Railway WITHOUT local .git folder
+                    const githubService = getGitHubService();
 
-                    // Read file contents and prepare for commit
+                    // CRITICAL: Use ONLY tracked fileChanges - NO filesystem reads
+                    // On Railway, filesystem = deployed code from GitHub (not our changes!)
+                    // The fileChanges array IS the source of truth for Meta-SySop's work
                     const filesToCommit = [];
                     for (const change of fileChanges) {
-                      if (change.contentAfter) {
-                        filesToCommit.push({
-                          path: change.path,
-                          content: change.contentAfter,
-                        });
-                      } else {
-                        // Read from filesystem if content wasn't tracked
-                        const fullPath = path.join(PROJECT_ROOT, change.path);
-                        const content = await fs.readFile(fullPath, 'utf-8');
-                        filesToCommit.push({
-                          path: change.path,
-                          content,
-                        });
+                      // REQUIRE contentAfter to be populated - no filesystem fallback
+                      if (!change.contentAfter && change.contentAfter !== '') {
+                        throw new Error(
+                          `File ${change.path} is missing content! ` +
+                          `This should never happen - writePlatformFile must populate contentAfter. ` +
+                          `Cannot read from filesystem on Railway (would get old deployed code).`
+                        );
                       }
+
+                      filesToCommit.push({
+                        path: change.path,
+                        content: change.contentAfter,
+                        operation: (change.operation || 'modify') as 'create' | 'modify' | 'delete',
+                      });
                     }
 
-                    // Commit to GitHub
+                    console.log(`[META-SYSOP] Committing ${filesToCommit.length} files via GitHub API (works on Railway)`);
+
+                    // Commit directly to GitHub via API (no local git needed)
                     const result = await githubService.commitFiles(
                       filesToCommit,
                       typedInput.commitMessage
@@ -2007,14 +2027,15 @@ DO NOT create new tasks - UPDATE existing ones!`;
 
                     commitSuccessful = true; // Track commit success for task validation
                     sendEvent('progress', { message: `✅ Committed to GitHub: ${result.commitHash}` });
-                    sendEvent('progress', { message: `🚀 Render will auto-deploy in 2-3 minutes` });
+                    sendEvent('progress', { message: `🚀 Railway will auto-deploy in 2-3 minutes` });
 
                     toolResult = `✅ SUCCESS! Committed ${fileChanges.length} files to GitHub\n\n` +
                       `Commit: ${result.commitHash}\n` +
                       `URL: ${result.commitUrl}\n\n` +
-                      `🚀 Render auto-deployment triggered!\n` +
+                      `🚀 Railway auto-deployment triggered!\n` +
                       `⏱️ Changes will be live in 2-3 minutes\n\n` +
-                      `Files committed:\n${filesToCommit.map(f => `- ${f.path}`).join('\n')}`;
+                      `Files committed:\n${filesToCommit.map(f => `- ${f.path}`).join('\n')}\n\n` +
+                      `Note: This works on Railway production (no local .git required)!`;
                   }
                 } catch (error: any) {
                   toolResult = `❌ GitHub commit failed: ${error.message}`;
