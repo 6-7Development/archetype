@@ -266,7 +266,12 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                   fetch(`/api/meta-sysop/task-list/${data.taskListId}`, {
                     credentials: 'include'
                   })
-                    .then(res => res.json())
+                    .then(async res => {
+                      if (!res.ok) {
+                        throw new Error(`Failed to fetch task list: ${res.status} ${res.statusText}`);
+                      }
+                      return res.json();
+                    })
                     .then(taskListData => {
                       if (taskListData.success && taskListData.tasks) {
                         const formattedTasks: AgentTask[] = taskListData.tasks.map((t: any) => ({
@@ -279,9 +284,18 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                         setShowTaskList(true);
                         setProgressMessage('Task list created - tracking progress...');
                         console.log('[META-SYSOP] Task list populated:', formattedTasks.length, 'tasks');
+                      } else {
+                        console.error('[META-SYSOP] Task list fetch returned no tasks:', taskListData);
                       }
                     })
-                    .catch(err => console.error('[META-SYSOP] Failed to fetch task list:', err));
+                    .catch(err => {
+                      console.error('[META-SYSOP] Failed to fetch task list:', err);
+                      toast({ 
+                        title: "Failed to load task list", 
+                        description: "Task progress may not be visible",
+                        variant: "destructive" 
+                      });
+                    });
                   break;
 
                 case 'task_updated':
