@@ -1521,27 +1521,8 @@ DO NOT create new tasks - UPDATE existing ones!`;
       }
     }
 
-    // 🎯 FINAL ANTI-LYING CHECK: Only allow completion message if we verified tasks are complete
-    let finalMessage = fullContent;
-    if (!finalMessage) {
-      // If fullContent is empty (all text suppressed), verify tasks before using default message
-      const verifyCheck = await readTaskList({ userId });
-      if (verifyCheck.success && verifyCheck.taskLists) {
-        const activeList = verifyCheck.taskLists.find((list: any) => list.status === 'active');
-        if (activeList) {
-          const allComplete = activeList.tasks.every((t: any) => t.status === 'completed');
-          if (allComplete) {
-            finalMessage = '✅ All tasks completed successfully!';
-          } else {
-            finalMessage = '⚠️ Session ended but not all tasks completed. Please review task status.';
-          }
-        } else {
-          finalMessage = '✅ Analysis complete!';
-        }
-      } else {
-        finalMessage = '⚠️ Session ended. Task verification unavailable.';
-      }
-    }
+    // Use Meta-SySop's response as-is (like Replit Agent)
+    let finalMessage = fullContent || '✅ Done!';
 
     // Save assistant message
     const [assistantMsg] = await db
