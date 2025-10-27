@@ -172,6 +172,7 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
+  const [progressMessage, setProgressMessage] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -211,6 +212,7 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
       setInput("");
       setIsStreaming(true);
       setStreamingContent("");
+      setProgressMessage("🧠 Connecting to Meta-SySop...");
 
       // Start streaming response
       const response = await fetch('/api/platform/chat/stream', {
@@ -233,46 +235,64 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
       let fullContent = "";
       let fileChanges: any[] = [];
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n');
 
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = JSON.parse(line.slice(6));
-            
-            if (data.type === 'content') {
-              fullContent += data.content;
-              setStreamingContent(fullContent);
-            } else if (data.type === 'file_change') {
-              fileChanges.push(data.file);
-            } else if (data.type === 'done') {
-              // Add complete assistant message
-              const assistantMsg: Message = {
-                id: data.messageId,
-                role: "assistant",
-                content: fullContent,
-                platformChanges: fileChanges.length > 0 ? { files: fileChanges } : undefined,
-                createdAt: new Date().toISOString(),
-              };
-              setMessages(prev => [...prev, assistantMsg]);
-              setIsStreaming(false);
-              setStreamingContent("");
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = JSON.parse(line.slice(6));
               
-              // Refresh history to persist
-              queryClient.invalidateQueries({ queryKey: ['/api/platform/chat/history'] });
+              if (data.type === 'progress') {
+                // SHOW PROGRESS in UI
+                setProgressMessage(data.message);
+              } else if (data.type === 'content') {
+                fullContent += data.content;
+                setStreamingContent(fullContent);
+              } else if (data.type === 'file_change') {
+                fileChanges.push(data.file);
+              } else if (data.type === 'error') {
+                console.error('[META-SYSOP] Error:', data.message);
+                throw new Error(data.message);
+              } else if (data.type === 'done') {
+                // Add complete assistant message
+                const assistantMsg: Message = {
+                  id: data.messageId,
+                  role: "assistant",
+                  content: fullContent,
+                  platformChanges: fileChanges.length > 0 ? { files: fileChanges } : undefined,
+                  createdAt: new Date().toISOString(),
+                };
+                setMessages(prev => [...prev, assistantMsg]);
+                setIsStreaming(false);
+                setStreamingContent("");
+                setProgressMessage(""); // CLEAR PROGRESS
+                
+                // Refresh history to persist
+                queryClient.invalidateQueries({ queryKey: ['/api/platform/chat/history'] });
+              }
             }
           }
         }
+      } catch (error) {
+        // Cancel reader on error to clean up resources
+        await reader.cancel();
+        throw error; // Re-throw to trigger onError
+      } finally {
+        // Always clean up state, even if stream completes normally
+        setIsStreaming(false);
+        setProgressMessage("");
       }
     },
     onError: (error: any) => {
       console.error('Meta-SySop error:', error);
       setIsStreaming(false);
       setStreamingContent("");
+      setProgressMessage(""); // CLEAR PROGRESS on error
       
       // Add error message
       const errorMsg: Message = {
