@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { AgentTaskList, type AgentTask } from "./agent-task-list";
 import { AgentProgressDisplay } from "./agent-progress-display";
@@ -114,6 +115,8 @@ function MessageContent({ content }: { content: string }) {
 
 export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopChatProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]); // Session-based only, no DB
   const [isStreaming, setIsStreaming] = useState(false);
@@ -139,9 +142,10 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
     queryKey: ['/api/meta-sysop/autonomy-level'],
   });
 
-  // Fetch all projects (admin only)
+  // Fetch all projects (admin only) - only run query if user is admin
   const { data: projects } = useQuery<any[]>({
     queryKey: ['/api/meta-sysop/projects'],
+    enabled: isAdmin, // Only fetch if user is admin to prevent 403 errors
   });
 
   // Update autonomy level

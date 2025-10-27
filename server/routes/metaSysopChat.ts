@@ -17,6 +17,34 @@ import * as path from 'path';
 
 const router = Router();
 
+// SECURITY: Validate project file paths to prevent path traversal attacks
+function validateProjectPath(filePath: string): string {
+  // Reject null, undefined, or empty paths
+  if (!filePath || typeof filePath !== 'string') {
+    throw new Error('Invalid file path: path is required');
+  }
+
+  // Normalize the path to resolve any .. or . segments
+  const normalized = path.normalize(filePath);
+
+  // Reject paths that try to escape using ..
+  if (normalized.includes('..')) {
+    throw new Error('Path traversal detected: paths cannot contain ".."');
+  }
+
+  // Reject absolute paths (must be relative to project root)
+  if (path.isAbsolute(normalized)) {
+    throw new Error('Absolute paths are not allowed: path must be relative to project root');
+  }
+
+  // Reject paths starting with / or \ (additional safety)
+  if (normalized.startsWith('/') || normalized.startsWith('\\')) {
+    throw new Error('Paths cannot start with / or \\');
+  }
+
+  return normalized;
+}
+
 // Session management for approval workflow
 const approvalPromises = new Map<string, { resolve: (value: boolean) => void; reject: (error: any) => void }>();
 
@@ -1386,19 +1414,27 @@ DO NOT create new tasks - UPDATE existing ones!`;
                 toolResult = '❌ No project selected. Use platform file tools instead.';
               } else {
                 const typedInput = input as { path: string };
-                sendEvent('progress', { message: `Reading ${typedInput.path} from user project...` });
                 
-                const { storage } = await import('../storage');
-                const projectFiles = await storage.getProjectFiles(projectId);
-                const targetFile = projectFiles.find(f => 
-                  (f.path ? `${f.path}/${f.filename}` : f.filename) === typedInput.path ||
-                  f.filename === typedInput.path
-                );
-                
-                if (targetFile) {
-                  toolResult = `File: ${targetFile.filename}\nLanguage: ${targetFile.language}\nContent:\n${targetFile.content}`;
-                } else {
-                  toolResult = `❌ File not found: ${typedInput.path}`;
+                try {
+                  // SECURITY: Validate path to prevent traversal attacks
+                  const validatedPath = validateProjectPath(typedInput.path);
+                  sendEvent('progress', { message: `Reading ${validatedPath} from user project...` });
+                  
+                  const { storage } = await import('../storage');
+                  const projectFiles = await storage.getProjectFiles(projectId);
+                  const targetFile = projectFiles.find(f => 
+                    (f.path ? `${f.path}/${f.filename}` : f.filename) === validatedPath ||
+                    f.filename === validatedPath
+                  );
+                  
+                  if (targetFile) {
+                    toolResult = `File: ${targetFile.filename}\nLanguage: ${targetFile.language}\nContent:\n${targetFile.content}`;
+                  } else {
+                    toolResult = `❌ File not found: ${validatedPath}`;
+                  }
+                } catch (error: any) {
+                  toolResult = `❌ Security error: ${error.message}`;
+                  sendEvent('error', { message: error.message });
                 }
               }
             } else if (name === 'writeProjectFile') {
@@ -1406,22 +1442,30 @@ DO NOT create new tasks - UPDATE existing ones!`;
                 toolResult = '❌ No project selected. Use platform file tools instead.';
               } else {
                 const typedInput = input as { path: string; content: string };
-                sendEvent('progress', { message: `Writing ${typedInput.path} to user project...` });
                 
-                const { storage } = await import('../storage');
-                const projectFiles = await storage.getProjectFiles(projectId);
-                const targetFile = projectFiles.find(f => 
-                  (f.path ? `${f.path}/${f.filename}` : f.filename) === typedInput.path ||
-                  f.filename === typedInput.path
-                );
-                
-                if (targetFile) {
-                  // Update existing file
-                  await storage.updateFile(targetFile.id, targetFile.userId, typedInput.content);
-                  toolResult = `✅ File updated: ${typedInput.path}`;
-                  sendEvent('file_change', { file: { path: typedInput.path, operation: 'modify' } });
-                } else {
-                  toolResult = `❌ File not found: ${typedInput.path}. Use createProjectFile to create new files.`;
+                try {
+                  // SECURITY: Validate path to prevent traversal attacks
+                  const validatedPath = validateProjectPath(typedInput.path);
+                  sendEvent('progress', { message: `Writing ${validatedPath} to user project...` });
+                  
+                  const { storage } = await import('../storage');
+                  const projectFiles = await storage.getProjectFiles(projectId);
+                  const targetFile = projectFiles.find(f => 
+                    (f.path ? `${f.path}/${f.filename}` : f.filename) === validatedPath ||
+                    f.filename === validatedPath
+                  );
+                  
+                  if (targetFile) {
+                    // Update existing file
+                    await storage.updateFile(targetFile.id, targetFile.userId, typedInput.content);
+                    toolResult = `✅ File updated: ${validatedPath}`;
+                    sendEvent('file_change', { file: { path: validatedPath, operation: 'modify' } });
+                  } else {
+                    toolResult = `❌ File not found: ${validatedPath}. Use createProjectFile to create new files.`;
+                  }
+                } catch (error: any) {
+                  toolResult = `❌ Security error: ${error.message}`;
+                  sendEvent('error', { message: error.message });
                 }
               }
             } else if (name === 'listProjectDirectory') {
@@ -1446,43 +1490,51 @@ DO NOT create new tasks - UPDATE existing ones!`;
                 toolResult = '❌ No project selected. Use platform file tools instead.';
               } else {
                 const typedInput = input as { path: string; content: string };
-                sendEvent('progress', { message: `Creating ${typedInput.path} in user project...` });
                 
-                const { storage } = await import('../storage');
-                
-                // Get project owner to set correct userId
-                const project = await db.select().from(projects).where(eq(projects.id, projectId)).limit(1);
-                if (!project || project.length === 0) {
-                  toolResult = '❌ Project not found';
-                } else {
-                  const projectOwnerId = project[0].userId;
+                try {
+                  // SECURITY: Validate path to prevent traversal attacks
+                  const validatedPath = validateProjectPath(typedInput.path);
+                  sendEvent('progress', { message: `Creating ${validatedPath} in user project...` });
                   
-                  // Parse filename and path
-                  const parts = typedInput.path.split('/');
-                  const filename = parts.pop() || typedInput.path;
-                  const filePath = parts.join('/');
+                  const { storage } = await import('../storage');
                   
-                  // Determine language from extension
-                  const ext = filename.split('.').pop()?.toLowerCase() || 'text';
-                  const langMap: Record<string, string> = {
-                    'js': 'javascript', 'jsx': 'javascript',
-                    'ts': 'typescript', 'tsx': 'typescript',
-                    'py': 'python', 'html': 'html', 'css': 'css',
-                    'json': 'json', 'md': 'markdown',
-                  };
-                  const language = langMap[ext] || 'text';
-                  
-                  await storage.createFile({
-                    userId: projectOwnerId,
-                    projectId,
-                    filename,
-                    path: filePath,
-                    content: typedInput.content,
-                    language,
-                  });
-                  
-                  toolResult = `✅ File created: ${typedInput.path}`;
-                  sendEvent('file_change', { file: { path: typedInput.path, operation: 'create' } });
+                  // Get project owner to set correct userId
+                  const project = await db.select().from(projects).where(eq(projects.id, projectId)).limit(1);
+                  if (!project || project.length === 0) {
+                    toolResult = '❌ Project not found';
+                  } else {
+                    const projectOwnerId = project[0].userId;
+                    
+                    // Parse filename and path from validated path
+                    const parts = validatedPath.split('/');
+                    const filename = parts.pop() || validatedPath;
+                    const filePath = parts.join('/');
+                    
+                    // Determine language from extension
+                    const ext = filename.split('.').pop()?.toLowerCase() || 'text';
+                    const langMap: Record<string, string> = {
+                      'js': 'javascript', 'jsx': 'javascript',
+                      'ts': 'typescript', 'tsx': 'typescript',
+                      'py': 'python', 'html': 'html', 'css': 'css',
+                      'json': 'json', 'md': 'markdown',
+                    };
+                    const language = langMap[ext] || 'text';
+                    
+                    await storage.createFile({
+                      userId: projectOwnerId,
+                      projectId,
+                      filename,
+                      path: filePath,
+                      content: typedInput.content,
+                      language,
+                    });
+                    
+                    toolResult = `✅ File created: ${validatedPath}`;
+                    sendEvent('file_change', { file: { path: validatedPath, operation: 'create' } });
+                  }
+                } catch (error: any) {
+                  toolResult = `❌ Security error: ${error.message}`;
+                  sendEvent('error', { message: error.message });
                 }
               }
             } else if (name === 'deleteProjectFile') {
@@ -1490,21 +1542,29 @@ DO NOT create new tasks - UPDATE existing ones!`;
                 toolResult = '❌ No project selected. Use platform file tools instead.';
               } else {
                 const typedInput = input as { path: string };
-                sendEvent('progress', { message: `Deleting ${typedInput.path} from user project...` });
                 
-                const { storage } = await import('../storage');
-                const projectFiles = await storage.getProjectFiles(projectId);
-                const targetFile = projectFiles.find(f => 
-                  (f.path ? `${f.path}/${f.filename}` : f.filename) === typedInput.path ||
-                  f.filename === typedInput.path
-                );
-                
-                if (targetFile) {
-                  await storage.deleteFile(targetFile.id, targetFile.userId);
-                  toolResult = `✅ File deleted: ${typedInput.path}`;
-                  sendEvent('file_change', { file: { path: typedInput.path, operation: 'delete' } });
-                } else {
-                  toolResult = `❌ File not found: ${typedInput.path}`;
+                try {
+                  // SECURITY: Validate path to prevent traversal attacks
+                  const validatedPath = validateProjectPath(typedInput.path);
+                  sendEvent('progress', { message: `Deleting ${validatedPath} from user project...` });
+                  
+                  const { storage } = await import('../storage');
+                  const projectFiles = await storage.getProjectFiles(projectId);
+                  const targetFile = projectFiles.find(f => 
+                    (f.path ? `${f.path}/${f.filename}` : f.filename) === validatedPath ||
+                    f.filename === validatedPath
+                  );
+                  
+                  if (targetFile) {
+                    await storage.deleteFile(targetFile.id, targetFile.userId);
+                    toolResult = `✅ File deleted: ${validatedPath}`;
+                    sendEvent('file_change', { file: { path: validatedPath, operation: 'delete' } });
+                  } else {
+                    toolResult = `❌ File not found: ${validatedPath}`;
+                  }
+                } catch (error: any) {
+                  toolResult = `❌ Security error: ${error.message}`;
+                  sendEvent('error', { message: error.message });
                 }
               }
             } else if (name === 'architect_consult') {
