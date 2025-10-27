@@ -513,8 +513,8 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     sendEvent('user_message', { messageId: userMsg.id });
 
-    // Meta-SySop will create task lists ONLY when actually building
-    // Not for questions, diagnostics, or exploration
+    // Meta-SySop creates task lists for work requests (diagnose, fix, improve)
+    // This makes progress visible in the inline task card
     sendEvent('progress', { message: '🧠 Analyzing your request...' });
     
     // Track task list ID if created during conversation
@@ -534,7 +534,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         )
       )
       .orderBy(chatMessages.createdAt)
-      .limit(20); // Last 20 messages for context
+      .limit(6); // Last 6 messages to avoid confusion from old context
 
     // Build conversation for Claude
     const conversationMessages: any[] = history
