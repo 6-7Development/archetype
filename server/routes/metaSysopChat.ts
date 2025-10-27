@@ -171,18 +171,23 @@ router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
 
 // Stream Meta-SySop chat response
 router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
+  console.log('[META-SYSOP-CHAT] Stream request received');
   const { message, autoCommit = false, autoPush = false } = req.body;
   const userId = req.authenticatedUserId;
+  console.log('[META-SYSOP-CHAT] Message:', message?.substring(0, 50), 'UserId:', userId);
 
   if (!message || typeof message !== 'string') {
+    console.log('[META-SYSOP-CHAT] ERROR: Message validation failed');
     return res.status(400).json({ error: 'Message is required' });
   }
 
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   if (!anthropicKey) {
+    console.log('[META-SYSOP-CHAT] ERROR: No Anthropic API key');
     return res.status(503).json({ error: 'Anthropic API key not configured' });
   }
 
+  console.log('[META-SYSOP-CHAT] Setting up SSE headers');
   // Set up Server-Sent Events
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
@@ -194,6 +199,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
   // Helper function to ensure consistent SSE stream termination
   const terminateStream = (messageId: string, error?: string) => {
+    console.log('[META-SYSOP-CHAT] Terminating stream:', messageId, error ? `Error: ${error}` : 'Success');
     if (error) {
       sendEvent('error', { message: error });
     }
@@ -201,6 +207,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     res.end();
   };
 
+  console.log('[META-SYSOP-CHAT] Entering try block');
   try {
 
     // Save user message
