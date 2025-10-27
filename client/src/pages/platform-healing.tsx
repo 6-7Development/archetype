@@ -108,12 +108,6 @@ function PlatformHealingContent() {
   // Use WebSocket metrics if available, otherwise HTTP metrics
   const status = metrics || httpMetrics;
 
-  // Fetch autonomy level data
-  const { data: autonomyData, isLoading: autonomyLoading } = useQuery<any>({
-    queryKey: ['/api/meta-sysop/autonomy-level'],
-    refetchInterval: false,
-  });
-
   // Fetch pending changes
   const { data: pendingChangesData, isLoading: pendingChangesLoading, refetch: refetchPendingChanges } = useQuery<any>({
     queryKey: ['/api/meta-sysop/pending-changes'],
@@ -122,27 +116,6 @@ function PlatformHealingContent() {
 
   const [selectedFileForDiff, setSelectedFileForDiff] = useState<string | null>(null);
   const [showPendingChanges, setShowPendingChanges] = useState(true);
-
-  // Update autonomy level mutation
-  const updateAutonomyMutation = useMutation({
-    mutationFn: async (level: string) => {
-      return await apiRequest('PUT', '/api/meta-sysop/autonomy-level', { level });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/meta-sysop/autonomy-level'] });
-      toast({
-        title: 'Autonomy level updated',
-        description: 'Your Meta-SySop autonomy level has been updated successfully.',
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        variant: 'destructive',
-        title: 'Update failed',
-        description: error.message || 'Failed to update autonomy level',
-      });
-    },
-  });
 
   // Meta-SySop streaming mutation (NEW SYSTEM with all tools!)
   const autoHealMutation = useMutation({
@@ -550,91 +523,6 @@ function PlatformHealingContent() {
             </div>
           </div>
 
-          {/* System Metrics Card */}
-          <div className="bg-card border border-border rounded-xl shadow-lg p-3 sm:p-5 overflow-hidden">
-            <h3 className="font-bold text-sm mb-3 sm:mb-4 flex items-center gap-2 flex-wrap" data-testid="metrics-title">
-              <Server className="w-4 h-4 text-blue-400 shrink-0" />
-              <span>Live System Metrics</span>
-              {wsStream.isConnected && (
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" title="WebSocket Connected" />
-              )}
-            </h3>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-3 sm:mb-4">
-              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
-                  <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />
-                </div>
-                <div className="min-w-0 overflow-hidden">
-                  <div className="text-xs text-muted-foreground truncate">Health</div>
-                  <div className="text-lg sm:text-xl font-bold truncate" data-testid="metric-health">
-                    {status?.overallHealth || 0}%
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
-                  <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
-                </div>
-                <div className="min-w-0 overflow-hidden">
-                  <div className="text-xs text-muted-foreground truncate">Incidents</div>
-                  <div className="text-lg sm:text-xl font-bold truncate" data-testid="metric-incidents">
-                    {status?.activeIncidents || 0}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
-                  <Cpu className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-                </div>
-                <div className="min-w-0 overflow-hidden">
-                  <div className="text-xs text-muted-foreground truncate">CPU</div>
-                  <div className="text-lg sm:text-xl font-bold truncate" data-testid="metric-cpu">
-                    {status?.cpuUsage || 0}%
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0">
-                  <HardDrive className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500" />
-                </div>
-                <div className="min-w-0 overflow-hidden">
-                  <div className="text-xs text-muted-foreground truncate">Memory</div>
-                  <div className="text-lg sm:text-xl font-bold truncate" data-testid="metric-memory">
-                    {status?.memoryUsage || 0}%
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs sm:text-sm gap-2">
-                  <span className="flex items-center gap-2 min-w-0">
-                    <Cpu className="w-4 h-4 text-blue-400 shrink-0" />
-                    <span className="truncate">CPU Load</span>
-                  </span>
-                  <span className="font-mono shrink-0" data-testid="cpu-percentage">{status?.cpuUsage || 0}%</span>
-                </div>
-                <Progress value={status?.cpuUsage || 0} className="h-2" />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs sm:text-sm gap-2">
-                  <span className="flex items-center gap-2 min-w-0">
-                    <HardDrive className="w-4 h-4 text-purple-400 shrink-0" />
-                    <span className="truncate">Memory</span>
-                  </span>
-                  <span className="font-mono shrink-0" data-testid="memory-percentage">{status?.memoryUsage || 0}%</span>
-                </div>
-                <Progress value={status?.memoryUsage || 0} className="h-2" />
-              </div>
-            </div>
-          </div>
-
           {/* Progress Steps */}
           {phase !== 'idle' && (
             <div className="bg-card border border-border rounded-xl shadow-lg p-3 sm:p-4">
@@ -892,103 +780,6 @@ function PlatformHealingContent() {
                   </div>
                 </div>
               )}
-            </div>
-          )}
-
-          {/* Autonomy Level Selector */}
-          {!autonomyLoading && autonomyData && (
-            <div className="bg-card border border-border rounded-xl shadow-lg p-4 sm:p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <SlidersHorizontal className="w-5 h-5 text-blue-400" />
-                <h3 className="font-bold text-sm sm:text-base">Meta-SySop Autonomy Level</h3>
-                <Badge variant="secondary" className="ml-auto">
-                  {autonomyData.plan}
-                </Badge>
-              </div>
-              
-              <p className="text-sm text-muted-foreground mb-4">
-                Control how much autonomy Meta-SySop has when maintaining your platform. Higher tiers unlock advanced capabilities.
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                {Object.entries(autonomyData.levels).map(([levelId, levelData]: [string, any]) => {
-                  const isCurrentLevel = autonomyData.currentLevel === levelId;
-                  const levelToNumber: Record<string, number> = { basic: 0, standard: 1, deep: 2, max: 3 };
-                  const maxToNumber: Record<string, number> = { basic: 0, standard: 1, deep: 2, max: 3 };
-                  const isLocked = levelToNumber[levelId] > maxToNumber[autonomyData.maxAllowedLevel];
-                  
-                  const IconComponent = levelData.icon === 'shield' ? Shield :
-                                       levelData.icon === 'zap' ? Zap :
-                                       levelData.icon === 'brain' ? Brain : Infinity;
-
-                  return (
-                    <button
-                      key={levelId}
-                      onClick={() => {
-                        if (!isLocked && !updateAutonomyMutation.isPending) {
-                          updateAutonomyMutation.mutate(levelId);
-                        }
-                      }}
-                      disabled={isLocked || updateAutonomyMutation.isPending}
-                      className={`relative p-4 rounded-lg border-2 transition-all text-left ${
-                        isCurrentLevel
-                          ? 'border-blue-500 bg-blue-500/10'
-                          : isLocked
-                          ? 'border-border bg-muted/50 opacity-60 cursor-not-allowed'
-                          : 'border-border bg-card hover-elevate active-elevate-2 cursor-pointer'
-                      }`}
-                      data-testid={`autonomy-level-${levelId}`}
-                    >
-                      {isLocked && (
-                        <div className="absolute top-2 right-2">
-                          <Lock className="w-4 h-4 text-muted-foreground" />
-                        </div>
-                      )}
-                      
-                      <div className="flex items-center gap-2 mb-2">
-                        <IconComponent className={`w-5 h-5 ${
-                          isCurrentLevel ? 'text-blue-500' : 'text-muted-foreground'
-                        }`} />
-                        <h4 className="font-bold text-sm">{levelData.name}</h4>
-                      </div>
-                      
-                      <p className="text-xs text-muted-foreground mb-3">
-                        {levelData.description}
-                      </p>
-                      
-                      <div className="space-y-1">
-                        {levelData.features.slice(0, 2).map((feature: string, idx: number) => (
-                          <div key={idx} className="flex items-start gap-1.5">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-500 mt-0.5 shrink-0" />
-                            <span className="text-xs text-foreground/80">{feature}</span>
-                          </div>
-                        ))}
-                        {levelData.features.length > 2 && (
-                          <span className="text-xs text-muted-foreground">
-                            +{levelData.features.length - 2} more
-                          </span>
-                        )}
-                      </div>
-
-                      {isLocked && (
-                        <div className="mt-3 pt-3 border-t border-border">
-                          <span className="text-xs text-muted-foreground">
-                            Requires: {levelData.requiredPlan}
-                          </span>
-                        </div>
-                      )}
-                      
-                      {isCurrentLevel && (
-                        <div className="mt-3 pt-3 border-t border-blue-500/30">
-                          <Badge variant="default" className="text-xs">
-                            Active
-                          </Badge>
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
             </div>
           )}
 
