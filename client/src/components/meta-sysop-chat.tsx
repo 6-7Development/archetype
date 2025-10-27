@@ -125,7 +125,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
   const [progressStatus, setProgressStatus] = useState<'thinking' | 'working' | 'vibing' | 'idle'>('idle');
   const [progressMessage, setProgressMessage] = useState("");
-  const [showTaskList, setShowTaskList] = useState(false);
+  const [showTaskList, setShowTaskList] = useState(true); // Default true to show task UI when tasks arrive (like Replit Agent)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null); // null = platform code
   const abortControllerRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
