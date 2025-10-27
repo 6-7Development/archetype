@@ -1,0 +1,95 @@
+2025-10-27T02:16:53.000000000Z [inf]  Starting Container
+2025-10-27T02:16:54.716617664Z [inf]  Time: Mon Oct 27 02:16:53 UTC 2025
+2025-10-27T02:16:54.716617833Z [inf]  
+2025-10-27T02:16:54.716625961Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-10-27T02:16:54.716632219Z [inf]  ======================================
+2025-10-27T02:16:54.716634957Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-10-27T02:16:54.716639273Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-10-27T02:16:54.716645745Z [inf]  🚂 RAILWAY STARTUP SCRIPT
+2025-10-27T02:16:54.716653999Z [inf]  ======================================
+2025-10-27T02:16:55.810592454Z [inf]  Using 'pg' driver for database querying
+2025-10-27T02:16:55.810612156Z [inf]  [⣷] Pulling schema from database...
+2025-10-27T02:16:55.810618166Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-27T02:16:55.810622948Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-27T02:16:55.810627945Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-27T02:16:55.810632952Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-27T02:16:55.890832277Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-27T02:16:56.693472197Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-27T02:16:56.693485377Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-27T02:16:56.693494706Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-27T02:16:56.693504023Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-27T02:16:56.693512537Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-27T02:16:56.693521690Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-27T02:16:56.790234001Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-27T02:16:56.918159249Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-27T02:16:57.889579124Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-27T02:16:57.889585220Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-27T02:16:57.889592074Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-27T02:16:57.889597382Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-27T02:16:57.889603910Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-27T02:16:57.889609514Z [inf]  [2K[1G[✓] Pulling schema from database...
+2025-10-27T02:16:57.889615352Z [inf]  [i] No changes detected
+2025-10-27T02:16:57.889620878Z [inf]  
+2025-10-27T02:16:57.889627126Z [inf]  ✅ Database migrations completed successfully!
+2025-10-27T02:16:57.889632735Z [inf]  
+2025-10-27T02:16:57.889639185Z [inf]  🚀 Starting Node.js application...
+2025-10-27T02:16:59.806914358Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-27T02:16:59.806928501Z [inf]  📡 WebSocket server initialized at /ws
+2025-10-27T02:16:59.806937468Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-27T02:16:59.806947613Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-27T02:16:59.806956034Z [inf]  ✅ All routes registered successfully
+2025-10-27T02:16:59.806963503Z [inf]  🔍 Testing database connection...
+2025-10-27T02:16:59.806970145Z [inf]  2:16:59 AM [express] serving on port 8080
+2025-10-27T02:16:59.806977774Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-10-27T02:16:59.806977839Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-27T02:16:59.806984838Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-27T02:16:59.806986500Z [inf]  ✅ Database connected successfully
+2025-10-27T02:16:59.806991327Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-27T02:16:59.806995531Z [inf]  🔧 Auto-healing system ENABLED (production mode)
+2025-10-27T02:16:59.806998997Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-27T02:16:59.807006145Z [inf]  
+2025-10-27T02:16:59.807006885Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-10-27T02:16:59.807013597Z [inf]  [db] Connection string includes SSL params: true
+2025-10-27T02:16:59.807014372Z [inf]  🔍 Checking GitHub integration configuration...
+2025-10-27T02:16:59.807023133Z [inf]  ✅ GitHub integration configured successfully
+2025-10-27T02:16:59.807023408Z [inf]  [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-27T02:16:59.807030007Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-27T02:16:59.807032510Z [inf]     - Repository: 6-7Development/archetype
+2025-10-27T02:16:59.807236756Z [inf]     - Branch: main
+2025-10-27T02:16:59.807243200Z [inf]     - Token: ✓ (configured)
+2025-10-27T02:16:59.807250485Z [inf]     - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-27T02:16:59.807257816Z [inf]     - Maintenance mode: Available for owner
+2025-10-27T02:16:59.807265429Z [inf]  
+2025-10-27T02:17:19.428017683Z [err]  Failed to get git info, using defaults: Error: Command failed: git rev-parse HEAD
+2025-10-27T02:17:19.428025816Z [err]  fatal: not a git repository (or any of the parent directories): .git
+2025-10-27T02:17:19.428032763Z [err]  
+2025-10-27T02:17:19.428039888Z [err]      at genericNodeError (node:internal/errors:984:15)
+2025-10-27T02:17:19.428045838Z [err]      at wrappedFn (node:internal/errors:538:14)
+2025-10-27T02:17:19.428053034Z [err]      at ChildProcess.exithandler (node:child_process:422:12)
+2025-10-27T02:17:19.428059017Z [err]      at ChildProcess.emit (node:events:524:28)
+2025-10-27T02:17:19.428066228Z [err]      at maybeClose (node:internal/child_process:1104:16)
+2025-10-27T02:17:19.428072329Z [err]      at Socket.<anonymous> (node:internal/child_process:456:11)
+2025-10-27T02:17:19.428078387Z [err]      at Socket.emit (node:events:524:28)
+2025-10-27T02:17:19.428084758Z [err]      at Pipe.<anonymous> (node:net:343:12) {
+2025-10-27T02:17:19.428091068Z [err]    code: 128,
+2025-10-27T02:17:19.428096693Z [err]    killed: false,
+2025-10-27T02:17:19.428103202Z [err]    signal: null,
+2025-10-27T02:17:19.428115638Z [err]    cmd: 'git rev-parse HEAD',
+2025-10-27T02:17:19.428121165Z [err]    stdout: '',
+2025-10-27T02:17:19.428126867Z [err]    stderr: 'fatal: not a git repository (or any of the parent directories): .git\n'
+2025-10-27T02:17:19.428156609Z [err]  }
+2025-10-27T02:17:19.428164513Z [inf]  2:17:10 AM [express] GET /api/deployment-info 200 in 18ms :: {"version":"1.0.0","commitHash":"unknow…
+2025-10-27T02:17:19.428171350Z [inf]  [AUTH] Login attempt for email: root@getdc360.com
+2025-10-27T02:17:19.428177736Z [inf]  [AUTH] Found users: 1
+2025-10-27T02:17:19.428185374Z [inf]  [AUTH] User found: root@getdc360.com has password: true
+2025-10-27T02:17:19.428191664Z [inf]  [AUTH] Verifying password...
+2025-10-27T02:17:19.428197320Z [inf]  [AUTH] Password valid: true
+2025-10-27T02:17:20.116568530Z [inf]  [AUTH] Authentication successful for: root@getdc360.com
+2025-10-27T02:17:20.116573909Z [inf]  2:17:13 AM [express] POST /api/auth/login 200 in 311ms :: {"success":true,"user":{"id":"723e1301-c72…
+2025-10-27T02:17:20.116578747Z [inf]  2:17:14 AM [express] GET /api/auth/me 304 in 15ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef95…
+2025-10-27T02:17:20.116583054Z [inf]  2:17:14 AM [express] GET /api/projects 304 in 98ms :: []
+2025-10-27T02:17:20.116587919Z [inf]  2:17:16 AM [express] GET /api/platform/status 200 in 33ms :: {"overallHealth":100,"activeIncidents":…
+2025-10-27T02:17:20.116592473Z [inf]  2:17:16 AM [express] GET /api/platform/chat/history 200 in 44ms
+2025-10-27T02:17:20.116597221Z [inf]  ✅ WebSocket client connected
+2025-10-27T02:17:20.116601695Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T02:17:23.056727950Z [inf]  2:17:22 AM [express] POST /api/platform/chat/stream 200 in 13ms

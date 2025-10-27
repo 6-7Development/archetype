@@ -171,27 +171,37 @@ router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
 
 // Stream Meta-SySop chat response
 router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
+  const { message, autoCommit = false, autoPush = false } = req.body;
+  const userId = req.authenticatedUserId;
+
+  if (!message || typeof message !== 'string') {
+    return res.status(400).json({ error: 'Message is required' });
+  }
+
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  if (!anthropicKey) {
+    return res.status(503).json({ error: 'Anthropic API key not configured' });
+  }
+
+  // Set up Server-Sent Events
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  const sendEvent = (type: string, data: any) => {
+    res.write(`data: ${JSON.stringify({ type, ...data })}\n\n`);
+  };
+
+  // Helper function to ensure consistent SSE stream termination
+  const terminateStream = (messageId: string, error?: string) => {
+    if (error) {
+      sendEvent('error', { message: error });
+    }
+    sendEvent('done', { messageId, error: error ? true : false });
+    res.end();
+  };
+
   try {
-    const { message, autoCommit = false, autoPush = false } = req.body;
-    const userId = req.authenticatedUserId;
-
-    if (!message || typeof message !== 'string') {
-      return res.status(400).json({ error: 'Message is required' });
-    }
-
-    const anthropicKey = process.env.ANTHROPIC_API_KEY;
-    if (!anthropicKey) {
-      return res.status(503).json({ error: 'Anthropic API key not configured' });
-    }
-
-    // Set up Server-Sent Events
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-
-    const sendEvent = (type: string, data: any) => {
-      res.write(`data: ${JSON.stringify({ type, ...data })}\n\n`);
-    };
 
     // Save user message
     const [userMsg] = await db
@@ -661,6 +671,50 @@ Be conversational, be helpful, and only work when asked!`;
         .trim();
     };
 
+    // 🎯 GREETING SHORTCUT: Detect casual greetings BEFORE calling Claude API
+    const userMessage = message.toLowerCase().trim();
+    const casualGreetings = ['hi', 'hello', 'hey', 'yo', 'sup', 'what\'s up', 'how are you', 'howdy'];
+    const isCasualGreeting = casualGreetings.some(greeting => 
+      userMessage === greeting || 
+      userMessage.startsWith(greeting + ' ') ||
+      userMessage.startsWith(greeting + '!')
+    );
+    
+    if (isCasualGreeting) {
+      console.log('[META-SYSOP] Casual greeting detected - sending friendly response WITHOUT calling Claude');
+      
+      // Send friendly greeting response WITHOUT calling Claude
+      const greetingResponse = "Hi! I'm Meta-SySop, your platform maintenance assistant. I can help diagnose issues, fix bugs, and maintain the Archetype platform. How can I help you today?";
+      
+      fullContent = greetingResponse;
+      sendEvent('content', { content: greetingResponse });
+      
+      // Save assistant message
+      const [assistantMsg] = await db.insert(chatMessages).values({
+        userId,
+        projectId: null,
+        fileId: null,
+        role: 'assistant',
+        content: greetingResponse,
+        isPlatformHealing: true,
+      }).returning();
+      
+      // Log audit trail
+      await platformAudit.log({
+        userId,
+        action: 'heal',
+        description: `Meta-SySop chat: ${message.slice(0, 100)}`,
+        changes: [],
+        backupId: undefined,
+        commitHash: '',
+        status: 'success',
+      });
+      
+      // Send done event and close stream
+      terminateStream(assistantMsg.id);
+      return; // Exit early, skip Claude API entirely
+    }
+
     while (continueLoop && iterationCount < MAX_ITERATIONS) {
       iterationCount++;
 
@@ -680,38 +734,10 @@ Be conversational, be helpful, and only work when asked!`;
         content: response.content,
       });
 
-      // 🎯 MESSAGE CLASSIFICATION: Detect casual greetings vs work requests
-      let isWorkRequest = true; // Default to work request
-      
-      if (iterationCount === 1) {
-        const userMessage = message.toLowerCase().trim();
-        
-        // Casual greetings - no tools required
-        const casualGreetings = ['hi', 'hello', 'hey', 'yo', 'sup', 'what\'s up', 'how are you', 'howdy'];
-        const isCasualGreeting = casualGreetings.some(greeting => 
-          userMessage === greeting || 
-          userMessage.startsWith(greeting + ' ') ||
-          userMessage.startsWith(greeting + '!')
-        );
-        
-        // Simple questions (short, no action verbs) - tools optional
-        const actionVerbs = ['fix', 'deploy', 'build', 'create', 'update', 'add', 'remove', 'delete', 'implement', 'refactor'];
-        const hasActionVerb = actionVerbs.some(verb => userMessage.includes(verb));
-        const isShortQuestion = userMessage.length < 50 && userMessage.includes('?');
-        
-        if (isCasualGreeting || (isShortQuestion && !hasActionVerb)) {
-          isWorkRequest = false;
-          console.log('[META-SYSOP-CLASSIFICATION] ✅ Casual conversation detected - tool calls not required');
-        } else {
-          console.log('[META-SYSOP-CLASSIFICATION] 🔨 Work request detected - tool calls required');
-        }
-      }
-
-      // 🎯 SIMPLIFIED: Log classification result, no enforcement
+      // 🎯 Log response for debugging
       if (iterationCount === 1) {
         const hasToolCalls = response.content.some(block => block.type === 'tool_use');
-        console.log('[META-SYSOP] Message classified as:', isWorkRequest ? 'WORK REQUEST' : 'CASUAL CONVERSATION');
-        console.log('[META-SYSOP] Has tool calls:', hasToolCalls);
+        console.log('[META-SYSOP] Response has tool calls:', hasToolCalls);
         console.log('[META-SYSOP] Content blocks:', response.content.map(b => b.type).join(', '));
       }
 
@@ -1503,11 +1529,21 @@ DO NOT create new tasks - UPDATE existing ones!`;
       }
 
       if (unapprovedFiles.length > 0) {
-        sendEvent('error', { 
-          message: `❌ AUTO-COMMIT BLOCKED: ${unapprovedFiles.length} file(s) lack I AM approval: ${unapprovedFiles.join(', ')}` 
-        });
+        const errorMsg = `❌ AUTO-COMMIT BLOCKED: ${unapprovedFiles.length} file(s) lack I AM approval: ${unapprovedFiles.join(', ')}`;
         console.error('[META-SYSOP] Blocked auto-commit - unapproved files:', unapprovedFiles);
-        res.end();
+        
+        // Save error message to DB
+        const [assistantMsg] = await db.insert(chatMessages).values({
+          userId,
+          projectId: null,
+          fileId: null,
+          role: 'assistant',
+          content: errorMsg,
+          isPlatformHealing: true,
+        }).returning();
+        
+        // Send error and done events, then close stream
+        terminateStream(assistantMsg.id, errorMsg);
         return;
       }
 
@@ -1571,9 +1607,26 @@ DO NOT create new tasks - UPDATE existing ones!`;
     res.end();
   } catch (error: any) {
     console.error('[META-SYSOP-CHAT] Stream error:', error);
-    const errorMessage = JSON.stringify({ type: 'error', message: error.message });
-    res.write(`data: ${errorMessage}\n\n`);
-    res.end();
+    
+    // Save error message to DB
+    try {
+      const errorMsg = `❌ Error: ${error.message}`;
+      const [errorAssistantMsg] = await db.insert(chatMessages).values({
+        userId,
+        projectId: null,
+        fileId: null,
+        role: 'assistant',
+        content: errorMsg,
+        isPlatformHealing: true,
+      }).returning();
+      
+      // Send error and done events, then close stream
+      terminateStream(errorAssistantMsg.id, error.message);
+    } catch (dbError: any) {
+      // If we can't save to DB, at least send done event with generic ID
+      console.error('[META-SYSOP-CHAT] Failed to save error message:', dbError);
+      terminateStream('error-' + Date.now(), error.message);
+    }
   }
 });
 
