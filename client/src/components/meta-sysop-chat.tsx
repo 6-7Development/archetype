@@ -1,12 +1,20 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Send, Loader2, Wrench, User, FileCode, Copy, Check } from "lucide-react";
+import { Send, Loader2, Wrench, User, FileCode, Copy, Check, Paperclip, X, Image, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+
+interface Attachment {
+  fileName: string;
+  fileType: 'image' | 'code' | 'log' | 'text';
+  content: string; // base64 for images, text for others
+  mimeType: string;
+  size: number;
+}
 
 interface Message {
   id: string;
@@ -15,6 +23,7 @@ interface Message {
   platformChanges?: {
     files: Array<{ path: string; operation: string }>;
   };
+  attachments?: Attachment[];
   createdAt: string;
 }
 
@@ -173,8 +182,12 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
   const [progressMessage, setProgressMessage] = useState("");
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   // Load Meta-SySop chat history
   const { data: chatHistory, isLoading } = useQuery<{ messages: Message[] }>({
@@ -198,18 +211,171 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
     }
   }, [messages, streamingContent]);
 
+  // File processing helper
+  const processFile = async (file: File): Promise<Attachment | null> => {
+    const maxSize = 10 * 1024 * 1024; // 10MB limit
+    if (file.size > maxSize) {
+      toast({
+        title: "File too large",
+        description: `${file.name} exceeds 10MB limit`,
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    // Determine file type
+    let fileType: 'image' | 'code' | 'log' | 'text' = 'text';
+    if (file.type.startsWith('image/')) {
+      fileType = 'image';
+    } else if (file.name.endsWith('.log') || file.name.includes('log')) {
+      fileType = 'log';
+    } else if (
+      file.name.match(/\.(js|ts|tsx|jsx|py|java|cpp|c|h|css|html|json|xml|yaml|yml|sql)$/i)
+    ) {
+      fileType = 'code';
+    }
+
+    // Read file content
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        resolve({
+          fileName: file.name,
+          fileType,
+          content: fileType === 'image' ? content : content, // base64 for images
+          mimeType: file.type || 'application/octet-stream',
+          size: file.size,
+        });
+      };
+
+      reader.onerror = () => {
+        toast({
+          title: "Error reading file",
+          description: `Failed to read ${file.name}`,
+          variant: "destructive",
+        });
+        resolve(null);
+      };
+
+      if (fileType === 'image') {
+        reader.readAsDataURL(file); // base64 for images
+      } else {
+        reader.readAsText(file); // text for code/logs
+      }
+    });
+  };
+
+  // Handle file selection
+  const handleFileSelect = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    
+    const maxFiles = 5;
+    if (attachments.length + files.length > maxFiles) {
+      toast({
+        title: "Too many files",
+        description: `Maximum ${maxFiles} attachments allowed`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newAttachments: Attachment[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const attachment = await processFile(files[i]);
+      if (attachment) {
+        newAttachments.push(attachment);
+      }
+    }
+
+    setAttachments(prev => [...prev, ...newAttachments]);
+    toast({
+      title: "Files attached",
+      description: `${newAttachments.length} file(s) ready to send`,
+    });
+  };
+
+  // Handle paste event
+  const handlePaste = async (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    const files: File[] = [];
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      
+      // Handle images from clipboard
+      if (item.type.startsWith('image/')) {
+        const file = item.getAsFile();
+        if (file) files.push(file);
+      }
+      // Handle text files from clipboard
+      else if (item.kind === 'file') {
+        const file = item.getAsFile();
+        if (file) files.push(file);
+      }
+    }
+
+    if (files.length > 0) {
+      e.preventDefault();
+      const fileList = files.reduce((dt, file) => {
+        dt.items.add(file);
+        return dt;
+      }, new DataTransfer()).files;
+      
+      await handleFileSelect(fileList);
+    }
+  };
+
+  // Drag and drop handlers
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.currentTarget === e.target) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    
+    await handleFileSelect(e.dataTransfer.files);
+  };
+
+  // Remove attachment
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
   // Send message mutation
   const sendMutation = useMutation({
     mutationFn: async (userMessage: string) => {
-      // Add user message immediately
+      // Add user message immediately with attachments
       const userMsg: Message = {
         id: Date.now().toString(),
         role: "user",
         content: userMessage,
+        attachments: attachments.length > 0 ? [...attachments] : undefined,
         createdAt: new Date().toISOString(),
       };
       setMessages(prev => [...prev, userMsg]);
       setInput("");
+      const currentAttachments = [...attachments]; // Save for API call
+      setAttachments([]); // Clear attachments after sending
       setIsStreaming(true);
       setStreamingContent("");
       setProgressMessage("🧠 Connecting to Meta-SySop...");
@@ -221,6 +387,7 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
         credentials: 'include',
         body: JSON.stringify({
           message: userMessage,
+          attachments: currentAttachments,
           autoCommit,
           autoPush,
         }),
@@ -330,7 +497,28 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
   }
 
   return (
-    <div className="flex flex-col h-full max-h-full overflow-hidden bg-slate-900/60">
+    <div 
+      className="flex flex-col h-full max-h-full overflow-hidden bg-slate-900/60 relative"
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
+      {/* Drag-and-drop overlay */}
+      {isDragging && (
+        <div className="absolute inset-0 z-50 bg-slate-900/95 backdrop-blur-sm flex items-center justify-center border-2 border-dashed border-slate-500 rounded-lg">
+          <div className="text-center space-y-3 animate-in fade-in-up duration-300">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center">
+              <Paperclip className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <p className="text-xl font-semibold text-slate-100">Drop files here</p>
+              <p className="text-sm text-slate-400 mt-1">Images, code snippets, and log files supported</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Chat Messages - Enhanced Scrolling */}
       <div 
         ref={scrollRef}
@@ -386,6 +574,34 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
             >
               <MessageContent content={message.content} />
               
+              {/* Attachments display */}
+              {message.attachments && message.attachments.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-slate-700/50 space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-slate-300 mb-2">
+                    <Paperclip className="h-3.5 w-3.5" />
+                    Attachments ({message.attachments.length})
+                  </div>
+                  <div className="space-y-1.5">
+                    {message.attachments.map((attachment, idx) => (
+                      <div key={idx} className="flex items-center gap-2 bg-slate-900/50 rounded-lg px-3 py-2 border border-slate-700/30">
+                        {attachment.fileType === 'image' ? (
+                          <Image className="h-4 w-4 text-emerald-400" />
+                        ) : (
+                          <FileText className="h-4 w-4 text-blue-400" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-slate-300 truncate">{attachment.fileName}</p>
+                          <p className="text-[10px] text-slate-500">{(attachment.size / 1024).toFixed(1)}KB</p>
+                        </div>
+                        <Badge variant="outline" className="text-[10px] h-5 bg-slate-700/10 text-slate-400 border-slate-600/30">
+                          {attachment.fileType}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* File changes indicator */}
               {message.platformChanges && message.platformChanges.files && message.platformChanges.files.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-slate-700/50 space-y-2">
@@ -442,31 +658,86 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
 
       {/* Input area - Fixed at bottom with mobile optimization */}
       <div className="border-t border-slate-800/50 p-3 sm:p-4 bg-slate-950/80 backdrop-blur-xl flex-shrink-0">
-        <div className="flex gap-2 sm:gap-3 items-end max-w-5xl mx-auto">
-          <Textarea
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Describe the platform issue to fix..."
-            className="min-h-[60px] sm:min-h-[70px] max-h-[200px] resize-none bg-slate-800/60 border-slate-700/50 text-slate-100 placeholder:text-slate-500 rounded-xl focus:border-slate-500/50 focus:ring-2 focus:ring-slate-500/20 transition-all text-sm sm:text-base"
-            rows={3}
-            data-testid="input-meta-sysop-message"
-            disabled={isStreaming}
-          />
-          <Button
-            onClick={handleSend}
-            disabled={!input.trim() || isStreaming}
-            size="icon"
-            className="h-[60px] w-[60px] sm:h-[70px] sm:w-[70px] flex-shrink-0 rounded-xl bg-gradient-to-br from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 shadow-lg shadow-slate-700/30 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-            data-testid="button-send-meta-sysop-message"
-          >
-            {isStreaming ? (
-              <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" />
-            ) : (
-              <Send className="h-5 w-5 sm:h-6 sm:w-6" />
-            )}
-          </Button>
+        <div className="max-w-5xl mx-auto space-y-3">
+          {/* Attachment pills */}
+          {attachments.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {attachments.map((attachment, idx) => (
+                <div 
+                  key={idx} 
+                  className="flex items-center gap-2 bg-slate-800/80 border border-slate-700/50 rounded-lg px-3 py-1.5 group hover-elevate"
+                  data-testid={`attachment-${idx}`}
+                >
+                  {attachment.fileType === 'image' ? (
+                    <Image className="h-3.5 w-3.5 text-emerald-400" />
+                  ) : (
+                    <FileText className="h-3.5 w-3.5 text-blue-400" />
+                  )}
+                  <span className="text-xs text-slate-300 font-medium max-w-[120px] truncate">
+                    {attachment.fileName}
+                  </span>
+                  <button
+                    onClick={() => removeAttachment(idx)}
+                    className="p-0.5 rounded-md hover:bg-slate-700/50 transition-colors"
+                    data-testid={`button-remove-attachment-${idx}`}
+                  >
+                    <X className="h-3 w-3 text-slate-400 hover:text-slate-200" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Input row */}
+          <div className="flex gap-2 sm:gap-3 items-end">
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,.txt,.log,.js,.ts,.tsx,.jsx,.py,.java,.cpp,.c,.h,.css,.html,.json,.xml,.yaml,.yml,.sql"
+              onChange={(e) => handleFileSelect(e.target.files)}
+              className="hidden"
+              data-testid="input-file-upload"
+            />
+            
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isStreaming}
+              className="h-[60px] w-[60px] sm:h-[70px] sm:w-[70px] flex-shrink-0 rounded-xl border border-slate-700/50 hover:bg-slate-800/60 hover:border-slate-600/50 transition-all"
+              data-testid="button-attach-file"
+            >
+              <Paperclip className="h-5 w-5 sm:h-6 sm:w-6 text-slate-400" />
+            </Button>
+
+            <Textarea
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
+              placeholder="Describe the platform issue to fix... (paste images or drop files)"
+              className="min-h-[60px] sm:min-h-[70px] max-h-[200px] resize-none bg-slate-800/60 border-slate-700/50 text-slate-100 placeholder:text-slate-500 rounded-xl focus:border-slate-500/50 focus:ring-2 focus:ring-slate-500/20 transition-all text-sm sm:text-base"
+              rows={3}
+              data-testid="input-meta-sysop-message"
+              disabled={isStreaming}
+            />
+            
+            <Button
+              onClick={handleSend}
+              disabled={(!input.trim() && attachments.length === 0) || isStreaming}
+              size="icon"
+              className="h-[60px] w-[60px] sm:h-[70px] sm:w-[70px] flex-shrink-0 rounded-xl bg-gradient-to-br from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 shadow-lg shadow-slate-700/30 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              data-testid="button-send-meta-sysop-message"
+            >
+              {isStreaming ? (
+                <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" />
+              ) : (
+                <Send className="h-5 w-5 sm:h-6 sm:w-6" />
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
