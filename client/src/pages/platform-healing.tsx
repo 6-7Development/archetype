@@ -432,15 +432,15 @@ function PlatformHealingContent() {
   }, [healEvents, currentSessionId]);
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-gradient-to-b from-[#0b0f15] to-[#0d121a] text-slate-100">
+    <div className="flex-1 flex flex-col overflow-hidden bg-background">
       <div className="grid grid-cols-1 gap-4 p-3 sm:p-4 h-full overflow-y-auto max-w-[100vw] overflow-x-hidden">
         {/* Main Content */}
         <section className="flex flex-col gap-3 sm:gap-4 min-w-0 max-w-6xl mx-auto w-full">
           {/* Header */}
-          <div className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl p-3 sm:p-4">
+          <div className="bg-card border border-border rounded-xl shadow-lg p-3 sm:p-4">
             <div className="flex flex-col gap-3">
               <div className="flex flex-wrap items-center gap-2">
-                <div className="text-xs text-slate-500" data-testid="breadcrumb">Home / Agents</div>
+                <div className="text-xs text-muted-foreground" data-testid="breadcrumb">Home / Agents</div>
                 <div className="text-base sm:text-lg font-bold break-words" data-testid="page-title">
                   Meta‑SySop • Platform Healing
                 </div>
@@ -467,7 +467,7 @@ function PlatformHealingContent() {
           </div>
 
           {/* System Metrics Card */}
-          <div className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl p-3 sm:p-5 overflow-hidden">
+          <div className="bg-card border border-border rounded-xl shadow-lg p-3 sm:p-5 overflow-hidden">
             <h3 className="font-bold text-sm mb-3 sm:mb-4 flex items-center gap-2 flex-wrap" data-testid="metrics-title">
               <Server className="w-4 h-4 text-blue-400 shrink-0" />
               <span>Live System Metrics</span>
@@ -482,7 +482,7 @@ function PlatformHealingContent() {
                   <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />
                 </div>
                 <div className="min-w-0 overflow-hidden">
-                  <div className="text-xs text-slate-500 truncate">Health</div>
+                  <div className="text-xs text-muted-foreground truncate">Health</div>
                   <div className="text-lg sm:text-xl font-bold truncate" data-testid="metric-health">
                     {status?.overallHealth || 0}%
                   </div>
@@ -494,7 +494,7 @@ function PlatformHealingContent() {
                   <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
                 </div>
                 <div className="min-w-0 overflow-hidden">
-                  <div className="text-xs text-slate-500 truncate">Incidents</div>
+                  <div className="text-xs text-muted-foreground truncate">Incidents</div>
                   <div className="text-lg sm:text-xl font-bold truncate" data-testid="metric-incidents">
                     {status?.activeIncidents || 0}
                   </div>
@@ -506,7 +506,7 @@ function PlatformHealingContent() {
                   <Cpu className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
                 </div>
                 <div className="min-w-0 overflow-hidden">
-                  <div className="text-xs text-slate-500 truncate">CPU</div>
+                  <div className="text-xs text-muted-foreground truncate">CPU</div>
                   <div className="text-lg sm:text-xl font-bold truncate" data-testid="metric-cpu">
                     {status?.cpuUsage || 0}%
                   </div>
@@ -518,7 +518,7 @@ function PlatformHealingContent() {
                   <HardDrive className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500" />
                 </div>
                 <div className="min-w-0 overflow-hidden">
-                  <div className="text-xs text-slate-500 truncate">Memory</div>
+                  <div className="text-xs text-muted-foreground truncate">Memory</div>
                   <div className="text-lg sm:text-xl font-bold truncate" data-testid="metric-memory">
                     {status?.memoryUsage || 0}%
                   </div>
@@ -553,12 +553,12 @@ function PlatformHealingContent() {
 
           {/* Progress Steps */}
           {phase !== 'idle' && (
-            <div className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl p-3 sm:p-4">
+            <div className="bg-card border border-border rounded-xl shadow-lg p-3 sm:p-4">
               <h3 className="font-bold text-sm mb-3" data-testid="progress-title">Build Progress</h3>
               <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 {progressSteps.map((step, index) => (
                   <div key={step.id} className="flex items-center gap-2">
-                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#0c121c] border border-slate-700/50">
+                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-muted border border-border">
                       {step.status === 'completed' ? (
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" data-testid={`step-icon-${step.id}-completed`} />
                       ) : step.status === 'in_progress' ? (
@@ -566,19 +566,19 @@ function PlatformHealingContent() {
                       ) : step.status === 'failed' ? (
                         <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0" data-testid={`step-icon-${step.id}-failed`} />
                       ) : (
-                        <Clock className="w-3.5 h-3.5 text-slate-600 shrink-0" data-testid={`step-icon-${step.id}-pending`} />
+                        <Clock className="w-3.5 h-3.5 text-muted-foreground shrink-0" data-testid={`step-icon-${step.id}-pending`} />
                       )}
                       <span className={`text-xs font-medium whitespace-nowrap ${
-                        step.status === 'completed' ? 'text-emerald-400' :
-                        step.status === 'in_progress' ? 'text-blue-300' :
-                        step.status === 'failed' ? 'text-red-400' :
-                        'text-slate-500'
+                        step.status === 'completed' ? 'text-emerald-600 dark:text-emerald-400' :
+                        step.status === 'in_progress' ? 'text-blue-600 dark:text-blue-400' :
+                        step.status === 'failed' ? 'text-destructive' :
+                        'text-muted-foreground'
                       }`} data-testid={`step-label-${step.id}`}>
                         {step.label}
                       </span>
                     </div>
                     {index < progressSteps.length - 1 && (
-                      <div className="w-2 h-0.5 bg-slate-700 hidden sm:block" />
+                      <div className="w-2 h-0.5 bg-border hidden sm:block" />
                     )}
                   </div>
                 ))}
@@ -595,21 +595,21 @@ function PlatformHealingContent() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-base mb-1" data-testid="approval-title">Approval Required</h3>
-                  <p className="text-sm text-slate-400">Meta-SySop has analyzed the issue and prepared a solution. Please review and approve.</p>
+                  <p className="text-sm text-muted-foreground">Meta-SySop has analyzed the issue and prepared a solution. Please review and approve.</p>
                 </div>
               </div>
 
               {/* Summary */}
-              <div className="mb-4 p-3 bg-[#0c121c] border border-slate-700/50 rounded-lg">
-                <h4 className="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Summary</h4>
-                <p className="text-sm text-slate-200 break-words whitespace-pre-wrap" data-testid="text-approval-summary">
+              <div className="mb-4 p-3 bg-muted border border-border rounded-lg">
+                <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Summary</h4>
+                <p className="text-sm text-foreground break-words whitespace-pre-wrap" data-testid="text-approval-summary">
                   {approvalRequest.summary}
                 </p>
               </div>
 
               {/* Files Changed */}
-              <div className="mb-4 p-3 bg-[#0c121c] border border-slate-700/50 rounded-lg">
-                <h4 className="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide flex items-center gap-2">
+              <div className="mb-4 p-3 bg-muted border border-border rounded-lg">
+                <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide flex items-center gap-2">
                   <FileText className="w-3.5 h-3.5" />
                   Files to be Changed ({approvalRequest.filesChanged.length})
                 </h4>
@@ -617,15 +617,15 @@ function PlatformHealingContent() {
                   {approvalRequest.filesChanged.map((file, index) => (
                     <div key={index} className="flex items-center gap-2 text-sm font-mono">
                       <div className="w-1 h-1 rounded-full bg-blue-400 shrink-0" />
-                      <span className="text-slate-300 break-all">{file}</span>
+                      <span className="text-foreground break-all">{file}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Estimated Impact */}
-              <div className="mb-5 p-3 bg-[#0c121c] border border-slate-700/50 rounded-lg">
-                <h4 className="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Estimated Impact</h4>
+              <div className="mb-5 p-3 bg-muted border border-border rounded-lg">
+                <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Estimated Impact</h4>
                 <Badge 
                   variant={approvalRequest.estimatedImpact === 'low' ? 'default' : 
                           approvalRequest.estimatedImpact === 'high' ? 'destructive' : 'secondary'}
@@ -634,7 +634,7 @@ function PlatformHealingContent() {
                 >
                   {approvalRequest.estimatedImpact.toUpperCase()}
                 </Badge>
-                <p className="text-xs text-slate-500 mt-2">
+                <p className="text-xs text-muted-foreground mt-2">
                   {approvalRequest.estimatedImpact === 'low' && 'Minor changes with low risk'}
                   {approvalRequest.estimatedImpact === 'medium' && 'Moderate changes that may affect features'}
                   {approvalRequest.estimatedImpact === 'high' && 'Significant changes requiring careful review'}
@@ -687,8 +687,8 @@ function PlatformHealingContent() {
           )}
 
           {/* Healing Chat Card */}
-          <div className="bg-[#141924] border border-slate-800/50 rounded-xl shadow-2xl overflow-hidden flex flex-col" style={{ height: '500px' }} data-testid="chat-card">
-            <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 border-b border-slate-800/50 flex-wrap">
+          <div className="bg-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col" style={{ height: '500px' }} data-testid="chat-card">
+            <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 border-b border-border flex-wrap">
               <h3 className="font-bold text-sm">Meta-SySop Chat</h3>
               <Badge 
                 variant={phase === 'idle' ? 'secondary' : phase === 'completed' ? 'default' : 'outline'}
