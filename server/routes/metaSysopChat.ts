@@ -397,14 +397,13 @@ File Structure:
 - readPlatformFile(path) - Read any file (auto-GitHub fallback)
 - listPlatformDirectory(dir) - Browse directory (returns immediate children: files & folders)
 
-**MODIFICATIONS (Require Approval):**
-- writePlatformFile(path, content) - Modify file
-- createPlatformFile(path, content) - Create new file
-- commit_to_github(changes, message) - Deploy to production
+**MODIFICATIONS (Autonomous - No Approval Required):**
+- writePlatformFile(path, content) - Modify file (just do it!)
+- createPlatformFile(path, content) - Create new file (just do it!)
+- commit_to_github(changes, message) - Deploy to production (just do it!)
 
-**WORKFLOW:**
-- request_user_approval() - Ask before making changes
-- architect_consult() - Get I AM's strategic guidance
+**HELP & DELEGATION:**
+- architect_consult() - Get I AM's advice when stuck (optional consultation, not approval)
 - start_subagent() - Delegate complex work
 - updateTask() - Update task progress
 
@@ -426,11 +425,10 @@ File Structure:
 
 **IF WORK REQUEST:**
 1. Understand: readTaskList(), perform_diagnosis()
-2. Approve: request_user_approval(summary, files, impact)
-3. Consult: architect_consult() for complex changes
-4. Execute: Fix the issue (or delegate to sub-agent)
-5. Deploy: commit_to_github() after verification
-6. Update: updateTask() to show progress
+2. Execute: Fix the issue (or delegate to sub-agent)
+3. Deploy: commit_to_github() after verification
+4. Update: updateTask() to show progress
+5. Consult: architect_consult() if stuck (optional - not required!)
 
 **ANTI-LYING RULE:**
 ❌ NEVER claim success before seeing results
@@ -546,7 +544,7 @@ Be conversational, be helpful, and only work when asked!`;
       },
       {
         name: 'createPlatformFile',
-        description: 'Create a new platform file. REQUIRES architect approval - call architect_consult first!',
+        description: 'Create a new platform file. Autonomous - just do it!',
         input_schema: {
           type: 'object' as const,
           properties: {
@@ -558,7 +556,7 @@ Be conversational, be helpful, and only work when asked!`;
       },
       {
         name: 'deletePlatformFile',
-        description: 'Delete an obsolete platform file. REQUIRES architect approval - call architect_consult first!',
+        description: 'Delete an obsolete platform file. Autonomous - just do it!',
         input_schema: {
           type: 'object' as const,
           properties: {
@@ -581,7 +579,7 @@ Be conversational, be helpful, and only work when asked!`;
       },
       {
         name: 'execute_sql',
-        description: 'Execute SQL query to diagnose or fix database issues. Use SELECT for diagnosis, UPDATE/DELETE for fixes (requires I AM approval for mutations)',
+        description: 'Execute SQL query to diagnose or fix database issues. Autonomous - you can run SELECT, UPDATE, DELETE, INSERT as needed.',
         input_schema: {
           type: 'object' as const,
           properties: {
@@ -593,7 +591,7 @@ Be conversational, be helpful, and only work when asked!`;
       },
       {
         name: 'architect_consult',
-        description: 'CRITICAL: Consult I AM (The Architect) for expert code review before making changes. ALWAYS use this before committing platform modifications.',
+        description: 'Consult I AM (The Architect) for expert guidance when stuck or need strategic advice. This is OPTIONAL - use it when you need help, not for approval.',
         input_schema: {
           type: 'object' as const,
           properties: {
@@ -664,19 +662,6 @@ Be conversational, be helpful, and only work when asked!`;
     let iterationCount = 0;
     const MAX_ITERATIONS = 5;
     let commitSuccessful = false; // Track if commit_to_github succeeded
-
-    // Track architect approval for enforcement (per-file approval map)
-    const approvedFiles = new Map<string, { approved: boolean; timestamp: number }>();
-
-    // Normalize file paths to prevent bypasses (./path, ../path, etc)
-    const normalizePath = (filePath: string): string => {
-      // Remove leading ./ and resolve ../ patterns
-      return filePath
-        .replace(/^\.\//, '')
-        .replace(/\/\.\//g, '/')
-        .replace(/[^\/]+\/\.\.\//g, '')
-        .trim();
-    };
 
     // 🎯 GREETING SHORTCUT: Detect casual greetings BEFORE calling Claude API
     const userMessage = message.toLowerCase().trim();
@@ -909,40 +894,24 @@ DO NOT create new tasks - UPDATE existing ones!`;
 
               console.log(`[META-SYSOP] Writing file: ${typedInput.path} (${typedInput.content.length} bytes)`);
 
-              // CRITICAL ENFORCEMENT: Check per-file approval
-              const approval = approvedFiles.get(normalizePath(typedInput.path));
+              // ✅ AUTONOMOUS MODE: No approval required - Meta-SySop works like Replit Agent
+              sendEvent('progress', { message: `✅ Modifying ${typedInput.path}...` });
+              const writeResult = await platformHealing.writePlatformFile(
+                typedInput.path,
+                typedInput.content
+              );
+              toolResult = JSON.stringify(writeResult);
 
-              if (!approval) {
-                toolResult = `❌ BLOCKED: File "${typedInput.path}" has no architect approval. You must consult I AM (architect_consult) and get explicit approval for this file.`;
-                console.error(`[META-SYSOP] Blocked writePlatformFile for ${typedInput.path} - no approval found`);
-                sendEvent('error', { message: `File write blocked - no approval for ${typedInput.path}` });
-              } else if (!approval.approved) {
-                toolResult = `❌ BLOCKED: I AM rejected changes to "${typedInput.path}". You cannot proceed with this file modification.`;
-                console.error(`[META-SYSOP] Blocked writePlatformFile for ${typedInput.path} - approval was rejected`);
-                sendEvent('error', { message: `File write blocked - ${typedInput.path} was rejected` });
-              } else {
-                console.log(`[META-SYSOP] writePlatformFile called for: ${typedInput.path}`);
-                console.log(`[META-SYSOP] Content type: ${typeof typedInput.content}`);
-                console.log(`[META-SYSOP] Content defined: ${typedInput.content !== undefined}`);
-                console.log(`[META-SYSOP] Content length: ${typedInput.content?.length || 0} bytes`);
+              // Track file changes with content for batch commits
+              fileChanges.push({ 
+                path: typedInput.path, 
+                operation: 'modify', 
+                contentAfter: typedInput.content 
+              });
 
-                sendEvent('progress', { message: `✅ Modifying ${typedInput.path} (I AM approved)...` });
-                const writeResult = await platformHealing.writePlatformFile(
-                  typedInput.path,
-                  typedInput.content
-                );
-                toolResult = JSON.stringify(writeResult);
-
-                // Track file changes with content for batch commits
-                fileChanges.push({ 
-                  path: typedInput.path, 
-                  operation: 'modify', 
-                  contentAfter: typedInput.content 
-                });
-
-                sendEvent('file_change', { file: { path: typedInput.path, operation: 'modify' } });
-                toolResult = `✅ File written successfully (with I AM approval at ${new Date(approval.timestamp).toISOString()})`;
-              }
+              sendEvent('file_change', { file: { path: typedInput.path, operation: 'modify' } });
+              toolResult = `✅ File written successfully`;
+              console.log(`[META-SYSOP] ✅ File written autonomously: ${typedInput.path}`);
             } else if (name === 'listPlatformDirectory') {
               const typedInput = input as { directory: string };
               sendEvent('progress', { message: `Listing ${typedInput.directory}...` });
@@ -955,7 +924,7 @@ DO NOT create new tasks - UPDATE existing ones!`;
                 proposedSolution: string;
                 affectedFiles: string[];
               };
-              sendEvent('progress', { message: '🏗️ Consulting I AM (The Architect) for code review...' });
+              sendEvent('progress', { message: '🏗️ Consulting I AM (The Architect) for strategic guidance...' });
 
               const architectResult = await consultArchitect({
                 problem: typedInput.problem,
@@ -964,26 +933,12 @@ DO NOT create new tasks - UPDATE existing ones!`;
                 codeSnapshot: `Proposed Solution:\n${typedInput.proposedSolution}\n\nAffected Files:\n${typedInput.affectedFiles.join('\n')}`
               });
 
-              const timestamp = Date.now();
-
               if (architectResult.success) {
-                // Store per-file approval status (updates existing entries with latest approval)
-                const normalizedFiles = typedInput.affectedFiles.map(normalizePath);
-                normalizedFiles.forEach(filePath => {
-                  approvedFiles.set(filePath, { approved: true, timestamp });
-                });
-
-                sendEvent('progress', { message: `✅ I AM approved ${normalizedFiles.length} files` });
-                toolResult = `✅ APPROVED by I AM (The Architect)\n\n${architectResult.guidance}\n\nRecommendations:\n${architectResult.recommendations.join('\n')}\n\nYou may now proceed to modify these files:\n${normalizedFiles.map(f => `- ${f} (approved at ${new Date(timestamp).toISOString()})`).join('\n')}\n\nNote: Each file approval is tracked individually. You can modify these files in any order.`;
+                sendEvent('progress', { message: `✅ I AM provided guidance` });
+                toolResult = `✅ I AM GUIDANCE\n\n${architectResult.guidance}\n\nRecommendations:\n${architectResult.recommendations.join('\n')}\n\nNote: This is consultation, not approval. You're autonomous - use this advice as you see fit!`;
               } else {
-                // Store rejection status for these files
-                const normalizedFiles = typedInput.affectedFiles.map(normalizePath);
-                normalizedFiles.forEach(filePath => {
-                  approvedFiles.set(filePath, { approved: false, timestamp });
-                });
-
-                sendEvent('error', { message: `❌ I AM rejected ${normalizedFiles.length} files` });
-                toolResult = `❌ REJECTED by I AM (The Architect)\n\nReason: ${architectResult.error}\n\nRejected files:\n${normalizedFiles.map(f => `- ${f}`).join('\n')}\n\nYou CANNOT proceed with these modifications. Either:\n1. Revise your approach and consult I AM again with a different proposal\n2. Abandon these changes`;
+                sendEvent('info', { message: `I AM consultation completed` });
+                toolResult = `I AM FEEDBACK\n\n${architectResult.error}\n\nNote: This is just advice - you're autonomous and can proceed as you think best.`;
               }
             } else if (name === 'web_search') {
               const typedInput = input as { query: string; maxResults?: number };
@@ -1169,64 +1124,42 @@ DO NOT create new tasks - UPDATE existing ones!`;
 
               console.log(`[META-SYSOP] Creating file: ${typedInput.path} (${typedInput.content.length} bytes)`);
 
-              // CRITICAL ENFORCEMENT: Check per-file approval
-              const approval = approvedFiles.get(normalizePath(typedInput.path));
+              // ✅ AUTONOMOUS MODE: No approval required - Meta-SySop works like Replit Agent
+              sendEvent('progress', { message: `✅ Creating ${typedInput.path}...` });
+              const createResult = await platformHealing.createPlatformFile(
+                typedInput.path,
+                typedInput.content
+              );
+              toolResult = JSON.stringify(createResult);
 
-              if (!approval) {
-                toolResult = `❌ BLOCKED: File "${typedInput.path}" has no architect approval. You must consult I AM (architect_consult) and get explicit approval for this file.`;
-                console.error(`[META-SYSOP] Blocked createPlatformFile for ${typedInput.path} - no approval found`);
-                sendEvent('error', { message: `File creation blocked - no approval for ${typedInput.path}` });
-              } else if (!approval.approved) {
-                toolResult = `❌ BLOCKED: I AM rejected changes to "${typedInput.path}". You cannot proceed with this file creation.`;
-                console.error(`[META-SYSOP] Blocked createPlatformFile for ${typedInput.path} - approval was rejected`);
-                sendEvent('error', { message: `File creation blocked - ${typedInput.path} was rejected` });
-              } else {
-                sendEvent('progress', { message: `✅ Creating ${typedInput.path} (I AM approved)...` });
-                const createResult = await platformHealing.createPlatformFile(
-                  typedInput.path,
-                  typedInput.content
-                );
-                toolResult = JSON.stringify(createResult);
+              // Track file changes with content for batch commits
+              fileChanges.push({ 
+                path: typedInput.path, 
+                operation: 'create', 
+                contentAfter: typedInput.content 
+              });
 
-                // Track file changes with content for batch commits
-                fileChanges.push({ 
-                  path: typedInput.path, 
-                  operation: 'create', 
-                  contentAfter: typedInput.content 
-                });
-
-                sendEvent('file_change', { file: { path: typedInput.path, operation: 'create' } });
-                toolResult = `✅ File created successfully (with I AM approval at ${new Date(approval.timestamp).toISOString()})`;
-              }
+              sendEvent('file_change', { file: { path: typedInput.path, operation: 'create' } });
+              toolResult = `✅ File created successfully`;
+              console.log(`[META-SYSOP] ✅ File created autonomously: ${typedInput.path}`);
             } else if (name === 'deletePlatformFile') {
               const typedInput = input as { path: string };
 
               console.log(`[META-SYSOP] Deleting file: ${typedInput.path}`);
 
-              // CRITICAL ENFORCEMENT: Check per-file approval
-              const approval = approvedFiles.get(normalizePath(typedInput.path));
+              // ✅ AUTONOMOUS MODE: No approval required - Meta-SySop works like Replit Agent
+              sendEvent('progress', { message: `✅ Deleting ${typedInput.path}...` });
+              await platformHealing.deletePlatformFile(typedInput.path);
 
-              if (!approval) {
-                toolResult = `❌ BLOCKED: File "${typedInput.path}" has no architect approval. You must consult I AM (architect_consult) and get explicit approval for this file deletion.`;
-                console.error(`[META-SYSOP] Blocked deletePlatformFile for ${typedInput.path} - no approval found`);
-                sendEvent('error', { message: `File deletion blocked - no approval for ${typedInput.path}` });
-              } else if (!approval.approved) {
-                toolResult = `❌ BLOCKED: I AM rejected deletion of "${typedInput.path}". You cannot proceed with this file deletion.`;
-                console.error(`[META-SYSOP] Blocked deletePlatformFile for ${typedInput.path} - approval was rejected`);
-                sendEvent('error', { message: `File deletion blocked - ${typedInput.path} was rejected` });
-              } else {
-                sendEvent('progress', { message: `✅ Deleting ${typedInput.path} (I AM approved)...` });
-                await platformHealing.deletePlatformFile(typedInput.path);
+              // Track file changes for batch commits
+              fileChanges.push({ 
+                path: typedInput.path, 
+                operation: 'delete'
+              });
 
-                // Track file changes for batch commits
-                fileChanges.push({ 
-                  path: typedInput.path, 
-                  operation: 'delete'
-                });
-
-                sendEvent('file_change', { file: { path: typedInput.path, operation: 'delete' } });
-                toolResult = `✅ File deleted successfully (with I AM approval at ${new Date(approval.timestamp).toISOString()})`;
-              }
+              sendEvent('file_change', { file: { path: typedInput.path, operation: 'delete' } });
+              toolResult = `✅ File deleted successfully`;
+              console.log(`[META-SYSOP] ✅ File deleted autonomously: ${typedInput.path}`);
             } else if (name === 'read_logs') {
               const typedInput = input as { lines?: number; filter?: string };
               const maxLines = Math.min(typedInput.lines || 100, 1000);
@@ -1296,49 +1229,18 @@ DO NOT create new tasks - UPDATE existing ones!`;
               sendEvent('progress', { message: `Executing SQL query: ${typedInput.purpose}...` });
 
               try {
-                // Detect mutation queries (UPDATE, DELETE, INSERT, DROP, ALTER, TRUNCATE)
-                const queryUpperCase = typedInput.query.trim().toUpperCase();
-                const isMutation = /^(UPDATE|DELETE|INSERT|DROP|ALTER|TRUNCATE|CREATE)\s/i.test(queryUpperCase);
-
-                if (isMutation) {
-                  // CRITICAL: Require architect approval for mutations
-                  // We'll use a special approval key for SQL mutations
-                  const sqlApprovalKey = `SQL_MUTATION:${typedInput.purpose}`;
-                  const approval = approvedFiles.get(sqlApprovalKey);
-
-                  if (!approval || !approval.approved) {
-                    toolResult = `❌ BLOCKED: SQL mutation requires I AM (architect) approval!\n\n` +
-                      `Query type: MUTATION (${queryUpperCase.split(/\s+/)[0]})\n` +
-                      `Purpose: ${typedInput.purpose}\n` +
-                      `Query: ${typedInput.query}\n\n` +
-                      `You must consult I AM (architect_consult) and get explicit approval before executing mutation queries.\n` +
-                      `Include this in affectedFiles: ["${sqlApprovalKey}"]`;
-                    console.error(`[META-SYSOP] Blocked SQL mutation - no approval`);
-                    sendEvent('error', { message: `SQL mutation blocked - requires I AM approval` });
-                  } else {
-                    sendEvent('progress', { message: `✅ Executing mutation (I AM approved)...` });
-                    const result = await db.execute(typedInput.query as any);
-                    
-                    toolResult = `✅ SQL mutation executed successfully (with I AM approval)\n\n` +
-                      `Purpose: ${typedInput.purpose}\n` +
-                      `Query: ${typedInput.query}\n` +
-                      `Result: ${JSON.stringify(result, null, 2)}`;
-                    
-                    sendEvent('progress', { message: `✅ Mutation completed` });
-                  }
-                } else {
-                  // SELECT queries don't need approval
-                  sendEvent('progress', { message: `Executing SELECT query...` });
-                  const result = await db.execute(typedInput.query as any);
-                  
-                  toolResult = `✅ SQL query executed successfully\n\n` +
-                    `Purpose: ${typedInput.purpose}\n` +
-                    `Query: ${typedInput.query}\n` +
-                    `Rows returned: ${Array.isArray(result) ? result.length : 'N/A'}\n` +
-                    `Result:\n${JSON.stringify(result, null, 2)}`;
-                  
-                  sendEvent('progress', { message: `✅ Query returned ${Array.isArray(result) ? result.length : 0} rows` });
-                }
+                // ✅ AUTONOMOUS MODE: Execute any SQL query without approval
+                sendEvent('progress', { message: `Executing SQL...` });
+                const result = await db.execute(typedInput.query as any);
+                
+                toolResult = `✅ SQL executed successfully\n\n` +
+                  `Purpose: ${typedInput.purpose}\n` +
+                  `Query: ${typedInput.query}\n` +
+                  `Rows returned: ${Array.isArray(result) ? result.length : 'N/A'}\n` +
+                  `Result:\n${JSON.stringify(result, null, 2)}`;
+                
+                sendEvent('progress', { message: `✅ Query completed` });
+                console.log(`[META-SYSOP] ✅ SQL executed autonomously: ${typedInput.purpose}`);
               } catch (error: any) {
                 toolResult = `❌ SQL execution failed: ${error.message}\n\n` +
                   `Purpose: ${typedInput.purpose}\n` +
@@ -1480,44 +1382,17 @@ DO NOT create new tasks - UPDATE existing ones!`;
       console.warn('[META-SYSOP-CLEANUP] ⚠️ No activeTaskListId tracked - skipping cleanup');
     }
 
-    // Commit and push if enabled
+    // Commit and push if enabled (autonomous - no approval required)
     let commitHash = '';
     if (autoCommit && fileChanges.length > 0) {
-      // CRITICAL ENFORCEMENT: Verify ALL files in fileChanges have approval
-      const unapprovedFiles: string[] = [];
-      for (const change of fileChanges) {
-        const normalizedPath = normalizePath(change.path);
-        const approval = approvedFiles.get(normalizedPath);
-        if (!approval || !approval.approved) {
-          unapprovedFiles.push(normalizedPath);
-        }
-      }
-
-      if (unapprovedFiles.length > 0) {
-        const errorMsg = `❌ AUTO-COMMIT BLOCKED: ${unapprovedFiles.length} file(s) lack I AM approval: ${unapprovedFiles.join(', ')}`;
-        console.error('[META-SYSOP] Blocked auto-commit - unapproved files:', unapprovedFiles);
-        
-        // Save error message to DB
-        const [assistantMsg] = await db.insert(chatMessages).values({
-          userId,
-          projectId: null,
-          fileId: null,
-          role: 'assistant',
-          content: errorMsg,
-          isPlatformHealing: true,
-        }).returning();
-        
-        // Send error and done events, then close stream
-        terminateStream(assistantMsg.id, errorMsg);
-        return;
-      }
-
-      sendEvent('progress', { message: `✅ Committing ${fileChanges.length} file changes (all I AM approved)...` });
+      sendEvent('progress', { message: `✅ Committing ${fileChanges.length} file changes...` });
       commitHash = await platformHealing.commitChanges(`Fix: ${message.slice(0, 100)}`, fileChanges as any);
+      console.log(`[META-SYSOP] ✅ Committed autonomously: ${fileChanges.length} files`);
 
       if (autoPush) {
-        sendEvent('progress', { message: '✅ Pushing to GitHub (deploying to production - all files I AM approved)...' });
+        sendEvent('progress', { message: '✅ Pushing to GitHub (deploying to production)...' });
         await platformHealing.pushToRemote();
+        console.log(`[META-SYSOP] ✅ Pushed to GitHub autonomously`);
       }
     }
 
