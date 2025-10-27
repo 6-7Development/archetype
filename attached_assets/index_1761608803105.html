@@ -1,0 +1,158 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lumo v1.8 – Full Build</title>
+  <style>
+    body {
+      background-color: #001f3f;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow: hidden;
+    }
+    #avatar-wrapper {
+      position: relative;
+      width: 250px;
+      margin: 0 auto;
+    }
+    #avatar {
+      width: 100%;
+      animation: pulseGlow 4s ease-in-out infinite;
+      filter: drop-shadow(0 0 8px #00ffd5);
+    }
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      display: none;
+    }
+    #xp-bar {
+      margin: 20px auto;
+      width: 300px;
+      height: 10px;
+      background: black;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    #xp-fill {
+      height: 100%;
+      background: limegreen;
+      width: 10%;
+      transition: width 0.5s;
+    }
+    button {
+      background-color: cyan;
+      border: none;
+      padding: 10px 16px;
+      margin: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      border-radius: 5px;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { filter: drop-shadow(0 0 6px #00ffd5); }
+      50% { filter: drop-shadow(0 0 16px #00ffd5); }
+    }
+  </style>
+</head>
+<body>
+
+<h1>🍋 Lumo – Full Build v1.8</h1>
+
+<div id="avatar-wrapper">
+  <img id="avatar" src="frames/resting.png" alt="Lumo Avatar">
+  <img id="blink-overlay" class="overlay" src="frames/blink.png">
+  <img id="bubble" class="overlay" src="frames/bubble_levelup.png">
+  <img id="glasses" class="overlay" src="frames/glasses.png">
+  <img id="beanie" class="overlay" src="frames/beanie.png">
+  <img id="necklace" class="overlay" src="frames/necklace.png">
+
+    <img id="sparkle-overlay" class="overlay" src="frames/sparkle.png">
+    <img id="smile-overlay" class="overlay" src="frames/smile_overlay.png">
+    
+</div>
+
+<div id="xp-bar"><div id="xp-fill"></div></div>
+
+<div>
+  <button onclick="gainXP()">+10 XP</button>
+  <button onclick="toggleEmotion()">Toggle Emotion</button>
+  <button onclick="toggleGear('glasses')">🕶 Glasses</button>
+  <button onclick="toggleGear('beanie')">🧢 Beanie</button>
+  <button onclick="toggleGear('necklace')">📿 Necklace</button>
+  <button onclick="toggleTheme()">🎨 Theme</button>
+</div>
+
+<script>
+  let xp = 10;
+  let emotions = ["resting", "excited", "thinking", "success", "worried"];
+  let currentEmotion = 0;
+
+  function gainXP() {
+    xp += 10;
+    if (xp > 100) xp = 100;
+    document.getElementById("xp-fill").style.width = xp + "%";
+    if (xp >= 30) showBubble();
+  }
+
+  function showBubble() {
+    const bubble = document.getElementById("bubble");
+    bubble.style.display = "block";
+    setTimeout(() => bubble.style.display = "none", 2000);
+  }
+
+  function toggleEmotion() {
+    currentEmotion = (currentEmotion + 1) % emotions.length;
+    document.getElementById("avatar").src = "frames/" + emotions[currentEmotion] + ".png";
+  }
+
+  function toggleGear(ar(item) {
+    const el = document.getElementById(item);
+    const isUnlocked = xp >= 30;
+    if (!isUnlocked) {
+      alert("Reach 30 XP to unlock " + item + "!");
+      return;
+    }
+    el.style.display = el.style.display === "block" ? "none" : "block";
+  }
+
+  function blink() {
+    const blinkImg = document.getElementById("blink-overlay");
+    blinkImg.style.display = "block";
+    setTimeout(() => {
+      blinkImg.style.display = "none";
+    }, 200);
+  }
+  setInterval(blink, 5000);
+
+  function toggleTheme() {
+    const current = document.body.style.backgroundColor;
+    document.body.style.backgroundColor = current === "black" ? "#001f3f" : "black";
+  }
+</script>
+
+
+    <script>
+      function sparkle() {
+        const sparkleImg = document.getElementById("sparkle-overlay");
+        sparkleImg.style.display = "block";
+        setTimeout(() => sparkleImg.style.display = "none", 800);
+      }
+      function smileOverlay() {
+        const smile = document.getElementById("smile-overlay");
+        smile.style.display = "block";
+        setTimeout(() => smile.style.display = "none", 2000);
+      }
+
+      // Automatic sparkle and smile pulse
+      setInterval(sparkle, 6000);
+      setInterval(smileOverlay, 7000);
+    </script>
+    
+</body>
+</html>
