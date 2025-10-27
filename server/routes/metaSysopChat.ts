@@ -1195,15 +1195,19 @@ ${projectId ? `
 5. Explain: Tell the user what you fixed and why
 ` : `
 **PLATFORM MODE WORKFLOW:**
-1. Understand: perform_diagnosis() (readTaskList optional)
-2. Execute: Fix the issue (or delegate to sub-agent)
-3. Deploy: commit_to_github() after verification
-4. Consult: architect_consult() if stuck (optional)
+1. Plan: createTaskList() to show the user what you'll do
+2. Understand: perform_diagnosis() to identify issues
+3. Execute: Fix each issue and updateTask() as you complete them
+4. Deploy: commit_to_github() after verification
+5. Consult: architect_consult() if stuck (optional)
 `}
 
-**TASK TRACKING (Optional):**
-- updateTask() is OPTIONAL - only use if readTaskList() found an active list
-- If no task list exists, just proceed with your work!
+**TASK TRACKING (REQUIRED for work requests):**
+- ALWAYS createTaskList() first when user asks you to diagnose/fix/improve
+- This makes your progress visible in the UI sidebar
+- Call updateTask(taskId, "in_progress") when starting a task
+- Call updateTask(taskId, "completed") when finishing a task
+- Users can see real-time progress as you work!
 
 **ANTI-LYING RULE:**
 ❌ NEVER claim success before seeing results
@@ -1243,8 +1247,31 @@ Be conversational, be helpful, and only work when asked!`;
         },
       },
       {
+        name: 'createTaskList',
+        description: '📋 CREATE TASK LIST - Create a visible task breakdown for work requests. REQUIRED for diagnosis/fix requests so users can see your progress! Makes tasks visible in the UI sidebar.',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            title: { type: 'string' as const, description: 'Task list title (e.g., "Fix Platform Issues")' },
+            tasks: {
+              type: 'array' as const,
+              items: {
+                type: 'object' as const,
+                properties: {
+                  title: { type: 'string' as const, description: 'Task title' },
+                  description: { type: 'string' as const, description: 'Detailed task description' },
+                },
+                required: ['title', 'description'],
+              },
+              description: 'List of tasks to complete'
+            },
+          },
+          required: ['title', 'tasks'],
+        },
+      },
+      {
         name: 'readTaskList',
-        description: '**FIRST STEP** - Read your pre-created task list to get task IDs. Tasks are already created and visible to users!',
+        description: 'Read your current task list to check status',
         input_schema: {
           type: 'object' as const,
           properties: {},
@@ -1633,18 +1660,29 @@ Be conversational, be helpful, and only work when asked!`;
             let toolResult: any = null;
 
             if (name === 'createTaskList') {
-              // REJECT: Tasks are pre-created, Meta-SySop should use readTaskList() instead
-              toolResult = `❌ ERROR: createTaskList() is NOT available!
+              const typedInput = input as { title: string; tasks: Array<{ title: string; description: string }> };
+              sendEvent('progress', { message: `Creating task list: ${typedInput.title}...` });
 
-Tasks are PRE-CREATED when users send messages. They're already visible in TaskBoard UI.
+              const result = await createTaskList({
+                userId,
+                title: typedInput.title,
+                tasks: typedInput.tasks.map(t => ({
+                  title: t.title,
+                  description: t.description,
+                  status: 'pending' as const
+                }))
+              });
 
-You MUST:
-1. Call readTaskList() to see your pre-created task IDs
-2. Call updateTask(taskId, status) to mark progress
-
-DO NOT create new tasks - UPDATE existing ones!`;
-              sendEvent('error', { message: 'createTaskList() blocked - use readTaskList() instead' });
-              console.error('[META-SYSOP] Blocked createTaskList - tasks are pre-created!');
+              if (result.success) {
+                // Track the active task list ID for cleanup
+                activeTaskListId = result.taskListId!;
+                toolResult = `✅ Task list created successfully!\n\nTask List ID: ${result.taskListId}\n\nTasks are now visible in the UI sidebar. Update task status as you work using updateTask().`;
+                sendEvent('task_list_created', { taskListId: result.taskListId });
+                console.log('[META-SYSOP] Task list created:', result.taskListId);
+              } else {
+                toolResult = `❌ Failed to create task list: ${result.error}`;
+                console.error('[META-SYSOP] Task list creation failed:', result.error);
+              }
             } else if (name === 'updateTask') {
               const typedInput = input as { taskId: string; status: string; result?: string };
               sendEvent('progress', { message: `Updating task to ${typedInput.status}...` });
