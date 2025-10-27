@@ -61,6 +61,63 @@ export class GitHubService {
   }
 
   /**
+   * Get file content from GitHub repository
+   */
+  async getFileContent(filePath: string): Promise<string> {
+    try {
+      const { data } = await this.octokit.repos.getContent({
+        owner: this.owner,
+        repo: this.repo,
+        path: filePath,
+        ref: this.branch,
+      });
+
+      // Ensure data is a file, not a directory or symlink
+      if (!('content' in data) || Array.isArray(data)) {
+        throw new Error(`Path ${filePath} is not a file`);
+      }
+
+      // Decode base64 content
+      const content = Buffer.from(data.content, 'base64').toString('utf-8');
+      return content;
+    } catch (error: any) {
+      console.error(`[GITHUB-SERVICE] Failed to get file content for ${filePath}:`, error.message);
+      throw new Error(`Failed to get file content: ${error.message}`);
+    }
+  }
+
+  /**
+   * List immediate directory contents from GitHub repository
+   * Returns entry names with type metadata (matches local fs behavior)
+   */
+  async listDirectoryEntries(directoryPath: string = ''): Promise<Array<{ name: string; type: 'file' | 'dir' }>> {
+    try {
+      const { data } = await this.octokit.repos.getContent({
+        owner: this.owner,
+        repo: this.repo,
+        path: directoryPath,
+        ref: this.branch,
+      });
+
+      // Ensure data is a directory listing
+      if (!Array.isArray(data)) {
+        throw new Error(`Path ${directoryPath} is not a directory`);
+      }
+
+      // Return immediate entries with type metadata
+      return data
+        .filter(entry => !entry.name.startsWith('.') && entry.name !== 'node_modules')
+        .map(entry => ({
+          name: entry.name,
+          type: entry.type === 'dir' ? 'dir' as const : 'file' as const
+        }));
+    } catch (error: any) {
+      console.error(`[GITHUB-SERVICE] Failed to list directory ${directoryPath}:`, error.message);
+      throw new Error(`Failed to list directory: ${error.message}`);
+    }
+  }
+
+  /**
    * Commit a single file to the repository
    */
   async commitFile(filePath: string, content: string, message: string): Promise<CommitResult> {
