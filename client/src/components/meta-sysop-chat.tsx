@@ -123,6 +123,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
   const [progressStatus, setProgressStatus] = useState<'thinking' | 'working' | 'vibing' | 'idle'>('idle');
   const [progressMessage, setProgressMessage] = useState("");
   const [showTaskList, setShowTaskList] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null); // null = platform code
   const abortControllerRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -136,6 +137,11 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
   // Fetch autonomy level
   const { data: autonomyData } = useQuery<any>({
     queryKey: ['/api/meta-sysop/autonomy-level'],
+  });
+
+  // Fetch all projects (admin only)
+  const { data: projects } = useQuery<any[]>({
+    queryKey: ['/api/meta-sysop/projects'],
   });
 
   // Update autonomy level
@@ -180,7 +186,10 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ 
+          message,
+          projectId: selectedProjectId, // null = platform code, otherwise user project ID
+        }),
         signal: abortControllerRef.current.signal,
       });
 
@@ -467,37 +476,77 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
         {/* Input Area */}
         <div className="border-t border-slate-800/50 p-4 bg-slate-950/80 flex-shrink-0">
           <div className="max-w-3xl mx-auto space-y-3">
-            {/* Autonomy Selector */}
-            {autonomyData && (
+            {/* Project Selector & Autonomy Selector */}
+            <div className="flex items-center gap-6 flex-wrap">
+              {/* Project Selector */}
               <div className="flex items-center gap-3">
-                <span className="text-xs text-slate-400 font-medium">Autonomy:</span>
+                <span className="text-xs text-slate-400 font-medium">Target:</span>
                 <Select
-                  value={autonomyData.currentLevel}
-                  onValueChange={(value) => updateAutonomyMutation.mutate(value)}
-                  disabled={updateAutonomyMutation.isPending || isStreaming}
+                  value={selectedProjectId || "platform"}
+                  onValueChange={(value) => setSelectedProjectId(value === "platform" ? null : value)}
+                  disabled={isStreaming}
                 >
-                  <SelectTrigger className="h-8 w-auto min-w-[140px] text-xs bg-slate-900/50 border-slate-700" data-testid="select-autonomy-level">
+                  <SelectTrigger className="h-8 w-auto min-w-[180px] text-xs bg-slate-900/50 border-slate-700" data-testid="select-project">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {autonomyData.levels && Object.values(autonomyData.levels).map((level: any) => {
-                      const Icon = level.icon === 'shield' ? Shield : 
-                                   level.icon === 'zap' ? Zap : 
-                                   level.icon === 'brain' ? Brain : Infinity;
-                      
-                      return (
-                        <SelectItem key={level.id} value={level.id} data-testid={`autonomy-option-${level.id}`}>
-                          <div className="flex items-center gap-2">
-                            <Icon className="h-3.5 w-3.5" />
-                            <span className="font-semibold">{level.name}</span>
-                          </div>
-                        </SelectItem>
-                      );
-                    })}
+                    <SelectItem value="platform" data-testid="project-option-platform">
+                      <div className="flex items-center gap-2">
+                        <Rocket className="h-3.5 w-3.5" />
+                        <span className="font-semibold">Platform Code</span>
+                      </div>
+                    </SelectItem>
+                    {projects && projects.length > 0 && (
+                      <>
+                        <div className="px-2 py-1.5 text-xs text-slate-500 font-medium">User Projects</div>
+                        {projects.map((project: any) => (
+                          <SelectItem key={project.id} value={project.id} data-testid={`project-option-${project.id}`}>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="font-semibold text-xs">{project.name}</span>
+                              <span className="text-[10px] text-slate-500">
+                                {project.userName || project.userEmail} • {project.fileCount || 0} files
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
-            )}
+
+              {/* Autonomy Selector */}
+              {autonomyData && (
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-slate-400 font-medium">Autonomy:</span>
+                  <Select
+                    value={autonomyData.currentLevel}
+                    onValueChange={(value) => updateAutonomyMutation.mutate(value)}
+                    disabled={updateAutonomyMutation.isPending || isStreaming}
+                  >
+                    <SelectTrigger className="h-8 w-auto min-w-[140px] text-xs bg-slate-900/50 border-slate-700" data-testid="select-autonomy-level">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {autonomyData.levels && Object.values(autonomyData.levels).map((level: any) => {
+                        const Icon = level.icon === 'shield' ? Shield : 
+                                     level.icon === 'zap' ? Zap : 
+                                     level.icon === 'brain' ? Brain : Infinity;
+                        
+                        return (
+                          <SelectItem key={level.id} value={level.id} data-testid={`autonomy-option-${level.id}`}>
+                            <div className="flex items-center gap-2">
+                              <Icon className="h-3.5 w-3.5" />
+                              <span className="font-semibold">{level.name}</span>
+                            </div>
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
 
             {/* Input */}
             <div className="flex gap-2">

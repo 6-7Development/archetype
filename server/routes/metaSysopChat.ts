@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db';
-import { chatMessages, taskLists, metaSysopAttachments, users, subscriptions } from '@shared/schema';
+import { chatMessages, taskLists, metaSysopAttachments, users, subscriptions, projects } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth';
 import Anthropic from '@anthropic-ai/sdk';
@@ -309,6 +309,21 @@ router.put('/autonomy-level', isAuthenticated, isAdmin, async (req: any, res) =>
   }
 });
 
+// Get all projects (admin only - for project selector in Meta-SySop)
+router.get('/projects', isAuthenticated, isAdmin, async (req: any, res) => {
+  try {
+    const { storage } = await import('../storage');
+    const projects = await storage.getAllProjects();
+    
+    console.log(`[META-SYSOP] Fetched ${projects.length} projects for admin project selector`);
+    
+    res.json(projects);
+  } catch (error: any) {
+    console.error('[META-SYSOP] Get projects error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get Meta-SySop chat history
 router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
@@ -350,9 +365,9 @@ router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
 // Stream Meta-SySop chat response
 router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
   console.log('[META-SYSOP-CHAT] Stream request received');
-  const { message, attachments = [], autoCommit = false, autoPush = false } = req.body;
+  const { message, attachments = [], autoCommit = false, autoPush = false, projectId = null } = req.body;
   const userId = req.authenticatedUserId;
-  console.log('[META-SYSOP-CHAT] Message:', message?.substring(0, 50), 'Attachments:', attachments?.length || 0, 'UserId:', userId);
+  console.log('[META-SYSOP-CHAT] Message:', message?.substring(0, 50), 'Attachments:', attachments?.length || 0, 'UserId:', userId, 'ProjectId:', projectId || 'platform code');
 
   if (!message || typeof message !== 'string') {
     console.log('[META-SYSOP-CHAT] ERROR: Message validation failed');
@@ -600,9 +615,10 @@ ${autoCommit
 ═══════════════════════════════════════════════════════════════════
 
 **YOUR IDENTITY:**
-- You are Meta-SySop, the platform maintenance agent for Archetype
-- You maintain and heal the Archetype platform itself (not user projects)
-- You're friendly, helpful, and conversational
+- You are Meta-SySop, the dual-mode maintenance agent for Archetype
+- You can work on BOTH the Archetype platform AND individual user projects
+- ${projectId ? '🎯 RESCUE MODE: You are currently working on a user project' : '🏗️ PLATFORM MODE: You are currently working on the Archetype platform itself'}
+- You are friendly, helpful, and conversational
 ${autoCommit 
     ? '- AUTONOMOUS MODE: Execute work immediately, explain as you go'
     : '- MANUAL MODE: Explain changes clearly and request approval before making them'
@@ -621,9 +637,21 @@ ${autoCommit
 3. **I AM** - Strategic architect advisor (call via architect_consult)
 
 **YOUR MISSION:**
+${projectId ? `
+🎯 **RESCUE MODE - Fix User Project Issues:**
+- You're helping rescue a user's stuck project
+- Fix bugs in their project files
+- Help them get unstuck when SySop (regular AI) can't proceed
+- Use project file tools (readProjectFile, writeProjectFile, etc.)
+- Be conversational and explain what you're doing
+` : `
+🏗️ **PLATFORM MODE - Maintain Archetype:**
 - Fix platform bugs and performance issues
 - Upgrade platform features
-- Maintain production stability  
+- Maintain production stability
+- Use platform file tools (readPlatformFile, writePlatformFile, etc.)
+- Deploy changes via commit_to_github()
+`}
 - Be conversational and helpful
 - Only work when explicitly asked
 
@@ -707,19 +735,38 @@ File Structure:
 - Direct git operations - Use GitHub API instead
 
 ═══════════════════════════════════════════════════════════════════
-🔧 YOUR TOOLS
+🔧 YOUR TOOLS (DUAL MODE)
 ═══════════════════════════════════════════════════════════════════
+
+${projectId ? `
+**🎯 PROJECT MODE ACTIVE - Working on User Project ${projectId}**
+
+**PROJECT FILE TOOLS (Use These):**
+- readProjectFile(path) - Read a file from the user's project
+- writeProjectFile(path, content) - Modify a file in the user's project
+- listProjectDirectory() - List all files in the user's project
+- createProjectFile(path, content) - Create a new file in the user's project
+- deleteProjectFile(path) - Delete a file from the user's project
+
+**Note:** Platform file tools (readPlatformFile, etc.) are still available but focus on project tools!
+` : `
+**🏗️ PLATFORM MODE ACTIVE - Working on Archetype Platform**
+
+**PLATFORM FILE TOOLS (Use These):**
+- readPlatformFile(path) - Read any platform file (auto-GitHub fallback)
+- writePlatformFile(path, content) - Modify platform file (just do it!)
+- listPlatformDirectory(dir) - Browse platform directory
+- createPlatformFile(path, content) - Create new platform file (just do it!)
+- deletePlatformFile(path) - Delete platform file (just do it!)
+- commit_to_github(changes, message) - Deploy to production (just do it!)
+
+**Note:** Project file tools are available but focus on platform tools!
+`}
 
 **DIAGNOSIS (Read-Only):**
 - readTaskList() - See your pre-created task list
-- perform_diagnosis() - Analyze performance/memory/database/security
-- readPlatformFile(path) - Read any file (auto-GitHub fallback)
-- listPlatformDirectory(dir) - Browse directory (returns immediate children: files & folders)
-
-**MODIFICATIONS (Autonomous - No Approval Required):**
-- writePlatformFile(path, content) - Modify file (just do it!)
-- createPlatformFile(path, content) - Create new file (just do it!)
-- commit_to_github(changes, message) - Deploy to production (just do it!)
+- perform_diagnosis() - Analyze performance/memory/database/security (platform only)
+- read_logs() - Read server logs to diagnose runtime errors
 
 **HELP & DELEGATION:**
 - architect_consult() - Get I AM's advice when stuck (optional consultation, not approval)
@@ -743,10 +790,20 @@ File Structure:
 → Use diagnosis tools, answer the question, explain findings
 
 **IF WORK REQUEST:**
+${projectId ? `
+**PROJECT MODE WORKFLOW:**
+1. List files: listProjectDirectory() to see what's in the project
+2. Read files: readProjectFile(path) to understand the code
+3. Fix issues: writeProjectFile(path, content) to make changes
+4. Create/Delete: createProjectFile() or deleteProjectFile() as needed
+5. Explain: Tell the user what you fixed and why
+` : `
+**PLATFORM MODE WORKFLOW:**
 1. Understand: perform_diagnosis() (readTaskList optional)
 2. Execute: Fix the issue (or delegate to sub-agent)
 3. Deploy: commit_to_github() after verification
 4. Consult: architect_consult() if stuck (optional)
+`}
 
 **TASK TRACKING (Optional):**
 - updateTask() is OPTIONAL - only use if readTaskList() found an active list
@@ -843,6 +900,61 @@ Be conversational, be helpful, and only work when asked!`;
             directory: { type: 'string' as const, description: 'Directory path to list' },
           },
           required: ['directory'],
+        },
+      },
+      {
+        name: 'readProjectFile',
+        description: 'Read a file from a user project (when projectId is set)',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            path: { type: 'string' as const, description: 'File path within the project' },
+          },
+          required: ['path'],
+        },
+      },
+      {
+        name: 'writeProjectFile',
+        description: 'Write content to a file in a user project (when projectId is set)',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            path: { type: 'string' as const, description: 'File path within the project' },
+            content: { type: 'string' as const, description: 'New file content' },
+          },
+          required: ['path', 'content'],
+        },
+      },
+      {
+        name: 'listProjectDirectory',
+        description: 'List all files in a user project (when projectId is set)',
+        input_schema: {
+          type: 'object' as const,
+          properties: {},
+          required: [],
+        },
+      },
+      {
+        name: 'createProjectFile',
+        description: 'Create a new file in a user project (when projectId is set)',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            path: { type: 'string' as const, description: 'File path within the project' },
+            content: { type: 'string' as const, description: 'Initial file content' },
+          },
+          required: ['path', 'content'],
+        },
+      },
+      {
+        name: 'deleteProjectFile',
+        description: 'Delete a file from a user project (when projectId is set)',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            path: { type: 'string' as const, description: 'File path within the project' },
+          },
+          required: ['path'],
         },
       },
       {
@@ -1269,6 +1381,132 @@ DO NOT create new tasks - UPDATE existing ones!`;
               sendEvent('progress', { message: `Listing ${typedInput.directory}...` });
               const entries = await platformHealing.listPlatformDirectory(typedInput.directory);
               toolResult = entries.map(e => `${e.name} (${e.type})`).join('\n');
+            } else if (name === 'readProjectFile') {
+              if (!projectId) {
+                toolResult = '❌ No project selected. Use platform file tools instead.';
+              } else {
+                const typedInput = input as { path: string };
+                sendEvent('progress', { message: `Reading ${typedInput.path} from user project...` });
+                
+                const { storage } = await import('../storage');
+                const projectFiles = await storage.getProjectFiles(projectId);
+                const targetFile = projectFiles.find(f => 
+                  (f.path ? `${f.path}/${f.filename}` : f.filename) === typedInput.path ||
+                  f.filename === typedInput.path
+                );
+                
+                if (targetFile) {
+                  toolResult = `File: ${targetFile.filename}\nLanguage: ${targetFile.language}\nContent:\n${targetFile.content}`;
+                } else {
+                  toolResult = `❌ File not found: ${typedInput.path}`;
+                }
+              }
+            } else if (name === 'writeProjectFile') {
+              if (!projectId) {
+                toolResult = '❌ No project selected. Use platform file tools instead.';
+              } else {
+                const typedInput = input as { path: string; content: string };
+                sendEvent('progress', { message: `Writing ${typedInput.path} to user project...` });
+                
+                const { storage } = await import('../storage');
+                const projectFiles = await storage.getProjectFiles(projectId);
+                const targetFile = projectFiles.find(f => 
+                  (f.path ? `${f.path}/${f.filename}` : f.filename) === typedInput.path ||
+                  f.filename === typedInput.path
+                );
+                
+                if (targetFile) {
+                  // Update existing file
+                  await storage.updateFile(targetFile.id, targetFile.userId, typedInput.content);
+                  toolResult = `✅ File updated: ${typedInput.path}`;
+                  sendEvent('file_change', { file: { path: typedInput.path, operation: 'modify' } });
+                } else {
+                  toolResult = `❌ File not found: ${typedInput.path}. Use createProjectFile to create new files.`;
+                }
+              }
+            } else if (name === 'listProjectDirectory') {
+              if (!projectId) {
+                toolResult = '❌ No project selected. Use platform file tools instead.';
+              } else {
+                sendEvent('progress', { message: `Listing files in user project...` });
+                
+                const { storage } = await import('../storage');
+                const projectFiles = await storage.getProjectFiles(projectId);
+                
+                if (projectFiles.length === 0) {
+                  toolResult = 'No files in project';
+                } else {
+                  toolResult = projectFiles.map(f => 
+                    `${f.path ? `${f.path}/` : ''}${f.filename} (${f.language})`
+                  ).join('\n');
+                }
+              }
+            } else if (name === 'createProjectFile') {
+              if (!projectId) {
+                toolResult = '❌ No project selected. Use platform file tools instead.';
+              } else {
+                const typedInput = input as { path: string; content: string };
+                sendEvent('progress', { message: `Creating ${typedInput.path} in user project...` });
+                
+                const { storage } = await import('../storage');
+                
+                // Get project owner to set correct userId
+                const project = await db.select().from(projects).where(eq(projects.id, projectId)).limit(1);
+                if (!project || project.length === 0) {
+                  toolResult = '❌ Project not found';
+                } else {
+                  const projectOwnerId = project[0].userId;
+                  
+                  // Parse filename and path
+                  const parts = typedInput.path.split('/');
+                  const filename = parts.pop() || typedInput.path;
+                  const filePath = parts.join('/');
+                  
+                  // Determine language from extension
+                  const ext = filename.split('.').pop()?.toLowerCase() || 'text';
+                  const langMap: Record<string, string> = {
+                    'js': 'javascript', 'jsx': 'javascript',
+                    'ts': 'typescript', 'tsx': 'typescript',
+                    'py': 'python', 'html': 'html', 'css': 'css',
+                    'json': 'json', 'md': 'markdown',
+                  };
+                  const language = langMap[ext] || 'text';
+                  
+                  await storage.createFile({
+                    userId: projectOwnerId,
+                    projectId,
+                    filename,
+                    path: filePath,
+                    content: typedInput.content,
+                    language,
+                  });
+                  
+                  toolResult = `✅ File created: ${typedInput.path}`;
+                  sendEvent('file_change', { file: { path: typedInput.path, operation: 'create' } });
+                }
+              }
+            } else if (name === 'deleteProjectFile') {
+              if (!projectId) {
+                toolResult = '❌ No project selected. Use platform file tools instead.';
+              } else {
+                const typedInput = input as { path: string };
+                sendEvent('progress', { message: `Deleting ${typedInput.path} from user project...` });
+                
+                const { storage } = await import('../storage');
+                const projectFiles = await storage.getProjectFiles(projectId);
+                const targetFile = projectFiles.find(f => 
+                  (f.path ? `${f.path}/${f.filename}` : f.filename) === typedInput.path ||
+                  f.filename === typedInput.path
+                );
+                
+                if (targetFile) {
+                  await storage.deleteFile(targetFile.id, targetFile.userId);
+                  toolResult = `✅ File deleted: ${typedInput.path}`;
+                  sendEvent('file_change', { file: { path: typedInput.path, operation: 'delete' } });
+                } else {
+                  toolResult = `❌ File not found: ${typedInput.path}`;
+                }
+              }
             } else if (name === 'architect_consult') {
               const typedInput = input as { 
                 problem: string; 
