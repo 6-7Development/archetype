@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Send, Loader2, Wrench, User, FileCode, Copy, Check, Paperclip, X, Image, FileText } from "lucide-react";
+import { Send, Loader2, Wrench, User, FileCode, Copy, Check, Paperclip, X, Image, FileText, Zap, Shield, Brain, Infinity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -192,6 +193,42 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
   // Load Meta-SySop chat history
   const { data: chatHistory, isLoading } = useQuery<{ messages: Message[] }>({
     queryKey: ['/api/meta-sysop/history'],
+  });
+
+  // Load autonomy level
+  const { data: autonomyData } = useQuery<{
+    currentLevel: string;
+    maxAllowedLevel: string;
+    plan: string;
+    isOwner: boolean;
+    levels: Record<string, { id: string; name: string; description: string; icon: string }>;
+  }>({
+    queryKey: ['/api/meta-sysop/autonomy-level'],
+  });
+
+  // Update autonomy level mutation
+  const updateAutonomyMutation = useMutation({
+    mutationFn: async (level: string) => {
+      return await apiRequest('/api/meta-sysop/autonomy-level', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ level }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/meta-sysop/autonomy-level'] });
+      toast({
+        title: "Autonomy updated",
+        description: "Meta-SySop autonomy level changed successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to update autonomy",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
   });
 
   // Initialize messages from history
@@ -659,6 +696,62 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
       {/* Input area - Fixed at bottom with mobile optimization */}
       <div className="border-t border-slate-800/50 p-3 sm:p-4 bg-slate-950/80 backdrop-blur-xl flex-shrink-0">
         <div className="max-w-5xl mx-auto space-y-3">
+          {/* Autonomy Level Selector - Prominent placement */}
+          {autonomyData && (
+            <div className="flex items-center gap-3 bg-slate-800/40 border border-slate-700/50 rounded-lg px-3 py-2">
+              <div className="flex items-center gap-2 text-xs text-slate-400">
+                <Zap className="h-3.5 w-3.5" />
+                <span className="font-medium">Autonomy:</span>
+              </div>
+              <Select
+                value={autonomyData.currentLevel}
+                onValueChange={(value) => updateAutonomyMutation.mutate(value)}
+                disabled={updateAutonomyMutation.isPending}
+              >
+                <SelectTrigger 
+                  className="h-8 w-auto min-w-[140px] bg-slate-900/50 border-slate-600/50 text-xs font-semibold"
+                  data-testid="select-autonomy-level"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {autonomyData.levels && Object.values(autonomyData.levels).map((level: any) => {
+                    const Icon = level.icon === 'shield' ? Shield : 
+                                 level.icon === 'zap' ? Zap : 
+                                 level.icon === 'brain' ? Brain : Infinity;
+                    const isDisabled = autonomyData.levels && 
+                      Object.keys(autonomyData.levels).indexOf(level.id) > 
+                      Object.keys(autonomyData.levels).indexOf(autonomyData.maxAllowedLevel);
+                    
+                    return (
+                      <SelectItem 
+                        key={level.id} 
+                        value={level.id}
+                        disabled={isDisabled}
+                        data-testid={`option-autonomy-${level.id}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Icon className="h-3.5 w-3.5" />
+                          <span className="font-semibold">{level.name}</span>
+                          {isDisabled && !autonomyData.isOwner && (
+                            <Badge variant="outline" className="text-[10px] ml-2">
+                              Upgrade Required
+                            </Badge>
+                          )}
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+              {autonomyData.isOwner && (
+                <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
+                  Owner - Full Access
+                </Badge>
+              )}
+            </div>
+          )}
+
           {/* Attachment pills */}
           {attachments.length > 0 && (
             <div className="flex flex-wrap gap-2">
