@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Send, Loader2, Sparkles, User, Key, AlertCircle } from "lucide-react";
+import { Send, Loader2, Sparkles, User, Key, AlertCircle, Square, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,8 @@ import CostPreview from "@/components/cost-preview";
 import { ChangesPanel } from "@/components/changes-panel";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { TaskBoard } from "@/components/task-board";
+import { AgentTaskList, type AgentTask } from "@/components/agent-task-list";
+import { AgentProgressDisplay } from "@/components/agent-progress-display";
 
 interface CheckpointData {
   complexity: string;
@@ -78,6 +80,13 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     deleted: string[];
     summary: string;
   } | null>(null);
+
+  // Agent UI state
+  const [agentTasks, setAgentTasks] = useState<AgentTask[]>([]);
+  const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
+  const [progressStatus, setProgressStatus] = useState<'thinking' | 'working' | 'vibing' | 'idle'>('idle');
+  const [progressMessage, setProgressMessage] = useState("");
+  const [showTaskList, setShowTaskList] = useState(false);
 
   // Fix sessionId persistence - scoped to project, recomputes when project changes
   const sessionId = useMemo(() => {
@@ -193,6 +202,44 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   // WebSocket streaming for AI chat - use actual user ID
   const streamState = useWebSocketStream(sessionId, user?.id || 'anonymous');
 
+  // Update agent UI from WebSocket events
+  useEffect(() => {
+    // Convert WebSocket tasks to AgentTask format
+    if (streamState.tasks && streamState.tasks.length > 0) {
+      const convertedTasks: AgentTask[] = streamState.tasks.map(task => ({
+        id: task.id,
+        title: task.title,
+        status: task.status,
+      }));
+      setAgentTasks(convertedTasks);
+      setShowTaskList(true);
+
+      // Find active task (first in_progress task)
+      const activeTask = convertedTasks.find(t => t.status === 'in_progress');
+      if (activeTask) {
+        setActiveTaskId(activeTask.id);
+      }
+    }
+
+    // Update progress status from chat progress
+    if (streamState.chatProgress) {
+      setProgressMessage(streamState.chatProgress.message);
+      setProgressStatus(streamState.chatProgress.status === 'working' ? 'working' : 'thinking');
+    } else if (streamState.currentAction) {
+      setProgressMessage(streamState.currentAction);
+      setProgressStatus('working');
+    } else if (streamState.currentStatus) {
+      setProgressMessage(streamState.currentStatus);
+      setProgressStatus('thinking');
+    }
+
+    // Set to idle when complete
+    if (streamState.currentStatus === 'completed') {
+      setProgressStatus('idle');
+      setProgressMessage("");
+    }
+  }, [streamState.tasks, streamState.chatProgress, streamState.currentAction, streamState.currentStatus]);
+
   // Update metrics from WebSocket usage data
   useEffect(() => {
     if (streamState.usage) {
@@ -249,6 +296,8 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
 
       // Clear chat progress when mutation completes
       streamState.resetState();
+      setProgressStatus('idle');
+      setProgressMessage("");
 
       // Persist assistant message to database (save to general chat if no project)
       saveMessageMutation.mutate({
@@ -266,6 +315,8 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     onError: (error) => {
       // Clear progress indicators on failure
       streamState.resetState();
+      setProgressStatus('idle');
+      setProgressMessage("");
 
       // Show error toast
       toast({
@@ -342,6 +393,8 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   const executeCommand = (command: string, secrets?: Record<string, string>) => {
     setLastCommand(command);
     setIsGenerating(true);
+    setProgressStatus('thinking');
+    setProgressMessage("Analyzing your request...");
 
     // Track start time for elapsed time calculation
     const startTime = Date.now();
@@ -410,6 +463,8 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
         onSettled: () => {
           clearInterval(progressInterval);
           setIsGenerating(false);
+          setProgressStatus('idle');
+          setProgressMessage("");
 
           // Calculate final elapsed time
           const elapsed = Date.now() - startTime;
@@ -548,6 +603,10 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     setInput("");
     setPendingImages([]); // Clear pending images after sending
 
+    // Set initial progress state
+    setProgressStatus('thinking');
+    setProgressMessage("Analyzing request...");
+
     // Persist user message to database (save to general chat if no project)
     saveMessageMutation.mutate({
       projectId: currentProjectId || null,
@@ -561,6 +620,20 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       images: messagesToSend,
       sessionId,
     });
+  };
+
+  // Handle stopping the generation
+  const handleStop = () => {
+    setIsGenerating(false);
+    setProgressStatus('idle');
+    setProgressMessage("");
+    
+    // Mark all in-progress tasks as failed
+    setAgentTasks(prev => prev.map(t => 
+      t.status === 'in_progress' ? { ...t, status: 'failed' as const } : t
+    ));
+
+    toast({ title: "🛑 Stopped generation" });
   };
 
   // Handle image paste from clipboard
@@ -655,323 +728,310 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   }, [messages, isGenerating]);
 
   return (
-    <div className="flex flex-col h-full max-h-full overflow-hidden bg-[hsl(220,20%,12%)] relative touch-none">
-      {/* Changes Panel - Fixed Overlay */}
-      {lastChanges && (
-        <div className="absolute top-4 right-4 z-50 w-full max-w-md" data-testid="changes-panel-overlay">
-          <ChangesPanel 
-            changes={lastChanges} 
-            onClose={() => setLastChanges(null)} 
-          />
+    <div className="flex h-full overflow-hidden bg-[hsl(220,20%,12%)] relative">
+      {/* Task List Sidebar */}
+      {showTaskList && agentTasks.length > 0 && (
+        <div className="w-64 border-r border-[hsl(220,15%,28%)] flex-shrink-0 overflow-y-auto bg-[hsl(220,18%,16%)]">
+          <div className="p-3 border-b border-[hsl(220,15%,28%)] flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-[hsl(220,8%,98%)]">Tasks</h3>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={() => setShowTaskList(false)}
+              data-testid="button-hide-tasks"
+            >
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </div>
+          <AgentTaskList tasks={agentTasks} activeTaskId={activeTaskId} onTaskClick={setActiveTaskId} />
         </div>
       )}
 
-      {/* Messages - Clean Scrollable Area */}
-      <div 
-        ref={scrollRef} 
-        className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4 sm:py-8 scroll-smooth bg-[hsl(220,20%,12%)]"
-        style={{ scrollBehavior: 'smooth' }}
-      >
-        <div className="space-y-4 max-w-4xl mx-auto pb-4">
-          {messages.map((message, idx) => (
+      {/* Main Content */}
+      <div className="flex flex-col h-full max-h-full overflow-hidden flex-1 relative touch-none">
+        {/* Changes Panel - Fixed Overlay */}
+        {lastChanges && (
+          <ChangesPanel
+            changes={lastChanges}
+            onClose={() => setLastChanges(null)}
+          />
+        )}
+
+        {/* Progress Display Header */}
+        {(isGenerating || chatMutation.isPending) && progressStatus !== 'idle' && (
+          <div className="px-4 py-3 border-b border-[hsl(220,15%,28%)] bg-[hsl(220,18%,16%)]">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h2 className="text-sm font-semibold text-[hsl(220,8%,98%)] truncate">
+                    {agentTasks.find(t => t.id === activeTaskId)?.title || 'Working...'}
+                  </h2>
+                  {agentTasks.length > 0 && (
+                    <span className="text-xs text-[hsl(220,10%,72%)] shrink-0">
+                      {agentTasks.filter(t => t.status === 'completed').length}/{agentTasks.length}
+                    </span>
+                  )}
+                </div>
+                <AgentProgressDisplay status={progressStatus} message={progressMessage} />
+              </div>
+              {isGenerating && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleStop}
+                  className="shrink-0"
+                  data-testid="button-stop"
+                >
+                  <Square className="h-3.5 w-3.5 mr-1.5 fill-current" />
+                  Stop
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Connection Status */}
+        <ConnectionStatus
+          isConnected={streamState.isConnected}
+          isReconnecting={streamState.isReconnecting}
+          reconnectAttempt={streamState.reconnectAttempt}
+          onReconnect={streamState.forceReconnect}
+        />
+
+        {/* AI Progress */}
+        {(currentProgress.length > 0 || isGenerating) && (
+          <div className="px-6 pt-4 pb-2 bg-[hsl(220,18%,16%)] border-b border-[hsl(220,15%,28%)]">
+            <AgentProgress
+              steps={currentProgress}
+              metrics={currentMetrics}
+            />
+          </div>
+        )}
+
+        {/* Task Board - Keep existing task board component */}
+        {!isGenerating && (
+          <TaskBoard 
+            tasks={streamState.tasks}
+            isGenerating={isGenerating}
+            subAgentActive={streamState.subAgentActive}
+            className="border-b border-[hsl(220,15%,28%)]" 
+          />
+        )}
+
+        {/* Messages Area */}
+        <div
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto px-6 py-4 space-y-4 scroll-smooth"
+          data-testid="messages-container"
+        >
+          {messages.map((message, index) => (
             <div
-              key={idx}
+              key={index}
               className={cn(
                 "flex gap-3 items-start",
                 message.role === "user" ? "justify-end" : "justify-start"
               )}
-              data-testid={`chat-message-${idx}`}
             >
-              {/* Avatar - Assistant Side */}
               {message.role === "assistant" && (
-                <div className="flex-shrink-0">
-                  <div className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center",
-                    message.isSummary 
-                      ? "bg-[hsl(220,18%,16%)] border border-[hsl(220,15%,28%)]" 
-                      : "bg-[hsl(220,70%,60%)]"
-                  )}>
-                    {message.isSummary ? (
-                      <AlertCircle className="w-4 h-4 text-[hsl(220,12%,55%)]" />
-                    ) : (
-                      <Sparkles className="w-4 h-4 text-[hsl(220,8%,98%)]" />
-                    )}
-                  </div>
+                <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-[hsl(220,70%,60%)] to-[hsl(220,70%,50%)] flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-white" />
                 </div>
               )}
 
-              {/* Message Bubble */}
-              <div className={cn(
-                "flex flex-col gap-1",
-                message.role === "user" ? "items-end max-w-[85%]" : "max-w-[85%]"
-              )}>
-                {/* Timestamp */}
-                {message.timestamp && (
-                  <div className="text-[11px] text-[hsl(220,12%,55%)]/60 px-2">
-                    {new Date(message.timestamp).toLocaleTimeString()}
-                  </div>
-                )}
-
-                {/* Message Content Bubble */}
-                <div
-                  className={cn(
-                    "px-3 py-2 text-sm prose dark:prose-invert max-w-none",
-                    message.role === "user"
-                      ? "bg-[hsl(220,70%,60%)] text-[hsl(220,8%,98%)] rounded-2xl rounded-tr-sm"
-                      : message.isSummary
-                      ? "bg-[hsl(220,18%,16%)] text-[hsl(220,8%,98%)] rounded-2xl rounded-tl-sm border border-[hsl(220,15%,28%)]"
-                      : "bg-[hsl(220,16%,20%)] text-[hsl(220,8%,98%)] rounded-2xl rounded-tl-sm border border-[hsl(220,15%,28%)]"
-                  )}
-                >
-                  {message.isSummary && (
-                    <p className="text-xs font-medium mb-2 text-[hsl(220,12%,55%)] border-b border-[hsl(220,15%,28%)] pb-1">
-                      📝 Previous conversation summary
-                    </p>
+              <div
+                className={cn(
+                  "max-w-[75%] rounded-2xl px-4 py-3 shadow-sm",
+                  message.role === "user"
+                    ? "bg-[hsl(220,70%,60%)] text-[hsl(220,8%,98%)]"
+                    : message.isSummary 
+                      ? "bg-[hsl(220,18%,16%)] border border-[hsl(220,15%,28%)]" 
+                      : "bg-[hsl(220,70%,60%)]"
+                )}>
+                  {message.isSummary ? (
+                    <div className="text-sm text-[hsl(220,10%,72%)] italic flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Earlier messages summarized for efficiency</span>
+                    </div>
+                  ) : (
+                    <div className="prose prose-invert max-w-none">
+                      <MarkdownRenderer content={message.content} />
+                    </div>
                   )}
 
-                  <MarkdownRenderer content={message.content} />
+                  {/* Display checkpoint billing preview if available */}
+                  {message.checkpoint && (
+                    <div className="mt-3 pt-3 border-t border-white/10">
+                      <div className="text-xs space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-white/70">Complexity:</span>
+                          <span className="font-semibold">{message.checkpoint.complexity}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-white/70">Estimated Cost:</span>
+                          <span className="font-semibold">${message.checkpoint.cost.toFixed(2)}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-white/70">Time:</span>
+                          <span className="font-semibold">{message.checkpoint.estimatedTime}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
-                  {/* Display images if present */}
+                  {/* Display attached images if any */}
                   {message.images && message.images.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-2 border-t border-[hsl(220,15%,28%)]/50 pt-3">
-                      {message.images.map((imageUrl, imgIdx) => (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {message.images.map((imageUrl, imgIndex) => (
                         <img
-                          key={imgIdx}
+                          key={imgIndex}
                           src={imageUrl}
-                          alt={`Attachment ${imgIdx + 1}`}
-                          className="max-w-xs rounded-lg cursor-pointer hover:opacity-90 transition-opacity border border-[hsl(220,15%,28%)]"
+                          alt={`Attached ${imgIndex + 1}`}
+                          className="max-w-[200px] rounded border border-white/20 cursor-pointer hover:opacity-80 transition-opacity"
                           onClick={() => setZoomImage(imageUrl)}
-                          data-testid={`message-image-${idx}-${imgIdx}`}
+                          data-testid={`message-image-${index}-${imgIndex}`}
                         />
                       ))}
                     </div>
                   )}
                 </div>
 
-                {/* Checkpoint billing info */}
-                {!isAdmin && message.role === "assistant" && message.checkpoint && (
-                  <div className="text-xs text-[hsl(220,10%,72%)] bg-[hsl(220,18%,16%)] rounded-md px-3 py-2 space-y-1 max-w-[85%] border border-[hsl(220,15%,28%)]">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-medium text-[hsl(220,8%,98%)]">{message.checkpoint.complexity.toUpperCase()}</span>
-                      <span className="font-semibold text-[hsl(220,70%,60%)]">${message.checkpoint.cost.toFixed(2)}</span>
-                    </div>
-                    <div className="text-[11px] text-[hsl(220,12%,55%)]">{message.checkpoint.estimatedTime}</div>
-                    {message.checkpoint.actions && message.checkpoint.actions.length > 0 && (
-                      <div className="pt-1 border-t border-[hsl(220,15%,28%)] space-y-0.5">
-                        {message.checkpoint.actions.map((action, i) => (
-                          <div key={i} className="text-[11px] text-[hsl(220,12%,55%)]">• {action}</div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Avatar - User Side */}
               {message.role === "user" && (
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 rounded-full bg-[hsl(220,70%,60%)] flex items-center justify-center">
-                    <User className="w-4 h-4 text-[hsl(220,8%,98%)]" />
-                  </div>
+                <div className="flex-shrink-0 w-9 h-9 rounded-full bg-[hsl(220,15%,28%)] flex items-center justify-center">
+                  <User className="w-5 h-5 text-[hsl(220,10%,72%)]" />
                 </div>
               )}
             </div>
           ))}
 
-          {/* Task Board - Replit Agent Style - Show at bottom */}
-          {(streamState.tasks.length > 0 || isGenerating) && (
+          {/* Streaming Indicator */}
+          {chatMutation.isPending && streamState.fullMessage && (
             <div className="flex gap-3 items-start">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 rounded-full bg-[hsl(220,70%,60%)] flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-[hsl(220,8%,98%)]" />
-                </div>
+              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-[hsl(220,70%,60%)] to-[hsl(220,70%,50%)] flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-white animate-pulse" />
               </div>
-              <div className="flex-1 max-w-[85%]">
-                <TaskBoard 
-                  tasks={streamState.tasks}
-                  isGenerating={isGenerating}
-                  subAgentActive={streamState.subAgentActive}
-                />
+              <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-[hsl(220,70%,60%)] shadow-sm">
+                <div className="prose prose-invert max-w-none">
+                  <MarkdownRenderer content={streamState.fullMessage} />
+                </div>
               </div>
             </div>
           )}
 
-          {/* Loading indicator - Modern style with real-time progress */}
-          {chatMutation.isPending && (
+          {/* AI Streaming Indicator - Simple Loader */}
+          {chatMutation.isPending && !streamState.fullMessage && (
             <div className="flex gap-3 items-start">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 rounded-full bg-[hsl(220,70%,60%)] flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-[hsl(220,8%,98%)] animate-pulse" />
-                </div>
+              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-[hsl(220,70%,60%)] to-[hsl(220,70%,50%)] flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-white animate-pulse" />
               </div>
-              <div className="bg-[hsl(220,16%,20%)] border border-[hsl(220,15%,28%)] rounded-2xl rounded-tl-sm px-3 py-2 min-w-[200px]">
-                <div className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-[hsl(220,70%,60%)]" />
-                  <span className="text-sm text-[hsl(220,10%,72%)]">
-                    {streamState.chatProgress?.message || 'Thinking...'}
-                  </span>
+              <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-[hsl(220,70%,60%)] shadow-sm">
+                <div className="flex items-center gap-2 text-sm text-white/70">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Thinking...</span>
                 </div>
-                {streamState.chatProgress?.filesModified !== undefined && streamState.chatProgress.filesModified > 0 && (
-                  <div className="text-xs text-[hsl(220,12%,55%)] mt-2 pl-6">
-                    Modified {streamState.chatProgress.filesModified} {streamState.chatProgress.filesModified === 1 ? 'file' : 'files'}
-                  </div>
-                )}
               </div>
             </div>
-          )}
-
-          {/* Progress Display - Clean and Minimal */}
-          {currentProgress.length > 0 && (
-            <div className="flex gap-3 items-start">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 rounded-full bg-[hsl(220,70%,60%)] flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-[hsl(220,8%,98%)]" />
-                </div>
-              </div>
-              <div className="flex-1 max-w-[85%] bg-[hsl(220,16%,20%)] border border-[hsl(220,15%,28%)] rounded-2xl rounded-tl-sm p-3">
-                <AgentProgress
-                  steps={currentProgress}
-                  isWorking={isGenerating}
-                  showTeachingEmojis={true}
-                  metrics={currentMetrics}
-                  onStop={async () => {
-                    try {
-                      await apiRequest("POST", "/api/commands/abort", { sessionId });
-                      setIsGenerating(false);
-                      setCurrentProgress([]);
-                      setCurrentMetrics({});
-                      toast({ description: "Generation stopped successfully" });
-                    } catch (error: any) {
-                      console.error('Failed to abort generation:', error);
-                      setIsGenerating(false);
-                      setCurrentProgress([]);
-                      setCurrentMetrics({});
-                      toast({ 
-                        variant: "destructive",
-                        description: "Failed to stop generation" 
-                      });
-                    }
-                  }}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Secrets Request Form */}
-          {secretsRequest && (
-            <Card className="border-[hsl(220,15%,28%)] bg-[hsl(220,18%,16%)]" data-testid="secrets-request-card">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Key className="w-5 h-5 text-[hsl(220,70%,60%)]" />
-                  <CardTitle className="text-lg text-[hsl(220,8%,98%)]">Secure Credentials Required</CardTitle>
-                </div>
-                <CardDescription className="text-[hsl(220,10%,72%)]">
-                  {secretsRequest.message}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Alert className="bg-[hsl(220,16%,20%)] border-[hsl(220,15%,28%)]">
-                  <AlertCircle className="h-4 w-4 text-[hsl(220,70%,60%)]" />
-                  <AlertDescription className="text-sm text-[hsl(220,10%,72%)]">
-                    Your credentials will be stored securely as environment variables and never exposed in generated code.
-                  </AlertDescription>
-                </Alert>
-
-                {secretsRequest.requiredSecrets.map((secret) => (
-                  <div key={secret.key} className="space-y-2">
-                    <Label htmlFor={secret.key} className="text-sm font-medium text-[hsl(220,8%,98%)]">
-                      {secret.key}
-                    </Label>
-                    <p className="text-xs text-[hsl(220,10%,72%)]">{secret.description}</p>
-                    {secret.getInstructions && (
-                      <p className="text-xs text-[hsl(220,70%,60%)]">
-                        Get it from: <a href={secret.getInstructions} target="_blank" rel="noopener noreferrer" className="underline">{secret.getInstructions}</a>
-                      </p>
-                    )}
-                    <Input
-                      id={secret.key}
-                      type="password"
-                      value={secretsInput[secret.key] || ""}
-                      onChange={(e) => setSecretsInput({ ...secretsInput, [secret.key]: e.target.value })}
-                      placeholder={`Enter your ${secret.key}`}
-                      className="font-mono text-sm bg-[hsl(220,16%,20%)] border-[hsl(220,15%,28%)] text-[hsl(220,8%,98%)]"
-                      data-testid={`input-secret-${secret.key}`}
-                    />
-                  </div>
-                ))}
-
-                <Button 
-                  onClick={handleSecretsSubmit} 
-                  className="w-full"
-                  disabled={commandMutation.isPending}
-                  data-testid="button-submit-secrets"
-                >
-                  {commandMutation.isPending ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Generating Project...
-                    </>
-                  ) : (
-                    <>
-                      <Key className="w-4 h-4 mr-2" />
-                      Continue with Secrets
-                    </>
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
           )}
         </div>
-      </div>
 
-      {/* Input - Fixed Bottom Toolbar */}
-      <div className="flex-shrink-0 border-t border-[hsl(220,15%,28%)] bg-[hsl(220,20%,12%)] z-10">
-        <div className="max-w-4xl mx-auto p-4">
-          {/* File Status Display */}
+        {/* Secrets Request Dialog */}
+        <Dialog open={!!secretsRequest} onOpenChange={() => setSecretsRequest(null)}>
+          <DialogContent className="max-w-[95vw] sm:max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Key className="w-5 h-5" />
+                Secure Credentials Required
+              </DialogTitle>
+              <DialogDescription>
+                {secretsRequest?.message}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              {secretsRequest?.requiredSecrets.map((secret) => (
+                <div key={secret.key} className="space-y-2">
+                  <Label htmlFor={secret.key}>{secret.key}</Label>
+                  <Input
+                    id={secret.key}
+                    type="password"
+                    placeholder={secret.description}
+                    value={secretsInput[secret.key] || ""}
+                    onChange={(e) =>
+                      setSecretsInput((prev) => ({
+                        ...prev,
+                        [secret.key]: e.target.value,
+                      }))
+                    }
+                    data-testid={`input-secret-${secret.key}`}
+                  />
+                  {secret.getInstructions && (
+                    <p className="text-xs text-muted-foreground">
+                      {secret.getInstructions}
+                    </p>
+                  )}
+                </div>
+              ))}
+
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Your credentials are encrypted and never stored. They're used only for this project generation.
+                </AlertDescription>
+              </Alert>
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setSecretsRequest(null)}
+                data-testid="button-cancel-secrets"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSecretsSubmit}
+                disabled={commandMutation.isPending}
+                data-testid="button-submit-secrets"
+              >
+                {commandMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  "Continue Generation"
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Input Area */}
+        <div className="flex-shrink-0 border-t border-[hsl(220,15%,28%)] bg-[hsl(220,18%,16%)] p-4">
+          {/* WebSocket Stream: File Status */}
           {streamState.currentFile && (
-            <div className="mb-2 px-3 py-1.5 bg-[hsl(220,16%,20%)] border-l-2 border-[hsl(220,70%,60%)] rounded text-xs" data-testid="file-status-display">
+            <div className="mb-2 px-3 py-1.5 bg-[hsl(220,16%,20%)] border-l-2 border-emerald-500/60 rounded text-xs" data-testid="stream-file-status">
               <p className="text-[hsl(220,10%,72%)] flex items-center gap-2">
-                {streamState.currentFile.action === 'creating' && (
-                  <>
-                    <span>Creating</span>
-                  </>
-                )}
-                {streamState.currentFile.action === 'updating' && (
-                  <>
-                    <span>Editing</span>
-                  </>
-                )}
-                {streamState.currentFile.action === 'deleting' && (
-                  <>
-                    <span>Deleting</span>
-                  </>
-                )}
-                <code className="text-[hsl(220,70%,60%)] font-mono">{streamState.currentFile.filename}</code>
-                <Loader2 className="w-3 h-3 animate-spin ml-auto text-[hsl(220,70%,60%)]" />
+                <span className="font-mono text-[hsl(220,70%,60%)]">{streamState.currentFile.action}</span>
+                <span className="font-mono">{streamState.currentFile.filename}</span>
+                <span className="ml-auto text-[hsl(220,12%,55%)]">{streamState.currentFile.language}</span>
+                <Loader2 className="w-3 h-3 animate-spin text-[hsl(220,70%,60%)]" />
               </p>
             </div>
           )}
 
-          {/* File Summary Display */}
+          {/* WebSocket Stream: File Summary */}
           {streamState.fileSummary && !streamState.currentFile && (
-            <div className="mb-2 px-3 py-1.5 bg-[hsl(220,16%,20%)] border-l-2 border-green-500/60 rounded text-xs" data-testid="file-summary-display">
-              <p className="text-[hsl(220,10%,72%)] flex items-center gap-2">
-                <span>✓</span>
-                <span>
-                  Saved {streamState.fileSummary.filesChanged} file{streamState.fileSummary.filesChanged !== 1 ? 's' : ''}
-                  {' '}({streamState.fileSummary.linesAdded.toLocaleString()} line{streamState.fileSummary.linesAdded !== 1 ? 's' : ''})
+            <div className="mb-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-xs" data-testid="stream-file-summary">
+              <div className="flex items-center justify-between text-emerald-200">
+                <span className="font-semibold">
+                  ✓ Modified {streamState.fileSummary.filesChanged} file{streamState.fileSummary.filesChanged !== 1 ? 's' : ''}
                 </span>
-              </p>
-            </div>
-          )}
-
-          {/* WebSocket Stream: Thinking Display */}
-          {streamState.currentThought && (
-            <div className="mb-2 px-3 py-1.5 bg-[hsl(220,16%,20%)] border-l-2 border-blue-500/60 rounded text-xs" data-testid="stream-thinking-display">
-              <p className="text-[hsl(220,10%,72%)] flex items-center gap-2">
-                <span className="italic">{streamState.currentThought}</span>
-                <Loader2 className="w-3 h-3 animate-spin ml-auto text-[hsl(220,70%,60%)]" />
-              </p>
+                <span className="text-emerald-300/70">
+                  +{streamState.fileSummary.linesAdded} lines
+                  {streamState.fileSummary.linesRemoved !== undefined && ` / -${streamState.fileSummary.linesRemoved}`}
+                </span>
+              </div>
             </div>
           )}
 
