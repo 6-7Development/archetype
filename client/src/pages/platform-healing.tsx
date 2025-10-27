@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { MetaSySopChat } from '@/components/meta-sysop-chat';
 import { AdminGuard } from '@/components/admin-guard';
+import { Rocket } from 'lucide-react';
 
 type StepState = 'pending' | 'running' | 'ok' | 'fail';
 
@@ -67,6 +68,44 @@ function PlatformHealingContent() {
     { id: 'committing', label: 'Committing to GitHub', status: 'pending' },
     { id: 'deployed', label: 'Deployed', status: 'pending' },
   ]);
+
+  // Force deploy mutation
+  const forceDeployMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/admin/force-deploy', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: 'Force deploy: Clean platform-healing UI - minimal chat interface only'
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.details || error.error || 'Deploy failed');
+      }
+
+      return await response.json();
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: '🚀 Deploy Successful!',
+        description: `Deployed ${data.filesDeployed} files. Railway will auto-deploy in 2-3 minutes.`,
+      });
+      console.log('[FORCE-DEPLOY] Success:', data);
+    },
+    onError: (error: any) => {
+      toast({
+        title: '❌ Deploy Failed',
+        description: error.message || 'Failed to deploy changes',
+        variant: 'destructive',
+      });
+      console.error('[FORCE-DEPLOY] Error:', error);
+    },
+  });
 
   // WebSocket connection for live metrics and heal events
   const wsStream = useWebSocketStream('platform-healing', 'admin');
@@ -467,7 +506,7 @@ function PlatformHealingContent() {
     <div className="flex-1 flex flex-col overflow-hidden bg-background p-3 sm:p-4">
       <div className="flex flex-col gap-3 sm:gap-4 h-full max-w-6xl mx-auto w-full">
         {/* Simple Header */}
-        <div className="flex items-center gap-2 px-2">
+        <div className="flex items-center gap-2 px-2 flex-wrap">
           <div className="text-xs text-muted-foreground">Home / Agents</div>
           <div className="text-base sm:text-lg font-bold">Meta‑SySop</div>
           <Badge 
@@ -476,6 +515,22 @@ function PlatformHealingContent() {
           >
             ● {status?.safety?.safe ? 'Healthy' : 'Issues'}
           </Badge>
+          <Button
+            size="sm"
+            onClick={() => forceDeployMutation.mutate()}
+            disabled={forceDeployMutation.isPending}
+            className="bg-gradient-to-b from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg"
+            data-testid="button-force-deploy"
+          >
+            {forceDeployMutation.isPending ? (
+              <>Deploying...</>
+            ) : (
+              <>
+                <Rocket className="w-4 h-4 mr-1" />
+                Force Deploy
+              </>
+            )}
+          </Button>
         </div>
 
         {/* Meta-SySop Chat - Full Interface */}
