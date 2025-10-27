@@ -1,0 +1,135 @@
+2025-10-27T00:31:58.000000000Z [inf]  Starting Container
+2025-10-27T00:31:58.395196685Z [inf]  ======================================
+2025-10-27T00:31:58.395204554Z [inf]  🚂 RAILWAY STARTUP SCRIPT
+2025-10-27T00:31:58.395211411Z [inf]  ======================================
+2025-10-27T00:31:58.395218406Z [inf]  Time: Mon Oct 27 00:31:58 UTC 2025
+2025-10-27T00:31:58.395225788Z [inf]  
+2025-10-27T00:31:58.395236237Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-10-27T00:32:01.410818486Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-10-27T00:32:01.410824147Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-10-27T00:32:01.666949378Z [inf]  Using 'pg' driver for database querying
+2025-10-27T00:32:01.778436689Z [inf]  [⣷] Pulling schema from database...
+2025-10-27T00:32:01.917111601Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-27T00:32:02.028767906Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-27T00:32:02.173511275Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-27T00:32:02.286040872Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-27T00:32:02.410133132Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-27T00:32:02.549341980Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-27T00:32:02.667020882Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-27T00:32:02.807200512Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-27T00:32:02.945984952Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-27T00:32:03.085834017Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-27T00:32:03.177610372Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-27T00:32:03.421492906Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-27T00:32:03.442172630Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-27T00:32:03.580697575Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-27T00:32:03.740261555Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-27T00:32:03.878788505Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-27T00:32:04.039794234Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-27T00:32:04.078660029Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-27T00:32:04.217422795Z [inf]  [2K[1G[✓] Pulling schema from database...
+2025-10-27T00:32:04.261268860Z [inf]  [i] No changes detected
+2025-10-27T00:32:04.285999043Z [inf]  
+2025-10-27T00:32:04.286003279Z [inf]  ✅ Database migrations completed successfully!
+2025-10-27T00:32:04.286007876Z [inf]  
+2025-10-27T00:32:04.286012663Z [inf]  🚀 Starting Node.js application...
+2025-10-27T00:32:05.175787934Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-27T00:32:05.175800580Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-27T00:32:05.175800634Z [inf]  📡 WebSocket server initialized at /ws
+2025-10-27T00:32:05.175812385Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-27T00:32:05.175814911Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-27T00:32:05.175823145Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-27T00:32:05.175825920Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-27T00:32:05.175834915Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-27T00:32:05.175844300Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-10-27T00:32:05.175853504Z [inf]  [db] Connection string includes SSL params: true
+2025-10-27T00:32:05.175862377Z [inf]  [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-27T00:32:05.175870917Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-27T00:32:05.222240326Z [inf]  ✅ All routes registered successfully
+2025-10-27T00:32:05.222248215Z [inf]  🔍 Testing database connection...
+2025-10-27T00:32:05.476905488Z [inf]     - Branch: main
+2025-10-27T00:32:05.476907235Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-10-27T00:32:05.476914885Z [inf]  ✅ Database connected successfully
+2025-10-27T00:32:05.476919147Z [inf]     - Token: ✓ (configured)
+2025-10-27T00:32:05.476920932Z [inf]  🔧 Auto-healing system ENABLED (production mode)
+2025-10-27T00:32:05.476926157Z [inf]  
+2025-10-27T00:32:05.476930530Z [inf]     - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-27T00:32:05.476932447Z [inf]  🔍 Checking GitHub integration configuration...
+2025-10-27T00:32:05.476938416Z [inf]  ✅ GitHub integration configured successfully
+2025-10-27T00:32:05.476940506Z [inf]     - Maintenance mode: Available for owner
+2025-10-27T00:32:05.476945057Z [inf]     - Repository: 6-7Development/archetype
+2025-10-27T00:32:05.476950214Z [inf]  
+2025-10-27T00:32:05.477007455Z [inf]  12:32:05 AM [express] serving on port 8080
+2025-10-27T00:32:25.423147368Z [inf]  12:32:23 AM [express] GET /api/deployment-info 200 in 9ms :: {"version":"1.0.0","commitHash":"unknown…
+2025-10-27T00:32:25.423148373Z [err]    syscall: 'spawn git',
+2025-10-27T00:32:25.423156632Z [err]    path: 'git',
+2025-10-27T00:32:25.423162941Z [err]  Failed to get git info, using defaults: Error: spawn git ENOENT
+2025-10-27T00:32:25.423167938Z [err]    spawnargs: [ 'rev-parse', 'HEAD' ],
+2025-10-27T00:32:25.423172025Z [err]      at ChildProcess._handle.onexit (node:internal/child_process:285:19)
+2025-10-27T00:32:25.423176937Z [err]    cmd: 'git rev-parse HEAD',
+2025-10-27T00:32:25.423181520Z [err]      at onErrorNT (node:internal/child_process:483:16)
+2025-10-27T00:32:25.423186135Z [err]    stdout: '',
+2025-10-27T00:32:25.423189794Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+2025-10-27T00:32:25.423193508Z [err]    stderr: ''
+2025-10-27T00:32:25.423198850Z [err]    errno: -2,
+2025-10-27T00:32:25.423199454Z [err]  }
+2025-10-27T00:32:25.423206650Z [err]    code: 'ENOENT',
+2025-10-27T00:32:28.226193608Z [err]  Failed to get git info, using defaults: Error: spawn git ENOENT
+2025-10-27T00:32:28.226203873Z [err]      at ChildProcess._handle.onexit (node:internal/child_process:285:19)
+2025-10-27T00:32:28.226210917Z [err]      at onErrorNT (node:internal/child_process:483:16)
+2025-10-27T00:32:28.226215261Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+2025-10-27T00:32:28.226219830Z [err]    errno: -2,
+2025-10-27T00:32:28.226225123Z [err]    code: 'ENOENT',
+2025-10-27T00:32:28.226230314Z [err]    syscall: 'spawn git',
+2025-10-27T00:32:28.226230619Z [err]  }
+2025-10-27T00:32:28.226234816Z [err]    path: 'git',
+2025-10-27T00:32:28.226239706Z [err]    spawnargs: [ 'rev-parse', 'HEAD' ],
+2025-10-27T00:32:28.226243984Z [inf]  12:32:28 AM [express] GET /api/deployment-info 200 in 4ms :: {"version":"1.0.0","commitHash":"unknown…
+2025-10-27T00:32:28.226245231Z [err]    cmd: 'git rev-parse HEAD',
+2025-10-27T00:32:28.226250067Z [err]    stdout: '',
+2025-10-27T00:32:28.226254013Z [err]    stderr: ''
+2025-10-27T00:32:33.100799296Z [inf]  [AUTH] Login attempt for email: root@getdc360.com
+2025-10-27T00:32:33.101610472Z [inf]  [AUTH] Found users: 1
+2025-10-27T00:32:33.101617870Z [inf]  [AUTH] User found: root@getdc360.com has password: true
+2025-10-27T00:32:33.101622948Z [inf]  [AUTH] Verifying password...
+2025-10-27T00:32:33.352265954Z [inf]  [AUTH] Password valid: true
+2025-10-27T00:32:33.352273651Z [inf]  [AUTH] Authentication successful for: root@getdc360.com
+2025-10-27T00:32:33.352280417Z [inf]  12:32:33 AM [express] POST /api/auth/login 200 in 259ms :: {"success":true,"user":{"id":"723e1301-c72…
+2025-10-27T00:32:33.992370596Z [inf]  12:32:33 AM [express] GET /api/auth/me 304 in 9ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef954…
+2025-10-27T00:32:33.992374362Z [inf]  12:32:33 AM [express] GET /api/projects 304 in 13ms :: []
+2025-10-27T00:32:35.656141077Z [inf]  12:32:35 AM [express] GET /api/platform/status 200 in 13ms :: {"overallHealth":100,"activeIncidents":…
+2025-10-27T00:32:35.776904448Z [inf]  ✅ WebSocket client connected
+2025-10-27T00:32:35.835119655Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T00:33:05.954266855Z [err]  [PLATFORM-BACKUP] ⚠️ Git unavailable, skipping backup: spawn git ENOENT
+2025-10-27T00:33:05.954279885Z [inf]  [META-SYSOP-ENFORCEMENT] Iteration 1 check:
+2025-10-27T00:33:05.954285575Z [inf]    - Has tool calls: true
+2025-10-27T00:33:05.954290355Z [inf]    - Content blocks: text, tool_use
+2025-10-27T00:33:05.954295587Z [inf]  [META-SYSOP-ENFORCEMENT] ✅ Tool calls detected on first response - proceeding
+2025-10-27T00:33:05.954300370Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - suppressing text blocks to prevent lying
+2025-10-27T00:33:05.954304563Z [inf]  [META-SYSOP-ENFORCEMENT] Blocked text output (has tool calls): I'll start by checking the task list and then performing a comprehensive diagnosis of the platform t
+2025-10-27T00:33:05.954309184Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - suppressing text blocks to prevent lying
+2025-10-27T00:33:05.954314579Z [inf]  [META-SYSOP-ENFORCEMENT] Blocked text output (has tool calls): Now let me perform a comprehensive diagnosis of the platform to identify all types of issues:
+2025-10-27T00:33:08.038358153Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - suppressing text blocks to prevent lying
+2025-10-27T00:33:08.038365995Z [inf]  [META-SYSOP-ENFORCEMENT] Blocked text output (has tool calls): Now let me check the server logs to see if these issues are causing runtime problems:
+2025-10-27T00:33:13.521178739Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - suppressing text blocks to prevent lying
+2025-10-27T00:33:13.521185145Z [inf]  [META-SYSOP-ENFORCEMENT] Blocked text output (has tool calls): Let me examine the current platform structure to better understand the codebase:
+2025-10-27T00:33:17.616303328Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - suppressing text blocks to prevent lying
+2025-10-27T00:33:17.616309940Z [inf]  [META-SYSOP-ENFORCEMENT] Blocked text output (has tool calls): Let me check the package.json to understand the dependencies and potential upgrade needs:
+2025-10-27T00:33:17.621912518Z [err]    stderr: ''
+2025-10-27T00:33:17.621920675Z [err]  }
+2025-10-27T00:33:17.621924790Z [err]  [PLATFORM-ROLLBACK] Rollback failed: Error: spawn git ENOENT
+2025-10-27T00:33:17.621926632Z [err]  [META-SYSOP-CHAT] Stream error: Error: Rollback failed: spawn git ENOENT
+2025-10-27T00:33:17.621933041Z [err]      at PlatformHealingService.rollback (file:///app/dist/index.js:7968:13)
+2025-10-27T00:33:17.621936533Z [err]      at ChildProcess._handle.onexit (node:internal/child_process:285:19)
+2025-10-27T00:33:17.621939234Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T00:33:17.621945723Z [err]      at async file:///app/dist/index.js:11256:9
+2025-10-27T00:33:17.621947046Z [err]      at onErrorNT (node:internal/child_process:483:16)
+2025-10-27T00:33:17.621955614Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+2025-10-27T00:33:17.621962009Z [err]    errno: -2,
+2025-10-27T00:33:17.621968659Z [err]    code: 'ENOENT',
+2025-10-27T00:33:17.621978835Z [err]    syscall: 'spawn git',
+2025-10-27T00:33:17.621984732Z [err]    path: 'git',
+2025-10-27T00:33:17.621988640Z [err]    spawnargs: [ 'branch', '--list' ],
+2025-10-27T00:33:17.621992295Z [err]    cmd: 'git branch --list',
+2025-10-27T00:33:17.621999183Z [err]    stdout: '',
+2025-10-27T00:33:17.712508657Z [inf]  12:33:17 AM [express] POST /api/meta-sysop/stream 200 in 18083ms
