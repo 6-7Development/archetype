@@ -176,7 +176,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/platform', platformRouter);
   
   // Mount Meta-SySop chat router (chat-based platform healing)
-  app.use('/api/platform/chat', metaSySopChatRouter);
+  app.use('/api/meta-sysop', metaSySopChatRouter);
 
   // ==================== REPLIT AGENT-STYLE FEATURES ====================
   
