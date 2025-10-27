@@ -8,6 +8,7 @@ import { CommandPalette } from "@/components/command-palette";
 import { ThemeProvider } from "@/components/theme-provider";
 import { VersionProvider } from "@/providers/version-provider";
 import { AppLayout } from "@/components/app-layout";
+import { AdminGuard } from "@/components/admin-guard";
 import { initGA4, trackPageView } from "@/lib/ga4";
 import Landing from "@/pages/landing";
 import LandingMobile from "@/pages/landing-mobile";
@@ -153,7 +154,9 @@ function Router() {
       </Route>
       <Route path="/platform-healing">
         <AppLayout>
-          <PlatformHealing />
+          <AdminGuard>
+            <PlatformHealing />
+          </AdminGuard>
         </AppLayout>
       </Route>
       <Route path="/agent-features">
