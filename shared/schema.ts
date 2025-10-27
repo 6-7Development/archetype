@@ -198,6 +198,26 @@ export const insertChatMessageSchema = createInsertSchema(chatMessages)
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 
+// Meta-SySop Attachments - Files attached to chat messages (images, code, logs)
+export const metaSysopAttachments = pgTable('meta_sysop_attachments', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  messageId: varchar('message_id').notNull(), // References chatMessages.id
+  fileName: varchar('file_name').notNull(),
+  fileType: varchar('file_type').notNull(), // 'image', 'code', 'log', 'text'
+  content: text('content'), // base64 for images, text for code/logs
+  mimeType: varchar('mime_type'),
+  size: integer('size'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const insertMetaSysopAttachmentSchema = createInsertSchema(metaSysopAttachments).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertMetaSysopAttachment = z.infer<typeof insertMetaSysopAttachmentSchema>;
+export type MetaSysopAttachment = typeof metaSysopAttachments.$inferSelect;
+
 // Usage Tracking & Billing
 export const usageLogs = pgTable("usage_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

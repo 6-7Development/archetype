@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db';
-import { chatMessages, taskLists } from '@shared/schema';
+import { chatMessages, taskLists, metaSysopAttachments } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth';
 import Anthropic from '@anthropic-ai/sdk';
@@ -162,7 +162,22 @@ router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
       )
       .orderBy(chatMessages.createdAt);
 
-    res.json({ messages });
+    // Fetch attachments for each message
+    const messagesWithAttachments = await Promise.all(
+      messages.map(async (msg) => {
+        const attachments = await db
+          .select()
+          .from(metaSysopAttachments)
+          .where(eq(metaSysopAttachments.messageId, msg.id));
+        
+        return {
+          ...msg,
+          attachments: attachments.length > 0 ? attachments : undefined,
+        };
+      })
+    );
+
+    res.json({ messages: messagesWithAttachments });
   } catch (error: any) {
     console.error('[META-SYSOP-CHAT] Error loading history:', error);
     res.status(500).json({ error: error.message });
@@ -172,9 +187,9 @@ router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
 // Stream Meta-SySop chat response
 router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
   console.log('[META-SYSOP-CHAT] Stream request received');
-  const { message, autoCommit = false, autoPush = false } = req.body;
+  const { message, attachments = [], autoCommit = false, autoPush = false } = req.body;
   const userId = req.authenticatedUserId;
-  console.log('[META-SYSOP-CHAT] Message:', message?.substring(0, 50), 'UserId:', userId);
+  console.log('[META-SYSOP-CHAT] Message:', message?.substring(0, 50), 'Attachments:', attachments?.length || 0, 'UserId:', userId);
 
   if (!message || typeof message !== 'string') {
     console.log('[META-SYSOP-CHAT] ERROR: Message validation failed');
@@ -223,6 +238,22 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       })
       .returning();
 
+    // Save attachments to database
+    if (attachments && attachments.length > 0) {
+      console.log('[META-SYSOP-CHAT] Saving', attachments.length, 'attachments');
+      const attachmentValues = attachments.map((att: any) => ({
+        messageId: userMsg.id,
+        fileName: att.fileName,
+        fileType: att.fileType,
+        content: att.content,
+        mimeType: att.mimeType,
+        size: att.size,
+      }));
+      
+      await db.insert(metaSysopAttachments).values(attachmentValues);
+      console.log('[META-SYSOP-CHAT] Attachments saved successfully');
+    }
+
     sendEvent('user_message', { messageId: userMsg.id });
 
     // Meta-SySop will create task lists ONLY when actually building
@@ -256,11 +287,77 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         content: msg.content,
       }));
 
-    // Add current user message
+    // Add current user message with attachments
+    let userMessageContent: any = message;
+    
+    // If attachments exist, build multimodal content for Claude
+    if (attachments && attachments.length > 0) {
+      const contentBlocks: any[] = [];
+      
+      // Add text message first
+      contentBlocks.push({
+        type: 'text',
+        text: message,
+      });
+      
+      // Add attachments
+      for (const att of attachments) {
+        if (att.fileType === 'image') {
+          // Use Vision API for images
+          // Extract base64 data and mime type from data URL
+          const base64Match = att.content.match(/^data:(.+);base64,(.+)$/);
+          if (base64Match) {
+            const [, mimeType, base64Data] = base64Match;
+            contentBlocks.push({
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: mimeType,
+                data: base64Data,
+              },
+            });
+          }
+        } else {
+          // Add text files (code, logs, text) as text blocks
+          contentBlocks.push({
+            type: 'text',
+            text: `\n\n**Attached file: ${att.fileName}** (${att.fileType}):\n\`\`\`${att.fileType === 'code' ? getFileExtension(att.fileName) : att.fileType}\n${att.content}\n\`\`\``,
+          });
+        }
+      }
+      
+      userMessageContent = contentBlocks;
+    }
+    
     conversationMessages.push({
       role: 'user',
-      content: message,
+      content: userMessageContent,
     });
+    
+    // Helper to get file extension for syntax highlighting
+    function getFileExtension(fileName: string): string {
+      const ext = fileName.split('.').pop()?.toLowerCase() || 'text';
+      // Map common extensions to language identifiers
+      const langMap: Record<string, string> = {
+        'js': 'javascript',
+        'ts': 'typescript',
+        'tsx': 'typescript',
+        'jsx': 'javascript',
+        'py': 'python',
+        'cpp': 'cpp',
+        'c': 'c',
+        'h': 'c',
+        'java': 'java',
+        'css': 'css',
+        'html': 'html',
+        'json': 'json',
+        'xml': 'xml',
+        'yaml': 'yaml',
+        'yml': 'yaml',
+        'sql': 'sql',
+      };
+      return langMap[ext] || ext;
+    }
 
     const systemPrompt = `You are Meta-SySop - the autonomous platform maintenance agent for Archetype.
 
