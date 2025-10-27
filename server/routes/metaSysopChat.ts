@@ -1209,9 +1209,18 @@ ${projectId ? `
 - Call updateTask(taskId, "completed") when finishing a task
 - Users can see real-time progress as you work!
 
-**ANTI-LYING RULE:**
-❌ NEVER claim success before seeing results
-✅ ALWAYS wait for tool results, then report facts
+**CONVERSATIONAL WORKFLOW - Be Like Replit Agent!**
+1. 📋 **Explain what you'll do** - "I'll create a task list, diagnose issues, then fix them"
+2. 🔧 **Narrate as you work** - "Creating task list now..." "Reading file X..." "Found the issue!"
+3. ✅ **Report results** - "Fixed! Here's what I changed..."
+4. 💬 **Keep chatting** - Don't go silent! Always tell the user what's happening
+
+**BE CONVERSATIONAL:**
+- Talk while you work (like I do!)
+- Give running commentary
+- Explain what each tool does
+- Share discoveries as you find them
+- Keep the conversation flowing - NEVER leave the user waiting in silence!
 
 ═══════════════════════════════════════════════════════════════════
 📋 CURRENT MESSAGE
@@ -1622,34 +1631,17 @@ Be conversational, be helpful, and only work when asked!`;
 
       const toolResults: any[] = [];
       const hasToolUse = response.content.some(block => block.type === 'tool_use');
-      let hasSeenToolUse = false; // Track if we've seen a tool_use block yet
-      const postToolText: string[] = []; // Buffer text that appears after tools
 
-      // 🎯 SMART ANTI-LYING ENFORCEMENT:
-      // - Allow text BEFORE tools (conversational setup: "I'm going to check X...")
-      // - Buffer text AFTER tools to send in next iteration (prevents premature claims)
-      // This keeps Meta-SySop conversational while preventing lies
-      if (hasToolUse) {
-        console.log('[META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text');
-      }
-
+      // 🎯 CONVERSATIONAL STREAMING:
+      // Stream ALL text immediately to keep the conversation flowing
+      // Just like Replit Agent - keep the user informed in real-time!
       for (const block of response.content) {
         if (block.type === 'text') {
-          // SMART BLOCKING: Only buffer text that appears AFTER we've seen tool_use blocks
-          // Text BEFORE tools is conversational setup (streamed immediately)
-          // Text AFTER tools is buffered and sent after tool execution
-          if (!hasSeenToolUse) {
-            // Text appears BEFORE any tool calls - this is conversational setup, STREAM it
-            fullContent += block.text;
-            sendEvent('content', { content: block.text });
-            console.log('[META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools):', block.text.slice(0, 100));
-          } else {
-            // Text appears AFTER tool calls - buffer it for post-tool delivery
-            postToolText.push(block.text);
-            console.log('[META-SYSOP-ENFORCEMENT] 📦 Buffered post-tool text (will send after tools):', block.text.slice(0, 100));
-          }
+          // STREAM ALL TEXT IMMEDIATELY - no buffering!
+          fullContent += block.text;
+          sendEvent('content', { content: block.text });
+          console.log('[META-SYSOP-CHAT] 💬 Streaming text:', block.text.slice(0, 100));
         } else if (block.type === 'tool_use') {
-          hasSeenToolUse = true; // Mark that we've seen a tool - buffer all text after this
           const { name, input, id } = block;
 
           // 🔥 RAILWAY FIX: Send progress event BEFORE each tool execution
@@ -1661,7 +1653,8 @@ Be conversational, be helpful, and only work when asked!`;
 
             if (name === 'createTaskList') {
               const typedInput = input as { title: string; tasks: Array<{ title: string; description: string }> };
-              sendEvent('progress', { message: `Creating task list: ${typedInput.title}...` });
+              sendEvent('progress', { message: `📋 Creating task list with ${typedInput.tasks.length} tasks...` });
+              sendEvent('content', { content: `\n\n*Creating task list: "${typedInput.title}"...*\n` });
 
               const result = await createTaskList({
                 userId,
@@ -1678,9 +1671,11 @@ Be conversational, be helpful, and only work when asked!`;
                 activeTaskListId = result.taskListId!;
                 toolResult = `✅ Task list created successfully!\n\nTask List ID: ${result.taskListId}\n\nTasks are now visible in the UI sidebar. Update task status as you work using updateTask().`;
                 sendEvent('task_list_created', { taskListId: result.taskListId });
+                sendEvent('content', { content: `✅ **Task list created!** You can see my progress in the sidebar.\n\n` });
                 console.log('[META-SYSOP] Task list created:', result.taskListId);
               } else {
                 toolResult = `❌ Failed to create task list: ${result.error}`;
+                sendEvent('content', { content: `❌ Failed to create task list: ${result.error}\n\n` });
                 console.error('[META-SYSOP] Task list creation failed:', result.error);
               }
             } else if (name === 'updateTask') {
@@ -2379,14 +2374,6 @@ Be conversational, be helpful, and only work when asked!`;
               sendEvent('progress', { message: `❌ Tool ${name} failed: ${error.message}` });
             }
         }
-      }
-
-      // Send any buffered post-tool text now that tools have executed
-      if (postToolText.length > 0) {
-        const bufferedContent = postToolText.join('');
-        fullContent += bufferedContent;
-        sendEvent('content', { content: bufferedContent });
-        console.log('[META-SYSOP-CHAT] 📤 Sent buffered post-tool text:', bufferedContent.slice(0, 100));
       }
 
       if (toolResults.length > 0) {
