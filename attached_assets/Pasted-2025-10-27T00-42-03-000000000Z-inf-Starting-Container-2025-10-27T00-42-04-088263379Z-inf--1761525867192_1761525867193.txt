@@ -1,0 +1,141 @@
+2025-10-27T00:42:03.000000000Z [inf]  Starting Container
+2025-10-27T00:42:04.088263379Z [inf]  ======================================
+2025-10-27T00:42:04.088272431Z [inf]  Time: Mon Oct 27 00:42:03 UTC 2025
+2025-10-27T00:42:04.088278269Z [inf]  
+2025-10-27T00:42:04.088282791Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-10-27T00:42:04.088287508Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-10-27T00:42:04.088292444Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-10-27T00:42:04.088369926Z [inf]  ======================================
+2025-10-27T00:42:04.088376141Z [inf]  🚂 RAILWAY STARTUP SCRIPT
+2025-10-27T00:42:04.219990032Z [inf]  Using 'pg' driver for database querying
+2025-10-27T00:42:04.330680943Z [inf]  [⣷] Pulling schema from database...
+2025-10-27T00:42:04.463748223Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-27T00:42:04.578336400Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-27T00:42:04.708593285Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-27T00:42:04.836206045Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-27T00:42:04.963940876Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-27T00:42:05.093161426Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-27T00:42:05.217675520Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-27T00:42:05.349845670Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-27T00:42:05.488221354Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-27T00:42:05.601946319Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-27T00:42:05.730131432Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-27T00:42:05.864881598Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-27T00:42:06.096817284Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-27T00:42:06.118481320Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-27T00:42:06.264202378Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-27T00:42:06.370959327Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-27T00:42:06.523353945Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-27T00:42:06.710560262Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-27T00:42:06.764453478Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-27T00:42:06.787093145Z [inf]  [2K[1G[✓] Pulling schema from database...
+2025-10-27T00:42:06.872464499Z [inf]  [i] No changes detected
+2025-10-27T00:42:06.872468734Z [inf]  
+2025-10-27T00:42:06.872473578Z [inf]  ✅ Database migrations completed successfully!
+2025-10-27T00:42:06.872477791Z [inf]  
+2025-10-27T00:42:06.872481364Z [inf]  🚀 Starting Node.js application...
+2025-10-27T00:42:07.791479677Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-27T00:42:07.791489213Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-27T00:42:07.791496014Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-27T00:42:07.791502218Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-27T00:42:07.791513158Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-10-27T00:42:07.791520036Z [inf]  [db] Connection string includes SSL params: true
+2025-10-27T00:42:07.791525775Z [inf]  [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-27T00:42:07.791534073Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-27T00:42:07.796330701Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-27T00:42:07.801161236Z [inf]  📡 WebSocket server initialized at /ws
+2025-10-27T00:42:07.801169881Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-27T00:42:07.801184279Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-27T00:42:07.812380594Z [inf]  ✅ All routes registered successfully
+2025-10-27T00:42:07.812387611Z [inf]  🔍 Testing database connection...
+2025-10-27T00:42:07.845100585Z [inf]  12:42:07 AM [express] serving on port 8080
+2025-10-27T00:42:07.845108248Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-10-27T00:42:07.949897027Z [inf]  ✅ Database connected successfully
+2025-10-27T00:42:07.949907478Z [inf]  🔧 Auto-healing system ENABLED (production mode)
+2025-10-27T00:42:07.949915150Z [inf]  
+2025-10-27T00:42:07.949921442Z [inf]  🔍 Checking GitHub integration configuration...
+2025-10-27T00:42:07.949927554Z [inf]  ✅ GitHub integration configured successfully
+2025-10-27T00:42:07.949934348Z [inf]     - Repository: 6-7Development/archetype
+2025-10-27T00:42:07.949939964Z [inf]     - Branch: main
+2025-10-27T00:42:07.949945785Z [inf]     - Token: ✓ (configured)
+2025-10-27T00:42:07.949953814Z [inf]     - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-27T00:42:07.949962040Z [inf]     - Maintenance mode: Available for owner
+2025-10-27T00:42:07.949970242Z [inf]  
+2025-10-27T00:42:08.472162399Z [inf]  12:42:08 AM [express] GET /api/platform/status 200 in 55ms :: {"overallHealth":100,"activeIncidents":…
+2025-10-27T00:42:09.974734208Z [inf]  ✅ WebSocket client connected
+2025-10-27T00:42:10.013864100Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T00:43:10.032298478Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-27T00:43:18.013242587Z [err]  Failed to get git info, using defaults: Error: Command failed: git rev-parse HEAD
+2025-10-27T00:43:18.013253347Z [err]  fatal: not a git repository (or any of the parent directories): .git
+2025-10-27T00:43:18.013260846Z [err]  
+2025-10-27T00:43:18.013267747Z [err]      at genericNodeError (node:internal/errors:984:15)
+2025-10-27T00:43:18.013275751Z [err]      at wrappedFn (node:internal/errors:538:14)
+2025-10-27T00:43:18.013286825Z [err]      at ChildProcess.exithandler (node:child_process:422:12)
+2025-10-27T00:43:18.013293760Z [err]      at ChildProcess.emit (node:events:524:28)
+2025-10-27T00:43:18.013300365Z [err]      at maybeClose (node:internal/child_process:1104:16)
+2025-10-27T00:43:18.013306950Z [err]      at Socket.<anonymous> (node:internal/child_process:456:11)
+2025-10-27T00:43:18.013313329Z [err]      at Socket.emit (node:events:524:28)
+2025-10-27T00:43:18.013337219Z [err]      at Pipe.<anonymous> (node:net:343:12) {
+2025-10-27T00:43:18.013345945Z [err]    code: 128,
+2025-10-27T00:43:18.013352142Z [err]    killed: false,
+2025-10-27T00:43:18.013360958Z [err]    signal: null,
+2025-10-27T00:43:18.013375923Z [err]    cmd: 'git rev-parse HEAD',
+2025-10-27T00:43:18.013387990Z [err]    stdout: '',
+2025-10-27T00:43:18.013395380Z [err]    stderr: 'fatal: not a git repository (or any of the parent directories): .git\n'
+2025-10-27T00:43:18.013403165Z [err]  }
+2025-10-27T00:43:18.013410437Z [inf]  12:43:18 AM [express] GET /api/deployment-info 200 in 112ms :: {"version":"1.0.0","commitHash":"unkno…
+2025-10-27T00:43:20.435840319Z [inf]  [AUTH] Login attempt for email: root@getdc360.com
+2025-10-27T00:43:20.435849008Z [inf]  [AUTH] Found users: 1
+2025-10-27T00:43:20.435855834Z [inf]  [AUTH] User found: root@getdc360.com has password: true
+2025-10-27T00:43:20.435862484Z [inf]  [AUTH] Verifying password...
+2025-10-27T00:43:20.679510625Z [inf]  [AUTH] Password valid: true
+2025-10-27T00:43:20.679519140Z [inf]  [AUTH] Authentication successful for: root@getdc360.com
+2025-10-27T00:43:20.690007601Z [inf]  12:43:20 AM [express] POST /api/auth/login 200 in 262ms :: {"success":true,"user":{"id":"723e1301-c72…
+2025-10-27T00:43:21.346524691Z [inf]  12:43:21 AM [express] GET /api/projects 304 in 13ms :: []
+2025-10-27T00:43:21.373515523Z [inf]  12:43:21 AM [express] GET /api/auth/me 304 in 98ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef95…
+2025-10-27T00:43:23.125221505Z [inf]  12:43:23 AM [express] GET /api/platform/status 200 in 14ms :: {"overallHealth":100,"activeIncidents":…
+2025-10-27T00:43:23.366903172Z [inf]  ✅ WebSocket client connected
+2025-10-27T00:43:23.366909848Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T00:43:43.335752701Z [err]  [PLATFORM-BACKUP] ⚠️ Git unavailable, skipping backup: Command failed: git add -A
+2025-10-27T00:43:43.335768249Z [err]  
+2025-10-27T00:43:45.611104284Z [inf]  [META-SYSOP-ENFORCEMENT] Iteration 1 check:
+2025-10-27T00:43:45.611113063Z [inf]    - Has tool calls: true
+2025-10-27T00:43:45.611121993Z [inf]    - Content blocks: text, tool_use
+2025-10-27T00:43:45.611131035Z [inf]  [META-SYSOP-ENFORCEMENT] ✅ Tool calls detected on first response - proceeding
+2025-10-27T00:43:45.611140548Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - suppressing text blocks to prevent lying
+2025-10-27T00:43:45.611150262Z [inf]  [META-SYSOP-ENFORCEMENT] Blocked text output (has tool calls): I'll diagnose the system to identify issues with the toolbar and other platform problems. Let me sta
+2025-10-27T00:43:48.122523484Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - suppressing text blocks to prevent lying
+2025-10-27T00:43:51.546869838Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - suppressing text blocks to prevent lying
+2025-10-27T00:43:51.546878926Z [inf]  [META-SYSOP-ENFORCEMENT] Blocked text output (has tool calls): Now let me check the logs and examine the specific files related to the chat toolbar to understand t
+2025-10-27T00:43:53.972118368Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - suppressing text blocks to prevent lying
+2025-10-27T00:43:53.972124415Z [err]  [META-SYSOP] ❌ Tool listPlatformFiles failed: Error: Failed to list platform files: ENOENT: no such file or directory, scandir '/app/client'
+2025-10-27T00:43:53.972131690Z [err]      at PlatformHealingService.listPlatformFiles (file:///app/dist/index.js:8283:13)
+2025-10-27T00:43:53.972138093Z [err]      at async file:///app/dist/index.js:10806:30
+2025-10-27T00:43:53.972143970Z [err]  [META-SYSOP] Tool input: {
+2025-10-27T00:43:53.972158137Z [err]    "directory": "client"
+2025-10-27T00:43:53.972164718Z [err]  }
+2025-10-27T00:43:56.113267860Z [err]    signal: null,
+2025-10-27T00:43:56.113272174Z [err]  [META-SYSOP-CHAT] Stream error: Error: Rollback failed: Command failed: git branch --list
+2025-10-27T00:43:56.113277736Z [err]    cmd: 'git branch --list',
+2025-10-27T00:43:56.113285197Z [err]  fatal: not a git repository (or any of the parent directories): .git
+2025-10-27T00:43:56.113287769Z [err]    stdout: '',
+2025-10-27T00:43:56.113296182Z [err]    stderr: 'fatal: not a git repository (or any of the parent directories): .git\n'
+2025-10-27T00:43:56.113296400Z [err]  
+2025-10-27T00:43:56.113297083Z [err]      at ChildProcess.exithandler (node:child_process:422:12)
+2025-10-27T00:43:56.113306687Z [err]      at PlatformHealingService.rollback (file:///app/dist/index.js:7976:13)
+2025-10-27T00:43:56.113307165Z [err]  }
+2025-10-27T00:43:56.113312129Z [err]      at ChildProcess.emit (node:events:524:28)
+2025-10-27T00:43:56.113312665Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - suppressing text blocks to prevent lying
+2025-10-27T00:43:56.113317860Z [err]      at async file:///app/dist/index.js:11268:9
+2025-10-27T00:43:56.113318641Z [err]  [PLATFORM-ROLLBACK] Rollback failed: Error: Command failed: git branch --list
+2025-10-27T00:43:56.113324265Z [err]      at maybeClose (node:internal/child_process:1104:16)
+2025-10-27T00:43:56.113324531Z [err]  fatal: not a git repository (or any of the parent directories): .git
+2025-10-27T00:43:56.113330840Z [err]  
+2025-10-27T00:43:56.113336161Z [err]      at Socket.<anonymous> (node:internal/child_process:456:11)
+2025-10-27T00:43:56.113336652Z [err]      at genericNodeError (node:internal/errors:984:15)
+2025-10-27T00:43:56.113344150Z [err]      at wrappedFn (node:internal/errors:538:14)
+2025-10-27T00:43:56.113347312Z [err]      at Socket.emit (node:events:524:28)
+2025-10-27T00:43:56.113356167Z [err]      at Pipe.<anonymous> (node:net:343:12) {
+2025-10-27T00:43:56.113370971Z [err]    code: 128,
+2025-10-27T00:43:56.113379383Z [err]    killed: false,
+2025-10-27T00:43:56.186057361Z [inf]  12:43:56 AM [express] POST /api/meta-sysop/stream 200 in 13622ms
