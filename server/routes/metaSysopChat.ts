@@ -1228,7 +1228,7 @@ ${projectId ? `
 
 **TASK TRACKING (REQUIRED for work requests):**
 - ALWAYS createTaskList() first when user asks you to diagnose/fix/improve
-- This makes your progress visible in the UI sidebar
+- This makes your progress visible inline in the chat as a floating progress card
 - Call updateTask(taskId, "in_progress") when starting a task
 - Call updateTask(taskId, "completed") when finishing a task
 - Users can see real-time progress as you work!
@@ -1281,7 +1281,7 @@ Be conversational, be helpful, and only work when asked!`;
       },
       {
         name: 'createTaskList',
-        description: '📋 CREATE TASK LIST - Create a visible task breakdown for work requests. REQUIRED for diagnosis/fix requests so users can see your progress! Makes tasks visible in the UI sidebar.',
+        description: '📋 CREATE TASK LIST - Create a visible task breakdown for work requests. REQUIRED for diagnosis/fix requests so users can see your progress! Makes tasks visible inline in the chat as a real-time progress card.',
         input_schema: {
           type: 'object' as const,
           properties: {
@@ -1693,9 +1693,9 @@ Be conversational, be helpful, and only work when asked!`;
               if (result.success) {
                 // Track the active task list ID for cleanup
                 activeTaskListId = result.taskListId!;
-                toolResult = `✅ Task list created successfully!\n\nTask List ID: ${result.taskListId}\n\nTasks are now visible in the UI sidebar. Update task status as you work using updateTask().`;
+                toolResult = `✅ Task list created successfully!\n\nTask List ID: ${result.taskListId}\n\nTasks are now visible inline in the chat. The user can see your progress in real-time! Update task status as you work using updateTask().`;
                 sendEvent('task_list_created', { taskListId: result.taskListId });
-                sendEvent('content', { content: `✅ **Task list created!** You can see my progress in the sidebar.\n\n` });
+                sendEvent('content', { content: `✅ **Task list created!** Track my progress in the card above.\n\n` });
                 console.log('[META-SYSOP] Task list created:', result.taskListId);
               } else {
                 toolResult = `❌ Failed to create task list: ${result.error}`;
