@@ -378,7 +378,7 @@ File Structure:
 - readTaskList() - See your pre-created task list
 - perform_diagnosis() - Analyze performance/memory/database/security
 - readPlatformFile(path) - Read any file (auto-GitHub fallback)
-- listPlatformFiles(dir) - Browse directories
+- listPlatformDirectory(dir) - Browse directory (returns immediate children: files & folders)
 
 **MODIFICATIONS (Require Approval):**
 - writePlatformFile(path, content) - Modify file
@@ -498,12 +498,12 @@ Be conversational, be helpful, and only work when asked!`;
         },
       },
       {
-        name: 'listPlatformFiles',
-        description: 'List files in a directory',
+        name: 'listPlatformDirectory',
+        description: 'List immediate children (files and subdirectories) in a directory. Returns entries with type metadata. Use this to explore the codebase structure.',
         input_schema: {
           type: 'object' as const,
           properties: {
-            directory: { type: 'string' as const, description: 'Directory path' },
+            directory: { type: 'string' as const, description: 'Directory path to list' },
           },
           required: ['directory'],
         },
@@ -915,11 +915,11 @@ DO NOT create new tasks - UPDATE existing ones!`;
                 sendEvent('file_change', { file: { path: typedInput.path, operation: 'modify' } });
                 toolResult = `✅ File written successfully (with I AM approval at ${new Date(approval.timestamp).toISOString()})`;
               }
-            } else if (name === 'listPlatformFiles') {
+            } else if (name === 'listPlatformDirectory') {
               const typedInput = input as { directory: string };
-              sendEvent('progress', { message: `Listing files in ${typedInput.directory}...` });
-              const files = await platformHealing.listPlatformFiles(typedInput.directory);
-              toolResult = files.join('\n');
+              sendEvent('progress', { message: `Listing ${typedInput.directory}...` });
+              const entries = await platformHealing.listPlatformDirectory(typedInput.directory);
+              toolResult = entries.map(e => `${e.name} (${e.type})`).join('\n');
             } else if (name === 'architect_consult') {
               const typedInput = input as { 
                 problem: string; 

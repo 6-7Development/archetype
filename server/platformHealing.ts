@@ -181,6 +181,55 @@ export class PlatformHealingService {
     }
   }
 
+  async listPlatformDirectory(directory: string = '.'): Promise<Array<{ name: string; type: 'file' | 'dir' }>> {
+    try {
+      if (path.isAbsolute(directory)) {
+        throw new Error('Absolute paths are not allowed');
+      }
+      
+      const fullPath = path.resolve(this.PROJECT_ROOT, directory);
+      
+      if (!fullPath.startsWith(this.PROJECT_ROOT + path.sep) && fullPath !== this.PROJECT_ROOT) {
+        throw new Error('Invalid directory path - path traversal detected');
+      }
+
+      // Check if directory exists
+      try {
+        await fs.access(fullPath);
+      } catch (error: any) {
+        // Directory doesn't exist - in production, fetch from GitHub for source directories
+        if (process.env.NODE_ENV === 'production' && (directory.startsWith('client/') || directory === 'client')) {
+          console.log(`[PLATFORM-LIST-DIR] 🔄 Source directory not in production build, fetching from GitHub: ${directory}`);
+          
+          if (!isGitHubServiceAvailable()) {
+            throw new Error(`Directory "${directory}" not available in production build and GitHub service not configured`);
+          }
+          
+          const githubService = getGitHubService();
+          const entries = await githubService.listDirectoryEntries(directory);
+          console.log(`[PLATFORM-LIST-DIR] ✅ Fetched ${entries.length} entries from GitHub directory: ${directory}`);
+          return entries;
+        } else if (process.env.NODE_ENV === 'production') {
+          console.warn(`[PLATFORM-LIST-DIR] ⚠️ Directory not found in production: ${directory}`);
+          return [];
+        }
+        throw new Error(`Directory not found: ${directory}`);
+      }
+
+      // Local filesystem - return immediate children with type metadata
+      const entries = await fs.readdir(fullPath, { withFileTypes: true });
+      
+      return entries
+        .filter(entry => !entry.name.startsWith('.') && entry.name !== 'node_modules')
+        .map(entry => ({
+          name: entry.name,
+          type: entry.isDirectory() ? 'dir' as const : 'file' as const
+        }));
+    } catch (error: any) {
+      throw new Error(`Failed to list directory: ${error.message}`);
+    }
+  }
+
   async readPlatformFile(filePath: string): Promise<string> {
     try {
       if (path.isAbsolute(filePath)) {
@@ -193,8 +242,28 @@ export class PlatformHealingService {
         throw new Error('Invalid file path - path traversal detected');
       }
 
-      const content = await fs.readFile(fullPath, 'utf-8');
-      return content;
+      // Try filesystem first
+      try {
+        const content = await fs.readFile(fullPath, 'utf-8');
+        return content;
+      } catch (fsError: any) {
+        // In production, if file is in client/ (source files), fetch from GitHub
+        if (process.env.NODE_ENV === 'production' && filePath.startsWith('client/')) {
+          console.log(`[PLATFORM-READ] 🔄 Source file not in production build, fetching from GitHub: ${filePath}`);
+          
+          if (!isGitHubServiceAvailable()) {
+            throw new Error(`File not found in production build and GitHub service not available: ${filePath}`);
+          }
+          
+          const githubService = getGitHubService();
+          const content = await githubService.getFileContent(filePath);
+          console.log(`[PLATFORM-READ] ✅ Fetched ${filePath} from GitHub (${content.length} bytes)`);
+          return content;
+        }
+        
+        // Otherwise, throw the original error
+        throw fsError;
+      }
     } catch (error: any) {
       throw new Error(`Failed to read platform file ${filePath}: ${error.message}`);
     }
@@ -502,15 +571,44 @@ export class PlatformHealingService {
         throw new Error('Invalid directory path - path traversal detected');
       }
 
+      // Helper to recursively collect files from directory entries
+      const collectFilesFromGitHub = async (dirPath: string): Promise<string[]> => {
+        const githubService = getGitHubService();
+        const entries = await githubService.listDirectoryEntries(dirPath);
+        const files: string[] = [];
+        
+        for (const entry of entries) {
+          const relativePath = dirPath ? `${dirPath}/${entry.name}` : entry.name;
+          
+          if (entry.type === 'file') {
+            files.push(relativePath);
+          } else if (entry.type === 'dir') {
+            // Recursively collect files from subdirectory
+            const subFiles = await collectFilesFromGitHub(relativePath);
+            files.push(...subFiles);
+          }
+        }
+        
+        return files;
+      };
+
       // Check if directory exists (especially important in production where client/ doesn't exist)
       try {
         await fs.access(fullPath);
       } catch (error: any) {
-        // Directory doesn't exist - return empty array in production, throw in dev
-        if (process.env.NODE_ENV === 'production') {
+        // Directory doesn't exist - in production, fetch from GitHub for source directories
+        if (process.env.NODE_ENV === 'production' && (directory.startsWith('client/') || directory === 'client')) {
+          console.log(`[PLATFORM-LIST] 🔄 Source directory not in production build, fetching from GitHub: ${directory}`);
+          
+          if (!isGitHubServiceAvailable()) {
+            throw new Error(`Directory "${directory}" not available in production build and GitHub service not configured`);
+          }
+          
+          const files = await collectFilesFromGitHub(directory);
+          console.log(`[PLATFORM-LIST] ✅ Fetched ${files.length} files from GitHub directory: ${directory}`);
+          return files;
+        } else if (process.env.NODE_ENV === 'production') {
           console.warn(`[PLATFORM-LIST] ⚠️ Directory not found in production: ${directory}`);
-          console.warn(`[PLATFORM-LIST] Production build only has: dist/, server/, shared/`);
-          console.warn(`[PLATFORM-LIST] Use GitHub API to access source files`);
           return [];
         }
         throw new Error(`Directory not found: ${directory}`);
@@ -536,11 +634,6 @@ export class PlatformHealingService {
 
       return files;
     } catch (error: any) {
-      // Gracefully handle errors in production
-      if (process.env.NODE_ENV === 'production') {
-        console.error(`[PLATFORM-LIST] ⚠️ Error listing files: ${error.message}`);
-        return [];
-      }
       throw new Error(`Failed to list platform files: ${error.message}`);
     }
   }
