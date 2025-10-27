@@ -680,44 +680,39 @@ Be conversational, be helpful, and only work when asked!`;
         content: response.content,
       });
 
-      // 🎯 OPTION 1 ENFORCEMENT: First response should use tools (not just text)
+      // 🎯 MESSAGE CLASSIFICATION: Detect casual greetings vs work requests
+      let isWorkRequest = true; // Default to work request
+      
+      if (iterationCount === 1) {
+        const userMessage = message.toLowerCase().trim();
+        
+        // Casual greetings - no tools required
+        const casualGreetings = ['hi', 'hello', 'hey', 'yo', 'sup', 'what\'s up', 'how are you', 'howdy'];
+        const isCasualGreeting = casualGreetings.some(greeting => 
+          userMessage === greeting || 
+          userMessage.startsWith(greeting + ' ') ||
+          userMessage.startsWith(greeting + '!')
+        );
+        
+        // Simple questions (short, no action verbs) - tools optional
+        const actionVerbs = ['fix', 'deploy', 'build', 'create', 'update', 'add', 'remove', 'delete', 'implement', 'refactor'];
+        const hasActionVerb = actionVerbs.some(verb => userMessage.includes(verb));
+        const isShortQuestion = userMessage.length < 50 && userMessage.includes('?');
+        
+        if (isCasualGreeting || (isShortQuestion && !hasActionVerb)) {
+          isWorkRequest = false;
+          console.log('[META-SYSOP-CLASSIFICATION] ✅ Casual conversation detected - tool calls not required');
+        } else {
+          console.log('[META-SYSOP-CLASSIFICATION] 🔨 Work request detected - tool calls required');
+        }
+      }
+
+      // 🎯 SIMPLIFIED: Log classification result, no enforcement
       if (iterationCount === 1) {
         const hasToolCalls = response.content.some(block => block.type === 'tool_use');
-
-        console.log('[META-SYSOP-ENFORCEMENT] Iteration 1 check:');
-        console.log('  - Has tool calls:', hasToolCalls);
-        console.log('  - Content blocks:', response.content.map(b => b.type).join(', '));
-
-        if (!hasToolCalls) {
-          // Force retry - Meta-SySop typed text instead of calling tools
-          console.error('[META-SYSOP-ENFORCEMENT] ❌ No tool calls on first response - REJECTING & RETRYING');
-          sendEvent('error', { message: '❌ Must call tools (not type text) - retrying...' });
-
-          const errorMessage = `ERROR: Your first response must include TOOL CALLS, not just text.
-
-Users are watching tasks in real-time via TaskBoard. A task list was PRE-CREATED for you.
-
-Instead of typing "### NEXT ACTIONS" or "Let me check...", you MUST call tools:
-
-1. readTaskList() - See your task IDs
-2. updateTask(taskId, "in_progress") - Mark progress
-3. readPlatformFile() - Read files you need
-4. architect_consult() - Get approval
-5. writePlatformFile() - Make changes
-6. commit_to_github() - Deploy
-
-RETRY NOW - Call readTaskList() first to see task IDs, then start working!`;
-
-          conversationMessages.push({
-            role: 'user',
-            content: errorMessage,
-          });
-
-          console.log('[META-SYSOP-ENFORCEMENT] Added error message to conversation - continuing loop');
-          continue; // Retry loop
-        } else {
-          console.log('[META-SYSOP-ENFORCEMENT] ✅ Tool calls detected on first response - proceeding');
-        }
+        console.log('[META-SYSOP] Message classified as:', isWorkRequest ? 'WORK REQUEST' : 'CASUAL CONVERSATION');
+        console.log('[META-SYSOP] Has tool calls:', hasToolCalls);
+        console.log('[META-SYSOP] Content blocks:', response.content.map(b => b.type).join(', '));
       }
 
       const toolResults: any[] = [];
