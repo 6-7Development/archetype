@@ -178,7 +178,7 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
 
   // Load Meta-SySop chat history
   const { data: chatHistory, isLoading } = useQuery<{ messages: Message[] }>({
-    queryKey: ['/api/platform/chat/history'],
+    queryKey: ['/api/meta-sysop/history'],
   });
 
   // Initialize messages from history
@@ -215,7 +215,7 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
       setProgressMessage("🧠 Connecting to Meta-SySop...");
 
       // Start streaming response
-      const response = await fetch('/api/platform/chat/stream', {
+      const response = await fetch('/api/meta-sysop/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -273,7 +273,7 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
                 setProgressMessage(""); // CLEAR PROGRESS
                 
                 // Refresh history to persist
-                queryClient.invalidateQueries({ queryKey: ['/api/platform/chat/history'] });
+                queryClient.invalidateQueries({ queryKey: ['/api/meta-sysop/history'] });
               }
             }
           }
