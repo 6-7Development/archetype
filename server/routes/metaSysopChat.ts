@@ -1430,16 +1430,9 @@ DO NOT create new tasks - UPDATE existing ones!`;
     const safety = await platformHealing.validateSafety();
 
     if (!safety.safe) {
-      if (backup?.id) {
-        await platformHealing.rollback(backup.id);
-        sendEvent('error', { 
-          message: `Safety check failed: ${safety.issues.join(', ')}. Changes rolled back.` 
-        });
-      } else {
-        sendEvent('error', { 
-          message: `Safety check failed: ${safety.issues.join(', ')}. No backup available to rollback.` 
-        });
-      }
+      sendEvent('error', { 
+        message: `Safety check failed: ${safety.issues.join(', ')}. Please review changes.` 
+      });
       res.end();
       return;
     }
@@ -1519,12 +1512,6 @@ DO NOT create new tasks - UPDATE existing ones!`;
           message: `❌ AUTO-COMMIT BLOCKED: ${unapprovedFiles.length} file(s) lack I AM approval: ${unapprovedFiles.join(', ')}` 
         });
         console.error('[META-SYSOP] Blocked auto-commit - unapproved files:', unapprovedFiles);
-
-        if (backup?.id) {
-          await platformHealing.rollback(backup.id);
-          sendEvent('progress', { message: 'All changes rolled back due to unapproved files in commit' });
-        }
-
         res.end();
         return;
       }
@@ -1580,7 +1567,7 @@ DO NOT create new tasks - UPDATE existing ones!`;
       action: 'heal',
       description: `Meta-SySop chat: ${message.slice(0, 100)}`,
       changes: fileChanges,
-      backupId: backup?.id || null,
+      backupId: undefined, // Backups removed for conversational performance
       commitHash,
       status: 'success',
     });
