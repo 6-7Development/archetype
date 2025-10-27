@@ -488,14 +488,14 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
             {/* Inline Task Progress Card */}
             {showTaskList && tasks.length > 0 && (
               <div className="animate-in fade-in-up">
-                <div className="bg-slate-800/60 border border-slate-700/50 rounded-xl p-4 shadow-lg backdrop-blur-sm">
+                <div className="bg-card/50 border border-border/40 rounded-xl p-4 shadow-sm backdrop-blur-md">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />
-                      <h3 className="text-sm font-semibold text-slate-200">
+                      <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                      <h3 className="text-sm font-semibold">
                         Task Progress
                       </h3>
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-muted-foreground">
                         {tasks.filter(t => t.status === 'completed').length}/{tasks.length}
                       </span>
                     </div>
