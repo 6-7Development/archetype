@@ -485,13 +485,8 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       userMessageContent = contentBlocks;
     }
     
-    conversationMessages.push({
-      role: 'user',
-      content: userMessageContent,
-    });
-    
     // Helper to get file extension for syntax highlighting
-    function getFileExtension(fileName: string): string {
+    const getFileExtension = (fileName: string): string => {
       const ext = fileName.split('.').pop()?.toLowerCase() || 'text';
       // Map common extensions to language identifiers
       const langMap: Record<string, string> = {
@@ -513,7 +508,12 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         'sql': 'sql',
       };
       return langMap[ext] || ext;
-    }
+    };
+    
+    conversationMessages.push({
+      role: 'user',
+      content: userMessageContent,
+    });
 
     const systemPrompt = `You are Meta-SySop - the autonomous platform maintenance agent for Archetype.
 
