@@ -10,32 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { MetaSySopChat } from '@/components/meta-sysop-chat';
-import { 
-  Activity, 
-  AlertTriangle, 
-  Server, 
-  Cpu, 
-  HardDrive, 
-  Database,
-  Wrench,
-  CheckCircle2,
-  Clock,
-  Loader2,
-  XCircle,
-  FileText,
-  GitCommit,
-  Package,
-  ChevronDown,
-  Sparkles,
-  Paperclip,
-  Infinity,
-  SlidersHorizontal,
-  ArrowUp,
-  Shield,
-  Zap,
-  Brain,
-  Lock,
-} from 'lucide-react';
+import { AdminGuard } from '@/components/admin-guard';
 
 type StepState = 'pending' | 'running' | 'ok' | 'fail';
 
@@ -489,342 +464,37 @@ function PlatformHealingContent() {
   }, [healEvents, currentSessionId]);
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-background">
-      <div className="grid grid-cols-1 gap-4 p-3 sm:p-4 h-full overflow-y-auto max-w-[100vw] overflow-x-hidden">
-        {/* Main Content */}
-        <section className="flex flex-col gap-3 sm:gap-4 min-w-0 max-w-6xl mx-auto w-full">
-          {/* Header */}
-          <div className="bg-card border border-border rounded-xl shadow-lg p-3 sm:p-4">
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="text-xs text-muted-foreground" data-testid="breadcrumb">Home / Agents</div>
-                <div className="text-base sm:text-lg font-bold break-words" data-testid="page-title">
-                  Meta‑SySop • Platform Healing
-                </div>
-                <Badge 
-                  variant={status?.safety?.safe ? 'default' : 'destructive'} 
-                  className="ml-auto shrink-0"
-                  data-testid="health-badge"
-                >
-                  ● {status?.safety?.safe ? 'Healthy' : 'Issues'}
-                </Badge>
-              </div>
-              
-              <div className="flex flex-wrap items-center gap-3">
-                <Button 
-                  size="sm"
-                  className="bg-gradient-to-b from-[#2a7dfb] to-[#0f62f2] shadow-lg shadow-blue-500/35 ml-auto"
-                  onClick={() => document.getElementById('issue')?.scrollIntoView({ behavior: 'smooth' })}
-                  data-testid="button-new-run"
-                >
-                  New Run
-                </Button>
-              </div>
-            </div>
-          </div>
+    <div className="flex-1 flex flex-col overflow-hidden bg-background p-3 sm:p-4">
+      <div className="flex flex-col gap-3 sm:gap-4 h-full max-w-6xl mx-auto w-full">
+        {/* Simple Header */}
+        <div className="flex items-center gap-2 px-2">
+          <div className="text-xs text-muted-foreground">Home / Agents</div>
+          <div className="text-base sm:text-lg font-bold">Meta‑SySop</div>
+          <Badge 
+            variant={status?.safety?.safe ? 'default' : 'destructive'} 
+            className="ml-auto"
+          >
+            ● {status?.safety?.safe ? 'Healthy' : 'Issues'}
+          </Badge>
+        </div>
 
-          {/* Progress Steps */}
-          {phase !== 'idle' && (
-            <div className="bg-card border border-border rounded-xl shadow-lg p-3 sm:p-4">
-              <h3 className="font-bold text-sm mb-3" data-testid="progress-title">Build Progress</h3>
-              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                {progressSteps.map((step, index) => (
-                  <div key={step.id} className="flex items-center gap-2">
-                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-muted border border-border">
-                      {step.status === 'completed' ? (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" data-testid={`step-icon-${step.id}-completed`} />
-                      ) : step.status === 'in_progress' ? (
-                        <Loader2 className="w-3.5 h-3.5 text-blue-400 animate-spin shrink-0" data-testid={`step-icon-${step.id}-in_progress`} />
-                      ) : step.status === 'failed' ? (
-                        <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0" data-testid={`step-icon-${step.id}-failed`} />
-                      ) : (
-                        <Clock className="w-3.5 h-3.5 text-muted-foreground shrink-0" data-testid={`step-icon-${step.id}-pending`} />
-                      )}
-                      <span className={`text-xs font-medium whitespace-nowrap ${
-                        step.status === 'completed' ? 'text-emerald-600 dark:text-emerald-400' :
-                        step.status === 'in_progress' ? 'text-blue-600 dark:text-blue-400' :
-                        step.status === 'failed' ? 'text-destructive' :
-                        'text-muted-foreground'
-                      }`} data-testid={`step-label-${step.id}`}>
-                        {step.label}
-                      </span>
-                    </div>
-                    {index < progressSteps.length - 1 && (
-                      <div className="w-2 h-0.5 bg-border hidden sm:block" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Approval Request Card */}
-          {approvalRequest && (
-            <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-2 border-blue-500/30 rounded-xl shadow-2xl p-4 sm:p-5 animate-in fade-in slide-in-from-top-4 duration-300">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
-                  <Wrench className="w-5 h-5 text-blue-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-base mb-1" data-testid="approval-title">Approval Required</h3>
-                  <p className="text-sm text-muted-foreground">Meta-SySop has analyzed the issue and prepared a solution. Please review and approve.</p>
-                </div>
-              </div>
-
-              {/* Summary */}
-              <div className="mb-4 p-3 bg-muted border border-border rounded-lg">
-                <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Summary</h4>
-                <p className="text-sm text-foreground break-words whitespace-pre-wrap" data-testid="text-approval-summary">
-                  {approvalRequest.summary}
-                </p>
-              </div>
-
-              {/* Files Changed */}
-              <div className="mb-4 p-3 bg-muted border border-border rounded-lg">
-                <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide flex items-center gap-2">
-                  <FileText className="w-3.5 h-3.5" />
-                  Files to be Changed ({approvalRequest.filesChanged.length})
-                </h4>
-                <div className="space-y-1.5" data-testid="text-files-changed">
-                  {approvalRequest.filesChanged.map((file, index) => (
-                    <div key={index} className="flex items-center gap-2 text-sm font-mono">
-                      <div className="w-1 h-1 rounded-full bg-blue-400 shrink-0" />
-                      <span className="text-foreground break-all">{file}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Estimated Impact */}
-              <div className="mb-5 p-3 bg-muted border border-border rounded-lg">
-                <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Estimated Impact</h4>
-                <Badge 
-                  variant={approvalRequest.estimatedImpact === 'low' ? 'default' : 
-                          approvalRequest.estimatedImpact === 'high' ? 'destructive' : 'secondary'}
-                  className="font-semibold"
-                  data-testid="text-estimated-impact"
-                >
-                  {approvalRequest.estimatedImpact.toUpperCase()}
-                </Badge>
-                <p className="text-xs text-muted-foreground mt-2">
-                  {approvalRequest.estimatedImpact === 'low' && 'Minor changes with low risk'}
-                  {approvalRequest.estimatedImpact === 'medium' && 'Moderate changes that may affect features'}
-                  {approvalRequest.estimatedImpact === 'high' && 'Significant changes requiring careful review'}
-                </p>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button
-                  className="flex-1 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-semibold shadow-lg shadow-emerald-500/25"
-                  size="lg"
-                  onClick={() => approveMutation.mutate(approvalRequest.messageId)}
-                  disabled={approveMutation.isPending}
-                  data-testid="button-approve-changes"
-                >
-                  {approveMutation.isPending ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Approving...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Approve & Build
-                    </>
-                  )}
-                </Button>
-                <Button
-                  variant="destructive"
-                  className="flex-1 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 font-semibold shadow-lg shadow-red-500/25"
-                  size="lg"
-                  onClick={() => rejectMutation.mutate(approvalRequest.messageId)}
-                  disabled={rejectMutation.isPending}
-                  data-testid="button-reject-changes"
-                >
-                  {rejectMutation.isPending ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Rejecting...
-                    </>
-                  ) : (
-                    <>
-                      <XCircle className="w-4 h-4 mr-2" />
-                      Reject
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Pending Changes Panel - Replit Agent Style */}
-          {!pendingChangesLoading && pendingChangesData && pendingChangesData.count > 0 && (
-            <div className="bg-card border border-border rounded-xl shadow-lg overflow-hidden">
-              <button
-                onClick={() => setShowPendingChanges(!showPendingChanges)}
-                className="w-full flex items-center justify-between p-4 sm:p-5 hover-elevate active-elevate-2"
-                data-testid="button-toggle-pending-changes"
-              >
-                <div className="flex items-center gap-3">
-                  <GitCommit className="w-5 h-5 text-yellow-400" />
-                  <div className="text-left">
-                    <h3 className="font-bold text-sm sm:text-base">
-                      Pending Changes
-                    </h3>
-                    <p className="text-xs text-muted-foreground">
-                      {pendingChangesData.count} file{pendingChangesData.count !== 1 ? 's' : ''} staged
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
-                    {pendingChangesData.count}
-                  </Badge>
-                  <ChevronDown className={`w-5 h-5 transition-transform ${showPendingChanges ? 'rotate-180' : ''}`} />
-                </div>
-              </button>
-
-              {showPendingChanges && (
-                <div className="border-t border-border p-4 sm:p-5 space-y-4">
-                  {/* File List */}
-                  <div className="space-y-2">
-                    {pendingChangesData.pendingChanges.map((change: any, idx: number) => (
-                      <button
-                        key={idx}
-                        onClick={() => setSelectedFileForDiff(selectedFileForDiff === change.path ? null : change.path)}
-                        className={`w-full text-left p-3 rounded-lg border transition-all ${
-                          selectedFileForDiff === change.path
-                            ? 'border-blue-500 bg-blue-500/10'
-                            : 'border-border hover-elevate active-elevate-2'
-                        }`}
-                        data-testid={`file-change-${idx}`}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <FileText className="w-4 h-4 shrink-0 text-muted-foreground" />
-                            <span className="font-mono text-xs truncate">{change.path}</span>
-                          </div>
-                          <Badge
-                            variant={
-                              change.operation === 'create' ? 'default' :
-                              change.operation === 'modify' ? 'secondary' : 'destructive'
-                            }
-                            className="shrink-0"
-                          >
-                            {change.operation}
-                          </Badge>
-                        </div>
-
-                        {selectedFileForDiff === change.path && change.oldContent && (
-                          <div className="mt-3 border-t border-border pt-3">
-                            <div className="grid grid-cols-2 gap-2 text-xs">
-                              <div>
-                                <p className="font-semibold text-muted-foreground mb-1">Before</p>
-                                <pre className="p-2 bg-red-500/10 border border-red-500/20 rounded text-xs overflow-x-auto max-h-40">
-                                  {change.oldContent.substring(0, 500)}{change.oldContent.length > 500 ? '...' : ''}
-                                </pre>
-                              </div>
-                              <div>
-                                <p className="font-semibold text-muted-foreground mb-1">After</p>
-                                <pre className="p-2 bg-green-500/10 border border-green-500/20 rounded text-xs overflow-x-auto max-h-40">
-                                  {change.newContent.substring(0, 500)}{change.newContent.length > 500 ? '...' : ''}
-                                </pre>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                    <Button
-                      className="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white font-semibold shadow-lg shadow-green-500/25"
-                      onClick={() => deployAllMutation.mutate()}
-                      disabled={deployAllMutation.isPending}
-                      data-testid="button-deploy-all"
-                    >
-                      {deployAllMutation.isPending ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Deploying...
-                        </>
-                      ) : (
-                        <>
-                          <GitCommit className="w-4 h-4 mr-2" />
-                          Deploy All ({pendingChangesData.count})
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      className="flex-1"
-                      onClick={() => discardAllMutation.mutate()}
-                      disabled={discardAllMutation.isPending}
-                      data-testid="button-discard-all"
-                    >
-                      {discardAllMutation.isPending ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Discarding...
-                        </>
-                      ) : (
-                        <>
-                          <XCircle className="w-4 h-4 mr-2" />
-                          Discard All
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Meta-SySop Chat - Full Chatroom Interface */}
-          <div className="bg-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col" style={{ height: '600px' }} data-testid="chat-card">
-            <MetaSySopChat 
-              autoCommit={true}
-              autoPush={true}
-            />
-          </div>
-        </section>
+        {/* Meta-SySop Chat - Full Interface */}
+        <div className="flex-1 bg-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col min-h-0">
+          <MetaSySopChat 
+            autoCommit={true}
+            autoPush={true}
+          />
+        </div>
       </div>
-
-      {/* Add custom animations */}
-      <style>{`
-        @keyframes pulse-glow {
-          0%, 100% {
-            box-shadow: 0 0 0 0 currentColor;
-          }
-          50% {
-            box-shadow: 0 0 0 8px transparent;
-          }
-        }
-        
-        @keyframes ping-slow {
-          0%, 100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.3;
-          }
-        }
-        
-        .animate-pulse-glow {
-          animation: pulse-glow 2s infinite;
-        }
-        
-        .animate-ping-slow {
-          animation: ping-slow 1.5s infinite;
-        }
-      `}</style>
     </div>
   );
 }
 
+// Export with admin guard
 export default function PlatformHealing() {
-  return <PlatformHealingContent />;
+  return (
+    <AdminGuard>
+      <PlatformHealingContent />
+    </AdminGuard>
+  );
 }
