@@ -1,0 +1,599 @@
+2025-10-27T21:58:56.000000000Z [inf]  Starting Container
+2025-10-27T21:58:56.621572813Z [inf]  Time: Mon Oct 27 21:58:56 UTC 2025
+2025-10-27T21:58:56.621592572Z [inf]  
+2025-10-27T21:58:56.621608837Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-10-27T21:58:56.621613191Z [inf]  ======================================
+2025-10-27T21:58:56.621623478Z [inf]  🚂 RAILWAY STARTUP SCRIPT
+2025-10-27T21:58:56.621630255Z [inf]  ======================================
+2025-10-27T21:58:56.958876205Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-10-27T21:58:56.958886089Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-10-27T21:58:57.581019029Z [inf]  Using 'pg' driver for database querying
+2025-10-27T21:58:57.583877093Z [inf]  [⣷] Pulling schema from database...
+2025-10-27T21:58:57.583888106Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-27T21:58:57.657737307Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-27T21:58:57.781332881Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-27T21:58:57.913031414Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-27T21:58:58.649662429Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-27T21:58:58.649673017Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-27T21:58:58.649679770Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-27T21:58:58.649686102Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-27T21:58:58.649692366Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-27T21:58:58.677587039Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-27T21:58:58.822365011Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-27T21:58:58.934037035Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-27T21:58:59.703090182Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-27T21:58:59.703154476Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-27T21:58:59.703164396Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-27T21:58:59.703173249Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-27T21:58:59.703192947Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-27T21:58:59.707096160Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-27T21:58:59.849149061Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-27T21:58:59.960947989Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-27T21:59:00.941928522Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-27T21:59:00.941937312Z [inf]  [2K[1G[✓] Pulling schema from database...
+2025-10-27T21:59:00.941943414Z [inf]  [i] No changes detected
+2025-10-27T21:59:00.941950743Z [inf]  
+2025-10-27T21:59:00.941957328Z [inf]  ✅ Database migrations completed successfully!
+2025-10-27T21:59:00.941963672Z [inf]  
+2025-10-27T21:59:00.941969934Z [inf]  🚀 Starting Node.js application...
+2025-10-27T21:59:01.903996136Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-27T21:59:01.904009025Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-27T21:59:01.904014425Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-27T21:59:01.904020308Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-27T21:59:01.904026490Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-10-27T21:59:01.904032631Z [inf]  [db] Connection string includes SSL params: true
+2025-10-27T21:59:01.904042447Z [inf]  [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-27T21:59:01.904048749Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-27T21:59:01.904054887Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-27T21:59:01.904060885Z [inf]  📡 WebSocket server initialized at /ws
+2025-10-27T21:59:01.904066825Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-27T21:59:01.904072354Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-27T21:59:01.904081310Z [inf]  ✅ All routes registered successfully
+2025-10-27T21:59:01.904088289Z [inf]  🔍 Testing database connection...
+2025-10-27T21:59:01.904094488Z [inf]  9:59:01 PM [express] serving on port 8080
+2025-10-27T21:59:01.904100224Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-10-27T21:59:01.904105765Z [inf]  ✅ Database connected successfully
+2025-10-27T21:59:01.904112832Z [inf]  🔧 Auto-healing system ENABLED (production mode)
+2025-10-27T21:59:01.904119230Z [inf]  
+2025-10-27T21:59:01.904127079Z [inf]  🔍 Checking GitHub integration configuration...
+2025-10-27T21:59:01.904133552Z [inf]  ✅ GitHub integration configured successfully
+2025-10-27T21:59:01.904138665Z [inf]     - Repository: 6-7Development/archetype
+2025-10-27T21:59:01.908501787Z [inf]     - Branch: main
+2025-10-27T21:59:01.908508108Z [inf]     - Token: ✓ (configured)
+2025-10-27T21:59:01.908514446Z [inf]     - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-27T21:59:01.908522108Z [inf]     - Maintenance mode: Available for owner
+2025-10-27T21:59:01.908529077Z [inf]  
+2025-10-27T21:59:21.950139723Z [err]  Failed to get git info, using defaults: Error: Command failed: git rev-parse HEAD
+2025-10-27T21:59:21.950144136Z [err]  fatal: not a git repository (or any of the parent directories): .git
+2025-10-27T21:59:21.950149992Z [err]  
+2025-10-27T21:59:21.950154455Z [err]      at genericNodeError (node:internal/errors:984:15)
+2025-10-27T21:59:21.950158434Z [err]      at wrappedFn (node:internal/errors:538:14)
+2025-10-27T21:59:21.950162282Z [err]      at ChildProcess.exithandler (node:child_process:422:12)
+2025-10-27T21:59:21.950166332Z [err]      at ChildProcess.emit (node:events:524:28)
+2025-10-27T21:59:21.950170019Z [err]      at maybeClose (node:internal/child_process:1104:16)
+2025-10-27T21:59:21.950173725Z [err]      at Socket.<anonymous> (node:internal/child_process:456:11)
+2025-10-27T21:59:21.950178444Z [err]      at Socket.emit (node:events:524:28)
+2025-10-27T21:59:21.950182855Z [err]      at Pipe.<anonymous> (node:net:343:12) {
+2025-10-27T21:59:21.950186870Z [err]    code: 128,
+2025-10-27T21:59:21.950190540Z [err]    killed: false,
+2025-10-27T21:59:21.950194590Z [err]    signal: null,
+2025-10-27T21:59:21.950199698Z [err]    cmd: 'git rev-parse HEAD',
+2025-10-27T21:59:21.950203727Z [err]    stdout: '',
+2025-10-27T21:59:21.950207508Z [err]    stderr: 'fatal: not a git repository (or any of the parent directories): .git\n'
+2025-10-27T21:59:21.950211409Z [err]  }
+2025-10-27T21:59:21.950215489Z [inf]  9:59:19 PM [express] GET /api/deployment-info 200 in 11ms :: {"version":"1.0.0","commitHash":"unknow…
+2025-10-27T21:59:23.217214778Z [inf]  [AUTH] Login attempt for email: root@getdc360.com
+2025-10-27T21:59:23.217254079Z [inf]  [AUTH] Found users: 1
+2025-10-27T21:59:23.217263840Z [inf]  [AUTH] User found: root@getdc360.com has password: true
+2025-10-27T21:59:23.217270239Z [inf]  [AUTH] Verifying password...
+2025-10-27T21:59:23.891876494Z [inf]  [AUTH] Password valid: true
+2025-10-27T21:59:23.891882026Z [inf]  [AUTH] Authentication successful for: root@getdc360.com
+2025-10-27T21:59:23.891888020Z [inf]  9:59:23 PM [express] POST /api/auth/login 200 in 280ms :: {"success":true,"user":{"id":"723e1301-c72…
+2025-10-27T21:59:24.082957487Z [inf]  9:59:24 PM [express] GET /api/projects 304 in 15ms :: []
+2025-10-27T21:59:24.174898172Z [inf]  9:59:24 PM [express] GET /api/auth/me 304 in 88ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef95…
+2025-10-27T22:07:52.262964900Z [inf]  ✅ WebSocket client connected
+2025-10-27T22:07:52.262969262Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T22:07:52.262973222Z [inf]  10:07:44 PM [express] GET /api/platform/status 200 in 150ms :: {"overallHealth":100,"activeIncidents"…
+2025-10-27T22:07:52.262977461Z [inf]  [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-27T22:07:52.262981620Z [inf]  10:07:44 PM [express] GET /api/meta-sysop/projects 200 in 204ms :: []
+2025-10-27T22:07:52.262985912Z [inf]  10:07:44 PM [express] GET /api/meta-sysop/pending-changes 304 in 203ms :: {"success":true,"pendingCha…
+2025-10-27T22:07:52.262989779Z [inf]  10:07:44 PM [express] GET /api/meta-sysop/autonomy-level 304 in 224ms :: {"currentLevel":"max","maxAl…
+2025-10-27T22:07:52.262995332Z [inf]  10:07:49 PM [express] GET /api/meta-sysop/pending-changes 304 in 20ms :: {"success":true,"pendingChan…
+2025-10-27T22:07:55.069307774Z [inf]  10:07:55 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-27T22:08:00.599813183Z [inf]  10:08:00 PM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {"success":true,"pendingChan…
+2025-10-27T22:08:01.852679442Z [inf]  [META-SYSOP-CHAT] Stream request received
+2025-10-27T22:08:01.852688369Z [inf]  [META-SYSOP-CHAT] Message: Please diagnose platform and fix issues Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-10-27T22:08:01.852696627Z [inf]  [META-SYSOP-CHAT] Setting up SSE headers
+2025-10-27T22:08:01.852705157Z [inf]  [META-SYSOP-CHAT] Entering try block
+2025-10-27T22:08:01.852713054Z [inf]  [META-SYSOP-CHAT] User autonomy level: max
+2025-10-27T22:08:06.060736781Z [inf]  10:08:05 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-27T22:08:06.060744157Z [inf]  [META-SYSOP] Response has tool calls: true
+2025-10-27T22:08:06.060751380Z [inf]  [META-SYSOP] Content blocks: text, tool_use
+2025-10-27T22:08:06.060758014Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:08:06.060764117Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): I'll diagnose the platform for issues and fix what I find. Let me run a comprehensive analysis first
+2025-10-27T22:08:10.862805471Z [inf]  10:08:10 PM [express] GET /api/meta-sysop/pending-changes 304 in 20ms :: {"success":true,"pendingChan…
+2025-10-27T22:08:11.996598628Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:08:11.996606608Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): I found **11 critical issues** that need immediate attention! Let me fix the most critical problems:
+2025-10-27T22:08:14.969421497Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:08:16.208025927Z [inf]  10:08:15 PM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {"success":true,"pendingChan…
+2025-10-27T22:08:20.106217718Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:08:20.106223776Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): Great! I can see the WebSocket setup already has proper error and close handlers in the websocket.ts
+2025-10-27T22:08:21.508286277Z [inf]  10:08:20 PM [express] GET /api/meta-sysop/pending-changes 304 in 23ms :: {"success":true,"pendingChan…
+2025-10-27T22:08:21.508292601Z [inf]  [META-SYSOP-CHAT] Stream request received
+2025-10-27T22:08:21.508298546Z [inf]  [META-SYSOP-CHAT] Message: Please diagnose platform and fix issues Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-10-27T22:08:21.508304761Z [inf]  [META-SYSOP-CHAT] Setting up SSE headers
+2025-10-27T22:08:21.508311538Z [inf]  [META-SYSOP-CHAT] Entering try block
+2025-10-27T22:08:21.508320348Z [inf]  [META-SYSOP-CHAT] User autonomy level: max
+2025-10-27T22:08:23.843122749Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:08:23.843179590Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): The WebSocket functions in anthropic.ts are just utility functions, not actual WebSocket connections
+2025-10-27T22:08:23.843184109Z [err]  [META-SYSOP-CLEANUP] ⚠️ No activeTaskListId tracked - skipping cleanup
+2025-10-27T22:08:23.843188606Z [inf]  [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: Meta-SySop chat: Please diagnose platform and fix issues - success
+2025-10-27T22:08:23.843193263Z [inf]  10:08:23 PM [express] POST /api/meta-sysop/stream 200 in 21770ms
+2025-10-27T22:08:26.689879394Z [inf]  10:08:25 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T22:08:26.689886031Z [inf]  [META-SYSOP] Response has tool calls: true
+2025-10-27T22:08:26.689892160Z [inf]  [META-SYSOP] Content blocks: text, tool_use
+2025-10-27T22:08:26.689905864Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:08:26.689912361Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): I'll diagnose the platform for issues and fix what I find. Let me start with a comprehensive analysi
+2025-10-27T22:08:31.811634991Z [inf]  10:08:31 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-27T22:08:33.680495976Z [inf]  ✅ WebSocket client connected
+2025-10-27T22:08:33.680503055Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T22:08:36.369867099Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:08:36.369873788Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): I found several critical issues that need immediate attention! Let me fix the most critical ones fir
+2025-10-27T22:08:36.369882395Z [inf]  10:08:36 PM [express] GET /api/meta-sysop/pending-changes 304 in 19ms :: {"success":true,"pendingChan…
+2025-10-27T22:08:41.709121693Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:08:41.709127379Z [inf]  10:08:41 PM [express] GET /api/meta-sysop/pending-changes 304 in 22ms :: {"success":true,"pendingChan…
+2025-10-27T22:08:46.971500329Z [inf]  10:08:46 PM [express] GET /api/meta-sysop/pending-changes 304 in 28ms :: {"success":true,"pendingChan…
+2025-10-27T22:08:49.254301377Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:08:51.811289198Z [inf]  10:08:51 PM [express] GET /api/meta-sysop/pending-changes 304 in 21ms :: {"success":true,"pendingChan…
+2025-10-27T22:08:53.297497236Z [inf]  10:08:52 PM [express] POST /api/meta-sysop/stream 200 in 31813ms
+2025-10-27T22:08:53.297520986Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:08:53.297527269Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): Now I'll fix the WebSocket memory leaks by adding proper error and close handlers to all WebSocket c
+2025-10-27T22:08:53.297534815Z [err]  [META-SYSOP-CLEANUP] ⚠️ No activeTaskListId tracked - skipping cleanup
+2025-10-27T22:08:53.297541353Z [inf]  [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: Meta-SySop chat: Please diagnose platform and fix issues - success
+2025-10-27T22:08:57.549649019Z [inf]  10:08:56 PM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {"success":true,"pendingChan…
+2025-10-27T22:09:02.809021591Z [inf]  💀 Terminating dead WebSocket connection (user: admin)
+2025-10-27T22:09:02.809066671Z [inf]  10:09:01 PM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {"success":true,"pendingChan…
+2025-10-27T22:09:02.809073354Z [inf]  [CACHE] Stats: {
+2025-10-27T22:09:02.809084413Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-27T22:09:02.809092470Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-27T22:09:02.809099711Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-27T22:09:02.809180272Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-27T22:09:02.809404927Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-27T22:09:02.809416331Z [inf]  }
+2025-10-27T22:09:07.028833565Z [inf]  10:09:06 PM [express] GET /api/meta-sysop/pending-changes 304 in 49ms :: {"success":true,"pendingChan…
+2025-10-27T22:09:12.065833987Z [inf]  10:09:11 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:09:17.294449162Z [inf]  10:09:16 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-27T22:09:22.416377044Z [inf]  10:09:22 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:09:24.322120663Z [inf]  ✅ WebSocket client connected
+2025-10-27T22:09:24.322126959Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T22:09:27.109991887Z [inf]  10:09:27 PM [express] GET /api/meta-sysop/pending-changes 304 in 18ms :: {"success":true,"pendingChan…
+2025-10-27T22:09:32.399426244Z [inf]  10:09:32 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:09:33.226586327Z [inf]  ✅ WebSocket client connected
+2025-10-27T22:09:33.286159014Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T22:09:38.137151981Z [inf]  10:09:37 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T22:09:43.231639721Z [inf]  10:09:42 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:09:48.133137499Z [inf]  10:09:47 PM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {"success":true,"pendingChan…
+2025-10-27T22:09:53.193408784Z [inf]  10:09:52 PM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {"success":true,"pendingChan…
+2025-10-27T22:09:58.169692143Z [inf]  10:09:57 PM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {"success":true,"pendingChan…
+2025-10-27T22:10:02.775518026Z [inf]  💀 Terminating dead WebSocket connection (user: admin)
+2025-10-27T22:10:02.775523855Z [inf]  💀 Terminating dead WebSocket connection (user: admin)
+2025-10-27T22:10:02.775528705Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-27T22:10:02.775534247Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-27T22:10:03.961920040Z [inf]  10:10:02 PM [express] GET /api/meta-sysop/pending-changes 304 in 20ms :: {"success":true,"pendingChan…
+2025-10-27T22:10:07.885052181Z [inf]  10:10:07 PM [express] GET /api/meta-sysop/pending-changes 304 in 18ms :: {"success":true,"pendingChan…
+2025-10-27T22:10:12.961948122Z [inf]  10:10:12 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T22:10:18.645516221Z [inf]  10:10:18 PM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {"success":true,"pendingChan…
+2025-10-27T22:10:23.536880957Z [inf]  10:10:23 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:10:29.018283972Z [inf]  10:10:28 PM [express] GET /api/meta-sysop/pending-changes 304 in 22ms :: {"success":true,"pendingChan…
+2025-10-27T22:10:33.832776357Z [inf]  10:10:33 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T22:10:38.821955787Z [inf]  10:10:38 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-27T22:10:43.694820295Z [inf]  10:10:43 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-27T22:10:48.736217090Z [inf]  10:10:48 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-27T22:10:53.703345115Z [inf]  10:10:53 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-27T22:10:58.925625170Z [inf]  10:10:58 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:11:04.498796526Z [inf]  10:11:03 PM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {"success":true,"pendingChan…
+2025-10-27T22:11:10.209447464Z [inf]  10:11:08 PM [express] GET /api/meta-sysop/pending-changes 304 in 18ms :: {"success":true,"pendingChan…
+2025-10-27T22:11:14.727911428Z [inf]  10:11:13 PM [express] GET /api/meta-sysop/pending-changes 304 in 22ms :: {"success":true,"pendingChan…
+2025-10-27T22:11:18.986955764Z [inf]  10:11:18 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:11:23.974813331Z [inf]  10:11:23 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:11:29.046814670Z [inf]  10:11:29 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:11:34.114535575Z [inf]  10:11:34 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-27T22:11:39.181771983Z [inf]  10:11:39 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:11:44.856922838Z [inf]  10:11:44 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:11:49.771342505Z [inf]  10:11:49 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:11:54.926000943Z [inf]  10:11:54 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T22:12:00.179065069Z [inf]  10:11:59 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:12:05.094485447Z [inf]  10:12:04 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-27T22:12:09.939417804Z [inf]  10:12:09 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:12:15.160642247Z [inf]  10:12:14 PM [express] GET /api/meta-sysop/pending-changes 304 in 21ms :: {"success":true,"pendingChan…
+2025-10-27T22:12:20.070350662Z [inf]  10:12:19 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T22:12:25.045464496Z [inf]  10:12:24 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:12:30.406813020Z [inf]  10:12:29 PM [express] GET /api/meta-sysop/pending-changes 304 in 19ms :: {"success":true,"pendingChan…
+2025-10-27T22:12:35.116620178Z [inf]  10:12:34 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-27T22:12:40.117842349Z [inf]  10:12:40 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-27T22:12:45.338769250Z [inf]  10:12:45 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T22:12:50.208723221Z [inf]  10:12:50 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:12:55.200754521Z [inf]  10:12:55 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:13:00.599419789Z [inf]  10:13:00 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-27T22:13:06.833550167Z [inf]  10:13:05 PM [express] GET /api/meta-sysop/pending-changes 304 in 50ms :: {"success":true,"pendingChan…
+2025-10-27T22:13:11.293294349Z [inf]  10:13:10 PM [express] GET /api/meta-sysop/pending-changes 304 in 26ms :: {"success":true,"pendingChan…
+2025-10-27T22:13:16.630013212Z [inf]  10:13:15 PM [express] GET /api/meta-sysop/pending-changes 304 in 19ms :: {"success":true,"pendingChan…
+2025-10-27T22:13:20.907182333Z [inf]  10:13:20 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:13:26.002889242Z [inf]  10:13:25 PM [express] GET /api/meta-sysop/pending-changes 304 in 19ms :: {"success":true,"pendingChan…
+2025-10-27T22:13:30.978662819Z [inf]  10:13:30 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-27T22:13:33.902444726Z [inf]  ✅ WebSocket client connected
+2025-10-27T22:13:33.902455964Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T22:13:36.056080857Z [inf]  10:13:36 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:13:41.128155431Z [inf]  10:13:41 PM [express] GET /api/meta-sysop/pending-changes 304 in 18ms :: {"success":true,"pendingChan…
+2025-10-27T22:13:46.669398923Z [inf]  10:13:46 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T22:13:51.374361770Z [inf]  10:13:51 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:13:56.595077757Z [inf]  10:13:56 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:14:01.818697737Z [inf]  10:14:01 PM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {"success":true,"pendingChan…
+2025-10-27T22:14:01.818704930Z [inf]  💀 Terminating dead WebSocket connection (user: admin)
+2025-10-27T22:14:01.818712061Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-27T22:14:06.734717307Z [inf]  10:14:06 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T22:14:11.960289344Z [inf]  10:14:11 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-27T22:14:17.517761522Z [inf]  10:14:16 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-27T22:14:22.713152162Z [inf]  10:14:21 PM [express] GET /api/meta-sysop/pending-changes 304 in 22ms :: {"success":true,"pendingChan…
+2025-10-27T22:14:27.706908900Z [inf]  10:14:27 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T22:14:32.631727279Z [inf]  10:14:32 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:14:33.511719107Z [inf]  ✅ WebSocket client connected
+2025-10-27T22:14:33.578963162Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T22:14:37.631023223Z [inf]  10:14:37 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:14:42.687660130Z [inf]  10:14:42 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:14:47.767162700Z [inf]  10:14:47 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:14:52.697000875Z [inf]  10:14:52 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-27T22:14:57.706393557Z [inf]  10:14:57 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-27T22:15:02.328797171Z [inf]  💀 Terminating dead WebSocket connection (user: admin)
+2025-10-27T22:15:02.328803530Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-27T22:15:03.264289353Z [inf]  10:15:02 PM [express] GET /api/meta-sysop/pending-changes 304 in 20ms :: {"success":true,"pendingChan…
+2025-10-27T22:15:08.340195353Z [inf]  10:15:07 PM [express] GET /api/meta-sysop/pending-changes 304 in 26ms :: {"success":true,"pendingChan…
+2025-10-27T22:15:13.290242164Z [inf]  10:15:13 PM [express] GET /api/meta-sysop/pending-changes 304 in 20ms :: {"success":true,"pendingChan…
+2025-10-27T22:15:18.144356453Z [inf]  10:15:18 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T22:15:23.167896834Z [inf]  10:15:23 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:15:28.314139360Z [inf]  10:15:28 PM [express] GET /api/meta-sysop/pending-changes 304 in 18ms :: {"success":true,"pendingChan…
+2025-10-27T22:15:33.412989454Z [inf]  10:15:33 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:15:38.398824363Z [inf]  10:15:38 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T22:15:43.463143533Z [inf]  10:15:43 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:15:48.525400281Z [inf]  10:15:48 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:15:54.244875384Z [inf]  10:15:53 PM [express] GET /api/meta-sysop/pending-changes 304 in 20ms :: {"success":true,"pendingChan…
+2025-10-27T22:15:59.486469624Z [inf]  10:15:58 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-27T22:16:04.005100542Z [inf]  10:16:03 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:16:09.047562223Z [inf]  10:16:08 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-27T22:16:13.961684663Z [inf]  10:16:13 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:16:18.978306563Z [inf]  10:16:18 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-27T22:16:24.047067760Z [inf]  10:16:24 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:16:29.962722533Z [inf]  10:16:29 PM [express] GET /api/meta-sysop/pending-changes 304 in 43ms :: {"success":true,"pendingChan…
+2025-10-27T22:16:34.820439929Z [inf]  10:16:34 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:16:39.780837590Z [inf]  10:16:39 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:16:44.991085628Z [inf]  10:16:44 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-27T22:16:50.007074656Z [inf]  10:16:49 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:16:54.957909471Z [inf]  10:16:54 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:17:00.076419293Z [inf]  10:16:59 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:17:05.250112862Z [inf]  10:17:04 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T22:17:10.118873513Z [inf]  10:17:09 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T22:17:15.339450139Z [inf]  10:17:14 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-27T22:17:20.304590911Z [inf]  10:17:19 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-27T22:17:25.333008492Z [inf]  10:17:24 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-27T22:17:30.382819475Z [inf]  10:17:30 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T22:17:35.188131224Z [inf]  10:17:35 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-27T22:17:40.272357854Z [inf]  10:17:40 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:17:45.450140818Z [inf]  10:17:45 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:17:51.037209014Z [inf]  10:17:50 PM [express] GET /api/meta-sysop/pending-changes 304 in 19ms :: {"success":true,"pendingChan…
+2025-10-27T22:17:55.322170273Z [err]    stderr: 'fatal: not a git repository (or any of the parent directories): .git\n'
+2025-10-27T22:17:55.322239621Z [err]  }
+2025-10-27T22:17:55.322252443Z [inf]  10:17:55 PM [express] GET /api/deployment-info 200 in 9ms :: {"version":"1.0.0","commitHash":"unknown…
+2025-10-27T22:17:55.323217182Z [err]  Failed to get git info, using defaults: Error: Command failed: git rev-parse HEAD
+2025-10-27T22:17:55.323223104Z [err]  fatal: not a git repository (or any of the parent directories): .git
+2025-10-27T22:17:55.323229509Z [err]  
+2025-10-27T22:17:55.323235994Z [err]      at genericNodeError (node:internal/errors:984:15)
+2025-10-27T22:17:55.323242158Z [err]      at wrappedFn (node:internal/errors:538:14)
+2025-10-27T22:17:55.323247962Z [err]      at ChildProcess.exithandler (node:child_process:422:12)
+2025-10-27T22:17:55.323255147Z [err]      at ChildProcess.emit (node:events:524:28)
+2025-10-27T22:17:55.323260908Z [err]      at maybeClose (node:internal/child_process:1104:16)
+2025-10-27T22:17:55.323266850Z [err]      at Socket.<anonymous> (node:internal/child_process:456:11)
+2025-10-27T22:17:55.323272861Z [err]      at Socket.emit (node:events:524:28)
+2025-10-27T22:17:55.323281341Z [err]      at Pipe.<anonymous> (node:net:343:12) {
+2025-10-27T22:17:55.323287697Z [err]    code: 128,
+2025-10-27T22:17:55.323293876Z [err]    killed: false,
+2025-10-27T22:17:55.323301126Z [err]    signal: null,
+2025-10-27T22:17:55.323307016Z [err]    cmd: 'git rev-parse HEAD',
+2025-10-27T22:17:55.323312652Z [err]    stdout: '',
+2025-10-27T22:17:56.404250041Z [inf]  10:17:55 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:02.243619494Z [inf]  10:18:00 PM [express] GET /api/meta-sysop/pending-changes 304 in 40ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:06.424430266Z [inf]  10:18:05 PM [express] GET /api/meta-sysop/pending-changes 304 in 20ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:07.751949499Z [inf]  [AUTH] Login attempt for email: root@getdc360.com
+2025-10-27T22:18:07.751956362Z [inf]  [AUTH] Found users: 1
+2025-10-27T22:18:07.751964962Z [inf]  [AUTH] User found: root@getdc360.com has password: true
+2025-10-27T22:18:07.751974070Z [inf]  [AUTH] Verifying password...
+2025-10-27T22:18:07.751980883Z [inf]  [AUTH] Password valid: true
+2025-10-27T22:18:07.751987596Z [inf]  [AUTH] Authentication successful for: root@getdc360.com
+2025-10-27T22:18:07.751993812Z [inf]  10:18:07 PM [express] POST /api/auth/login 200 in 335ms :: {"success":true,"user":{"id":"723e1301-c72…
+2025-10-27T22:18:09.127252265Z [inf]  10:18:07 PM [express] GET /api/projects 304 in 36ms :: []
+2025-10-27T22:18:09.127261289Z [inf]  10:18:08 PM [express] GET /api/auth/me 200 in 165ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef9…
+2025-10-27T22:18:10.923209843Z [inf]  10:18:10 PM [express] GET /api/meta-sysop/pending-changes 304 in 20ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:15.035486423Z [inf]  10:18:14 PM [express] GET /api/meta-sysop/pending-changes 304 in 21ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:15.035491525Z [inf]  [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-27T22:18:15.035496482Z [inf]  10:18:14 PM [express] GET /api/meta-sysop/projects 200 in 20ms :: []
+2025-10-27T22:18:15.035501208Z [inf]  ✅ WebSocket client connected
+2025-10-27T22:18:15.035525964Z [inf]  10:18:14 PM [express] GET /api/meta-sysop/autonomy-level 304 in 103ms :: {"currentLevel":"max","maxAl…
+2025-10-27T22:18:15.035531760Z [inf]  10:18:14 PM [express] GET /api/platform/status 200 in 106ms :: {"overallHealth":100,"activeIncidents"…
+2025-10-27T22:18:15.035537814Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T22:18:15.803491176Z [inf]  10:18:15 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:19.880483012Z [inf]  10:18:19 PM [express] GET /api/meta-sysop/pending-changes 304 in 29ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:21.051101698Z [inf]  10:18:21 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:24.897305813Z [inf]  10:18:24 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:26.115802199Z [inf]  10:18:26 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:30.187811546Z [inf]  10:18:29 PM [express] GET /api/meta-sysop/pending-changes 304 in 20ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:31.189284268Z [inf]  10:18:31 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:33.005849342Z [inf]  ✅ WebSocket client connected
+2025-10-27T22:18:33.054123487Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T22:18:33.943535039Z [inf]  ✅ WebSocket client connected
+2025-10-27T22:18:33.943540556Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T22:18:35.076593715Z [inf]  10:18:35 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:36.246142242Z [inf]  10:18:36 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:37.846858271Z [inf]  [META-SYSOP-CHAT] Stream request received
+2025-10-27T22:18:37.846866216Z [inf]  [META-SYSOP-CHAT] Message: Check for any platform issues and fix them Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-10-27T22:18:37.846871220Z [inf]  [META-SYSOP-CHAT] Setting up SSE headers
+2025-10-27T22:18:37.846875791Z [inf]  [META-SYSOP-CHAT] Entering try block
+2025-10-27T22:18:37.846882514Z [inf]  [META-SYSOP-CHAT] User autonomy level: max
+2025-10-27T22:18:40.198255093Z [inf]  10:18:40 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:42.036800402Z [inf]  10:18:41 PM [express] GET /api/meta-sysop/pending-changes 304 in 19ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:42.036804647Z [inf]  [META-SYSOP] Response has tool calls: true
+2025-10-27T22:18:42.036809298Z [inf]  [META-SYSOP] Content blocks: text, tool_use
+2025-10-27T22:18:42.036814235Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:18:42.036819045Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): I'll diagnose the platform for any issues and fix them. Let me start with a comprehensive analysis.
+2025-10-27T22:18:45.172433006Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:18:45.172441512Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): I found **11 critical issues** that need immediate fixing! Let me check the logs for any active erro
+2025-10-27T22:18:45.273812702Z [inf]  10:18:45 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:47.129043787Z [inf]  10:18:46 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:51.052624348Z [inf]  10:18:50 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:51.052633094Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:18:51.052635694Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): Now let me fix the critical issues I found. I'll start with the WebSocket memory leaks as these are 
+2025-10-27T22:18:52.002705608Z [inf]  10:18:51 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:55.979049901Z [inf]  10:18:55 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:56.901517402Z [inf]  10:18:56 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-27T22:18:56.901524008Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:19:00.324324732Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:19:00.324328830Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): Great! I can see the WebSocket setup already has proper error and close handlers. Let me check the a
+2025-10-27T22:19:00.342884755Z [err]  [META-SYSOP-CLEANUP] ⚠️ No activeTaskListId tracked - skipping cleanup
+2025-10-27T22:19:00.358628526Z [inf]  [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: Meta-SySop chat: Check for any platform issues and fix them - success
+2025-10-27T22:19:00.358634481Z [inf]  10:19:00 PM [express] POST /api/meta-sysop/stream 200 in 22888ms
+2025-10-27T22:19:01.391978187Z [inf]  10:19:00 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:02.325667878Z [inf]  [CACHE] Stats: {
+2025-10-27T22:19:02.325672645Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-27T22:19:02.325677045Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-27T22:19:02.325681495Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-27T22:19:02.325686396Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-27T22:19:02.325692651Z [inf]  }
+2025-10-27T22:19:02.325698657Z [inf]  10:19:01 PM [express] GET /api/meta-sysop/pending-changes 304 in 26ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:02.325704567Z [inf]  💀 Terminating dead WebSocket connection (user: admin)
+2025-10-27T22:19:02.325714440Z [inf]  💀 Terminating dead WebSocket connection (user: admin)
+2025-10-27T22:19:02.325720346Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-27T22:19:02.325727152Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-27T22:19:06.209186965Z [inf]  10:19:05 PM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:07.283496782Z [inf]  10:19:06 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:11.089267118Z [inf]  10:19:10 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:12.165038542Z [inf]  10:19:11 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:16.240241114Z [inf]  10:19:15 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:17.233154516Z [inf]  10:19:16 PM [express] GET /api/meta-sysop/pending-changes 304 in 20ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:21.151496768Z [inf]  10:19:21 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:22.214081917Z [inf]  10:19:21 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:24.465245367Z [inf]  ✅ WebSocket client connected
+2025-10-27T22:19:25.208338894Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T22:19:26.177034455Z [inf]  10:19:26 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:27.134286167Z [inf]  10:19:27 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:31.314878919Z [inf]  10:19:31 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:32.299989221Z [inf]  10:19:32 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:33.259453153Z [inf]  ✅ WebSocket client connected
+2025-10-27T22:19:33.312911411Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T22:19:33.505811155Z [inf]  ✅ WebSocket client connected
+2025-10-27T22:19:33.565327972Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T22:19:36.360733164Z [inf]  10:19:36 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:37.216253145Z [inf]  10:19:37 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:41.450555669Z [inf]  10:19:41 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:42.265437466Z [inf]  10:19:42 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:46.532993827Z [inf]  10:19:46 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:47.378725131Z [inf]  10:19:47 PM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {"success":true,"pendingChang…
+2025-10-27T22:19:47.577739052Z [inf]  [META-SYSOP-CHAT] Stream request received
+2025-10-27T22:19:47.577746290Z [inf]  [META-SYSOP-CHAT] Message: Update Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-10-27T22:19:47.577753167Z [inf]  [META-SYSOP-CHAT] Setting up SSE headers
+2025-10-27T22:19:47.577759710Z [inf]  [META-SYSOP-CHAT] Entering try block
+2025-10-27T22:19:47.577766045Z [inf]  [META-SYSOP-CHAT] User autonomy level: max
+2025-10-27T22:19:50.719165480Z [inf]  [META-SYSOP] Response has tool calls: true
+2025-10-27T22:19:50.719171689Z [inf]  [META-SYSOP] Content blocks: text, tool_use
+2025-10-27T22:19:50.719177651Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:19:50.719183905Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): I'll check the current platform status and identify any issues that need fixing.
+2025-10-27T22:19:51.622952511Z [inf]  10:19:51 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:52.426099991Z [inf]  10:19:52 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:56.354267705Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:19:56.354304777Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): Found **11 critical issues** that need immediate attention! The main problems are:
+2025-10-27T22:19:56.354311764Z [inf]  
+2025-10-27T22:19:56.354318147Z [inf]  🚨 **Critical Is
+2025-10-27T22:19:56.717721629Z [inf]  10:19:56 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-27T22:19:57.480953599Z [inf]  10:19:57 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:20:01.858658969Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-27T22:20:01.858670178Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-27T22:20:01.858737178Z [inf]  💀 Terminating dead WebSocket connection (user: admin)
+2025-10-27T22:20:01.858743932Z [inf]  💀 Terminating dead WebSocket connection (user: admin)
+2025-10-27T22:20:01.858751336Z [inf]  💀 Terminating dead WebSocket connection (user: admin)
+2025-10-27T22:20:01.858757875Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-27T22:20:02.871796830Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:20:02.871810980Z [inf]  10:20:02 PM [express] GET /api/meta-sysop/pending-changes 304 in 26ms :: {"success":true,"pendingChan…
+2025-10-27T22:20:06.729714397Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:20:06.729721036Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): I can see the WebSocket code already has error and close handlers! Let me check the other files ment
+2025-10-27T22:20:08.231530653Z [inf]  10:20:07 PM [express] GET /api/meta-sysop/pending-changes 304 in 31ms :: {"success":true,"pendingChan…
+2025-10-27T22:20:09.526549657Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:20:09.526553571Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): Now let me check server/index.ts to see the WebSocket handling there:
+2025-10-27T22:20:09.526557055Z [err]  [META-SYSOP-CLEANUP] ⚠️ No activeTaskListId tracked - skipping cleanup
+2025-10-27T22:20:09.526560811Z [inf]  [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: Meta-SySop chat: Update - success
+2025-10-27T22:20:09.526564480Z [inf]  10:20:08 PM [express] POST /api/meta-sysop/stream 200 in 21155ms
+2025-10-27T22:20:12.734913508Z [inf]  10:20:12 PM [express] GET /api/meta-sysop/pending-changes 304 in 27ms :: {"success":true,"pendingChan…
+2025-10-27T22:20:18.457608459Z [inf]  10:20:17 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:20:23.500268418Z [inf]  10:20:22 PM [express] GET /api/meta-sysop/pending-changes 304 in 20ms :: {"success":true,"pendingChan…
+2025-10-27T22:20:28.620640026Z [inf]  10:20:27 PM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {"success":true,"pendingChan…
+2025-10-27T22:20:33.560626152Z [inf]  10:20:33 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-27T22:20:38.546595147Z [inf]  10:20:38 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-27T22:20:41.809613336Z [inf]  10:20:41 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:20:43.673062299Z [inf]  10:20:43 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:20:46.889029351Z [inf]  10:20:46 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-27T22:20:48.536581363Z [inf]  10:20:48 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:20:53.562783874Z [inf]  10:20:53 PM [express] GET /api/meta-sysop/pending-changes 304 in 24ms :: {"success":true,"pendingChan…
+2025-10-27T22:20:58.698803507Z [inf]  10:20:58 PM [express] GET /api/meta-sysop/pending-changes 304 in 19ms :: {"success":true,"pendingChan…
+2025-10-27T22:21:03.859542746Z [inf]  10:21:03 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:21:08.850180574Z [inf]  10:21:08 PM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {"success":true,"pendingChan…
+2025-10-27T22:21:13.899597717Z [inf]  10:21:13 PM [express] GET /api/meta-sysop/pending-changes 304 in 18ms :: {"success":true,"pendingChan…
+2025-10-27T22:21:18.756261913Z [inf]  10:21:18 PM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {"success":true,"pendingChan…
+2025-10-27T22:21:23.766813465Z [inf]  10:21:23 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:21:28.919171138Z [inf]  10:21:28 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-27T22:21:33.902455332Z [inf]  10:21:33 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-27T22:21:38.966061399Z [inf]  10:21:38 PM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {"success":true,"pendingChang…
+2025-10-27T22:21:44.043761982Z [inf]  10:21:44 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:21:48.818434425Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-27T22:21:49.176831602Z [inf]  10:21:49 PM [express] GET /api/meta-sysop/pending-changes 304 in 80ms :: {"success":true,"pendingChan…
+2025-10-27T22:21:54.814204284Z [inf]  10:21:54 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:22:00.171004333Z [inf]  10:21:59 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:22:05.091057087Z [inf]  10:22:04 PM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {"success":true,"pendingChan…
+2025-10-27T22:22:09.936280219Z [inf]  10:22:09 PM [express] GET /api/meta-sysop/pending-changes 304 in 19ms :: {"success":true,"pendingChan…
+2025-10-27T22:22:15.475258384Z [inf]  10:22:14 PM [express] GET /api/meta-sysop/pending-changes 304 in 24ms :: {"success":true,"pendingChan…
+2025-10-27T22:22:19.625912899Z [inf]  10:22:19 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-27T22:22:25.465509508Z [inf]  10:22:24 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-27T22:22:30.393301901Z [inf]  10:22:29 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-27T22:22:35.289112813Z [inf]  10:22:34 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-27T22:22:40.037455743Z [inf]  10:22:39 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-27T22:22:45.210227726Z [inf]  10:22:44 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:22:50.269140184Z [inf]  10:22:50 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:22:55.349859694Z [inf]  10:22:55 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:23:00.436016994Z [inf]  10:23:00 PM [express] GET /api/meta-sysop/pending-changes 304 in 18ms :: {"success":true,"pendingChan…
+2025-10-27T22:23:05.527326474Z [inf]  10:23:05 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:23:10.599195718Z [inf]  10:23:10 PM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {"success":true,"pendingChan…
+2025-10-27T22:23:15.825947524Z [inf]  10:23:15 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T22:23:20.636359005Z [inf]  10:23:20 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:23:25.711453311Z [inf]  10:23:25 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:23:30.835846308Z [inf]  10:23:30 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T22:23:33.754579020Z [inf]  ✅ WebSocket client connected
+2025-10-27T22:23:33.754584281Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T22:23:35.903182919Z [inf]  10:23:35 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-27T22:23:40.972552632Z [inf]  10:23:40 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:23:46.305924053Z [inf]  10:23:46 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-27T22:23:51.139188225Z [inf]  10:23:51 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-27T22:23:57.325963250Z [inf]  10:23:56 PM [express] GET /api/meta-sysop/pending-changes 304 in 68ms :: {"success":true,"pendingChan…
+2025-10-27T22:24:02.347346177Z [inf]  💀 Terminating dead WebSocket connection (user: admin)
+2025-10-27T22:24:02.347363923Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-27T22:24:02.347368533Z [inf]  10:24:01 PM [express] GET /api/meta-sysop/pending-changes 304 in 27ms :: {"success":true,"pendingChan…
+2025-10-27T22:24:06.639799559Z [inf]  10:24:06 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-27T22:24:08.027483509Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-27T22:24:09.050573037Z [inf]  10:24:08 PM [express] GET /api/auth/me 304 in 14ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef95…
+2025-10-27T22:24:09.050578593Z [inf]  10:24:08 PM [express] GET /api/meta-sysop/autonomy-level 304 in 37ms :: {"currentLevel":"max","maxAll…
+2025-10-27T22:24:09.050585083Z [inf]  [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-27T22:24:09.050590606Z [inf]  10:24:08 PM [express] GET /api/platform/status 200 in 87ms :: {"overallHealth":100,"activeIncidents":…
+2025-10-27T22:24:09.050607356Z [inf]  10:24:08 PM [express] GET /api/meta-sysop/projects 304 in 91ms :: []
+2025-10-27T22:24:09.050613792Z [inf]  ✅ WebSocket client connected
+2025-10-27T22:24:09.050620262Z [inf]  10:24:08 PM [express] GET /api/meta-sysop/pending-changes 304 in 114ms :: {"success":true,"pendingCha…
+2025-10-27T22:24:09.050625657Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T22:24:10.906676081Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-27T22:24:12.902189910Z [inf]  10:24:12 PM [express] GET /api/auth/me 304 in 11ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef95…
+2025-10-27T22:24:12.902200455Z [inf]  [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-27T22:24:12.902208267Z [inf]  10:24:12 PM [express] GET /api/meta-sysop/projects 304 in 19ms :: []
+2025-10-27T22:24:12.902214697Z [inf]  10:24:12 PM [express] GET /api/meta-sysop/pending-changes 304 in 18ms :: {"success":true,"pendingChan…
+2025-10-27T22:24:12.902220305Z [inf]  10:24:12 PM [express] GET /api/platform/status 200 in 19ms :: {"overallHealth":100,"activeIncidents":…
+2025-10-27T22:24:12.902226478Z [inf]  10:24:12 PM [express] GET /api/meta-sysop/autonomy-level 304 in 99ms :: {"currentLevel":"max","maxAll…
+2025-10-27T22:24:12.902234765Z [inf]  ✅ WebSocket client connected
+2025-10-27T22:24:12.902240427Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T22:24:17.846989153Z [inf]  10:24:17 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-27T22:24:22.805443858Z [inf]  10:24:22 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:24:24.719211635Z [inf]  ✅ WebSocket client connected
+2025-10-27T22:24:24.719217931Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T22:24:25.857424922Z [inf]  [META-SYSOP-CHAT] Message: why are you unable to fix the platform be honest Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-10-27T22:24:25.857431660Z [inf]  [META-SYSOP-CHAT] Setting up SSE headers
+2025-10-27T22:24:25.857440490Z [inf]  [META-SYSOP-CHAT] Entering try block
+2025-10-27T22:24:25.857443105Z [inf]  [META-SYSOP-CHAT] User autonomy level: max
+2025-10-27T22:24:25.857471838Z [inf]  [META-SYSOP-CHAT] Stream request received
+2025-10-27T22:24:27.848216243Z [inf]  10:24:27 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:24:32.994255144Z [inf]  [META-SYSOP-CHAT] User autonomy level: max
+2025-10-27T22:24:32.994276096Z [inf]  [META-SYSOP-CHAT] Message: why are you unable to fix the platform be honest Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-10-27T22:24:32.994285559Z [inf]  [META-SYSOP-CHAT] Setting up SSE headers
+2025-10-27T22:24:32.994295388Z [inf]  [META-SYSOP-CHAT] Entering try block
+2025-10-27T22:24:32.994308670Z [inf]  [META-SYSOP-CHAT] Stream request received
+2025-10-27T22:24:33.075610865Z [inf]  10:24:33 PM [express] GET /api/meta-sysop/pending-changes 304 in 88ms :: {"success":true,"pendingChan…
+2025-10-27T22:24:38.060687330Z [inf]  [META-SYSOP] No more tool calls - ending session naturally
+2025-10-27T22:24:38.060709472Z [inf]  [META-SYSOP] Response has tool calls: false
+2025-10-27T22:24:38.060718920Z [inf]  [META-SYSOP] Content blocks: text
+2025-10-27T22:24:38.060726296Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): I need to be completely honest with you about my current limitations:
+2025-10-27T22:24:38.060733311Z [inf]  
+2025-10-27T22:24:38.060740235Z [inf]  **The Real Issue:**
+2025-10-27T22:24:38.060748661Z [inf]  
+2025-10-27T22:24:38.060755311Z [inf]  I am exp
+2025-10-27T22:24:38.063531839Z [err]  [META-SYSOP-CLEANUP] ⚠️ No activeTaskListId tracked - skipping cleanup
+2025-10-27T22:24:38.071751703Z [inf]  [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: Meta-SySop chat: why are you unable to fix the platform be honest - success
+2025-10-27T22:24:38.073983830Z [inf]  10:24:38 PM [express] POST /api/meta-sysop/stream 200 in 12497ms
+2025-10-27T22:24:38.698040861Z [inf]  10:24:38 PM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {"success":true,"pendingChang…
+2025-10-27T22:24:43.966150324Z [inf]  10:24:43 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-27T22:24:48.768804699Z [inf]  10:24:48 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:24:49.989146194Z [inf]  [META-SYSOP] Response has tool calls: true
+2025-10-27T22:24:49.989153209Z [inf]  [META-SYSOP] Content blocks: text, tool_use
+2025-10-27T22:24:49.989160260Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:24:49.989166728Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): I appreciate your direct question - let me be completely honest about what's happening.
+2025-10-27T22:24:49.989173397Z [inf]  
+2025-10-27T22:24:49.989181374Z [inf]  **The Real 
+2025-10-27T22:24:49.989187343Z [inf]  [PLATFORM-READ] 🔄 Source file not in production build, fetching from GitHub: client/src/App.tsx
+2025-10-27T22:24:49.991086699Z [inf]  [GITHUB-SERVICE] Initialized for 6-7Development/archetype on branch main
+2025-10-27T22:24:50.117406078Z [inf]  [PLATFORM-READ] ✅ Fetched client/src/App.tsx from GitHub (6524 bytes)
+2025-10-27T22:24:53.747086239Z [inf]  10:24:53 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:24:58.054588717Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:24:58.054596565Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): Now I'll add the CSS for the glowing effect:
+2025-10-27T22:24:58.054609206Z [inf]  [PLATFORM-READ] 🔄 Source file not in production build, fetching from GitHub: client/src/index.css
+2025-10-27T22:24:58.068611860Z [inf]  [PLATFORM-READ] ✅ Fetched client/src/index.css from GitHub (14214 bytes)
+2025-10-27T22:24:58.949261273Z [inf]  10:24:58 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:25:02.277466403Z [inf]  💀 Terminating dead WebSocket connection (user: admin)
+2025-10-27T22:25:02.277472114Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-27T22:25:04.023597643Z [inf]  10:25:03 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-27T22:25:06.190928940Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:25:06.190945996Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): Perfect! Now I can see the CSS structure. I already added the "Jesus" text and glowing effect to bot
+2025-10-27T22:25:09.217202309Z [inf]  10:25:08 PM [express] GET /api/meta-sysop/pending-changes 304 in 27ms :: {"success":true,"pendingChan…
+2025-10-27T22:25:14.083393423Z [inf]  10:25:13 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T22:25:19.013337859Z [inf]  10:25:18 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:25:24.043108254Z [inf]  10:25:23 PM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {"success":true,"pendingChan…
+2025-10-27T22:25:29.233966979Z [inf]  10:25:28 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:25:32.178835304Z [inf]  [GITHUB-SERVICE] Content defined: true
+2025-10-27T22:25:32.178845159Z [inf]  [PLATFORM-WRITE] ✅ Content validated for client/src/App.tsx
+2025-10-27T22:25:32.178845718Z [inf]  [GITHUB-SERVICE] Content length: 6524 bytes
+2025-10-27T22:25:32.178846487Z [inf]  [GITHUB-SERVICE] Content length: 6524 bytes
+2025-10-27T22:25:32.178856902Z [inf]  [GITHUB-SERVICE] Committing 1 file(s) (attempt 1/3)
+2025-10-27T22:25:32.178857918Z [inf]  [PLATFORM-WRITE] Content length: 6524 bytes
+2025-10-27T22:25:32.178867154Z [inf]  [GITHUB-SERVICE] Latest commit: cad2c630d4ae3f53810a36e6beee506a77091174
+2025-10-27T22:25:32.178867919Z [inf]  [PLATFORM-WRITE] Content type: string
+2025-10-27T22:25:32.178874405Z [inf]  [GITHUB-SERVICE] Operation: modify
+2025-10-27T22:25:32.178876767Z [inf]  [GITHUB-SERVICE] Processing file 1/1: client/src/App.tsx
+2025-10-27T22:25:32.178882726Z [inf]  [META-SYSOP-ENFORCEMENT] Response has tool calls - allowing conversational text, buffering post-tool text
+2025-10-27T22:25:32.178891921Z [inf]  [META-SYSOP-CHAT] 💬 Streaming conversational text (pre-tools): Ah, I need to actually write the changes to the files! Let me fix that:
+2025-10-27T22:25:32.178894629Z [inf]  [GITHUB-SERVICE] Content type: string
+2025-10-27T22:25:32.178898369Z [inf]  [META-SYSOP] Writing file: client/src/App.tsx (6524 bytes)
+2025-10-27T22:25:32.178904656Z [inf]  [GITHUB-SERVICE] Content defined: true
+2025-10-27T22:25:32.178942372Z [inf]  [PLATFORM-WRITE] 🔧 Committing to GitHub: client/src/App.tsx
+2025-10-27T22:25:32.178970138Z [inf]  [PLATFORM-WRITE] Maintenance mode: ENABLED
+2025-10-27T22:25:32.178979800Z [inf]  [PLATFORM-WRITE] Reason: fixing
+2025-10-27T22:25:32.178990707Z [inf]  [PLATFORM-WRITE] Content to commit: 6524 bytes
+2025-10-27T22:25:32.178997397Z [inf]  [GITHUB-SERVICE] commitFile called with path: client/src/App.tsx
+2025-10-27T22:25:32.179005484Z [inf]  [GITHUB-SERVICE] Content type: string
+2025-10-27T22:25:32.183864933Z [inf]  [GITHUB-SERVICE] ✅ Content validated for client/src/App.tsx
+2025-10-27T22:25:33.125697426Z [inf]  [GITHUB-SERVICE] URL: https://github.com/6-7Development/archetype/commit/fccc3feab744e535619cb73c1fdeea0eef33d131
+2025-10-27T22:25:33.125706524Z [inf]  [PLATFORM-WRITE] ✅ Committed to GitHub successfully
+2025-10-27T22:25:33.125712815Z [inf]  [PLATFORM-WRITE] Commit: fccc3feab744e535619cb73c1fdeea0eef33d131
+2025-10-27T22:25:33.125718703Z [inf]  [PLATFORM-WRITE] URL: https://github.com/6-7Development/archetype/commit/fccc3feab744e535619cb73c1fdeea0eef33d131
+2025-10-27T22:25:33.125727320Z [inf]  [PLATFORM-WRITE] ⏳ Render will auto-deploy from GitHub...
+2025-10-27T22:25:33.125733069Z [inf]  [META-SYSOP] ✅ File written autonomously: client/src/App.tsx
+2025-10-27T22:25:33.125775313Z [inf]  [GITHUB-SERVICE] ✅ Successfully committed 1 file(s)
+2025-10-27T22:25:33.125781406Z [inf]  [GITHUB-SERVICE] Commit: fccc3feab744e535619cb73c1fdeea0eef33d131
+2025-10-27T22:25:34.110937528Z [inf]  10:25:33 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-27T22:25:39.133388974Z [inf]  10:25:39 PM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {"success":true,"pendingChan…
+2025-10-27T22:25:44.159110337Z [inf]  10:25:44 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-27T22:25:49.155018169Z [inf]  10:25:49 PM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {"success":true,"pendingChang…
+2025-10-27T22:25:54.230772414Z [inf]  10:25:54 PM [express] GET /api/meta-sysop/pending-changes 304 in 18ms :: {"success":true,"pendingChan…
+2025-10-27T22:25:59.401932390Z [inf]  10:25:59 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:26:04.373875215Z [inf]  10:26:04 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:26:09.521824997Z [inf]  10:26:09 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T22:26:14.500601869Z [inf]  10:26:14 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-27T22:26:19.582628916Z [inf]  10:26:19 PM [express] GET /api/meta-sysop/pending-changes 304 in 24ms :: {"success":true,"pendingChan…
+2025-10-27T22:26:24.649065619Z [inf]  10:26:24 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-27T22:26:29.000000000Z [inf]  Stopping Container
