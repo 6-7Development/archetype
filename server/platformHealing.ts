@@ -114,7 +114,7 @@ export class PlatformHealingService {
       const sanitizedId = this.sanitizeBackupId(backupId);
       const branchName = `${this.BACKUP_BRANCH_PREFIX}${sanitizedId}`;
 
-      // Check if git is available
+      // Check if git is available and this is a git repository
       try {
         const { stdout: branches } = await execFileAsync('git', ['branch', '--list'], { cwd: this.PROJECT_ROOT });
         if (!branches.includes(branchName)) {
@@ -127,9 +127,16 @@ export class PlatformHealingService {
 
         console.log(`[PLATFORM-ROLLBACK] ✅ Rolled back to backup: ${sanitizedId}`);
       } catch (gitError: any) {
+        // Handle git not installed
         if (gitError.code === 'ENOENT') {
-          console.warn('[PLATFORM-ROLLBACK] ⚠️ Git not available - rollback not possible in this environment');
-          throw new Error('Rollback requires git, which is not available in this deployment environment');
+          console.warn('[PLATFORM-ROLLBACK] ⚠️ Git not installed - rollback not possible');
+          throw new Error('Rollback requires git, which is not installed in this environment');
+        }
+        // Handle not a git repository (Docker containers in production)
+        if (gitError.code === 128 || gitError.message?.includes('not a git repository')) {
+          console.warn('[PLATFORM-ROLLBACK] ⚠️ Not a git repository - rollback not possible in production');
+          console.warn('[PLATFORM-ROLLBACK] Production deployments use GitHub API for changes');
+          throw new Error('Rollback is not available in production. Use GitHub API to revert changes.');
         }
         throw gitError;
       }
@@ -495,6 +502,20 @@ export class PlatformHealingService {
         throw new Error('Invalid directory path - path traversal detected');
       }
 
+      // Check if directory exists (especially important in production where client/ doesn't exist)
+      try {
+        await fs.access(fullPath);
+      } catch (error: any) {
+        // Directory doesn't exist - return empty array in production, throw in dev
+        if (process.env.NODE_ENV === 'production') {
+          console.warn(`[PLATFORM-LIST] ⚠️ Directory not found in production: ${directory}`);
+          console.warn(`[PLATFORM-LIST] Production build only has: dist/, server/, shared/`);
+          console.warn(`[PLATFORM-LIST] Use GitHub API to access source files`);
+          return [];
+        }
+        throw new Error(`Directory not found: ${directory}`);
+      }
+
       const entries = await fs.readdir(fullPath, { withFileTypes: true });
       
       const files: string[] = [];
@@ -515,6 +536,11 @@ export class PlatformHealingService {
 
       return files;
     } catch (error: any) {
+      // Gracefully handle errors in production
+      if (process.env.NODE_ENV === 'production') {
+        console.error(`[PLATFORM-LIST] ⚠️ Error listing files: ${error.message}`);
+        return [];
+      }
       throw new Error(`Failed to list platform files: ${error.message}`);
     }
   }
