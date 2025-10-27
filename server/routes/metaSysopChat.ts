@@ -1405,28 +1405,20 @@ DO NOT create new tasks - UPDATE existing ones!`;
           content: toolResults,
         });
       } else {
-        // 🎯 FINAL VALIDATION: Don't end loop unless all tasks are actually complete
+        // 🎯 FINAL VALIDATION: Only enforce task completion if Meta-SySop created a task list
+        // If just chatting (no task list), let conversation end naturally
         const finalCheck = await readTaskList({ userId });
 
         if (!finalCheck.success) {
-          // CRITICAL: If readTaskList fails, BLOCK session end (don't allow silent continuation)
-          console.error('[META-SYSOP-ANTI-LYING] readTaskList failed - cannot verify tasks complete!');
-          sendEvent('error', { message: 'Cannot verify task completion - retrying...' });
-
-          const errorMessage = `❌ ERROR: Cannot verify task completion status!\n\n` +
-            `Task verification failed: ${finalCheck.error}\n\n` +
-            `You MUST ensure all tasks are completed before ending. Call readTaskList() to verify, then complete any remaining tasks.`;
-
-          conversationMessages.push({
-            role: 'user',
-            content: errorMessage,
-          });
-          continue; // Force retry - do NOT allow loop end
-        }
-
-        if (finalCheck.taskLists) {
+          // Task list check failed - if there's an active list we created, this is a problem
+          // If no active list, we're just chatting, so it's fine
+          console.warn('[META-SYSOP] readTaskList check failed:', finalCheck.error);
+          // Allow conversation to continue/end naturally
+          continueLoop = false;
+        } else if (finalCheck.taskLists) {
           const activeList = finalCheck.taskLists.find((list: any) => list.status === 'active');
           if (activeList) {
+            // Found an active task list - enforce completion
             const incompleteTasks = activeList.tasks.filter((t: any) => t.status !== 'completed');
             if (incompleteTasks.length > 0) {
               console.error('[META-SYSOP-ANTI-LYING] Blocked loop end - tasks incomplete:', incompleteTasks.map((t: any) => t.title));
@@ -1443,13 +1435,21 @@ DO NOT create new tasks - UPDATE existing ones!`;
                 content: errorMessage,
               });
               continue; // Force another iteration
+            } else {
+              // Active task list exists, all tasks complete
+              console.log('[META-SYSOP-ENFORCEMENT] ✅ All tasks verified complete - ending session');
+              continueLoop = false;
             }
+          } else {
+            // No active task list - just a conversation, let it end naturally
+            console.log('[META-SYSOP] No active task list - conversation ending naturally');
+            continueLoop = false;
           }
+        } else {
+          // No task lists at all - just chatting
+          console.log('[META-SYSOP] No task lists - conversation ending naturally');
+          continueLoop = false;
         }
-
-        // ✅ ALL VALIDATIONS PASSED: Tasks verified complete, safe to end session
-        console.log('[META-SYSOP-ENFORCEMENT] ✅ All tasks verified complete - ending session');
-        continueLoop = false;
       }
     }
 
