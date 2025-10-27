@@ -1,0 +1,124 @@
+2025-10-27T02:44:28.000000000Z [inf]  Starting Container
+2025-10-27T02:44:29.501247271Z [inf]  
+2025-10-27T02:44:29.501269214Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-10-27T02:44:29.501526640Z [inf]  ======================================
+2025-10-27T02:44:29.501533403Z [inf]  🚂 RAILWAY STARTUP SCRIPT
+2025-10-27T02:44:29.501540322Z [inf]  ======================================
+2025-10-27T02:44:29.501547502Z [inf]  Time: Mon Oct 27 02:44:28 UTC 2025
+2025-10-27T02:44:29.781054216Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-10-27T02:44:29.781061123Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-10-27T02:44:30.563391793Z [inf]  [⣷] Pulling schema from database...
+2025-10-27T02:44:30.563399885Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-27T02:44:30.563408048Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-27T02:44:30.563499429Z [inf]  Using 'pg' driver for database querying
+2025-10-27T02:44:30.622061017Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-27T02:44:30.750248962Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-27T02:44:30.878991427Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-27T02:44:31.006984506Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-27T02:44:31.560903099Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-27T02:44:31.560909629Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-27T02:44:31.560915498Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-27T02:44:31.560923991Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-27T02:44:31.662961856Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-27T02:44:31.779631748Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-27T02:44:31.919357252Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-27T02:44:32.034079793Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-27T02:44:32.579528038Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-27T02:44:32.579532294Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-27T02:44:32.579536414Z [inf]  [2K[1G[✓] Pulling schema from database...
+2025-10-27T02:44:32.579541728Z [inf]  [i] No changes detected
+2025-10-27T02:44:32.579547975Z [inf]  
+2025-10-27T02:44:32.579554169Z [inf]  ✅ Database migrations completed successfully!
+2025-10-27T02:44:32.579560081Z [inf]  
+2025-10-27T02:44:32.579566482Z [inf]  🚀 Starting Node.js application...
+2025-10-27T02:44:33.632532017Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-27T02:44:33.632540790Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-27T02:44:33.632546655Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-27T02:44:33.632551922Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-27T02:44:33.632557835Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-10-27T02:44:33.632563965Z [inf]  [db] Connection string includes SSL params: true
+2025-10-27T02:44:33.632570288Z [inf]  [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-27T02:44:33.632577539Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-27T02:44:33.632585038Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-27T02:44:33.632593937Z [inf]  📡 WebSocket server initialized at /ws
+2025-10-27T02:44:33.632600302Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-27T02:44:33.632605974Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-27T02:44:33.632610839Z [inf]  ✅ All routes registered successfully
+2025-10-27T02:44:33.632616004Z [inf]  🔍 Testing database connection...
+2025-10-27T02:44:33.632621604Z [inf]  2:44:33 AM [express] serving on port 8080
+2025-10-27T02:44:33.632646716Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-10-27T02:44:33.673139292Z [inf]  ✅ Database connected successfully
+2025-10-27T02:44:33.673144850Z [inf]  🔧 Auto-healing system ENABLED (production mode)
+2025-10-27T02:44:33.673151818Z [inf]  
+2025-10-27T02:44:33.673157997Z [inf]  🔍 Checking GitHub integration configuration...
+2025-10-27T02:44:33.673164565Z [inf]  ✅ GitHub integration configured successfully
+2025-10-27T02:44:33.673170764Z [inf]     - Repository: 6-7Development/archetype
+2025-10-27T02:44:33.673177614Z [inf]     - Branch: main
+2025-10-27T02:44:33.673186565Z [inf]     - Token: ✓ (configured)
+2025-10-27T02:44:33.673193982Z [inf]     - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-27T02:44:33.673200438Z [inf]     - Maintenance mode: Available for owner
+2025-10-27T02:44:33.673209856Z [inf]  
+2025-10-27T02:44:36.129805190Z [err]  Failed to get git info, using defaults: Error: Command failed: git rev-parse HEAD
+2025-10-27T02:44:36.129817781Z [err]  fatal: not a git repository (or any of the parent directories): .git
+2025-10-27T02:44:36.129825289Z [err]  
+2025-10-27T02:44:36.129833330Z [err]      at genericNodeError (node:internal/errors:984:15)
+2025-10-27T02:44:36.129844730Z [err]      at wrappedFn (node:internal/errors:538:14)
+2025-10-27T02:44:36.129853019Z [err]      at ChildProcess.exithandler (node:child_process:422:12)
+2025-10-27T02:44:36.129859450Z [err]      at ChildProcess.emit (node:events:524:28)
+2025-10-27T02:44:36.129865498Z [err]      at maybeClose (node:internal/child_process:1104:16)
+2025-10-27T02:44:36.129872078Z [err]      at Socket.<anonymous> (node:internal/child_process:456:11)
+2025-10-27T02:44:36.129878952Z [err]      at Socket.emit (node:events:524:28)
+2025-10-27T02:44:36.129884761Z [err]      at Pipe.<anonymous> (node:net:343:12) {
+2025-10-27T02:44:36.129890224Z [err]    code: 128,
+2025-10-27T02:44:36.129896952Z [err]    killed: false,
+2025-10-27T02:44:36.129901483Z [err]    signal: null,
+2025-10-27T02:44:36.129905744Z [err]    cmd: 'git rev-parse HEAD',
+2025-10-27T02:44:36.129909390Z [err]    stdout: '',
+2025-10-27T02:44:36.129913865Z [err]    stderr: 'fatal: not a git repository (or any of the parent directories): .git\n'
+2025-10-27T02:44:36.129918565Z [err]  }
+2025-10-27T02:44:36.129922976Z [inf]  2:44:36 AM [express] GET /api/deployment-info 200 in 16ms :: {"version":"1.0.0","commitHash":"unknow…
+2025-10-27T02:44:39.637966712Z [inf]  [AUTH] Verifying password...
+2025-10-27T02:44:39.637980518Z [inf]  [AUTH] Password valid: true
+2025-10-27T02:44:39.637990230Z [inf]  [AUTH] Authentication successful for: root@getdc360.com
+2025-10-27T02:44:39.637996728Z [inf]  2:44:39 AM [express] POST /api/auth/login 200 in 277ms :: {"success":true,"user":{"id":"723e1301-c72…
+2025-10-27T02:44:39.638175511Z [inf]  [AUTH] Login attempt for email: root@getdc360.com
+2025-10-27T02:44:39.638183330Z [inf]  [AUTH] Found users: 1
+2025-10-27T02:44:39.638190117Z [inf]  [AUTH] User found: root@getdc360.com has password: true
+2025-10-27T02:44:40.118552118Z [inf]  2:44:40 AM [express] GET /api/auth/me 304 in 7ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef954…
+2025-10-27T02:44:40.609399715Z [inf]  2:44:40 AM [express] GET /api/projects 304 in 85ms :: []
+2025-10-27T02:44:41.714566829Z [inf]  2:44:41 AM [express] GET /api/platform/chat/history 200 in 15ms
+2025-10-27T02:44:41.714572838Z [inf]  2:44:41 AM [express] GET /api/platform/status 200 in 12ms :: {"overallHealth":100,"activeIncidents":…
+2025-10-27T02:44:41.714578910Z [inf]  ✅ WebSocket client connected
+2025-10-27T02:44:41.714585373Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T02:44:45.060348584Z [inf]  2:44:45 AM [express] POST /api/platform/chat/stream 200 in 11ms
+2025-10-27T02:45:15.063816170Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-27T02:45:15.063824024Z [inf]  2:45:08 AM [express] GET /api/auth/me 304 in 10ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef95…
+2025-10-27T02:45:15.063829722Z [inf]  2:45:08 AM [express] GET /api/platform/status 200 in 18ms :: {"overallHealth":100,"activeIncidents":…
+2025-10-27T02:45:15.063836966Z [inf]  2:45:08 AM [express] GET /api/platform/chat/history 304 in 19ms
+2025-10-27T02:45:15.063842751Z [inf]  ✅ WebSocket client connected
+2025-10-27T02:45:15.063847701Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T02:45:15.063853877Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-27T02:45:15.063859399Z [inf]  2:45:13 AM [express] GET /api/platform/status 200 in 21ms :: {"overallHealth":100,"activeIncidents":…
+2025-10-27T02:45:15.063864527Z [inf]  2:45:13 AM [express] GET /api/auth/me 304 in 91ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef95…
+2025-10-27T02:45:15.063871413Z [inf]  2:45:13 AM [express] GET /api/platform/chat/history 304 in 92ms
+2025-10-27T02:45:15.063876652Z [inf]  ✅ WebSocket client connected
+2025-10-27T02:45:15.063881599Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T02:45:16.330879145Z [inf]  2:45:16 AM [express] POST /api/platform/chat/stream 200 in 7ms
+2025-10-27T02:54:37.700450671Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-27T02:54:37.700463319Z [inf]  }
+2025-10-27T02:54:37.700772000Z [inf]  [CACHE] Stats: {
+2025-10-27T02:54:37.700777614Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-27T02:54:37.700782332Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-27T02:54:37.700786703Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-27T03:04:38.605319032Z [inf]  [CACHE] Stats: {
+2025-10-27T03:04:38.605325972Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-27T03:04:38.605334850Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-27T03:04:38.605341928Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-27T03:04:38.605349462Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-27T03:04:38.605357549Z [inf]  }
+2025-10-27T03:14:40.370903643Z [inf]  [CACHE] Stats: {
+2025-10-27T03:14:40.370911713Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-27T03:14:40.370919925Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-27T03:14:40.370926356Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-27T03:14:40.370933630Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-27T03:14:40.370941900Z [inf]  }
