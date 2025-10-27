@@ -9,7 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { PlatformHealingChat } from '@/components/platform-healing-chat';
+import { MetaSySopChat } from '@/components/meta-sysop-chat';
 import { 
   Activity, 
   AlertTriangle, 
@@ -686,107 +686,12 @@ function PlatformHealingContent() {
             </div>
           )}
 
-          {/* Healing Chat Card */}
-          <div className="bg-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col" style={{ height: '500px' }} data-testid="chat-card">
-            <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 border-b border-border flex-wrap">
-              <h3 className="font-bold text-sm">Meta-SySop Chat</h3>
-              <Badge 
-                variant={phase === 'idle' ? 'secondary' : phase === 'completed' ? 'default' : 'outline'}
-                className={`${phase === 'analyzing' || phase === 'executing' ? 'bg-blue-500/10 text-blue-300 border-blue-500/30' : ''} shrink-0`}
-                data-testid="run-phase-badge"
-              >
-                {phase === 'idle' ? 'Idle' : phase.charAt(0).toUpperCase() + phase.slice(1)}
-              </Badge>
-            </div>
-            
-            <PlatformHealingChat
-              messages={healingMessages}
-              pendingWrite={pendingWrite}
-              onApprove={(sessionId) => approveMutation.mutate(sessionId)}
-              onReject={(sessionId) => rejectMutation.mutate(sessionId)}
-              isLoading={autoHealMutation.isPending}
+          {/* Meta-SySop Chat - Full Chatroom Interface */}
+          <div className="bg-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col" style={{ height: '600px' }} data-testid="chat-card">
+            <MetaSySopChat 
+              autoCommit={false}
+              autoPush={false}
             />
-          </div>
-
-          {/* Replit Agent Style Chat Input */}
-          <div id="issue" className="bg-background border border-border rounded-lg shadow-sm overflow-hidden">
-            {/* Textarea */}
-            <Textarea
-              value={issueDescription}
-              onChange={e => setIssueDescription(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                  e.preventDefault();
-                  if (issueDescription.trim() && !autoHealMutation.isPending) {
-                    startRun(issueDescription.trim());
-                    setIssueDescription('');
-                  }
-                }
-              }}
-              placeholder="Make, test, iterate..."
-              className="min-h-[80px] border-0 border-b border-border resize-none focus-visible:ring-0 text-base bg-background rounded-none px-4 pt-4 pb-2"
-              data-testid="input-issue-description"
-            />
-            
-            {/* Toolbar */}
-            <div className="flex items-center justify-between px-2 py-2 bg-background">
-              {/* Left Side Tools */}
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 gap-1 text-foreground hover-elevate"
-                  disabled={autoHealMutation.isPending}
-                  data-testid="button-build-mode"
-                >
-                  <Package className="w-4 h-4" />
-                  <span className="text-sm font-medium">Build</span>
-                  <ChevronDown className="w-3 h-3 opacity-50" />
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 hover-elevate"
-                  disabled={autoHealMutation.isPending}
-                  data-testid="button-ai-assist"
-                >
-                  <Sparkles className="w-4 h-4" />
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 hover-elevate"
-                  disabled={autoHealMutation.isPending}
-                  data-testid="button-attach"
-                >
-                  <Paperclip className="w-4 h-4" />
-                </Button>
-              </div>
-
-              {/* Right Side Actions */}
-              <div className="flex items-center gap-1">
-                <Button
-                  size="icon"
-                  className="h-8 w-8 bg-amber-500 hover:bg-amber-600 text-white shadow-sm"
-                  onClick={() => {
-                    if (issueDescription.trim()) {
-                      startRun(issueDescription.trim());
-                      setIssueDescription('');
-                    }
-                  }}
-                  disabled={!issueDescription.trim() || autoHealMutation.isPending}
-                  data-testid="button-send"
-                >
-                  {autoHealMutation.isPending ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <ArrowUp className="w-4 h-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
           </div>
         </section>
       </div>
