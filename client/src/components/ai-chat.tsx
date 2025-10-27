@@ -86,7 +86,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
   const [progressStatus, setProgressStatus] = useState<'thinking' | 'working' | 'vibing' | 'idle'>('idle');
   const [progressMessage, setProgressMessage] = useState("");
-  const [showTaskList, setShowTaskList] = useState(false);
+  const [showTaskList, setShowTaskList] = useState(true); // Default true to show UI when tasks arrive
 
   // Fix sessionId persistence - scoped to project, recomputes when project changes
   const sessionId = useMemo(() => {
