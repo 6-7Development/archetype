@@ -114,16 +114,25 @@ export class PlatformHealingService {
       const sanitizedId = this.sanitizeBackupId(backupId);
       const branchName = `${this.BACKUP_BRANCH_PREFIX}${sanitizedId}`;
 
-      const { stdout: branches } = await execFileAsync('git', ['branch', '--list'], { cwd: this.PROJECT_ROOT });
-      if (!branches.includes(branchName)) {
-        throw new Error(`Backup branch ${branchName} not found`);
+      // Check if git is available
+      try {
+        const { stdout: branches } = await execFileAsync('git', ['branch', '--list'], { cwd: this.PROJECT_ROOT });
+        if (!branches.includes(branchName)) {
+          throw new Error(`Backup branch ${branchName} not found`);
+        }
+
+        await execFileAsync('git', ['stash'], { cwd: this.PROJECT_ROOT });
+        
+        await execFileAsync('git', ['reset', '--hard', branchName], { cwd: this.PROJECT_ROOT });
+
+        console.log(`[PLATFORM-ROLLBACK] ✅ Rolled back to backup: ${sanitizedId}`);
+      } catch (gitError: any) {
+        if (gitError.code === 'ENOENT') {
+          console.warn('[PLATFORM-ROLLBACK] ⚠️ Git not available - rollback not possible in this environment');
+          throw new Error('Rollback requires git, which is not available in this deployment environment');
+        }
+        throw gitError;
       }
-
-      await execFileAsync('git', ['stash'], { cwd: this.PROJECT_ROOT });
-      
-      await execFileAsync('git', ['reset', '--hard', branchName], { cwd: this.PROJECT_ROOT });
-
-      console.log(`[PLATFORM-ROLLBACK] Rolled back to backup: ${sanitizedId}`);
     } catch (error: any) {
       console.error('[PLATFORM-ROLLBACK] Rollback failed:', error);
       throw new Error(`Rollback failed: ${error.message}`);
@@ -155,6 +164,11 @@ export class PlatformHealingService {
 
       return backups;
     } catch (error: any) {
+      // Gracefully handle git not being available
+      if (error.code === 'ENOENT') {
+        console.warn('[PLATFORM-BACKUP] ⚠️ Git not available - cannot list backups');
+        return [];
+      }
       console.error('[PLATFORM-BACKUP] List backups failed:', error);
       return [];
     }
