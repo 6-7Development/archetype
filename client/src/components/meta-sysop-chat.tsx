@@ -261,6 +261,41 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                   setProgressStatus('working');
                   break;
 
+                case 'task_list_created':
+                  // Fetch the task list from the database
+                  fetch(`/api/meta-sysop/task-list/${data.taskListId}`, {
+                    credentials: 'include'
+                  })
+                    .then(res => res.json())
+                    .then(taskListData => {
+                      if (taskListData.success && taskListData.tasks) {
+                        const formattedTasks: AgentTask[] = taskListData.tasks.map((t: any) => ({
+                          id: t.id,
+                          title: t.title,
+                          description: t.description,
+                          status: t.status as AgentTask['status'],
+                        }));
+                        setTasks(formattedTasks);
+                        setShowTaskList(true);
+                        setProgressMessage('Task list created - tracking progress...');
+                        console.log('[META-SYSOP] Task list populated:', formattedTasks.length, 'tasks');
+                      }
+                    })
+                    .catch(err => console.error('[META-SYSOP] Failed to fetch task list:', err));
+                  break;
+
+                case 'task_updated':
+                  // Update specific task status
+                  setTasks(prev => prev.map(t => 
+                    t.id === data.taskId 
+                      ? { ...t, status: data.status as AgentTask['status'] }
+                      : t
+                  ));
+                  if (data.status === 'in_progress') {
+                    setActiveTaskId(data.taskId);
+                  }
+                  break;
+
                 case 'done':
                   // Add assistant message to session
                   const assistantMsg: Message = {
@@ -349,25 +384,6 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
 
   return (
     <div className="flex h-full overflow-hidden bg-slate-900/60">
-      {/* Task List Sidebar */}
-      {showTaskList && tasks.length > 0 && (
-        <div className="w-64 border-r border-slate-800/50 flex-shrink-0 overflow-y-auto bg-slate-950/60">
-          <div className="p-3 border-b border-slate-800/50 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-200">Tasks</h3>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6"
-              onClick={() => setShowTaskList(false)}
-              data-testid="button-hide-tasks"
-            >
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </div>
-          <AgentTaskList tasks={tasks} activeTaskId={activeTaskId} onTaskClick={setActiveTaskId} />
-        </div>
-      )}
-
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Active Task Header */}
@@ -454,6 +470,35 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                 )}
               </div>
             ))}
+
+            {/* Inline Task Progress Card */}
+            {showTaskList && tasks.length > 0 && (
+              <div className="animate-in fade-in-up">
+                <div className="bg-slate-800/60 border border-slate-700/50 rounded-xl p-4 shadow-lg backdrop-blur-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />
+                      <h3 className="text-sm font-semibold text-slate-200">
+                        Task Progress
+                      </h3>
+                      <span className="text-xs text-slate-400">
+                        {tasks.filter(t => t.status === 'completed').length}/{tasks.length}
+                      </span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => setShowTaskList(false)}
+                      data-testid="button-hide-tasks"
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <AgentTaskList tasks={tasks} activeTaskId={activeTaskId} onTaskClick={setActiveTaskId} />
+                </div>
+              </div>
+            )}
 
             {/* Streaming indicator */}
             {isStreaming && (

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db';
-import { chatMessages, taskLists, metaSysopAttachments, users, subscriptions, projects } from '@shared/schema';
+import { chatMessages, taskLists, tasks, metaSysopAttachments, users, subscriptions, projects } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth';
 import Anthropic from '@anthropic-ai/sdk';
@@ -348,6 +348,30 @@ router.get('/projects', isAuthenticated, isAdmin, async (req: any, res) => {
     res.json(projects);
   } catch (error: any) {
     console.error('[META-SYSOP] Get projects error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get task list by ID
+router.get('/task-list/:taskListId', isAuthenticated, isAdmin, async (req: any, res) => {
+  try {
+    const { taskListId } = req.params;
+    
+    const taskList = await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.taskListId, taskListId))
+      .orderBy(tasks.createdAt);
+    
+    console.log(`[META-SYSOP] Fetched ${taskList.length} tasks for task list ${taskListId}`);
+    
+    res.json({ 
+      success: true, 
+      tasks: taskList,
+      count: taskList.length,
+    });
+  } catch (error: any) {
+    console.error('[META-SYSOP] Get task list error:', error);
     res.status(500).json({ error: error.message });
   }
 });
