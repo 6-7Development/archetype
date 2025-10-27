@@ -427,10 +427,13 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
                 ) : (
                   <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
                 )}
-                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-700/50 text-xs text-slate-400 animate-pulse">
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  Meta-SySop is thinking...
-                </div>
+                {/* Show real-time progress messages */}
+                {progressMessage && (
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-700/50 text-xs text-emerald-400/90">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span className="animate-pulse">{progressMessage}</span>
+                  </div>
+                )}
               </div>
             </div>
           )}
