@@ -219,6 +219,29 @@ export const insertMetaSysopAttachmentSchema = createInsertSchema(metaSysopAttac
 export type InsertMetaSysopAttachment = z.infer<typeof insertMetaSysopAttachmentSchema>;
 export type MetaSysopAttachment = typeof metaSysopAttachments.$inferSelect;
 
+// Meta-SySop Sessions - Track pending changes in memory before batch commit
+export const metaSysopSessions = pgTable('meta_sysop_sessions', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar('user_id').notNull(),
+  pendingChanges: jsonb('pending_changes').$type<Array<{
+    path: string;
+    operation: 'create' | 'modify' | 'delete';
+    oldContent?: string;
+    newContent: string;
+  }>>().default(sql`'[]'::jsonb`),
+  createdAt: timestamp('created_at').defaultNow(),
+  lastUpdated: timestamp('last_updated').defaultNow(),
+});
+
+export const insertMetaSysopSessionSchema = createInsertSchema(metaSysopSessions).omit({
+  id: true,
+  createdAt: true,
+  lastUpdated: true,
+});
+
+export type InsertMetaSysopSession = z.infer<typeof insertMetaSysopSessionSchema>;
+export type MetaSysopSession = typeof metaSysopSessions.$inferSelect;
+
 // Usage Tracking & Billing
 export const usageLogs = pgTable("usage_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
