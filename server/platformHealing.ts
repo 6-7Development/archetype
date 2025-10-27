@@ -834,6 +834,136 @@ export class PlatformHealingService {
       return { safe: false, issues };
     }
   }
+
+  async addPendingChange(userId: string, change: { path: string; operation: 'create' | 'modify' | 'delete'; oldContent?: string; newContent: string }): Promise<void> {
+    const { db } = await import('./db');
+    const { metaSysopSessions } = await import('@shared/schema');
+    const { eq } = await import('drizzle-orm');
+
+    try {
+      const [session] = await db.select().from(metaSysopSessions).where(eq(metaSysopSessions.userId, userId)).limit(1);
+
+      if (session) {
+        const pendingChanges = session.pendingChanges || [];
+        const existingIndex = pendingChanges.findIndex((c: any) => c.path === change.path);
+        
+        if (existingIndex >= 0) {
+          pendingChanges[existingIndex] = change;
+        } else {
+          pendingChanges.push(change);
+        }
+
+        await db.update(metaSysopSessions)
+          .set({ pendingChanges, lastUpdated: new Date() })
+          .where(eq(metaSysopSessions.userId, userId));
+      } else {
+        await db.insert(metaSysopSessions).values({
+          userId,
+          pendingChanges: [change],
+        });
+      }
+
+      console.log(`[SESSION] Added pending change: ${change.operation} ${change.path}`);
+    } catch (error: any) {
+      console.error('[SESSION] Failed to add pending change:', error);
+      throw error;
+    }
+  }
+
+  async getPendingChanges(userId: string): Promise<Array<{ path: string; operation: 'create' | 'modify' | 'delete'; oldContent?: string; newContent: string }>> {
+    const { db } = await import('./db');
+    const { metaSysopSessions } = await import('@shared/schema');
+    const { eq } = await import('drizzle-orm');
+
+    try {
+      const [session] = await db.select().from(metaSysopSessions).where(eq(metaSysopSessions.userId, userId)).limit(1);
+      return session?.pendingChanges || [];
+    } catch (error: any) {
+      console.error('[SESSION] Failed to get pending changes:', error);
+      return [];
+    }
+  }
+
+  async deployAllChanges(userId: string): Promise<{ success: boolean; message: string; commitHash?: string; commitUrl?: string; filesDeployed: number }> {
+    const { db } = await import('./db');
+    const { metaSysopSessions } = await import('@shared/schema');
+    const { eq } = await import('drizzle-orm');
+
+    try {
+      const pendingChanges = await this.getPendingChanges(userId);
+
+      if (pendingChanges.length === 0) {
+        return {
+          success: true,
+          message: 'No pending changes to deploy',
+          filesDeployed: 0,
+        };
+      }
+
+      console.log(`[SESSION] Deploying ${pendingChanges.length} pending changes...`);
+
+      if (process.env.NODE_ENV === 'production') {
+        if (!isGitHubServiceAvailable()) {
+          throw new Error('GitHub service not available');
+        }
+
+        const githubService = getGitHubService();
+        const commitMessage = `Batch deploy ${pendingChanges.length} file(s) via Meta-SySop\n\nFiles changed:\n${pendingChanges.map(c => `- ${c.operation} ${c.path}`).join('\n')}`;
+
+        const filesToCommit: Array<{ path: string; content: string }> = pendingChanges
+          .filter(c => c.operation !== 'delete')
+          .map(c => ({ path: c.path, content: c.newContent }));
+
+        const result = await githubService.commitMultipleFiles(filesToCommit, commitMessage);
+
+        await db.delete(metaSysopSessions).where(eq(metaSysopSessions.userId, userId));
+
+        return {
+          success: true,
+          message: `Successfully deployed ${pendingChanges.length} file(s)`,
+          commitHash: result.commitHash,
+          commitUrl: result.commitUrl,
+          filesDeployed: pendingChanges.length,
+        };
+      } else {
+        for (const change of pendingChanges) {
+          if (change.operation === 'delete') {
+            await this.deletePlatformFile(change.path);
+          } else {
+            const fullPath = path.resolve(this.PROJECT_ROOT, change.path);
+            const dir = path.dirname(fullPath);
+            await fs.mkdir(dir, { recursive: true });
+            await fs.writeFile(fullPath, change.newContent, 'utf-8');
+          }
+        }
+
+        await db.delete(metaSysopSessions).where(eq(metaSysopSessions.userId, userId));
+
+        return {
+          success: true,
+          message: `Successfully deployed ${pendingChanges.length} file(s) in development mode`,
+          filesDeployed: pendingChanges.length,
+        };
+      }
+    } catch (error: any) {
+      console.error('[SESSION] Failed to deploy changes:', error);
+      throw new Error(`Failed to deploy changes: ${error.message}`);
+    }
+  }
+
+  async discardPendingChanges(userId: string): Promise<void> {
+    const { db } = await import('./db');
+    const { metaSysopSessions } = await import('@shared/schema');
+    const { eq } = await import('drizzle-orm');
+
+    try {
+      await db.delete(metaSysopSessions).where(eq(metaSysopSessions.userId, userId));
+      console.log(`[SESSION] Discarded pending changes for user ${userId}`);
+    } catch (error: any) {
+      console.error('[SESSION] Failed to discard pending changes:', error);
+      throw error;
+    }
+  }
 }
 
 export const platformHealing = new PlatformHealingService();

@@ -1782,4 +1782,50 @@ DO NOT create new tasks - UPDATE existing ones!`;
   }
 });
 
+// Get pending changes for current user session
+router.get('/pending-changes', isAuthenticated, isAdmin, async (req: any, res) => {
+  try {
+    const userId = req.authenticatedUserId;
+    const pendingChanges = await platformHealing.getPendingChanges(userId);
+
+    res.json({
+      success: true,
+      pendingChanges,
+      count: pendingChanges.length,
+    });
+  } catch (error: any) {
+    console.error('[META-SYSOP] Failed to get pending changes:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Deploy all pending changes to production (batch commit)
+router.post('/deploy-all', isAuthenticated, isAdmin, async (req: any, res) => {
+  try {
+    const userId = req.authenticatedUserId;
+    const result = await platformHealing.deployAllChanges(userId);
+
+    res.json(result);
+  } catch (error: any) {
+    console.error('[META-SYSOP] Failed to deploy changes:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Discard all pending changes
+router.delete('/discard-changes', isAuthenticated, isAdmin, async (req: any, res) => {
+  try {
+    const userId = req.authenticatedUserId;
+    await platformHealing.discardPendingChanges(userId);
+
+    res.json({
+      success: true,
+      message: 'All pending changes discarded',
+    });
+  } catch (error: any) {
+    console.error('[META-SYSOP] Failed to discard changes:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;

@@ -114,6 +114,15 @@ function PlatformHealingContent() {
     refetchInterval: false,
   });
 
+  // Fetch pending changes
+  const { data: pendingChangesData, isLoading: pendingChangesLoading, refetch: refetchPendingChanges } = useQuery<any>({
+    queryKey: ['/api/meta-sysop/pending-changes'],
+    refetchInterval: 5000,
+  });
+
+  const [selectedFileForDiff, setSelectedFileForDiff] = useState<string | null>(null);
+  const [showPendingChanges, setShowPendingChanges] = useState(true);
+
   // Update autonomy level mutation
   const updateAutonomyMutation = useMutation({
     mutationFn: async (level: string) => {
@@ -320,6 +329,50 @@ function PlatformHealingContent() {
         variant: 'destructive',
         title: 'Rejection failed',
         description: error.message || 'Failed to reject changes',
+      });
+    },
+  });
+
+  // Deploy All mutation - batch commit all pending changes
+  const deployAllMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('POST', '/api/meta-sysop/deploy-all', {});
+    },
+    onSuccess: (result: any) => {
+      refetchPendingChanges();
+      setSelectedFileForDiff(null);
+      toast({
+        title: 'Deployment successful!',
+        description: `Successfully deployed ${result.filesDeployed} file(s)`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Deployment failed',
+        description: error.message || 'Failed to deploy changes',
+      });
+    },
+  });
+
+  // Discard All mutation - clear all pending changes
+  const discardAllMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('DELETE', '/api/meta-sysop/discard-changes', {});
+    },
+    onSuccess: () => {
+      refetchPendingChanges();
+      setSelectedFileForDiff(null);
+      toast({
+        title: 'Changes discarded',
+        description: 'All pending changes have been discarded',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Discard failed',
+        description: error.message || 'Failed to discard changes',
       });
     },
   });
@@ -714,6 +767,131 @@ function PlatformHealingContent() {
                   )}
                 </Button>
               </div>
+            </div>
+          )}
+
+          {/* Pending Changes Panel - Replit Agent Style */}
+          {!pendingChangesLoading && pendingChangesData && pendingChangesData.count > 0 && (
+            <div className="bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+              <button
+                onClick={() => setShowPendingChanges(!showPendingChanges)}
+                className="w-full flex items-center justify-between p-4 sm:p-5 hover-elevate active-elevate-2"
+                data-testid="button-toggle-pending-changes"
+              >
+                <div className="flex items-center gap-3">
+                  <GitCommit className="w-5 h-5 text-yellow-400" />
+                  <div className="text-left">
+                    <h3 className="font-bold text-sm sm:text-base">
+                      Pending Changes
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {pendingChangesData.count} file{pendingChangesData.count !== 1 ? 's' : ''} staged
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
+                    {pendingChangesData.count}
+                  </Badge>
+                  <ChevronDown className={`w-5 h-5 transition-transform ${showPendingChanges ? 'rotate-180' : ''}`} />
+                </div>
+              </button>
+
+              {showPendingChanges && (
+                <div className="border-t border-border p-4 sm:p-5 space-y-4">
+                  {/* File List */}
+                  <div className="space-y-2">
+                    {pendingChangesData.pendingChanges.map((change: any, idx: number) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedFileForDiff(selectedFileForDiff === change.path ? null : change.path)}
+                        className={`w-full text-left p-3 rounded-lg border transition-all ${
+                          selectedFileForDiff === change.path
+                            ? 'border-blue-500 bg-blue-500/10'
+                            : 'border-border hover-elevate active-elevate-2'
+                        }`}
+                        data-testid={`file-change-${idx}`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <FileText className="w-4 h-4 shrink-0 text-muted-foreground" />
+                            <span className="font-mono text-xs truncate">{change.path}</span>
+                          </div>
+                          <Badge
+                            variant={
+                              change.operation === 'create' ? 'default' :
+                              change.operation === 'modify' ? 'secondary' : 'destructive'
+                            }
+                            className="shrink-0"
+                          >
+                            {change.operation}
+                          </Badge>
+                        </div>
+
+                        {selectedFileForDiff === change.path && change.oldContent && (
+                          <div className="mt-3 border-t border-border pt-3">
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              <div>
+                                <p className="font-semibold text-muted-foreground mb-1">Before</p>
+                                <pre className="p-2 bg-red-500/10 border border-red-500/20 rounded text-xs overflow-x-auto max-h-40">
+                                  {change.oldContent.substring(0, 500)}{change.oldContent.length > 500 ? '...' : ''}
+                                </pre>
+                              </div>
+                              <div>
+                                <p className="font-semibold text-muted-foreground mb-1">After</p>
+                                <pre className="p-2 bg-green-500/10 border border-green-500/20 rounded text-xs overflow-x-auto max-h-40">
+                                  {change.newContent.substring(0, 500)}{change.newContent.length > 500 ? '...' : ''}
+                                </pre>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                    <Button
+                      className="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white font-semibold shadow-lg shadow-green-500/25"
+                      onClick={() => deployAllMutation.mutate()}
+                      disabled={deployAllMutation.isPending}
+                      data-testid="button-deploy-all"
+                    >
+                      {deployAllMutation.isPending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Deploying...
+                        </>
+                      ) : (
+                        <>
+                          <GitCommit className="w-4 h-4 mr-2" />
+                          Deploy All ({pendingChangesData.count})
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      className="flex-1"
+                      onClick={() => discardAllMutation.mutate()}
+                      disabled={discardAllMutation.isPending}
+                      data-testid="button-discard-all"
+                    >
+                      {discardAllMutation.isPending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Discarding...
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="w-4 h-4 mr-2" />
+                          Discard All
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
