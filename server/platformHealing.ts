@@ -910,11 +910,15 @@ export class PlatformHealingService {
         const githubService = getGitHubService();
         const commitMessage = `Batch deploy ${pendingChanges.length} file(s) via Meta-SySop\n\nFiles changed:\n${pendingChanges.map(c => `- ${c.operation} ${c.path}`).join('\n')}`;
 
-        const filesToCommit: Array<{ path: string; content: string }> = pendingChanges
+        const filesToCommit = pendingChanges
           .filter(c => c.operation !== 'delete')
-          .map(c => ({ path: c.path, content: c.newContent }));
+          .map(c => ({ 
+            path: c.path, 
+            content: c.newContent, 
+            operation: c.operation as 'create' | 'modify' 
+          }));
 
-        const result = await githubService.commitMultipleFiles(filesToCommit, commitMessage);
+        const result = await githubService.commitFiles(filesToCommit, commitMessage);
 
         await db.delete(metaSysopSessions).where(eq(metaSysopSessions.userId, userId));
 
