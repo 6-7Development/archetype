@@ -424,11 +424,14 @@ File Structure:
 → Use diagnosis tools, answer the question, explain findings
 
 **IF WORK REQUEST:**
-1. Understand: readTaskList(), perform_diagnosis()
+1. Understand: perform_diagnosis() (readTaskList optional)
 2. Execute: Fix the issue (or delegate to sub-agent)
 3. Deploy: commit_to_github() after verification
-4. Update: updateTask() to show progress
-5. Consult: architect_consult() if stuck (optional - not required!)
+4. Consult: architect_consult() if stuck (optional)
+
+**TASK TRACKING (Optional):**
+- updateTask() is OPTIONAL - only use if readTaskList() found an active list
+- If no task list exists, just proceed with your work!
 
 **ANTI-LYING RULE:**
 ❌ NEVER claim success before seeing results
@@ -655,9 +658,13 @@ Be conversational, be helpful, and only work when asked!`;
       },
     ];
 
-    // 🎯 AUTONOMOUS MODE: Remove approval tool when autoCommit=true
+    // 🎯 AUTONOMOUS MODE: Remove approval + task tracking tools when autoCommit=true
     const availableTools = autoCommit 
-      ? tools.filter(tool => tool.name !== 'request_user_approval')
+      ? tools.filter(tool => 
+          tool.name !== 'request_user_approval' && 
+          tool.name !== 'readTaskList' && 
+          tool.name !== 'updateTask'
+        )
       : tools;
 
     const client = new Anthropic({ apiKey: anthropicKey });
@@ -876,7 +883,7 @@ DO NOT create new tasks - UPDATE existing ones!`;
                   ).join('\n');
                   toolResult = `Current Task List (${activeList.id}):\n${taskSummary}`;
                 } else {
-                  toolResult = `No active task list found. A task list should have been pre-created. Proceed with your work - the task list will be available in the next turn.`;
+                  toolResult = `No active task list found. Task tracking is optional - proceed with your work without calling updateTask().`;
                 }
               } else {
                 toolResult = `Error reading task list: ${result.error}. Proceed with your work anyway - task tracking is optional.`;
