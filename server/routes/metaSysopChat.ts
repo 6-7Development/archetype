@@ -2429,7 +2429,8 @@ DO NOT create new tasks - UPDATE existing ones!`;
         // Don't throw - cleanup is best-effort
       }
     } else {
-      console.warn('[META-SYSOP-CLEANUP] ⚠️ No activeTaskListId tracked - skipping cleanup');
+      // No task list to clean up - this is normal and expected
+      console.log('[META-SYSOP-CLEANUP] ℹ️ No task list in this session (task tracking is optional)');
     }
 
     // Commit and push if enabled (autonomous - no approval required)
