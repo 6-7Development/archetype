@@ -387,7 +387,7 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
               <MessageContent content={message.content} />
               
               {/* File changes indicator */}
-              {message.platformChanges && message.platformChanges.files.length > 0 && (
+              {message.platformChanges && message.platformChanges.files && message.platformChanges.files.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-slate-700/50 space-y-2">
                   <div className="flex items-center gap-2 text-xs font-semibold text-slate-300 mb-2">
                     <FileCode className="h-3.5 w-3.5" />
