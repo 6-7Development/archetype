@@ -534,8 +534,11 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           eq(chatMessages.isPlatformHealing, true)
         )
       )
-      .orderBy(chatMessages.createdAt)
+      .orderBy(desc(chatMessages.createdAt)) // 🔥 DESC to get LATEST messages
       .limit(25); // Last 25 messages for comprehensive memory
+    
+    // Reverse to chronological order (oldest → newest) for Claude
+    history.reverse();
 
     // 🧠 EXTRACT MEMORY CONTEXT from conversation history
     const userMessages = history.filter(msg => msg.role === 'user' && msg.id !== userMsg.id);
