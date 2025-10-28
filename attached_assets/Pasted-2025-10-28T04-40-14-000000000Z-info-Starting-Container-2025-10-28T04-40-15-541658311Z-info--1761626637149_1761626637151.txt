@@ -1,0 +1,153 @@
+2025-10-28T04:40:14.000000000Z [info] Starting Container
+2025-10-28T04:40:15.541658311Z [info] ======================================
+2025-10-28T04:40:15.541663142Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT
+2025-10-28T04:40:15.541667328Z [info] ======================================
+2025-10-28T04:40:15.541672634Z [info] Time: Tue Oct 28 04:40:14 UTC 2025
+2025-10-28T04:40:15.541677042Z [info] 
+2025-10-28T04:40:15.541682040Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-10-28T04:40:15.728893580Z [info] No config path provided, using default 'drizzle.config.ts'
+2025-10-28T04:40:15.728901702Z [info] Reading config file '/app/drizzle.config.ts'
+2025-10-28T04:40:16.492811052Z [info] Using 'pg' driver for database querying
+2025-10-28T04:40:16.492817302Z [info] [â£·] Pulling schema from database...
+2025-10-28T04:40:16.492824569Z [info] a from database...
+2025-10-28T04:40:16.514173995Z [info] a from database...
+2025-10-28T04:40:16.642755836Z [info] a from database...
+2025-10-28T04:40:16.770229812Z [info] a from database...
+2025-10-28T04:40:16.902151637Z [info] a from database...
+2025-10-28T04:40:17.522740545Z [info] a from database...
+2025-10-28T04:40:17.522748549Z [info] a from database...
+2025-10-28T04:40:17.522756133Z [info] a from database...
+2025-10-28T04:40:17.522766876Z [info] a from database...
+2025-10-28T04:40:17.541269660Z [info] a from database...
+2025-10-28T04:40:17.678157035Z [info] a from database...
+2025-10-28T04:40:17.796240233Z [info] a from database...
+2025-10-28T04:40:17.924918891Z [info] a from database...
+2025-10-28T04:40:18.551498453Z [info] a from database...
+2025-10-28T04:40:18.551508445Z [info] a from database...
+2025-10-28T04:40:18.551514195Z [info] a from database...
+2025-10-28T04:40:18.551545785Z [info] a from database...
+2025-10-28T04:40:18.551553880Z [info] a from database...
+2025-10-28T04:40:18.601052346Z [info] [i] No changes detected
+2025-10-28T04:40:18.631811978Z [info] 
+2025-10-28T04:40:18.631819148Z [info] âœ… Database migrations completed successfully!
+2025-10-28T04:40:18.631824087Z [info] 
+2025-10-28T04:40:18.631828167Z [info] ðŸš€ Starting Node.js application...
+2025-10-28T04:40:20.598132291Z [info]    - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-28T04:40:20.598139713Z [info]    - Maintenance mode: Available for owner
+2025-10-28T04:40:20.598147957Z [info] 
+2025-10-28T04:40:20.598168111Z [info]    - Branch: main
+2025-10-28T04:40:20.598175107Z [info]    - Token: âœ“ (configured)
+2025-10-28T04:40:20.598498193Z [info] [db] âœ… Added sslmode=no-verify to connection string for production
+2025-10-28T04:40:20.598502968Z [info] [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-28T04:40:20.598508281Z [info] [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-28T04:40:20.598513179Z [info] [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-28T04:40:20.598517565Z [info] [db] SSL Configuration: {rejectUnauthorized:false}
+2025-10-28T04:40:20.598521726Z [info] [db] Connection string includes SSL params: true
+2025-10-28T04:40:20.598526302Z [info] [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-28T04:40:20.598530543Z [info] [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-28T04:40:20.598535227Z [info] [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-28T04:40:20.598544913Z [info] ðŸ“¡ WebSocket server initialized at /ws
+2025-10-28T04:40:20.598550056Z [info] [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-28T04:40:20.598556713Z [info] [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-28T04:40:20.598561413Z [info] âœ… All routes registered successfully
+2025-10-28T04:40:20.598566113Z [info] ðŸ” Testing database connection...
+2025-10-28T04:40:20.598570581Z [info] 4:40:20 AM [express] serving on port 8080
+2025-10-28T04:40:20.598574881Z [info] ðŸŒ Server accessible at http://0.0.0.0:8080
+2025-10-28T04:40:20.598579221Z [info] âœ… Database connected successfully
+2025-10-28T04:40:20.598585220Z [info] ðŸ”§ Auto-healing system ENABLED (production mode)
+2025-10-28T04:40:20.598590397Z [info] 
+2025-10-28T04:40:20.598595759Z [info] ðŸ” Checking GitHub integration configuration...
+2025-10-28T04:40:20.598600705Z [info] âœ… GitHub integration configured successfully
+2025-10-28T04:40:20.598604768Z [info]    - Repository: 6-7Development/archetype
+2025-10-28T04:41:00.116337872Z [info] [DEPLOYMENT-INFO] Using Railway environment variables
+2025-10-28T04:41:00.116350670Z [info] 4:40:50 AM [express] GET /api/deployment-info 200 in 6ms :: {version:"1.0.0",commitHash:"35a4fc1â€¦
+2025-10-28T04:41:00.116356844Z [info] [AUTH] Login attempt for email: root@getdc360.com
+2025-10-28T04:41:00.116376354Z [info] [AUTH] Found users: 1
+2025-10-28T04:41:00.116383632Z [info] [AUTH] User found: root@getdc360.com has password: true
+2025-10-28T04:41:00.116391866Z [info] [AUTH] Verifying password...
+2025-10-28T04:41:00.116401199Z [info] [AUTH] Password valid: true
+2025-10-28T04:41:00.116408100Z [info] [AUTH] Authentication successful for: root@getdc360.com
+2025-10-28T04:41:00.116414701Z [info] 4:40:55 AM [express] POST /api/auth/login 200 in 288ms :: {success:true,user:{id:"723e1301-c72â€¦
+2025-10-28T04:41:00.116423742Z [info] 4:40:56 AM [express] GET /api/auth/me 304 in 9ms :: {user:{id:"723e1301-c729-48fc-810a-39ddef954â€¦
+2025-10-28T04:41:00.116430563Z [info] 4:40:56 AM [express] GET /api/projects 304 in 95ms :: []
+2025-10-28T04:41:00.749753564Z [info] 4:41:00 AM [express] GET /api/admin/users 200 in 26ms
+2025-10-28T04:41:00.749757342Z [info] 4:41:00 AM [express] GET /api/maintenance-mode/status 200 in 21ms :: {enabled:true,reason:"fixinâ€¦
+2025-10-28T04:41:00.749761081Z [info] 4:41:00 AM [express] GET /api/admin/analytics 200 in 27ms
+2025-10-28T04:41:00.749765419Z [info] 4:41:00 AM [express] GET /api/admin/stats 200 in 22ms
+2025-10-28T04:41:00.777358160Z [info] 4:41:00 AM [express] GET /api/admin/usage-logs 200 in 91ms
+2025-10-28T04:41:03.067361423Z [info] 4:41:03 AM [express] GET /api/meta-sysop/pending-changes 304 in 24ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:41:03.067367156Z [info] [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-28T04:41:03.068740061Z [info] 4:41:03 AM [express] GET /api/meta-sysop/autonomy-level 304 in 26ms :: {currentLevel:"max","maxAllâ€¦
+2025-10-28T04:41:03.070367567Z [info] 4:41:03 AM [express] GET /api/meta-sysop/projects 304 in 27ms :: []
+2025-10-28T04:41:03.151196874Z [info] 4:41:03 AM [express] GET /api/platform/status 200 in 106ms :: {overallHealth:80,activeIncidents:â€¦
+2025-10-28T04:41:03.719195630Z [info] âœ… WebSocket client connected
+2025-10-28T04:41:03.719200969Z [info] ðŸ“¡ [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-28T04:41:08.161661941Z [info] 4:41:08 AM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:41:13.720272306Z [info] 4:41:13 AM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:41:15.788422327Z [info] [META-SYSOP-CHAT] Stream request received
+2025-10-28T04:41:15.788427918Z [info] [META-SYSOP-CHAT] Message: Diagnose fix platform commit Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-10-28T04:41:15.788433330Z [info] [META-SYSOP-CHAT] Setting up SSE headers
+2025-10-28T04:41:15.788439192Z [info] [META-SYSOP-CHAT] Heartbeat started - will send keepalive every 15s
+2025-10-28T04:41:15.788444151Z [info] [META-SYSOP-CHAT] Entering try block
+2025-10-28T04:41:15.788472292Z [info] [META-SYSOP-CHAT] User autonomy level: max
+2025-10-28T04:41:18.009821488Z [info] [META-SYSOP-CHAT] ðŸ’¬ Streaming text: I'll diagnose the platform, find issues, and fix the chat toolbar problems. Let me start by creating
+2025-10-28T04:41:18.776433120Z [info] 4:41:18 AM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:41:23.736927662Z [info] [META-SYSOP-FORCE] All tools executed and results added - now adding forcing message...
+2025-10-28T04:41:23.736940848Z [info] [META-SYSOP-FORCE] âœ… Forcing message added. Conversation length: 10
+2025-10-28T04:41:23.736948390Z [info] [META-SYSOP-FORCE] âœ… Continuing to iteration 2...
+2025-10-28T04:41:23.736957288Z [info] 4:41:23 AM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:41:23.736974734Z [info] [META-SYSOP] Response has tool calls: true
+2025-10-28T04:41:23.736976542Z [info] [META-SYSOP] Content blocks: text, text, tool_use
+2025-10-28T04:41:23.736993266Z [info] [META-SYSOP-FORCE] === ITERATION 1 CHECK ===
+2025-10-28T04:41:23.737004180Z [info] [META-SYSOP-FORCE] Tools called this iteration: createTaskList
+2025-10-28T04:41:23.737016956Z [info] [META-SYSOP] Task list created: e4038d06-95c6-44c5-8671-b2b1f0c26a86
+2025-10-28T04:41:23.737027138Z [info] [META-SYSOP-FORCE] Created task list: true
+2025-10-28T04:41:23.737093543Z [info] [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-28T04:41:23.737108467Z [info] [META-SYSOP-FORCE] Iteration count: 1
+2025-10-28T04:41:23.737118560Z [info] [META-SYSOP-FORCE] âŒâŒâŒ FORCING TRIGGERED! Meta-SySop skipped perform_diagnosis!
+2025-10-28T04:41:26.273157696Z [info] [META-SYSOP-FORCE] === ITERATION 2 CHECK ===
+2025-10-28T04:41:26.273170607Z [info] [META-SYSOP-FORCE] Tools called this iteration: updateTask
+2025-10-28T04:41:26.281465385Z [info] [META-SYSOP-FORCE] Created task list: false
+2025-10-28T04:41:26.281472027Z [info] [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-28T04:41:26.281479477Z [info] [META-SYSOP-FORCE] Iteration count: 2
+2025-10-28T04:41:26.281485600Z [info] [META-SYSOP-FORCE] âœ“ No forcing needed - proceeding normally
+2025-10-28T04:41:28.901310080Z [info] [META-SYSOP-FORCE] === ITERATION 3 CHECK ===
+2025-10-28T04:41:28.901319049Z [info] [META-SYSOP-FORCE] Tools called this iteration: perform_diagnosis
+2025-10-28T04:41:28.901325529Z [info] [META-SYSOP-FORCE] Created task list: false
+2025-10-28T04:41:28.901331091Z [info] [META-SYSOP-FORCE] Called diagnosis tools: true
+2025-10-28T04:41:28.901336816Z [info] [META-SYSOP-FORCE] Iteration count: 3
+2025-10-28T04:41:28.901343085Z [info] [META-SYSOP-FORCE] âœ“ No forcing needed - proceeding normally
+2025-10-28T04:41:28.901349122Z [info] 4:41:28 AM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:41:30.846257491Z [info] [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-28T04:41:30.846264487Z [info] [META-SYSOP-CHAT] ðŸ’¬ Streaming text: Let me run the diagnosis without specifying focus files:
+2025-10-28T04:41:31.048386913Z [info] [META-SYSOP-FORCE] === ITERATION 4 CHECK ===
+2025-10-28T04:41:31.048402551Z [info] [META-SYSOP-FORCE] Tools called this iteration: perform_diagnosis
+2025-10-28T04:41:31.073005163Z [info] [META-SYSOP-FORCE] Created task list: false
+2025-10-28T04:41:31.073018000Z [info] [META-SYSOP-FORCE] Called diagnosis tools: true
+2025-10-28T04:41:31.073043646Z [info] [META-SYSOP-FORCE] Iteration count: 4
+2025-10-28T04:41:31.073050939Z [info] [META-SYSOP-FORCE] âœ“ No forcing needed - proceeding normally
+2025-10-28T04:41:33.865929529Z [info] [META-SYSOP-CHAT] ðŸ’¬ Streaming text: Now let me check the task list to update the correct task ID:
+2025-10-28T04:41:33.865951141Z [info] [META-SYSOP-FORCE] === ITERATION 5 CHECK ===
+2025-10-28T04:41:33.865959856Z [info] [META-SYSOP-FORCE] Tools called this iteration: readTaskList
+2025-10-28T04:41:33.865967823Z [info] 4:41:33 AM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:41:34.075200175Z [info] [META-SYSOP-FORCE] Created task list: false
+2025-10-28T04:41:34.075213723Z [info] [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-28T04:41:34.075222975Z [info] [META-SYSOP-FORCE] Iteration count: 5
+2025-10-28T04:41:34.075230821Z [info] [META-SYSOP-FORCE] âœ“ No forcing needed - proceeding normally
+2025-10-28T04:41:34.092740924Z [info] [META-SYSOP-CLEANUP] Safety passed - checking task list e4038d06-95c6-44c5-8671-b2b1f0c26a86 for incomplete tasks...
+2025-10-28T04:41:34.122390223Z [info] [META-SYSOP-CLEANUP] â„¹ï¸ No stuck tasks. Status: 0 completed, 5 pending - no cleanup needed
+2025-10-28T04:41:34.125634326Z [info] [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: Meta-SySop chat: Diagnose fix platform commit - success
+2025-10-28T04:41:34.127758813Z [info] [META-SYSOP-HEARTBEAT] Cleared on stream end
+2025-10-28T04:41:34.131641553Z [info] 4:41:34 AM [express] POST /api/meta-sysop/stream 200 in 18802ms
+2025-10-28T04:41:34.859469533Z [info] [META-SYSOP] Fetched 5 tasks for task list e4038d06-95c6-44c5-8671-b2b1f0c26a86
+2025-10-28T04:41:34.859476092Z [info] 4:41:34 AM [express] GET /api/meta-sysop/task-list/e4038d06-95c6-44c5-8671-b2b1f0c26a86 200 in 11ms â€¦
+2025-10-28T04:41:38.857184016Z [info] 4:41:38 AM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:41:43.947212649Z [info] 4:41:43 AM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:41:49.059142288Z [info] 4:41:49 AM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:41:54.147984227Z [info] 4:41:54 AM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:41:59.240743719Z [info] 4:41:59 AM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:42:04.380060374Z [info] 4:42:04 AM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:42:09.937755419Z [info] 4:42:09 AM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:42:14.903467918Z [info] 4:42:14 AM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:42:20.149684130Z [info] 4:42:19 AM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:42:25.188333587Z [info] 4:42:24 AM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {success:true,"pendingChanâ€¦
