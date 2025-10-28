@@ -630,12 +630,40 @@ Be conversational, be helpful, and only work when asked!`;
       console.log(`[META-SYSOP-JOB-MANAGER] === ITERATION ${iterationCount} ===`);
       console.log(`[META-SYSOP-JOB-MANAGER] Tools called: ${toolNames.join(', ') || 'NONE'}`);
 
+      // MANDATORY ACTION ENFORCEMENT: Block read-only tools after iteration 6 if no code written
+      const hasWrittenCodeEver = fileChanges.length > 0;
+      const ACTION_ONLY_TOOLS = ['writePlatformFile', 'writeProjectFile', 'commit_to_github', 'updateTask'];
+      const READ_ONLY_TOOLS = ['perform_diagnosis', 'readPlatformFile', 'readProjectFile', 'listPlatformDirectory', 
+                                'listProjectDirectory', 'read_logs', 'readTaskList', 'architect_consult', 'web_search'];
+      
       // Execute all tools
       for (const block of contentBlocks) {
         if (block.type === 'tool_use') {
           const { name, input, id } = block;
 
           broadcast(userId, jobId, 'job_progress', { message: `🔧 Executing tool: ${name}...` });
+
+          // MANDATORY FORCING: Block read-only tools after iteration 6 if no code written
+          if (iterationCount >= 6 && !hasWrittenCodeEver && READ_ONLY_TOOLS.includes(name)) {
+            console.log(`[META-SYSOP-JOB-MANAGER] 🚫 BLOCKED ${name} - WRITE CODE FIRST!`);
+            
+            toolResults.push({
+              type: 'tool_result',
+              tool_use_id: id,
+              is_error: true,
+              content: `🚫 BLOCKED: ${name} is not allowed after iteration 6.\n\n` +
+                `You have NOT written ANY code yet. Your task list has pending tasks.\n\n` +
+                `**ONLY ALLOWED TOOLS NOW:**\n` +
+                `- writePlatformFile() - Write code to fix issues\n` +
+                `- writeProjectFile() - Write code to fix issues\n` +
+                `- updateTask() - Mark tasks complete\n` +
+                `- commit_to_github() - Commit your changes\n\n` +
+                `STOP READING. START WRITING CODE NOW.`
+            });
+            
+            broadcast(userId, jobId, 'job_progress', { message: `🚫 Blocked ${name} - forcing action` });
+            continue;
+          }
 
           try {
             let toolResult: any = null;
