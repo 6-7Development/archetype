@@ -2436,49 +2436,46 @@ Be conversational, be helpful, and only work when asked!`;
           // CRITICAL: Only clean up THE SPECIFIC task list from THIS session
           const sessionTaskList = cleanupCheck.taskLists.find((list: any) => list.id === activeTaskListId);
           if (sessionTaskList && sessionTaskList.status !== 'completed') {
-            const incompleteTasks = sessionTaskList.tasks.filter((t: any) => t.status !== 'completed');
+            // 🐛 CRITICAL FIX: Only cleanup tasks that are stuck "in_progress"
+            // NEVER touch "pending" tasks - they were never started
+            // This prevents auto-completing tasks that Meta-SySop hasn't started yet
+            const stuckTasks = sessionTaskList.tasks.filter((t: any) => t.status === 'in_progress');
             
-            // 🐛 FIX: Only cleanup if at least one task was STARTED (has startedAt)
-            // If all tasks are still pending with no startedAt, the task list was just created
-            // and Meta-SySop hasn't started working yet - DON'T auto-complete them!
-            const anyTaskStarted = sessionTaskList.tasks.some((t: any) => t.startedAt !== null);
-            
-            if (incompleteTasks.length > 0 && anyTaskStarted) {
-              console.log(`[META-SYSOP-CLEANUP] Found ${incompleteTasks.length} incomplete tasks (work was started)`);
-              sendEvent('progress', { message: `Cleaning up ${incompleteTasks.length} incomplete tasks...` });
+            if (stuckTasks.length > 0) {
+              console.log(`[META-SYSOP-CLEANUP] Found ${stuckTasks.length} stuck in_progress tasks - will auto-complete`);
+              sendEvent('progress', { message: `Cleaning up ${stuckTasks.length} stuck tasks...` });
 
-              // Mark each incomplete task as completed (with warning)
-              for (const task of incompleteTasks) {
+              // Only mark stuck "in_progress" tasks as completed
+              for (const task of stuckTasks) {
                 try {
                   await updateTask({
                     userId,
                     taskId: task.id,
                     status: 'completed',
-                    result: '⚠️ Auto-completed (session ended early)',
+                    result: '⚠️ Auto-completed (session ended with task in progress)',
                     completedAt: new Date()
                   });
-                  console.log(`[META-SYSOP-CLEANUP] Marked task "${task.title}" as completed (cleanup)`);
+                  console.log(`[META-SYSOP-CLEANUP] Marked stuck task "${task.title}" as completed`);
                 } catch (error: any) {
                   console.error(`[META-SYSOP-CLEANUP] Failed to cleanup task ${task.id}:`, error);
                 }
               }
-            } else if (incompleteTasks.length > 0 && !anyTaskStarted) {
-              console.log(`[META-SYSOP-CLEANUP] ℹ️ ${incompleteTasks.length} pending tasks found, but no work started yet - skipping cleanup`);
-            }
-
-            // Only mark task list as completed if work was actually started
-            if (anyTaskStarted) {
+              
+              // Mark task list as completed since we cleaned up stuck tasks
               try {
                 await db
                   .update(taskLists)
                   .set({ status: 'completed', completedAt: new Date() })
                   .where(eq(taskLists.id, activeTaskListId));
-                console.log(`[META-SYSOP-CLEANUP] ✅ Task list ${activeTaskListId} marked as completed (cleanup)`);
+                console.log(`[META-SYSOP-CLEANUP] ✅ Task list ${activeTaskListId} marked as completed (had stuck tasks)`);
               } catch (error: any) {
-                console.error('[META-SYSOP-CLEANUP] Failed to cleanup task list:', error);
+                console.error('[META-SYSOP-CLEANUP] Failed to mark task list complete:', error);
               }
             } else {
-              console.log(`[META-SYSOP-CLEANUP] ℹ️ Task list not marked complete - no work started yet`);
+              // No stuck tasks - all are pending or completed
+              const pendingTasks = sessionTaskList.tasks.filter((t: any) => t.status === 'pending');
+              const completedTasks = sessionTaskList.tasks.filter((t: any) => t.status === 'completed');
+              console.log(`[META-SYSOP-CLEANUP] ℹ️ No stuck tasks. Status: ${completedTasks.length} completed, ${pendingTasks.length} pending - no cleanup needed`);
             }
           } else if (sessionTaskList?.status === 'completed') {
             console.log(`[META-SYSOP-CLEANUP] ✅ Task list already marked as completed`);
