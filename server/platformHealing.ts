@@ -269,7 +269,7 @@ export class PlatformHealingService {
     }
   }
 
-  async writePlatformFile(filePath: string, content: string): Promise<{ success: boolean; message: string; commitHash?: string; commitUrl?: string }> {
+  async writePlatformFile(filePath: string, content: string, skipAutoCommit: boolean = false): Promise<{ success: boolean; message: string; commitHash?: string; commitUrl?: string }> {
     // CRITICAL: Validate content before ANY processing
     if (content === undefined || content === null) {
       console.error(`[PLATFORM-WRITE] ❌ REJECTED: undefined/null content for ${filePath}`);
@@ -285,6 +285,9 @@ export class PlatformHealingService {
     console.log(`[PLATFORM-WRITE] ✅ Content validated for ${filePath}`);
     console.log(`[PLATFORM-WRITE] Content length: ${content.length} bytes`);
     console.log(`[PLATFORM-WRITE] Content type: ${typeof content}`);
+    if (skipAutoCommit) {
+      console.log(`[PLATFORM-WRITE] 📦 BATCH MODE - Will NOT auto-commit (commit manually later)`);
+    }
     
     // Validate file path
     if (path.isAbsolute(filePath)) {
@@ -352,10 +355,26 @@ export class PlatformHealingService {
         throw new Error(`Cannot commit file with undefined or null content: ${filePath}`);
       }
 
-      // Use GitHub service to commit the file
+      // If skipAutoCommit, just write to temp storage for batch commit later
+      if (skipAutoCommit) {
+        // Store in temp directory for batch commit
+        const tempPath = path.join('/tmp/meta-sysop-changes', filePath);
+        const tempDir = path.dirname(tempPath);
+        await fs.mkdir(tempDir, { recursive: true });
+        await fs.writeFile(tempPath, content, 'utf-8');
+        
+        console.log(`[PLATFORM-WRITE] 📦 Staged for batch commit: ${filePath}`);
+        
+        return {
+          success: true,
+          message: `File staged for batch commit. Use commit_to_github to commit all changes.`,
+        };
+      }
+
+      // Use GitHub service to commit the file IMMEDIATELY (old behavior)
       try {
         const githubService = getGitHubService();
-        const commitMessage = `Update ${filePath} via Platform-SySop`;
+        const commitMessage = `[Meta-SySop 🤖] Update ${filePath}`;
         
         console.log(`[PLATFORM-WRITE] 🔧 Committing to GitHub: ${filePath}`);
         console.log(`[PLATFORM-WRITE] Maintenance mode: ENABLED`);
@@ -367,11 +386,11 @@ export class PlatformHealingService {
         console.log(`[PLATFORM-WRITE] ✅ Committed to GitHub successfully`);
         console.log(`[PLATFORM-WRITE] Commit: ${result.commitHash}`);
         console.log(`[PLATFORM-WRITE] URL: ${result.commitUrl}`);
-        console.log(`[PLATFORM-WRITE] ⏳ Render will auto-deploy from GitHub...`);
+        console.log(`[PLATFORM-WRITE] ⏳ Railway will auto-deploy from GitHub...`);
         
         return {
           success: true,
-          message: `File committed to GitHub successfully. Render will auto-deploy shortly.`,
+          message: `File committed to GitHub successfully. Railway will auto-deploy shortly.`,
           commitHash: result.commitHash,
           commitUrl: result.commitUrl,
         };

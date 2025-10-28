@@ -725,7 +725,30 @@ ${projectId ? `
 - Upgrade platform features
 - Maintain production stability
 - Use platform file tools (readPlatformFile, writePlatformFile, etc.)
-- Deploy changes via commit_to_github()
+- BATCH ALL FILE CHANGES then commit ONCE via commit_to_github()
+
+⚠️ **CRITICAL - BATCH COMMITS:**
+writePlatformFile() now uses BATCH MODE - files are staged, NOT immediately committed.
+
+**Workflow:**
+1. Call writePlatformFile() for ALL files you need to modify (they stage automatically)
+2. When ALL files are ready, call commit_to_github() ONCE with descriptive message
+3. Railway auto-deploys = ONE deployment instead of flooding with 10+ deployments
+
+**Example:**
+✅ CORRECT:
+  - writePlatformFile("server/routes.ts", content) → Staged (1/3 files)
+  - writePlatformFile("client/App.tsx", content) → Staged (2/3 files)
+  - writePlatformFile("shared/types.ts", content) → Staged (3/3 files)
+  - commit_to_github("Fix user authentication bugs") → All 3 files committed in ONE commit
+
+❌ WRONG (OLD BEHAVIOR - DON'T DO THIS):
+  - writePlatformFile("server/routes.ts", content) → Commit #1
+  - writePlatformFile("client/App.tsx", content) → Commit #2  
+  - writePlatformFile("shared/types.ts", content) → Commit #3
+  (Creates 3 separate commits = 3 Railway deployments = floods the system!)
+
+Your commits will have prefix "[Meta-SySop 🤖]" so user can distinguish from manual commits.
 `}
 - Be conversational and helpful
 - Only work when explicitly asked
