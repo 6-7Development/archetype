@@ -524,7 +524,8 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // Backups only created when actual platform changes are made (via approval workflow)
 
     // Get conversation history for context
-    // 🧠 MEMORY SYSTEM: Load last 25 messages (not just 6) for better context
+    // 🧠 BOUNDED MEMORY SYSTEM: Load last 100 messages (prevents token overflow)
+    // This gives ~50K tokens for history + leaves 150K for platform knowledge + response
     const history = await db
       .select()
       .from(chatMessages)
@@ -534,67 +535,134 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           eq(chatMessages.isPlatformHealing, true)
         )
       )
-      .orderBy(desc(chatMessages.createdAt)) // 🔥 DESC to get LATEST messages
-      .limit(25); // Last 25 messages for comprehensive memory
+      .orderBy(desc(chatMessages.createdAt))
+      .limit(100); // Bounded to prevent API failures, but still comprehensive
     
     // Reverse to chronological order (oldest → newest) for Claude
     history.reverse();
 
-    // 🧠 EXTRACT MEMORY CONTEXT from conversation history
+    // 🧠 EXTRACT COMPREHENSIVE MEMORY from ENTIRE conversation history
     const userMessages = history.filter(msg => msg.role === 'user' && msg.id !== userMsg.id);
     const assistantMessages = history.filter(msg => msg.role === 'assistant');
     
-    // Track user goals, issues, and attempted fixes
+    // Track ALL user goals, issues, fixes, and platform changes
     const userGoals: string[] = [];
     const knownIssues: string[] = [];
     const attemptedFixes: string[] = [];
+    const completedWork: string[] = [];
     
     for (const msg of userMessages) {
       const content = msg.content.toLowerCase();
       
-      // Extract user goals (what they want to build/fix)
-      if (content.includes('build') || content.includes('create') || content.includes('implement') || content.includes('add')) {
+      // Extract EVERYTHING - user goals, ideas, requests
+      if (content.includes('build') || content.includes('create') || content.includes('implement') || 
+          content.includes('add') || content.includes('want') || content.includes('need')) {
         userGoals.push(msg.content);
       }
       
-      // Extract known issues (bugs, errors, problems)
-      if (content.includes('bug') || content.includes('error') || content.includes('broken') || content.includes('not working') || content.includes('issue')) {
+      // Extract ALL issues - bugs, errors, complaints, problems
+      if (content.includes('bug') || content.includes('error') || content.includes('broken') || 
+          content.includes('not working') || content.includes('issue') || content.includes('problem') ||
+          content.includes('doesn\'t') || content.includes('can\'t') || content.includes('won\'t')) {
         knownIssues.push(msg.content);
       }
       
-      // Extract fix requests
-      if (content.includes('fix') || content.includes('repair') || content.includes('resolve')) {
+      // Extract fix requests and what user asked for
+      if (content.includes('fix') || content.includes('repair') || content.includes('resolve') ||
+          content.includes('update') || content.includes('change') || content.includes('improve')) {
         attemptedFixes.push(msg.content);
       }
     }
     
-    // Generate memory summary for system prompt
+    // Extract completed work from assistant messages
+    for (const msg of assistantMessages) {
+      const content = msg.content.toLowerCase();
+      if (content.includes('committed') || content.includes('deployed') || content.includes('completed') ||
+          content.includes('fixed') || content.includes('updated') || content.includes('implemented')) {
+        // Extract first 200 chars of work completed
+        completedWork.push(msg.content.substring(0, 200));
+      }
+    }
+    
+    // 🧠 CONDENSED PLATFORM KNOWLEDGE: Smart summary instead of full replit.md
+    const platformKnowledge = `\n\n═══════════════════════════════════════════════════════════════════\n` +
+      `📚 CONDENSED PLATFORM KNOWLEDGE (Your Intimate Understanding)\n` +
+      `═══════════════════════════════════════════════════════════════════\n\n` +
+      `**ARCHETYPE PLATFORM - YOU KNOW THIS INTIMATELY:**\n\n` +
+      `**What It Is:** AI-powered SaaS for rapid web dev with SySop (user AI agent), Meta-SySop (YOU - platform maintenance), I AM (architect). Dual versions: Archetype (desktop) + Archetype5 (mobile).\n\n` +
+      `**Tech Stack:** React + Express + PostgreSQL (Neon) + Vite, deployed on Railway with GitHub auto-deploy from main branch.\n\n` +
+      `**YOUR CAPABILITIES (Meta-SySop):**\n` +
+      `- ✅ Full platform source code access (read/write platform files)\n` +
+      `- ✅ Background jobs system (run indefinitely, no timeouts)\n` +
+      `- ✅ Batch commits (stage files, commit once to prevent deployment flooding)\n` +
+      `- ✅ Memory system (100 messages of conversation history)\n` +
+      `- ✅ Deployment awareness (know recent GitHub commits)\n` +
+      `- ✅ Architect consultation (call I AM for architectural guidance)\n` +
+      `- ✅ Web search (Tavily API for research)\n` +
+      `- ✅ Task management (create/update task lists)\n` +
+      `- ✅ Action-oriented workflow (tools first, talk second like Replit Agent)\n\n` +
+      `**KEY SYSTEMS YOU MAINTAIN:**\n` +
+      `1. **SySop AI Agent** - 12-step workflow for user project generation\n` +
+      `2. **Platform Healing** - Real-time metrics, diagnostics, auto-healing\n` +
+      `3. **WebSocket Broadcasting** - Live updates for chat, tasks, metrics\n` +
+      `4. **Database** - PostgreSQL with Drizzle ORM, 20+ tables\n` +
+      `5. **Authentication** - Replit Auth + PostgreSQL sessions\n` +
+      `6. **File Management** - Monaco editor, project storage\n` +
+      `7. **Preview System** - esbuild in-memory compilation\n` +
+      `8. **Deployment** - Railway auto-deploy on GitHub push\n\n` +
+      `**RESOLVED ISSUES (Don't bring these up):**\n` +
+      `- ❌ Chatbar issues (FIXED - UI updated)\n` +
+      `- ❌ Memory problems (FIXED - you now have 100-message memory)\n` +
+      `- ❌ Deployment flooding (FIXED - batch commits)\n` +
+      `- ❌ Personality/conversation skills (FIXED - you're conversational now!)\n\n` +
+      `**FILE STRUCTURE:**\n` +
+      `- client/src/ - React frontend (pages, components)\n` +
+      `- server/ - Express backend (routes, services)\n` +
+      `- shared/ - TypeScript types and schema\n` +
+      `- Use readPlatformFile/writePlatformFile for code changes\n\n` +
+      `**HOW TO HELP:**\n` +
+      `- Be conversational and reference this knowledge naturally\n` +
+      `- "I know Archetype uses..." or "Let me check the platform healing system..."\n` +
+      `- Show confidence from this intimate understanding\n` +
+      `- Reference past fixes and improvements\n`;
+
+    // Generate comprehensive memory summary for system prompt
     let memorySummary = '';
-    if (userGoals.length > 0 || knownIssues.length > 0 || attemptedFixes.length > 0) {
+    if (userGoals.length > 0 || knownIssues.length > 0 || attemptedFixes.length > 0 || completedWork.length > 0) {
       memorySummary = `\n\n═══════════════════════════════════════════════════════════════════\n`;
-      memorySummary += `🧠 CONVERSATION MEMORY (Remember This Context)\n`;
+      memorySummary += `🧠 FULL CONVERSATION HISTORY (Everything We've Discussed)\n`;
       memorySummary += `═══════════════════════════════════════════════════════════════════\n\n`;
+      memorySummary += `**Total conversation messages: ${history.length}**\n`;
+      memorySummary += `**User requests tracked: ${userMessages.length}**\n`;
+      memorySummary += `**Work completed: ${completedWork.length} items**\n\n`;
       
       if (userGoals.length > 0) {
-        memorySummary += `**USER GOALS (What they want to build/accomplish):**\n`;
-        memorySummary += userGoals.slice(-3).map(g => `- ${g.substring(0, 200)}`).join('\n');
+        memorySummary += `**ALL USER GOALS (${userGoals.length} total):**\n`;
+        memorySummary += userGoals.slice(-10).map((g, i) => `${i+1}. ${g.substring(0, 300)}`).join('\n');
         memorySummary += `\n\n`;
       }
       
       if (knownIssues.length > 0) {
-        memorySummary += `**KNOWN ISSUES (Bugs/problems user reported):**\n`;
-        memorySummary += knownIssues.slice(-3).map(i => `- ${i.substring(0, 200)}`).join('\n');
+        memorySummary += `**ALL KNOWN ISSUES (${knownIssues.length} total):**\n`;
+        memorySummary += knownIssues.slice(-10).map((issue, i) => `${i+1}. ${issue.substring(0, 300)}`).join('\n');
         memorySummary += `\n\n`;
       }
       
       if (attemptedFixes.length > 0) {
-        memorySummary += `**PREVIOUS FIX ATTEMPTS:**\n`;
-        memorySummary += attemptedFixes.slice(-3).map(f => `- ${f.substring(0, 200)}`).join('\n');
+        memorySummary += `**ALL FIX ATTEMPTS (${attemptedFixes.length} total):**\n`;
+        memorySummary += attemptedFixes.slice(-10).map((f, i) => `${i+1}. ${f.substring(0, 300)}`).join('\n');
         memorySummary += `\n\n`;
       }
       
-      memorySummary += `**BE PROACTIVE:** Based on this memory, proactively suggest fixes for known issues and help achieve user goals.\n`;
-      memorySummary += `Don't wait to be asked - if you see a known issue, offer to fix it!\n`;
+      if (completedWork.length > 0) {
+        memorySummary += `**WORK COMPLETED (${completedWork.length} total):**\n`;
+        memorySummary += completedWork.slice(-10).map((work, i) => `${i+1}. ${work}`).join('\n');
+        memorySummary += `\n\n`;
+      }
+      
+      memorySummary += `**YOU HAVE COMPLETE CONTEXT:** You know every bug we fixed, every feature we built, every conversation we had.\n`;
+      memorySummary += `Reference this history naturally - "I remember when we fixed X..." or "Earlier you mentioned Y..."\n`;
+      memorySummary += `Be proactive based on this complete knowledge!\n`;
     }
 
     // 🚀 DEPLOYMENT AWARENESS: Fetch recent commits so Meta-SySop knows what's new
@@ -1926,9 +1994,9 @@ Be conversational, be helpful, and only work when asked!`;
 
       sendEvent('progress', { message: `Analyzing (iteration ${iterationCount}/${MAX_ITERATIONS})...` });
 
-      // 🧠 INJECT MEMORY SUMMARY + DEPLOYMENT AWARENESS into system prompt (only on first iteration)
+      // 🧠 INJECT COMPLETE PLATFORM KNOWLEDGE + MEMORY + DEPLOYMENT AWARENESS into system prompt (only on first iteration)
       const finalSystemPrompt = iterationCount === 1 
-        ? systemPrompt + memorySummary + deploymentAwareness
+        ? systemPrompt + platformKnowledge + memorySummary + deploymentAwareness
         : systemPrompt;
 
       const stream = await client.messages.create({
