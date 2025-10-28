@@ -2427,6 +2427,7 @@ Be conversational, be helpful, and only work when asked!`;
     // 🎯 POST-SAFETY CLEANUP: Clean up incomplete tasks from THIS session only
     // CRITICAL: This now runs AFTER safety check passes, and only affects THIS session's tasks
     // This prevents stuck tasks when Meta-SySop exits early (timeout, crash, etc)
+    // 🐛 FIX: Only cleanup if work actually started (prevents auto-complete of just-created tasks)
     if (activeTaskListId) {
       try {
         console.log(`[META-SYSOP-CLEANUP] Safety passed - checking task list ${activeTaskListId} for incomplete tasks...`);
@@ -2436,8 +2437,14 @@ Be conversational, be helpful, and only work when asked!`;
           const sessionTaskList = cleanupCheck.taskLists.find((list: any) => list.id === activeTaskListId);
           if (sessionTaskList && sessionTaskList.status !== 'completed') {
             const incompleteTasks = sessionTaskList.tasks.filter((t: any) => t.status !== 'completed');
-            if (incompleteTasks.length > 0) {
-              console.log(`[META-SYSOP-CLEANUP] Found ${incompleteTasks.length} incomplete tasks in session task list ${activeTaskListId}`);
+            
+            // 🐛 FIX: Only cleanup if at least one task was STARTED (has startedAt)
+            // If all tasks are still pending with no startedAt, the task list was just created
+            // and Meta-SySop hasn't started working yet - DON'T auto-complete them!
+            const anyTaskStarted = sessionTaskList.tasks.some((t: any) => t.startedAt !== null);
+            
+            if (incompleteTasks.length > 0 && anyTaskStarted) {
+              console.log(`[META-SYSOP-CLEANUP] Found ${incompleteTasks.length} incomplete tasks (work was started)`);
               sendEvent('progress', { message: `Cleaning up ${incompleteTasks.length} incomplete tasks...` });
 
               // Mark each incomplete task as completed (with warning)
@@ -2455,17 +2462,23 @@ Be conversational, be helpful, and only work when asked!`;
                   console.error(`[META-SYSOP-CLEANUP] Failed to cleanup task ${task.id}:`, error);
                 }
               }
+            } else if (incompleteTasks.length > 0 && !anyTaskStarted) {
+              console.log(`[META-SYSOP-CLEANUP] ℹ️ ${incompleteTasks.length} pending tasks found, but no work started yet - skipping cleanup`);
             }
 
-            // Now mark the task list as completed
-            try {
-              await db
-                .update(taskLists)
-                .set({ status: 'completed', completedAt: new Date() })
-                .where(eq(taskLists.id, activeTaskListId));
-              console.log(`[META-SYSOP-CLEANUP] ✅ Task list ${activeTaskListId} marked as completed (cleanup)`);
-            } catch (error: any) {
-              console.error('[META-SYSOP-CLEANUP] Failed to cleanup task list:', error);
+            // Only mark task list as completed if work was actually started
+            if (anyTaskStarted) {
+              try {
+                await db
+                  .update(taskLists)
+                  .set({ status: 'completed', completedAt: new Date() })
+                  .where(eq(taskLists.id, activeTaskListId));
+                console.log(`[META-SYSOP-CLEANUP] ✅ Task list ${activeTaskListId} marked as completed (cleanup)`);
+              } catch (error: any) {
+                console.error('[META-SYSOP-CLEANUP] Failed to cleanup task list:', error);
+              }
+            } else {
+              console.log(`[META-SYSOP-CLEANUP] ℹ️ Task list not marked complete - no work started yet`);
             }
           } else if (sessionTaskList?.status === 'completed') {
             console.log(`[META-SYSOP-CLEANUP] ✅ Task list already marked as completed`);
