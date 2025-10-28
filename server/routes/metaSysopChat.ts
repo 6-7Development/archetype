@@ -619,12 +619,19 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       `- client/src/ - React frontend (pages, components)\n` +
       `- server/ - Express backend (routes, services)\n` +
       `- shared/ - TypeScript types and schema\n` +
+      `- replit.md - Platform documentation (YOU CAN READ/WRITE THIS!)\n` +
       `- Use readPlatformFile/writePlatformFile for code changes\n\n` +
+      `**📖 ACCESSING FULL PLATFORM KNOWLEDGE:**\n` +
+      `- You have condensed knowledge above, but complete docs are in replit.md\n` +
+      `- Read it anytime: readPlatformFile("replit.md")\n` +
+      `- Update it when you make major changes: writePlatformFile("replit.md", content)\n` +
+      `- Keep it current with platform evolution - it's YOUR documentation!\n\n` +
       `**HOW TO HELP:**\n` +
       `- Be conversational and reference this knowledge naturally\n` +
       `- "I know Archetype uses..." or "Let me check the platform healing system..."\n` +
       `- Show confidence from this intimate understanding\n` +
-      `- Reference past fixes and improvements\n`;
+      `- Reference past fixes and improvements\n` +
+      `- Read replit.md for detailed architecture when needed\n`;
 
     // Generate comprehensive memory summary for system prompt
     let memorySummary = '';
@@ -643,7 +650,8 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       }
       
       if (knownIssues.length > 0) {
-        memorySummary += `**ALL KNOWN ISSUES (${knownIssues.length} total):**\n`;
+        memorySummary += `**HISTORICAL ISSUES DISCUSSED (${knownIssues.length} total - MOST ARE ALREADY FIXED):**\n`;
+        memorySummary += `⚠️ These are from our conversation history - many are already resolved!\n`;
         memorySummary += knownIssues.slice(-10).map((issue, i) => `${i+1}. ${issue.substring(0, 300)}`).join('\n');
         memorySummary += `\n\n`;
       }
@@ -660,9 +668,12 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         memorySummary += `\n\n`;
       }
       
-      memorySummary += `**YOU HAVE COMPLETE CONTEXT:** You know every bug we fixed, every feature we built, every conversation we had.\n`;
-      memorySummary += `Reference this history naturally - "I remember when we fixed X..." or "Earlier you mentioned Y..."\n`;
-      memorySummary += `Be proactive based on this complete knowledge!\n`;
+      memorySummary += `**🎯 IMPORTANT CONTEXT NOTES:**\n`;
+      memorySummary += `- This is HISTORICAL conversation memory - most issues listed above are ALREADY RESOLVED\n`;
+      memorySummary += `- These are for your reference/context - NOT current problems needing fixes\n`;
+      memorySummary += `- Only work on NEW issues the user mentions in their current message\n`;
+      memorySummary += `- Reference history naturally: "I remember when we fixed X..." or "Earlier you mentioned Y..."\n`;
+      memorySummary += `- Don't assume old issues still exist - ask before fixing historical problems!\n`;
     }
 
     // 🚀 DEPLOYMENT AWARENESS: Fetch recent commits so Meta-SySop knows what's new

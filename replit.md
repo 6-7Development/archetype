@@ -41,7 +41,8 @@ The user interface features a tab-based workspace (Overview, Build, Files, Previ
     - All bugs fixed and features built throughout project history
     - Recent deployment updates and what changed
     - Technical implementation details and file structure
-  System uses token-bounded approach (100 messages + condensed knowledge) preventing API failures while maintaining comprehensive context. Meta-SySop references this knowledge naturally in conversations like "I remember when we fixed X" or "Let me check the platform healing system I maintain".
+    - **Full replit.md access**: Can read/write platform documentation using readPlatformFile/writePlatformFile tools
+  System uses token-bounded approach (100 messages + condensed knowledge) preventing API failures while maintaining comprehensive context. Memory system clearly labels historical issues as "RESOLVED" to prevent confusion about current platform state. Meta-SySop references this knowledge naturally in conversations like "I remember when we fixed X" or "Let me check the platform healing system I maintain".
 - **Platform Healing System**: Real-time system monitoring with WebSocket-based metrics broadcasting (CPU, memory, health, incidents, uptime, git status), a theme-aware UI, and auto-commit/auto-push toggles.
 - **Advanced AI Capabilities**: SySop can build complex marketplace platforms, 2D/3D games, implement usage-based billing, generate test data, simulate user behavior, and create functional chatbots/automation agents.
 - **Command System**: Natural language commands are processed by Anthropic Claude 3.5 Sonnet to generate JSON project structures.
