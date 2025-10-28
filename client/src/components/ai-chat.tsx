@@ -23,6 +23,7 @@ import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { TaskBoard } from "@/components/task-board";
 import { AgentTaskList, type AgentTask } from "@/components/agent-task-list";
 import { AgentProgressDisplay } from "@/components/agent-progress-display";
+import { ChatInputToolbar } from "@/components/ui/chat-input-toolbar";
 
 interface CheckpointData {
   complexity: string;
@@ -707,6 +708,61 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     setPendingImages((prev) => prev.filter((url) => url !== imageUrl));
   };
 
+  // Handle image selection from file input
+  const handleImageSelect = async (files: FileList) => {
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    const ALLOWED_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+
+      // Validate file format
+      if (!ALLOWED_FORMATS.includes(file.type)) {
+        toast({
+          variant: "destructive",
+          description: `Unsupported image format. Please use: JPG, PNG, GIF, or WebP`
+        });
+        continue;
+      }
+
+      // Validate file size (5MB max)
+      if (file.size > MAX_FILE_SIZE) {
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        toast({
+          variant: "destructive",
+          description: `Image too large (${sizeMB}MB). Maximum size is 5MB`
+        });
+        continue;
+      }
+
+      // Generate temporary ID for tracking upload progress
+      const tempId = nanoid();
+
+      // Add to uploading state
+      setUploadingImages(prev => new Map(prev).set(tempId, true));
+
+      // Upload image with temp ID for progress tracking
+      uploadImageMutation.mutate(file, {
+        onSuccess: () => {
+          // Remove from uploading state
+          setUploadingImages(prev => {
+            const next = new Map(prev);
+            next.delete(tempId);
+            return next;
+          });
+        },
+        onError: () => {
+          // Remove from uploading state on error
+          setUploadingImages(prev => {
+            const next = new Map(prev);
+            next.delete(tempId);
+            return next;
+          });
+        },
+      });
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -1101,17 +1157,25 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
           )}
 
           <div className="flex gap-2 items-end">
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onPaste={handlePaste}
-              placeholder="Message SySop..."
-              className="min-h-[60px] max-h-[200px] resize-none text-base bg-[hsl(220,18%,16%)] border-[hsl(220,15%,28%)] text-[hsl(220,8%,98%)] placeholder:text-[hsl(220,12%,55%)] focus-visible:ring-1 focus-visible:ring-[hsl(220,70%,60%)] rounded-2xl px-4 py-3"
-              disabled={chatMutation.isPending}
-              data-testid="input-chat-message"
-              rows={3}
-            />
+            <div className="flex-1 relative">
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
+                placeholder="Message SySop..."
+                className="min-h-[60px] max-h-[200px] resize-none text-base bg-[hsl(220,18%,16%)] border-[hsl(220,15%,28%)] text-[hsl(220,8%,98%)] placeholder:text-[hsl(220,12%,55%)] focus-visible:ring-1 focus-visible:ring-[hsl(220,70%,60%)] rounded-2xl px-4 py-3 pr-12"
+                disabled={chatMutation.isPending}
+                data-testid="input-chat-message"
+                rows={3}
+              />
+              <div className="absolute bottom-2 right-2">
+                <ChatInputToolbar
+                  onImageSelect={handleImageSelect}
+                  disabled={chatMutation.isPending}
+                />
+              </div>
+            </div>
             <Button
               onClick={handleSend}
               disabled={!input.trim() || chatMutation.isPending}
