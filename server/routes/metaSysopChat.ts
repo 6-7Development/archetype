@@ -2715,7 +2715,7 @@ router.delete('/discard-changes', isAuthenticated, isAdmin, async (req: any, res
 // ==================== BACKGROUND JOB ROUTES (Railway SSE timeout fix) ====================
 
 // POST /api/meta-sysop/start - Start a new background job
-router.post('/start', isAuthenticated, isAdmin, async (req: any, res) => {
+router.post('/start', isAuthenticated, async (req: any, res) => {
   try {
     const { message } = req.body;
     const userId = req.authenticatedUserId;
@@ -2746,7 +2746,7 @@ router.post('/start', isAuthenticated, isAdmin, async (req: any, res) => {
 });
 
 // POST /api/meta-sysop/resume/:jobId - Resume an interrupted or failed job
-router.post('/resume/:jobId', isAuthenticated, isAdmin, async (req: any, res) => {
+router.post('/resume/:jobId', isAuthenticated, async (req: any, res) => {
   try {
     const { jobId } = req.params;
     const userId = req.authenticatedUserId;
@@ -2777,7 +2777,7 @@ router.post('/resume/:jobId', isAuthenticated, isAdmin, async (req: any, res) =>
 });
 
 // GET /api/meta-sysop/job/:jobId - Get job status and details
-router.get('/job/:jobId', isAuthenticated, isAdmin, async (req: any, res) => {
+router.get('/job/:jobId', isAuthenticated, async (req: any, res) => {
   try {
     const { jobId } = req.params;
     const userId = req.authenticatedUserId;
@@ -2797,6 +2797,32 @@ router.get('/job/:jobId', isAuthenticated, isAdmin, async (req: any, res) => {
     });
   } catch (error: any) {
     console.error('[META-SYSOP] Failed to get job:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/meta-sysop/active-job - Get user's active or interrupted job
+router.get('/active-job', isAuthenticated, async (req: any, res) => {
+  try {
+    const userId = req.authenticatedUserId;
+    
+    // Find the most recent active, interrupted, or pending job
+    const job = await db.query.metaSysopJobs.findFirst({
+      where: (jobs, { and, eq, inArray }) => and(
+        eq(jobs.userId, userId),
+        inArray(jobs.status, ['pending', 'running', 'interrupted'])
+      ),
+      orderBy: (jobs, { desc }) => [desc(jobs.createdAt)],
+    });
+    
+    console.log('[META-SYSOP] Active job query for user:', userId, job ? `found ${job.id}` : 'none found');
+    
+    res.json({ 
+      success: true, 
+      job: job || null,
+    });
+  } catch (error: any) {
+    console.error('[META-SYSOP] Failed to get active job:', error);
     res.status(500).json({ error: error.message });
   }
 });
