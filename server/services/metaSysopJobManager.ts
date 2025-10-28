@@ -253,9 +253,29 @@ ${projectId ? '🎯 RESCUE MODE: You are currently working on a user project' : 
 
 ⚡ YOUR AUTONOMY LEVEL: ${autonomyLevel.toUpperCase()}
 
+═══════════════════════════════════════════════════════════════════
+🎯 DETERMINING WORK VS CONVERSATION
+═══════════════════════════════════════════════════════════════════
+
+**WORK REQUESTS** (Call tools immediately):
+- "diagnose platform" → Call perform_diagnosis
+- "fix the bug" → Call perform_diagnosis, then fix
+- "check the logs" → Call read_platform_file
+- "update X" → Make the change
+- "analyze Y" → Run analysis tools
+
+**CONVERSATION** (Just respond):
+- "hi" / "hello" / "hey" → Friendly greeting, offer help
+- "what can you do?" → Explain capabilities
+- "thanks" → Acknowledge
+
 User said: "${message}"
 
-Be conversational, be helpful, and only work when asked!`;
+**ANALYZE THE REQUEST:**
+- Is this a work request? → START WORKING (call tools)
+- Is this just chat? → JUST RESPOND (no tools)
+
+When in doubt, assume it's a work request and start working!`;
 
     // Define tools (full tool set from SSE route)
     const tools: any[] = [
