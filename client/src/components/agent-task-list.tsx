@@ -1,6 +1,7 @@
 import { Check, Circle, Loader2, AlertCircle, ChevronRight, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { Progress } from '@/components/ui/progress';
 
 export interface AgentTask {
   id: string;
@@ -40,7 +41,25 @@ function TaskItem({
   onClick?: () => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [animatedProgress, setAnimatedProgress] = useState(0);
   const hasSubsteps = task.substeps && task.substeps.length > 0;
+
+  // Animate progress for in_progress tasks (indeterminate animation)
+  useEffect(() => {
+    if (task.status === 'in_progress') {
+      const interval = setInterval(() => {
+        setAnimatedProgress((prev) => {
+          // Create a pulsing effect between 20% and 80%
+          const next = prev + 2;
+          if (next > 80) return 20;
+          return next;
+        });
+      }, 50);
+      return () => clearInterval(interval);
+    } else {
+      setAnimatedProgress(0);
+    }
+  }, [task.status]);
 
   return (
     <div className="space-y-0.5">
@@ -72,7 +91,20 @@ function TaskItem({
         
         <TaskIcon status={task.status} />
         
-        <span className="flex-1 text-sm truncate">{task.title}</span>
+        <div className="flex-1 min-w-0">
+          <span className="block text-sm truncate">{task.title}</span>
+          
+          {/* Progress bar for in_progress tasks */}
+          {task.status === 'in_progress' && (
+            <div className="mt-1">
+              <Progress 
+                value={animatedProgress} 
+                className="h-1" 
+                data-testid={`progress-${task.id}`}
+              />
+            </div>
+          )}
+        </div>
         
         {task.progress && (
           <span className="text-xs text-muted-foreground shrink-0">
