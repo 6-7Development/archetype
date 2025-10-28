@@ -468,6 +468,20 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     res.write(`data: ${JSON.stringify({ type, ...data })}\n\n`);
   };
 
+  // Helper function to emit structured section events for collapsible UI
+  const emitSection = (sectionId: string, sectionType: 'thinking' | 'tool' | 'text', phase: 'start' | 'update' | 'finish', content: string, metadata?: any) => {
+    const event = {
+      sectionId,
+      sectionType,
+      title: metadata?.title || content.substring(0, 50),
+      phase,
+      timestamp: Date.now(),
+      content,
+      metadata
+    };
+    res.write(`data: ${JSON.stringify({ type: `section_${phase}`, ...event })}\n\n`);
+  };
+
   // Helper function to ensure consistent SSE stream termination
   const terminateStream = (messageId: string, error?: string) => {
     console.log('[META-SYSOP-CHAT] Terminating stream:', messageId, error ? `Error: ${error}` : 'Success');
@@ -2053,6 +2067,13 @@ Be conversational, be helpful, and only work when asked!`;
 
       sendEvent('progress', { message: `Analyzing (iteration ${iterationCount}/${MAX_ITERATIONS})...` });
 
+      // Emit thinking section start
+      const thinkingSectionId = `thinking-${iterationCount}-${Date.now()}`;
+      emitSection(thinkingSectionId, 'thinking', 'start', 'Processing your request...', {
+        title: 'Analyzing request',
+        iteration: iterationCount
+      });
+
       // 🧠 INJECT COMPLETE PLATFORM KNOWLEDGE + MEMORY + DEPLOYMENT AWARENESS into system prompt (only on first iteration)
       const finalSystemPrompt = iterationCount === 1 
         ? systemPrompt + platformKnowledge + memorySummary + deploymentAwareness
@@ -2134,6 +2155,12 @@ Be conversational, be helpful, and only work when asked!`;
         }
       });
 
+      // Emit thinking section finish
+      emitSection(thinkingSectionId, 'thinking', 'finish', fullContent.substring(fullContent.length - 200) || 'Analysis complete', {
+        title: 'Analysis complete',
+        iteration: iterationCount
+      });
+
       conversationMessages.push({
         role: 'assistant',
         content: contentBlocks,
@@ -2159,6 +2186,14 @@ Be conversational, be helpful, and only work when asked!`;
       for (const block of contentBlocks) {
         if (block.type === 'tool_use') {
           const { name, input, id } = block;
+
+          // Emit tool section start
+          const toolSectionId = `tool-${name}-${id}`;
+          emitSection(toolSectionId, 'tool', 'start', `Executing ${name}...`, {
+            title: `🔧 ${name}`,
+            toolName: name,
+            args: input
+          });
 
           // 🔥 RAILWAY FIX: Send progress event BEFORE each tool execution
           // This keeps the connection alive during long tool operations
@@ -2817,6 +2852,13 @@ Be conversational, be helpful, and only work when asked!`;
               content: toolResult || 'Success',
             });
 
+            // Emit tool section finish with result
+            emitSection(toolSectionId, 'tool', 'finish', toolResult || 'Success', {
+              title: `✅ ${name}`,
+              toolName: name,
+              result: toolResult
+            });
+
             // 🔥 RAILWAY FIX: Send progress event AFTER each tool execution
             // This provides more frequent updates and keeps connection alive
             sendEvent('progress', { message: `✅ Tool ${name} completed` });
@@ -2824,11 +2866,20 @@ Be conversational, be helpful, and only work when asked!`;
               console.error(`[META-SYSOP] ❌ Tool ${name} failed:`, error);
               console.error(`[META-SYSOP] Tool input:`, JSON.stringify(input, null, 2));
 
+              const errorMessage = `Error in ${name}: ${error.message}\n\nThis error has been logged for debugging.`;
+
               toolResults.push({
                 type: 'tool_result',
                 tool_use_id: id,
                 is_error: true,
-                content: `Error in ${name}: ${error.message}\n\nThis error has been logged for debugging.`,
+                content: errorMessage,
+              });
+
+              // Emit tool section finish with error
+              emitSection(toolSectionId, 'tool', 'finish', errorMessage, {
+                title: `❌ ${name} (failed)`,
+                toolName: name,
+                error: error.message
               });
 
               // 🔥 RAILWAY FIX: Send error progress event
