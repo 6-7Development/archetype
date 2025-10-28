@@ -1750,19 +1750,15 @@ Be conversational, be helpful, and only work when asked!`;
             console.log(`[META-SYSOP-FORCE] Forcing work on: ${tasksToForce.map((t: any) => t.title).join(', ')}`);
             
             const firstTask = tasksToForce[0];
-            // Force Meta-SySop to actually work
+            // Simple reminder to call tools (not micromanagement)
             conversationMessages.push({
               role: 'user',
               content: [{
                 type: 'text',
-                text: `❌ STOP TALKING. START WORKING.\n\n` +
-                  `You created a task list but did NOT call ANY tools. You just talked about working.\n\n` +
-                  `FIRST TASK: "${firstTask.title}" (ID: ${firstTask.id})\n\n` +
-                  `REQUIRED ACTIONS (in order):\n` +
-                  `1. updateTask(taskId: "${firstTask.id}", status: "in_progress")\n` +
-                  `2. perform_diagnosis(target: "full") OR readPlatformFile() OR execute_sql() - DO THE ACTUAL WORK\n` +
-                  `3. updateTask(taskId: "${firstTask.id}", status: "completed", result: "...")\n\n` +
-                  `DO NOT respond with text. CALL THESE TOOLS RIGHT NOW IN YOUR NEXT RESPONSE.`
+                text: `You have tasks but didn't call any tools.\n\n` +
+                  `Task: "${firstTask.title}"\n\n` +
+                  `Call the appropriate tool to do the work (perform_diagnosis, readPlatformFile, execute_sql, etc.).\n\n` +
+                  `Remember: Tools first, explanations second.`
               }]
             });
             sendEvent('error', { message: `Forcing work on: ${firstTask.title}` });
