@@ -1586,7 +1586,7 @@ Be conversational, be helpful, and only work when asked!`;
     const fileChanges: Array<{ path: string; operation: string; contentAfter?: string }> = [];
     let continueLoop = true;
     let iterationCount = 0;
-    const MAX_ITERATIONS = 5;
+    const MAX_ITERATIONS = 25; // 🔥 Increased from 5 - Replit Agent runs 20+ iterations for complex work
     let commitSuccessful = false; // Track if commit_to_github succeeded
 
     // 🎯 GREETING SHORTCUT: Detect casual greetings BEFORE calling Claude API
@@ -2484,12 +2484,12 @@ Be conversational, be helpful, and only work when asked!`;
             // No forcing, no micromanagement - trust the AI to do its job
             const hasIncompleteTasks = inProgressTasks.length > 0 || pendingTasks.length > 0;
             
-            if (hasIncompleteTasks && iterationCount < 14) {
+            if (hasIncompleteTasks && iterationCount < MAX_ITERATIONS) {
               console.log(`[META-SYSOP-CONTINUATION] ✅ Continuing naturally - incomplete tasks remain`);
               continueLoop = true; // Continue but don't inject forcing messages
             } else {
               // Either all tasks done or hit iteration limit
-              console.log(`[META-SYSOP-CONTINUATION] ❌ Ending - all tasks complete or limit reached (iteration ${iterationCount}/${14})`);
+              console.log(`[META-SYSOP-CONTINUATION] ❌ Ending - all tasks complete or limit reached (iteration ${iterationCount}/${MAX_ITERATIONS})`);
               continueLoop = false;
             }
           } catch (error: any) {
