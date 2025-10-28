@@ -524,6 +524,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // Backups only created when actual platform changes are made (via approval workflow)
 
     // Get conversation history for context
+    // 🧠 MEMORY SYSTEM: Load last 25 messages (not just 6) for better context
     const history = await db
       .select()
       .from(chatMessages)
@@ -534,7 +535,64 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         )
       )
       .orderBy(chatMessages.createdAt)
-      .limit(6); // Last 6 messages to avoid confusion from old context
+      .limit(25); // Last 25 messages for comprehensive memory
+
+    // 🧠 EXTRACT MEMORY CONTEXT from conversation history
+    const userMessages = history.filter(msg => msg.role === 'user' && msg.id !== userMsg.id);
+    const assistantMessages = history.filter(msg => msg.role === 'assistant');
+    
+    // Track user goals, issues, and attempted fixes
+    const userGoals: string[] = [];
+    const knownIssues: string[] = [];
+    const attemptedFixes: string[] = [];
+    
+    for (const msg of userMessages) {
+      const content = msg.content.toLowerCase();
+      
+      // Extract user goals (what they want to build/fix)
+      if (content.includes('build') || content.includes('create') || content.includes('implement') || content.includes('add')) {
+        userGoals.push(msg.content);
+      }
+      
+      // Extract known issues (bugs, errors, problems)
+      if (content.includes('bug') || content.includes('error') || content.includes('broken') || content.includes('not working') || content.includes('issue')) {
+        knownIssues.push(msg.content);
+      }
+      
+      // Extract fix requests
+      if (content.includes('fix') || content.includes('repair') || content.includes('resolve')) {
+        attemptedFixes.push(msg.content);
+      }
+    }
+    
+    // Generate memory summary for system prompt
+    let memorySummary = '';
+    if (userGoals.length > 0 || knownIssues.length > 0 || attemptedFixes.length > 0) {
+      memorySummary = `\n\n═══════════════════════════════════════════════════════════════════\n`;
+      memorySummary += `🧠 CONVERSATION MEMORY (Remember This Context)\n`;
+      memorySummary += `═══════════════════════════════════════════════════════════════════\n\n`;
+      
+      if (userGoals.length > 0) {
+        memorySummary += `**USER GOALS (What they want to build/accomplish):**\n`;
+        memorySummary += userGoals.slice(-3).map(g => `- ${g.substring(0, 200)}`).join('\n');
+        memorySummary += `\n\n`;
+      }
+      
+      if (knownIssues.length > 0) {
+        memorySummary += `**KNOWN ISSUES (Bugs/problems user reported):**\n`;
+        memorySummary += knownIssues.slice(-3).map(i => `- ${i.substring(0, 200)}`).join('\n');
+        memorySummary += `\n\n`;
+      }
+      
+      if (attemptedFixes.length > 0) {
+        memorySummary += `**PREVIOUS FIX ATTEMPTS:**\n`;
+        memorySummary += attemptedFixes.slice(-3).map(f => `- ${f.substring(0, 200)}`).join('\n');
+        memorySummary += `\n\n`;
+      }
+      
+      memorySummary += `**BE PROACTIVE:** Based on this memory, proactively suggest fixes for known issues and help achieve user goals.\n`;
+      memorySummary += `Don't wait to be asked - if you see a known issue, offer to fix it!\n`;
+    }
 
     // Build conversation for Claude
     const conversationMessages: any[] = history
@@ -1802,10 +1860,15 @@ Be conversational, be helpful, and only work when asked!`;
 
       sendEvent('progress', { message: `Analyzing (iteration ${iterationCount}/${MAX_ITERATIONS})...` });
 
+      // 🧠 INJECT MEMORY SUMMARY into system prompt (only on first iteration)
+      const finalSystemPrompt = iterationCount === 1 && memorySummary 
+        ? systemPrompt + memorySummary 
+        : systemPrompt;
+
       const stream = await client.messages.create({
         model: 'claude-opus-4-20250514', // 🔥 OPUS 4.1 - What Replit Agent uses for complex tasks
         max_tokens: config.maxTokens, // Use autonomy level's max_tokens
-        system: systemPrompt,
+        system: finalSystemPrompt,
         messages: conversationMessages,
         tools: availableTools,
         stream: true, // ✅ Required for Opus 4.1 (long operations)
