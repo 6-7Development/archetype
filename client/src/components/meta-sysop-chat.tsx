@@ -127,6 +127,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
   const [progressMessage, setProgressMessage] = useState("");
   const [showTaskList, setShowTaskList] = useState(true); // Default true to show task UI when tasks arrive (like Replit Agent)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null); // null = platform code
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null); // Track active background job
   const abortControllerRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -136,6 +137,124 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, streamingContent]);
+
+  // WebSocket listener for background job updates
+  useEffect(() => {
+    if (!currentJobId) return;
+
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+
+    ws.onopen = () => {
+      console.log('[META-SYSOP] WebSocket connected for job:', currentJobId);
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        // Only process meta_sysop_job_update events for current job
+        if (data.type !== 'meta_sysop_job_update' || data.jobId !== currentJobId) {
+          return;
+        }
+
+        console.log('[META-SYSOP] WebSocket event:', data.updateType, data);
+
+        switch (data.updateType) {
+          case 'job_content':
+            setStreamingContent(prev => prev + (data.content || ''));
+            setProgressStatus('working');
+            break;
+
+          case 'job_progress':
+            setProgressMessage(data.message || '');
+            setProgressStatus('working');
+            break;
+
+          case 'task_list_created':
+            // Fetch the task list from database
+            fetch(`/api/meta-sysop/task-list/${data.taskListId}`, {
+              credentials: 'include'
+            })
+              .then(res => res.json())
+              .then(taskListData => {
+                if (taskListData.success && taskListData.tasks) {
+                  const formattedTasks: AgentTask[] = taskListData.tasks.map((t: any) => ({
+                    id: t.id,
+                    title: t.title,
+                    description: t.description,
+                    status: t.status as AgentTask['status'],
+                  }));
+                  setTasks(formattedTasks);
+                  setShowTaskList(true);
+                  setProgressMessage('Task list created - tracking progress...');
+                }
+              })
+              .catch(err => {
+                console.error('[META-SYSOP] Failed to fetch task list:', err);
+              });
+            break;
+
+          case 'task_updated':
+            setTasks(prev => prev.map(t => 
+              t.id === data.taskId 
+                ? { ...t, status: data.status as AgentTask['status'] }
+                : t
+            ));
+            if (data.status === 'in_progress') {
+              setActiveTaskId(data.taskId);
+            }
+            break;
+
+          case 'job_completed':
+            // Add final assistant message
+            const assistantMsg: Message = {
+              id: Date.now().toString(),
+              role: 'assistant',
+              content: streamingContent,
+            };
+            setMessages(prev => [...prev, assistantMsg]);
+            
+            setIsStreaming(false);
+            setProgressStatus('idle');
+            setCurrentJobId(null);
+            setStreamingContent('');
+            setTasks(prev => prev.map(t => ({ ...t, status: 'completed' as const })));
+            
+            toast({ title: "✅ Task completed" });
+            break;
+
+          case 'job_failed':
+            setIsStreaming(false);
+            setProgressStatus('idle');
+            setCurrentJobId(null);
+            setStreamingContent('');
+            
+            toast({ 
+              title: '❌ Job failed', 
+              description: data.error || 'Unknown error',
+              variant: 'destructive' 
+            });
+            break;
+        }
+      } catch (error) {
+        console.error('[META-SYSOP] WebSocket message parse error:', error);
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error('[META-SYSOP] WebSocket error:', error);
+    };
+
+    ws.onclose = () => {
+      console.log('[META-SYSOP] WebSocket disconnected');
+    };
+
+    return () => {
+      console.log('[META-SYSOP] Closing WebSocket for job:', currentJobId);
+      ws.close();
+    };
+  }, [currentJobId, streamingContent, toast]);
 
   // Fetch autonomy level
   const { data: autonomyData } = useQuery<any>({
@@ -165,7 +284,42 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
     },
   });
 
-  // Send message mutation
+  // Query for user's active job (poll every 5s when no current job)
+  const { data: activeJobData } = useQuery<any>({
+    queryKey: ['/api/meta-sysop/active-job'],
+    enabled: !currentJobId && isAdmin,
+    refetchInterval: 5000,
+  });
+
+  const activeJob = activeJobData?.job;
+
+  // Resume mutation
+  const resumeMutation = useMutation({
+    mutationFn: async (jobId: string) => {
+      const response = await fetch(`/api/meta-sysop/resume/${jobId}`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to resume job');
+      setCurrentJobId(jobId);
+      setIsStreaming(true);
+      setProgressStatus('working');
+      setProgressMessage("Resuming Meta-SySop...");
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "✅ Job resumed" });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "❌ Resume failed",
+        description: error.message || 'Failed to resume job',
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Send message mutation - now starts background job instead of SSE
   const sendMutation = useMutation({
     mutationFn: async (message: string) => {
       // Add user message to session
@@ -182,165 +336,31 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
       setTasks([]);
       setActiveTaskId(null);
       setProgressStatus('thinking');
-      setProgressMessage("Analyzing request...");
-      
-      abortControllerRef.current = new AbortController();
+      setProgressMessage("Starting Meta-SySop background job...");
 
-      const response = await fetch('/api/meta-sysop/stream', {
+      // Start background job
+      const response = await fetch('/api/meta-sysop/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ 
           message,
-          projectId: selectedProjectId, // null = platform code, otherwise user project ID
+          projectId: selectedProjectId,
         }),
-        signal: abortControllerRef.current.signal,
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to start: ${response.statusText}`);
+        throw new Error(`Failed to start job: ${response.statusText}`);
       }
 
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      let fullContent = '';
-
-      if (!reader) throw new Error('No response stream');
-
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-
-          for (const line of lines) {
-            if (!line.trim() || !line.startsWith('data: ')) continue;
-            
-            try {
-              const data = JSON.parse(line.slice(6));
-
-              switch (data.type) {
-                case 'content':
-                  fullContent += data.content || '';
-                  setStreamingContent(fullContent);
-                  setProgressStatus('working');
-                  break;
-
-                case 'tool_use':
-                  const toolTask: AgentTask = {
-                    id: data.id || `tool-${Date.now()}`,
-                    title: formatToolName(data.name || 'Unknown tool'),
-                    status: 'in_progress',
-                  };
-                  setTasks(prev => {
-                    const existing = prev.find(t => t.id === toolTask.id);
-                    if (existing) return prev;
-                    return [...prev, toolTask];
-                  });
-                  setActiveTaskId(toolTask.id);
-                  setProgressMessage(`Using ${formatToolName(data.name)}...`);
-                  setShowTaskList(true);
-                  break;
-
-                case 'tool_result':
-                  setTasks(prev => prev.map(t => 
-                    t.id === data.tool_use_id 
-                      ? { ...t, status: 'completed' as const }
-                      : t
-                  ));
-                  setProgressStatus('thinking');
-                  setProgressMessage("Processing results...");
-                  break;
-
-                case 'progress':
-                  setProgressMessage(data.message || '');
-                  setProgressStatus('working');
-                  break;
-
-                case 'task_list_created':
-                  // Fetch the task list from the database
-                  fetch(`/api/meta-sysop/task-list/${data.taskListId}`, {
-                    credentials: 'include'
-                  })
-                    .then(async res => {
-                      if (!res.ok) {
-                        throw new Error(`Failed to fetch task list: ${res.status} ${res.statusText}`);
-                      }
-                      return res.json();
-                    })
-                    .then(taskListData => {
-                      if (taskListData.success && taskListData.tasks) {
-                        const formattedTasks: AgentTask[] = taskListData.tasks.map((t: any) => ({
-                          id: t.id,
-                          title: t.title,
-                          description: t.description,
-                          status: t.status as AgentTask['status'],
-                        }));
-                        setTasks(formattedTasks);
-                        setShowTaskList(true);
-                        setProgressMessage('Task list created - tracking progress...');
-                        console.log('[META-SYSOP] Task list populated:', formattedTasks.length, 'tasks');
-                      } else {
-                        console.error('[META-SYSOP] Task list fetch returned no tasks:', taskListData);
-                      }
-                    })
-                    .catch(err => {
-                      console.error('[META-SYSOP] Failed to fetch task list:', err);
-                      toast({ 
-                        title: "Failed to load task list", 
-                        description: "Task progress may not be visible",
-                        variant: "destructive" 
-                      });
-                    });
-                  break;
-
-                case 'task_updated':
-                  // Update specific task status
-                  setTasks(prev => prev.map(t => 
-                    t.id === data.taskId 
-                      ? { ...t, status: data.status as AgentTask['status'] }
-                      : t
-                  ));
-                  if (data.status === 'in_progress') {
-                    setActiveTaskId(data.taskId);
-                  }
-                  break;
-
-                case 'done':
-                  // Add assistant message to session
-                  const assistantMsg: Message = {
-                    id: Date.now().toString(),
-                    role: "assistant",
-                    content: fullContent,
-                  };
-                  setMessages(prev => [...prev, assistantMsg]);
-                  
-                  setIsStreaming(false);
-                  setStreamingContent("");
-                  setProgressStatus('idle');
-                  setProgressMessage("");
-                  setTasks(prev => prev.map(t => ({ ...t, status: 'completed' as const })));
-                  
-                  toast({ title: "✅ Task completed" });
-                  break;
-
-                case 'error':
-                  throw new Error(data.error || 'Unknown error');
-              }
-            } catch (parseError) {
-              console.warn('Failed to parse SSE event:', line);
-            }
-          }
-        }
-      } finally {
-        setIsStreaming(false);
-        setProgressStatus('idle');
-        abortControllerRef.current = null;
-      }
+      const { jobId } = await response.json();
+      setCurrentJobId(jobId);
+      setProgressStatus('working');
+      setProgressMessage("Meta-SySop is working in the background...");
+      
+      console.log('[META-SYSOP] Started background job:', jobId);
+      
+      // WebSocket will handle all updates from here
     },
     onError: (error: any) => {
       console.error('Meta-SySop error:', error);
@@ -437,6 +457,27 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
           className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth"
         >
           <div className="max-w-4xl mx-auto space-y-4">
+            {/* Resume Button for Interrupted Jobs */}
+            {activeJob && activeJob.status === 'interrupted' && !currentJobId && (
+              <div className="mb-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg animate-in fade-in-up">
+                <p className="text-sm text-amber-200 mb-2">Meta-SySop session was interrupted</p>
+                <Button 
+                  size="sm" 
+                  onClick={() => resumeMutation.mutate(activeJob.id)}
+                  disabled={resumeMutation.isPending}
+                  data-testid="button-resume-job"
+                  className="bg-amber-600 hover:bg-amber-700 text-white"
+                >
+                  {resumeMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Rocket className="w-4 h-4 mr-2" />
+                  )}
+                  Resume Session
+                </Button>
+              </div>
+            )}
+
             {/* Welcome screen */}
             {messages.length === 0 && !isStreaming && (
               <div className="text-center py-12 animate-in fade-in-up duration-700">
