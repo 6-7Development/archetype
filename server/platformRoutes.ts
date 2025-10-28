@@ -599,4 +599,58 @@ router.post('/tasks/clear', isAuthenticated, isAdmin, async (req: any, res) => {
   }
 });
 
+// GET /api/platform/deployment-history - Recent GitHub commits/deployments
+router.get('/deployment-history', isAuthenticated, isAdmin, async (req: any, res) => {
+  try {
+    const { getGitHubService } = await import('./githubService');
+    const githubService = getGitHubService();
+    
+    if (!githubService) {
+      return res.status(503).json({ 
+        error: 'GitHub not configured',
+        deployments: [] 
+      });
+    }
+
+    // Fetch last 10 commits from main branch
+    const commits = await githubService.getRecentCommits('main', 10);
+    
+    // Transform commits into deployment records
+    const deployments = commits.map((commit: any) => {
+      const message = commit.commit.message;
+      const author = commit.commit.author.name;
+      const email = commit.commit.author.email;
+      
+      // Detect if commit was made by Meta-SySop
+      const isMetaSysop = 
+        message.includes('[Meta-SySop]') ||
+        message.includes('Meta-SySop:') ||
+        author.toLowerCase().includes('meta-sysop') ||
+        email.toLowerCase().includes('meta-sysop');
+      
+      return {
+        hash: commit.sha,
+        shortHash: commit.sha.substring(0, 7),
+        message: message.split('\n')[0], // First line only
+        author: author,
+        authorType: isMetaSysop ? 'meta-sysop' : 'manual',
+        timestamp: commit.commit.author.date,
+        url: commit.html_url,
+      };
+    });
+
+    res.json({ 
+      success: true,
+      deployments,
+      repository: process.env.GITHUB_REPO || 'unknown',
+    });
+  } catch (error: any) {
+    console.error('[DEPLOYMENT-HISTORY] Error:', error);
+    res.status(500).json({ 
+      error: error.message,
+      deployments: [] 
+    });
+  }
+});
+
 export default router;
