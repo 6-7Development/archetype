@@ -208,50 +208,12 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
             break;
 
           case 'job_completed':
-            // CRITICAL FIX: Fetch message from database instead of using state
-            // (in case WebSocket disconnected during streaming)
-            if (data.messageId) {
-              fetch(`/api/meta-sysop/message/${data.messageId}`, {
-                credentials: 'include'
-              })
-                .then(res => res.json())
-                .then(msgData => {
-                  if (msgData.success && msgData.message) {
-                    const assistantMsg: Message = {
-                      id: msgData.message.id,
-                      role: 'assistant',
-                      content: msgData.message.content || streamingContent || '✅ Done!',
-                    };
-                    setMessages(prev => [...prev, assistantMsg]);
-                  }
-                })
-                .catch(err => {
-                  console.error('[META-SYSOP] Failed to fetch final message:', err);
-                  // Fallback to streamed content if fetch fails
-                  const assistantMsg: Message = {
-                    id: Date.now().toString(),
-                    role: 'assistant',
-                    content: streamingContent || '✅ Done!',
-                  };
-                  setMessages(prev => [...prev, assistantMsg]);
-                });
-            } else {
-              // No messageId, use streamed content
-              const assistantMsg: Message = {
-                id: Date.now().toString(),
-                role: 'assistant',
-                content: streamingContent || '✅ Done!',
-              };
-              setMessages(prev => [...prev, assistantMsg]);
-            }
-            
+            // DON'T add message here - polling will handle it to avoid duplicates
             setIsStreaming(false);
             setProgressStatus('idle');
             setCurrentJobId(null);
             setStreamingContent('');
             setTasks(prev => prev.map(t => ({ ...t, status: 'completed' as const })));
-            
-            toast({ title: "✅ Task completed" });
             break;
 
           case 'job_failed':

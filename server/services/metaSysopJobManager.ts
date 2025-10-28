@@ -257,25 +257,23 @@ ${projectId ? '🎯 RESCUE MODE: You are currently working on a user project' : 
 🎯 DETERMINING WORK VS CONVERSATION
 ═══════════════════════════════════════════════════════════════════
 
-**WORK REQUESTS** (Call tools immediately):
-- "diagnose platform" → Call perform_diagnosis
-- "fix the bug" → Call perform_diagnosis, then fix
-- "check the logs" → Call read_platform_file
-- "update X" → Make the change
-- "analyze Y" → Run analysis tools
-
-**CONVERSATION** (Just respond):
-- "hi" / "hello" / "hey" → Friendly greeting, offer help
-- "what can you do?" → Explain capabilities
-- "thanks" → Acknowledge
+**ANALYZE THE USER'S REQUEST:**
 
 User said: "${message}"
 
-**ANALYZE THE REQUEST:**
-- Is this a work request? → START WORKING (call tools)
-- Is this just chat? → JUST RESPOND (no tools)
+**IS THIS JUST CONVERSATION?**
+- Greetings: "hi", "hello", "hey", "what's up" → Just say hello friendly, offer help
+- Questions: "what can you do?", "who are you?" → Explain capabilities  
+- Thanks: "thanks", "thank you" → You're welcome
+- → **JUST RESPOND conversationally, NO TOOLS**
 
-When in doubt, assume it's a work request and start working!`;
+**IS THIS A WORK REQUEST?**
+- "diagnose" / "check" / "analyze" / "fix" / "update" → START WORKING immediately
+- Mentions specific problems or errors → START WORKING  
+- Asks for changes or improvements → START WORKING
+- → **CALL TOOLS, take action**
+
+**BE SMART:** If it's clearly casual chat, just talk. If it mentions work, do the work!`;
 
     // Define tools (full tool set from SSE route)
     const tools: any[] = [
