@@ -242,6 +242,39 @@ export const insertMetaSysopSessionSchema = createInsertSchema(metaSysopSessions
 export type InsertMetaSysopSession = z.infer<typeof insertMetaSysopSessionSchema>;
 export type MetaSysopSession = typeof metaSysopSessions.$inferSelect;
 
+// Meta-SySop Background Jobs - Long-running jobs with resumption capability
+export const metaSysopJobs = pgTable('meta_sysop_jobs', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar('user_id').notNull(),
+  status: varchar('status', { length: 20 }).notNull().default('pending'), // 'pending' | 'running' | 'completed' | 'failed' | 'interrupted'
+  conversationState: jsonb('conversation_state').$type<Array<{
+    role: 'user' | 'assistant';
+    content: any;
+  }>>().default(sql`'[]'::jsonb`), // Full conversation history for resumption
+  lastIteration: integer('last_iteration').notNull().default(0), // Track progress for resumption
+  taskListId: varchar('task_list_id'), // Reference to active task list
+  error: text('error'), // Error message if failed
+  metadata: jsonb('metadata').$type<{
+    initialMessage?: string;
+    totalIterations?: number;
+    filesModified?: number;
+    commitsCreated?: number;
+  }>(), // Additional context
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+  completedAt: timestamp('completed_at'),
+});
+
+export const insertMetaSysopJobSchema = createInsertSchema(metaSysopJobs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  completedAt: true,
+});
+
+export type InsertMetaSysopJob = z.infer<typeof insertMetaSysopJobSchema>;
+export type MetaSysopJob = typeof metaSysopJobs.$inferSelect;
+
 // Usage Tracking & Billing
 export const usageLogs = pgTable("usage_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
