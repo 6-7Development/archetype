@@ -1818,6 +1818,46 @@ Be conversational, be helpful, and only work when asked!`;
                 sendEvent('task_list_created', { taskListId: result.taskListId });
                 sendEvent('content', { content: `✅ **Task list created!** Track my progress in the card above.\n\n` });
                 console.log('[META-SYSOP] Task list created:', result.taskListId);
+                
+                // 🔥 ARCHITECT SOLUTION: Auto-execute first diagnostic to guarantee progress
+                // This ensures work happens even if AI ignores prompts
+                if (typedInput.tasks && typedInput.tasks.length > 0) {
+                  const firstTask = typedInput.tasks[0];
+                  console.log(`[META-SYSOP-AUTO] Auto-executing first task: ${firstTask.title}`);
+                  sendEvent('progress', { message: `🤖 Auto-starting: ${firstTask.title}` });
+                  
+                  // Auto-execute in background (don't await - let it run async)
+                  (async () => {
+                    try {
+                      // Get the actual task ID from database
+                      const tasksResult = await readTaskList({ userId });
+                      const taskList = tasksResult.taskLists?.find((l: any) => l.id === result.taskListId);
+                      const dbTask = taskList?.tasks?.[0];
+                      
+                      if (dbTask) {
+                        // Mark in progress
+                        await updateTask({ userId, taskId: dbTask.id, status: 'in_progress' });
+                        console.log(`[META-SYSOP-AUTO] Marked task ${dbTask.id} in_progress`);
+                        
+                        // Run diagnosis
+                        const diagResult = await performDiagnosis({ target: 'full' });
+                        console.log(`[META-SYSOP-AUTO] Diagnosis complete: ${diagResult.issues.length} issues found`);
+                        
+                        // Mark complete
+                        await updateTask({
+                          userId,
+                          taskId: dbTask.id,
+                          status: 'completed',
+                          result: `Auto-executed: Found ${diagResult.issues.length} issues`,
+                          completedAt: new Date()
+                        });
+                        console.log(`[META-SYSOP-AUTO] Task ${dbTask.id} completed`);
+                      }
+                    } catch (error: any) {
+                      console.error('[META-SYSOP-AUTO] Auto-execution failed:', error);
+                    }
+                  })();
+                }
               } else {
                 toolResult = `❌ Failed to create task list: ${result.error}`;
                 sendEvent('content', { content: `❌ Failed to create task list: ${result.error}\n\n` });
