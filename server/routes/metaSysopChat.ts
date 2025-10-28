@@ -2550,13 +2550,11 @@ Be conversational, be helpful, and only work when asked!`;
             role: 'user',
             content: [{
               type: 'text',
-              text: `✅ Task list created. Now EXECUTE the first task immediately.\n\n` +
-                `FIRST TASK: "${forceFirstTask.title}"\n\n` +
-                `YOUR NEXT RESPONSE MUST CONTAIN THESE TOOL CALLS (in order):\n` +
-                `1. updateTask(taskId: "...", status: "in_progress") - mark task as started\n` +
-                `2. perform_diagnosis(target: "full") - RUN THE ACTUAL DIAGNOSTIC\n` +
-                `3. updateTask(taskId: "...", status: "completed", result: "...") - mark complete\n\n` +
-                `DO NOT reply with text explanations. CALL THESE TOOLS NOW.`
+              text: `STOP. DO NOT respond with text.\n\n` +
+                `CALL THIS TOOL IMMEDIATELY:\n` +
+                `perform_diagnosis(target: "full", focus: [])\n\n` +
+                `This will diagnose the platform. After you receive the diagnosis results, THEN you can analyze and fix issues.\n\n` +
+                `CALL perform_diagnosis NOW. No text, just the tool call.`
             }]
           });
           
@@ -2604,13 +2602,10 @@ Be conversational, be helpful, and only work when asked!`;
                 role: 'user',
                 content: [{
                   type: 'text',
-                  text: `❌ STOP TALKING. START WORKING NOW.\n\n` +
-                    `Task: "${firstTask.title}" (ID: ${firstTask.id})\n\n` +
-                    `REQUIRED TOOL CALLS (execute immediately):\n` +
-                    `1. updateTask(taskId: "${firstTask.id}", status: "in_progress")\n` +
-                    `2. perform_diagnosis(target: "full") - DO THE ACTUAL DIAGNOSTIC WORK\n` +
-                    `3. updateTask(taskId: "${firstTask.id}", status: "completed", result: "...")\n\n` +
-                    `CALL THESE TOOLS IN YOUR NEXT RESPONSE. NO TEXT. TOOLS ONLY.`
+                  text: `STOP TALKING. CALL TOOLS.\n\n` +
+                    `Task: "${firstTask.title}"\n\n` +
+                    `CALL perform_diagnosis(target: "full", focus: []) NOW.\n\n` +
+                    `Do the actual diagnostic work. No text responses - just call the tool.`
                 }]
               });
             } else {
