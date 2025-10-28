@@ -252,6 +252,25 @@ export class GitHubService {
   }
 
   /**
+   * Get recent commits from the repository
+   */
+  async getRecentCommits(branch: string = 'main', count: number = 10): Promise<any[]> {
+    try {
+      const { data: commits } = await this.octokit.repos.listCommits({
+        owner: this.owner,
+        repo: this.repo,
+        sha: branch,
+        per_page: count,
+      });
+
+      return commits;
+    } catch (error: any) {
+      console.error('[GITHUB-SERVICE] Failed to get recent commits:', error.message);
+      throw new Error(`Failed to get recent commits: ${error.message}`);
+    }
+  }
+
+  /**
    * Check if the service is properly configured
    */
   isConfigured(): boolean {
