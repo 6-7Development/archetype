@@ -1,0 +1,167 @@
+2025-10-27T23:58:57.000000000Z [inf]  Starting Container
+2025-10-27T23:58:58.986017949Z [inf]  ======================================
+2025-10-27T23:58:58.986023687Z [inf]  🚂 RAILWAY STARTUP SCRIPT
+2025-10-27T23:58:58.986028943Z [inf]  ======================================
+2025-10-27T23:58:58.986033933Z [inf]  Time: Mon Oct 27 23:58:57 UTC 2025
+2025-10-27T23:58:58.986039185Z [inf]  
+2025-10-27T23:58:58.986045081Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-10-27T23:58:58.986049835Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-10-27T23:58:58.986054877Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-10-27T23:58:59.238286251Z [inf]  Using 'pg' driver for database querying
+2025-10-27T23:58:59.395569897Z [inf]  [⣷] Pulling schema from database...
+2025-10-27T23:58:59.511539671Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-27T23:59:00.078561600Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-27T23:59:00.078566633Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-27T23:59:00.078572694Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-27T23:59:00.078579472Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-27T23:59:00.153124161Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-27T23:59:00.280552205Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-27T23:59:00.408033279Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-27T23:59:00.535904240Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-27T23:59:00.926872019Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-27T23:59:00.926889815Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-27T23:59:00.926898642Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-27T23:59:01.049954438Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-27T23:59:01.177544665Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-27T23:59:01.305266266Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-27T23:59:01.434138551Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-27T23:59:01.561623626Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-27T23:59:01.988355274Z [inf]  [i] No changes detected
+2025-10-27T23:59:01.988364430Z [inf]  
+2025-10-27T23:59:01.988371826Z [inf]  ✅ Database migrations completed successfully!
+2025-10-27T23:59:01.988378690Z [inf]  
+2025-10-27T23:59:01.988387720Z [inf]  🚀 Starting Node.js application...
+2025-10-27T23:59:01.988395923Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-27T23:59:01.988407566Z [inf]  [2K[1G[✓] Pulling schema from database...
+2025-10-27T23:59:02.987969605Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-10-27T23:59:02.987976324Z [inf]  [db] Connection string includes SSL params: true
+2025-10-27T23:59:02.987977872Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-27T23:59:02.987981334Z [inf]  [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-27T23:59:02.987988311Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-27T23:59:02.987989364Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-27T23:59:02.987996350Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-27T23:59:02.988003716Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-27T23:59:02.988003930Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-27T23:59:02.988005298Z [inf]  📡 WebSocket server initialized at /ws
+2025-10-27T23:59:02.988011734Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-27T23:59:02.988017066Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-27T23:59:02.989452748Z [inf]  ✅ All routes registered successfully
+2025-10-27T23:59:02.989457480Z [inf]  🔍 Testing database connection...
+2025-10-27T23:59:03.030504533Z [inf]  11:59:03 PM [express] serving on port 8080
+2025-10-27T23:59:03.030510275Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-10-27T23:59:03.133669732Z [inf]  ✅ Database connected successfully
+2025-10-27T23:59:03.133676020Z [inf]  🔧 Auto-healing system ENABLED (production mode)
+2025-10-27T23:59:03.133682699Z [inf]  
+2025-10-27T23:59:03.133687100Z [inf]  🔍 Checking GitHub integration configuration...
+2025-10-27T23:59:03.133759513Z [inf]  ✅ GitHub integration configured successfully
+2025-10-27T23:59:03.133767831Z [inf]     - Repository: 6-7Development/archetype
+2025-10-27T23:59:03.133772913Z [inf]     - Branch: main
+2025-10-27T23:59:03.133777803Z [inf]     - Token: ✓ (configured)
+2025-10-27T23:59:03.133782942Z [inf]     - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-27T23:59:03.133787942Z [inf]     - Maintenance mode: Available for owner
+2025-10-27T23:59:03.133795739Z [inf]  
+2025-10-27T23:59:23.131573337Z [inf]  [DEPLOYMENT-INFO] Using Railway environment variables
+2025-10-27T23:59:23.131576400Z [inf]  [AUTH] Login attempt for email: root@getdc360.com
+2025-10-27T23:59:23.131580518Z [inf]  11:59:22 PM [express] GET /api/projects 304 in 11ms :: []
+2025-10-27T23:59:23.131584830Z [inf]  [AUTH] Found users: 1
+2025-10-27T23:59:23.131589911Z [inf]  [AUTH] User found: root@getdc360.com has password: true
+2025-10-27T23:59:23.131594569Z [inf]  11:59:15 PM [express] GET /api/deployment-info 200 in 3ms :: {"version":"1.0.0","commitHash":"5c462e8…
+2025-10-27T23:59:23.131594870Z [inf]  [AUTH] Verifying password...
+2025-10-27T23:59:23.131599610Z [inf]  [AUTH] Password valid: true
+2025-10-27T23:59:23.131604477Z [inf]  [AUTH] Authentication successful for: root@getdc360.com
+2025-10-27T23:59:23.131609015Z [inf]  11:59:22 PM [express] POST /api/auth/login 200 in 280ms :: {"success":true,"user":{"id":"723e1301-c72…
+2025-10-27T23:59:23.131612948Z [inf]  11:59:22 PM [express] GET /api/auth/me 304 in 8ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef954…
+2025-10-27T23:59:26.363275240Z [inf]  [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-27T23:59:26.421809217Z [inf]  11:59:26 PM [express] GET /api/meta-sysop/projects 304 in 79ms :: []
+2025-10-27T23:59:26.423657469Z [inf]  11:59:26 PM [express] GET /api/meta-sysop/autonomy-level 304 in 80ms :: {"currentLevel":"max","maxAll…
+2025-10-27T23:59:26.450117054Z [inf]  11:59:26 PM [express] GET /api/meta-sysop/pending-changes 304 in 104ms :: {"success":true,"pendingCha…
+2025-10-27T23:59:26.455707543Z [inf]  11:59:26 PM [express] GET /api/platform/status 200 in 107ms :: {"overallHealth":100,"activeIncidents"…
+2025-10-27T23:59:26.539598619Z [inf]  ✅ WebSocket client connected
+2025-10-27T23:59:26.614496118Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-27T23:59:31.534344719Z [inf]  11:59:31 PM [express] GET /api/meta-sysop/pending-changes 304 in 18ms :: {"success":true,"pendingChan…
+2025-10-27T23:59:36.618112094Z [inf]  11:59:36 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T23:59:37.126008207Z [inf]  [META-SYSOP-CHAT] Stream request received
+2025-10-27T23:59:37.126018752Z [inf]  [META-SYSOP-CHAT] Message: Diagnose platform issues and fix them updates plea Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-10-27T23:59:37.126025239Z [inf]  [META-SYSOP-CHAT] Setting up SSE headers
+2025-10-27T23:59:37.126032016Z [inf]  [META-SYSOP-CHAT] Heartbeat started - will send keepalive every 15s
+2025-10-27T23:59:37.126042407Z [inf]  [META-SYSOP-CHAT] Entering try block
+2025-10-27T23:59:37.127235145Z [inf]  [META-SYSOP-CHAT] User autonomy level: max
+2025-10-27T23:59:42.098321469Z [inf]  11:59:41 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-27T23:59:45.153731697Z [inf]  [META-SYSOP] Response has tool calls: true
+2025-10-27T23:59:45.153738777Z [inf]  [META-SYSOP] Content blocks: text, tool_use
+2025-10-27T23:59:45.153745181Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: I'll diagnose the platform for issues and fix the broken chat toolbar! Let me create a comprehensive
+2025-10-27T23:59:45.153752350Z [inf]  [META-SYSOP] Task list created: 69320bf6-df26-4c07-9344-efbd7014da00
+2025-10-27T23:59:47.073448895Z [inf]  11:59:46 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-27T23:59:48.056847605Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Perfect! I've created a comprehensive task list that's now visible in your chat. Let me start by run
+2025-10-27T23:59:50.089933208Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Let me check the actual task IDs first:
+2025-10-27T23:59:52.053347056Z [inf]  11:59:51 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-27T23:59:52.125292124Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-27T23:59:53.396776193Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Now I'll start with the comprehensive platform diagnosis:
+2025-10-27T23:59:56.330291924Z [inf]  [META-SYSOP-CLEANUP] Safety passed - checking task list 69320bf6-df26-4c07-9344-efbd7014da00 for incomplete tasks...
+2025-10-27T23:59:56.333705268Z [inf]  [META-SYSOP-CLEANUP] Found 5 incomplete tasks in session task list 69320bf6-df26-4c07-9344-efbd7014da00
+2025-10-27T23:59:56.338480616Z [inf]  [META-SYSOP-CLEANUP] Marked task "Investigate Chat Toolbar Issues" as completed (cleanup)
+2025-10-27T23:59:56.344692796Z [inf]  [META-SYSOP-CLEANUP] Marked task "Fix Chat Toolbar Functionality" as completed (cleanup)
+2025-10-27T23:59:56.347701718Z [inf]  [META-SYSOP-CLEANUP] Marked task "Apply Critical Platform Fixes" as completed (cleanup)
+2025-10-27T23:59:56.353046657Z [inf]  [META-SYSOP-CLEANUP] Marked task "Deploy All Fixes" as completed (cleanup)
+2025-10-27T23:59:56.356577993Z [inf]  [META-SYSOP-CLEANUP] Marked task "System-wide Platform Diagnosis" as completed (cleanup)
+2025-10-27T23:59:56.358543248Z [inf]  [META-SYSOP-CLEANUP] ✅ Task list 69320bf6-df26-4c07-9344-efbd7014da00 marked as completed (cleanup)
+2025-10-27T23:59:56.361997591Z [inf]  [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: Meta-SySop chat: Diagnose platform issues and fix them updates please - success
+2025-10-27T23:59:56.363776991Z [inf]  [META-SYSOP-HEARTBEAT] Cleared on stream end
+2025-10-27T23:59:56.366876909Z [inf]  11:59:56 PM [express] POST /api/meta-sysop/stream 200 in 19253ms
+2025-10-27T23:59:56.476661201Z [inf]  [META-SYSOP] Fetched 5 tasks for task list 69320bf6-df26-4c07-9344-efbd7014da00
+2025-10-27T23:59:56.482359104Z [inf]  11:59:56 PM [express] GET /api/meta-sysop/task-list/69320bf6-df26-4c07-9344-efbd7014da00 200 in 15ms …
+2025-10-27T23:59:56.562797800Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-28T00:00:00.293957750Z [inf]  12:00:00 AM [express] GET /api/auth/me 304 in 7ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef954…
+2025-10-28T00:00:00.398888995Z [inf]  [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-28T00:00:00.404491791Z [inf]  12:00:00 AM [express] GET /api/meta-sysop/projects 304 in 25ms :: []
+2025-10-28T00:00:00.413801475Z [inf]  12:00:00 AM [express] GET /api/meta-sysop/pending-changes 304 in 24ms :: {"success":true,"pendingChan…
+2025-10-28T00:00:00.508271299Z [inf]  12:00:00 AM [express] GET /api/platform/status 200 in 114ms :: {"overallHealth":100,"activeIncidents"…
+2025-10-28T00:00:00.508279705Z [inf]  12:00:00 AM [express] GET /api/meta-sysop/autonomy-level 304 in 127ms :: {"currentLevel":"max","maxAl…
+2025-10-28T00:00:00.572660981Z [inf]  ✅ WebSocket client connected
+2025-10-28T00:00:00.627822705Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-28T00:00:05.482803115Z [inf]  12:00:05 AM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-28T00:00:07.234742354Z [inf]  [META-SYSOP-CHAT] Stream request received
+2025-10-28T00:00:07.234749503Z [inf]  [META-SYSOP-CHAT] Message: hello Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-10-28T00:00:07.234755997Z [inf]  [META-SYSOP-CHAT] Setting up SSE headers
+2025-10-28T00:00:07.234766681Z [inf]  [META-SYSOP-CHAT] Heartbeat started - will send keepalive every 15s
+2025-10-28T00:00:07.234773935Z [inf]  [META-SYSOP-CHAT] Entering try block
+2025-10-28T00:00:07.234781871Z [inf]  [META-SYSOP-CHAT] User autonomy level: max
+2025-10-28T00:00:07.234788736Z [inf]  [META-SYSOP] Casual greeting detected - sending friendly response WITHOUT calling Claude
+2025-10-28T00:00:07.234795275Z [inf]  [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: Meta-SySop chat: hello - success
+2025-10-28T00:00:07.234801891Z [inf]  [META-SYSOP-CHAT] Terminating stream: 1e2c7c10-e650-4da3-912b-19540291c2c7 Success
+2025-10-28T00:00:07.234808624Z [inf]  [META-SYSOP-HEARTBEAT] Cleared on stream end
+2025-10-28T00:00:07.234815900Z [inf]  12:00:06 AM [express] POST /api/meta-sysop/stream 200 in 28ms
+2025-10-28T00:00:10.566208558Z [inf]  12:00:10 AM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-28T00:00:30.567568169Z [inf]  12:00:20 AM [express] GET /api/meta-sysop/pending-changes 304 in 95ms :: {"success":true,"pendingChan…
+2025-10-28T00:00:30.567582062Z [inf]  12:00:25 AM [express] GET /api/meta-sysop/pending-changes 304 in 19ms :: {"success":true,"pendingChan…
+2025-10-28T00:00:30.567591538Z [inf]  [META-SYSOP-CHAT] Stream request received
+2025-10-28T00:00:30.567600018Z [inf]  [META-SYSOP-CHAT] Message: can you remove the Jesus ontop of the platform? Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-10-28T00:00:30.567606567Z [inf]  [META-SYSOP-CHAT] Setting up SSE headers
+2025-10-28T00:00:30.567615006Z [inf]  [META-SYSOP-CHAT] Heartbeat started - will send keepalive every 15s
+2025-10-28T00:00:30.567623286Z [inf]  [META-SYSOP-CHAT] Entering try block
+2025-10-28T00:00:30.567631137Z [inf]  [META-SYSOP-CHAT] User autonomy level: max
+2025-10-28T00:00:31.419680247Z [inf]  12:00:30 AM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {"success":true,"pendingChan…
+2025-10-28T00:00:36.249345855Z [inf]  12:00:36 AM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-28T00:00:37.713862475Z [inf]  [META-SYSOP] Response has tool calls: true
+2025-10-28T00:00:37.713876111Z [inf]  [META-SYSOP] Content blocks: text, tool_use
+2025-10-28T00:00:37.713883162Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: I understand you want me to diagnose the platform for issues and fix multiple problems. Let me start
+2025-10-28T00:00:37.723381006Z [inf]  [META-SYSOP] Task list created: d483a125-983a-4b66-a74a-fc118f4058ae
+2025-10-28T00:00:41.378061827Z [inf]  12:00:41 AM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-28T00:00:41.615917257Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Perfect! I've created a comprehensive task list to address all your concerns. Let me start by runnin
+2025-10-28T00:00:45.447593833Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-28T00:00:46.404067023Z [inf]  12:00:46 AM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {"success":true,"pendingChan…
+2025-10-28T00:00:50.736653212Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Now running comprehensive system diagnosis to identify all platform issues...
+2025-10-28T00:00:50.760893743Z [inf]  [META-SYSOP-CLEANUP] Safety passed - checking task list d483a125-983a-4b66-a74a-fc118f4058ae for incomplete tasks...
+2025-10-28T00:00:50.767064325Z [inf]  [META-SYSOP-CLEANUP] Found 5 incomplete tasks in session task list d483a125-983a-4b66-a74a-fc118f4058ae
+2025-10-28T00:00:50.774064753Z [inf]  [META-SYSOP-CLEANUP] Marked task "Fix Chat Toolbar Issues" as completed (cleanup)
+2025-10-28T00:00:50.780118637Z [inf]  [META-SYSOP-CLEANUP] Marked task "Remove Religious Imagery" as completed (cleanup)
+2025-10-28T00:00:50.790794127Z [inf]  [META-SYSOP-CLEANUP] Marked task "Address Critical System Issues" as completed (cleanup)
+2025-10-28T00:00:50.790804262Z [inf]  [META-SYSOP-CLEANUP] Marked task "Deploy All Fixes" as completed (cleanup)
+2025-10-28T00:00:51.198770470Z [inf]  [META-SYSOP-CLEANUP] Marked task "System-wide Platform Diagnosis" as completed (cleanup)
+2025-10-28T00:00:51.198776065Z [inf]  [META-SYSOP-CLEANUP] ✅ Task list d483a125-983a-4b66-a74a-fc118f4058ae marked as completed (cleanup)
+2025-10-28T00:00:51.198781390Z [inf]  [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: Meta-SySop chat: can you remove the Jesus ontop of the platform? - success
+2025-10-28T00:00:51.198787154Z [inf]  [META-SYSOP-HEARTBEAT] Cleared on stream end
+2025-10-28T00:00:51.198792781Z [inf]  12:00:50 AM [express] POST /api/meta-sysop/stream 200 in 20387ms
+2025-10-28T00:00:51.198817091Z [inf]  [META-SYSOP] Fetched 5 tasks for task list d483a125-983a-4b66-a74a-fc118f4058ae
+2025-10-28T00:00:51.198823549Z [inf]  12:00:50 AM [express] GET /api/meta-sysop/task-list/d483a125-983a-4b66-a74a-fc118f4058ae 200 in 14ms …
+2025-10-28T00:00:51.198833722Z [inf]  ❌ WebSocket client disconnected (user: admin)
