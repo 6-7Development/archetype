@@ -1718,6 +1718,13 @@ Be conversational, be helpful, and only work when asked!`;
         contentBlocks.push({ type: 'text', text: currentTextBlock });
       }
 
+      // 🔥 CLEANUP: Remove internal _inputStr fields before sending to Claude
+      contentBlocks.forEach(block => {
+        if (block.type === 'tool_use' && '_inputStr' in block) {
+          delete block._inputStr;
+        }
+      });
+
       conversationMessages.push({
         role: 'assistant',
         content: contentBlocks,
