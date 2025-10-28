@@ -5,3 +5,18 @@ builder = "nixpacks"
 startCommand = "sh railway-start.sh"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 10
+
+# PR Preview Configuration
+# Railway automatically creates preview environments for PRs
+# Each preview gets its own isolated environment with forked services
+
+[environments.pr]
+# Preview-specific settings
+# These apply to all PR preview deployments
+[environments.pr.variables]
+# PR previews use the PR workflow by default
+ENABLE_PR_WORKFLOW = "true"
+# Shorter session timeout for previews
+SESSION_MAX_AGE = "3600000"
+# Enable verbose logging in previews for debugging
+LOG_LEVEL = "debug"

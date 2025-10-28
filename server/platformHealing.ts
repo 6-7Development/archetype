@@ -31,6 +31,18 @@ interface FileChange {
   contentAfter?: string;
 }
 
+// PR Workflow metadata storage (in-memory)
+interface PRMetadata {
+  prNumber: number;
+  branchName: string;
+  previewUrl?: string;
+  status: 'pending' | 'success' | 'failure';
+  createdAt: Date;
+}
+
+// In-memory storage for active PRs (keyed by branch name)
+const activePRs = new Map<string, PRMetadata>();
+
 export class PlatformHealingService {
   private readonly PROJECT_ROOT = PROJECT_ROOT;
   private readonly BACKUP_BRANCH_PREFIX = 'backup/meta-sysop-';
@@ -38,6 +50,27 @@ export class PlatformHealingService {
   constructor() {
     // Log PROJECT_ROOT for debugging
     console.log(`[PLATFORM-HEALING] PROJECT_ROOT: ${this.PROJECT_ROOT}`);
+  }
+
+  /**
+   * Get PR metadata by branch name
+   */
+  getPRMetadata(branchName: string): PRMetadata | undefined {
+    return activePRs.get(branchName);
+  }
+
+  /**
+   * Store PR metadata
+   */
+  private storePRMetadata(metadata: PRMetadata): void {
+    activePRs.set(metadata.branchName, metadata);
+  }
+
+  /**
+   * Check if PR workflow is enabled
+   */
+  private isPRWorkflowEnabled(): boolean {
+    return process.env.ENABLE_PR_WORKFLOW === 'true';
   }
   
   private sanitizeBackupId(backupId: string): string {
