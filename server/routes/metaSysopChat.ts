@@ -1741,7 +1741,8 @@ Be conversational, be helpful, and only work when asked!`;
       const hasToolUse = contentBlocks.some(block => block.type === 'tool_use');
 
       // 🚨 FORCE TOOL EXECUTION: If Meta-SySop has tasks but doesn't call tools, force it
-      if (activeTaskListId && iterationCount > 1 && !hasToolUse) {
+      // 🔥 ARCHITECT FIX: Removed iterationCount > 1 guard - must enforce on ALL iterations
+      if (activeTaskListId && !hasToolUse) {
         console.log('[META-SYSOP-FORCE] No tools called but have task list - checking tasks...');
         try {
           const taskCheck = await readTaskList({ userId });
@@ -2544,27 +2545,36 @@ Be conversational, be helpful, and only work when asked!`;
             const allTasks = sessionTaskList?.tasks || [];
             const inProgressTasks = allTasks.filter((t: any) => t.status === 'in_progress');
             const pendingTasks = allTasks.filter((t: any) => t.status === 'pending');
+            const completedTasks = allTasks.filter((t: any) => t.status === 'completed');
             
-            console.log(`[META-SYSOP-CONTINUATION] In-progress: ${inProgressTasks.length}, Pending: ${pendingTasks.length}`);
+            console.log(`[META-SYSOP-CONTINUATION] Completed: ${completedTasks.length}, In-progress: ${inProgressTasks.length}, Pending: ${pendingTasks.length}`);
             
-            if (inProgressTasks.length > 0 && iterationCount < 14) {
-              console.log(`[META-SYSOP-CONTINUATION] ✅ Continuing - ${inProgressTasks.length} tasks in_progress`);
-              sendEvent('progress', { message: `${inProgressTasks.length} task(s) in progress - continuing work...` });
+            // 🔥 ARCHITECT FIX: Continue if there are ANY incomplete tasks (in_progress OR pending)
+            const hasIncompleteTasks = inProgressTasks.length > 0 || (pendingTasks.length > 0 && completedTasks.length === 0);
+            
+            if (hasIncompleteTasks && iterationCount < 14) {
+              const tasksToForce = inProgressTasks.length > 0 ? inProgressTasks : [pendingTasks[0]];
+              console.log(`[META-SYSOP-CONTINUATION] ✅ Continuing - forcing work on: ${tasksToForce.map((t: any) => t.title).join(', ')}`);
+              sendEvent('progress', { message: `Forcing work on ${tasksToForce.length} task(s)...` });
               
-              // Give Meta-SySop a STRONG directive to use tools
+              const firstTask = tasksToForce[0];
+              // FORCE Meta-SySop to work - explicit tool call instructions
               conversationMessages.push({
                 role: 'user',
                 content: [{
                   type: 'text',
-                  text: `⚠️ CRITICAL: You have ${inProgressTasks.length} task(s) marked as "in_progress" that you MUST complete:\n\n` +
-                    inProgressTasks.map((t: any) => `- ${t.title} (ID: ${t.id})`).join('\n') +
-                    `\n\nYou MUST use the available tools to complete these tasks. Don't just describe what you'll do - ACTUALLY CALL THE TOOLS NOW. ` +
-                    `Use perform_diagnosis, readPlatformFile, writePlatformFile, etc. to do the actual work.`
+                  text: `❌ STOP TALKING. START WORKING NOW.\n\n` +
+                    `Task: "${firstTask.title}" (ID: ${firstTask.id})\n\n` +
+                    `REQUIRED TOOL CALLS (execute immediately):\n` +
+                    `1. updateTask(taskId: "${firstTask.id}", status: "in_progress")\n` +
+                    `2. perform_diagnosis(target: "full") - DO THE ACTUAL DIAGNOSTIC WORK\n` +
+                    `3. updateTask(taskId: "${firstTask.id}", status: "completed", result: "...")\n\n` +
+                    `CALL THESE TOOLS IN YOUR NEXT RESPONSE. NO TEXT. TOOLS ONLY.`
                 }]
               });
             } else {
               // Either all tasks done or hit iteration limit
-              console.log(`[META-SYSOP-CONTINUATION] ❌ Ending - no in_progress tasks (iteration ${iterationCount}/${14})`);
+              console.log(`[META-SYSOP-CONTINUATION] ❌ Ending - all tasks complete or limit reached (iteration ${iterationCount}/${14})`);
               continueLoop = false;
             }
           } catch (error: any) {
