@@ -1819,17 +1819,8 @@ Be conversational, be helpful, and only work when asked!`;
                 sendEvent('content', { content: `✅ **Task list created!** Track my progress in the card above.\n\n` });
                 console.log('[META-SYSOP] Task list created:', result.taskListId);
                 
-                // 🔥 CRITICAL FIX: Set flag to force continuation AFTER tool results are added
-                // This prevents conversation structure errors with Anthropic API
-                // The forcing message will be injected after line 2554 (after tool_results are added)
-                if (typedInput.tasks && typedInput.tasks.length > 0) {
-                  // Store first task info for forcing message later
-                  (global as any).metaSysopForceFirstTask = {
-                    title: typedInput.tasks[0].title,
-                    description: typedInput.tasks[0].description
-                  };
-                  console.log(`[META-SYSOP-AUTO] Will force execution of first task after tool results: ${typedInput.tasks[0].title}`);
-                }
+                // ✅ FULL AUTONOMY: No forcing, no micromanagement
+                // Meta-SySop will naturally proceed with tasks like Replit Agent does
               } else {
                 toolResult = `❌ Failed to create task list: ${result.error}`;
                 sendEvent('content', { content: `❌ Failed to create task list: ${result.error}\n\n` });
@@ -1839,66 +1830,8 @@ Be conversational, be helpful, and only work when asked!`;
               const typedInput = input as { taskId: string; status: string; result?: string };
               sendEvent('progress', { message: `Updating task to ${typedInput.status}...` });
 
-              // 🎯 ANTI-LYING VALIDATION: Prevent completing tasks out of order
-              if (typedInput.status === 'completed') {
-                // Get current task list to validate
-                const listResult = await readTaskList({ userId });
-                if (listResult.success && listResult.taskLists) {
-                  const activeList = listResult.taskLists.find((list: any) => list.status === 'active');
-                  if (activeList) {
-                    const tasks = activeList.tasks || [];
-                    const currentTask = tasks.find((t: any) => t.id === typedInput.taskId);
-
-                    if (currentTask) {
-                      // SPECIAL VALIDATION: "Deploy to production via GitHub" requires actual commit success
-                      if (currentTask.title === 'Deploy to production via GitHub') {
-                        if (!commitSuccessful) {
-                          toolResult = `❌ BLOCKED: Cannot mark deployment task as completed!\n\n` +
-                            `You must successfully call commit_to_github() and receive a success response BEFORE marking this task complete.\n\n` +
-                            `Commit status: ${commitSuccessful ? 'Success' : 'Not attempted or failed'}\n` +
-                            `File changes: ${fileChanges.length}\n\n` +
-                            `You cannot claim deployment is done until GitHub actually confirms the commit!`;
-                          console.error('[META-SYSOP-ANTI-LYING] Blocked deployment task completion - commit not successful');
-                          sendEvent('error', { message: 'Cannot complete deployment - commit not successful' });
-                          
-                          // CRITICAL: Don't break - add error result and continue processing other tools
-                          toolResults.push({
-                            type: 'tool_result',
-                            tool_use_id: id,
-                            is_error: true,
-                            content: toolResult,
-                          });
-                          continue; // Skip updateTask but continue processing other tools
-                        }
-                      }
-
-                      // DEPENDENCY VALIDATION: Check if prerequisite tasks are complete
-                      const currentIndex = tasks.findIndex((t: any) => t.id === typedInput.taskId);
-                      const previousTasks = tasks.slice(0, currentIndex);
-                      const incompletePrevious = previousTasks.filter((t: any) => t.status !== 'completed');
-
-                      if (incompletePrevious.length > 0) {
-                        toolResult = `❌ BLOCKED: Cannot complete task out of order!\n\n` +
-                          `Task "${currentTask.title}" requires these tasks to be completed first:\n` +
-                          incompletePrevious.map((t: any) => `- ${t.title} (${t.status})`).join('\n') +
-                          `\n\nComplete tasks in order!`;
-                        console.error('[META-SYSOP-ANTI-LYING] Blocked out-of-order task completion');
-                        sendEvent('error', { message: 'Tasks must be completed in order' });
-                        
-                        // CRITICAL: Don't break - add error result and continue processing other tools
-                        toolResults.push({
-                          type: 'tool_result',
-                          tool_use_id: id,
-                          is_error: true,
-                          content: toolResult,
-                        });
-                        continue; // Skip updateTask but continue processing other tools
-                      }
-                    }
-                  }
-                }
-              }
-
+              // ✅ FULL AUTONOMY: No validation, no blocking - Meta-SySop works freely like Replit Agent
+              // Let Meta-SySop manage its own tasks without artificial restrictions
               const result = await updateTask({
                 userId,
                 taskId: typedInput.taskId,
@@ -2538,33 +2471,6 @@ Be conversational, be helpful, and only work when asked!`;
           role: 'user',
           content: toolResults,
         });
-        
-        // 🔥 CRITICAL FIX: Check if we need to force first task execution
-        // This must happen AFTER tool_results are added to maintain conversation structure
-        const forceFirstTask = (global as any).metaSysopForceFirstTask;
-        if (forceFirstTask) {
-          console.log(`[META-SYSOP-AUTO] Forcing immediate execution of first task: ${forceFirstTask.title}`);
-          
-          // Inject forcing message into conversation AFTER tool results
-          conversationMessages.push({
-            role: 'user',
-            content: [{
-              type: 'text',
-              text: `STOP. DO NOT respond with text.\n\n` +
-                `CALL THIS TOOL IMMEDIATELY:\n` +
-                `perform_diagnosis(target: "full", focus: [])\n\n` +
-                `This will diagnose the platform. After you receive the diagnosis results, THEN you can analyze and fix issues.\n\n` +
-                `CALL perform_diagnosis NOW. No text, just the tool call.`
-            }]
-          });
-          
-          // Force another iteration to execute tools
-          continueLoop = true;
-          sendEvent('progress', { message: `🤖 Forcing execution: ${forceFirstTask.title}` });
-          
-          // Clear the flag so we don't force again
-          delete (global as any).metaSysopForceFirstTask;
-        }
       } else {
         // No tool calls this iteration - check if we should continue
         // 🐛 FIX: Don't end if there are tasks still in progress - Meta-SySop might need another turn
@@ -2588,26 +2494,13 @@ Be conversational, be helpful, and only work when asked!`;
             
             console.log(`[META-SYSOP-CONTINUATION] Completed: ${completedTasks.length}, In-progress: ${inProgressTasks.length}, Pending: ${pendingTasks.length}`);
             
-            // 🔥 ARCHITECT FIX: Continue if there are ANY incomplete tasks (in_progress OR pending)
-            const hasIncompleteTasks = inProgressTasks.length > 0 || (pendingTasks.length > 0 && completedTasks.length === 0);
+            // ✅ FULL AUTONOMY: Let Meta-SySop decide when to continue
+            // No forcing, no micromanagement - trust the AI to do its job
+            const hasIncompleteTasks = inProgressTasks.length > 0 || pendingTasks.length > 0;
             
             if (hasIncompleteTasks && iterationCount < 14) {
-              const tasksToForce = inProgressTasks.length > 0 ? inProgressTasks : [pendingTasks[0]];
-              console.log(`[META-SYSOP-CONTINUATION] ✅ Continuing - forcing work on: ${tasksToForce.map((t: any) => t.title).join(', ')}`);
-              sendEvent('progress', { message: `Forcing work on ${tasksToForce.length} task(s)...` });
-              
-              const firstTask = tasksToForce[0];
-              // FORCE Meta-SySop to work - explicit tool call instructions
-              conversationMessages.push({
-                role: 'user',
-                content: [{
-                  type: 'text',
-                  text: `STOP TALKING. CALL TOOLS.\n\n` +
-                    `Task: "${firstTask.title}"\n\n` +
-                    `CALL perform_diagnosis(target: "full", focus: []) NOW.\n\n` +
-                    `Do the actual diagnostic work. No text responses - just call the tool.`
-                }]
-              });
+              console.log(`[META-SYSOP-CONTINUATION] ✅ Continuing naturally - incomplete tasks remain`);
+              continueLoop = true; // Continue but don't inject forcing messages
             } else {
               // Either all tasks done or hit iteration limit
               console.log(`[META-SYSOP-CONTINUATION] ❌ Ending - all tasks complete or limit reached (iteration ${iterationCount}/${14})`);
