@@ -2181,11 +2181,88 @@ Be conversational, be helpful, and only work when asked!`;
       console.log(`[META-SYSOP-FORCE] === ITERATION ${iterationCount} CHECK ===`);
       console.log(`[META-SYSOP-FORCE] Tools called this iteration: ${toolNames.join(', ') || 'NONE'}`);
 
+      // 💬 CONVERSATIONAL HELPERS: Generate friendly explanatory text
+      const getPreToolMessage = (toolName: string, input: any): string => {
+        switch (toolName) {
+          case 'readPlatformFile':
+            return `I'll read that file for you...\n\n`;
+          case 'writePlatformFile':
+            return `Updating that file now...\n\n`;
+          case 'perform_diagnosis':
+            return `Running platform diagnostics...\n\n`;
+          case 'execute_sql':
+            return `Let me check the database...\n\n`;
+          case 'listPlatformDirectory':
+            return `Let me see what's in that directory...\n\n`;
+          case 'readProjectFile':
+            return `Reading that file from your project...\n\n`;
+          case 'writeProjectFile':
+            return `Updating that file in your project...\n\n`;
+          case 'architect_consult':
+            return `Let me consult with I AM (The Architect) for guidance...\n\n`;
+          case 'web_search':
+            return `Searching the web for solutions...\n\n`;
+          case 'commit_to_github':
+            return `Committing these changes to GitHub and deploying to production...\n\n`;
+          case 'createTaskList':
+            return `Creating a task list to track my progress...\n\n`;
+          case 'updateTask':
+            return `Updating task status...\n\n`;
+          case 'start_subagent':
+            return `Delegating this work to a specialized sub-agent...\n\n`;
+          case 'read_logs':
+            return `Let me check the server logs...\n\n`;
+          default:
+            return `Working on that...\n\n`;
+        }
+      };
+
+      const getPostToolMessage = (toolName: string, result: string): string => {
+        // Check if the tool failed
+        const isError = result.includes('❌') || result.includes('Error') || result.includes('Failed') || result.toLowerCase().includes('failed');
+        
+        if (isError) {
+          return `\n\nHmm, ran into an issue there. Let me try a different approach...\n\n`;
+        }
+        
+        // Success messages
+        switch (toolName) {
+          case 'readPlatformFile':
+          case 'readProjectFile':
+            return `\n\nHere's what I found:\n\n`;
+          case 'writePlatformFile':
+          case 'writeProjectFile':
+            return `\n\nFile updated successfully!\n\n`;
+          case 'perform_diagnosis':
+            return `\n\nDiagnostics complete! Here's what I found:\n\n`;
+          case 'execute_sql':
+            return `\n\nDatabase query completed:\n\n`;
+          case 'listPlatformDirectory':
+          case 'listProjectDirectory':
+            return `\n\nHere are the files:\n\n`;
+          case 'commit_to_github':
+            return `\n\nChanges committed and deployed!\n\n`;
+          case 'architect_consult':
+            return `\n\nI AM provided this guidance:\n\n`;
+          case 'web_search':
+            return `\n\nFound some helpful information:\n\n`;
+          case 'start_subagent':
+            return `\n\nSub-agent completed the work:\n\n`;
+          default:
+            return `\n\n`;
+        }
+      };
+
       // 🔧 TOOL EXECUTION: Process all tool calls from the response FIRST
       // This ensures every tool_use has a tool_result before we add forcing messages
       for (const block of contentBlocks) {
         if (block.type === 'tool_use') {
           const { name, input, id } = block;
+
+          // 💬 CONVERSATIONAL: Stream friendly text BEFORE tool execution
+          const preMessage = getPreToolMessage(name, input);
+          sendEvent('content', { content: preMessage });
+          fullContent += preMessage;
 
           // Emit tool section start
           const toolSectionId = `tool-${name}-${id}`;
@@ -2852,6 +2929,11 @@ Be conversational, be helpful, and only work when asked!`;
               content: toolResult || 'Success',
             });
 
+            // 💬 CONVERSATIONAL: Stream friendly text AFTER tool execution
+            const postMessage = getPostToolMessage(name, toolResult || '');
+            sendEvent('content', { content: postMessage });
+            fullContent += postMessage;
+
             // Emit tool section finish with result
             emitSection(toolSectionId, 'tool', 'finish', toolResult || 'Success', {
               title: `✅ ${name}`,
@@ -2874,6 +2956,11 @@ Be conversational, be helpful, and only work when asked!`;
                 is_error: true,
                 content: errorMessage,
               });
+
+              // 💬 CONVERSATIONAL: Stream friendly text AFTER tool error
+              const errorPostMessage = getPostToolMessage(name, errorMessage);
+              sendEvent('content', { content: errorPostMessage });
+              fullContent += errorPostMessage;
 
               // Emit tool section finish with error
               emitSection(toolSectionId, 'tool', 'finish', errorMessage, {
