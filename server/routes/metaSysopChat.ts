@@ -72,6 +72,32 @@ function resolveApproval(messageId: string, approved: boolean) {
   return false;
 }
 
+// Get a message by ID (for fetching final message when job completes)
+router.get('/message/:messageId', isAuthenticated, async (req: any, res) => {
+  try {
+    const { messageId } = req.params;
+    const userId = req.authenticatedUserId;
+
+    const [message] = await db
+      .select()
+      .from(chatMessages)
+      .where(and(
+        eq(chatMessages.id, messageId),
+        eq(chatMessages.userId, userId)
+      ))
+      .limit(1);
+
+    if (!message) {
+      return res.status(404).json({ success: false, error: 'Message not found' });
+    }
+
+    res.json({ success: true, message });
+  } catch (error: any) {
+    console.error('[META-SYSOP] Failed to fetch message:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Approve pending changes and auto-resume Meta-SySop
 router.post('/approve/:messageId', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
