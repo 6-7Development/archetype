@@ -1,0 +1,229 @@
+2025-10-28T03:07:25.000000000Z [info] Starting Container
+2025-10-28T03:07:25.648419955Z [info] ======================================
+2025-10-28T03:07:25.648425594Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT
+2025-10-28T03:07:25.648430906Z [info] ======================================
+2025-10-28T03:07:25.648436176Z [info] Time: Tue Oct 28 03:07:25 UTC 2025
+2025-10-28T03:07:25.648442197Z [info] 
+2025-10-28T03:07:25.648448203Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-10-28T03:07:26.038677510Z [info] No config path provided, using default 'drizzle.config.ts'
+2025-10-28T03:07:26.038686489Z [info] Reading config file '/app/drizzle.config.ts'
+2025-10-28T03:07:26.603189297Z [info] Using 'pg' driver for database querying
+2025-10-28T03:07:26.603194583Z [info] [â£·] Pulling schema from database...
+2025-10-28T03:07:26.603198929Z [info] a from database...
+2025-10-28T03:07:26.747413758Z [info] a from database...
+2025-10-28T03:07:26.832698731Z [info] a from database...
+2025-10-28T03:07:26.938742918Z [info] a from database...
+2025-10-28T03:07:27.088164404Z [info] a from database...
+2025-10-28T03:07:27.212845619Z [info] a from database...
+2025-10-28T03:07:27.655526934Z [info] a from database...
+2025-10-28T03:07:27.655531557Z [info] a from database...
+2025-10-28T03:07:27.655536070Z [info] a from database...
+2025-10-28T03:07:27.705772423Z [info] a from database...
+2025-10-28T03:07:27.837903842Z [info] a from database...
+2025-10-28T03:07:27.967900923Z [info] a from database...
+2025-10-28T03:07:28.091353909Z [info] a from database...
+2025-10-28T03:07:28.227339639Z [info] a from database...
+2025-10-28T03:07:28.697976261Z [info] a from database...
+2025-10-28T03:07:28.697981094Z [info] a from database...
+2025-10-28T03:07:28.697985238Z [info] a from database...
+2025-10-28T03:07:28.697990796Z [info] a from database...
+2025-10-28T03:07:28.723585512Z [info] [i] No changes detected
+2025-10-28T03:07:28.747458381Z [info] 
+2025-10-28T03:07:28.747463672Z [info] âœ… Database migrations completed successfully!
+2025-10-28T03:07:28.747468209Z [info] 
+2025-10-28T03:07:28.747472720Z [info] ðŸš€ Starting Node.js application...
+2025-10-28T03:07:29.915075326Z [info] [db] âœ… Added sslmode=no-verify to connection string for production
+2025-10-28T03:07:29.915082920Z [info] [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-28T03:07:29.915088825Z [info] [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-28T03:07:29.915094935Z [info] [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-28T03:07:29.915101354Z [info] [db] SSL Configuration: {rejectUnauthorized:false}
+2025-10-28T03:07:29.915106770Z [info] [db] Connection string includes SSL params: true
+2025-10-28T03:07:29.915112523Z [info] [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-28T03:07:29.915118315Z [info] [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-28T03:07:29.915123243Z [info] [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-28T03:07:29.920991957Z [info] ðŸ“¡ WebSocket server initialized at /ws
+2025-10-28T03:07:29.921006406Z [info] [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-28T03:07:29.921011433Z [info] [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-28T03:07:29.933860420Z [info] âœ… All routes registered successfully
+2025-10-28T03:07:29.933867740Z [info] ðŸ” Testing database connection...
+2025-10-28T03:07:29.978084480Z [info] 3:07:29 AM [express] serving on port 8080
+2025-10-28T03:07:29.978091249Z [info] ðŸŒ Server accessible at http://0.0.0.0:8080
+2025-10-28T03:07:30.096109476Z [info] âœ… Database connected successfully
+2025-10-28T03:07:30.096117495Z [info] ðŸ”§ Auto-healing system ENABLED (production mode)
+2025-10-28T03:07:30.096121805Z [info] 
+2025-10-28T03:07:30.096126883Z [info] ðŸ” Checking GitHub integration configuration...
+2025-10-28T03:07:30.096131018Z [info] âœ… GitHub integration configured successfully
+2025-10-28T03:07:30.096135691Z [info]    - Repository: 6-7Development/archetype
+2025-10-28T03:07:30.096140001Z [info]    - Branch: main
+2025-10-28T03:07:30.096144637Z [info]    - Token: âœ“ (configured)
+2025-10-28T03:07:30.096149092Z [info]    - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-28T03:07:30.096162188Z [info]    - Maintenance mode: Available for owner
+2025-10-28T03:07:30.096166124Z [info] 
+2025-10-28T03:07:50.124534347Z [info] [DEPLOYMENT-INFO] Using Railway environment variables
+2025-10-28T03:07:50.124540184Z [info] 3:07:44 AM [express] GET /api/deployment-info 200 in 2ms :: {version:"1.0.0",commitHash:"ebc0ba6â€¦
+2025-10-28T03:07:50.124545882Z [info] 3:07:48 AM [express] GET /api/deployment-info 200 in 0ms :: {version:"1.0.0",commitHash:"ebc0ba6â€¦
+2025-10-28T03:07:50.124550713Z [info] [AUTH] Login attempt for email: root@getdc360.com
+2025-10-28T03:07:50.124555726Z [info] [AUTH] Found users: 1
+2025-10-28T03:07:50.124560814Z [info] [AUTH] User found: root@getdc360.com has password: true
+2025-10-28T03:07:50.124565745Z [info] [AUTH] Verifying password...
+2025-10-28T03:07:50.324864624Z [info] [AUTH] Password valid: true
+2025-10-28T03:07:50.324870727Z [info] [AUTH] Authentication successful for: root@getdc360.com
+2025-10-28T03:07:50.339689360Z [info] 3:07:50 AM [express] POST /api/auth/login 200 in 285ms :: {success:true,user:{id:"723e1301-c72â€¦
+2025-10-28T03:07:51.089398146Z [info] 3:07:51 AM [express] GET /api/auth/me 304 in 6ms :: {user:{id:"723e1301-c729-48fc-810a-39ddef954â€¦
+2025-10-28T03:07:51.092132597Z [info] 3:07:51 AM [express] GET /api/projects 304 in 89ms :: []
+2025-10-28T03:07:55.453684622Z [info] [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-28T03:07:55.460519095Z [info] 3:07:55 AM [express] GET /api/meta-sysop/projects 304 in 20ms :: []
+2025-10-28T03:07:55.460528874Z [info] 3:07:55 AM [express] GET /api/meta-sysop/autonomy-level 304 in 20ms :: {currentLevel:"max","maxAllâ€¦
+2025-10-28T03:07:55.545565578Z [info] 3:07:55 AM [express] GET /api/meta-sysop/pending-changes 304 in 100ms :: {success:true,"pendingChaâ€¦
+2025-10-28T03:07:55.547402507Z [info] 3:07:55 AM [express] GET /api/platform/status 200 in 102ms :: {overallHealth:100,"activeIncidents"â€¦
+2025-10-28T03:07:55.628372059Z [info] âœ… WebSocket client connected
+2025-10-28T03:07:55.750396613Z [info] ðŸ“¡ [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-28T03:08:00.629540848Z [info] 3:08:00 AM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:08:05.719905376Z [info] 3:08:05 AM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:08:08.743842350Z [info] [META-SYSOP-CHAT] Stream request received
+2025-10-28T03:08:08.743849031Z [info] [META-SYSOP-CHAT] Message: Diagnose platform Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-10-28T03:08:08.743854076Z [info] [META-SYSOP-CHAT] Setting up SSE headers
+2025-10-28T03:08:08.743858283Z [info] [META-SYSOP-CHAT] Heartbeat started - will send keepalive every 15s
+2025-10-28T03:08:08.743862403Z [info] [META-SYSOP-CHAT] Entering try block
+2025-10-28T03:08:08.743866698Z [info] [META-SYSOP-CHAT] User autonomy level: max
+2025-10-28T03:08:10.803261120Z [info] 3:08:10 AM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:08:12.503381099Z [info] [META-SYSOP-CHAT] ðŸ’¬ Streaming text: I'll diagnose the platform comprehensively, focusing on the chat toolbar issues you mentioned and ch
+2025-10-28T03:08:15.904798133Z [info] 3:08:15 AM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:08:18.193678911Z [info] [META-SYSOP] Response has tool calls: true
+2025-10-28T03:08:18.193687482Z [info] [META-SYSOP] Content blocks: text, text, tool_use
+2025-10-28T03:08:18.204175823Z [info] [META-SYSOP] Task list created: 53de0132-4345-4e92-839f-700f646831fa
+2025-10-28T03:08:18.204182221Z [info] [META-SYSOP-AUTO] Forcing immediate execution of first task: Run comprehensive platform diagnosis
+2025-10-28T03:08:18.686635170Z [error]     'content-type': 'application/json',
+2025-10-28T03:08:18.686643369Z [error]     'content-length': '320',
+2025-10-28T03:08:18.686649267Z [error]     connection: 'keep-alive',
+2025-10-28T03:08:18.686655943Z [error]     'cf-ray': '99573a55cdee7004-IAD',
+2025-10-28T03:08:18.686661212Z [error]     'x-should-retry': 'false',
+2025-10-28T03:08:18.686669498Z [error]     'request-id': 'req_011CUYrqU9zz7SSUnrwhe6if',
+2025-10-28T03:08:18.686676838Z [error]     'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+2025-10-28T03:08:18.686681238Z [error]     'anthropic-organization-id': '60f9e9aa-d58b-44f4-aa91-af881dd8f26a',
+2025-10-28T03:08:18.686685126Z [error]     'x-envoy-upstream-service-time': '116',
+2025-10-28T03:08:18.686777096Z [error] [META-SYSOP-CHAT] Stream error: BadRequestError: 400 {type:"error",error:{type:"invalid_request_error",message:"messages.4: `tool_use` ids were found without `tool_result` blocks immediately after: toolu_01BSwRMfHDvohNkayb9fDRMy. Each `tool_use` block must have a corresponding `tool_result` block in the next message."},request_id:"req_011CUYrqU9zz7SSUnrwhe6if"}
+2025-10-28T03:08:18.686781061Z [error]     at APIError.generate (file:///app/node_modules/@anthropic-ai/sdk/core/error.mjs:37:20)
+2025-10-28T03:08:18.686784973Z [error]     at Anthropic.makeStatusError (file:///app/node_modules/@anthropic-ai/sdk/client.mjs:152:32)
+2025-10-28T03:08:18.686789046Z [error]     at Anthropic.makeRequest (file:///app/node_modules/@anthropic-ai/sdk/client.mjs:306:30)
+2025-10-28T03:08:18.686792762Z [error]     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-28T03:08:18.686796898Z [error]     at async file:///app/dist/index.js:11767:22 {
+2025-10-28T03:08:18.686800988Z [error]   status: 400,
+2025-10-28T03:08:18.686805053Z [error]   headers: Headers {
+2025-10-28T03:08:18.686809086Z [error]     date: 'Tue, 28 Oct 2025 03:08:18 GMT',
+2025-10-28T03:08:18.687107436Z [error]     via: '1.1 google',
+2025-10-28T03:08:18.687112218Z [error]     'cf-cache-status': 'DYNAMIC',
+2025-10-28T03:08:18.687118185Z [error]     'x-robots-tag': 'none',
+2025-10-28T03:08:18.687123457Z [error]     server: 'cloudflare'
+2025-10-28T03:08:18.687128239Z [error]   },
+2025-10-28T03:08:18.687132953Z [error]   requestID: 'req_011CUYrqU9zz7SSUnrwhe6if',
+2025-10-28T03:08:18.687137607Z [error]   error: {
+2025-10-28T03:08:18.687142033Z [error]     type: 'error',
+2025-10-28T03:08:18.687147036Z [error]     error: {
+2025-10-28T03:08:18.687151926Z [error]       type: 'invalid_request_error',
+2025-10-28T03:08:18.687157866Z [error]       message: 'messages.4: `tool_use` ids were found without `tool_result` blocks immediately after: toolu_01BSwRMfHDvohNkayb9fDRMy. Each `tool_use` block must have a corresponding `tool_result` block in the next message.'
+2025-10-28T03:08:18.687162328Z [error]     },
+2025-10-28T03:08:18.687167030Z [error]     request_id: 'req_011CUYrqU9zz7SSUnrwhe6if'
+2025-10-28T03:08:18.687171804Z [error]   }
+2025-10-28T03:08:18.687176172Z [error] }
+2025-10-28T03:08:18.687180237Z [info] [META-SYSOP-HEARTBEAT] Cleared on error
+2025-10-28T03:08:18.687184444Z [info] [META-SYSOP-CHAT] Terminating stream: 0ace0332-5624-445b-b9c7-d4988302e378 Error: 400 {type:"error",error:{type:"invalid_request_error",message:"messages.4: `tool_use` ids were found without `tool_result` blocks immediately after: toolu_01BSwRMfHDvohNkayb9fDRMy. Each `tool_use` block must have a corresponding `tool_result` block in the next message."},request_id:"req_011CUYrqU9zz7SSUnrwhe6if"}
+2025-10-28T03:08:18.687188903Z [info] [META-SYSOP-HEARTBEAT] Cleared on stream end
+2025-10-28T03:08:18.687193505Z [info] 3:08:18 AM [express] POST /api/meta-sysop/stream 200 in 9652ms
+2025-10-28T03:08:18.687197507Z [info] [META-SYSOP] Fetched 5 tasks for task list 53de0132-4345-4e92-839f-700f646831fa
+2025-10-28T03:08:18.687201856Z [info] 3:08:18 AM [express] GET /api/meta-sysop/task-list/53de0132-4345-4e92-839f-700f646831fa 200 in 14ms â€¦
+2025-10-28T03:08:21.001241414Z [info] 3:08:20 AM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:08:26.117509664Z [info] 3:08:26 AM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:08:31.223796289Z [info] 3:08:31 AM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:08:36.305057981Z [info] 3:08:36 AM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:08:41.397235203Z [info] 3:08:41 AM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:08:46.482547940Z [info] 3:08:46 AM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:08:51.858575391Z [info] 3:08:51 AM [express] GET /api/meta-sysop/pending-changes 304 in 31ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:08:57.033794066Z [info] 3:08:56 AM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:09:02.029769470Z [info] 3:09:01 AM [express] GET /api/meta-sysop/pending-changes 304 in 34ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:09:07.008983589Z [info] 3:09:06 AM [express] GET /api/meta-sysop/pending-changes 304 in 29ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:09:12.137164688Z [info] 3:09:12 AM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {success:true,"pendingChangâ€¦
+2025-10-28T03:09:17.150460998Z [info] 3:09:17 AM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:09:22.244117033Z [info] 3:09:22 AM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {success:true,"pendingChangâ€¦
+2025-10-28T03:09:27.338091227Z [info] 3:09:27 AM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:09:32.427240365Z [info] 3:09:32 AM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:09:37.513359104Z [info] 3:09:37 AM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:09:42.761164602Z [info] 3:09:42 AM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:09:47.984135435Z [info] 3:09:47 AM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:09:52.842993616Z [info] 3:09:52 AM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {success:true,"pendingChangâ€¦
+2025-10-28T03:09:57.941521273Z [info] 3:09:57 AM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {success:true,"pendingChangâ€¦
+2025-10-28T03:10:03.161691990Z [info] 3:10:03 AM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:10:08.291691690Z [info] 3:10:08 AM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:10:13.411175019Z [info] 3:10:13 AM [express] GET /api/meta-sysop/pending-changes 304 in 8ms :: {success:true,"pendingChangâ€¦
+2025-10-28T03:10:18.635330585Z [info] 3:10:18 AM [express] GET /api/meta-sysop/pending-changes 304 in 21ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:10:23.806043964Z [info] 3:10:23 AM [express] GET /api/meta-sysop/pending-changes 304 in 46ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:10:28.875717132Z [info] 3:10:28 AM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:10:34.112063005Z [info] 3:10:34 AM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:10:39.143009376Z [info] 3:10:39 AM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:10:44.244501460Z [info] 3:10:44 AM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:10:49.366325076Z [info] 3:10:49 AM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:10:54.466144593Z [info] 3:10:54 AM [express] GET /api/meta-sysop/pending-changes 304 in 28ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:10:59.564750439Z [info] 3:10:59 AM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:11:05.182967816Z [info] 3:11:04 AM [express] GET /api/meta-sysop/pending-changes 304 in 40ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:11:09.857560552Z [info] 3:11:09 AM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:11:14.931541961Z [info] 3:11:14 AM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:11:20.012745309Z [info] 3:11:20 AM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:11:25.427254214Z [info] 3:11:25 AM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:11:30.195489808Z [info] 3:11:30 AM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {success:true,"pendingChangâ€¦
+2025-10-28T03:11:35.296683070Z [info] 3:11:35 AM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:11:40.412600923Z [info] 3:11:40 AM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:11:45.775494930Z [info] 3:11:45 AM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:11:50.919322933Z [info] 3:11:50 AM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {success:true,"pendingChangâ€¦
+2025-10-28T03:11:53.013358757Z [info] [META-SYSOP-CHAT] Stream request received
+2025-10-28T03:11:53.013365720Z [info] [META-SYSOP-CHAT] Message: Update? Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-10-28T03:11:53.013371423Z [info] [META-SYSOP-CHAT] Setting up SSE headers
+2025-10-28T03:11:53.013376107Z [info] [META-SYSOP-CHAT] Heartbeat started - will send keepalive every 15s
+2025-10-28T03:11:53.013380618Z [info] [META-SYSOP-CHAT] Entering try block
+2025-10-28T03:11:53.020753956Z [info] [META-SYSOP-CHAT] User autonomy level: max
+2025-10-28T03:11:55.946701936Z [info] 3:11:55 AM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:11:57.163296684Z [info] [META-SYSOP-CHAT] ðŸ’¬ Streaming text: I'll help you diagnose the platform issues and fix the chat toolbar problems. Let me start by creati
+2025-10-28T03:12:00.961099530Z [info] 3:12:00 AM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {success:true,"pendingChanâ€¦
+2025-10-28T03:12:03.155836948Z [info] [META-SYSOP] Response has tool calls: true
+2025-10-28T03:12:03.155844563Z [info] [META-SYSOP] Content blocks: text, text, tool_use
+2025-10-28T03:12:03.155851228Z [info] [META-SYSOP] Task list created: 64521f4e-7b04-499e-a352-51d7b2393fdf
+2025-10-28T03:12:03.155857695Z [info] [META-SYSOP-AUTO] Forcing immediate execution of first task: Run comprehensive platform diagnosis
+2025-10-28T03:12:03.155864703Z [error] [META-SYSOP-CHAT] Stream error: BadRequestError: 400 {type:"error",error:{type:"invalid_request_error",message:"messages.4: `tool_use` ids were found without `tool_result` blocks immediately after: toolu_01HQqNHVscgpYQnf22zHcRCw. Each `tool_use` block must have a corresponding `tool_result` block in the next message."},request_id:"req_011CUYs83HkKApGQf1t1a96T"}
+2025-10-28T03:12:03.155870948Z [error]     at APIError.generate (file:///app/node_modules/@anthropic-ai/sdk/core/error.mjs:37:20)
+2025-10-28T03:12:03.156053189Z [error]     at Anthropic.makeStatusError (file:///app/node_modules/@anthropic-ai/sdk/client.mjs:152:32)
+2025-10-28T03:12:03.156065028Z [error]     at Anthropic.makeRequest (file:///app/node_modules/@anthropic-ai/sdk/client.mjs:306:30)
+2025-10-28T03:12:03.156071987Z [error]     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-28T03:12:03.156079126Z [error]     at async file:///app/dist/index.js:11767:22 {
+2025-10-28T03:12:03.156085108Z [error]   status: 400,
+2025-10-28T03:12:03.156092572Z [error]   headers: Headers {
+2025-10-28T03:12:03.156098913Z [error]     date: 'Tue, 28 Oct 2025 03:12:03 GMT',
+2025-10-28T03:12:03.156105115Z [error]     'content-type': 'application/json',
+2025-10-28T03:12:03.156110841Z [error]     'content-length': '320',
+2025-10-28T03:12:03.156117897Z [error]     connection: 'keep-alive',
+2025-10-28T03:12:03.156125075Z [error]     'cf-ray': '99573fd2dd3305fd-IAD',
+2025-10-28T03:12:03.156132819Z [error]     'x-should-retry': 'false',
+2025-10-28T03:12:03.158929032Z [error]     'request-id': 'req_011CUYs83HkKApGQf1t1a96T',
+2025-10-28T03:12:03.158932237Z [error]     error: {
+2025-10-28T03:12:03.158934689Z [error]     'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+2025-10-28T03:12:03.158941748Z [error]     'anthropic-organization-id': '60f9e9aa-d58b-44f4-aa91-af881dd8f26a',
+2025-10-28T03:12:03.158943845Z [error]       type: 'invalid_request_error',
+2025-10-28T03:12:03.158946371Z [error]     'x-envoy-upstream-service-time': '28',
+2025-10-28T03:12:03.158952907Z [error]     via: '1.1 google',
+2025-10-28T03:12:03.158959281Z [error]       message: 'messages.4: `tool_use` ids were found without `tool_result` blocks immediately after: toolu_01HQqNHVscgpYQnf22zHcRCw. Each `tool_use` block must have a corresponding `tool_result` block in the next message.'
+2025-10-28T03:12:03.158961920Z [error]     'cf-cache-status': 'DYNAMIC',
+2025-10-28T03:12:03.158967431Z [error]     'x-robots-tag': 'none',
+2025-10-28T03:12:03.158968518Z [error]     },
+2025-10-28T03:12:03.158972532Z [error]     server: 'cloudflare'
+2025-10-28T03:12:03.158978062Z [error]   },
+2025-10-28T03:12:03.158979741Z [error]     request_id: 'req_011CUYs83HkKApGQf1t1a96T'
+2025-10-28T03:12:03.158984495Z [error]   requestID: 'req_011CUYs83HkKApGQf1t1a96T',
+2025-10-28T03:12:03.158987495Z [error]   }
+2025-10-28T03:12:03.158989997Z [error]   error: {
+2025-10-28T03:12:03.158995056Z [error]     type: 'error',
+2025-10-28T03:12:03.159000387Z [error] }
+2025-10-28T03:12:03.159006536Z [info] [META-SYSOP-HEARTBEAT] Cleared on error
+2025-10-28T03:12:03.159012308Z [info] [META-SYSOP-CHAT] Terminating stream: d4928bda-8e66-4c93-90e5-38fc13d9d7c6 Error: 400 {type:"error",error:{type:"invalid_request_error",message:"messages.4: `tool_use` ids were found without `tool_result` blocks immediately after: toolu_01HQqNHVscgpYQnf22zHcRCw. Each `tool_use` block must have a corresponding `tool_result` block in the next message."},request_id:"req_011CUYs83HkKApGQf1t1a96T"}
+2025-10-28T03:12:03.160156044Z [info] [META-SYSOP-HEARTBEAT] Cleared on stream end
+2025-10-28T03:12:03.160160060Z [info] 3:12:03 AM [express] POST /api/meta-sysop/stream 200 in 10077ms
+2025-10-28T03:12:03.238330748Z [info] [META-SYSOP] Fetched 4 tasks for task list 64521f4e-7b04-499e-a352-51d7b2393fdf
+2025-10-28T03:12:03.238338541Z [info] 3:12:03 AM [express] GET /api/meta-sysop/task-list/64521f4e-7b04-499e-a352-51d7b2393fdf 200 in 9ms :â€¦
+2025-10-28T03:12:06.239659301Z [info] 3:12:05 AM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {success:true,"pendingChangâ€¦

@@ -1819,30 +1819,16 @@ Be conversational, be helpful, and only work when asked!`;
                 sendEvent('content', { content: `✅ **Task list created!** Track my progress in the card above.\n\n` });
                 console.log('[META-SYSOP] Task list created:', result.taskListId);
                 
-                // 🔥 ARCHITECT SOLUTION: Force continuation with tool call requirement
-                // After creating task list, inject a user message demanding immediate tool execution
+                // 🔥 CRITICAL FIX: Set flag to force continuation AFTER tool results are added
+                // This prevents conversation structure errors with Anthropic API
+                // The forcing message will be injected after line 2554 (after tool_results are added)
                 if (typedInput.tasks && typedInput.tasks.length > 0) {
-                  const firstTask = typedInput.tasks[0];
-                  console.log(`[META-SYSOP-AUTO] Forcing immediate execution of first task: ${firstTask.title}`);
-                  
-                  // Inject forcing message into conversation
-                  conversationMessages.push({
-                    role: 'user',
-                    content: [{
-                      type: 'text',
-                      text: `✅ Task list created. Now EXECUTE the first task immediately.\n\n` +
-                        `FIRST TASK: "${firstTask.title}"\n\n` +
-                        `YOUR NEXT RESPONSE MUST CONTAIN THESE TOOL CALLS (in order):\n` +
-                        `1. updateTask(taskId: "...", status: "in_progress") - mark task as started\n` +
-                        `2. perform_diagnosis(target: "full") - RUN THE ACTUAL DIAGNOSTIC\n` +
-                        `3. updateTask(taskId: "...", status: "completed", result: "...") - mark complete\n\n` +
-                        `DO NOT reply with text explanations. CALL THESE TOOLS NOW.`
-                    }]
-                  });
-                  
-                  // Force another iteration to execute tools
-                  continueLoop = true;
-                  sendEvent('progress', { message: `🤖 Forcing execution: ${firstTask.title}` });
+                  // Store first task info for forcing message later
+                  (global as any).metaSysopForceFirstTask = {
+                    title: typedInput.tasks[0].title,
+                    description: typedInput.tasks[0].description
+                  };
+                  console.log(`[META-SYSOP-AUTO] Will force execution of first task after tool results: ${typedInput.tasks[0].title}`);
                 }
               } else {
                 toolResult = `❌ Failed to create task list: ${result.error}`;
@@ -2552,6 +2538,35 @@ Be conversational, be helpful, and only work when asked!`;
           role: 'user',
           content: toolResults,
         });
+        
+        // 🔥 CRITICAL FIX: Check if we need to force first task execution
+        // This must happen AFTER tool_results are added to maintain conversation structure
+        const forceFirstTask = (global as any).metaSysopForceFirstTask;
+        if (forceFirstTask) {
+          console.log(`[META-SYSOP-AUTO] Forcing immediate execution of first task: ${forceFirstTask.title}`);
+          
+          // Inject forcing message into conversation AFTER tool results
+          conversationMessages.push({
+            role: 'user',
+            content: [{
+              type: 'text',
+              text: `✅ Task list created. Now EXECUTE the first task immediately.\n\n` +
+                `FIRST TASK: "${forceFirstTask.title}"\n\n` +
+                `YOUR NEXT RESPONSE MUST CONTAIN THESE TOOL CALLS (in order):\n` +
+                `1. updateTask(taskId: "...", status: "in_progress") - mark task as started\n` +
+                `2. perform_diagnosis(target: "full") - RUN THE ACTUAL DIAGNOSTIC\n` +
+                `3. updateTask(taskId: "...", status: "completed", result: "...") - mark complete\n\n` +
+                `DO NOT reply with text explanations. CALL THESE TOOLS NOW.`
+            }]
+          });
+          
+          // Force another iteration to execute tools
+          continueLoop = true;
+          sendEvent('progress', { message: `🤖 Forcing execution: ${forceFirstTask.title}` });
+          
+          // Clear the flag so we don't force again
+          delete (global as any).metaSysopForceFirstTask;
+        }
       } else {
         // No tool calls this iteration - check if we should continue
         // 🐛 FIX: Don't end if there are tasks still in progress - Meta-SySop might need another turn
