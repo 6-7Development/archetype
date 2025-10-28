@@ -184,7 +184,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
   const [progressMessage, setProgressMessage] = useState("");
   const [showTaskList, setShowTaskList] = useState(true);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
-  const eventSourceRef = useRef<EventSource | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom
@@ -197,10 +197,10 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
   // Cleanup stream on unmount
   useEffect(() => {
     return () => {
-      if (eventSourceRef.current) {
+      if (abortControllerRef.current) {
         console.log('[META-SYSOP] Aborting stream on unmount');
-        (eventSourceRef.current as AbortController).abort();
-        eventSourceRef.current = null;
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
       }
     };
   }, []);
@@ -282,7 +282,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
       }
 
       // Store abort controller for stopping
-      eventSourceRef.current = abortController as any;
+      abortControllerRef.current = abortController;
 
       // Parse SSE stream manually
       const reader = response.body.getReader();
@@ -426,7 +426,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                     setProgressMessage('');
                     setTasks(prev => prev.map(t => ({ ...t, status: 'completed' as const })));
                     
-                    eventSourceRef.current = null;
+                    abortControllerRef.current = null;
                     toast({ title: "✅ Done" });
                     return;
                   }
@@ -446,7 +446,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                       variant: 'destructive'
                     });
                     
-                    eventSourceRef.current = null;
+                    abortControllerRef.current = null;
                     return;
                 }
               } catch (error) {
@@ -484,9 +484,9 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
         variant: "destructive",
       });
       
-      if (eventSourceRef.current) {
-        (eventSourceRef.current as AbortController).abort();
-        eventSourceRef.current = null;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
       }
     },
   });
@@ -498,10 +498,10 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
   };
 
   const handleStop = () => {
-    if (eventSourceRef.current) {
+    if (abortControllerRef.current) {
       console.log('[META-SYSOP] Stopping stream...');
-      (eventSourceRef.current as AbortController).abort();
-      eventSourceRef.current = null;
+      (abortControllerRef.current as AbortController).abort();
+      abortControllerRef.current = null;
       
       setTasks(prev => prev.map(t => 
         t.status === 'in_progress' ? { ...t, status: 'failed' as const } : t
