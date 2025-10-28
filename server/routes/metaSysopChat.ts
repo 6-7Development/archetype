@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db';
-import { chatMessages, taskLists, tasks, metaSysopAttachments, users, subscriptions, projects } from '@shared/schema';
+import { chatMessages, taskLists, tasks, metaSysopAttachments, metaSysopJobs, users, subscriptions, projects } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth';
 import Anthropic from '@anthropic-ai/sdk';
@@ -2823,6 +2823,48 @@ router.get('/active-job', isAuthenticated, async (req: any, res) => {
     });
   } catch (error: any) {
     console.error('[META-SYSOP] Failed to get active job:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// DELETE /api/meta-sysop/job/:jobId - Cancel/clean up a stuck job (admin)
+router.delete('/job/:jobId', isAuthenticated, isAdmin, async (req: any, res) => {
+  try {
+    const { jobId } = req.params;
+    const userId = req.authenticatedUserId;
+    
+    // Get the job
+    const job = await db.query.metaSysopJobs.findFirst({
+      where: (jobs, { eq }) => eq(jobs.id, jobId)
+    });
+    
+    if (!job) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+    
+    // Admins can clean up any job, regular users can only clean up their own
+    const user = req.user as any;
+    if (!user.isOwner && job.userId !== userId) {
+      return res.status(403).json({ error: 'You can only cancel your own jobs' });
+    }
+    
+    // Mark as failed/interrupted
+    await db.update(metaSysopJobs)
+      .set({ 
+        status: 'failed',
+        error: 'Job cancelled by user',
+        updatedAt: new Date()
+      })
+      .where(eq(metaSysopJobs.id, jobId));
+    
+    console.log('[META-SYSOP] Job cancelled:', jobId, 'by user:', userId);
+    
+    res.json({ 
+      success: true,
+      message: 'Job cancelled successfully',
+    });
+  } catch (error: any) {
+    console.error('[META-SYSOP] Failed to cancel job:', error);
     res.status(500).json({ error: error.message });
   }
 });
