@@ -31,6 +31,10 @@ The user interface features a tab-based workspace (Overview, Build, Files, Previ
 
 **Chat Input Enhancements** (Oct 28, 2025): Added visible image attachment toolbar to AI chat interface. Previously, image upload was only available via paste (Ctrl+V), with no visible UI button. Now includes ChatInputToolbar component with image icon button positioned inside textarea (bottom-right corner), supporting multi-file selection, format validation (JPG/PNG/GIF/WebP), and 5MB size limit per image. Meta-SySop chat intentionally excludes image upload as it focuses on platform maintenance tasks.
 
+**Meta-SySop Job Management UI** (Oct 28, 2025): Added Resume/Cancel controls for active or stuck background jobs. When a Meta-SySop job is running, pending, or interrupted, an amber alert banner appears with job status and two buttons: "Resume" (continues from last checkpoint) and "Cancel Job" (marks job as failed, freeing the system). Fixes issue where stuck jobs blocked new Meta-SySop runs. Includes DELETE /api/meta-sysop/job/:jobId endpoint for job cleanup.
+
+**Deployment Status Widget** (Oct 28, 2025): Added real-time deployment tracking widget to Platform Healing page sidebar. Shows last 10 GitHub commits with Meta-SySop detection (via commit message/author patterns), commit hash, timestamp, and direct GitHub links. Auto-refreshes every 30 seconds. Helps users track when Meta-SySop autonomously updates the platform vs manual developer changes.
+
 ### Technical Implementations
 - **AI Architecture**: SySop (AI Coding Agent) employs a 12-step workflow with Architect consultation, real-time streaming, and comprehensive billing. It's optimized for full-stack web, professional games, self-testing, and usage-based billing.
 - **Replit Agent-Style Task Management**: Live, interactive task lists with real-time status updates are displayed via a TaskBoard UI component, driven by WebSocket updates and robust JSON parsing.
