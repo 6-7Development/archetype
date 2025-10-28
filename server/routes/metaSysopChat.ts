@@ -3267,4 +3267,34 @@ router.delete('/job/:jobId', isAuthenticated, isAdmin, async (req: any, res) => 
   }
 });
 
+// GET /api/meta-sysop/chat-history - Fetch recent chat messages
+router.get('/chat-history', isAuthenticated, async (req: any, res) => {
+  try {
+    const userId = req.authenticatedUserId;
+    const limit = parseInt(req.query.limit as string) || 50;
+    
+    // Fetch recent messages for this user
+    const messages = await db
+      .select({
+        id: chatMessages.id,
+        role: chatMessages.role,
+        content: chatMessages.content,
+        createdAt: chatMessages.createdAt,
+      })
+      .from(chatMessages)
+      .where(eq(chatMessages.userId, userId))
+      .orderBy(desc(chatMessages.createdAt))
+      .limit(limit);
+    
+    // Return in chronological order (oldest first)
+    res.json({ 
+      success: true, 
+      messages: messages.reverse() 
+    });
+  } catch (error: any) {
+    console.error('[META-SYSOP] Failed to fetch chat history:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;
