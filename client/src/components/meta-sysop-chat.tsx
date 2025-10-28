@@ -154,8 +154,9 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
       try {
         const data = JSON.parse(event.data);
         
-        // Only process meta_sysop_job_update events for current job
-        if (data.type !== 'meta_sysop_job_update' || data.jobId !== currentJobId) {
+        // Only process Meta-SySop events for current job
+        const isMetaSysopEvent = data.type === 'meta_sysop_job_update' || data.type === 'job_completed';
+        if (!isMetaSysopEvent || data.jobId !== currentJobId) {
           return;
         }
 
