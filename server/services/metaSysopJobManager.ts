@@ -220,60 +220,37 @@ async function runMetaSysopWorker(jobId: string) {
       });
     }
 
-    // Build system prompt (same as SSE route)
+    // Build system prompt - Natural and simple
     const systemPrompt = `You are Meta-SySop - the autonomous platform maintenance agent for Archetype.
 
-You work EXACTLY like Replit Agent - action-oriented, tool-focused, autonomous.
-
-═══════════════════════════════════════════════════════════════════
-⚡ ACTION-ORIENTED WORKFLOW (Like Replit Agent)
-═══════════════════════════════════════════════════════════════════
-
-When you receive a work request, you:
-1. **Create task list** - Break work into clear steps
-2. **IMMEDIATELY call tools** - Start doing the actual work
-3. **Update tasks as you go** - Show progress in real-time
-4. **Explain while working** - Stream brief updates
-5. **Complete tasks** - Mark done when finished
-
-**DO NOT:**
-- ❌ Talk about calling tools without calling them
-- ❌ Say "Let me..." without immediately doing it
-- ❌ Explain your plan then stop
-- ❌ Wait for permission unless explicitly needed
-- ❌ Overthink whether something is a "work request"
-
-**GOLDEN RULE:**
-${autoCommit 
-    ? '**AUTONOMOUS MODE:** Just DO IT. Tools first, explanations second.' 
-    : '**MANUAL MODE:** Request approval for changes, but still CALL DIAGNOSTIC TOOLS immediately.'
-  }
-
-${projectId ? '🎯 RESCUE MODE: You are currently working on a user project' : '🏗️ PLATFORM MODE: You are currently working on the Archetype platform itself'}
+${projectId ? '🎯 RESCUE MODE: You are working on a user project' : '🏗️ PLATFORM MODE: You maintain the Archetype platform itself'}
 
 ⚡ YOUR AUTONOMY LEVEL: ${autonomyLevel.toUpperCase()}
+${autoCommit ? '**AUTO-COMMIT ENABLED:** You can commit changes to GitHub autonomously' : '**MANUAL MODE:** Request approval before committing changes'}
 
 ═══════════════════════════════════════════════════════════════════
-🎯 DETERMINING WORK VS CONVERSATION
+🎯 HOW TO RESPOND
 ═══════════════════════════════════════════════════════════════════
 
-**ANALYZE THE USER'S REQUEST:**
+**CASUAL CONVERSATION** (no tools needed):
+- Greetings: "hi", "hello" → Be friendly, say hi back
+- Questions about you: "who are you?", "what can you do?" → Explain your role
+- Thanks: "thank you" → You're welcome!
+- **Just respond naturally with text. Don't call any tools.**
 
-User said: "${message}"
+**WORK REQUESTS** (use tools to actually do the work):
+- "diagnose", "check", "fix", "analyze" → Create task list, run diagnostics
+- Mentions errors or problems → Investigate and fix
+- "update", "improve", "add feature" → Do the work
+- **Call tools immediately. Work while you talk.**
 
-**IS THIS JUST CONVERSATION?**
-- Greetings: "hi", "hello", "hey", "what's up" → Just say hello friendly, offer help
-- Questions: "what can you do?", "who are you?" → Explain capabilities  
-- Thanks: "thanks", "thank you" → You're welcome
-- → **JUST RESPOND conversationally, NO TOOLS**
+═══════════════════════════════════════════════════════════════════
 
-**IS THIS A WORK REQUEST?**
-- "diagnose" / "check" / "analyze" / "fix" / "update" → START WORKING immediately
-- Mentions specific problems or errors → START WORKING  
-- Asks for changes or improvements → START WORKING
-- → **CALL TOOLS, take action**
-
-**BE SMART:** If it's clearly casual chat, just talk. If it mentions work, do the work!`;
+When doing work:
+1. Create a task list for complex requests
+2. Call tools to actually do the work (don't just talk about it)
+3. Update tasks as you complete them
+4. Be concise - explain what you're doing, but focus on action`;
 
     // Define tools (full tool set from SSE route)
     const tools: any[] = [
@@ -654,40 +631,12 @@ User said: "${message}"
       console.log(`[META-SYSOP-JOB-MANAGER] Content blocks received: ${contentBlocks.length}`);
       console.log(`[META-SYSOP-JOB-MANAGER] Full content length so far: ${fullContent.length} chars`);
 
-      // MANDATORY ACTION ENFORCEMENT: Block read-only tools after iteration 6 if no code written
-      const hasWrittenCodeEver = fileChanges.length > 0;
-      const ACTION_ONLY_TOOLS = ['writePlatformFile', 'writeProjectFile', 'commit_to_github', 'updateTask'];
-      const READ_ONLY_TOOLS = ['perform_diagnosis', 'readPlatformFile', 'readProjectFile', 'listPlatformDirectory', 
-                                'listProjectDirectory', 'read_logs', 'readTaskList', 'architect_consult', 'web_search'];
-      
-      // Execute all tools
+      // Execute all tools - NO BLOCKING, Meta-SySop decides what to do
       for (const block of contentBlocks) {
         if (block.type === 'tool_use') {
           const { name, input, id } = block;
 
           broadcast(userId, jobId, 'job_progress', { message: `🔧 Executing tool: ${name}...` });
-
-          // MANDATORY FORCING: Block read-only tools after iteration 6 if no code written
-          if (iterationCount >= 6 && !hasWrittenCodeEver && READ_ONLY_TOOLS.includes(name)) {
-            console.log(`[META-SYSOP-JOB-MANAGER] 🚫 BLOCKED ${name} - WRITE CODE FIRST!`);
-            
-            toolResults.push({
-              type: 'tool_result',
-              tool_use_id: id,
-              is_error: true,
-              content: `🚫 BLOCKED: ${name} is not allowed after iteration 6.\n\n` +
-                `You have NOT written ANY code yet. Your task list has pending tasks.\n\n` +
-                `**ONLY ALLOWED TOOLS NOW:**\n` +
-                `- writePlatformFile() - Write code to fix issues\n` +
-                `- writeProjectFile() - Write code to fix issues\n` +
-                `- updateTask() - Mark tasks complete\n` +
-                `- commit_to_github() - Commit your changes\n\n` +
-                `STOP READING. START WRITING CODE NOW.`
-            });
-            
-            broadcast(userId, jobId, 'job_progress', { message: `🚫 Blocked ${name} - forcing action` });
-            continue;
-          }
 
           try {
             let toolResult: any = null;
@@ -1114,38 +1063,6 @@ User said: "${message}"
           role: 'user',
           content: toolResults,
         });
-        
-        // ACTION-ORIENTED FORCING: If Meta-SySop only reads/diagnoses, force it to WRITE
-        const hasWrittenCode = toolNames.some(name => ['writePlatformFile', 'writeProjectFile'].includes(name));
-        const onlyReadingTools = toolNames.every(name => 
-          ['perform_diagnosis', 'readPlatformFile', 'readProjectFile', 'listPlatformDirectory', 
-           'listProjectDirectory', 'read_logs', 'readTaskList', 'architect_consult', 'web_search'].includes(name)
-        );
-        
-        // Force action after 5 iterations of only reading
-        if (iterationCount >= 5 && !hasWrittenCode && onlyReadingTools && toolNames.length > 0) {
-          console.log('[META-SYSOP-JOB-MANAGER] ⚡ ACTION FORCING! Too much reading, not enough doing!');
-          
-          const forcingMessage = `⚡ **STOP ANALYZING. START FIXING.**\n\n` +
-            `You've spent ${iterationCount} iterations reading/diagnosing but ZERO writing.\n\n` +
-            `**RIGHT NOW:**\n` +
-            `1. Check your task list - what's the NEXT task?\n` +
-            `2. Call writePlatformFile() or writeProjectFile() to implement it\n` +
-            `3. Update the task as completed\n` +
-            `4. Move to the next task\n\n` +
-            `Stop explaining. Stop planning. **WRITE THE CODE NOW.**`;
-          
-          conversationMessages.push({
-            role: 'user',
-            content: [{
-              type: 'text',
-              text: forcingMessage
-            }]
-          });
-          
-          broadcast(userId, jobId, 'job_progress', { message: '⚡ Forcing action...' });
-          continue;
-        }
       } else {
         // No tool calls - check if should continue
         if (activeTaskListId) {
