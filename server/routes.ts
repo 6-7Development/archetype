@@ -153,6 +153,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const metricsBroadcaster = new PlatformMetricsBroadcaster(wss);
   metricsBroadcaster.start();
 
+  // Initialize Meta-SySop job manager with WebSocket support
+  const { initializeJobManager } = await import('./services/metaSysopJobManager');
+  initializeJobManager(wss);
+  console.log('[META-SYSOP-JOB-MANAGER] Job manager connected to WebSocket');
+
   // ==================== REGISTER ROUTE MODULES ====================
   
   // Register all route modules with dependencies

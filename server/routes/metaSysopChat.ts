@@ -2712,4 +2712,93 @@ router.delete('/discard-changes', isAuthenticated, isAdmin, async (req: any, res
   }
 });
 
+// ==================== BACKGROUND JOB ROUTES (Railway SSE timeout fix) ====================
+
+// POST /api/meta-sysop/start - Start a new background job
+router.post('/start', isAuthenticated, isAdmin, async (req: any, res) => {
+  try {
+    const { message } = req.body;
+    const userId = req.authenticatedUserId;
+    
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+
+    const { createJob, startJobWorker } = await import('../services/metaSysopJobManager');
+    
+    // Create the job
+    const job = await createJob(userId, message);
+    
+    // Start worker in background (fire and forget)
+    startJobWorker(job.id);
+    
+    console.log('[META-SYSOP] Started background job:', job.id);
+    
+    res.json({ 
+      success: true, 
+      jobId: job.id,
+      message: 'Job started successfully',
+    });
+  } catch (error: any) {
+    console.error('[META-SYSOP] Failed to start job:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/meta-sysop/resume/:jobId - Resume an interrupted or failed job
+router.post('/resume/:jobId', isAuthenticated, isAdmin, async (req: any, res) => {
+  try {
+    const { jobId } = req.params;
+    const userId = req.authenticatedUserId;
+    
+    const { resumeJob } = await import('../services/metaSysopJobManager');
+    
+    // Resume the job
+    await resumeJob(jobId, userId);
+    
+    console.log('[META-SYSOP] Resumed job:', jobId);
+    
+    res.json({ 
+      success: true,
+      message: 'Job resumed successfully',
+    });
+  } catch (error: any) {
+    console.error('[META-SYSOP] Failed to resume job:', error);
+    
+    if (error.message.includes('not found')) {
+      return res.status(404).json({ error: error.message });
+    }
+    if (error.message.includes('cannot be resumed')) {
+      return res.status(400).json({ error: error.message });
+    }
+    
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/meta-sysop/job/:jobId - Get job status and details
+router.get('/job/:jobId', isAuthenticated, isAdmin, async (req: any, res) => {
+  try {
+    const { jobId } = req.params;
+    const userId = req.authenticatedUserId;
+    
+    const { getJob } = await import('../services/metaSysopJobManager');
+    
+    // Get the job
+    const job = await getJob(jobId, userId);
+    
+    if (!job) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+    
+    res.json({ 
+      success: true, 
+      job,
+    });
+  } catch (error: any) {
+    console.error('[META-SYSOP] Failed to get job:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
