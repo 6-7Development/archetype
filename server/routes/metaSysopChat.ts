@@ -1728,45 +1728,30 @@ Be conversational, be helpful, and only work when asked!`;
 
       const toolResults: any[] = [];
       const hasToolUse = contentBlocks.some(block => block.type === 'tool_use');
-
-      // 🚨 FORCE TOOL EXECUTION: If Meta-SySop has tasks but doesn't call tools, force it
-      // 🔥 ARCHITECT FIX: Removed iterationCount > 1 guard - must enforce on ALL iterations
-      if (activeTaskListId && !hasToolUse) {
-        console.log('[META-SYSOP-FORCE] No tools called but have task list - checking tasks...');
-        try {
-          const taskCheck = await readTaskList({ userId });
-          const sessionTaskList = taskCheck.taskLists?.find((list: any) => list.id === activeTaskListId);
-          const allTasks = sessionTaskList?.tasks || [];
-          const inProgressTasks = allTasks.filter((t: any) => t.status === 'in_progress');
-          const pendingTasks = allTasks.filter((t: any) => t.status === 'pending');
-          const completedTasks = allTasks.filter((t: any) => t.status === 'completed');
-          
-          console.log(`[META-SYSOP-FORCE] Task status: ${completedTasks.length} completed, ${inProgressTasks.length} in_progress, ${pendingTasks.length} pending`);
-          
-          // Force execution if there are ANY incomplete tasks (in_progress OR pending)
-          if (inProgressTasks.length > 0 || (pendingTasks.length > 0 && completedTasks.length === 0)) {
-            const tasksToForce = inProgressTasks.length > 0 ? inProgressTasks : [pendingTasks[0]];
-            console.log(`[META-SYSOP-FORCE] ❌ REJECTED: Meta-SySop has tasks but called NO tools!`);
-            console.log(`[META-SYSOP-FORCE] Forcing work on: ${tasksToForce.map((t: any) => t.title).join(', ')}`);
-            
-            const firstTask = tasksToForce[0];
-            // Simple reminder to call tools (not micromanagement)
-            conversationMessages.push({
-              role: 'user',
-              content: [{
-                type: 'text',
-                text: `You have tasks but didn't call any tools.\n\n` +
-                  `Task: "${firstTask.title}"\n\n` +
-                  `Call the appropriate tool to do the work (perform_diagnosis, readPlatformFile, execute_sql, etc.).\n\n` +
-                  `Remember: Tools first, explanations second.`
-              }]
-            });
-            sendEvent('error', { message: `Forcing work on: ${firstTask.title}` });
-            continue; // Force another iteration with actual tool calls
-          }
-        } catch (error: any) {
-          console.error('[META-SYSOP-FORCE] Failed to check tasks:', error);
-        }
+      const toolNames = contentBlocks.filter(b => b.type === 'tool_use').map(b => b.name);
+      
+      // 🚨 AGGRESSIVE FORCING: If Meta-SySop created task list but skipped the WORK tools, force it
+      const createdTaskListThisIteration = toolNames.includes('createTaskList');
+      const calledDiagnosisTools = toolNames.some(name => ['perform_diagnosis', 'architect_consult', 'execute_sql'].includes(name));
+      
+      if (createdTaskListThisIteration && !calledDiagnosisTools && iterationCount === 1) {
+        console.log('[META-SYSOP-FORCE] ❌ Created task list but skipped work tools!');
+        console.log('[META-SYSOP-FORCE] Tools called:', toolNames.join(', '));
+        console.log('[META-SYSOP-FORCE] Forcing perform_diagnosis() now...');
+        
+        conversationMessages.push({
+          role: 'user',
+          content: [{
+            type: 'text',
+            text: `You created a task list but didn't call perform_diagnosis().\n\n` +
+              `Your first task is to diagnose the platform.\n\n` +
+              `Call perform_diagnosis(target: "full", focus: []) RIGHT NOW.\n\n` +
+              `Do not skip this step. Do not read individual files yet. Run the full diagnosis first.`
+          }]
+        });
+        
+        sendEvent('error', { message: 'Forcing diagnosis - Meta-SySop tried to skip it' });
+        continue; // Force another iteration with diagnosis
       }
 
       // 🔧 TOOL EXECUTION: Process all tool calls from the response

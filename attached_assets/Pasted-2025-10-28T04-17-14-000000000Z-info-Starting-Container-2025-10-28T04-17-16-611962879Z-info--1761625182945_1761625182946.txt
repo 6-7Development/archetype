@@ -1,0 +1,124 @@
+2025-10-28T04:17:14.000000000Z [info] Starting Container
+2025-10-28T04:17:16.611962879Z [info] ======================================
+2025-10-28T04:17:16.611970169Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT
+2025-10-28T04:17:16.611977638Z [info] ======================================
+2025-10-28T04:17:16.611984779Z [info] Time: Tue Oct 28 04:17:14 UTC 2025
+2025-10-28T04:17:16.611992147Z [info] 
+2025-10-28T04:17:16.612064028Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-10-28T04:17:16.612075344Z [info] No config path provided, using default 'drizzle.config.ts'
+2025-10-28T04:17:16.612082564Z [info] Reading config file '/app/drizzle.config.ts'
+2025-10-28T04:17:17.703190854Z [info] Using 'pg' driver for database querying
+2025-10-28T04:17:17.703196501Z [info] [â£·] Pulling schema from database...
+2025-10-28T04:17:17.703202592Z [info] a from database...
+2025-10-28T04:17:17.703208806Z [info] a from database...
+2025-10-28T04:17:18.792708736Z [info] a from database...
+2025-10-28T04:17:18.792715436Z [info] a from database...
+2025-10-28T04:17:18.792723015Z [info] a from database...
+2025-10-28T04:17:18.792729256Z [info] a from database...
+2025-10-28T04:17:18.792735639Z [info] a from database...
+2025-10-28T04:17:18.792742099Z [info] a from database...
+2025-10-28T04:17:18.792783169Z [info] a from database...
+2025-10-28T04:17:18.792789489Z [info] a from database...
+2025-10-28T04:17:19.950632325Z [info] a from database...
+2025-10-28T04:17:19.950947565Z [info] a from database...
+2025-10-28T04:17:19.950954944Z [info] a from database...
+2025-10-28T04:17:19.950981238Z [info] a from database...
+2025-10-28T04:17:19.950991573Z [info] a from database...
+2025-10-28T04:17:19.951006231Z [info] a from database...
+2025-10-28T04:17:19.951015568Z [info] a from database...
+2025-10-28T04:17:19.951028228Z [info] a from database...
+2025-10-28T04:17:19.951036295Z [info] a from database...
+2025-10-28T04:17:21.025987283Z [info] 
+2025-10-28T04:17:21.025999354Z [info] âœ… Database migrations completed successfully!
+2025-10-28T04:17:21.026008568Z [info] 
+2025-10-28T04:17:21.026016498Z [info] ðŸš€ Starting Node.js application...
+2025-10-28T04:17:21.026135045Z [info] a from database...
+2025-10-28T04:17:21.026140355Z [info] [i] No changes detected
+2025-10-28T04:17:22.355561747Z [info] [db] âœ… Added sslmode=no-verify to connection string for production
+2025-10-28T04:17:22.355568422Z [info] [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-28T04:17:22.355576819Z [info] [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-28T04:17:22.355583364Z [info] [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-28T04:17:22.355592379Z [info] [db] SSL Configuration: {rejectUnauthorized:false}
+2025-10-28T04:17:22.355600380Z [info] [db] Connection string includes SSL params: true
+2025-10-28T04:17:22.355606931Z [info] [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-28T04:17:22.355613412Z [info] [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-28T04:17:22.355619974Z [info] [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-28T04:17:22.355626734Z [info] ðŸ“¡ WebSocket server initialized at /ws
+2025-10-28T04:17:22.355634855Z [info] [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-28T04:17:22.355641224Z [info] [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-28T04:17:22.355649032Z [info] âœ… All routes registered successfully
+2025-10-28T04:17:22.355658967Z [info] ðŸ” Testing database connection...
+2025-10-28T04:17:22.355666379Z [info] 4:17:21 AM [express] serving on port 8080
+2025-10-28T04:17:22.355673280Z [info] ðŸŒ Server accessible at http://0.0.0.0:8080
+2025-10-28T04:17:22.355679850Z [info] âœ… Database connected successfully
+2025-10-28T04:17:22.355686074Z [info] ðŸ”§ Auto-healing system ENABLED (production mode)
+2025-10-28T04:17:22.355693310Z [info] 
+2025-10-28T04:17:22.355700514Z [info] ðŸ” Checking GitHub integration configuration...
+2025-10-28T04:17:22.355712082Z [info] âœ… GitHub integration configured successfully
+2025-10-28T04:17:22.355722054Z [info]    - Repository: 6-7Development/archetype
+2025-10-28T04:17:24.762602957Z [info]    - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-28T04:17:24.762612682Z [info]    - Maintenance mode: Available for owner
+2025-10-28T04:17:24.762620862Z [info] 
+2025-10-28T04:17:24.762717294Z [info]    - Branch: main
+2025-10-28T04:17:24.762725270Z [info]    - Token: âœ“ (configured)
+2025-10-28T04:17:27.075736438Z [info] [DEPLOYMENT-INFO] Using Railway environment variables
+2025-10-28T04:17:27.075744633Z [info] 4:17:25 AM [express] GET /api/deployment-info 200 in 6ms :: {version:"1.0.0",commitHash:"87f0012â€¦
+2025-10-28T04:17:35.028616182Z [info] [AUTH] Login attempt for email: root@getdc360.com
+2025-10-28T04:17:35.028622687Z [info] [AUTH] Found users: 1
+2025-10-28T04:17:35.028629265Z [info] [AUTH] User found: root@getdc360.com has password: true
+2025-10-28T04:17:35.028637978Z [info] [AUTH] Verifying password...
+2025-10-28T04:17:35.028647999Z [info] [AUTH] Password valid: true
+2025-10-28T04:17:35.028654773Z [info] [AUTH] Authentication successful for: root@getdc360.com
+2025-10-28T04:17:35.028661106Z [info] 4:17:33 AM [express] POST /api/auth/login 200 in 420ms :: {success:true,user:{id:"723e1301-c72â€¦
+2025-10-28T04:17:35.028668138Z [info] 4:17:34 AM [express] GET /api/auth/me 304 in 24ms :: {user:{id:"723e1301-c729-48fc-810a-39ddef95â€¦
+2025-10-28T04:17:35.028674925Z [info] 4:17:34 AM [express] GET /api/projects 304 in 129ms :: []
+2025-10-28T04:17:40.139758593Z [info] [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-28T04:17:40.139765805Z [info] 4:17:38 AM [express] GET /api/meta-sysop/autonomy-level 304 in 39ms :: {currentLevel:"max","maxAllâ€¦
+2025-10-28T04:17:40.139771936Z [info] 4:17:38 AM [express] GET /api/meta-sysop/projects 304 in 139ms :: []
+2025-10-28T04:17:40.139778813Z [info] 4:17:38 AM [express] GET /api/meta-sysop/pending-changes 304 in 157ms :: {success:true,"pendingChaâ€¦
+2025-10-28T04:17:40.139785293Z [info] âœ… WebSocket client connected
+2025-10-28T04:17:40.139794052Z [info] 4:17:38 AM [express] GET /api/platform/status 200 in 214ms :: {overallHealth:80,activeIncidents:â€¦
+2025-10-28T04:17:40.139801075Z [info] ðŸ“¡ [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-28T04:17:44.507971209Z [info] 4:17:43 AM [express] GET /api/meta-sysop/pending-changes 304 in 35ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:17:49.412069389Z [info] 4:17:48 AM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:17:54.668748737Z [info] 4:17:53 AM [express] GET /api/meta-sysop/pending-changes 304 in 19ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:17:59.004490576Z [info] 4:17:58 AM [express] GET /api/meta-sysop/pending-changes 304 in 25ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:18:00.762263460Z [info] [META-SYSOP-CHAT] Stream request received
+2025-10-28T04:18:00.762269878Z [info] [META-SYSOP-CHAT] Message: See what issues are in the platform and fix them Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-10-28T04:18:00.762276549Z [info] [META-SYSOP-CHAT] Setting up SSE headers
+2025-10-28T04:18:00.762283673Z [info] [META-SYSOP-CHAT] Heartbeat started - will send keepalive every 15s
+2025-10-28T04:18:00.762289336Z [info] [META-SYSOP-CHAT] Entering try block
+2025-10-28T04:18:00.762294988Z [info] [META-SYSOP-CHAT] User autonomy level: max
+2025-10-28T04:18:02.645987658Z [info] [META-SYSOP-CHAT] ðŸ’¬ Streaming text: I'll help you diagnose the platform, find issues, and fix the chat toolbar problems. Let me start by
+2025-10-28T04:18:03.927952946Z [info] 4:18:03 AM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:18:08.162693139Z [info] [META-SYSOP] Response has tool calls: true
+2025-10-28T04:18:08.162700608Z [info] [META-SYSOP] Content blocks: text, text, tool_use
+2025-10-28T04:18:08.162707522Z [info] [META-SYSOP] Task list created: 2ac7e62f-8142-4133-974d-dddf769233f3
+2025-10-28T04:18:09.416075276Z [info] 4:18:08 AM [express] GET /api/meta-sysop/pending-changes 304 in 21ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:18:10.923228379Z [info] [META-SYSOP-CHAT] ðŸ’¬ Streaming text: Now let me start with the full platform diagnosis to identify all issues.
+2025-10-28T04:18:14.306678382Z [info] [META-SYSOP-CHAT] ðŸ’¬ Streaming text: Let me check the task list to get the correct IDs.Let me check the task list to get the correct IDs.
+2025-10-28T04:18:14.306685368Z [info] [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-28T04:18:18.078216223Z [info] [META-SYSOP-CHAT] ðŸ’¬ Streaming text: I see there's already an existing task list. Let me update the diagnosis task that's already complet
+2025-10-28T04:18:23.099332008Z [info] [META-SYSOP-CHAT] ðŸ’¬ Streaming text: Great! I've found several critical issues. Now let me investigate the chat toolbar problem specifica
+2025-10-28T04:18:23.099339530Z [info] [PLATFORM-READ] ðŸ”„ Source file not in production build, fetching from GitHub: client/src/components/chat/ChatToolbar.tsx
+2025-10-28T04:18:23.099346471Z [info] [GITHUB-SERVICE] Initialized for 6-7Development/archetype on branch main
+2025-10-28T04:18:24.506573435Z [error] GET /repos/6-7Development/archetype/contents/client%2Fsrc%2Fcomponents%2Fchat%2FChatToolbar.tsx?ref=main - 404 with id 8944:152AB1:13DC06F:55746BB:6900440F in 121ms
+2025-10-28T04:18:24.506580214Z [error] [GITHUB-SERVICE] Failed to get file content for client/src/components/chat/ChatToolbar.tsx: Not Found - https://docs.github.com/rest/repos/contents#get-repository-content
+2025-10-28T04:18:24.506586682Z [error] [META-SYSOP] âŒ Tool readPlatformFile failed: Error: Failed to read platform file client/src/components/chat/ChatToolbar.tsx: Failed to get file content: Not Found - https://docs.github.com/rest/repos/contents#get-repository-content
+2025-10-28T04:18:24.506595595Z [error]     at PlatformHealingService.readPlatformFile (file:///app/dist/index.js:8212:13)
+2025-10-28T04:18:24.506602079Z [error]     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-28T04:18:24.506608665Z [error]     at async file:///app/dist/index.js:11970:28
+2025-10-28T04:18:24.506615329Z [error] [META-SYSOP] Tool input: {
+2025-10-28T04:18:24.506621835Z [error]   path: "client/src/components/chat/ChatToolbar.tsx"
+2025-10-28T04:18:24.506631356Z [error] }
+2025-10-28T04:18:24.506637978Z [info] [META-SYSOP-CLEANUP] Safety passed - checking task list 2ac7e62f-8142-4133-974d-dddf769233f3 for incomplete tasks...
+2025-10-28T04:18:24.506644588Z [info] [META-SYSOP-CLEANUP] â„¹ï¸ No stuck tasks. Status: 0 completed, 5 pending - no cleanup needed
+2025-10-28T04:18:24.506651467Z [info] [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: Meta-SySop chat: See what issues are in the platform and fix them - success
+2025-10-28T04:18:24.506663311Z [info] [META-SYSOP-HEARTBEAT] Cleared on stream end
+2025-10-28T04:18:24.506670205Z [info] 4:18:23 AM [express] POST /api/meta-sysop/stream 200 in 24340ms
+2025-10-28T04:18:24.506676745Z [info] [META-SYSOP] Fetched 5 tasks for task list 2ac7e62f-8142-4133-974d-dddf769233f3
+2025-10-28T04:18:25.899328187Z [info] 4:18:23 AM [express] GET /api/meta-sysop/task-list/2ac7e62f-8142-4133-974d-dddf769233f3 200 in 26ms â€¦
+2025-10-28T04:18:34.961231774Z [info] 4:18:34 AM [express] GET /api/meta-sysop/pending-changes 304 in 125ms :: {success:true,"pendingChaâ€¦
+2025-10-28T04:18:40.239675098Z [info] 4:18:39 AM [express] GET /api/meta-sysop/pending-changes 304 in 18ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:18:44.320020094Z [info] 4:18:44 AM [express] GET /api/meta-sysop/pending-changes 304 in 18ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:18:49.623088292Z [info] 4:18:49 AM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {success:true,"pendingChanâ€¦
