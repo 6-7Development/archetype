@@ -220,9 +220,12 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                     setMessages(prev => {
                       const exists = prev.some(m => m.id === msgData.message.id);
                       if (exists) {
-                        console.log('[META-SYSOP] Message already exists, skipping:', msgData.message.id);
+                        console.log('[META-SYSOP] ⚠️  Duplicate detected (WebSocket), skipping ID:', msgData.message.id);
                         return prev;
                       }
+                      
+                      console.log('[META-SYSOP] ✅ Adding message via WebSocket, ID:', msgData.message.id);
+                      console.log('[META-SYSOP] Content length:', msgData.message.content?.length || 0);
                       
                       const assistantMsg: Message = {
                         id: msgData.message.id,
@@ -404,7 +407,10 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
       setProgressStatus('working');
       setProgressMessage("Meta-SySop is working...");
       
-      console.log('[META-SYSOP] Started background job:', jobId);
+      console.log('[META-SYSOP] ============ JOB STARTED ============');
+      console.log('[META-SYSOP] Job ID:', jobId);
+      console.log('[META-SYSOP] Message:', message);
+      console.log('[META-SYSOP] =====================================');
       
       // SIMPLE POLLING: Check every 3 seconds for completion
       const checkCompletion = async () => {
@@ -427,9 +433,11 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                   setMessages(prev => {
                     const exists = prev.some(m => m.id === assistantMsg.id);
                     if (exists) {
-                      console.log('[META-SYSOP] Message already exists (polling), skipping');
+                      console.log('[META-SYSOP] ⚠️  Duplicate detected (polling), skipping ID:', assistantMsg.id);
                       return prev;
                     }
+                    console.log('[META-SYSOP] ✅ Adding message via polling, ID:', assistantMsg.id);
+                    console.log('[META-SYSOP] Content length:', assistantMsg.content?.length || 0);
                     return [...prev, {
                       id: assistantMsg.id,
                       role: 'assistant',
