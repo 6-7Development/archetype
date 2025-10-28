@@ -313,3 +313,20 @@ export function getGitHubService(): GitHubService {
 export function isGitHubServiceAvailable(): boolean {
   return !!(process.env.GITHUB_TOKEN && process.env.GITHUB_REPO);
 }
+
+// Helper function to fetch recent commits for deployment awareness
+export async function fetchRecentCommits(count: number = 10): Promise<any[]> {
+  if (!isGitHubServiceAvailable()) {
+    console.log('[GITHUB-SERVICE] GitHub not configured, returning empty commits');
+    return [];
+  }
+  
+  try {
+    const service = getGitHubService();
+    const commits = await service.getRecentCommits('main', count);
+    return commits;
+  } catch (error) {
+    console.error('[GITHUB-SERVICE] Failed to fetch recent commits:', error);
+    return [];
+  }
+}
