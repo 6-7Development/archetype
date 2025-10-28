@@ -2408,34 +2408,52 @@ Be conversational, be helpful, and only work when asked!`;
       } else {
         // No tool calls this iteration - check if we should continue
         // 🐛 FIX: Don't end if there are tasks still in progress - Meta-SySop might need another turn
+        console.log(`[META-SYSOP-CONTINUATION] Iteration ${iterationCount}: No tool calls, checking if should continue...`);
+        console.log(`[META-SYSOP-CONTINUATION] Active task list ID: ${activeTaskListId || 'none'}`);
+        
         if (activeTaskListId) {
           try {
             const taskCheck = await readTaskList({ userId });
-            const sessionTaskList = taskCheck.taskLists?.find((list: any) => list.id === activeTaskListId);
-            const inProgressTasks = sessionTaskList?.tasks.filter((t: any) => t.status === 'in_progress') || [];
+            console.log(`[META-SYSOP-CONTINUATION] Task list read success: ${taskCheck.success}`);
+            console.log(`[META-SYSOP-CONTINUATION] Task lists found: ${taskCheck.taskLists?.length || 0}`);
             
-            if (inProgressTasks.length > 0 && iteration < 14) {
-              console.log(`[META-SYSOP] No tool calls but ${inProgressTasks.length} tasks in_progress - continuing conversation`);
-              // Give Meta-SySop a gentle prompt to continue working
+            const sessionTaskList = taskCheck.taskLists?.find((list: any) => list.id === activeTaskListId);
+            console.log(`[META-SYSOP-CONTINUATION] Session task list found: ${!!sessionTaskList}`);
+            console.log(`[META-SYSOP-CONTINUATION] Tasks: ${sessionTaskList?.tasks?.length || 0}`);
+            
+            const allTasks = sessionTaskList?.tasks || [];
+            const inProgressTasks = allTasks.filter((t: any) => t.status === 'in_progress');
+            const pendingTasks = allTasks.filter((t: any) => t.status === 'pending');
+            
+            console.log(`[META-SYSOP-CONTINUATION] In-progress: ${inProgressTasks.length}, Pending: ${pendingTasks.length}`);
+            
+            if (inProgressTasks.length > 0 && iterationCount < 14) {
+              console.log(`[META-SYSOP-CONTINUATION] ✅ Continuing - ${inProgressTasks.length} tasks in_progress`);
+              sendEvent('progress', { message: `${inProgressTasks.length} task(s) in progress - continuing work...` });
+              
+              // Give Meta-SySop a STRONG directive to use tools
               conversationMessages.push({
                 role: 'user',
                 content: [{
                   type: 'text',
-                  text: `You have ${inProgressTasks.length} task(s) still in progress. Please continue working on them using the available tools.`
+                  text: `⚠️ CRITICAL: You have ${inProgressTasks.length} task(s) marked as "in_progress" that you MUST complete:\n\n` +
+                    inProgressTasks.map((t: any) => `- ${t.title} (ID: ${t.id})`).join('\n') +
+                    `\n\nYou MUST use the available tools to complete these tasks. Don't just describe what you'll do - ACTUALLY CALL THE TOOLS NOW. ` +
+                    `Use perform_diagnosis, readPlatformFile, writePlatformFile, etc. to do the actual work.`
                 }]
               });
             } else {
               // Either all tasks done or hit iteration limit
-              console.log('[META-SYSOP] No more tool calls and no tasks in_progress - ending session naturally');
+              console.log(`[META-SYSOP-CONTINUATION] ❌ Ending - no in_progress tasks (iteration ${iterationCount}/${14})`);
               continueLoop = false;
             }
           } catch (error: any) {
-            console.error('[META-SYSOP] Failed to check task status:', error);
+            console.error('[META-SYSOP-CONTINUATION] Failed to check task status:', error);
             continueLoop = false;
           }
         } else {
           // No task list - end normally
-          console.log('[META-SYSOP] No more tool calls - ending session naturally');
+          console.log('[META-SYSOP-CONTINUATION] No task list - ending session naturally');
           continueLoop = false;
         }
       }
