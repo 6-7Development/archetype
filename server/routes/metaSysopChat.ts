@@ -1730,28 +1730,43 @@ Be conversational, be helpful, and only work when asked!`;
       const hasToolUse = contentBlocks.some(block => block.type === 'tool_use');
       const toolNames = contentBlocks.filter(b => b.type === 'tool_use').map(b => b.name);
       
-      // 🚨 AGGRESSIVE FORCING: If Meta-SySop created task list but skipped the WORK tools, force it
+      // 🚨 ULTRA-AGGRESSIVE FORCING WITH EXTENSIVE LOGGING
+      console.log(`[META-SYSOP-FORCE] === ITERATION ${iterationCount} CHECK ===`);
+      console.log(`[META-SYSOP-FORCE] Tools called this iteration: ${toolNames.join(', ') || 'NONE'}`);
+      console.log(`[META-SYSOP-FORCE] Has tool use: ${hasToolUse}`);
+      
       const createdTaskListThisIteration = toolNames.includes('createTaskList');
       const calledDiagnosisTools = toolNames.some(name => ['perform_diagnosis', 'architect_consult', 'execute_sql'].includes(name));
       
+      console.log(`[META-SYSOP-FORCE] Created task list: ${createdTaskListThisIteration}`);
+      console.log(`[META-SYSOP-FORCE] Called diagnosis tools: ${calledDiagnosisTools}`);
+      console.log(`[META-SYSOP-FORCE] Iteration count: ${iterationCount}`);
+      
       if (createdTaskListThisIteration && !calledDiagnosisTools && iterationCount === 1) {
-        console.log('[META-SYSOP-FORCE] ❌ Created task list but skipped work tools!');
-        console.log('[META-SYSOP-FORCE] Tools called:', toolNames.join(', '));
-        console.log('[META-SYSOP-FORCE] Forcing perform_diagnosis() now...');
+        console.log('[META-SYSOP-FORCE] ❌❌❌ FORCING TRIGGERED! Meta-SySop skipped perform_diagnosis!');
+        console.log('[META-SYSOP-FORCE] Adding forcing message to conversation...');
+        
+        const forcingMessage = `STOP. You created a task list but did NOT call perform_diagnosis().\n\n` +
+          `Your first task requires running the full platform diagnosis.\n\n` +
+          `Call perform_diagnosis(target: "full", focus: []) RIGHT NOW.\n\n` +
+          `Do NOT call readPlatformFile() or any other tools yet.\n` +
+          `Do NOT just talk about it.\n` +
+          `CALL THE TOOL: perform_diagnosis(target: "full", focus: [])`;
         
         conversationMessages.push({
           role: 'user',
           content: [{
             type: 'text',
-            text: `You created a task list but didn't call perform_diagnosis().\n\n` +
-              `Your first task is to diagnose the platform.\n\n` +
-              `Call perform_diagnosis(target: "full", focus: []) RIGHT NOW.\n\n` +
-              `Do not skip this step. Do not read individual files yet. Run the full diagnosis first.`
+            text: forcingMessage
           }]
         });
         
-        sendEvent('error', { message: 'Forcing diagnosis - Meta-SySop tried to skip it' });
+        console.log('[META-SYSOP-FORCE] ✅ Forcing message added. Conversation length:', conversationMessages.length);
+        console.log('[META-SYSOP-FORCE] ✅ Restarting loop with continue statement...');
+        sendEvent('error', { message: '🚨 Forcing diagnosis - Meta-SySop tried to skip it' });
         continue; // Force another iteration with diagnosis
+      } else {
+        console.log('[META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally');
       }
 
       // 🔧 TOOL EXECUTION: Process all tool calls from the response
