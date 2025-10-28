@@ -323,11 +323,11 @@ User said: "${message}"
       },
       {
         name: 'readPlatformFile',
-        description: 'Read a platform source file',
+        description: 'Read a platform source file. IMPORTANT: Use RELATIVE paths only (e.g., "replit.md", "server/index.ts"), NOT absolute paths',
         input_schema: {
           type: 'object' as const,
           properties: {
-            path: { type: 'string' as const },
+            path: { type: 'string' as const, description: 'Relative path from project root (e.g., "replit.md", NOT "/app/replit.md")' },
           },
           required: ['path'],
         },
@@ -346,11 +346,11 @@ User said: "${message}"
       },
       {
         name: 'listPlatformDirectory',
-        description: 'List directory contents',
+        description: 'List directory contents. IMPORTANT: Use RELATIVE paths only (e.g., ".", "server", "client/src"), NOT absolute paths',
         input_schema: {
           type: 'object' as const,
           properties: {
-            directory: { type: 'string' as const },
+            directory: { type: 'string' as const, description: 'Relative path from project root (e.g., ".", "server"), use "." for root' },
           },
           required: ['directory'],
         },

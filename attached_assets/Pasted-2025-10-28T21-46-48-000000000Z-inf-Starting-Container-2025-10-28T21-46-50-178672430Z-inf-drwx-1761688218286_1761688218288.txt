@@ -1,0 +1,374 @@
+2025-10-28T21:46:48.000000000Z [inf]  Starting Container
+2025-10-28T21:46:50.178672430Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 28 21:46 dist
+2025-10-28T21:46:50.178684107Z [inf]  -rw-rw-r--    1 root     root           325 Oct 28 21:44 drizzle.config.ts
+2025-10-28T21:46:50.178692315Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 28 21:31 node_modules
+2025-10-28T21:46:50.178731563Z [inf]  
+2025-10-28T21:46:50.178739334Z [inf]  📁 Current directory: /app
+2025-10-28T21:46:50.178746069Z [inf]  📂 Listing root files:
+2025-10-28T21:46:50.178757532Z [inf]  total 388
+2025-10-28T21:46:50.178759681Z [inf]  ======================================
+2025-10-28T21:46:50.178764044Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 28 21:46 .
+2025-10-28T21:46:50.178764842Z [inf]  ======================================
+2025-10-28T21:46:50.178769855Z [inf]  Time: Tue Oct 28 21:46:48 UTC 2025
+2025-10-28T21:46:50.178773897Z [inf]  🚂 RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-10-28T21:46:50.178773929Z [inf]  dr-xr-xr-x    1 root     root          4096 Oct 28 21:46 ..
+2025-10-28T21:46:50.178779080Z [inf]  Node version: v20.19.5
+2025-10-28T21:46:50.178785338Z [inf]  NPM version: 10.8.2
+2025-10-28T21:46:50.179005907Z [inf]  -rw-rw-r--    1 root     root        348537 Oct 28 21:31 package-lock.json
+2025-10-28T21:46:50.179015814Z [inf]  -rw-rw-r--    1 root     root          4475 Oct 28 21:31 package.json
+2025-10-28T21:46:50.179021623Z [inf]  -rwxrwxr-x    1 root     root          1494 Oct 28 21:44 railway-start.sh
+2025-10-28T21:46:50.179033174Z [inf]  drwxr-xr-x    9 root     root          4096 Oct 28 21:44 server
+2025-10-28T21:46:50.179040984Z [inf]  drwxr-xr-x    2 root     root          4096 Oct 28 21:44 shared
+2025-10-28T21:46:50.179046801Z [inf]  -rw-rw-r--    1 root     root           657 Oct 28 21:44 tsconfig.json
+2025-10-28T21:46:50.179052878Z [inf]  
+2025-10-28T21:46:50.179059687Z [inf]  🔍 Checking for dist directory...
+2025-10-28T21:46:50.300117693Z [inf]  ✅ dist directory exists
+2025-10-28T21:46:50.300123868Z [inf]  📂 Contents:
+2025-10-28T21:46:50.300130886Z [inf]  total 720
+2025-10-28T21:46:50.300138397Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 28 21:46 .
+2025-10-28T21:46:50.300145720Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 28 21:46 ..
+2025-10-28T21:46:50.300152049Z [inf]  -rw-r--r--    1 root     root        724481 Oct 28 21:46 index.js
+2025-10-28T21:46:50.300158805Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 28 21:46 public
+2025-10-28T21:46:50.300165089Z [inf]  ✅ dist/index.js found
+2025-10-28T21:46:50.300171626Z [inf]  
+2025-10-28T21:46:50.300178548Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-10-28T21:46:50.300185319Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-10-28T21:46:50.300192351Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-10-28T21:46:50.300198601Z [inf]  Using 'pg' driver for database querying
+2025-10-28T21:46:50.305904973Z [inf]  [⣷] Pulling schema from database...
+2025-10-28T21:46:50.349872447Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-28T21:46:50.483019582Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-28T21:46:50.620487153Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-28T21:46:50.833235142Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-28T21:46:51.201707683Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-28T21:46:51.201713642Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-28T21:46:51.201719457Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-28T21:46:51.246545278Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-28T21:46:51.391204808Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-28T21:46:51.506542690Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-28T21:46:51.630053838Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-28T21:46:52.171527808Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-28T21:46:52.171532082Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-28T21:46:52.171536126Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-28T21:46:52.171540317Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-28T21:46:52.271712296Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-28T21:46:52.409600617Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-28T21:46:52.532613528Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-28T21:46:52.656004510Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-28T21:46:53.247575227Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-28T21:46:53.247579360Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-28T21:46:53.247582868Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-28T21:46:53.247586523Z [inf]  [2K[1G[✓] Pulling schema from database...
+2025-10-28T21:46:53.247590368Z [inf]  [i] No changes detected
+2025-10-28T21:46:53.247594035Z [inf]  ✅ Database migrations completed successfully!
+2025-10-28T21:46:53.247598665Z [inf]  
+2025-10-28T21:46:53.247602837Z [inf]  🔍 Environment Check:
+2025-10-28T21:46:53.247607109Z [inf]  NODE_ENV: production
+2025-10-28T21:46:53.247610799Z [inf]  PORT: 8080
+2025-10-28T21:46:53.247614678Z [inf]  DATABASE_URL: ✓ SET (hidden for security)
+2025-10-28T21:46:53.247618741Z [inf]  GITHUB_TOKEN: ✓ SET
+2025-10-28T21:46:53.247623361Z [inf]  GITHUB_REPO: 6-7Development/archetype
+2025-10-28T21:46:53.247627236Z [inf]  GITHUB_BRANCH: main
+2025-10-28T21:46:53.247631133Z [inf]  ANTHROPIC_API_KEY: ✓ SET
+2025-10-28T21:46:53.247635303Z [inf]  
+2025-10-28T21:46:53.247640400Z [inf]  🚀 Starting Node.js application...
+2025-10-28T21:46:53.247644647Z [inf]  Command: node dist/index.js
+2025-10-28T21:46:53.247648934Z [inf]  
+2025-10-28T21:46:54.228997969Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-28T21:46:54.229002332Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-28T21:46:54.229007013Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-28T21:46:54.229011150Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-28T21:46:54.229015102Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-10-28T21:46:54.229019434Z [inf]  [db] Connection string includes SSL params: true
+2025-10-28T21:46:54.229024214Z [inf]  [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-28T21:46:54.229029521Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-28T21:46:54.229036100Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-28T21:46:54.229040868Z [inf]  📡 WebSocket server initialized at /ws
+2025-10-28T21:46:54.229045270Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-28T21:46:54.229049987Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-28T21:46:54.229054261Z [inf]  [META-SYSOP-JOB-MANAGER] Initialized with WebSocket support
+2025-10-28T21:46:54.229059301Z [inf]  [META-SYSOP-JOB-MANAGER] Job manager connected to WebSocket
+2025-10-28T21:46:54.229063667Z [inf]  ✅ All routes registered successfully
+2025-10-28T21:46:54.229068176Z [inf]  🔍 Testing database connection...
+2025-10-28T21:46:54.229079001Z [inf]  9:46:54 PM [express] serving on port 8080
+2025-10-28T21:46:54.229088844Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-10-28T21:46:54.264036087Z [inf]  ✅ Database connected successfully
+2025-10-28T21:46:54.264043308Z [inf]  🔧 Auto-healing system ENABLED (production mode)
+2025-10-28T21:46:54.264048744Z [inf]  
+2025-10-28T21:46:54.264052640Z [inf]  
+2025-10-28T21:46:54.264053564Z [inf]  🔍 Checking GitHub integration configuration...
+2025-10-28T21:46:54.264058878Z [inf]  ✅ GitHub integration configured successfully
+2025-10-28T21:46:54.264063157Z [inf]     - Repository: 6-7Development/archetype
+2025-10-28T21:46:54.264067521Z [inf]     - Branch: main
+2025-10-28T21:46:54.264071425Z [inf]     - Token: ✓ (configured)
+2025-10-28T21:46:54.264077423Z [inf]     - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-28T21:46:54.264081594Z [inf]     - Maintenance mode: Available for owner
+2025-10-28T21:47:43.802494772Z [inf]  [DEPLOYMENT-INFO] Using Railway environment variables
+2025-10-28T21:47:43.802502823Z [inf]  9:47:39 PM [express] GET /api/deployment-info 200 in 2ms :: {"version":"1.0.0","commitHash":"fd55c1f…
+2025-10-28T21:47:43.802509413Z [inf]  [AUTH] Login attempt for email: root@getdc360.com
+2025-10-28T21:47:43.802517313Z [inf]  [AUTH] Found users: 1
+2025-10-28T21:47:43.802524607Z [inf]  [AUTH] User found: root@getdc360.com has password: true
+2025-10-28T21:47:43.802531056Z [inf]  [AUTH] Verifying password...
+2025-10-28T21:47:43.802536607Z [inf]  [AUTH] Password valid: true
+2025-10-28T21:47:43.802542934Z [inf]  [AUTH] Authentication successful for: root@getdc360.com
+2025-10-28T21:47:43.802549366Z [inf]  9:47:42 PM [express] POST /api/auth/login 200 in 284ms :: {"success":true,"user":{"id":"723e1301-c72…
+2025-10-28T21:47:43.802555567Z [inf]  9:47:43 PM [express] GET /api/projects 304 in 11ms :: []
+2025-10-28T21:47:43.802561496Z [inf]  9:47:43 PM [express] GET /api/auth/me 304 in 85ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef95…
+2025-10-28T21:47:45.440834580Z [inf]  [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-28T21:47:45.440839968Z [inf]  9:47:44 PM [express] GET /api/meta-sysop/autonomy-level 304 in 32ms :: {"currentLevel":"max","maxAll…
+2025-10-28T21:47:45.440845736Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T21:47:45.440851853Z [inf]  9:47:45 PM [express] GET /api/meta-sysop/active-job 304 in 68ms :: {"success":true,"job":null}
+2025-10-28T21:47:45.440859069Z [inf]  9:47:45 PM [express] GET /api/platform/status 200 in 82ms :: {"overallHealth":100,"activeIncidents":…
+2025-10-28T21:47:45.440865075Z [inf]  9:47:45 PM [express] GET /api/meta-sysop/projects 304 in 88ms :: []
+2025-10-28T21:47:45.440870524Z [inf]  9:47:45 PM [express] GET /api/meta-sysop/pending-changes 304 in 83ms :: {"success":true,"pendingChan…
+2025-10-28T21:47:45.440877383Z [inf]  [GITHUB-SERVICE] Initialized for 6-7Development/archetype on branch main
+2025-10-28T21:47:45.440882989Z [inf]  ✅ WebSocket client connected
+2025-10-28T21:47:45.440888781Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-28T21:47:45.440894795Z [inf]  9:47:45 PM [express] GET /api/platform/deployment-history 200 in 259ms :: {"success":true,"deploymen…
+2025-10-28T21:47:49.805015521Z [inf]  [META-SYSOP-JOB-MANAGER] Created job: c4683834-a25c-4907-bf02-a6ae8cd4d090 for user: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-10-28T21:47:49.805022102Z [inf]  [META-SYSOP-JOB-MANAGER] Starting worker for job: c4683834-a25c-4907-bf02-a6ae8cd4d090
+2025-10-28T21:47:49.806861315Z [inf]  [META-SYSOP] Started background job: c4683834-a25c-4907-bf02-a6ae8cd4d090
+2025-10-28T21:47:49.814652759Z [inf]  9:47:49 PM [express] POST /api/meta-sysop/start 200 in 19ms :: {"success":true,"jobId":"c4683834-a25…
+2025-10-28T21:47:49.814659236Z [inf]  [META-SYSOP-JOB-MANAGER] Job started: c4683834-a25c-4907-bf02-a6ae8cd4d090
+2025-10-28T21:47:49.814663880Z [inf]  [META-SYSOP-JOB-MANAGER] User autonomy level: max
+2025-10-28T21:47:49.814667994Z [inf]  [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 1)...
+2025-10-28T21:47:49.979468269Z [inf]  ✅ WebSocket client connected
+2025-10-28T21:47:50.420625070Z [inf]  9:47:50 PM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {"success":true,"pendingChang…
+2025-10-28T21:47:53.366554214Z [inf]  9:47:53 PM [express] GET /api/meta-sysop/active-job 200 in 12ms :: {"success":true,"job":{"id":"c468…
+2025-10-28T21:47:53.366634735Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found c4683834-a25c-4907-bf02-a6ae8cd4d090
+2025-10-28T21:47:55.476888203Z [inf]  9:47:55 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-28T21:47:56.514190143Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found c4683834-a25c-4907-bf02-a6ae8cd4d090
+2025-10-28T21:47:56.514195591Z [inf]  9:47:56 PM [express] GET /api/meta-sysop/active-job 304 in 10ms :: {"success":true,"job":{"id":"c468…
+2025-10-28T21:47:59.411783518Z [inf]  9:47:59 PM [express] GET /api/meta-sysop/active-job 304 in 9ms :: {"success":true,"job":{"id":"c4683…
+2025-10-28T21:47:59.411896764Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found c4683834-a25c-4907-bf02-a6ae8cd4d090
+2025-10-28T21:48:00.476768534Z [inf]  9:48:00 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-28T21:48:02.622543569Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found c4683834-a25c-4907-bf02-a6ae8cd4d090
+2025-10-28T21:48:02.622550334Z [inf]  9:48:02 PM [express] GET /api/meta-sysop/active-job 304 in 9ms :: {"success":true,"job":{"id":"c4683…
+2025-10-28T21:48:03.588465087Z [inf]  [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T21:48:05.548285166Z [inf]  9:48:05 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-28T21:48:05.548296418Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found c4683834-a25c-4907-bf02-a6ae8cd4d090
+2025-10-28T21:48:05.548304877Z [inf]  9:48:05 PM [express] GET /api/meta-sysop/active-job 304 in 9ms :: {"success":true,"job":{"id":"c4683…
+2025-10-28T21:48:05.821358206Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-28T21:48:05.821366098Z [inf]  ❌ WebSocket client disconnected
+2025-10-28T21:48:06.698532064Z [inf]  9:48:06 PM [express] GET /api/auth/me 200 in 8ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef954…
+2025-10-28T21:48:06.810430727Z [inf]  [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-28T21:48:06.810439584Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found c4683834-a25c-4907-bf02-a6ae8cd4d090
+2025-10-28T21:48:06.812377718Z [inf]  9:48:06 PM [express] GET /api/meta-sysop/projects 200 in 26ms :: []
+2025-10-28T21:48:06.823397267Z [inf]  9:48:06 PM [express] GET /api/platform/status 200 in 28ms :: {"overallHealth":100,"activeIncidents":…
+2025-10-28T21:48:06.837282128Z [inf]  9:48:06 PM [express] GET /api/meta-sysop/pending-changes 200 in 40ms :: {"success":true,"pendingChan…
+2025-10-28T21:48:06.857656218Z [inf]  9:48:06 PM [express] GET /api/meta-sysop/active-job 200 in 69ms :: {"success":true,"job":{"id":"c468…
+2025-10-28T21:48:06.857660584Z [inf]  9:48:06 PM [express] GET /api/meta-sysop/autonomy-level 200 in 76ms :: {"currentLevel":"max","maxAll…
+2025-10-28T21:48:06.918644382Z [inf]  ✅ WebSocket client connected
+2025-10-28T21:48:06.964595623Z [inf]  9:48:06 PM [express] GET /api/platform/deployment-history 200 in 173ms :: {"success":true,"deploymen…
+2025-10-28T21:48:06.982973199Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-28T21:48:09.485074990Z [inf]  [META-SYSOP-JOB-MANAGER] Content blocks received: 1
+2025-10-28T21:48:09.485084359Z [inf]  [META-SYSOP-JOB-MANAGER] Full content length so far: 731 chars
+2025-10-28T21:48:09.485092907Z [inf]  [META-SYSOP-JOB-MANAGER] Saving assistant message (731 chars)
+2025-10-28T21:48:09.485106727Z [inf]  [META-SYSOP-JOB-MANAGER] === ITERATION 1 ===
+2025-10-28T21:48:09.485112266Z [inf]  [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T21:48:09.485127208Z [inf]  [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: Meta-SySop job: hi - success
+2025-10-28T21:48:09.485133232Z [inf]  [META-SYSOP-JOB-MANAGER] Job completed: c4683834-a25c-4907-bf02-a6ae8cd4d090
+2025-10-28T21:48:09.485139862Z [inf]  [META-SYSOP-JOB-MANAGER] Worker completed for job: c4683834-a25c-4907-bf02-a6ae8cd4d090
+2025-10-28T21:48:09.485145523Z [inf]  [META-SYSOP] Job cancelled: c4683834-a25c-4907-bf02-a6ae8cd4d090 by user: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-10-28T21:48:09.485151084Z [inf]  9:48:09 PM [express] DELETE /api/meta-sysop/job/c4683834-a25c-4907-bf02-a6ae8cd4d090 200 in 13ms :: …
+2025-10-28T21:48:09.506770399Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T21:48:09.509192720Z [inf]  9:48:09 PM [express] GET /api/meta-sysop/active-job 200 in 10ms :: {"success":true,"job":null}
+2025-10-28T21:48:11.557660502Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-28T21:48:11.859885165Z [inf]  9:48:11 PM [express] GET /api/auth/me 304 in 8ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef954…
+2025-10-28T21:48:11.956143523Z [inf]  [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-28T21:48:11.956151956Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T21:48:11.964899486Z [inf]  9:48:11 PM [express] GET /api/meta-sysop/projects 304 in 20ms :: []
+2025-10-28T21:48:11.964907290Z [inf]  9:48:11 PM [express] GET /api/meta-sysop/active-job 304 in 19ms :: {"success":true,"job":null}
+2025-10-28T21:48:11.971895196Z [inf]  9:48:11 PM [express] GET /api/platform/status 200 in 22ms :: {"overallHealth":100,"activeIncidents":…
+2025-10-28T21:48:11.973511113Z [inf]  9:48:11 PM [express] GET /api/meta-sysop/autonomy-level 304 in 25ms :: {"currentLevel":"max","maxAll…
+2025-10-28T21:48:11.973517021Z [inf]  9:48:11 PM [express] GET /api/meta-sysop/pending-changes 304 in 21ms :: {"success":true,"pendingChan…
+2025-10-28T21:48:12.049262129Z [inf]  ✅ WebSocket client connected
+2025-10-28T21:48:12.097082066Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-28T21:48:12.104701650Z [inf]  9:48:12 PM [express] GET /api/platform/deployment-history 304 in 156ms :: {"success":true,"deploymen…
+2025-10-28T21:48:13.660444717Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-28T21:48:13.675057469Z [inf]  9:48:13 PM [express] GET /api/auth/me 304 in 10ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef95…
+2025-10-28T21:48:13.802521073Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T21:48:13.802548398Z [inf]  9:48:13 PM [express] GET /api/meta-sysop/active-job 304 in 22ms :: {"success":true,"job":null}
+2025-10-28T21:48:13.802559159Z [inf]  9:48:13 PM [express] GET /api/meta-sysop/autonomy-level 304 in 26ms :: {"currentLevel":"max","maxAll…
+2025-10-28T21:48:13.802567261Z [inf]  [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-28T21:48:13.802575355Z [inf]  9:48:13 PM [express] GET /api/meta-sysop/projects 304 in 27ms :: []
+2025-10-28T21:48:13.871396983Z [inf]  9:48:13 PM [express] GET /api/platform/status 200 in 89ms :: {"overallHealth":100,"activeIncidents":…
+2025-10-28T21:48:13.871420211Z [inf]  9:48:13 PM [express] GET /api/meta-sysop/pending-changes 304 in 91ms :: {"success":true,"pendingChan…
+2025-10-28T21:48:13.893793932Z [inf]  ✅ WebSocket client connected
+2025-10-28T21:48:13.907252335Z [inf]  9:48:13 PM [express] GET /api/platform/deployment-history 304 in 138ms :: {"success":true,"deploymen…
+2025-10-28T21:48:13.953688966Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-28T21:48:17.816516711Z [inf]  [META-SYSOP-JOB-MANAGER] Created job: 2304cb62-57ad-4ae1-b21f-8f3f74feac17 for user: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-10-28T21:48:17.816523704Z [inf]  [META-SYSOP-JOB-MANAGER] Starting worker for job: 2304cb62-57ad-4ae1-b21f-8f3f74feac17
+2025-10-28T21:48:17.816531637Z [inf]  [META-SYSOP] Started background job: 2304cb62-57ad-4ae1-b21f-8f3f74feac17
+2025-10-28T21:48:17.816536482Z [inf]  9:48:17 PM [express] POST /api/meta-sysop/start 200 in 16ms :: {"success":true,"jobId":"2304cb62-57a…
+2025-10-28T21:48:17.816540950Z [inf]  [META-SYSOP-JOB-MANAGER] Job started: 2304cb62-57ad-4ae1-b21f-8f3f74feac17
+2025-10-28T21:48:17.817782556Z [inf]  [META-SYSOP-JOB-MANAGER] User autonomy level: max
+2025-10-28T21:48:17.817791924Z [inf]  [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 1)...
+2025-10-28T21:48:18.069153700Z [inf]  ✅ WebSocket client connected
+2025-10-28T21:48:18.931446444Z [inf]  9:48:18 PM [express] GET /api/meta-sysop/pending-changes 304 in 8ms :: {"success":true,"pendingChang…
+2025-10-28T21:48:20.879458225Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found 2304cb62-57ad-4ae1-b21f-8f3f74feac17
+2025-10-28T21:48:20.887062756Z [inf]  9:48:20 PM [express] GET /api/meta-sysop/active-job 200 in 10ms :: {"success":true,"job":{"id":"2304…
+2025-10-28T21:48:21.709477723Z [inf]  [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T21:48:24.832709925Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found 2304cb62-57ad-4ae1-b21f-8f3f74feac17
+2025-10-28T21:48:24.839452935Z [inf]  9:48:24 PM [express] GET /api/meta-sysop/active-job 304 in 9ms :: {"success":true,"job":{"id":"2304c…
+2025-10-28T21:48:25.760210075Z [inf]  [META-SYSOP-JOB-MANAGER] === ITERATION 1 ===
+2025-10-28T21:48:25.760215833Z [inf]  [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T21:48:25.760220781Z [inf]  [META-SYSOP-JOB-MANAGER] Content blocks received: 1
+2025-10-28T21:48:25.760392539Z [inf]  [META-SYSOP-JOB-MANAGER] Full content length so far: 586 chars
+2025-10-28T21:48:25.760399932Z [inf]  [META-SYSOP-JOB-MANAGER] Saving assistant message (586 chars)
+2025-10-28T21:48:25.760403118Z [inf]  [META-SYSOP-JOB-MANAGER] Job completed: 2304cb62-57ad-4ae1-b21f-8f3f74feac17
+2025-10-28T21:48:25.760407078Z [inf]  [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: Meta-SySop job: hi - success
+2025-10-28T21:48:25.760411491Z [inf]  [META-SYSOP-JOB-MANAGER] Worker completed for job: 2304cb62-57ad-4ae1-b21f-8f3f74feac17
+2025-10-28T21:48:28.746847403Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T21:48:28.746852698Z [inf]  9:48:28 PM [express] GET /api/meta-sysop/active-job 200 in 11ms :: {"success":true,"job":null}
+2025-10-28T21:48:28.746856923Z [inf]  9:48:28 PM [express] GET /api/meta-sysop/chat-history 200 in 21ms :: {"success":true,"messages":[{"i…
+2025-10-28T21:48:28.778998623Z [inf]  ❌ WebSocket client disconnected
+2025-10-28T21:48:48.296749783Z [inf]  9:48:44 PM [express] GET /api/meta-sysop/pending-changes 304 in 111ms :: {"success":true,"pendingCha…
+2025-10-28T21:48:48.296753666Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T21:48:48.296757546Z [inf]  9:48:44 PM [express] GET /api/meta-sysop/active-job 304 in 144ms :: {"success":true,"job":null}
+2025-10-28T21:48:48.296761353Z [inf]  9:48:44 PM [express] GET /api/platform/deployment-history 304 in 341ms :: {"success":true,"deploymen…
+2025-10-28T21:48:49.256914651Z [inf]  9:48:49 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-28T21:48:49.284548581Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T21:48:49.284555066Z [inf]  9:48:49 PM [express] GET /api/meta-sysop/active-job 304 in 10ms :: {"success":true,"job":null}
+2025-10-28T21:48:54.460642105Z [inf]  9:48:54 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-28T21:48:54.981732216Z [inf]  9:48:54 PM [express] GET /api/meta-sysop/active-job 304 in 93ms :: {"success":true,"job":null}
+2025-10-28T21:48:54.981859230Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T21:48:59.978717065Z [inf]  9:48:59 PM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {"success":true,"pendingChang…
+2025-10-28T21:48:59.978730867Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T21:48:59.978740056Z [inf]  9:48:59 PM [express] GET /api/meta-sysop/active-job 304 in 12ms :: {"success":true,"job":null}
+2025-10-28T21:49:05.038846370Z [inf]  9:49:04 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-28T21:49:05.038850053Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T21:49:05.038854904Z [inf]  9:49:04 PM [express] GET /api/meta-sysop/active-job 304 in 81ms :: {"success":true,"job":null}
+2025-10-28T21:49:09.996613081Z [inf]  9:49:09 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-28T21:49:09.996618790Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T21:49:09.996623083Z [inf]  9:49:09 PM [express] GET /api/meta-sysop/active-job 304 in 9ms :: {"success":true,"job":null}
+2025-10-28T21:49:15.009420655Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T21:49:15.009432342Z [inf]  9:49:14 PM [express] GET /api/meta-sysop/active-job 304 in 7ms :: {"success":true,"job":null}
+2025-10-28T21:49:15.009531083Z [inf]  9:49:14 PM [express] GET /api/platform/deployment-history 304 in 164ms :: {"success":true,"deploymen…
+2025-10-28T21:49:15.009535331Z [inf]  9:49:14 PM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {"success":true,"pendingChang…
+2025-10-28T21:49:20.035592535Z [inf]  9:49:19 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-28T21:49:20.035602804Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T21:49:20.035610102Z [inf]  9:49:19 PM [express] GET /api/meta-sysop/active-job 304 in 9ms :: {"success":true,"job":null}
+2025-10-28T21:49:21.451014858Z [inf]  [META-SYSOP-JOB-MANAGER] Created job: ea94cc96-0019-47ff-963f-8aaa5a3110dc for user: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-10-28T21:49:21.451024587Z [inf]  [META-SYSOP-JOB-MANAGER] Starting worker for job: ea94cc96-0019-47ff-963f-8aaa5a3110dc
+2025-10-28T21:49:21.451029994Z [inf]  [META-SYSOP] Started background job: ea94cc96-0019-47ff-963f-8aaa5a3110dc
+2025-10-28T21:49:21.451035729Z [inf]  9:49:21 PM [express] POST /api/meta-sysop/start 200 in 12ms :: {"success":true,"jobId":"ea94cc96-001…
+2025-10-28T21:49:21.451041204Z [inf]  [META-SYSOP-JOB-MANAGER] Job started: ea94cc96-0019-47ff-963f-8aaa5a3110dc
+2025-10-28T21:49:21.451046800Z [inf]  [META-SYSOP-JOB-MANAGER] User autonomy level: max
+2025-10-28T21:49:21.451052581Z [inf]  [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 1)...
+2025-10-28T21:49:22.040642430Z [inf]  ✅ WebSocket client connected
+2025-10-28T21:49:24.026167977Z [inf]  [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T21:49:24.512401066Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found ea94cc96-0019-47ff-963f-8aaa5a3110dc
+2025-10-28T21:49:24.514306974Z [inf]  9:49:24 PM [express] GET /api/meta-sysop/active-job 200 in 8ms :: {"success":true,"job":{"id":"ea94c…
+2025-10-28T21:49:25.059380629Z [inf]  9:49:25 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-28T21:49:27.161647168Z [inf]  [META-SYSOP-JOB-MANAGER] === ITERATION 1 ===
+2025-10-28T21:49:27.161651974Z [inf]  [META-SYSOP-JOB-MANAGER] Tools called: createTaskList
+2025-10-28T21:49:27.161656303Z [inf]  [META-SYSOP-JOB-MANAGER] Content blocks received: 3
+2025-10-28T21:49:27.161660315Z [inf]  [META-SYSOP-JOB-MANAGER] Full content length so far: 184 chars
+2025-10-28T21:49:27.169197365Z [inf]  [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 2)...
+2025-10-28T21:49:27.606689778Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found ea94cc96-0019-47ff-963f-8aaa5a3110dc
+2025-10-28T21:49:27.606695785Z [inf]  9:49:27 PM [express] GET /api/meta-sysop/active-job 304 in 12ms :: {"success":true,"job":{"id":"ea94…
+2025-10-28T21:49:30.067245661Z [inf]  [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T21:49:30.093629015Z [inf]  9:49:30 PM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {"success":true,"pendingChang…
+2025-10-28T21:49:30.182522152Z [inf]  [META-SYSOP-JOB-MANAGER] === ITERATION 2 ===
+2025-10-28T21:49:30.182532640Z [inf]  [META-SYSOP-JOB-MANAGER] Tools called: readPlatformFile
+2025-10-28T21:49:30.182544848Z [inf]  [META-SYSOP-JOB-MANAGER] Content blocks received: 1
+2025-10-28T21:49:30.182554400Z [inf]  [META-SYSOP-JOB-MANAGER] Full content length so far: 184 chars
+2025-10-28T21:49:30.182561039Z [err]  [META-SYSOP-JOB-MANAGER] Tool readPlatformFile failed: Error: Failed to read platform file replit.md: ENOENT: no such file or directory, open '/app/replit.md'
+2025-10-28T21:49:30.182566707Z [err]      at PlatformHealingService.readPlatformFile (file:///app/dist/index.js:3761:17)
+2025-10-28T21:49:30.182571959Z [err]      at async runMetaSysopWorker (file:///app/dist/index.js:6432:28)
+2025-10-28T21:49:30.182577431Z [inf]  [META-SYSOP-JOB-MANAGER] Saved checkpoint for job ea94cc96-0019-47ff-963f-8aaa5a3110dc at iteration 2
+2025-10-28T21:49:30.182584405Z [inf]  [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 3)...
+2025-10-28T21:49:31.000138933Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found ea94cc96-0019-47ff-963f-8aaa5a3110dc
+2025-10-28T21:49:31.000144966Z [inf]  9:49:30 PM [express] GET /api/meta-sysop/active-job 200 in 10ms :: {"success":true,"job":{"id":"ea94…
+2025-10-28T21:49:31.351761748Z [inf]  [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T21:49:32.986273196Z [inf]  [META-SYSOP-JOB-MANAGER] === ITERATION 3 ===
+2025-10-28T21:49:32.986279059Z [inf]  [META-SYSOP-JOB-MANAGER] Tools called: listPlatformDirectory
+2025-10-28T21:49:32.986290234Z [inf]  [META-SYSOP-JOB-MANAGER] Content blocks received: 3
+2025-10-28T21:49:32.986295686Z [inf]  [META-SYSOP-JOB-MANAGER] Full content length so far: 284 chars
+2025-10-28T21:49:32.986301149Z [err]  [META-SYSOP-JOB-MANAGER] Tool listPlatformDirectory failed: Error: Failed to list directory: Absolute paths are not allowed
+2025-10-28T21:49:32.986307133Z [err]      at PlatformHealingService.listPlatformDirectory (file:///app/dist/index.js:3732:17)
+2025-10-28T21:49:32.986312488Z [err]      at runMetaSysopWorker (file:///app/dist/index.js:6454:53)
+2025-10-28T21:49:32.986320653Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-28T21:49:32.986326429Z [inf]  [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 4)...
+2025-10-28T21:49:34.220943832Z [inf]  [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T21:49:34.625428718Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found ea94cc96-0019-47ff-963f-8aaa5a3110dc
+2025-10-28T21:49:34.632189118Z [inf]  9:49:34 PM [express] GET /api/meta-sysop/active-job 304 in 9ms :: {"success":true,"job":{"id":"ea94c…
+2025-10-28T21:49:34.648875609Z [inf]  [META-SYSOP-JOB-MANAGER] === ITERATION 4 ===
+2025-10-28T21:49:34.648886812Z [inf]  [META-SYSOP-JOB-MANAGER] Tools called: listPlatformDirectory
+2025-10-28T21:49:34.648892877Z [inf]  [META-SYSOP-JOB-MANAGER] Content blocks received: 1
+2025-10-28T21:49:34.648898462Z [inf]  [META-SYSOP-JOB-MANAGER] Full content length so far: 284 chars
+2025-10-28T21:49:34.648903622Z [inf]  [META-SYSOP-JOB-MANAGER] Saved checkpoint for job ea94cc96-0019-47ff-963f-8aaa5a3110dc at iteration 4
+2025-10-28T21:49:34.648909082Z [inf]  [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 5)...
+2025-10-28T21:49:36.145367396Z [inf]  [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T21:49:37.139511617Z [inf]  [META-SYSOP-JOB-MANAGER] Tools called: readProjectFile
+2025-10-28T21:49:37.139529135Z [inf]  [META-SYSOP-JOB-MANAGER] Content blocks received: 3
+2025-10-28T21:49:37.139542408Z [inf]  [META-SYSOP-JOB-MANAGER] Full content length so far: 370 chars
+2025-10-28T21:49:37.139555948Z [inf]  [META-SYSOP-JOB-MANAGER] ⚡ ACTION FORCING! Too much reading, not enough doing!
+2025-10-28T21:49:37.139582701Z [inf]  [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 6)...
+2025-10-28T21:49:37.139879841Z [inf]  [META-SYSOP-JOB-MANAGER] === ITERATION 5 ===
+2025-10-28T21:49:38.337362151Z [inf]  [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T21:49:38.628618272Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found ea94cc96-0019-47ff-963f-8aaa5a3110dc
+2025-10-28T21:49:38.628627674Z [inf]  9:49:38 PM [express] GET /api/meta-sysop/active-job 200 in 10ms :: {"success":true,"job":{"id":"ea94…
+2025-10-28T21:49:39.172780550Z [inf]  [META-SYSOP-JOB-MANAGER] === ITERATION 6 ===
+2025-10-28T21:49:39.172790279Z [inf]  [META-SYSOP-JOB-MANAGER] Tools called: readTaskList
+2025-10-28T21:49:39.172795703Z [inf]  [META-SYSOP-JOB-MANAGER] Content blocks received: 1
+2025-10-28T21:49:39.172800759Z [inf]  [META-SYSOP-JOB-MANAGER] Full content length so far: 370 chars
+2025-10-28T21:49:39.172805362Z [inf]  [META-SYSOP-JOB-MANAGER] 🚫 BLOCKED readTaskList - WRITE CODE FIRST!
+2025-10-28T21:49:39.172811072Z [inf]  [META-SYSOP-JOB-MANAGER] ⚡ ACTION FORCING! Too much reading, not enough doing!
+2025-10-28T21:49:39.172815906Z [inf]  [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 7)...
+2025-10-28T21:49:41.630524415Z [inf]  [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T21:49:42.624762345Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found ea94cc96-0019-47ff-963f-8aaa5a3110dc
+2025-10-28T21:49:42.624772060Z [inf]  9:49:42 PM [express] GET /api/meta-sysop/active-job 304 in 10ms :: {"success":true,"job":{"id":"ea94…
+2025-10-28T21:49:46.628876055Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found ea94cc96-0019-47ff-963f-8aaa5a3110dc
+2025-10-28T21:49:46.628885931Z [inf]  9:49:46 PM [express] GET /api/meta-sysop/active-job 304 in 13ms :: {"success":true,"job":{"id":"ea94…
+2025-10-28T21:49:50.620764838Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found ea94cc96-0019-47ff-963f-8aaa5a3110dc
+2025-10-28T21:49:50.627039920Z [inf]  9:49:50 PM [express] GET /api/meta-sysop/active-job 304 in 9ms :: {"success":true,"job":{"id":"ea94c…
+2025-10-28T21:49:54.624018535Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found ea94cc96-0019-47ff-963f-8aaa5a3110dc
+2025-10-28T21:49:54.624023921Z [inf]  9:49:54 PM [express] GET /api/meta-sysop/active-job 304 in 8ms :: {"success":true,"job":{"id":"ea94c…
+2025-10-28T21:49:58.621088555Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found ea94cc96-0019-47ff-963f-8aaa5a3110dc
+2025-10-28T21:49:58.624225106Z [inf]  9:49:58 PM [express] GET /api/meta-sysop/active-job 304 in 9ms :: {"success":true,"job":{"id":"ea94c…
+2025-10-28T21:50:00.304468085Z [inf]  [META-SYSOP-JOB-MANAGER] === ITERATION 7 ===
+2025-10-28T21:50:00.304472837Z [inf]  [META-SYSOP-JOB-MANAGER] Tools called: createPlatformFile
+2025-10-28T21:50:00.304477076Z [inf]  [META-SYSOP-JOB-MANAGER] Content blocks received: 1
+2025-10-28T21:50:00.304480989Z [inf]  [META-SYSOP-JOB-MANAGER] Full content length so far: 370 chars
+2025-10-28T21:50:00.304484761Z [inf]  [PLATFORM-CREATE] 🔧 Committing to GitHub: replit.md
+2025-10-28T21:50:00.304488809Z [inf]  [PLATFORM-CREATE] Content to commit: 1731 bytes
+2025-10-28T21:50:00.304493366Z [inf]  [GITHUB-SERVICE] commitFile called with path: replit.md
+2025-10-28T21:50:00.304498023Z [inf]  [GITHUB-SERVICE] Content type: string
+2025-10-28T21:50:00.304502249Z [inf]  [GITHUB-SERVICE] Content defined: true
+2025-10-28T21:50:00.304506136Z [inf]  [GITHUB-SERVICE] Content length: 1731 bytes
+2025-10-28T21:50:00.304511611Z [inf]  [GITHUB-SERVICE] Committing 1 file(s) (attempt 1/3)
+2025-10-28T21:50:00.304517271Z [inf]  9:50:00 PM [express] GET /api/meta-sysop/pending-changes 304 in 87ms :: {"success":true,"pendingChan…
+2025-10-28T21:50:00.304522905Z [inf]  [GITHUB-SERVICE] Latest commit: fd55c1fc0e8db9d17a5fd039160db95f5b97bb21
+2025-10-28T21:50:00.332139985Z [inf]  [GITHUB-SERVICE] Processing file 1/1: replit.md
+2025-10-28T21:50:00.332146450Z [inf]  [GITHUB-SERVICE] Operation: modify
+2025-10-28T21:50:00.332151533Z [inf]  [GITHUB-SERVICE] Content type: string
+2025-10-28T21:50:00.332156778Z [inf]  [GITHUB-SERVICE] Content defined: true
+2025-10-28T21:50:00.332162593Z [inf]  [GITHUB-SERVICE] Content length: 1731 bytes
+2025-10-28T21:50:00.332167501Z [inf]  [GITHUB-SERVICE] ✅ Content validated for replit.md
+2025-10-28T21:50:01.232697320Z [inf]  [GITHUB-SERVICE] ✅ Successfully committed 1 file(s)
+2025-10-28T21:50:01.232704801Z [inf]  [GITHUB-SERVICE] Commit: 158873c7800b94083890a04b71c439671591cad5
+2025-10-28T21:50:01.232710931Z [inf]  [GITHUB-SERVICE] URL: https://github.com/6-7Development/archetype/commit/158873c7800b94083890a04b71c439671591cad5
+2025-10-28T21:50:01.232717153Z [inf]  [PLATFORM-CREATE] ✅ Committed to GitHub successfully
+2025-10-28T21:50:01.232722870Z [inf]  [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 8)...
+2025-10-28T21:50:01.695479351Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found ea94cc96-0019-47ff-963f-8aaa5a3110dc
+2025-10-28T21:50:01.695488420Z [inf]  9:50:01 PM [express] GET /api/meta-sysop/active-job 304 in 10ms :: {"success":true,"job":{"id":"ea94…
+2025-10-28T21:50:03.395718742Z [inf]  [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T21:50:04.766098899Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found ea94cc96-0019-47ff-963f-8aaa5a3110dc
+2025-10-28T21:50:04.768947479Z [inf]  9:50:04 PM [express] GET /api/meta-sysop/active-job 304 in 12ms :: {"success":true,"job":{"id":"ea94…
+2025-10-28T21:50:05.385338813Z [inf]  9:50:05 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-28T21:50:06.452559814Z [inf]  [META-SYSOP-JOB-MANAGER] Tools called: updateTask
+2025-10-28T21:50:06.452560635Z [inf]  [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 9)...
+2025-10-28T21:50:06.452567712Z [inf]  [META-SYSOP-JOB-MANAGER] Content blocks received: 1
+2025-10-28T21:50:06.452572797Z [inf]  [META-SYSOP-JOB-MANAGER] Full content length so far: 370 chars
+2025-10-28T21:50:06.452578371Z [inf]  [META-SYSOP-JOB-MANAGER] Saved checkpoint for job ea94cc96-0019-47ff-963f-8aaa5a3110dc at iteration 8
+2025-10-28T21:50:06.452629288Z [inf]  [META-SYSOP-JOB-MANAGER] === ITERATION 8 ===
+2025-10-28T21:50:07.781936485Z [inf]  [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T21:50:07.844571848Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found ea94cc96-0019-47ff-963f-8aaa5a3110dc
+2025-10-28T21:50:07.854690966Z [inf]  9:50:07 PM [express] GET /api/meta-sysop/active-job 200 in 15ms :: {"success":true,"job":{"id":"ea94…
+2025-10-28T21:50:09.435219538Z [inf]  [META-SYSOP-JOB-MANAGER] Tools called: updateTask
+2025-10-28T21:50:09.435228354Z [inf]  [META-SYSOP-JOB-MANAGER] Content blocks received: 1
+2025-10-28T21:50:09.435234640Z [inf]  [META-SYSOP-JOB-MANAGER] Full content length so far: 370 chars
+2025-10-28T21:50:09.435239642Z [inf]  [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 10)...
+2025-10-28T21:50:09.435297600Z [inf]  [META-SYSOP-JOB-MANAGER] === ITERATION 9 ===
