@@ -1,0 +1,351 @@
+2025-10-28T19:32:30.000000000Z [info] Starting Container
+2025-10-28T19:32:30.833487003Z [info] ======================================
+2025-10-28T19:32:30.833501428Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT
+2025-10-28T19:32:30.833508946Z [info] ======================================
+2025-10-28T19:32:30.833514285Z [info] Time: Tue Oct 28 19:32:30 UTC 2025
+2025-10-28T19:32:30.833520746Z [info] 
+2025-10-28T19:32:30.833526593Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-10-28T19:32:31.875903458Z [info] No config path provided, using default 'drizzle.config.ts'
+2025-10-28T19:32:31.875907264Z [info] Reading config file '/app/drizzle.config.ts'
+2025-10-28T19:32:31.875911438Z [info] Using 'pg' driver for database querying
+2025-10-28T19:32:31.875915081Z [info] [â£·] Pulling schema from database...
+2025-10-28T19:32:31.938720211Z [info] a from database...
+2025-10-28T19:32:32.067297252Z [info] a from database...
+2025-10-28T19:32:32.193145025Z [info] a from database...
+2025-10-28T19:32:32.856844833Z [info] a from database...
+2025-10-28T19:32:32.856849870Z [info] a from database...
+2025-10-28T19:32:32.856855375Z [info] a from database...
+2025-10-28T19:32:32.856860687Z [info] a from database...
+2025-10-28T19:32:32.856871032Z [info] a from database...
+2025-10-28T19:32:32.961955660Z [info] a from database...
+2025-10-28T19:32:33.088808602Z [info] a from database...
+2025-10-28T19:32:33.218485932Z [info] a from database...
+2025-10-28T19:32:33.822744460Z [info] a from database...
+2025-10-28T19:32:33.822756288Z [info] a from database...
+2025-10-28T19:32:33.822764490Z [info] a from database...
+2025-10-28T19:32:33.822776482Z [info] a from database...
+2025-10-28T19:32:33.857526163Z [info] a from database...
+2025-10-28T19:32:34.044216571Z [info] a from database...
+2025-10-28T19:32:34.114947231Z [info] a from database...
+2025-10-28T19:32:34.165539429Z [info] a from database...
+2025-10-28T19:32:35.046953125Z [info] [i] No changes detected
+2025-10-28T19:32:35.046959521Z [info] 
+2025-10-28T19:32:35.046964481Z [info] âœ… Database migrations completed successfully!
+2025-10-28T19:32:35.046968260Z [info] 
+2025-10-28T19:32:35.046972225Z [info] ðŸš€ Starting Node.js application...
+2025-10-28T19:32:36.038717786Z [info] ðŸ” Testing database connection...
+2025-10-28T19:32:36.038725857Z [info] 7:32:35 PM [express] serving on port 8080
+2025-10-28T19:32:36.038732415Z [info] ðŸŒ Server accessible at http://0.0.0.0:8080
+2025-10-28T19:32:36.038739877Z [info] âœ… Database connected successfully
+2025-10-28T19:32:36.038795055Z [info] [db] âœ… Added sslmode=no-verify to connection string for production
+2025-10-28T19:32:36.038803827Z [info] [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-28T19:32:36.038811751Z [info] [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-28T19:32:36.038819227Z [info] [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-28T19:32:36.038828427Z [info] [db] SSL Configuration: {rejectUnauthorized:false}
+2025-10-28T19:32:36.038835388Z [info] [db] Connection string includes SSL params: true
+2025-10-28T19:32:36.038842233Z [info] [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-28T19:32:36.038849674Z [info] [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-28T19:32:36.038857542Z [info] [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-28T19:32:36.038862552Z [info] ðŸ”§ Auto-healing system ENABLED (production mode)
+2025-10-28T19:32:36.038866334Z [info] ðŸ“¡ WebSocket server initialized at /ws
+2025-10-28T19:32:36.038873632Z [info] [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-28T19:32:36.038880207Z [info] 
+2025-10-28T19:32:36.038883925Z [info] [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-28T19:32:36.038891054Z [info] [META-SYSOP-JOB-MANAGER] Initialized with WebSocket support
+2025-10-28T19:32:36.038898004Z [info] [META-SYSOP-JOB-MANAGER] Job manager connected to WebSocket
+2025-10-28T19:32:36.038904140Z [info] âœ… All routes registered successfully
+2025-10-28T19:32:36.039403239Z [info] ðŸ” Checking GitHub integration configuration...
+2025-10-28T19:32:36.039409595Z [info] âœ… GitHub integration configured successfully
+2025-10-28T19:32:36.039415954Z [info]    - Repository: 6-7Development/archetype
+2025-10-28T19:32:36.039422130Z [info]    - Maintenance mode: Available for owner
+2025-10-28T19:32:36.039428513Z [info] 
+2025-10-28T19:32:36.039455916Z [info]    - Branch: main
+2025-10-28T19:32:36.039464129Z [info]    - Token: âœ“ (configured)
+2025-10-28T19:32:36.039469358Z [info]    - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-28T19:42:39.401366438Z [info] [CACHE] Stats: {
+2025-10-28T19:42:39.401378810Z [info]   user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-28T19:42:39.401385645Z [info]   project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-28T19:42:39.401391657Z [info]   subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-28T19:42:39.401397656Z [info]   response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-28T19:42:39.401403396Z [info] }
+2025-10-28T19:52:44.273313866Z [info] [CACHE] Stats: {
+2025-10-28T19:52:44.273320447Z [info]   user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-28T19:52:44.273329024Z [info]   project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-28T19:52:44.273335519Z [info]   subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-28T19:52:44.273346609Z [info]   response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-28T19:52:44.273353828Z [info] }
+2025-10-28T20:02:42.134914719Z [info] [CACHE] Stats: {
+2025-10-28T20:02:42.134920593Z [info]   user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-28T20:02:42.134927518Z [info]   project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-28T20:02:42.134934080Z [info]   subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-28T20:02:42.134940959Z [info]   response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-28T20:02:42.134947436Z [info] }
+2025-10-28T20:12:39.130143946Z [info] [CACHE] Stats: {
+2025-10-28T20:12:39.130150321Z [info]   user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-28T20:12:39.130158833Z [info]   project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-28T20:12:39.130167351Z [info]   subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-28T20:12:39.130173886Z [info]   response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-28T20:12:39.130180428Z [info] }
+2025-10-28T20:22:43.780571108Z [info] 8:22:40 PM [express] GET /api/deployment-info 200 in 3ms :: {version:"1.0.0",commitHash:"b85cc9bâ€¦
+2025-10-28T20:22:43.780826465Z [info] [CACHE] Stats: {
+2025-10-28T20:22:43.780832718Z [info]   user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-28T20:22:43.780839324Z [info]   project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-28T20:22:43.780848467Z [info]   subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-28T20:22:43.780859417Z [info]   response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-28T20:22:43.780869458Z [info] }
+2025-10-28T20:22:43.780876073Z [info] [DEPLOYMENT-INFO] Using Railway environment variables
+2025-10-28T20:22:47.611354558Z [info] [AUTH] Login attempt for email: root@getdc360.com
+2025-10-28T20:22:47.611362344Z [info] [AUTH] Found users: 1
+2025-10-28T20:22:47.611380716Z [info] [AUTH] User found: root@getdc360.com has password: true
+2025-10-28T20:22:47.611388206Z [info] [AUTH] Verifying password...
+2025-10-28T20:22:47.653253310Z [info] [AUTH] Password valid: true
+2025-10-28T20:22:47.653257187Z [info] [AUTH] Authentication successful for: root@getdc360.com
+2025-10-28T20:22:47.665581889Z [info] 8:22:47 PM [express] POST /api/auth/login 200 in 301ms :: {success:true,user:{id:"723e1301-c72â€¦
+2025-10-28T20:22:48.651490814Z [info] 8:22:48 PM [express] GET /api/projects 304 in 16ms :: []
+2025-10-28T20:22:48.651495907Z [info] 8:22:48 PM [express] GET /api/auth/me 304 in 96ms :: {user:{id:"723e1301-c729-48fc-810a-39ddef95â€¦
+2025-10-28T20:22:53.803308459Z [info] 8:22:53 PM [express] GET /api/meta-sysop/autonomy-level 304 in 28ms :: {currentLevel:"max","maxAllâ€¦
+2025-10-28T20:22:53.803313899Z [info] 8:22:53 PM [express] GET /api/platform/status 200 in 18ms :: {overallHealth:100,activeIncidents:â€¦
+2025-10-28T20:22:53.803319699Z [info] [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-28T20:22:53.803325947Z [info] 8:22:53 PM [express] GET /api/meta-sysop/projects 304 in 104ms :: []
+2025-10-28T20:22:53.803332939Z [info] âœ… WebSocket client connected
+2025-10-28T20:22:53.803339074Z [info] [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T20:22:53.803344846Z [info] 8:22:53 PM [express] GET /api/meta-sysop/active-job 304 in 169ms :: {success:true,job:null}
+2025-10-28T20:22:53.803350287Z [info] 8:22:53 PM [express] GET /api/meta-sysop/pending-changes 304 in 173ms :: {success:true,"pendingChaâ€¦
+2025-10-28T20:22:53.803356905Z [info] [GITHUB-SERVICE] Initialized for 6-7Development/archetype on branch main
+2025-10-28T20:22:53.803364225Z [info] ðŸ“¡ [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-28T20:22:53.803370470Z [info] 8:22:53 PM [express] GET /api/platform/deployment-history 200 in 342ms :: {success:true,"deploymenâ€¦
+2025-10-28T20:22:58.678859069Z [info] [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T20:22:58.688118073Z [info] 8:22:58 PM [express] GET /api/meta-sysop/active-job 304 in 17ms :: {success:true,job:null}
+2025-10-28T20:22:58.697562315Z [info] 8:22:58 PM [express] GET /api/meta-sysop/pending-changes 304 in 25ms :: {success:true,"pendingChanâ€¦
+2025-10-28T20:23:03.802068862Z [info] [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T20:23:03.802086712Z [info] 8:23:03 PM [express] GET /api/meta-sysop/active-job 304 in 13ms :: {success:true,job:null}
+2025-10-28T20:23:03.988708680Z [info] 8:23:03 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {success:true,"pendingChanâ€¦
+2025-10-28T20:23:06.863214790Z [info] [META-SYSOP-JOB-MANAGER] Created job: 18a6c694-2032-4710-b581-3e448e2d8898 for user: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-10-28T20:23:06.863221578Z [info] [META-SYSOP-JOB-MANAGER] Starting worker for job: 18a6c694-2032-4710-b581-3e448e2d8898
+2025-10-28T20:23:06.863228862Z [info] [META-SYSOP] Started background job: 18a6c694-2032-4710-b581-3e448e2d8898
+2025-10-28T20:23:06.863235891Z [info] 8:23:06 PM [express] POST /api/meta-sysop/start 200 in 25ms :: {success:true,jobId:"18a6c694-203â€¦
+2025-10-28T20:23:06.863241846Z [info] [META-SYSOP-JOB-MANAGER] Job started: 18a6c694-2032-4710-b581-3e448e2d8898
+2025-10-28T20:23:06.863248549Z [info] [META-SYSOP-JOB-MANAGER] User autonomy level: max
+2025-10-28T20:23:06.863253401Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 1)...
+2025-10-28T20:23:06.863262478Z [info] âœ… WebSocket client connected
+2025-10-28T20:23:07.781573138Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:23:09.755253000Z [info] 8:23:09 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {success:true,"pendingChanâ€¦
+2025-10-28T20:23:12.988717682Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 3
+2025-10-28T20:23:12.988718058Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 1 ===
+2025-10-28T20:23:12.988725452Z [info] [META-SYSOP-JOB-MANAGER] Tools called: createTaskList
+2025-10-28T20:23:12.988729340Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 238 chars
+2025-10-28T20:23:12.988739391Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 2)...
+2025-10-28T20:23:14.034999750Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:23:15.073402961Z [info] 8:23:14 PM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {success:true,"pendingChanâ€¦
+2025-10-28T20:23:15.753165169Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 2 ===
+2025-10-28T20:23:15.753174973Z [info] [META-SYSOP-JOB-MANAGER] Tools called: perform_diagnosis
+2025-10-28T20:23:15.753190716Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 3
+2025-10-28T20:23:15.753195796Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 288 chars
+2025-10-28T20:23:15.762722433Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 18a6c694-2032-4710-b581-3e448e2d8898 at iteration 2
+2025-10-28T20:23:15.762732910Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 3)...
+2025-10-28T20:23:18.020603653Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:23:18.918923296Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 3 ===
+2025-10-28T20:23:18.918935956Z [info] [META-SYSOP-JOB-MANAGER] Tools called: listPlatformDirectory
+2025-10-28T20:23:18.918943448Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 3
+2025-10-28T20:23:18.918953184Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 446 chars
+2025-10-28T20:23:18.923209352Z [error] [META-SYSOP-JOB-MANAGER] Tool listPlatformDirectory failed: Error: Failed to list directory: Absolute paths are not allowed
+2025-10-28T20:23:18.923224118Z [error]     at PlatformHealingService.listPlatformDirectory (file:///app/dist/index.js:3732:17)
+2025-10-28T20:23:18.923232436Z [error]     at runMetaSysopWorker (file:///app/dist/index.js:6436:53)
+2025-10-28T20:23:18.923239559Z [error]     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-28T20:23:18.923246448Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 4)...
+2025-10-28T20:23:19.764842446Z [info] 8:23:19 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {success:true,"pendingChanâ€¦
+2025-10-28T20:23:20.968575274Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:23:21.899482017Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 4 ===
+2025-10-28T20:23:21.899488171Z [info] [META-SYSOP-JOB-MANAGER] Tools called: listPlatformDirectory
+2025-10-28T20:23:21.899494068Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 1
+2025-10-28T20:23:21.899499753Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 446 chars
+2025-10-28T20:23:21.899505593Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 18a6c694-2032-4710-b581-3e448e2d8898 at iteration 4
+2025-10-28T20:23:21.899511420Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 5)...
+2025-10-28T20:23:22.740005869Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:23:23.996283360Z [info] 8:23:23 PM [express] GET /api/platform/deployment-history 304 in 137ms :: {success:true,"deploymenâ€¦
+2025-10-28T20:23:24.788489033Z [info] 8:23:24 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {success:true,"pendingChanâ€¦
+2025-10-28T20:23:24.788697020Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 5 ===
+2025-10-28T20:23:24.788708564Z [info] [META-SYSOP-JOB-MANAGER] Tools called: read_logs
+2025-10-28T20:23:24.788718992Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 3
+2025-10-28T20:23:24.788728718Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 560 chars
+2025-10-28T20:23:24.788737416Z [info] [META-SYSOP-JOB-MANAGER] âš¡ ACTION FORCING! Too much reading, not enough doing!
+2025-10-28T20:23:24.788746612Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 6)...
+2025-10-28T20:23:26.701441068Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:23:28.956889405Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 6 ===
+2025-10-28T20:23:28.956897949Z [info] [META-SYSOP-JOB-MANAGER] Tools called: readTaskList
+2025-10-28T20:23:28.956906868Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 1
+2025-10-28T20:23:28.956922773Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 560 chars
+2025-10-28T20:23:28.956930330Z [info] [META-SYSOP-JOB-MANAGER] ðŸš« BLOCKED readTaskList - WRITE CODE FIRST!
+2025-10-28T20:23:28.956937132Z [info] [META-SYSOP-JOB-MANAGER] âš¡ ACTION FORCING! Too much reading, not enough doing!
+2025-10-28T20:23:28.956943665Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 7)...
+2025-10-28T20:23:30.052300423Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:23:30.052381707Z [info] 8:23:29 PM [express] GET /api/meta-sysop/pending-changes 304 in 23ms :: {success:true,"pendingChanâ€¦
+2025-10-28T20:23:35.948152575Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 7 ===
+2025-10-28T20:23:35.948171348Z [info] [META-SYSOP-JOB-MANAGER] Tools called: writePlatformFile
+2025-10-28T20:23:35.948180162Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 1
+2025-10-28T20:23:35.948188886Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 560 chars
+2025-10-28T20:23:35.948196457Z [info] [PLATFORM-WRITE] âœ… Content validated for server/logging.ts
+2025-10-28T20:23:35.948203108Z [info] [PLATFORM-WRITE] Content length: 1170 bytes
+2025-10-28T20:23:35.948213028Z [info] [PLATFORM-WRITE] Content type: string
+2025-10-28T20:23:35.948220455Z [info] [PLATFORM-WRITE] ðŸ“¦ BATCH MODE - Will NOT auto-commit (commit manually later)
+2025-10-28T20:23:35.958107631Z [info] [PLATFORM-WRITE] ðŸ“¦ Staged for batch commit: server/logging.ts
+2025-10-28T20:23:35.958114268Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 8)...
+2025-10-28T20:23:37.784772081Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:23:41.029923888Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 8 ===
+2025-10-28T20:23:41.029931556Z [info] [META-SYSOP-JOB-MANAGER] Tools called: updateTask
+2025-10-28T20:23:41.029939184Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 1
+2025-10-28T20:23:41.029947437Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 560 chars
+2025-10-28T20:23:41.032851573Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 18a6c694-2032-4710-b581-3e448e2d8898 at iteration 8
+2025-10-28T20:23:41.032866358Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 9)...
+2025-10-28T20:23:43.799758814Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:23:51.906617430Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 9 ===
+2025-10-28T20:23:51.906621235Z [info] [META-SYSOP-JOB-MANAGER] Tools called: writePlatformFile
+2025-10-28T20:23:51.906625150Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 1
+2025-10-28T20:23:51.906628985Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 560 chars
+2025-10-28T20:23:51.906632657Z [info] [PLATFORM-WRITE] âœ… Content validated for server/db/health.ts
+2025-10-28T20:23:51.906636765Z [info] [PLATFORM-WRITE] Content length: 1690 bytes
+2025-10-28T20:23:51.906640763Z [info] [PLATFORM-WRITE] Content type: string
+2025-10-28T20:23:51.906645126Z [info] [PLATFORM-WRITE] ðŸ“¦ BATCH MODE - Will NOT auto-commit (commit manually later)
+2025-10-28T20:23:51.906649096Z [info] [PLATFORM-WRITE] ðŸ“¦ Staged for batch commit: server/db/health.ts
+2025-10-28T20:23:51.906654320Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 10)...
+2025-10-28T20:23:53.666356690Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:23:54.677939759Z [info] 8:23:54 PM [express] GET /api/platform/deployment-history 304 in 239ms :: {success:true,"deploymenâ€¦
+2025-10-28T20:23:54.688069583Z [info] 8:23:54 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {success:true,"pendingChanâ€¦
+2025-10-28T20:23:59.846268876Z [info] 8:23:59 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {success:true,"pendingChanâ€¦
+2025-10-28T20:24:00.978580519Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 10 ===
+2025-10-28T20:24:00.978586393Z [info] [META-SYSOP-JOB-MANAGER] Tools called: writePlatformFile
+2025-10-28T20:24:00.978592343Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 1
+2025-10-28T20:24:00.978599498Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 560 chars
+2025-10-28T20:24:00.978606291Z [info] [PLATFORM-WRITE] âœ… Content validated for server/api/health.ts
+2025-10-28T20:24:00.978612734Z [info] [PLATFORM-WRITE] Content length: 1267 bytes
+2025-10-28T20:24:00.978619227Z [info] [PLATFORM-WRITE] Content type: string
+2025-10-28T20:24:00.978625395Z [info] [PLATFORM-WRITE] ðŸ“¦ BATCH MODE - Will NOT auto-commit (commit manually later)
+2025-10-28T20:24:00.978631742Z [info] [PLATFORM-WRITE] ðŸ“¦ Staged for batch commit: server/api/health.ts
+2025-10-28T20:24:00.978638371Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 18a6c694-2032-4710-b581-3e448e2d8898 at iteration 10
+2025-10-28T20:24:00.978645708Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 11)...
+2025-10-28T20:24:04.125885015Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:24:09.112880214Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 11 ===
+2025-10-28T20:24:09.112890363Z [info] [META-SYSOP-JOB-MANAGER] Tools called: commit_to_github
+2025-10-28T20:24:09.112897104Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 1
+2025-10-28T20:24:09.112902111Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 560 chars
+2025-10-28T20:24:09.112906899Z [info] [GITHUB-SERVICE] Committing 3 file(s) (attempt 1/3)
+2025-10-28T20:24:09.859383479Z [info] [GITHUB-SERVICE] Operation: modify
+2025-10-28T20:24:09.859396586Z [info] [GITHUB-SERVICE] Content type: string
+2025-10-28T20:24:09.859402822Z [info] [GITHUB-SERVICE] Content defined: true
+2025-10-28T20:24:09.859409119Z [info] [GITHUB-SERVICE] Content length: 1170 bytes
+2025-10-28T20:24:09.859414743Z [info] [GITHUB-SERVICE] âœ… Content validated for server/logging.ts
+2025-10-28T20:24:09.859420434Z [info] [GITHUB-SERVICE] Processing file 2/3: server/db/health.ts
+2025-10-28T20:24:09.859426599Z [info] [GITHUB-SERVICE] Operation: modify
+2025-10-28T20:24:09.859432555Z [info] [GITHUB-SERVICE] Content type: string
+2025-10-28T20:24:09.859439190Z [info] [GITHUB-SERVICE] Content defined: true
+2025-10-28T20:24:09.859446411Z [info] [GITHUB-SERVICE] Content length: 1690 bytes
+2025-10-28T20:24:09.859452193Z [info] [GITHUB-SERVICE] âœ… Content validated for server/db/health.ts
+2025-10-28T20:24:09.859457693Z [info] [GITHUB-SERVICE] Processing file 3/3: server/api/health.ts
+2025-10-28T20:24:09.859463779Z [info] [GITHUB-SERVICE] Operation: modify
+2025-10-28T20:24:09.859469037Z [info] [GITHUB-SERVICE] âœ… Content validated for server/api/health.ts
+2025-10-28T20:24:09.859473038Z [info] [GITHUB-SERVICE] Content type: string
+2025-10-28T20:24:09.859479856Z [info] [GITHUB-SERVICE] Content defined: true
+2025-10-28T20:24:09.859486804Z [info] [GITHUB-SERVICE] Content length: 1267 bytes
+2025-10-28T20:24:09.859679630Z [info] [GITHUB-SERVICE] Latest commit: b85cc9b247b5ec2a4fe335548cd3162534ecb293
+2025-10-28T20:24:09.859686120Z [info] [GITHUB-SERVICE] Processing file 1/3: server/logging.ts
+2025-10-28T20:24:10.636715588Z [info] [GITHUB-SERVICE] âœ… Successfully committed 3 file(s)
+2025-10-28T20:24:10.636723012Z [info] [GITHUB-SERVICE] Commit: 0b3a388d6e6092952e5c6038ff25b0125e35555d
+2025-10-28T20:24:10.636730255Z [info] [GITHUB-SERVICE] URL: https://github.com/6-7Development/archetype/commit/0b3a388d6e6092952e5c6038ff25b0125e35555d
+2025-10-28T20:24:10.636737104Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 12)...
+2025-10-28T20:24:11.716138789Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:24:14.807661590Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 12 ===
+2025-10-28T20:24:14.807667550Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T20:24:14.807673958Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 1
+2025-10-28T20:24:14.807679192Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 919 chars
+2025-10-28T20:24:15.829639651Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 18a6c694-2032-4710-b581-3e448e2d8898 at iteration 12
+2025-10-28T20:24:15.829645375Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 13)...
+2025-10-28T20:24:17.747239845Z [info] âŒ WebSocket client disconnected
+2025-10-28T20:24:18.010193071Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:24:18.755072535Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 0
+2025-10-28T20:24:18.755083278Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 919 chars
+2025-10-28T20:24:18.755093031Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 14)...
+2025-10-28T20:24:18.755109169Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 13 ===
+2025-10-28T20:24:18.755116298Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T20:24:20.028590942Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:24:20.028596708Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 14 ===
+2025-10-28T20:24:20.028603153Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T20:24:20.028610651Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 0
+2025-10-28T20:24:20.028617943Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 919 chars
+2025-10-28T20:24:20.028623679Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 18a6c694-2032-4710-b581-3e448e2d8898 at iteration 14
+2025-10-28T20:24:20.028629750Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 15)...
+2025-10-28T20:24:20.090097171Z [info] 8:24:20 PM [express] GET /api/meta-sysop/pending-changes 304 in 100ms :: {success:true,"pendingChaâ€¦
+2025-10-28T20:24:21.931556009Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:24:22.113076431Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 15 ===
+2025-10-28T20:24:22.113087127Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T20:24:22.113094397Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 0
+2025-10-28T20:24:22.113103492Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 919 chars
+2025-10-28T20:24:22.135905356Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 16)...
+2025-10-28T20:24:24.318531043Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:24:24.318537524Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 16 ===
+2025-10-28T20:24:24.318543536Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T20:24:24.318551861Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 0
+2025-10-28T20:24:24.318558526Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 919 chars
+2025-10-28T20:24:24.318565413Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 18a6c694-2032-4710-b581-3e448e2d8898 at iteration 16
+2025-10-28T20:24:24.318572124Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 17)...
+2025-10-28T20:24:24.784798770Z [info] 8:24:24 PM [express] GET /api/platform/deployment-history 200 in 140ms :: {success:true,"deploymenâ€¦
+2025-10-28T20:24:25.908685810Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:24:25.908694466Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 17 ===
+2025-10-28T20:24:25.908700125Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T20:24:25.908706303Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 0
+2025-10-28T20:24:25.908711988Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 919 chars
+2025-10-28T20:24:25.908718637Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 18)...
+2025-10-28T20:24:27.829803277Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:24:27.862642215Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 18 ===
+2025-10-28T20:24:27.862650074Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T20:24:27.862656650Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 0
+2025-10-28T20:24:27.862661478Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 919 chars
+2025-10-28T20:24:27.882874740Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 18a6c694-2032-4710-b581-3e448e2d8898 at iteration 18
+2025-10-28T20:24:27.882882958Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 19)...
+2025-10-28T20:24:29.900884058Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:24:29.900892052Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 19 ===
+2025-10-28T20:24:29.900899539Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T20:24:29.900905598Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 0
+2025-10-28T20:24:29.900911790Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 919 chars
+2025-10-28T20:24:29.900917541Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 20)...
+2025-10-28T20:24:31.286811530Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:24:31.906775063Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 20 ===
+2025-10-28T20:24:31.906780067Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T20:24:31.906784862Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 0
+2025-10-28T20:24:31.906789603Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 919 chars
+2025-10-28T20:24:31.906794669Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 18a6c694-2032-4710-b581-3e448e2d8898 at iteration 20
+2025-10-28T20:24:31.906800898Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 21)...
+2025-10-28T20:24:36.953305826Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:24:36.962993412Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 21 ===
+2025-10-28T20:24:36.962998465Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T20:24:36.963003726Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 0
+2025-10-28T20:24:36.963009338Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 919 chars
+2025-10-28T20:24:36.975740571Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 22)...
+2025-10-28T20:24:38.782977330Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 18a6c694-2032-4710-b581-3e448e2d8898 at iteration 22
+2025-10-28T20:24:38.782978996Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T20:24:38.782985531Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 23)...
+2025-10-28T20:24:38.782991455Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 0
+2025-10-28T20:24:38.782999155Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 919 chars
+2025-10-28T20:24:38.783006740Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:24:38.783014999Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 22 ===
+2025-10-28T20:24:39.831163500Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:24:39.831168419Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 23 ===
+2025-10-28T20:24:39.831173193Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T20:24:39.831177733Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 0
+2025-10-28T20:24:39.831182843Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 919 chars
+2025-10-28T20:24:39.854060051Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 24)...
+2025-10-28T20:24:41.932961578Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:24:41.932971248Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 24 ===
+2025-10-28T20:24:41.932980364Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T20:24:41.932988529Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 0
+2025-10-28T20:24:41.932996062Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 919 chars
+2025-10-28T20:24:41.933002957Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 18a6c694-2032-4710-b581-3e448e2d8898 at iteration 24
+2025-10-28T20:24:41.933009819Z [info] [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 25)...
+2025-10-28T20:24:43.251017060Z [info] [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T20:24:43.290803127Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 25 ===
+2025-10-28T20:24:43.290818985Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T20:24:43.290827640Z [info] [META-SYSOP-JOB-MANAGER] Content blocks received: 0
+2025-10-28T20:24:43.290835954Z [info] [META-SYSOP-JOB-MANAGER] Full content length so far: 919 chars
+2025-10-28T20:24:43.893113080Z [info] [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: Meta-SySop job: Diagnose platform - success
+2025-10-28T20:24:43.893125585Z [info] [META-SYSOP-JOB-MANAGER] Job completed: 18a6c694-2032-4710-b581-3e448e2d8898
+2025-10-28T20:24:43.893134794Z [info] [META-SYSOP-JOB-MANAGER] Worker completed for job: 18a6c694-2032-4710-b581-3e448e2d8898
+2025-10-28T20:24:43.893304931Z [info] [META-SYSOP-JOB-MANAGER] Saving assistant message (919 chars)

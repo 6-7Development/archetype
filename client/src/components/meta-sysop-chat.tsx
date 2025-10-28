@@ -208,13 +208,42 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
             break;
 
           case 'job_completed':
-            // Add final assistant message
-            const assistantMsg: Message = {
-              id: Date.now().toString(),
-              role: 'assistant',
-              content: streamingContent,
-            };
-            setMessages(prev => [...prev, assistantMsg]);
+            // CRITICAL FIX: Fetch message from database instead of using state
+            // (in case WebSocket disconnected during streaming)
+            if (data.messageId) {
+              fetch(`/api/meta-sysop/message/${data.messageId}`, {
+                credentials: 'include'
+              })
+                .then(res => res.json())
+                .then(msgData => {
+                  if (msgData.success && msgData.message) {
+                    const assistantMsg: Message = {
+                      id: msgData.message.id,
+                      role: 'assistant',
+                      content: msgData.message.content || streamingContent || '✅ Done!',
+                    };
+                    setMessages(prev => [...prev, assistantMsg]);
+                  }
+                })
+                .catch(err => {
+                  console.error('[META-SYSOP] Failed to fetch final message:', err);
+                  // Fallback to streamed content if fetch fails
+                  const assistantMsg: Message = {
+                    id: Date.now().toString(),
+                    role: 'assistant',
+                    content: streamingContent || '✅ Done!',
+                  };
+                  setMessages(prev => [...prev, assistantMsg]);
+                });
+            } else {
+              // No messageId, use streamed content
+              const assistantMsg: Message = {
+                id: Date.now().toString(),
+                role: 'assistant',
+                content: streamingContent || '✅ Done!',
+              };
+              setMessages(prev => [...prev, assistantMsg]);
+            }
             
             setIsStreaming(false);
             setProgressStatus('idle');
@@ -248,7 +277,8 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
     };
 
     ws.onclose = () => {
-      console.log('[META-SYSOP] WebSocket disconnected');
+      console.warn('[META-SYSOP] WebSocket disconnected - content may be lost!');
+      // Note: If connection drops, job_completed will fetch message from database
     };
 
     return () => {
