@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { MetaSySopChat } from '@/components/meta-sysop-chat';
 import { AdminGuard } from '@/components/admin-guard';
+import { DeploymentStatusWidget } from '@/components/deployment-status-widget';
 import { Rocket } from 'lucide-react';
 
 type StepState = 'pending' | 'running' | 'ok' | 'fail';
@@ -504,7 +505,7 @@ function PlatformHealingContent() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background p-3 sm:p-4">
-      <div className="flex flex-col gap-3 sm:gap-4 h-full max-w-6xl mx-auto w-full">
+      <div className="flex flex-col gap-3 sm:gap-4 h-full max-w-7xl mx-auto w-full">
         {/* Simple Header */}
         <div className="flex items-center gap-2 px-2 flex-wrap">
           <div className="text-xs text-muted-foreground">Home / Agents</div>
@@ -533,12 +534,20 @@ function PlatformHealingContent() {
           </Button>
         </div>
 
-        {/* Meta-SySop Chat - Full Interface */}
-        <div className="flex-1 bg-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col min-h-0">
-          <MetaSySopChat 
-            autoCommit={true}
-            autoPush={true}
-          />
+        {/* Main Content Area - Chat + Sidebar */}
+        <div className="flex-1 flex gap-3 sm:gap-4 min-h-0">
+          {/* Meta-SySop Chat - Main Panel */}
+          <div className="flex-1 bg-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col min-h-0">
+            <MetaSySopChat 
+              autoCommit={true}
+              autoPush={true}
+            />
+          </div>
+
+          {/* Sidebar - Deployment Status */}
+          <div className="hidden lg:flex flex-col gap-3 w-80 shrink-0">
+            <DeploymentStatusWidget />
+          </div>
         </div>
       </div>
     </div>
