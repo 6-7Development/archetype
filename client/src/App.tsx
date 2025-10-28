@@ -184,16 +184,10 @@ function Router() {
 }
 
 function App() {
-  console.log('[APP] App component rendering...');
-  
   // Initialize Google Analytics 4 on app load
   useEffect(() => {
-    console.log('[APP] useEffect running - initializing GA4');
     initGA4();
-    console.log('[APP] GA4 initialized');
   }, []);
-
-  console.log('[APP] About to return JSX tree');
   
   return (
     <ErrorBoundary>
@@ -201,8 +195,6 @@ function App() {
         <ThemeProvider defaultTheme="dark">
           <VersionProvider mobileBreakpoint={768}>
             <TooltipProvider>
-              {/* Glowing Jesus text - Meta-SySop platform edit demonstration */}
-              <div className="jesus-glow">Jesus</div>
               <CommandPalette />
               <Toaster />
               <Router />
@@ -213,7 +205,5 @@ function App() {
     </ErrorBoundary>
   );
 }
-
-console.log('[APP] App module loaded successfully');
 
 export default App;
