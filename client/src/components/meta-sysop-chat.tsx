@@ -411,11 +411,48 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
       const { jobId } = await response.json();
       setCurrentJobId(jobId);
       setProgressStatus('working');
-      setProgressMessage("Meta-SySop is working in the background...");
+      setProgressMessage("Meta-SySop is working...");
       
       console.log('[META-SYSOP] Started background job:', jobId);
       
-      // WebSocket will handle all updates from here
+      // SIMPLE POLLING: Check every 3 seconds for completion
+      const checkCompletion = async () => {
+        for (let i = 0; i < 60; i++) { // Max 3 minutes
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          
+          try {
+            const jobRes = await fetch(`/api/meta-sysop/active-job`, { credentials: 'include' });
+            const jobData = await jobRes.json();
+            
+            if (!jobData.job || jobData.job.status === 'completed' || jobData.job.status === 'failed') {
+              // Fetch last 2 messages (user + assistant)
+              const histRes = await fetch('/api/meta-sysop/chat-history?limit=2', { credentials: 'include' });
+              const histData = await histRes.json();
+              
+              if (histData.success && histData.messages) {
+                const assistantMsg = histData.messages.find((m: any) => m.role === 'assistant');
+                if (assistantMsg) {
+                  setMessages(prev => [...prev, {
+                    id: assistantMsg.id,
+                    role: 'assistant',
+                    content: assistantMsg.content
+                  }]);
+                }
+              }
+              
+              setIsStreaming(false);
+              setProgressStatus('idle');
+              setCurrentJobId(null);
+              toast({ title: "✅ Done" });
+              break;
+            }
+          } catch (err) {
+            console.error('Poll error:', err);
+          }
+        }
+      };
+      
+      checkCompletion(); // Start polling
     },
     onError: (error: any) => {
       console.error('Meta-SySop error:', error);
