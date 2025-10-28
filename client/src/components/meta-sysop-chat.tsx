@@ -255,7 +255,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
       console.log('[META-SYSOP] Closing WebSocket for job:', currentJobId);
       ws.close();
     };
-  }, [currentJobId, streamingContent, toast]);
+  }, [currentJobId, toast]); // CRITICAL FIX: Removed streamingContent to prevent reconnection loops
 
   // Fetch autonomy level
   const { data: autonomyData } = useQuery<any>({
