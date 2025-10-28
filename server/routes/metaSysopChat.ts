@@ -1649,29 +1649,79 @@ Be conversational, be helpful, and only work when asked!`;
 
       sendEvent('progress', { message: `Analyzing (iteration ${iterationCount}/${MAX_ITERATIONS})...` });
 
-      const response = await client.messages.create({
-        model: 'claude-opus-4-20250514', // 🔥 SWITCHED TO OPUS 4.1 - What Replit Agent uses for complex tasks
+      const stream = await client.messages.create({
+        model: 'claude-opus-4-20250514', // 🔥 OPUS 4.1 - What Replit Agent uses for complex tasks
         max_tokens: config.maxTokens, // Use autonomy level's max_tokens
         system: systemPrompt,
         messages: conversationMessages,
         tools: availableTools,
-        stream: false, // We'll handle our own streaming
+        stream: true, // ✅ Required for Opus 4.1 (long operations)
       });
+
+      // ✅ HANDLE STREAMING RESPONSE: Consume stream and build content blocks
+      const contentBlocks: any[] = [];
+      let currentTextBlock = '';
+      
+      for await (const event of stream) {
+        if (event.type === 'content_block_start') {
+          if (event.content_block.type === 'tool_use') {
+            // Save any pending text block
+            if (currentTextBlock) {
+              contentBlocks.push({ type: 'text', text: currentTextBlock });
+              currentTextBlock = '';
+            }
+            // Start new tool_use block
+            contentBlocks.push({
+              type: 'tool_use',
+              id: event.content_block.id,
+              name: event.content_block.name,
+              input: {}
+            });
+          }
+        } else if (event.type === 'content_block_delta') {
+          if (event.delta.type === 'text_delta') {
+            currentTextBlock += event.delta.text;
+          } else if (event.delta.type === 'input_json_delta') {
+            // Accumulate tool input JSON
+            const lastBlock = contentBlocks[contentBlocks.length - 1];
+            if (lastBlock && lastBlock.type === 'tool_use') {
+              const inputStr = (lastBlock._inputStr || '') + event.delta.partial_json;
+              lastBlock._inputStr = inputStr;
+            }
+          }
+        } else if (event.type === 'content_block_stop') {
+          // Finalize tool input
+          const lastBlock = contentBlocks[contentBlocks.length - 1];
+          if (lastBlock && lastBlock.type === 'tool_use' && lastBlock._inputStr) {
+            try {
+              lastBlock.input = JSON.parse(lastBlock._inputStr);
+              delete lastBlock._inputStr;
+            } catch (e) {
+              console.error('[META-SYSOP] Failed to parse tool input JSON:', e);
+            }
+          }
+        }
+      }
+      
+      // Add any final text block
+      if (currentTextBlock) {
+        contentBlocks.push({ type: 'text', text: currentTextBlock });
+      }
 
       conversationMessages.push({
         role: 'assistant',
-        content: response.content,
+        content: contentBlocks,
       });
 
       // 🎯 Log response for debugging
       if (iterationCount === 1) {
-        const hasToolCalls = response.content.some(block => block.type === 'tool_use');
+        const hasToolCalls = contentBlocks.some(block => block.type === 'tool_use');
         console.log('[META-SYSOP] Response has tool calls:', hasToolCalls);
-        console.log('[META-SYSOP] Content blocks:', response.content.map(b => b.type).join(', '));
+        console.log('[META-SYSOP] Content blocks:', contentBlocks.map(b => b.type).join(', '));
       }
 
       const toolResults: any[] = [];
-      const hasToolUse = response.content.some(block => block.type === 'tool_use');
+      const hasToolUse = contentBlocks.some(block => block.type === 'tool_use');
 
       // 🚨 FORCE TOOL EXECUTION: If we have in_progress tasks but Claude doesn't call tools, reject and retry
       if (activeTaskListId && iterationCount > 1 && !hasToolUse) {
@@ -1710,7 +1760,7 @@ Be conversational, be helpful, and only work when asked!`;
       // 🎯 CONVERSATIONAL STREAMING:
       // Stream ALL text immediately to keep the conversation flowing
       // Just like Replit Agent - keep the user informed in real-time!
-      for (const block of response.content) {
+      for (const block of contentBlocks) {
         if (block.type === 'text') {
           // STREAM ALL TEXT IMMEDIATELY - no buffering!
           fullContent += block.text;
