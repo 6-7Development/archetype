@@ -1,20 +1,38 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
-import { Send, Square, ChevronDown, ChevronRight, Shield, Zap, Brain, Infinity, Rocket, Wrench, User, Copy, Check, Loader2, XCircle } from "lucide-react";
+import { Send, Square, ChevronDown, ChevronRight, Shield, Zap, Brain, Infinity, Rocket, Wrench, User, Copy, Check, Loader2, XCircle, FileCode, Terminal, CheckCircle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { AgentTaskList, type AgentTask } from "./agent-task-list";
 import { AgentProgressDisplay } from "./agent-progress-display";
+import { MarkdownRenderer } from "./markdown-renderer";
+
+interface Section {
+  id: string;
+  type: 'thinking' | 'tool' | 'text';
+  title: string;
+  content: string;
+  status: 'active' | 'finished';
+  startTime: number;
+  endTime?: number;
+  metadata?: {
+    toolName?: string;
+    args?: any;
+    result?: any;
+  };
+}
 
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
+  sections?: Section[]; // Structured sections for agent responses
 }
 
 interface MetaSySopChatProps {
@@ -22,95 +40,132 @@ interface MetaSySopChatProps {
   autoPush?: boolean;
 }
 
-// Copy button for code blocks
-function CodeCopyButton({ code }: { code: string }) {
-  const [copied, setCopied] = useState(false);
-  const { toast } = useToast();
+// Helper to format duration
+function formatDuration(ms: number): string {
+  if (ms < 1000) return `${ms}ms`;
+  const seconds = Math.floor(ms / 1000);
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}m ${remainingSeconds}s`;
+}
 
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopied(true);
-      toast({ title: "Copied to clipboard" });
-      setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      toast({ title: "Failed to copy", variant: "destructive" });
-    }
-  };
+// Icon mapping for section types
+function getSectionIcon(type: Section['type'], toolName?: string) {
+  if (type === 'thinking') return Brain;
+  if (type === 'text') return FileCode;
+  if (type === 'tool') {
+    // Map tool names to specific icons
+    if (toolName?.includes('read')) return FileCode;
+    if (toolName?.includes('write')) return FileCode;
+    if (toolName?.includes('diagnosis')) return Terminal;
+    if (toolName?.includes('sql')) return Terminal;
+    return Wrench;
+  }
+  return FileCode;
+}
+
+// CollapsibleExcerpt: Shows preview with "Show N more" for long content
+function CollapsibleExcerpt({ content, maxLines = 4 }: { content: string; maxLines?: number }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const lines = content.split('\n');
+  const hasMore = lines.length > maxLines;
+
+  if (!hasMore) {
+    return <MarkdownRenderer content={content} />;
+  }
+
+  const previewContent = lines.slice(0, maxLines).join('\n');
+  const hiddenCount = lines.length - maxLines;
 
   return (
-    <button
-      onClick={handleCopy}
-      className="absolute top-2 right-2 p-1.5 rounded-md bg-muted hover:bg-muted/80 border border-border transition-colors text-muted-foreground hover:text-foreground"
-      data-testid="button-copy-code"
-    >
-      {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-    </button>
+    <div>
+      {!isExpanded ? (
+        <>
+          <MarkdownRenderer content={previewContent} />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsExpanded(true)}
+            className="mt-2 h-7 text-xs text-primary hover:text-primary/80"
+            data-testid="button-show-more"
+          >
+            Show {hiddenCount} more line{hiddenCount !== 1 ? 's' : ''}
+          </Button>
+        </>
+      ) : (
+        <>
+          <MarkdownRenderer content={content} />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsExpanded(false)}
+            className="mt-2 h-7 text-xs text-muted-foreground"
+            data-testid="button-show-less"
+          >
+            Show less
+          </Button>
+        </>
+      )}
+    </div>
   );
 }
 
-// Message content renderer with code blocks
-function MessageContent({ content }: { content: string }) {
-  const parts: Array<{ type: 'text' | 'code'; content: string; language?: string }> = [];
-  const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
-  let lastIndex = 0;
-  let match;
-
-  while ((match = codeBlockRegex.exec(content)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push({ type: 'text', content: content.slice(lastIndex, match.index) });
+// CollapsibleSection: Renders a single section with collapse/expand
+function CollapsibleSection({ section }: { section: Section }) {
+  const [isOpen, setIsOpen] = useState(section.status === 'active');
+  const Icon = getSectionIcon(section.type, section.metadata?.toolName);
+  
+  // Auto-expand when section finishes
+  useEffect(() => {
+    if (section.status === 'finished') {
+      setIsOpen(false); // Collapse when finished to save space
     }
-    parts.push({ type: 'code', content: match[2].trim(), language: match[1] || 'text' });
-    lastIndex = match.index + match[0].length;
-  }
+  }, [section.status]);
 
-  if (lastIndex < content.length) {
-    parts.push({ type: 'text', content: content.slice(lastIndex) });
-  }
+  const duration = section.endTime && section.startTime 
+    ? formatDuration(section.endTime - section.startTime)
+    : null;
 
-  if (parts.length === 0) {
-    parts.push({ type: 'text', content });
-  }
+  const getStatusIcon = () => {
+    if (section.status === 'active') {
+      return <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />;
+    }
+    return <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />;
+  };
 
   return (
-    <div className="space-y-2">
-      {parts.map((part, index) => (
-        part.type === 'code' ? (
-          <div key={index} className="relative group">
-            <div className="bg-muted border border-border rounded-md p-3 overflow-x-auto">
-              <div className="text-[10px] text-muted-foreground uppercase mb-2 font-semibold">{part.language}</div>
-              <pre className="text-xs text-foreground font-mono leading-relaxed">{part.content}</pre>
-            </div>
-            <CodeCopyButton code={part.content} />
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <div className="border border-border rounded-lg overflow-hidden bg-muted/30">
+        <CollapsibleTrigger className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-muted/50 transition-colors group" data-testid="section-trigger">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            {isOpen ? (
+              <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+            ) : (
+              <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+            )}
+            <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
+            <span className="text-sm font-medium truncate">{section.title}</span>
+            {duration && (
+              <span className="text-xs text-muted-foreground ml-auto shrink-0 flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {duration}
+              </span>
+            )}
+            {getStatusIcon()}
           </div>
-        ) : (
-          <div key={index} className="text-sm leading-relaxed whitespace-pre-wrap">
-            {part.content.split('\n').map((line, i) => {
-              const boldRegex = /\*\*(.*?)\*\*/g;
-              if (boldRegex.test(line)) {
-                const segments = [];
-                let lastIdx = 0;
-                let boldMatch;
-                boldRegex.lastIndex = 0;
-                
-                while ((boldMatch = boldRegex.exec(line)) !== null) {
-                  if (boldMatch.index > lastIdx) {
-                    segments.push(<span key={`text-${i}-${lastIdx}`}>{line.slice(lastIdx, boldMatch.index)}</span>);
-                  }
-                  segments.push(<strong key={`bold-${i}-${boldMatch.index}`} className="font-semibold">{boldMatch[1]}</strong>);
-                  lastIdx = boldMatch.index + boldMatch[0].length;
-                }
-                if (lastIdx < line.length) {
-                  segments.push(<span key={`text-${i}-${lastIdx}`}>{line.slice(lastIdx)}</span>);
-                }
-                return <div key={i}>{segments}</div>;
-              }
-              return <div key={i}>{line || '\u00A0'}</div>;
-            })}
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="px-4 py-3 border-t border-border bg-background/50">
+            {section.content ? (
+              <CollapsibleExcerpt content={section.content} maxLines={6} />
+            ) : (
+              <div className="text-sm text-muted-foreground italic">No output</div>
+            )}
           </div>
-        )
-      ))}
-    </div>
+        </CollapsibleContent>
+      </div>
+    </Collapsible>
   );
 }
 
@@ -119,15 +174,16 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]); // Session-based only, no DB
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
+  const [streamingSections, setStreamingSections] = useState<Section[]>([]); // Active streaming sections
   const [tasks, setTasks] = useState<AgentTask[]>([]);
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
   const [progressStatus, setProgressStatus] = useState<'thinking' | 'working' | 'vibing' | 'idle'>('idle');
   const [progressMessage, setProgressMessage] = useState("");
-  const [showTaskList, setShowTaskList] = useState(true); // Default true to show task UI when tasks arrive (like Replit Agent)
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null); // null = platform code
+  const [showTaskList, setShowTaskList] = useState(true);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -136,7 +192,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, streamingContent]);
+  }, [messages, streamingContent, streamingSections]);
 
   // Cleanup stream on unmount
   useEffect(() => {
@@ -154,10 +210,10 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
     queryKey: ['/api/meta-sysop/autonomy-level'],
   });
 
-  // Fetch all projects (admin only) - only run query if user is admin
+  // Fetch all projects (admin only)
   const { data: projects } = useQuery<any[]>({
     queryKey: ['/api/meta-sysop/projects'],
-    enabled: isAdmin, // Only fetch if user is admin to prevent 403 errors
+    enabled: isAdmin,
   });
 
   // Update autonomy level
@@ -191,6 +247,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
       
       setIsStreaming(true);
       setStreamingContent("");
+      setStreamingSections([]);
       setTasks([]);
       setActiveTaskId(null);
       setProgressStatus('thinking');
@@ -204,7 +261,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
       // Create abort controller for stopping stream
       const abortController = new AbortController();
       
-      // Start SSE stream using fetch (POST required for this endpoint)
+      // Start SSE stream using fetch
       const response = await fetch('/api/meta-sysop/stream', {
         method: 'POST',
         headers: {
@@ -231,7 +288,8 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
-      let accumulatedContent = ''; // Track content locally for final message
+      let accumulatedContent = '';
+      let currentSections: Section[] = [];
 
       try {
         while (true) {
@@ -250,25 +308,68 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
 
                 switch (data.type) {
                   case 'user_message':
-                    // User message saved - just acknowledge
                     console.log('[META-SYSOP] User message saved:', data.messageId);
                     break;
 
+                  case 'section_start': {
+                    // Start a new section
+                    const newSection: Section = {
+                      id: data.sectionId,
+                      type: data.sectionType || 'text',
+                      title: data.title || 'Working...',
+                      content: '',
+                      status: 'active',
+                      startTime: data.timestamp || Date.now(),
+                      metadata: data.metadata,
+                    };
+                    currentSections = [...currentSections, newSection];
+                    setStreamingSections(currentSections);
+                    setProgressStatus('working');
+                    console.log('[META-SYSOP] Section started:', data.sectionType, data.title);
+                    break;
+                  }
+
+                  case 'section_update': {
+                    // Update existing section content
+                    currentSections = currentSections.map(s => 
+                      s.id === data.sectionId 
+                        ? { ...s, content: s.content + (data.content || '') }
+                        : s
+                    );
+                    setStreamingSections(currentSections);
+                    break;
+                  }
+
+                  case 'section_finish': {
+                    // Finish section and mark as complete
+                    currentSections = currentSections.map(s => 
+                      s.id === data.sectionId 
+                        ? { 
+                            ...s, 
+                            status: 'finished' as const,
+                            endTime: data.timestamp || Date.now(),
+                            content: data.content || s.content
+                          }
+                        : s
+                    );
+                    setStreamingSections(currentSections);
+                    console.log('[META-SYSOP] Section finished:', data.sectionId);
+                    break;
+                  }
+
                   case 'content':
-                    // Stream content in real-time
+                    // Legacy content streaming (for backward compatibility)
                     accumulatedContent += (data.content || '');
                     setStreamingContent(accumulatedContent);
                     setProgressStatus('working');
                     break;
 
                   case 'progress':
-                    // Update progress message
                     setProgressMessage(data.message || '');
                     setProgressStatus('working');
                     break;
 
                   case 'task_list_created':
-                    // Fetch task list from database
                     fetch(`/api/meta-sysop/task-list/${data.taskListId}`, {
                       credentials: 'include'
                     })
@@ -292,7 +393,6 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                     break;
 
                   case 'task_updated':
-                    // Update task status
                     setTasks(prev => prev.map(t => 
                       t.id === data.taskId 
                         ? { ...t, status: data.status as AgentTask['status'] }
@@ -304,20 +404,23 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                     console.log('[META-SYSOP] Task updated:', data.taskId, '→', data.status);
                     break;
 
-                  case 'done':
-                    // Stream complete - add final message
+                  case 'done': {
                     console.log('[META-SYSOP] ✅ Stream complete, messageId:', data.messageId);
                     
-                    // Use accumulated content for final message
-                    const finalContent = accumulatedContent || '✅ Done!';
+                    // Build final message with sections
+                    const finalContent = accumulatedContent || streamingContent || '✅ Done!';
+                    const finalSections = currentSections.length > 0 ? currentSections : undefined;
+                    
                     const assistantMsg: Message = {
                       id: data.messageId || Date.now().toString(),
                       role: 'assistant',
                       content: finalContent,
+                      sections: finalSections,
                     };
                     
                     setMessages(prev => [...prev, assistantMsg]);
                     setStreamingContent('');
+                    setStreamingSections([]);
                     setIsStreaming(false);
                     setProgressStatus('idle');
                     setProgressMessage('');
@@ -325,14 +428,15 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                     
                     eventSourceRef.current = null;
                     toast({ title: "✅ Done" });
-                    return; // Exit the loop
+                    return;
+                  }
 
                   case 'error':
-                    // Handle error
                     console.error('[META-SYSOP] ❌ Stream error:', data.message);
                     
                     setIsStreaming(false);
                     setStreamingContent('');
+                    setStreamingSections([]);
                     setProgressStatus('idle');
                     setProgressMessage('');
                     
@@ -343,7 +447,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                     });
                     
                     eventSourceRef.current = null;
-                    return; // Exit the loop
+                    return;
                 }
               } catch (error) {
                 console.error('[META-SYSOP] Failed to parse SSE data:', error);
@@ -364,10 +468,10 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
       console.error('Meta-SySop error:', error);
       setIsStreaming(false);
       setStreamingContent("");
+      setStreamingSections([]);
       setProgressStatus('idle');
       setProgressMessage("");
       
-      // Mark active task as failed
       if (activeTaskId) {
         setTasks(prev => prev.map(t => 
           t.id === activeTaskId ? { ...t, status: 'failed' as const } : t
@@ -380,7 +484,6 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
         variant: "destructive",
       });
       
-      // Cleanup abort controller
       if (eventSourceRef.current) {
         (eventSourceRef.current as AbortController).abort();
         eventSourceRef.current = null;
@@ -400,13 +503,13 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
       (eventSourceRef.current as AbortController).abort();
       eventSourceRef.current = null;
       
-      // Mark all in-progress tasks as failed
       setTasks(prev => prev.map(t => 
         t.status === 'in_progress' ? { ...t, status: 'failed' as const } : t
       ));
       
       setIsStreaming(false);
       setStreamingContent("");
+      setStreamingSections([]);
       setProgressStatus('idle');
       setProgressMessage("");
       
@@ -491,15 +594,26 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                   </div>
                 )}
                 
-                <div
-                  className={cn(
-                    "rounded-lg px-4 py-3 max-w-[75%] border",
-                    message.role === "user"
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-muted text-foreground border-border"
+                <div className={cn("rounded-lg max-w-[85%]", message.role === "user" ? "w-auto" : "w-full")}>
+                  {message.role === "user" ? (
+                    <div className="px-4 py-3 bg-primary text-primary-foreground border border-primary rounded-lg">
+                      <div className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {/* Render sections if available */}
+                      {message.sections && message.sections.length > 0 ? (
+                        message.sections.map((section) => (
+                          <CollapsibleSection key={section.id} section={section} />
+                        ))
+                      ) : (
+                        // Fallback to plain content
+                        <div className="px-4 py-3 bg-muted text-foreground border border-border rounded-lg">
+                          <MarkdownRenderer content={message.content} />
+                        </div>
+                      )}
+                    </div>
                   )}
-                >
-                  <MessageContent content={message.content} />
                 </div>
 
                 {message.role === "user" && (
@@ -539,15 +653,29 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
               </div>
             )}
 
-            {/* Streaming indicator */}
-            {isStreaming && (
+            {/* Streaming sections (active) */}
+            {isStreaming && streamingSections.length > 0 && (
+              <div className="flex gap-3 justify-start animate-in fade-in-up">
+                <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-muted flex items-center justify-center animate-pulse">
+                  <Wrench className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div className="space-y-3 w-full max-w-[85%]">
+                  {streamingSections.map((section) => (
+                    <CollapsibleSection key={section.id} section={section} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Streaming indicator (legacy fallback) */}
+            {isStreaming && streamingSections.length === 0 && (
               <div className="flex gap-3 justify-start animate-in fade-in-up">
                 <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-muted flex items-center justify-center animate-pulse">
                   <Wrench className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div className="rounded-lg px-4 py-3 max-w-[75%] bg-muted text-foreground border border-border">
                   {streamingContent ? (
-                    <MessageContent content={streamingContent} />
+                    <MarkdownRenderer content={streamingContent} />
                   ) : (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
@@ -581,51 +709,48 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                     <SelectItem value="platform" data-testid="project-option-platform">
                       <div className="flex items-center gap-2">
                         <Rocket className="h-3.5 w-3.5" />
-                        <span className="font-semibold">Platform Code</span>
+                        <span>Platform Code</span>
                       </div>
                     </SelectItem>
-                    {projects && projects.length > 0 && (
-                      <>
-                        <div className="px-2 py-1.5 text-xs text-muted-foreground font-medium">User Projects</div>
-                        {projects.map((project: any) => (
-                          <SelectItem key={project.id} value={project.id} data-testid={`project-option-${project.id}`}>
-                            <div className="flex flex-col gap-0.5">
-                              <span className="font-semibold text-xs">{project.name}</span>
-                              <span className="text-[10px] text-muted-foreground">
-                                {project.userName || project.userEmail} • {project.fileCount || 0} files
-                              </span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </>
-                    )}
+                    {projects?.map((project) => (
+                      <SelectItem key={project.id} value={project.id} data-testid={`project-option-${project.id}`}>
+                        <div className="flex items-center gap-2">
+                          <FileCode className="h-3.5 w-3.5" />
+                          <span className="truncate max-w-[160px]">{project.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* Autonomy Selector */}
+              {/* Autonomy Level Selector */}
               {autonomyData && (
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-muted-foreground font-medium">Autonomy:</span>
                   <Select
                     value={autonomyData.currentLevel}
-                    onValueChange={(value) => updateAutonomyMutation.mutate(value)}
-                    disabled={updateAutonomyMutation.isPending || isStreaming}
+                    onValueChange={(level) => updateAutonomyMutation.mutate(level)}
+                    disabled={isStreaming}
                   >
-                    <SelectTrigger className="h-8 w-auto min-w-[140px] text-xs" data-testid="select-autonomy-level">
+                    <SelectTrigger className="h-8 w-auto min-w-[140px] text-xs" data-testid="select-autonomy">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {autonomyData.levels && Object.values(autonomyData.levels).map((level: any) => {
-                        const Icon = level.icon === 'shield' ? Shield : 
-                                     level.icon === 'zap' ? Zap : 
-                                     level.icon === 'brain' ? Brain : Infinity;
-                        
+                      {Object.values(autonomyData.levels).map((level: any) => {
+                        const Icon = level.icon === 'shield' ? Shield : level.icon === 'zap' ? Zap : level.icon === 'brain' ? Brain : Infinity;
+                        const isAvailable = autonomyData.levels[autonomyData.maxAllowedLevel] >= autonomyData.levels[level.id];
                         return (
-                          <SelectItem key={level.id} value={level.id} data-testid={`autonomy-option-${level.id}`}>
+                          <SelectItem
+                            key={level.id}
+                            value={level.id}
+                            disabled={!isAvailable}
+                            data-testid={`autonomy-option-${level.id}`}
+                          >
                             <div className="flex items-center gap-2">
                               <Icon className="h-3.5 w-3.5" />
-                              <span className="font-semibold">{level.name}</span>
+                              <span>{level.name}</span>
+                              {!isAvailable && <span className="text-xs text-muted-foreground">(Upgrade)</span>}
                             </div>
                           </SelectItem>
                         );
@@ -636,45 +761,31 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
               )}
             </div>
 
-            {/* Input */}
+            {/* Input field */}
             <div className="flex gap-2">
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Tell Meta-SySop what needs to be fixed..."
-                className="min-h-[44px] max-h-32 resize-none"
+                placeholder="Tell me what needs to be fixed..."
+                className="min-h-[60px] max-h-[200px] resize-none"
                 disabled={isStreaming}
-                data-testid="textarea-message"
+                data-testid="input-message"
               />
-              <Button
-                onClick={handleSend}
-                disabled={!input.trim() || isStreaming}
-                size="icon"
-                className="h-11 w-11 shrink-0"
-                data-testid="button-send"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
+              <div className="flex flex-col gap-2">
+                <Button
+                  onClick={handleSend}
+                  disabled={!input.trim() || isStreaming}
+                  size="icon"
+                  data-testid="button-send"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
   );
-}
-
-// Helper to format tool names
-function formatToolName(toolName: string): string {
-  const nameMap: Record<string, string> = {
-    'readPlatformFile': 'Read file',
-    'writePlatformFile': 'Write file',
-    'listPlatformDirectory': 'List directory',
-    'perform_diagnosis': 'Run diagnostics',
-    'commit_to_github': 'Commit to GitHub',
-    'architect_consult': 'Consult I AM',
-    'web_search': 'Search web',
-  };
-
-  return nameMap[toolName] || toolName.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
 }
