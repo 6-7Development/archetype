@@ -1,0 +1,212 @@
+2025-10-28T04:55:56.000000000Z [info] Starting Container
+2025-10-28T04:55:57.649149647Z [info] ======================================
+2025-10-28T04:55:57.649156047Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT
+2025-10-28T04:55:57.649163119Z [info] ======================================
+2025-10-28T04:55:57.649169340Z [info] Time: Tue Oct 28 04:55:56 UTC 2025
+2025-10-28T04:55:57.649176422Z [info] 
+2025-10-28T04:55:57.649183125Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-10-28T04:55:57.649189392Z [info] No config path provided, using default 'drizzle.config.ts'
+2025-10-28T04:55:57.649196034Z [info] Reading config file '/app/drizzle.config.ts'
+2025-10-28T04:55:58.931820205Z [info] Using 'pg' driver for database querying
+2025-10-28T04:55:58.931827099Z [info] [â£·] Pulling schema from database...
+2025-10-28T04:55:58.931833728Z [info] a from database...
+2025-10-28T04:55:58.931841298Z [info] a from database...
+2025-10-28T04:55:58.931849272Z [info] a from database...
+2025-10-28T04:55:58.931856089Z [info] a from database...
+2025-10-28T04:55:58.931862916Z [info] a from database...
+2025-10-28T04:55:58.931869924Z [info] a from database...
+2025-10-28T04:56:00.027411538Z [info] a from database...
+2025-10-28T04:56:00.027416181Z [info] a from database...
+2025-10-28T04:56:00.027421157Z [info] a from database...
+2025-10-28T04:56:00.027425994Z [info] a from database...
+2025-10-28T04:56:00.027430410Z [info] a from database...
+2025-10-28T04:56:00.027435189Z [info] a from database...
+2025-10-28T04:56:00.027439739Z [info] a from database...
+2025-10-28T04:56:00.027444048Z [info] a from database...
+2025-10-28T04:56:00.027449572Z [info] a from database...
+2025-10-28T04:56:01.128238373Z [info] ðŸš€ Starting Node.js application...
+2025-10-28T04:56:01.128375913Z [info] a from database...
+2025-10-28T04:56:01.128389639Z [info] a from database...
+2025-10-28T04:56:01.128397004Z [info] a from database...
+2025-10-28T04:56:01.128407250Z [info] a from database...
+2025-10-28T04:56:01.128414321Z [info] a from database...
+2025-10-28T04:56:01.128450071Z [info] [i] No changes detected
+2025-10-28T04:56:01.128460979Z [info] 
+2025-10-28T04:56:01.128471902Z [info] âœ… Database migrations completed successfully!
+2025-10-28T04:56:01.128478862Z [info] 
+2025-10-28T04:56:02.054658965Z [info] [db] âœ… Added sslmode=no-verify to connection string for production
+2025-10-28T04:56:02.054666360Z [info] [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-28T04:56:02.054672923Z [info] [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-28T04:56:02.054679352Z [info] [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-28T04:56:02.054686169Z [info] [db] SSL Configuration: {rejectUnauthorized:false}
+2025-10-28T04:56:02.054694962Z [info] [db] Connection string includes SSL params: true
+2025-10-28T04:56:02.065290000Z [info] [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-28T04:56:02.069186554Z [info] [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-28T04:56:02.069196943Z [info] [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-28T04:56:02.075788595Z [info] ðŸ“¡ WebSocket server initialized at /ws
+2025-10-28T04:56:02.075794353Z [info] [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-28T04:56:02.075798889Z [info] [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-28T04:56:02.105968412Z [info] âœ… All routes registered successfully
+2025-10-28T04:56:02.105980323Z [info] ðŸ” Testing database connection...
+2025-10-28T04:56:03.104781775Z [info] ðŸ”§ Auto-healing system ENABLED (production mode)
+2025-10-28T04:56:03.104791793Z [info] 
+2025-10-28T04:56:03.104799102Z [info] ðŸ” Checking GitHub integration configuration...
+2025-10-28T04:56:03.104805302Z [info] âœ… GitHub integration configured successfully
+2025-10-28T04:56:03.104944368Z [info]    - Repository: 6-7Development/archetype
+2025-10-28T04:56:03.104953449Z [info]    - Branch: main
+2025-10-28T04:56:03.104957338Z [info]    - Maintenance mode: Available for owner
+2025-10-28T04:56:03.104963200Z [info]    - Token: âœ“ (configured)
+2025-10-28T04:56:03.104969736Z [info] 
+2025-10-28T04:56:03.104973171Z [info]    - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-28T04:56:03.105340847Z [info] 4:56:02 AM [express] serving on port 8080
+2025-10-28T04:56:03.105355345Z [info] ðŸŒ Server accessible at http://0.0.0.0:8080
+2025-10-28T04:56:03.105363222Z [info] âœ… Database connected successfully
+2025-10-28T04:56:04.876479232Z [info] âœ… WebSocket client connected
+2025-10-28T04:56:04.876487282Z [info] ðŸ“¡ [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-28T04:57:05.043330671Z [info] 4:57:03 AM [express] GET /api/meta-sysop/pending-changes 304 in 146ms :: {success:true,"pendingChaâ€¦
+2025-10-28T04:57:24.112920479Z [info] âŒ WebSocket client disconnected (user: admin)
+2025-10-28T04:58:24.043792761Z [info] [DEPLOYMENT-INFO] Using Railway environment variables
+2025-10-28T04:58:24.043798241Z [info] 4:58:22 AM [express] GET /api/deployment-info 200 in 7ms :: {version:"1.0.0",commitHash:"15b72dcâ€¦
+2025-10-28T04:58:29.086035799Z [info] [AUTH] Login attempt for email: root@getdc360.com
+2025-10-28T04:58:29.086059002Z [info] [AUTH] Found users: 1
+2025-10-28T04:58:29.086065642Z [info] [AUTH] User found: root@getdc360.com has password: true
+2025-10-28T04:58:29.086093143Z [info] [AUTH] Verifying password...
+2025-10-28T04:58:30.127275965Z [info] [AUTH] Password valid: true
+2025-10-28T04:58:30.127283015Z [info] [AUTH] Authentication successful for: root@getdc360.com
+2025-10-28T04:58:30.127289984Z [info] 4:58:29 AM [express] POST /api/auth/login 200 in 310ms :: {success:true,user:{id:"723e1301-c72â€¦
+2025-10-28T04:58:30.127300334Z [info] 4:58:29 AM [express] GET /api/auth/me 304 in 13ms :: {user:{id:"723e1301-c729-48fc-810a-39ddef95â€¦
+2025-10-28T04:58:30.127307022Z [info] 4:58:29 AM [express] GET /api/projects 304 in 20ms :: []
+2025-10-28T04:58:34.458639358Z [info] 4:58:33 AM [express] GET /api/platform/status 200 in 32ms :: {overallHealth:100,activeIncidents:â€¦
+2025-10-28T04:58:34.458645748Z [info] 4:58:33 AM [express] GET /api/meta-sysop/pending-changes 304 in 102ms :: {success:true,"pendingChaâ€¦
+2025-10-28T04:58:34.458651649Z [info] âœ… WebSocket client connected
+2025-10-28T04:58:34.458658250Z [info] ðŸ“¡ [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-28T04:58:34.458664110Z [info] [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-28T04:58:34.458723827Z [info] 4:58:33 AM [express] GET /api/meta-sysop/autonomy-level 304 in 33ms :: {currentLevel:"max","maxAllâ€¦
+2025-10-28T04:58:34.458754772Z [info] 4:58:33 AM [express] GET /api/meta-sysop/projects 304 in 31ms :: []
+2025-10-28T04:58:39.729014492Z [info] 4:58:38 AM [express] GET /api/meta-sysop/pending-changes 304 in 19ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:58:41.870625065Z [info] [META-SYSOP-CHAT] Stream request received
+2025-10-28T04:58:41.870631242Z [info] [META-SYSOP-CHAT] Message: Diagnose platform and fix Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-10-28T04:58:41.870637673Z [info] [META-SYSOP-CHAT] Setting up SSE headers
+2025-10-28T04:58:41.870643741Z [info] [META-SYSOP-CHAT] Heartbeat started - will send keepalive every 15s
+2025-10-28T04:58:41.870650488Z [info] [META-SYSOP-CHAT] Entering try block
+2025-10-28T04:58:41.870657323Z [info] [META-SYSOP-CHAT] User autonomy level: max
+2025-10-28T04:58:44.751208059Z [info] 4:58:43 AM [express] GET /api/meta-sysop/pending-changes 304 in 24ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:58:44.751214392Z [info] [META-SYSOP-CHAT] ðŸ’¬ Streaming text: I'll diagnose the platform to identify issues and fix them, with special focus on the chat toolbar p
+2025-10-28T04:58:49.543025455Z [info] 4:58:49 AM [express] GET /api/meta-sysop/pending-changes 304 in 21ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:58:52.621830152Z [info] [META-SYSOP] Response has tool calls: true
+2025-10-28T04:58:52.621835125Z [info] [META-SYSOP] Content blocks: text, text, tool_use
+2025-10-28T04:58:52.621840616Z [info] [META-SYSOP-FORCE] === ITERATION 1 CHECK ===
+2025-10-28T04:58:52.621845098Z [info] [META-SYSOP-FORCE] Tools called this iteration: createTaskList
+2025-10-28T04:58:52.621849646Z [info] [META-SYSOP] Task list created: adcea120-f9c6-4cad-b9b8-0849acc37712
+2025-10-28T04:58:52.621853961Z [info] [META-SYSOP-FORCE] Created task list: true
+2025-10-28T04:58:52.621858680Z [info] [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-28T04:58:52.621863792Z [info] [META-SYSOP-FORCE] Iteration count: 1
+2025-10-28T04:58:52.621868511Z [info] [META-SYSOP-FORCE] âŒâŒâŒ FORCING TRIGGERED! Meta-SySop skipped perform_diagnosis!
+2025-10-28T04:58:52.621874280Z [info] [META-SYSOP-FORCE] All tools executed and results added - now adding forcing message...
+2025-10-28T04:58:52.621880120Z [info] [META-SYSOP-FORCE] âœ… Forcing message added. Conversation length: 10
+2025-10-28T04:58:52.621892913Z [info] [META-SYSOP-FORCE] âœ… Continuing to iteration 2...
+2025-10-28T04:58:54.236725785Z [info] 4:58:54 AM [express] GET /api/meta-sysop/pending-changes 304 in 24ms :: {success:true,"pendingChanâ€¦
+2025-10-28T04:58:55.462553104Z [info] [META-SYSOP-FORCE] === ITERATION 2 CHECK ===
+2025-10-28T04:58:55.462559195Z [info] [META-SYSOP-FORCE] Tools called this iteration: updateTask
+2025-10-28T04:58:55.462566211Z [info] [META-SYSOP-FORCE] Created task list: false
+2025-10-28T04:58:55.462572835Z [info] [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-28T04:58:55.462579141Z [info] [META-SYSOP-FORCE] Iteration count: 2
+2025-10-28T04:58:55.462586422Z [info] [META-SYSOP-FORCE] âœ“ No forcing needed - proceeding normally
+2025-10-28T04:58:56.604377808Z [info] [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-28T04:58:57.836469051Z [info] [META-SYSOP-FORCE] === ITERATION 3 CHECK ===
+2025-10-28T04:58:57.836476983Z [info] [META-SYSOP-FORCE] Tools called this iteration: readTaskList
+2025-10-28T04:58:57.836484481Z [info] [META-SYSOP-FORCE] Created task list: false
+2025-10-28T04:58:57.836491103Z [info] [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-28T04:58:57.836498008Z [info] [META-SYSOP-FORCE] Iteration count: 3
+2025-10-28T04:58:57.836505238Z [info] [META-SYSOP-FORCE] âœ“ No forcing needed - proceeding normally
+2025-10-28T04:59:01.125410616Z [info] [META-SYSOP-FORCE] === ITERATION 4 CHECK ===
+2025-10-28T04:59:01.125417108Z [info] [META-SYSOP-FORCE] Tools called this iteration: perform_diagnosis
+2025-10-28T04:59:01.125425957Z [info] [META-SYSOP-FORCE] Created task list: false
+2025-10-28T04:59:01.125432723Z [info] [META-SYSOP-FORCE] Called diagnosis tools: true
+2025-10-28T04:59:01.125440727Z [info] [META-SYSOP-FORCE] Iteration count: 4
+2025-10-28T04:59:01.125449243Z [info] [META-SYSOP-FORCE] âœ“ No forcing needed - proceeding normally
+2025-10-28T04:59:02.558292515Z [info] [META-SYSOP-FORCE] === ITERATION 5 CHECK ===
+2025-10-28T04:59:02.558302211Z [info] [META-SYSOP-FORCE] Tools called this iteration: perform_diagnosis
+2025-10-28T04:59:02.558309416Z [info] [META-SYSOP-FORCE] Created task list: false
+2025-10-28T04:59:02.558320380Z [info] [META-SYSOP-FORCE] Called diagnosis tools: true
+2025-10-28T04:59:02.558327774Z [info] [META-SYSOP-FORCE] Iteration count: 5
+2025-10-28T04:59:02.558334940Z [info] [META-SYSOP-FORCE] âœ“ No forcing needed - proceeding normally
+2025-10-28T04:59:05.723431569Z [info] [META-SYSOP-CHAT] ðŸ’¬ Streaming text: Now let me investigate the chat toolbar issues specifically by examining the ChatInput component:
+2025-10-28T04:59:05.723438291Z [info] [META-SYSOP-FORCE] === ITERATION 6 CHECK ===
+2025-10-28T04:59:05.723446446Z [info] [META-SYSOP-FORCE] Tools called this iteration: readPlatformFile
+2025-10-28T04:59:05.723458275Z [info] [PLATFORM-READ] ðŸ”„ Source file not in production build, fetching from GitHub: client/src/components/ide/ChatInput.tsx
+2025-10-28T04:59:05.723465406Z [info] [GITHUB-SERVICE] Initialized for 6-7Development/archetype on branch main
+2025-10-28T04:59:05.723479143Z [error] GET /repos/6-7Development/archetype/contents/client%2Fsrc%2Fcomponents%2Fide%2FChatInput.tsx?ref=main - 404 with id DF7C:1C3390:12FA101:51F300F:69004D99 in 112ms
+2025-10-28T04:59:05.723487100Z [error] [GITHUB-SERVICE] Failed to get file content for client/src/components/ide/ChatInput.tsx: Not Found - https://docs.github.com/rest/repos/contents#get-repository-content
+2025-10-28T04:59:05.723494366Z [error] [META-SYSOP] âŒ Tool readPlatformFile failed: Error: Failed to read platform file client/src/components/ide/ChatInput.tsx: Failed to get file content: Not Found - https://docs.github.com/rest/repos/contents#get-repository-content
+2025-10-28T04:59:05.723502410Z [error]     at PlatformHealingService.readPlatformFile (file:///app/dist/index.js:8212:13)
+2025-10-28T04:59:05.723509737Z [error]     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-28T04:59:05.723517046Z [error]     at async file:///app/dist/index.js:11938:28
+2025-10-28T04:59:05.723523932Z [error] [META-SYSOP] Tool input: {
+2025-10-28T04:59:05.723534248Z [error]   path: "client/src/components/ide/ChatInput.tsx"
+2025-10-28T04:59:05.723543968Z [error] }
+2025-10-28T04:59:05.723550894Z [info] [META-SYSOP-FORCE] Created task list: false
+2025-10-28T04:59:05.723558885Z [info] [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-28T04:59:07.661465029Z [info] [META-SYSOP-FORCE] âœ“ No forcing needed - proceeding normally
+2025-10-28T04:59:07.661808646Z [info] [META-SYSOP-FORCE] Iteration count: 6
+2025-10-28T04:59:08.525932160Z [info] [META-SYSOP-FORCE] === ITERATION 7 CHECK ===
+2025-10-28T04:59:08.525937469Z [info] [META-SYSOP-FORCE] Tools called this iteration: listPlatformDirectory
+2025-10-28T04:59:08.525942591Z [info] [PLATFORM-LIST-DIR] ðŸ”„ Source directory not in production build, fetching from GitHub: client/src/components
+2025-10-28T04:59:08.525948424Z [info] [PLATFORM-LIST-DIR] âœ… Fetched 49 entries from GitHub directory: client/src/components
+2025-10-28T04:59:08.525953451Z [info] [META-SYSOP-FORCE] Created task list: false
+2025-10-28T04:59:08.525962843Z [info] [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-28T04:59:08.525968151Z [info] [META-SYSOP-FORCE] Iteration count: 7
+2025-10-28T04:59:08.525973083Z [info] [META-SYSOP-FORCE] âœ“ No forcing needed - proceeding normally
+2025-10-28T04:59:11.397139817Z [info] [META-SYSOP-CHAT] ðŸ’¬ Streaming text: Let me check the AI chat components that likely contain the toolbar:Let me check the AI chat compone
+2025-10-28T04:59:11.397147224Z [info] [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-28T04:59:11.412529836Z [info] [META-SYSOP-FORCE] === ITERATION 8 CHECK ===
+2025-10-28T04:59:11.412538488Z [info] [META-SYSOP-FORCE] Tools called this iteration: readPlatformFile
+2025-10-28T04:59:11.412660855Z [info] [PLATFORM-READ] ðŸ”„ Source file not in production build, fetching from GitHub: client/src/components/ai-chat.tsx
+2025-10-28T04:59:12.233847810Z [info] [PLATFORM-READ] âœ… Fetched client/src/components/ai-chat.tsx from GitHub (46912 bytes)
+2025-10-28T04:59:12.233871575Z [info] [META-SYSOP-FORCE] Created task list: false
+2025-10-28T04:59:12.233878937Z [info] [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-28T04:59:12.233885977Z [info] [META-SYSOP-FORCE] Iteration count: 8
+2025-10-28T04:59:12.233893676Z [info] [META-SYSOP-FORCE] âœ“ No forcing needed - proceeding normally
+2025-10-28T04:59:15.832571953Z [info] [META-SYSOP-CHAT] ðŸ’¬ Streaming text: Now let me check the Meta-SySop chat component to see if it has similar issues:
+2025-10-28T04:59:15.832582510Z [info] [META-SYSOP-FORCE] === ITERATION 9 CHECK ===
+2025-10-28T04:59:15.832589679Z [info] [META-SYSOP-FORCE] Tools called this iteration: readPlatformFile
+2025-10-28T04:59:15.832704719Z [info] [PLATFORM-READ] ðŸ”„ Source file not in production build, fetching from GitHub: client/src/components/meta-sysop-chat.tsx
+2025-10-28T04:59:15.832711474Z [info] [PLATFORM-READ] âœ… Fetched client/src/components/meta-sysop-chat.tsx from GitHub (26646 bytes)
+2025-10-28T04:59:15.832717446Z [info] [META-SYSOP-FORCE] Created task list: false
+2025-10-28T04:59:15.832727000Z [info] [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-28T04:59:15.832732721Z [info] [META-SYSOP-FORCE] Iteration count: 9
+2025-10-28T04:59:15.832737758Z [info] [META-SYSOP-FORCE] âœ“ No forcing needed - proceeding normally
+2025-10-28T04:59:19.620653268Z [info] [META-SYSOP-CHAT] ðŸ’¬ Streaming text: Now let me look for the actual ChatInput component that contains the toolbar:
+2025-10-28T04:59:20.660374475Z [info] [META-SYSOP-FORCE] === ITERATION 10 CHECK ===
+2025-10-28T04:59:20.660388577Z [info] [META-SYSOP-FORCE] Tools called this iteration: listPlatformDirectory
+2025-10-28T04:59:20.660395932Z [info] [PLATFORM-LIST-DIR] ðŸ”„ Source directory not in production build, fetching from GitHub: client/src/components/ui
+2025-10-28T04:59:20.660403622Z [info] [PLATFORM-LIST-DIR] âœ… Fetched 47 entries from GitHub directory: client/src/components/ui
+2025-10-28T04:59:20.660411053Z [info] [META-SYSOP-FORCE] Created task list: false
+2025-10-28T04:59:20.660418726Z [info] [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-28T04:59:20.660443220Z [info] [META-SYSOP-FORCE] Iteration count: 10
+2025-10-28T04:59:20.660451384Z [info] [META-SYSOP-FORCE] âœ“ No forcing needed - proceeding normally
+2025-10-28T04:59:24.695237262Z [info] [META-SYSOP-CHAT] ðŸ’¬ Streaming text: Let me search for files with toolbar functionality in the platform:Let me search for files with tool
+2025-10-28T04:59:24.949330347Z [info] [META-SYSOP-FORCE] === ITERATION 11 CHECK ===
+2025-10-28T04:59:24.949336516Z [info] [META-SYSOP-FORCE] Tools called this iteration: readPlatformFile
+2025-10-28T04:59:24.949341201Z [info] [PLATFORM-READ] ðŸ”„ Source file not in production build, fetching from GitHub: client/src/components/ui/textarea.tsx
+2025-10-28T04:59:24.949345408Z [info] [PLATFORM-READ] âœ… Fetched client/src/components/ui/textarea.tsx from GitHub (689 bytes)
+2025-10-28T04:59:24.949349528Z [info] [META-SYSOP-FORCE] Created task list: false
+2025-10-28T04:59:24.949358877Z [info] [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-28T04:59:24.949365315Z [info] [META-SYSOP-FORCE] Iteration count: 11
+2025-10-28T04:59:24.949370040Z [info] [META-SYSOP-FORCE] âœ“ No forcing needed - proceeding normally
+2025-10-28T04:59:26.582861620Z [info] [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-28T04:59:28.858499521Z [info] [META-SYSOP-CHAT] ðŸ’¬ Streaming text: Let me search for mentions of toolbar or attach in the ai-chat.tsx file:Let me check the toolbar imp
+2025-10-28T04:59:34.691391783Z [info] [META-SYSOP-FORCE] === ITERATION 12 CHECK ===
+2025-10-28T04:59:34.691398792Z [info] [META-SYSOP-FORCE] Tools called this iteration: updateTask
+2025-10-28T04:59:34.691404470Z [info] [META-SYSOP-FORCE] Created task list: false
+2025-10-28T04:59:34.691411511Z [info] [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-28T04:59:34.691418002Z [info] [META-SYSOP-FORCE] Iteration count: 12
+2025-10-28T04:59:34.691424578Z [info] [META-SYSOP-FORCE] âœ“ No forcing needed - proceeding normally
+2025-10-28T04:59:40.738630351Z [info] [META-SYSOP-CHAT] ðŸ’¬ Streaming text: Now I need to fix this by adding the missing toolbar to both chat components. Let me create a proper
+2025-10-28T04:59:41.926437756Z [info] [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-28T04:59:42.765131795Z [info] [META-SYSOP-FORCE] === ITERATION 13 CHECK ===
+2025-10-28T04:59:42.765137962Z [info] [META-SYSOP-FORCE] Tools called this iteration: updateTask
+2025-10-28T04:59:42.765144972Z [info] [META-SYSOP-FORCE] Created task list: false
+2025-10-28T04:59:42.765151705Z [info] [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-28T04:59:42.765165514Z [info] [META-SYSOP-FORCE] Iteration count: 13
+2025-10-28T04:59:42.765171310Z [info] [META-SYSOP-FORCE] âœ“ No forcing needed - proceeding normally
