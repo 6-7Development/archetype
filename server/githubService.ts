@@ -289,6 +289,380 @@ export class GitHubService {
       hasToken: !!process.env.GITHUB_TOKEN,
     };
   }
+
+  // ============================================================
+  // PR WORKFLOW METHODS (Phase 2)
+  // ============================================================
+
+  /**
+   * Create a new branch from main for PR workflow
+   * @param branchName - Name of the branch to create (e.g., "meta-sysop/fix-123")
+   * @returns The created branch reference
+   */
+  async createBranchFromMain(branchName: string): Promise<{ ref: string; sha: string }> {
+    try {
+      console.log(`[GITHUB-PR] Creating branch: ${branchName} from ${this.branch}`);
+
+      // Get the latest commit SHA from main
+      const mainSha = await this.getLatestCommit();
+
+      // Create the new branch reference
+      const { data } = await this.octokit.git.createRef({
+        owner: this.owner,
+        repo: this.repo,
+        ref: `refs/heads/${branchName}`,
+        sha: mainSha,
+      });
+
+      console.log(`[GITHUB-PR] ✅ Branch created: ${branchName} at ${mainSha.substring(0, 7)}`);
+
+      return {
+        ref: data.ref,
+        sha: data.object.sha,
+      };
+    } catch (error: any) {
+      // If branch already exists, get its current SHA
+      if (error.status === 422 && error.message.includes('Reference already exists')) {
+        console.log(`[GITHUB-PR] Branch ${branchName} already exists, fetching current SHA`);
+        const { data } = await this.octokit.repos.getBranch({
+          owner: this.owner,
+          repo: this.repo,
+          branch: branchName,
+        });
+        return {
+          ref: `refs/heads/${branchName}`,
+          sha: data.commit.sha,
+        };
+      }
+
+      console.error(`[GITHUB-PR] Failed to create branch ${branchName}:`, error.message);
+      throw new Error(`Failed to create branch: ${error.message}`);
+    }
+  }
+
+  /**
+   * Push changes to a specific branch (for PR workflow)
+   * @param branchName - Target branch name
+   * @param files - Files to commit
+   * @param commitMessage - Commit message
+   * @returns Commit result
+   */
+  async pushChangesToBranch(
+    branchName: string,
+    files: FileChange[],
+    commitMessage: string
+  ): Promise<CommitResult> {
+    try {
+      console.log(`[GITHUB-PR] Pushing ${files.length} file(s) to branch: ${branchName}`);
+
+      // Get the latest commit SHA from the target branch
+      const { data: branchData } = await this.octokit.repos.getBranch({
+        owner: this.owner,
+        repo: this.repo,
+        branch: branchName,
+      });
+      const latestCommitSha = branchData.commit.sha;
+
+      // Get the tree of the latest commit
+      const { data: latestCommit } = await this.octokit.git.getCommit({
+        owner: this.owner,
+        repo: this.repo,
+        commit_sha: latestCommitSha,
+      });
+
+      // Create tree entries for each changed file
+      const treeEntries = await Promise.all(
+        files.map(async (change) => {
+          if (change.operation === 'delete') {
+            return {
+              path: change.path,
+              mode: '100644' as const,
+              type: 'blob' as const,
+              sha: null as any,
+            };
+          }
+
+          if (!change.content) {
+            throw new Error(`File ${change.path} has no content`);
+          }
+
+          const { data: blob } = await this.octokit.git.createBlob({
+            owner: this.owner,
+            repo: this.repo,
+            content: Buffer.from(change.content).toString('base64'),
+            encoding: 'base64',
+          });
+
+          return {
+            path: change.path,
+            mode: '100644' as const,
+            type: 'blob' as const,
+            sha: blob.sha,
+          };
+        })
+      );
+
+      // Create a new tree
+      const { data: newTree } = await this.octokit.git.createTree({
+        owner: this.owner,
+        repo: this.repo,
+        base_tree: latestCommit.tree.sha,
+        tree: treeEntries,
+      });
+
+      // Create a new commit
+      const { data: newCommit } = await this.octokit.git.createCommit({
+        owner: this.owner,
+        repo: this.repo,
+        message: `[Meta-SySop PR] ${commitMessage}`,
+        tree: newTree.sha,
+        parents: [latestCommitSha],
+      });
+
+      // Update the branch reference
+      await this.octokit.git.updateRef({
+        owner: this.owner,
+        repo: this.repo,
+        ref: `heads/${branchName}`,
+        sha: newCommit.sha,
+      });
+
+      const commitUrl = `https://github.com/${this.owner}/${this.repo}/commit/${newCommit.sha}`;
+
+      console.log(`[GITHUB-PR] ✅ Pushed to ${branchName}: ${newCommit.sha.substring(0, 7)}`);
+
+      return {
+        commitHash: newCommit.sha,
+        commitUrl,
+      };
+    } catch (error: any) {
+      console.error(`[GITHUB-PR] Failed to push to branch ${branchName}:`, error.message);
+      throw new Error(`Failed to push to branch: ${error.message}`);
+    }
+  }
+
+  /**
+   * Create a new PR or update existing one
+   * @param branchName - Source branch name
+   * @param title - PR title
+   * @param body - PR description
+   * @returns PR number and URL
+   */
+  async createOrUpdatePR(
+    branchName: string,
+    title: string,
+    body: string
+  ): Promise<{ prNumber: number; prUrl: string; isNew: boolean }> {
+    try {
+      console.log(`[GITHUB-PR] Creating/updating PR for branch: ${branchName}`);
+
+      // Check if a PR already exists for this branch
+      const { data: existingPRs } = await this.octokit.pulls.list({
+        owner: this.owner,
+        repo: this.repo,
+        head: `${this.owner}:${branchName}`,
+        state: 'open',
+      });
+
+      if (existingPRs.length > 0) {
+        // Update existing PR
+        const existingPR = existingPRs[0];
+        console.log(`[GITHUB-PR] Updating existing PR #${existingPR.number}`);
+
+        await this.octokit.pulls.update({
+          owner: this.owner,
+          repo: this.repo,
+          pull_number: existingPR.number,
+          title,
+          body,
+        });
+
+        return {
+          prNumber: existingPR.number,
+          prUrl: existingPR.html_url,
+          isNew: false,
+        };
+      }
+
+      // Create new PR
+      const { data: newPR } = await this.octokit.pulls.create({
+        owner: this.owner,
+        repo: this.repo,
+        title,
+        body,
+        head: branchName,
+        base: this.branch,
+      });
+
+      console.log(`[GITHUB-PR] ✅ Created PR #${newPR.number}: ${newPR.html_url}`);
+
+      return {
+        prNumber: newPR.number,
+        prUrl: newPR.html_url,
+        isNew: true,
+      };
+    } catch (error: any) {
+      console.error(`[GITHUB-PR] Failed to create/update PR:`, error.message);
+      throw new Error(`Failed to create/update PR: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get PR status, checks, and preview URL from comments
+   * @param prNumber - PR number
+   * @returns PR status information including preview URL if available
+   */
+  async getPRStatus(prNumber: number): Promise<{
+    state: string;
+    mergeable: boolean | null;
+    checksStatus: 'pending' | 'success' | 'failure' | 'unknown';
+    previewUrl?: string;
+  }> {
+    try {
+      console.log(`[GITHUB-PR] Fetching status for PR #${prNumber}`);
+
+      // Get PR details
+      const { data: pr } = await this.octokit.pulls.get({
+        owner: this.owner,
+        repo: this.repo,
+        pull_number: prNumber,
+      });
+
+      // Get check runs for the PR
+      const { data: checkRuns } = await this.octokit.checks.listForRef({
+        owner: this.owner,
+        repo: this.repo,
+        ref: pr.head.sha,
+      });
+
+      // Determine overall check status
+      let checksStatus: 'pending' | 'success' | 'failure' | 'unknown' = 'unknown';
+      if (checkRuns.total_count === 0) {
+        checksStatus = 'pending';
+      } else {
+        const allSuccess = checkRuns.check_runs.every((run) => run.conclusion === 'success');
+        const anyFailure = checkRuns.check_runs.some((run) => run.conclusion === 'failure');
+        if (anyFailure) {
+          checksStatus = 'failure';
+        } else if (allSuccess) {
+          checksStatus = 'success';
+        } else {
+          checksStatus = 'pending';
+        }
+      }
+
+      // Try to extract preview URL from PR comments
+      let previewUrl: string | undefined;
+      try {
+        const { data: comments } = await this.octokit.issues.listComments({
+          owner: this.owner,
+          repo: this.repo,
+          issue_number: prNumber,
+        });
+
+        // Look for Railway preview deployment comment
+        const previewComment = comments.find((c) => 
+          c.body?.includes('Preview Deployment') || c.body?.includes('Preview URL')
+        );
+
+        if (previewComment?.body) {
+          // Extract URL from markdown link format: [text](url)
+          const urlMatch = previewComment.body.match(/\*\*Preview URL:\*\*\s+(.+)/);
+          if (urlMatch) {
+            previewUrl = urlMatch[1].trim();
+          }
+        }
+      } catch (commentError) {
+        console.warn(`[GITHUB-PR] Could not fetch comments for PR #${prNumber}`);
+      }
+
+      console.log(`[GITHUB-PR] PR #${prNumber} status:`, {
+        state: pr.state,
+        mergeable: pr.mergeable,
+        checksStatus,
+        previewUrl: previewUrl ? '✅' : '❌',
+      });
+
+      return {
+        state: pr.state,
+        mergeable: pr.mergeable,
+        checksStatus,
+        previewUrl,
+      };
+    } catch (error: any) {
+      console.error(`[GITHUB-PR] Failed to get PR status:`, error.message);
+      throw new Error(`Failed to get PR status: ${error.message}`);
+    }
+  }
+
+  /**
+   * Merge a PR (auto-merge when tests pass)
+   * @param prNumber - PR number to merge
+   * @returns Merge result
+   */
+  async mergePR(prNumber: number): Promise<{ merged: boolean; sha: string; message: string }> {
+    try {
+      console.log(`[GITHUB-PR] Attempting to merge PR #${prNumber}`);
+
+      // Check if PR is mergeable
+      const status = await this.getPRStatus(prNumber);
+      if (!status.mergeable) {
+        throw new Error('PR is not mergeable (conflicts or other issues)');
+      }
+
+      if (status.checksStatus === 'failure') {
+        throw new Error('Cannot merge PR with failing checks');
+      }
+
+      if (status.checksStatus === 'pending') {
+        console.log(`[GITHUB-PR] ⚠️ Checks still pending for PR #${prNumber}`);
+      }
+
+      // Merge the PR
+      const { data: mergeResult } = await this.octokit.pulls.merge({
+        owner: this.owner,
+        repo: this.repo,
+        pull_number: prNumber,
+        merge_method: 'squash', // Use squash merge for cleaner history
+      });
+
+      console.log(`[GITHUB-PR] ✅ Merged PR #${prNumber}: ${mergeResult.sha?.substring(0, 7)}`);
+
+      return {
+        merged: mergeResult.merged,
+        sha: mergeResult.sha || '',
+        message: mergeResult.message || 'PR merged successfully',
+      };
+    } catch (error: any) {
+      console.error(`[GITHUB-PR] Failed to merge PR #${prNumber}:`, error.message);
+      throw new Error(`Failed to merge PR: ${error.message}`);
+    }
+  }
+
+  /**
+   * Close a PR without merging (when tests fail)
+   * @param prNumber - PR number to close
+   * @returns Close result
+   */
+  async closePR(prNumber: number): Promise<{ closed: boolean }> {
+    try {
+      console.log(`[GITHUB-PR] Closing PR #${prNumber} without merging`);
+
+      await this.octokit.pulls.update({
+        owner: this.owner,
+        repo: this.repo,
+        pull_number: prNumber,
+        state: 'closed',
+      });
+
+      console.log(`[GITHUB-PR] ✅ Closed PR #${prNumber}`);
+
+      return { closed: true };
+    } catch (error: any) {
+      console.error(`[GITHUB-PR] Failed to close PR #${prNumber}:`, error.message);
+      throw new Error(`Failed to close PR: ${error.message}`);
+    }
+  }
 }
 
 // Singleton instance
