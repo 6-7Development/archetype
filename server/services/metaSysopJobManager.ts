@@ -1058,15 +1058,25 @@ Be conversational, be helpful, and only work when asked!`;
           content: toolResults,
         });
         
-        // Forcing logic
-        const createdTaskListThisIteration = toolNames.includes('createTaskList');
-        const calledDiagnosisTools = toolNames.some(name => ['perform_diagnosis', 'architect_consult', 'execute_sql'].includes(name));
+        // ACTION-ORIENTED FORCING: If Meta-SySop only reads/diagnoses, force it to WRITE
+        const hasWrittenCode = toolNames.some(name => ['writePlatformFile', 'writeProjectFile'].includes(name));
+        const onlyReadingTools = toolNames.every(name => 
+          ['perform_diagnosis', 'readPlatformFile', 'readProjectFile', 'listPlatformDirectory', 
+           'listProjectDirectory', 'read_logs', 'readTaskList', 'architect_consult', 'web_search'].includes(name)
+        );
         
-        if (createdTaskListThisIteration && !calledDiagnosisTools && iterationCount === 1) {
-          console.log('[META-SYSOP-JOB-MANAGER] ❌ FORCING TRIGGERED! Skipped perform_diagnosis!');
+        // Force action after 5 iterations of only reading
+        if (iterationCount >= 5 && !hasWrittenCode && onlyReadingTools && toolNames.length > 0) {
+          console.log('[META-SYSOP-JOB-MANAGER] ⚡ ACTION FORCING! Too much reading, not enough doing!');
           
-          const forcingMessage = `STOP. You created a task list but did NOT call perform_diagnosis().\n\n` +
-            `Call perform_diagnosis(target: "all", focus: []) RIGHT NOW.`;
+          const forcingMessage = `⚡ **STOP ANALYZING. START FIXING.**\n\n` +
+            `You've spent ${iterationCount} iterations reading/diagnosing but ZERO writing.\n\n` +
+            `**RIGHT NOW:**\n` +
+            `1. Check your task list - what's the NEXT task?\n` +
+            `2. Call writePlatformFile() or writeProjectFile() to implement it\n` +
+            `3. Update the task as completed\n` +
+            `4. Move to the next task\n\n` +
+            `Stop explaining. Stop planning. **WRITE THE CODE NOW.**`;
           
           conversationMessages.push({
             role: 'user',
@@ -1076,7 +1086,7 @@ Be conversational, be helpful, and only work when asked!`;
             }]
           });
           
-          broadcast(userId, jobId, 'job_progress', { message: '🚨 Forcing diagnosis...' });
+          broadcast(userId, jobId, 'job_progress', { message: '⚡ Forcing action...' });
           continue;
         }
       } else {
