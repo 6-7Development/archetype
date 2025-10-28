@@ -1,0 +1,120 @@
+2025-10-28T21:33:00.000000000Z [inf]  Starting Container
+2025-10-28T21:33:01.218000361Z [inf]  
+2025-10-28T21:33:01.218012860Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-10-28T21:33:01.218041836Z [inf]  ======================================
+2025-10-28T21:33:01.218042451Z [inf]  ======================================
+2025-10-28T21:33:01.218050430Z [inf]  Time: Tue Oct 28 21:33:00 UTC 2025
+2025-10-28T21:33:01.218050676Z [inf]  🚂 RAILWAY STARTUP SCRIPT
+2025-10-28T21:33:01.557914298Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-10-28T21:33:01.559711221Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-10-28T21:33:02.202601330Z [inf]  Using 'pg' driver for database querying
+2025-10-28T21:33:02.202615491Z [inf]  [⣷] Pulling schema from database...
+2025-10-28T21:33:02.202623747Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-28T21:33:02.322323726Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-28T21:33:02.449889745Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-28T21:33:02.578384896Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-28T21:33:02.712271409Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-28T21:33:03.204691244Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-28T21:33:03.204697483Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-28T21:33:03.204704204Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-28T21:33:03.220579019Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-28T21:33:03.348927589Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-28T21:33:03.476357339Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-28T21:33:03.604333959Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-28T21:33:03.732013731Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-28T21:33:04.260521515Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-28T21:33:04.260525910Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-28T21:33:04.260530190Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-28T21:33:04.260536049Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-28T21:33:04.385580920Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-28T21:33:04.476951720Z [inf]  [2K[1G[✓] Pulling schema from database...
+2025-10-28T21:33:04.507649256Z [inf]  [i] No changes detected
+2025-10-28T21:33:04.534642132Z [inf]  
+2025-10-28T21:33:04.534648771Z [inf]  ✅ Database migrations completed successfully!
+2025-10-28T21:33:04.534670153Z [inf]  
+2025-10-28T21:33:04.534674680Z [inf]  🚀 Starting Node.js application...
+2025-10-28T21:33:05.553295770Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-28T21:33:05.553300322Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-28T21:33:05.553304566Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-28T21:33:05.553308477Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-28T21:33:05.553312537Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-10-28T21:33:05.553316898Z [inf]  [db] Connection string includes SSL params: true
+2025-10-28T21:33:05.559595335Z [inf]  [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-28T21:33:05.561712414Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-28T21:33:05.570689135Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-28T21:33:05.570700567Z [inf]  📡 WebSocket server initialized at /ws
+2025-10-28T21:33:05.570707876Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-28T21:33:05.570713493Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-28T21:33:05.572701721Z [inf]  [META-SYSOP-JOB-MANAGER] Initialized with WebSocket support
+2025-10-28T21:33:05.572708389Z [inf]  [META-SYSOP-JOB-MANAGER] Job manager connected to WebSocket
+2025-10-28T21:33:05.579768506Z [inf]  ✅ All routes registered successfully
+2025-10-28T21:33:05.582175214Z [inf]  🔍 Testing database connection...
+2025-10-28T21:33:05.636184462Z [inf]  9:33:05 PM [express] serving on port 8080
+2025-10-28T21:33:05.636188779Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-10-28T21:33:05.749953630Z [inf]  ✅ Database connected successfully
+2025-10-28T21:33:05.749963410Z [inf]  🔧 Auto-healing system ENABLED (production mode)
+2025-10-28T21:33:05.749969916Z [inf]  
+2025-10-28T21:33:05.749974847Z [inf]  🔍 Checking GitHub integration configuration...
+2025-10-28T21:33:05.749979517Z [inf]  ✅ GitHub integration configured successfully
+2025-10-28T21:33:05.749984415Z [inf]     - Repository: 6-7Development/archetype
+2025-10-28T21:33:05.749989029Z [inf]     - Branch: main
+2025-10-28T21:33:05.749993953Z [inf]     - Token: ✓ (configured)
+2025-10-28T21:33:05.749998662Z [inf]     - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-28T21:33:05.750003396Z [inf]     - Maintenance mode: Available for owner
+2025-10-28T21:33:05.750008599Z [inf]  
+2025-10-28T21:34:25.767633442Z [inf]  [DEPLOYMENT-INFO] Using Railway environment variables
+2025-10-28T21:34:25.767634254Z [inf]  9:34:25 PM [express] GET /api/meta-sysop/pending-changes 304 in 48ms :: {"success":true,"pendingChan…
+2025-10-28T21:34:25.767650719Z [inf]  9:34:20 PM [express] GET /api/deployment-info 200 in 4ms :: {"version":"1.0.0","commitHash":"f302d6a…
+2025-10-28T21:34:25.767654210Z [inf]  9:34:25 PM [express] GET /api/meta-sysop/autonomy-level 304 in 80ms :: {"currentLevel":"max","maxAll…
+2025-10-28T21:34:25.767670140Z [inf]  [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-28T21:34:25.767672214Z [inf]  [AUTH] Login attempt for email: root@getdc360.com
+2025-10-28T21:34:25.767680105Z [inf]  [AUTH] Found users: 1
+2025-10-28T21:34:25.767689365Z [inf]  [AUTH] User found: root@getdc360.com has password: true
+2025-10-28T21:34:25.767696839Z [inf]  [AUTH] Verifying password...
+2025-10-28T21:34:25.767703237Z [inf]  [AUTH] Password valid: true
+2025-10-28T21:34:25.767710000Z [inf]  [AUTH] Authentication successful for: root@getdc360.com
+2025-10-28T21:34:25.767717337Z [inf]  9:34:22 PM [express] POST /api/auth/login 200 in 275ms :: {"success":true,"user":{"id":"723e1301-c72…
+2025-10-28T21:34:25.767724535Z [inf]  9:34:23 PM [express] GET /api/projects 304 in 11ms :: []
+2025-10-28T21:34:25.767742563Z [inf]  9:34:23 PM [express] GET /api/auth/me 304 in 85ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef95…
+2025-10-28T21:34:25.767749648Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T21:34:25.767756930Z [inf]  9:34:24 PM [express] GET /api/meta-sysop/active-job 304 in 19ms :: {"success":true,"job":null}
+2025-10-28T21:34:25.767764853Z [inf]  [GITHUB-SERVICE] Initialized for 6-7Development/archetype on branch main
+2025-10-28T21:34:25.767772497Z [inf]  9:34:25 PM [express] GET /api/platform/status 200 in 51ms :: {"overallHealth":100,"activeIncidents":…
+2025-10-28T21:34:25.768447211Z [inf]  9:34:25 PM [express] GET /api/meta-sysop/projects 304 in 80ms :: []
+2025-10-28T21:34:25.768453560Z [inf]  ✅ WebSocket client connected
+2025-10-28T21:34:25.768458411Z [inf]  9:34:25 PM [express] GET /api/platform/deployment-history 200 in 243ms :: {"success":true,"deploymen…
+2025-10-28T21:34:25.768462734Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-28T21:34:27.651019690Z [inf]  [META-SYSOP-JOB-MANAGER] Created job: 35ab0d76-45dd-454d-bbe0-353f63f06975 for user: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-10-28T21:34:27.651025769Z [inf]  [META-SYSOP-JOB-MANAGER] Starting worker for job: 35ab0d76-45dd-454d-bbe0-353f63f06975
+2025-10-28T21:34:27.651029963Z [inf]  [META-SYSOP] Started background job: 35ab0d76-45dd-454d-bbe0-353f63f06975
+2025-10-28T21:34:27.657871276Z [inf]  9:34:27 PM [express] POST /api/meta-sysop/start 200 in 20ms :: {"success":true,"jobId":"35ab0d76-45d…
+2025-10-28T21:34:27.657877328Z [inf]  [META-SYSOP-JOB-MANAGER] Job started: 35ab0d76-45dd-454d-bbe0-353f63f06975
+2025-10-28T21:34:27.657881780Z [inf]  [META-SYSOP-JOB-MANAGER] User autonomy level: max
+2025-10-28T21:34:27.657886478Z [inf]  [META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration 1)...
+2025-10-28T21:34:27.824358222Z [inf]  ✅ WebSocket client connected
+2025-10-28T21:34:29.633517769Z [inf]  [META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...
+2025-10-28T21:34:30.105313452Z [inf]  9:34:30 PM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {"success":true,"pendingChang…
+2025-10-28T21:34:30.724840931Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found 35ab0d76-45dd-454d-bbe0-353f63f06975
+2025-10-28T21:34:30.724847418Z [inf]  9:34:30 PM [express] GET /api/meta-sysop/active-job 200 in 9ms :: {"success":true,"job":{"id":"35ab0…
+2025-10-28T21:34:33.096604824Z [inf]  [META-SYSOP-JOB-MANAGER] === ITERATION 1 ===
+2025-10-28T21:34:33.096613703Z [inf]  [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T21:34:33.096620865Z [inf]  [META-SYSOP-JOB-MANAGER] Content blocks received: 1
+2025-10-28T21:34:33.096645519Z [inf]  [META-SYSOP-JOB-MANAGER] Full content length so far: 451 chars
+2025-10-28T21:34:33.102990984Z [inf]  [META-SYSOP-JOB-MANAGER] Saving assistant message (451 chars)
+2025-10-28T21:34:33.109536042Z [inf]  [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: Meta-SySop job: hi - success
+2025-10-28T21:34:33.109541159Z [inf]  [META-SYSOP-JOB-MANAGER] Job completed: 35ab0d76-45dd-454d-bbe0-353f63f06975
+2025-10-28T21:34:33.109546050Z [inf]  [META-SYSOP-JOB-MANAGER] Worker completed for job: 35ab0d76-45dd-454d-bbe0-353f63f06975
+2025-10-28T21:34:33.778483607Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T21:34:33.779993451Z [inf]  9:34:33 PM [express] GET /api/meta-sysop/active-job 200 in 10ms :: {"success":true,"job":null}
+2025-10-28T21:34:33.854627270Z [inf]  9:34:33 PM [express] GET /api/meta-sysop/chat-history 200 in 9ms :: {"success":true,"messages":[{"id…
+2025-10-28T21:34:33.903476333Z [inf]  ❌ WebSocket client disconnected
+2025-10-28T21:34:35.179766015Z [inf]  9:34:35 PM [express] GET /api/meta-sysop/pending-changes 304 in 17ms :: {"success":true,"pendingChan…
+2025-10-28T21:34:39.125317373Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T21:34:39.125325588Z [inf]  9:34:39 PM [express] GET /api/meta-sysop/active-job 304 in 12ms :: {"success":true,"job":null}
+2025-10-28T21:34:40.244653863Z [inf]  9:34:40 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-28T21:34:44.175271924Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T21:34:44.177675018Z [inf]  9:34:44 PM [express] GET /api/meta-sysop/active-job 304 in 10ms :: {"success":true,"job":null}
+2025-10-28T21:34:45.628760218Z [inf]  9:34:45 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-28T21:34:49.658874897Z [inf]  [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T21:34:49.658886290Z [inf]  9:34:49 PM [express] GET /api/meta-sysop/active-job 304 in 11ms :: {"success":true,"job":null}
+2025-10-28T21:34:50.671136471Z [inf]  9:34:50 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
