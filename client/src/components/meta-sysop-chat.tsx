@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Send, Square, ChevronDown, ChevronRight, Shield, Zap, Brain, Infinity, Rocket, Wrench, User, Copy, Check, Loader2 } from "lucide-react";
+import { queryClient } from "@/lib/queryClient";
+import { Send, Square, ChevronDown, ChevronRight, Shield, Zap, Brain, Infinity, Rocket, Wrench, User, Copy, Check, Loader2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -319,6 +320,30 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
     },
   });
 
+  // Cancel stuck job mutation
+  const cancelJobMutation = useMutation({
+    mutationFn: async (jobId: string) => {
+      const response = await fetch(`/api/meta-sysop/job/${jobId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to cancel job');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "✅ Job cancelled" });
+      // Trigger refetch of active job
+      queryClient.invalidateQueries({ queryKey: ['/api/meta-sysop/active-job'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "❌ Cancel failed",
+        description: error.message || 'Failed to cancel job',
+        variant: "destructive",
+      });
+    },
+  });
+
   // Send message mutation - now starts background job instead of SSE
   const sendMutation = useMutation({
     mutationFn: async (message: string) => {
@@ -457,24 +482,47 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
           className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth"
         >
           <div className="max-w-4xl mx-auto space-y-4">
-            {/* Resume Button for Interrupted Jobs */}
-            {activeJob && activeJob.status === 'interrupted' && !currentJobId && (
+            {/* Active Job Controls - Resume or Cancel */}
+            {activeJob && (activeJob.status === 'interrupted' || activeJob.status === 'running' || activeJob.status === 'pending') && !currentJobId && (
               <div className="mb-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg animate-in fade-in-up">
-                <p className="text-sm text-amber-200 mb-2">Meta-SySop session was interrupted</p>
-                <Button 
-                  size="sm" 
-                  onClick={() => resumeMutation.mutate(activeJob.id)}
-                  disabled={resumeMutation.isPending}
-                  data-testid="button-resume-job"
-                  className="bg-amber-600 hover:bg-amber-700 text-white"
-                >
-                  {resumeMutation.isPending ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Rocket className="w-4 h-4 mr-2" />
-                  )}
-                  Resume Session
-                </Button>
+                <p className="text-sm text-amber-200 mb-2">
+                  {activeJob.status === 'interrupted' 
+                    ? 'Meta-SySop session was interrupted' 
+                    : 'Active Meta-SySop job found'}
+                </p>
+                <p className="text-xs text-amber-300/70 mb-3">
+                  Job ID: {activeJob.id.substring(0, 8)}... • Status: {activeJob.status}
+                </p>
+                <div className="flex gap-2">
+                  <Button 
+                    size="sm" 
+                    onClick={() => resumeMutation.mutate(activeJob.id)}
+                    disabled={resumeMutation.isPending || cancelJobMutation.isPending}
+                    data-testid="button-resume-job"
+                    className="bg-amber-600 hover:bg-amber-700 text-white"
+                  >
+                    {resumeMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Rocket className="w-4 h-4 mr-2" />
+                    )}
+                    Resume
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="destructive"
+                    onClick={() => cancelJobMutation.mutate(activeJob.id)}
+                    disabled={resumeMutation.isPending || cancelJobMutation.isPending}
+                    data-testid="button-cancel-job"
+                  >
+                    {cancelJobMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <XCircle className="w-4 h-4 mr-2" />
+                    )}
+                    Cancel Job
+                  </Button>
+                </div>
               </div>
             )}
 
