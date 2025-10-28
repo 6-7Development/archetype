@@ -1740,34 +1740,43 @@ Be conversational, be helpful, and only work when asked!`;
       const toolResults: any[] = [];
       const hasToolUse = contentBlocks.some(block => block.type === 'tool_use');
 
-      // 🚨 FORCE TOOL EXECUTION: If we have in_progress tasks but Claude doesn't call tools, reject and retry
+      // 🚨 FORCE TOOL EXECUTION: If Meta-SySop has tasks but doesn't call tools, force it
       if (activeTaskListId && iterationCount > 1 && !hasToolUse) {
-        console.log('[META-SYSOP-FORCE] No tools called but have task list - checking for in_progress tasks...');
+        console.log('[META-SYSOP-FORCE] No tools called but have task list - checking tasks...');
         try {
           const taskCheck = await readTaskList({ userId });
           const sessionTaskList = taskCheck.taskLists?.find((list: any) => list.id === activeTaskListId);
-          const inProgressTasks = sessionTaskList?.tasks?.filter((t: any) => t.status === 'in_progress') || [];
+          const allTasks = sessionTaskList?.tasks || [];
+          const inProgressTasks = allTasks.filter((t: any) => t.status === 'in_progress');
+          const pendingTasks = allTasks.filter((t: any) => t.status === 'pending');
+          const completedTasks = allTasks.filter((t: any) => t.status === 'completed');
           
-          if (inProgressTasks.length > 0) {
-            console.log(`[META-SYSOP-FORCE] ❌ REJECTED: Meta-SySop has ${inProgressTasks.length} in_progress tasks but called NO tools!`);
-            console.log(`[META-SYSOP-FORCE] In-progress tasks: ${inProgressTasks.map((t: any) => t.title).join(', ')}`);
+          console.log(`[META-SYSOP-FORCE] Task status: ${completedTasks.length} completed, ${inProgressTasks.length} in_progress, ${pendingTasks.length} pending`);
+          
+          // Force execution if there are ANY incomplete tasks (in_progress OR pending)
+          if (inProgressTasks.length > 0 || (pendingTasks.length > 0 && completedTasks.length === 0)) {
+            const tasksToForce = inProgressTasks.length > 0 ? inProgressTasks : [pendingTasks[0]];
+            console.log(`[META-SYSOP-FORCE] ❌ REJECTED: Meta-SySop has tasks but called NO tools!`);
+            console.log(`[META-SYSOP-FORCE] Forcing work on: ${tasksToForce.map((t: any) => t.title).join(', ')}`);
             
-            // Force Meta-SySop to use tools by rejecting this response
+            const firstTask = tasksToForce[0];
+            // Force Meta-SySop to actually work
             conversationMessages.push({
               role: 'user',
               content: [{
                 type: 'text',
-                text: `❌ CRITICAL ERROR: You have ${inProgressTasks.length} task(s) marked "in_progress" but you did NOT call ANY tools!\n\n` +
-                  `Tasks in progress:\n${inProgressTasks.map((t: any) => `- ${t.title} (ID: ${t.id})`).join('\n')}\n\n` +
-                  `YOU MUST CALL TOOLS NOW. Examples:\n` +
-                  `- perform_diagnosis(target: "full")\n` +
-                  `- readPlatformFile(path: "...")\n` +
-                  `- execute_sql(query: "...", purpose: "...")\n\n` +
-                  `DO NOT respond with text. CALL THE TOOLS IMMEDIATELY.`
+                text: `❌ STOP TALKING. START WORKING.\n\n` +
+                  `You created a task list but did NOT call ANY tools. You just talked about working.\n\n` +
+                  `FIRST TASK: "${firstTask.title}" (ID: ${firstTask.id})\n\n` +
+                  `REQUIRED ACTIONS (in order):\n` +
+                  `1. updateTask(taskId: "${firstTask.id}", status: "in_progress")\n` +
+                  `2. perform_diagnosis(target: "full") OR readPlatformFile() OR execute_sql() - DO THE ACTUAL WORK\n` +
+                  `3. updateTask(taskId: "${firstTask.id}", status: "completed", result: "...")\n\n` +
+                  `DO NOT respond with text. CALL THESE TOOLS RIGHT NOW IN YOUR NEXT RESPONSE.`
               }]
             });
-            sendEvent('error', { message: `Forcing tool execution - ${inProgressTasks.length} tasks in progress` });
-            continue; // Skip streaming text, force another iteration with tool calls
+            sendEvent('error', { message: `Forcing work on: ${firstTask.title}` });
+            continue; // Force another iteration with actual tool calls
           }
         } catch (error: any) {
           console.error('[META-SYSOP-FORCE] Failed to check tasks:', error);
