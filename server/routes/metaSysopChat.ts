@@ -1650,7 +1650,7 @@ Be conversational, be helpful, and only work when asked!`;
       sendEvent('progress', { message: `Analyzing (iteration ${iterationCount}/${MAX_ITERATIONS})...` });
 
       const response = await client.messages.create({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-opus-4-20250514', // 🔥 SWITCHED TO OPUS 4.1 - What Replit Agent uses for complex tasks
         max_tokens: config.maxTokens, // Use autonomy level's max_tokens
         system: systemPrompt,
         messages: conversationMessages,
