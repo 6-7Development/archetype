@@ -1673,6 +1673,40 @@ Be conversational, be helpful, and only work when asked!`;
       const toolResults: any[] = [];
       const hasToolUse = response.content.some(block => block.type === 'tool_use');
 
+      // 🚨 FORCE TOOL EXECUTION: If we have in_progress tasks but Claude doesn't call tools, reject and retry
+      if (activeTaskListId && iterationCount > 1 && !hasToolUse) {
+        console.log('[META-SYSOP-FORCE] No tools called but have task list - checking for in_progress tasks...');
+        try {
+          const taskCheck = await readTaskList({ userId });
+          const sessionTaskList = taskCheck.taskLists?.find((list: any) => list.id === activeTaskListId);
+          const inProgressTasks = sessionTaskList?.tasks?.filter((t: any) => t.status === 'in_progress') || [];
+          
+          if (inProgressTasks.length > 0) {
+            console.log(`[META-SYSOP-FORCE] ❌ REJECTED: Meta-SySop has ${inProgressTasks.length} in_progress tasks but called NO tools!`);
+            console.log(`[META-SYSOP-FORCE] In-progress tasks: ${inProgressTasks.map((t: any) => t.title).join(', ')}`);
+            
+            // Force Meta-SySop to use tools by rejecting this response
+            conversationMessages.push({
+              role: 'user',
+              content: [{
+                type: 'text',
+                text: `❌ CRITICAL ERROR: You have ${inProgressTasks.length} task(s) marked "in_progress" but you did NOT call ANY tools!\n\n` +
+                  `Tasks in progress:\n${inProgressTasks.map((t: any) => `- ${t.title} (ID: ${t.id})`).join('\n')}\n\n` +
+                  `YOU MUST CALL TOOLS NOW. Examples:\n` +
+                  `- perform_diagnosis(target: "full")\n` +
+                  `- readPlatformFile(path: "...")\n` +
+                  `- execute_sql(query: "...", purpose: "...")\n\n` +
+                  `DO NOT respond with text. CALL THE TOOLS IMMEDIATELY.`
+              }]
+            });
+            sendEvent('error', { message: `Forcing tool execution - ${inProgressTasks.length} tasks in progress` });
+            continue; // Skip streaming text, force another iteration with tool calls
+          }
+        } catch (error: any) {
+          console.error('[META-SYSOP-FORCE] Failed to check tasks:', error);
+        }
+      }
+
       // 🎯 CONVERSATIONAL STREAMING:
       // Stream ALL text immediately to keep the conversation flowing
       // Just like Replit Agent - keep the user informed in real-time!
