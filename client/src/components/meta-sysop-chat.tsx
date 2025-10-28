@@ -208,7 +208,36 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
             break;
 
           case 'job_completed':
-            // DON'T add message here - polling will handle it to avoid duplicates
+            // Fetch final message from database and add if not already present
+            if (data.messageId) {
+              fetch(`/api/meta-sysop/message/${data.messageId}`, {
+                credentials: 'include'
+              })
+                .then(res => res.json())
+                .then(msgData => {
+                  if (msgData.success && msgData.message) {
+                    // CRITICAL: Check if message already exists to prevent duplicates
+                    setMessages(prev => {
+                      const exists = prev.some(m => m.id === msgData.message.id);
+                      if (exists) {
+                        console.log('[META-SYSOP] Message already exists, skipping:', msgData.message.id);
+                        return prev;
+                      }
+                      
+                      const assistantMsg: Message = {
+                        id: msgData.message.id,
+                        role: 'assistant',
+                        content: msgData.message.content || streamingContent || '✅ Done!',
+                      };
+                      return [...prev, assistantMsg];
+                    });
+                  }
+                })
+                .catch(err => {
+                  console.error('[META-SYSOP] Failed to fetch final message:', err);
+                });
+            }
+            
             setIsStreaming(false);
             setProgressStatus('idle');
             setCurrentJobId(null);
@@ -387,18 +416,26 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
             const jobData = await jobRes.json();
             
             if (!jobData.job || jobData.job.status === 'completed' || jobData.job.status === 'failed') {
-              // Fetch last 2 messages (user + assistant)
+              // Fetch last 2 messages (user + assistant) as fallback if WebSocket failed
               const histRes = await fetch('/api/meta-sysop/chat-history?limit=2', { credentials: 'include' });
               const histData = await histRes.json();
               
               if (histData.success && histData.messages) {
                 const assistantMsg = histData.messages.find((m: any) => m.role === 'assistant');
                 if (assistantMsg) {
-                  setMessages(prev => [...prev, {
-                    id: assistantMsg.id,
-                    role: 'assistant',
-                    content: assistantMsg.content
-                  }]);
+                  // CRITICAL: Check if message already exists to prevent duplicates
+                  setMessages(prev => {
+                    const exists = prev.some(m => m.id === assistantMsg.id);
+                    if (exists) {
+                      console.log('[META-SYSOP] Message already exists (polling), skipping');
+                      return prev;
+                    }
+                    return [...prev, {
+                      id: assistantMsg.id,
+                      role: 'assistant',
+                      content: assistantMsg.content
+                    }];
+                  });
                 }
               }
               
