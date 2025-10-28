@@ -128,8 +128,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
   const [progressMessage, setProgressMessage] = useState("");
   const [showTaskList, setShowTaskList] = useState(true); // Default true to show task UI when tasks arrive (like Replit Agent)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null); // null = platform code
-  const [currentJobId, setCurrentJobId] = useState<string | null>(null); // Track active background job
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const eventSourceRef = useRef<EventSource | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom
@@ -139,148 +138,16 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
     }
   }, [messages, streamingContent]);
 
-  // WebSocket listener for background job updates
+  // Cleanup stream on unmount
   useEffect(() => {
-    if (!currentJobId) return;
-
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
-
-    ws.onopen = () => {
-      console.log('[META-SYSOP] WebSocket connected for job:', currentJobId);
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        
-        // Only process Meta-SySop events for current job
-        const isMetaSysopEvent = data.type === 'meta_sysop_job_update' || data.type === 'job_completed';
-        if (!isMetaSysopEvent || data.jobId !== currentJobId) {
-          return;
-        }
-
-        console.log('[META-SYSOP] WebSocket event:', data.updateType, data);
-
-        switch (data.updateType) {
-          case 'job_content':
-            setStreamingContent(prev => prev + (data.content || ''));
-            setProgressStatus('working');
-            break;
-
-          case 'job_progress':
-            setProgressMessage(data.message || '');
-            setProgressStatus('working');
-            break;
-
-          case 'task_list_created':
-            // Fetch the task list from database
-            fetch(`/api/meta-sysop/task-list/${data.taskListId}`, {
-              credentials: 'include'
-            })
-              .then(res => res.json())
-              .then(taskListData => {
-                if (taskListData.success && taskListData.tasks) {
-                  const formattedTasks: AgentTask[] = taskListData.tasks.map((t: any) => ({
-                    id: t.id,
-                    title: t.title,
-                    description: t.description,
-                    status: t.status as AgentTask['status'],
-                  }));
-                  setTasks(formattedTasks);
-                  setShowTaskList(true);
-                  setProgressMessage('Task list created - tracking progress...');
-                }
-              })
-              .catch(err => {
-                console.error('[META-SYSOP] Failed to fetch task list:', err);
-              });
-            break;
-
-          case 'task_updated':
-            setTasks(prev => prev.map(t => 
-              t.id === data.taskId 
-                ? { ...t, status: data.status as AgentTask['status'] }
-                : t
-            ));
-            if (data.status === 'in_progress') {
-              setActiveTaskId(data.taskId);
-            }
-            break;
-
-          case 'job_completed':
-            // Fetch final message from database and add if not already present
-            if (data.messageId) {
-              fetch(`/api/meta-sysop/message/${data.messageId}`, {
-                credentials: 'include'
-              })
-                .then(res => res.json())
-                .then(msgData => {
-                  if (msgData.success && msgData.message) {
-                    // CRITICAL: Check if message already exists to prevent duplicates
-                    setMessages(prev => {
-                      const exists = prev.some(m => m.id === msgData.message.id);
-                      if (exists) {
-                        console.log('[META-SYSOP] ⚠️  Duplicate detected (WebSocket), skipping ID:', msgData.message.id);
-                        return prev;
-                      }
-                      
-                      console.log('[META-SYSOP] ✅ Adding message via WebSocket, ID:', msgData.message.id);
-                      console.log('[META-SYSOP] Content length:', msgData.message.content?.length || 0);
-                      
-                      const assistantMsg: Message = {
-                        id: msgData.message.id,
-                        role: 'assistant',
-                        content: msgData.message.content || streamingContent || '✅ Done!',
-                      };
-                      return [...prev, assistantMsg];
-                    });
-                  }
-                })
-                .catch(err => {
-                  console.error('[META-SYSOP] Failed to fetch final message:', err);
-                });
-            }
-            
-            setIsStreaming(false);
-            setProgressStatus('idle');
-            setCurrentJobId(null);
-            setStreamingContent('');
-            setTasks(prev => prev.map(t => ({ ...t, status: 'completed' as const })));
-            break;
-
-          case 'job_failed':
-            setIsStreaming(false);
-            setProgressStatus('idle');
-            setCurrentJobId(null);
-            setStreamingContent('');
-            
-            toast({ 
-              title: '❌ Job failed', 
-              description: data.error || 'Unknown error',
-              variant: 'destructive' 
-            });
-            break;
-        }
-      } catch (error) {
-        console.error('[META-SYSOP] WebSocket message parse error:', error);
+    return () => {
+      if (eventSourceRef.current) {
+        console.log('[META-SYSOP] Aborting stream on unmount');
+        (eventSourceRef.current as AbortController).abort();
+        eventSourceRef.current = null;
       }
     };
-
-    ws.onerror = (error) => {
-      console.error('[META-SYSOP] WebSocket error:', error);
-    };
-
-    ws.onclose = () => {
-      console.warn('[META-SYSOP] WebSocket disconnected - content may be lost!');
-      // Note: If connection drops, job_completed will fetch message from database
-    };
-
-    return () => {
-      console.log('[META-SYSOP] Closing WebSocket for job:', currentJobId);
-      ws.close();
-    };
-  }, [currentJobId, toast]); // CRITICAL FIX: Removed streamingContent to prevent reconnection loops
+  }, []);
 
   // Fetch autonomy level
   const { data: autonomyData } = useQuery<any>({
@@ -310,66 +177,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
     },
   });
 
-  // Query for user's active job (poll every 5s when no current job)
-  const { data: activeJobData } = useQuery<any>({
-    queryKey: ['/api/meta-sysop/active-job'],
-    enabled: !currentJobId && isAdmin,
-    refetchInterval: 5000,
-  });
-
-  const activeJob = activeJobData?.job;
-
-  // Resume mutation
-  const resumeMutation = useMutation({
-    mutationFn: async (jobId: string) => {
-      const response = await fetch(`/api/meta-sysop/resume/${jobId}`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (!response.ok) throw new Error('Failed to resume job');
-      setCurrentJobId(jobId);
-      setIsStreaming(true);
-      setProgressStatus('working');
-      setProgressMessage("Resuming Meta-SySop...");
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({ title: "✅ Job resumed" });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "❌ Resume failed",
-        description: error.message || 'Failed to resume job',
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Cancel stuck job mutation
-  const cancelJobMutation = useMutation({
-    mutationFn: async (jobId: string) => {
-      const response = await fetch(`/api/meta-sysop/job/${jobId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      if (!response.ok) throw new Error('Failed to cancel job');
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({ title: "✅ Job cancelled" });
-      // Trigger refetch of active job
-      queryClient.invalidateQueries({ queryKey: ['/api/meta-sysop/active-job'] });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "❌ Cancel failed",
-        description: error.message || 'Failed to cancel job',
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Send message mutation - now starts background job instead of SSE
+  // Send message mutation - uses SSE streaming for real-time responses
   const sendMutation = useMutation({
     mutationFn: async (message: string) => {
       // Add user message to session
@@ -386,81 +194,171 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
       setTasks([]);
       setActiveTaskId(null);
       setProgressStatus('thinking');
-      setProgressMessage("Starting Meta-SySop background job...");
+      setProgressMessage("Starting Meta-SySop...");
 
-      // Start background job
-      const response = await fetch('/api/meta-sysop/start', {
+      console.log('[META-SYSOP] ============ SSE STREAM STARTING ============');
+      console.log('[META-SYSOP] Message:', message);
+      console.log('[META-SYSOP] Project:', selectedProjectId || 'platform code');
+      console.log('[META-SYSOP] =========================================');
+
+      // Create abort controller for stopping stream
+      const abortController = new AbortController();
+      
+      // Start SSE stream using fetch (POST required for this endpoint)
+      const response = await fetch('/api/meta-sysop/stream', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         credentials: 'include',
-        body: JSON.stringify({ 
+        signal: abortController.signal,
+        body: JSON.stringify({
           message,
           projectId: selectedProjectId,
+          autoCommit: true,
+          autoPush: false,
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(`Failed to start job: ${response.statusText}`);
+      if (!response.ok || !response.body) {
+        throw new Error(`Failed to start stream: ${response.statusText}`);
       }
 
-      const { jobId } = await response.json();
-      setCurrentJobId(jobId);
-      setProgressStatus('working');
-      setProgressMessage("Meta-SySop is working...");
-      
-      console.log('[META-SYSOP] ============ JOB STARTED ============');
-      console.log('[META-SYSOP] Job ID:', jobId);
-      console.log('[META-SYSOP] Message:', message);
-      console.log('[META-SYSOP] =====================================');
-      
-      // SIMPLE POLLING: Check every 3 seconds for completion
-      const checkCompletion = async () => {
-        for (let i = 0; i < 60; i++) { // Max 3 minutes
-          await new Promise(resolve => setTimeout(resolve, 3000));
-          
-          try {
-            const jobRes = await fetch(`/api/meta-sysop/active-job`, { credentials: 'include' });
-            const jobData = await jobRes.json();
-            
-            if (!jobData.job || jobData.job.status === 'completed' || jobData.job.status === 'failed') {
-              // Fetch last 2 messages (user + assistant) as fallback if WebSocket failed
-              const histRes = await fetch('/api/meta-sysop/chat-history?limit=2', { credentials: 'include' });
-              const histData = await histRes.json();
-              
-              if (histData.success && histData.messages) {
-                const assistantMsg = histData.messages.find((m: any) => m.role === 'assistant');
-                if (assistantMsg) {
-                  // CRITICAL: Check if message already exists to prevent duplicates
-                  setMessages(prev => {
-                    const exists = prev.some(m => m.id === assistantMsg.id);
-                    if (exists) {
-                      console.log('[META-SYSOP] ⚠️  Duplicate detected (polling), skipping ID:', assistantMsg.id);
-                      return prev;
+      // Store abort controller for stopping
+      eventSourceRef.current = abortController as any;
+
+      // Parse SSE stream manually
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let accumulatedContent = ''; // Track content locally for final message
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                console.log('[META-SYSOP] SSE event:', data.type);
+
+                switch (data.type) {
+                  case 'user_message':
+                    // User message saved - just acknowledge
+                    console.log('[META-SYSOP] User message saved:', data.messageId);
+                    break;
+
+                  case 'content':
+                    // Stream content in real-time
+                    accumulatedContent += (data.content || '');
+                    setStreamingContent(accumulatedContent);
+                    setProgressStatus('working');
+                    break;
+
+                  case 'progress':
+                    // Update progress message
+                    setProgressMessage(data.message || '');
+                    setProgressStatus('working');
+                    break;
+
+                  case 'task_list_created':
+                    // Fetch task list from database
+                    fetch(`/api/meta-sysop/task-list/${data.taskListId}`, {
+                      credentials: 'include'
+                    })
+                      .then(res => res.json())
+                      .then(taskListData => {
+                        if (taskListData.success && taskListData.tasks) {
+                          const formattedTasks: AgentTask[] = taskListData.tasks.map((t: any) => ({
+                            id: t.id,
+                            title: t.title,
+                            description: t.description,
+                            status: t.status as AgentTask['status'],
+                          }));
+                          setTasks(formattedTasks);
+                          setShowTaskList(true);
+                          console.log('[META-SYSOP] Task list created with', formattedTasks.length, 'tasks');
+                        }
+                      })
+                      .catch(err => {
+                        console.error('[META-SYSOP] Failed to fetch task list:', err);
+                      });
+                    break;
+
+                  case 'task_updated':
+                    // Update task status
+                    setTasks(prev => prev.map(t => 
+                      t.id === data.taskId 
+                        ? { ...t, status: data.status as AgentTask['status'] }
+                        : t
+                    ));
+                    if (data.status === 'in_progress') {
+                      setActiveTaskId(data.taskId);
                     }
-                    console.log('[META-SYSOP] ✅ Adding message via polling, ID:', assistantMsg.id);
-                    console.log('[META-SYSOP] Content length:', assistantMsg.content?.length || 0);
-                    return [...prev, {
-                      id: assistantMsg.id,
+                    console.log('[META-SYSOP] Task updated:', data.taskId, '→', data.status);
+                    break;
+
+                  case 'done':
+                    // Stream complete - add final message
+                    console.log('[META-SYSOP] ✅ Stream complete, messageId:', data.messageId);
+                    
+                    // Use accumulated content for final message
+                    const finalContent = accumulatedContent || '✅ Done!';
+                    const assistantMsg: Message = {
+                      id: data.messageId || Date.now().toString(),
                       role: 'assistant',
-                      content: assistantMsg.content
-                    }];
-                  });
+                      content: finalContent,
+                    };
+                    
+                    setMessages(prev => [...prev, assistantMsg]);
+                    setStreamingContent('');
+                    setIsStreaming(false);
+                    setProgressStatus('idle');
+                    setProgressMessage('');
+                    setTasks(prev => prev.map(t => ({ ...t, status: 'completed' as const })));
+                    
+                    eventSourceRef.current = null;
+                    toast({ title: "✅ Done" });
+                    return; // Exit the loop
+
+                  case 'error':
+                    // Handle error
+                    console.error('[META-SYSOP] ❌ Stream error:', data.message);
+                    
+                    setIsStreaming(false);
+                    setStreamingContent('');
+                    setProgressStatus('idle');
+                    setProgressMessage('');
+                    
+                    toast({
+                      title: '❌ Error',
+                      description: data.message || 'Unknown error',
+                      variant: 'destructive'
+                    });
+                    
+                    eventSourceRef.current = null;
+                    return; // Exit the loop
                 }
+              } catch (error) {
+                console.error('[META-SYSOP] Failed to parse SSE data:', error);
               }
-              
-              setIsStreaming(false);
-              setProgressStatus('idle');
-              setCurrentJobId(null);
-              toast({ title: "✅ Done" });
-              break;
             }
-          } catch (err) {
-            console.error('Poll error:', err);
           }
         }
-      };
-      
-      checkCompletion(); // Start polling
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          console.log('[META-SYSOP] Stream aborted by user');
+        } else {
+          console.error('[META-SYSOP] Stream error:', error);
+          throw error;
+        }
+      }
     },
     onError: (error: any) => {
       console.error('Meta-SySop error:', error);
@@ -481,6 +379,12 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
         description: error.message || 'Failed to process request',
         variant: "destructive",
       });
+      
+      // Cleanup abort controller
+      if (eventSourceRef.current) {
+        (eventSourceRef.current as AbortController).abort();
+        eventSourceRef.current = null;
+      }
     },
   });
 
@@ -491,9 +395,10 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
   };
 
   const handleStop = () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
+    if (eventSourceRef.current) {
+      console.log('[META-SYSOP] Stopping stream...');
+      (eventSourceRef.current as AbortController).abort();
+      eventSourceRef.current = null;
       
       // Mark all in-progress tasks as failed
       setTasks(prev => prev.map(t => 
@@ -557,50 +462,6 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
           className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth"
         >
           <div className="max-w-4xl mx-auto space-y-4">
-            {/* Active Job Controls - Resume or Cancel */}
-            {activeJob && (activeJob.status === 'interrupted' || activeJob.status === 'running' || activeJob.status === 'pending') && !currentJobId && (
-              <div className="mb-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg animate-in fade-in-up">
-                <p className="text-sm text-amber-200 mb-2">
-                  {activeJob.status === 'interrupted' 
-                    ? 'Meta-SySop session was interrupted' 
-                    : 'Active Meta-SySop job found'}
-                </p>
-                <p className="text-xs text-amber-300/70 mb-3">
-                  Job ID: {activeJob.id.substring(0, 8)}... • Status: {activeJob.status}
-                </p>
-                <div className="flex gap-2">
-                  <Button 
-                    size="sm" 
-                    onClick={() => resumeMutation.mutate(activeJob.id)}
-                    disabled={resumeMutation.isPending || cancelJobMutation.isPending}
-                    data-testid="button-resume-job"
-                    className="bg-amber-600 hover:bg-amber-700 text-white"
-                  >
-                    {resumeMutation.isPending ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <Rocket className="w-4 h-4 mr-2" />
-                    )}
-                    Resume
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="destructive"
-                    onClick={() => cancelJobMutation.mutate(activeJob.id)}
-                    disabled={resumeMutation.isPending || cancelJobMutation.isPending}
-                    data-testid="button-cancel-job"
-                  >
-                    {cancelJobMutation.isPending ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <XCircle className="w-4 h-4 mr-2" />
-                    )}
-                    Cancel Job
-                  </Button>
-                </div>
-              </div>
-            )}
-
             {/* Welcome screen */}
             {messages.length === 0 && !isStreaming && (
               <div className="text-center py-12 animate-in fade-in-up duration-700">
