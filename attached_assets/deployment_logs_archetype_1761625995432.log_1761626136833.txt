@@ -1,0 +1,144 @@
+2025-10-28T04:29:15.000000000Z [info] Starting Container
+2025-10-28T04:29:16.177626899Z [info] 🔄 Running database migrations with drizzle-kit...
+2025-10-28T04:29:16.177633913Z [info] No config path provided, using default 'drizzle.config.ts'
+2025-10-28T04:29:16.177641372Z [info] Reading config file '/app/drizzle.config.ts'
+2025-10-28T04:29:16.177645180Z [info] ======================================
+2025-10-28T04:29:16.177647926Z [info] ======================================
+2025-10-28T04:29:16.177653521Z [info] Time: Tue Oct 28 04:29:15 UTC 2025
+2025-10-28T04:29:16.177659788Z [info] 🚂 RAILWAY STARTUP SCRIPT
+2025-10-28T04:29:16.177662070Z [info] 
+2025-10-28T04:29:17.062753131Z [info] a from database...
+2025-10-28T04:29:17.062764539Z [info] a from database...
+2025-10-28T04:29:17.062838665Z [info] Using 'pg' driver for database querying
+2025-10-28T04:29:17.062843544Z [info] [⣷] Pulling schema from database...
+2025-10-28T04:29:17.096121842Z [info] a from database...
+2025-10-28T04:29:17.230915936Z [info] a from database...
+2025-10-28T04:29:18.077627950Z [info] a from database...
+2025-10-28T04:29:18.077633229Z [info] a from database...
+2025-10-28T04:29:18.077640160Z [info] a from database...
+2025-10-28T04:29:18.077645729Z [info] a from database...
+2025-10-28T04:29:18.077651134Z [info] a from database...
+2025-10-28T04:29:18.077663639Z [info] a from database...
+2025-10-28T04:29:18.124807890Z [info] a from database...
+2025-10-28T04:29:18.261935303Z [info] a from database...
+2025-10-28T04:29:18.934305377Z [info] a from database...
+2025-10-28T04:29:18.934311608Z [info] a from database...
+2025-10-28T04:29:18.934317090Z [info] a from database...
+2025-10-28T04:29:18.934324185Z [info] a from database...
+2025-10-28T04:29:18.934332244Z [info] a from database...
+2025-10-28T04:29:18.976545349Z [info] a from database...
+2025-10-28T04:29:19.068792105Z [info] [i] No changes detected
+2025-10-28T04:29:19.102192576Z [info] 
+2025-10-28T04:29:19.102208903Z [info] ✅ Database migrations completed successfully!
+2025-10-28T04:29:19.102218882Z [info] 
+2025-10-28T04:29:19.102226466Z [info] 🚀 Starting Node.js application...
+2025-10-28T04:29:20.291769721Z [info] [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-28T04:29:20.291777707Z [info] [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-28T04:29:20.291785491Z [info] [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-28T04:29:20.291792439Z [info] [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-28T04:29:20.291799626Z [info] [db] SSL Configuration: {rejectUnauthorized:false}
+2025-10-28T04:29:20.291808032Z [info] [db] Connection string includes SSL params: true
+2025-10-28T04:29:20.294181176Z [info] [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-28T04:29:20.296273807Z [info] [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-28T04:29:20.304506652Z [info] [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-28T04:29:20.307030462Z [info] 📡 WebSocket server initialized at /ws
+2025-10-28T04:29:20.307038200Z [info] [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-28T04:29:20.307042956Z [info] [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-28T04:29:20.320376126Z [info] ✅ All routes registered successfully
+2025-10-28T04:29:20.320383960Z [info] 🔍 Testing database connection...
+2025-10-28T04:29:20.963730920Z [info] 4:29:20 AM [express] serving on port 8080
+2025-10-28T04:29:20.963737136Z [info] 🌐 Server accessible at http://0.0.0.0:8080
+2025-10-28T04:29:20.963744845Z [info] ✅ Database connected successfully
+2025-10-28T04:29:20.963752474Z [info] 🔧 Auto-healing system ENABLED (production mode)
+2025-10-28T04:29:20.963760673Z [info] 
+2025-10-28T04:29:20.963768816Z [info] 🔍 Checking GitHub integration configuration...
+2025-10-28T04:29:20.963776296Z [info] ✅ GitHub integration configured successfully
+2025-10-28T04:29:20.963783828Z [info]    - Repository: 6-7Development/archetype
+2025-10-28T04:29:20.963791034Z [info]    - Branch: main
+2025-10-28T04:29:20.963803730Z [info]    - Token: ✓ (configured)
+2025-10-28T04:29:20.963809821Z [info]    - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-28T04:29:20.963817244Z [info]    - Maintenance mode: Available for owner
+2025-10-28T04:29:20.963826645Z [info] 
+2025-10-28T04:32:11.288463817Z [info] 4:32:08 AM [express] POST /api/auth/login 200 in 351ms :: {success:true,user:{id:"723e1301-c72…
+2025-10-28T04:32:11.288478301Z [info] 4:32:09 AM [express] GET /api/auth/me 304 in 96ms :: {user:{id:"723e1301-c729-48fc-810a-39ddef95…
+2025-10-28T04:32:11.288486539Z [info] 4:32:09 AM [express] GET /api/projects 304 in 99ms :: []
+2025-10-28T04:32:11.288519282Z [info] [DEPLOYMENT-INFO] Using Railway environment variables
+2025-10-28T04:32:11.288526011Z [info] 4:32:02 AM [express] GET /api/deployment-info 200 in 4ms :: {version:"1.0.0",commitHash:"40f1cf9…
+2025-10-28T04:32:11.288535545Z [info] [AUTH] Verifying password...
+2025-10-28T04:32:11.288540954Z [info] [AUTH] Login attempt for email: root@getdc360.com
+2025-10-28T04:32:11.288546685Z [info] [AUTH] Password valid: true
+2025-10-28T04:32:11.288551374Z [info] [AUTH] Found users: 1
+2025-10-28T04:32:11.288559430Z [info] [AUTH] Authentication successful for: root@getdc360.com
+2025-10-28T04:32:11.288564152Z [info] [AUTH] User found: root@getdc360.com has password: true
+2025-10-28T04:32:14.919991810Z [info] [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-28T04:32:14.919999187Z [info] 4:32:14 AM [express] GET /api/meta-sysop/projects 304 in 26ms :: []
+2025-10-28T04:32:14.920006225Z [info] 4:32:14 AM [express] GET /api/meta-sysop/pending-changes 304 in 27ms :: {success:true,"pendingChan…
+2025-10-28T04:32:14.920014475Z [info] 4:32:14 AM [express] GET /api/platform/status 200 in 106ms :: {overallHealth:100,"activeIncidents"…
+2025-10-28T04:32:14.920021547Z [info] 4:32:14 AM [express] GET /api/meta-sysop/autonomy-level 304 in 122ms :: {currentLevel:"max","maxAl…
+2025-10-28T04:32:14.920028665Z [info] ✅ WebSocket client connected
+2025-10-28T04:32:14.920036168Z [info] 📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-28T04:32:20.695121397Z [info] [META-SYSOP-CHAT] Message: Repair platform Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-10-28T04:32:20.695134753Z [info] [META-SYSOP-CHAT] Setting up SSE headers
+2025-10-28T04:32:20.695144305Z [info] [META-SYSOP-CHAT] Heartbeat started - will send keepalive every 15s
+2025-10-28T04:32:20.695156734Z [info] [META-SYSOP-CHAT] Entering try block
+2025-10-28T04:32:20.695172849Z [info] [META-SYSOP-CHAT] User autonomy level: max
+2025-10-28T04:32:20.695739275Z [info] 4:32:19 AM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {success:true,"pendingChan…
+2025-10-28T04:32:20.695750618Z [info] [META-SYSOP-CHAT] Stream request received
+2025-10-28T04:32:23.253443151Z [info] [META-SYSOP-CHAT] 💬 Streaming text: I'll diagnose the platform for issues and fix the chat toolbar problems. Let me start by creating a 
+2025-10-28T04:32:25.475574671Z [info] 4:32:24 AM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {success:true,"pendingChan…
+2025-10-28T04:32:29.934241752Z [info] [META-SYSOP-FORCE] Has tool use: true
+2025-10-28T04:32:29.934266602Z [info] [META-SYSOP-FORCE] ❌❌❌ FORCING TRIGGERED! Meta-SySop skipped perform_diagnosis!
+2025-10-28T04:32:29.934280376Z [info] [META-SYSOP-FORCE] Adding forcing message to conversation...
+2025-10-28T04:32:29.934294012Z [info] [META-SYSOP-FORCE] ✅ Forcing message added. Conversation length: 9
+2025-10-28T04:32:29.934295409Z [info] [META-SYSOP] Response has tool calls: true
+2025-10-28T04:32:29.934303393Z [info] [META-SYSOP] Content blocks: text, text, tool_use
+2025-10-28T04:32:29.934318540Z [info] [META-SYSOP-FORCE] Created task list: true
+2025-10-28T04:32:29.934322169Z [info] [META-SYSOP-FORCE] ✅ Restarting loop with continue statement...
+2025-10-28T04:32:29.934332056Z [info] [META-SYSOP-FORCE] === ITERATION 1 CHECK ===
+2025-10-28T04:32:29.934332608Z [info] [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-28T04:32:29.934333580Z [error] [META-SYSOP-CHAT] Stream error: BadRequestError: 400 {type:"error",error:{type:"invalid_request_error",message:"messages.4: `tool_use` ids were found without `tool_result` blocks immediately after: toolu_01M5ropFLKDsYvxn62rmwYnV. Each `tool_use` block must have a corresponding `tool_result` block in the next message."},request_id:"req_011CUYyFpT1AWkMn887CbZNE"}
+2025-10-28T04:32:29.934342429Z [error]     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-28T04:32:29.934342979Z [info] [META-SYSOP-FORCE] Tools called this iteration: createTaskList
+2025-10-28T04:32:29.934350632Z [info] [META-SYSOP-FORCE] Iteration count: 1
+2025-10-28T04:32:29.934354839Z [error]     at APIError.generate (file:///app/node_modules/@anthropic-ai/sdk/core/error.mjs:37:20)
+2025-10-28T04:32:29.934373039Z [error]     at Anthropic.makeStatusError (file:///app/node_modules/@anthropic-ai/sdk/client.mjs:152:32)
+2025-10-28T04:32:29.934381391Z [error]     at Anthropic.makeRequest (file:///app/node_modules/@anthropic-ai/sdk/client.mjs:306:30)
+2025-10-28T04:32:31.044812587Z [error]     at async file:///app/dist/index.js:11759:22 {
+2025-10-28T04:32:31.044818091Z [error]   status: 400,
+2025-10-28T04:32:31.044823321Z [error]   headers: Headers {
+2025-10-28T04:32:31.044828956Z [error]     date: 'Tue, 28 Oct 2025 04:32:29 GMT',
+2025-10-28T04:32:31.044834074Z [error]     'content-type': 'application/json',
+2025-10-28T04:32:31.044839822Z [error]     'content-length': '320',
+2025-10-28T04:32:31.044845335Z [error]     connection: 'keep-alive',
+2025-10-28T04:32:31.044850958Z [error]     'cf-ray': '9957b5a7ec39819a-IAD',
+2025-10-28T04:32:31.044856517Z [error]     'x-should-retry': 'false',
+2025-10-28T04:32:31.044861976Z [error]     'request-id': 'req_011CUYyFpT1AWkMn887CbZNE',
+2025-10-28T04:32:31.044867195Z [error]     'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+2025-10-28T04:32:31.044872576Z [error]     'anthropic-organization-id': '60f9e9aa-d58b-44f4-aa91-af881dd8f26a',
+2025-10-28T04:32:31.044878287Z [error]     'x-envoy-upstream-service-time': '21',
+2025-10-28T04:32:31.044883895Z [error]     via: '1.1 google',
+2025-10-28T04:32:31.044889184Z [error]     'cf-cache-status': 'DYNAMIC',
+2025-10-28T04:32:31.044896656Z [error]     'x-robots-tag': 'none',
+2025-10-28T04:32:31.044902445Z [error]     server: 'cloudflare'
+2025-10-28T04:32:31.044908114Z [error]   },
+2025-10-28T04:32:31.044913743Z [error]   requestID: 'req_011CUYyFpT1AWkMn887CbZNE',
+2025-10-28T04:32:31.044920530Z [error]   error: {
+2025-10-28T04:32:31.044925815Z [error]     type: 'error',
+2025-10-28T04:32:31.044931759Z [error]     error: {
+2025-10-28T04:32:31.044937438Z [error]       type: 'invalid_request_error',
+2025-10-28T04:32:31.044942340Z [error]       message: 'messages.4: `tool_use` ids were found without `tool_result` blocks immediately after: toolu_01M5ropFLKDsYvxn62rmwYnV. Each `tool_use` block must have a corresponding `tool_result` block in the next message.'
+2025-10-28T04:32:31.774641785Z [error]     },
+2025-10-28T04:32:31.774648598Z [error]     request_id: 'req_011CUYyFpT1AWkMn887CbZNE'
+2025-10-28T04:32:31.774654532Z [error]   }
+2025-10-28T04:32:31.774660479Z [error] }
+2025-10-28T04:32:31.774666074Z [info] [META-SYSOP-HEARTBEAT] Cleared on error
+2025-10-28T04:32:31.774674036Z [info] [META-SYSOP-CHAT] Terminating stream: 5d2e1e2e-c396-471a-9599-3ae172f1d4e2 Error: 400 {type:"error",error:{type:"invalid_request_error",message:"messages.4: `tool_use` ids were found without `tool_result` blocks immediately after: toolu_01M5ropFLKDsYvxn62rmwYnV. Each `tool_use` block must have a corresponding `tool_result` block in the next message."},request_id:"req_011CUYyFpT1AWkMn887CbZNE"}
+2025-10-28T04:32:31.774680518Z [info] [META-SYSOP-HEARTBEAT] Cleared on stream end
+2025-10-28T04:32:31.774686540Z [info] 4:32:29 AM [express] POST /api/meta-sysop/stream 200 in 9628ms
+2025-10-28T04:32:31.774692117Z [info] 4:32:29 AM [express] GET /api/meta-sysop/pending-changes 304 in 18ms :: {success:true,"pendingChan…
+2025-10-28T04:32:34.964818875Z [info] 4:32:34 AM [express] GET /api/meta-sysop/pending-changes 304 in 22ms :: {success:true,"pendingChan…
+2025-10-28T04:32:40.050166336Z [info] 4:32:40 AM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {success:true,"pendingChan…
+2025-10-28T04:32:45.508447001Z [info] 4:32:45 AM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {success:true,"pendingChan…
+2025-10-28T04:32:50.695243781Z [info] 4:32:50 AM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {success:true,"pendingChan…
+2025-10-28T04:32:55.547326024Z [info] 4:32:55 AM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {success:true,"pendingChan…
+2025-10-28T04:33:01.126674817Z [info] 4:33:00 AM [express] GET /api/meta-sysop/pending-changes 304 in 22ms :: {success:true,"pendingChan…
