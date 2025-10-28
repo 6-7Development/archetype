@@ -2406,9 +2406,38 @@ Be conversational, be helpful, and only work when asked!`;
           content: toolResults,
         });
       } else {
-        // No more tool calls - conversation ends naturally (like Replit Agent)
-        console.log('[META-SYSOP] No more tool calls - ending session naturally');
-        continueLoop = false;
+        // No tool calls this iteration - check if we should continue
+        // 🐛 FIX: Don't end if there are tasks still in progress - Meta-SySop might need another turn
+        if (activeTaskListId) {
+          try {
+            const taskCheck = await readTaskList({ userId });
+            const sessionTaskList = taskCheck.taskLists?.find((list: any) => list.id === activeTaskListId);
+            const inProgressTasks = sessionTaskList?.tasks.filter((t: any) => t.status === 'in_progress') || [];
+            
+            if (inProgressTasks.length > 0 && iteration < 14) {
+              console.log(`[META-SYSOP] No tool calls but ${inProgressTasks.length} tasks in_progress - continuing conversation`);
+              // Give Meta-SySop a gentle prompt to continue working
+              conversationMessages.push({
+                role: 'user',
+                content: [{
+                  type: 'text',
+                  text: `You have ${inProgressTasks.length} task(s) still in progress. Please continue working on them using the available tools.`
+                }]
+              });
+            } else {
+              // Either all tasks done or hit iteration limit
+              console.log('[META-SYSOP] No more tool calls and no tasks in_progress - ending session naturally');
+              continueLoop = false;
+            }
+          } catch (error: any) {
+            console.error('[META-SYSOP] Failed to check task status:', error);
+            continueLoop = false;
+          }
+        } else {
+          // No task list - end normally
+          console.log('[META-SYSOP] No more tool calls - ending session naturally');
+          continueLoop = false;
+        }
       }
     }
 
