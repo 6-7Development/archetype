@@ -731,9 +731,11 @@ Be conversational, be helpful, and only work when asked!`;
               if (!typedInput.content && typedInput.content !== '') {
                 throw new Error(`writePlatformFile called without content for ${typedInput.path}`);
               }
+              // BATCH MODE: Skip auto-commit, accumulate changes for ONE commit at end
               const writeResult = await platformHealing.writePlatformFile(
                 typedInput.path,
-                typedInput.content
+                typedInput.content,
+                true  // skipAutoCommit=true - batch all changes
               );
               toolResult = JSON.stringify(writeResult);
               fileChanges.push({ 
@@ -742,7 +744,7 @@ Be conversational, be helpful, and only work when asked!`;
                 contentAfter: typedInput.content 
               });
               broadcast(userId, jobId, 'file_change', { file: { path: typedInput.path, operation: 'modify' } });
-              toolResult = `✅ File written successfully`;
+              toolResult = `✅ File staged for batch commit (${fileChanges.length} files total)`;
             } else if (name === 'listPlatformDirectory') {
               const typedInput = input as { directory: string };
               const entries = await platformHealing.listPlatformDirectory(typedInput.directory);
@@ -1021,9 +1023,12 @@ Be conversational, be helpful, and only work when asked!`;
                       });
                     }
 
+                    // Unique Meta-SySop commit prefix so user can distinguish from manual commits
+                    const uniqueCommitMessage = `[Meta-SySop 🤖] ${typedInput.commitMessage}`;
+                    
                     const result = await githubService.commitFiles(
                       filesToCommit,
-                      typedInput.commitMessage
+                      uniqueCommitMessage
                     );
 
                     commitSuccessful = true;
