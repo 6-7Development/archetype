@@ -1,0 +1,281 @@
+2025-10-28T06:34:58.000000000Z [info] Starting Container
+2025-10-28T06:34:59.041401269Z [info] ======================================
+2025-10-28T06:34:59.041406333Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT
+2025-10-28T06:34:59.041411007Z [info] ======================================
+2025-10-28T06:34:59.041415699Z [info] Time: Tue Oct 28 06:34:58 UTC 2025
+2025-10-28T06:34:59.041420596Z [info] 
+2025-10-28T06:34:59.041425396Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-10-28T06:34:59.645067710Z [info] No config path provided, using default 'drizzle.config.ts'
+2025-10-28T06:34:59.645074399Z [info] Reading config file '/app/drizzle.config.ts'
+2025-10-28T06:35:00.086738137Z [info] Using 'pg' driver for database querying
+2025-10-28T06:35:00.087567041Z [info] [â£·] Pulling schema from database...
+2025-10-28T06:35:00.211601410Z [info] a from database...
+2025-10-28T06:35:00.346812057Z [info] a from database...
+2025-10-28T06:35:00.489160566Z [info] a from database...
+2025-10-28T06:35:00.604916266Z [info] a from database...
+2025-10-28T06:35:01.105513579Z [info] a from database...
+2025-10-28T06:35:01.105518560Z [info] a from database...
+2025-10-28T06:35:01.105522378Z [info] a from database...
+2025-10-28T06:35:01.105526230Z [info] a from database...
+2025-10-28T06:35:01.227369628Z [info] a from database...
+2025-10-28T06:35:01.367781549Z [info] a from database...
+2025-10-28T06:35:01.483604068Z [info] a from database...
+2025-10-28T06:35:01.632014675Z [info] a from database...
+2025-10-28T06:35:01.746108762Z [info] a from database...
+2025-10-28T06:35:02.045486348Z [info] a from database...
+2025-10-28T06:35:02.045490532Z [info] a from database...
+2025-10-28T06:35:02.127918509Z [info] a from database...
+2025-10-28T06:35:02.149579756Z [info] a from database...
+2025-10-28T06:35:02.246831439Z [info] [i] No changes detected
+2025-10-28T06:35:02.257032462Z [info] 
+2025-10-28T06:35:02.257038504Z [info] âœ… Database migrations completed successfully!
+2025-10-28T06:35:02.257043176Z [info] 
+2025-10-28T06:35:02.257048535Z [info] ðŸš€ Starting Node.js application...
+2025-10-28T06:35:03.187233225Z [info] [db] âœ… Added sslmode=no-verify to connection string for production
+2025-10-28T06:35:03.187242203Z [info] [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-28T06:35:03.187249415Z [info] [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-28T06:35:03.187255715Z [info] [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-28T06:35:03.187261722Z [info] [db] SSL Configuration: {rejectUnauthorized:false}
+2025-10-28T06:35:03.187268298Z [info] [db] Connection string includes SSL params: true
+2025-10-28T06:35:03.193376830Z [info] [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-28T06:35:03.198922517Z [info] [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-28T06:35:03.206374234Z [info] [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-28T06:35:03.206381326Z [info] ðŸ“¡ WebSocket server initialized at /ws
+2025-10-28T06:35:03.206386273Z [info] [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-28T06:35:03.206390674Z [info] [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-28T06:35:03.206395011Z [info] [META-SYSOP-JOB-MANAGER] Initialized with WebSocket support
+2025-10-28T06:35:03.206399815Z [info] [META-SYSOP-JOB-MANAGER] Job manager connected to WebSocket
+2025-10-28T06:35:03.216850255Z [info] âœ… All routes registered successfully
+2025-10-28T06:35:03.216858191Z [info] ðŸ” Testing database connection...
+2025-10-28T06:35:03.261854715Z [info] 6:35:03 AM [express] serving on port 8080
+2025-10-28T06:35:03.261860359Z [info] ðŸŒ Server accessible at http://0.0.0.0:8080
+2025-10-28T06:35:03.369124306Z [info] âœ… Database connected successfully
+2025-10-28T06:35:03.369132618Z [info] ðŸ”§ Auto-healing system ENABLED (production mode)
+2025-10-28T06:35:03.369141065Z [info] 
+2025-10-28T06:35:03.369149047Z [info] ðŸ” Checking GitHub integration configuration...
+2025-10-28T06:35:03.369156679Z [info] âœ… GitHub integration configured successfully
+2025-10-28T06:35:03.369178720Z [info]    - Repository: 6-7Development/archetype
+2025-10-28T06:35:03.369185086Z [info]    - Branch: main
+2025-10-28T06:35:03.369190769Z [info]    - Token: âœ“ (configured)
+2025-10-28T06:35:03.369195702Z [info]    - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-28T06:35:03.369201033Z [info]    - Maintenance mode: Available for owner
+2025-10-28T06:35:03.369205587Z [info] 
+2025-10-28T06:35:33.216051473Z [info] [DEPLOYMENT-INFO] Using Railway environment variables
+2025-10-28T06:35:33.216056398Z [info] 6:35:30 AM [express] GET /api/deployment-info 200 in 3ms :: {version:"1.0.0",commitHash:"421de35â€¦
+2025-10-28T06:35:34.493323045Z [info] [AUTH] Login attempt for email: root@getdc360.com
+2025-10-28T06:35:34.493332105Z [info] [AUTH] Found users: 1
+2025-10-28T06:35:34.493339134Z [info] [AUTH] User found: root@getdc360.com has password: true
+2025-10-28T06:35:34.493346663Z [info] [AUTH] Verifying password...
+2025-10-28T06:35:34.893227948Z [info] [AUTH] Password valid: true
+2025-10-28T06:35:34.893231914Z [info] [AUTH] Authentication successful for: root@getdc360.com
+2025-10-28T06:35:34.893236190Z [info] 6:35:34 AM [express] POST /api/auth/login 200 in 278ms :: {success:true,user:{id:"723e1301-c72â€¦
+2025-10-28T06:35:35.347952267Z [info] [AUTH] Login attempt for email: root@getdc360.com
+2025-10-28T06:35:35.347957277Z [info] [AUTH] Found users: 1
+2025-10-28T06:35:35.347961537Z [info] [AUTH] User found: root@getdc360.com has password: true
+2025-10-28T06:35:35.347966611Z [info] [AUTH] Verifying password...
+2025-10-28T06:35:35.361513108Z [info] 6:35:35 AM [express] GET /api/auth/me 304 in 9ms :: {user:{id:"723e1301-c729-48fc-810a-39ddef954â€¦
+2025-10-28T06:35:35.467020685Z [info] 6:35:35 AM [express] GET /api/projects 304 in 90ms :: []
+2025-10-28T06:35:35.942006128Z [info] [AUTH] Password valid: true
+2025-10-28T06:35:35.942015264Z [info] [AUTH] Authentication successful for: root@getdc360.com
+2025-10-28T06:35:35.942020398Z [info] 6:35:35 AM [express] POST /api/auth/login 200 in 269ms :: {success:true,user:{id:"723e1301-c72â€¦
+2025-10-28T06:35:35.942025593Z [info] 6:35:35 AM [express] GET /api/auth/me 304 in 5ms :: {user:{id:"723e1301-c729-48fc-810a-39ddef954â€¦
+2025-10-28T06:35:39.203558518Z [info] [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-28T06:35:39.203565148Z [info] [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T06:35:39.203570569Z [info] 6:35:39 AM [express] GET /api/meta-sysop/projects 304 in 20ms :: []
+2025-10-28T06:35:39.222237600Z [info] 6:35:39 AM [express] GET /api/meta-sysop/autonomy-level 304 in 89ms :: {currentLevel:"max","maxAllâ€¦
+2025-10-28T06:35:39.263304463Z [info] 6:35:39 AM [express] GET /api/meta-sysop/active-job 304 in 128ms :: {success:true,job:null}
+2025-10-28T06:35:39.263312090Z [info] 6:35:39 AM [express] GET /api/platform/status 200 in 130ms :: {overallHealth:100,"activeIncidents"â€¦
+2025-10-28T06:35:39.263317946Z [info] [GITHUB-SERVICE] Initialized for 6-7Development/archetype on branch main
+2025-10-28T06:35:39.269416462Z [info] 6:35:39 AM [express] GET /api/meta-sysop/pending-changes 304 in 140ms :: {success:true,"pendingChaâ€¦
+2025-10-28T06:35:39.292159776Z [info] âœ… WebSocket client connected
+2025-10-28T06:35:39.369806358Z [info] ðŸ“¡ [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-28T06:35:39.412956117Z [info] 6:35:39 AM [express] GET /api/platform/deployment-history 200 in 276ms :: {success:true,"deploymenâ€¦
+2025-10-28T06:35:44.345285375Z [info] [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T06:35:44.346094788Z [info] 6:35:44 AM [express] GET /api/meta-sysop/active-job 304 in 10ms :: {success:true,job:null}
+2025-10-28T06:35:44.347589402Z [info] 6:35:44 AM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {success:true,"pendingChanâ€¦
+2025-10-28T06:35:46.345286813Z [info] [META-SYSOP-JOB-MANAGER] Created job: f08092d2-1b17-479c-8362-b88447ad038d for user: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-10-28T06:35:46.345291123Z [info] [META-SYSOP-JOB-MANAGER] Starting worker for job: f08092d2-1b17-479c-8362-b88447ad038d
+2025-10-28T06:35:46.345294929Z [info] [META-SYSOP] Started background job: f08092d2-1b17-479c-8362-b88447ad038d
+2025-10-28T06:35:46.345299257Z [info] 6:35:46 AM [express] POST /api/meta-sysop/start 200 in 20ms :: {success:true,jobId:"f08092d2-1b1â€¦
+2025-10-28T06:35:46.345303021Z [info] [META-SYSOP-JOB-MANAGER] Job started: f08092d2-1b17-479c-8362-b88447ad038d
+2025-10-28T06:35:46.345306929Z [info] [META-SYSOP-JOB-MANAGER] User autonomy level: max
+2025-10-28T06:35:46.968304879Z [info] âœ… WebSocket client connected
+2025-10-28T06:35:49.475786242Z [info] 6:35:49 AM [express] GET /api/meta-sysop/pending-changes 304 in 8ms :: {success:true,"pendingChangâ€¦
+2025-10-28T06:35:54.381698874Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 1 ===
+2025-10-28T06:35:54.381702646Z [info] [META-SYSOP-JOB-MANAGER] Tools called: createTaskList
+2025-10-28T06:35:58.189374194Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 2 ===
+2025-10-28T06:35:58.189380143Z [info] [META-SYSOP-JOB-MANAGER] Tools called: read_logs
+2025-10-28T06:35:58.189385451Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job f08092d2-1b17-479c-8362-b88447ad038d at iteration 2
+2025-10-28T06:36:01.047793347Z [info] [META-SYSOP-JOB-MANAGER] Tools called: read_logs
+2025-10-28T06:36:01.047842410Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 3 ===
+2025-10-28T06:36:05.466357980Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 4 ===
+2025-10-28T06:36:05.466365695Z [info] [META-SYSOP-JOB-MANAGER] Tools called: updateTask
+2025-10-28T06:36:05.467296324Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job f08092d2-1b17-479c-8362-b88447ad038d at iteration 4
+2025-10-28T06:36:08.597441396Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 5 ===
+2025-10-28T06:36:08.597448616Z [info] [META-SYSOP-JOB-MANAGER] Tools called: readTaskList
+2025-10-28T06:36:08.597456343Z [info] [META-SYSOP-JOB-MANAGER] âš¡ ACTION FORCING! Too much reading, not enough doing!
+2025-10-28T06:36:13.708704053Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 6 ===
+2025-10-28T06:36:13.708713789Z [info] [META-SYSOP-JOB-MANAGER] Tools called: createTaskList
+2025-10-28T06:36:13.715259701Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job f08092d2-1b17-479c-8362-b88447ad038d at iteration 6
+2025-10-28T06:36:16.859611621Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 7 ===
+2025-10-28T06:36:16.859618595Z [info] [META-SYSOP-JOB-MANAGER] Tools called: perform_diagnosis
+2025-10-28T06:36:16.859623767Z [info] [META-SYSOP-JOB-MANAGER] ðŸš« BLOCKED perform_diagnosis - WRITE CODE FIRST!
+2025-10-28T06:36:16.859628673Z [info] [META-SYSOP-JOB-MANAGER] âš¡ ACTION FORCING! Too much reading, not enough doing!
+2025-10-28T06:36:18.788421992Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 8 ===
+2025-10-28T06:36:18.788429205Z [info] [META-SYSOP-JOB-MANAGER] Tools called: readTaskList
+2025-10-28T06:36:18.788434008Z [info] [META-SYSOP-JOB-MANAGER] ðŸš« BLOCKED readTaskList - WRITE CODE FIRST!
+2025-10-28T06:36:18.788438887Z [info] [META-SYSOP-JOB-MANAGER] âš¡ ACTION FORCING! Too much reading, not enough doing!
+2025-10-28T06:36:23.785626063Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 9 ===
+2025-10-28T06:36:23.785632155Z [info] [META-SYSOP-JOB-MANAGER] Tools called: writePlatformFile
+2025-10-28T06:36:23.785638199Z [info] [PLATFORM-WRITE] âœ… Content validated for /tmp/logs/server.log
+2025-10-28T06:36:23.785644886Z [info] [PLATFORM-WRITE] Content length: 137 bytes
+2025-10-28T06:36:23.785651580Z [info] [PLATFORM-WRITE] Content type: string
+2025-10-28T06:36:23.785658031Z [error] [META-SYSOP-JOB-MANAGER] Tool writePlatformFile failed: Error: Absolute paths are not allowed
+2025-10-28T06:36:23.785663999Z [error]     at PlatformHealingService.writePlatformFile (file:///app/dist/index.js:3762:17)
+2025-10-28T06:36:23.785668698Z [error]     at runMetaSysopWorker (file:///app/dist/index.js:6387:57)
+2025-10-28T06:36:23.785675834Z [error]     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-28T06:36:27.282728111Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 10 ===
+2025-10-28T06:36:27.282735893Z [info] [META-SYSOP-JOB-MANAGER] Tools called: writePlatformFile
+2025-10-28T06:36:27.282740883Z [info] [PLATFORM-WRITE] âœ… Content validated for logs/server.log
+2025-10-28T06:36:27.282745602Z [info] [PLATFORM-WRITE] Content length: 194 bytes
+2025-10-28T06:36:27.282756295Z [info] [PLATFORM-WRITE] Content type: string
+2025-10-28T06:36:27.282760870Z [info] [PLATFORM-WRITE] ðŸ”§ Committing to GitHub: logs/server.log
+2025-10-28T06:36:27.282764675Z [info] [PLATFORM-WRITE] Maintenance mode: ENABLED
+2025-10-28T06:36:27.282768143Z [info] [PLATFORM-WRITE] Reason: fixing
+2025-10-28T06:36:27.282771902Z [info] [PLATFORM-WRITE] Content to commit: 194 bytes
+2025-10-28T06:36:27.282776355Z [info] [GITHUB-SERVICE] commitFile called with path: logs/server.log
+2025-10-28T06:36:27.282781602Z [info] [GITHUB-SERVICE] Content type: string
+2025-10-28T06:36:27.282786733Z [info] [GITHUB-SERVICE] Content defined: true
+2025-10-28T06:36:27.282791493Z [info] [GITHUB-SERVICE] Content length: 194 bytes
+2025-10-28T06:36:27.282796356Z [info] [GITHUB-SERVICE] Committing 1 file(s) (attempt 1/3)
+2025-10-28T06:36:27.404763049Z [info] [GITHUB-SERVICE] Latest commit: 421de357678a3b40ac57d59018e780acd5f9ac65
+2025-10-28T06:36:27.463864028Z [info] [GITHUB-SERVICE] Processing file 1/1: logs/server.log
+2025-10-28T06:36:27.463871972Z [info] [GITHUB-SERVICE] Operation: modify
+2025-10-28T06:36:27.463877513Z [info] [GITHUB-SERVICE] Content type: string
+2025-10-28T06:36:27.463882051Z [info] [GITHUB-SERVICE] Content defined: true
+2025-10-28T06:36:27.463886403Z [info] [GITHUB-SERVICE] Content length: 194 bytes
+2025-10-28T06:36:27.463890340Z [info] [GITHUB-SERVICE] âœ… Content validated for logs/server.log
+2025-10-28T06:36:28.393558396Z [info] [GITHUB-SERVICE] âœ… Successfully committed 1 file(s)
+2025-10-28T06:36:28.393565669Z [info] [GITHUB-SERVICE] Commit: 207736afa9c42f3090146c0039fb1265b13ff76f
+2025-10-28T06:36:28.393572050Z [info] [GITHUB-SERVICE] URL: https://github.com/6-7Development/archetype/commit/207736afa9c42f3090146c0039fb1265b13ff76f
+2025-10-28T06:36:28.393576264Z [info] [PLATFORM-WRITE] âœ… Committed to GitHub successfully
+2025-10-28T06:36:28.393580416Z [info] [PLATFORM-WRITE] Commit: 207736afa9c42f3090146c0039fb1265b13ff76f
+2025-10-28T06:36:28.393584638Z [info] [PLATFORM-WRITE] URL: https://github.com/6-7Development/archetype/commit/207736afa9c42f3090146c0039fb1265b13ff76f
+2025-10-28T06:36:28.393588584Z [info] [PLATFORM-WRITE] â³ Render will auto-deploy from GitHub...
+2025-10-28T06:36:28.399705716Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job f08092d2-1b17-479c-8362-b88447ad038d at iteration 10
+2025-10-28T06:36:35.867229814Z [info] [GITHUB-SERVICE] Committing 1 file(s) (attempt 1/3)
+2025-10-28T06:36:35.867244706Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 11 ===
+2025-10-28T06:36:35.867251705Z [info] [PLATFORM-WRITE] ðŸ”§ Committing to GitHub: monitoring/health-check.js
+2025-10-28T06:36:35.867261067Z [info] [META-SYSOP-JOB-MANAGER] Tools called: writePlatformFile
+2025-10-28T06:36:35.867263838Z [info] [PLATFORM-WRITE] Maintenance mode: ENABLED
+2025-10-28T06:36:35.867272645Z [info] [PLATFORM-WRITE] Reason: fixing
+2025-10-28T06:36:35.867275532Z [info] [PLATFORM-WRITE] âœ… Content validated for monitoring/health-check.js
+2025-10-28T06:36:35.867281662Z [info] [PLATFORM-WRITE] Content to commit: 1038 bytes
+2025-10-28T06:36:35.867285217Z [info] [PLATFORM-WRITE] Content length: 1038 bytes
+2025-10-28T06:36:35.867290113Z [info] [GITHUB-SERVICE] commitFile called with path: monitoring/health-check.js
+2025-10-28T06:36:35.867294179Z [info] [PLATFORM-WRITE] Content type: string
+2025-10-28T06:36:35.867299695Z [info] [GITHUB-SERVICE] Content type: string
+2025-10-28T06:36:35.867306415Z [info] [GITHUB-SERVICE] Content defined: true
+2025-10-28T06:36:35.867313314Z [info] [GITHUB-SERVICE] Content length: 1038 bytes
+2025-10-28T06:36:35.946722309Z [info] [GITHUB-SERVICE] Latest commit: 207736afa9c42f3090146c0039fb1265b13ff76f
+2025-10-28T06:36:36.046087789Z [info] [GITHUB-SERVICE] Processing file 1/1: monitoring/health-check.js
+2025-10-28T06:36:36.046093001Z [info] [GITHUB-SERVICE] Operation: modify
+2025-10-28T06:36:36.046097433Z [info] [GITHUB-SERVICE] Content type: string
+2025-10-28T06:36:36.046102104Z [info] [GITHUB-SERVICE] Content defined: true
+2025-10-28T06:36:36.046106514Z [info] [GITHUB-SERVICE] Content length: 1038 bytes
+2025-10-28T06:36:36.046111047Z [info] [GITHUB-SERVICE] âœ… Content validated for monitoring/health-check.js
+2025-10-28T06:36:37.030479675Z [info] [PLATFORM-WRITE] âœ… Committed to GitHub successfully
+2025-10-28T06:36:37.030489463Z [info] [PLATFORM-WRITE] Commit: 80fad183b0e372ed64d9849a6e2371ee6176dbbe
+2025-10-28T06:36:37.030495907Z [info] [PLATFORM-WRITE] URL: https://github.com/6-7Development/archetype/commit/80fad183b0e372ed64d9849a6e2371ee6176dbbe
+2025-10-28T06:36:37.030501660Z [info] [PLATFORM-WRITE] â³ Render will auto-deploy from GitHub...
+2025-10-28T06:36:37.030521213Z [info] [GITHUB-SERVICE] âœ… Successfully committed 1 file(s)
+2025-10-28T06:36:37.030526522Z [info] [GITHUB-SERVICE] Commit: 80fad183b0e372ed64d9849a6e2371ee6176dbbe
+2025-10-28T06:36:37.030532175Z [info] [GITHUB-SERVICE] URL: https://github.com/6-7Development/archetype/commit/80fad183b0e372ed64d9849a6e2371ee6176dbbe
+2025-10-28T06:36:46.732869085Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 12 ===
+2025-10-28T06:36:46.732879781Z [info] [META-SYSOP-JOB-MANAGER] Tools called: writePlatformFile
+2025-10-28T06:36:46.732885646Z [info] [PLATFORM-WRITE] âœ… Content validated for utils/diagnostics.js
+2025-10-28T06:36:46.732890944Z [info] [PLATFORM-WRITE] Content length: 1662 bytes
+2025-10-28T06:36:46.732898830Z [info] [PLATFORM-WRITE] Content type: string
+2025-10-28T06:36:46.732904271Z [info] [PLATFORM-WRITE] ðŸ”§ Committing to GitHub: utils/diagnostics.js
+2025-10-28T06:36:46.732911673Z [info] [PLATFORM-WRITE] Maintenance mode: ENABLED
+2025-10-28T06:36:46.732917675Z [info] [PLATFORM-WRITE] Reason: fixing
+2025-10-28T06:36:46.732923579Z [info] [PLATFORM-WRITE] Content to commit: 1662 bytes
+2025-10-28T06:36:46.732929372Z [info] [GITHUB-SERVICE] commitFile called with path: utils/diagnostics.js
+2025-10-28T06:36:46.732935359Z [info] [GITHUB-SERVICE] Content type: string
+2025-10-28T06:36:46.732944751Z [info] [GITHUB-SERVICE] Content defined: true
+2025-10-28T06:36:46.732949897Z [info] [GITHUB-SERVICE] Content length: 1662 bytes
+2025-10-28T06:36:46.732954847Z [info] [GITHUB-SERVICE] Committing 1 file(s) (attempt 1/3)
+2025-10-28T06:36:46.850226623Z [info] [GITHUB-SERVICE] Latest commit: 80fad183b0e372ed64d9849a6e2371ee6176dbbe
+2025-10-28T06:36:47.190070185Z [info] [GITHUB-SERVICE] Processing file 1/1: utils/diagnostics.js
+2025-10-28T06:36:47.190076478Z [info] [GITHUB-SERVICE] Operation: modify
+2025-10-28T06:36:47.190083824Z [info] [GITHUB-SERVICE] Content type: string
+2025-10-28T06:36:47.190090459Z [info] [GITHUB-SERVICE] Content defined: true
+2025-10-28T06:36:47.190096866Z [info] [GITHUB-SERVICE] Content length: 1662 bytes
+2025-10-28T06:36:47.190103293Z [info] [GITHUB-SERVICE] âœ… Content validated for utils/diagnostics.js
+2025-10-28T06:36:47.856333376Z [info] [GITHUB-SERVICE] âœ… Successfully committed 1 file(s)
+2025-10-28T06:36:47.856343625Z [info] [GITHUB-SERVICE] Commit: 6d6b8e78dc2451e8396c8033cdab448bbfcc1bb1
+2025-10-28T06:36:47.856349051Z [info] [GITHUB-SERVICE] URL: https://github.com/6-7Development/archetype/commit/6d6b8e78dc2451e8396c8033cdab448bbfcc1bb1
+2025-10-28T06:36:47.856354534Z [info] [PLATFORM-WRITE] âœ… Committed to GitHub successfully
+2025-10-28T06:36:47.856359735Z [info] [PLATFORM-WRITE] Commit: 6d6b8e78dc2451e8396c8033cdab448bbfcc1bb1
+2025-10-28T06:36:47.856365333Z [info] [PLATFORM-WRITE] URL: https://github.com/6-7Development/archetype/commit/6d6b8e78dc2451e8396c8033cdab448bbfcc1bb1
+2025-10-28T06:36:47.856370260Z [info] [PLATFORM-WRITE] â³ Render will auto-deploy from GitHub...
+2025-10-28T06:36:47.856374786Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job f08092d2-1b17-479c-8362-b88447ad038d at iteration 12
+2025-10-28T06:36:54.118010401Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 13 ===
+2025-10-28T06:36:54.118020858Z [info] [META-SYSOP-JOB-MANAGER] Tools called: updateTask
+2025-10-28T06:36:55.642651473Z [info] 6:36:55 AM [express] GET /api/meta-sysop/pending-changes 304 in 94ms :: {success:true,"pendingChanâ€¦
+2025-10-28T06:36:59.484965414Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 14 ===
+2025-10-28T06:36:59.484970848Z [info] [META-SYSOP-JOB-MANAGER] Tools called: commit_to_github
+2025-10-28T06:36:59.484976921Z [info] [GITHUB-SERVICE] Committing 3 file(s) (attempt 1/3)
+2025-10-28T06:36:59.484981839Z [info] [GITHUB-SERVICE] Latest commit: 6d6b8e78dc2451e8396c8033cdab448bbfcc1bb1
+2025-10-28T06:36:59.527323798Z [info] [GITHUB-SERVICE] Processing file 1/3: logs/server.log
+2025-10-28T06:36:59.527326939Z [info] [GITHUB-SERVICE] âœ… Content validated for logs/server.log
+2025-10-28T06:36:59.527334185Z [info] [GITHUB-SERVICE] Operation: modify
+2025-10-28T06:36:59.527341757Z [info] [GITHUB-SERVICE] Processing file 2/3: monitoring/health-check.js
+2025-10-28T06:36:59.527343549Z [info] [GITHUB-SERVICE] Content type: string
+2025-10-28T06:36:59.527352205Z [info] [GITHUB-SERVICE] Operation: modify
+2025-10-28T06:36:59.527352406Z [info] [GITHUB-SERVICE] Content defined: true
+2025-10-28T06:36:59.527361597Z [info] [GITHUB-SERVICE] Content length: 194 bytes
+2025-10-28T06:36:59.527361953Z [info] [GITHUB-SERVICE] Content type: string
+2025-10-28T06:36:59.527369838Z [info] [GITHUB-SERVICE] Content defined: true
+2025-10-28T06:36:59.527377644Z [info] [GITHUB-SERVICE] Content length: 1038 bytes
+2025-10-28T06:36:59.527385321Z [info] [GITHUB-SERVICE] âœ… Content validated for monitoring/health-check.js
+2025-10-28T06:36:59.527392593Z [info] [GITHUB-SERVICE] Processing file 3/3: utils/diagnostics.js
+2025-10-28T06:36:59.527399685Z [info] [GITHUB-SERVICE] Operation: modify
+2025-10-28T06:36:59.527407110Z [info] [GITHUB-SERVICE] Content type: string
+2025-10-28T06:36:59.527416414Z [info] [GITHUB-SERVICE] Content defined: true
+2025-10-28T06:36:59.527436057Z [info] [GITHUB-SERVICE] Content length: 1662 bytes
+2025-10-28T06:36:59.527443037Z [info] [GITHUB-SERVICE] âœ… Content validated for utils/diagnostics.js
+2025-10-28T06:37:00.716539101Z [info] [GITHUB-SERVICE] âœ… Successfully committed 3 file(s)
+2025-10-28T06:37:00.716545766Z [info] [GITHUB-SERVICE] Commit: 5b0eba6d844a55de240df8240aef6c1b3e722502
+2025-10-28T06:37:00.716551974Z [info] [GITHUB-SERVICE] URL: https://github.com/6-7Development/archetype/commit/5b0eba6d844a55de240df8240aef6c1b3e722502
+2025-10-28T06:37:00.716558458Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job f08092d2-1b17-479c-8362-b88447ad038d at iteration 14
+2025-10-28T06:37:05.786599487Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 15 ===
+2025-10-28T06:37:05.786606345Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T06:37:07.823734983Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 16 ===
+2025-10-28T06:37:07.823739506Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T06:37:07.823744574Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job f08092d2-1b17-479c-8362-b88447ad038d at iteration 16
+2025-10-28T06:37:09.316967589Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 17 ===
+2025-10-28T06:37:09.316977184Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T06:37:12.056979847Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 18 ===
+2025-10-28T06:37:12.056986267Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T06:37:12.080304906Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job f08092d2-1b17-479c-8362-b88447ad038d at iteration 18
+2025-10-28T06:37:13.590097984Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 19 ===
+2025-10-28T06:37:13.590104746Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T06:37:14.995383800Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 20 ===
+2025-10-28T06:37:14.995389519Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T06:37:14.995394509Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job f08092d2-1b17-479c-8362-b88447ad038d at iteration 20
+2025-10-28T06:37:16.345652778Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 21 ===
+2025-10-28T06:37:16.345658833Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T06:37:18.137701083Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 22 ===
+2025-10-28T06:37:18.137705566Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T06:37:18.137710281Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job f08092d2-1b17-479c-8362-b88447ad038d at iteration 22
+2025-10-28T06:37:19.358711036Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 23 ===
+2025-10-28T06:37:19.358717449Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T06:37:20.685108131Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 24 ===
+2025-10-28T06:37:20.685114965Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T06:37:20.696118611Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job f08092d2-1b17-479c-8362-b88447ad038d at iteration 24
+2025-10-28T06:37:22.467640761Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 25 ===
+2025-10-28T06:37:22.467645103Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T06:37:22.480320400Z [info] [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: Meta-SySop job: Diagnose platform - success
+2025-10-28T06:37:22.482506607Z [info] [META-SYSOP-JOB-MANAGER] Job completed: f08092d2-1b17-479c-8362-b88447ad038d
+2025-10-28T06:37:22.482516010Z [info] [META-SYSOP-JOB-MANAGER] Worker completed for job: f08092d2-1b17-479c-8362-b88447ad038d
