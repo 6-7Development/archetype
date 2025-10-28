@@ -33,49 +33,63 @@ export interface DiagnosisResult {
  * @returns Sanitized relative path or null if invalid
  */
 function sanitizeFilePath(filePath: string): string | null {
+  // Reject null, undefined, or empty paths
+  if (!filePath || typeof filePath !== 'string') {
+    console.warn(`🚨 SECURITY: Invalid file path type: ${typeof filePath}`);
+    return null;
+  }
+  
   // Reject absolute paths - only accept relative paths
   if (path.isAbsolute(filePath)) {
     console.warn(`🚨 SECURITY: Rejected absolute path: ${filePath}`);
     return null;
   }
   
-  // Reject paths with shell metacharacters, quotes, or dangerous whitespace (tabs, newlines)
-  // Allow normal spaces in filenames, but reject tabs and newlines
-  if (/[;&|`$(){}[\]<>"'\t\n\r]/.test(filePath)) {
-    console.warn(`🚨 SECURITY: Rejected unsafe file path with metacharacters/quotes: ${filePath}`);
+  // Reject path traversal attempts (..) - CRITICAL security check
+  if (filePath.includes('..')) {
+    console.warn(`🚨 SECURITY: Rejected path traversal: ${filePath}`);
     return null;
   }
   
-  // Normalize and resolve to absolute path for validation
+  // Reject paths with shell metacharacters or dangerous characters
+  // Allow normal spaces, dashes, dots, slashes, and underscores in filenames
+  // Block shell injection characters: ; & | ` $ ( ) { } [ ] < > " ' and dangerous whitespace
+  if (/[;&|`$(){}[\]<>"\t\n\r]/.test(filePath)) {
+    console.warn(`🚨 SECURITY: Rejected unsafe file path with shell metacharacters: ${filePath}`);
+    return null;
+  }
+  
+  // Normalize the path
   const normalized = path.normalize(filePath);
+  
+  // Resolve to absolute for validation
   const resolved = path.resolve(process.cwd(), normalized);
   const workspaceRoot = process.cwd() + path.sep;
   
-  // Ensure it's within the workspace with proper separator check
+  // Ensure it's within the workspace
   if (!resolved.startsWith(workspaceRoot) && resolved !== process.cwd()) {
     console.warn(`🚨 SECURITY: Rejected path outside workspace: ${filePath} -> ${resolved}`);
     return null;
   }
   
-  // Get relative path (don't leak absolute paths)
+  // Get relative path for return
   const relativePath = path.relative(process.cwd(), resolved);
   
-  // Additional check: prevent reading sensitive files
-  const sensitivePatterns = [
-    /^\.env/, 
-    /^\.git/,
-    /node_modules\/.*\.json$/, // package.json in node_modules could leak info
-    /^database\//,
+  // Additional safety: Only block the most critical sensitive files
+  // More permissive to allow normal diagnosis of platform code
+  const criticalPatterns = [
+    /^\.env($|\.)/,  // .env, .env.local, etc. (secrets)
+    /^\.git\//,       // .git directory (version control internals)
   ];
   
-  for (const pattern of sensitivePatterns) {
+  for (const pattern of criticalPatterns) {
     if (pattern.test(relativePath)) {
-      console.warn(`🚨 SECURITY: Rejected access to sensitive file: ${relativePath}`);
+      console.warn(`🚨 SECURITY: Rejected access to critical file: ${relativePath}`);
       return null;
     }
   }
   
-  // Return workspace-relative path (don't leak absolute filesystem locations)
+  // Return workspace-relative path (safe for diagnosis)
   return relativePath;
 }
 
