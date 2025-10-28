@@ -52,6 +52,19 @@ echo "GITHUB_BRANCH: ${GITHUB_BRANCH}"
 echo "ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:+✓ SET}"
 echo ""
 
+echo "📄 Ensuring replit.md is available..."
+if [ ! -f "replit.md" ]; then
+  echo "⚠️  replit.md not found in root, extracting from git..."
+  if git show HEAD:replit.md > replit.md 2>/dev/null; then
+    echo "✅ Extracted replit.md from git"
+  else
+    echo "❌ Could not find replit.md in git either"
+  fi
+else
+  echo "✅ replit.md already present"
+fi
+echo ""
+
 echo "🚀 Starting Node.js application..."
 echo "Command: node dist/index.js"
 echo ""
