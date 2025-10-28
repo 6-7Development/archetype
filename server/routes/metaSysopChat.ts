@@ -1658,7 +1658,7 @@ Be conversational, be helpful, and only work when asked!`;
         stream: true, // ✅ Required for Opus 4.1 (long operations)
       });
 
-      // ✅ HANDLE STREAMING RESPONSE: Consume stream and build content blocks
+      // ✅ REAL-TIME STREAMING: Stream text to user AS IT ARRIVES while building content blocks
       const contentBlocks: any[] = [];
       let currentTextBlock = '';
       
@@ -1668,6 +1668,9 @@ Be conversational, be helpful, and only work when asked!`;
             // Save any pending text block
             if (currentTextBlock) {
               contentBlocks.push({ type: 'text', text: currentTextBlock });
+              fullContent += currentTextBlock;
+              sendEvent('content', { content: currentTextBlock });
+              console.log('[META-SYSOP-CHAT] 💬 Streaming text:', currentTextBlock.slice(0, 100));
               currentTextBlock = '';
             }
             // Start new tool_use block
@@ -1680,7 +1683,10 @@ Be conversational, be helpful, and only work when asked!`;
           }
         } else if (event.type === 'content_block_delta') {
           if (event.delta.type === 'text_delta') {
+            // 🔥 STREAM TEXT IMMEDIATELY - Don't wait!
             currentTextBlock += event.delta.text;
+            fullContent += event.delta.text;
+            sendEvent('content', { content: event.delta.text });
           } else if (event.delta.type === 'input_json_delta') {
             // Accumulate tool input JSON
             const lastBlock = contentBlocks[contentBlocks.length - 1];
@@ -1690,6 +1696,10 @@ Be conversational, be helpful, and only work when asked!`;
             }
           }
         } else if (event.type === 'content_block_stop') {
+          // Finalize current text block
+          if (currentTextBlock && contentBlocks[contentBlocks.length - 1]?.type !== 'text') {
+            contentBlocks.push({ type: 'text', text: currentTextBlock });
+          }
           // Finalize tool input
           const lastBlock = contentBlocks[contentBlocks.length - 1];
           if (lastBlock && lastBlock.type === 'tool_use' && lastBlock._inputStr) {
@@ -1704,7 +1714,7 @@ Be conversational, be helpful, and only work when asked!`;
       }
       
       // Add any final text block
-      if (currentTextBlock) {
+      if (currentTextBlock && contentBlocks[contentBlocks.length - 1]?.text !== currentTextBlock) {
         contentBlocks.push({ type: 'text', text: currentTextBlock });
       }
 
@@ -1757,16 +1767,9 @@ Be conversational, be helpful, and only work when asked!`;
         }
       }
 
-      // 🎯 CONVERSATIONAL STREAMING:
-      // Stream ALL text immediately to keep the conversation flowing
-      // Just like Replit Agent - keep the user informed in real-time!
+      // 🔧 TOOL EXECUTION: Process all tool calls from the response
       for (const block of contentBlocks) {
-        if (block.type === 'text') {
-          // STREAM ALL TEXT IMMEDIATELY - no buffering!
-          fullContent += block.text;
-          sendEvent('content', { content: block.text });
-          console.log('[META-SYSOP-CHAT] 💬 Streaming text:', block.text.slice(0, 100));
-        } else if (block.type === 'tool_use') {
+        if (block.type === 'tool_use') {
           const { name, input, id } = block;
 
           // 🔥 RAILWAY FIX: Send progress event BEFORE each tool execution
