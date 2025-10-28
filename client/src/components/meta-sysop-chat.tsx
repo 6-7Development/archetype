@@ -41,7 +41,7 @@ function CodeCopyButton({ code }: { code: string }) {
   return (
     <button
       onClick={handleCopy}
-      className="absolute top-2 right-2 p-1.5 rounded-md bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50 transition-all text-slate-300 hover:text-white"
+      className="absolute top-2 right-2 p-1.5 rounded-md bg-muted hover:bg-muted/80 border border-border transition-colors text-muted-foreground hover:text-foreground"
       data-testid="button-copy-code"
     >
       {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -77,9 +77,9 @@ function MessageContent({ content }: { content: string }) {
       {parts.map((part, index) => (
         part.type === 'code' ? (
           <div key={index} className="relative group">
-            <div className="bg-slate-950/90 border border-slate-700/50 rounded-lg p-3 overflow-x-auto">
-              <div className="text-[10px] text-slate-500 uppercase mb-2 font-semibold">{part.language}</div>
-              <pre className="text-xs text-emerald-300 font-mono leading-relaxed">{part.content}</pre>
+            <div className="bg-muted border border-border rounded-md p-3 overflow-x-auto">
+              <div className="text-[10px] text-muted-foreground uppercase mb-2 font-semibold">{part.language}</div>
+              <pre className="text-xs text-foreground font-mono leading-relaxed">{part.content}</pre>
             </div>
             <CodeCopyButton code={part.content} />
           </div>
@@ -97,7 +97,7 @@ function MessageContent({ content }: { content: string }) {
                   if (boldMatch.index > lastIdx) {
                     segments.push(<span key={`text-${i}-${lastIdx}`}>{line.slice(lastIdx, boldMatch.index)}</span>);
                   }
-                  segments.push(<strong key={`bold-${i}-${boldMatch.index}`} className="font-semibold text-slate-100">{boldMatch[1]}</strong>);
+                  segments.push(<strong key={`bold-${i}-${boldMatch.index}`} className="font-semibold">{boldMatch[1]}</strong>);
                   lastIdx = boldMatch.index + boldMatch[0].length;
                 }
                 if (lastIdx < line.length) {
@@ -509,20 +509,20 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
   };
 
   return (
-    <div className="flex h-full overflow-hidden bg-slate-900/60">
+    <div className="flex h-full overflow-hidden bg-background">
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Active Task Header */}
         {isStreaming && activeTaskId && (
-          <div className="px-4 py-3 border-b border-slate-800/50 bg-slate-950/60">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
             <div className="flex items-center justify-between gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h2 className="text-sm font-semibold text-slate-200 truncate">
+                  <h2 className="text-sm font-semibold truncate">
                     {tasks.find(t => t.id === activeTaskId)?.title || 'Working...'}
                   </h2>
                   {tasks.length > 0 && (
-                    <span className="text-xs text-slate-400 shrink-0">
+                    <span className="text-xs text-muted-foreground shrink-0">
                       {tasks.filter(t => t.status === 'completed').length}/{tasks.length}
                     </span>
                   )}
@@ -596,11 +596,11 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
             {/* Welcome screen */}
             {messages.length === 0 && !isStreaming && (
               <div className="text-center py-12 animate-in fade-in-up duration-700">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center shadow-lg">
-                  <Wrench className="h-8 w-8 text-white" />
+                <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-muted flex items-center justify-center">
+                  <Wrench className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-100 mb-2">Meta-SySop Ready</h3>
-                <p className="text-slate-400 max-w-md mx-auto leading-relaxed">
+                <h3 className="text-xl font-bold mb-2">Meta-SySop Ready</h3>
+                <p className="text-muted-foreground max-w-md mx-auto leading-relaxed">
                   I'm Meta-SySop, your autonomous platform healing agent. I can diagnose and fix issues 
                   with the Archetype platform itself. Tell me what needs to be fixed.
                 </p>
@@ -617,25 +617,25 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                 )}
               >
                 {message.role === "assistant" && (
-                  <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center shadow-lg">
-                    <Wrench className="h-5 w-5 text-white" />
+                  <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-muted flex items-center justify-center">
+                    <Wrench className="h-5 w-5 text-muted-foreground" />
                   </div>
                 )}
                 
                 <div
                   className={cn(
-                    "rounded-xl px-4 py-3 max-w-[75%] shadow-lg",
+                    "rounded-lg px-4 py-3 max-w-[75%] border",
                     message.role === "user"
-                      ? "bg-gradient-to-br from-slate-700 to-slate-600 text-white border border-slate-500/20"
-                      : "bg-slate-800/90 text-slate-200 border border-slate-700/50"
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-muted text-foreground border-border"
                   )}
                 >
                   <MessageContent content={message.content} />
                 </div>
 
                 {message.role === "user" && (
-                  <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-slate-700 flex items-center justify-center">
-                    <User className="h-5 w-5 text-slate-300" />
+                  <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
+                    <User className="h-5 w-5 text-primary-foreground" />
                   </div>
                 )}
               </div>
@@ -644,7 +644,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
             {/* Inline Task Progress Card */}
             {showTaskList && tasks.length > 0 && (
               <div className="animate-in fade-in-up">
-                <div className="bg-card/50 border border-border/40 rounded-xl p-4 shadow-sm backdrop-blur-md">
+                <div className="bg-muted border border-border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <Loader2 className="w-4 h-4 text-primary animate-spin" />
@@ -673,17 +673,17 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
             {/* Streaming indicator */}
             {isStreaming && (
               <div className="flex gap-3 justify-start animate-in fade-in-up">
-                <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center shadow-lg animate-pulse">
-                  <Wrench className="h-5 w-5 text-white" />
+                <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-muted flex items-center justify-center animate-pulse">
+                  <Wrench className="h-5 w-5 text-muted-foreground" />
                 </div>
-                <div className="rounded-xl px-4 py-3 max-w-[75%] bg-slate-800/90 text-slate-200 border border-slate-700/50 shadow-lg">
+                <div className="rounded-lg px-4 py-3 max-w-[75%] bg-muted text-foreground border border-border">
                   {streamingContent ? (
                     <MessageContent content={streamingContent} />
                   ) : (
-                    <div className="flex items-center gap-2 text-sm text-slate-400">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
+                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
                     </div>
                   )}
                 </div>
@@ -693,19 +693,19 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
         </div>
 
         {/* Input Area */}
-        <div className="border-t border-slate-800/50 p-4 bg-slate-950/80 flex-shrink-0">
+        <div className="border-t border-border p-4 bg-background flex-shrink-0">
           <div className="max-w-3xl mx-auto space-y-3">
             {/* Project Selector & Autonomy Selector */}
             <div className="flex items-center gap-6 flex-wrap">
               {/* Project Selector */}
               <div className="flex items-center gap-3">
-                <span className="text-xs text-slate-400 font-medium">Target:</span>
+                <span className="text-xs text-muted-foreground font-medium">Target:</span>
                 <Select
                   value={selectedProjectId || "platform"}
                   onValueChange={(value) => setSelectedProjectId(value === "platform" ? null : value)}
                   disabled={isStreaming}
                 >
-                  <SelectTrigger className="h-8 w-auto min-w-[180px] text-xs bg-slate-900/50 border-slate-700" data-testid="select-project">
+                  <SelectTrigger className="h-8 w-auto min-w-[180px] text-xs" data-testid="select-project">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -717,12 +717,12 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                     </SelectItem>
                     {projects && projects.length > 0 && (
                       <>
-                        <div className="px-2 py-1.5 text-xs text-slate-500 font-medium">User Projects</div>
+                        <div className="px-2 py-1.5 text-xs text-muted-foreground font-medium">User Projects</div>
                         {projects.map((project: any) => (
                           <SelectItem key={project.id} value={project.id} data-testid={`project-option-${project.id}`}>
                             <div className="flex flex-col gap-0.5">
                               <span className="font-semibold text-xs">{project.name}</span>
-                              <span className="text-[10px] text-slate-500">
+                              <span className="text-[10px] text-muted-foreground">
                                 {project.userName || project.userEmail} • {project.fileCount || 0} files
                               </span>
                             </div>
@@ -737,13 +737,13 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
               {/* Autonomy Selector */}
               {autonomyData && (
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-slate-400 font-medium">Autonomy:</span>
+                  <span className="text-xs text-muted-foreground font-medium">Autonomy:</span>
                   <Select
                     value={autonomyData.currentLevel}
                     onValueChange={(value) => updateAutonomyMutation.mutate(value)}
                     disabled={updateAutonomyMutation.isPending || isStreaming}
                   >
-                    <SelectTrigger className="h-8 w-auto min-w-[140px] text-xs bg-slate-900/50 border-slate-700" data-testid="select-autonomy-level">
+                    <SelectTrigger className="h-8 w-auto min-w-[140px] text-xs" data-testid="select-autonomy-level">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -774,7 +774,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Tell Meta-SySop what needs to be fixed..."
-                className="min-h-[44px] max-h-32 resize-none bg-slate-900/50 border-slate-700 text-slate-200"
+                className="min-h-[44px] max-h-32 resize-none"
                 disabled={isStreaming}
                 data-testid="textarea-message"
               />
