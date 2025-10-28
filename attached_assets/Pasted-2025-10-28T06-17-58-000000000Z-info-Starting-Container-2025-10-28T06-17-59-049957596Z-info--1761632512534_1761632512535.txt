@@ -1,0 +1,186 @@
+2025-10-28T06:17:58.000000000Z [info] Starting Container
+2025-10-28T06:17:59.049957596Z [info] ======================================
+2025-10-28T06:17:59.049961937Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT
+2025-10-28T06:17:59.049966195Z [info] ======================================
+2025-10-28T06:17:59.049972153Z [info] Time: Tue Oct 28 06:17:58 UTC 2025
+2025-10-28T06:17:59.049976681Z [info] 
+2025-10-28T06:17:59.049981023Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-10-28T06:17:59.049985373Z [info] No config path provided, using default 'drizzle.config.ts'
+2025-10-28T06:17:59.050029429Z [info] Reading config file '/app/drizzle.config.ts'
+2025-10-28T06:17:59.208353763Z [info] Using 'pg' driver for database querying
+2025-10-28T06:17:59.314518857Z [info] [â£·] Pulling schema from database...
+2025-10-28T06:17:59.426326910Z [info] a from database...
+2025-10-28T06:17:59.553423125Z [info] a from database...
+2025-10-28T06:18:00.076319987Z [info] a from database...
+2025-10-28T06:18:00.076332029Z [info] a from database...
+2025-10-28T06:18:00.076417943Z [info] a from database...
+2025-10-28T06:18:00.076425188Z [info] a from database...
+2025-10-28T06:18:00.225396726Z [info] a from database...
+2025-10-28T06:18:00.332110944Z [info] a from database...
+2025-10-28T06:18:00.451446321Z [info] a from database...
+2025-10-28T06:18:00.593876868Z [info] a from database...
+2025-10-28T06:18:01.138804851Z [info] a from database...
+2025-10-28T06:18:01.138809748Z [info] a from database...
+2025-10-28T06:18:01.138814720Z [info] a from database...
+2025-10-28T06:18:01.138819711Z [info] a from database...
+2025-10-28T06:18:01.229500159Z [info] a from database...
+2025-10-28T06:18:01.344649711Z [info] a from database...
+2025-10-28T06:18:01.490274324Z [info] a from database...
+2025-10-28T06:18:01.567996177Z [info] [i] No changes detected
+2025-10-28T06:18:01.568003745Z [info] 
+2025-10-28T06:18:01.568011179Z [info] âœ… Database migrations completed successfully!
+2025-10-28T06:18:01.568019838Z [info] 
+2025-10-28T06:18:01.568026192Z [info] ðŸš€ Starting Node.js application...
+2025-10-28T06:18:02.489486125Z [info] [db] âœ… Added sslmode=no-verify to connection string for production
+2025-10-28T06:18:02.489499649Z [info] [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-28T06:18:02.489508223Z [info] [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-28T06:18:02.489515370Z [info] [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-28T06:18:02.489521834Z [info] [db] SSL Configuration: {rejectUnauthorized:false}
+2025-10-28T06:18:02.489528976Z [info] [db] Connection string includes SSL params: true
+2025-10-28T06:18:02.494808766Z [info] [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-28T06:18:02.494818247Z [info] [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-28T06:18:02.507390774Z [info] [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller
+2025-10-28T06:18:02.507397924Z [info] ðŸ“¡ WebSocket server initialized at /ws
+2025-10-28T06:18:02.507403056Z [info] [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-28T06:18:02.507408267Z [info] [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-28T06:18:02.508718704Z [info] [META-SYSOP-JOB-MANAGER] Initialized with WebSocket support
+2025-10-28T06:18:02.508727310Z [info] [META-SYSOP-JOB-MANAGER] Job manager connected to WebSocket
+2025-10-28T06:18:02.519108494Z [info] âœ… All routes registered successfully
+2025-10-28T06:18:02.519115293Z [info] ðŸ” Testing database connection...
+2025-10-28T06:18:02.564550960Z [info] 6:18:02 AM [express] serving on port 8080
+2025-10-28T06:18:02.564558604Z [info] ðŸŒ Server accessible at http://0.0.0.0:8080
+2025-10-28T06:18:02.714161845Z [info] âœ… Database connected successfully
+2025-10-28T06:18:02.714167080Z [info] ðŸ”§ Auto-healing system ENABLED (production mode)
+2025-10-28T06:18:02.714172172Z [info] 
+2025-10-28T06:18:02.714177173Z [info] ðŸ” Checking GitHub integration configuration...
+2025-10-28T06:18:02.714181540Z [info] âœ… GitHub integration configured successfully
+2025-10-28T06:18:02.714186004Z [info]    - Repository: 6-7Development/archetype
+2025-10-28T06:18:02.714190535Z [info]    - Branch: main
+2025-10-28T06:18:02.714197202Z [info]    - Token: âœ“ (configured)
+2025-10-28T06:18:02.714202583Z [info]    - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-28T06:18:02.714206801Z [info]    - Maintenance mode: Available for owner
+2025-10-28T06:18:02.714210660Z [info] 
+2025-10-28T06:18:08.275147619Z [info] [DEPLOYMENT-INFO] Using Railway environment variables
+2025-10-28T06:18:08.275155427Z [info] 6:18:08 AM [express] GET /api/deployment-info 200 in 2ms :: {version:"1.0.0",commitHash:"29de8faâ€¦
+2025-10-28T06:18:12.248136712Z [info] [AUTH] Login attempt for email: root@getdc360.com
+2025-10-28T06:18:12.248149981Z [info] [AUTH] Found users: 1
+2025-10-28T06:18:12.248160892Z [info] [AUTH] User found: root@getdc360.com has password: true
+2025-10-28T06:18:12.248169818Z [info] [AUTH] Verifying password...
+2025-10-28T06:18:12.256694635Z [info] [AUTH] Password valid: true
+2025-10-28T06:18:12.256702648Z [info] [AUTH] Authentication successful for: root@getdc360.com
+2025-10-28T06:18:12.263392539Z [info] 6:18:12 AM [express] POST /api/auth/login 200 in 273ms :: {success:true,user:{id:"723e1301-c72â€¦
+2025-10-28T06:18:13.402839943Z [info] 6:18:13 AM [express] GET /api/auth/me 304 in 80ms :: {user:{id:"723e1301-c729-48fc-810a-39ddef95â€¦
+2025-10-28T06:18:13.402848056Z [info] 6:18:13 AM [express] GET /api/projects 304 in 87ms :: []
+2025-10-28T06:18:16.978896806Z [info] 6:18:16 AM [express] GET /api/meta-sysop/autonomy-level 304 in 25ms :: {currentLevel:"max","maxAllâ€¦
+2025-10-28T06:18:16.978901957Z [info] [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-28T06:18:16.978929867Z [info] 6:18:16 AM [express] GET /api/meta-sysop/projects 304 in 21ms :: []
+2025-10-28T06:18:16.978937066Z [info] 6:18:16 AM [express] GET /api/platform/status 200 in 19ms :: {overallHealth:100,activeIncidents:â€¦
+2025-10-28T06:18:17.369860759Z [info] 6:18:17 AM [express] GET /api/platform/deployment-history 304 in 240ms :: {success:true,"deploymenâ€¦
+2025-10-28T06:18:17.369874835Z [info] ðŸ“¡ [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-28T06:18:17.369935383Z [info] 6:18:17 AM [express] GET /api/meta-sysop/pending-changes 304 in 97ms :: {success:true,"pendingChanâ€¦
+2025-10-28T06:18:17.369943142Z [info] [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found 3e5845e8-1de3-4276-a674-94d134cc37ac
+2025-10-28T06:18:17.369950139Z [info] 6:18:17 AM [express] GET /api/meta-sysop/active-job 304 in 93ms :: {success:true,job:{id:"3e58â€¦
+2025-10-28T06:18:17.369956950Z [info] [GITHUB-SERVICE] Initialized for 6-7Development/archetype on branch main
+2025-10-28T06:18:17.369963611Z [info] âœ… WebSocket client connected
+2025-10-28T06:18:22.410975519Z [info] [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 found 3e5845e8-1de3-4276-a674-94d134cc37ac
+2025-10-28T06:18:22.410981131Z [info] 6:18:22 AM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {success:true,"pendingChanâ€¦
+2025-10-28T06:18:22.410986054Z [info] 6:18:22 AM [express] GET /api/meta-sysop/active-job 304 in 12ms :: {success:true,job:{id:"3e58â€¦
+2025-10-28T06:18:24.495295424Z [error] [META-SYSOP] Failed to resume job: Error: Job cannot be resumed from status: running
+2025-10-28T06:18:24.495311436Z [error]     at resumeJob (file:///app/dist/index.js:6849:11)
+2025-10-28T06:18:24.495319672Z [error]     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-28T06:18:24.495326551Z [error]     at async file:///app/dist/index.js:13956:5
+2025-10-28T06:18:24.495333916Z [info] 6:18:24 AM [express] POST /api/meta-sysop/resume/3e5845e8-1de3-4276-a674-94d134cc37ac 400 in 12ms ::â€¦
+2025-10-28T06:18:26.541935977Z [error] [META-SYSOP] Failed to resume job: Error: Job cannot be resumed from status: running
+2025-10-28T06:18:26.541949880Z [error]     at resumeJob (file:///app/dist/index.js:6849:11)
+2025-10-28T06:18:26.541956225Z [error]     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-28T06:18:26.541964769Z [error]     at async file:///app/dist/index.js:13956:5
+2025-10-28T06:18:26.541970119Z [info] 6:18:26 AM [express] POST /api/meta-sysop/resume/3e5845e8-1de3-4276-a674-94d134cc37ac 400 in 14ms ::â€¦
+2025-10-28T06:18:26.922383926Z [info] [META-SYSOP] Job cancelled: 3e5845e8-1de3-4276-a674-94d134cc37ac by user: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-10-28T06:18:26.922392162Z [info] 6:18:26 AM [express] DELETE /api/meta-sysop/job/3e5845e8-1de3-4276-a674-94d134cc37ac 200 in 14ms :: â€¦
+2025-10-28T06:18:27.095509947Z [info] [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T06:18:27.095514267Z [info] 6:18:27 AM [express] GET /api/meta-sysop/active-job 200 in 9ms :: {success:true,job:null}
+2025-10-28T06:18:27.594389755Z [info] 6:18:27 AM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {success:true,"pendingChanâ€¦
+2025-10-28T06:18:32.203866269Z [info] [META-SYSOP] Active job query for user: 723e1301-c729-48fc-810a-39ddef954ae2 none found
+2025-10-28T06:18:32.203871731Z [info] 6:18:32 AM [express] GET /api/meta-sysop/active-job 304 in 13ms :: {success:true,job:null}
+2025-10-28T06:18:32.565965102Z [info] 6:18:32 AM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {success:true,"pendingChangâ€¦
+2025-10-28T06:18:34.818944736Z [info] [META-SYSOP-JOB-MANAGER] Created job: 93dc33d2-41d2-4a83-85cd-88a0b1891b53 for user: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-10-28T06:18:34.818959703Z [info] [META-SYSOP-JOB-MANAGER] Starting worker for job: 93dc33d2-41d2-4a83-85cd-88a0b1891b53
+2025-10-28T06:18:34.818969949Z [info] [META-SYSOP] Started background job: 93dc33d2-41d2-4a83-85cd-88a0b1891b53
+2025-10-28T06:18:34.818976751Z [info] 6:18:34 AM [express] POST /api/meta-sysop/start 200 in 13ms :: {success:true,jobId:"93dc33d2-41dâ€¦
+2025-10-28T06:18:34.818982950Z [info] [META-SYSOP-JOB-MANAGER] Job started: 93dc33d2-41d2-4a83-85cd-88a0b1891b53
+2025-10-28T06:18:34.818991946Z [info] [META-SYSOP-JOB-MANAGER] User autonomy level: max
+2025-10-28T06:18:35.176437662Z [info] âœ… WebSocket client connected
+2025-10-28T06:18:37.585432052Z [info] 6:18:37 AM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {success:true,"pendingChanâ€¦
+2025-10-28T06:18:42.099920192Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 1 ===
+2025-10-28T06:18:42.099925477Z [info] [META-SYSOP-JOB-MANAGER] Tools called: createTaskList
+2025-10-28T06:18:42.099929934Z [info] [META-SYSOP-JOB-MANAGER] âŒ FORCING TRIGGERED! Skipped perform_diagnosis!
+2025-10-28T06:18:42.784667099Z [info] 6:18:42 AM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {success:true,"pendingChangâ€¦
+2025-10-28T06:18:44.912153742Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 2 ===
+2025-10-28T06:18:44.912159712Z [info] [META-SYSOP-JOB-MANAGER] Tools called: perform_diagnosis
+2025-10-28T06:18:44.912165035Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 93dc33d2-41d2-4a83-85cd-88a0b1891b53 at iteration 2
+2025-10-28T06:18:47.436916712Z [info] 6:18:47 AM [express] GET /api/platform/deployment-history 304 in 135ms :: {success:true,"deploymenâ€¦
+2025-10-28T06:18:47.852565214Z [info] 6:18:47 AM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {success:true,"pendingChangâ€¦
+2025-10-28T06:18:48.487358804Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 3 ===
+2025-10-28T06:18:48.487369270Z [info] [META-SYSOP-JOB-MANAGER] Tools called: updateTask
+2025-10-28T06:18:50.252088511Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 4 ===
+2025-10-28T06:18:50.252097773Z [info] [META-SYSOP-JOB-MANAGER] Tools called: readTaskList
+2025-10-28T06:18:50.786929024Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 93dc33d2-41d2-4a83-85cd-88a0b1891b53 at iteration 4
+2025-10-28T06:18:54.047435963Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 5 ===
+2025-10-28T06:18:54.047446104Z [info] [META-SYSOP-JOB-MANAGER] Tools called: read_logs
+2025-10-28T06:18:56.957229625Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 6 ===
+2025-10-28T06:18:56.957234932Z [info] [META-SYSOP-JOB-MANAGER] Tools called: listPlatformDirectory
+2025-10-28T06:18:56.957239790Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 93dc33d2-41d2-4a83-85cd-88a0b1891b53 at iteration 6
+2025-10-28T06:19:00.021138715Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 7 ===
+2025-10-28T06:19:00.021146286Z [info] [META-SYSOP-JOB-MANAGER] Tools called: perform_diagnosis
+2025-10-28T06:19:03.484804579Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 8 ===
+2025-10-28T06:19:03.484808819Z [info] [META-SYSOP-JOB-MANAGER] Tools called: listPlatformDirectory
+2025-10-28T06:19:03.484813514Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 93dc33d2-41d2-4a83-85cd-88a0b1891b53 at iteration 8
+2025-10-28T06:19:08.096125995Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 9 ===
+2025-10-28T06:19:08.096131849Z [info] [META-SYSOP-JOB-MANAGER] Tools called: readPlatformFile
+2025-10-28T06:19:11.647499545Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 10 ===
+2025-10-28T06:19:11.647503611Z [info] [META-SYSOP-JOB-MANAGER] Tools called: execute_sql
+2025-10-28T06:19:11.647507779Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 93dc33d2-41d2-4a83-85cd-88a0b1891b53 at iteration 10
+2025-10-28T06:19:15.091994053Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 11 ===
+2025-10-28T06:19:15.092412231Z [info] [META-SYSOP-JOB-MANAGER] Tools called: execute_sql
+2025-10-28T06:19:20.139655559Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 12 ===
+2025-10-28T06:19:20.139659752Z [info] [META-SYSOP-JOB-MANAGER] Tools called: execute_sql
+2025-10-28T06:19:20.139663519Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 93dc33d2-41d2-4a83-85cd-88a0b1891b53 at iteration 12
+2025-10-28T06:19:26.968374350Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 13 ===
+2025-10-28T06:19:26.968379144Z [info] [META-SYSOP-JOB-MANAGER] Tools called: readPlatformFile
+2025-10-28T06:19:33.037871781Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 14 ===
+2025-10-28T06:19:33.037875899Z [info] [META-SYSOP-JOB-MANAGER] Tools called: readPlatformFile
+2025-10-28T06:19:33.043533971Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 93dc33d2-41d2-4a83-85cd-88a0b1891b53 at iteration 14
+2025-10-28T06:19:36.952200490Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 15 ===
+2025-10-28T06:19:36.952204853Z [info] [META-SYSOP-JOB-MANAGER] Tools called: execute_sql
+2025-10-28T06:19:56.957145754Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 16 ===
+2025-10-28T06:19:56.957152249Z [info] [META-SYSOP-JOB-MANAGER] Tools called: updateTask
+2025-10-28T06:19:56.957157300Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 93dc33d2-41d2-4a83-85cd-88a0b1891b53 at iteration 16
+2025-10-28T06:19:56.957162160Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 17 ===
+2025-10-28T06:19:56.957167156Z [info] [META-SYSOP-JOB-MANAGER] Tools called: updateTask
+2025-10-28T06:20:04.049839409Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 18 ===
+2025-10-28T06:20:04.049846921Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T06:20:04.388723827Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 93dc33d2-41d2-4a83-85cd-88a0b1891b53 at iteration 18
+2025-10-28T06:20:06.362858522Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 19 ===
+2025-10-28T06:20:06.362864853Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T06:20:08.393365300Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 20 ===
+2025-10-28T06:20:08.393370069Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T06:20:08.420345077Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 93dc33d2-41d2-4a83-85cd-88a0b1891b53 at iteration 20
+2025-10-28T06:20:10.127611507Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 21 ===
+2025-10-28T06:20:10.127615550Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T06:20:12.013182243Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 22 ===
+2025-10-28T06:20:12.013187853Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T06:20:12.013194102Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 93dc33d2-41d2-4a83-85cd-88a0b1891b53 at iteration 22
+2025-10-28T06:20:14.208240913Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 23 ===
+2025-10-28T06:20:14.208246805Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T06:20:14.359541082Z [info] 6:20:14 AM [express] GET /api/meta-sysop/pending-changes 304 in 91ms :: {success:true,"pendingChanâ€¦
+2025-10-28T06:20:16.057159308Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 24 ===
+2025-10-28T06:20:16.057163747Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T06:20:16.057168097Z [info] [META-SYSOP-JOB-MANAGER] Saved checkpoint for job 93dc33d2-41d2-4a83-85cd-88a0b1891b53 at iteration 24
+2025-10-28T06:20:17.581918702Z [info] [META-SYSOP-JOB-MANAGER] === ITERATION 25 ===
+2025-10-28T06:20:17.581931073Z [info] [META-SYSOP-JOB-MANAGER] Tools called: NONE
+2025-10-28T06:20:17.620594173Z [info] [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: Meta-SySop job: Diagnose platform - success
+2025-10-28T06:20:17.622046701Z [info] [META-SYSOP-JOB-MANAGER] Job completed: 93dc33d2-41d2-4a83-85cd-88a0b1891b53
+2025-10-28T06:20:17.622054958Z [info] [META-SYSOP-JOB-MANAGER] Worker completed for job: 93dc33d2-41d2-4a83-85cd-88a0b1891b53
+2025-10-28T06:20:17.660984854Z [info] 6:20:17 AM [express] GET /api/platform/deployment-history 304 in 106ms :: {success:true,"deploymenâ€¦
+2025-10-28T06:20:19.459486670Z [info] 6:20:19 AM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {success:true,"pendingChanâ€¦
+2025-10-28T06:20:24.501147994Z [info] 6:20:24 AM [express] GET /api/meta-sysop/pending-changes 304 in 8ms :: {success:true,"pendingChangâ€¦
