@@ -1945,6 +1945,7 @@ Be conversational, be helpful, and only work when asked!`;
     let iterationCount = 0;
     const MAX_ITERATIONS = 25; // 🔥 Increased from 5 - Replit Agent runs 20+ iterations for complex work
     let commitSuccessful = false; // Track if commit_to_github succeeded
+    let usedGitHubAPI = false; // Track if commit_to_github tool was used (already pushes via API)
     let consecutiveEmptyIterations = 0; // Track iterations with no tool calls
     const MAX_EMPTY_ITERATIONS = 3; // Stop if 3 consecutive iterations without tool calls
 
@@ -2565,6 +2566,7 @@ Be conversational, be helpful, and only work when asked!`;
                     );
 
                     commitSuccessful = true; // Track commit success for task validation
+                    usedGitHubAPI = true; // ✅ GitHub API already pushed - skip redundant git push
                     sendEvent('progress', { message: `✅ Committed to GitHub: ${result.commitHash}` });
                     sendEvent('progress', { message: `🚀 Railway will auto-deploy in 2-3 minutes` });
 
@@ -2575,6 +2577,11 @@ Be conversational, be helpful, and only work when asked!`;
                       `⏱️ Changes will be live in 2-3 minutes\n\n` +
                       `Files committed:\n${filesToCommit.map(f => `- ${f.path}`).join('\n')}\n\n` +
                       `Note: This works on Railway production (no local .git required)!`;
+                    
+                    // ✅ CRITICAL: Clear fileChanges to prevent fallback commit from trying again
+                    // Without this, the cleanup section would still attempt local git commit → error on Railway
+                    fileChanges.length = 0;
+                    console.log('[META-SYSOP] ✅ Cleared fileChanges after successful GitHub API commit');
                   }
                 } catch (error: any) {
                   toolResult = `❌ GitHub commit failed: ${error.message}`;
@@ -3077,7 +3084,8 @@ Be conversational, be helpful, and only work when asked!`;
 
     // Commit and push if enabled (autonomous - no approval required)
     let commitHash = '';
-    if (autoCommit && fileChanges.length > 0) {
+    if (autoCommit && fileChanges.length > 0 && !usedGitHubAPI) {
+      // Only use fallback commit if commit_to_github tool wasn't used
       sendEvent('progress', { message: `✅ Committing ${fileChanges.length} file changes...` });
       commitHash = await platformHealing.commitChanges(`Fix: ${message.slice(0, 100)}`, fileChanges as any);
       console.log(`[META-SYSOP] ✅ Committed autonomously: ${fileChanges.length} files`);
@@ -3087,6 +3095,8 @@ Be conversational, be helpful, and only work when asked!`;
         await platformHealing.pushToRemote();
         console.log(`[META-SYSOP] ✅ Pushed to GitHub autonomously`);
       }
+    } else if (usedGitHubAPI) {
+      console.log(`[META-SYSOP] ℹ️ Skipping fallback commit - already committed via GitHub API`);
     }
 
     // Use Meta-SySop's response as-is (like Replit Agent)
