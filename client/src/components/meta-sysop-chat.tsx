@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
-import { Send, Square, ChevronDown, ChevronRight, Shield, Zap, Brain, Infinity, Rocket, Wrench, User, Copy, Check, Loader2, XCircle, FileCode, Terminal, CheckCircle, Clock, BookOpen } from "lucide-react";
+import { Send, Square, ChevronDown, ChevronRight, Shield, Zap, Brain, Infinity, Rocket, Wrench, User, Copy, Check, Loader2, XCircle, FileCode, Terminal, CheckCircle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -553,34 +553,8 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
 
   return (
     <div className="flex h-full overflow-hidden bg-background">
-      {/* Glowing Bible Icon Header */}
-      <style jsx>{`
-        @keyframes holy-glow {
-          0%, 100% { 
-            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8)) 
-                    drop-shadow(0 0 40px rgba(255, 215, 0, 0.6));
-            transform: translateY(0);
-          }
-          50% { 
-            filter: drop-shadow(0 0 30px rgba(255, 215, 0, 1)) 
-                    drop-shadow(0 0 60px rgba(255, 215, 0, 0.8));
-            transform: translateY(-2px);
-          }
-        }
-        
-        .holy-glow {
-          animation: holy-glow 3s ease-in-out infinite;
-          color: #FFD700;
-        }
-      `}</style>
-      
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Glowing Bible Header */}
-        <div className="flex items-center justify-center py-4 bg-gradient-to-b from-amber-50/10 to-transparent border-b border-amber-200/20">
-          <BookOpen className="w-10 h-10 holy-glow" />
-        </div>
-
         {/* Active Task Header */}
         {isStreaming && activeTaskId && (
           <div className="px-4 py-3 border-b border-border bg-muted/30">
