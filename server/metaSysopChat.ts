@@ -122,66 +122,65 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
 🎯 MANDATORY WORKFLOW (FOLLOW EXACTLY):
 
+⚠️  CRITICAL COMMUNICATION RULE:
+   → ALWAYS output text explaining what you're doing BEFORE calling tools
+   → NEVER just silently call tools - users need to see your progress!
+   → Example: "Let me create a task list to break down this work..." THEN call createTaskList()
+   → Example: "Now I'll read the file to understand the issue..." THEN call readPlatformFile()
+   → Example: "Based on my investigation, I found the problem. Let me consult I AM..." THEN call architect_consult()
+
 1️⃣ CREATE TASK LIST (FIRST - ALWAYS!)
+   → **Output text**: "I'll create a task list to track progress on this fix..."
    → Call createTaskList() immediately
    → Break down work into 4-6 clear steps
    → Mark first task as "in_progress"
-   → Example:
-     createTaskList({
-       title: "Fix Meta-SySop task display",
-       description: "Update endpoint to use real task management system",
-       tasks: [
-         { title: "Read platformRoutes.ts to understand current implementation", status: "in_progress" },
-         { title: "Read task-management.ts to see correct API", status: "pending" },
-         { title: "Consult I AM with proposed endpoint fix", status: "pending" },
-         { title: "Update /tasks endpoint to use readTaskList", status: "pending" },
-         { title: "Commit changes to GitHub for auto-deploy", status: "pending" }
-       ]
-     })
+   → **Output text**: "Task list created! Starting investigation..."
 
 2️⃣ INVESTIGATE & DIAGNOSE
+   → **Output text**: Explain what you're looking for before each tool call
    → Use readPlatformFile() to examine relevant files
+   → **Output text**: Summarize what you found after reading files
    → Use listPlatformFiles() if you need to find files
    → Use web_search() if you need documentation
    → Call updateTask() when starting/completing each step
    → Use readTaskList() to see your task IDs
 
 3️⃣ CONSULT I AM (MANDATORY BEFORE WRITING!)
-   → Call architect_consult() with:
-     • problem: Clear description of the bug/issue
-     • context: What you discovered in your investigation
-     • proposedSolution: Exact changes you plan to make
-     • affectedFiles: List of files you'll modify
-   → Wait for approval before proceeding
+   → **Output text**: "I've identified the issue. Let me consult I AM for approval..."
+   → Call architect_consult() with full details
+   → **Output text**: Summarize I AM's approval/rejection
 
 4️⃣ IMPLEMENT FIXES (ONLY IF I AM APPROVES!)
+   → **Output text**: "I AM approved! Now implementing the fix..."
    → Call writePlatformFile() for each approved file
+   → **Output text**: Confirm each file written
    → Update tasks to "completed" as you finish each one
-   → Make precise, surgical changes - don't rewrite entire files
 
 5️⃣ AUTO-DEPLOY TO PRODUCTION
+   → **Output text**: "Changes complete! Committing to GitHub for deployment..."
    → Call commit_to_github() with detailed commit message
-   → This automatically deploys to Render (2-3 min)
+   → **Output text**: "✅ Deployed! Changes will be live in 2-3 minutes."
    → Mark all tasks "completed"
 
 6️⃣ REPORT COMPLETION
-   → Summarize what was fixed
-   → List files changed
-   → Confirm deployment initiated
+   → **Output text**: Full summary of what was fixed, files changed, and deployment status
 
 ═══════════════════════════════════════════════════════════════════
 🚫 CRITICAL RULES:
 ═══════════════════════════════════════════════════════════════════
 
 ✅ DO:
+  • ALWAYS output text before calling tools (explain what you're doing!)
   • ALWAYS create task list FIRST (users watch progress live)
   • ALWAYS consult I AM before writing any file
   • ALWAYS update tasks as you work
   • ALWAYS commit when done (auto-deploys to production)
+  • ALWAYS narrate your progress so users know what's happening
   • Make minimal, surgical changes
   • Read files before modifying them
 
 ❌ DO NOT:
+  • Silently call tools without text output (users will think you're stuck!)
   • Ask "should I fix this?" - JUST FIX IT (you're autonomous)
   • Ask permission to deploy - AUTO-DEPLOY with commit_to_github
   • Write files without I AM approval (will be BLOCKED)
@@ -220,7 +219,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
 ${message}
 
-Now execute the workflow autonomously - create tasks, investigate, consult I AM, fix, and deploy!`;
+Now execute the workflow autonomously - NARRATE your progress as you create tasks, investigate, consult I AM, fix, and deploy!`;
 
     const tools = [
       {
@@ -394,6 +393,24 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
           sendEvent('content', { content: block.text });
         } else if (block.type === 'tool_use') {
           const { name, input, id } = block;
+
+          // CRITICAL FIX: Add automatic narration when tools are called
+          // This ensures users see progress even if Claude doesn't output text
+          const toolNarrations: Record<string, string> = {
+            createTaskList: '📋 Creating task list to track progress...\n\n',
+            updateTask: '✏️ Updating task status...\n\n',
+            readTaskList: '📖 Reading current task list...\n\n',
+            readPlatformFile: `📄 Reading file: ${(input as any).path}...\n\n`,
+            writePlatformFile: `✍️ Writing file: ${(input as any).path}...\n\n`,
+            listPlatformFiles: '📁 Listing directory contents...\n\n',
+            architect_consult: '🏗️ Consulting I AM (The Architect) for approval...\n\n',
+            web_search: `🔍 Searching: ${(input as any).query}...\n\n`,
+            commit_to_github: '📤 Committing changes to GitHub...\n\n',
+          };
+
+          const narration = toolNarrations[name] || `🔧 Executing ${name}...\n\n`;
+          fullContent += narration;
+          sendEvent('content', { content: narration });
 
           try {
             let toolResult: any = null;
@@ -610,12 +627,38 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
               }
             }
 
+            // CRITICAL FIX: Add result narration so users see what happened
+            let resultNarration = '';
+            if (name === 'createTaskList' && toolResult.includes('✅')) {
+              resultNarration = '✅ Task list created successfully!\n\n';
+            } else if (name === 'updateTask' && toolResult.includes('✅')) {
+              resultNarration = `✅ Task updated!\n\n`;
+            } else if (name === 'architect_consult' && toolResult.includes('✅ APPROVED')) {
+              resultNarration = '✅ I AM APPROVED! Proceeding with changes...\n\n';
+            } else if (name === 'commit_to_github' && toolResult.includes('✅')) {
+              resultNarration = '✅ Successfully committed to GitHub! Deployment initiated.\n\n';
+            } else if (name === 'writePlatformFile' && toolResult.includes('✅')) {
+              resultNarration = `✅ File written successfully!\n\n`;
+            } else if (toolResult.includes('❌')) {
+              resultNarration = `⚠️ Tool encountered an issue.\n\n`;
+            }
+
+            if (resultNarration) {
+              fullContent += resultNarration;
+              sendEvent('content', { content: resultNarration });
+            }
+
             toolResults.push({
               type: 'tool_result',
               tool_use_id: id,
               content: toolResult || 'Success',
             });
           } catch (error: any) {
+            // CRITICAL FIX: Narrate errors so users know what went wrong
+            const errorNarration = `❌ Error executing ${name}: ${error.message}\n\n`;
+            fullContent += errorNarration;
+            sendEvent('content', { content: errorNarration });
+
             toolResults.push({
               type: 'tool_result',
               tool_use_id: id,
@@ -693,6 +736,16 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
     }
 
     // Save assistant message
+    // CRITICAL FIX: Better fallback message with file change summary
+    let finalContent = fullContent;
+    if (!finalContent || finalContent.trim().length === 0) {
+      if (fileChanges.length > 0) {
+        finalContent = `✅ Platform maintenance completed!\n\nFiles modified:\n${fileChanges.map(f => `- ${f.path}`).join('\n')}\n\nChanges have been applied.`;
+      } else {
+        finalContent = '✅ Analysis completed. No changes were necessary.';
+      }
+    }
+
     const [assistantMsg] = await db
       .insert(chatMessages)
       .values({
@@ -700,7 +753,7 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
         projectId: null,
         fileId: null,
         role: 'assistant',
-        content: fullContent || 'Done! I\'ve analyzed and fixed the issues.',
+        content: finalContent,
         isPlatformHealing: true,
         platformChanges: fileChanges.length > 0 ? { files: fileChanges } : null,
       })
