@@ -1,0 +1,106 @@
+2025-10-29T16:46:01.000000000Z [inf]  Starting Container
+2025-10-29T16:46:02.867074993Z [inf]  
+2025-10-29T16:46:02.867086839Z [inf]  
+2025-10-29T16:46:02.867092435Z [inf]  drwxr-xr-x   10 root     root          4096 Oct 29 16:37 server
+2025-10-29T16:46:02.867099477Z [inf]  drwxr-xr-x    2 root     root          4096 Oct 29 16:37 shared
+2025-10-29T16:46:02.867102590Z [inf]  📁 Current directory: /app
+2025-10-29T16:46:02.867108313Z [inf]  -rw-rw-r--    1 root     root           657 Oct 29 16:37 tsconfig.json
+2025-10-29T16:46:02.867110387Z [inf]  📂 Listing root files:
+2025-10-29T16:46:02.867116297Z [inf]  total 404
+2025-10-29T16:46:02.867121342Z [inf]  -rw-rw-r--    1 root     root        352670 Oct 29 16:27 package-lock.json
+2025-10-29T16:46:02.867124036Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 29 16:38 .
+2025-10-29T16:46:02.867130829Z [inf]  -rw-rw-r--    1 root     root          4529 Oct 29 16:27 package.json
+2025-10-29T16:46:02.867141621Z [inf]  -rwxrwxr-x    1 root     root          1865 Oct 29 16:37 railway-start.sh
+2025-10-29T16:46:02.867144104Z [inf]  dr-xr-xr-x    1 root     root          4096 Oct 29 16:46 ..
+2025-10-29T16:46:02.867144816Z [inf]  ======================================
+2025-10-29T16:46:02.867152391Z [inf]  Time: Wed Oct 29 16:46:01 UTC 2025
+2025-10-29T16:46:02.867159791Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 29 16:37 dist
+2025-10-29T16:46:02.867160963Z [inf]  -rw-rw-r--    1 root     root         10299 Oct 29 16:37 replit.md
+2025-10-29T16:46:02.867162089Z [inf]  Node version: v20.19.5
+2025-10-29T16:46:02.867167842Z [inf]  ======================================
+2025-10-29T16:46:02.867169581Z [inf]  NPM version: 10.8.2
+2025-10-29T16:46:02.867171071Z [inf]  -rw-rw-r--    1 root     root           325 Oct 29 16:37 drizzle.config.ts
+2025-10-29T16:46:02.867177047Z [inf]  🚂 RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-10-29T16:46:02.867177898Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 29 16:27 node_modules
+2025-10-29T16:46:02.867959362Z [inf]  🔍 Checking for dist directory...
+2025-10-29T16:46:02.867969933Z [inf]  ✅ dist directory exists
+2025-10-29T16:46:02.867977862Z [inf]  📂 Contents:
+2025-10-29T16:46:02.867985461Z [inf]  total 744
+2025-10-29T16:46:02.867992984Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 29 16:37 .
+2025-10-29T16:46:02.867999722Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 29 16:38 ..
+2025-10-29T16:46:02.868006508Z [inf]  -rw-r--r--    1 root     root        748604 Oct 29 16:37 index.js
+2025-10-29T16:46:02.868013487Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 29 16:37 public
+2025-10-29T16:46:02.868020058Z [inf]  ✅ dist/index.js found
+2025-10-29T16:46:02.868026779Z [inf]  
+2025-10-29T16:46:02.868033417Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-10-29T16:46:02.868039893Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-10-29T16:46:02.868046604Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-10-29T16:46:03.017851846Z [inf]  Using 'pg' driver for database querying
+2025-10-29T16:46:03.130090029Z [inf]  [⣷] Pulling schema from database...
+2025-10-29T16:46:03.250443352Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-29T16:46:03.373785649Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-29T16:46:03.515568325Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-29T16:46:03.909065448Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-29T16:46:03.909070967Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-29T16:46:03.909078507Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-29T16:46:04.017685865Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-29T16:46:04.174202846Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-29T16:46:04.295579567Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-29T16:46:04.428813643Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-29T16:46:04.542245547Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-29T16:46:04.852191398Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-29T16:46:04.852196663Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-29T16:46:04.910188812Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-29T16:46:05.040293371Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-29T16:46:05.167247502Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-29T16:46:05.297790466Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-29T16:46:05.423236619Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-29T16:46:05.502123537Z [inf]  [2K[1G[✓] Pulling schema from database...
+2025-10-29T16:46:05.564820960Z [inf]  [i] No changes detected
+2025-10-29T16:46:05.590135968Z [inf]  📄 Ensuring replit.md is available...
+2025-10-29T16:46:05.590148560Z [inf]  ✅ Database migrations completed successfully!
+2025-10-29T16:46:05.590152412Z [inf]  ✅ replit.md already present
+2025-10-29T16:46:05.590157958Z [inf]  
+2025-10-29T16:46:05.590161701Z [inf]  
+2025-10-29T16:46:05.590166970Z [inf]  🔍 Environment Check:
+2025-10-29T16:46:05.590170394Z [inf]  🚀 Starting Node.js application...
+2025-10-29T16:46:05.590176671Z [inf]  Command: node dist/index.js
+2025-10-29T16:46:05.590179327Z [inf]  NODE_ENV: production
+2025-10-29T16:46:05.590182717Z [inf]  
+2025-10-29T16:46:05.590186734Z [inf]  PORT: 8080
+2025-10-29T16:46:05.590194228Z [inf]  DATABASE_URL: ✓ SET (hidden for security)
+2025-10-29T16:46:05.590199835Z [inf]  GITHUB_TOKEN: ✓ SET
+2025-10-29T16:46:05.590205819Z [inf]  GITHUB_REPO: 6-7Development/archetype
+2025-10-29T16:46:05.590212460Z [inf]  GITHUB_BRANCH: main
+2025-10-29T16:46:05.590218096Z [inf]  ANTHROPIC_API_KEY: ✓ SET
+2025-10-29T16:46:05.590225149Z [inf]  
+2025-10-29T16:46:06.903813990Z [inf]  [META-SYSOP-JOB-MANAGER] Initialized with WebSocket support
+2025-10-29T16:46:06.903824262Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-29T16:46:06.903830186Z [inf]  [META-SYSOP-JOB-MANAGER] Job manager connected to WebSocket
+2025-10-29T16:46:06.903841211Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-29T16:46:06.903842188Z [inf]  ✅ All routes registered successfully
+2025-10-29T16:46:06.903854825Z [inf]  🔍 Testing database connection...
+2025-10-29T16:46:06.903855822Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-29T16:46:06.903868359Z [inf]  4:46:06 PM [express] serving on port 8080
+2025-10-29T16:46:06.903869541Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-10-29T16:46:06.903882703Z [inf]  [db] Connection string includes SSL params: true
+2025-10-29T16:46:06.903882887Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-10-29T16:46:06.903896410Z [inf]  ✅ Database connected successfully
+2025-10-29T16:46:06.903897227Z [inf]  [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-29T16:46:06.903908465Z [inf]  🔧 Auto-healing system ENABLED (production mode)
+2025-10-29T16:46:06.903913019Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-29T16:46:06.903921590Z [inf]  
+2025-10-29T16:46:06.903925865Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller (SSE streams excluded)
+2025-10-29T16:46:06.903933479Z [inf]  📡 WebSocket server initialized at /ws
+2025-10-29T16:46:06.903939044Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-29T16:46:06.903946587Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-29T16:46:06.903973177Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-29T16:46:06.904436615Z [inf]  🔍 Checking GitHub integration configuration...
+2025-10-29T16:46:06.904441067Z [inf]  ✅ GitHub integration configured successfully
+2025-10-29T16:46:06.904445675Z [inf]     - Repository: 6-7Development/archetype
+2025-10-29T16:46:06.904449790Z [inf]     - Branch: main
+2025-10-29T16:46:06.904453708Z [inf]     - Token: ✓ (configured)
+2025-10-29T16:46:06.904457474Z [inf]     - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-29T16:46:06.904461284Z [inf]     - Maintenance mode: Available for owner
+2025-10-29T16:46:06.904465647Z [inf]  
+2025-10-29T16:46:55.000000000Z [inf]  Stopping Container

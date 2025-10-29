@@ -461,10 +461,12 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
   }
 
   console.log('[META-SYSOP-CHAT] Setting up SSE headers');
-  // Set up Server-Sent Events
+  // Set up Server-Sent Events with Railway-specific anti-buffering headers
   res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no'); // Disable buffering on Railway/nginx proxies
+  res.setHeader('Content-Encoding', 'none'); // Prevent gzip buffering
 
   const sendEvent = (type: string, data: any) => {
     res.write(`data: ${JSON.stringify({ type, ...data })}\n\n`);
