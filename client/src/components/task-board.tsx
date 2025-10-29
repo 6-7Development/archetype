@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Check, Circle, Loader2, X, ChevronDown, ChevronRight, Bot } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Check, Circle, Loader2, X, ChevronDown, ChevronRight, Bot, ArrowRight, Play } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -18,10 +18,7 @@ interface TaskBoardProps {
 
 export function TaskBoard({ tasks, isGenerating, subAgentActive, className }: TaskBoardProps) {
   const [isOpen, setIsOpen] = useState(true);
-
-  if (tasks.length === 0 && !isGenerating) {
-    return null;
-  }
+  const [taskAnimations, setTaskAnimations] = useState<Record<string, { progress: number; showArrow: boolean }>>({});
 
   // Detect mobile viewport
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -34,6 +31,46 @@ export function TaskBoard({ tasks, isGenerating, subAgentActive, className }: Ta
   // Get current task
   const currentTask = tasks.find(t => t.status === 'in_progress');
   const hasFailed = tasks.some(t => t.status === 'failed');
+
+  // Animation effect for task completion
+  useEffect(() => {
+    tasks.forEach(task => {
+      if (task.status === 'completed' && !taskAnimations[task.id]?.showArrow) {
+        // Animate progress bar filling up
+        setTimeout(() => {
+          setTaskAnimations(prev => ({
+            ...prev,
+            [task.id]: { progress: 0, showArrow: false }
+          }));
+          
+          // Animate to 100%
+          setTimeout(() => {
+            setTaskAnimations(prev => ({
+              ...prev,
+              [task.id]: { progress: 100, showArrow: false }
+            }));
+            
+            // Show checkmark/arrow after progress completes
+            setTimeout(() => {
+              setTaskAnimations(prev => ({
+                ...prev,
+                [task.id]: { progress: 100, showArrow: true }
+              }));
+            }, 300);
+          }, 50);
+        }, 100);
+      }
+      
+      // Reset animation for non-completed tasks
+      if (task.status !== 'completed' && taskAnimations[task.id]) {
+        setTaskAnimations(prev => {
+          const newState = { ...prev };
+          delete newState[task.id];
+          return newState;
+        });
+      }
+    });
+  }, [tasks.map(t => `${t.id}-${t.status}`).join(',')]);
 
   const handleReset = async () => {
     // Force refresh by invalidating query
@@ -74,8 +111,8 @@ export function TaskBoard({ tasks, isGenerating, subAgentActive, className }: Ta
                   <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
                     <div 
                       className={cn(
-                        "h-full transition-all duration-500",
-                        hasFailed ? "bg-destructive" : "bg-primary"
+                        "h-full transition-all duration-1000 ease-out",
+                        hasFailed ? "bg-destructive" : "bg-gradient-to-r from-green-500 to-emerald-400"
                       )}
                       style={{ width: `${progressPercentage}%` }}
                     />
@@ -143,27 +180,37 @@ export function TaskBoard({ tasks, isGenerating, subAgentActive, className }: Ta
                     key={task.id} 
                     task={task} 
                     index={index}
+                    animation={taskAnimations[task.id]}
                   />
                 ))}
               </div>
             )}
 
-            {/* Overall progress bar */}
+            {/* Overall progress bar with enhanced animation */}
             {totalCount > 0 && (
               <div className="pt-2 mt-2 border-t border-border/50">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-medium text-muted-foreground">
                     Overall Progress
                   </span>
-                  <span className="text-xs font-medium text-foreground tabular-nums">
-                    {progressPercentage}%
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {completedCount === totalCount && totalCount > 0 && (
+                      <div className="flex items-center gap-1 text-green-500 animate-in slide-in-from-right-2 duration-500">
+                        <Check className="w-3 h-3" strokeWidth={3} />
+                        <span className="text-xs font-medium">Complete!</span>
+                      </div>
+                    )}
+                    <span className="text-xs font-medium text-foreground tabular-nums">
+                      {progressPercentage}%
+                    </span>
+                  </div>
                 </div>
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                   <div 
                     className={cn(
-                      "h-full transition-all duration-500",
-                      hasFailed ? "bg-destructive" : "bg-primary"
+                      "h-full transition-all duration-1000 ease-out",
+                      hasFailed ? "bg-destructive" : "bg-gradient-to-r from-green-500 via-emerald-400 to-green-300",
+                      completedCount === totalCount && "animate-pulse"
                     )}
                     style={{ width: `${progressPercentage}%` }}
                   />
@@ -180,17 +227,32 @@ export function TaskBoard({ tasks, isGenerating, subAgentActive, className }: Ta
 interface TaskItemProps {
   task: Task;
   index: number;
+  animation?: { progress: number; showArrow: boolean };
 }
 
-function TaskItem({ task, index }: TaskItemProps) {
+function TaskItem({ task, index, animation }: TaskItemProps) {
   const getStatusIcon = () => {
     switch (task.status) {
       case 'completed':
-        return <Check className="w-4 h-4 text-primary" strokeWidth={3} />;
+        return (
+          <div className="relative flex items-center justify-center">
+            <Check className="w-4 h-4 text-green-500 animate-in zoom-in duration-300" strokeWidth={3} />
+            {animation?.showArrow && (
+              <ArrowRight className="w-3 h-3 text-green-500 absolute -right-1 -top-1 animate-in slide-in-from-left duration-500" strokeWidth={2} />
+            )}
+          </div>
+        );
       case 'failed':
         return <X className="w-4 h-4 text-destructive" strokeWidth={3} />;
       case 'in_progress':
-        return <Loader2 className="w-4 h-4 text-primary animate-spin" />;
+        return (
+          <div className="relative">
+            <Play className="w-4 h-4 text-blue-500 animate-pulse" strokeWidth={2} fill="currentColor" />
+            <div className="absolute inset-0 animate-ping">
+              <Play className="w-4 h-4 text-blue-500/30" strokeWidth={2} fill="currentColor" />
+            </div>
+          </div>
+        );
       default:
         return <Circle className="w-4 h-4 text-muted-foreground/40" strokeWidth={2} />;
     }
@@ -199,7 +261,7 @@ function TaskItem({ task, index }: TaskItemProps) {
   const getStatusColor = () => {
     switch (task.status) {
       case 'completed':
-        return 'text-foreground';
+        return 'text-green-700 dark:text-green-300';
       case 'failed':
         return 'text-destructive';
       case 'in_progress':
@@ -212,12 +274,23 @@ function TaskItem({ task, index }: TaskItemProps) {
   return (
     <div 
       className={cn(
-        "flex items-start gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-colors text-xs sm:text-sm",
-        task.status === 'in_progress' && "bg-primary/5",
-        task.status === 'failed' && "bg-destructive/5"
+        "relative flex items-start gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all duration-500 text-xs sm:text-sm",
+        task.status === 'in_progress' && "bg-blue-500/10 border border-blue-500/20 animate-pulse",
+        task.status === 'failed' && "bg-destructive/5",
+        task.status === 'completed' && "bg-green-500/10 border border-green-500/20"
       )}
       data-testid={`task-item-${task.id}`}
     >
+      {/* Animated progress bar for individual tasks */}
+      {task.status === 'completed' && animation && (
+        <div className="absolute inset-x-0 bottom-0 h-0.5 bg-muted rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-500 ease-out"
+            style={{ width: `${animation.progress}%` }}
+          />
+        </div>
+      )}
+
       {/* Status icon */}
       <div className="flex-shrink-0 mt-0.5">
         {getStatusIcon()}
@@ -225,7 +298,7 @@ function TaskItem({ task, index }: TaskItemProps) {
 
       {/* Task content */}
       <div className="flex-1 min-w-0">
-        <div className={cn("text-sm", getStatusColor())}>
+        <div className={cn("text-sm transition-colors duration-300", getStatusColor())}>
           {task.title}
         </div>
         
@@ -245,6 +318,14 @@ function TaskItem({ task, index }: TaskItemProps) {
         <Badge variant="secondary" className="text-xs flex-shrink-0">
           P{task.priority}
         </Badge>
+      )}
+
+      {/* Completion celebration effect */}
+      {task.status === 'completed' && animation?.showArrow && (
+        <div className="absolute -top-1 -right-1 pointer-events-none">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-ping" />
+          <div className="absolute inset-0 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+        </div>
       )}
     </div>
   );
