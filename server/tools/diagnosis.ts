@@ -1,6 +1,20 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 
+/**
+ * RECOMMENDED: Use the sanitizeDiagnosisFileList helper from anthropic-wrapper
+ * for better logging and validation when processing file lists.
+ * 
+ * Example integration:
+ * ```typescript
+ * import { sanitizeDiagnosisFileList } from '../lib/anthropic-wrapper';
+ * 
+ * const rawFiles = params.focus || DEFAULT_FILES;
+ * const sanitizedFiles = sanitizeDiagnosisFileList(rawFiles);
+ * // Logs: "✅ File list sanitized: N valid files" or "ℹ️ Using fallback"
+ * ```
+ */
+
 export interface DiagnosisParams {
   target: 'performance' | 'security' | 'memory' | 'database' | 'all';
   focus?: string[]; // Specific files to check

@@ -348,6 +348,18 @@ npm run db:push --force
 └── docker-compose.yml  # Docker orchestration
 ```
 
+## Advanced Features
+
+### Anthropic Context Limit Wrapper
+
+The platform includes a robust wrapper for Anthropic API calls that prevents context limit errors. For detailed usage instructions, see [ANTHROPIC_WRAPPER_GUIDE.md](./ANTHROPIC_WRAPPER_GUIDE.md).
+
+Key features:
+- Automatic token estimation and truncation
+- Retry logic with exponential backoff
+- Configurable via environment variables
+- Unit tested with 20+ test cases
+
 ## Contributing
 
 1. Fork the repository
