@@ -2018,49 +2018,8 @@ Be conversational, be helpful, and only work when asked!`;
     const MAX_ITERATIONS = 25; // 🔥 Increased from 5 - Replit Agent runs 20+ iterations for complex work
     let commitSuccessful = false; // Track if commit_to_github succeeded
 
-    // 🎯 GREETING SHORTCUT: Detect casual greetings BEFORE calling Claude API
-    const userMessage = message.toLowerCase().trim();
-    const casualGreetings = ['hi', 'hello', 'hey', 'yo', 'sup', 'what\'s up', 'how are you', 'howdy'];
-    const isCasualGreeting = casualGreetings.some(greeting => 
-      userMessage === greeting || 
-      userMessage.startsWith(greeting + ' ') ||
-      userMessage.startsWith(greeting + '!')
-    );
-    
-    if (isCasualGreeting) {
-      console.log('[META-SYSOP] Casual greeting detected - sending friendly response WITHOUT calling Claude');
-      
-      // Send friendly greeting response WITHOUT calling Claude
-      const greetingResponse = "Hi! I'm Meta-SySop, your platform maintenance assistant. I can help diagnose issues, fix bugs, and maintain the Archetype platform. How can I help you today?";
-      
-      fullContent = greetingResponse;
-      sendEvent('content', { content: greetingResponse });
-      
-      // Save assistant message
-      const [assistantMsg] = await db.insert(chatMessages).values({
-        userId,
-        projectId: null,
-        fileId: null,
-        role: 'assistant',
-        content: greetingResponse,
-        isPlatformHealing: true,
-      }).returning();
-      
-      // Log audit trail
-      await platformAudit.log({
-        userId,
-        action: 'heal',
-        description: `Meta-SySop chat: ${message.slice(0, 100)}`,
-        changes: [],
-        backupId: undefined,
-        commitHash: '',
-        status: 'success',
-      });
-      
-      // Send done event and close stream
-      terminateStream(assistantMsg.id);
-      return; // Exit early, skip Claude API entirely
-    }
+    // ✅ REMOVED: Casual greeting bypass - Meta-SySop should ALWAYS be conversational like Replit Agent
+    // Every message goes to Claude for proper conversational awareness and context
 
     while (continueLoop && iterationCount < MAX_ITERATIONS) {
       iterationCount++;
