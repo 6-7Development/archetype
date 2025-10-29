@@ -35,6 +35,9 @@ COPY shared ./shared
 COPY tsconfig.json ./
 COPY drizzle.config.ts ./
 
+# CRITICAL: Copy replit.md for Meta-SySop platform knowledge
+COPY replit.md ./
+
 # Copy startup script
 COPY railway-start.sh ./
 RUN chmod +x railway-start.sh
