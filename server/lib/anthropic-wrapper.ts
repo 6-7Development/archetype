@@ -9,6 +9,8 @@
  * 5. Final guard throws error if unable to reduce below limit
  */
 
+import { MessageParam } from '@anthropic-ai/sdk/resources/messages';
+
 // More conservative token estimation: ~3 characters = 1 token
 // (Claude often uses more tokens than 4 chars/token estimate)
 const CHARS_PER_TOKEN = 3;
@@ -29,13 +31,8 @@ interface MessageContent {
   [key: string]: any;
 }
 
-interface Message {
-  role: 'user' | 'assistant';
-  content: string | MessageContent[];
-}
-
 interface TruncationResult {
-  messages: Message[];
+  messages: MessageParam[];
   systemPrompt: string;
   estimatedTokens: number;
   truncated: boolean;
@@ -113,7 +110,7 @@ function truncateAttachments(content: MessageContent[]): MessageContent[] {
  * @returns Truncated messages and system prompt with token estimates
  */
 export function createSafeAnthropicRequest(
-  messages: Message[],
+  messages: MessageParam[],
   systemPrompt: string
 ): TruncationResult {
   
@@ -179,7 +176,7 @@ export function createSafeAnthropicRequest(
     console.log('[ANTHROPIC-WRAPPER] ✅ Attachment truncation successful');
     console.log(`[ANTHROPIC-WRAPPER] Safety margin: ${(MAX_CONTEXT_TOKENS - tokensAfterAttachmentTruncation).toLocaleString()} tokens remaining`);
     return {
-      messages: messagesWithTruncatedAttachments,
+      messages: messagesWithTruncatedAttachments as MessageParam[],
       systemPrompt,
       estimatedTokens: tokensAfterAttachmentTruncation,
       truncated: true,
@@ -253,7 +250,7 @@ export function createSafeAnthropicRequest(
   console.log(`[ANTHROPIC-WRAPPER] Safety margin: ${(MAX_CONTEXT_TOKENS - currentTotalTokens).toLocaleString()} tokens remaining`);
   
   return {
-    messages: currentMessages,
+    messages: currentMessages as MessageParam[],
     systemPrompt,
     estimatedTokens: currentTotalTokens,
     truncated: true,

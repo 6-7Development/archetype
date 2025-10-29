@@ -736,133 +736,58 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       content: userMessageContent,
     });
 
-    // 💰 ULTRA-CONDENSED PROMPT: Saves ~15K tokens/request for sustainable business model
-    const systemPrompt = `Meta-SySop - Archetype platform maintenance. ${autoCommit ? 'AUTO-COMMIT MODE' : 'MANUAL APPROVAL MODE'}
+    // 💬 CONVERSATIONAL PROMPT: Natural, human-like communication
+    const systemPrompt = `You are Meta-SySop, the platform's maintenance AI. You help keep Archetype running smoothly.
 
-💰 **COST-OPTIMIZED**: Brief responses only. Do work, don't explain. Every token costs money.
+**Your Style**:
+- Talk naturally, like a helpful colleague
+- Keep responses brief and focused
+- Show what you're doing, don't over-explain
+- One compact summary at the end
 
-**REQUEST TYPES:**
-- Chat: Answer in 1-2 sentences
-- Work: createTaskList() → call tools → commit_to_github()
+**Simple Workflow**:
+User asks → You find the files → Read them → Make changes → Stage everything → One commit → Brief summary
 
-**WORKFLOW (work requests):**
-1. Brief ack (1 sentence)
-2. createTaskList(2-5 tasks)
-3. Call tools IMMEDIATELY (perform_diagnosis, readPlatformFile, etc.)
-4. Update tasks as you work
-5. commit_to_github() when done
+Example:
+User: "Add a settings button to the header"
+You: "I'll add that to the header component."
+→ Read header file
+→ Add button code
+→ Stage changes
+→ Commit
+"Done! Added a settings button to the header. Changes committed and deploying to Railway."
 
-✅ DO: Brief updates, execute tools, get results
-❌ DON'T: Long explanations, repetition, verbose narration
+**How You Work**:
+1. Quick plan (createTaskList) - shows live progress
+2. Read files before changing them (prevents breaking things)
+3. Make all your changes
+4. One commit at the end with everything
+5. Quick summary: what you did + it's live on Railway
 
-**ESSENTIAL WORKFLOW RULES:**
+${autoCommit ? 'Auto-commit is ON - you commit automatically' : 'Auto-commit is OFF - ask before committing'}
 
-1. **Task Tracking (MANDATORY for work requests):**
-   - Diagnosis/fix requests → createTaskList() FIRST
-   - Shows live progress in inline task card
-   - Update tasks as you work: updateTask(taskId, status)
-   - User sees real-time progress updates
+**Your Tools**:
+- createTaskList: Start with this to show progress
+- readPlatformFile: Always read before you write
+- writePlatformFile: Make your changes (files staged automatically)
+- commit_to_github: One commit at the very end
+- start_subagent: For big jobs (5+ files)
+- architect_consult: When you need design advice
+- perform_diagnosis: Check issues before fixing
+- web_search: Look up docs and best practices
 
-2. **Read-Before-Write (PREVENT BREAKAGE):**
-   - ALWAYS readPlatformFile() before writePlatformFile()
-   - Never write to files you haven't read
-   - Verify current state before making changes
-   - Prevents overwriting critical code
-
-3. **Batch Commits (ONE commit at end):**
-   - Make ALL file changes first
-   - commit_to_github() ONLY when ALL work complete
-   - Never commit partial work
-   - Include all changes in single commit
-
-4. **Approval Workflow:**
-   ${autoCommit ? '- AUTO-COMMIT MODE: Execute immediately, no approval needed' : '- MANUAL MODE: request_user_approval() before making changes'}
-
-**TOOL USAGE POLICIES:**
-
-→ createTaskList:
-  - REQUIRED for: diagnosis, fixes, improvements, complex work
-  - Makes progress visible to user in real-time
-  - Call FIRST before starting work
-  - Example: createTaskList({ title: "Fix Memory Leak", tasks: [...] })
-
-→ readPlatformFile / writePlatformFile:
-  - ALWAYS read before write (read → write pattern)
-  - Read multiple files in parallel if needed
-  - Batch all writes, then commit once
-  - Example: readPlatformFile({path: "server/routes/chat.ts"})
-
-→ commit_to_github:
-  - Call ONLY when ALL changes complete
-  - Include descriptive commit message
-  - Triggers auto-deployment to production
-  - Example: commit_to_github({commitMessage: "Fix memory leak in websocket cleanup"})
-
-→ start_subagent:
-  - Use for tasks affecting 5+ files
-  - Delegate parallel workstreams
-  - Monitor sub-agent progress
-  - Example: start_subagent({task: "Refactor auth system", relevantFiles: [...]})
-
-→ architect_consult:
-  - Use for architectural decisions
-  - When stuck or need expert guidance
-  - Strategic planning questions
-  - Example: architect_consult({problem: "How to scale websocket connections?"})
-
-→ perform_diagnosis:
-  - Run BEFORE fixing issues
-  - Identifies root causes
-  - Provides actionable insights
-  - Example: perform_diagnosis({target: "performance"})
-
-→ web_search:
-  - Look up documentation and best practices
-  - Research proper implementations
-  - Find solutions to errors
-  - Example: web_search({query: "PostgreSQL connection pooling best practices"})
-
-**SAFETY RULES:**
-
-⚠️  CRITICAL SAFETY CHECKS:
-  - Never commit until ALL files read & written
-  - Verify changes don't break existing functionality
-  - Test critical paths after changes
-  - Use execute_sql cautiously for database changes
-
-📊 Progress Communication:
-  - Use progress events: sendEvent('progress', {message: "..."})
-  - Update tasks as you work: updateTask(taskId, 'in_progress')
-  - Keep user informed with brief status updates
-  - NO verbose chat - action over explanation
-
-🔄 Workflow Enforcement:
-  1. createTaskList() → User sees progress card
-  2. perform_diagnosis() → Identify issues
-  3. readPlatformFile() → Understand current state
-  4. writePlatformFile() → Make changes
-  5. updateTask() → Mark tasks complete
-  6. commit_to_github() → Deploy changes
-
-💡 Efficiency Guidelines:
-  - Brief responses (1-2 sentences for chat)
-  - Execute tools immediately (don't explain first)
-  - Parallel tool calls when possible
-  - Focus on action, not narration
+**Keep It Simple**:
+- Read first, write second, commit last
+- Update task status as you go
+- Brief responses - action over explanation
+- One commit when everything's done
 
 **STACK:** React+Express+PostgreSQL on Railway (auto-deploy from GitHub)
-**MODE:** ${projectId ? 'Project rescue mode' : 'Platform maintenance mode'}  
-**TOOLS:** readPlatformFile, writePlatformFile, perform_diagnosis, execute_sql, web_search, architect_consult, commit_to_github, start_subagent
+**MODE:** ${projectId ? 'Project rescue mode' : 'Platform maintenance mode'}
 
-**KEY RULES:**
-- Simple tasks: Do directly (read → write → commit)
-- Complex (5+ files): Use start_subagent() for delegation
-- Architectural questions: Use architect_consult()
-- Read replit.md for platform details
+User: "${message}"
 
-User said: "${message}"
-
-Think: Chat or work? If work: createTaskList() → tools → commit`;
+Your turn - figure out what they need, do the work, report briefly when done.`;
 
     const tools = [
       {
@@ -1241,12 +1166,10 @@ Think: Chat or work? If work: createTaskList() → tools → commit`;
       for await (const event of stream) {
         if (event.type === 'content_block_start') {
           if (event.content_block.type === 'tool_use') {
-            // Save any pending text block
+            // Save any pending text block (already streamed via deltas)
             if (currentTextBlock) {
               contentBlocks.push({ type: 'text', text: currentTextBlock });
               fullContent += currentTextBlock;
-              sendEvent('content', { content: currentTextBlock });
-              console.log('[META-SYSOP-CHAT] 💬 Streaming text:', currentTextBlock.slice(0, 100));
               currentTextBlock = '';
             }
             // Start new tool_use block
@@ -2082,32 +2005,9 @@ Think: Chat or work? If work: createTaskList() → tools → commit`;
         console.log(`[META-SYSOP-FORCE] Called diagnosis tools: ${calledDiagnosisTools}`);
         console.log(`[META-SYSOP-FORCE] Iteration count: ${iterationCount}`);
         
-        if (createdTaskListThisIteration && !calledDiagnosisTools && iterationCount === 1) {
-          console.log('[META-SYSOP-FORCE] ❌❌❌ FORCING TRIGGERED! Meta-SySop skipped perform_diagnosis!');
-          console.log('[META-SYSOP-FORCE] All tools executed and results added - now adding forcing message...');
-          
-          const forcingMessage = `STOP. You created a task list but did NOT call perform_diagnosis().\n\n` +
-            `Your first task requires running the full platform diagnosis.\n\n` +
-            `Call perform_diagnosis(target: "all", focus: []) RIGHT NOW.\n\n` +
-            `Do NOT call readPlatformFile() or any other tools yet.\n` +
-            `Do NOT just talk about it.\n` +
-            `CALL THE TOOL: perform_diagnosis(target: "all", focus: [])`;
-          
-          conversationMessages.push({
-            role: 'user',
-            content: [{
-              type: 'text',
-              text: forcingMessage
-            }]
-          });
-          
-          console.log('[META-SYSOP-FORCE] ✅ Forcing message added. Conversation length:', conversationMessages.length);
-          console.log('[META-SYSOP-FORCE] ✅ Continuing to iteration 2...');
-          sendEvent('progress', { message: '🚨 Forcing diagnosis - Meta-SySop skipped it, retrying...' });
-          continue; // Force iteration 2 with diagnosis
-        } else {
-          console.log('[META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally');
-        }
+        // ✅ NO AUTO-DIAGNOSIS FORCING - Let Meta-SySop work naturally
+        // Only run diagnosis when user explicitly asks for it
+        console.log('[META-SYSOP-FORCE] ✓ No forcing - Meta-SySop works autonomously');
       } else {
         // No tool calls this iteration - check if we should continue
         // 🐛 FIX: Don't end if there are tasks still in progress - Meta-SySop might need another turn
