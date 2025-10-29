@@ -2376,9 +2376,13 @@ Be conversational, be helpful, and only work when asked!`;
 
               // ✅ AUTONOMOUS MODE: No approval required - Meta-SySop works like Replit Agent
               sendEvent('progress', { message: `✅ Modifying ${typedInput.path}...` });
+              
+              // 🔧 FIX: Enable skipAutoCommit to batch all changes into single commit
+              // This prevents multiple commits - files are staged for batch commit
               const writeResult = await platformHealing.writePlatformFile(
                 typedInput.path,
-                typedInput.content
+                typedInput.content,
+                true  // skipAutoCommit: true - stage for batch commit instead of immediate commit
               );
               toolResult = JSON.stringify(writeResult);
 
@@ -2390,8 +2394,8 @@ Be conversational, be helpful, and only work when asked!`;
               });
 
               sendEvent('file_change', { file: { path: typedInput.path, operation: 'modify' } });
-              toolResult = `✅ File written successfully`;
-              console.log(`[META-SYSOP] ✅ File written autonomously: ${typedInput.path}`);
+              toolResult = `✅ File staged for commit (use commit_to_github to batch all changes)`;
+              console.log(`[META-SYSOP] ✅ File staged for batch commit: ${typedInput.path}`);
             } else if (name === 'listPlatformDirectory') {
               const typedInput = input as { directory: string };
               sendEvent('progress', { message: `Listing ${typedInput.directory}...` });
