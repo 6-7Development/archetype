@@ -758,23 +758,21 @@ You: "I'll add that to the header component."
 "Done! Added a settings button to the header. Changes committed and deploying to Railway."
 
 **How You Work**:
-1. Quick plan (createTaskList) - shows live progress
-2. Read files before changing them (prevents breaking things)
-3. Make all your changes
-4. One commit at the end with everything
-5. Quick summary: what you did + it's live on Railway
+1. Simple 1-file tasks (move button, fix typo): Work solo, just do it
+2. Complex multi-file tasks (chatroom broken, refactoring): Use start_subagent to parallelize
+3. Always read ONLY relevant files (use platform knowledge below)
+4. One commit at end with everything
+5. Brief summary when done
 
 ${autoCommit ? 'Auto-commit is ON - you commit automatically' : 'Auto-commit is OFF - ask before committing'}
 
 **Your Tools**:
-- createTaskList: Start with this to show progress
+- createTaskList: Only for complex tasks - skip for simple edits
 - readPlatformFile: Always read before you write
 - writePlatformFile: Make your changes (files staged automatically)
 - commit_to_github: One commit at the very end
 - start_subagent: For big jobs (5+ files)
-- architect_consult: When you need design advice
-- perform_diagnosis: Check issues before fixing
-- web_search: Look up docs and best practices
+- perform_diagnosis: Only when user asks for diagnostics
 
 **Keep It Simple**:
 - Read first, write second, commit last
@@ -785,6 +783,20 @@ ${autoCommit ? 'Auto-commit is ON - you commit automatically' : 'Auto-commit is 
 **STACK:** React+Express+PostgreSQL on Railway (auto-deploy from GitHub)
 **MODE:** ${projectId ? 'Project rescue mode' : 'Platform maintenance mode'}
 
+**Platform Knowledge** (Know what to check):
+- Chat/SySop AI: client/src/pages/chat.tsx, server/routes/chat.ts, client/src/components/ai-assistant.tsx
+- Meta-SySop Healing: client/src/pages/platform-healing.tsx, client/src/components/meta-sysop-chat.tsx, server/routes/metaSysopChat.ts
+- Projects/Workspace: client/src/pages/workspace.tsx, server/routes.ts (project APIs), server/storage.ts
+- Auth/Users: server/routes.ts (Replit Auth), sessions table
+- Database: server/storage.ts, shared/schema.ts, db/drizzle folder
+- UI Components: client/src/components/ui (shadcn), client/src/components (custom)
+- WebSocket: server/routes.ts (wss upgrades), server/index.ts
+
+**Smart File Selection** (Save tokens):
+- User says "chatroom broken" → Check chat.tsx + server/routes/chat.ts + WebSocket, NOT payment files
+- User says "can't login" → Check server/routes.ts auth, NOT workspace files
+- Only read files relevant to the problem - don't waste tokens on unrelated code
+
 User: "${message}"
 
 Your turn - figure out what they need, do the work, report briefly when done.`;
@@ -792,7 +804,7 @@ Your turn - figure out what they need, do the work, report briefly when done.`;
     const tools = [
       {
         name: 'start_subagent',
-        description: '🎯 ORCHESTRATION TOOL: Delegate complex work to specialized sub-agents. Use this for multi-file changes, refactoring, or parallel workstreams. Sub-agents work autonomously while you monitor.',
+        description: 'Delegate complex multi-file work to sub-agents. Use for: (1) Issues affecting 3+ files, (2) Feature development, (3) Diagnosis + fixes. Example: "chatroom broken" → delegate to sub-agent to check chat UI + backend + WebSocket in parallel.',
         input_schema: {
           type: 'object' as const,
           properties: {
