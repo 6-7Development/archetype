@@ -13,21 +13,6 @@ import { AgentTaskList, type AgentTask } from "./agent-task-list";
 import { AgentProgressDisplay } from "./agent-progress-display";
 import { MarkdownRenderer } from "./markdown-renderer";
 
-interface Section {
-  id: string;
-  type: 'thinking' | 'tool' | 'text';
-  title: string;
-  content: string;
-  status: 'active' | 'finished';
-  startTime: number;
-  endTime?: number;
-  metadata?: {
-    toolName?: string;
-    args?: any;
-    result?: any;
-  };
-}
-
 interface Attachment {
   fileName: string;
   fileType: 'image' | 'code' | 'log' | 'text';
@@ -40,7 +25,6 @@ interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
-  sections?: Section[]; // Structured sections for agent responses
   isStreaming?: boolean; // Flag to indicate if this message is currently streaming
   attachments?: Attachment[]; // File attachments
 }
@@ -51,136 +35,7 @@ interface MetaSySopChatProps {
   onTasksChange?: (tasks: AgentTask[], activeTaskId: string | null) => void;
 }
 
-// Helper to format duration
-function formatDuration(ms: number): string {
-  if (ms < 1000) return `${ms}ms`;
-  const seconds = Math.floor(ms / 1000);
-  if (seconds < 60) return `${seconds}s`;
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return `${minutes}m ${remainingSeconds}s`;
-}
-
-// Icon mapping for section types
-function getSectionIcon(type: Section['type'], toolName?: string) {
-  if (type === 'thinking') return Brain;
-  if (type === 'text') return FileCode;
-  if (type === 'tool') {
-    // Map tool names to specific icons
-    if (toolName?.includes('read')) return FileCode;
-    if (toolName?.includes('write')) return FileCode;
-    if (toolName?.includes('diagnosis')) return Terminal;
-    if (toolName?.includes('sql')) return Terminal;
-    return Wrench;
-  }
-  return FileCode;
-}
-
-// CollapsibleExcerpt: Shows preview with "Show N more" for long content
-function CollapsibleExcerpt({ content, maxLines = 4 }: { content: string; maxLines?: number }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const lines = content.split('\n');
-  const hasMore = lines.length > maxLines;
-
-  if (!hasMore) {
-    return <MarkdownRenderer content={content} />;
-  }
-
-  const previewContent = lines.slice(0, maxLines).join('\n');
-  const hiddenCount = lines.length - maxLines;
-
-  return (
-    <div>
-      {!isExpanded ? (
-        <>
-          <MarkdownRenderer content={previewContent} />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsExpanded(true)}
-            className="mt-2 h-7 text-xs text-primary hover:text-primary/80"
-            data-testid="button-show-more"
-          >
-            Show {hiddenCount} more line{hiddenCount !== 1 ? 's' : ''}
-          </Button>
-        </>
-      ) : (
-        <>
-          <MarkdownRenderer content={content} />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsExpanded(false)}
-            className="mt-2 h-7 text-xs text-muted-foreground"
-            data-testid="button-show-less"
-          >
-            Show less
-          </Button>
-        </>
-      )}
-    </div>
-  );
-}
-
-// CollapsibleSection: Renders a single section with collapse/expand
-function CollapsibleSection({ section }: { section: Section }) {
-  const [isOpen, setIsOpen] = useState(section.status === 'active');
-  const Icon = getSectionIcon(section.type, section.metadata?.toolName);
-  
-  // Auto-expand when section finishes
-  useEffect(() => {
-    if (section.status === 'finished') {
-      setIsOpen(false); // Collapse when finished to save space
-    }
-  }, [section.status]);
-
-  const duration = section.endTime && section.startTime 
-    ? formatDuration(section.endTime - section.startTime)
-    : null;
-
-  const getStatusIcon = () => {
-    if (section.status === 'active') {
-      return <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />;
-    }
-    return <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />;
-  };
-
-  return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="border border-border rounded-lg overflow-hidden bg-muted/30">
-        <CollapsibleTrigger className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-muted/50 transition-colors group" data-testid="section-trigger">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            {isOpen ? (
-              <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
-            ) : (
-              <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
-            )}
-            <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
-            <span className="text-sm font-medium truncate">{section.title}</span>
-            {duration && (
-              <span className="text-xs text-muted-foreground ml-auto shrink-0 flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                {duration}
-              </span>
-            )}
-            {getStatusIcon()}
-          </div>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="px-4 py-3 border-t border-border bg-background/50">
-            {section.content ? (
-              <CollapsibleExcerpt content={section.content} maxLines={6} />
-            ) : (
-              <div className="text-sm text-muted-foreground italic">No output</div>
-            )}
-          </div>
-        </CollapsibleContent>
-      </div>
-    </Collapsible>
-  );
-}
-
-// Helper function to retry fetch with exponential backoff
+// Helper to retry fetch with exponential backoff
 async function retryFetch(url: string, options: RequestInit, maxRetries = 3): Promise<Response> {
   let lastError: Error | null = null;
   
@@ -333,12 +188,18 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
     }
   }, [tasks, activeTaskId, onTasksChange]);
 
-  // Auto-scroll to bottom
+  // Auto-scroll to bottom when new content arrives
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      const scrollEl = scrollRef.current;
+      const isNearBottom = scrollEl.scrollTop + scrollEl.clientHeight > scrollEl.scrollHeight - 100;
+      
+      // Only auto-scroll if user is near the bottom (avoid interrupting reading)
+      if (isNearBottom || isStreaming) {
+        scrollEl.scrollTop = scrollEl.scrollHeight;
+      }
     }
-  }, [messages]);
+  }, [messages, isStreaming]);
 
   // Cleanup stream on unmount
   useEffect(() => {
@@ -599,7 +460,6 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
         id: assistantMsgId,
         role: "assistant",
         content: "",
-        sections: [],
         isStreaming: true,
       };
       setMessages(prev => [...prev, assistantMsg]);
@@ -665,71 +525,9 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                     console.log('[META-SYSOP] User message saved:', data.messageId);
                     break;
 
-                  case 'section_start': {
-                    // Start a new section
-                    const newSection: Section = {
-                      id: data.sectionId,
-                      type: data.sectionType || 'text',
-                      title: data.title || 'Working...',
-                      content: '',
-                      status: 'active',
-                      startTime: data.timestamp || Date.now(),
-                      metadata: data.metadata,
-                    };
-                    
-                    // Update the streaming message with new section
-                    setMessages(prev => prev.map(msg => 
-                      msg.id === assistantMsgId
-                        ? { ...msg, sections: [...(msg.sections || []), newSection] }
-                        : msg
-                    ));
-                    setProgressStatus('working');
-                    console.log('[META-SYSOP] Section started:', data.sectionType, data.title);
-                    break;
-                  }
-
-                  case 'section_update': {
-                    // Update existing section content
-                    setMessages(prev => prev.map(msg => 
-                      msg.id === assistantMsgId
-                        ? {
-                            ...msg,
-                            sections: msg.sections?.map(s => 
-                              s.id === data.sectionId 
-                                ? { ...s, content: s.content + (data.content || '') }
-                                : s
-                            )
-                          }
-                        : msg
-                    ));
-                    break;
-                  }
-
-                  case 'section_finish': {
-                    // Finish section and mark as complete
-                    setMessages(prev => prev.map(msg => 
-                      msg.id === assistantMsgId
-                        ? {
-                            ...msg,
-                            sections: msg.sections?.map(s => 
-                              s.id === data.sectionId 
-                                ? { 
-                                    ...s, 
-                                    status: 'finished' as const,
-                                    endTime: data.timestamp || Date.now(),
-                                    content: data.content || s.content
-                                  }
-                                : s
-                            )
-                          }
-                        : msg
-                    ));
-                    console.log('[META-SYSOP] Section finished:', data.sectionId);
-                    break;
-                  }
-
                   case 'content':
-                    // Update the streaming message content
+                    // 🔥 REPLIT AGENT STYLE: Stream content character-by-character
+                    // Update the streaming message content IMMEDIATELY (no buffering)
                     setMessages(prev => prev.map(msg => 
                       msg.id === assistantMsgId
                         ? { ...msg, content: msg.content + (data.content || '') }
@@ -791,6 +589,13 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                       setActiveTaskId(data.taskId);
                     }
                     console.log('[META-SYSOP] Task updated:', data.taskId, '→', data.status);
+                    break;
+
+                  // Remove all section-based events - we're using direct content streaming now
+                  case 'section_start':
+                  case 'section_update': 
+                  case 'section_finish':
+                    // Ignore - using simple content streaming instead
                     break;
 
                   case 'done': {
@@ -1039,32 +844,19 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                       )}
                     </div>
                   ) : (
-                    <div className="space-y-3">
-                      {/* CRITICAL FIX: Always show content if it exists, regardless of sections */}
-                      {message.content && (
-                        <div className="px-4 py-3 bg-muted text-foreground border border-border rounded-lg">
+                    // 🔥 SIMPLIFIED ASSISTANT MESSAGE: Just content + streaming indicator
+                    <div className="px-4 py-3 bg-muted text-foreground border border-border rounded-lg">
+                      {message.content ? (
+                        <div className="prose prose-sm max-w-none dark:prose-invert">
                           <MarkdownRenderer content={message.content} />
-                          {message.isStreaming && (
-                            <span className="inline-block w-1 h-4 bg-primary animate-pulse ml-0.5" />
-                          )}
                         </div>
-                      )}
-                      
-                      {/* Render sections separately (after content) */}
-                      {message.sections && message.sections.length > 0 && (
-                        message.sections.map((section) => (
-                          <CollapsibleSection key={section.id} section={section} />
-                        ))
-                      )}
-                      
-                      {/* Show streaming indicator if no content yet */}
-                      {!message.content && message.isStreaming && (
-                        <div className="px-4 py-3 bg-muted text-foreground border border-border rounded-lg">
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
-                            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
-                          </div>
+                      ) : null}
+                      {message.isStreaming && (
+                        <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+                          <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                          <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
+                          <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
+                          <span className="text-xs ml-2">Meta-SySop is typing...</span>
                         </div>
                       )}
                     </div>
