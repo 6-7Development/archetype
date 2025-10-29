@@ -98,14 +98,14 @@ async function buildApplication(config: ProductionConfig): Promise<boolean> {
 
     // Verify build artifacts exist
     const serverArtifact = path.join(distPath, 'index.js');
-    const clientArtifact = path.join(distPath, 'client');
+    const clientArtifact = path.join(distPath, 'public');
     
     if (!fs.existsSync(serverArtifact)) {
       throw new Error('Server build artifact not found: dist/index.js');
     }
     
     if (!fs.existsSync(clientArtifact)) {
-      throw new Error('Client build artifacts not found: dist/client/');
+      throw new Error('Client build artifacts not found: dist/public/');
     }
 
     logSuccess('Build completed successfully');
@@ -127,9 +127,9 @@ async function bootstrapEnvironment(config: ProductionConfig): Promise<Record<st
   logStep('ENV', 'Bootstrapping production environment...');
   
   const env: Record<string, string> = {
+    ...process.env as Record<string, string>,
     NODE_ENV: 'production',
     PORT: config.port.toString(),
-    ...process.env as Record<string, string>,
   };
 
   // Mock Railway secrets if requested
