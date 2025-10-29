@@ -48,6 +48,7 @@ interface Message {
 interface MetaSySopChatProps {
   autoCommit?: boolean;
   autoPush?: boolean;
+  onTasksChange?: (tasks: AgentTask[], activeTaskId: string | null) => void;
 }
 
 // Helper to format duration
@@ -303,7 +304,7 @@ function AttachmentPreview({ attachment, onRemove }: { attachment: Attachment; o
   );
 }
 
-export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopChatProps) {
+export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChange }: MetaSySopChatProps) {
   const { toast } = useToast();
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
@@ -324,6 +325,13 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
   const lastEventTimeRef = useRef<number>(Date.now());
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Notify parent of task changes
+  useEffect(() => {
+    if (onTasksChange) {
+      onTasksChange(tasks, activeTaskId);
+    }
+  }, [tasks, activeTaskId, onTasksChange]);
 
   // Auto-scroll to bottom
   useEffect(() => {

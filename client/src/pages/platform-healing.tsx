@@ -12,6 +12,8 @@ import { Label } from '@/components/ui/label';
 import { MetaSySopChat } from '@/components/meta-sysop-chat';
 import { AdminGuard } from '@/components/admin-guard';
 import { DeploymentStatusWidget } from '@/components/deployment-status-widget';
+import { TaskProgressWidget } from '@/components/task-progress-widget';
+import type { AgentTask } from '@/components/agent-task-list';
 import { Rocket } from 'lucide-react';
 
 type StepState = 'pending' | 'running' | 'ok' | 'fail';
@@ -69,6 +71,8 @@ function PlatformHealingContent() {
     { id: 'committing', label: 'Committing to GitHub', status: 'pending' },
     { id: 'deployed', label: 'Deployed', status: 'pending' },
   ]);
+  const [metaTasks, setMetaTasks] = useState<AgentTask[]>([]);
+  const [metaActiveTaskId, setMetaActiveTaskId] = useState<string | null>(null);
 
   // Force deploy mutation
   const forceDeployMutation = useMutation({
@@ -541,11 +545,21 @@ function PlatformHealingContent() {
             <MetaSySopChat 
               autoCommit={true}
               autoPush={true}
+              onTasksChange={(tasks, activeId) => {
+                setMetaTasks(tasks);
+                setMetaActiveTaskId(activeId);
+              }}
             />
           </div>
 
-          {/* Sidebar - Deployment Status */}
+          {/* Sidebar - Task Progress + Deployment Status */}
           <div className="hidden lg:flex flex-col gap-3 w-80 shrink-0">
+            {metaTasks.length > 0 && (
+              <TaskProgressWidget 
+                tasks={metaTasks} 
+                activeTaskId={metaActiveTaskId} 
+              />
+            )}
             <DeploymentStatusWidget />
           </div>
         </div>
