@@ -23,12 +23,12 @@ export async function runPlatformDiagnostics(): Promise<DiagnosticResult[]> {
       message: 'Database connection successful',
       details: { userCount: testQuery[0]?.count || 0 }
     });
-  } catch (error) {
+  } catch (error: any) {
     results.push({
       status: 'error',
       category: 'database',
       message: 'Database connection failed',
-      details: { error: error.message }
+      details: { error: error?.message || 'Unknown error' }
     });
   }
 
@@ -42,12 +42,12 @@ export async function runPlatformDiagnostics(): Promise<DiagnosticResult[]> {
       category: 'filesystem',
       message: 'File system write permissions OK'
     });
-  } catch (error) {
+  } catch (error: any) {
     results.push({
       status: 'error',
       category: 'filesystem',
       message: 'File system write permissions failed',
-      details: { error: error.message }
+      details: { error: error?.message || 'Unknown error' }
     });
   }
 

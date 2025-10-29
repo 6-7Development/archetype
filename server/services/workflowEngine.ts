@@ -157,10 +157,10 @@ export class WorkflowEngine extends EventEmitter {
   /**
    * Execute workflow steps in parallel
    */
-  private async executeParallel(runId: string, workflow: Workflow): Promise<void> {
+  private async executeParallel(runId: string, workflow: any): Promise<void> {
     const processes: any[] = [];
     const outputs: string[] = [];
-    const steps = workflow.steps as any[];
+    const steps = (workflow.steps || []) as any[];
 
     this.activeRuns.set(runId, { processes, aborted: false });
 
