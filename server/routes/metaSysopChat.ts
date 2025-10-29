@@ -566,8 +566,8 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // Backups only created when actual platform changes are made (via approval workflow)
 
     // Get conversation history for context
-    // 🧠 BOUNDED MEMORY SYSTEM: Load last 100 messages (prevents token overflow)
-    // This gives ~50K tokens for history + leaves 150K for platform knowledge + response
+    // 🧠 BOUNDED MEMORY SYSTEM: Load last 10 messages (aggressive token reduction)
+    // This gives ~5K-10K tokens for history, saving 40K+ tokens per request
     const history = await db
       .select()
       .from(chatMessages)
@@ -578,7 +578,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         )
       )
       .orderBy(desc(chatMessages.createdAt))
-      .limit(100); // Bounded to prevent API failures, but still comprehensive
+      .limit(10); // ⚡ REDUCED FROM 100 - Saves ~40K tokens per request!
     
     // Reverse to chronological order (oldest → newest) for Claude
     history.reverse();
@@ -626,142 +626,33 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       }
     }
     
-    // 🧠 CONDENSED PLATFORM KNOWLEDGE: Smart summary instead of full replit.md
-    const platformKnowledge = `\n\n═══════════════════════════════════════════════════════════════════\n` +
-      `📚 CONDENSED PLATFORM KNOWLEDGE (Your Intimate Understanding)\n` +
-      `═══════════════════════════════════════════════════════════════════\n\n` +
-      `**ARCHETYPE PLATFORM - YOU KNOW THIS INTIMATELY:**\n\n` +
-      `**What It Is:** AI-powered SaaS for rapid web dev with SySop (user AI agent), Meta-SySop (YOU - platform maintenance), I AM (architect). Dual versions: Archetype (desktop) + Archetype5 (mobile).\n\n` +
-      `**Tech Stack:** React + Express + PostgreSQL (Neon) + Vite, deployed on Railway with GitHub auto-deploy from main branch.\n\n` +
-      `**YOUR CAPABILITIES (Meta-SySop):**\n` +
-      `- ✅ Full platform source code access (read/write platform files)\n` +
-      `- ✅ Background jobs system (run indefinitely, no timeouts)\n` +
-      `- ✅ Batch commits (stage files, commit once to prevent deployment flooding)\n` +
-      `- ✅ Memory system (100 messages of conversation history)\n` +
-      `- ✅ Deployment awareness (know recent GitHub commits)\n` +
-      `- ✅ Architect consultation (call I AM for architectural guidance)\n` +
-      `- ✅ Web search (Tavily API for research)\n` +
-      `- ✅ Task management (create/update task lists)\n` +
-      `- ✅ Action-oriented workflow (tools first, talk second like Replit Agent)\n\n` +
-      `**KEY SYSTEMS YOU MAINTAIN:**\n` +
-      `1. **SySop AI Agent** - 12-step workflow for user project generation\n` +
-      `2. **Platform Healing** - Real-time metrics, diagnostics, auto-healing\n` +
-      `3. **WebSocket Broadcasting** - Live updates for chat, tasks, metrics\n` +
-      `4. **Database** - PostgreSQL with Drizzle ORM, 20+ tables\n` +
-      `5. **Authentication** - Replit Auth + PostgreSQL sessions\n` +
-      `6. **File Management** - Monaco editor, project storage\n` +
-      `7. **Preview System** - esbuild in-memory compilation\n` +
-      `8. **Deployment** - Railway auto-deploy on GitHub push\n\n` +
-      `**RESOLVED ISSUES (Don't bring these up):**\n` +
-      `- ❌ Chatbar issues (FIXED - UI updated)\n` +
-      `- ❌ Memory problems (FIXED - you now have 100-message memory)\n` +
-      `- ❌ Deployment flooding (FIXED - batch commits)\n` +
-      `- ❌ Personality/conversation skills (FIXED - you're conversational now!)\n\n` +
-      `**FILE STRUCTURE:**\n` +
-      `- client/src/ - React frontend (pages, components)\n` +
-      `- server/ - Express backend (routes, services)\n` +
-      `- shared/ - TypeScript types and schema\n` +
-      `- replit.md - Platform documentation (YOU CAN READ/WRITE THIS!)\n` +
-      `- Use readPlatformFile/writePlatformFile for code changes\n\n` +
-      `**📖 ACCESSING FULL PLATFORM KNOWLEDGE:**\n` +
-      `- You have condensed knowledge above, but complete docs are in replit.md\n` +
-      `- Read it anytime: readPlatformFile("replit.md")\n` +
-      `- Update it when you make major changes: writePlatformFile("replit.md", content)\n` +
-      `- Keep it current with platform evolution - it's YOUR documentation!\n\n` +
-      `**HOW TO HELP:**\n` +
-      `- Be conversational and reference this knowledge naturally\n` +
-      `- "I know Archetype uses..." or "Let me check the platform healing system..."\n` +
-      `- Show confidence from this intimate understanding\n` +
-      `- Reference past fixes and improvements\n` +
-      `- Read replit.md for detailed architecture when needed\n`;
+    // 🧠 ULTRA-CONDENSED PLATFORM KNOWLEDGE: Minimal tokens, maximum efficiency
+    const platformKnowledge = `\n\n**ARCHETYPE PLATFORM:**\n` +
+      `React+Express+PostgreSQL on Railway. You're Meta-SySop - platform maintenance agent.\n` +
+      `Tools: readPlatformFile/writePlatformFile, web_search, architect_consult, commit_to_github.\n` +
+      `Read replit.md for full details when needed. Be conversational, action-oriented.\n`;
 
     // Generate comprehensive memory summary for system prompt
     let memorySummary = '';
     if (userGoals.length > 0 || knownIssues.length > 0 || attemptedFixes.length > 0 || completedWork.length > 0) {
-      memorySummary = `\n\n═══════════════════════════════════════════════════════════════════\n`;
-      memorySummary += `🧠 FULL CONVERSATION HISTORY (Everything We've Discussed)\n`;
-      memorySummary += `═══════════════════════════════════════════════════════════════════\n\n`;
-      memorySummary += `**Total conversation messages: ${history.length}**\n`;
-      memorySummary += `**User requests tracked: ${userMessages.length}**\n`;
-      memorySummary += `**Work completed: ${completedWork.length} items**\n\n`;
+      memorySummary = `\n\n**CONTEXT:** ${history.length} msgs, ${userMessages.length} requests, ${completedWork.length} completed.\n`;
       
       if (userGoals.length > 0) {
-        memorySummary += `**ALL USER GOALS (${userGoals.length} total):**\n`;
-        memorySummary += userGoals.slice(-10).map((g, i) => `${i+1}. ${g.substring(0, 300)}`).join('\n');
-        memorySummary += `\n\n`;
+        memorySummary += `Goals: ${userGoals.slice(-2).map(g => g.substring(0, 80)).join('; ')}\n`;
       }
       
       if (knownIssues.length > 0) {
-        memorySummary += `**HISTORICAL ISSUES DISCUSSED (${knownIssues.length} total - MOST ARE ALREADY FIXED):**\n`;
-        memorySummary += `⚠️ These are from our conversation history - many are already resolved!\n`;
-        memorySummary += knownIssues.slice(-10).map((issue, i) => `${i+1}. ${issue.substring(0, 300)}`).join('\n');
-        memorySummary += `\n\n`;
-      }
-      
-      if (attemptedFixes.length > 0) {
-        memorySummary += `**ALL FIX ATTEMPTS (${attemptedFixes.length} total):**\n`;
-        memorySummary += attemptedFixes.slice(-10).map((f, i) => `${i+1}. ${f.substring(0, 300)}`).join('\n');
-        memorySummary += `\n\n`;
+        memorySummary += `Issues: ${knownIssues.slice(-2).map(i => i.substring(0, 80)).join('; ')}\n`;
       }
       
       if (completedWork.length > 0) {
-        memorySummary += `**WORK COMPLETED (${completedWork.length} total):**\n`;
-        memorySummary += completedWork.slice(-10).map((work, i) => `${i+1}. ${work}`).join('\n');
-        memorySummary += `\n\n`;
+        memorySummary += `Completed: ${completedWork.slice(-1).join('; ')}\n`;
       }
-      
-      memorySummary += `**🎯 IMPORTANT CONTEXT NOTES:**\n`;
-      memorySummary += `- This is HISTORICAL conversation memory - most issues listed above are ALREADY RESOLVED\n`;
-      memorySummary += `- These are for your reference/context - NOT current problems needing fixes\n`;
-      memorySummary += `- Only work on NEW issues the user mentions in their current message\n`;
-      memorySummary += `- Reference history naturally: "I remember when we fixed X..." or "Earlier you mentioned Y..."\n`;
-      memorySummary += `- Don't assume old issues still exist - ask before fixing historical problems!\n`;
     }
 
-    // 🚀 DEPLOYMENT AWARENESS: Fetch recent commits so Meta-SySop knows what's new
+    // ⚡ Minimal deployment awareness - only on first iteration
     let deploymentAwareness = '';
-    try {
-      const { fetchRecentCommits } = await import('../githubService');
-      const recentCommits = await fetchRecentCommits(10); // Last 10 commits
-      
-      if (recentCommits && recentCommits.length > 0) {
-        deploymentAwareness = `\n\n═══════════════════════════════════════════════════════════════════\n`;
-        deploymentAwareness += `🚀 RECENT PLATFORM UPDATES (You've Been Updated!)\n`;
-        deploymentAwareness += `═══════════════════════════════════════════════════════════════════\n\n`;
-        deploymentAwareness += `**IMPORTANT: You were recently updated! Here's what changed:**\n\n`;
-        
-        const recentUpdateCommits = recentCommits.slice(0, 5);
-        for (const commit of recentUpdateCommits) {
-          const timeAgo = Math.floor((Date.now() - new Date(commit.date).getTime()) / (1000 * 60 * 60));
-          const timeStr = timeAgo < 1 ? 'just now' : timeAgo < 24 ? `${timeAgo}h ago` : `${Math.floor(timeAgo / 24)}d ago`;
-          deploymentAwareness += `- **${commit.message}** (${timeStr})\n`;
-        }
-        
-        deploymentAwareness += `\n**KEY UPDATES TO YOU (Meta-SySop):**\n`;
-        deploymentAwareness += `- 🧠 **Memory System**: You now remember user goals, issues, and fixes across 25 messages!\n`;
-        deploymentAwareness += `- 🚀 **Deployment Awareness**: You now know when you've been updated (like RIGHT NOW!)\n`;
-        deploymentAwareness += `- ⚡ **Action-Oriented**: You work like Replit Agent - tools first, talk second\n`;
-        deploymentAwareness += `- 🎯 **Background Jobs**: You can run indefinitely without timeouts\n`;
-        deploymentAwareness += `- 📦 **Batch Commits**: You batch all file changes into one commit (no deployment flooding)\n\n`;
-        
-        deploymentAwareness += `**HOW TO USE THIS INFO:**\n`;
-        deploymentAwareness += `- Mention recent updates when relevant: "I just got an update that improves my memory!"\n`;
-        deploymentAwareness += `- Be self-aware: "With my new deployment awareness, I can see..."\n`;
-        deploymentAwareness += `- Show personality: Be confident, friendly, and conversational!\n`;
-        deploymentAwareness += `- Reference what you can do: "I can now remember 25 messages of context..."\n\n`;
-        
-        deploymentAwareness += `**🗑️ IGNORE OLD RESOLVED ISSUES:**\n`;
-        deploymentAwareness += `The following issues were fixed in previous deployments - DON'T bring them up:\n`;
-        deploymentAwareness += `- ❌ Chatbar issues (RESOLVED - UI has been fixed)\n`;
-        deploymentAwareness += `- ❌ Old UI/UX problems (RESOLVED - multiple updates deployed)\n`;
-        deploymentAwareness += `- ❌ Memory problems (RESOLVED - you now have 25-message memory!)\n`;
-        deploymentAwareness += `- ❌ Deployment flooding (RESOLVED - batch commits implemented)\n\n`;
-        deploymentAwareness += `**Focus on NEW requests, not old resolved issues!**\n`;
-      }
-    } catch (error) {
-      console.error('[META-SYSOP] Failed to fetch deployment awareness:', error);
-      // Non-blocking - continue without deployment awareness
-    }
+    // REMOVED: Deployment awareness section to save ~2K tokens per request
 
     // Build conversation for Claude
     const conversationMessages: any[] = history
