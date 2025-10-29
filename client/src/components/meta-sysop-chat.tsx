@@ -33,6 +33,7 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   sections?: Section[]; // Structured sections for agent responses
+  isStreaming?: boolean; // Flag to indicate if this message is currently streaming
 }
 
 interface MetaSySopChatProps {
@@ -176,8 +177,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
-  const [streamingContent, setStreamingContent] = useState("");
-  const [streamingSections, setStreamingSections] = useState<Section[]>([]); // Active streaming sections
+  const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null);
   const [tasks, setTasks] = useState<AgentTask[]>([]);
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
   const [progressStatus, setProgressStatus] = useState<'thinking' | 'working' | 'vibing' | 'idle'>('idle');
@@ -192,7 +192,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, streamingContent, streamingSections]);
+  }, [messages]);
 
   // Cleanup stream on unmount
   useEffect(() => {
@@ -246,12 +246,23 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
       setInput("");
       
       setIsStreaming(true);
-      setStreamingContent("");
-      setStreamingSections([]);
       setTasks([]);
       setActiveTaskId(null);
       setProgressStatus('thinking');
       setProgressMessage("Starting Meta-SySop...");
+
+      // Add initial assistant message that will be updated via streaming
+      const assistantMsgId = `assistant-${Date.now()}`;
+      setStreamingMessageId(assistantMsgId);
+      
+      const assistantMsg: Message = {
+        id: assistantMsgId,
+        role: "assistant",
+        content: "",
+        sections: [],
+        isStreaming: true,
+      };
+      setMessages(prev => [...prev, assistantMsg]);
 
       console.log('[META-SYSOP] ============ SSE STREAM STARTING ============');
       console.log('[META-SYSOP] Message:', message);
@@ -288,8 +299,6 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
-      let accumulatedContent = '';
-      let currentSections: Section[] = [];
 
       try {
         while (true) {
@@ -322,8 +331,13 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                       startTime: data.timestamp || Date.now(),
                       metadata: data.metadata,
                     };
-                    currentSections = [...currentSections, newSection];
-                    setStreamingSections(currentSections);
+                    
+                    // Update the streaming message with new section
+                    setMessages(prev => prev.map(msg => 
+                      msg.id === assistantMsgId
+                        ? { ...msg, sections: [...(msg.sections || []), newSection] }
+                        : msg
+                    ));
                     setProgressStatus('working');
                     console.log('[META-SYSOP] Section started:', data.sectionType, data.title);
                     break;
@@ -331,36 +345,51 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
 
                   case 'section_update': {
                     // Update existing section content
-                    currentSections = currentSections.map(s => 
-                      s.id === data.sectionId 
-                        ? { ...s, content: s.content + (data.content || '') }
-                        : s
-                    );
-                    setStreamingSections(currentSections);
+                    setMessages(prev => prev.map(msg => 
+                      msg.id === assistantMsgId
+                        ? {
+                            ...msg,
+                            sections: msg.sections?.map(s => 
+                              s.id === data.sectionId 
+                                ? { ...s, content: s.content + (data.content || '') }
+                                : s
+                            )
+                          }
+                        : msg
+                    ));
                     break;
                   }
 
                   case 'section_finish': {
                     // Finish section and mark as complete
-                    currentSections = currentSections.map(s => 
-                      s.id === data.sectionId 
-                        ? { 
-                            ...s, 
-                            status: 'finished' as const,
-                            endTime: data.timestamp || Date.now(),
-                            content: data.content || s.content
+                    setMessages(prev => prev.map(msg => 
+                      msg.id === assistantMsgId
+                        ? {
+                            ...msg,
+                            sections: msg.sections?.map(s => 
+                              s.id === data.sectionId 
+                                ? { 
+                                    ...s, 
+                                    status: 'finished' as const,
+                                    endTime: data.timestamp || Date.now(),
+                                    content: data.content || s.content
+                                  }
+                                : s
+                            )
                           }
-                        : s
-                    );
-                    setStreamingSections(currentSections);
+                        : msg
+                    ));
                     console.log('[META-SYSOP] Section finished:', data.sectionId);
                     break;
                   }
 
                   case 'content':
-                    // Legacy content streaming (for backward compatibility)
-                    accumulatedContent += (data.content || '');
-                    setStreamingContent(accumulatedContent);
+                    // Update the streaming message content
+                    setMessages(prev => prev.map(msg => 
+                      msg.id === assistantMsgId
+                        ? { ...msg, content: msg.content + (data.content || '') }
+                        : msg
+                    ));
                     setProgressStatus('working');
                     break;
 
@@ -407,20 +436,14 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                   case 'done': {
                     console.log('[META-SYSOP] ✅ Stream complete, messageId:', data.messageId);
                     
-                    // Build final message with sections
-                    const finalContent = accumulatedContent || streamingContent || '✅ Done!';
-                    const finalSections = currentSections.length > 0 ? currentSections : undefined;
+                    // Mark the message as no longer streaming
+                    setMessages(prev => prev.map(msg => 
+                      msg.id === assistantMsgId
+                        ? { ...msg, isStreaming: false }
+                        : msg
+                    ));
                     
-                    const assistantMsg: Message = {
-                      id: data.messageId || Date.now().toString(),
-                      role: 'assistant',
-                      content: finalContent,
-                      sections: finalSections,
-                    };
-                    
-                    setMessages(prev => [...prev, assistantMsg]);
-                    setStreamingContent('');
-                    setStreamingSections([]);
+                    setStreamingMessageId(null);
                     setIsStreaming(false);
                     setProgressStatus('idle');
                     setProgressMessage('');
@@ -435,10 +458,16 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                     console.error('[META-SYSOP] ❌ Stream error:', data.message);
                     
                     setIsStreaming(false);
-                    setStreamingContent('');
-                    setStreamingSections([]);
+                    setStreamingMessageId(null);
                     setProgressStatus('idle');
                     setProgressMessage('');
+                    
+                    // Add error to the message
+                    setMessages(prev => prev.map(msg => 
+                      msg.id === assistantMsgId
+                        ? { ...msg, content: `❌ Error: ${data.message}`, isStreaming: false }
+                        : msg
+                    ));
                     
                     toast({
                       title: '❌ Error',
@@ -467,8 +496,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
     onError: (error: any) => {
       console.error('Meta-SySop error:', error);
       setIsStreaming(false);
-      setStreamingContent("");
-      setStreamingSections([]);
+      setStreamingMessageId(null);
       setProgressStatus('idle');
       setProgressMessage("");
       
@@ -508,8 +536,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
       ));
       
       setIsStreaming(false);
-      setStreamingContent("");
-      setStreamingSections([]);
+      setStreamingMessageId(null);
       setProgressStatus('idle');
       setProgressMessage("");
       
@@ -632,12 +659,21 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                         message.sections.map((section) => (
                           <CollapsibleSection key={section.id} section={section} />
                         ))
-                      ) : (
+                      ) : message.content ? (
                         // Fallback to plain content
                         <div className="px-4 py-3 bg-muted text-foreground border border-border rounded-lg">
                           <MarkdownRenderer content={message.content} />
                         </div>
-                      )}
+                      ) : message.isStreaming ? (
+                        // Show streaming indicator while no content yet
+                        <div className="px-4 py-3 bg-muted text-foreground border border-border rounded-lg">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
+                            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
                   )}
                 </div>
@@ -675,40 +711,6 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                     </Button>
                   </div>
                   <AgentTaskList tasks={tasks} activeTaskId={activeTaskId} onTaskClick={setActiveTaskId} />
-                </div>
-              </div>
-            )}
-
-            {/* Streaming sections (active) */}
-            {isStreaming && streamingSections.length > 0 && (
-              <div className="flex gap-3 justify-start animate-in fade-in-up">
-                <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-muted flex items-center justify-center animate-pulse">
-                  <Wrench className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <div className="space-y-3 w-full max-w-[85%]">
-                  {streamingSections.map((section) => (
-                    <CollapsibleSection key={section.id} section={section} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Streaming indicator (legacy fallback) */}
-            {isStreaming && streamingSections.length === 0 && (
-              <div className="flex gap-3 justify-start animate-in fade-in-up">
-                <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-muted flex items-center justify-center animate-pulse">
-                  <Wrench className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <div className="rounded-lg px-4 py-3 max-w-[75%] bg-muted text-foreground border border-border">
-                  {streamingContent ? (
-                    <MarkdownRenderer content={streamingContent} />
-                  ) : (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
-                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
-                    </div>
-                  )}
                 </div>
               </div>
             )}
