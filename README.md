@@ -2,6 +2,32 @@
 
 A powerful self-hosted web IDE with AI-powered code generation and real-time collaboration features built with React, Monaco Editor, Express, PostgreSQL, and OpenAI.
 
+## 🤖 Meta-SySop - Autonomous Platform Management
+
+**Meta-SySop** is Archetype's built-in AI agent that can autonomously maintain and update the platform itself. Unlike typical AI assistants that only help with user projects, Meta-SySop can edit Archetype's own codebase and deploy changes to production via GitHub and Railway.
+
+### Quick Start with Meta-SySop
+
+```bash
+# 1. Set up GitHub integration (one-time)
+# See META_SYSOP_QUICKSTART.md for detailed instructions
+
+# 2. Verify configuration
+npm run meta:check
+
+# 3. Use Meta-SySop
+# Navigate to /platform-healing and ask Meta-SySop to:
+# - Fix bugs: "The mobile menu is broken - fix it"
+# - Add features: "Add a dark mode toggle"
+# - Refactor code: "Optimize the dashboard queries"
+# - Deploy: Changes automatically commit to GitHub and deploy via Railway
+```
+
+**Learn More:**
+- 📘 [Complete Workflow Guide](META_SYSOP_WORKFLOW.md) - Full documentation
+- 🚀 [Quick Start Guide](META_SYSOP_QUICKSTART.md) - 5-minute setup
+- 🔧 [Implementation Details](META_SYSOP_IMPLEMENTATION_COMPLETE.md) - Technical specs
+
 ## Features
 
 - 🎨 **Monaco Editor Integration** - Full-featured code editor with syntax highlighting
