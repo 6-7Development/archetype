@@ -2670,6 +2670,12 @@ Be conversational, be helpful, and only work when asked!`;
                     `Recommendations:\n${(sanitizedResult.recommendations || diagnosisResult.recommendations).map((r: string, i: number) => `${i + 1}. ${r}`).join('\n')}`;
                   
                   sendEvent('progress', { message: `✅ Found ${diagnosisResult.findings.length} issues` });
+                  
+                  // 🔥 FIX: Stream diagnosis results to chat immediately (don't wait for Claude to explain)
+                  const postMessage = getPostToolMessage('perform_diagnosis', toolResult);
+                  const diagnosisOutput = postMessage + toolResult;
+                  sendEvent('content', { content: diagnosisOutput });
+                  fullContent += diagnosisOutput;
                 } else {
                   toolResult = `❌ Diagnosis failed: ${diagnosisResult.error}`;
                   sendEvent('error', { message: `Diagnosis failed: ${diagnosisResult.error}` });
