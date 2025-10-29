@@ -30,7 +30,8 @@ import {
   List,
   Sparkles,
   LayoutTemplate,
-  Code2
+  Code2,
+  GitCommit
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TemplateGallery } from "@/components/template-gallery";
@@ -124,11 +125,35 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Projects</h1>
-            <p className="text-muted-foreground">
-              Manage and organize all your AI-generated projects
-            </p>
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Projects</h1>
+              <p className="text-muted-foreground">
+                Manage and organize all your AI-generated projects
+              </p>
+            </div>
+            {/* Glowing 123 Commits Indicator */}
+            <div className="relative group cursor-pointer">
+              <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
+              <div className="relative px-4 py-2 bg-black rounded-lg leading-none flex items-center gap-2">
+                <GitCommit className="w-4 h-4 text-white" />
+                <span className="text-white font-bold">123</span>
+                <span className="text-gray-300 text-sm">commits</span>
+              </div>
+              <style jsx>{`
+                @keyframes pulse {
+                  0%, 100% {
+                    opacity: 0.75;
+                  }
+                  50% {
+                    opacity: 1;
+                  }
+                }
+                .animate-pulse {
+                  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+                }
+              `}</style>
+            </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
             <Button

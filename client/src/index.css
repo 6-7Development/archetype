@@ -93,6 +93,20 @@
   margin: 10px 0;
 }
 
+/* Glowing commits indicator animation */
+@keyframes glow-pulse {
+  0%, 100% {
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.glow-pulse {
+  animation: glow-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
 /* Mobile-First Responsive Images & Media */
 @layer base {
   img,
