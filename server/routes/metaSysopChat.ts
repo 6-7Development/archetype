@@ -3018,28 +3018,63 @@ Be conversational, be helpful, and only work when asked!`;
         // 🐛 FIX: Don't end if there are tasks still in progress - Meta-SySop might need another turn
         console.log(`[META-SYSOP-CONTINUATION] Iteration ${iterationCount}: No tool calls, checking if should continue...`);
         console.log(`[META-SYSOP-CONTINUATION] Active task list ID: ${activeTaskListId || 'none'}`);
-        
-        if (activeTaskListId) {
+
+        // 🚨 STUCK DETECTION: If 3+ iterations with no tool calls, stop to prevent infinite loop
+        const recentIterations = conversationMessages.slice(-6); // Last 3 iterations (user + assistant pairs)
+        const recentToolUses = recentIterations.filter((msg: any) =>
+          msg.role === 'assistant' && msg.content.some((block: any) => block.type === 'tool_use')
+        );
+
+        if (recentToolUses.length === 0 && iterationCount > 3) {
+          console.log(`[META-SYSOP-CONTINUATION] ❌ STUCK DETECTED - No tool calls in last 3 iterations. Ending to prevent infinite loop.`);
+
+          // Auto-complete stuck tasks
+          if (activeTaskListId) {
+            try {
+              const taskCheck = await readTaskList({ userId });
+              const sessionTaskList = taskCheck.taskLists?.find((list: any) => list.id === activeTaskListId);
+              const incompleteTasks = sessionTaskList?.tasks?.filter((t: any) =>
+                t.status === 'pending' || t.status === 'in_progress'
+              ) || [];
+
+              for (const task of incompleteTasks) {
+                await updateTask({
+                  userId,
+                  taskId: task.id,
+                  status: 'completed',
+                  result: '⚠️ Auto-completed - session ended without explicit completion',
+                  completedAt: new Date()
+                });
+              }
+              console.log(`[META-SYSOP-CONTINUATION] Auto-completed ${incompleteTasks.length} stuck tasks`);
+            } catch (error: any) {
+              console.error('[META-SYSOP-CONTINUATION] Failed to auto-complete tasks:', error);
+            }
+          }
+
+          continueLoop = false;
+        }
+        else if (activeTaskListId) {
           try {
             const taskCheck = await readTaskList({ userId });
             console.log(`[META-SYSOP-CONTINUATION] Task list read success: ${taskCheck.success}`);
             console.log(`[META-SYSOP-CONTINUATION] Task lists found: ${taskCheck.taskLists?.length || 0}`);
-            
+
             const sessionTaskList = taskCheck.taskLists?.find((list: any) => list.id === activeTaskListId);
             console.log(`[META-SYSOP-CONTINUATION] Session task list found: ${!!sessionTaskList}`);
             console.log(`[META-SYSOP-CONTINUATION] Tasks: ${sessionTaskList?.tasks?.length || 0}`);
-            
+
             const allTasks = sessionTaskList?.tasks || [];
             const inProgressTasks = allTasks.filter((t: any) => t.status === 'in_progress');
             const pendingTasks = allTasks.filter((t: any) => t.status === 'pending');
             const completedTasks = allTasks.filter((t: any) => t.status === 'completed');
-            
+
             console.log(`[META-SYSOP-CONTINUATION] Completed: ${completedTasks.length}, In-progress: ${inProgressTasks.length}, Pending: ${pendingTasks.length}`);
-            
+
             // ✅ FULL AUTONOMY: Let Meta-SySop decide when to continue
             // No forcing, no micromanagement - trust the AI to do its job
             const hasIncompleteTasks = inProgressTasks.length > 0 || pendingTasks.length > 0;
-            
+
             if (hasIncompleteTasks && iterationCount < MAX_ITERATIONS) {
               console.log(`[META-SYSOP-CONTINUATION] ✅ Continuing naturally - incomplete tasks remain`);
               continueLoop = true; // Continue but don't inject forcing messages
