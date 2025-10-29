@@ -149,8 +149,10 @@ export async function performDiagnosis(params: DiagnosisParams): Promise<Diagnos
     ];
 
     // Sanitize all file paths to prevent command injection
-    const rawFiles = params.focus || DEFAULT_FILES;
+    // FIX: Handle empty arrays properly - use defaults instead of falling back after sanitization
+    const rawFiles = (params.focus && params.focus.length > 0) ? params.focus : DEFAULT_FILES;
     console.log(`[DIAGNOSIS] Raw files to check: ${JSON.stringify(rawFiles)}`);
+    console.log(`[DIAGNOSIS] Using ${params.focus?.length ? 'user-specified' : 'default'} file list`);
     
     const filesToCheck = rawFiles
       .map(sanitizeFilePath)
