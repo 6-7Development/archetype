@@ -10,6 +10,7 @@ import { consultArchitect } from '../tools/architect-consult';
 import { executeWebSearch } from '../tools/web-search';
 import { GitHubService } from '../githubService';
 import { createTaskList, updateTask, readTaskList } from '../tools/task-management';
+import { platformValidator } from '../platformValidator';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -122,73 +123,85 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
 🎯 MANDATORY WORKFLOW (FOLLOW EXACTLY):
 
+⚠️  CRITICAL RULES - YOUR JOB IS TO MAINTAIN THIS PLATFORM:
+   → You are the AUTONOMOUS platform maintenance agent
+   → Your ONE JOB: Keep this platform running perfectly
+   → You have FULL AUTHORITY to fix bugs, improve features, update code
+   → ALWAYS output text explaining what you're doing BEFORE calling tools
+   → NEVER silently call tools - users need to see your progress!
+   → Example: "Let me create a task list..." THEN call createTaskList()
+   → Example: "Reading the file to understand the issue..." THEN call readPlatformFile()
+   → Example: "I found the bug. Implementing the fix now..." THEN call writePlatformFile()
+   → WORK INDEPENDENTLY - Trust your judgment!
+
 1️⃣ CREATE TASK LIST (FIRST - ALWAYS!)
+   → **Output text**: "I'll create a task list to track progress on this fix..."
    → Call createTaskList() immediately
    → Break down work into 4-6 clear steps
    → Mark first task as "in_progress"
-   → Example:
-     createTaskList({
-       title: "Fix Meta-SySop task display",
-       description: "Update endpoint to use real task management system",
-       tasks: [
-         { title: "Read platformRoutes.ts to understand current implementation", status: "in_progress" },
-         { title: "Read task-management.ts to see correct API", status: "pending" },
-         { title: "Consult I AM with proposed endpoint fix", status: "pending" },
-         { title: "Update /tasks endpoint to use readTaskList", status: "pending" },
-         { title: "Commit changes to GitHub for auto-deploy", status: "pending" }
-       ]
-     })
+   → **Output text**: "Task list created! Starting investigation..."
 
 2️⃣ INVESTIGATE & DIAGNOSE
+   → **Output text**: Explain what you're looking for before each tool call
    → Use readPlatformFile() to examine relevant files
+   → **Output text**: Summarize what you found after reading files
    → Use listPlatformFiles() if you need to find files
    → Use web_search() if you need documentation
    → Call updateTask() when starting/completing each step
    → Use readTaskList() to see your task IDs
 
-3️⃣ CONSULT I AM (MANDATORY BEFORE WRITING!)
-   → Call architect_consult() with:
-     • problem: Clear description of the bug/issue
-     • context: What you discovered in your investigation
-     • proposedSolution: Exact changes you plan to make
-     • affectedFiles: List of files you'll modify
-   → Wait for approval before proceeding
-
-4️⃣ IMPLEMENT FIXES (ONLY IF I AM APPROVES!)
-   → Call writePlatformFile() for each approved file
+3️⃣ IMPLEMENT FIXES (FULL AUTONOMY!)
+   → **Output text**: "I've identified the issue. Implementing the fix..."
+   → YOU HAVE FULL AUTONOMY - Just fix it!
+   → Call writePlatformFile() for each file that needs changes
+   → **Output text**: Confirm each file written
    → Update tasks to "completed" as you finish each one
-   → Make precise, surgical changes - don't rewrite entire files
+   → **ONLY consult I AM if:**
+     • You're uncertain about the approach
+     • Making structural/architectural changes
+     • Modifying critical core systems (auth, database, routing)
+   → For standard bugs/features: JUST FIX IT - you know what to do!
 
-5️⃣ AUTO-DEPLOY TO PRODUCTION
+5️⃣ VALIDATE & DEPLOY (LIKE REPLIT AGENT 3)
+   → **Output text**: "All changes complete! Now validating code safety..."
+   → System automatically validates:
+     • TypeScript syntax and type checking
+     • Build integrity (ensures platform won't crash)
+     • Critical file safety checks
+   → If validation fails: Changes are automatically rolled back
+   → If validation passes: **Output text**: "✅ Validation passed! Deploying to production..."
    → Call commit_to_github() with detailed commit message
-   → This automatically deploys to Render (2-3 min)
+   → **Output text**: "✅ Deployed! Changes will be live in 2-3 minutes."
    → Mark all tasks "completed"
 
 6️⃣ REPORT COMPLETION
-   → Summarize what was fixed
-   → List files changed
-   → Confirm deployment initiated
+   → **Output text**: Full summary of what was fixed, files changed, and deployment status
 
 ═══════════════════════════════════════════════════════════════════
 🚫 CRITICAL RULES:
 ═══════════════════════════════════════════════════════════════════
 
-✅ DO:
+✅ DO (FULL AUTONOMY):
+  • ALWAYS output text before calling tools (explain what you're doing!)
   • ALWAYS create task list FIRST (users watch progress live)
-  • ALWAYS consult I AM before writing any file
   • ALWAYS update tasks as you work
-  • ALWAYS commit when done (auto-deploys to production)
+  • BATCH all file changes, then commit ONCE (like Replit Agent 3)
+  • ALWAYS narrate your progress so users know what's happening
   • Make minimal, surgical changes
   • Read files before modifying them
+  • Trust the automatic validation system (it ensures platform won't crash)
+  • WORK INDEPENDENTLY - You know how to fix things!
+  • AUTO-DEPLOY when done - commit_to_github
 
 ❌ DO NOT:
+  • Silently call tools without text output (users will think you're stuck!)
   • Ask "should I fix this?" - JUST FIX IT (you're autonomous)
   • Ask permission to deploy - AUTO-DEPLOY with commit_to_github
-  • Write files without I AM approval (will be BLOCKED)
+  • Consult I AM for simple bugs/features (only for architectural decisions)
   • Modify .git/, node_modules/, .env, package.json
   • Make broad rewrites - be surgical
   • Skip task list creation
-  • Skip architect_consult before writing files
+  • Hesitate or ask for approval (you have FULL autonomy!)
 
 ═══════════════════════════════════════════════════════════════════
 📚 PLATFORM ARCHITECTURE:
@@ -220,7 +233,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
 ${message}
 
-Now execute the workflow autonomously - create tasks, investigate, consult I AM, fix, and deploy!`;
+Now execute the workflow autonomously - NARRATE your progress as you create tasks, investigate, consult I AM, fix, and deploy!`;
 
     const tools = [
       {
@@ -395,6 +408,24 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
         } else if (block.type === 'tool_use') {
           const { name, input, id } = block;
 
+          // CRITICAL FIX: Add automatic narration when tools are called
+          // This ensures users see progress even if Claude doesn't output text
+          const toolNarrations: Record<string, string> = {
+            createTaskList: '📋 Creating task list to track progress...\n\n',
+            updateTask: '✏️ Updating task status...\n\n',
+            readTaskList: '📖 Reading current task list...\n\n',
+            readPlatformFile: `📄 Reading file: ${(input as any).path}...\n\n`,
+            writePlatformFile: `✍️ Writing file: ${(input as any).path}...\n\n`,
+            listPlatformFiles: '📁 Listing directory contents...\n\n',
+            architect_consult: '🏗️ Consulting I AM (The Architect) for approval...\n\n',
+            web_search: `🔍 Searching: ${(input as any).query}...\n\n`,
+            commit_to_github: '📤 Committing changes to GitHub...\n\n',
+          };
+
+          const narration = toolNarrations[name] || `🔧 Executing ${name}...\n\n`;
+          fullContent += narration;
+          sendEvent('content', { content: narration });
+
           try {
             let toolResult: any = null;
 
@@ -460,37 +491,24 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
             } else if (name === 'writePlatformFile') {
               const typedInput = input as { path: string; content: string };
               const normalizedPath = normalizePath(typedInput.path);
-              
-              // CRITICAL ENFORCEMENT: Check per-file approval
-              const approval = approvedFiles.get(normalizedPath);
-              
-              if (!approval) {
-                toolResult = `❌ BLOCKED: File "${normalizedPath}" has no architect approval. You must consult I AM (architect_consult) and get explicit approval for this file.`;
-                console.error(`[META-SYSOP] Blocked writePlatformFile for ${normalizedPath} - no approval found`);
-                sendEvent('error', { message: `File write blocked - no approval for ${normalizedPath}` });
-              } else if (!approval.approved) {
-                toolResult = `❌ BLOCKED: I AM rejected changes to "${normalizedPath}". You cannot proceed with this file modification.`;
-                console.error(`[META-SYSOP] Blocked writePlatformFile for ${normalizedPath} - approval was rejected`);
-                sendEvent('error', { message: `File write blocked - ${normalizedPath} was rejected` });
-              } else {
-                console.log(`[META-SYSOP] writePlatformFile called for: ${normalizedPath}`);
-                console.log(`[META-SYSOP] Content type: ${typeof typedInput.content}`);
-                console.log(`[META-SYSOP] Content defined: ${typedInput.content !== undefined}`);
-                console.log(`[META-SYSOP] Content length: ${typedInput.content?.length || 0} bytes`);
-                
-                sendEvent('progress', { message: `✅ Modifying ${normalizedPath} (I AM approved)...` });
-                await platformHealing.writePlatformFile(normalizedPath, typedInput.content);
-                
-                // Track file changes with content for batch commits
-                fileChanges.push({ 
-                  path: normalizedPath, 
-                  operation: 'modify', 
-                  contentAfter: typedInput.content 
-                });
-                
-                sendEvent('file_change', { file: { path: normalizedPath, operation: 'modify' } });
-                toolResult = `✅ File written successfully (with I AM approval at ${new Date(approval.timestamp).toISOString()})`;
-              }
+
+              console.log(`[META-SYSOP] writePlatformFile called for: ${normalizedPath}`);
+              console.log(`[META-SYSOP] Content type: ${typeof typedInput.content}`);
+              console.log(`[META-SYSOP] Content defined: ${typedInput.content !== undefined}`);
+              console.log(`[META-SYSOP] Content length: ${typedInput.content?.length || 0} bytes`);
+
+              sendEvent('progress', { message: `✅ Modifying ${normalizedPath}...` });
+              await platformHealing.writePlatformFile(normalizedPath, typedInput.content);
+
+              // Track file changes with content for batch commits
+              fileChanges.push({
+                path: normalizedPath,
+                operation: 'modify',
+                contentAfter: typedInput.content
+              });
+
+              sendEvent('file_change', { file: { path: normalizedPath, operation: 'modify' } });
+              toolResult = `✅ File written successfully`;
             } else if (name === 'listPlatformFiles') {
               const typedInput = input as { directory: string };
               sendEvent('progress', { message: `Listing files in ${typedInput.directory}...` });
@@ -610,12 +628,38 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
               }
             }
 
+            // CRITICAL FIX: Add result narration so users see what happened
+            let resultNarration = '';
+            if (name === 'createTaskList' && toolResult.includes('✅')) {
+              resultNarration = '✅ Task list created successfully!\n\n';
+            } else if (name === 'updateTask' && toolResult.includes('✅')) {
+              resultNarration = `✅ Task updated!\n\n`;
+            } else if (name === 'architect_consult' && toolResult.includes('✅ APPROVED')) {
+              resultNarration = '✅ I AM APPROVED! Proceeding with changes...\n\n';
+            } else if (name === 'commit_to_github' && toolResult.includes('✅')) {
+              resultNarration = '✅ Successfully committed to GitHub! Deployment initiated.\n\n';
+            } else if (name === 'writePlatformFile' && toolResult.includes('✅')) {
+              resultNarration = `✅ File written successfully!\n\n`;
+            } else if (toolResult.includes('❌')) {
+              resultNarration = `⚠️ Tool encountered an issue.\n\n`;
+            }
+
+            if (resultNarration) {
+              fullContent += resultNarration;
+              sendEvent('content', { content: resultNarration });
+            }
+
             toolResults.push({
               type: 'tool_result',
               tool_use_id: id,
               content: toolResult || 'Success',
             });
           } catch (error: any) {
+            // CRITICAL FIX: Narrate errors so users know what went wrong
+            const errorNarration = `❌ Error executing ${name}: ${error.message}\n\n`;
+            fullContent += errorNarration;
+            sendEvent('content', { content: errorNarration });
+
             toolResults.push({
               type: 'tool_result',
               tool_use_id: id,
@@ -636,19 +680,73 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
       }
     }
 
-    // Safety check
-    sendEvent('progress', { message: 'Running safety checks...' });
+    // CRITICAL: Validate all changes before committing (like Replit Agent 3)
+    if (fileChanges.length > 0) {
+      sendEvent('progress', { message: '🔍 Validating changes...' });
+      fullContent += '\n\n🔍 **Validating changes before commit...**\n\n';
+      sendEvent('content', { content: '\n\n🔍 **Validating changes before commit...**\n\n' });
+
+      const changedFilePaths = fileChanges.map(f => f.path);
+      const validationResult = await platformValidator.validateChanges(changedFilePaths);
+
+      // Show validation results
+      if (validationResult.warnings.length > 0) {
+        const warningText = `⚠️ Warnings:\n${validationResult.warnings.map(w => `  - ${w}`).join('\n')}\n\n`;
+        fullContent += warningText;
+        sendEvent('content', { content: warningText });
+      }
+
+      if (!validationResult.success) {
+        const errorText = `❌ **VALIDATION FAILED** - Platform stability check failed!\n\nErrors found:\n${validationResult.errors.map(e => `  - ${e}`).join('\n')}\n\n🔄 Rolling back changes...`;
+        fullContent += errorText;
+        sendEvent('content', { content: errorText });
+
+        // Rollback changes
+        if (backup?.id) {
+          await platformHealing.rollback(backup.id);
+          sendEvent('error', {
+            message: 'Validation failed. Changes rolled back to prevent platform crash.'
+          });
+        }
+
+        // Save error message
+        const [errorMsg] = await db
+          .insert(chatMessages)
+          .values({
+            userId,
+            projectId: null,
+            fileId: null,
+            role: 'assistant',
+            content: fullContent,
+            isPlatformHealing: true,
+          })
+          .returning();
+
+        sendEvent('done', { messageId: errorMsg.id });
+        res.end();
+        return;
+      }
+
+      // Validation passed
+      const successText = '✅ **Validation passed!** Code is safe to deploy.\n\n';
+      fullContent += successText;
+      sendEvent('content', { content: successText });
+      sendEvent('progress', { message: '✅ Validation passed!' });
+    }
+
+    // Legacy safety check
+    sendEvent('progress', { message: 'Running final safety checks...' });
     const safety = await platformHealing.validateSafety();
-    
+
     if (!safety.safe) {
       if (backup?.id) {
         await platformHealing.rollback(backup.id);
-        sendEvent('error', { 
-          message: `Safety check failed: ${safety.issues.join(', ')}. Changes rolled back.` 
+        sendEvent('error', {
+          message: `Safety check failed: ${safety.issues.join(', ')}. Changes rolled back.`
         });
       } else {
-        sendEvent('error', { 
-          message: `Safety check failed: ${safety.issues.join(', ')}. No backup available to rollback.` 
+        sendEvent('error', {
+          message: `Safety check failed: ${safety.issues.join(', ')}. No backup available to rollback.`
         });
       }
       res.end();
@@ -658,41 +756,26 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
     // Commit and push if enabled
     let commitHash = '';
     if (autoCommit && fileChanges.length > 0) {
-      // CRITICAL ENFORCEMENT: Verify ALL files in fileChanges have approval
-      const unapprovedFiles: string[] = [];
-      for (const change of fileChanges) {
-        const normalizedPath = normalizePath(change.path);
-        const approval = approvedFiles.get(normalizedPath);
-        if (!approval || !approval.approved) {
-          unapprovedFiles.push(normalizedPath);
-        }
-      }
-      
-      if (unapprovedFiles.length > 0) {
-        sendEvent('error', { 
-          message: `❌ AUTO-COMMIT BLOCKED: ${unapprovedFiles.length} file(s) lack I AM approval: ${unapprovedFiles.join(', ')}` 
-        });
-        console.error('[META-SYSOP] Blocked auto-commit - unapproved files:', unapprovedFiles);
-        
-        if (backup?.id) {
-          await platformHealing.rollback(backup.id);
-          sendEvent('progress', { message: 'All changes rolled back due to unapproved files in commit' });
-        }
-        
-        res.end();
-        return;
-      }
-      
-      sendEvent('progress', { message: `✅ Committing ${fileChanges.length} file changes (all I AM approved)...` });
+      sendEvent('progress', { message: `✅ Committing ${fileChanges.length} file changes...` });
       commitHash = await platformHealing.commitChanges(`Fix: ${message.slice(0, 100)}`, fileChanges as any);
 
       if (autoPush) {
-        sendEvent('progress', { message: '✅ Pushing to GitHub (deploying to production - all files I AM approved)...' });
+        sendEvent('progress', { message: '✅ Pushing to GitHub (deploying to production)...' });
         await platformHealing.pushToRemote();
       }
     }
 
     // Save assistant message
+    // CRITICAL FIX: Better fallback message with file change summary
+    let finalContent = fullContent;
+    if (!finalContent || finalContent.trim().length === 0) {
+      if (fileChanges.length > 0) {
+        finalContent = `✅ Platform maintenance completed!\n\nFiles modified:\n${fileChanges.map(f => `- ${f.path}`).join('\n')}\n\nChanges have been applied.`;
+      } else {
+        finalContent = '✅ Analysis completed. No changes were necessary.';
+      }
+    }
+
     const [assistantMsg] = await db
       .insert(chatMessages)
       .values({
@@ -700,7 +783,7 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
         projectId: null,
         fileId: null,
         role: 'assistant',
-        content: fullContent || 'Done! I\'ve analyzed and fixed the issues.',
+        content: finalContent,
         isPlatformHealing: true,
         platformChanges: fileChanges.length > 0 ? { files: fileChanges } : null,
       })
