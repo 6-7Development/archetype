@@ -1,6 +1,6 @@
 import { db } from './db';
 import { sql } from 'drizzle-orm';
-import { users, projects, files, replitIntegrations } from '@shared/schema';
+import { users, projects, files } from '@shared/schema';
 
 export interface TableHealth {
   tableName: string;
@@ -46,22 +46,17 @@ export async function checkDatabaseHealth(): Promise<DatabaseHealth> {
       rowCount: Number(fileCount[0]?.count || 0)
     });
     
-    // Check replitIntegrations table
-    const integrationCount = await db.select({ count: sql`COUNT(*)` }).from(replitIntegrations);
-    tables.push({
-      tableName: 'replitIntegrations',
-      rowCount: Number(integrationCount[0]?.count || 0)
-    });
+    // PostgreSQL version check removed - replitIntegrations table doesn't exist
     
     // Get PostgreSQL version
     const versionResult = await db.execute(sql`SELECT version()`);
-    const version = versionResult.rows[0]?.version || 'Unknown';
+    const version = String(versionResult.rows[0]?.version || 'Unknown');
     
     // Get database size (approximate)
     const sizeResult = await db.execute(sql`
       SELECT pg_database_size(current_database()) as size
     `);
-    const sizeBytes = sizeResult.rows[0]?.size || 0;
+    const sizeBytes = Number(sizeResult.rows[0]?.size) || 0;
     const sizeMB = Math.round(sizeBytes / 1024 / 1024);
     
     return {
@@ -70,11 +65,11 @@ export async function checkDatabaseHealth(): Promise<DatabaseHealth> {
       version,
       size: `${sizeMB} MB`
     };
-  } catch (error) {
+  } catch (error: any) {
     return {
       connected: false,
       tables: [],
-      error: error.message
+      error: error?.message || 'Unknown error'
     };
   }
 }
@@ -97,10 +92,10 @@ export async function repairDatabase(): Promise<{ success: boolean; message: str
       success: true,
       message: `Database health check complete. Found ${tablesExist.rows.length} tables.`
     };
-  } catch (error) {
+  } catch (error: any) {
     return {
       success: false,
-      message: `Database repair failed: ${error.message}`
+      message: `Database repair failed: ${error?.message || 'Unknown error'}`
     };
   }
 }

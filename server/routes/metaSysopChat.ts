@@ -2987,92 +2987,16 @@ Be conversational, be helpful, and only work when asked!`;
           content: toolResults,
         });
         
-        // 🚨 FORCING LOGIC (AFTER tool execution to avoid 400 errors)
-        const createdTaskListThisIteration = toolNames.includes('createTaskList');
-        const calledDiagnosisTools = toolNames.some(name => ['perform_diagnosis', 'architect_consult', 'execute_sql'].includes(name));
-        
-        console.log(`[META-SYSOP-FORCE] Created task list: ${createdTaskListThisIteration}`);
-        console.log(`[META-SYSOP-FORCE] Called diagnosis tools: ${calledDiagnosisTools}`);
-        console.log(`[META-SYSOP-FORCE] Iteration count: ${iterationCount}`);
-        
-        if (createdTaskListThisIteration && !calledDiagnosisTools && iterationCount === 1) {
-          console.log('[META-SYSOP-FORCE] ❌❌❌ FORCING TRIGGERED! Meta-SySop skipped perform_diagnosis!');
-          console.log('[META-SYSOP-FORCE] All tools executed and results added - now adding forcing message...');
-          
-          const forcingMessage = `STOP. You created a task list but did NOT call perform_diagnosis().\n\n` +
-            `Your first task requires running the full platform diagnosis.\n\n` +
-            `Call perform_diagnosis(target: "all", focus: []) RIGHT NOW.\n\n` +
-            `Do NOT call readPlatformFile() or any other tools yet.\n` +
-            `Do NOT just talk about it.\n` +
-            `CALL THE TOOL: perform_diagnosis(target: "all", focus: [])`;
-          
-          conversationMessages.push({
-            role: 'user',
-            content: [{
-              type: 'text',
-              text: forcingMessage
-            }]
-          });
-          
-          console.log('[META-SYSOP-FORCE] ✅ Forcing message added. Conversation length:', conversationMessages.length);
-          console.log('[META-SYSOP-FORCE] ✅ Continuing to iteration 2...');
-          sendEvent('progress', { message: '🚨 Forcing diagnosis - Meta-SySop skipped it, retrying...' });
-          continue; // Force iteration 2 with diagnosis
-        } else {
-          console.log('[META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally');
-        }
+        // 🎯 TRUST CLAUDE: No forcing logic - system prompt is clear enough
+        // Forcing creates confusing conversation loops where Claude responds multiple times without calling tools
+        // If Claude doesn't call the right tools, it's a prompt engineering issue, not something to fix with forcing
+        console.log(`[META-SYSOP] Tool results added - proceeding to next iteration naturally`);
       } else {
-        // No tool calls this iteration - check if we should continue
-        // 🐛 FIX: Don't end if there are tasks still in progress - Meta-SySop might need another turn
-        console.log(`[META-SYSOP-CONTINUATION] Iteration ${iterationCount}: No tool calls, checking if should continue...`);
-        console.log(`[META-SYSOP-CONTINUATION] Active task list ID: ${activeTaskListId || 'none'}`);
-        
-        // 🚨 INFINITE LOOP PREVENTION: Track consecutive empty iterations
-        consecutiveEmptyIterations++;
-        console.log(`[META-SYSOP-CONTINUATION] Consecutive empty iterations: ${consecutiveEmptyIterations}/${MAX_EMPTY_ITERATIONS}`);
-        
-        if (consecutiveEmptyIterations >= MAX_EMPTY_ITERATIONS) {
-          console.log(`[META-SYSOP-CONTINUATION] 🛑 STOPPING - ${MAX_EMPTY_ITERATIONS} consecutive iterations without tool calls (infinite loop detected)`);
-          sendEvent('progress', { message: `⚠️ Meta-SySop appears stuck - stopping after ${consecutiveEmptyIterations} empty iterations` });
-          continueLoop = false;
-        } else if (activeTaskListId) {
-          try {
-            const taskCheck = await readTaskList({ userId });
-            console.log(`[META-SYSOP-CONTINUATION] Task list read success: ${taskCheck.success}`);
-            console.log(`[META-SYSOP-CONTINUATION] Task lists found: ${taskCheck.taskLists?.length || 0}`);
-            
-            const sessionTaskList = taskCheck.taskLists?.find((list: any) => list.id === activeTaskListId);
-            console.log(`[META-SYSOP-CONTINUATION] Session task list found: ${!!sessionTaskList}`);
-            console.log(`[META-SYSOP-CONTINUATION] Tasks: ${sessionTaskList?.tasks?.length || 0}`);
-            
-            const allTasks = sessionTaskList?.tasks || [];
-            const inProgressTasks = allTasks.filter((t: any) => t.status === 'in_progress');
-            const pendingTasks = allTasks.filter((t: any) => t.status === 'pending');
-            const completedTasks = allTasks.filter((t: any) => t.status === 'completed');
-            
-            console.log(`[META-SYSOP-CONTINUATION] Completed: ${completedTasks.length}, In-progress: ${inProgressTasks.length}, Pending: ${pendingTasks.length}`);
-            
-            // ✅ FULL AUTONOMY: Let Meta-SySop decide when to continue
-            // No forcing, no micromanagement - trust the AI to do its job
-            const hasIncompleteTasks = inProgressTasks.length > 0 || pendingTasks.length > 0;
-            
-            if (hasIncompleteTasks && iterationCount < MAX_ITERATIONS) {
-              console.log(`[META-SYSOP-CONTINUATION] ✅ Continuing naturally - incomplete tasks remain`);
-              continueLoop = true; // Continue but don't inject forcing messages
-            } else {
-              // Either all tasks done or hit iteration limit
-              console.log(`[META-SYSOP-CONTINUATION] ❌ Ending - all tasks complete or limit reached (iteration ${iterationCount}/${MAX_ITERATIONS})`);
-              continueLoop = false;
-            }
-          } catch (error: any) {
-            console.error('[META-SYSOP-CONTINUATION] Failed to check task status:', error);
-            continueLoop = false;
-          }
-        } else {
-          // No task list - end normally
-          console.log('[META-SYSOP-CONTINUATION] No task list - ending session naturally');
-          continueLoop = false;
-        }
+        // 🎯 TRUST CLAUDE: No tool calls = Claude is done
+        // When Claude stops calling tools, it means the work is complete
+        // Don't second-guess or check tasks - trust the AI
+        console.log(`[META-SYSOP] Iteration ${iterationCount}: No tool calls - Meta-SySop is done`);
+        continueLoop = false;
       }
     }
 

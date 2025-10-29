@@ -1,6 +1,5 @@
-import { db } from './index';
+import { db } from '../db';
 import { sql } from 'drizzle-orm';
-import { logger } from '../logging';
 
 export interface HealthCheckResult {
   database: {
@@ -38,18 +37,18 @@ export async function checkDatabaseHealth(): Promise<HealthCheckResult> {
     result.database.responseTime = Date.now() - startTime;
 
     // Count records in main tables
-    const [users] = await db.execute(sql`SELECT COUNT(*) as count FROM users`);
-    const [sessions] = await db.execute(sql`SELECT COUNT(*) as count FROM sessions`);
-    const [projects] = await db.execute(sql`SELECT COUNT(*) as count FROM projects`);
+    const users = await db.execute(sql`SELECT COUNT(*) as count FROM users`);
+    const sessions = await db.execute(sql`SELECT COUNT(*) as count FROM sessions`);
+    const projects = await db.execute(sql`SELECT COUNT(*) as count FROM projects`);
 
-    result.tables.users = Number(users.count);
-    result.tables.sessions = Number(sessions.count);
-    result.tables.projects = Number(projects.count);
+    result.tables.users = Number((users.rows[0] as any)?.count || 0);
+    result.tables.sessions = Number((sessions.rows[0] as any)?.count || 0);
+    result.tables.projects = Number((projects.rows[0] as any)?.count || 0);
 
-    logger.info('Database health check passed', result);
+    console.info('Database health check passed', result);
   } catch (error) {
     result.database.error = error instanceof Error ? error.message : 'Unknown error';
-    logger.error('Database health check failed', error);
+    console.error('Database health check failed', error);
   }
 
   return result;
