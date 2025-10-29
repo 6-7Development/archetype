@@ -43,8 +43,8 @@ jobs:
             echo "❌ Server artifact dist/index.js not found"
             exit 1
           fi
-          if [ ! -d "dist/client" ]; then
-            echo "❌ Client artifacts dist/client/ not found"
+          if [ ! -d "dist/public" ]; then
+            echo "❌ Client artifacts dist/public/ not found"
             exit 1
           fi
           echo "✅ Build artifacts verified"
