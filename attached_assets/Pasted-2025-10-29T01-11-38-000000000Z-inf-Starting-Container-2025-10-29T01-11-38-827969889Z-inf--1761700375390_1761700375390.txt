@@ -1,0 +1,170 @@
+2025-10-29T01:11:38.000000000Z [inf]  Starting Container
+2025-10-29T01:11:38.827969889Z [inf]  ======================================
+2025-10-29T01:11:38.827987298Z [inf]  🚂 RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-10-29T01:11:38.827994080Z [inf]  ======================================
+2025-10-29T01:11:38.828001077Z [inf]  Time: Wed Oct 29 01:11:38 UTC 2025
+2025-10-29T01:11:38.828006996Z [inf]  Node version: v20.19.5
+2025-10-29T01:11:38.828014443Z [inf]  NPM version: 10.8.2
+2025-10-29T01:11:38.828023161Z [inf]  
+2025-10-29T01:11:38.828036778Z [inf]  📁 Current directory: /app
+2025-10-29T01:11:38.828042923Z [inf]  📂 Listing root files:
+2025-10-29T01:11:38.828048458Z [inf]  total 404
+2025-10-29T01:11:38.828054036Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 29 01:10 .
+2025-10-29T01:11:38.828059728Z [inf]  dr-xr-xr-x    1 root     root          4096 Oct 29 01:11 ..
+2025-10-29T01:11:38.828073312Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 29 01:10 dist
+2025-10-29T01:11:38.828087486Z [inf]  -rw-rw-r--    1 root     root           325 Oct 29 01:09 drizzle.config.ts
+2025-10-29T01:11:38.828095773Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 29 00:32 node_modules
+2025-10-29T01:11:38.828101248Z [inf]  -rw-rw-r--    1 root     root        352670 Oct 29 00:32 package-lock.json
+2025-10-29T01:11:38.828105647Z [inf]  -rw-rw-r--    1 root     root          4529 Oct 29 00:32 package.json
+2025-10-29T01:11:38.828110098Z [inf]  -rwxrwxr-x    1 root     root          1865 Oct 29 01:09 railway-start.sh
+2025-10-29T01:11:38.828114610Z [inf]  -rw-rw-r--    1 root     root         10062 Oct 29 01:09 replit.md
+2025-10-29T01:11:38.828120370Z [inf]  drwxr-xr-x   10 root     root          4096 Oct 29 01:09 server
+2025-10-29T01:11:38.828124820Z [inf]  drwxr-xr-x    2 root     root          4096 Oct 29 01:09 shared
+2025-10-29T01:11:38.828130205Z [inf]  -rw-rw-r--    1 root     root           657 Oct 29 01:09 tsconfig.json
+2025-10-29T01:11:38.828134551Z [inf]  
+2025-10-29T01:11:38.829411959Z [inf]  🔍 Checking for dist directory...
+2025-10-29T01:11:38.829417310Z [inf]  ✅ dist directory exists
+2025-10-29T01:11:38.829423575Z [inf]  📂 Contents:
+2025-10-29T01:11:38.829428761Z [inf]  total 736
+2025-10-29T01:11:38.829434843Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 29 01:10 .
+2025-10-29T01:11:38.829439903Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 29 01:10 ..
+2025-10-29T01:11:38.829445068Z [inf]  -rw-r--r--    1 root     root        740626 Oct 29 01:10 index.js
+2025-10-29T01:11:38.829450087Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 29 01:10 public
+2025-10-29T01:11:38.829529111Z [inf]  ✅ dist/index.js found
+2025-10-29T01:11:38.829534339Z [inf]  
+2025-10-29T01:11:38.829538440Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-10-29T01:11:39.754752914Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-10-29T01:11:39.754909009Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-10-29T01:11:39.925795459Z [inf]  Using 'pg' driver for database querying
+2025-10-29T01:11:40.078835188Z [inf]  [⣷] Pulling schema from database...
+2025-10-29T01:11:40.189771591Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-29T01:11:40.688743150Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-29T01:11:40.688749650Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-29T01:11:40.688757048Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-29T01:11:40.701448911Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-29T01:11:40.861710411Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-29T01:11:40.959850159Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-29T01:11:41.085576270Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-29T01:11:41.735075708Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-29T01:11:41.735085629Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-29T01:11:41.735092696Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-29T01:11:41.735099099Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-29T01:11:41.735104081Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-29T01:11:41.857114342Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-29T01:11:41.987357531Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-29T01:11:42.111075676Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-29T01:11:42.118804461Z [inf]  [2K[1G[✓] Pulling schema from database...
+2025-10-29T01:11:42.206222194Z [inf]  [i] No changes detected
+2025-10-29T01:11:42.786618093Z [inf]  GITHUB_REPO: 6-7Development/archetype
+2025-10-29T01:11:42.786629376Z [inf]  GITHUB_BRANCH: main
+2025-10-29T01:11:42.786636643Z [inf]  ANTHROPIC_API_KEY: ✓ SET
+2025-10-29T01:11:42.786643301Z [inf]  
+2025-10-29T01:11:42.786649194Z [inf]  📄 Ensuring replit.md is available...
+2025-10-29T01:11:42.786656544Z [inf]  ✅ replit.md already present
+2025-10-29T01:11:42.786662486Z [inf]  
+2025-10-29T01:11:42.786668187Z [inf]  🚀 Starting Node.js application...
+2025-10-29T01:11:42.786674373Z [inf]  Command: node dist/index.js
+2025-10-29T01:11:42.786681361Z [inf]  
+2025-10-29T01:11:42.787050337Z [inf]  ✅ Database migrations completed successfully!
+2025-10-29T01:11:42.787056474Z [inf]  
+2025-10-29T01:11:42.787068156Z [inf]  🔍 Environment Check:
+2025-10-29T01:11:42.787074366Z [inf]  NODE_ENV: production
+2025-10-29T01:11:42.787080799Z [inf]  PORT: 8080
+2025-10-29T01:11:42.787086916Z [inf]  DATABASE_URL: ✓ SET (hidden for security)
+2025-10-29T01:11:42.787092227Z [inf]  GITHUB_TOKEN: ✓ SET
+2025-10-29T01:11:43.883965358Z [inf]  [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-29T01:11:43.883981232Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-29T01:11:43.884005484Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-10-29T01:11:43.884012425Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller (SSE streams excluded)
+2025-10-29T01:11:43.884020803Z [inf]  ✅ Database connected successfully
+2025-10-29T01:11:43.884027661Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-29T01:11:43.884030172Z [inf]  📡 WebSocket server initialized at /ws
+2025-10-29T01:11:43.884032693Z [inf]  🔧 Auto-healing system ENABLED (production mode)
+2025-10-29T01:11:43.884035690Z [inf]  [META-SYSOP-JOB-MANAGER] Job manager connected to WebSocket
+2025-10-29T01:11:43.884047952Z [inf]  
+2025-10-29T01:11:43.884056936Z [inf]  1:11:43 AM [express] serving on port 8080
+2025-10-29T01:11:43.884058398Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-29T01:11:43.884058583Z [inf]  ✅ All routes registered successfully
+2025-10-29T01:11:43.884060351Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-29T01:11:43.884073488Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-29T01:11:43.884074165Z [inf]  🔍 Testing database connection...
+2025-10-29T01:11:43.884081907Z [inf]  [META-SYSOP-JOB-MANAGER] Initialized with WebSocket support
+2025-10-29T01:11:43.884266363Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-29T01:11:43.884298296Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-29T01:11:43.884307515Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-10-29T01:11:43.884318731Z [inf]  [db] Connection string includes SSL params: true
+2025-10-29T01:11:43.885495359Z [inf]  🔍 Checking GitHub integration configuration...
+2025-10-29T01:11:43.885501691Z [inf]  ✅ GitHub integration configured successfully
+2025-10-29T01:11:43.885508210Z [inf]     - Repository: 6-7Development/archetype
+2025-10-29T01:11:43.885513635Z [inf]     - Branch: main
+2025-10-29T01:11:43.885519038Z [inf]     - Token: ✓ (configured)
+2025-10-29T01:11:43.885525036Z [inf]     - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-29T01:11:43.885529778Z [inf]     - Maintenance mode: Available for owner
+2025-10-29T01:11:43.885534621Z [inf]  
+2025-10-29T01:12:03.912089696Z [inf]  [DEPLOYMENT-INFO] Using Railway environment variables
+2025-10-29T01:12:03.912094949Z [inf]  1:11:55 AM [express] GET /api/deployment-info 200 in 7ms :: {"version":"1.0.0","commitHash":"3e52662…
+2025-10-29T01:12:03.912101040Z [inf]  1:11:58 AM [express] GET /api/deployment-info 200 in 2ms :: {"version":"1.0.0","commitHash":"3e52662…
+2025-10-29T01:12:03.912106830Z [inf]  [AUTH] Login attempt for email: root@getdc360.com
+2025-10-29T01:12:03.912112019Z [inf]  [AUTH] Found users: 1
+2025-10-29T01:12:03.912122305Z [inf]  [AUTH] User found: root@getdc360.com has password: true
+2025-10-29T01:12:03.912127819Z [inf]  [AUTH] Verifying password...
+2025-10-29T01:12:03.912133687Z [inf]  [AUTH] Password valid: true
+2025-10-29T01:12:03.912140222Z [inf]  [AUTH] Authentication successful for: root@getdc360.com
+2025-10-29T01:12:03.912148707Z [inf]  1:12:03 AM [express] POST /api/auth/login 200 in 285ms :: {"success":true,"user":{"id":"723e1301-c72…
+2025-10-29T01:12:04.118262471Z [inf]  1:12:04 AM [express] GET /api/auth/me 304 in 7ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef954…
+2025-10-29T01:12:04.119732940Z [inf]  1:12:04 AM [express] GET /api/projects 304 in 12ms :: []
+2025-10-29T01:12:05.290616717Z [inf]  1:12:05 AM [express] GET /api/meta-sysop/autonomy-level 304 in 26ms :: {"currentLevel":"max","maxAll…
+2025-10-29T01:12:05.290623513Z [inf]  1:12:05 AM [express] GET /api/meta-sysop/pending-changes 304 in 24ms :: {"success":true,"pendingChan…
+2025-10-29T01:12:05.290628038Z [inf]  [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-29T01:12:05.290632473Z [inf]  1:12:05 AM [express] GET /api/meta-sysop/projects 304 in 27ms :: []
+2025-10-29T01:12:05.296424674Z [inf]  [GITHUB-SERVICE] Initialized for 6-7Development/archetype on branch main
+2025-10-29T01:12:05.326395874Z [inf]  1:12:05 AM [express] GET /api/platform/status 200 in 70ms :: {"overallHealth":100,"activeIncidents":…
+2025-10-29T01:12:05.946747192Z [inf]  ✅ WebSocket client connected
+2025-10-29T01:12:05.946754129Z [inf]  1:12:05 AM [express] GET /api/platform/deployment-history 200 in 235ms :: {"success":true,"deploymen…
+2025-10-29T01:12:05.946763189Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-29T01:12:11.163172702Z [inf]  1:12:10 AM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-29T01:12:16.035554826Z [inf]  1:12:15 AM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-29T01:12:21.170794874Z [inf]  1:12:21 AM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-29T01:12:22.344028700Z [inf]  [META-SYSOP-CHAT] Stream request received
+2025-10-29T01:12:22.344033957Z [inf]  [META-SYSOP-CHAT] Message: remove glowing bible from top of header Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-10-29T01:12:22.344039777Z [inf]  [META-SYSOP-CHAT] Setting up SSE headers
+2025-10-29T01:12:22.344045719Z [inf]  [META-SYSOP-CHAT] Heartbeat started - will send keepalive every 15s
+2025-10-29T01:12:22.344051081Z [inf]  [META-SYSOP-CHAT] Entering try block
+2025-10-29T01:12:22.346718342Z [inf]  [META-SYSOP-CHAT] User autonomy level: max
+2025-10-29T01:12:26.345952820Z [inf]  1:12:26 AM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-29T01:12:27.305594730Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: I'll remove the glowing Bible icon from the top of the header for you. Let me create a task list and
+2025-10-29T01:12:30.336444843Z [inf]  [META-SYSOP] Response has tool calls: true
+2025-10-29T01:12:30.336450013Z [inf]  [META-SYSOP] Content blocks: text, text, tool_use
+2025-10-29T01:12:30.336458921Z [inf]  [META-SYSOP-FORCE] === ITERATION 1 CHECK ===
+2025-10-29T01:12:30.336463316Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: createTaskList
+2025-10-29T01:12:30.336467876Z [inf]  [META-SYSOP] Task list created: 2c1d61fa-5132-430e-be95-ab58dce633fd
+2025-10-29T01:12:30.338320675Z [inf]  [META-SYSOP-FORCE] Created task list: true
+2025-10-29T01:12:30.338329894Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-29T01:12:30.338337892Z [inf]  [META-SYSOP-FORCE] Iteration count: 1
+2025-10-29T01:12:30.338344033Z [inf]  [META-SYSOP-FORCE] ❌❌❌ FORCING TRIGGERED! Meta-SySop skipped perform_diagnosis!
+2025-10-29T01:12:30.338350308Z [inf]  [META-SYSOP-FORCE] All tools executed and results added - now adding forcing message...
+2025-10-29T01:12:30.338356169Z [inf]  [META-SYSOP-FORCE] ✅ Forcing message added. Conversation length: 103
+2025-10-29T01:12:30.338361591Z [inf]  [META-SYSOP-FORCE] ✅ Continuing to iteration 2...
+2025-10-29T01:12:30.457674040Z [inf]  [META-SYSOP] Fetched 3 tasks for task list 2c1d61fa-5132-430e-be95-ab58dce633fd
+2025-10-29T01:12:30.457680643Z [inf]  1:12:30 AM [express] GET /api/meta-sysop/task-list/2c1d61fa-5132-430e-be95-ab58dce633fd 200 in 12ms …
+2025-10-29T01:12:31.383193101Z [inf]  1:12:31 AM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-29T01:12:34.646122136Z [inf]  [META-SYSOP-FORCE] === ITERATION 2 CHECK ===
+2025-10-29T01:12:34.646129311Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: perform_diagnosis
+2025-10-29T01:12:34.646136211Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T01:12:34.646143088Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: true
+2025-10-29T01:12:34.646149650Z [inf]  [META-SYSOP-FORCE] Iteration count: 2
+2025-10-29T01:12:34.646156182Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T01:12:36.202929442Z [inf]  1:12:35 AM [express] GET /api/platform/deployment-history 304 in 159ms :: {"success":true,"deploymen…
+2025-10-29T01:12:36.505818408Z [inf]  1:12:36 AM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-29T01:12:37.347224108Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T01:12:38.282448683Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Let me read the Meta-SySop chat component directly to find and remove the Bible icon:
+2025-10-29T01:12:39.158558144Z [inf]  [META-SYSOP-FORCE] === ITERATION 3 CHECK ===
+2025-10-29T01:12:39.158568654Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: readPlatformFile
+2025-10-29T01:12:39.158574961Z [inf]  [PLATFORM-READ] 🔄 Source file not in production build, fetching from GitHub: client/src/components/meta-sysop-chat.tsx
+2025-10-29T01:12:39.276382824Z [inf]  [PLATFORM-READ] ✅ Fetched client/src/components/meta-sysop-chat.tsx from GitHub (32246 bytes)
+2025-10-29T01:12:39.276387820Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T01:12:39.276392836Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-29T01:12:39.276398696Z [inf]  [META-SYSOP-FORCE] Iteration count: 3
+2025-10-29T01:12:39.276404988Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T01:12:41.597412039Z [inf]  1:12:41 AM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-29T01:12:44.268394315Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Now I'll remove the Bible icon code from the header:Now I'll remove the Bible icon code from the hea
