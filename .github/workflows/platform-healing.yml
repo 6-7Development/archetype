@@ -1,0 +1,347 @@
+name: Meta-SySop Platform Healing Validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # Phase D: Production Build Validation
+  build-production:
+    name: Phase D - Production Build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build production artifacts
+        run: npm run build
+        env:
+          NODE_ENV: production
+          COMMIT_SHA: ${{ github.sha }}
+          BUILD_TIMESTAMP: ${{ github.event.head_commit.timestamp }}
+          
+      - name: Verify build artifacts
+        run: |
+          echo "Checking for dist/ artifacts..."
+          if [ ! -f "dist/index.js" ]; then
+            echo "❌ Server artifact dist/index.js not found"
+            exit 1
+          fi
+          if [ ! -d "dist/public" ]; then
+            echo "❌ Client artifacts dist/public/ not found"
+            exit 1
+          fi
+          echo "✅ Build artifacts verified"
+          ls -lh dist/
+          
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-build
+          path: |
+            dist/
+            !dist/**/*.map
+          retention-days: 7
+
+  # Phase A: Integration Tests
+  integration-tests:
+    name: Phase A - Integration Tests
+    runs-on: ubuntu-latest
+    needs: build-production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: production-build
+          path: dist/
+          
+      - name: Run diagnosis integration tests
+        run: tsx server/tests/platformHealing/diagnosis.integration.test.ts
+        env:
+          NODE_ENV: production
+          
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            logs/
+            *.log
+          retention-days: 7
+
+  # Phase B: Drift Detection
+  drift-detection:
+    name: Phase B - Source⇄Artifact Fidelity
+    runs-on: ubuntu-latest
+    needs: build-production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: production-build
+          path: dist/
+          
+      - name: Run drift detection
+        run: |
+          cat > validate-fidelity.ts << 'EOF'
+          import { performDriftDetection, BUILD_INFO } from './server/lib/driftDetection';
+          
+          async function main() {
+            console.log('='.repeat(70));
+            console.log('  Phase B: Source⇄Artifact Fidelity Check');
+            console.log('='.repeat(70));
+            console.log('');
+            
+            console.log('Build Information:');
+            console.log(`  Commit SHA: ${BUILD_INFO.commitSHA}`);
+            console.log(`  Build Time: ${BUILD_INFO.buildTimestamp}`);
+            console.log(`  Environment: ${BUILD_INFO.nodeEnv}`);
+            console.log('');
+            
+            const report = await performDriftDetection();
+            
+            console.log('Drift Detection Results:');
+            console.log(`  Overall Drift Detected: ${report.overallDriftDetected ? '⚠️ YES' : '✅ NO'}`);
+            console.log(`  Metrics Collected: ${report.metrics.length}`);
+            console.log(`  Warnings: ${report.warnings.length}`);
+            console.log('');
+            
+            if (report.warnings.length > 0) {
+              console.log('Warnings:');
+              report.warnings.forEach(w => console.log(`  - ${w}`));
+              console.log('');
+            }
+            
+            if (report.overallDriftDetected) {
+              console.log('❌ Drift detected - artifacts may not match source');
+              process.exit(1);
+            } else {
+              console.log('✅ No drift detected - artifacts in sync');
+            }
+          }
+          
+          main().catch(error => {
+            console.error('Drift detection failed:', error);
+            process.exit(1);
+          });
+          EOF
+          
+          tsx validate-fidelity.ts
+        env:
+          NODE_ENV: production
+          COMMIT_SHA: ${{ github.sha }}
+          BUILD_TIMESTAMP: ${{ github.event.head_commit.timestamp }}
+          
+      - name: Upload drift reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: drift-reports
+          path: |
+            logs/drift-*.json
+            logs/drift-*.log
+          retention-days: 30
+
+  # Phase C: Conversational Context Validation
+  context-validation:
+    name: Phase C - Context Injection Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Validate context injection modules
+        run: |
+          echo "Checking context injection modules..."
+          
+          # Verify files exist
+          if [ ! -f "server/lib/contextInjection.ts" ]; then
+            echo "❌ Context injection module not found"
+            exit 1
+          fi
+          
+          # Type check
+          npx tsc --noEmit server/lib/contextInjection.ts
+          
+          echo "✅ Context injection modules validated"
+          
+      - name: Validate secret sanitization
+        run: |
+          cat > test-sanitization.ts << 'EOF'
+          import { sanitizeContent } from './server/lib/contextInjection';
+          
+          const testCases = [
+            { input: 'ANTHROPIC_API_KEY=sk-ant-abc123', expected: 'ANTHROPIC_API_KEY=***' },
+            { input: 'DATABASE_URL=postgresql://user:pass@host/db', expected: 'DATABASE_URL=***' },
+            { input: 'GITHUB_TOKEN=ghp_1234567890', expected: 'GITHUB_TOKEN=***' },
+          ];
+          
+          let passed = 0;
+          let failed = 0;
+          
+          testCases.forEach((test, i) => {
+            const result = sanitizeContent(test.input);
+            if (result.includes('***')) {
+              console.log(`✅ Test ${i + 1}: Secret sanitized`);
+              passed++;
+            } else {
+              console.log(`❌ Test ${i + 1}: Secret NOT sanitized: ${result}`);
+              failed++;
+            }
+          });
+          
+          console.log(`\nResults: ${passed} passed, ${failed} failed`);
+          if (failed > 0) process.exit(1);
+          EOF
+          
+          tsx test-sanitization.ts
+
+  # Release Gate Summary
+  release-gate:
+    name: Release Gate - Summary
+    runs-on: ubuntu-latest
+    needs: [build-production, integration-tests, drift-detection, context-validation]
+    if: always()
+    
+    steps:
+      - name: Check all phases
+        run: |
+          echo "==================================================================="
+          echo "  Meta-SySop Validation - Release Gate Summary"
+          echo "==================================================================="
+          echo ""
+          echo "Phase Status:"
+          echo "  Phase D (Production Build):     ${{ needs.build-production.result }}"
+          echo "  Phase A (Integration Tests):    ${{ needs.integration-tests.result }}"
+          echo "  Phase B (Drift Detection):      ${{ needs.drift-detection.result }}"
+          echo "  Phase C (Context Validation):   ${{ needs.context-validation.result }}"
+          echo ""
+          
+          # Check if all passed
+          if [ "${{ needs.build-production.result }}" != "success" ] || \
+             [ "${{ needs.integration-tests.result }}" != "success" ] || \
+             [ "${{ needs.drift-detection.result }}" != "success" ] || \
+             [ "${{ needs.context-validation.result }}" != "success" ]; then
+            echo "❌ RELEASE BLOCKED - One or more validation phases failed"
+            echo ""
+            echo "Release Checklist:"
+            echo "  [ ] ✅ Green CI"
+            echo "  [ ] ⏹️  Manual performDiagnosis against live Railway"
+            echo "  [ ] ⏹️  Architect sign-off with evidence"
+            echo ""
+            exit 1
+          else
+            echo "✅ ALL VALIDATION PHASES PASSED"
+            echo ""
+            echo "Release Checklist:"
+            echo "  [✓] ✅ Green CI"
+            echo "  [ ] ⏹️  Manual performDiagnosis against live Railway"
+            echo "  [ ] ⏹️  Architect sign-off with evidence"
+            echo ""
+            echo "Next steps:"
+            echo "  1. Test locally: tsx scripts/run-meta-prod.ts"
+            echo "  2. Run manual diagnosis against Railway production"
+            echo "  3. Obtain architect approval"
+            echo "  4. Deploy to Railway"
+          fi
+          
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: validation-artifacts/
+          
+      - name: Create validation summary
+        run: |
+          mkdir -p validation-summary
+          
+          cat > validation-summary/README.md << 'EOF'
+          # Meta-SySop Validation Summary
+          
+          **Build**: ${{ github.sha }}
+          **Date**: ${{ github.event.head_commit.timestamp }}
+          **Triggered by**: ${{ github.actor }}
+          
+          ## Validation Results
+          
+          - **Phase D (Production Build)**: ${{ needs.build-production.result }}
+          - **Phase A (Integration Tests)**: ${{ needs.integration-tests.result }}
+          - **Phase B (Drift Detection)**: ${{ needs.drift-detection.result }}
+          - **Phase C (Context Validation)**: ${{ needs.context-validation.result }}
+          
+          ## Artifacts
+          
+          All validation artifacts are attached to this workflow run.
+          
+          ## Manual Validation Required
+          
+          Before deploying to Railway:
+          
+          1. ✅ Automated validation passed (this CI run)
+          2. ⏹️ Local production test: `tsx scripts/run-meta-prod.ts`
+          3. ⏹️ Manual diagnosis against live Railway
+          4. ⏹️ Architect sign-off with evidence
+          
+          See `docs/META_SYSOP_VALIDATION.md` for detailed procedures.
+          EOF
+          
+          cat validation-summary/README.md
+          
+      - name: Upload validation summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-summary
+          path: validation-summary/
+          retention-days: 90
