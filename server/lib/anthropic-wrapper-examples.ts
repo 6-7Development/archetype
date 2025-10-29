@@ -103,11 +103,11 @@ async function exampleConversationManagement() {
 
 // Example 3: Handling very large diagnosis results
 async function exampleLargeDiagnosisReport() {
-  // Simulate a very large diagnosis report
+  // Simulate a large diagnosis report (100 lines for demo - adjust as needed)
   const diagnosisReport = `
     # Platform Diagnosis Report
     
-    ${Array(1000).fill('Line of diagnosis data...').join('\n')}
+    ${Array(100).fill('Line of diagnosis data...').join('\n')}
   `;
 
   // Import truncation helper
@@ -159,12 +159,17 @@ async function exampleTokenUsageMonitoring() {
     if (result.retried) retryCount++;
   }
 
+  // Anthropic Claude pricing (as of January 2025)
+  // Note: Update these rates if pricing changes
+  const INPUT_COST_PER_1K = 0.003;  // $0.003 per 1K input tokens
+  const OUTPUT_COST_PER_1K = 0.015; // $0.015 per 1K output tokens
+
   console.log('[Meta-SySop] Token usage summary:', {
     totalInputTokens,
     totalOutputTokens,
     truncationCount,
     retryCount,
-    estimatedCost: ((totalInputTokens / 1000) * 0.003 + (totalOutputTokens / 1000) * 0.015).toFixed(4),
+    estimatedCost: ((totalInputTokens / 1000) * INPUT_COST_PER_1K + (totalOutputTokens / 1000) * OUTPUT_COST_PER_1K).toFixed(4),
   });
 }
 
