@@ -338,7 +338,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
           message,
           projectId: selectedProjectId,
           autoCommit: true,
-          autoPush: false,
+          autoPush: true, // ✅ Push to GitHub after committing (triggers Railway deployment)
         }),
       });
 
