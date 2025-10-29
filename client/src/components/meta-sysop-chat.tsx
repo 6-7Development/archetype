@@ -316,7 +316,6 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
   const [progressStatus, setProgressStatus] = useState<'thinking' | 'working' | 'vibing' | 'idle'>('idle');
   const [progressMessage, setProgressMessage] = useState("");
-  const [showTaskList, setShowTaskList] = useState(true);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -758,7 +757,6 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                             status: t.status as AgentTask['status'],
                           }));
                           setTasks(formattedTasks);
-                          setShowTaskList(true);
                           console.log('[META-SYSOP] ✅ Task list loaded with', formattedTasks.length, 'tasks');
                         }
                       })
@@ -1078,35 +1076,6 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                 )}
               </div>
             ))}
-
-            {/* Inline Task Progress Card */}
-            {showTaskList && tasks.length > 0 && (
-              <div className="animate-in fade-in-up">
-                <div className="bg-muted border border-border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                      <h3 className="text-sm font-semibold">
-                        Task Progress
-                      </h3>
-                      <span className="text-xs text-muted-foreground">
-                        {tasks.filter(t => t.status === 'completed').length}/{tasks.length}
-                      </span>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => setShowTaskList(false)}
-                      data-testid="button-hide-tasks"
-                    >
-                      <ChevronDown className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <AgentTaskList tasks={tasks} activeTaskId={activeTaskId} onTaskClick={setActiveTaskId} />
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
