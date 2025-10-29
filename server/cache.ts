@@ -52,8 +52,10 @@ export class LRUCache<T = any> {
   set(key: string, value: T, ttlSeconds: number = 300): void {
     // Remove oldest entry if cache is full
     if (this.cache.size >= this.maxSize) {
-      const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
+      const firstKey = this.cache.keys().next().value as string | undefined;
+      if (firstKey) {
+        this.cache.delete(firstKey);
+      }
     }
 
     const expiresAt = Date.now() + (ttlSeconds * 1000);
