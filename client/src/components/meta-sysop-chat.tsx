@@ -874,9 +874,9 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
         {/* Input Area */}
         <div className="border-t border-border p-4 bg-background flex-shrink-0">
           <div className="max-w-3xl mx-auto space-y-3">
-            {/* Project Selector & Autonomy Selector */}
-            <div className="flex items-center gap-6 flex-wrap">
-              {/* Project Selector */}
+            {/* 🎯 REDESIGNED CONTROLS: Project, Autonomy & Upload Button together */}
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              {/* Left side: Project Selector */}
               <div className="flex items-center gap-3">
                 <span className="text-xs text-muted-foreground font-medium">Target:</span>
                 <Select
@@ -906,41 +906,57 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                 </Select>
               </div>
 
-              {/* Autonomy Level Selector */}
-              {autonomyData && (
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground font-medium">Autonomy:</span>
-                  <Select
-                    value={autonomyData.currentLevel}
-                    onValueChange={(level) => updateAutonomyMutation.mutate(level)}
-                    disabled={isStreaming}
-                  >
-                    <SelectTrigger className="h-8 w-auto min-w-[140px] text-xs" data-testid="select-autonomy">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.values(autonomyData.levels).map((level: any) => {
-                        const Icon = level.icon === 'shield' ? Shield : level.icon === 'zap' ? Zap : level.icon === 'brain' ? Brain : Infinity;
-                        const isAvailable = autonomyData.levels[autonomyData.maxAllowedLevel] >= autonomyData.levels[level.id];
-                        return (
-                          <SelectItem
-                            key={level.id}
-                            value={level.id}
-                            disabled={!isAvailable}
-                            data-testid={`autonomy-option-${level.id}`}
-                          >
-                            <div className="flex items-center gap-2">
-                              <Icon className="h-3.5 w-3.5" />
-                              <span>{level.name}</span>
-                              {!isAvailable && <span className="text-xs text-muted-foreground">(Upgrade)</span>}
-                            </div>
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+              {/* Right side: Autonomy Selector + Upload Button */}
+              <div className="flex items-center gap-3">
+                {/* Autonomy Level Selector */}
+                {autonomyData && (
+                  <>
+                    <span className="text-xs text-muted-foreground font-medium">Autonomy:</span>
+                    <Select
+                      value={autonomyData.currentLevel}
+                      onValueChange={(level) => updateAutonomyMutation.mutate(level)}
+                      disabled={isStreaming}
+                    >
+                      <SelectTrigger className="h-8 w-auto min-w-[140px] text-xs" data-testid="select-autonomy">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.values(autonomyData.levels).map((level: any) => {
+                          const Icon = level.icon === 'shield' ? Shield : level.icon === 'zap' ? Zap : level.icon === 'brain' ? Brain : Infinity;
+                          const isAvailable = autonomyData.levels[autonomyData.maxAllowedLevel] >= autonomyData.levels[level.id];
+                          return (
+                            <SelectItem
+                              key={level.id}
+                              value={level.id}
+                              disabled={!isAvailable}
+                              data-testid={`autonomy-option-${level.id}`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <Icon className="h-3.5 w-3.5" />
+                                <span>{level.name}</span>
+                                {!isAvailable && <span className="text-xs text-muted-foreground">(Upgrade)</span>}
+                              </div>
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </>
+                )}
+
+                {/* ✨ UPLOAD BUTTON - Now positioned next to autonomy selector */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-3 gap-1.5"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isStreaming}
+                  title="Upload files (images, code, logs)"
+                >
+                  <Upload className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline text-xs">Upload</span>
+                </Button>
+              </div>
             </div>
 
             {/* Attachments preview */}
@@ -956,29 +972,19 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
               </div>
             )}
 
-            {/* Input field */}
+            {/* 🎯 REDESIGNED INPUT AREA: Clean textarea without embedded button */}
             <div className="flex gap-2">
-              <div className="flex-1 relative">
+              <div className="flex-1">
                 <Textarea
                   ref={textareaRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Tell me what needs to be fixed... (paste images, drag files, or use upload button)"
-                  className="min-h-[60px] max-h-[200px] resize-none pr-10"
+                  className="min-h-[60px] max-h-[200px] resize-none"
                   disabled={isStreaming}
                   data-testid="input-message"
                 />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-2 bottom-2 h-8 w-8"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isStreaming}
-                  title="Upload files"
-                >
-                  <Upload className="h-4 w-4" />
-                </Button>
               </div>
               <div className="flex flex-col gap-2">
                 {isStreaming ? (
