@@ -2987,40 +2987,10 @@ Be conversational, be helpful, and only work when asked!`;
           content: toolResults,
         });
         
-        // 🚨 FORCING LOGIC (AFTER tool execution to avoid 400 errors)
-        const createdTaskListThisIteration = toolNames.includes('createTaskList');
-        const calledDiagnosisTools = toolNames.some(name => ['perform_diagnosis', 'architect_consult', 'execute_sql'].includes(name));
-        
-        console.log(`[META-SYSOP-FORCE] Created task list: ${createdTaskListThisIteration}`);
-        console.log(`[META-SYSOP-FORCE] Called diagnosis tools: ${calledDiagnosisTools}`);
-        console.log(`[META-SYSOP-FORCE] Iteration count: ${iterationCount}`);
-        
-        if (createdTaskListThisIteration && !calledDiagnosisTools && iterationCount === 1) {
-          console.log('[META-SYSOP-FORCE] ❌❌❌ FORCING TRIGGERED! Meta-SySop skipped perform_diagnosis!');
-          console.log('[META-SYSOP-FORCE] All tools executed and results added - now adding forcing message...');
-          
-          const forcingMessage = `STOP. You created a task list but did NOT call perform_diagnosis().\n\n` +
-            `Your first task requires running the full platform diagnosis.\n\n` +
-            `Call perform_diagnosis(target: "all", focus: []) RIGHT NOW.\n\n` +
-            `Do NOT call readPlatformFile() or any other tools yet.\n` +
-            `Do NOT just talk about it.\n` +
-            `CALL THE TOOL: perform_diagnosis(target: "all", focus: [])`;
-          
-          conversationMessages.push({
-            role: 'user',
-            content: [{
-              type: 'text',
-              text: forcingMessage
-            }]
-          });
-          
-          console.log('[META-SYSOP-FORCE] ✅ Forcing message added. Conversation length:', conversationMessages.length);
-          console.log('[META-SYSOP-FORCE] ✅ Continuing to iteration 2...');
-          sendEvent('progress', { message: '🚨 Forcing diagnosis - Meta-SySop skipped it, retrying...' });
-          continue; // Force iteration 2 with diagnosis
-        } else {
-          console.log('[META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally');
-        }
+        // 🎯 TRUST CLAUDE: No forcing logic - system prompt is clear enough
+        // Forcing creates confusing conversation loops where Claude responds multiple times without calling tools
+        // If Claude doesn't call the right tools, it's a prompt engineering issue, not something to fix with forcing
+        console.log(`[META-SYSOP] Tool results added - proceeding to next iteration naturally`);
       } else {
         // No tool calls this iteration - check if we should continue
         // 🐛 FIX: Don't end if there are tasks still in progress - Meta-SySop might need another turn
