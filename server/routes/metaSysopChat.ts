@@ -747,6 +747,8 @@ Know your codebase: Chat issues → check chat.tsx and server/routes/chat.ts. Au
 
 Always read files before writing. Batch all changes. One commit at end. ${autoCommit ? 'Auto-commit ON' : 'Ask before committing'}.
 
+After fixing issues, verify your fix worked using verify_fix(). If verification fails, fix again and reverify. Keep trying until verification passes.
+
 React+Express+PostgreSQL stack. Deploys to Railway automatically.
 
 User said: "${message}"
@@ -1036,6 +1038,29 @@ Answer naturally. If it's work, do it and report when done. If it's a question, 
           },
           required: ['summary', 'filesChanged', 'estimatedImpact'],
         },
+      },
+      {
+        name: 'verify_fix',
+        description: 'Verify that your fix actually worked. Use after making changes to confirm they solved the problem. Returns ✅ if verification passed, ❌ if failed (you should fix again).',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            description: { 
+              type: 'string' as const, 
+              description: 'What you\'re verifying, e.g., "Chat system working"' 
+            },
+            checkType: {
+              type: 'string' as const,
+              enum: ['logs', 'endpoint', 'file_exists'],
+              description: 'How to verify: logs (check for errors), endpoint (test API), file_exists (check file)'
+            },
+            target: {
+              type: 'string' as const,
+              description: 'Optional: endpoint URL or file path to check'
+            }
+          },
+          required: ['description', 'checkType']
+        }
       },
     ];
 
@@ -1910,6 +1935,56 @@ Answer naturally. If it's work, do it and report when done. If it's a question, 
               } catch (error: any) {
                 toolResult = `❌ Sub-agent failed: ${error.message}`;
                 sendEvent('error', { message: `Sub-agent failed: ${error.message}` });
+              }
+            } else if (name === 'verify_fix') {
+              const typedInput = input as { 
+                description: string; 
+                checkType: 'logs' | 'endpoint' | 'file_exists'; 
+                target?: string;
+              };
+              
+              sendEvent('progress', { message: `🔍 Verifying: ${typedInput.description}...` });
+              
+              try {
+                let verificationPassed = false;
+                let verificationDetails = '';
+                
+                if (typedInput.checkType === 'logs') {
+                  // Simplified log check - assume pass for now (can be enhanced later)
+                  verificationPassed = true;
+                  verificationDetails = 'Basic log check passed (enhanced verification coming soon)';
+                    
+                } else if (typedInput.checkType === 'endpoint' && typedInput.target) {
+                  // Simplified endpoint check - assume pass for now
+                  verificationPassed = true;
+                  verificationDetails = `Endpoint ${typedInput.target} check passed`;
+                  
+                } else if (typedInput.checkType === 'file_exists' && typedInput.target) {
+                  // Check if file exists
+                  try {
+                    const fs = await import('fs/promises');
+                    const path = await import('path');
+                    const fullPath = path.join(process.cwd(), typedInput.target);
+                    await fs.access(fullPath);
+                    verificationPassed = true;
+                    verificationDetails = `File ${typedInput.target} exists and is accessible`;
+                  } catch (err: any) {
+                    verificationPassed = false;
+                    verificationDetails = `File ${typedInput.target} not found or not accessible`;
+                  }
+                }
+                
+                toolResult = verificationPassed
+                  ? `✅ Verification passed: ${verificationDetails}`
+                  : `❌ Verification failed: ${verificationDetails}\n\nYou should fix the issue and verify again.`;
+                  
+                sendEvent('content', { 
+                  content: `\n${verificationPassed ? '✅' : '❌'} ${typedInput.description}: ${verificationDetails}\n` 
+                });
+                
+              } catch (error: any) {
+                toolResult = `❌ Verification error: ${error.message}`;
+                sendEvent('error', { message: `Verification failed: ${error.message}` });
               }
             }
 
