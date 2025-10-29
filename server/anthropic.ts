@@ -1,6 +1,31 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { WebSocket } from 'ws';
 
+/**
+ * RECOMMENDED ENHANCEMENT: Integrate AnthropicWrapper for context limit protection
+ * 
+ * The AnthropicWrapper in server/lib/anthropic-wrapper.ts provides:
+ * - Automatic token estimation and truncation
+ * - Retry logic on context limit errors (400 invalid_request_error)
+ * - Prevents crashes like: "196601 + 16000 > 200000" errors
+ * 
+ * Quick integration example:
+ * ```typescript
+ * import { getAnthropicWrapper } from './lib/anthropic-wrapper';
+ * 
+ * const wrapper = getAnthropicWrapper();
+ * const response = await wrapper.callAnthropic({
+ *   input: messages,
+ *   system: systemPrompt,
+ *   maxTokens: 4096,
+ *   model: DEFAULT_MODEL,
+ * });
+ * ```
+ * 
+ * For streaming use cases, the wrapper can be adapted or used as a validation
+ * layer before creating the stream. See ANTHROPIC_WRAPPER_GUIDE.md for details.
+ */
+
 /*
 <important_code_snippet_instructions>
 The newest Anthropic model is "claude-sonnet-4-20250514", not "claude-3-7-sonnet-20250219", "claude-3-5-sonnet-20241022" nor "claude-3-sonnet-20240229". 
@@ -263,7 +288,20 @@ export async function streamAnthropicResponse(options: StreamOptions) {
     return { fullText, usage: usage || { inputTokens: 0, outputTokens: 0 } };
 
   } catch (error) {
-    console.error('❌ Fatal error in Anthropic streaming:', error);
+    // Check for context limit errors and provide helpful guidance
+    const isContextError = 
+      error instanceof Error &&
+      error.message &&
+      (error.message.includes('context limit') || 
+       error.message.includes('max_tokens'));
+    
+    if (isContextError) {
+      console.error('❌ Context limit error in Anthropic streaming:', error.message);
+      console.error('💡 TIP: Use AnthropicWrapper from server/lib/anthropic-wrapper.ts to prevent this');
+      console.error('💡 See ANTHROPIC_WRAPPER_GUIDE.md for integration instructions');
+    } else {
+      console.error('❌ Fatal error in Anthropic streaming:', error);
+    }
     
     // Notify error callback
     if (onError) {
