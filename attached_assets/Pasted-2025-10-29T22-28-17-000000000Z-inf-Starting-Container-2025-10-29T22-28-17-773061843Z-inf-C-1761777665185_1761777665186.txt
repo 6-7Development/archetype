@@ -1,0 +1,502 @@
+2025-10-29T22:28:17.000000000Z [inf]  Starting Container
+2025-10-29T22:28:17.773061843Z [inf]  📁 Current directory: /app
+2025-10-29T22:28:17.773069226Z [inf]  📂 Listing root files:
+2025-10-29T22:28:17.773073948Z [inf]  -rwxrwxr-x    1 root     root          1865 Oct 29 22:25 railway-start.sh
+2025-10-29T22:28:17.773078610Z [inf]  total 404
+2025-10-29T22:28:17.773080835Z [inf]  -rw-rw-r--    1 root     root         10299 Oct 29 22:25 replit.md
+2025-10-29T22:28:17.773085536Z [inf]  drwxr-xr-x   11 root     root          4096 Oct 29 22:25 server
+2025-10-29T22:28:17.773093918Z [inf]  drwxr-xr-x    2 root     root          4096 Oct 29 22:25 shared
+2025-10-29T22:28:17.773095155Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 29 22:27 .
+2025-10-29T22:28:17.773105241Z [inf]  -rw-rw-r--    1 root     root           657 Oct 29 22:25 tsconfig.json
+2025-10-29T22:28:17.773106943Z [inf]  dr-xr-xr-x    1 root     root          4096 Oct 29 22:28 ..
+2025-10-29T22:28:17.773106963Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 29 16:27 node_modules
+2025-10-29T22:28:17.773110557Z [inf]  
+2025-10-29T22:28:17.773115440Z [inf]  -rw-rw-r--    1 root     root        352670 Oct 29 16:27 package-lock.json
+2025-10-29T22:28:17.773116358Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 29 22:27 dist
+2025-10-29T22:28:17.773118546Z [inf]  🚂 RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-10-29T22:28:17.773124830Z [inf]  -rw-rw-r--    1 root     root          4529 Oct 29 16:27 package.json
+2025-10-29T22:28:17.773126529Z [inf]  -rw-rw-r--    1 root     root           325 Oct 29 22:25 drizzle.config.ts
+2025-10-29T22:28:17.773128206Z [inf]  ======================================
+2025-10-29T22:28:17.773129617Z [inf]  Node version: v20.19.5
+2025-10-29T22:28:17.773130237Z [inf]  NPM version: 10.8.2
+2025-10-29T22:28:17.773137157Z [inf]  Time: Wed Oct 29 22:28:17 UTC 2025
+2025-10-29T22:28:17.773137371Z [inf]  
+2025-10-29T22:28:17.773146536Z [inf]  ======================================
+2025-10-29T22:28:17.774831493Z [inf]  🔍 Checking for dist directory...
+2025-10-29T22:28:17.774836632Z [inf]  ✅ dist directory exists
+2025-10-29T22:28:17.774842418Z [inf]  📂 Contents:
+2025-10-29T22:28:17.774846631Z [inf]  total 744
+2025-10-29T22:28:17.774851135Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 29 22:27 .
+2025-10-29T22:28:17.774856677Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 29 22:27 ..
+2025-10-29T22:28:17.774862057Z [inf]  -rw-r--r--    1 root     root        748730 Oct 29 22:27 index.js
+2025-10-29T22:28:17.774867069Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 29 22:27 public
+2025-10-29T22:28:17.774871959Z [inf]  ✅ dist/index.js found
+2025-10-29T22:28:17.774881587Z [inf]  
+2025-10-29T22:28:17.774886522Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-10-29T22:28:18.124481403Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-10-29T22:28:18.124489733Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-10-29T22:28:18.796347294Z [inf]  Using 'pg' driver for database querying
+2025-10-29T22:28:18.796377070Z [inf]  [⣷] Pulling schema from database...
+2025-10-29T22:28:18.796388288Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-29T22:28:18.839440543Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-29T22:28:18.966852764Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-29T22:28:19.096242991Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-29T22:28:19.221419542Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-29T22:28:19.348487246Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-29T22:28:19.755311555Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-29T22:28:19.755322174Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-29T22:28:19.755329372Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-29T22:28:19.860833951Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-29T22:28:19.996354225Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-29T22:28:20.118422922Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-29T22:28:20.247226683Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-29T22:28:20.766945600Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-29T22:28:20.766975791Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-29T22:28:20.766981941Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-29T22:28:20.766987046Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-29T22:28:20.887555357Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-29T22:28:20.903804174Z [inf]  [2K[1G[✓] Pulling schema from database...
+2025-10-29T22:28:20.964661151Z [inf]  [i] No changes detected
+2025-10-29T22:28:20.986406828Z [inf]  GITHUB_BRANCH: main
+2025-10-29T22:28:20.986416198Z [inf]  ANTHROPIC_API_KEY: ✓ SET
+2025-10-29T22:28:20.986426635Z [inf]  
+2025-10-29T22:28:20.986431792Z [inf]  📄 Ensuring replit.md is available...
+2025-10-29T22:28:20.986436876Z [inf]  ✅ replit.md already present
+2025-10-29T22:28:20.986441883Z [inf]  
+2025-10-29T22:28:20.986447510Z [inf]  🚀 Starting Node.js application...
+2025-10-29T22:28:20.986452286Z [inf]  Command: node dist/index.js
+2025-10-29T22:28:20.986456677Z [inf]  
+2025-10-29T22:28:20.986470573Z [inf]  ✅ Database migrations completed successfully!
+2025-10-29T22:28:20.986474815Z [inf]  
+2025-10-29T22:28:20.986479837Z [inf]  🔍 Environment Check:
+2025-10-29T22:28:20.986483658Z [inf]  NODE_ENV: production
+2025-10-29T22:28:20.986488620Z [inf]  PORT: 8080
+2025-10-29T22:28:20.986493046Z [inf]  DATABASE_URL: ✓ SET (hidden for security)
+2025-10-29T22:28:20.986498857Z [inf]  GITHUB_TOKEN: ✓ SET
+2025-10-29T22:28:20.986504311Z [inf]  GITHUB_REPO: 6-7Development/archetype
+2025-10-29T22:28:21.957334186Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-29T22:28:21.959370981Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-29T22:28:21.959377176Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-29T22:28:21.959409428Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-29T22:28:21.959414826Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-10-29T22:28:21.959419056Z [inf]  [db] Connection string includes SSL params: true
+2025-10-29T22:28:21.966933074Z [inf]  [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-29T22:28:21.966941852Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-29T22:28:21.977305074Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller (SSE streams excluded)
+2025-10-29T22:28:21.977312322Z [inf]  📡 WebSocket server initialized at /ws
+2025-10-29T22:28:21.977322867Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-29T22:28:21.977331527Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-29T22:28:21.982187487Z [inf]  [META-SYSOP-JOB-MANAGER] Initialized with WebSocket support
+2025-10-29T22:28:21.982194232Z [inf]  [META-SYSOP-JOB-MANAGER] Job manager connected to WebSocket
+2025-10-29T22:28:21.987067942Z [inf]  ✅ All routes registered successfully
+2025-10-29T22:28:21.987075962Z [inf]  🔍 Testing database connection...
+2025-10-29T22:28:22.021150227Z [inf]  10:28:21 PM [express] serving on port 8080
+2025-10-29T22:28:22.021160157Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-10-29T22:28:22.128505105Z [inf]  ✅ Database connected successfully
+2025-10-29T22:28:22.128519158Z [inf]  🔧 Auto-healing system ENABLED (production mode)
+2025-10-29T22:28:22.128526412Z [inf]  
+2025-10-29T22:28:22.128532917Z [inf]  🔍 Checking GitHub integration configuration...
+2025-10-29T22:28:22.128538313Z [inf]  ✅ GitHub integration configured successfully
+2025-10-29T22:28:22.128544423Z [inf]     - Repository: 6-7Development/archetype
+2025-10-29T22:28:22.128550043Z [inf]     - Branch: main
+2025-10-29T22:28:22.128564218Z [inf]     - Token: ✓ (configured)
+2025-10-29T22:28:22.128569967Z [inf]     - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-29T22:28:22.128576873Z [inf]     - Maintenance mode: Available for owner
+2025-10-29T22:28:22.128582536Z [inf]  
+2025-10-29T22:31:12.531845174Z [inf]  [DEPLOYMENT-INFO] Using Railway environment variables
+2025-10-29T22:31:12.531851973Z [inf]  10:31:09 PM [express] GET /api/deployment-info 200 in 3ms :: {"version":"1.0.0","commitHash":"b9f9a05…
+2025-10-29T22:31:12.531857437Z [inf]  [AUTH] Login attempt for email: root@getdc360.com
+2025-10-29T22:31:12.531862736Z [inf]  [AUTH] Found users: 1
+2025-10-29T22:31:12.531870687Z [inf]  [AUTH] User found: root@getdc360.com has password: true
+2025-10-29T22:31:12.531876427Z [inf]  [AUTH] Verifying password...
+2025-10-29T22:31:12.713638452Z [inf]  [AUTH] Password valid: true
+2025-10-29T22:31:12.713644231Z [inf]  [AUTH] Authentication successful for: root@getdc360.com
+2025-10-29T22:31:12.729075360Z [inf]  10:31:12 PM [express] POST /api/auth/login 200 in 295ms :: {"success":true,"user":{"id":"723e1301-c72…
+2025-10-29T22:31:13.497961789Z [inf]  10:31:13 PM [express] GET /api/projects 304 in 13ms :: []
+2025-10-29T22:31:13.497966460Z [inf]  10:31:13 PM [express] GET /api/auth/me 304 in 89ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef95…
+2025-10-29T22:31:16.410428292Z [inf]  10:31:16 PM [express] GET /api/platform/status 200 in 24ms :: {"overallHealth":100,"activeIncidents":…
+2025-10-29T22:31:16.410435487Z [inf]  10:31:16 PM [express] GET /api/meta-sysop/autonomy-level 304 in 27ms :: {"currentLevel":"max","maxAll…
+2025-10-29T22:31:16.480095447Z [inf]  [GITHUB-SERVICE] Initialized for 6-7Development/archetype on branch main
+2025-10-29T22:31:16.500917463Z [inf]  [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-29T22:31:16.504430773Z [inf]  10:31:16 PM [express] GET /api/meta-sysop/projects 304 in 118ms :: []
+2025-10-29T22:31:16.509901115Z [inf]  10:31:16 PM [express] GET /api/meta-sysop/pending-changes 304 in 123ms :: {"success":true,"pendingCha…
+2025-10-29T22:31:16.592372842Z [inf]  ✅ WebSocket client connected
+2025-10-29T22:31:16.666397308Z [inf]  10:31:16 PM [express] GET /api/platform/deployment-history 200 in 273ms :: {"success":true,"deploymen…
+2025-10-29T22:31:16.678341225Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-29T22:31:21.586790980Z [inf]  10:31:21 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-29T22:31:26.653846964Z [inf]  10:31:26 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-29T22:31:31.736338844Z [inf]  10:31:31 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-29T22:31:36.806242358Z [inf]  10:31:36 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-29T22:31:41.872725381Z [inf]  10:31:41 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-29T22:31:46.896682392Z [inf]  10:31:46 PM [express] GET /api/platform/deployment-history 304 in 148ms :: {"success":true,"deploymen…
+2025-10-29T22:31:46.941099459Z [inf]  10:31:46 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-29T22:31:52.027267133Z [inf]  10:31:52 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-29T22:31:57.517455024Z [inf]  10:31:57 PM [express] GET /api/meta-sysop/pending-changes 304 in 8ms :: {"success":true,"pendingChang…
+2025-10-29T22:32:02.603060891Z [inf]  10:32:02 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-29T22:32:07.681717895Z [inf]  10:32:07 PM [express] GET /api/meta-sysop/pending-changes 304 in 33ms :: {"success":true,"pendingChan…
+2025-10-29T22:32:07.681752054Z [inf]  [ANTHROPIC-WRAPPER] ✅ Within limits (17,115 / 175,000 tokens)
+2025-10-29T22:32:07.681757969Z [inf]  [ANTHROPIC-WRAPPER] Safety margin: 157,885 tokens remaining
+2025-10-29T22:32:07.681763171Z [inf]  [ANTHROPIC-WRAPPER] ═══════════════════════════════════════
+2025-10-29T22:32:07.681772730Z [inf]  [META-SYSOP-CHAT] Stream request received
+2025-10-29T22:32:07.681778375Z [inf]  [META-SYSOP-CHAT] Message: The chat display the way meta sysop talks to me an Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-10-29T22:32:07.681783075Z [inf]    - Messages: 10 messages, 6,463 tokens
+2025-10-29T22:32:07.681787644Z [inf]  [META-SYSOP-CHAT] Setting up SSE headers
+2025-10-29T22:32:07.681790255Z [inf]    - Total: 17,115 tokens
+2025-10-29T22:32:07.681794072Z [inf]  [META-SYSOP-CHAT] Heartbeat started - will send keepalive every 15s
+2025-10-29T22:32:07.681797060Z [inf]    - Limit: 175,000 tokens (25,000K safety margin)
+2025-10-29T22:32:07.681801779Z [inf]  [META-SYSOP-CHAT] Entering try block
+2025-10-29T22:32:07.681806686Z [inf]  [META-SYSOP-CHAT] User autonomy level: max
+2025-10-29T22:32:07.681811194Z [inf]  [ANTHROPIC-WRAPPER] Original context size:
+2025-10-29T22:32:07.681816277Z [inf]    - System prompt: 10,652 tokens
+2025-10-29T22:32:07.681842104Z [inf]  [ANTHROPIC-WRAPPER] ✅ NO TRUNCATION NEEDED
+2025-10-29T22:32:07.681852251Z [inf]  [ANTHROPIC-WRAPPER] ═══════════════════════════════════════
+2025-10-29T22:32:07.681858224Z [inf]  [ANTHROPIC-WRAPPER] Total tokens: 17,115 / 175,000
+2025-10-29T22:32:07.681863815Z [inf]  [ANTHROPIC-WRAPPER] Safety margin: 157,885 tokens
+2025-10-29T22:32:11.544366944Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: I'll fix the chat communication issues to make Meta-SySop conversations smooth and constant like Rep
+2025-10-29T22:32:12.542751977Z [inf]  10:32:12 PM [express] GET /api/meta-sysop/pending-changes 304 in 23ms :: {"success":true,"pendingChan…
+2025-10-29T22:32:15.607364314Z [inf]  [META-SYSOP] Response has tool calls: true
+2025-10-29T22:32:15.607371513Z [inf]  [META-SYSOP] Content blocks: text, text, tool_use
+2025-10-29T22:32:15.607378163Z [inf]  [META-SYSOP-FORCE] === ITERATION 1 CHECK ===
+2025-10-29T22:32:15.607384686Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: createTaskList
+2025-10-29T22:32:15.607391065Z [inf]  [META-SYSOP-CONTINUATION] ✅ Tools called - reset empty counter to 0
+2025-10-29T22:32:15.607398141Z [inf]  [META-SYSOP] Task list created: e96095f4-df29-470e-95f6-cbbf239e122d
+2025-10-29T22:32:15.607404376Z [inf]  [META-SYSOP-FORCE] Created task list: true
+2025-10-29T22:32:15.607411029Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-29T22:32:15.607416772Z [inf]  [META-SYSOP-FORCE] Iteration count: 1
+2025-10-29T22:32:15.607423004Z [inf]  [META-SYSOP-FORCE] ❌❌❌ FORCING TRIGGERED! Meta-SySop skipped perform_diagnosis!
+2025-10-29T22:32:15.607429387Z [inf]  [META-SYSOP-FORCE] All tools executed and results added - now adding forcing message...
+2025-10-29T22:32:15.607436374Z [inf]  [META-SYSOP-FORCE] ✅ Forcing message added. Conversation length: 13
+2025-10-29T22:32:15.607442490Z [inf]  [META-SYSOP-FORCE] ✅ Continuing to iteration 2...
+2025-10-29T22:32:15.607448577Z [inf]  [ANTHROPIC-WRAPPER] Original context size:
+2025-10-29T22:32:15.607453553Z [inf]    - System prompt: 10,375 tokens
+2025-10-29T22:32:15.607458338Z [inf]    - Messages: 13 messages, 6,686 tokens
+2025-10-29T22:32:15.607463046Z [inf]    - Total: 17,061 tokens
+2025-10-29T22:32:15.607468161Z [inf]    - Limit: 175,000 tokens (25,000K safety margin)
+2025-10-29T22:32:15.607475960Z [inf]  [ANTHROPIC-WRAPPER] ✅ Within limits (17,061 / 175,000 tokens)
+2025-10-29T22:32:15.607480619Z [inf]  [ANTHROPIC-WRAPPER] Safety margin: 157,939 tokens remaining
+2025-10-29T22:32:15.607485096Z [inf]  [META-SYSOP] Fetched 5 tasks for task list e96095f4-df29-470e-95f6-cbbf239e122d
+2025-10-29T22:32:15.610767807Z [inf]  10:32:15 PM [express] GET /api/meta-sysop/task-list/e96095f4-df29-470e-95f6-cbbf239e122d 200 in 16ms …
+2025-10-29T22:32:17.070124192Z [inf]  10:32:17 PM [express] GET /api/platform/deployment-history 304 in 122ms :: {"success":true,"deploymen…
+2025-10-29T22:32:17.494347075Z [inf]  10:32:17 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-29T22:32:17.913061602Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: updateTask
+2025-10-29T22:32:17.913072219Z [inf]  [META-SYSOP-CONTINUATION] ✅ Tools called - reset empty counter to 0
+2025-10-29T22:32:17.913182615Z [inf]  [META-SYSOP-FORCE] === ITERATION 2 CHECK ===
+2025-10-29T22:32:17.918433570Z [inf]    - Limit: 175,000 tokens (25,000K safety margin)
+2025-10-29T22:32:17.918441651Z [inf]  [ANTHROPIC-WRAPPER] ✅ Within limits (17,061 / 175,000 tokens)
+2025-10-29T22:32:17.918447024Z [inf]  [ANTHROPIC-WRAPPER] Safety margin: 157,939 tokens remaining
+2025-10-29T22:32:17.918463817Z [inf]  [ANTHROPIC-WRAPPER] Original context size:
+2025-10-29T22:32:17.918465173Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-29T22:32:17.918472425Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T22:32:17.918475718Z [inf]  [META-SYSOP-FORCE] Iteration count: 2
+2025-10-29T22:32:17.918476168Z [inf]    - System prompt: 10,375 tokens
+2025-10-29T22:32:17.918483950Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T22:32:17.918487261Z [inf]    - Messages: 15 messages, 6,686 tokens
+2025-10-29T22:32:17.918493795Z [inf]    - Total: 17,061 tokens
+2025-10-29T22:32:20.836497618Z [inf]  [META-SYSOP-FORCE] === ITERATION 3 CHECK ===
+2025-10-29T22:32:20.836505927Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: readTaskList
+2025-10-29T22:32:20.836511931Z [inf]  [META-SYSOP-CONTINUATION] ✅ Tools called - reset empty counter to 0
+2025-10-29T22:32:21.597803839Z [inf]  [META-SYSOP-FORCE] Iteration count: 3
+2025-10-29T22:32:21.597815043Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T22:32:21.597821948Z [inf]  [ANTHROPIC-WRAPPER] Original context size:
+2025-10-29T22:32:21.597828417Z [inf]    - System prompt: 10,375 tokens
+2025-10-29T22:32:21.597836831Z [inf]    - Messages: 17 messages, 6,686 tokens
+2025-10-29T22:32:21.597843253Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T22:32:21.597847684Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-29T22:32:21.597854568Z [inf]    - Total: 17,061 tokens
+2025-10-29T22:32:21.597863609Z [inf]    - Limit: 175,000 tokens (25,000K safety margin)
+2025-10-29T22:32:21.597871328Z [inf]  [ANTHROPIC-WRAPPER] ✅ Within limits (17,061 / 175,000 tokens)
+2025-10-29T22:32:21.597877303Z [inf]  [ANTHROPIC-WRAPPER] Safety margin: 157,939 tokens remaining
+2025-10-29T22:32:22.552361563Z [inf]  10:32:22 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-29T22:32:22.566065444Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T22:32:23.730348399Z [inf]  [META-SYSOP-FORCE] === ITERATION 4 CHECK ===
+2025-10-29T22:32:23.730355665Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: perform_diagnosis
+2025-10-29T22:32:23.730364025Z [inf]  [META-SYSOP-CONTINUATION] ✅ Tools called - reset empty counter to 0
+2025-10-29T22:32:23.730374830Z [inf]  [DIAGNOSIS] Raw files to check: []
+2025-10-29T22:32:23.730382212Z [inf]  [DIAGNOSIS] After sanitization: []
+2025-10-29T22:32:23.730388920Z [err]  [DIAGNOSIS] All paths rejected, falling back to DEFAULT_FILES
+2025-10-29T22:32:23.730395159Z [inf]  [DIAGNOSIS] Using 4 default files
+2025-10-29T22:32:23.751291120Z [inf]  [DIAGNOSIS-SANITIZER] Sanitizing diagnosis report...
+2025-10-29T22:32:23.751298130Z [inf]  [DIAGNOSIS-SANITIZER] Sanitization complete
+2025-10-29T22:32:23.751304382Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T22:32:23.751310144Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: true
+2025-10-29T22:32:23.751316286Z [inf]  [META-SYSOP-FORCE] Iteration count: 4
+2025-10-29T22:32:23.751322467Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T22:32:23.751328583Z [inf]  [ANTHROPIC-WRAPPER] Original context size:
+2025-10-29T22:32:23.751334182Z [inf]    - System prompt: 10,375 tokens
+2025-10-29T22:32:23.751339792Z [inf]    - Messages: 19 messages, 6,686 tokens
+2025-10-29T22:32:23.751345129Z [inf]    - Total: 17,061 tokens
+2025-10-29T22:32:23.751350557Z [inf]    - Limit: 175,000 tokens (25,000K safety margin)
+2025-10-29T22:32:23.751357030Z [inf]  [ANTHROPIC-WRAPPER] ✅ Within limits (17,061 / 175,000 tokens)
+2025-10-29T22:32:23.751364266Z [inf]  [ANTHROPIC-WRAPPER] Safety margin: 157,939 tokens remaining
+2025-10-29T22:32:27.616787514Z [inf]  10:32:27 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-29T22:32:29.621444656Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Perfect! Diagnosis complete. Found **11 issues** including **5 critical ones** that are likely causi
+2025-10-29T22:32:29.970918076Z [inf]  [META-SYSOP-FORCE] === ITERATION 5 CHECK ===
+2025-10-29T22:32:29.970923677Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: readPlatformFile
+2025-10-29T22:32:29.970928848Z [inf]  [META-SYSOP-CONTINUATION] ✅ Tools called - reset empty counter to 0
+2025-10-29T22:32:29.970935714Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T22:32:29.970941639Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-29T22:32:29.970947722Z [inf]  [META-SYSOP-FORCE] Iteration count: 5
+2025-10-29T22:32:29.970953757Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T22:32:29.973831574Z [inf]  [ANTHROPIC-WRAPPER] Original context size:
+2025-10-29T22:32:29.973839143Z [inf]    - System prompt: 10,375 tokens
+2025-10-29T22:32:29.973847261Z [inf]    - Messages: 21 messages, 7,116 tokens
+2025-10-29T22:32:29.973854180Z [inf]    - Total: 17,491 tokens
+2025-10-29T22:32:29.973862946Z [inf]    - Limit: 175,000 tokens (25,000K safety margin)
+2025-10-29T22:32:29.973869273Z [inf]  [ANTHROPIC-WRAPPER] ✅ Within limits (17,491 / 175,000 tokens)
+2025-10-29T22:32:29.973875625Z [inf]  [ANTHROPIC-WRAPPER] Safety margin: 157,509 tokens remaining
+2025-10-29T22:32:32.695031643Z [inf]  10:32:32 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-29T22:32:32.852658297Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Found the WebSocket setup! Now let me check the actual WebSocket implementation to see the missing e
+2025-10-29T22:32:33.126472232Z [inf]  [META-SYSOP-FORCE] === ITERATION 6 CHECK ===
+2025-10-29T22:32:33.126477243Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: readPlatformFile
+2025-10-29T22:32:33.126482921Z [inf]  [META-SYSOP-CONTINUATION] ✅ Tools called - reset empty counter to 0
+2025-10-29T22:32:33.126488145Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T22:32:33.126493303Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-29T22:32:33.126498064Z [inf]  [META-SYSOP-FORCE] Iteration count: 6
+2025-10-29T22:32:33.126501785Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T22:32:33.126505417Z [inf]  [ANTHROPIC-WRAPPER] Original context size:
+2025-10-29T22:32:33.126509021Z [inf]    - System prompt: 10,375 tokens
+2025-10-29T22:32:33.126512620Z [inf]    - Messages: 23 messages, 7,192 tokens
+2025-10-29T22:32:33.126516135Z [inf]    - Total: 17,567 tokens
+2025-10-29T22:32:33.126519748Z [inf]    - Limit: 175,000 tokens (25,000K safety margin)
+2025-10-29T22:32:33.126523139Z [inf]  [ANTHROPIC-WRAPPER] ✅ Within limits (17,567 / 175,000 tokens)
+2025-10-29T22:32:33.126526649Z [inf]  [ANTHROPIC-WRAPPER] Safety margin: 157,433 tokens remaining
+2025-10-29T22:32:36.657676112Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Great! The WebSocket implementation already has proper error and close handlers. Let me check the An
+2025-10-29T22:32:36.895829630Z [inf]  [META-SYSOP-FORCE] === ITERATION 7 CHECK ===
+2025-10-29T22:32:36.895838160Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: readPlatformFile
+2025-10-29T22:32:36.895843347Z [inf]  [META-SYSOP-CONTINUATION] ✅ Tools called - reset empty counter to 0
+2025-10-29T22:32:36.898459108Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T22:32:36.898467744Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-29T22:32:36.898473893Z [inf]  [META-SYSOP-FORCE] Iteration count: 7
+2025-10-29T22:32:36.898479740Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T22:32:36.898485261Z [inf]  [ANTHROPIC-WRAPPER] Original context size:
+2025-10-29T22:32:36.898493302Z [inf]    - System prompt: 10,375 tokens
+2025-10-29T22:32:36.898498843Z [inf]    - Messages: 25 messages, 7,380 tokens
+2025-10-29T22:32:36.898504431Z [inf]    - Total: 17,755 tokens
+2025-10-29T22:32:36.898509970Z [inf]    - Limit: 175,000 tokens (25,000K safety margin)
+2025-10-29T22:32:36.898514450Z [inf]  [ANTHROPIC-WRAPPER] ✅ Within limits (17,755 / 175,000 tokens)
+2025-10-29T22:32:36.898518250Z [inf]  [ANTHROPIC-WRAPPER] Safety margin: 157,245 tokens remaining
+2025-10-29T22:32:37.690574384Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T22:32:37.716317462Z [inf]  10:32:37 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-29T22:32:40.750145155Z [inf]  [META-SYSOP-FORCE] Iteration count: 8
+2025-10-29T22:32:40.750155539Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T22:32:40.750159279Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: The Anthropic file looks good too! Now let me check server/index.ts:The Anthropic file looks good to
+2025-10-29T22:32:40.750166244Z [inf]  [ANTHROPIC-WRAPPER] Original context size:
+2025-10-29T22:32:40.750168794Z [inf]  [META-SYSOP-FORCE] === ITERATION 8 CHECK ===
+2025-10-29T22:32:40.750176169Z [inf]    - Messages: 27 messages, 7,562 tokens
+2025-10-29T22:32:40.750176375Z [inf]    - System prompt: 10,375 tokens
+2025-10-29T22:32:40.750177362Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: readPlatformFile
+2025-10-29T22:32:40.750183910Z [inf]    - Limit: 175,000 tokens (25,000K safety margin)
+2025-10-29T22:32:40.750186112Z [inf]    - Total: 17,937 tokens
+2025-10-29T22:32:40.750186887Z [inf]  [META-SYSOP-CONTINUATION] ✅ Tools called - reset empty counter to 0
+2025-10-29T22:32:40.750193923Z [inf]  [ANTHROPIC-WRAPPER] ✅ Within limits (17,937 / 175,000 tokens)
+2025-10-29T22:32:40.750196992Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T22:32:40.750202914Z [inf]  [ANTHROPIC-WRAPPER] Safety margin: 157,063 tokens remaining
+2025-10-29T22:32:40.750211348Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-29T22:32:42.806414863Z [inf]  10:32:42 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-29T22:32:47.607723229Z [inf]  10:32:47 PM [express] GET /api/platform/deployment-history 304 in 139ms :: {"success":true,"deploymen…
+2025-10-29T22:32:47.607729543Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Actually, I see the issue now! The diagnosis tool is detecting WebSocket creation patterns but not r
+2025-10-29T22:32:47.871734027Z [inf]  10:32:47 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-29T22:32:48.069338775Z [inf]  [META-SYSOP-FORCE] === ITERATION 9 CHECK ===
+2025-10-29T22:32:48.069345896Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: readPlatformFile
+2025-10-29T22:32:48.069352276Z [inf]  [META-SYSOP-CONTINUATION] ✅ Tools called - reset empty counter to 0
+2025-10-29T22:32:48.071419517Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T22:32:48.071424385Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-29T22:32:48.071429167Z [inf]  [META-SYSOP-FORCE] Iteration count: 9
+2025-10-29T22:32:48.071433172Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T22:32:48.071436946Z [inf]  [ANTHROPIC-WRAPPER] Original context size:
+2025-10-29T22:32:48.071442734Z [inf]    - System prompt: 10,375 tokens
+2025-10-29T22:32:48.071446737Z [inf]    - Messages: 29 messages, 8,874 tokens
+2025-10-29T22:32:48.071451109Z [inf]    - Total: 19,249 tokens
+2025-10-29T22:32:48.071457038Z [inf]    - Limit: 175,000 tokens (25,000K safety margin)
+2025-10-29T22:32:48.071460938Z [inf]  [ANTHROPIC-WRAPPER] ✅ Within limits (19,249 / 175,000 tokens)
+2025-10-29T22:32:48.071464582Z [inf]  [ANTHROPIC-WRAPPER] Safety margin: 155,751 tokens remaining
+2025-10-29T22:32:52.705486263Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T22:32:52.946649722Z [inf]  10:32:52 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-29T22:32:55.723179351Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Perfect! I found the issue with chat communication. Let me examine the actual client-side chat compo
+2025-10-29T22:32:55.993472116Z [inf]  [META-SYSOP-FORCE] === ITERATION 10 CHECK ===
+2025-10-29T22:32:55.993481155Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: readPlatformFile
+2025-10-29T22:32:55.993487478Z [inf]  [META-SYSOP-CONTINUATION] ✅ Tools called - reset empty counter to 0
+2025-10-29T22:32:55.993493520Z [inf]  [PLATFORM-READ] 🔄 Source file not in production build, fetching from GitHub: client/src/components/meta-sysop-chat.tsx
+2025-10-29T22:32:56.143806963Z [inf]  [PLATFORM-READ] ✅ Fetched client/src/components/meta-sysop-chat.tsx from GitHub (48086 bytes)
+2025-10-29T22:32:56.143813455Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T22:32:56.143819367Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-29T22:32:56.143824968Z [inf]  [META-SYSOP-FORCE] Iteration count: 10
+2025-10-29T22:32:56.143830966Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T22:32:56.143839146Z [inf]  [ANTHROPIC-WRAPPER] Original context size:
+2025-10-29T22:32:56.143845513Z [inf]    - System prompt: 10,375 tokens
+2025-10-29T22:32:56.143861852Z [inf]    - Messages: 31 messages, 10,566 tokens
+2025-10-29T22:32:56.143868119Z [inf]    - Total: 20,941 tokens
+2025-10-29T22:32:56.143874337Z [inf]    - Limit: 175,000 tokens (25,000K safety margin)
+2025-10-29T22:32:56.143880029Z [inf]  [ANTHROPIC-WRAPPER] ✅ Within limits (20,941 / 175,000 tokens)
+2025-10-29T22:32:56.143886139Z [inf]  [ANTHROPIC-WRAPPER] Safety margin: 154,059 tokens remaining
+2025-10-29T22:32:58.008739079Z [inf]  10:32:58 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-29T22:33:02.837322406Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Now I can see the issue! Looking at the Meta-SySop chat implementation, the problem is in the **stre
+2025-10-29T22:33:03.079745890Z [inf]  10:33:03 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-29T22:33:03.726852819Z [inf]  [META-SYSOP-FORCE] === ITERATION 11 CHECK ===
+2025-10-29T22:33:03.726857092Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: updateTask
+2025-10-29T22:33:03.726860939Z [inf]  [META-SYSOP-CONTINUATION] ✅ Tools called - reset empty counter to 0
+2025-10-29T22:33:03.726865162Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T22:33:03.726868752Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-29T22:33:03.726872410Z [inf]  [META-SYSOP-FORCE] Iteration count: 11
+2025-10-29T22:33:03.726876116Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T22:33:03.726879727Z [inf]  [ANTHROPIC-WRAPPER] Original context size:
+2025-10-29T22:33:03.726885004Z [inf]    - System prompt: 10,375 tokens
+2025-10-29T22:33:03.726888718Z [inf]    - Messages: 33 messages, 10,962 tokens
+2025-10-29T22:33:03.726892861Z [inf]    - Total: 21,337 tokens
+2025-10-29T22:33:03.726896669Z [inf]    - Limit: 175,000 tokens (25,000K safety margin)
+2025-10-29T22:33:03.726900508Z [inf]  [ANTHROPIC-WRAPPER] ✅ Within limits (21,337 / 175,000 tokens)
+2025-10-29T22:33:03.726904286Z [inf]  [ANTHROPIC-WRAPPER] Safety margin: 153,663 tokens remaining
+2025-10-29T22:33:07.873250667Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Found the issue! The chat display system is using complex sections instead of smooth character-by-ch
+2025-10-29T22:33:07.873327941Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T22:33:08.147791080Z [inf]  10:33:08 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-29T22:33:13.227477231Z [inf]  10:33:13 PM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-29T22:33:17.888384447Z [inf]  10:33:17 PM [express] GET /api/platform/deployment-history 304 in 229ms :: {"success":true,"deploymen…
+2025-10-29T22:33:18.304953395Z [inf]  10:33:18 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-29T22:33:23.086148450Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T22:33:24.019262421Z [inf]  10:33:23 PM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-29T22:33:24.248143249Z [inf]  ✅ WebSocket client connected
+2025-10-29T22:33:24.300161206Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-29T22:33:28.820204935Z [inf]  10:33:28 PM [express] GET /api/meta-sysop/pending-changes 304 in 16ms :: {"success":true,"pendingChan…
+2025-10-29T22:33:33.852988877Z [inf]  10:33:33 PM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-29T22:33:38.141232006Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T22:33:38.861624854Z [inf]  10:33:38 PM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {"success":true,"pendingChang…
+2025-10-29T22:33:43.942270621Z [inf]  10:33:43 PM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {"success":true,"pendingChang…
+2025-10-29T22:33:47.849463015Z [inf]  10:33:47 PM [express] GET /api/platform/deployment-history 304 in 250ms :: {"success":true,"deploymen…
+2025-10-29T22:33:49.015558888Z [inf]  10:33:49 PM [express] GET /api/meta-sysop/pending-changes 304 in 18ms :: {"success":true,"pendingChan…
+2025-10-29T22:33:51.995072906Z [inf]  💀 Terminating dead WebSocket connection (user: admin)
+2025-10-29T22:33:51.995080886Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-29T22:33:52.838020285Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T22:33:54.076312947Z [inf]  10:33:54 PM [express] GET /api/meta-sysop/pending-changes 304 in 9ms :: {"success":true,"pendingChang…
+2025-10-29T22:33:59.143123623Z [inf]  10:33:59 PM [express] GET /api/meta-sysop/pending-changes 304 in 8ms :: {"success":true,"pendingChang…
+2025-10-29T22:34:04.209942206Z [inf]  10:34:04 PM [express] GET /api/meta-sysop/pending-changes 304 in 11ms :: {"success":true,"pendingChan…
+2025-10-29T22:34:08.044294038Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T22:34:09.283182951Z [inf]  10:34:09 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-29T22:34:14.339022515Z [inf]  10:34:14 PM [express] GET /api/meta-sysop/pending-changes 304 in 10ms :: {"success":true,"pendingChan…
+2025-10-29T22:34:18.243310324Z [inf]  10:34:18 PM [express] GET /api/platform/deployment-history 304 in 114ms :: {"success":true,"deploymen…
+2025-10-29T22:34:19.408916896Z [inf]  10:34:19 PM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-29T22:34:23.054923876Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T22:34:24.088549626Z [inf]  ✅ WebSocket client connected
+2025-10-29T22:34:24.088555103Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-29T22:34:44.258860574Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T22:34:52.220017968Z [inf]  💀 Terminating dead WebSocket connection (user: admin)
+2025-10-29T22:34:52.220023695Z [inf]  ❌ WebSocket client disconnected (user: admin)
+2025-10-29T22:34:52.572090319Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T22:35:12.571922238Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T22:35:12.571930015Z [inf]  10:35:09 PM [express] GET /api/meta-sysop/pending-changes 304 in 88ms :: {"success":true,"pendingChan…
+2025-10-29T22:35:22.566779545Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T22:35:27.629890386Z [inf]  [META-SYSOP-FORCE] === ITERATION 12 CHECK ===
+2025-10-29T22:35:27.629896338Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: writePlatformFile
+2025-10-29T22:35:27.629901252Z [inf]  [META-SYSOP-CONTINUATION] ✅ Tools called - reset empty counter to 0
+2025-10-29T22:35:27.630082781Z [inf]  [META-SYSOP] Writing file: client/src/components/meta-sysop-chat.tsx (40584 bytes)
+2025-10-29T22:35:27.630093831Z [inf]  [PLATFORM-WRITE] ✅ Content validated for client/src/components/meta-sysop-chat.tsx
+2025-10-29T22:35:27.630102218Z [inf]  [PLATFORM-WRITE] Content length: 40584 bytes
+2025-10-29T22:35:27.630108549Z [inf]  [PLATFORM-WRITE] Content type: string
+2025-10-29T22:35:27.630115427Z [inf]  [PLATFORM-WRITE] 📦 BATCH MODE - Will NOT auto-commit (commit manually later)
+2025-10-29T22:35:27.632177297Z [inf]  [PLATFORM-WRITE] 📦 Staged for batch commit: client/src/components/meta-sysop-chat.tsx
+2025-10-29T22:35:27.632181382Z [inf]  [META-SYSOP] ✅ File staged for batch commit: client/src/components/meta-sysop-chat.tsx
+2025-10-29T22:35:27.632186783Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T22:35:27.632191818Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-29T22:35:27.632197348Z [inf]  [META-SYSOP-FORCE] Iteration count: 12
+2025-10-29T22:35:27.632202459Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T22:35:27.632207734Z [inf]  [ANTHROPIC-WRAPPER] Original context size:
+2025-10-29T22:35:27.632213508Z [inf]    - System prompt: 10,375 tokens
+2025-10-29T22:35:27.632218863Z [inf]    - Messages: 35 messages, 11,090 tokens
+2025-10-29T22:35:27.632224382Z [inf]    - Total: 21,465 tokens
+2025-10-29T22:35:27.632229517Z [inf]    - Limit: 175,000 tokens (25,000K safety margin)
+2025-10-29T22:35:27.632235579Z [inf]  [ANTHROPIC-WRAPPER] ✅ Within limits (21,465 / 175,000 tokens)
+2025-10-29T22:35:27.632241408Z [inf]  [ANTHROPIC-WRAPPER] Safety margin: 153,535 tokens remaining
+2025-10-29T22:35:47.545995241Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T22:35:47.546005667Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Perfect! I've fixed the Meta-SySop chat to stream smoothly like Replit Agent. Here's what I changed:
+2025-10-29T22:35:47.546013409Z [inf]  [META-SYSOP-FORCE] === ITERATION 13 CHECK ===
+2025-10-29T22:35:47.546020304Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: updateTask
+2025-10-29T22:35:47.546026466Z [inf]  [META-SYSOP-CONTINUATION] ✅ Tools called - reset empty counter to 0
+2025-10-29T22:35:47.546033197Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T22:35:47.546039287Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-29T22:35:47.546046998Z [inf]  [META-SYSOP-FORCE] Iteration count: 13
+2025-10-29T22:35:47.546076527Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T22:35:47.546082926Z [inf]  [ANTHROPIC-WRAPPER] Original context size:
+2025-10-29T22:35:47.546089551Z [inf]    - System prompt: 10,375 tokens
+2025-10-29T22:35:47.546096033Z [inf]    - Messages: 37 messages, 12,100 tokens
+2025-10-29T22:35:47.546102069Z [inf]    - Total: 22,475 tokens
+2025-10-29T22:35:47.546108082Z [inf]    - Limit: 175,000 tokens (25,000K safety margin)
+2025-10-29T22:35:47.546114443Z [inf]  [ANTHROPIC-WRAPPER] ✅ Within limits (22,475 / 175,000 tokens)
+2025-10-29T22:35:47.546120641Z [inf]  [ANTHROPIC-WRAPPER] Safety margin: 152,525 tokens remaining
+2025-10-29T22:35:47.546127897Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Now let me commit these changes to GitHub and deploy the smooth communication fix:Now let me commit 
+2025-10-29T22:35:50.320440684Z [inf]  [META-SYSOP-FORCE] === ITERATION 14 CHECK ===
+2025-10-29T22:35:50.320446406Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: commit_to_github
+2025-10-29T22:35:50.320966859Z [inf]  [META-SYSOP-CONTINUATION] ✅ Tools called - reset empty counter to 0
+2025-10-29T22:35:50.320976084Z [inf]  [META-SYSOP] Committing 1 files via GitHub API (works on Railway)
+2025-10-29T22:35:50.320983162Z [inf]  [GITHUB-SERVICE] Committing 1 file(s) (attempt 1/3)
+2025-10-29T22:35:50.320989317Z [inf]  [GITHUB-SERVICE] Latest commit: b9f9a05c230683e411ff4d38120100ad7149b363
+2025-10-29T22:35:50.340002800Z [inf]  [GITHUB-SERVICE] Content length: 40584 bytes
+2025-10-29T22:35:50.340013480Z [inf]  [GITHUB-SERVICE] ✅ Content validated for client/src/components/meta-sysop-chat.tsx
+2025-10-29T22:35:50.340096158Z [inf]  [GITHUB-SERVICE] Processing file 1/1: client/src/components/meta-sysop-chat.tsx
+2025-10-29T22:35:50.340100732Z [inf]  [GITHUB-SERVICE] Operation: modify
+2025-10-29T22:35:50.340105179Z [inf]  [GITHUB-SERVICE] Content type: string
+2025-10-29T22:35:50.340109288Z [inf]  [GITHUB-SERVICE] Content defined: true
+2025-10-29T22:35:51.314964306Z [inf]    - Limit: 175,000 tokens (25,000K safety margin)
+2025-10-29T22:35:51.314970622Z [inf]  [ANTHROPIC-WRAPPER] ✅ Within limits (22,585 / 175,000 tokens)
+2025-10-29T22:35:51.314976546Z [inf]  [ANTHROPIC-WRAPPER] Safety margin: 152,415 tokens remaining
+2025-10-29T22:35:51.314978901Z [inf]  [GITHUB-SERVICE] ✅ Successfully committed 1 file(s)
+2025-10-29T22:35:51.314985856Z [inf]  [GITHUB-SERVICE] URL: https://github.com/6-7Development/archetype/commit/1cd0bcdd37efb8747e1c2f9d916cfff9f5a2c817
+2025-10-29T22:35:51.314987261Z [inf]  [GITHUB-SERVICE] Commit: 1cd0bcdd37efb8747e1c2f9d916cfff9f5a2c817
+2025-10-29T22:35:51.314987420Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T22:35:51.314997704Z [inf]  [META-SYSOP] ✅ Cleared fileChanges after successful GitHub API commit
+2025-10-29T22:35:51.314999067Z [inf]  [ANTHROPIC-WRAPPER] Original context size:
+2025-10-29T22:35:51.315008183Z [inf]    - System prompt: 10,375 tokens
+2025-10-29T22:35:51.315008452Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T22:35:51.315014579Z [inf]    - Messages: 39 messages, 12,210 tokens
+2025-10-29T22:35:51.315017414Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-29T22:35:51.315020507Z [inf]    - Total: 22,585 tokens
+2025-10-29T22:35:51.315025808Z [inf]  [META-SYSOP-FORCE] Iteration count: 14
+2025-10-29T22:35:52.570892053Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T22:36:12.566729249Z [inf]  [META-SYSOP-FORCE] === ITERATION 15 CHECK ===
+2025-10-29T22:36:12.566740965Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: NONE
+2025-10-29T22:36:12.566747927Z [inf]  [ANTHROPIC-WRAPPER] ✅ Within limits (23,359 / 175,000 tokens)
+2025-10-29T22:36:12.566748907Z [inf]  [META-SYSOP-CONTINUATION] Iteration 15: No tool calls, checking if should continue...
+2025-10-29T22:36:12.566755499Z [inf]  [META-SYSOP-CONTINUATION] Active task list ID: e96095f4-df29-470e-95f6-cbbf239e122d
+2025-10-29T22:36:12.566762696Z [inf]  [META-SYSOP-CONTINUATION] Consecutive empty iterations: 1/3
+2025-10-29T22:36:12.566764901Z [inf]  [ANTHROPIC-WRAPPER] Safety margin: 151,641 tokens remaining
+2025-10-29T22:36:12.566771559Z [inf]  [META-SYSOP-CONTINUATION] Task list read success: true
+2025-10-29T22:36:12.566774163Z [inf]  [META-SYSOP-FORCE] === ITERATION 16 CHECK ===
+2025-10-29T22:36:12.566780762Z [inf]  [META-SYSOP-CONTINUATION] Task lists found: 82
+2025-10-29T22:36:12.566782246Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: NONE
+2025-10-29T22:36:12.566790747Z [inf]  [META-SYSOP-CONTINUATION] Session task list found: true
+2025-10-29T22:36:12.566791298Z [inf]  [META-SYSOP-CONTINUATION] Iteration 16: No tool calls, checking if should continue...
+2025-10-29T22:36:12.566799432Z [inf]  [META-SYSOP-CONTINUATION] Tasks: 5
+2025-10-29T22:36:12.566806511Z [inf]  [META-SYSOP-CONTINUATION] Completed: 0, In-progress: 0, Pending: 5
+2025-10-29T22:36:12.566812034Z [inf]  [META-SYSOP-CONTINUATION] ✅ Continuing naturally - incomplete tasks remain
+2025-10-29T22:36:12.566817380Z [inf]  [ANTHROPIC-WRAPPER] Original context size:
+2025-10-29T22:36:12.566823457Z [inf]    - System prompt: 10,375 tokens
+2025-10-29T22:36:12.566828438Z [inf]    - Messages: 40 messages, 12,984 tokens
+2025-10-29T22:36:12.566833580Z [inf]    - Total: 23,359 tokens
+2025-10-29T22:36:12.566840890Z [inf]    - Limit: 175,000 tokens (25,000K safety margin)
+2025-10-29T22:36:12.568389587Z [inf]  [META-SYSOP-CONTINUATION] Active task list ID: e96095f4-df29-470e-95f6-cbbf239e122d
+2025-10-29T22:36:12.568394706Z [inf]  [META-SYSOP-CONTINUATION] Consecutive empty iterations: 2/3
+2025-10-29T22:36:12.568398910Z [inf]  [META-SYSOP-CONTINUATION] Task list read success: true
+2025-10-29T22:36:12.568403305Z [inf]  [META-SYSOP-CONTINUATION] Task lists found: 82
+2025-10-29T22:36:12.568411395Z [inf]  [META-SYSOP-CONTINUATION] Session task list found: true
+2025-10-29T22:36:12.568415342Z [inf]  [META-SYSOP-CONTINUATION] Tasks: 5
+2025-10-29T22:36:12.568419371Z [inf]  [META-SYSOP-CONTINUATION] Completed: 0, In-progress: 0, Pending: 5
+2025-10-29T22:36:12.568423247Z [inf]  [META-SYSOP-CONTINUATION] ✅ Continuing naturally - incomplete tasks remain
+2025-10-29T22:36:12.568427308Z [inf]  [ANTHROPIC-WRAPPER] Original context size:
+2025-10-29T22:36:12.568432953Z [inf]    - System prompt: 10,375 tokens
+2025-10-29T22:36:12.568438252Z [inf]    - Messages: 41 messages, 12,984 tokens
+2025-10-29T22:36:12.568442678Z [inf]    - Total: 23,359 tokens
+2025-10-29T22:36:12.568450759Z [inf]    - Limit: 175,000 tokens (25,000K safety margin)
+2025-10-29T22:36:12.568481559Z [inf]  [ANTHROPIC-WRAPPER] ✅ Within limits (23,359 / 175,000 tokens)
+2025-10-29T22:36:12.568486327Z [inf]  [ANTHROPIC-WRAPPER] Safety margin: 151,641 tokens remaining
+2025-10-29T22:36:12.568490710Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T22:36:12.568494763Z [inf]  [META-SYSOP-FORCE] === ITERATION 17 CHECK ===
+2025-10-29T22:36:12.568498998Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: NONE
+2025-10-29T22:36:12.568503656Z [inf]  [META-SYSOP-CONTINUATION] Iteration 17: No tool calls, checking if should continue...
+2025-10-29T22:36:12.568508218Z [inf]  [META-SYSOP-CONTINUATION] Active task list ID: e96095f4-df29-470e-95f6-cbbf239e122d
+2025-10-29T22:36:12.568512511Z [inf]  [META-SYSOP-CONTINUATION] Consecutive empty iterations: 3/3
+2025-10-29T22:36:12.570665286Z [inf]  10:36:09 PM [express] POST /api/meta-sysop/stream 200 in 242376ms
+2025-10-29T22:36:12.570681205Z [inf]  [META-SYSOP-CONTINUATION] 🛑 STOPPING - 3 consecutive iterations without tool calls (infinite loop detected)
+2025-10-29T22:36:12.570685620Z [inf]  [META-SYSOP-CLEANUP] Safety passed - checking task list e96095f4-df29-470e-95f6-cbbf239e122d for incomplete tasks...
+2025-10-29T22:36:12.570689719Z [inf]  [META-SYSOP-CLEANUP] ℹ️ No stuck tasks. Status: 0 completed, 5 pending - no cleanup needed
+2025-10-29T22:36:12.570694058Z [inf]  [META-SYSOP] ℹ️ Skipping fallback commit - already committed via GitHub API
+2025-10-29T22:36:12.570698829Z [inf]  [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: Meta-SySop chat: The chat display the way meta sysop talks to me and users should be smooth constant chat communicati - success
+2025-10-29T22:36:12.570703156Z [inf]  [META-SYSOP-HEARTBEAT] Cleared on stream end
+2025-10-29T22:37:23.000000000Z [inf]  Stopping Container
