@@ -10,6 +10,7 @@ import { consultArchitect } from '../tools/architect-consult';
 import { executeWebSearch } from '../tools/web-search';
 import { GitHubService } from '../githubService';
 import { createTaskList, updateTask, readTaskList } from '../tools/task-management';
+import { platformValidator } from '../platformValidator';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -156,8 +157,14 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
    → **Output text**: Confirm each file written
    → Update tasks to "completed" as you finish each one
 
-5️⃣ AUTO-DEPLOY TO PRODUCTION
-   → **Output text**: "Changes complete! Committing to GitHub for deployment..."
+5️⃣ VALIDATE & DEPLOY (LIKE REPLIT AGENT 3)
+   → **Output text**: "All changes complete! Now validating code safety..."
+   → System automatically validates:
+     • TypeScript syntax and type checking
+     • Build integrity (ensures platform won't crash)
+     • Critical file safety checks
+   → If validation fails: Changes are automatically rolled back
+   → If validation passes: **Output text**: "✅ Validation passed! Deploying to production..."
    → Call commit_to_github() with detailed commit message
    → **Output text**: "✅ Deployed! Changes will be live in 2-3 minutes."
    → Mark all tasks "completed"
@@ -174,10 +181,11 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
   • ALWAYS create task list FIRST (users watch progress live)
   • ALWAYS consult I AM before writing any file
   • ALWAYS update tasks as you work
-  • ALWAYS commit when done (auto-deploys to production)
+  • BATCH all file changes, then commit ONCE (like Replit Agent 3)
   • ALWAYS narrate your progress so users know what's happening
   • Make minimal, surgical changes
   • Read files before modifying them
+  • Trust the automatic validation system (it ensures platform won't crash)
 
 ❌ DO NOT:
   • Silently call tools without text output (users will think you're stuck!)
@@ -679,19 +687,73 @@ Now execute the workflow autonomously - NARRATE your progress as you create task
       }
     }
 
-    // Safety check
-    sendEvent('progress', { message: 'Running safety checks...' });
+    // CRITICAL: Validate all changes before committing (like Replit Agent 3)
+    if (fileChanges.length > 0) {
+      sendEvent('progress', { message: '🔍 Validating changes...' });
+      fullContent += '\n\n🔍 **Validating changes before commit...**\n\n';
+      sendEvent('content', { content: '\n\n🔍 **Validating changes before commit...**\n\n' });
+
+      const changedFilePaths = fileChanges.map(f => f.path);
+      const validationResult = await platformValidator.validateChanges(changedFilePaths);
+
+      // Show validation results
+      if (validationResult.warnings.length > 0) {
+        const warningText = `⚠️ Warnings:\n${validationResult.warnings.map(w => `  - ${w}`).join('\n')}\n\n`;
+        fullContent += warningText;
+        sendEvent('content', { content: warningText });
+      }
+
+      if (!validationResult.success) {
+        const errorText = `❌ **VALIDATION FAILED** - Platform stability check failed!\n\nErrors found:\n${validationResult.errors.map(e => `  - ${e}`).join('\n')}\n\n🔄 Rolling back changes...`;
+        fullContent += errorText;
+        sendEvent('content', { content: errorText });
+
+        // Rollback changes
+        if (backup?.id) {
+          await platformHealing.rollback(backup.id);
+          sendEvent('error', {
+            message: 'Validation failed. Changes rolled back to prevent platform crash.'
+          });
+        }
+
+        // Save error message
+        const [errorMsg] = await db
+          .insert(chatMessages)
+          .values({
+            userId,
+            projectId: null,
+            fileId: null,
+            role: 'assistant',
+            content: fullContent,
+            isPlatformHealing: true,
+          })
+          .returning();
+
+        sendEvent('done', { messageId: errorMsg.id });
+        res.end();
+        return;
+      }
+
+      // Validation passed
+      const successText = '✅ **Validation passed!** Code is safe to deploy.\n\n';
+      fullContent += successText;
+      sendEvent('content', { content: successText });
+      sendEvent('progress', { message: '✅ Validation passed!' });
+    }
+
+    // Legacy safety check
+    sendEvent('progress', { message: 'Running final safety checks...' });
     const safety = await platformHealing.validateSafety();
-    
+
     if (!safety.safe) {
       if (backup?.id) {
         await platformHealing.rollback(backup.id);
-        sendEvent('error', { 
-          message: `Safety check failed: ${safety.issues.join(', ')}. Changes rolled back.` 
+        sendEvent('error', {
+          message: `Safety check failed: ${safety.issues.join(', ')}. Changes rolled back.`
         });
       } else {
-        sendEvent('error', { 
-          message: `Safety check failed: ${safety.issues.join(', ')}. No backup available to rollback.` 
+        sendEvent('error', {
+          message: `Safety check failed: ${safety.issues.join(', ')}. No backup available to rollback.`
         });
       }
       res.end();

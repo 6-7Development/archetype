@@ -11,6 +11,7 @@ import { getGitHubService } from '../githubService';
 import { createTaskList, updateTask, readTaskList } from '../tools/task-management';
 import { performDiagnosis } from '../tools/diagnosis';
 import { startSubagent } from '../subagentOrchestration';
+import { platformValidator } from '../platformValidator';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { storage } from '../storage';
@@ -1101,8 +1102,38 @@ When doing work:
       }
     }
 
-    // Safety check
-    broadcast(userId, jobId, 'job_progress', { message: 'Running safety checks...' });
+    // CRITICAL: Validate all changes before committing (like Replit Agent 3)
+    if (fileChanges.length > 0) {
+      broadcast(userId, jobId, 'job_progress', { message: '🔍 Validating changes...' });
+      fullContent += '\n\n🔍 **Validating changes before commit...**\n\n';
+
+      const changedFilePaths = fileChanges.map(f => f.path);
+      const validationResult = await platformValidator.validateChanges(changedFilePaths);
+
+      // Show validation results
+      if (validationResult.warnings.length > 0) {
+        const warningText = `⚠️ Warnings:\n${validationResult.warnings.map(w => `  - ${w}`).join('\n')}\n\n`;
+        fullContent += warningText;
+        broadcast(userId, jobId, 'job_content', { content: warningText });
+      }
+
+      if (!validationResult.success) {
+        const errorText = `❌ **VALIDATION FAILED** - Platform stability check failed!\n\nErrors found:\n${validationResult.errors.map(e => `  - ${e}`).join('\n')}\n\n`;
+        fullContent += errorText;
+        broadcast(userId, jobId, 'job_content', { content: errorText });
+
+        throw new Error(`Validation failed: ${validationResult.errors.join('; ')}`);
+      }
+
+      // Validation passed
+      const successText = '✅ **Validation passed!** Code is safe to deploy.\n\n';
+      fullContent += successText;
+      broadcast(userId, jobId, 'job_content', { content: successText });
+      broadcast(userId, jobId, 'job_progress', { message: '✅ Validation passed!' });
+    }
+
+    // Legacy safety check
+    broadcast(userId, jobId, 'job_progress', { message: 'Running final safety checks...' });
     const safety = await platformHealing.validateSafety();
 
     if (!safety.safe) {
