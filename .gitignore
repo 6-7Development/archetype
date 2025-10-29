@@ -13,3 +13,4 @@ vite.config.ts.*
 *.tar.gz
 *.zip
 *.tar.gz
+.github/workflows/
