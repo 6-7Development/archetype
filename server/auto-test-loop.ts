@@ -74,12 +74,12 @@ async function runBrowserTest(projectUrl: string): Promise<{ passed: boolean; de
 4. [Browser] Test basic user interactions (clicks, form inputs if present)
 5. [Verify] Ensure no console errors in browser
       `.trim(),
-    });
+    } as any);
     
     return {
-      passed: !result.error && !result.issues?.length,
-      details: result.summary || 'Browser test completed',
-      issues: result.issues,
+      passed: !result.error && !(result as any).issues?.length,
+      details: (result as any).summary || 'Browser test completed',
+      issues: (result as any).issues,
     };
   } catch (error: any) {
     return {
@@ -175,9 +175,11 @@ export async function runAutoTestLoop(
       const { consultArchitect } = await import('./tools/architect-consult');
       
       await consultArchitect({
-        query: `Code generation completed but tests are failing after ${MAX_RETRY_ATTEMPTS} attempts. Issues found: ${lastResult?.issues?.join(', ')}. Please review the implementation and provide guidance.`,
-        codeContext: files.map(f => `${f.filename}: ${f.content.substring(0, 500)}...`).join('\n\n'),
-      });
+        problem: `Code generation completed but tests are failing after ${MAX_RETRY_ATTEMPTS} attempts. Issues found: ${lastResult?.issues?.join(', ')}. Please review the implementation and provide guidance.`,
+        context: files.map(f => `${f.filename}: ${f.content.substring(0, 500)}...`).join('\n\n'),
+        previousAttempts: [],
+        codeSnapshot: '',
+      } as any);
       
       if (onProgress) {
         onProgress(`✅ Architect consultation complete - check recommendations`);
