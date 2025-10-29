@@ -1074,7 +1074,7 @@ Answer naturally. If it's work, do it and report when done. If it's a question, 
     const fileChanges: Array<{ path: string; operation: string; contentAfter?: string }> = [];
     let continueLoop = true;
     let iterationCount = 0;
-    const MAX_ITERATIONS = 25; // 🔥 Increased from 5 - Replit Agent runs 20+ iterations for complex work
+    const MAX_ITERATIONS = 10; // 🎯 Reduced from 25 - most tasks should complete in 5-10 iterations
     let commitSuccessful = false; // Track if commit_to_github succeeded
     let usedGitHubAPI = false; // Track if commit_to_github tool was used (already pushes via API)
     let consecutiveEmptyIterations = 0; // Track iterations with no tool calls
@@ -2025,6 +2025,14 @@ Answer naturally. If it's work, do it and report when done. If it's a question, 
           continueLoop = false;
         }
       }
+    }
+
+    // 🚨 NOTIFY USER IF HIT ITERATION LIMIT
+    if (iterationCount >= MAX_ITERATIONS) {
+      const warningMsg = `\n\n⚠️ Stopped after ${MAX_ITERATIONS} iterations. This usually means I got stuck in a loop. The work might be incomplete - please check what I did and let me know if you need me to continue.`;
+      sendEvent('content', { content: warningMsg });
+      fullContent += warningMsg;
+      console.warn(`[META-SYSOP] ⚠️ Hit MAX_ITERATIONS (${MAX_ITERATIONS}) - possible infinite loop`);
     }
 
     // Safety check
