@@ -265,11 +265,21 @@ export class PlatformHealingService {
 
   async readPlatformFile(filePath: string): Promise<string> {
     try {
+      // Handle absolute paths - normalize to relative if within workspace
+      let pathToRead = filePath;
       if (path.isAbsolute(filePath)) {
-        throw new Error('Absolute paths are not allowed');
+        // Check if absolute path is within our workspace
+        if (filePath.startsWith(this.PROJECT_ROOT + path.sep) || filePath === this.PROJECT_ROOT) {
+          // Strip PROJECT_ROOT to convert to relative path
+          pathToRead = path.relative(this.PROJECT_ROOT, filePath);
+          console.log(`[PLATFORM-READ] 🔧 Normalized absolute path: ${filePath} → ${pathToRead}`);
+        } else {
+          // Absolute path outside workspace - reject for security
+          throw new Error('Absolute paths outside workspace are not allowed');
+        }
       }
       
-      const fullPath = path.resolve(this.PROJECT_ROOT, filePath);
+      const fullPath = path.resolve(this.PROJECT_ROOT, pathToRead);
       
       if (!fullPath.startsWith(this.PROJECT_ROOT + path.sep) && fullPath !== this.PROJECT_ROOT) {
         throw new Error('Invalid file path - path traversal detected');
@@ -280,18 +290,35 @@ export class PlatformHealingService {
         const content = await fs.readFile(fullPath, 'utf-8');
         return content;
       } catch (fsError: any) {
-        // In production, if file is in client/ (source files), fetch from GitHub
-        if (process.env.NODE_ENV === 'production' && filePath.startsWith('client/')) {
-          console.log(`[PLATFORM-READ] 🔄 Source file not in production build, fetching from GitHub: ${filePath}`);
-          
-          if (!isGitHubServiceAvailable()) {
-            throw new Error(`File not found in production build and GitHub service not available: ${filePath}`);
+        // In production, handle missing source files
+        if (process.env.NODE_ENV === 'production') {
+          // Client source files - fetch from GitHub
+          if (pathToRead.startsWith('client/')) {
+            console.log(`[PLATFORM-READ] 🔄 Source file not in production build, fetching from GitHub: ${pathToRead}`);
+            
+            if (!isGitHubServiceAvailable()) {
+              throw new Error(`File not found in production build and GitHub service not available: ${pathToRead}`);
+            }
+            
+            const githubService = getGitHubService();
+            const content = await githubService.getFileContent(pathToRead);
+            console.log(`[PLATFORM-READ] ✅ Fetched ${pathToRead} from GitHub (${content.length} bytes)`);
+            return content;
           }
           
-          const githubService = getGitHubService();
-          const content = await githubService.getFileContent(filePath);
-          console.log(`[PLATFORM-READ] ✅ Fetched ${filePath} from GitHub (${content.length} bytes)`);
-          return content;
+          // Server TypeScript source files - compiled to dist/, fetch from GitHub
+          if (pathToRead.startsWith('server/') && pathToRead.endsWith('.ts')) {
+            console.log(`[PLATFORM-READ] 🔄 Server source file not in production build, fetching from GitHub: ${pathToRead}`);
+            
+            if (!isGitHubServiceAvailable()) {
+              throw new Error(`Server file not found in production build and GitHub service not available: ${pathToRead}`);
+            }
+            
+            const githubService = getGitHubService();
+            const content = await githubService.getFileContent(pathToRead);
+            console.log(`[PLATFORM-READ] ✅ Fetched ${pathToRead} from GitHub (${content.length} bytes)`);
+            return content;
+          }
         }
         
         // Otherwise, throw the original error

@@ -29,7 +29,7 @@ export interface DiagnosisResult {
 
 /**
  * Sanitize file path to prevent path traversal and command injection
- * @param filePath - The file path to sanitize (must be relative)
+ * @param filePath - The file path to sanitize (absolute or relative)
  * @returns Sanitized relative path or null if invalid
  */
 function sanitizeFilePath(filePath: string): string | null {
@@ -39,41 +39,52 @@ function sanitizeFilePath(filePath: string): string | null {
     return null;
   }
   
-  // Reject absolute paths - only accept relative paths
+  const projectRoot = process.cwd();
+  
+  // Handle absolute paths - normalize to relative if within workspace
+  let pathToValidate = filePath;
   if (path.isAbsolute(filePath)) {
-    console.warn(`🚨 SECURITY: Rejected absolute path: ${filePath}`);
-    return null;
+    // Check if absolute path is within our workspace
+    if (filePath.startsWith(projectRoot + path.sep) || filePath === projectRoot) {
+      // Strip PROJECT_ROOT to convert to relative path
+      pathToValidate = path.relative(projectRoot, filePath);
+      console.log(`🔧 NORMALIZED: Absolute path ${filePath} → ${pathToValidate}`);
+    } else {
+      // Absolute path outside workspace - reject for security
+      console.warn(`🚨 SECURITY: Rejected absolute path outside workspace: ${filePath}`);
+      return null;
+    }
   }
   
   // Reject path traversal attempts (..) - CRITICAL security check
-  if (filePath.includes('..')) {
-    console.warn(`🚨 SECURITY: Rejected path traversal: ${filePath}`);
+  if (pathToValidate.includes('..')) {
+    console.warn(`🚨 SECURITY: Rejected path traversal: ${pathToValidate}`);
     return null;
   }
   
   // Reject paths with shell metacharacters or dangerous characters
   // Allow normal spaces, dashes, dots, slashes, and underscores in filenames
   // Block shell injection characters: ; & | ` $ ( ) { } [ ] < > " ' and dangerous whitespace
-  if (/[;&|`$(){}[\]<>"\t\n\r]/.test(filePath)) {
-    console.warn(`🚨 SECURITY: Rejected unsafe file path with shell metacharacters: ${filePath}`);
+  if (/[;&|`$(){}[\]<>"\t\n\r]/.test(pathToValidate)) {
+    console.warn(`🚨 SECURITY: Rejected unsafe file path with shell metacharacters: ${pathToValidate}`);
     return null;
   }
   
   // Normalize the path
-  const normalized = path.normalize(filePath);
+  const normalized = path.normalize(pathToValidate);
   
   // Resolve to absolute for validation
-  const resolved = path.resolve(process.cwd(), normalized);
-  const workspaceRoot = process.cwd() + path.sep;
+  const resolved = path.resolve(projectRoot, normalized);
+  const workspaceRoot = projectRoot + path.sep;
   
   // Ensure it's within the workspace
-  if (!resolved.startsWith(workspaceRoot) && resolved !== process.cwd()) {
-    console.warn(`🚨 SECURITY: Rejected path outside workspace: ${filePath} -> ${resolved}`);
+  if (!resolved.startsWith(workspaceRoot) && resolved !== projectRoot) {
+    console.warn(`🚨 SECURITY: Rejected path outside workspace: ${pathToValidate} -> ${resolved}`);
     return null;
   }
   
   // Get relative path for return
-  const relativePath = path.relative(process.cwd(), resolved);
+  const relativePath = path.relative(projectRoot, resolved);
   
   // Additional safety: Only block the most critical sensitive files
   // More permissive to allow normal diagnosis of platform code
