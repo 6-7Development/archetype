@@ -14,6 +14,8 @@ import { performDiagnosis } from '../tools/diagnosis';
 import { startSubagent } from '../subagentOrchestration';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { createSafeAnthropicRequest, logTruncationResults } from '../lib/anthropic-wrapper';
+import { sanitizeDiagnosisForAI } from '../lib/diagnosis-sanitizer';
 
 const router = Router();
 
@@ -2075,11 +2077,28 @@ Be conversational, be helpful, and only work when asked!`;
         ? systemPrompt + platformKnowledge + memorySummary + deploymentAwareness
         : systemPrompt;
 
+      // 🛡️ ANTHROPIC CONTEXT-LIMIT PROTECTION: Prevent 400 errors from exceeding 200K token limit
+      // This wrapper truncates context if needed while preserving recent messages
+      const { messages: safeMessages, systemPrompt: safeSystemPrompt, estimatedTokens, truncated, originalTokens, removedMessages } = 
+        createSafeAnthropicRequest(conversationMessages, finalSystemPrompt);
+      
+      // Log truncation results for monitoring (only on first iteration)
+      if (iterationCount === 1) {
+        logTruncationResults({ 
+          messages: safeMessages, 
+          systemPrompt: safeSystemPrompt, 
+          estimatedTokens, 
+          truncated,
+          removedMessages,
+          originalTokens // ✅ Use accurate original tokens from wrapper
+        });
+      }
+
       const stream = await client.messages.create({
         model: 'claude-opus-4-20250514', // 🔥 OPUS 4.1 - What Replit Agent uses for complex tasks
         max_tokens: config.maxTokens, // Use autonomy level's max_tokens
-        system: finalSystemPrompt,
-        messages: conversationMessages,
+        system: safeSystemPrompt, // ✅ Use truncated system prompt
+        messages: safeMessages, // ✅ Use truncated messages
         tools: availableTools,
         stream: true, // ✅ Required for Opus 4.1 (long operations)
       });
@@ -2741,9 +2760,12 @@ Be conversational, be helpful, and only work when asked!`;
                 });
 
                 if (diagnosisResult.success) {
-                  // Format findings nicely
-                  const findingsList = diagnosisResult.findings
-                    .map((f, idx) => 
+                  // 🛡️ SANITIZE DIAGNOSIS: Reduce token consumption from large reports
+                  const sanitizedResult = sanitizeDiagnosisForAI(diagnosisResult as any);
+                  
+                  // Format findings nicely (using sanitized data)
+                  const findingsList = (sanitizedResult.findings || diagnosisResult.findings)
+                    .map((f: any, idx: number) => 
                       `${idx + 1}. [${f.severity.toUpperCase()}] ${f.category}\n` +
                       `   Issue: ${f.issue}\n` +
                       `   Location: ${f.location}\n` +
@@ -2752,9 +2774,9 @@ Be conversational, be helpful, and only work when asked!`;
                     .join('\n\n');
 
                   toolResult = `✅ Diagnosis Complete\n\n` +
-                    `${diagnosisResult.summary}\n\n` +
+                    `${sanitizedResult.summary || diagnosisResult.summary}\n\n` +
                     `Findings:\n${findingsList || 'No issues found'}\n\n` +
-                    `Recommendations:\n${diagnosisResult.recommendations.map((r, i) => `${i + 1}. ${r}`).join('\n')}`;
+                    `Recommendations:\n${(sanitizedResult.recommendations || diagnosisResult.recommendations).map((r: string, i: number) => `${i + 1}. ${r}`).join('\n')}`;
                   
                   sendEvent('progress', { message: `✅ Found ${diagnosisResult.findings.length} issues` });
                 } else {
