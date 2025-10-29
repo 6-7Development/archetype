@@ -537,7 +537,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                     // Add error to the message
                     setMessages(prev => prev.map(msg => 
                       msg.id === assistantMsgId
-                        ? { ...msg, content: `❌ Error: ${data.message}`, isStreaming: false }
+                        ? { ...msg, content: msg.content + `\n\n❌ Error: ${data.message}`, isStreaming: false }
                         : msg
                     ));
                     
@@ -700,18 +700,25 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {/* Render sections if available */}
-                      {message.sections && message.sections.length > 0 ? (
+                      {/* CRITICAL FIX: Always show content if it exists, regardless of sections */}
+                      {message.content && (
+                        <div className="px-4 py-3 bg-muted text-foreground border border-border rounded-lg">
+                          <MarkdownRenderer content={message.content} />
+                          {message.isStreaming && (
+                            <span className="inline-block w-1 h-4 bg-primary animate-pulse ml-0.5" />
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Render sections separately (after content) */}
+                      {message.sections && message.sections.length > 0 && (
                         message.sections.map((section) => (
                           <CollapsibleSection key={section.id} section={section} />
                         ))
-                      ) : message.content ? (
-                        // Fallback to plain content
-                        <div className="px-4 py-3 bg-muted text-foreground border border-border rounded-lg">
-                          <MarkdownRenderer content={message.content} />
-                        </div>
-                      ) : message.isStreaming ? (
-                        // Show streaming indicator while no content yet
+                      )}
+                      
+                      {/* Show streaming indicator if no content yet */}
+                      {!message.content && message.isStreaming && (
                         <div className="px-4 py-3 bg-muted text-foreground border border-border rounded-lg">
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
@@ -719,7 +726,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                             <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
                           </div>
                         </div>
-                      ) : null}
+                      )}
                     </div>
                   )}
                 </div>
