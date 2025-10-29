@@ -1133,26 +1133,61 @@ ${projectId ? `
 - Use platform file tools (readPlatformFile, writePlatformFile, etc.)
 - BATCH ALL FILE CHANGES then commit ONCE via commit_to_github()
 
-⚠️ **CRITICAL - BATCH COMMITS:**
-writePlatformFile() now uses BATCH MODE - files are staged, NOT immediately committed.
+⚠️ ⚠️ ⚠️ **CRITICAL - MANDATORY WORKFLOW ORDER** ⚠️ ⚠️ ⚠️
 
-**Workflow:**
-1. Call writePlatformFile() for ALL files you need to modify (they stage automatically)
-2. When ALL files are ready, call commit_to_github() ONCE with descriptive message
-3. Railway auto-deploys = ONE deployment instead of flooding with 10+ deployments
+**YOU MUST FOLLOW THIS EXACT SEQUENCE - NO EXCEPTIONS:**
 
-**Example:**
-✅ CORRECT:
-  - writePlatformFile("server/routes.ts", content) → Staged (1/3 files)
-  - writePlatformFile("client/App.tsx", content) → Staged (2/3 files)
-  - writePlatformFile("shared/types.ts", content) → Staged (3/3 files)
-  - commit_to_github("Fix user authentication bugs") → All 3 files committed in ONE commit
+**PHASE 1: PLANNING (ALWAYS FIRST!)**
+1. Create task list via createTaskList() - MANDATORY for all work requests
+2. Brief acknowledgment to user (1 sentence)
 
-❌ WRONG (OLD BEHAVIOR - DON'T DO THIS):
-  - writePlatformFile("server/routes.ts", content) → Commit #1
-  - writePlatformFile("client/App.tsx", content) → Commit #2  
-  - writePlatformFile("shared/types.ts", content) → Commit #3
-  (Creates 3 separate commits = 3 Railway deployments = floods the system!)
+**PHASE 2: UNDERSTANDING (READ BEFORE WRITING!)**
+3. Read ALL relevant files via readPlatformFile()
+4. Understand current implementation and dependencies
+5. Check related files that might be affected
+
+**PHASE 3: IMPLEMENTATION (MAKE ALL CHANGES)**
+6. Write ALL modified files via writePlatformFile() - files are STAGED, not committed
+7. Update tasks as you complete each one via updateTask()
+8. Verify all changes are complete
+
+**PHASE 4: COMMIT (ONLY AT THE END!)**
+9. Call commit_to_github() ONCE with all staged files
+10. Railway auto-deploys your changes
+
+**Example: "Add upload button to chat"**
+
+✅ **CORRECT WORKFLOW:**
+\`\`\`
+1. createTaskList([
+     "Read existing chat component files",
+     "Add file upload UI to chat interface", 
+     "Add file attachment handler",
+     "Test upload functionality",
+     "Commit all changes"
+   ])
+2. "I'll add an upload button to the Meta-SySop chat interface."
+3. readPlatformFile("client/src/components/meta-sysop-chat.tsx")
+4. readPlatformFile("server/routes/metaSysopChat.ts")  
+5. writePlatformFile("client/src/components/meta-sysop-chat.tsx", ...) → STAGED
+6. writePlatformFile("server/routes/metaSysopChat.ts", ...) → STAGED
+7. updateTask(taskId, "completed")
+8. commit_to_github("Add file upload button to Meta-SySop chat") → COMMITS ALL
+\`\`\`
+
+❌ **WRONG - DON'T DO THIS:**
+\`\`\`
+1. "I'll add the upload button now..."
+2. writePlatformFile("client/src/components/meta-sysop-chat.tsx", ...)
+3. commit_to_github("Add upload button") ← TOO EARLY! Didn't read files first!
+(Results in: Broken code, missing dependencies, incomplete feature)
+\`\`\`
+
+🚨 **NEVER commit_to_github() until:**
+- ✅ You've read all relevant files
+- ✅ You've written ALL necessary changes
+- ✅ You've updated all affected components
+- ✅ All tasks are marked complete
 
 Your commits will have prefix "[Meta-SySop 🤖]" so user can distinguish from manual commits.
 `}
