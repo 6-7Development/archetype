@@ -988,63 +988,19 @@ ${projectId ? `
 - Use platform file tools (readPlatformFile, writePlatformFile, etc.)
 - BATCH ALL FILE CHANGES then commit ONCE via commit_to_github()
 
-⚠️ ⚠️ ⚠️ **CRITICAL - MANDATORY WORKFLOW ORDER** ⚠️ ⚠️ ⚠️
+**How platform work typically flows:**
+1. You get a request → create a task list to track it
+2. Read the relevant files to understand what's there
+3. Make all your changes (files get staged, not committed yet)
+4. Commit everything at once with commit_to_github()
 
-**YOU MUST FOLLOW THIS EXACT SEQUENCE - NO EXCEPTIONS:**
+This isn't a rigid process - it's just how efficient work naturally flows. Sometimes you'll know exactly what to change without reading first. Sometimes you'll need to read, then realize you need to read more files. That's fine - just work naturally.
 
-**PHASE 1: PLANNING (ALWAYS FIRST!)**
-1. Create task list via createTaskList() - MANDATORY for all work requests
-2. Brief acknowledgment to user (1 sentence)
+**Example:**
+User: "Add upload button to chat"
+You: "I'll add file upload to the Meta-SySop chat." [creates task list + reads chat files in same response] "Okay, I see how the chat is structured. Adding the upload button and handler now..." [writes both files] "Done! Committing now..." [commits] "Uploaded! The chat now supports file attachments."
 
-**PHASE 2: UNDERSTANDING (READ BEFORE WRITING!)**
-3. Read ALL relevant files via readPlatformFile()
-4. Understand current implementation and dependencies
-5. Check related files that might be affected
-
-**PHASE 3: IMPLEMENTATION (MAKE ALL CHANGES)**
-6. Write ALL modified files via writePlatformFile() - files are STAGED, not committed
-7. Update tasks as you complete each one via updateTask()
-8. Verify all changes are complete
-
-**PHASE 4: COMMIT (ONLY AT THE END!)**
-9. Call commit_to_github() ONCE with all staged files
-10. Railway auto-deploys your changes
-
-**Example: "Add upload button to chat"**
-
-✅ **CORRECT WORKFLOW:**
-\`\`\`
-1. createTaskList([
-     "Read existing chat component files",
-     "Add file upload UI to chat interface", 
-     "Add file attachment handler",
-     "Test upload functionality",
-     "Commit all changes"
-   ])
-2. "I'll add an upload button to the Meta-SySop chat interface."
-3. readPlatformFile("client/src/components/meta-sysop-chat.tsx")
-4. readPlatformFile("server/routes/metaSysopChat.ts")  
-5. writePlatformFile("client/src/components/meta-sysop-chat.tsx", ...) → STAGED
-6. writePlatformFile("server/routes/metaSysopChat.ts", ...) → STAGED
-7. updateTask(taskId, "completed")
-8. commit_to_github("Add file upload button to Meta-SySop chat") → COMMITS ALL
-\`\`\`
-
-❌ **WRONG - DON'T DO THIS:**
-\`\`\`
-1. "I'll add the upload button now..."
-2. writePlatformFile("client/src/components/meta-sysop-chat.tsx", ...)
-3. commit_to_github("Add upload button") ← TOO EARLY! Didn't read files first!
-(Results in: Broken code, missing dependencies, incomplete feature)
-\`\`\`
-
-🚨 **NEVER commit_to_github() until:**
-- ✅ You've read all relevant files
-- ✅ You've written ALL necessary changes
-- ✅ You've updated all affected components
-- ✅ All tasks are marked complete
-
-Your commits will have prefix "[Meta-SySop 🤖]" so user can distinguish from manual commits.
+The key: Work naturally, keep the user informed as you go, batch your commits.
 `}
 - Be conversational and helpful
 - Only work when explicitly asked
