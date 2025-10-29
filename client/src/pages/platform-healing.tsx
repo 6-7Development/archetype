@@ -506,8 +506,25 @@ function PlatformHealingContent() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background p-3 sm:p-4">
       <div className="flex flex-col gap-3 sm:gap-4 h-full max-w-7xl mx-auto w-full">
-        {/* Simple Header */}
-        <div className="flex items-center gap-2 px-2 flex-wrap">
+        {/* Header with Glowing Jesus */}
+        <div className="flex items-center gap-2 px-2 flex-wrap relative">
+          {/* Glowing Jesus */}
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 flex items-center justify-center">
+            <div className="relative">
+              {/* Glow effect */}
+              <div className="absolute inset-0 animate-pulse">
+                <div className="w-16 h-16 bg-yellow-400/50 rounded-full blur-xl"></div>
+              </div>
+              <div className="absolute inset-0 animate-pulse animation-delay-200">
+                <div className="w-16 h-16 bg-white/30 rounded-full blur-lg"></div>
+              </div>
+              {/* Jesus emoji/icon with glow */}
+              <div className="relative text-4xl filter drop-shadow-[0_0_20px_rgba(255,255,255,0.8)]">
+                ✝️
+              </div>
+            </div>
+          </div>
+          
           <div className="text-xs text-muted-foreground">Home / Agents</div>
           <div className="text-base sm:text-lg font-bold">Meta‑SySop</div>
           <Badge 
@@ -550,6 +567,28 @@ function PlatformHealingContent() {
           </div>
         </div>
       </div>
+      
+      {/* Add animation keyframes */}
+      <style jsx>{`
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 0.6;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.1);
+          }
+        }
+        
+        .animate-pulse {
+          animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .animation-delay-200 {
+          animation-delay: 200ms;
+        }
+      `}</style>
     </div>
   );
 }
