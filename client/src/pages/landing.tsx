@@ -163,16 +163,6 @@ export default function Landing() {
                 ARCHETYPE
               </span>
             </Link>
-
-            {/* Brigido Text - Center */}
-            <motion.div 
-              className="text-xl font-bold text-white"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5 }}
-            >
-              Brigido
-            </motion.div>
             
             {/* Right Side - Clean */}
             <div className="flex items-center gap-1 sm:gap-2">
