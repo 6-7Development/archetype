@@ -150,43 +150,63 @@ export async function performDiagnosis(params: DiagnosisParams): Promise<Diagnos
 
     // Sanitize all file paths to prevent command injection
     const rawFiles = params.focus || DEFAULT_FILES;
+    console.log(`[DIAGNOSIS] Raw files to check: ${JSON.stringify(rawFiles)}`);
+    
     const filesToCheck = rawFiles
       .map(sanitizeFilePath)
       .filter((path): path is string => path !== null);
 
-    // Security check: ensure we have valid files to analyze
-    if (filesToCheck.length === 0) {
-      return {
-        success: false,
-        summary: 'No valid files to diagnose',
-        findings: [],
-        recommendations: [],
-        error: 'All provided file paths were rejected by security validation',
-      };
-    }
+    console.log(`[DIAGNOSIS] After sanitization: ${JSON.stringify(filesToCheck)}`);
 
-    // Warn if some paths were filtered out
+    // Warn if some paths were filtered out (BEFORE fallback logic)
     if (filesToCheck.length < rawFiles.length) {
       console.warn(
         `⚠️  ${rawFiles.length - filesToCheck.length} file path(s) were rejected by security validation`
       );
     }
 
-    // Run diagnosis based on target
+    // FIX: Use separate variable for effective files to avoid mutation issues
+    let effectiveFiles: string[];
+    
+    if (filesToCheck.length === 0) {
+      console.warn('[DIAGNOSIS] All paths rejected, falling back to DEFAULT_FILES');
+      const defaultSanitized = DEFAULT_FILES
+        .map(sanitizeFilePath)
+        .filter((path): path is string => path !== null);
+      
+      if (defaultSanitized.length === 0) {
+        return {
+          success: false,
+          summary: 'No valid files to diagnose',
+          findings: [],
+          recommendations: [],
+          error: 'All file paths (including defaults) were rejected by security validation. This is likely a configuration issue.',
+        };
+      }
+      
+      // Use sanitized defaults as effective files
+      effectiveFiles = defaultSanitized;
+      console.log(`[DIAGNOSIS] Using ${effectiveFiles.length} default files`);
+    } else {
+      // Use sanitized user-provided files
+      effectiveFiles = filesToCheck;
+    }
+
+    // Run diagnosis based on target (using effectiveFiles instead of filesToCheck)
     if (params.target === 'performance' || params.target === 'all') {
-      await diagnosePerformance(findings, filesToCheck, filesAnalyzed);
+      await diagnosePerformance(findings, effectiveFiles, filesAnalyzed);
     }
 
     if (params.target === 'memory' || params.target === 'all') {
-      await diagnoseMemory(findings, filesToCheck, filesAnalyzed);
+      await diagnoseMemory(findings, effectiveFiles, filesAnalyzed);
     }
 
     if (params.target === 'database' || params.target === 'all') {
-      await diagnoseDatabase(findings, filesToCheck, filesAnalyzed);
+      await diagnoseDatabase(findings, effectiveFiles, filesAnalyzed);
     }
 
     if (params.target === 'security' || params.target === 'all') {
-      await diagnoseSecurity(findings, filesToCheck, filesAnalyzed);
+      await diagnoseSecurity(findings, effectiveFiles, filesAnalyzed);
     }
 
     // Calculate metrics
