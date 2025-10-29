@@ -50,8 +50,13 @@ async function retryWithBackoff<T>(
 const app = express();
 
 // PERFORMANCE: Enable gzip compression for all responses (70-80% size reduction)
+// BUT: Disable for SSE streams (they need real-time streaming, not buffering)
 app.use(compression({
   filter: (req, res) => {
+    // Disable compression for Server-Sent Events (SSE) - they need real-time streaming
+    if (req.path === '/api/meta-sysop/stream' || req.path.includes('/stream')) {
+      return false;
+    }
     if (req.headers['x-no-compression']) {
       return false;
     }
@@ -59,7 +64,7 @@ app.use(compression({
   },
   level: 6, // Balance between speed and compression ratio
 }));
-console.log('[PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller');
+console.log('[PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller (SSE streams excluded)');
 
 // Force HTTPS redirect in production (Render provides free SSL)
 app.use((req, res, next) => {
