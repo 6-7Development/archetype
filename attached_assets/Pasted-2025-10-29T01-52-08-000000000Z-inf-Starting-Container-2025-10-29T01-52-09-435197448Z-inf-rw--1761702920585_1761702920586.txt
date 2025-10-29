@@ -1,0 +1,328 @@
+2025-10-29T01:52:08.000000000Z [inf]  Starting Container
+2025-10-29T01:52:09.435197448Z [inf]  -rw-rw-r--    1 root     root        352670 Oct 29 01:51 package-lock.json
+2025-10-29T01:52:09.435197998Z [inf]  -rw-rw-r--    1 root     root           657 Oct 29 01:50 tsconfig.json
+2025-10-29T01:52:09.435198028Z [inf]  🚂 RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-10-29T01:52:09.435213799Z [inf]  
+2025-10-29T01:52:09.435214187Z [inf]  ======================================
+2025-10-29T01:52:09.435222583Z [inf]  Time: Wed Oct 29 01:52:08 UTC 2025
+2025-10-29T01:52:09.435228982Z [inf]  Node version: v20.19.5
+2025-10-29T01:52:09.435241066Z [inf]  NPM version: 10.8.2
+2025-10-29T01:52:09.435248764Z [inf]  
+2025-10-29T01:52:09.435255813Z [inf]  📁 Current directory: /app
+2025-10-29T01:52:09.435263512Z [inf]  📂 Listing root files:
+2025-10-29T01:52:09.435266821Z [inf]  -rw-rw-r--    1 root     root          4529 Oct 29 01:51 package.json
+2025-10-29T01:52:09.435277320Z [inf]  total 404
+2025-10-29T01:52:09.435284456Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 29 01:51 .
+2025-10-29T01:52:09.435290631Z [inf]  dr-xr-xr-x    1 root     root          4096 Oct 29 01:52 ..
+2025-10-29T01:52:09.435297097Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 29 01:51 dist
+2025-10-29T01:52:09.435304702Z [inf]  -rw-rw-r--    1 root     root           325 Oct 29 01:50 drizzle.config.ts
+2025-10-29T01:52:09.435311156Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 29 01:51 node_modules
+2025-10-29T01:52:09.435364393Z [inf]  -rwxrwxr-x    1 root     root          1865 Oct 29 01:50 railway-start.sh
+2025-10-29T01:52:09.435394007Z [inf]  -rw-rw-r--    1 root     root         10062 Oct 29 01:50 replit.md
+2025-10-29T01:52:09.435401701Z [inf]  drwxr-xr-x   10 root     root          4096 Oct 29 01:50 server
+2025-10-29T01:52:09.435409848Z [inf]  drwxr-xr-x    2 root     root          4096 Oct 29 01:50 shared
+2025-10-29T01:52:09.435465822Z [inf]  ======================================
+2025-10-29T01:52:09.438922860Z [inf]  🔍 Checking for dist directory...
+2025-10-29T01:52:09.438930493Z [inf]  ✅ dist directory exists
+2025-10-29T01:52:09.438936997Z [inf]  📂 Contents:
+2025-10-29T01:52:09.438944131Z [inf]  total 736
+2025-10-29T01:52:09.438950738Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 29 01:51 .
+2025-10-29T01:52:09.438957985Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 29 01:51 ..
+2025-10-29T01:52:09.438964660Z [inf]  -rw-r--r--    1 root     root        741297 Oct 29 01:51 index.js
+2025-10-29T01:52:09.438970384Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 29 01:51 public
+2025-10-29T01:52:09.438976798Z [inf]  ✅ dist/index.js found
+2025-10-29T01:52:09.438983927Z [inf]  
+2025-10-29T01:52:09.438992959Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-10-29T01:52:09.669103028Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-10-29T01:52:09.669108556Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-10-29T01:52:10.485196589Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-29T01:52:10.485253188Z [inf]  Using 'pg' driver for database querying
+2025-10-29T01:52:10.485260436Z [inf]  [⣷] Pulling schema from database...
+2025-10-29T01:52:10.516376450Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-29T01:52:10.655139021Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-29T01:52:11.440722399Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-29T01:52:11.440730283Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-29T01:52:11.440737843Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-29T01:52:11.440744526Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-29T01:52:11.440751765Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-29T01:52:11.440758266Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-29T01:52:11.546457368Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-29T01:52:11.679931369Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-29T01:52:12.509625525Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-29T01:52:12.509632314Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-29T01:52:12.509640137Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-29T01:52:12.509647850Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-29T01:52:12.509654695Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-29T01:52:12.509660903Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-29T01:52:12.567947734Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-29T01:52:12.696181206Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-29T01:52:13.816841415Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-29T01:52:13.816842529Z [inf]  
+2025-10-29T01:52:13.816855130Z [inf]  [2K[1G[✓] Pulling schema from database...
+2025-10-29T01:52:13.816863656Z [inf]  [i] No changes detected
+2025-10-29T01:52:13.816869770Z [inf]  ✅ Database migrations completed successfully!
+2025-10-29T01:52:13.816877396Z [inf]  
+2025-10-29T01:52:13.816886949Z [inf]  🔍 Environment Check:
+2025-10-29T01:52:13.816896616Z [inf]  NODE_ENV: production
+2025-10-29T01:52:13.816902833Z [inf]  DATABASE_URL: ✓ SET (hidden for security)
+2025-10-29T01:52:13.816904554Z [inf]  PORT: 8080
+2025-10-29T01:52:13.816916396Z [inf]  GITHUB_TOKEN: ✓ SET
+2025-10-29T01:52:13.816924332Z [inf]  GITHUB_REPO: 6-7Development/archetype
+2025-10-29T01:52:13.816931084Z [inf]  GITHUB_BRANCH: main
+2025-10-29T01:52:13.816937695Z [inf]  ANTHROPIC_API_KEY: ✓ SET
+2025-10-29T01:52:13.816945895Z [inf]  
+2025-10-29T01:52:13.816956122Z [inf]  📄 Ensuring replit.md is available...
+2025-10-29T01:52:13.816970697Z [inf]  ✅ replit.md already present
+2025-10-29T01:52:13.816977896Z [inf]  
+2025-10-29T01:52:13.816984990Z [inf]  🚀 Starting Node.js application...
+2025-10-29T01:52:13.816991777Z [inf]  Command: node dist/index.js
+2025-10-29T01:52:14.926697639Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-29T01:52:14.926703235Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-29T01:52:14.926709501Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-29T01:52:14.926715417Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-29T01:52:14.926722167Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-10-29T01:52:14.926727891Z [inf]  [db] Connection string includes SSL params: true
+2025-10-29T01:52:14.926733847Z [inf]  [PERFORMANCE] System prompt base cached (21338 chars) - saves ~4KB per request
+2025-10-29T01:52:14.926740590Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-29T01:52:14.926746700Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller (SSE streams excluded)
+2025-10-29T01:52:14.926752592Z [inf]  📡 WebSocket server initialized at /ws
+2025-10-29T01:52:14.926757760Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-29T01:52:14.926763315Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-29T01:52:14.926769441Z [inf]  [META-SYSOP-JOB-MANAGER] Initialized with WebSocket support
+2025-10-29T01:52:14.926779739Z [inf]  [META-SYSOP-JOB-MANAGER] Job manager connected to WebSocket
+2025-10-29T01:52:14.926785393Z [inf]  ✅ All routes registered successfully
+2025-10-29T01:52:14.926791274Z [inf]  🔍 Testing database connection...
+2025-10-29T01:52:14.926798850Z [inf]  1:52:14 AM [express] serving on port 8080
+2025-10-29T01:52:14.926804876Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-10-29T01:52:14.926811665Z [inf]  ✅ Database connected successfully
+2025-10-29T01:52:14.926821049Z [inf]  🔧 Auto-healing system ENABLED (production mode)
+2025-10-29T01:52:14.926836418Z [inf]  
+2025-10-29T01:52:15.929553817Z [inf]     - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-29T01:52:15.929566418Z [inf]     - Maintenance mode: Available for owner
+2025-10-29T01:52:15.929574743Z [inf]  
+2025-10-29T01:52:15.929599883Z [inf]  🔍 Checking GitHub integration configuration...
+2025-10-29T01:52:15.929606418Z [inf]  ✅ GitHub integration configured successfully
+2025-10-29T01:52:15.929615830Z [inf]     - Repository: 6-7Development/archetype
+2025-10-29T01:52:15.929622831Z [inf]     - Branch: main
+2025-10-29T01:52:15.929629023Z [inf]     - Token: ✓ (configured)
+2025-10-29T01:52:19.641086102Z [inf]  [DEPLOYMENT-INFO] Using Railway environment variables
+2025-10-29T01:52:19.641094233Z [inf]  1:52:19 AM [express] GET /api/deployment-info 200 in 3ms :: {"version":"1.0.0","commitHash":"4ba72a6…
+2025-10-29T01:52:25.665740399Z [inf]  [AUTH] Login attempt for email: root@getdc360.com
+2025-10-29T01:52:25.665745830Z [inf]  [AUTH] Found users: 1
+2025-10-29T01:52:25.665752143Z [inf]  [AUTH] User found: root@getdc360.com has password: true
+2025-10-29T01:52:25.665759258Z [inf]  [AUTH] Verifying password...
+2025-10-29T01:52:25.665766729Z [inf]  [AUTH] Password valid: true
+2025-10-29T01:52:25.665772837Z [inf]  [AUTH] Authentication successful for: root@getdc360.com
+2025-10-29T01:52:25.665779408Z [inf]  1:52:25 AM [express] POST /api/auth/login 200 in 284ms :: {"success":true,"user":{"id":"723e1301-c72…
+2025-10-29T01:52:26.586035991Z [inf]  1:52:26 AM [express] GET /api/projects 304 in 15ms :: []
+2025-10-29T01:52:26.586043866Z [inf]  1:52:26 AM [express] GET /api/auth/me 304 in 87ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef95…
+2025-10-29T01:52:27.715138514Z [inf]  [GITHUB-SERVICE] Initialized for 6-7Development/archetype on branch main
+2025-10-29T01:52:27.715160820Z [inf]  1:52:27 AM [express] GET /api/meta-sysop/autonomy-level 304 in 49ms :: {"currentLevel":"max","maxAll…
+2025-10-29T01:52:27.715178496Z [inf]  1:52:27 AM [express] GET /api/platform/status 200 in 47ms :: {"overallHealth":100,"activeIncidents":…
+2025-10-29T01:52:27.715186189Z [inf]  1:52:27 AM [express] GET /api/meta-sysop/pending-changes 304 in 57ms :: {"success":true,"pendingChan…
+2025-10-29T01:52:27.715192514Z [inf]  [META-SYSOP] Fetched 0 projects for admin project selector
+2025-10-29T01:52:27.715215869Z [inf]  1:52:27 AM [express] GET /api/meta-sysop/projects 304 in 96ms :: []
+2025-10-29T01:52:27.743784817Z [inf]  1:52:27 AM [express] GET /api/platform/deployment-history 200 in 210ms :: {"success":true,"deploymen…
+2025-10-29T01:52:27.903437265Z [inf]  ✅ WebSocket client connected
+2025-10-29T01:52:29.028876573Z [inf]  📡 [WS] Session registered: userId=admin, sessionId=platform-healing
+2025-10-29T01:52:32.817764220Z [inf]  1:52:32 AM [express] GET /api/meta-sysop/pending-changes 304 in 12ms :: {"success":true,"pendingChan…
+2025-10-29T01:52:37.890317943Z [inf]  1:52:37 AM [express] GET /api/meta-sysop/pending-changes 304 in 19ms :: {"success":true,"pendingChan…
+2025-10-29T01:52:41.649861533Z [inf]  [META-SYSOP-CHAT] Stream request received
+2025-10-29T01:52:41.649868272Z [inf]  [META-SYSOP-CHAT] Message: diagnose platform issues or meta ai issues Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-10-29T01:52:41.649876379Z [inf]  [META-SYSOP-CHAT] Setting up SSE headers
+2025-10-29T01:52:41.649882517Z [inf]  [META-SYSOP-CHAT] Heartbeat started - will send keepalive every 15s
+2025-10-29T01:52:41.649888827Z [inf]  [META-SYSOP-CHAT] Entering try block
+2025-10-29T01:52:41.649899354Z [inf]  [META-SYSOP-CHAT] User autonomy level: max
+2025-10-29T01:52:42.982575979Z [inf]  1:52:42 AM [express] GET /api/meta-sysop/pending-changes 304 in 14ms :: {"success":true,"pendingChan…
+2025-10-29T01:52:45.990806084Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: I'll diagnose both platform issues and Meta-SySop AI issues for you. Let me create a task list and p
+2025-10-29T01:52:50.809774234Z [inf]  [META-SYSOP] Response has tool calls: true
+2025-10-29T01:52:50.809778788Z [inf]  [META-SYSOP] Content blocks: text, text, tool_use
+2025-10-29T01:52:50.809782804Z [inf]  [META-SYSOP-FORCE] === ITERATION 1 CHECK ===
+2025-10-29T01:52:50.809788565Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: createTaskList
+2025-10-29T01:52:50.809792284Z [inf]  [META-SYSOP] Task list created: d0a318a2-ac9e-4161-8ee0-52033d7063b8
+2025-10-29T01:52:50.809796199Z [inf]  [META-SYSOP-FORCE] Created task list: true
+2025-10-29T01:52:50.809801505Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-29T01:52:50.809806029Z [inf]  [META-SYSOP-FORCE] Iteration count: 1
+2025-10-29T01:52:50.809809645Z [inf]  [META-SYSOP-FORCE] ❌❌❌ FORCING TRIGGERED! Meta-SySop skipped perform_diagnosis!
+2025-10-29T01:52:50.809813940Z [inf]  [META-SYSOP-FORCE] All tools executed and results added - now adding forcing message...
+2025-10-29T01:52:50.809818476Z [inf]  [META-SYSOP-FORCE] ✅ Forcing message added. Conversation length: 103
+2025-10-29T01:52:50.809822919Z [inf]  [META-SYSOP-FORCE] ✅ Continuing to iteration 2...
+2025-10-29T01:52:50.889688367Z [inf]  [META-SYSOP] Fetched 5 tasks for task list d0a318a2-ac9e-4161-8ee0-52033d7063b8
+2025-10-29T01:52:50.889700620Z [inf]  1:52:50 AM [express] GET /api/meta-sysop/task-list/d0a318a2-ac9e-4161-8ee0-52033d7063b8 200 in 16ms …
+2025-10-29T01:52:55.071087673Z [inf]  [META-SYSOP-FORCE] === ITERATION 2 CHECK ===
+2025-10-29T01:52:55.071097278Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: perform_diagnosis
+2025-10-29T01:52:55.071103714Z [inf]  [DIAGNOSIS] Raw files to check: []
+2025-10-29T01:52:55.071113918Z [inf]  [DIAGNOSIS] After sanitization: []
+2025-10-29T01:52:55.071119521Z [err]  [DIAGNOSIS] All paths rejected, falling back to DEFAULT_FILES
+2025-10-29T01:52:55.073029176Z [inf]  [DIAGNOSIS] Using 4 default files
+2025-10-29T01:52:55.764563494Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T01:52:55.764568514Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: true
+2025-10-29T01:52:55.764572821Z [inf]  [META-SYSOP-FORCE] Iteration count: 2
+2025-10-29T01:52:55.764577316Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T01:52:56.763455697Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T01:52:58.012917164Z [inf]  1:52:58 AM [express] GET /api/platform/deployment-history 304 in 210ms :: {"success":true,"deploymen…
+2025-10-29T01:52:58.062214733Z [inf]  1:52:58 AM [express] GET /api/meta-sysop/pending-changes 304 in 20ms :: {"success":true,"pendingChan…
+2025-10-29T01:53:00.285992759Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Now let me update the task status and check Meta-SySop AI issues:
+2025-10-29T01:53:02.082966911Z [inf]  [META-SYSOP-FORCE] === ITERATION 3 CHECK ===
+2025-10-29T01:53:02.082974506Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: updateTask
+2025-10-29T01:53:02.082983719Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T01:53:02.082992897Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-29T01:53:02.083000552Z [inf]  [META-SYSOP-FORCE] Iteration count: 3
+2025-10-29T01:53:02.083007389Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T01:53:03.137275237Z [inf]  1:53:03 AM [express] GET /api/meta-sysop/pending-changes 304 in 19ms :: {"success":true,"pendingChan…
+2025-10-29T01:53:06.299015063Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Let me check the task list to get the correct IDs:
+2025-10-29T01:53:06.299026129Z [inf]  [META-SYSOP-FORCE] === ITERATION 4 CHECK ===
+2025-10-29T01:53:06.299033669Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: readTaskList
+2025-10-29T01:53:07.038823288Z [inf]  [META-SYSOP-FORCE] Iteration count: 4
+2025-10-29T01:53:07.038838917Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T01:53:07.038931282Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T01:53:07.038938549Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-29T01:53:08.216691399Z [inf]  1:53:08 AM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-29T01:53:10.970666681Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: This is an old task list. Let me check the current task list I just created:This is an old task list
+2025-10-29T01:53:11.239472049Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T01:53:11.908876023Z [inf]  [META-SYSOP-FORCE] === ITERATION 5 CHECK ===
+2025-10-29T01:53:11.908879793Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: updateTask
+2025-10-29T01:53:11.917701613Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T01:53:11.917710139Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-29T01:53:11.917717398Z [inf]  [META-SYSOP-FORCE] Iteration count: 5
+2025-10-29T01:53:11.917724648Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T01:53:14.232014255Z [inf]  1:53:13 AM [express] GET /api/meta-sysop/pending-changes 304 in 18ms :: {"success":true,"pendingChan…
+2025-10-29T01:53:16.212121119Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Let me now analyze Meta-SySop AI issues by checking the server logs:Let me now analyze Meta-SySop AI
+2025-10-29T01:53:16.994075234Z [inf]  [META-SYSOP-FORCE] === ITERATION 6 CHECK ===
+2025-10-29T01:53:16.994080795Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: read_logs
+2025-10-29T01:53:16.994086036Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T01:53:16.994091083Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: false
+2025-10-29T01:53:16.994096247Z [inf]  [META-SYSOP-FORCE] Iteration count: 6
+2025-10-29T01:53:16.994101287Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T01:53:19.050790805Z [inf]  1:53:18 AM [express] GET /api/meta-sysop/pending-changes 304 in 15ms :: {"success":true,"pendingChan…
+2025-10-29T01:53:21.059206364Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Let me check for any Meta-SySop errors in the database:Let me check for any Meta-SySop errors in the
+2025-10-29T01:53:25.076962141Z [inf]  [META-SYSOP-FORCE] === ITERATION 7 CHECK ===
+2025-10-29T01:53:25.076970246Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: execute_sql
+2025-10-29T01:53:25.076977199Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T01:53:25.076984502Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: true
+2025-10-29T01:53:25.076992305Z [inf]  [META-SYSOP-FORCE] Iteration count: 7
+2025-10-29T01:53:25.077000348Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T01:53:26.240546799Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T01:53:29.122934951Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Let me check the correct table name:Let me check the correct table name:Let me check the correct tab
+2025-10-29T01:53:30.323036822Z [inf]  [META-SYSOP-FORCE] === ITERATION 8 CHECK ===
+2025-10-29T01:53:30.323049850Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: execute_sql
+2025-10-29T01:53:30.323058136Z [inf]  [META-SYSOP] ✅ SQL executed autonomously: Find chat-related tables in the database
+2025-10-29T01:53:30.323067143Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T01:53:30.323075017Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: true
+2025-10-29T01:53:30.323082604Z [inf]  [META-SYSOP-FORCE] Iteration count: 8
+2025-10-29T01:53:30.323089324Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T01:53:37.219759034Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Now let me check for Meta-SySop errors in the correct table:Now let me check for Meta-SySop errors i
+2025-10-29T01:53:40.332372078Z [inf]  [META-SYSOP-FORCE] === ITERATION 9 CHECK ===
+2025-10-29T01:53:40.332379345Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: execute_sql
+2025-10-29T01:53:40.332386144Z [inf]  [META-SYSOP] ✅ SQL executed autonomously: Check for recent Meta-SySop error patterns
+2025-10-29T01:53:40.332393973Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T01:53:40.332400651Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: true
+2025-10-29T01:53:40.332407702Z [inf]  [META-SYSOP-FORCE] Iteration count: 9
+2025-10-29T01:53:40.332414397Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T01:53:41.240744455Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T01:53:49.131391577Z [inf]  1:53:48 AM [express] GET /api/meta-sysop/pending-changes 304 in 91ms :: {"success":true,"pendingChan…
+2025-10-29T01:53:55.185680890Z [inf]  [META-SYSOP-CHAT] 💬 Streaming text: Let me also check recent Meta-SySop performance:Let me also check recent Meta-SySop performance:Let 
+2025-10-29T01:53:56.241147144Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T01:53:59.665771149Z [inf]  [META-SYSOP-FORCE] === ITERATION 10 CHECK ===
+2025-10-29T01:53:59.665779275Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: execute_sql
+2025-10-29T01:53:59.665786074Z [inf]  [META-SYSOP] ✅ SQL executed autonomously: Check Meta-SySop performance metrics for last 24 hours
+2025-10-29T01:53:59.665792414Z [inf]  [META-SYSOP-FORCE] Created task list: false
+2025-10-29T01:53:59.665798996Z [inf]  [META-SYSOP-FORCE] Called diagnosis tools: true
+2025-10-29T01:53:59.665804637Z [inf]  [META-SYSOP-FORCE] Iteration count: 10
+2025-10-29T01:53:59.665811512Z [inf]  [META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally
+2025-10-29T01:54:09.527215815Z [inf]  1:54:08 AM [express] GET /api/meta-sysop/pending-changes 304 in 104ms :: {"success":true,"pendingCha…
+2025-10-29T01:54:11.345275958Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T01:54:14.851217068Z [inf]  1:54:13 AM [express] GET /api/meta-sysop/pending-changes 304 in 13ms :: {"success":true,"pendingChan…
+2025-10-29T01:54:20.732323003Z [inf]  [META-SYSOP-FORCE] === ITERATION 11 CHECK ===
+2025-10-29T01:54:20.732328503Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: NONE
+2025-10-29T01:54:20.732333385Z [inf]  [META-SYSOP-CONTINUATION] Iteration 11: No tool calls, checking if should continue...
+2025-10-29T01:54:20.732339353Z [inf]  [META-SYSOP-CONTINUATION] Active task list ID: d0a318a2-ac9e-4161-8ee0-52033d7063b8
+2025-10-29T01:54:21.523838536Z [inf]  [META-SYSOP-CONTINUATION] Session task list found: true
+2025-10-29T01:54:21.523848573Z [inf]  [META-SYSOP-CONTINUATION] Tasks: 5
+2025-10-29T01:54:21.523858097Z [inf]  [META-SYSOP-CONTINUATION] Completed: 0, In-progress: 0, Pending: 5
+2025-10-29T01:54:21.523866584Z [inf]  [META-SYSOP-CONTINUATION] ✅ Continuing naturally - incomplete tasks remain
+2025-10-29T01:54:21.523900326Z [inf]  [META-SYSOP-CONTINUATION] Task list read success: true
+2025-10-29T01:54:21.523907496Z [inf]  [META-SYSOP-CONTINUATION] Task lists found: 59
+2025-10-29T01:54:26.429005492Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T01:54:31.543826997Z [inf]  [META-SYSOP-FORCE] === ITERATION 12 CHECK ===
+2025-10-29T01:54:31.543836456Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: NONE
+2025-10-29T01:54:31.543844157Z [inf]  [META-SYSOP-CONTINUATION] Iteration 12: No tool calls, checking if should continue...
+2025-10-29T01:54:31.543849954Z [inf]  [META-SYSOP-CONTINUATION] Active task list ID: d0a318a2-ac9e-4161-8ee0-52033d7063b8
+2025-10-29T01:54:31.593897030Z [inf]  [META-SYSOP-CONTINUATION] Task list read success: true
+2025-10-29T01:54:31.593904006Z [inf]  [META-SYSOP-CONTINUATION] Task lists found: 59
+2025-10-29T01:54:31.593909875Z [inf]  [META-SYSOP-CONTINUATION] Session task list found: true
+2025-10-29T01:54:31.593918426Z [inf]  [META-SYSOP-CONTINUATION] Tasks: 5
+2025-10-29T01:54:31.593925271Z [inf]  [META-SYSOP-CONTINUATION] Completed: 0, In-progress: 0, Pending: 5
+2025-10-29T01:54:31.593932017Z [inf]  [META-SYSOP-CONTINUATION] ✅ Continuing naturally - incomplete tasks remain
+2025-10-29T01:54:50.994430247Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T01:54:50.994437234Z [inf]  [META-SYSOP-FORCE] === ITERATION 13 CHECK ===
+2025-10-29T01:54:50.994446179Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: NONE
+2025-10-29T01:54:50.994452982Z [inf]  [META-SYSOP-CONTINUATION] Iteration 13: No tool calls, checking if should continue...
+2025-10-29T01:54:50.994457901Z [inf]  [META-SYSOP-CONTINUATION] Active task list ID: d0a318a2-ac9e-4161-8ee0-52033d7063b8
+2025-10-29T01:54:50.994462865Z [inf]  [META-SYSOP-CONTINUATION] Task list read success: true
+2025-10-29T01:54:50.994467174Z [inf]  [META-SYSOP-CONTINUATION] Task lists found: 59
+2025-10-29T01:54:50.994471552Z [inf]  [META-SYSOP-CONTINUATION] Session task list found: true
+2025-10-29T01:54:50.994477433Z [inf]  [META-SYSOP-CONTINUATION] Tasks: 5
+2025-10-29T01:54:50.994483856Z [inf]  [META-SYSOP-CONTINUATION] Completed: 0, In-progress: 0, Pending: 5
+2025-10-29T01:54:50.994488070Z [inf]  [META-SYSOP-CONTINUATION] ✅ Continuing naturally - incomplete tasks remain
+2025-10-29T01:54:52.948755368Z [inf]  [META-SYSOP-FORCE] === ITERATION 14 CHECK ===
+2025-10-29T01:54:52.948770809Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: NONE
+2025-10-29T01:54:52.948781013Z [inf]  [META-SYSOP-CONTINUATION] Iteration 14: No tool calls, checking if should continue...
+2025-10-29T01:54:52.948788271Z [inf]  [META-SYSOP-CONTINUATION] Active task list ID: d0a318a2-ac9e-4161-8ee0-52033d7063b8
+2025-10-29T01:54:52.948795695Z [inf]  [META-SYSOP-CONTINUATION] Task list read success: true
+2025-10-29T01:54:52.948803126Z [inf]  [META-SYSOP-CONTINUATION] Task lists found: 59
+2025-10-29T01:54:52.948812353Z [inf]  [META-SYSOP-CONTINUATION] Session task list found: true
+2025-10-29T01:54:52.948820246Z [inf]  [META-SYSOP-CONTINUATION] Tasks: 5
+2025-10-29T01:54:52.948832711Z [inf]  [META-SYSOP-CONTINUATION] Completed: 0, In-progress: 0, Pending: 5
+2025-10-29T01:54:52.948840894Z [inf]  [META-SYSOP-CONTINUATION] ✅ Continuing naturally - incomplete tasks remain
+2025-10-29T01:54:55.872556177Z [inf]  [META-SYSOP-FORCE] === ITERATION 15 CHECK ===
+2025-10-29T01:54:55.872563223Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: NONE
+2025-10-29T01:54:55.872570627Z [inf]  [META-SYSOP-CONTINUATION] Iteration 15: No tool calls, checking if should continue...
+2025-10-29T01:54:55.872577951Z [inf]  [META-SYSOP-CONTINUATION] Active task list ID: d0a318a2-ac9e-4161-8ee0-52033d7063b8
+2025-10-29T01:54:55.872587140Z [inf]  [META-SYSOP-CONTINUATION] Task list read success: true
+2025-10-29T01:54:55.872594873Z [inf]  [META-SYSOP-CONTINUATION] Task lists found: 59
+2025-10-29T01:54:55.872602573Z [inf]  [META-SYSOP-CONTINUATION] Session task list found: true
+2025-10-29T01:54:55.872610029Z [inf]  [META-SYSOP-CONTINUATION] Tasks: 5
+2025-10-29T01:54:55.872617576Z [inf]  [META-SYSOP-CONTINUATION] Completed: 0, In-progress: 0, Pending: 5
+2025-10-29T01:54:55.872624723Z [inf]  [META-SYSOP-CONTINUATION] ✅ Continuing naturally - incomplete tasks remain
+2025-10-29T01:54:56.788296765Z [inf]  [META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout
+2025-10-29T01:54:58.996334055Z [inf]  [META-SYSOP-CONTINUATION] Completed: 0, In-progress: 0, Pending: 5
+2025-10-29T01:54:58.996353261Z [inf]  [META-SYSOP-CONTINUATION] ✅ Continuing naturally - incomplete tasks remain
+2025-10-29T01:54:58.996555586Z [inf]  [META-SYSOP-FORCE] === ITERATION 16 CHECK ===
+2025-10-29T01:54:58.996561445Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: NONE
+2025-10-29T01:54:58.996567328Z [inf]  [META-SYSOP-CONTINUATION] Iteration 16: No tool calls, checking if should continue...
+2025-10-29T01:54:58.996574481Z [inf]  [META-SYSOP-CONTINUATION] Active task list ID: d0a318a2-ac9e-4161-8ee0-52033d7063b8
+2025-10-29T01:54:58.996581108Z [inf]  [META-SYSOP-CONTINUATION] Task list read success: true
+2025-10-29T01:54:58.996587420Z [inf]  [META-SYSOP-CONTINUATION] Task lists found: 59
+2025-10-29T01:54:58.996594310Z [inf]  [META-SYSOP-CONTINUATION] Session task list found: true
+2025-10-29T01:54:58.996601236Z [inf]  [META-SYSOP-CONTINUATION] Tasks: 5
+2025-10-29T01:55:02.017201450Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: NONE
+2025-10-29T01:55:02.017212164Z [inf]  [META-SYSOP-CONTINUATION] Iteration 17: No tool calls, checking if should continue...
+2025-10-29T01:55:02.017217908Z [inf]  [META-SYSOP-CONTINUATION] Active task list ID: d0a318a2-ac9e-4161-8ee0-52033d7063b8
+2025-10-29T01:55:02.017224846Z [inf]  [META-SYSOP-CONTINUATION] Task list read success: true
+2025-10-29T01:55:02.017229481Z [inf]  [META-SYSOP-CONTINUATION] Task lists found: 59
+2025-10-29T01:55:02.017235027Z [inf]  [META-SYSOP-CONTINUATION] Session task list found: true
+2025-10-29T01:55:02.017281739Z [inf]  [META-SYSOP-CONTINUATION] Tasks: 5
+2025-10-29T01:55:02.017286773Z [inf]  [META-SYSOP-FORCE] === ITERATION 17 CHECK ===
+2025-10-29T01:55:02.017294696Z [inf]  [META-SYSOP-CONTINUATION] Completed: 0, In-progress: 0, Pending: 5
+2025-10-29T01:55:02.017303384Z [inf]  [META-SYSOP-CONTINUATION] ✅ Continuing naturally - incomplete tasks remain
+2025-10-29T01:55:04.851238659Z [inf]  [META-SYSOP-CONTINUATION] Completed: 0, In-progress: 0, Pending: 5
+2025-10-29T01:55:04.851251860Z [inf]  [META-SYSOP-CONTINUATION] ✅ Continuing naturally - incomplete tasks remain
+2025-10-29T01:55:04.851369878Z [inf]  [META-SYSOP-FORCE] === ITERATION 18 CHECK ===
+2025-10-29T01:55:04.851373440Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: NONE
+2025-10-29T01:55:04.851377207Z [inf]  [META-SYSOP-CONTINUATION] Iteration 18: No tool calls, checking if should continue...
+2025-10-29T01:55:04.851381065Z [inf]  [META-SYSOP-CONTINUATION] Active task list ID: d0a318a2-ac9e-4161-8ee0-52033d7063b8
+2025-10-29T01:55:04.851384695Z [inf]  [META-SYSOP-CONTINUATION] Task list read success: true
+2025-10-29T01:55:04.851388691Z [inf]  [META-SYSOP-CONTINUATION] Task lists found: 59
+2025-10-29T01:55:04.851392735Z [inf]  [META-SYSOP-CONTINUATION] Session task list found: true
+2025-10-29T01:55:04.851396315Z [inf]  [META-SYSOP-CONTINUATION] Tasks: 5
+2025-10-29T01:55:07.974736261Z [inf]  [META-SYSOP-CONTINUATION] ✅ Continuing naturally - incomplete tasks remain
+2025-10-29T01:55:07.974818533Z [inf]  [META-SYSOP-FORCE] === ITERATION 19 CHECK ===
+2025-10-29T01:55:07.974827510Z [inf]  [META-SYSOP-FORCE] Tools called this iteration: NONE
+2025-10-29T01:55:07.974835214Z [inf]  [META-SYSOP-CONTINUATION] Iteration 19: No tool calls, checking if should continue...
+2025-10-29T01:55:07.974841962Z [inf]  [META-SYSOP-CONTINUATION] Active task list ID: d0a318a2-ac9e-4161-8ee0-52033d7063b8
+2025-10-29T01:55:07.974848835Z [inf]  [META-SYSOP-CONTINUATION] Tasks: 5
+2025-10-29T01:55:07.974850302Z [inf]  [META-SYSOP-CONTINUATION] Task list read success: true
+2025-10-29T01:55:07.974857565Z [inf]  [META-SYSOP-CONTINUATION] Completed: 0, In-progress: 0, Pending: 5
+2025-10-29T01:55:07.974875470Z [inf]  [META-SYSOP-CONTINUATION] Task lists found: 59
+2025-10-29T01:55:07.974882684Z [inf]  [META-SYSOP-CONTINUATION] Session task list found: true
