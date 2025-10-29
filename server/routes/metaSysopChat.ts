@@ -2136,8 +2136,9 @@ Be conversational, be helpful, and only work when asked!`;
         // Check if the tool failed
         const isError = result.includes('❌') || result.includes('Error') || result.includes('Failed') || result.toLowerCase().includes('failed');
         
+        // Don't spam "Hmm, ran into an issue..." - just continue silently
         if (isError) {
-          return `\n\nHmm, ran into an issue there. Let me try a different approach...\n\n`;
+          return ''; // Let the AI handle retries naturally without verbose messaging
         }
         
         // Success messages
