@@ -2295,16 +2295,29 @@ Be conversational, be helpful, and only work when asked!`;
               // ✅ AUTONOMOUS MODE: No approval required - Meta-SySop works like Replit Agent
               sendEvent('progress', { message: `✅ Modifying ${typedInput.path}...` });
               
-              // 🔧 FIX: Enable skipAutoCommit to batch all changes into single commit
-              // This prevents multiple commits - files are staged for batch commit
+              // 🚀 IMMEDIATE COMMIT: Auto-commit every file change to GitHub immediately
+              // This ensures changes are deployed instantly without waiting for manual commit_to_github()
               const writeResult = await platformHealing.writePlatformFile(
                 typedInput.path,
                 typedInput.content,
-                true  // skipAutoCommit: true - stage for batch commit instead of immediate commit
+                false  // skipAutoCommit: false - commit immediately to GitHub
               );
-              toolResult = JSON.stringify(writeResult);
+              
+              // Stream commit result to user
+              if (writeResult.success && writeResult.commitHash) {
+                sendEvent('content', { 
+                  content: `\n\n✅ **Committed to GitHub!**\n` +
+                    `- File: ${typedInput.path}\n` +
+                    `- Commit: ${writeResult.commitHash?.substring(0, 7)}\n` +
+                    `- Railway deploying now...\n\n`
+                });
+              }
+              
+              toolResult = writeResult.commitHash 
+                ? `✅ File committed to GitHub successfully!\n\nCommit: ${writeResult.commitHash}\nURL: ${writeResult.commitUrl}\n\nRailway will auto-deploy in ~2 minutes.`
+                : `✅ File updated: ${writeResult.message}`;
 
-              // Track file changes with content for batch commits
+              // Track file changes for audit log
               fileChanges.push({ 
                 path: typedInput.path, 
                 operation: 'modify', 
@@ -2312,8 +2325,7 @@ Be conversational, be helpful, and only work when asked!`;
               });
 
               sendEvent('file_change', { file: { path: typedInput.path, operation: 'modify' } });
-              toolResult = `✅ File staged for commit (use commit_to_github to batch all changes)`;
-              console.log(`[META-SYSOP] ✅ File staged for batch commit: ${typedInput.path}`);
+              console.log(`[META-SYSOP] ✅ File committed immediately: ${typedInput.path}`);
             } else if (name === 'listPlatformDirectory') {
               const typedInput = input as { directory: string };
               sendEvent('progress', { message: `Listing ${typedInput.directory}...` });
