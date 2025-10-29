@@ -2992,57 +2992,11 @@ Be conversational, be helpful, and only work when asked!`;
         // If Claude doesn't call the right tools, it's a prompt engineering issue, not something to fix with forcing
         console.log(`[META-SYSOP] Tool results added - proceeding to next iteration naturally`);
       } else {
-        // No tool calls this iteration - check if we should continue
-        // 🐛 FIX: Don't end if there are tasks still in progress - Meta-SySop might need another turn
-        console.log(`[META-SYSOP-CONTINUATION] Iteration ${iterationCount}: No tool calls, checking if should continue...`);
-        console.log(`[META-SYSOP-CONTINUATION] Active task list ID: ${activeTaskListId || 'none'}`);
-        
-        // 🚨 INFINITE LOOP PREVENTION: Track consecutive empty iterations
-        consecutiveEmptyIterations++;
-        console.log(`[META-SYSOP-CONTINUATION] Consecutive empty iterations: ${consecutiveEmptyIterations}/${MAX_EMPTY_ITERATIONS}`);
-        
-        if (consecutiveEmptyIterations >= MAX_EMPTY_ITERATIONS) {
-          console.log(`[META-SYSOP-CONTINUATION] 🛑 STOPPING - ${MAX_EMPTY_ITERATIONS} consecutive iterations without tool calls (infinite loop detected)`);
-          sendEvent('progress', { message: `⚠️ Meta-SySop appears stuck - stopping after ${consecutiveEmptyIterations} empty iterations` });
-          continueLoop = false;
-        } else if (activeTaskListId) {
-          try {
-            const taskCheck = await readTaskList({ userId });
-            console.log(`[META-SYSOP-CONTINUATION] Task list read success: ${taskCheck.success}`);
-            console.log(`[META-SYSOP-CONTINUATION] Task lists found: ${taskCheck.taskLists?.length || 0}`);
-            
-            const sessionTaskList = taskCheck.taskLists?.find((list: any) => list.id === activeTaskListId);
-            console.log(`[META-SYSOP-CONTINUATION] Session task list found: ${!!sessionTaskList}`);
-            console.log(`[META-SYSOP-CONTINUATION] Tasks: ${sessionTaskList?.tasks?.length || 0}`);
-            
-            const allTasks = sessionTaskList?.tasks || [];
-            const inProgressTasks = allTasks.filter((t: any) => t.status === 'in_progress');
-            const pendingTasks = allTasks.filter((t: any) => t.status === 'pending');
-            const completedTasks = allTasks.filter((t: any) => t.status === 'completed');
-            
-            console.log(`[META-SYSOP-CONTINUATION] Completed: ${completedTasks.length}, In-progress: ${inProgressTasks.length}, Pending: ${pendingTasks.length}`);
-            
-            // ✅ FULL AUTONOMY: Let Meta-SySop decide when to continue
-            // No forcing, no micromanagement - trust the AI to do its job
-            const hasIncompleteTasks = inProgressTasks.length > 0 || pendingTasks.length > 0;
-            
-            if (hasIncompleteTasks && iterationCount < MAX_ITERATIONS) {
-              console.log(`[META-SYSOP-CONTINUATION] ✅ Continuing naturally - incomplete tasks remain`);
-              continueLoop = true; // Continue but don't inject forcing messages
-            } else {
-              // Either all tasks done or hit iteration limit
-              console.log(`[META-SYSOP-CONTINUATION] ❌ Ending - all tasks complete or limit reached (iteration ${iterationCount}/${MAX_ITERATIONS})`);
-              continueLoop = false;
-            }
-          } catch (error: any) {
-            console.error('[META-SYSOP-CONTINUATION] Failed to check task status:', error);
-            continueLoop = false;
-          }
-        } else {
-          // No task list - end normally
-          console.log('[META-SYSOP-CONTINUATION] No task list - ending session naturally');
-          continueLoop = false;
-        }
+        // 🎯 TRUST CLAUDE: No tool calls = Claude is done
+        // When Claude stops calling tools, it means the work is complete
+        // Don't second-guess or check tasks - trust the AI
+        console.log(`[META-SYSOP] Iteration ${iterationCount}: No tool calls - Meta-SySop is done`);
+        continueLoop = false;
       }
     }
 
