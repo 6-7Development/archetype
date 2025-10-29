@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
-import { Send, Square, ChevronDown, ChevronRight, Shield, Zap, Brain, Infinity, Rocket, Wrench, User, Copy, Check, Loader2, XCircle, FileCode, Terminal, CheckCircle, Clock } from "lucide-react";
+import { Send, Square, ChevronDown, ChevronRight, Shield, Zap, Brain, Infinity, Rocket, Wrench, User, Copy, Check, Loader2, XCircle, FileCode, Terminal, CheckCircle, Clock, Upload, X, File, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -28,12 +28,21 @@ interface Section {
   };
 }
 
+interface Attachment {
+  fileName: string;
+  fileType: 'image' | 'code' | 'log' | 'text';
+  content: string; // base64 for images, text for others
+  mimeType?: string;
+  size: number;
+}
+
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
   sections?: Section[]; // Structured sections for agent responses
   isStreaming?: boolean; // Flag to indicate if this message is currently streaming
+  attachments?: Attachment[]; // File attachments
 }
 
 interface MetaSySopChatProps {
@@ -196,6 +205,104 @@ async function retryFetch(url: string, options: RequestInit, maxRetries = 3): Pr
   throw lastError || new Error('Fetch failed after retries');
 }
 
+// File type detection
+function detectFileType(fileName: string, mimeType?: string): Attachment['fileType'] {
+  const ext = fileName.split('.').pop()?.toLowerCase() || '';
+  
+  // Check mime type first
+  if (mimeType?.startsWith('image/')) return 'image';
+  
+  // Check by extension
+  if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].includes(ext)) return 'image';
+  if (['js', 'ts', 'tsx', 'jsx', 'py', 'java', 'cpp', 'c', 'cs', 'go', 'rs', 'php', 'rb', 'swift', 'kt', 'dart', 'vue', 'css', 'html', 'xml', 'json', 'yaml', 'yml', 'toml', 'ini', 'sh', 'bash', 'ps1', 'sql'].includes(ext)) return 'code';
+  if (['log', 'txt'].includes(ext)) return 'log';
+  
+  // Default to text
+  return 'text';
+}
+
+// Convert file to base64 or text
+async function fileToContent(file: File): Promise<{ content: string; isBase64: boolean }> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      const result = e.target?.result;
+      if (typeof result === 'string') {
+        // For images, keep as data URL (includes base64)
+        if (file.type.startsWith('image/')) {
+          resolve({ content: result, isBase64: true });
+        } else {
+          // For text files, extract text content
+          resolve({ content: result, isBase64: false });
+        }
+      } else {
+        reject(new Error('Failed to read file'));
+      }
+    };
+    
+    reader.onerror = () => reject(reader.error);
+    
+    // Read images as data URL, text files as text
+    if (file.type.startsWith('image/')) {
+      reader.readAsDataURL(file);
+    } else {
+      reader.readAsText(file);
+    }
+  });
+}
+
+// Format file size
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// AttachmentPreview component
+function AttachmentPreview({ attachment, onRemove }: { attachment: Attachment; onRemove: () => void }) {
+  const [showPreview, setShowPreview] = useState(false);
+  
+  return (
+    <div className="relative group">
+      <div className="flex items-center gap-2 p-2 bg-muted rounded-lg border border-border">
+        {attachment.fileType === 'image' ? (
+          <Image className="w-4 h-4 text-muted-foreground shrink-0" />
+        ) : (
+          <File className="w-4 h-4 text-muted-foreground shrink-0" />
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="text-xs font-medium truncate">{attachment.fileName}</div>
+          <div className="text-xs text-muted-foreground">{formatFileSize(attachment.size)}</div>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+          onClick={onRemove}
+        >
+          <X className="h-3 w-3" />
+        </Button>
+      </div>
+      
+      {/* Image preview on hover */}
+      {attachment.fileType === 'image' && attachment.content && (
+        <div className="absolute bottom-full mb-2 left-0 z-10 hidden group-hover:block">
+          <div className="p-2 bg-popover border border-border rounded-lg shadow-lg">
+            <img 
+              src={attachment.content} 
+              alt={attachment.fileName}
+              className="max-w-[200px] max-h-[200px] rounded"
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopChatProps) {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -210,9 +317,13 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
   const [progressMessage, setProgressMessage] = useState("");
   const [showTaskList, setShowTaskList] = useState(true);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastEventTimeRef = useRef<number>(Date.now());
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -231,6 +342,171 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
       }
     };
   }, []);
+
+  // Paste handler for images and text
+  useEffect(() => {
+    const handlePaste = async (e: ClipboardEvent) => {
+      // Only handle paste in our textarea
+      if (document.activeElement !== textareaRef.current) return;
+      
+      const items = Array.from(e.clipboardData?.items || []);
+      
+      for (const item of items) {
+        // Handle images
+        if (item.type.startsWith('image/')) {
+          e.preventDefault();
+          const file = item.getAsFile();
+          if (file) {
+            try {
+              const { content } = await fileToContent(file);
+              const attachment: Attachment = {
+                fileName: `paste-${Date.now()}.${file.type.split('/')[1]}`,
+                fileType: 'image',
+                content,
+                mimeType: file.type,
+                size: file.size,
+              };
+              setAttachments(prev => [...prev, attachment]);
+              toast({
+                title: "Image pasted",
+                description: "Image added to attachments",
+              });
+            } catch (error) {
+              console.error('Failed to process pasted image:', error);
+              toast({
+                title: "Failed to paste image",
+                variant: "destructive",
+              });
+            }
+          }
+        }
+        // Handle text/code (let default behavior handle regular text paste)
+        else if (item.type === 'text/plain') {
+          // Check if it looks like code (has multiple lines, indentation, or code patterns)
+          const text = await new Promise<string>((resolve) => {
+            item.getAsString(resolve);
+          });
+          
+          const looksLikeCode = text.includes('\n') && (
+            text.includes('  ') || // indentation
+            text.includes('\t') || // tabs
+            /^(import|export|const|let|var|function|class|if|for|while)/m.test(text) || // code keywords
+            /[{}\[\]();]/.test(text) // code syntax
+          );
+          
+          if (looksLikeCode && text.length > 100) {
+            e.preventDefault();
+            // Offer to add as code attachment
+            const attachment: Attachment = {
+              fileName: `code-snippet-${Date.now()}.txt`,
+              fileType: 'code',
+              content: text,
+              mimeType: 'text/plain',
+              size: new Blob([text]).size,
+            };
+            setAttachments(prev => [...prev, attachment]);
+            toast({
+              title: "Code snippet added",
+              description: "Code added as attachment",
+            });
+          }
+          // Otherwise let default paste behavior handle it
+        }
+      }
+    };
+    
+    document.addEventListener('paste', handlePaste);
+    return () => document.removeEventListener('paste', handlePaste);
+  }, [toast]);
+
+  // Drag and drop handlers
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only set to false if we're leaving the main container
+    if (e.currentTarget === e.target) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    await processFiles(files);
+  };
+
+  // File processing
+  const processFiles = async (files: File[]) => {
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB limit
+    const newAttachments: Attachment[] = [];
+    
+    for (const file of files) {
+      if (file.size > MAX_FILE_SIZE) {
+        toast({
+          title: "File too large",
+          description: `${file.name} exceeds 10MB limit`,
+          variant: "destructive",
+        });
+        continue;
+      }
+      
+      try {
+        const { content } = await fileToContent(file);
+        const attachment: Attachment = {
+          fileName: file.name,
+          fileType: detectFileType(file.name, file.type),
+          content,
+          mimeType: file.type || undefined,
+          size: file.size,
+        };
+        newAttachments.push(attachment);
+      } catch (error) {
+        console.error('Failed to process file:', error);
+        toast({
+          title: "Failed to process file",
+          description: file.name,
+          variant: "destructive",
+        });
+      }
+    }
+    
+    if (newAttachments.length > 0) {
+      setAttachments(prev => [...prev, ...newAttachments]);
+      toast({
+        title: "Files added",
+        description: `${newAttachments.length} file(s) attached`,
+      });
+    }
+  };
+
+  // File input handler
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    await processFiles(files);
+    // Reset input to allow selecting the same file again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Remove attachment
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
 
   // Timeout detection: Check for stalled SSE connections
   useEffect(() => {
@@ -292,9 +568,11 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
         id: Date.now().toString(),
         role: "user",
         content: message,
+        attachments: attachments.length > 0 ? [...attachments] : undefined,
       };
       setMessages(prev => [...prev, userMsg]);
       setInput("");
+      setAttachments([]); // Clear attachments after sending
       
       setIsStreaming(true);
       setTasks([]);
@@ -320,6 +598,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
 
       console.log('[META-SYSOP] ============ SSE STREAM STARTING ============');
       console.log('[META-SYSOP] Message:', message);
+      console.log('[META-SYSOP] Attachments:', attachments.length);
       console.log('[META-SYSOP] Project:', selectedProjectId || 'platform code');
       console.log('[META-SYSOP] =========================================');
 
@@ -336,6 +615,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
         signal: abortController.signal,
         body: JSON.stringify({
           message,
+          attachments: attachments.length > 0 ? attachments : undefined,
           projectId: selectedProjectId,
           autoCommit: true,
           autoPush: true, // ✅ Push to GitHub after committing (triggers Railway deployment)
@@ -571,6 +851,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
       setStreamingMessageId(null);
       setProgressStatus('idle');
       setProgressMessage("");
+      setAttachments([]); // Clear attachments on error
       
       if (activeTaskId) {
         setTasks(prev => prev.map(t => 
@@ -611,6 +892,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
       setStreamingMessageId(null);
       setProgressStatus('idle');
       setProgressMessage("");
+      setAttachments([]); // Clear attachments when stopping
       
       toast({ title: "🛑 Stopped" });
     }
@@ -624,7 +906,34 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
   };
 
   return (
-    <div className="flex h-full overflow-hidden bg-background">
+    <div 
+      className="flex h-full overflow-hidden bg-background"
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
+      {/* Drag overlay */}
+      {isDragging && (
+        <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center">
+          <div className="p-8 bg-card border-2 border-dashed border-primary rounded-lg">
+            <Upload className="h-12 w-12 mx-auto mb-4 text-primary" />
+            <p className="text-lg font-medium text-center">Drop files here</p>
+            <p className="text-sm text-muted-foreground text-center mt-2">Images, code files, logs, or text files</p>
+          </div>
+        </div>
+      )}
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        className="hidden"
+        onChange={handleFileSelect}
+        accept="image/*,text/*,.js,.ts,.tsx,.jsx,.py,.java,.cpp,.c,.cs,.go,.rs,.php,.rb,.swift,.kt,.dart,.vue,.css,.html,.xml,.json,.yaml,.yml,.toml,.ini,.sh,.bash,.ps1,.sql,.log,.txt"
+      />
+
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Active Task Header */}
@@ -675,6 +984,9 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                   I'm Meta-SySop, your autonomous platform healing agent. I can diagnose and fix issues 
                   with the Archetype platform itself. Tell me what needs to be fixed.
                 </p>
+                <div className="mt-4 text-sm text-muted-foreground">
+                  💡 Tip: You can upload images, paste screenshots, or attach code/logs
+                </div>
               </div>
             )}
 
@@ -695,8 +1007,28 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                 
                 <div className={cn("rounded-lg max-w-[85%]", message.role === "user" ? "w-auto" : "w-full")}>
                   {message.role === "user" ? (
-                    <div className="px-4 py-3 bg-primary text-primary-foreground border border-primary rounded-lg">
-                      <div className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</div>
+                    <div className="space-y-2">
+                      <div className="px-4 py-3 bg-primary text-primary-foreground border border-primary rounded-lg">
+                        <div className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</div>
+                      </div>
+                      {/* User attachments */}
+                      {message.attachments && message.attachments.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {message.attachments.map((attachment, idx) => (
+                            <div key={idx} className="flex items-center gap-2 p-2 bg-muted rounded-lg border border-border">
+                              {attachment.fileType === 'image' ? (
+                                <Image className="w-4 h-4 text-muted-foreground shrink-0" />
+                              ) : (
+                                <File className="w-4 h-4 text-muted-foreground shrink-0" />
+                              )}
+                              <div className="text-xs">
+                                <div className="font-medium">{attachment.fileName}</div>
+                                <div className="text-muted-foreground">{formatFileSize(attachment.size)}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -842,17 +1174,43 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
               )}
             </div>
 
+            {/* Attachments preview */}
+            {attachments.length > 0 && (
+              <div className="flex flex-wrap gap-2 p-2 bg-muted/50 rounded-lg border border-border">
+                {attachments.map((attachment, idx) => (
+                  <AttachmentPreview
+                    key={idx}
+                    attachment={attachment}
+                    onRemove={() => removeAttachment(idx)}
+                  />
+                ))}
+              </div>
+            )}
+
             {/* Input field */}
             <div className="flex gap-2">
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Tell me what needs to be fixed..."
-                className="min-h-[60px] max-h-[200px] resize-none"
-                disabled={isStreaming}
-                data-testid="input-message"
-              />
+              <div className="flex-1 relative">
+                <Textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Tell me what needs to be fixed... (paste images, drag files, or use upload button)"
+                  className="min-h-[60px] max-h-[200px] resize-none pr-10"
+                  disabled={isStreaming}
+                  data-testid="input-message"
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-2 bottom-2 h-8 w-8"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isStreaming}
+                  title="Upload files"
+                >
+                  <Upload className="h-4 w-4" />
+                </Button>
+              </div>
               <div className="flex flex-col gap-2">
                 <Button
                   onClick={handleSend}
