@@ -394,8 +394,47 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                     break;
 
                   case 'progress':
-                    setProgressMessage(data.message || '');
+                    // 🎯 FIX: Make progress updates visible in chat chronologically
+                    const progressText = data.message || '';
+                    setProgressMessage(progressText);
                     setProgressStatus('working');
+                    
+                    // Create a visible status section for important progress updates
+                    if (progressText) {
+                      // Check if this is an important update (contains emoji or key action words)
+                      const isImportant = progressText.match(/[🎯🚨📋✅❌🔧⚠️🚀📤]/g) || 
+                                         progressText.match(/creating|reading|writing|committing|completed|failed|done/i);
+                      
+                      if (isImportant) {
+                        // Create a status section for this progress update
+                        const statusSection: Section = {
+                          id: `progress-${Date.now()}-${Math.random()}`,
+                          type: 'text',
+                          title: '📊 Status Update',
+                          content: progressText,
+                          status: 'finished',
+                          startTime: Date.now(),
+                          endTime: Date.now(),
+                        };
+                        
+                        setMessages(prev => prev.map(msg => 
+                          msg.id === assistantMsgId
+                            ? { ...msg, sections: [...(msg.sections || []), statusSection] }
+                            : msg
+                        ));
+                      } else {
+                        // For less important updates, just append to content
+                        setMessages(prev => prev.map(msg => 
+                          msg.id === assistantMsgId
+                            ? { 
+                                ...msg, 
+                                content: msg.content + (msg.content && !msg.content.endsWith('\n') ? '\n' : '') + 
+                                         `\n*${progressText}*\n`
+                              }
+                            : msg
+                        ));
+                      }
+                    }
                     break;
 
                   case 'task_list_created':
@@ -422,6 +461,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                     break;
 
                   case 'task_updated':
+                    // Update task status
                     setTasks(prev => prev.map(t => 
                       t.id === data.taskId 
                         ? { ...t, status: data.status as AgentTask['status'] }
@@ -431,6 +471,29 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                       setActiveTaskId(data.taskId);
                     }
                     console.log('[META-SYSOP] Task updated:', data.taskId, '→', data.status);
+                    
+                    // 🎯 FIX: Show task completion in chat for visibility
+                    if (data.status === 'completed') {
+                      // Find the task title to show what was completed
+                      const completedTask = tasks.find(t => t.id === data.taskId);
+                      if (completedTask) {
+                        const taskCompleteSection: Section = {
+                          id: `task-complete-${Date.now()}`,
+                          type: 'text',
+                          title: '✅ Task Completed',
+                          content: `**${completedTask.title}**\n\n${completedTask.description || 'Task completed successfully'}`,
+                          status: 'finished',
+                          startTime: Date.now(),
+                          endTime: Date.now(),
+                        };
+                        
+                        setMessages(prev => prev.map(msg => 
+                          msg.id === assistantMsgId
+                            ? { ...msg, sections: [...(msg.sections || []), taskCompleteSection] }
+                            : msg
+                        ));
+                      }
+                    }
                     break;
 
                   case 'done': {

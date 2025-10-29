@@ -1133,63 +1133,89 @@ ${projectId ? `
 - Use platform file tools (readPlatformFile, writePlatformFile, etc.)
 - BATCH ALL FILE CHANGES then commit ONCE via commit_to_github()
 
-⚠️ ⚠️ ⚠️ **CRITICAL - MANDATORY WORKFLOW ORDER** ⚠️ ⚠️ ⚠️
+⚠️ ⚠️ ⚠️ **CRITICAL - MANDATORY WORKFLOW** ⚠️ ⚠️ ⚠️
 
-**YOU MUST FOLLOW THIS EXACT SEQUENCE - NO EXCEPTIONS:**
+**YOU MUST FOLLOW THIS EXACT WORKFLOW - NO EXCEPTIONS:**
 
-**PHASE 1: PLANNING (ALWAYS FIRST!)**
-1. Create task list via createTaskList() - MANDATORY for all work requests
-2. Brief acknowledgment to user (1 sentence)
+**STEP 1: ACCEPT THE JOB**
+- Read and acknowledge the user's request clearly
+- Confirm what you understand you need to do
 
-**PHASE 2: UNDERSTANDING (READ BEFORE WRITING!)**
-3. Read ALL relevant files via readPlatformFile()
-4. Understand current implementation and dependencies
-5. Check related files that might be affected
+**STEP 2: CREATE TASK LIST**
+- ALWAYS create a task list using createTaskList() for ANY work request
+- Break the work into clear, logical steps
+- Include these standard tasks:
+  * Read/analyze relevant files
+  * Make necessary changes
+  * Test/verify the changes
+  * Commit all changes to GitHub
 
-**PHASE 3: IMPLEMENTATION (MAKE ALL CHANGES)**
-6. Write ALL modified files via writePlatformFile() - files are STAGED, not committed
-7. Update tasks as you complete each one via updateTask()
-8. Verify all changes are complete
+**STEP 3: READ BEFORE WRITING**
+- Read ALL relevant files using readPlatformFile()
+- Understand the current implementation
+- Check dependencies and related files
+- NEVER write files before reading them
 
-**PHASE 4: COMMIT (ONLY AT THE END!)**
-9. Call commit_to_github() ONCE with all staged files
-10. Railway auto-deploys your changes
+**STEP 4: IMPLEMENT ALL CHANGES**
+- Make ALL necessary changes using writePlatformFile()
+- Files are STAGED (not committed immediately)
+- Update tasks as you complete them using updateTask()
+- Continue until ALL tasks are done
 
-**Example: "Add upload button to chat"**
+**STEP 5: VERIFY YOUR WORK**
+- Review what you changed
+- Make sure all tasks are marked completed
+- Confirm all necessary files were modified
 
-✅ **CORRECT WORKFLOW:**
+**STEP 6: COMMIT EVERYTHING AT ONCE**
+- Call commit_to_github() ONCE with all staged files
+- Write a clear commit message describing ALL changes
+- Wait for Railway auto-deployment confirmation
+
+**🚨 CRITICAL RULES:**
+1. NEVER skip the task list - it tracks your progress
+2. NEVER write files without reading them first
+3. NEVER commit before all changes are complete
+4. NEVER end the conversation with uncommitted staged files
+5. ALWAYS update task status as you work
+6. ALWAYS commit when all tasks are done
+
+**Example Workflow:**
 \`\`\`
-1. createTaskList([
-     "Read existing chat component files",
-     "Add file upload UI to chat interface", 
-     "Add file attachment handler",
-     "Test upload functionality",
-     "Commit all changes"
-   ])
-2. "I'll add an upload button to the Meta-SySop chat interface."
-3. readPlatformFile("client/src/components/meta-sysop-chat.tsx")
-4. readPlatformFile("server/routes/metaSysopChat.ts")  
-5. writePlatformFile("client/src/components/meta-sysop-chat.tsx", ...) → STAGED
-6. writePlatformFile("server/routes/metaSysopChat.ts", ...) → STAGED
-7. updateTask(taskId, "completed")
-8. commit_to_github("Add file upload button to Meta-SySop chat") → COMMITS ALL
+User: "Fix the mobile navigation menu"
+
+You:
+1. "I'll fix the mobile navigation menu. Let me create a task list."
+2. createTaskList({
+     title: "Fix mobile navigation menu",
+     tasks: [
+       { title: "Read navigation component code", description: "Understand current implementation" },
+       { title: "Identify and fix mobile issues", description: "Fix responsive styling and interactions" },
+       { title: "Test the fixes", description: "Verify menu works on mobile" },
+       { title: "Commit changes", description: "Deploy to GitHub/Railway" }
+     ]
+   })
+3. "Reading the navigation files..."
+4. readPlatformFile("client/src/components/Navigation.tsx")
+5. readPlatformFile("client/src/styles/navigation.css")
+6. "I found the issue - the mobile breakpoint is incorrect. Fixing now..."
+7. writePlatformFile("client/src/components/Navigation.tsx", ...) → STAGED
+8. writePlatformFile("client/src/styles/navigation.css", ...) → STAGED
+9. updateTask(taskId, "completed", "Fixed mobile breakpoint")
+10. "All changes complete. Committing to GitHub..."
+11. commit_to_github({ commitMessage: "Fix mobile navigation menu - corrected breakpoint and improved touch interactions" })
+12. "✅ Done! Changes committed and deploying to Railway."
 \`\`\`
 
-❌ **WRONG - DON'T DO THIS:**
-\`\`\`
-1. "I'll add the upload button now..."
-2. writePlatformFile("client/src/components/meta-sysop-chat.tsx", ...)
-3. commit_to_github("Add upload button") ← TOO EARLY! Didn't read files first!
-(Results in: Broken code, missing dependencies, incomplete feature)
-\`\`\`
+**What NOT to Do:**
+❌ Skip the task list
+❌ Start writing files immediately without reading
+❌ Commit after every file change (batch them!)
+❌ End conversation with staged but uncommitted files
+❌ Talk for multiple iterations without using tools
+❌ Ignore your task list progress
 
-🚨 **NEVER commit_to_github() until:**
-- ✅ You've read all relevant files
-- ✅ You've written ALL necessary changes
-- ✅ You've updated all affected components
-- ✅ All tasks are marked complete
-
-Your commits will have prefix "[Meta-SySop 🤖]" so user can distinguish from manual commits.
+**Remember:** You are maintaining a production platform. Be systematic, thorough, and always commit your work.
 `}
 - Be conversational and helpful
 - Only work when explicitly asked
@@ -2052,6 +2078,14 @@ Be conversational, be helpful, and only work when asked!`;
     let iterationCount = 0;
     const MAX_ITERATIONS = 25; // 🔥 Increased from 5 - Replit Agent runs 20+ iterations for complex work
     let commitSuccessful = false; // Track if commit_to_github succeeded
+    
+    // 🎯 NEW: Workflow phase tracking to enforce systematic progression
+    type WorkflowPhase = 'INIT' | 'PLANNING' | 'READING' | 'IMPLEMENTING' | 'VERIFYING' | 'COMMITTING' | 'DONE';
+    let currentPhase: WorkflowPhase = 'INIT';
+    let hasCreatedTaskList = false;
+    let hasReadFiles = false;
+    let hasWrittenFiles = false;
+    let consecutiveNoToolIterations = 0; // Track iterations without tool use
 
     // ✅ REMOVED: Casual greeting bypass - Meta-SySop should ALWAYS be conversational like Replit Agent
     // Every message goes to Claude for proper conversational awareness and context
@@ -2291,10 +2325,12 @@ Be conversational, be helpful, and only work when asked!`;
               if (result.success) {
                 // Track the active task list ID for cleanup
                 activeTaskListId = result.taskListId!;
+                hasCreatedTaskList = true; // ✅ Mark that task list was created
+                currentPhase = 'PLANNING'; // ✅ Advance to PLANNING phase
                 toolResult = `✅ Task list created successfully!\n\nTask List ID: ${result.taskListId}\n\nTasks are now visible inline in the chat. The user can see your progress in real-time! Update task status as you work using updateTask().`;
                 sendEvent('task_list_created', { taskListId: result.taskListId });
                 sendEvent('content', { content: `✅ **Task list created!** Track my progress in the card above.\n\n` });
-                console.log('[META-SYSOP] Task list created:', result.taskListId);
+                console.log('[META-SYSOP] Task list created:', result.taskListId, '- Phase:', currentPhase);
                 
                 // ✅ FULL AUTONOMY: No forcing, no micromanagement
                 // Meta-SySop will naturally proceed with tasks like Replit Agent does
@@ -2360,6 +2396,11 @@ Be conversational, be helpful, and only work when asked!`;
               const typedInput = input as { path: string };
               sendEvent('progress', { message: `Reading ${typedInput.path}...` });
               toolResult = await platformHealing.readPlatformFile(typedInput.path);
+              hasReadFiles = true; // ✅ Track that files were read
+              if (currentPhase === 'PLANNING') {
+                currentPhase = 'READING'; // ✅ Advance to READING phase
+                console.log('[META-SYSOP] Phase transition: PLANNING → READING');
+              }
             } else if (name === 'writePlatformFile') {
               const typedInput = input as { path: string; content: string };
 
@@ -2393,9 +2434,15 @@ Be conversational, be helpful, and only work when asked!`;
                 contentAfter: typedInput.content 
               });
 
+              hasWrittenFiles = true; // ✅ Track that files were written
+              if (currentPhase === 'READING' || currentPhase === 'PLANNING') {
+                currentPhase = 'IMPLEMENTING'; // ✅ Advance to IMPLEMENTING phase
+                console.log('[META-SYSOP] Phase transition: → IMPLEMENTING');
+              }
+
               sendEvent('file_change', { file: { path: typedInput.path, operation: 'modify' } });
               toolResult = `✅ File staged for commit (use commit_to_github to batch all changes)`;
-              console.log(`[META-SYSOP] ✅ File staged for batch commit: ${typedInput.path}`);
+              console.log(`[META-SYSOP] ✅ File staged for batch commit: ${typedInput.path} - Phase: ${currentPhase}`);
             } else if (name === 'listPlatformDirectory') {
               const typedInput = input as { directory: string };
               sendEvent('progress', { message: `Listing ${typedInput.directory}...` });
@@ -2647,6 +2694,7 @@ Be conversational, be helpful, and only work when asked!`;
                     );
 
                     commitSuccessful = true; // Track commit success for task validation
+                    currentPhase = 'COMMITTING'; // ✅ Mark as committing phase
                     sendEvent('progress', { message: `✅ Committed to GitHub: ${result.commitHash}` });
                     sendEvent('progress', { message: `🚀 Railway will auto-deploy in 2-3 minutes` });
 
@@ -2657,6 +2705,10 @@ Be conversational, be helpful, and only work when asked!`;
                       `⏱️ Changes will be live in 2-3 minutes\n\n` +
                       `Files committed:\n${filesToCommit.map(f => `- ${f.path}`).join('\n')}\n\n` +
                       `Note: This works on Railway production (no local .git required)!`;
+                    
+                    console.log('[META-SYSOP] ✅ Commit successful - Phase:', currentPhase);
+                    // Clear file changes after successful commit
+                    fileChanges.length = 0;
                   }
                 } catch (error: any) {
                   toolResult = `❌ GitHub commit failed: ${error.message}`;
@@ -2973,12 +3025,160 @@ Be conversational, be helpful, and only work when asked!`;
         }
       }
 
-      if (toolResults.length > 0) {
+      // 🎯 NEW IMPROVED WORKFLOW CONTROL LOGIC
+      // Track whether tools were used this iteration
+      const usedToolsThisIteration = toolResults.length > 0;
+      
+      if (usedToolsThisIteration) {
+        // Reset no-tool counter when tools are actively used
+        consecutiveNoToolIterations = 0;
+        console.log(`[META-SYSOP-WORKFLOW] Iteration ${iterationCount}: Tools used - continuing`);
+      } else {
+        consecutiveNoToolIterations++;
+        console.log(`[META-SYSOP-WORKFLOW] Iteration ${iterationCount}: No tools used (${consecutiveNoToolIterations} consecutive)`);
+      }
+
+      // 🚨 CRITICAL FIX #1: COMMIT ENFORCEMENT
+      // If files are staged but not committed, and Meta-SySop is idle, force commit
+      if (fileChanges.length > 0 && !commitSuccessful && consecutiveNoToolIterations >= 1) {
+        console.log(`[META-SYSOP-WORKFLOW] ⚠️  COMMIT ENFORCEMENT: ${fileChanges.length} files staged, no commit yet`);
+        console.log(`[META-SYSOP-WORKFLOW] 🔧 Injecting commit reminder...`);
+        
+        const commitReminder = `🚨 CRITICAL REMINDER:\n\n` +
+          `You have ${fileChanges.length} file(s) staged for commit but have NOT called commit_to_github() yet!\n\n` +
+          `Staged files:\n${fileChanges.map(f => `  • ${f.path}`).join('\n')}\n\n` +
+          `⚠️  These changes will be LOST if you don't commit them now!\n\n` +
+          `YOU MUST call commit_to_github() in your NEXT response with a clear commit message describing all your changes.\n\n` +
+          `Example: commit_to_github({ commitMessage: "Fix navigation menu and update styles" })\n\n` +
+          `DO NOT respond with anything else. Call commit_to_github() NOW.`;
+        
         conversationMessages.push({
           role: 'user',
-          content: toolResults,
+          content: [{ type: 'text', text: commitReminder }]
         });
         
+        sendEvent('progress', { message: '⚠️  Reminding Meta-SySop to commit staged changes...' });
+        consecutiveNoToolIterations = 0; // Reset to give one more chance
+        continue; // Continue to force commit
+      }
+
+      // 🚨 CRITICAL FIX #2: IMPROVED TASK COMPLETION CHECK
+      // Check if all tasks are complete before allowing exit
+      if (activeTaskListId && consecutiveNoToolIterations >= 2) {
+        console.log(`[META-SYSOP-WORKFLOW] Checking task completion before allowing exit...`);
+        
+        try {
+          const taskCheck = await readTaskList({ userId });
+          const sessionTaskList = taskCheck.taskLists?.find((list: any) => list.id === activeTaskListId);
+          
+          if (sessionTaskList && sessionTaskList.tasks) {
+            const allTasks = sessionTaskList.tasks;
+            const incompleteTasks = allTasks.filter((t: any) => 
+              t.status === 'pending' || t.status === 'in_progress'
+            );
+            const completedTasks = allTasks.filter((t: any) => t.status === 'completed');
+            
+            console.log(`[META-SYSOP-WORKFLOW] Tasks: ${completedTasks.length}/${allTasks.length} completed`);
+            
+            // If tasks are incomplete, remind Meta-SySop
+            if (incompleteTasks.length > 0 && consecutiveNoToolIterations === 2) {
+              console.log(`[META-SYSOP-WORKFLOW] ⚠️  ${incompleteTasks.length} tasks still incomplete!`);
+              
+              const taskReminder = `📋 TASK STATUS CHECK:\n\n` +
+                `You still have ${incompleteTasks.length} incomplete task(s):\n\n` +
+                incompleteTasks.map((t: any) => `  • [${t.status.toUpperCase()}] ${t.title}`).join('\n') + '\n\n' +
+                `Please continue working on these tasks. When you complete each one, call updateTask() to mark it complete.\n\n` +
+                `Once ALL tasks are done, call commit_to_github() to commit your changes.`;
+              
+              conversationMessages.push({
+                role: 'user',
+                content: [{ type: 'text', text: taskReminder }]
+              });
+              
+              sendEvent('progress', { message: '📋 Reminding Meta-SySop about incomplete tasks...' });
+              consecutiveNoToolIterations = 0;
+              continue;
+            }
+          }
+        } catch (error: any) {
+          console.error('[META-SYSOP-WORKFLOW] Failed to check task status:', error);
+        }
+      }
+
+      // 🚨 CRITICAL FIX #3: PREVENT PREMATURE EXIT
+      // Only stop if truly stuck (5+ iterations without tools AND no staged files AND tasks complete)
+      if (consecutiveNoToolIterations >= 5) {
+        console.log(`[META-SYSOP-WORKFLOW] ⚠️  Meta-SySop appears stuck (${consecutiveNoToolIterations} iterations no tools)`);
+        
+        // Final checks before stopping
+        const hasStagedFiles = fileChanges.length > 0;
+        const hasCommitted = commitSuccessful;
+        
+        if (hasStagedFiles && !hasCommitted) {
+          console.log(`[META-SYSOP-WORKFLOW] ❌ CANNOT STOP: ${fileChanges.length} files not committed!`);
+          // Force one more reminder
+          consecutiveNoToolIterations = 1;
+          continue;
+        }
+        
+        console.log(`[META-SYSOP-WORKFLOW] ❌ STOPPING: Truly stuck, no uncommitted files`);
+        
+        // Auto-complete any remaining tasks
+        if (activeTaskListId) {
+          try {
+            const taskCheck = await readTaskList({ userId });
+            const sessionTaskList = taskCheck.taskLists?.find((list: any) => list.id === activeTaskListId);
+            const incompleteTasks = sessionTaskList?.tasks?.filter((t: any) =>
+              t.status === 'pending' || t.status === 'in_progress'
+            ) || [];
+
+            for (const task of incompleteTasks) {
+              await updateTask({
+                userId,
+                taskId: task.id,
+                status: 'completed',
+                result: '⚠️ Auto-completed - Meta-SySop session ended',
+                completedAt: new Date()
+              });
+            }
+            console.log(`[META-SYSOP-WORKFLOW] Auto-completed ${incompleteTasks.length} remaining tasks`);
+          } catch (error: any) {
+            console.error('[META-SYSOP-WORKFLOW] Failed to auto-complete tasks:', error);
+          }
+        }
+        
+        continueLoop = false;
+      }
+      
+      // 🎯 CONTINUE if work is in progress
+      if (hasWrittenFiles && !commitSuccessful) {
+        console.log(`[META-SYSOP-WORKFLOW] ✅ Continuing - files written but not committed yet`);
+        continueLoop = true;
+      }
+      
+      // 🎯 CONTINUE if tasks are incomplete
+      if (activeTaskListId && consecutiveNoToolIterations < 5) {
+        try {
+          const taskCheck = await readTaskList({ userId });
+          const sessionTaskList = taskCheck.taskLists?.find((list: any) => list.id === activeTaskListId);
+          const hasIncompleteTasks = sessionTaskList?.tasks?.some((t: any) => 
+            t.status === 'pending' || t.status === 'in_progress'
+          );
+          
+          if (hasIncompleteTasks) {
+            console.log(`[META-SYSOP-WORKFLOW] ✅ Continuing - tasks still incomplete`);
+            continueLoop = true;
+          }
+        } catch (error: any) {
+          console.error('[META-SYSOP-WORKFLOW] Failed to check tasks:', error);
+        }
+      }
+      
+      // Log phase and status
+      console.log(`[META-SYSOP-WORKFLOW] Phase: ${currentPhase}, Continue: ${continueLoop}, Iteration: ${iterationCount}/${MAX_ITERATIONS}`);
+
+      // OLD FORCING LOGIC BELOW - Keep for backward compatibility but now enhanced
+      if (toolResults.length > 0) {
         // 🚨 FORCING LOGIC (AFTER tool execution to avoid 400 errors)
         const createdTaskListThisIteration = toolNames.includes('createTaskList');
         const calledDiagnosisTools = toolNames.some(name => ['perform_diagnosis', 'architect_consult', 'execute_sql'].includes(name));
@@ -3013,86 +3213,31 @@ Be conversational, be helpful, and only work when asked!`;
         } else {
           console.log('[META-SYSOP-FORCE] ✓ No forcing needed - proceeding normally');
         }
-      } else {
-        // No tool calls this iteration - check if we should continue
-        // 🐛 FIX: Don't end if there are tasks still in progress - Meta-SySop might need another turn
-        console.log(`[META-SYSOP-CONTINUATION] Iteration ${iterationCount}: No tool calls, checking if should continue...`);
-        console.log(`[META-SYSOP-CONTINUATION] Active task list ID: ${activeTaskListId || 'none'}`);
-
-        // 🚨 STUCK DETECTION: If 3+ iterations with no tool calls, stop to prevent infinite loop
-        const recentIterations = conversationMessages.slice(-6); // Last 3 iterations (user + assistant pairs)
-        const recentToolUses = recentIterations.filter((msg: any) =>
-          msg.role === 'assistant' && msg.content.some((block: any) => block.type === 'tool_use')
-        );
-
-        if (recentToolUses.length === 0 && iterationCount > 3) {
-          console.log(`[META-SYSOP-CONTINUATION] ❌ STUCK DETECTED - No tool calls in last 3 iterations. Ending to prevent infinite loop.`);
-
-          // Auto-complete stuck tasks
-          if (activeTaskListId) {
-            try {
-              const taskCheck = await readTaskList({ userId });
-              const sessionTaskList = taskCheck.taskLists?.find((list: any) => list.id === activeTaskListId);
-              const incompleteTasks = sessionTaskList?.tasks?.filter((t: any) =>
-                t.status === 'pending' || t.status === 'in_progress'
-              ) || [];
-
-              for (const task of incompleteTasks) {
-                await updateTask({
-                  userId,
-                  taskId: task.id,
-                  status: 'completed',
-                  result: '⚠️ Auto-completed - session ended without explicit completion',
-                  completedAt: new Date()
-                });
-              }
-              console.log(`[META-SYSOP-CONTINUATION] Auto-completed ${incompleteTasks.length} stuck tasks`);
-            } catch (error: any) {
-              console.error('[META-SYSOP-CONTINUATION] Failed to auto-complete tasks:', error);
-            }
-          }
-
-          continueLoop = false;
-        }
-        else if (activeTaskListId) {
-          try {
-            const taskCheck = await readTaskList({ userId });
-            console.log(`[META-SYSOP-CONTINUATION] Task list read success: ${taskCheck.success}`);
-            console.log(`[META-SYSOP-CONTINUATION] Task lists found: ${taskCheck.taskLists?.length || 0}`);
-
-            const sessionTaskList = taskCheck.taskLists?.find((list: any) => list.id === activeTaskListId);
-            console.log(`[META-SYSOP-CONTINUATION] Session task list found: ${!!sessionTaskList}`);
-            console.log(`[META-SYSOP-CONTINUATION] Tasks: ${sessionTaskList?.tasks?.length || 0}`);
-
-            const allTasks = sessionTaskList?.tasks || [];
-            const inProgressTasks = allTasks.filter((t: any) => t.status === 'in_progress');
-            const pendingTasks = allTasks.filter((t: any) => t.status === 'pending');
-            const completedTasks = allTasks.filter((t: any) => t.status === 'completed');
-
-            console.log(`[META-SYSOP-CONTINUATION] Completed: ${completedTasks.length}, In-progress: ${inProgressTasks.length}, Pending: ${pendingTasks.length}`);
-
-            // ✅ FULL AUTONOMY: Let Meta-SySop decide when to continue
-            // No forcing, no micromanagement - trust the AI to do its job
-            const hasIncompleteTasks = inProgressTasks.length > 0 || pendingTasks.length > 0;
-
-            if (hasIncompleteTasks && iterationCount < MAX_ITERATIONS) {
-              console.log(`[META-SYSOP-CONTINUATION] ✅ Continuing naturally - incomplete tasks remain`);
-              continueLoop = true; // Continue but don't inject forcing messages
-            } else {
-              // Either all tasks done or hit iteration limit
-              console.log(`[META-SYSOP-CONTINUATION] ❌ Ending - all tasks complete or limit reached (iteration ${iterationCount}/${MAX_ITERATIONS})`);
-              continueLoop = false;
-            }
-          } catch (error: any) {
-            console.error('[META-SYSOP-CONTINUATION] Failed to check task status:', error);
-            continueLoop = false;
-          }
-        } else {
-          // No task list - end normally
-          console.log('[META-SYSOP-CONTINUATION] No task list - ending session naturally');
-          continueLoop = false;
-        }
       }
+      
+      // 🎯 End of iteration - loop will continue based on continueLoop flag set above
+    }
+
+    // === END OF MAIN LOOP ===
+    
+    console.log('[META-SYSOP] Main loop ended');
+    console.log('[META-SYSOP] Final state:');
+    console.log('  - Iterations:', iterationCount);
+    console.log('  - Phase:', currentPhase);
+    console.log('  - Committed:', commitSuccessful);
+    console.log('  - Staged files:', fileChanges.length);
+
+    // 🚨 CRITICAL: Final check for uncommitted changes
+    if (fileChanges.length > 0 && !commitSuccessful) {
+      console.log('[META-SYSOP] ⚠️  WARNING: Session ending with uncommitted changes!');
+      sendEvent('error', { 
+        message: `⚠️  Meta-SySop session ended with ${fileChanges.length} uncommitted files. Changes were not deployed.` 
+      });
+      sendEvent('content', { 
+        content: `\n\n⚠️  **WARNING**: I made changes to ${fileChanges.length} file(s) but did not commit them:\n` +
+          fileChanges.map(f => `  • ${f.path}`).join('\n') + '\n\n' +
+          `These changes are staged but NOT deployed. Please ask me to commit them.`
+      });
     }
 
     // Safety check
