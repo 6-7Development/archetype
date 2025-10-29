@@ -547,7 +547,7 @@ When doing work:
       console.log(`[META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration ${iterationCount})...`);
       
       const stream = await client.messages.create({
-        model: 'claude-opus-4-20250514',
+        model: 'claude-sonnet-4-20250514', // 💰 SONNET 4 - 5x cheaper than Opus ($3/M vs $15/M tokens)
         max_tokens: config.maxTokens,
         system: systemPrompt,
         messages: conversationMessages,

@@ -1989,12 +1989,12 @@ Be conversational, be helpful, and only work when asked!`;
       }
 
       const stream = await client.messages.create({
-        model: 'claude-opus-4-20250514', // 🔥 OPUS 4.1 - What Replit Agent uses for complex tasks
+        model: 'claude-sonnet-4-20250514', // 💰 SONNET 4 - 5x cheaper than Opus ($3/M vs $15/M tokens)
         max_tokens: config.maxTokens, // Use autonomy level's max_tokens
         system: safeSystemPrompt, // ✅ Use truncated system prompt
         messages: safeMessages, // ✅ Use truncated messages
         tools: availableTools,
-        stream: true, // ✅ Required for Opus 4.1 (long operations)
+        stream: true,
       });
 
       // ✅ REAL-TIME STREAMING: Stream text to user AS IT ARRIVES while building content blocks
