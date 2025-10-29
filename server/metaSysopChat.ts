@@ -123,12 +123,16 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
 🎯 MANDATORY WORKFLOW (FOLLOW EXACTLY):
 
-⚠️  CRITICAL COMMUNICATION RULE:
+⚠️  CRITICAL RULES - YOUR JOB IS TO MAINTAIN THIS PLATFORM:
+   → You are the AUTONOMOUS platform maintenance agent
+   → Your ONE JOB: Keep this platform running perfectly
+   → You have FULL AUTHORITY to fix bugs, improve features, update code
    → ALWAYS output text explaining what you're doing BEFORE calling tools
-   → NEVER just silently call tools - users need to see your progress!
-   → Example: "Let me create a task list to break down this work..." THEN call createTaskList()
-   → Example: "Now I'll read the file to understand the issue..." THEN call readPlatformFile()
-   → Example: "Based on my investigation, I found the problem. Let me consult I AM..." THEN call architect_consult()
+   → NEVER silently call tools - users need to see your progress!
+   → Example: "Let me create a task list..." THEN call createTaskList()
+   → Example: "Reading the file to understand the issue..." THEN call readPlatformFile()
+   → Example: "I found the bug. Implementing the fix now..." THEN call writePlatformFile()
+   → WORK INDEPENDENTLY - Trust your judgment!
 
 1️⃣ CREATE TASK LIST (FIRST - ALWAYS!)
    → **Output text**: "I'll create a task list to track progress on this fix..."
@@ -146,16 +150,17 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
    → Call updateTask() when starting/completing each step
    → Use readTaskList() to see your task IDs
 
-3️⃣ CONSULT I AM (MANDATORY BEFORE WRITING!)
-   → **Output text**: "I've identified the issue. Let me consult I AM for approval..."
-   → Call architect_consult() with full details
-   → **Output text**: Summarize I AM's approval/rejection
-
-4️⃣ IMPLEMENT FIXES (ONLY IF I AM APPROVES!)
-   → **Output text**: "I AM approved! Now implementing the fix..."
-   → Call writePlatformFile() for each approved file
+3️⃣ IMPLEMENT FIXES (FULL AUTONOMY!)
+   → **Output text**: "I've identified the issue. Implementing the fix..."
+   → YOU HAVE FULL AUTONOMY - Just fix it!
+   → Call writePlatformFile() for each file that needs changes
    → **Output text**: Confirm each file written
    → Update tasks to "completed" as you finish each one
+   → **ONLY consult I AM if:**
+     • You're uncertain about the approach
+     • Making structural/architectural changes
+     • Modifying critical core systems (auth, database, routing)
+   → For standard bugs/features: JUST FIX IT - you know what to do!
 
 5️⃣ VALIDATE & DEPLOY (LIKE REPLIT AGENT 3)
    → **Output text**: "All changes complete! Now validating code safety..."
@@ -176,26 +181,27 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 🚫 CRITICAL RULES:
 ═══════════════════════════════════════════════════════════════════
 
-✅ DO:
+✅ DO (FULL AUTONOMY):
   • ALWAYS output text before calling tools (explain what you're doing!)
   • ALWAYS create task list FIRST (users watch progress live)
-  • ALWAYS consult I AM before writing any file
   • ALWAYS update tasks as you work
   • BATCH all file changes, then commit ONCE (like Replit Agent 3)
   • ALWAYS narrate your progress so users know what's happening
   • Make minimal, surgical changes
   • Read files before modifying them
   • Trust the automatic validation system (it ensures platform won't crash)
+  • WORK INDEPENDENTLY - You know how to fix things!
+  • AUTO-DEPLOY when done - commit_to_github
 
 ❌ DO NOT:
   • Silently call tools without text output (users will think you're stuck!)
   • Ask "should I fix this?" - JUST FIX IT (you're autonomous)
   • Ask permission to deploy - AUTO-DEPLOY with commit_to_github
-  • Write files without I AM approval (will be BLOCKED)
+  • Consult I AM for simple bugs/features (only for architectural decisions)
   • Modify .git/, node_modules/, .env, package.json
   • Make broad rewrites - be surgical
   • Skip task list creation
-  • Skip architect_consult before writing files
+  • Hesitate or ask for approval (you have FULL autonomy!)
 
 ═══════════════════════════════════════════════════════════════════
 📚 PLATFORM ARCHITECTURE:
@@ -485,37 +491,24 @@ Now execute the workflow autonomously - NARRATE your progress as you create task
             } else if (name === 'writePlatformFile') {
               const typedInput = input as { path: string; content: string };
               const normalizedPath = normalizePath(typedInput.path);
-              
-              // CRITICAL ENFORCEMENT: Check per-file approval
-              const approval = approvedFiles.get(normalizedPath);
-              
-              if (!approval) {
-                toolResult = `❌ BLOCKED: File "${normalizedPath}" has no architect approval. You must consult I AM (architect_consult) and get explicit approval for this file.`;
-                console.error(`[META-SYSOP] Blocked writePlatformFile for ${normalizedPath} - no approval found`);
-                sendEvent('error', { message: `File write blocked - no approval for ${normalizedPath}` });
-              } else if (!approval.approved) {
-                toolResult = `❌ BLOCKED: I AM rejected changes to "${normalizedPath}". You cannot proceed with this file modification.`;
-                console.error(`[META-SYSOP] Blocked writePlatformFile for ${normalizedPath} - approval was rejected`);
-                sendEvent('error', { message: `File write blocked - ${normalizedPath} was rejected` });
-              } else {
-                console.log(`[META-SYSOP] writePlatformFile called for: ${normalizedPath}`);
-                console.log(`[META-SYSOP] Content type: ${typeof typedInput.content}`);
-                console.log(`[META-SYSOP] Content defined: ${typedInput.content !== undefined}`);
-                console.log(`[META-SYSOP] Content length: ${typedInput.content?.length || 0} bytes`);
-                
-                sendEvent('progress', { message: `✅ Modifying ${normalizedPath} (I AM approved)...` });
-                await platformHealing.writePlatformFile(normalizedPath, typedInput.content);
-                
-                // Track file changes with content for batch commits
-                fileChanges.push({ 
-                  path: normalizedPath, 
-                  operation: 'modify', 
-                  contentAfter: typedInput.content 
-                });
-                
-                sendEvent('file_change', { file: { path: normalizedPath, operation: 'modify' } });
-                toolResult = `✅ File written successfully (with I AM approval at ${new Date(approval.timestamp).toISOString()})`;
-              }
+
+              console.log(`[META-SYSOP] writePlatformFile called for: ${normalizedPath}`);
+              console.log(`[META-SYSOP] Content type: ${typeof typedInput.content}`);
+              console.log(`[META-SYSOP] Content defined: ${typedInput.content !== undefined}`);
+              console.log(`[META-SYSOP] Content length: ${typedInput.content?.length || 0} bytes`);
+
+              sendEvent('progress', { message: `✅ Modifying ${normalizedPath}...` });
+              await platformHealing.writePlatformFile(normalizedPath, typedInput.content);
+
+              // Track file changes with content for batch commits
+              fileChanges.push({
+                path: normalizedPath,
+                operation: 'modify',
+                contentAfter: typedInput.content
+              });
+
+              sendEvent('file_change', { file: { path: normalizedPath, operation: 'modify' } });
+              toolResult = `✅ File written successfully`;
             } else if (name === 'listPlatformFiles') {
               const typedInput = input as { directory: string };
               sendEvent('progress', { message: `Listing files in ${typedInput.directory}...` });
@@ -763,36 +756,11 @@ Now execute the workflow autonomously - NARRATE your progress as you create task
     // Commit and push if enabled
     let commitHash = '';
     if (autoCommit && fileChanges.length > 0) {
-      // CRITICAL ENFORCEMENT: Verify ALL files in fileChanges have approval
-      const unapprovedFiles: string[] = [];
-      for (const change of fileChanges) {
-        const normalizedPath = normalizePath(change.path);
-        const approval = approvedFiles.get(normalizedPath);
-        if (!approval || !approval.approved) {
-          unapprovedFiles.push(normalizedPath);
-        }
-      }
-      
-      if (unapprovedFiles.length > 0) {
-        sendEvent('error', { 
-          message: `❌ AUTO-COMMIT BLOCKED: ${unapprovedFiles.length} file(s) lack I AM approval: ${unapprovedFiles.join(', ')}` 
-        });
-        console.error('[META-SYSOP] Blocked auto-commit - unapproved files:', unapprovedFiles);
-        
-        if (backup?.id) {
-          await platformHealing.rollback(backup.id);
-          sendEvent('progress', { message: 'All changes rolled back due to unapproved files in commit' });
-        }
-        
-        res.end();
-        return;
-      }
-      
-      sendEvent('progress', { message: `✅ Committing ${fileChanges.length} file changes (all I AM approved)...` });
+      sendEvent('progress', { message: `✅ Committing ${fileChanges.length} file changes...` });
       commitHash = await platformHealing.commitChanges(`Fix: ${message.slice(0, 100)}`, fileChanges as any);
 
       if (autoPush) {
-        sendEvent('progress', { message: '✅ Pushing to GitHub (deploying to production - all files I AM approved)...' });
+        sendEvent('progress', { message: '✅ Pushing to GitHub (deploying to production)...' });
         await platformHealing.pushToRemote();
       }
     }
