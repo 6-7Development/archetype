@@ -2052,6 +2052,8 @@ Be conversational, be helpful, and only work when asked!`;
     let iterationCount = 0;
     const MAX_ITERATIONS = 25; // 🔥 Increased from 5 - Replit Agent runs 20+ iterations for complex work
     let commitSuccessful = false; // Track if commit_to_github succeeded
+    let consecutiveEmptyIterations = 0; // Track iterations with no tool calls
+    const MAX_EMPTY_ITERATIONS = 3; // Stop if 3 consecutive iterations without tool calls
 
     // ✅ REMOVED: Casual greeting bypass - Meta-SySop should ALWAYS be conversational like Replit Agent
     // Every message goes to Claude for proper conversational awareness and context
@@ -2174,6 +2176,12 @@ Be conversational, be helpful, and only work when asked!`;
       // 🎯 PRE-EXECUTION LOGGING
       console.log(`[META-SYSOP-FORCE] === ITERATION ${iterationCount} CHECK ===`);
       console.log(`[META-SYSOP-FORCE] Tools called this iteration: ${toolNames.join(', ') || 'NONE'}`);
+
+      // 🚨 RESET EMPTY COUNTER IMMEDIATELY when tools are called (before any continue/return)
+      if (toolNames.length > 0) {
+        consecutiveEmptyIterations = 0;
+        console.log('[META-SYSOP-CONTINUATION] ✅ Tools called - reset empty counter to 0');
+      }
 
       // 💬 CONVERSATIONAL HELPERS: Generate friendly explanatory text
       const getPreToolMessage = (toolName: string, input: any): string => {
@@ -3019,7 +3027,15 @@ Be conversational, be helpful, and only work when asked!`;
         console.log(`[META-SYSOP-CONTINUATION] Iteration ${iterationCount}: No tool calls, checking if should continue...`);
         console.log(`[META-SYSOP-CONTINUATION] Active task list ID: ${activeTaskListId || 'none'}`);
         
-        if (activeTaskListId) {
+        // 🚨 INFINITE LOOP PREVENTION: Track consecutive empty iterations
+        consecutiveEmptyIterations++;
+        console.log(`[META-SYSOP-CONTINUATION] Consecutive empty iterations: ${consecutiveEmptyIterations}/${MAX_EMPTY_ITERATIONS}`);
+        
+        if (consecutiveEmptyIterations >= MAX_EMPTY_ITERATIONS) {
+          console.log(`[META-SYSOP-CONTINUATION] 🛑 STOPPING - ${MAX_EMPTY_ITERATIONS} consecutive iterations without tool calls (infinite loop detected)`);
+          sendEvent('progress', { message: `⚠️ Meta-SySop appears stuck - stopping after ${consecutiveEmptyIterations} empty iterations` });
+          continueLoop = false;
+        } else if (activeTaskListId) {
           try {
             const taskCheck = await readTaskList({ userId });
             console.log(`[META-SYSOP-CONTINUATION] Task list read success: ${taskCheck.success}`);
