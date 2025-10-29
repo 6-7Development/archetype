@@ -14,11 +14,11 @@ router.get('/api/diagnostics/health', async (req, res) => {
       timestamp: new Date().toISOString(),
       results
     });
-  } catch (error: any) {
+  } catch (error) {
     res.status(500).json({
       status: 'error',
       message: 'Failed to run diagnostics',
-      error: error?.message || 'Unknown error'
+      error: error.message
     });
   }
 });

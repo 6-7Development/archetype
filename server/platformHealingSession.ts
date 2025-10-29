@@ -129,10 +129,7 @@ class SessionManager {
 
     session.status = 'completed';
     if (changes) {
-      session.changes = changes as Array<{
-        path: string;
-        operation: 'create' | 'modify' | 'delete';
-      }>;
+      session.changes = changes;
     }
 
     this.addMessage(sessionId, {

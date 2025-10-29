@@ -138,7 +138,7 @@ export class WorkflowEngine extends EventEmitter {
       userId,
       status: 'running',
       currentStep: 0,
-      totalSteps: (workflow.steps as any[])?.length || 0,
+      totalSteps: workflow.steps.length,
     }).returning();
 
     const runId = result[0].id;
@@ -157,10 +157,10 @@ export class WorkflowEngine extends EventEmitter {
   /**
    * Execute workflow steps in parallel
    */
-  private async executeParallel(runId: string, workflow: any): Promise<void> {
+  private async executeParallel(runId: string, workflow: Workflow): Promise<void> {
     const processes: any[] = [];
     const outputs: string[] = [];
-    const steps = (workflow.steps || []) as any[];
+    const steps = workflow.steps as any[];
 
     this.activeRuns.set(runId, { processes, aborted: false });
 
