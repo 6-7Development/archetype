@@ -170,6 +170,32 @@ function CollapsibleSection({ section }: { section: Section }) {
   );
 }
 
+// Helper function to retry fetch with exponential backoff
+async function retryFetch(url: string, options: RequestInit, maxRetries = 3): Promise<Response> {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      if (response.ok) {
+        return response;
+      }
+      lastError = new Error(`HTTP ${response.status}: ${response.statusText}`);
+    } catch (error) {
+      lastError = error as Error;
+    }
+    
+    // If not the last attempt, wait with exponential backoff
+    if (attempt < maxRetries - 1) {
+      const delay = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s
+      console.log(`[META-SYSOP] Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  
+  throw lastError || new Error('Fetch failed after retries');
+}
+
 export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopChatProps) {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -186,6 +212,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const lastEventTimeRef = useRef<number>(Date.now());
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -204,6 +231,30 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
       }
     };
   }, []);
+
+  // Timeout detection: Check for stalled SSE connections
+  useEffect(() => {
+    if (!isStreaming) return;
+
+    const timeoutCheckInterval = setInterval(() => {
+      const timeSinceLastEvent = Date.now() - lastEventTimeRef.current;
+      const TIMEOUT_THRESHOLD = 30000; // 30 seconds
+
+      if (timeSinceLastEvent > TIMEOUT_THRESHOLD) {
+        console.warn('[META-SYSOP] ⚠️ No events received for 30+ seconds - connection may be stalled');
+        toast({
+          title: '⚠️ Connection Warning',
+          description: 'No updates received for 30 seconds. The connection may have stalled.',
+          variant: 'destructive',
+        });
+        
+        // Clear the interval to avoid repeated warnings
+        clearInterval(timeoutCheckInterval);
+      }
+    }, 5000); // Check every 5 seconds
+
+    return () => clearInterval(timeoutCheckInterval);
+  }, [isStreaming, toast]);
 
   // Fetch autonomy level
   const { data: autonomyData } = useQuery<any>({
@@ -250,6 +301,9 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
       setActiveTaskId(null);
       setProgressStatus('thinking');
       setProgressMessage("Starting Meta-SySop...");
+      
+      // Reset timeout detection timestamp
+      lastEventTimeRef.current = Date.now();
 
       // Add initial assistant message that will be updated via streaming
       const assistantMsgId = `assistant-${Date.now()}`;
@@ -314,6 +368,9 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
               try {
                 const data = JSON.parse(line.slice(6));
                 console.log('[META-SYSOP] SSE event:', data.type);
+                
+                // Update last event timestamp for timeout detection
+                lastEventTimeRef.current = Date.now();
 
                 switch (data.type) {
                   case 'user_message':
@@ -399,7 +456,8 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                     break;
 
                   case 'task_list_created':
-                    fetch(`/api/meta-sysop/task-list/${data.taskListId}`, {
+                    // Use retry logic for fetching task list
+                    retryFetch(`/api/meta-sysop/task-list/${data.taskListId}`, {
                       credentials: 'include'
                     })
                       .then(res => res.json())
@@ -413,20 +471,34 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true }: MetaSySopC
                           }));
                           setTasks(formattedTasks);
                           setShowTaskList(true);
-                          console.log('[META-SYSOP] Task list created with', formattedTasks.length, 'tasks');
+                          console.log('[META-SYSOP] ✅ Task list loaded with', formattedTasks.length, 'tasks');
                         }
                       })
                       .catch(err => {
-                        console.error('[META-SYSOP] Failed to fetch task list:', err);
+                        console.error('[META-SYSOP] ❌ Failed to fetch task list after retries:', err);
+                        toast({
+                          title: '❌ Failed to Load Tasks',
+                          description: 'Could not load task list after multiple attempts. The agent is still working.',
+                          variant: 'destructive',
+                        });
                       });
                     break;
 
                   case 'task_updated':
-                    setTasks(prev => prev.map(t => 
-                      t.id === data.taskId 
-                        ? { ...t, status: data.status as AgentTask['status'] }
-                        : t
-                    ));
+                    // Check if task exists before updating
+                    setTasks(prev => {
+                      const taskExists = prev.some(t => t.id === data.taskId);
+                      if (!taskExists) {
+                        console.warn('[META-SYSOP] ⚠️ Task update received for unknown taskId:', data.taskId);
+                      }
+                      
+                      return prev.map(t => 
+                        t.id === data.taskId 
+                          ? { ...t, status: data.status as AgentTask['status'] }
+                          : t
+                      );
+                    });
+                    
                     if (data.status === 'in_progress') {
                       setActiveTaskId(data.taskId);
                     }
