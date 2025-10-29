@@ -981,14 +981,25 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                 </Button>
               </div>
               <div className="flex flex-col gap-2">
-                <Button
-                  onClick={handleSend}
-                  disabled={!input.trim() || isStreaming}
-                  size="icon"
-                  data-testid="button-send"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
+                {isStreaming ? (
+                  <Button
+                    onClick={handleStop}
+                    variant="destructive"
+                    size="icon"
+                    data-testid="button-stop"
+                  >
+                    <Square className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleSend}
+                    disabled={!input.trim()}
+                    size="icon"
+                    data-testid="button-send"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
             </div>
           </div>
