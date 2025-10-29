@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MobileNav } from "@/components/mobile-nav";
-import { Sparkles, Zap, Shield, Gauge, Code, Rocket, Check, Terminal, Play, ArrowRight, GitCommit } from "lucide-react";
+import { Sparkles, Zap, Shield, Gauge, Code, Rocket, Check, Terminal, Play, ArrowRight } from "lucide-react";
 import logoPath from "@assets/logo.svg";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -164,26 +164,14 @@ export default function Landing() {
               </span>
             </Link>
 
-            {/* Glowing 123 Commits Indicator - Center */}
+            {/* Brigido Text - Center */}
             <motion.div 
-              className="relative group cursor-pointer hidden sm:block"
+              className="text-xl font-bold text-white"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5 }}
-              whileHover={{ scale: 1.05 }}
             >
-              <motion.div 
-                className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"
-                animate={{
-                  opacity: [0.5, 0.75, 0.5],
-                }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-              <div className="relative px-4 py-2 bg-black rounded-lg leading-none flex items-center gap-2">
-                <GitCommit className="w-4 h-4 text-white" />
-                <span className="text-white font-bold">123</span>
-                <span className="text-gray-300 text-sm">commits</span>
-              </div>
+              Brigido
             </motion.div>
             
             {/* Right Side - Clean */}
