@@ -1,7 +1,20 @@
 import { useEffect, useState } from 'react';
 
-// Simple Lemonade-Inspired Text Logo with Integrated Lemon
+// Enhanced Lemonade-Inspired Text Logo with Detailed Lemon
 export function LemonAidTextLogo({ className = "", size = "default" }: { className?: string; size?: "sm" | "default" | "lg" }) {
+  const [pulse, setPulse] = useState(1);
+  
+  useEffect(() => {
+    let frame = 0;
+    const animate = () => {
+      frame += 0.008;
+      setPulse(0.98 + Math.sin(frame) * 0.02); // Subtle breathing
+      requestAnimationFrame(animate);
+    };
+    const id = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(id);
+  }, []);
+
   const sizeClasses = {
     sm: "text-xl",
     default: "text-2xl", 
@@ -9,50 +22,107 @@ export function LemonAidTextLogo({ className = "", size = "default" }: { classNa
   };
   
   const lemonSize = {
-    sm: 24,
-    default: 32,
-    lg: 48
-  };
-
-  const leafSize = {
-    sm: 12,
-    default: 16,
-    lg: 24
+    sm: 28,
+    default: 36,
+    lg: 52
   };
 
   const s = lemonSize[size];
-  const l = leafSize[size];
 
   return (
     <div className={`flex items-center gap-0.5 ${className}`}>
-      <span className={`font-bold ${sizeClasses[size]}`} style={{ color: 'hsl(50, 98%, 58%)' }}>
+      <span 
+        className={`font-bold ${sizeClasses[size]}`} 
+        style={{ 
+          background: 'linear-gradient(135deg, hsl(50, 98%, 65%) 0%, hsl(50, 98%, 55%) 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+          filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))'
+        }}
+      >
         Lem
       </span>
-      {/* Lemon replacing the "o" */}
+      {/* Enhanced Lemon replacing the "o" */}
       <div className="relative inline-flex items-center justify-center" style={{ width: s, height: s, marginTop: -2 }}>
-        <svg width={s} height={s} viewBox="0 0 32 32" className="shrink-0">
+        <svg width={s} height={s} viewBox="0 0 40 40" className="shrink-0" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }}>
           <defs>
-            <radialGradient id="simple-lemon">
-              <stop offset="0%" stopColor="hsl(50, 98%, 72%)" />
-              <stop offset="100%" stopColor="hsl(50, 98%, 58%)" />
+            <radialGradient id="detailed-lemon-outer">
+              <stop offset="0%" stopColor="hsl(50, 98%, 75%)" />
+              <stop offset="50%" stopColor="hsl(50, 98%, 62%)" />
+              <stop offset="100%" stopColor="hsl(50, 95%, 52%)" />
             </radialGradient>
-            <linearGradient id="simple-leaf" x1="0%" y1="0%" x2="0%" y2="100%">
+            <radialGradient id="detailed-lemon-inner">
+              <stop offset="0%" stopColor="hsl(50, 100%, 80%)" />
+              <stop offset="100%" stopColor="hsl(50, 98%, 65%)" />
+            </radialGradient>
+            <linearGradient id="detailed-leaf-main" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="hsl(145, 75%, 60%)" />
+              <stop offset="100%" stopColor="hsl(145, 65%, 48%)" />
+            </linearGradient>
+            <linearGradient id="detailed-leaf-accent" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="hsl(145, 70%, 55%)" />
               <stop offset="100%" stopColor="hsl(145, 60%, 45%)" />
             </linearGradient>
           </defs>
-          {/* Lemon body */}
-          <circle cx="16" cy="16" r="14" fill="url(#simple-lemon)" />
-          {/* Simple shine */}
-          <ellipse cx="12" cy="11" rx="5" ry="7" fill="white" opacity="0.4" />
-          {/* Leaf on top */}
-          <path 
-            d="M 14 4 Q 12 1 14.5 0.5 Q 17 1 16 4 Z" 
-            fill="url(#simple-leaf)" 
-          />
+          
+          <g transform={`scale(${pulse}) translate(${(1 - pulse) * 20} ${(1 - pulse) * 20})`}>
+            {/* Lemon outer body */}
+            <circle cx="20" cy="20" r="16" fill="url(#detailed-lemon-outer)" />
+            
+            {/* Lemon segments for detail */}
+            {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => {
+              const x1 = 20;
+              const y1 = 20;
+              const x2 = 20 + Math.cos((angle * Math.PI) / 180) * 14;
+              const y2 = 20 + Math.sin((angle * Math.PI) / 180) * 14;
+              return (
+                <line
+                  key={i}
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke="white"
+                  strokeWidth="0.8"
+                  opacity="0.25"
+                />
+              );
+            })}
+            
+            {/* Inner circle */}
+            <circle cx="20" cy="20" r="10" fill="url(#detailed-lemon-inner)" opacity="0.8" />
+            
+            {/* Premium shine highlight */}
+            <ellipse cx="14" cy="13" rx="6" ry="8" fill="white" opacity="0.5" />
+            <ellipse cx="23" cy="17" rx="3" ry="5" fill="white" opacity="0.3" />
+            
+            {/* Leaf cluster on top with more detail */}
+            <g transform="translate(20, 5)">
+              <path d="M -4 0 Q -6 -3 -4.5 -4.5 Q -3 -3.5 -3 0 Z" fill="url(#detailed-leaf-main)" />
+              <path d="M -1 -1 Q -2 -4 -0.5 -5.5 Q 1 -4 1 -1 Z" fill="url(#detailed-leaf-accent)" />
+              <path d="M 2 0 Q 3 -3 5 -4 Q 6 -2 4 0 Z" fill="url(#detailed-leaf-main)" opacity="0.9" />
+              {/* Leaf veins for detail */}
+              <line x1="-3.5" y1="-2" x2="-3.5" y2="0" stroke="white" strokeWidth="0.3" opacity="0.4" />
+              <line x1="0" y1="-3" x2="0" y2="-1" stroke="white" strokeWidth="0.3" opacity="0.4" />
+              <line x1="3.5" y1="-2" x2="3.5" y2="0" stroke="white" strokeWidth="0.3" opacity="0.4" />
+            </g>
+            
+            {/* Subtle rim shadow */}
+            <circle cx="20" cy="20" r="15.5" fill="none" stroke="hsl(50, 80%, 45%)" strokeWidth="0.5" opacity="0.3" />
+          </g>
         </svg>
       </div>
-      <span className={`font-bold ${sizeClasses[size]}`} style={{ color: 'hsl(50, 98%, 58%)' }}>
+      <span 
+        className={`font-bold ${sizeClasses[size]}`} 
+        style={{ 
+          background: 'linear-gradient(135deg, hsl(50, 98%, 65%) 0%, hsl(50, 98%, 55%) 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+          filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))'
+        }}
+      >
         nAid
       </span>
     </div>
