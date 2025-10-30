@@ -45,82 +45,104 @@ export function LumoPixelAvatar({
   const bgTheme = backgroundTheme === "auto" ? theme : backgroundTheme;
   const isDark = bgTheme === "dark";
 
-  // Full animation sequences using ALL sprite variations
-  // Sheet layouts: 4 cols × 2 rows (8 total frames per sheet)
-  // Each frame shows different expression: eyes open/closed, mouth states, etc.
+  // Natural animation sequences with VARIED timing for organic feel
   const EMOTION_ANIMATIONS: Record<EmotionType, SpriteFrame[]> = {
-    // Happy - show different happy expressions, blinks, smiles
+    // Happy - natural blinking and expressions
     happy: [
-      { sheet: sheet3, col: 0, row: 1, duration: 800 },   // Normal happy
-      { sheet: sheet3, col: 1, row: 1, duration: 100 },   // Blink
-      { sheet: sheet3, col: 0, row: 1, duration: 1200 },  // Normal happy
-      { sheet: sheet3, col: 2, row: 1, duration: 150 },   // Wink/excited
-      { sheet: sheet3, col: 0, row: 1, duration: 600 },   // Back to normal
+      { sheet: sheet3, col: 0, row: 1, duration: 1200 },
+      { sheet: sheet3, col: 1, row: 1, duration: 80 },    // Quick blink
+      { sheet: sheet3, col: 0, row: 1, duration: 1800 },
+      { sheet: sheet3, col: 2, row: 1, duration: 120 },   // Wink
+      { sheet: sheet3, col: 0, row: 1, duration: 2200 },
+      { sheet: sheet3, col: 1, row: 1, duration: 80 },    // Blink
+      { sheet: sheet3, col: 0, row: 1, duration: 1500 },
     ],
     
-    // Excited - rapid expressions showing energy
+    // Excited - faster, energetic
     excited: [
-      { sheet: sheet3, col: 2, row: 0, duration: 250 },   // Big smile eyes closed
-      { sheet: sheet3, col: 3, row: 0, duration: 250 },   // Eyes open excited
-      { sheet: sheet3, col: 0, row: 0, duration: 250 },   // Happy
-      { sheet: sheet3, col: 2, row: 0, duration: 250 },   // Repeat cycle
+      { sheet: sheet3, col: 2, row: 0, duration: 180 },
+      { sheet: sheet3, col: 3, row: 0, duration: 200 },
+      { sheet: sheet3, col: 0, row: 0, duration: 150 },
+      { sheet: sheet3, col: 2, row: 0, duration: 220 },
+      { sheet: sheet3, col: 3, row: 0, duration: 180 },
+      { sheet: sheet3, col: 1, row: 0, duration: 100 },
       { sheet: sheet3, col: 3, row: 0, duration: 250 },
     ],
     
-    // Thinking - contemplative, looking around
+    // Thinking - slow, contemplative
     thinking: [
-      { sheet: sheet2, col: 0, row: 0, duration: 900 },   // Look left
-      { sheet: sheet2, col: 1, row: 0, duration: 900 },   // Look center
-      { sheet: sheet2, col: 2, row: 0, duration: 900 },   // Look right
-      { sheet: sheet2, col: 1, row: 0, duration: 600 },   // Back to center
+      { sheet: sheet2, col: 0, row: 0, duration: 1100 },
+      { sheet: sheet2, col: 1, row: 0, duration: 800 },
+      { sheet: sheet2, col: 1, row: 0, duration: 900 },
+      { sheet: sheet2, col: 2, row: 0, duration: 1200 },
+      { sheet: sheet2, col: 1, row: 0, duration: 700 },
+      { sheet: sheet2, col: 1, row: 0, duration: 1400 },
     ],
     
-    // Working - talking/explaining animation
+    // Working - varied mouth movement (like real talking)
     working: [
-      { sheet: sheet1, col: 0, row: 0, duration: 200 },   // Mouth closed
-      { sheet: sheet1, col: 1, row: 0, duration: 200 },   // Mouth open 1
-      { sheet: sheet1, col: 2, row: 0, duration: 200 },   // Mouth open 2
-      { sheet: sheet1, col: 3, row: 0, duration: 200 },   // Mouth wide
-      { sheet: sheet1, col: 2, row: 0, duration: 200 },   // Back
-      { sheet: sheet1, col: 1, row: 0, duration: 200 },   // Back
+      { sheet: sheet1, col: 0, row: 0, duration: 180 },   // Closed
+      { sheet: sheet1, col: 1, row: 0, duration: 95 },    // Small open
+      { sheet: sheet1, col: 2, row: 0, duration: 140 },   // Medium
+      { sheet: sheet1, col: 3, row: 0, duration: 110 },   // Wide
+      { sheet: sheet1, col: 2, row: 0, duration: 85 },
+      { sheet: sheet1, col: 1, row: 0, duration: 120 },
+      { sheet: sheet1, col: 0, row: 0, duration: 160 },   // Pause
+      { sheet: sheet1, col: 1, row: 0, duration: 90 },
+      { sheet: sheet1, col: 3, row: 0, duration: 130 },
+      { sheet: sheet1, col: 2, row: 0, duration: 100 },
+      { sheet: sheet1, col: 1, row: 0, duration: 95 },
+      { sheet: sheet1, col: 0, row: 0, duration: 200 },   // Longer pause
+      { sheet: sheet1, col: 2, row: 0, duration: 110 },
+      { sheet: sheet1, col: 3, row: 0, duration: 100 },
+      { sheet: sheet1, col: 1, row: 0, duration: 95 },
     ],
     
-    // Success - celebration animation
+    // Success - celebratory
     success: [
-      { sheet: sheet3, col: 3, row: 0, duration: 300 },   // Big smile
-      { sheet: sheet3, col: 2, row: 0, duration: 150 },   // Eyes closed happy
-      { sheet: sheet3, col: 3, row: 0, duration: 300 },   // Big smile
-      { sheet: sheet3, col: 0, row: 0, duration: 600 },   // Normal happy
+      { sheet: sheet3, col: 3, row: 0, duration: 300 },
+      { sheet: sheet3, col: 2, row: 0, duration: 150 },
+      { sheet: sheet3, col: 3, row: 0, duration: 280 },
+      { sheet: sheet3, col: 0, row: 0, duration: 200 },
+      { sheet: sheet3, col: 3, row: 0, duration: 350 },
+      { sheet: sheet3, col: 0, row: 0, duration: 600 },
     ],
     
-    // Error - upset/angry expressions
+    // Error - agitated
     error: [
-      { sheet: sheet4, col: 2, row: 0, duration: 1000 },  // Angry
-      { sheet: sheet4, col: 3, row: 0, duration: 500 },   // Very upset
-      { sheet: sheet4, col: 2, row: 0, duration: 800 },   // Angry
+      { sheet: sheet4, col: 2, row: 0, duration: 400 },
+      { sheet: sheet4, col: 3, row: 0, duration: 300 },
+      { sheet: sheet4, col: 2, row: 0, duration: 450 },
+      { sheet: sheet4, col: 3, row: 0, duration: 350 },
+      { sheet: sheet4, col: 2, row: 0, duration: 600 },
     ],
     
-    // Worried - anxious shifting
+    // Worried - nervous
     worried: [
-      { sheet: sheet4, col: 0, row: 0, duration: 700 },   // Worried frown
-      { sheet: sheet4, col: 1, row: 0, duration: 400 },   // Crying/very worried
-      { sheet: sheet4, col: 0, row: 0, duration: 700 },   // Back to worried
+      { sheet: sheet4, col: 0, row: 0, duration: 650 },
+      { sheet: sheet4, col: 1, row: 0, duration: 400 },
+      { sheet: sheet4, col: 0, row: 0, duration: 700 },
+      { sheet: sheet4, col: 1, row: 0, duration: 500 },
+      { sheet: sheet4, col: 0, row: 0, duration: 800 },
     ],
     
-    // Sad - crying/very sad
+    // Sad - slow, heavy
     sad: [
-      { sheet: sheet4, col: 0, row: 1, duration: 1500 },  // Sad frown
-      { sheet: sheet4, col: 1, row: 1, duration: 800 },   // Tears
-      { sheet: sheet4, col: 0, row: 1, duration: 1200 },  // Sad frown
+      { sheet: sheet4, col: 0, row: 1, duration: 1600 },
+      { sheet: sheet4, col: 1, row: 1, duration: 900 },
+      { sheet: sheet4, col: 0, row: 1, duration: 1400 },
+      { sheet: sheet4, col: 1, row: 1, duration: 1100 },
     ],
     
-    // Idle - relaxed, occasional blinks
+    // Idle - natural, relaxed breathing
     idle: [
-      { sheet: sheet3, col: 0, row: 1, duration: 2000 },  // Normal relaxed
-      { sheet: sheet3, col: 1, row: 1, duration: 150 },   // Blink
-      { sheet: sheet3, col: 0, row: 1, duration: 2500 },  // Normal
-      { sheet: sheet3, col: 1, row: 1, duration: 150 },   // Blink
-      { sheet: sheet3, col: 0, row: 1, duration: 3000 },  // Normal longer
+      { sheet: sheet3, col: 0, row: 1, duration: 2000 },
+      { sheet: sheet3, col: 1, row: 1, duration: 90 },    // Blink
+      { sheet: sheet3, col: 0, row: 1, duration: 2800 },
+      { sheet: sheet3, col: 1, row: 1, duration: 90 },    // Blink
+      { sheet: sheet3, col: 0, row: 1, duration: 3500 },
+      { sheet: sheet3, col: 2, row: 1, duration: 180 },   // Small expression
+      { sheet: sheet3, col: 0, row: 1, duration: 2200 },
     ],
   };
 
@@ -134,8 +156,6 @@ export function LumoPixelAvatar({
     canvas.width = containerSize;
     canvas.height = containerSize;
 
-    console.log(`[LUMO] Starting animation for ${emotion} (${containerSize}px)`);
-
     // Load sprite images
     const images = new Map<string, HTMLImageElement>();
     const sheets = [sheet1, sheet2, sheet3, sheet4];
@@ -143,28 +163,23 @@ export function LumoPixelAvatar({
 
     const checkComplete = () => {
       if (loadedCount >= sheets.length) {
-        console.log(`[LUMO] All sprites ready!`);
         setIsLoaded(true);
         startAnimation();
       }
     };
 
-    sheets.forEach((sheetUrl, index) => {
+    sheets.forEach((sheetUrl) => {
       const img = new Image();
       img.crossOrigin = "anonymous";
-      
       img.onload = () => {
         images.set(sheetUrl, img);
         loadedCount++;
         checkComplete();
       };
-      
       img.onerror = () => {
-        console.error(`[LUMO] Failed sheet ${index + 1}`);
         loadedCount++;
         checkComplete();
       };
-      
       img.src = sheetUrl;
     });
 
@@ -175,9 +190,40 @@ export function LumoPixelAvatar({
       let frameTimer = 0;
       let lastTimestamp = 0;
       const animSequence = EMOTION_ANIMATIONS[emotion];
-      const FRAME_SIZE = 256; // 1024 / 4 columns
-
-      console.log(`[LUMO] Animation sequence has ${animSequence.length} frames`);
+      const FRAME_SIZE = 256;
+      
+      // Pre-render frames to off-screen buffer to prevent sprite bleed
+      const frameBuffers = new Map<string, HTMLCanvasElement>();
+      
+      const prepareFrameBuffer = (frame: SpriteFrame) => {
+        const key = `${frame.sheet}-${frame.col}-${frame.row}`;
+        if (frameBuffers.has(key)) return frameBuffers.get(key)!;
+        
+        const buffer = document.createElement('canvas');
+        buffer.width = FRAME_SIZE;
+        buffer.height = FRAME_SIZE;
+        const bufferCtx = buffer.getContext('2d');
+        
+        if (bufferCtx) {
+          const img = images.get(frame.sheet);
+          if (img && img.complete) {
+            bufferCtx.imageSmoothingEnabled = false;
+            bufferCtx.drawImage(
+              img,
+              frame.col * FRAME_SIZE,
+              frame.row * FRAME_SIZE,
+              FRAME_SIZE,
+              FRAME_SIZE,
+              0, 0,
+              FRAME_SIZE,
+              FRAME_SIZE
+            );
+          }
+        }
+        
+        frameBuffers.set(key, buffer);
+        return buffer;
+      };
 
       const animate = (timestamp: number) => {
         if (!canvasRef.current) return;
@@ -190,7 +236,7 @@ export function LumoPixelAvatar({
         
         frameTimer += deltaTime;
 
-        // Advance to next frame when duration expires
+        // Advance frame
         const currentFrame = animSequence[currentFrameIndex];
         if (frameTimer >= currentFrame.duration) {
           frameTimer = 0;
@@ -198,29 +244,38 @@ export function LumoPixelAvatar({
         }
 
         const frame = animSequence[currentFrameIndex];
-        const spriteImage = images.get(frame.sheet);
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        if (spriteImage && spriteImage.complete && spriteImage.naturalWidth > 0) {
-          // Extract frame from sprite sheet
-          const sx = frame.col * FRAME_SIZE;
-          const sy = frame.row * FRAME_SIZE;
+        // Natural breathing animation (subtle, separate from frame changes)
+        const breatheY = Math.sin(timestamp * 0.0008) * 1.5;  // Slow breathing
+        const breatheScale = 1 + Math.sin(timestamp * 0.0008) * 0.008;  // Subtle scale
+        
+        // Prepare and draw the frame buffer
+        const frameBuffer = prepareFrameBuffer(frame);
+        
+        if (frameBuffer) {
+          const centerX = containerSize / 2;
+          const centerY = containerSize / 2;
           
-          // Gentle bobbing
-          const bobY = Math.sin(timestamp * 0.002) * 2;
+          ctx.save();
+          ctx.translate(centerX, centerY + breatheY);
+          ctx.scale(breatheScale, breatheScale);
+          ctx.translate(-centerX, -centerY);
           
           ctx.imageSmoothingEnabled = false;
           
           try {
             ctx.drawImage(
-              spriteImage,
-              sx, sy, FRAME_SIZE, FRAME_SIZE,
-              0, bobY, containerSize, containerSize
+              frameBuffer,
+              0, 0, FRAME_SIZE, FRAME_SIZE,
+              0, 0, containerSize, containerSize
             );
           } catch (error) {
             console.error("[LUMO] Draw error:", error);
           }
+          
+          ctx.restore();
         }
       };
 
