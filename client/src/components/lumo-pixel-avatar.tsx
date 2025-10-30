@@ -2,15 +2,16 @@ import { useRef, useEffect, useState, useCallback } from "react";
 import { useTheme } from "@/components/theme-provider";
 import { useLumoAvatar, type MoodType } from "@/hooks/use-lumo-avatar";
 
-import happyStrip from "@assets/lumo-happy-strip.png";
-import cheerfulFrames from "@assets/lumo-cheerful-frames.png";
-import excitedFrames from "@assets/lumo-excited-frames.png";
-import smileFrames from "@assets/lumo-smile-frames.png";
-import confusedFrames from "@assets/lumo-confused-frames.png";
-import angryFrames from "@assets/lumo-angry-frames.png";
-import displeasedFrames from "@assets/lumo-displeased-frames.png";
-import loveFrames from "@assets/lumo-love-frames.png";
-import contentFrames from "@assets/lumo-content-frames.png";
+// Lumo sprite sheets from public folder
+const happyStrip = "/lumo-sprites/lumo-happy-strip.png";
+const cheerfulFrames = "/lumo-sprites/lumo-cheerful-frames.png";
+const excitedFrames = "/lumo-sprites/lumo-excited-frames.png";
+const smileFrames = "/lumo-sprites/lumo-smile-frames.png";
+const confusedFrames = "/lumo-sprites/lumo-confused-frames.png";
+const angryFrames = "/lumo-sprites/lumo-angry-frames.png";
+const displeasedFrames = "/lumo-sprites/lumo-displeased-frames.png";
+const loveFrames = "/lumo-sprites/lumo-love-frames.png";
+const contentFrames = "/lumo-sprites/lumo-content-frames.png";
 
 interface LumoPixelAvatarProps {
   emotion?: "auto" | MoodType;
@@ -556,11 +557,13 @@ export function LumoPixelAvatar({
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.onload = () => {
+        console.log(`[LUMO] ✅ Loaded sprite sheet:`, sheetUrl.substring(0, 50));
         images.set(sheetUrl, img);
         loadedCount++;
         checkComplete();
       };
-      img.onerror = () => {
+      img.onerror = (e) => {
+        console.error(`[LUMO] ❌ Failed to load sprite sheet:`, sheetUrl, e);
         loadedCount++;
         checkComplete();
       };
