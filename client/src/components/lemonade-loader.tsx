@@ -265,13 +265,16 @@ export function LemonadeLoader({
         </div>
       </div>
 
-      {/* Sparkles when complete */}
+      {/* Sparkles when complete - SVG stars instead of emoji */}
       {animatedProgress >= 100 && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           {[...Array(6)].map((_, i) => (
-            <div
+            <svg
               key={i}
-              className="absolute text-2xl animate-ping"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              className="absolute animate-ping"
               style={{
                 animationDelay: `${i * 0.2}s`,
                 animationDuration: "1s",
@@ -279,8 +282,12 @@ export function LemonadeLoader({
                 top: `${50 + Math.sin((i * Math.PI * 2) / 6) * 40}%`,
               }}
             >
-              ✨
-            </div>
+              <path
+                d="M12 2l2.4 7.4h7.6l-6 4.6 2.3 7-6.3-4.6-6.3 4.6 2.3-7-6-4.6h7.6z"
+                fill="hsl(50, 98%, 58%)"
+                opacity="0.8"
+              />
+            </svg>
           ))}
         </div>
       )}

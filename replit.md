@@ -1,7 +1,12 @@
-# Archetype - AI-Powered Website Builder Platform
+# LemonAid - "When Code Throws You Lemons"
 
 ## Overview
-Archetype is an AI-powered platform for rapid web development, featuring an AI coding agent (SySop) for autonomous code generation and dual-version IDE Workspaces (Archetype for desktop, Archetype5 for mobile). It offers a console-first interface, real-time preview, and comprehensive workspace features. Archetype aims for Fortune 500 production readiness and fully portable deployment, incorporating monetization infrastructure, a template marketplace, and professional development services. A key feature is Meta-SySop, an autonomous system for platform self-healing, bug fixes, and UI/UX improvements to its own source code, complete with rollback and audit logging.
+**Tagline**: "When code throws you lemons, you get LemonAid"  
+**Mission**: The SaaS platform made to make life sweet
+
+LemonAid is an AI-powered platform for rapid web development, featuring an AI coding agent (SySop) for autonomous code generation and dual-version IDE Workspaces (LemonAid for desktop, LemonAid5 for mobile). It offers a console-first interface, real-time preview, and comprehensive workspace features with a fresh, optimistic aesthetic. LemonAid aims for production readiness with fully portable deployment, incorporating monetization infrastructure, a template marketplace, and professional development services. A key feature is Meta-SySop, an autonomous system for platform self-healing, bug fixes, and UI/UX improvements to its own source code, complete with rollback and audit logging.
+
+**Mascot**: Lumo the Lemon - An animated pixel art lemon with red goggles and a tech aesthetic, serving as your cheerful AI coding buddy with 9 emotional states (happy, excited, thinking, working, success, error, worried, sad, idle).
 
 ## User Preferences
 ### API Configuration
@@ -11,23 +16,34 @@ Archetype is an AI-powered platform for rapid web development, featuring an AI c
 - Superior code quality compared to GPT-4
 
 ### Design Preferences
-- Fortune 500 corporate aesthetic
-- Professional enterprise design system
-- Navy blue and slate gray color palette
-- Card-based layouts with sophisticated shadows and elevation
-- Clean, minimalist interface with generous spacing
-- Professional Inter font family for UI
-- Dark mode with enterprise-grade polish
-- Subtle micro-interactions and hover effects
+- **Brand Identity**: Fresh, optimistic, citrus-inspired theme
+- **Color Palette**: 
+  - Sparkling Lemon (50 98% 58%) - Primary vibrant yellow
+  - Fresh Mint (145 60% 45%) - Success green
+  - Citrus Bloom (32 94% 62%) - Warning orange
+  - Slate Professional (210 14% 24%) - Text and contrast
+  - Cream Base (48 46% 96%) - Soft backgrounds
+- **Visual Language**: 
+  - Bright, welcoming interfaces with playful professionalism
+  - Card-based layouts with warm shadows
+  - Clean, approachable design with generous spacing
+  - Inter font family for UI text, JetBrains Mono for code
+  - Light mode primary with dark mode support
+  - Organic animations (Lumo breathing, lemonade filling)
+- **Illustration Elements**: 
+  - Lemonade jar loading animations (SVG with animated fill and bubbles)
+  - Lumo mascot with natural sprite animations
+  - Subtle lemon motifs and citrus accents
+  - Ice cubes, bubbles, and fresh visual flourishes
 
 ## System Architecture
 The platform is built with a React frontend, an Express.js backend, and PostgreSQL for data persistence.
 
-### Dual-Version Architecture (Archetype + Archetype5)
-The platform uses a unified codebase to support two distinct user experiences: Archetype (Desktop) with a 4-panel layout, and Archetype5 (Mobile) with bottom tab navigation. Both versions share backend APIs, WebSocket connections, authentication, and database access.
+### Dual-Version Architecture (LemonAid + LemonAid5)
+The platform uses a unified codebase to support two distinct user experiences: LemonAid (Desktop) with a 4-panel layout, and LemonAid5 (Mobile) with bottom tab navigation. Both versions share backend APIs, WebSocket connections, authentication, and database access.
 
 ### UI/UX Decisions
-The user interface features a tab-based workspace (Overview, Build, Files, Preview, Activity, Versions) providing an IDE-like experience, primarily through a command console and real-time live preview. The design emphasizes a professional, corporate aesthetic with a navy/slate color palette, card-based layouts, smooth transitions, and ADA/WCAG accessibility. Chat interfaces are clean and minimal with enhanced progress displays. New additions include a visible image attachment toolbar in the AI chat interface and Resume/Cancel controls for Meta-SySop jobs. A real-time deployment status widget tracks GitHub commits and Meta-SySop's autonomous updates.
+The user interface features a tab-based workspace (Overview, Build, Files, Preview, Activity, Versions) providing an IDE-like experience, primarily through a command console and real-time live preview. The design emphasizes a fresh, optimistic aesthetic with a citrus-inspired color palette (Sparkling Lemon, Fresh Mint, Citrus Bloom), card-based layouts, warm shadows, smooth transitions, and ADA/WCAG accessibility. Chat interfaces feature Lumo the Lemon mascot as an AI companion with natural sprite animations and emotional expressions. Loading states use the signature lemonade jar animation with liquid fill, bubbles, and ice cubes. New additions include a visible image attachment toolbar in the AI chat interface, Resume/Cancel controls for Meta-SySop jobs, and the animated Lumo avatar system. A real-time deployment status widget tracks GitHub commits and Meta-SySop's autonomous updates.
 
 ### Technical Implementations
 - **AI Architecture**: SySop (AI Coding Agent) follows a 12-step workflow with Architect consultation, real-time streaming, and usage-based billing, optimized for full-stack web and professional games.
@@ -38,11 +54,13 @@ The user interface features a tab-based workspace (Overview, Build, Files, Previ
 - **Meta-SySop Token Optimization** (Oct 29, 2025): Aggressive token reduction to prevent excessive API costs and 200K token limit errors. Chat history reduced from 100→10 messages (~40K tokens saved), ultra-condensed platform knowledge (~2K saved), minimal memory summaries (~3K saved), deployment awareness removed (~2K saved). **Total savings: ~47K tokens per request**, making Meta-SySop sustainable for production use. System now maintains conversation context efficiently while staying well under Anthropic's limits.
 - **Meta-SySop Intimate Platform Knowledge System** (Oct 28, 2025): Complete context awareness combining bounded conversation history (10 messages optimized for tokens), condensed platform architecture knowledge, comprehensive bug/fix tracking, and conversational personality. Meta-SySop has intimate understanding of:
     - Recent conversation with user (goals, issues, fixes, completed work)
-    - Complete Archetype platform architecture (SySop, healing system, database, deployment)
+    - Complete LemonAid platform architecture (SySop, healing system, database, deployment)
     - Recent bugs fixed and features built
     - Technical implementation details and file structure
     - **Full replit.md access**: Can read/write platform documentation using readPlatformFile/writePlatformFile tools
   System uses aggressive token optimization (10 messages + ultra-condensed prompts) preventing API failures while maintaining essential context. Meta-SySop references knowledge naturally: "I remember when..." or "Let me check the platform healing system...".
+- **Lumo Avatar System** (Oct 30, 2025): Animated lemon mascot with 9 emotion states using sprite sheet animations (1024×1024 PNG files, 4×2 grid, 256×256 frames). Features natural breathing animation with continuous sine wave, varied frame timing for organic feel, pre-rendered frame buffers to prevent sprite bleed, animated background with pulsing glow and orbiting particles, and rotating outer ring border effect. Appears in SySop and Meta-SySop chat interfaces as a coding companion.
+- **Lemonade Jar Loader** (Oct 30, 2025): SVG-based loading animation featuring a glass jar with animated yellow lemonade fill (0-100%), floating bubble particles with varied animation timing, rotating ice cubes that appear at >20% progress, lemon slice garnish at >50%, glass shine effects, red bendy straw decoration, and celebratory sparkles at 100% completion. Used throughout the platform for loading states.
 - **Platform Healing System**: Real-time system monitoring with WebSocket-based metrics broadcasting (CPU, memory, health, incidents, uptime, git status), a theme-aware UI, and auto-commit/auto-push toggles.
 - **Advanced AI Capabilities**: SySop can build complex marketplace platforms, 2D/3D games, implement usage-based billing, generate test data, simulate user behavior, and create functional chatbots/automation agents.
 - **Command System**: Natural language commands are processed by Anthropic Claude 3.5 Sonnet to generate JSON project structures.

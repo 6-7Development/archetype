@@ -178,10 +178,10 @@
 - Professional when needed (serious errors, billing)
 
 **Example Messages**:
-- ✅ "Your code is looking sweet!" (success)
-- ⚠️ "Hang tight! Squeezing fresh code..." (loading)
-- ❌ "Oops! That's a sour lemon. Let's fix it." (error)
-- 💡 "Here's a fresh idea..." (suggestion)
+- [SUCCESS] "Your code is looking sweet!"
+- [LOADING] "Hang tight! Squeezing fresh code..."
+- [ERROR] "Oops! That's a sour lemon. Let's fix it."
+- [TIP] "Here's a fresh idea..."
 
 ## Responsive Design
 
@@ -232,4 +232,4 @@
 
 ---
 
-**Remember**: When code throws you lemons, LemonAid makes it sweet! 🍋✨
+**Remember**: When code throws you lemons, LemonAid makes it sweet!
