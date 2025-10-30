@@ -3,7 +3,7 @@
  * 
  * This module provides cross-agent communication patterns for:
  * - SySop (The Coder) - Builds user projects
- * - Meta-SySop - Platform self-healing system
+ * - LomuAI - Platform self-healing system
  * - I AM (The Architect) - Architectural consultant
  * 
  * COMMUNICATION PATTERNS:
@@ -24,7 +24,7 @@ import { broadcastToUser, broadcastToAll } from './routes/websocket';
 /**
  * Agent Types in the Archetype Platform
  */
-export type AgentType = 'sysop' | 'meta-sysop' | 'architect' | 'sub-agent';
+export type AgentType = 'sysop' | 'lomu-ai' | 'architect' | 'sub-agent';
 
 /**
  * Agent Status States
@@ -265,8 +265,8 @@ export function getAgentCapabilities(agentType: AgentType): AgentCapabilities {
         'UI/UX implementation',
       ],
     },
-    'meta-sysop': {
-      agentType: 'meta-sysop',
+    'lomu-ai': {
+      agentType: 'lomu-ai',
       capabilities: [
         'Modify platform source code',
         'Fix platform bugs',
@@ -343,7 +343,7 @@ export function getAgentCapabilities(agentType: AgentType): AgentCapabilities {
 export function discoverAgentCapabilities(): Record<AgentType, AgentCapabilities> {
   return {
     'sysop': getAgentCapabilities('sysop'),
-    'meta-sysop': getAgentCapabilities('meta-sysop'),
+    'lomu-ai': getAgentCapabilities('lomu-ai'),
     'architect': getAgentCapabilities('architect'),
     'sub-agent': getAgentCapabilities('sub-agent'),
   };
@@ -425,7 +425,7 @@ export function broadcastAgentStatus(
  * @example
  * ```typescript
  * const approvalRequest = requestArchitectApproval({
- *   requestedBy: 'meta-sysop',
+ *   requestedBy: 'lomu-ai',
  *   userId: 'owner123',
  *   changeType: 'architecture',
  *   description: 'Refactor WebSocket system to support multiple concurrent connections',
@@ -715,9 +715,9 @@ export function processEscalationResponse(params: {
  * 
  * @example
  * ```typescript
- * // Meta-SySop delegates database migration to specialist sub-agent
+ * // LomuAI delegates database migration to specialist sub-agent
  * const delegation = delegateToSubAgent({
- *   delegatedBy: 'meta-sysop',
+ *   delegatedBy: 'lomu-ai',
  *   subAgentType: 'specialist',
  *   userId: 'owner123',
  *   task: {

@@ -1,7 +1,7 @@
 # Render Production - Owner Setup Guide
 
 ## Problem
-Meta-SySop requires a designated platform owner (user with `is_owner = true` in database) to function on Render production. Without this, Meta cannot update the platform.
+LomuAI requires a designated platform owner (user with `is_owner = true` in database) to function on Render production. Without this, Meta cannot update the platform.
 
 ## Solution: Browser Console Method
 
@@ -34,7 +34,7 @@ fetch('/api/setup-owner', {
     console.log('✅ Owner setup result:', data);
     if (data.success) {
       console.log('🎉 You are now the platform owner!');
-      console.log('Meta-SySop can now update the platform on Render.');
+      console.log('LomuAI can now update the platform on Render.');
     } else {
       console.error('❌ Error:', data.error);
     }
@@ -105,12 +105,12 @@ fetch('/api/auth/check')
 - Contact them to manage platform updates
 - Or use `OWNER_USER_ID` environment variable override
 
-## Testing Meta-SySop After Setup
+## Testing LomuAI After Setup
 
-Once owner is set, test Meta-SySop:
+Once owner is set, test LomuAI:
 
 ```javascript
-// Test Meta-SySop chat endpoint
+// Test LomuAI chat endpoint
 fetch('/api/platform/chat', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
@@ -121,12 +121,12 @@ fetch('/api/platform/chat', {
   })
 })
   .then(r => r.json())
-  .then(data => console.log('Meta-SySop response:', data));
+  .then(data => console.log('LomuAI response:', data));
 ```
 
 ## Security Notes
 
 - Owner status is permanent (cannot be changed via API once set)
 - Only admins can become owner
-- Owner has special privileges for Meta-SySop platform updates
+- Owner has special privileges for LomuAI platform updates
 - All updates are logged and audited

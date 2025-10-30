@@ -7,11 +7,11 @@ import { db } from "./db";
 import { files } from "@shared/schema";
 import { autoHealing } from "./autoHealing";
 
-// DEPLOYMENT VERIFICATION: October 28, 2025 01:50 UTC - Meta-SySop execution fix deployed
-// ✅ Meta-SySop system prompt rewritten to force immediate tool execution
+// DEPLOYMENT VERIFICATION: October 28, 2025 01:50 UTC - LomuAI execution fix deployed
+// ✅ LomuAI system prompt rewritten to force immediate tool execution
 // ✅ Continuation logic added to keep working on in_progress tasks
 // ✅ Visual progress bars added to in_progress tasks
-// ✅ Extensive diagnostic logging for Meta-SySop debugging
+// ✅ Extensive diagnostic logging for LomuAI debugging
 // PREVIOUS: Session store SSL, Vite allowedHosts, WebSocket WSS all configured
 
 // PRODUCTION FIX: Handle SSL certificate validation for Render deployment
@@ -54,7 +54,7 @@ const app = express();
 app.use(compression({
   filter: (req, res) => {
     // Disable compression for Server-Sent Events (SSE) - they need real-time streaming
-    if (req.path === '/api/meta-sysop/stream' || req.path.includes('/stream')) {
+    if (req.path === '/api/lomu-ai/stream' || req.path.includes('/stream')) {
       return false;
     }
     if (req.headers['x-no-compression']) {

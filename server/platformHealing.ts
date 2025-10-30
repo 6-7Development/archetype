@@ -45,7 +45,7 @@ const activePRs = new Map<string, PRMetadata>();
 
 export class PlatformHealingService {
   private readonly PROJECT_ROOT = PROJECT_ROOT;
-  private readonly BACKUP_BRANCH_PREFIX = 'backup/meta-sysop-';
+  private readonly BACKUP_BRANCH_PREFIX = 'backup/lomu-ai-';
   
   constructor() {
     // Log PROJECT_ROOT for debugging
@@ -90,12 +90,12 @@ export class PlatformHealingService {
       try {
         await execFileAsync('git', ['add', '-A'], { cwd: this.PROJECT_ROOT });
         
-        const commitMessage = `[Meta-SySop Backup] ${description}`;
+        const commitMessage = `[LomuAI Backup] ${description}`;
         
         try {
           await execFileAsync('git', [
-            '-c', 'user.name=Meta-SySop',
-            '-c', 'user.email=meta-sysop@archetype.platform',
+            '-c', 'user.name=LomuAI',
+            '-c', 'user.email=lomu-ai@archetype.platform',
             'commit', '-m', commitMessage
           ], { cwd: this.PROJECT_ROOT });
         } catch (commitError: any) {
@@ -418,7 +418,7 @@ export class PlatformHealingService {
       // If skipAutoCommit, just write to temp storage for batch commit later
       if (skipAutoCommit) {
         // Store in temp directory for batch commit
-        const tempPath = path.join('/tmp/meta-sysop-changes', filePath);
+        const tempPath = path.join('/tmp/lomu-ai-changes', filePath);
         const tempDir = path.dirname(tempPath);
         await fs.mkdir(tempDir, { recursive: true });
         await fs.writeFile(tempPath, content, 'utf-8');
@@ -434,7 +434,7 @@ export class PlatformHealingService {
       // Use GitHub service to commit the file IMMEDIATELY (old behavior)
       try {
         const githubService = getGitHubService();
-        const commitMessage = `[Meta-SySop 🤖] Update ${filePath}`;
+        const commitMessage = `[LomuAI 🤖] Update ${filePath}`;
         
         console.log(`[PLATFORM-WRITE] 🔧 Committing to GitHub: ${filePath}`);
         console.log(`[PLATFORM-WRITE] Maintenance mode: ENABLED`);
@@ -777,11 +777,11 @@ export class PlatformHealingService {
     try {
       await execFileAsync('git', ['add', '-A'], { cwd: this.PROJECT_ROOT });
 
-      const commitMessage = `[Meta-SySop] ${message}\n\nChanges:\n${changes.map(c => `- ${c.operation} ${c.path}`).join('\n')}`;
+      const commitMessage = `[LomuAI] ${message}\n\nChanges:\n${changes.map(c => `- ${c.operation} ${c.path}`).join('\n')}`;
 
       await execFileAsync('git', [
-        '-c', 'user.name=Meta-SySop',
-        '-c', 'user.email=meta-sysop@archetype.platform',
+        '-c', 'user.name=LomuAI',
+        '-c', 'user.email=lomu-ai@archetype.platform',
         'commit', '-m', commitMessage
       ], { cwd: this.PROJECT_ROOT });
 
@@ -987,7 +987,7 @@ export class PlatformHealingService {
         }
 
         const githubService = getGitHubService();
-        const commitMessage = `Batch deploy ${pendingChanges.length} file(s) via Meta-SySop\n\nFiles changed:\n${pendingChanges.map(c => `- ${c.operation} ${c.path}`).join('\n')}`;
+        const commitMessage = `Batch deploy ${pendingChanges.length} file(s) via LomuAI\n\nFiles changed:\n${pendingChanges.map(c => `- ${c.operation} ${c.path}`).join('\n')}`;
 
         const filesToCommit = pendingChanges
           .filter(c => c.operation !== 'delete')

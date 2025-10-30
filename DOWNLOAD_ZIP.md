@@ -44,7 +44,7 @@ You should see:
 ❌ Git history  
 
 ## For ChatGPT Review
-This ZIP contains everything needed to review the Archetype platform architecture and recent Meta-SySop task cleanup fix.
+This ZIP contains everything needed to review the Archetype platform architecture and recent LomuAI task cleanup fix.
 
 Key files to review:
 - `ZIP_CONTENTS.md` - Overview

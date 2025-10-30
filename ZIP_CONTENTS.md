@@ -27,7 +27,7 @@ This ZIP file contains the complete Archetype platform source code for review.
 
 ### Database Files
 - `shared/schema.ts` - Complete Drizzle ORM schema (PostgreSQL)
-- `production-owner-setup.sql` - Owner user setup for Meta-SySop
+- `production-owner-setup.sql` - Owner user setup for LomuAI
 - `PRODUCTION_CLEAR_TASKS.sql` - Task cleanup utility
 
 ### Documentation
@@ -60,11 +60,11 @@ This ZIP file contains the complete Archetype platform source code for review.
 3. **`shared/schema.ts`** - Database schema (all tables)
 4. **`render.yaml`** - Deployment configuration
 
-### For Meta-SySop Implementation
-5. **`server/routes/metaSysopChat.ts`** - Main Meta-SySop logic
+### For LomuAI Implementation
+5. **`server/routes/metaSysopChat.ts`** - Main LomuAI logic
 6. **`server/tools/task-management.ts`** - Task management system
 7. **`server/githubService.ts`** - GitHub integration for auto-commits
-8. **`client/src/components/meta-sysop-chat.tsx`** - Frontend UI
+8. **`client/src/components/lomu-ai-chat.tsx`** - Frontend UI
 9. **`client/src/components/task-board.tsx`** - Real-time task display
 
 ### For Frontend Architecture
@@ -107,7 +107,7 @@ See `.env.example` for complete list. Critical ones:
 DATABASE_URL=postgresql://...       # PostgreSQL connection
 SESSION_SECRET=random-secret-here   # Session encryption
 ANTHROPIC_API_KEY=sk-ant-...       # Claude API
-GITHUB_TOKEN=ghp_...               # For Meta-SySop commits
+GITHUB_TOKEN=ghp_...               # For LomuAI commits
 GITHUB_REPO=owner/repo-name        # Your repo
 ```
 
@@ -116,7 +116,7 @@ GITHUB_REPO=owner/repo-name        # Your repo
 ### Recent Critical Fix (Oct 25, 2024)
 **Commit**: 3f62a0e73f853bcb24f45aedbe5fffe2eede086b
 
-**Problem**: Tasks remained stuck when Meta-SySop exited early
+**Problem**: Tasks remained stuck when LomuAI exited early
 
 **Solution**: 
 - Session-scoped cleanup (tracks activeTaskListId)
@@ -125,7 +125,7 @@ GITHUB_REPO=owner/repo-name        # Your repo
 - See `server/routes/metaSysopChat.ts` lines ~818-867
 
 ### Anti-Lying Enforcement System
-5-layer system prevents Meta-SySop from claiming success prematurely:
+5-layer system prevents LomuAI from claiming success prematurely:
 1. Text suppression when tool calls present
 2. Task dependency validation  
 3. Commit success tracking
@@ -138,7 +138,7 @@ See `RENDER_DEPLOYMENT_NOTES.md` for details.
 
 - **Dual-Version UI**: Archetype (desktop) + Archetype5 (mobile)
 - **WebSocket**: Real-time task updates
-- **Autonomous AI**: Meta-SySop self-heals production issues
+- **Autonomous AI**: LomuAI self-heals production issues
 - **GitHub Integration**: Auto-commits fixes to trigger Render deploy
 - **Enterprise Auth**: Replit Auth + PostgreSQL sessions
 - **Usage Tracking**: Comprehensive billing/metering system
@@ -149,6 +149,6 @@ Review these docs in order:
 1. RENDER_DEPLOYMENT_NOTES.md (deployment guide)
 2. replit.md (complete architecture)
 3. shared/schema.ts (database structure)
-4. server/routes/metaSysopChat.ts (Meta-SySop implementation)
+4. server/routes/metaSysopChat.ts (LomuAI implementation)
 
 All code is TypeScript with comprehensive comments.

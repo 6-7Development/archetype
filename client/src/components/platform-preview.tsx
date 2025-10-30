@@ -154,7 +154,7 @@ export function PlatformPreview({ showHealing = false }: PlatformPreviewProps) {
             <Loader2 className="w-4 h-4 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0 animate-spin" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">
-                Meta-SySop is fixing the issue...
+                LomuAI is fixing the issue...
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 The platform will reload automatically when the fix is complete

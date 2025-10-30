@@ -26,13 +26,13 @@ let wss: WebSocketServer | null = null;
 // Initialize WebSocket server reference
 export function initializeMetaSysopWebSocket(websocketServer: WebSocketServer) {
   wss = websocketServer;
-  console.log('[META-SYSOP] WebSocket server initialized for live preview broadcasts');
+  console.log('[LOMU-AI] WebSocket server initialized for live preview broadcasts');
 }
 
 // Broadcast file update to all connected clients for live preview refresh
 function broadcastFileUpdate(path: string, operation: 'create' | 'modify' | 'delete', projectId: string | null = null) {
   if (!wss) {
-    console.warn('[META-SYSOP] WebSocket not initialized, skipping file update broadcast');
+    console.warn('[LOMU-AI] WebSocket not initialized, skipping file update broadcast');
     return;
   }
 
@@ -52,7 +52,7 @@ function broadcastFileUpdate(path: string, operation: 'create' | 'modify' | 'del
     }
   });
 
-  console.log(`[META-SYSOP] 📡 Broadcasted file update (${operation}: ${path}, project: ${projectId || 'platform'}) to ${broadcastCount} clients`);
+  console.log(`[LOMU-AI] 📡 Broadcasted file update (${operation}: ${path}, project: ${projectId || 'platform'}) to ${broadcastCount} clients`);
 }
 
 // Track active streams to prevent concurrent requests per user
@@ -134,12 +134,12 @@ router.get('/message/:messageId', isAuthenticated, async (req: any, res) => {
 
     res.json({ success: true, message });
   } catch (error: any) {
-    console.error('[META-SYSOP] Failed to fetch message:', error);
+    console.error('[LOMU-AI] Failed to fetch message:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
 
-// Approve pending changes and auto-resume Meta-SySop
+// Approve pending changes and auto-resume LomuAI
 router.post('/approve/:messageId', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
     const { messageId } = req.params;
@@ -171,14 +171,14 @@ router.post('/approve/:messageId', isAuthenticated, isAdmin, async (req: any, re
       })
       .where(eq(chatMessages.id, messageId));
 
-    console.log('[META-SYSOP] Changes approved for message:', messageId);
+    console.log('[LOMU-AI] Changes approved for message:', messageId);
 
     // CRITICAL: Resolve the approval promise to resume the SSE stream
     const resolved = resolveApproval(messageId, true);
     if (resolved) {
-      console.log('[META-SYSOP] Stream will resume after approval');
+      console.log('[LOMU-AI] Stream will resume after approval');
     } else {
-      console.warn('[META-SYSOP] No pending stream found for message:', messageId);
+      console.warn('[LOMU-AI] No pending stream found for message:', messageId);
     }
 
     res.json({ 
@@ -187,7 +187,7 @@ router.post('/approve/:messageId', isAuthenticated, isAdmin, async (req: any, re
     });
 
   } catch (error: any) {
-    console.error('[META-SYSOP] Approval error:', error);
+    console.error('[LOMU-AI] Approval error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -224,19 +224,19 @@ router.post('/reject/:messageId', isAuthenticated, isAdmin, async (req: any, res
       })
       .where(eq(chatMessages.id, messageId));
 
-    console.log('[META-SYSOP] Changes rejected for message:', messageId);
+    console.log('[LOMU-AI] Changes rejected for message:', messageId);
 
     // Resolve the pending approval with false (rejected) to resume stream
     const resolved = resolveApproval(messageId, false);
     if (resolved) {
-      console.log('[META-SYSOP] Stream resumed with rejection');
+      console.log('[LOMU-AI] Stream resumed with rejection');
     } else {
-      console.warn('[META-SYSOP] No pending stream found for message:', messageId);
+      console.warn('[LOMU-AI] No pending stream found for message:', messageId);
     }
 
     res.json({ success: true, message: 'Changes rejected' });
   } catch (error: any) {
-    console.error('[META-SYSOP] Rejection error:', error);
+    console.error('[LOMU-AI] Rejection error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -266,7 +266,7 @@ router.get('/autonomy-level', isAuthenticated, isAdmin, async (req: any, res) =>
       // Auto-set owner to 'max' if not already set
       if (!user.autonomyLevel || user.autonomyLevel === 'basic') {
         await db.update(users).set({ autonomyLevel: 'max' }).where(eq(users.id, userId));
-        console.log(`[META-SYSOP] Owner ${userId} auto-upgraded to MAX autonomy`);
+        console.log(`[LOMU-AI] Owner ${userId} auto-upgraded to MAX autonomy`);
       }
     } else {
       // Regular users: check subscription
@@ -329,7 +329,7 @@ router.get('/autonomy-level', isAuthenticated, isAdmin, async (req: any, res) =>
       levels: autonomyLevels,
     });
   } catch (error: any) {
-    console.error('[META-SYSOP] Get autonomy level error:', error);
+    console.error('[LOMU-AI] Get autonomy level error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -391,7 +391,7 @@ router.put('/autonomy-level', isAuthenticated, isAdmin, async (req: any, res) =>
       .set({ autonomyLevel: level, updatedAt: new Date() })
       .where(eq(users.id, userId));
 
-    console.log(`[META-SYSOP] User ${userId} autonomy level updated to: ${level}`);
+    console.log(`[LOMU-AI] User ${userId} autonomy level updated to: ${level}`);
 
     res.json({ 
       success: true, 
@@ -399,22 +399,22 @@ router.put('/autonomy-level', isAuthenticated, isAdmin, async (req: any, res) =>
       message: `Autonomy level updated to ${level}`,
     });
   } catch (error: any) {
-    console.error('[META-SYSOP] Update autonomy level error:', error);
+    console.error('[LOMU-AI] Update autonomy level error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Get all projects (admin only - for project selector in Meta-SySop)
+// Get all projects (admin only - for project selector in LomuAI)
 router.get('/projects', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
     const { storage } = await import('../storage');
     const projects = await storage.getAllProjects();
     
-    console.log(`[META-SYSOP] Fetched ${projects.length} projects for admin project selector`);
+    console.log(`[LOMU-AI] Fetched ${projects.length} projects for admin project selector`);
     
     res.json(projects);
   } catch (error: any) {
-    console.error('[META-SYSOP] Get projects error:', error);
+    console.error('[LOMU-AI] Get projects error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -430,7 +430,7 @@ router.get('/task-list/:taskListId', isAuthenticated, isAdmin, async (req: any, 
       .where(eq(tasks.taskListId, taskListId))
       .orderBy(tasks.createdAt);
     
-    console.log(`[META-SYSOP] Fetched ${taskList.length} tasks for task list ${taskListId}`);
+    console.log(`[LOMU-AI] Fetched ${taskList.length} tasks for task list ${taskListId}`);
     
     res.json({ 
       success: true, 
@@ -438,12 +438,12 @@ router.get('/task-list/:taskListId', isAuthenticated, isAdmin, async (req: any, 
       count: taskList.length,
     });
   } catch (error: any) {
-    console.error('[META-SYSOP] Get task list error:', error);
+    console.error('[LOMU-AI] Get task list error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Get Meta-SySop chat history
+// Get LomuAI chat history
 router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
     const userId = req.authenticatedUserId;
@@ -476,41 +476,41 @@ router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
 
     res.json({ messages: messagesWithAttachments });
   } catch (error: any) {
-    console.error('[META-SYSOP-CHAT] Error loading history:', error);
+    console.error('[LOMU-AI-CHAT] Error loading history:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Stream Meta-SySop chat response
+// Stream LomuAI chat response
 router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
-  console.log('[META-SYSOP-CHAT] Stream request received');
+  console.log('[LOMU-AI-CHAT] Stream request received');
   const { message, attachments = [], autoCommit = false, autoPush = false, projectId = null } = req.body;
   const userId = req.authenticatedUserId;
-  console.log('[META-SYSOP-CHAT] Message:', message?.substring(0, 50), 'Attachments:', attachments?.length || 0, 'UserId:', userId, 'ProjectId:', projectId || 'platform code');
+  console.log('[LOMU-AI-CHAT] Message:', message?.substring(0, 50), 'Attachments:', attachments?.length || 0, 'UserId:', userId, 'ProjectId:', projectId || 'platform code');
 
   if (!message || typeof message !== 'string') {
-    console.log('[META-SYSOP-CHAT] ERROR: Message validation failed');
+    console.log('[LOMU-AI-CHAT] ERROR: Message validation failed');
     return res.status(400).json({ error: 'Message is required' });
   }
 
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   if (!anthropicKey) {
-    console.log('[META-SYSOP-CHAT] ERROR: No Anthropic API key');
+    console.log('[LOMU-AI-CHAT] ERROR: No Anthropic API key');
     return res.status(503).json({ error: 'Anthropic API key not configured' });
   }
 
   // Prevent concurrent streams per user
-  const activeStreamsKey = `meta-sysop-stream-${userId}`;
+  const activeStreamsKey = `lomu-ai-stream-${userId}`;
   if (activeStreams.has(activeStreamsKey)) {
-    console.log('[META-SYSOP-CHAT] Concurrent stream detected for user:', userId);
+    console.log('[LOMU-AI-CHAT] Concurrent stream detected for user:', userId);
     return res.status(429).json({
-      error: 'A Meta-SySop stream is already active. Please wait for it to complete.'
+      error: 'A LomuAI stream is already active. Please wait for it to complete.'
     });
   }
   activeStreams.add(activeStreamsKey);
-  console.log('[META-SYSOP-CHAT] Stream registered for user:', userId);
+  console.log('[LOMU-AI-CHAT] Stream registered for user:', userId);
 
-  console.log('[META-SYSOP-CHAT] Setting up SSE headers');
+  console.log('[LOMU-AI-CHAT] Setting up SSE headers');
   // Set up Server-Sent Events with Railway-specific anti-buffering headers
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
@@ -538,7 +538,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
   // Helper function to ensure consistent SSE stream termination
   const terminateStream = (messageId: string, error?: string) => {
-    console.log('[META-SYSOP-CHAT] Terminating stream:', messageId, error ? `Error: ${error}` : 'Success');
+    console.log('[LOMU-AI-CHAT] Terminating stream:', messageId, error ? `Error: ${error}` : 'Success');
     if (error) {
       sendEvent('error', { message: error });
     }
@@ -552,33 +552,33 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
   const heartbeatInterval = setInterval(() => {
     try {
       res.write(': keepalive\n\n'); // SSE comment (lines starting with : are ignored by EventSource)
-      console.log('[META-SYSOP-HEARTBEAT] Sent keepalive to prevent timeout');
+      console.log('[LOMU-AI-HEARTBEAT] Sent keepalive to prevent timeout');
     } catch (error) {
-      console.error('[META-SYSOP-HEARTBEAT] Failed to send keepalive:', error);
+      console.error('[LOMU-AI-HEARTBEAT] Failed to send keepalive:', error);
     }
   }, 15000); // Every 15 seconds
 
-  console.log('[META-SYSOP-CHAT] Heartbeat started - will send keepalive every 15s');
+  console.log('[LOMU-AI-CHAT] Heartbeat started - will send keepalive every 15s');
   
   // Wrap entire route handler in timeout to prevent infinite hanging
   const STREAM_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes max
   const streamTimeoutId = setTimeout(() => {
-    console.error('[META-SYSOP] ⏱️ STREAM TIMEOUT - Force closing after 5 minutes');
+    console.error('[LOMU-AI] ⏱️ STREAM TIMEOUT - Force closing after 5 minutes');
     if (!res.writableEnded) {
       sendEvent('error', { message: '⏱️ Stream timeout after 5 minutes. Please try again.' });
       sendEvent('done', { messageId: 'timeout', error: true });
       res.end();
     }
   }, STREAM_TIMEOUT_MS);
-  console.log('[META-SYSOP-CHAT] Stream timeout set - will force close after 5 minutes');
+  console.log('[LOMU-AI-CHAT] Stream timeout set - will force close after 5 minutes');
   
-  console.log('[META-SYSOP-CHAT] Entering try block');
+  console.log('[LOMU-AI-CHAT] Entering try block');
   try {
 
     // Fetch user's autonomy level and subscription
     const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
     const autonomyLevel = user?.autonomyLevel || 'basic';
-    console.log(`[META-SYSOP-CHAT] User autonomy level: ${autonomyLevel}`);
+    console.log(`[LOMU-AI-CHAT] User autonomy level: ${autonomyLevel}`);
 
     // Determine autonomy level capabilities
     const levelConfig = {
@@ -604,7 +604,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     // Save attachments to database
     if (attachments && attachments.length > 0) {
-      console.log('[META-SYSOP-CHAT] Saving', attachments.length, 'attachments');
+      console.log('[LOMU-AI-CHAT] Saving', attachments.length, 'attachments');
       const attachmentValues = attachments.map((att: any) => ({
         messageId: userMsg.id,
         fileName: att.fileName,
@@ -615,7 +615,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       }));
       
       await db.insert(metaSysopAttachments).values(attachmentValues);
-      console.log('[META-SYSOP-CHAT] Attachments saved successfully');
+      console.log('[LOMU-AI-CHAT] Attachments saved successfully');
     }
 
     sendEvent('user_message', { messageId: userMsg.id });
@@ -638,7 +638,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       return 'task';
     };
 
-    // Meta-SySop creates task lists for work requests (diagnose, fix, improve)
+    // LomuAI creates task lists for work requests (diagnose, fix, improve)
     // This makes progress visible in the inline task card
     sendEvent('progress', { message: '🧠 Analyzing your request...' });
     
@@ -749,7 +749,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     const intent = classifyIntent(message);
 
     // ⚡ ULTRA-COMPRESSED SYSTEM PROMPT: ~500 tokens (95% reduction from 11K)
-    const systemPrompt = `Meta-SySop maintains Archetype platform. ${intent === 'question' ? 'Answer in 1 sentence.' : 'Be brief.'}
+    const systemPrompt = `LomuAI maintains Archetype platform. ${intent === 'question' ? 'Answer in 1 sentence.' : 'Be brief.'}
 
 Tools: readPlatformFile, writePlatformFile, commit_to_github, start_subagent, verify_fix, web_search, architect_consult.
 Stack: React+Express+PostgreSQL on Railway.
@@ -1039,7 +1039,7 @@ User: "${message}"`;
     let consecutiveEmptyIterations = 0; // Track iterations with no tool calls
     const MAX_EMPTY_ITERATIONS = 3; // Stop if 3 consecutive iterations without tool calls
 
-    // ✅ REMOVED: Casual greeting bypass - Meta-SySop should ALWAYS be conversational like Replit Agent
+    // ✅ REMOVED: Casual greeting bypass - LomuAI should ALWAYS be conversational like Replit Agent
     // Every message goes to Claude for proper conversational awareness and context
 
     while (continueLoop && iterationCount < MAX_ITERATIONS) {
@@ -1111,7 +1111,7 @@ User: "${message}"`;
             
             if (chunkHash === lastChunkHash && chunkText.length > 10) {
               // Skip duplicate chunk (likely from SSE retry)
-              console.log('[META-SYSOP-STREAM] Skipped duplicate chunk:', chunkHash.substring(0, 20));
+              console.log('[LOMU-AI-STREAM] Skipped duplicate chunk:', chunkHash.substring(0, 20));
               continue;
             }
             lastChunkHash = chunkHash;
@@ -1148,7 +1148,7 @@ User: "${message}"`;
               lastBlock.input = JSON.parse(lastBlock._inputStr);
               delete lastBlock._inputStr;
             } catch (e) {
-              console.error('[META-SYSOP] Failed to parse tool input JSON:', e);
+              console.error('[LOMU-AI] Failed to parse tool input JSON:', e);
             }
           }
         }
@@ -1176,8 +1176,8 @@ User: "${message}"`;
       // 🎯 Log response for debugging
       if (iterationCount === 1) {
         const hasToolCalls = contentBlocks.some(block => block.type === 'tool_use');
-        console.log('[META-SYSOP] Response has tool calls:', hasToolCalls);
-        console.log('[META-SYSOP] Content blocks:', contentBlocks.map(b => b.type).join(', '));
+        console.log('[LOMU-AI] Response has tool calls:', hasToolCalls);
+        console.log('[LOMU-AI] Content blocks:', contentBlocks.map(b => b.type).join(', '));
       }
 
       const toolResults: any[] = [];
@@ -1185,13 +1185,13 @@ User: "${message}"`;
       const toolNames = contentBlocks.filter(b => b.type === 'tool_use').map(b => b.name);
       
       // 🎯 PRE-EXECUTION LOGGING
-      console.log(`[META-SYSOP-FORCE] === ITERATION ${iterationCount} CHECK ===`);
-      console.log(`[META-SYSOP-FORCE] Tools called this iteration: ${toolNames.join(', ') || 'NONE'}`);
+      console.log(`[LOMU-AI-FORCE] === ITERATION ${iterationCount} CHECK ===`);
+      console.log(`[LOMU-AI-FORCE] Tools called this iteration: ${toolNames.join(', ') || 'NONE'}`);
 
       // 🚨 RESET EMPTY COUNTER IMMEDIATELY when tools are called (before any continue/return)
       if (toolNames.length > 0) {
         consecutiveEmptyIterations = 0;
-        console.log('[META-SYSOP-CONTINUATION] ✅ Tools called - reset empty counter to 0');
+        console.log('[LOMU-AI-CONTINUATION] ✅ Tools called - reset empty counter to 0');
       }
 
       // 💬 MINIMAL TOOL MESSAGES: Let AI explain naturally, no pre-tool spam
@@ -1249,21 +1249,21 @@ User: "${message}"`;
                 toolResult = `✅ Task list created successfully!\n\nTask List ID: ${result.taskListId}\n\nTasks are now visible inline in the chat. The user can see your progress in real-time! Update task status as you work using updateTask().`;
                 sendEvent('task_list_created', { taskListId: result.taskListId });
                 sendEvent('content', { content: `✅ **Task list created!** Track my progress in the card above.\n\n` });
-                console.log('[META-SYSOP] Task list created:', result.taskListId);
+                console.log('[LOMU-AI] Task list created:', result.taskListId);
                 
                 // ✅ FULL AUTONOMY: No forcing, no micromanagement
-                // Meta-SySop will naturally proceed with tasks like Replit Agent does
+                // LomuAI will naturally proceed with tasks like Replit Agent does
               } else {
                 toolResult = `❌ Failed to create task list: ${result.error}`;
                 sendEvent('content', { content: `❌ Failed to create task list: ${result.error}\n\n` });
-                console.error('[META-SYSOP] Task list creation failed:', result.error);
+                console.error('[LOMU-AI] Task list creation failed:', result.error);
               }
             } else if (name === 'updateTask') {
               const typedInput = input as { taskId: string; status: string; result?: string };
               sendEvent('progress', { message: `Updating task to ${typedInput.status}...` });
 
-              // ✅ FULL AUTONOMY: No validation, no blocking - Meta-SySop works freely like Replit Agent
-              // Let Meta-SySop manage its own tasks without artificial restrictions
+              // ✅ FULL AUTONOMY: No validation, no blocking - LomuAI works freely like Replit Agent
+              // Let LomuAI manage its own tasks without artificial restrictions
               const result = await updateTask({
                 userId,
                 taskId: typedInput.taskId,
@@ -1327,9 +1327,9 @@ User: "${message}"`;
                 throw new Error(`Tool writePlatformFile called with invalid content type (${typeof typedInput.content}) for ${typedInput.path}`);
               }
 
-              console.log(`[META-SYSOP] Writing file: ${typedInput.path} (${typedInput.content.length} bytes)`);
+              console.log(`[LOMU-AI] Writing file: ${typedInput.path} (${typedInput.content.length} bytes)`);
 
-              // ✅ AUTONOMOUS MODE: No approval required - Meta-SySop works like Replit Agent
+              // ✅ AUTONOMOUS MODE: No approval required - LomuAI works like Replit Agent
               sendEvent('progress', { message: `✅ Modifying ${typedInput.path}...` });
               
               // 📦 BATCH COMMIT: Stage files for single commit at the end
@@ -1354,12 +1354,12 @@ User: "${message}"`;
               broadcastFileUpdate(typedInput.path, 'modify', projectId || 'platform');
               
               toolResult = `✅ File staged for commit (use commit_to_github to batch all changes)`;
-              console.log(`[META-SYSOP] ✅ File staged for batch commit: ${typedInput.path}`);
+              console.log(`[LOMU-AI] ✅ File staged for batch commit: ${typedInput.path}`);
 
               // 🔄 AUTO-VERIFY: Automatically verify file write after every writePlatformFile
               // This ensures true self-healing: writes → verifies → retries if failed
               try {
-                console.log('[META-SYSOP-AUTO-VERIFY] Triggering automatic verification after file write');
+                console.log('[LOMU-AI-AUTO-VERIFY] Triggering automatic verification after file write');
                 sendEvent('progress', { message: '🔍 Auto-verifying file write...' });
                 
                 // Check if file exists and is accessible
@@ -1374,14 +1374,14 @@ User: "${message}"`;
                 const verifySuccess = `\n\n🔍 Auto-verification passed: File ${lastChange.path} written successfully and is accessible.`;
                 toolResult += verifySuccess;
                 sendEvent('content', { content: verifySuccess });
-                console.log(`[META-SYSOP-AUTO-VERIFY] ✅ Verification passed for ${lastChange.path}`);
+                console.log(`[LOMU-AI-AUTO-VERIFY] ✅ Verification passed for ${lastChange.path}`);
                 
               } catch (verifyError: any) {
                 // Verification failed - append warning
                 const verifyWarning = `\n\n⚠️ Auto-verification warning: File may not be accessible yet (${verifyError.message}). This is normal for new files.`;
                 toolResult += verifyWarning;
                 sendEvent('content', { content: verifyWarning });
-                console.warn(`[META-SYSOP-AUTO-VERIFY] ⚠️ Verification warning for ${typedInput.path}:`, verifyError.message);
+                console.warn(`[LOMU-AI-AUTO-VERIFY] ⚠️ Verification warning for ${typedInput.path}:`, verifyError.message);
               }
             } else if (name === 'listPlatformDirectory') {
               const typedInput = input as { directory: string };
@@ -1578,7 +1578,7 @@ User: "${message}"`;
                 maxResults: typedInput.maxResults || 5
               });
 
-              // Format results for Meta-SySop (using 'content' field from API)
+              // Format results for LomuAI (using 'content' field from API)
               toolResult = `Search Results:\n${searchResult.results.map((r: any) => 
                 `• ${r.title}\n  ${r.url}\n  ${r.content}\n`
               ).join('\n')}`;
@@ -1606,7 +1606,7 @@ User: "${message}"`;
 
                     // CRITICAL: Use ONLY tracked fileChanges - NO filesystem reads
                     // On Railway, filesystem = deployed code from GitHub (not our changes!)
-                    // The fileChanges array IS the source of truth for Meta-SySop's work
+                    // The fileChanges array IS the source of truth for LomuAI's work
                     const filesToCommit = [];
                     for (const change of fileChanges) {
                       // REQUIRE contentAfter to be populated - no filesystem fallback
@@ -1625,7 +1625,7 @@ User: "${message}"`;
                       });
                     }
 
-                    console.log(`[META-SYSOP] Committing ${filesToCommit.length} files via GitHub API (works on Railway)`);
+                    console.log(`[LOMU-AI] Committing ${filesToCommit.length} files via GitHub API (works on Railway)`);
 
                     // Commit directly to GitHub via API (no local git needed)
                     const result = await githubService.commitFiles(
@@ -1649,7 +1649,7 @@ User: "${message}"`;
                     // ✅ CRITICAL: Clear fileChanges to prevent fallback commit from trying again
                     // Without this, the cleanup section would still attempt local git commit → error on Railway
                     fileChanges.length = 0;
-                    console.log('[META-SYSOP] ✅ Cleared fileChanges after successful GitHub API commit');
+                    console.log('[LOMU-AI] ✅ Cleared fileChanges after successful GitHub API commit');
                   }
                 } catch (error: any) {
                   toolResult = `❌ GitHub commit failed: ${error.message}`;
@@ -1689,7 +1689,7 @@ User: "${message}"`;
                 messageId: approvalMsg.id 
               });
               
-              console.log('[META-SYSOP] Waiting for user approval...');
+              console.log('[LOMU-AI] Waiting for user approval...');
               sendEvent('progress', { message: '⏳ Waiting for your approval...' });
               
               try {
@@ -1701,13 +1701,13 @@ User: "${message}"`;
                     `Approved changes:\n${typedInput.filesChanged.map(f => `- ${f}`).join('\n')}\n\n` +
                     `Continue with implementation.`;
                   sendEvent('progress', { message: '✅ Approved! Proceeding with changes...' });
-                  console.log('[META-SYSOP] User approved - continuing work');
+                  console.log('[LOMU-AI] User approved - continuing work');
                 } else {
                   toolResult = `❌ USER REJECTED the changes.\n\n` +
                     `The user did not approve your proposed changes. ` +
                     `Stop this approach and ask the user what they would like to do instead.`;
                   sendEvent('progress', { message: '❌ Rejected by user' });
-                  console.log('[META-SYSOP] User rejected - stopping work');
+                  console.log('[LOMU-AI] User rejected - stopping work');
                   continueLoop = false; // Stop if rejected
                 }
               } catch (error: any) {
@@ -1771,9 +1771,9 @@ User: "${message}"`;
                 throw new Error(`Tool createPlatformFile called with invalid content type (${typeof typedInput.content}) for ${typedInput.path}`);
               }
 
-              console.log(`[META-SYSOP] Creating file: ${typedInput.path} (${typedInput.content.length} bytes)`);
+              console.log(`[LOMU-AI] Creating file: ${typedInput.path} (${typedInput.content.length} bytes)`);
 
-              // ✅ AUTONOMOUS MODE: No approval required - Meta-SySop works like Replit Agent
+              // ✅ AUTONOMOUS MODE: No approval required - LomuAI works like Replit Agent
               sendEvent('progress', { message: `✅ Creating ${typedInput.path}...` });
               const createResult = await platformHealing.createPlatformFile(
                 typedInput.path,
@@ -1794,13 +1794,13 @@ User: "${message}"`;
               broadcastFileUpdate(typedInput.path, 'create', projectId || 'platform');
               
               toolResult = `✅ File created successfully`;
-              console.log(`[META-SYSOP] ✅ File created autonomously: ${typedInput.path}`);
+              console.log(`[LOMU-AI] ✅ File created autonomously: ${typedInput.path}`);
             } else if (name === 'deletePlatformFile') {
               const typedInput = input as { path: string };
 
-              console.log(`[META-SYSOP] Deleting file: ${typedInput.path}`);
+              console.log(`[LOMU-AI] Deleting file: ${typedInput.path}`);
 
-              // ✅ AUTONOMOUS MODE: No approval required - Meta-SySop works like Replit Agent
+              // ✅ AUTONOMOUS MODE: No approval required - LomuAI works like Replit Agent
               sendEvent('progress', { message: `✅ Deleting ${typedInput.path}...` });
               await platformHealing.deletePlatformFile(typedInput.path);
 
@@ -1816,7 +1816,7 @@ User: "${message}"`;
               broadcastFileUpdate(typedInput.path, 'delete', projectId || 'platform');
               
               toolResult = `✅ File deleted successfully`;
-              console.log(`[META-SYSOP] ✅ File deleted autonomously: ${typedInput.path}`);
+              console.log(`[LOMU-AI] ✅ File deleted autonomously: ${typedInput.path}`);
             } else if (name === 'read_logs') {
               const typedInput = input as { lines?: number; filter?: string };
               const maxLines = Math.min(typedInput.lines || 100, 1000);
@@ -1897,7 +1897,7 @@ User: "${message}"`;
                   `Result:\n${JSON.stringify(result, null, 2)}`;
                 
                 sendEvent('progress', { message: `✅ Query completed` });
-                console.log(`[META-SYSOP] ✅ SQL executed autonomously: ${typedInput.purpose}`);
+                console.log(`[LOMU-AI] ✅ SQL executed autonomously: ${typedInput.purpose}`);
               } catch (error: any) {
                 toolResult = `❌ SQL execution failed: ${error.message}\n\n` +
                   `Purpose: ${typedInput.purpose}\n` +
@@ -2007,8 +2007,8 @@ User: "${message}"`;
             // This provides more frequent updates and keeps connection alive
             sendEvent('progress', { message: `✅ Tool ${name} completed` });
           } catch (error: any) {
-              console.error(`[META-SYSOP] ❌ Tool ${name} failed:`, error);
-              console.error(`[META-SYSOP] Tool input:`, JSON.stringify(input, null, 2));
+              console.error(`[LOMU-AI] ❌ Tool ${name} failed:`, error);
+              console.error(`[LOMU-AI] Tool input:`, JSON.stringify(input, null, 2));
 
               const errorMessage = `Error in ${name}: ${error.message}\n\nThis error has been logged for debugging.`;
 
@@ -2042,63 +2042,63 @@ User: "${message}"`;
         const createdTaskListThisIteration = toolNames.includes('createTaskList');
         const calledDiagnosisTools = toolNames.some(name => ['perform_diagnosis', 'architect_consult', 'execute_sql'].includes(name));
         
-        console.log(`[META-SYSOP-FORCE] Created task list: ${createdTaskListThisIteration}`);
-        console.log(`[META-SYSOP-FORCE] Called diagnosis tools: ${calledDiagnosisTools}`);
-        console.log(`[META-SYSOP-FORCE] Iteration count: ${iterationCount}`);
+        console.log(`[LOMU-AI-FORCE] Created task list: ${createdTaskListThisIteration}`);
+        console.log(`[LOMU-AI-FORCE] Called diagnosis tools: ${calledDiagnosisTools}`);
+        console.log(`[LOMU-AI-FORCE] Iteration count: ${iterationCount}`);
         
-        // ✅ NO AUTO-DIAGNOSIS FORCING - Let Meta-SySop work naturally
+        // ✅ NO AUTO-DIAGNOSIS FORCING - Let LomuAI work naturally
         // Only run diagnosis when user explicitly asks for it
-        console.log('[META-SYSOP-FORCE] ✓ No forcing - Meta-SySop works autonomously');
+        console.log('[LOMU-AI-FORCE] ✓ No forcing - LomuAI works autonomously');
       } else {
         // No tool calls this iteration - check if we should continue
-        // 🐛 FIX: Don't end if there are tasks still in progress - Meta-SySop might need another turn
-        console.log(`[META-SYSOP-CONTINUATION] Iteration ${iterationCount}: No tool calls, checking if should continue...`);
-        console.log(`[META-SYSOP-CONTINUATION] Active task list ID: ${activeTaskListId || 'none'}`);
+        // 🐛 FIX: Don't end if there are tasks still in progress - LomuAI might need another turn
+        console.log(`[LOMU-AI-CONTINUATION] Iteration ${iterationCount}: No tool calls, checking if should continue...`);
+        console.log(`[LOMU-AI-CONTINUATION] Active task list ID: ${activeTaskListId || 'none'}`);
         
         // 🚨 INFINITE LOOP PREVENTION: Track consecutive empty iterations
         consecutiveEmptyIterations++;
-        console.log(`[META-SYSOP-CONTINUATION] Consecutive empty iterations: ${consecutiveEmptyIterations}/${MAX_EMPTY_ITERATIONS}`);
+        console.log(`[LOMU-AI-CONTINUATION] Consecutive empty iterations: ${consecutiveEmptyIterations}/${MAX_EMPTY_ITERATIONS}`);
         
         if (consecutiveEmptyIterations >= MAX_EMPTY_ITERATIONS) {
-          console.log(`[META-SYSOP-CONTINUATION] 🛑 STOPPING - ${MAX_EMPTY_ITERATIONS} consecutive iterations without tool calls (infinite loop detected)`);
-          sendEvent('progress', { message: `⚠️ Meta-SySop appears stuck - stopping after ${consecutiveEmptyIterations} empty iterations` });
+          console.log(`[LOMU-AI-CONTINUATION] 🛑 STOPPING - ${MAX_EMPTY_ITERATIONS} consecutive iterations without tool calls (infinite loop detected)`);
+          sendEvent('progress', { message: `⚠️ LomuAI appears stuck - stopping after ${consecutiveEmptyIterations} empty iterations` });
           continueLoop = false;
         } else if (activeTaskListId) {
           try {
             const taskCheck = await readTaskList({ userId });
-            console.log(`[META-SYSOP-CONTINUATION] Task list read success: ${taskCheck.success}`);
-            console.log(`[META-SYSOP-CONTINUATION] Task lists found: ${taskCheck.taskLists?.length || 0}`);
+            console.log(`[LOMU-AI-CONTINUATION] Task list read success: ${taskCheck.success}`);
+            console.log(`[LOMU-AI-CONTINUATION] Task lists found: ${taskCheck.taskLists?.length || 0}`);
             
             const sessionTaskList = taskCheck.taskLists?.find((list: any) => list.id === activeTaskListId);
-            console.log(`[META-SYSOP-CONTINUATION] Session task list found: ${!!sessionTaskList}`);
-            console.log(`[META-SYSOP-CONTINUATION] Tasks: ${sessionTaskList?.tasks?.length || 0}`);
+            console.log(`[LOMU-AI-CONTINUATION] Session task list found: ${!!sessionTaskList}`);
+            console.log(`[LOMU-AI-CONTINUATION] Tasks: ${sessionTaskList?.tasks?.length || 0}`);
             
             const allTasks = sessionTaskList?.tasks || [];
             const inProgressTasks = allTasks.filter((t: any) => t.status === 'in_progress');
             const pendingTasks = allTasks.filter((t: any) => t.status === 'pending');
             const completedTasks = allTasks.filter((t: any) => t.status === 'completed');
             
-            console.log(`[META-SYSOP-CONTINUATION] Completed: ${completedTasks.length}, In-progress: ${inProgressTasks.length}, Pending: ${pendingTasks.length}`);
+            console.log(`[LOMU-AI-CONTINUATION] Completed: ${completedTasks.length}, In-progress: ${inProgressTasks.length}, Pending: ${pendingTasks.length}`);
             
-            // ✅ FULL AUTONOMY: Let Meta-SySop decide when to continue
+            // ✅ FULL AUTONOMY: Let LomuAI decide when to continue
             // No forcing, no micromanagement - trust the AI to do its job
             const hasIncompleteTasks = inProgressTasks.length > 0 || pendingTasks.length > 0;
             
             if (hasIncompleteTasks && iterationCount < MAX_ITERATIONS) {
-              console.log(`[META-SYSOP-CONTINUATION] ✅ Continuing naturally - incomplete tasks remain`);
+              console.log(`[LOMU-AI-CONTINUATION] ✅ Continuing naturally - incomplete tasks remain`);
               continueLoop = true; // Continue but don't inject forcing messages
             } else {
               // Either all tasks done or hit iteration limit
-              console.log(`[META-SYSOP-CONTINUATION] ❌ Ending - all tasks complete or limit reached (iteration ${iterationCount}/${MAX_ITERATIONS})`);
+              console.log(`[LOMU-AI-CONTINUATION] ❌ Ending - all tasks complete or limit reached (iteration ${iterationCount}/${MAX_ITERATIONS})`);
               continueLoop = false;
             }
           } catch (error: any) {
-            console.error('[META-SYSOP-CONTINUATION] Failed to check task status:', error);
+            console.error('[LOMU-AI-CONTINUATION] Failed to check task status:', error);
             continueLoop = false;
           }
         } else {
           // No task list - end normally
-          console.log('[META-SYSOP-CONTINUATION] No task list - ending session naturally');
+          console.log('[LOMU-AI-CONTINUATION] No task list - ending session naturally');
           continueLoop = false;
         }
       }
@@ -2109,7 +2109,7 @@ User: "${message}"`;
       const warningMsg = `\n\n⚠️ Stopped after ${MAX_ITERATIONS} iterations. This usually means I got stuck in a loop. The work might be incomplete - please check what I did and let me know if you need me to continue.`;
       sendEvent('content', { content: warningMsg });
       fullContent += warningMsg;
-      console.warn(`[META-SYSOP] ⚠️ Hit MAX_ITERATIONS (${MAX_ITERATIONS}) - possible infinite loop`);
+      console.warn(`[LOMU-AI] ⚠️ Hit MAX_ITERATIONS (${MAX_ITERATIONS}) - possible infinite loop`);
     }
 
     // Safety check
@@ -2126,11 +2126,11 @@ User: "${message}"`;
 
     // 🎯 POST-SAFETY CLEANUP: Clean up incomplete tasks from THIS session only
     // CRITICAL: This now runs AFTER safety check passes, and only affects THIS session's tasks
-    // This prevents stuck tasks when Meta-SySop exits early (timeout, crash, etc)
+    // This prevents stuck tasks when LomuAI exits early (timeout, crash, etc)
     // 🐛 FIX: Only cleanup if work actually started (prevents auto-complete of just-created tasks)
     if (activeTaskListId) {
       try {
-        console.log(`[META-SYSOP-CLEANUP] Safety passed - checking task list ${activeTaskListId} for incomplete tasks...`);
+        console.log(`[LOMU-AI-CLEANUP] Safety passed - checking task list ${activeTaskListId} for incomplete tasks...`);
         const cleanupCheck = await readTaskList({ userId });
         if (cleanupCheck.success && cleanupCheck.taskLists) {
           // CRITICAL: Only clean up THE SPECIFIC task list from THIS session
@@ -2138,11 +2138,11 @@ User: "${message}"`;
           if (sessionTaskList && sessionTaskList.status !== 'completed') {
             // 🐛 CRITICAL FIX: Only cleanup tasks that are stuck "in_progress"
             // NEVER touch "pending" tasks - they were never started
-            // This prevents auto-completing tasks that Meta-SySop hasn't started yet
+            // This prevents auto-completing tasks that LomuAI hasn't started yet
             const stuckTasks = sessionTaskList.tasks.filter((t: any) => t.status === 'in_progress');
             
             if (stuckTasks.length > 0) {
-              console.log(`[META-SYSOP-CLEANUP] Found ${stuckTasks.length} stuck in_progress tasks - will auto-complete`);
+              console.log(`[LOMU-AI-CLEANUP] Found ${stuckTasks.length} stuck in_progress tasks - will auto-complete`);
               sendEvent('progress', { message: `Cleaning up ${stuckTasks.length} stuck tasks...` });
 
               // Only mark stuck "in_progress" tasks as completed
@@ -2155,9 +2155,9 @@ User: "${message}"`;
                     result: '⚠️ Auto-completed (session ended with task in progress)',
                     completedAt: new Date()
                   });
-                  console.log(`[META-SYSOP-CLEANUP] Marked stuck task "${task.title}" as completed`);
+                  console.log(`[LOMU-AI-CLEANUP] Marked stuck task "${task.title}" as completed`);
                 } catch (error: any) {
-                  console.error(`[META-SYSOP-CLEANUP] Failed to cleanup task ${task.id}:`, error);
+                  console.error(`[LOMU-AI-CLEANUP] Failed to cleanup task ${task.id}:`, error);
                 }
               }
               
@@ -2167,29 +2167,29 @@ User: "${message}"`;
                   .update(taskLists)
                   .set({ status: 'completed', completedAt: new Date() })
                   .where(eq(taskLists.id, activeTaskListId));
-                console.log(`[META-SYSOP-CLEANUP] ✅ Task list ${activeTaskListId} marked as completed (had stuck tasks)`);
+                console.log(`[LOMU-AI-CLEANUP] ✅ Task list ${activeTaskListId} marked as completed (had stuck tasks)`);
               } catch (error: any) {
-                console.error('[META-SYSOP-CLEANUP] Failed to mark task list complete:', error);
+                console.error('[LOMU-AI-CLEANUP] Failed to mark task list complete:', error);
               }
             } else {
               // No stuck tasks - all are pending or completed
               const pendingTasks = sessionTaskList.tasks.filter((t: any) => t.status === 'pending');
               const completedTasks = sessionTaskList.tasks.filter((t: any) => t.status === 'completed');
-              console.log(`[META-SYSOP-CLEANUP] ℹ️ No stuck tasks. Status: ${completedTasks.length} completed, ${pendingTasks.length} pending - no cleanup needed`);
+              console.log(`[LOMU-AI-CLEANUP] ℹ️ No stuck tasks. Status: ${completedTasks.length} completed, ${pendingTasks.length} pending - no cleanup needed`);
             }
           } else if (sessionTaskList?.status === 'completed') {
-            console.log(`[META-SYSOP-CLEANUP] ✅ Task list already marked as completed`);
+            console.log(`[LOMU-AI-CLEANUP] ✅ Task list already marked as completed`);
           } else {
-            console.warn(`[META-SYSOP-CLEANUP] ⚠️ Session task list ${activeTaskListId} not found - skipping cleanup`);
+            console.warn(`[LOMU-AI-CLEANUP] ⚠️ Session task list ${activeTaskListId} not found - skipping cleanup`);
           }
         }
       } catch (cleanupError: any) {
-        console.error('[META-SYSOP-CLEANUP] Cleanup error (non-fatal):', cleanupError.message);
+        console.error('[LOMU-AI-CLEANUP] Cleanup error (non-fatal):', cleanupError.message);
         // Don't throw - cleanup is best-effort
       }
     } else {
       // No task list to clean up - this is normal and expected
-      console.log('[META-SYSOP-CLEANUP] ℹ️ No task list in this session (task tracking is optional)');
+      console.log('[LOMU-AI-CLEANUP] ℹ️ No task list in this session (task tracking is optional)');
     }
 
     // Commit and push if enabled (autonomous - no approval required)
@@ -2198,18 +2198,18 @@ User: "${message}"`;
       // Only use fallback commit if commit_to_github tool wasn't used
       sendEvent('progress', { message: `✅ Committing ${fileChanges.length} file changes...` });
       commitHash = await platformHealing.commitChanges(`Fix: ${message.slice(0, 100)}`, fileChanges as any);
-      console.log(`[META-SYSOP] ✅ Committed autonomously: ${fileChanges.length} files`);
+      console.log(`[LOMU-AI] ✅ Committed autonomously: ${fileChanges.length} files`);
 
       if (autoPush) {
         sendEvent('progress', { message: '✅ Pushing to GitHub (deploying to production)...' });
         await platformHealing.pushToRemote();
-        console.log(`[META-SYSOP] ✅ Pushed to GitHub autonomously`);
+        console.log(`[LOMU-AI] ✅ Pushed to GitHub autonomously`);
       }
     } else if (usedGitHubAPI) {
-      console.log(`[META-SYSOP] ℹ️ Skipping fallback commit - already committed via GitHub API`);
+      console.log(`[LOMU-AI] ℹ️ Skipping fallback commit - already committed via GitHub API`);
     }
 
-    // Use Meta-SySop's response as-is (like Replit Agent)
+    // Use LomuAI's response as-is (like Replit Agent)
     let finalMessage = fullContent || '✅ Done!';
 
     // Save assistant message
@@ -2230,7 +2230,7 @@ User: "${message}"`;
     await platformAudit.log({
       userId,
       action: 'heal',
-      description: `Meta-SySop chat: ${message.slice(0, 100)}`,
+      description: `LomuAI chat: ${message.slice(0, 100)}`,
       changes: fileChanges,
       backupId: undefined, // Backups removed for conversational performance
       commitHash,
@@ -2240,12 +2240,12 @@ User: "${message}"`;
     sendEvent('done', { messageId: assistantMsg.id, commitHash, filesChanged: fileChanges.length });
     res.end();
   } catch (error: any) {
-    console.error('[META-SYSOP-CHAT] Stream error:', error);
+    console.error('[LOMU-AI-CHAT] Stream error:', error);
     
     // 🔥 RAILWAY FIX: Clear heartbeat on error
     if (heartbeatInterval) {
       clearInterval(heartbeatInterval);
-      console.log('[META-SYSOP-HEARTBEAT] Cleared on error');
+      console.log('[LOMU-AI-HEARTBEAT] Cleared on error');
     }
 
     // Save error message to DB
@@ -2264,26 +2264,26 @@ User: "${message}"`;
       terminateStream(errorAssistantMsg.id, error.message);
     } catch (dbError: any) {
       // If we can't save to DB, at least send done event with generic ID
-      console.error('[META-SYSOP-CHAT] Failed to save error message:', dbError);
+      console.error('[LOMU-AI-CHAT] Failed to save error message:', dbError);
       terminateStream('error-' + Date.now(), error.message);
     }
   } finally {
     // Remove from active streams
-    const activeStreamsKey = `meta-sysop-stream-${userId}`;
+    const activeStreamsKey = `lomu-ai-stream-${userId}`;
     activeStreams.delete(activeStreamsKey);
-    console.log('[META-SYSOP-CHAT] Stream unregistered for user:', userId);
+    console.log('[LOMU-AI-CHAT] Stream unregistered for user:', userId);
     
     // Clear stream timeout
     if (streamTimeoutId) {
       clearTimeout(streamTimeoutId);
-      console.log('[META-SYSOP-CHAT] Stream timeout cleared');
+      console.log('[LOMU-AI-CHAT] Stream timeout cleared');
     }
     
     // 🔥 RAILWAY FIX: ALWAYS clear heartbeat when stream ends
     // This ensures cleanup happens on success, error, or early termination
     if (heartbeatInterval) {
       clearInterval(heartbeatInterval);
-      console.log('[META-SYSOP-HEARTBEAT] Cleared on stream end');
+      console.log('[LOMU-AI-HEARTBEAT] Cleared on stream end');
     }
   }
 });
@@ -2300,7 +2300,7 @@ router.get('/pending-changes', isAuthenticated, isAdmin, async (req: any, res) =
       count: pendingChanges.length,
     });
   } catch (error: any) {
-    console.error('[META-SYSOP] Failed to get pending changes:', error);
+    console.error('[LOMU-AI] Failed to get pending changes:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -2313,7 +2313,7 @@ router.post('/deploy-all', isAuthenticated, isAdmin, async (req: any, res) => {
 
     res.json(result);
   } catch (error: any) {
-    console.error('[META-SYSOP] Failed to deploy changes:', error);
+    console.error('[LOMU-AI] Failed to deploy changes:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -2329,14 +2329,14 @@ router.delete('/discard-changes', isAuthenticated, isAdmin, async (req: any, res
       message: 'All pending changes discarded',
     });
   } catch (error: any) {
-    console.error('[META-SYSOP] Failed to discard changes:', error);
+    console.error('[LOMU-AI] Failed to discard changes:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 // ==================== BACKGROUND JOB ROUTES (Railway SSE timeout fix) ====================
 
-// POST /api/meta-sysop/start - Start a new background job
+// POST /api/lomu-ai/start - Start a new background job
 router.post('/start', isAuthenticated, async (req: any, res) => {
   try {
     const { message } = req.body;
@@ -2354,7 +2354,7 @@ router.post('/start', isAuthenticated, async (req: any, res) => {
     // Start worker in background (fire and forget)
     startJobWorker(job.id);
     
-    console.log('[META-SYSOP] Started background job:', job.id);
+    console.log('[LOMU-AI] Started background job:', job.id);
     
     res.json({ 
       success: true, 
@@ -2362,12 +2362,12 @@ router.post('/start', isAuthenticated, async (req: any, res) => {
       message: 'Job started successfully',
     });
   } catch (error: any) {
-    console.error('[META-SYSOP] Failed to start job:', error);
+    console.error('[LOMU-AI] Failed to start job:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// POST /api/meta-sysop/resume/:jobId - Resume an interrupted or failed job
+// POST /api/lomu-ai/resume/:jobId - Resume an interrupted or failed job
 router.post('/resume/:jobId', isAuthenticated, async (req: any, res) => {
   try {
     const { jobId } = req.params;
@@ -2378,14 +2378,14 @@ router.post('/resume/:jobId', isAuthenticated, async (req: any, res) => {
     // Resume the job
     await resumeJob(jobId, userId);
     
-    console.log('[META-SYSOP] Resumed job:', jobId);
+    console.log('[LOMU-AI] Resumed job:', jobId);
     
     res.json({ 
       success: true,
       message: 'Job resumed successfully',
     });
   } catch (error: any) {
-    console.error('[META-SYSOP] Failed to resume job:', error);
+    console.error('[LOMU-AI] Failed to resume job:', error);
     
     if (error.message.includes('not found')) {
       return res.status(404).json({ error: error.message });
@@ -2398,7 +2398,7 @@ router.post('/resume/:jobId', isAuthenticated, async (req: any, res) => {
   }
 });
 
-// GET /api/meta-sysop/job/:jobId - Get job status and details
+// GET /api/lomu-ai/job/:jobId - Get job status and details
 router.get('/job/:jobId', isAuthenticated, async (req: any, res) => {
   try {
     const { jobId } = req.params;
@@ -2418,12 +2418,12 @@ router.get('/job/:jobId', isAuthenticated, async (req: any, res) => {
       job,
     });
   } catch (error: any) {
-    console.error('[META-SYSOP] Failed to get job:', error);
+    console.error('[LOMU-AI] Failed to get job:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// GET /api/meta-sysop/active-job - Get user's active or interrupted job
+// GET /api/lomu-ai/active-job - Get user's active or interrupted job
 router.get('/active-job', isAuthenticated, async (req: any, res) => {
   try {
     const userId = req.authenticatedUserId;
@@ -2437,19 +2437,19 @@ router.get('/active-job', isAuthenticated, async (req: any, res) => {
       orderBy: (jobs, { desc }) => [desc(jobs.createdAt)],
     });
     
-    console.log('[META-SYSOP] Active job query for user:', userId, job ? `found ${job.id}` : 'none found');
+    console.log('[LOMU-AI] Active job query for user:', userId, job ? `found ${job.id}` : 'none found');
     
     res.json({ 
       success: true, 
       job: job || null,
     });
   } catch (error: any) {
-    console.error('[META-SYSOP] Failed to get active job:', error);
+    console.error('[LOMU-AI] Failed to get active job:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// DELETE /api/meta-sysop/job/:jobId - Cancel/clean up a stuck job (admin)
+// DELETE /api/lomu-ai/job/:jobId - Cancel/clean up a stuck job (admin)
 router.delete('/job/:jobId', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
     const { jobId } = req.params;
@@ -2479,19 +2479,19 @@ router.delete('/job/:jobId', isAuthenticated, isAdmin, async (req: any, res) => 
       })
       .where(eq(metaSysopJobs.id, jobId));
     
-    console.log('[META-SYSOP] Job cancelled:', jobId, 'by user:', userId);
+    console.log('[LOMU-AI] Job cancelled:', jobId, 'by user:', userId);
     
     res.json({ 
       success: true,
       message: 'Job cancelled successfully',
     });
   } catch (error: any) {
-    console.error('[META-SYSOP] Failed to cancel job:', error);
+    console.error('[LOMU-AI] Failed to cancel job:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// GET /api/meta-sysop/chat-history - Fetch recent chat messages
+// GET /api/lomu-ai/chat-history - Fetch recent chat messages
 router.get('/chat-history', isAuthenticated, async (req: any, res) => {
   try {
     const userId = req.authenticatedUserId;
@@ -2516,7 +2516,7 @@ router.get('/chat-history', isAuthenticated, async (req: any, res) => {
       messages: messages.reverse() 
     });
   } catch (error: any) {
-    console.error('[META-SYSOP] Failed to fetch chat history:', error);
+    console.error('[LOMU-AI] Failed to fetch chat history:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });

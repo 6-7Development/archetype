@@ -116,7 +116,7 @@ Additional features accessible:
 | Platform Healing | `/platform-healing` | Wrench | `nav-platform-healing` | `isOwner === true` |
 
 **Features Available in Platform Healing**:
-- Meta-SySop chat interface
+- LomuAI chat interface
 - Automatic platform backups before changes
 - Maintenance mode toggle
 - GitHub commit/push capabilities
@@ -190,7 +190,7 @@ The `/builder` page includes 4 main tabs:
 ### Test 3: Platform Owner Features
 1. Login as platform owner (`isOwner === true`)
 2. Verify "Platform Healing" nav item appears
-3. Click Platform Healing → verify Meta-SySop chat loads
+3. Click Platform Healing → verify LomuAI chat loads
 4. Verify maintenance mode toggle available
 5. Test backup/rollback functionality
 

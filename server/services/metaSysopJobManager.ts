@@ -34,7 +34,7 @@ let wss: WebSocketServer | null = null;
  */
 export function initializeJobManager(websocketServer: WebSocketServer) {
   wss = websocketServer;
-  console.log('[META-SYSOP-JOB-MANAGER] Initialized with WebSocket support');
+  console.log('[LOMU-AI-JOB-MANAGER] Initialized with WebSocket support');
 }
 
 /**
@@ -42,14 +42,14 @@ export function initializeJobManager(websocketServer: WebSocketServer) {
  */
 function broadcast(userId: string, jobId: string, type: string, data: any) {
   if (!wss) {
-    console.warn('[META-SYSOP-JOB-MANAGER] WebSocket not initialized, skipping broadcast');
+    console.warn('[LOMU-AI-JOB-MANAGER] WebSocket not initialized, skipping broadcast');
     return;
   }
 
   wss.clients.forEach((client: any) => {
     if (client.readyState === 1 && client.userId === userId) {
       client.send(JSON.stringify({
-        type: 'meta_sysop_job_update',
+        type: 'lomu_ai_job_update',
         jobId,
         updateType: type,
         ...data,
@@ -59,7 +59,7 @@ function broadcast(userId: string, jobId: string, type: string, data: any) {
 }
 
 /**
- * Create a new Meta-SySop job
+ * Create a new LomuAI job
  */
 export async function createJob(userId: string, initialMessage: string) {
   // Check for existing active job
@@ -71,7 +71,7 @@ export async function createJob(userId: string, initialMessage: string) {
   });
 
   if (existingJob) {
-    throw new Error('You already have an active Meta-SySop job. Please wait or resume it.');
+    throw new Error('You already have an active LomuAI job. Please wait or resume it.');
   }
 
   // Create new job
@@ -82,7 +82,7 @@ export async function createJob(userId: string, initialMessage: string) {
     metadata: { initialMessage },
   }).returning();
 
-  console.log('[META-SYSOP-JOB-MANAGER] Created job:', job.id, 'for user:', userId);
+  console.log('[LOMU-AI-JOB-MANAGER] Created job:', job.id, 'for user:', userId);
   return job;
 }
 
@@ -92,18 +92,18 @@ export async function createJob(userId: string, initialMessage: string) {
 export async function startJobWorker(jobId: string) {
   // Check if already running
   if (activeJobs.has(jobId)) {
-    console.log('[META-SYSOP-JOB-MANAGER] Job already running:', jobId);
+    console.log('[LOMU-AI-JOB-MANAGER] Job already running:', jobId);
     return;
   }
 
-  console.log('[META-SYSOP-JOB-MANAGER] Starting worker for job:', jobId);
+  console.log('[LOMU-AI-JOB-MANAGER] Starting worker for job:', jobId);
 
   const jobPromise = runMetaSysopWorker(jobId);
   activeJobs.set(jobId, jobPromise);
   
   jobPromise.finally(() => {
     activeJobs.delete(jobId);
-    console.log('[META-SYSOP-JOB-MANAGER] Worker completed for job:', jobId);
+    console.log('[LOMU-AI-JOB-MANAGER] Worker completed for job:', jobId);
   });
 }
 
@@ -125,7 +125,7 @@ export async function saveCheckpoint(
     })
     .where(eq(metaSysopJobs.id, jobId));
   
-  console.log(`[META-SYSOP-JOB-MANAGER] Saved checkpoint for job ${jobId} at iteration ${iteration}`);
+  console.log(`[LOMU-AI-JOB-MANAGER] Saved checkpoint for job ${jobId} at iteration ${iteration}`);
 }
 
 // SECURITY: Validate project file paths to prevent path traversal attacks
@@ -152,7 +152,7 @@ function validateProjectPath(filePath: string): string {
 }
 
 /**
- * Main worker function that runs the Meta-SySop conversation loop
+ * Main worker function that runs the LomuAI conversation loop
  */
 async function runMetaSysopWorker(jobId: string) {
   try {
@@ -164,7 +164,7 @@ async function runMetaSysopWorker(jobId: string) {
       .limit(1);
 
     if (!job) {
-      console.error('[META-SYSOP-JOB-MANAGER] Job not found:', jobId);
+      console.error('[LOMU-AI-JOB-MANAGER] Job not found:', jobId);
       return;
     }
 
@@ -179,12 +179,12 @@ async function runMetaSysopWorker(jobId: string) {
       .set({ status: 'running', updatedAt: new Date() })
       .where(eq(metaSysopJobs.id, jobId));
 
-    console.log('[META-SYSOP-JOB-MANAGER] Job started:', jobId);
+    console.log('[LOMU-AI-JOB-MANAGER] Job started:', jobId);
     
     // Broadcast job started
     broadcast(userId, jobId, 'job_started', {
       status: 'running',
-      message: 'Meta-SySop job started...',
+      message: 'LomuAI job started...',
     });
 
     // Get Anthropic API key
@@ -196,7 +196,7 @@ async function runMetaSysopWorker(jobId: string) {
     // Fetch user's autonomy level
     const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
     const autonomyLevel = user?.autonomyLevel || 'basic';
-    console.log(`[META-SYSOP-JOB-MANAGER] User autonomy level: ${autonomyLevel}`);
+    console.log(`[LOMU-AI-JOB-MANAGER] User autonomy level: ${autonomyLevel}`);
 
     // Determine autonomy level capabilities
     const levelConfig = {
@@ -221,7 +221,7 @@ async function runMetaSysopWorker(jobId: string) {
     }
 
     // Build system prompt - Natural and simple
-    const systemPrompt = `You are Meta-SySop - the autonomous platform maintenance agent for Archetype.
+    const systemPrompt = `You are LomuAI - the autonomous platform maintenance agent for Archetype.
 
 ${projectId ? '🎯 RESCUE MODE: You are working on a user project' : '🏗️ PLATFORM MODE: You maintain the Archetype platform itself'}
 
@@ -544,7 +544,7 @@ When doing work:
         message: `Analyzing (iteration ${iterationCount}/${MAX_ITERATIONS})...`
       });
 
-      console.log(`[META-SYSOP-JOB-MANAGER] Calling Anthropic API (iteration ${iterationCount})...`);
+      console.log(`[LOMU-AI-JOB-MANAGER] Calling Anthropic API (iteration ${iterationCount})...`);
       
       const stream = await client.messages.create({
         model: 'claude-sonnet-4-20250514', // 💰 SONNET 4 - 5x cheaper than Opus ($3/M vs $15/M tokens)
@@ -555,7 +555,7 @@ When doing work:
         stream: true,
       });
       
-      console.log('[META-SYSOP-JOB-MANAGER] Anthropic stream started, processing events...');
+      console.log('[LOMU-AI-JOB-MANAGER] Anthropic stream started, processing events...');
 
       // Stream processing
       const contentBlocks: any[] = [];
@@ -599,7 +599,7 @@ When doing work:
               lastBlock.input = JSON.parse(lastBlock._inputStr);
               delete lastBlock._inputStr;
             } catch (e) {
-              console.error('[META-SYSOP-JOB-MANAGER] Failed to parse tool input JSON:', e);
+              console.error('[LOMU-AI-JOB-MANAGER] Failed to parse tool input JSON:', e);
             }
           }
         }
@@ -626,12 +626,12 @@ When doing work:
       const hasToolUse = contentBlocks.some(block => block.type === 'tool_use');
       const toolNames = contentBlocks.filter(b => b.type === 'tool_use').map(b => b.name);
       
-      console.log(`[META-SYSOP-JOB-MANAGER] === ITERATION ${iterationCount} ===`);
-      console.log(`[META-SYSOP-JOB-MANAGER] Tools called: ${toolNames.join(', ') || 'NONE'}`);
-      console.log(`[META-SYSOP-JOB-MANAGER] Content blocks received: ${contentBlocks.length}`);
-      console.log(`[META-SYSOP-JOB-MANAGER] Full content length so far: ${fullContent.length} chars`);
+      console.log(`[LOMU-AI-JOB-MANAGER] === ITERATION ${iterationCount} ===`);
+      console.log(`[LOMU-AI-JOB-MANAGER] Tools called: ${toolNames.join(', ') || 'NONE'}`);
+      console.log(`[LOMU-AI-JOB-MANAGER] Content blocks received: ${contentBlocks.length}`);
+      console.log(`[LOMU-AI-JOB-MANAGER] Full content length so far: ${fullContent.length} chars`);
 
-      // Execute all tools - NO BLOCKING, Meta-SySop decides what to do
+      // Execute all tools - NO BLOCKING, LomuAI decides what to do
       for (const block of contentBlocks) {
         if (block.type === 'tool_use') {
           const { name, input, id } = block;
@@ -996,8 +996,8 @@ When doing work:
                       });
                     }
 
-                    // Unique Meta-SySop commit prefix so user can distinguish from manual commits
-                    const uniqueCommitMessage = `[Meta-SySop 🤖] ${typedInput.commitMessage}`;
+                    // Unique LomuAI commit prefix so user can distinguish from manual commits
+                    const uniqueCommitMessage = `[LomuAI 🤖] ${typedInput.commitMessage}`;
                     
                     const result = await githubService.commitFiles(
                       filesToCommit,
@@ -1044,7 +1044,7 @@ When doing work:
 
             broadcast(userId, jobId, 'job_progress', { message: `✅ Tool ${name} completed` });
           } catch (error: any) {
-            console.error(`[META-SYSOP-JOB-MANAGER] Tool ${name} failed:`, error);
+            console.error(`[LOMU-AI-JOB-MANAGER] Tool ${name} failed:`, error);
 
             toolResults.push({
               type: 'tool_result',
@@ -1081,7 +1081,7 @@ When doing work:
               continueLoop = false;
             }
           } catch (error: any) {
-            console.error('[META-SYSOP-JOB-MANAGER] Failed to check task status:', error);
+            console.error('[LOMU-AI-JOB-MANAGER] Failed to check task status:', error);
             continueLoop = false;
           }
         } else {
@@ -1129,7 +1129,7 @@ When doing work:
           }
         }
       } catch (cleanupError: any) {
-        console.error('[META-SYSOP-JOB-MANAGER] Cleanup error (non-fatal):', cleanupError.message);
+        console.error('[LOMU-AI-JOB-MANAGER] Cleanup error (non-fatal):', cleanupError.message);
       }
     }
 
@@ -1147,9 +1147,9 @@ When doing work:
     let finalMessage = fullContent || '✅ Done!';
     
     // CRITICAL FIX: Log the actual content being saved
-    console.log(`[META-SYSOP-JOB-MANAGER] Saving assistant message (${finalMessage.length} chars)`);
+    console.log(`[LOMU-AI-JOB-MANAGER] Saving assistant message (${finalMessage.length} chars)`);
     if (finalMessage.length === 0 || finalMessage === '✅ Done!') {
-      console.warn('[META-SYSOP-JOB-MANAGER] WARNING: No content was generated by Claude!');
+      console.warn('[LOMU-AI-JOB-MANAGER] WARNING: No content was generated by Claude!');
     }
     
     const [assistantMsg] = await db
@@ -1169,7 +1169,7 @@ When doing work:
     await platformAudit.log({
       userId,
       action: 'heal',
-      description: `Meta-SySop job: ${message.slice(0, 100)}`,
+      description: `LomuAI job: ${message.slice(0, 100)}`,
       changes: fileChanges,
       backupId: undefined,
       commitHash,
@@ -1187,16 +1187,16 @@ When doing work:
 
     broadcast(userId, jobId, 'job_completed', {
       status: 'completed',
-      message: 'Meta-SySop job completed successfully!',
+      message: 'LomuAI job completed successfully!',
       messageId: assistantMsg.id,
       commitHash,
       filesChanged: fileChanges.length,
     });
 
-    console.log('[META-SYSOP-JOB-MANAGER] Job completed:', jobId);
+    console.log('[LOMU-AI-JOB-MANAGER] Job completed:', jobId);
 
   } catch (error: any) {
-    console.error('[META-SYSOP-JOB-MANAGER] Job error:', jobId, error);
+    console.error('[LOMU-AI-JOB-MANAGER] Job error:', jobId, error);
 
     // Mark job as failed
     await db.update(metaSysopJobs)
@@ -1222,7 +1222,7 @@ When doing work:
         });
       }
     } catch (broadcastError) {
-      console.error('[META-SYSOP-JOB-MANAGER] Failed to broadcast error:', broadcastError);
+      console.error('[LOMU-AI-JOB-MANAGER] Failed to broadcast error:', broadcastError);
     }
   }
 }
@@ -1263,6 +1263,6 @@ export async function resumeJob(jobId: string, userId: string) {
   // Start the worker
   await startJobWorker(jobId);
 
-  console.log('[META-SYSOP-JOB-MANAGER] Job resumed:', jobId);
+  console.log('[LOMU-AI-JOB-MANAGER] Job resumed:', jobId);
   return job;
 }

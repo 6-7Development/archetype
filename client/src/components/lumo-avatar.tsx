@@ -494,7 +494,7 @@ export function LumoAvatar({
           >
             <motion.img
               src={processedImage}
-              alt="Lumo - Meta-SySop Avatar"
+              alt="Lumo - LomuAI Avatar"
               className="w-full h-full object-contain"
               style={{
                 filter: `

@@ -19,7 +19,7 @@
 5. Application becomes available at production URL
 
 ### Expected Functionality
-- **Meta-SySop**: Autonomous AI agent for platform self-healing
+- **LomuAI**: Autonomous AI agent for platform self-healing
   - Accepts requests from owner users (is_owner = true in database)
   - Creates task lists with real-time updates via WebSocket
   - Auto-commits fixes to GitHub when requested
@@ -37,9 +37,9 @@
 ## What ACTUALLY Happens (Current Issues)
 
 ### Recent Fixes Deployed
-✅ **Oct 25, 2024** - Meta-SySop Task Cleanup Fix
+✅ **Oct 25, 2024** - LomuAI Task Cleanup Fix
 - **Commit**: 3f62a0e73f853bcb24f45aedbe5fffe2eede086b
-- **Fix**: Prevents tasks from getting stuck when Meta-SySop exits early
+- **Fix**: Prevents tasks from getting stuck when LomuAI exits early
 - **Changes**:
   - Session-scoped cleanup (uses tracked activeTaskListId)
   - Runs AFTER safety check passes
@@ -47,7 +47,7 @@
   - Auto-marks incomplete tasks as "⚠️ Auto-completed (session ended early)"
 
 ### Known Issues Before Latest Fix
-1. **Stuck Tasks**: Tasks remained in "active" status indefinitely when Meta-SySop exited early (timeout/crash)
+1. **Stuck Tasks**: Tasks remained in "active" status indefinitely when LomuAI exited early (timeout/crash)
    - **Impact**: Frontend showed incomplete task lists that never cleared
    - **Status**: FIXED in commit 3f62a0e73f853bcb24f45aedbe5fffe2eede086b
 
@@ -58,7 +58,7 @@
 ### Database Requirements
 
 #### Owner Configuration (CRITICAL)
-Meta-SySop requires owner designation for access:
+LomuAI requires owner designation for access:
 ```sql
 -- Set owner in production database
 UPDATE users 
@@ -99,7 +99,7 @@ SESSION_SECRET=<random-secret>
 ANTHROPIC_API_KEY=sk-ant-...   # Claude API
 ```
 
-### GitHub Integration (For Meta-SySop)
+### GitHub Integration (For LomuAI)
 ```
 GITHUB_TOKEN=ghp_...            # Fine-grained PAT with repo access
 GITHUB_REPO=6-7Development/archetype
@@ -136,25 +136,25 @@ Look for:
 💡 Auto-healing system DISABLED (development mode - use manual healing)
 ```
 
-### Meta-SySop Session
+### LomuAI Session
 Look for:
 ```
-[META-SYSOP] Starting Meta-SySop session for user: <id>
-[META-SYSOP-CLEANUP] Post-loop cleanup: checking for incomplete tasks...
-[META-SYSOP-CLEANUP] ✅ Task list marked as completed (cleanup)
+[LOMU-AI] Starting LomuAI session for user: <id>
+[LOMU-AI-CLEANUP] Post-loop cleanup: checking for incomplete tasks...
+[LOMU-AI-CLEANUP] ✅ Task list marked as completed (cleanup)
 ```
 
 ### Anti-Lying Enforcement
 Look for (5 times per session):
 ```
-[META-SYSOP-STREAM] 🔇 Text suppression active (tool calls present)
+[LOMU-AI-STREAM] 🔇 Text suppression active (tool calls present)
 ```
 
 ## Testing After Deployment
 
 1. **Verify Owner Access**:
    - Log in as owner user
-   - Navigate to Meta-SySop chat
+   - Navigate to LomuAI chat
    - Should see interface (not "Unauthorized")
 
 2. **Test Task Cleanup**:
@@ -173,7 +173,7 @@ Look for (5 times per session):
 - Run SQL cleanup queries (see PRODUCTION_CLEAR_TASKS.sql)
 - Verify fix was deployed (check commit hash in logs)
 
-### "Unauthorized" for Meta-SySop
+### "Unauthorized" for LomuAI
 - Check owner designation in database
 - Verify OWNER_USER_ID env var (if using)
 

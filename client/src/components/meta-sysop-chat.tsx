@@ -30,7 +30,7 @@ interface Message {
   attachments?: Attachment[]; // File attachments
 }
 
-interface MetaSySopChatProps {
+interface LomuAiChatProps {
   autoCommit?: boolean;
   autoPush?: boolean;
   onTasksChange?: (tasks: AgentTask[], activeTaskId: string | null) => void;
@@ -54,7 +54,7 @@ async function retryFetch(url: string, options: RequestInit, maxRetries = 3): Pr
     // If not the last attempt, wait with exponential backoff
     if (attempt < maxRetries - 1) {
       const delay = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s
-      console.log(`[META-SYSOP] Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms`);
+      console.log(`[LOMU-AI] Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
@@ -161,7 +161,7 @@ function AttachmentPreview({ attachment, onRemove }: { attachment: Attachment; o
   );
 }
 
-export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChange }: MetaSySopChatProps) {
+export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChange }: LomuAiChatProps) {
   const { toast } = useToast();
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
@@ -206,7 +206,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
   useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
-        console.log('[META-SYSOP] Aborting stream on unmount');
+        console.log('[LOMU-AI] Aborting stream on unmount');
         abortControllerRef.current.abort();
         abortControllerRef.current = null;
       }
@@ -403,7 +403,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
       const TIMEOUT_THRESHOLD = 30000; // 30 seconds
 
       if (timeSinceLastEvent > TIMEOUT_THRESHOLD) {
-        console.warn('[META-SYSOP] ⚠️ No events received for 30+ seconds - connection may be stalled');
+        console.warn('[LOMU-AI] ⚠️ No events received for 30+ seconds - connection may be stalled');
         toast({
           title: '⚠️ Connection Warning',
           description: 'No updates received for 30 seconds. The connection may have stalled.',
@@ -420,19 +420,19 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
 
   // Fetch autonomy level
   const { data: autonomyData } = useQuery<any>({
-    queryKey: ['/api/meta-sysop/autonomy-level'],
+    queryKey: ['/api/lomu-ai/autonomy-level'],
   });
 
   // Fetch all projects (admin only)
   const { data: projects } = useQuery<any[]>({
-    queryKey: ['/api/meta-sysop/projects'],
+    queryKey: ['/api/lomu-ai/projects'],
     enabled: isAdmin,
   });
 
   // Update autonomy level
   const updateAutonomyMutation = useMutation({
     mutationFn: async (level: string) => {
-      const response = await fetch('/api/meta-sysop/autonomy-level', {
+      const response = await fetch('/api/lomu-ai/autonomy-level', {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -464,7 +464,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
       setTasks([]);
       setActiveTaskId(null);
       setProgressStatus('thinking');
-      setProgressMessage("Starting Meta-SySop...");
+      setProgressMessage("Starting LomuAI...");
       
       // Reset timeout detection timestamp
       lastEventTimeRef.current = Date.now();
@@ -481,17 +481,17 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
       };
       setMessages(prev => [...prev, assistantMsg]);
 
-      console.log('[META-SYSOP] ============ SSE STREAM STARTING ============');
-      console.log('[META-SYSOP] Message:', message);
-      console.log('[META-SYSOP] Attachments:', attachments.length);
-      console.log('[META-SYSOP] Project:', selectedProjectId || 'platform code');
-      console.log('[META-SYSOP] =========================================');
+      console.log('[LOMU-AI] ============ SSE STREAM STARTING ============');
+      console.log('[LOMU-AI] Message:', message);
+      console.log('[LOMU-AI] Attachments:', attachments.length);
+      console.log('[LOMU-AI] Project:', selectedProjectId || 'platform code');
+      console.log('[LOMU-AI] =========================================');
 
       // Create abort controller for stopping stream
       const abortController = new AbortController();
       
       // Start SSE stream using fetch
-      const response = await fetch('/api/meta-sysop/stream', {
+      const response = await fetch('/api/lomu-ai/stream', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -532,14 +532,14 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
             if (line.startsWith('data: ')) {
               try {
                 const data = JSON.parse(line.slice(6));
-                console.log('[META-SYSOP] SSE event:', data.type);
+                console.log('[LOMU-AI] SSE event:', data.type);
                 
                 // Update last event timestamp for timeout detection
                 lastEventTimeRef.current = Date.now();
 
                 switch (data.type) {
                   case 'user_message':
-                    console.log('[META-SYSOP] User message saved:', data.messageId);
+                    console.log('[LOMU-AI] User message saved:', data.messageId);
                     break;
 
                   case 'content':
@@ -560,7 +560,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
 
                   case 'task_list_created':
                     // Use retry logic for fetching task list
-                    retryFetch(`/api/meta-sysop/task-list/${data.taskListId}`, {
+                    retryFetch(`/api/lomu-ai/task-list/${data.taskListId}`, {
                       credentials: 'include'
                     })
                       .then(res => res.json())
@@ -573,11 +573,11 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                             status: t.status as AgentTask['status'],
                           }));
                           setTasks(formattedTasks);
-                          console.log('[META-SYSOP] ✅ Task list loaded with', formattedTasks.length, 'tasks');
+                          console.log('[LOMU-AI] ✅ Task list loaded with', formattedTasks.length, 'tasks');
                         }
                       })
                       .catch(err => {
-                        console.error('[META-SYSOP] ❌ Failed to fetch task list after retries:', err);
+                        console.error('[LOMU-AI] ❌ Failed to fetch task list after retries:', err);
                         toast({
                           title: '❌ Failed to Load Tasks',
                           description: 'Could not load task list after multiple attempts. The agent is still working.',
@@ -591,7 +591,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                     setTasks(prev => {
                       const taskExists = prev.some(t => t.id === data.taskId);
                       if (!taskExists) {
-                        console.warn('[META-SYSOP] ⚠️ Task update received for unknown taskId:', data.taskId);
+                        console.warn('[LOMU-AI] ⚠️ Task update received for unknown taskId:', data.taskId);
                       }
                       
                       return prev.map(t => 
@@ -604,7 +604,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                     if (data.status === 'in_progress') {
                       setActiveTaskId(data.taskId);
                     }
-                    console.log('[META-SYSOP] Task updated:', data.taskId, '→', data.status);
+                    console.log('[LOMU-AI] Task updated:', data.taskId, '→', data.status);
                     break;
 
                   // Remove all section-based events - we're using direct content streaming now
@@ -615,7 +615,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                     break;
 
                   case 'done': {
-                    console.log('[META-SYSOP] ✅ Stream complete, messageId:', data.messageId);
+                    console.log('[LOMU-AI] ✅ Stream complete, messageId:', data.messageId);
                     
                     // Mark the message as no longer streaming
                     setMessages(prev => prev.map(msg => 
@@ -636,7 +636,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                   }
 
                   case 'error':
-                    console.error('[META-SYSOP] ❌ Stream error:', data.message);
+                    console.error('[LOMU-AI] ❌ Stream error:', data.message);
                     
                     setIsStreaming(false);
                     setStreamingMessageId(null);
@@ -660,22 +660,22 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                     return;
                 }
               } catch (error) {
-                console.error('[META-SYSOP] Failed to parse SSE data:', error);
+                console.error('[LOMU-AI] Failed to parse SSE data:', error);
               }
             }
           }
         }
       } catch (error: any) {
         if (error.name === 'AbortError') {
-          console.log('[META-SYSOP] Stream aborted by user');
+          console.log('[LOMU-AI] Stream aborted by user');
         } else {
-          console.error('[META-SYSOP] Stream error:', error);
+          console.error('[LOMU-AI] Stream error:', error);
           throw error;
         }
       }
     },
     onError: (error: any) => {
-      console.error('Meta-SySop error:', error);
+      console.error('LomuAI error:', error);
       setIsStreaming(false);
       setStreamingMessageId(null);
       setProgressStatus('idle');
@@ -709,7 +709,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
 
   const handleStop = () => {
     if (abortControllerRef.current) {
-      console.log('[META-SYSOP] Stopping stream...');
+      console.log('[LOMU-AI] Stopping stream...');
       (abortControllerRef.current as AbortController).abort();
       abortControllerRef.current = null;
       
@@ -823,7 +823,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                   />
                 </div>
                 <h3 className="text-lg md:text-2xl font-bold mb-1 md:mb-2 px-2">Meet Lumo!</h3>
-                <h4 className="text-sm md:text-lg text-muted-foreground mb-2 md:mb-3 px-2">Your Meta-SySop AI Assistant</h4>
+                <h4 className="text-sm md:text-lg text-muted-foreground mb-2 md:mb-3 px-2">Your LomuAI AI Assistant</h4>
                 <p className="text-xs md:text-base text-muted-foreground max-w-md mx-auto leading-relaxed px-4">
                   I'm an autonomous platform healing agent. I can diagnose and fix issues 
                   with the Archetype platform itself. Tell me what needs to be fixed.
@@ -895,7 +895,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                           <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-primary rounded-full animate-pulse" />
                           <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
                           <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
-                          <span className="text-xs ml-1 md:ml-2">Meta-SySop is typing...</span>
+                          <span className="text-xs ml-1 md:ml-2">LomuAI is typing...</span>
                         </div>
                       )}
                     </div>

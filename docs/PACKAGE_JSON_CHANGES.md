@@ -18,7 +18,7 @@ Open `package.json` and add the following scripts to the `"scripts"` section:
     // ADD THESE NEW SCRIPTS:
     "meta:prod": "tsx scripts/run-meta-prod.ts",
     "meta:prod:seed": "tsx scripts/run-meta-prod.ts --seed --mock-secrets",
-    "test:meta-sysop": "tsx server/tests/platformHealing/diagnosis.integration.test.ts"
+    "test:lomu-ai": "tsx server/tests/platformHealing/diagnosis.integration.test.ts"
   }
 }
 ```
@@ -26,7 +26,7 @@ Open `package.json` and add the following scripts to the `"scripts"` section:
 ## Script Descriptions
 
 ### `meta:prod`
-Runs Meta-SySop in local production mode for validation testing.
+Runs LomuAI in local production mode for validation testing.
 
 **Usage:**
 ```bash
@@ -49,19 +49,19 @@ tsx scripts/run-meta-prod.ts --verbose
 ```
 
 ### `meta:prod:seed`
-Runs Meta-SySop in production mode with database seeding and mock secrets enabled.
+Runs LomuAI in production mode with database seeding and mock secrets enabled.
 
 **Usage:**
 ```bash
 npm run meta:prod:seed
 ```
 
-### `test:meta-sysop`
-Runs the Phase A integration tests for Meta-SySop diagnosis system.
+### `test:lomu-ai`
+Runs the Phase A integration tests for LomuAI diagnosis system.
 
 **Usage:**
 ```bash
-npm run test:meta-sysop
+npm run test:lomu-ai
 ```
 
 This will:
@@ -76,7 +76,7 @@ This will:
 For production parity testing, ensure these environment variables are set in `.env`:
 
 ```bash
-# Required for Meta-SySop
+# Required for LomuAI
 ANTHROPIC_API_KEY=sk-ant-your-key-here
 # OR
 OPENAI_API_KEY=sk-your-key-here
@@ -107,7 +107,7 @@ After adding the scripts, verify they work:
 npm run meta:prod -- --help
 
 # Test integration tests
-npm run test:meta-sysop
+npm run test:lomu-ai
 
 # Test production build
 npm run build
@@ -125,5 +125,5 @@ The following dependencies have been installed and are ready to use:
 
 1. Add the scripts to `package.json` as shown above
 2. Run `npm run meta:prod` to test local production mode
-3. Run `npm run test:meta-sysop` to validate integration tests
-4. Review `docs/META_SYSOP_VALIDATION.md` for full validation procedures
+3. Run `npm run test:lomu-ai` to validate integration tests
+4. Review `docs/LOMU_AI_VALIDATION.md` for full validation procedures

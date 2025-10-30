@@ -3,7 +3,7 @@
 **Created:** October 26, 2025  
 **Status:** Production Ready ✅
 
-This guide demonstrates how to use the cross-agent communication patterns for **SySop**, **Meta-SySop**, and **I AM (The Architect)**.
+This guide demonstrates how to use the cross-agent communication patterns for **SySop**, **LomuAI**, and **I AM (The Architect)**.
 
 ---
 
@@ -152,11 +152,11 @@ function exampleStatusBroadcast(wss: WebSocketServer) {
 ```typescript
 import { requestArchitectApproval, processArchitectApproval } from './agentCommunication';
 
-// Meta-SySop needs approval to refactor WebSocket system
+// LomuAI needs approval to refactor WebSocket system
 function exampleArchitectApproval() {
   // Step 1: Request approval
   const approvalRequest = requestArchitectApproval({
-    requestedBy: 'meta-sysop',
+    requestedBy: 'lomu-ai',
     userId: 'owner123',
     changeType: 'architecture',
     description: 'Refactor WebSocket system to support connection pooling',
@@ -370,10 +370,10 @@ app.use(session({
 ```typescript
 import { delegateToSubAgent, processTaskHandoff } from './agentCommunication';
 
-// Meta-SySop delegates database migration to specialist sub-agent
+// LomuAI delegates database migration to specialist sub-agent
 function exampleDelegation() {
   const delegation = delegateToSubAgent({
-    delegatedBy: 'meta-sysop',
+    delegatedBy: 'lomu-ai',
     subAgentType: 'specialist',
     userId: 'owner123',
     task: {
@@ -550,7 +550,7 @@ export async function processPayment(paymentId: string) {
 
 ### In Your Agent Routes
 
-**Example: Meta-SySop Chat Integration**
+**Example: LomuAI Chat Integration**
 
 ```typescript
 // server/routes/metaSysopChat.ts
@@ -565,8 +565,8 @@ export function setupMetaSysopChat(router: Router, wss: WebSocketServer) {
   router.post('/stream', async (req, res) => {
     const userId = req.authenticatedUserId;
     
-    // Broadcast that Meta-SySop is starting work
-    broadcastAgentStatus(wss, 'meta-sysop', {
+    // Broadcast that LomuAI is starting work
+    broadcastAgentStatus(wss, 'lomu-ai', {
       userId,
       status: 'thinking',
       currentTask: 'Analyzing platform issue',
@@ -576,7 +576,7 @@ export function setupMetaSysopChat(router: Router, wss: WebSocketServer) {
     // If stuck, escalate to architect
     if (failedAttempts >= 3) {
       const escalation = escalateToArchitect({
-        escalatedBy: 'meta-sysop',
+        escalatedBy: 'lomu-ai',
         userId,
         reason: 'deadlock',
         description: 'Cannot resolve platform issue after 3 attempts',
@@ -589,7 +589,7 @@ export function setupMetaSysopChat(router: Router, wss: WebSocketServer) {
 
     // Delegate complex tasks to sub-agents
     const delegation = delegateToSubAgent({
-      delegatedBy: 'meta-sysop',
+      delegatedBy: 'lomu-ai',
       subAgentType: 'specialist',
       userId,
       task: {
@@ -603,7 +603,7 @@ export function setupMetaSysopChat(router: Router, wss: WebSocketServer) {
     });
 
     // Broadcast completion
-    broadcastAgentStatus(wss, 'meta-sysop', {
+    broadcastAgentStatus(wss, 'lomu-ai', {
       userId,
       status: 'completed',
       currentTask: 'Platform fix complete',
@@ -767,7 +767,7 @@ await Promise.all(tasks.map(t => waitForCompletion(t.delegationId)));
 
 ## Summary
 
-The agent communication system provides a robust, type-safe way for SySop, Meta-SySop, and I AM to collaborate effectively:
+The agent communication system provides a robust, type-safe way for SySop, LomuAI, and I AM to collaborate effectively:
 
 - ✅ **Status Broadcasting** - Keep users informed in real-time
 - ✅ **Approval Workflows** - Get architect sign-off on critical changes

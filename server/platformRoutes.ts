@@ -14,7 +14,7 @@ const router = Router();
 // Store pending write approvals in memory
 const pendingApprovals = new Map<string, { resolve: (approved: boolean) => void }>();
 
-// Export function to resolve pending approvals (used by Meta-SySop approval endpoint)
+// Export function to resolve pending approvals (used by LomuAI approval endpoint)
 export function resolvePendingApproval(sessionId: string, approved: boolean): boolean {
   const pending = pendingApprovals.get(sessionId);
   if (pending) {
@@ -157,7 +157,7 @@ async function runHealingProcess(
 
     const client = new Anthropic({ apiKey: anthropicKey });
 
-    const systemPrompt = `You are Meta-SySop, an elite AI agent that fixes the Archetype platform itself.
+    const systemPrompt = `You are LomuAI, an elite AI agent that fixes the Archetype platform itself.
 
 CRITICAL: You are modifying the PRODUCTION PLATFORM CODE, not user projects. Be extremely careful.
 
@@ -621,19 +621,19 @@ router.get('/deployment-history', isAuthenticated, isAdmin, async (req: any, res
       const author = commit.commit.author.name;
       const email = commit.commit.author.email;
       
-      // Detect if commit was made by Meta-SySop
+      // Detect if commit was made by LomuAI
       const isMetaSysop = 
-        message.includes('[Meta-SySop]') ||
-        message.includes('Meta-SySop:') ||
-        author.toLowerCase().includes('meta-sysop') ||
-        email.toLowerCase().includes('meta-sysop');
+        message.includes('[LomuAI]') ||
+        message.includes('LomuAI:') ||
+        author.toLowerCase().includes('lomu-ai') ||
+        email.toLowerCase().includes('lomu-ai');
       
       return {
         hash: commit.sha,
         shortHash: commit.sha.substring(0, 7),
         message: message.split('\n')[0], // First line only
         author: author,
-        authorType: isMetaSysop ? 'meta-sysop' : 'manual',
+        authorType: isMetaSysop ? 'lomu-ai' : 'manual',
         timestamp: commit.commit.author.date,
         url: commit.html_url,
       };

@@ -296,7 +296,7 @@ export class GitHubService {
 
   /**
    * Create a new branch from main for PR workflow
-   * @param branchName - Name of the branch to create (e.g., "meta-sysop/fix-123")
+   * @param branchName - Name of the branch to create (e.g., "lomu-ai/fix-123")
    * @returns The created branch reference
    */
   async createBranchFromMain(branchName: string): Promise<{ ref: string; sha: string }> {
@@ -414,7 +414,7 @@ export class GitHubService {
       const { data: newCommit } = await this.octokit.git.createCommit({
         owner: this.owner,
         repo: this.repo,
-        message: `[Meta-SySop PR] ${commitMessage}`,
+        message: `[LomuAI PR] ${commitMessage}`,
         tree: newTree.sha,
         parents: [latestCommitSha],
       });

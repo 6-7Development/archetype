@@ -1,4 +1,4 @@
-# Multi-Project Architecture for Meta-SySop
+# Multi-Project Architecture for LomuAI
 
 **Version:** 1.0  
 **Date:** October 30, 2025  
@@ -8,11 +8,11 @@
 
 ## Executive Summary
 
-This document defines the architecture for enabling Meta-SySop to safely maintain multiple user Replit projects within Archetype. The design ensures complete project isolation, secure GitHub integration, and a seamless user experience for importing and managing external codebases.
+This document defines the architecture for enabling LomuAI to safely maintain multiple user Replit projects within Archetype. The design ensures complete project isolation, secure GitHub integration, and a seamless user experience for importing and managing external codebases.
 
 **Key Goals:**
 - Allow users to import Replit projects (ZIP or GitHub) into Archetype
-- Enable Meta-SySop to maintain multiple projects per user with full isolation
+- Enable LomuAI to maintain multiple projects per user with full isolation
 - Provide safe workspace switching without cross-contamination
 - Integrate with GitHub for version control and auto-deployment
 - Support Railway/Vercel deployment pipelines
@@ -102,8 +102,8 @@ export const workspaceFiles = pgTable('workspace_files', {
   mimeType: varchar('mime_type'),
   
   // Metadata
-  isGenerated: boolean('is_generated').default(false), // Created by Meta-SySop
-  lastModifiedBy: varchar('last_modified_by'), // 'user' | 'meta-sysop' | 'import'
+  isGenerated: boolean('is_generated').default(false), // Created by LomuAI
+  lastModifiedBy: varchar('last_modified_by'), // 'user' | 'lomu-ai' | 'import'
   
   // Timestamps
   createdAt: timestamp('created_at').defaultNow(),
@@ -125,7 +125,7 @@ export type WorkspaceFile = typeof workspaceFiles.$inferSelect;
 
 ### 1.3 Workspace Activity Log
 
-**Purpose:** Audit trail for all Meta-SySop operations on workspaces.
+**Purpose:** Audit trail for all LomuAI operations on workspaces.
 
 ```typescript
 export const workspaceActivity = pgTable('workspace_activity', {
@@ -136,7 +136,7 @@ export const workspaceActivity = pgTable('workspace_activity', {
   // Activity Details
   type: varchar('type').notNull(), // 'import' | 'file_modified' | 'deploy' | 'commit' | 'analyze'
   action: text('action').notNull(), // Human-readable description
-  actor: varchar('actor').default('user'), // 'user' | 'meta-sysop' | 'system'
+  actor: varchar('actor').default('user'), // 'user' | 'lomu-ai' | 'system'
   
   // Metadata
   metadata: jsonb('metadata'), // Type-specific data
@@ -163,7 +163,7 @@ export const workspaceActivity = pgTable('workspace_activity', {
 **Migration Strategy:**
 1. Add new tables without modifying existing schema
 2. Add nullable `workspaceId` column to `commands`, `chatMessages`, `sysopTasks`
-3. Update Meta-SySop logic to check workspace context
+3. Update LomuAI logic to check workspace context
 4. Maintain backward compatibility with existing projects
 
 ---
@@ -204,7 +204,7 @@ export const workspaceActivity = pgTable('workspace_activity', {
    - Switching workspaces requires explicit user action
 
 2. **File System Boundaries**
-   - Meta-SySop file operations restricted to `/workspaces/{active-workspace-id}/`
+   - LomuAI file operations restricted to `/workspaces/{active-workspace-id}/`
    - Read/write operations validate workspace ownership via `userId`
    - No cross-workspace file access (enforced at API level)
 
@@ -213,7 +213,7 @@ export const workspaceActivity = pgTable('workspace_activity', {
    - Separate Node.js process per workspace for preview
    - Memory/CPU limits per workspace
 
-### 2.2 Meta-SySop Context Switching
+### 2.2 LomuAI Context Switching
 
 **Workspace Context Manager:**
 
@@ -257,9 +257,9 @@ class WorkspaceContextManager {
 }
 ```
 
-**Meta-SySop Tool Modifications:**
+**LomuAI Tool Modifications:**
 
-All Meta-SySop file operations must check workspace context:
+All LomuAI file operations must check workspace context:
 
 ```typescript
 // Before: Operates on platform files
@@ -373,9 +373,9 @@ router.post('/api/workspaces/import-github', async (req, res) => {
 
 ### 3.3 Auto-Commit Workflow
 
-**Meta-SySop Commit Strategy:**
+**LomuAI Commit Strategy:**
 
-When Meta-SySop modifies workspace files:
+When LomuAI modifies workspace files:
 
 ```typescript
 // server/services/workspace-git.ts
@@ -397,12 +397,12 @@ async function commitWorkspaceChanges(
     }
   }
   
-  // Commit with Meta-SySop signature
+  // Commit with LomuAI signature
   await git.commit({
     message: commitMessage,
     author: {
-      name: 'Meta-SySop',
-      email: 'meta-sysop@archetype.dev',
+      name: 'LomuAI',
+      email: 'lomu-ai@archetype.dev',
     },
   });
   
@@ -419,8 +419,8 @@ async function commitWorkspaceChanges(
   await logWorkspaceActivity({
     workspaceId,
     type: 'commit',
-    action: `Meta-SySop committed ${files.length} file(s): ${commitMessage}`,
-    actor: 'meta-sysop',
+    action: `LomuAI committed ${files.length} file(s): ${commitMessage}`,
+    actor: 'lomu-ai',
   });
 }
 ```
@@ -465,7 +465,7 @@ async function deployWorkspace(workspaceId: string) {
 
 **Deployment Triggers:**
 - Manual: User clicks "Deploy" button
-- Automatic: After Meta-SySop commits to `main` branch (configurable)
+- Automatic: After LomuAI commits to `main` branch (configurable)
 - Webhook: GitHub push event triggers deployment
 
 ---
@@ -505,7 +505,7 @@ async function deployWorkspace(workspaceId: string) {
 └─────────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│ Step 5: Meta-SySop Analysis (Optional)                          │
+│ Step 5: LomuAI Analysis (Optional)                          │
 │ - Detect framework: React, Next.js, Express, etc.               │
 │ - Identify package manager: npm, yarn, pnpm                     │
 │ - Check for config files: package.json, .env.example            │
@@ -518,7 +518,7 @@ async function deployWorkspace(workspaceId: string) {
 │ - Display workspace dashboard                                   │
 │ - Show detected framework, file count, size                     │
 │ - Prompt: "Connect to GitHub?" (optional)                       │
-│ - Prompt: "Run Meta-SySop health check?" (optional)             │
+│ - Prompt: "Run LomuAI health check?" (optional)             │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -639,7 +639,7 @@ async function deployWorkspace(workspaceId: string) {
 │ ┌──────────────────────────────────────────────────────┐   │
 │ │ 📁 My Todo App                            ✓ Active   │   │
 │ │ React • 42 files • 2.3 MB                            │   │
-│ │ Last modified: 2 hours ago by Meta-SySop             │   │
+│ │ Last modified: 2 hours ago by LomuAI             │   │
 │ │ [Open] [Settings] [Deploy]                           │   │
 │ └──────────────────────────────────────────────────────┘   │
 │                                                             │
@@ -654,7 +654,7 @@ async function deployWorkspace(workspaceId: string) {
 │ │ 📁 E-commerce Store                                  │   │
 │ │ Express.js • 134 files • 12.8 MB                     │   │
 │ │ GitHub: connected • Railway: deployed                │   │
-│ │ Last modified: 3 days ago by Meta-SySop              │   │
+│ │ Last modified: 3 days ago by LomuAI              │   │
 │ │ [Open] [Settings] [Deploy]                           │   │
 │ └──────────────────────────────────────────────────────┘   │
 │                                                             │
@@ -664,7 +664,7 @@ async function deployWorkspace(workspaceId: string) {
 **Card Features:**
 - **Status Indicator:** Green checkmark for active workspace
 - **Metadata:** Framework, file count, total size
-- **Activity:** Last modification timestamp and actor (user/Meta-SySop)
+- **Activity:** Last modification timestamp and actor (user/LomuAI)
 - **Integrations:** GitHub connection status, deployment status
 - **Actions:**
   - "Open" → Switch to this workspace and navigate to builder
@@ -695,11 +695,11 @@ async function deployWorkspace(workspaceId: string) {
    - Auto-deploy on commit (toggle)
    - Deployment history
 
-4. **Meta-SySop**
+4. **LomuAI**
    - Autonomy level for this workspace
    - Auto-commit toggle
    - Auto-deploy toggle
-   - Activity log (recent actions by Meta-SySop)
+   - Activity log (recent actions by LomuAI)
 
 ---
 
@@ -744,7 +744,7 @@ async function deployWorkspace(workspaceId: string) {
 - [ ] Create commit endpoint (`POST /api/workspaces/{id}/commit`)
 - [ ] Implement sync endpoint (`POST /api/workspaces/{id}/sync`)
 - [ ] Add webhook handler for GitHub push events
-- [ ] Test auto-commit workflow with Meta-SySop
+- [ ] Test auto-commit workflow with LomuAI
 
 ### Phase 5: Deployment Integration (Week 4-5)
 **Goal:** Connect workspaces to Railway/Vercel
@@ -767,15 +767,15 @@ async function deployWorkspace(workspaceId: string) {
 - [ ] Implement workspace switching with loading states
 - [ ] Add mobile-responsive layouts
 
-### Phase 7: Meta-SySop Integration (Week 6-7)
-**Goal:** Enable Meta-SySop to work on workspaces
+### Phase 7: LomuAI Integration (Week 6-7)
+**Goal:** Enable LomuAI to work on workspaces
 
-- [ ] Update Meta-SySop file tools to check workspace context
-- [ ] Add workspace mode toggle in Meta-SySop chat
+- [ ] Update LomuAI file tools to check workspace context
+- [ ] Add workspace mode toggle in LomuAI chat
 - [ ] Implement workspace-aware commit functionality
 - [ ] Add workspace health diagnostics
 - [ ] Create workspace-specific prompt enhancements
-- [ ] Test Meta-SySop maintaining multiple workspaces
+- [ ] Test LomuAI maintaining multiple workspaces
 - [ ] Add safety checks (no cross-workspace access)
 
 ### Phase 8: Security & Testing (Week 7-8)
@@ -813,7 +813,7 @@ async function deployWorkspace(workspaceId: string) {
   - Modify workspace files
   - Delete workspace
   - Configure GitHub/deployment settings
-  - Trigger Meta-SySop actions on workspace
+  - Trigger LomuAI actions on workspace
 
 **Validation Flow:**
 
@@ -912,7 +912,7 @@ async function logWorkspaceActivity(activity: {
   userId: string;
   type: 'import' | 'file_modified' | 'commit' | 'deploy' | 'delete';
   action: string;
-  actor: 'user' | 'meta-sysop' | 'system';
+  actor: 'user' | 'lomu-ai' | 'system';
   metadata?: any;
   success: boolean;
   error?: string;
@@ -941,12 +941,12 @@ async function logWorkspaceActivity(activity: {
 **Existing Behavior:**
 - Current users have projects in `projects` table
 - Files stored in `files` table
-- Meta-SySop operates on platform files only
+- LomuAI operates on platform files only
 
 **New Behavior:**
 - `projects` table remains for Archetype-native projects
 - New `workspaces` table for imported Replit projects
-- Meta-SySop can operate in two modes:
+- LomuAI can operate in two modes:
   1. **Platform Mode:** Modify Archetype platform (existing behavior)
   2. **Workspace Mode:** Modify active workspace (new behavior)
 
@@ -957,7 +957,7 @@ async function logWorkspaceActivity(activity: {
 1. Existing `projects` continue to work as before
 2. New `workspaces` table is independent
 3. Users can create both native projects and imported workspaces
-4. Meta-SySop detects context from active workspace selection
+4. LomuAI detects context from active workspace selection
 
 ### 8.3 Feature Flags
 
@@ -1005,10 +1005,10 @@ if (WORKSPACE_FEATURE_ENABLED) {
 - "Deploy my Replit project to Railway" templates
 - Pre-configured GitHub Actions for CI/CD
 
-### 9.3 Advanced Meta-SySop Features
+### 9.3 Advanced LomuAI Features
 
 **Cross-Workspace Learning:**
-- Meta-SySop learns common patterns across user's workspaces
+- LomuAI learns common patterns across user's workspaces
 - Suggests refactoring based on best practices from other projects
 - Detects duplicated code across workspaces
 
@@ -1042,7 +1042,7 @@ if (WORKSPACE_FEATURE_ENABLED) {
 
 - [ ] 100+ workspaces imported by users
 - [ ] 80% successful import rate (ZIP + GitHub combined)
-- [ ] 50+ Meta-SySop commits to workspaces
+- [ ] 50+ LomuAI commits to workspaces
 - [ ] 20+ successful deployments to Railway/Vercel
 - [ ] Zero security incidents (directory traversal, unauthorized access)
 
@@ -1075,7 +1075,7 @@ if (WORKSPACE_FEATURE_ENABLED) {
 
 ## Conclusion
 
-This multi-project architecture enables Archetype users to safely import and maintain their Replit projects using Meta-SySop, while maintaining complete isolation and security. The phased implementation plan ensures robust testing and gradual rollout.
+This multi-project architecture enables Archetype users to safely import and maintain their Replit projects using LomuAI, while maintaining complete isolation and security. The phased implementation plan ensures robust testing and gradual rollout.
 
 **Next Steps:**
 1. Review this document with engineering team

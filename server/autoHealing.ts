@@ -143,7 +143,7 @@ class AutoHealingService {
 
       const issue = `Automatic healing triggered by errors:\n${errorSummary}`;
 
-      // Use Meta-SySop to fix
+      // Use LomuAI to fix
       await this.executeHealing(issue);
 
       // Learn from this fix
@@ -162,7 +162,7 @@ class AutoHealingService {
   }
 
   /**
-   * Execute healing using Meta-SySop
+   * Execute healing using LomuAI
    */
   private async executeHealing(issue: string): Promise<void> {
     const anthropicKey = process.env.ANTHROPIC_API_KEY;
@@ -189,7 +189,7 @@ class AutoHealingService {
 
       const client = new Anthropic({ apiKey: anthropicKey });
 
-      const systemPrompt = `You are Meta-SySop's AUTO-HEALING module. You fix platform errors automatically.
+      const systemPrompt = `You are LomuAI's AUTO-HEALING module. You fix platform errors automatically.
 
 CRITICAL: This is AUTOMATIC healing - be conservative and surgical. Only fix what's broken.
 

@@ -65,7 +65,7 @@ export default function LandingMobile() {
       <div className="pt-20 pb-4 px-4 relative z-20">
         <BillboardBanner
           type="announcement"
-          title="New Feature: Meta-SySop Auto-Healing!"
+          title="New Feature: LomuAI Auto-Healing!"
           description="Our AI now automatically fixes bugs and deploys updates - watch your platform heal itself in real-time"
           ctaText="See It In Action"
           ctaLink="/platform-healing"

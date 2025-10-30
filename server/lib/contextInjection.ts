@@ -1,7 +1,7 @@
 /**
  * Phase C: Conversational Awareness Layer
  * 
- * Context injection utilities for Meta-SySop chat to provide:
+ * Context injection utilities for LomuAI chat to provide:
  * - Task board snapshot
  * - Recent platform changes (git history)
  * - Diagnosis report summaries
@@ -106,14 +106,14 @@ export async function getRecentPlatformChanges(
 
 /**
  * Get last diagnosis summary from chat history
- * Looks for recent diagnosis results in Meta-SySop messages
+ * Looks for recent diagnosis results in LomuAI messages
  */
 export async function getLastDiagnosisSummary(
   userId: string,
   sessionId?: string
 ): Promise<DiagnosisSummary | undefined> {
   try {
-    // Query recent Meta-SySop messages
+    // Query recent LomuAI messages
     const recentMessages = await db
       .select()
       .from(chatMessages)
@@ -155,7 +155,7 @@ export async function getLastDiagnosisSummary(
 }
 
 /**
- * Get conversation history for Meta-SySop session
+ * Get conversation history for LomuAI session
  */
 export async function getConversationHistory(
   userId: string,
@@ -189,7 +189,7 @@ export async function getConversationHistory(
 }
 
 /**
- * Build complete Meta-SySop context
+ * Build complete LomuAI context
  */
 export async function buildMetaSysopContext(
   userId: string,

@@ -1,7 +1,7 @@
 # 🔄 Clear Browser Cache - Fix Stuck Task Popup
 
 ## Problem
-The Meta-SySop TaskBoard popup is stuck showing old/incomplete tasks that won't go away.
+The LomuAI TaskBoard popup is stuck showing old/incomplete tasks that won't go away.
 
 ## Solution: Hard Refresh Browser
 
@@ -52,16 +52,16 @@ Or: Cmd + Option + R
 1. **Refresh the page** - Should see clean TaskBoard
 2. **Log in again** (if needed)
 3. **Navigate to Platform Healing** - `/platform-healing`
-4. **Send test message** to Meta-SySop
+4. **Send test message** to LomuAI
 
 ---
 
 ## Test Message
 
-After clearing cache, test Meta-SySop with:
+After clearing cache, test LomuAI with:
 
 ```
-Add a console.log to server/index.ts that says "Meta-SySop deployed successfully"
+Add a console.log to server/index.ts that says "LomuAI deployed successfully"
 ```
 
 **Watch for:**
@@ -88,7 +88,7 @@ If tasks still show after clearing cache:
 ## Prevention
 
 To prevent future stuck popups:
-- Meta-SySop now has anti-lying enforcement
+- LomuAI now has anti-lying enforcement
 - Tasks must complete in order
 - Deployment requires actual GitHub commit success
 - Invalid task updates are blocked with clear error messages

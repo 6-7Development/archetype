@@ -71,7 +71,7 @@ export function PlatformHealingChat({
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm text-muted-foreground mb-1">Meta-SySop initialized</div>
+              <div className="text-sm text-muted-foreground mb-1">LomuAI initialized</div>
               <div className="text-sm">{msg.text}</div>
             </div>
           </div>
@@ -226,7 +226,7 @@ export function PlatformHealingChat({
                 </div>
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm text-muted-foreground">Meta-SySop is analyzing...</div>
+                <div className="text-sm text-muted-foreground">LomuAI is analyzing...</div>
               </div>
             </div>
           )}
@@ -240,7 +240,7 @@ export function PlatformHealingChat({
             <div className="flex-1 min-w-0">
               <h4 className="font-medium text-sm mb-1">Approval Required</h4>
               <p className="text-sm text-muted-foreground">
-                Meta-SySop wants to modify: <code className="text-xs">{pendingWrite.path}</code>
+                LomuAI wants to modify: <code className="text-xs">{pendingWrite.path}</code>
               </p>
             </div>
           </div>

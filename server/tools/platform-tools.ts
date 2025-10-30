@@ -1,7 +1,7 @@
 import { platformHealing } from '../platformHealing';
 
 /**
- * Platform modification tools for Meta-SySop
+ * Platform modification tools for LomuAI
  * Allow SySop to fix Archetype's own code via normal chat
  */
 

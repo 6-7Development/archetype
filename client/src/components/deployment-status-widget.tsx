@@ -76,7 +76,7 @@ export function DeploymentStatusWidget() {
                         {latest.authorType === 'meta-sysop' ? (
                           <>
                             <Bot className="h-3 w-3 mr-1" />
-                            Meta-SySop
+                            LomuAI
                           </>
                         ) : (
                           <>

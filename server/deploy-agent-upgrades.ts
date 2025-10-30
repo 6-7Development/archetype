@@ -29,7 +29,7 @@ async function deployUpgrades() {
     'server/AGENT_COMMUNICATION_GUIDE.md',
     'server/agentCommunicationExample.ts',
     
-    // Meta-SySop Orchestrator
+    // LomuAI Orchestrator
     'server/routes/metaSysopChat.ts',
     'server/subagentOrchestration.ts',
   ];
@@ -66,7 +66,7 @@ async function deployUpgrades() {
    - Parallel execution patterns
    - Quality gates (review before completion)
 
-2. **Meta-SySop Enhanced:**
+2. **LomuAI Enhanced:**
    - Already had orchestrator mindset (now standardized)
    - Same delegation patterns as SySop
    - Enhanced with knowledge management tools

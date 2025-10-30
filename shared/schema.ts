@@ -27,7 +27,7 @@ export const users = pgTable("users", {
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role").notNull().default("user"), // user, admin
   isOwner: boolean("is_owner").notNull().default(false), // Platform owner (can modify platform in production)
-  autonomyLevel: varchar("autonomy_level", { length: 20 }).notNull().default("basic"), // 'basic' | 'standard' | 'deep' | 'max' - Controls Meta-SySop capabilities
+  autonomyLevel: varchar("autonomy_level", { length: 20 }).notNull().default("basic"), // 'basic' | 'standard' | 'deep' | 'max' - Controls LomuAI capabilities
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -125,7 +125,7 @@ export const commands = pgTable("commands", {
   response: text("response"),
   status: text("status").notNull().default("pending"),
   platformMode: text("platform_mode").default("user"), // "user" or "platform" - determines if SySop modifies user project or Archetype itself
-  platformChanges: jsonb("platform_changes"), // Tracks platform file modifications for Meta-SySop
+  platformChanges: jsonb("platform_changes"), // Tracks platform file modifications for LomuAI
   autoCommitted: text("auto_committed").default("false"), // Tracks if platform changes were auto-committed to git
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -171,14 +171,14 @@ export type SysopTask = typeof sysopTasks.$inferSelect;
 export const chatMessages = pgTable("chat_messages", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
-  projectId: varchar("project_id"), // Link messages to projects (null for Meta-SySop platform healing)
+  projectId: varchar("project_id"), // Link messages to projects (null for LomuAI platform healing)
   fileId: varchar("file_id"),
   role: text("role").notNull(), // 'user' | 'assistant' | 'system'
   content: text("content").notNull(),
   images: jsonb("images"), // Array of image URLs/paths for Vision API support
   isSummary: boolean("is_summary").notNull().default(false), // True for compressed conversation summaries
-  isPlatformHealing: boolean("is_platform_healing").notNull().default(false), // True for Meta-SySop platform healing conversations
-  platformChanges: jsonb("platform_changes"), // Track file modifications in Meta-SySop messages
+  isPlatformHealing: boolean("is_platform_healing").notNull().default(false), // True for LomuAI platform healing conversations
+  platformChanges: jsonb("platform_changes"), // Track file modifications in LomuAI messages
   approvalStatus: text("approval_status"), // null | 'pending_approval' | 'approved' | 'rejected' - Replit Agent-style workflow
   approvalSummary: text("approval_summary"), // Summary of proposed changes awaiting approval
   approvedBy: varchar("approved_by"), // User ID who approved/rejected
@@ -199,7 +199,7 @@ export const insertChatMessageSchema = createInsertSchema(chatMessages)
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 
-// Meta-SySop Attachments - Files attached to chat messages (images, code, logs)
+// LomuAI Attachments - Files attached to chat messages (images, code, logs)
 export const metaSysopAttachments = pgTable('meta_sysop_attachments', {
   id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
   messageId: varchar('message_id').notNull(), // References chatMessages.id
@@ -219,7 +219,7 @@ export const insertMetaSysopAttachmentSchema = createInsertSchema(metaSysopAttac
 export type InsertMetaSysopAttachment = z.infer<typeof insertMetaSysopAttachmentSchema>;
 export type MetaSysopAttachment = typeof metaSysopAttachments.$inferSelect;
 
-// Meta-SySop Sessions - Track pending changes in memory before batch commit
+// LomuAI Sessions - Track pending changes in memory before batch commit
 export const metaSysopSessions = pgTable('meta_sysop_sessions', {
   id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar('user_id').notNull(),
@@ -242,7 +242,7 @@ export const insertMetaSysopSessionSchema = createInsertSchema(metaSysopSessions
 export type InsertMetaSysopSession = z.infer<typeof insertMetaSysopSessionSchema>;
 export type MetaSysopSession = typeof metaSysopSessions.$inferSelect;
 
-// Meta-SySop Background Jobs - Long-running jobs with resumption capability
+// LomuAI Background Jobs - Long-running jobs with resumption capability
 export const metaSysopJobs = pgTable('meta_sysop_jobs', {
   id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar('user_id').notNull(),
@@ -1048,7 +1048,7 @@ export const insertArchitectReviewSchema = createInsertSchema(architectReviews).
 export type InsertArchitectReview = z.infer<typeof insertArchitectReviewSchema>;
 export type ArchitectReview = typeof architectReviews.$inferSelect;
 
-// Meta-SySop Knowledge Base - Stores learned patterns, decisions, and fixes
+// LomuAI Knowledge Base - Stores learned patterns, decisions, and fixes
 export const metaSysopKnowledge = pgTable("meta_sysop_knowledge", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   category: text("category").notNull(), // 'pattern' | 'fix' | 'decision' | 'rule' | 'preference'
@@ -1084,7 +1084,7 @@ export const insertMetaSysopKnowledgeSchema = createInsertSchema(metaSysopKnowle
 export type InsertMetaSysopKnowledge = z.infer<typeof insertMetaSysopKnowledgeSchema>;
 export type MetaSysopKnowledge = typeof metaSysopKnowledge.$inferSelect;
 
-// Meta-SySop Instructions - User-given permanent instructions and preferences
+// LomuAI Instructions - User-given permanent instructions and preferences
 export const metaSysopInstructions = pgTable("meta_sysop_instructions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   type: text("type").notNull(), // 'permanent' | 'conditional' | 'project-specific'
@@ -1114,7 +1114,7 @@ export const insertMetaSysopInstructionSchema = createInsertSchema(metaSysopInst
 export type InsertMetaSysopInstruction = z.infer<typeof insertMetaSysopInstructionSchema>;
 export type MetaSysopInstruction = typeof metaSysopInstructions.$inferSelect;
 
-// Meta-SySop Automation Rules - Automated workflows and triggers
+// LomuAI Automation Rules - Automated workflows and triggers
 export const metaSysopAutomation = pgTable("meta_sysop_automation", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(), // Human-readable name for this automation
@@ -1152,7 +1152,7 @@ export const insertMetaSysopAutomationSchema = createInsertSchema(metaSysopAutom
 export type InsertMetaSysopAutomation = z.infer<typeof insertMetaSysopAutomationSchema>;
 export type MetaSysopAutomation = typeof metaSysopAutomation.$inferSelect;
 
-// Meta-SySop Memory Log - Conversation memory and context retention
+// LomuAI Memory Log - Conversation memory and context retention
 export const metaSysopMemory = pgTable("meta_sysop_memory", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   sessionId: varchar("session_id"), // Groups related memories together

@@ -9,7 +9,7 @@ Render automatically deploys your application when you push to GitHub. Here's ho
 #### Step 1: Commit Your Changes
 ```bash
 git add .
-git commit -m "Your update message (e.g., Fixed Meta-SySop authentication)"
+git commit -m "Your update message (e.g., Fixed LomuAI authentication)"
 ```
 
 #### Step 2: Push to GitHub
@@ -75,7 +75,7 @@ After pushing updates, verify deployment with these steps:
 - [ ] Confirm "Updated X ago" shows recent time
 - [ ] See "Live" badge
 
-#### 2. **Test Meta-SySop Features**
+#### 2. **Test LomuAI Features**
 - [ ] Login as admin
 - [ ] Navigate to `/platform-healing`
 - [ ] Verify page loads without errors

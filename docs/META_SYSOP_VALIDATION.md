@@ -1,10 +1,10 @@
-# Meta-SySop Validation Guide
+# LomuAI Validation Guide
 
 ## Overview
 
-This guide describes the **bulletproof Meta-SySop validation workflow** that ensures Meta-SySop accurately diagnoses and heals the platform in production mode before any deployment to Railway.
+This guide describes the **bulletproof LomuAI validation workflow** that ensures LomuAI accurately diagnoses and heals the platform in production mode before any deployment to Railway.
 
-The validation system implements **5 critical phases** that together guarantee Meta-SySop analyzes real compiled artifacts, detects source⇄artifact drift, and operates with full conversational awareness.
+The validation system implements **5 critical phases** that together guarantee LomuAI analyzes real compiled artifacts, detects source⇄artifact drift, and operates with full conversational awareness.
 
 ---
 
@@ -12,9 +12,9 @@ The validation system implements **5 critical phases** that together guarantee M
 
 ### Purpose
 
-Test Meta-SySop in production mode **locally** before deploying to Railway. This ensures:
+Test LomuAI in production mode **locally** before deploying to Railway. This ensures:
 
-- Meta-SySop diagnoses **compiled dist/ artifacts** (not source TypeScript)
+- LomuAI diagnoses **compiled dist/ artifacts** (not source TypeScript)
 - Platform healing works against production builds
 - No surprises when deploying to Railway
 
@@ -85,11 +85,11 @@ Runs the **compiled server** (not tsx/ts-node) exactly like Railway does.
 
 ### Validation Checklist
 
-Once the server is running, validate Meta-SySop functionality:
+Once the server is running, validate LomuAI functionality:
 
 #### ✅ **Diagnosis Accuracy**
 
-1. Open Meta-SySop chat at `http://localhost:5000/platform-healing`
+1. Open LomuAI chat at `http://localhost:5000/platform-healing`
 2. Run diagnosis command:
    ```
    Run full platform diagnosis
@@ -101,20 +101,20 @@ Once the server is running, validate Meta-SySop functionality:
 
 #### ✅ **Source⇄Artifact Fidelity**
 
-1. Meta-SySop should detect drift between source and compiled code
+1. LomuAI should detect drift between source and compiled code
 2. Warnings should appear if compiled code differs from source
 3. SHA-based validation ensures correct source version
 
 #### ✅ **Healing Workflows**
 
-1. Request Meta-SySop to fix an issue
+1. Request LomuAI to fix an issue
 2. Changes should be applied to **source files** (server/*.ts)
 3. After changes, app should rebuild automatically
-4. Meta-SySop should verify fixes in new dist/ artifacts
+4. LomuAI should verify fixes in new dist/ artifacts
 
 #### ✅ **Conversational Context**
 
-1. Meta-SySop should reference:
+1. LomuAI should reference:
    - Current task board state
    - Recent git commits
    - Previous diagnosis findings
@@ -133,7 +133,7 @@ Automated tests that verify production diagnosis works correctly.
 
 ```bash
 # Run integration tests
-npm run test:meta-sysop
+npm run test:lomu-ai
 
 # Or manually
 tsx server/tests/platformHealing/diagnosis.integration.test.ts
@@ -172,7 +172,7 @@ The integration tests verify:
 
 ### Purpose
 
-Detect and alert when **source code** differs from **compiled artifacts** to prevent Meta-SySop from diagnosing stale code.
+Detect and alert when **source code** differs from **compiled artifacts** to prevent LomuAI from diagnosing stale code.
 
 ### Implementation
 
@@ -233,7 +233,7 @@ Build SHA: abc123 (deployed)
 Source SHA: def456 (GitHub main)
 Checksum: MISMATCH
 
-Meta-SySop diagnosis may reference outdated code.
+LomuAI diagnosis may reference outdated code.
 Recommendation: Rebuild and redeploy to sync artifacts.
 ```
 
@@ -242,7 +242,7 @@ Recommendation: Rebuild and redeploy to sync artifacts.
 - ✅ Drift detection catches stale builds
 - ✅ SHA comparison works in production
 - ✅ Checksum validation prevents false positives
-- ✅ Warnings surface in Meta-SySop chat
+- ✅ Warnings surface in LomuAI chat
 - ✅ Metrics tracked for monitoring
 
 ---
@@ -251,11 +251,11 @@ Recommendation: Rebuild and redeploy to sync artifacts.
 
 ### Purpose
 
-Make Meta-SySop **context-aware** and **conversational** like Replit Agent.
+Make LomuAI **context-aware** and **conversational** like Replit Agent.
 
 ### Context Injection
 
-Meta-SySop automatically includes:
+LomuAI automatically includes:
 
 #### 1. **Task Board Snapshot**
 
@@ -353,7 +353,7 @@ function sanitizeContent(content: string): string {
 
 ### Acceptance Criteria
 
-- ✅ Meta-SySop references current tasks in responses
+- ✅ LomuAI references current tasks in responses
 - ✅ Recent commits inform diagnosis
 - ✅ Previous findings guide troubleshooting
 - ✅ Streaming feels responsive and natural
@@ -382,7 +382,7 @@ on:
     branches: [main]
 
 jobs:
-  validate-meta-sysop:
+  validate-lomu-ai:
     runs-on: ubuntu-latest
     
     steps:
@@ -400,7 +400,7 @@ jobs:
         run: npm run build
         
       - name: Phase A - Integration Tests
-        run: npm run test:meta-sysop
+        run: npm run test:lomu-ai
         
       - name: Phase B - Drift Detection
         run: tsx scripts/validate-fidelity.ts
@@ -435,7 +435,7 @@ Before deploying to Railway:
 1. **Run local validation**:
    ```bash
    tsx scripts/run-meta-prod.ts --mock-secrets
-   # Test Meta-SySop in browser
+   # Test LomuAI in browser
    ```
 
 2. **Check CI status**:
@@ -453,12 +453,12 @@ Before deploying to Railway:
    # SSH to Railway or use web console
    curl https://archetype.railway.app/api/health
    
-   # Test Meta-SySop chat
+   # Test LomuAI chat
    # Run diagnosis against production
    ```
 
 5. **Monitor drift metrics**:
-   - Check drift warnings in Meta-SySop status
+   - Check drift warnings in LomuAI status
    - Verify deployed SHA matches GitHub main
 
 ### Acceptance Criteria
@@ -475,7 +475,7 @@ Before deploying to Railway:
 
 ### Common Issues
 
-#### **"Meta-SySop analyzing source code instead of dist/"**
+#### **"LomuAI analyzing source code instead of dist/"**
 
 **Cause**: Running in development mode (tsx server/index.ts)
 
@@ -501,7 +501,7 @@ npm run build
 ```bash
 rm -rf dist/
 npm run build
-npm run test:meta-sysop
+npm run test:lomu-ai
 ```
 
 #### **"GitHub source fallback not working"**
@@ -523,11 +523,11 @@ GITHUB_TOKEN=ghp_your_token_here
 2. **Test in development mode** (npm run dev)
 3. **Build production artifacts** (npm run build)
 4. **Test in production mode** (tsx scripts/run-meta-prod.ts)
-5. **Run integration tests** (npm run test:meta-sysop)
+5. **Run integration tests** (npm run test:lomu-ai)
 6. **Commit and push** (triggers CI)
 7. **Deploy to Railway** (after CI passes)
 
-### Meta-SySop Usage
+### LomuAI Usage
 
 - **Always test in production mode** before deploying
 - **Check drift warnings** after rebuilds
@@ -546,12 +546,12 @@ GITHUB_TOKEN=ghp_your_token_here
 
 ## Summary
 
-The bulletproof Meta-SySop validation system ensures:
+The bulletproof LomuAI validation system ensures:
 
 - ✅ **Phase D**: Local production testing mirrors Railway exactly
 - ✅ **Phase A**: Integration tests prove diagnosis works in production
 - ✅ **Phase B**: Drift detection catches stale builds before issues arise
-- ✅ **Phase C**: Conversational context makes Meta-SySop intelligent and natural
+- ✅ **Phase C**: Conversational context makes LomuAI intelligent and natural
 - ✅ **Phase E**: CI gates prevent bad deployments
 
-**Result**: Meta-SySop can confidently diagnose and heal the platform in production, with full visibility into what code it's analyzing and why.
+**Result**: LomuAI can confidently diagnose and heal the platform in production, with full visibility into what code it's analyzing and why.

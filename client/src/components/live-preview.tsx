@@ -25,7 +25,7 @@ export function LivePreview({ projectId, fileCount = 0 }: LivePreviewProps) {
     }
   }, [projectId]);
 
-  // 📡 LIVE PREVIEW: Listen for Meta-SySop file updates via WebSocket
+  // 📡 LIVE PREVIEW: Listen for LomuAI file updates via WebSocket
   useEffect(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/ws`;
@@ -45,7 +45,7 @@ export function LivePreview({ projectId, fileCount = 0 }: LivePreviewProps) {
           try {
             const data = JSON.parse(event.data);
             
-            // Listen for Meta-SySop file updates
+            // Listen for LomuAI file updates
             if (data.type === 'platform_file_updated') {
               // Match current project OR platform code
               const currentProject = projectId || 'platform';

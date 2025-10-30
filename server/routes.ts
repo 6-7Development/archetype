@@ -153,15 +153,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const metricsBroadcaster = new PlatformMetricsBroadcaster(wss);
   metricsBroadcaster.start();
 
-  // Initialize Meta-SySop job manager with WebSocket support
+  // Initialize LomuAI job manager with WebSocket support
   const { initializeJobManager } = await import('./services/metaSysopJobManager');
   initializeJobManager(wss);
-  console.log('[META-SYSOP-JOB-MANAGER] Job manager connected to WebSocket');
+  console.log('[LOMU-AI-JOB-MANAGER] Job manager connected to WebSocket');
 
-  // Initialize Meta-SySop chat with WebSocket for live preview
+  // Initialize LomuAI chat with WebSocket for live preview
   const { initializeMetaSysopWebSocket } = await import('./routes/metaSysopChat');
   initializeMetaSysopWebSocket(wss);
-  console.log('[META-SYSOP-CHAT] Live preview WebSocket initialized');
+  console.log('[LOMU-AI-CHAT] Live preview WebSocket initialized');
 
   // ==================== REGISTER ROUTE MODULES ====================
   
@@ -185,8 +185,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Mount platform router (platform self-healing)
   app.use('/api/platform', platformRouter);
   
-  // Mount Meta-SySop chat router (chat-based platform healing)
-  app.use('/api/meta-sysop', metaSySopChatRouter);
+  // Mount LomuAI chat router (chat-based platform healing)
+  app.use('/api/lomu-ai', metaSySopChatRouter);
 
   // ==================== REPLIT AGENT-STYLE FEATURES ====================
   

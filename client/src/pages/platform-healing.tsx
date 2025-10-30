@@ -71,8 +71,8 @@ function PlatformHealingContent() {
     { id: 'committing', label: 'Committing to GitHub', status: 'pending' },
     { id: 'deployed', label: 'Deployed', status: 'pending' },
   ]);
-  const [metaTasks, setMetaTasks] = useState<AgentTask[]>([]);
-  const [metaActiveTaskId, setMetaActiveTaskId] = useState<string | null>(null);
+  const [lomuTasks, setLomuTasks] = useState<AgentTask[]>([]);
+  const [lomuActiveTaskId, setLomuActiveTaskId] = useState<string | null>(null);
 
   // Force deploy mutation
   const forceDeployMutation = useMutation({
@@ -136,14 +136,14 @@ function PlatformHealingContent() {
   const [selectedFileForDiff, setSelectedFileForDiff] = useState<string | null>(null);
   const [showPendingChanges, setShowPendingChanges] = useState(true);
 
-  // Meta-SySop streaming mutation (NEW SYSTEM with all tools!)
+  // LomuAI streaming mutation (NEW SYSTEM with all tools!)
   const autoHealMutation = useMutation({
     mutationFn: async (issue: string) => {
       setPhase('analyzing');
       setHealingMessages([{ 
         id: Date.now().toString(), 
         type: 'init', 
-        text: 'Starting Meta-SySop...', 
+        text: 'Starting LomuAI...', 
         timestamp: new Date() 
       }]);
 
@@ -180,7 +180,7 @@ function PlatformHealingContent() {
             
             try {
               const data = JSON.parse(line.slice(6));
-              console.log('[META-SYSOP] Event:', data.type, data);
+              console.log('[LOMU-AI] Event:', data.type, data);
 
               // Add to chat messages for ALL events
               if (data.type === 'content' && data.content) {
@@ -247,7 +247,7 @@ function PlatformHealingContent() {
                 }]);
               }
             } catch (err) {
-              console.error('[META-SYSOP] Parse error:', err);
+              console.error('[LOMU-AI] Parse error:', err);
             }
           }
         }
@@ -259,7 +259,7 @@ function PlatformHealingContent() {
     },
     onSuccess: () => {
       setPhase('completed');
-      toast({ title: 'Complete', description: 'Meta-SySop finished' });
+      toast({ title: 'Complete', description: 'LomuAI finished' });
       queryClient.invalidateQueries({ queryKey: ['/api/platform/status'] });
     },
     onError: (error: any) => {
@@ -286,7 +286,7 @@ function PlatformHealingContent() {
       updateProgressStep('building', 'in_progress');
       toast({
         title: 'Changes approved',
-        description: 'Meta-SySop is continuing work...',
+        description: 'LomuAI is continuing work...',
       });
       // No need to restart - the approval resolves the pending promise
       // and the original session continues automatically
@@ -313,7 +313,7 @@ function PlatformHealingContent() {
       updateProgressStep('approval', 'failed');
       toast({
         title: 'Changes rejected',
-        description: 'Meta-SySop will not proceed with these changes',
+        description: 'LomuAI will not proceed with these changes',
       });
     },
     onError: (error: any) => {
@@ -546,8 +546,8 @@ function PlatformHealingContent() {
               autoCommit={true}
               autoPush={true}
               onTasksChange={(tasks, activeId) => {
-                setMetaTasks(tasks);
-                setMetaActiveTaskId(activeId);
+                setLomuTasks(tasks);
+                setLomuActiveTaskId(activeId);
               }}
             />
           </div>
@@ -561,8 +561,8 @@ function PlatformHealingContent() {
               </div>
               <div className="flex-1 overflow-y-auto" data-testid="container-task-list">
                 <AgentTaskList 
-                  tasks={metaTasks} 
-                  activeTaskId={metaActiveTaskId}
+                  tasks={lomuTasks} 
+                  activeTaskId={lomuActiveTaskId}
                 />
               </div>
             </div>

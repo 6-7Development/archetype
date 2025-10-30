@@ -61,7 +61,7 @@ After this deployment:
 - ✅ Database connects successfully
 - ✅ Server starts without retries
 - ⏳ Owner can be set via SQL (manual step)
-- ✅ Meta-SySop will work once owner is set
+- ✅ LomuAI will work once owner is set
 
 ---
 
@@ -87,5 +87,5 @@ After this deployment:
 
 1. Wait for Render deployment to complete (~2-3 min)
 2. Check logs for successful database connection
-3. Run owner setup SQL if you need Meta-SySop access
+3. Run owner setup SQL if you need LomuAI access
 4. Platform will be fully operational!

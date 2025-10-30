@@ -1,7 +1,7 @@
 # 🔧 Production Owner Setup Guide
 
 ## Problem
-Meta-SySop doesn't work on Render production because:
+LomuAI doesn't work on Render production because:
 - ❌ No user is marked as `is_owner = true` in production database
 - ❌ `OWNER_USER_ID` environment variable is not set on Render
 
@@ -72,13 +72,13 @@ This approach uses an environment variable to identify the owner.
 
 3. **Render Auto-Redeploys**
    - Service will automatically restart with new env var
-   - Meta-SySop will now work for that user ID
+   - LomuAI will now work for that user ID
 
 ---
 
 ## 🧪 Testing
 
-After setup, verify Meta-SySop works:
+After setup, verify LomuAI works:
 
 1. **Log in to production:**
    ```
@@ -87,7 +87,7 @@ After setup, verify Meta-SySop works:
 
 2. **Navigate to Platform Healing:**
    - Should see "Platform Healing" in sidebar (wrench icon 🔧)
-   - Click to open Meta-SySop chat
+   - Click to open LomuAI chat
 
 3. **Send test message:**
    ```
@@ -96,7 +96,7 @@ After setup, verify Meta-SySop works:
 
 4. **Verify on GitHub:**
    - Check https://github.com/6-7Development/archetype/commits/main
-   - Should see new commit from Meta-SySop
+   - Should see new commit from LomuAI
 
 ---
 
@@ -116,7 +116,7 @@ After setup, verify Meta-SySop works:
 1. ✅ Mark user as owner in database (permanent)
 2. ✅ Set OWNER_USER_ID env var (backup/explicit reference)
 
-This ensures Meta-SySop works even if:
+This ensures LomuAI works even if:
 - Database is migrated/restored
 - Environment variables are reset
 - Multiple environments exist (staging, production, etc.)
@@ -130,7 +130,7 @@ This ensures Meta-SySop works even if:
 - Verify `is_owner = true` in database
 - Clear browser cache and reload
 
-### Meta-SySop returns "Unauthorized"?
+### LomuAI returns "Unauthorized"?
 - Check `OWNER_USER_ID` matches your actual user ID
 - Verify user exists in production database
 - Check Render logs for auth errors
@@ -146,13 +146,13 @@ This ensures Meta-SySop works even if:
 
 **Development (Replit):**
 - ✅ Owner configured: `root@getdc360.com`, `sysop@test.local`
-- ✅ Meta-SySop fully functional
+- ✅ LomuAI fully functional
 - ⚠️ No `OWNER_USER_ID` env var (not needed)
 
 **Production (Render):**
 - ❌ No owner configured in database
 - ❌ No `OWNER_USER_ID` env var set
-- ❌ Meta-SySop currently non-functional
+- ❌ LomuAI currently non-functional
 
 **Action Required:**
-Run the production setup (Option 1 or 2 above) to enable Meta-SySop on Render!
+Run the production setup (Option 1 or 2 above) to enable LomuAI on Render!
