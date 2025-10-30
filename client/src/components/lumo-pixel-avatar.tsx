@@ -48,9 +48,9 @@ export function LumoPixelAvatar({
   // Animation sequences
   const EMOTION_ANIMATIONS: Record<EmotionType, SpriteFrame[]> = {
     happy: [
-      { sheet: sheet3, col: 0, row: 0, duration: 1500 },
-      { sheet: sheet3, col: 1, row: 0, duration: 200 },
-      { sheet: sheet3, col: 0, row: 0, duration: 2000 },
+      { sheet: sheet3, col: 0, row: 1, duration: 1500 },  // Try row 1 instead
+      { sheet: sheet3, col: 1, row: 1, duration: 200 },
+      { sheet: sheet3, col: 0, row: 1, duration: 2000 },
     ],
     excited: [
       { sheet: sheet3, col: 2, row: 0, duration: 400 },
@@ -178,20 +178,29 @@ export function LumoPixelAvatar({
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         if (spriteImage && spriteImage.complete && spriteImage.naturalWidth > 0) {
+          // Calculate source rectangle (which part of sprite sheet to extract)
           const sx = frame.col * FRAME_SIZE;
           const sy = frame.row * FRAME_SIZE;
-          const bobY = Math.sin(timestamp * 0.002) * 2;
           
+          // Gentle bobbing animation
+          const bobY = Math.sin(timestamp * 0.002) * 3;
+          
+          // Draw at origin with bob offset
           ctx.imageSmoothingEnabled = false;
           
           try {
+            // Draw the extracted frame to fill the entire canvas
             ctx.drawImage(
               spriteImage,
-              sx, sy, FRAME_SIZE, FRAME_SIZE,
-              0, bobY, containerSize, containerSize
+              sx, sy, FRAME_SIZE, FRAME_SIZE,  // Source: extract 256x256 from sprite sheet
+              0, bobY, containerSize, containerSize  // Destination: fill canvas (128 or 192px)
             );
           } catch (error) {
-            console.error("[LUMO] Error drawing sprite:", error);
+            console.error("[LUMO] Error drawing sprite:", error, {
+              sx, sy, FRAME_SIZE,
+              containerSize,
+              imageSize: `${spriteImage.naturalWidth}x${spriteImage.naturalHeight}`
+            });
           }
         }
       };
