@@ -526,14 +526,14 @@ export function LumoAvatar({
             />
 
             {/* ANIMATED EYELIDS - INSIDE animated container so they move with Lumo */}
-            {/* Left eye eyelid (viewer's left, Lumo's right) */}
+            {/* Cyan eye eyelid (viewer's right, Lumo's left eye) */}
             <motion.div
               className="absolute pointer-events-none overflow-hidden rounded-full"
               style={{
-                left: "58%",
-                top: "38%",
-                width: "12%",
-                height: "10%",
+                left: "62%",
+                top: "42%",
+                width: "11%",
+                height: "9%",
                 zIndex: 25,
               }}
             >
@@ -552,14 +552,14 @@ export function LumoAvatar({
               />
             </motion.div>
 
-            {/* Right eye eyelid (viewer's right, Lumo's left) */}
+            {/* Dark eye eyelid (viewer's left, Lumo's right eye) */}
             <motion.div
               className="absolute pointer-events-none overflow-hidden rounded-full"
               style={{
-                left: "30%",
-                top: "38%",
-                width: "12%",
-                height: "10%",
+                left: "36%",
+                top: "42%",
+                width: "11%",
+                height: "9%",
                 zIndex: 25,
               }}
             >
@@ -583,9 +583,9 @@ export function LumoAvatar({
               className="absolute pointer-events-none"
               style={{
                 left: "50%",
-                top: "64%",
-                width: "28%",
-                height: "10%",
+                top: "62%",
+                width: "26%",
+                height: "8%",
                 transform: "translateX(-50%)",
                 zIndex: 25,
               }}
