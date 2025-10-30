@@ -372,8 +372,8 @@ export function LemonMascot({ emotion = 'idle', size = 'medium', className }: Le
       const palette = getPalette();
       const cx = canvasSize / 2;
       // Position and size so entire lemon (with leaf cap and arms) fits in canvas
-      const cy = canvasSize * 0.70;  // Lower center to make room for leaf cap on top
-      const r = canvasSize * 0.12;   // Smaller so whole character fits
+      const cy = canvasSize * 0.60;  // Centered to fit leaf cap above and body below
+      const r = canvasSize * 0.11;   // Scaled so whole character fits within bounds
 
       const breathe = Math.sin(now * 0.0025) * 0.02;
       const bounce = emotion === 'working' ? Math.max(0, Math.sin(now * 0.009)) * 8 : 0;
