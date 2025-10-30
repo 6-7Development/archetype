@@ -238,6 +238,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     if (streamState.currentStatus === 'completed') {
       setProgressStatus('idle');
       setProgressMessage("");
+      setIsGenerating(false);
     }
   }, [streamState.tasks, streamState.chatProgress, streamState.currentAction, streamState.currentStatus]);
 
@@ -299,6 +300,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       streamState.resetState();
       setProgressStatus('idle');
       setProgressMessage("");
+      setIsGenerating(false);
 
       // Persist assistant message to database (save to general chat if no project)
       saveMessageMutation.mutate({
@@ -318,6 +320,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       streamState.resetState();
       setProgressStatus('idle');
       setProgressMessage("");
+      setIsGenerating(false);
 
       // Show error toast
       toast({
@@ -382,12 +385,22 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       if (onProjectGenerated && data.result) {
         onProjectGenerated(data.result);
       }
+
+      // Clear generation state
+      setIsGenerating(false);
+      setProgressStatus('idle');
+      setProgressMessage("");
     },
     onError: (error: any) => {
       toast({ 
         variant: "destructive",
         description: error.message || "Failed to generate project" 
       });
+
+      // Clear generation state on error
+      setIsGenerating(false);
+      setProgressStatus('idle');
+      setProgressMessage("");
     },
   });
 
@@ -463,9 +476,6 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       {
         onSettled: () => {
           clearInterval(progressInterval);
-          setIsGenerating(false);
-          setProgressStatus('idle');
-          setProgressMessage("");
 
           // Calculate final elapsed time
           const elapsed = Date.now() - startTime;
@@ -865,15 +875,13 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
           </div>
         )}
 
-        {/* Task Board - Keep existing task board component */}
-        {!isGenerating && (
-          <TaskBoard 
-            tasks={streamState.tasks}
-            isGenerating={isGenerating}
-            subAgentActive={streamState.subAgentActive}
-            className="border-b border-[hsl(220,15%,28%)]" 
-          />
-        )}
+        {/* Task Board - ALWAYS SHOW when tasks exist */}
+        <TaskBoard 
+          tasks={streamState.tasks || []}
+          isGenerating={isGenerating || chatMutation.isPending}
+          subAgentActive={streamState.subAgentActive}
+          className="border-b border-[hsl(220,15%,28%)]" 
+        />
 
         {/* Messages Area */}
         <div
