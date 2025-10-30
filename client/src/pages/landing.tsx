@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MobileNav } from "@/components/mobile-nav";
 import { Sparkles, Zap, Shield, Gauge, Code, Rocket, Check, Terminal, Play, ArrowRight } from "lucide-react";
-import { LogoEnhancedBadge, LogoAnimatedWordmark } from '@/components/final-logos';
+import { LogoEnhancedBadge, LemonAidTextLogo } from '@/components/final-logos';
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { MotionToggle } from "@/components/motion-toggle";
@@ -158,7 +158,7 @@ export default function Landing() {
           <div className="flex items-center justify-between gap-2">
             {/* Logo - Simplified on mobile */}
             <Link href="/" data-testid="link-home" className="flex items-center gap-2 flex-shrink-0">
-              <LogoAnimatedWordmark size={120} variant="compact" />
+              <LemonAidTextLogo size="sm" />
             </Link>
             
             {/* Right Side - Clean */}
@@ -171,7 +171,7 @@ export default function Landing() {
                   { href: "/builder", label: "Get Started" }
                 ]}
                 logo={
-                  <LogoAnimatedWordmark size={120} variant="compact" />
+                  <LemonAidTextLogo size="sm" />
                 }
               />
               <Button variant="outline" className="min-h-[44px] hidden md:inline-flex text-white border-slate-600 hover:bg-slate-800" data-testid="button-nav-login" asChild>
@@ -219,7 +219,7 @@ export default function Landing() {
           </motion.div>
           
           <motion.h1 
-            className="text-4xl sm:text-6xl lg:text-7xl font-bold mb-6 leading-tight"
+            className="text-4xl sm:text-6xl lg:text-7xl font-bold mb-6 leading-tight break-words"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
@@ -227,7 +227,7 @@ export default function Landing() {
             <RotatingText />
             <br />
             <motion.span 
-              className="text-white"
+              className="text-white break-words"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
@@ -237,7 +237,7 @@ export default function Landing() {
           </motion.h1>
           
           <motion.p 
-            className="text-xl text-slate-400 mb-10 max-w-3xl mx-auto"
+            className="text-xl text-slate-400 mb-10 max-w-3xl mx-auto break-words whitespace-normal"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
@@ -331,7 +331,7 @@ export default function Landing() {
           >
             <div className="max-w-2xl mx-auto text-center mb-6">
               <motion.h3 
-                className="text-2xl sm:text-3xl font-bold mb-3 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
+                className="text-2xl sm:text-3xl font-bold mb-3 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent break-words leading-snug"
                 animate={{ 
                   backgroundPosition: ["0%", "100%", "0%"],
                 }}
@@ -339,7 +339,7 @@ export default function Landing() {
               >
                 Start Building in 60 Seconds
               </motion.h3>
-              <p className="text-slate-400">Join thousands of developers squeezing fresh code with AI</p>
+              <p className="text-slate-400 break-words">Join thousands of developers squeezing fresh code with AI</p>
             </div>
             <LeadCaptureForm source="landing_page_hero" />
           </motion.div>
@@ -371,14 +371,14 @@ export default function Landing() {
               <span className="text-sm text-primary font-medium">100% Transparent Pricing</span>
             </motion.div>
 
-            <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-white">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-white break-words leading-snug">
               Know Exactly What You'll Pay{" "}
-              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent break-words">
                 Before Building
               </span>
             </h2>
 
-            <p className="text-xl text-slate-300 mb-10 max-w-3xl mx-auto">
+            <p className="text-xl text-slate-300 mb-10 max-w-3xl mx-auto break-words whitespace-normal">
               No hidden fees. No surprises. See your project's estimated tokens and cost in real-time before generating any code.
             </p>
 
@@ -394,8 +394,8 @@ export default function Landing() {
                   <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-primary mb-4 mx-auto">
                     <Gauge className="w-6 h-6" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2 text-white">Real-Time Cost Preview</h3>
-                  <p className="text-slate-400 text-sm">
+                  <h3 className="text-lg font-semibold mb-2 text-white break-words">Real-Time Cost Preview</h3>
+                  <p className="text-slate-400 text-sm break-words whitespace-normal">
                     AI analyzes your request and shows exact token estimate and cost before you confirm
                   </p>
                 </Card>
@@ -412,8 +412,8 @@ export default function Landing() {
                   <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-primary mb-4 mx-auto">
                     <Sparkles className="w-6 h-6" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2 text-white">Smart Complexity Detection</h3>
-                  <p className="text-slate-400 text-sm">
+                  <h3 className="text-lg font-semibold mb-2 text-white break-words">Smart Complexity Detection</h3>
+                  <p className="text-slate-400 text-sm break-words whitespace-normal">
                     Automatic analysis determines if your project is simple, medium, complex, or enterprise-scale
                   </p>
                 </Card>
@@ -430,8 +430,8 @@ export default function Landing() {
                   <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-primary mb-4 mx-auto">
                     <Shield className="w-6 h-6" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2 text-white">Usage Dashboard</h3>
-                  <p className="text-slate-400 text-sm">
+                  <h3 className="text-lg font-semibold mb-2 text-white break-words">Usage Dashboard</h3>
+                  <p className="text-slate-400 text-sm break-words whitespace-normal">
                     Track your token usage in real-time with detailed breakdowns and overage alerts
                   </p>
                 </Card>
@@ -445,7 +445,7 @@ export default function Landing() {
               transition={{ delay: 0.4 }}
               className="mt-8"
             >
-              <p className="text-sm text-slate-400 max-w-2xl mx-auto">
+              <p className="text-sm text-slate-400 max-w-2xl mx-auto break-words whitespace-normal">
                 <strong className="text-primary">Fair pricing model:</strong> $1.50 per 1,000 overage tokens ensures you only pay for what you use beyond your plan's included tokens.
               </p>
             </motion.div>
@@ -463,12 +463,12 @@ export default function Landing() {
             transition={{ duration: 0.8 }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl sm:text-5xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <h2 className="text-3xl sm:text-5xl font-bold mb-4 break-words leading-snug">
+              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent break-words">
                 See AI in Action
               </span>
             </h2>
-            <p className="text-xl text-slate-400">Watch LemonAid squeeze fresh, production-ready code</p>
+            <p className="text-xl text-slate-400 break-words">Watch LemonAid squeeze fresh, production-ready code</p>
           </motion.div>
 
           <motion.div
@@ -485,7 +485,7 @@ export default function Landing() {
                 >
                   <Terminal className="w-6 h-6 text-primary" />
                 </motion.div>
-                <h3 className="text-xl font-bold text-white">Command: "Build a landing page for a SaaS product"</h3>
+                <h3 className="text-xl font-bold text-white break-words">Command: "Build a landing page for a SaaS product"</h3>
               </div>
               <div className="bg-slate-950 rounded-lg p-6 border border-primary/20">
                 <motion.div
@@ -552,12 +552,12 @@ export default function Landing() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl sm:text-5xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <h2 className="text-3xl sm:text-5xl font-bold mb-4 break-words leading-snug">
+              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent break-words">
                 Enterprise-Grade AI Platform
               </span>
             </h2>
-            <p className="text-xl text-slate-400">Making life sweet for developers and enterprises alike</p>
+            <p className="text-xl text-slate-400 break-words">Making life sweet for developers and enterprises alike</p>
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -614,8 +614,8 @@ export default function Landing() {
                   >
                     {feature.icon}
                   </motion.div>
-                  <h3 className="text-xl font-semibold mb-2 text-white">{feature.title}</h3>
-                  <p className="text-slate-400">{feature.desc}</p>
+                  <h3 className="text-xl font-semibold mb-2 text-white break-words">{feature.title}</h3>
+                  <p className="text-slate-400 break-words whitespace-normal">{feature.desc}</p>
                 </Card>
               </motion.div>
             ))}
@@ -646,10 +646,10 @@ export default function Landing() {
               />
               
               <div className="relative z-10">
-                <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-white">
+                <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-white break-words leading-snug">
                   Ready to Squeeze Fresh Code?
                 </h2>
-                <p className="text-xl text-slate-300 mb-8">
+                <p className="text-xl text-slate-300 mb-8 break-words whitespace-normal">
                   When code throws you lemons, LemonAid makes it sweet
                 </p>
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -674,9 +674,9 @@ export default function Landing() {
               className="flex items-center justify-center gap-3 mb-4"
               whileHover={{ scale: 1.05 }}
             >
-              <LogoAnimatedWordmark size={140} variant="compact" />
+              <LemonAidTextLogo size="default" />
             </motion.div>
-            <p className="text-sm mb-4">© 2025 LemonAid. When code throws you lemons, you get LemonAid.</p>
+            <p className="text-sm mb-4 break-words">© 2025 LemonAid. When code throws you lemons, you get LemonAid.</p>
             <DeploymentStatus />
           </div>
         </div>

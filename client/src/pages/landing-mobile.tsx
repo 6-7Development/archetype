@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MotionToggle } from "@/components/motion-toggle";
 import { Sparkles, Zap, Shield, Code, Check, ArrowRight, Menu } from "lucide-react";
-import { LogoEnhancedBadge, LogoAnimatedWordmark } from '@/components/final-logos';
+import { LogoEnhancedBadge, LemonAidTextLogo } from '@/components/final-logos';
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { taglines } from '@/lib/taglines';
@@ -19,7 +19,7 @@ export default function LandingMobile() {
         <div className="px-3 sm:px-4 py-3">
           <div className="flex items-center justify-between gap-2 sm:gap-3">
             <Link href="/" className="flex items-center gap-2 min-h-[44px] py-1 flex-1 min-w-0 max-w-[60%]" data-testid="link-brand">
-              <LogoAnimatedWordmark size={120} variant="compact" />
+              <LemonAidTextLogo size="sm" />
             </Link>
             
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -90,19 +90,19 @@ export default function LandingMobile() {
             }}
             aria-hidden="true"
           >
-            <LogoAnimatedWordmark size={200} />
+            <LemonAidTextLogo size="default" />
           </motion.div>
 
           <div className="space-y-3">
-            <h1 className="text-4xl font-bold leading-tight">
-              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold leading-tight break-words">
+              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent break-words">
                 Squeeze Fresh Code
               </span>
               <br />
-              <span className="text-white">With LemonAid</span>
+              <span className="text-white break-words">With LemonAid</span>
             </h1>
             
-            <p className="text-slate-300 text-base max-w-sm mx-auto">
+            <p className="text-slate-300 text-base max-w-sm mx-auto break-words whitespace-normal">
               {taglines.hero[0]} Build complete websites and web apps instantly with AI.
             </p>
           </div>
@@ -124,8 +124,8 @@ export default function LandingMobile() {
       {/* Features - Mobile Stack */}
       <section className="py-12 px-4">
         <div className="max-w-md mx-auto space-y-4">
-          <h2 className="text-2xl font-bold text-center mb-6">
-            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          <h2 className="text-2xl font-bold text-center mb-6 break-words leading-snug">
+            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent break-words">
               Why Choose LemonAid
             </span>
           </h2>
@@ -134,8 +134,8 @@ export default function LandingMobile() {
             <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-white">AI-Powered</h3>
-            <p className="text-slate-300 text-sm">
+            <h3 className="text-lg font-semibold text-white break-words">AI-Powered</h3>
+            <p className="text-slate-300 text-sm break-words whitespace-normal">
               Claude Sonnet 4 generates production-ready code instantly
             </p>
           </Card>
@@ -144,8 +144,8 @@ export default function LandingMobile() {
             <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-secondary to-accent flex items-center justify-center">
               <Zap className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-white">Lightning Fast</h3>
-            <p className="text-slate-300 text-sm">
+            <h3 className="text-lg font-semibold text-white break-words">Lightning Fast</h3>
+            <p className="text-slate-300 text-sm break-words whitespace-normal">
               Build complete projects in minutes, not weeks
             </p>
           </Card>
@@ -154,8 +154,8 @@ export default function LandingMobile() {
             <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-secondary to-primary flex items-center justify-center">
               <Code className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-white">Full Stack</h3>
-            <p className="text-slate-300 text-sm">
+            <h3 className="text-lg font-semibold text-white break-words">Full Stack</h3>
+            <p className="text-slate-300 text-sm break-words whitespace-normal">
               Frontend, backend, database - everything generated for you
             </p>
           </Card>
@@ -164,8 +164,8 @@ export default function LandingMobile() {
             <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
               <Shield className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-white">Enterprise Ready</h3>
-            <p className="text-slate-300 text-sm">
+            <h3 className="text-lg font-semibold text-white break-words">Enterprise Ready</h3>
+            <p className="text-slate-300 text-sm break-words whitespace-normal">
               Production-grade security and scalability built-in
             </p>
           </Card>
@@ -181,23 +181,23 @@ export default function LandingMobile() {
               <span className="text-sm text-primary font-medium">Limited Time Offer</span>
             </div>
             
-            <h3 className="text-2xl font-bold text-white">Start Free</h3>
-            <p className="text-slate-300 text-sm">
+            <h3 className="text-2xl font-bold text-white break-words leading-snug">Start Free</h3>
+            <p className="text-slate-300 text-sm break-words whitespace-normal">
               3 AI projects included. No credit card required.
             </p>
 
             <ul className="text-left space-y-2 py-4">
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                <span className="text-sm text-slate-300">AI code generation</span>
+                <span className="text-sm text-slate-300 break-words">AI code generation</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                <span className="text-sm text-slate-300">Live preview & editing</span>
+                <span className="text-sm text-slate-300 break-words">Live preview & editing</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                <span className="text-sm text-slate-300">Download projects</span>
+                <span className="text-sm text-slate-300 break-words">Download projects</span>
               </li>
             </ul>
 
@@ -212,9 +212,9 @@ export default function LandingMobile() {
       <footer className="border-t border-white/10 py-8 px-4">
         <div className="max-w-md mx-auto text-center space-y-4">
           <div className="flex items-center justify-center gap-2">
-            <LogoAnimatedWordmark size={100} variant="compact" />
+            <LemonAidTextLogo size="sm" />
           </div>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-slate-400 break-words whitespace-normal">
             {taglines.footer[0]}
           </p>
           <div className="flex justify-center gap-4">

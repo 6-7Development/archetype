@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { MobileNav } from "@/components/mobile-nav";
 import { MotionToggle } from "@/components/motion-toggle";
 import { Check, Sparkles, Zap, Shield, TrendingUp, DollarSign } from "lucide-react";
-import { LogoEnhancedBadge, LogoAnimatedWordmark } from '@/components/final-logos';
+import { LogoEnhancedBadge, LemonAidTextLogo } from '@/components/final-logos';
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -205,12 +205,12 @@ export default function Pricing() {
                   { href: "/builder", label: "Get Started" }
                 ]}
                 logo={
-                  <LogoAnimatedWordmark size={120} variant="compact" />
+                  <LemonAidTextLogo size="sm" />
                 }
               />
               <Link href="/" data-testid="link-home" className="hidden lg:flex">
                 <div className="hover-elevate active-elevate-2 transition-all cursor-pointer">
-                  <LogoAnimatedWordmark size={160} variant="compact" />
+                  <LemonAidTextLogo size="default" />
                 </div>
               </Link>
             </div>
@@ -530,7 +530,7 @@ export default function Pricing() {
       <footer className="py-12 px-6 border-t border-white/10">
         <div className="container mx-auto max-w-6xl text-center text-slate-500">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <LogoAnimatedWordmark size={140} variant="compact" />
+            <LemonAidTextLogo size="sm" />
           </div>
           <p className="text-sm">© 2025 LemonAid. Transparent AI-Powered Development.</p>
           <p className="text-xs mt-2">No hidden fees. No surprise bills. Pay for what you use.</p>

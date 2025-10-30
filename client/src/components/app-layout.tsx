@@ -29,7 +29,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { queryClient } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 import type { User } from "@shared/schema";
-import { LogoEnhancedBadge, LogoAnimatedWordmark } from '@/components/final-logos';
+import { LogoEnhancedBadge, LemonAidTextLogo } from '@/components/final-logos';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -159,7 +159,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       )}>
         {/* Logo - PROUD & PROMINENT! */}
         <div className="h-20 border-b flex items-center px-4 gap-4">
-          <LogoAnimatedWordmark size={140} variant="compact" />
+          <LemonAidTextLogo size="sm" />
         </div>
 
         {/* Navigation - Scrollable */}

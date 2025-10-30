@@ -1,5 +1,64 @@
 import { useEffect, useState } from 'react';
 
+// Simple Lemonade-Inspired Text Logo with Integrated Lemon
+export function LemonAidTextLogo({ className = "", size = "default" }: { className?: string; size?: "sm" | "default" | "lg" }) {
+  const sizeClasses = {
+    sm: "text-xl",
+    default: "text-2xl", 
+    lg: "text-4xl"
+  };
+  
+  const lemonSize = {
+    sm: 24,
+    default: 32,
+    lg: 48
+  };
+
+  const leafSize = {
+    sm: 12,
+    default: 16,
+    lg: 24
+  };
+
+  const s = lemonSize[size];
+  const l = leafSize[size];
+
+  return (
+    <div className={`flex items-center gap-0.5 ${className}`}>
+      <span className={`font-bold ${sizeClasses[size]}`} style={{ color: 'hsl(50, 98%, 58%)' }}>
+        Lem
+      </span>
+      {/* Lemon replacing the "o" */}
+      <div className="relative inline-flex items-center justify-center" style={{ width: s, height: s, marginTop: -2 }}>
+        <svg width={s} height={s} viewBox="0 0 32 32" className="shrink-0">
+          <defs>
+            <radialGradient id="simple-lemon">
+              <stop offset="0%" stopColor="hsl(50, 98%, 72%)" />
+              <stop offset="100%" stopColor="hsl(50, 98%, 58%)" />
+            </radialGradient>
+            <linearGradient id="simple-leaf" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="hsl(145, 70%, 55%)" />
+              <stop offset="100%" stopColor="hsl(145, 60%, 45%)" />
+            </linearGradient>
+          </defs>
+          {/* Lemon body */}
+          <circle cx="16" cy="16" r="14" fill="url(#simple-lemon)" />
+          {/* Simple shine */}
+          <ellipse cx="12" cy="11" rx="5" ry="7" fill="white" opacity="0.4" />
+          {/* Leaf on top */}
+          <path 
+            d="M 14 4 Q 12 1 14.5 0.5 Q 17 1 16 4 Z" 
+            fill="url(#simple-leaf)" 
+          />
+        </svg>
+      </div>
+      <span className={`font-bold ${sizeClasses[size]}`} style={{ color: 'hsl(50, 98%, 58%)' }}>
+        nAid
+      </span>
+    </div>
+  );
+}
+
 // Enhanced Gradient Badge with Better Color Scheme
 export function LogoEnhancedBadge({ size = 40 }: { size?: number }) {
   const [glow, setGlow] = useState(0);
