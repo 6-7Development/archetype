@@ -806,7 +806,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
               <div className="text-center py-8 animate-in fade-in-up duration-700">
                 <div className="flex justify-center mb-6">
                   <LumoAvatar 
-                    emotion="happy" 
+                    emotion={progressStatus === 'idle' ? 'happy' : progressStatus as any} 
                     size="large" 
                     showBackground={true}
                   />
@@ -835,7 +835,11 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                 {message.role === "assistant" && (
                   <div className="flex-shrink-0">
                     <LumoAvatar 
-                      emotion={progressStatus === 'working' ? 'worried' : 'happy'} 
+                      emotion={
+                        progressStatus === 'thinking' ? 'thinking' : 
+                        progressStatus === 'working' ? 'working' : 
+                        'happy'
+                      } 
                       size="small" 
                       showBackground={false}
                       className="scale-75"

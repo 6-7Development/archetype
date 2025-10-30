@@ -1,20 +1,41 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import lumoImage from "@assets/image_1761785678184.png";
+import { backgroundThemes, getAutoTheme, type BackgroundTheme } from "./lumo-background-themes";
 
-type EmotionState = "happy" | "sad" | "worried" | "excited" | "idle";
+type EmotionState = "happy" | "sad" | "worried" | "excited" | "thinking" | "working" | "success" | "error" | "idle";
 
 interface LumoAvatarProps {
   emotion?: EmotionState;
   size?: "small" | "medium" | "large";
   showBackground?: boolean;
+  backgroundTheme?: BackgroundTheme | "auto"; // "auto" = detect based on date
   className?: string;
 }
+
+// Map activity states to emotions and visual effects
+const emotionConfig: Record<EmotionState, { 
+  displayEmotion: "happy" | "sad" | "worried" | "excited";
+  glowColor: string;
+  pulseSpeed: number;
+  showSparkles: boolean;
+}> = {
+  happy: { displayEmotion: "happy", glowColor: "rgba(6, 182, 212, 0.3)", pulseSpeed: 2.5, showSparkles: false },
+  sad: { displayEmotion: "sad", glowColor: "rgba(59, 130, 246, 0.3)", pulseSpeed: 3, showSparkles: false },
+  worried: { displayEmotion: "worried", glowColor: "rgba(251, 191, 36, 0.4)", pulseSpeed: 1.8, showSparkles: false },
+  excited: { displayEmotion: "excited", glowColor: "rgba(168, 85, 247, 0.4)", pulseSpeed: 1.5, showSparkles: true },
+  thinking: { displayEmotion: "worried", glowColor: "rgba(251, 191, 36, 0.4)", pulseSpeed: 2, showSparkles: false },
+  working: { displayEmotion: "worried", glowColor: "rgba(6, 182, 212, 0.5)", pulseSpeed: 1.5, showSparkles: false },
+  success: { displayEmotion: "excited", glowColor: "rgba(34, 197, 94, 0.5)", pulseSpeed: 1, showSparkles: true },
+  error: { displayEmotion: "sad", glowColor: "rgba(239, 68, 68, 0.4)", pulseSpeed: 2.5, showSparkles: false },
+  idle: { displayEmotion: "happy", glowColor: "rgba(6, 182, 212, 0.3)", pulseSpeed: 2.5, showSparkles: false },
+};
 
 export function LumoAvatar({
   emotion = "happy",
   size = "medium",
   showBackground = true,
+  backgroundTheme = "auto",
   className = "",
 }: LumoAvatarProps) {
   const [isBlinking, setIsBlinking] = useState(false);
@@ -28,6 +49,11 @@ export function LumoAvatar({
   };
 
   const config = sizeConfig[size];
+  const currentConfig = emotionConfig[emotion];
+  
+  // Get theme config (auto-detect if "auto")
+  const themeKey = backgroundTheme === "auto" ? getAutoTheme() : backgroundTheme;
+  const theme = backgroundThemes[themeKey];
 
   // Random blink effect (every 4-7 seconds)
   useEffect(() => {
@@ -46,14 +72,14 @@ export function LumoAvatar({
   useEffect(() => {
     if (!showBackground) return;
     
-    const newParticles = Array.from({ length: 20 }, (_, i) => ({
+    const newParticles = Array.from({ length: theme.particleCount }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
       delay: Math.random() * 5,
     }));
     setParticles(newParticles);
-  }, [showBackground]);
+  }, [showBackground, theme.particleCount]);
 
   return (
     <div 
@@ -68,31 +94,29 @@ export function LumoAvatar({
           animate={{ opacity: 1 }}
           transition={{ duration: 1 }}
         >
-          {/* Gradient background */}
+          {/* Gradient background - themed */}
           <motion.div
-            className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 via-blue-500/20 to-purple-500/20"
+            className="absolute inset-0"
             animate={{
-              background: [
-                "linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(59, 130, 246, 0.2) 50%, rgba(168, 85, 247, 0.2) 100%)",
-                "linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(6, 182, 212, 0.2) 50%, rgba(59, 130, 246, 0.2) 100%)",
-                "linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(168, 85, 247, 0.2) 50%, rgba(6, 182, 212, 0.2) 100%)",
-              ],
+              background: theme.gradients,
             }}
             transition={{
-              duration: 10,
+              duration: theme.animationSpeed,
               repeat: Infinity,
               ease: "linear",
             }}
           />
 
-          {/* Floating particles */}
+          {/* Floating particles - themed color */}
           {particles.map((particle) => (
             <motion.div
               key={particle.id}
-              className="absolute w-1 h-1 bg-cyan-400/60 rounded-full"
+              className="absolute w-1 h-1 rounded-full"
               style={{
                 left: `${particle.x}%`,
                 top: `${particle.y}%`,
+                backgroundColor: theme.particleColor,
+                opacity: 0.6,
               }}
               animate={{
                 y: [0, -30, 0],
@@ -110,11 +134,11 @@ export function LumoAvatar({
         </motion.div>
       )}
 
-      {/* Animated border ring */}
+      {/* Animated border ring - themed */}
       <motion.div
         className="absolute inset-0 rounded-full"
         style={{
-          background: "linear-gradient(135deg, #06b6d4, #3b82f6, #a855f7, #06b6d4)",
+          background: theme.borderGlow,
           backgroundSize: "300% 300%",
           padding: "3px",
         }}
@@ -175,18 +199,18 @@ export function LumoAvatar({
             },
           }}
         >
-          {/* Circuit glow pulse overlay */}
+          {/* Circuit glow pulse overlay - color changes with emotion */}
           <motion.div
             className="absolute inset-0 rounded-full"
             style={{
-              background: "radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, transparent 70%)",
+              background: `radial-gradient(circle, ${currentConfig.glowColor} 0%, transparent 70%)`,
             }}
             animate={{
               opacity: [0.3, 0.7, 0.3],
               scale: [0.95, 1.05, 0.95],
             }}
             transition={{
-              duration: 2.5,
+              duration: currentConfig.pulseSpeed,
               repeat: Infinity,
               ease: "easeInOut",
             }}
@@ -203,8 +227,8 @@ export function LumoAvatar({
             transition={{ duration: 0.1 }}
           />
 
-          {/* Sparkle effects for excited state */}
-          {emotion === "excited" && (
+          {/* Sparkle effects for excited/success states */}
+          {currentConfig.showSparkles && (
             <>
               {[0, 1, 2, 3].map((i) => (
                 <motion.div
@@ -228,6 +252,32 @@ export function LumoAvatar({
                 />
               ))}
             </>
+          )}
+
+          {/* Working indicator - animated dots for "working" state */}
+          {emotion === "working" && (
+            <motion.div
+              className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex gap-1"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              {[0, 1, 2].map((i) => (
+                <motion.div
+                  key={`dot-${i}`}
+                  className="w-1.5 h-1.5 bg-cyan-400 rounded-full"
+                  animate={{
+                    y: [0, -8, 0],
+                    opacity: [0.5, 1, 0.5],
+                  }}
+                  transition={{
+                    duration: 0.8,
+                    repeat: Infinity,
+                    delay: i * 0.15,
+                    ease: "easeInOut",
+                  }}
+                />
+              ))}
+            </motion.div>
           )}
         </motion.div>
       </motion.div>
