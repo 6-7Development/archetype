@@ -287,6 +287,17 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
     return () => document.removeEventListener('paste', handlePaste);
   }, [toast]);
 
+  // ESC key handler to dismiss drag overlay
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isDragging) {
+        setIsDragging(false);
+      }
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [isDragging]);
+
   // Drag and drop handlers
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -297,8 +308,13 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Only set to false if we're leaving the main container
-    if (e.currentTarget === e.target) {
+    // Check if we're actually leaving the container (not just entering a child)
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX;
+    const y = e.clientY;
+    
+    // If the mouse is outside the container bounds, hide the overlay
+    if (x < rect.left || x >= rect.right || y < rect.top || y >= rect.bottom) {
       setIsDragging(false);
     }
   };
@@ -726,11 +742,11 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
     >
       {/* Drag overlay */}
       {isDragging && (
-        <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center">
-          <div className="p-8 bg-card border-2 border-dashed border-primary rounded-lg">
-            <Upload className="h-12 w-12 mx-auto mb-4 text-primary" />
-            <p className="text-lg font-medium text-center">Drop files here</p>
-            <p className="text-sm text-muted-foreground text-center mt-2">Images, code files, logs, or text files</p>
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-background/80 backdrop-blur-sm border-2 border-dashed border-primary rounded-lg">
+          <div className="text-center">
+            <Upload className="w-12 h-12 mx-auto mb-2 text-primary" />
+            <p className="text-lg font-medium">Drop files here</p>
+            <p className="text-sm text-muted-foreground">Images, code files, logs, or text files</p>
           </div>
         </div>
       )}

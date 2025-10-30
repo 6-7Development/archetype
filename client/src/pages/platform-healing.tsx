@@ -13,7 +13,7 @@ import { MetaSySopChat } from '@/components/meta-sysop-chat';
 import { AdminGuard } from '@/components/admin-guard';
 import { DeploymentStatusWidget } from '@/components/deployment-status-widget';
 import { TaskProgressWidget } from '@/components/task-progress-widget';
-import type { AgentTask } from '@/components/agent-task-list';
+import { AgentTaskList, type AgentTask } from '@/components/agent-task-list';
 import { Rocket } from 'lucide-react';
 
 type StepState = 'pending' | 'running' | 'ok' | 'fail';
@@ -538,10 +538,10 @@ function PlatformHealingContent() {
           </Button>
         </div>
 
-        {/* Main Content Area - Chat + Sidebar */}
-        <div className="flex-1 flex gap-3 sm:gap-4 min-h-0">
-          {/* Meta-SySop Chat - Main Panel */}
-          <div className="flex-1 bg-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col min-h-0">
+        {/* Main Content Area - Chat + Task Manager */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6 flex-1 min-h-0">
+          {/* Left: Chat - 2 columns on desktop */}
+          <div className="lg:col-span-2 bg-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col min-h-0" data-testid="panel-meta-sysop-chat">
             <MetaSySopChat 
               autoCommit={true}
               autoPush={true}
@@ -552,14 +552,22 @@ function PlatformHealingContent() {
             />
           </div>
 
-          {/* Sidebar - Task Progress + Deployment Status */}
-          <div className="hidden lg:flex flex-col gap-3 w-80 shrink-0">
-            {metaTasks.length > 0 && (
-              <TaskProgressWidget 
-                tasks={metaTasks} 
-                activeTaskId={metaActiveTaskId} 
-              />
-            )}
+          {/* Right: Task Manager - 1 column on desktop */}
+          <div className="lg:col-span-1 flex flex-col gap-3 min-h-0" data-testid="panel-task-manager">
+            {/* Task Manager Panel */}
+            <div className="bg-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col min-h-0">
+              <div className="px-4 py-3 border-b border-border">
+                <h3 className="text-sm font-semibold" data-testid="heading-task-manager">Task Manager</h3>
+              </div>
+              <div className="flex-1 overflow-y-auto" data-testid="container-task-list">
+                <AgentTaskList 
+                  tasks={metaTasks} 
+                  activeTaskId={metaActiveTaskId}
+                />
+              </div>
+            </div>
+
+            {/* Deployment Status Widget */}
             <DeploymentStatusWidget />
           </div>
         </div>

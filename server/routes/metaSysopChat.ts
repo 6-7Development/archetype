@@ -1126,7 +1126,7 @@ Answer naturally. If it's work, do it and report when done. If it's a question, 
     const fileChanges: Array<{ path: string; operation: string; contentAfter?: string }> = [];
     let continueLoop = true;
     let iterationCount = 0;
-    const MAX_ITERATIONS = 10; // 🎯 Reduced from 25 - most tasks should complete in 5-10 iterations
+    const MAX_ITERATIONS = 16; // 🎯 Increased from 10 to handle subagent calls and prevent getting stuck
     let commitSuccessful = false; // Track if commit_to_github succeeded
     let usedGitHubAPI = false; // Track if commit_to_github tool was used (already pushes via API)
     let consecutiveEmptyIterations = 0; // Track iterations with no tool calls
@@ -1173,11 +1173,13 @@ Answer naturally. If it's work, do it and report when done. If it's a question, 
         messages: safeMessages, // ✅ Use truncated messages
         tools: availableTools,
         stream: true,
+        stop_sequences: ['\n\nHuman:', '\n\nAssistant:', 'END_OF_RESPONSE'], // 🎯 Prevent rambling and verbose responses
       });
 
       // ✅ REAL-TIME STREAMING: Stream text to user AS IT ARRIVES while building content blocks
       const contentBlocks: any[] = [];
       let currentTextBlock = '';
+      let lastChunkHash = ''; // 🔥 Track last chunk to prevent duplicate streaming
       
       for await (const event of stream) {
         if (event.type === 'content_block_start') {
@@ -1198,10 +1200,21 @@ Answer naturally. If it's work, do it and report when done. If it's a question, 
           }
         } else if (event.type === 'content_block_delta') {
           if (event.delta.type === 'text_delta') {
+            // 🔥 DUPLICATE CHUNK SUPPRESSION: Prevent duplicate text from SSE retries
+            const chunkText = event.delta.text;
+            const chunkHash = chunkText.slice(-Math.min(50, chunkText.length)); // Last 50 chars as fingerprint
+            
+            if (chunkHash === lastChunkHash && chunkText.length > 10) {
+              // Skip duplicate chunk (likely from SSE retry)
+              console.log('[META-SYSOP-STREAM] Skipped duplicate chunk:', chunkHash.substring(0, 20));
+              continue;
+            }
+            lastChunkHash = chunkHash;
+            
             // 🔥 STREAM TEXT IMMEDIATELY - Don't wait!
-            currentTextBlock += event.delta.text;
-            fullContent += event.delta.text;
-            sendEvent('content', { content: event.delta.text });
+            currentTextBlock += chunkText;
+            fullContent += chunkText;
+            sendEvent('content', { content: chunkText });
           } else if (event.delta.type === 'input_json_delta') {
             // Accumulate tool input JSON
             const lastBlock = contentBlocks[contentBlocks.length - 1];
