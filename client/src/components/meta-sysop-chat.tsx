@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { AgentTaskList, type AgentTask } from "./agent-task-list";
 import { AgentProgressDisplay } from "./agent-progress-display";
 import { MarkdownRenderer } from "./markdown-renderer";
+import { LumoAvatar } from "./lumo-avatar";
 
 interface Attachment {
   fileName: string;
@@ -800,15 +801,20 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
           className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth"
         >
           <div className="max-w-4xl mx-auto space-y-4">
-            {/* Welcome screen */}
+            {/* Welcome screen with Lumo */}
             {messages.length === 0 && !isStreaming && (
-              <div className="text-center py-12 animate-in fade-in-up duration-700">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-muted flex items-center justify-center">
-                  <Wrench className="h-8 w-8 text-muted-foreground" />
+              <div className="text-center py-8 animate-in fade-in-up duration-700">
+                <div className="flex justify-center mb-6">
+                  <LumoAvatar 
+                    emotion="happy" 
+                    size="large" 
+                    showBackground={true}
+                  />
                 </div>
-                <h3 className="text-xl font-bold mb-2">Meta-SySop Ready</h3>
+                <h3 className="text-2xl font-bold mb-2">Meet Lumo!</h3>
+                <h4 className="text-lg text-muted-foreground mb-3">Your Meta-SySop AI Assistant</h4>
                 <p className="text-muted-foreground max-w-md mx-auto leading-relaxed">
-                  I'm Meta-SySop, your autonomous platform healing agent. I can diagnose and fix issues 
+                  I'm an autonomous platform healing agent. I can diagnose and fix issues 
                   with the Archetype platform itself. Tell me what needs to be fixed.
                 </p>
                 <div className="mt-4 text-sm text-muted-foreground">
@@ -827,8 +833,13 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                 )}
               >
                 {message.role === "assistant" && (
-                  <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-muted flex items-center justify-center">
-                    <Wrench className="h-5 w-5 text-muted-foreground" />
+                  <div className="flex-shrink-0">
+                    <LumoAvatar 
+                      emotion={progressStatus === 'working' ? 'worried' : 'happy'} 
+                      size="small" 
+                      showBackground={false}
+                      className="scale-75"
+                    />
                   </div>
                 )}
                 
