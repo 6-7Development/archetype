@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
-interface AppleMascotProps {
+interface LemonMascotProps {
   emotion?: 'happy' | 'thinking' | 'working' | 'confused' | 'error' | 'idle';
   size?: 'small' | 'medium' | 'large';
   className?: string;
@@ -20,35 +20,47 @@ interface Particle {
 
 const COLOR_PALETTES = {
   happy: {
-    apple1: '#E74C3C',      // Bright red
-    apple2: '#C0392B',      // Darker red
-    stem: '#8B4513',        // Brown stem
-    leaf: '#27AE60',        // Green leaf
-    eye: '#2C3E50',         // Dark eyes
-    pupil: '#FFFFFF',       // White shine
-    mouth: '#34495E',       // Dark mouth
+    lemon1: '#FFE46B',
+    lemon2: '#F2BF2A',
+    rim: '#A06516',
+    blush: '#ff9aa6',
+    stem: '#26563a',
+    leaf1: '#2bb24f',
+    leaf2: '#11883a',
+    eye: '#101423',
+    shine: '#ffffff',
+    mouth: '#6f200f',
+    mouthInner: '#f06a35'
   },
   excited: {
-    apple1: '#FF6B6B',      // Vibrant red
-    apple2: '#E84A3F',      // Bright darker red
-    stem: '#A0522D',        // Lighter brown
-    leaf: '#2ECC71',        // Brighter green
-    eye: '#2C3E50',
-    pupil: '#FFFFFF',
-    mouth: '#34495E',
+    lemon1: '#FFF27A',
+    lemon2: '#F5C63D',
+    rim: '#9b6215',
+    blush: '#ffadb8',
+    stem: '#2a5c3f',
+    leaf1: '#33bf60',
+    leaf2: '#149446',
+    eye: '#101423',
+    shine: '#ffffff',
+    mouth: '#6f200f',
+    mouthInner: '#f06a35'
   },
   annoyed: {
-    apple1: '#C23E34',      // Dull red
-    apple2: '#A03228',      // Darker dull red
-    stem: '#6B3410',        // Dark brown
-    leaf: '#1E8449',        // Darker green
-    eye: '#1C2833',
-    pupil: '#ECF0F1',
-    mouth: '#2C3E50',
+    lemon1: '#EAD06A',
+    lemon2: '#D7A82C',
+    rim: '#875512',
+    blush: '#e68f99',
+    stem: '#244c36',
+    leaf1: '#1fa353',
+    leaf2: '#0e7a39',
+    eye: '#0c101d',
+    shine: '#f6f6f6',
+    mouth: '#6f200f',
+    mouthInner: '#f06a35'
   },
 };
 
-export function AppleMascot({ emotion = 'idle', size = 'medium', className }: AppleMascotProps) {
+export function LemonMascot({ emotion = 'idle', size = 'medium', className }: LemonMascotProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
   const particlesRef = useRef<Particle[]>([]);
@@ -129,150 +141,201 @@ export function AppleMascot({ emotion = 'idle', size = 'medium', className }: Ap
       ctx.restore();
     };
 
-    const drawAppleBody = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, palette: typeof COLOR_PALETTES.happy) => {
-      // Simple round apple body
-      const bodyGradient = ctx.createRadialGradient(x - r * 0.5, y - r * 0.5, r * 0.3, x, y, r * 3.5);
-      bodyGradient.addColorStop(0, palette.apple1);
-      bodyGradient.addColorStop(1, palette.apple2);
-      ctx.fillStyle = bodyGradient;
-
+    const drawLemonBody = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, palette: typeof COLOR_PALETTES.happy) => {
+      const rX = r * 3.5, rY = r * 3;  // lemon ellipse proportions
+      
+      // Radial gradient for subsurface scattering feel
+      const rg = ctx.createRadialGradient(x - r * 0.6, y - r * 0.8, r * 0.8, x, y + r * 0.2, rX + r * 0.8);
+      rg.addColorStop(0, palette.lemon1);
+      rg.addColorStop(1, palette.lemon2);
+      ctx.fillStyle = rg;
+      
       ctx.beginPath();
-      // Round apple shape
-      ctx.arc(x, y, r * 3, 0, Math.PI * 2);
+      // Main lemon oval
+      ctx.ellipse(x, y - r * 0.2, rX, rY, 0, 0, Math.PI * 2);
+      // Chin point at bottom
+      ctx.moveTo(x, y + rY * 0.75);
+      ctx.quadraticCurveTo(x + r * 0.25, y + rY * 0.88, x, y + rY * 0.98);
+      ctx.quadraticCurveTo(x - r * 0.25, y + rY * 0.88, x, y + rY * 0.75);
+      ctx.closePath();
       ctx.fill();
 
-      // Apple shine/highlight
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+      // Rim shadow for depth
+      ctx.strokeStyle = palette.rim;
+      ctx.globalAlpha = 0.22;
+      ctx.lineWidth = r * 0.16;
       ctx.beginPath();
-      ctx.arc(x - r * 1.2, y - r * 1.2, r * 0.8, 0, Math.PI * 2);
+      ctx.ellipse(x, y - r * 0.2, rX - r * 0.12, rY - r * 0.12, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Rind texture (subtle pores)
+      ctx.globalAlpha = 0.22;
+      for (let i = 0; i < 45; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.sqrt(Math.random()) * (rX * 0.95);
+        const px = x + Math.cos(angle) * dist;
+        const py = y - r * 0.2 + Math.sin(angle) * (rY * 0.9);
+        
+        // Check if inside ellipse
+        const dx = (px - x) / rX;
+        const dy = (py - (y - r * 0.2)) / rY;
+        if (dx * dx + dy * dy <= 1) {
+          ctx.fillStyle = (py < y - r * 0.5) ? 'rgba(255,255,255,0.45)' : 'rgba(120,80,10,0.5)';
+          ctx.fillRect(px - r * 0.04, py, r * 0.08, r * 0.08);
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      // Cheek blush
+      ctx.globalAlpha = 0.22;
+      ctx.fillStyle = palette.blush;
+      ctx.beginPath();
+      ctx.ellipse(x - r * 1.85, y + r * 0.8, r * 0.7, r * 0.45, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(x + r * 1.85, y + r * 0.8, r * 0.7, r * 0.45, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Highlights
+      ctx.fillStyle = 'rgba(255,255,255,0.20)';
+      ctx.beginPath();
+      ctx.ellipse(x - r * 1.45, y - r, r * 1.14, r * 0.52, -0.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(x + r * 0.62, y - r * 1.76, r * 0.45, r * 0.25, -0.1, 0, Math.PI * 2);
       ctx.fill();
     };
 
     const drawStemAndLeaf = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, palette: typeof COLOR_PALETTES.happy, swayAngle: number) => {
-      // Small brown stem on top
-      const stemY = y - r * 3.2;
+      // Stem
       ctx.fillStyle = palette.stem;
-      ctx.fillRect(x - r * 0.2, stemY, r * 0.4, r * 1.2);
-
-      // Green leaf with sway animation
       ctx.save();
-      ctx.translate(x + r * 0.3, stemY);
-      ctx.rotate(swayAngle);
-      
-      ctx.fillStyle = palette.leaf;
+      ctx.translate(x + r * 0.45, y - r * 3.2);
+      ctx.rotate(-0.18);
+      ctx.fillRect(-r * 0.2, -r * 1.45, r * 0.45, r * 1.45);
+      ctx.restore();
+
+      // Leaf cap (half ellipse)
+      const lg = ctx.createLinearGradient(x, y - r * 3.1, x, y - r * 0.8);
+      lg.addColorStop(0, palette.leaf1);
+      lg.addColorStop(1, palette.leaf2);
+      ctx.fillStyle = lg;
       ctx.beginPath();
-      ctx.ellipse(0, 0, r * 1.2, r * 0.7, -Math.PI / 6, 0, Math.PI * 2);
+      ctx.ellipse(x, y - r * 2.38, r * 2.9, r * 1.45, 0, Math.PI, 0, true);
       ctx.fill();
-      
-      // Leaf vein
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
-      ctx.lineWidth = r * 0.08;
+
+      // Single leaf with sway
+      ctx.save();
+      ctx.translate(x + r * 1.45, y - r * 3.62);
+      ctx.rotate(0.7 + swayAngle);
+      ctx.fillStyle = palette.leaf1;
       ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(r * 0.6, -r * 0.2);
-      ctx.stroke();
-      
+      ctx.ellipse(0, 0, r * 0.93, r * 1.76, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Leaf vein
+      ctx.fillStyle = palette.leaf2;
+      ctx.fillRect(-r * 0.06, -r * 1.45, r * 0.12, r * 1.45);
       ctx.restore();
     };
 
     const drawEye = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, palette: typeof COLOR_PALETTES.happy, eyelidOpen: number) => {
-      // Simple round eyes
-      const eyeSize = r * 0.6;
+      const eyeSize = r * 0.58;
       
-      // White of eye
-      ctx.fillStyle = '#FFFFFF';
+      ctx.save();
+      ctx.translate(x, y);
+
+      // Dark eye base
+      ctx.fillStyle = palette.eye;
       ctx.beginPath();
-      ctx.arc(x, y, eyeSize, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, eyeSize, eyeSize * 1.18, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      if (eyelidOpen > 0.1) {
-        // Eye color (dark)
-        const pupilSize = (emotion === 'error' || emotion === 'confused') ? eyeSize * 0.5 : eyeSize * 0.7;
-        ctx.fillStyle = palette.eye;
+      // Iris glow + reflections while open
+      if (eyelidOpen > 0.12) {
+        // Soft inner glow
+        const g = ctx.createRadialGradient(-r * 0.12, -r * 0.08, r * 0.04, 0, 0, eyeSize * 1.1);
+        g.addColorStop(0, 'rgba(255,220,120,0.9)');
+        g.addColorStop(1, 'rgba(255,220,120,0.0)');
+        ctx.fillStyle = g;
         ctx.beginPath();
-        ctx.arc(x, y, pupilSize, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, eyeSize, eyeSize * 1.18, 0, 0, Math.PI * 2);
         ctx.fill();
-        
-        // Shine/highlight
-        ctx.fillStyle = palette.pupil;
+
+        // Bright specs
+        ctx.fillStyle = palette.shine;
         ctx.beginPath();
-        ctx.arc(x - pupilSize * 0.3, y - pupilSize * 0.3, pupilSize * 0.3, 0, Math.PI * 2);
+        ctx.arc(-r * 0.16, -r * 0.16, r * 0.12, 0, Math.PI * 2);
         ctx.fill();
+        ctx.globalAlpha = 0.75;
+        ctx.beginPath();
+        ctx.arc(r * 0.14, r * 0.04, r * 0.08, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
       }
 
-      // Blinking - eyelid overlay
+      // Eyelid (top mask)
       if (eyelidOpen < 1) {
         ctx.save();
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.fillStyle = palette.apple1;
-        const eyelidHeight = (1 - eyelidOpen) * (eyeSize * 2);
-        ctx.fillRect(x - eyeSize, y - eyeSize, eyeSize * 2, eyelidHeight);
+        ctx.globalCompositeOperation = 'destination-out';
+        const h = (1 - eyelidOpen) * eyeSize * 2.4;
+        ctx.fillRect(-eyeSize - r * 0.08, -eyeSize * 1.2, eyeSize * 2 + r * 0.16, h);
         ctx.restore();
       }
+
+      ctx.restore();
+    };
+
+    const roundRect = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, rad: number) => {
+      const rr = Math.min(rad, Math.abs(w) / 2, Math.abs(h) / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + rr, y);
+      ctx.arcTo(x + w, y, x + w, y + h, rr);
+      ctx.arcTo(x + w, y + h, x, y + h, rr);
+      ctx.arcTo(x, y + h, x, y, rr);
+      ctx.arcTo(x, y, x + w, y, rr);
+      ctx.closePath();
     };
 
     const drawMouth = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, time: number, palette: typeof COLOR_PALETTES.happy) => {
       ctx.save();
-      ctx.fillStyle = palette.mouth;
-      ctx.strokeStyle = palette.mouth;
-      ctx.lineWidth = r * 0.15;
-      ctx.lineCap = 'round';
+      ctx.translate(x, y);
 
       if (emotion === 'working' || emotion === 'thinking') {
-        // Talking mouth - opens/closes
-        const openness = (Math.sin(time * 0.02) + 1) / 2;
-        const mouthY = y + r * 0.8;
-        ctx.beginPath();
-        ctx.arc(x, mouthY, r * 0.8, 0.2 * Math.PI, 0.8 * Math.PI);
-        if (openness > 0.3) {
-          ctx.fill();
-        } else {
-          ctx.stroke();
-        }
+        // Talking mouth - animated open/close
+        const talkPhase = (Math.sin(time * 0.024) + 1) / 2;
+        const w = r * 0.58 + talkPhase * r * 0.66;
+        const h = r * 0.25 + talkPhase * r * 0.58;
+        ctx.fillStyle = palette.mouth;
+        roundRect(ctx, -w / 2, -h / 2, w, h, h * 0.45);
+        ctx.fill();
+        ctx.fillStyle = palette.mouthInner;
+        roundRect(ctx, -w / 2 + r * 0.2, -h / 2 + h * 0.38, w - r * 0.4, h * 0.55, h * 0.25);
+        ctx.fill();
       } else if (emotion === 'happy' || emotion === 'idle') {
-        // Big smile
+        // Smile arc
+        ctx.strokeStyle = palette.mouth;
+        ctx.lineWidth = r * 0.25;
+        ctx.lineCap = 'round';
         ctx.beginPath();
-        ctx.arc(x, y + r * 0.3, r * 1.2, 0.15 * Math.PI, 0.85 * Math.PI);
+        ctx.arc(0, r * 0.2, r * 0.83, Math.PI * 0.15, Math.PI - Math.PI * 0.15);
         ctx.stroke();
       } else if (emotion === 'error' || emotion === 'confused') {
-        // Frown
+        // Frown arc
+        ctx.strokeStyle = palette.mouth;
+        ctx.lineWidth = r * 0.25;
+        ctx.lineCap = 'round';
         ctx.beginPath();
-        ctx.arc(x, y + r * 1.8, r * 1.2, 1.15 * Math.PI, 1.85 * Math.PI);
+        ctx.arc(0, r * 0.7, r * 0.66, Math.PI + 0.2, -0.2, true);
         ctx.stroke();
       } else {
-        // Neutral line
-        ctx.beginPath();
-        ctx.moveTo(x - r * 0.8, y + r * 0.8);
-        ctx.lineTo(x + r * 0.8, y + r * 0.8);
-        ctx.stroke();
+        // Neutral
+        ctx.fillStyle = palette.mouth;
+        roundRect(ctx, -r * 0.54, -r * 0.1, r * 1.08, r * 0.25, r * 0.12);
+        ctx.fill();
       }
-      
-      ctx.restore();
-    };
 
-    const drawArm = (ctx: CanvasRenderingContext2D, x: number, y: number, angle: number, palette: typeof COLOR_PALETTES.happy) => {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(angle * Math.PI / 180);
-      
-      // Brown stick arms
-      ctx.strokeStyle = palette.stem;
-      ctx.lineWidth = r * 0.25;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.quadraticCurveTo(-r * 0.5, r * 0.8, -r * 0.8, r * 1.2);
-      ctx.stroke();
-      
-      // Hand (small circle at end)
-      ctx.fillStyle = '#D2691E';
-      ctx.strokeStyle = palette.stem;
-      ctx.lineWidth = r * 0.1;
-      ctx.beginPath();
-      ctx.arc(-r * 0.8, r * 1.2, r * 0.35, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      
       ctx.restore();
     };
 
@@ -305,9 +368,7 @@ export function AppleMascot({ emotion = 'idle', size = 'medium', className }: Ap
 
       const breathe = Math.sin(now * 0.0025) * 0.02;
       const bounce = emotion === 'working' ? Math.max(0, Math.sin(now * 0.009)) * 8 : 0;
-      const swayAngle = Math.sin(now * 0.004) * 0.15;
-      const leftArmAngle = -25 + Math.sin(now * 0.002) * 15;
-      const rightArmAngle = 25 + Math.sin(now * 0.002 + Math.PI) * 15;
+      const swayAngle = Math.sin(now * 0.004) * 0.22;
 
       ctx.clearRect(0, 0, canvasSize, canvasSize);
 
@@ -316,24 +377,20 @@ export function AppleMascot({ emotion = 'idle', size = 'medium', className }: Ap
       ctx.scale(1 + breathe, 1 - breathe);
       ctx.translate(-cx, -cy);
 
-      // Draw apple body
-      drawAppleBody(ctx, cx, cy, r, palette);
+      // Draw lemon body with texture
+      drawLemonBody(ctx, cx, cy, r, palette);
       
-      // Stem and leaf on top
+      // Stem and leaf cap on top
       drawStemAndLeaf(ctx, cx, cy, r, palette, swayAngle);
 
-      // Arms on sides (optional - apples with arms are cute!)
-      drawArm(ctx, cx - r * 3.2, cy + r * 0.5, leftArmAngle, palette);
-      drawArm(ctx, cx + r * 3.2, cy + r * 0.5, rightArmAngle, palette);
-
-      // Face in center of apple
-      const eyeY = cy - r * 0.3;
-      const eyeSpacing = r * 1.2;
+      // Face in upper part of lemon
+      const eyeY = cy - r * 0.1;
+      const eyeSpacing = r * 1.76;
       
-      drawEye(ctx, cx - eyeSpacing, eyeY, r, palette, eyelidRef.current);
-      drawEye(ctx, cx + eyeSpacing, eyeY, r, palette, eyelidRef.current);
+      drawEye(cx - eyeSpacing, eyeY, r, palette, eyelidRef.current);
+      drawEye(cx + eyeSpacing, eyeY, r, palette, eyelidRef.current);
 
-      drawMouth(ctx, cx, eyeY, r, now, palette);
+      drawMouth(cx, cy + r * 1.55, r, now, palette);
 
       ctx.restore();
 
@@ -357,11 +414,10 @@ export function AppleMascot({ emotion = 'idle', size = 'medium', className }: Ap
       ref={canvasRef}
       width={canvasSize}
       height={canvasSize}
-      className={cn("apple-mascot", className)}
+      className={cn("lemon-mascot", className)}
       style={{ display: 'block', imageRendering: 'auto' }}
     />
   );
 }
 
-// Export both AppleMascot and LemonMascot (for backwards compatibility)
-export { AppleMascot, AppleMascot as LemonMascot };
+// Export already done above with function declaration

@@ -20,7 +20,7 @@ interface Message {
   createdAt: string;
 }
 
-interface MetaSySopChatProps {
+interface LomuAIChatProps {
   autoCommit?: boolean;
   autoPush?: boolean;
 }
@@ -169,7 +169,7 @@ function MessageContent({ content }: { content: string }) {
   );
 }
 
-export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySopChatProps) {
+export function LomuAIChat({ autoCommit = false, autoPush = false }: LomuAIChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -177,7 +177,7 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Load Meta-SySop chat history
+  // Load LomuAI chat history
   const { data: chatHistory, isLoading } = useQuery<{ messages: Message[] }>({
     queryKey: ['/api/platform/chat/history'],
   });
@@ -277,7 +277,7 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
       }
     },
     onError: (error: any) => {
-      console.error('Meta-SySop error:', error);
+      console.error('LomuAI error:', error);
       setIsStreaming(false);
       setStreamingContent("");
       
@@ -336,9 +336,9 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-600 flex items-center justify-center shadow-lg shadow-slate-700/30">
               <Wrench className="h-8 w-8 text-white" />
             </div>
-            <h3 className="text-xl font-bold text-slate-100 mb-2">Meta-SySop Ready</h3>
+            <h3 className="text-xl font-bold text-slate-100 mb-2">LomuAI Ready</h3>
             <p className="text-slate-400 max-w-md mx-auto leading-relaxed">
-              I'm Meta-SySop, your autonomous platform healing agent. I can diagnose and fix issues 
+              I'm LomuAI, your autonomous platform healing agent. I can diagnose and fix issues 
               with the Archetype platform itself. Tell me what needs to be fixed, and I'll analyze 
               the code, make changes, and optionally commit and deploy them.
             </p>
@@ -413,7 +413,7 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
               )}
               <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-700/50 text-xs text-slate-400">
                 <Loader2 className="h-3 w-3 animate-spin" />
-                Meta-SySop is thinking...
+                LomuAI is thinking...
               </div>
             </div>
           </div>
@@ -431,7 +431,7 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
             placeholder="Describe the platform issue to fix..."
             className="min-h-[70px] max-h-[200px] resize-none bg-slate-800/50 border-slate-700/50 text-slate-100 placeholder:text-slate-500 rounded-xl focus:border-slate-500/50 focus:ring-2 focus:ring-slate-500/20"
             rows={3}
-            data-testid="input-meta-sysop-message"
+            data-testid="input-lomu-ai-message"
             disabled={isStreaming}
           />
           <Button
@@ -439,7 +439,7 @@ export function MetaSySopChat({ autoCommit = false, autoPush = false }: MetaSySo
             disabled={!input.trim() || isStreaming}
             size="icon"
             className="h-[70px] w-[70px] flex-shrink-0 rounded-xl bg-gradient-to-br from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 shadow-lg shadow-slate-700/30 transition-all hover:scale-105 active:scale-95"
-            data-testid="button-send-meta-sysop-message"
+            data-testid="button-send-lomu-ai-message"
           >
             {isStreaming ? (
               <Loader2 className="h-6 w-6 animate-spin" />

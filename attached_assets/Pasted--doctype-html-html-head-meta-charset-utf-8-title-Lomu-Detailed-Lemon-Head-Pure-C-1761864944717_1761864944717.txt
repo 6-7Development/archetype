@@ -1,0 +1,324 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Lomu — Detailed Lemon Head (Pure Canvas)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root { color-scheme: dark; }
+  html,body{height:100%;margin:0;background:#0c1017;display:grid;place-items:center}
+  canvas{width:min(92vmin,760px);height:min(92vmin,760px);background:#0c1017;display:block}
+  .hud{position:fixed;left:12px;bottom:12px;color:#cfe3ff;font:13px/1.3 system-ui}
+  .hud code{background:#0c0f14;padding:2px 6px;border-radius:6px}
+</style>
+</head>
+<body>
+<canvas id="c" width="760" height="760"></canvas>
+<div class="hud">
+  Keys: <code>1</code>=happy <code>2</code>=excited <code>3</code>=annoyed
+  <code>S</code>=smile <code>T</code>=talk <code>B</code>=blink <code>F</code>=frown
+</div>
+
+<script>
+/* ========= CONFIG ========= */
+const PALETTES = {
+  happy: {
+    bgA:'#182233', bgB:'#111824',
+    lemonA:'#FFE46B', lemonB:'#F2BF2A', rim:'#A06516',
+    blush:'#ff9aa6',
+    stem:'#26563a', leafA:'#2bb24f', leafB:'#11883a',
+    eye:'#101423', shine:'#ffffff'
+  },
+  excited: {
+    bgA:'#203448', bgB:'#172427',
+    lemonA:'#FFF27A', lemonB:'#F5C63D', rim:'#9b6215',
+    blush:'#ffadb8',
+    stem:'#2a5c3f', leafA:'#33bf60', leafB:'#149446',
+    eye:'#101423', shine:'#ffffff'
+  },
+  annoyed: {
+    bgA:'#161a24', bgB:'#0f131b',
+    lemonA:'#EAD06A', lemonB:'#D7A82C', rim:'#875512',
+    blush:'#e68f99',
+    stem:'#244c36', leafA:'#1fa353', leafB:'#0e7a39',
+    eye:'#0c101d', shine:'#f6f6f6'
+  }
+};
+let MOOD = 'happy';   // happy | excited | annoyed
+let FACE = 'idle';    // idle | smile | talk | frown
+
+/* ========= CANVAS ========= */
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+/* ========= ANIMATION STATE ========= */
+let last = performance.now();
+let blinkOpen = 1;  // 1=open, 0=closed
+let blinking = false, blinkStart = 0, nextBlinkAt = last + 1200 + Math.random()*2200;
+let talkPhase = 0;  // 0..1 animated mouth open
+let particles = [];
+
+/* ========= UTIL ========= */
+function lerp(a,b,t){ return a+(b-a)*t; }
+function clamp(x,a,b){ return Math.max(a, Math.min(b, x)); }
+
+/* ========= BACKGROUND ========= */
+function drawBackground(){
+  const p = PALETTES[MOOD];
+  const g = ctx.createLinearGradient(0,0,canvas.width,canvas.height);
+  g.addColorStop(0,p.bgA); g.addColorStop(1,p.bgB);
+  ctx.fillStyle=g; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // parallax sparkles
+  const t = performance.now()*0.00025;
+  ctx.globalAlpha=0.18;
+  ctx.fillStyle='#cfe8ff';
+  for(let i=0;i<160;i++){
+    const x=(i*47 + (t*320)%760)%760;
+    const y=(i*83 + (t*210)%760)%760;
+    ctx.fillRect(x,y,1,1);
+  }
+  ctx.globalAlpha=1;
+}
+
+/* ========= LEMON ========= */
+function drawLemon(now){
+  const p = PALETTES[MOOD];
+  const cx = canvas.width/2, cy = canvas.height*0.56;
+
+  const breathe = Math.sin(now*0.0024)*0.02 + 0.02;             // squash & stretch
+  const bounce  = (MOOD==='excited') ? Math.max(0,Math.sin(now*0.009))*8 : 0;
+
+  ctx.save();
+  ctx.translate(cx, cy + bounce);
+  ctx.scale(1+breathe, 1-breathe);
+
+  // BODY base form (lemony oval with chin)
+  const rX = 170, rY = 145;
+  ctx.save();
+  // radial-ish fill for subsurface feel
+  const rg = ctx.createRadialGradient(-30,-40,40,0,10, rX+40);
+  rg.addColorStop(0, p.lemonA);
+  rg.addColorStop(1, p.lemonB);
+  ctx.fillStyle = rg;
+  ctx.beginPath();
+  ctx.ellipse(0, -10, rX, rY, 0, 0, Math.PI*2);
+  // chin point
+  ctx.moveTo(0, rY*0.95);
+  ctx.quadraticCurveTo(12, rY*1.08, 0, rY*1.18);
+  ctx.quadraticCurveTo(-12, rY*1.08, 0, rY*0.95);
+  ctx.closePath();
+  ctx.fill();
+
+  // Rim shadow for depth
+  ctx.strokeStyle = p.rim;
+  ctx.globalAlpha = 0.22;
+  ctx.lineWidth = 8;
+  ctx.beginPath();
+  ctx.ellipse(0,-10, rX-6, rY-6, 0, 0, Math.PI*2);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // Rind texture (pores) — tiny dots brighter on top-left, darker bottom-right
+  ctx.globalAlpha = 0.22;
+  for(let i=0;i<220; i++){
+    const a = Math.random()*Math.PI*2;
+    const rr = Math.sqrt(Math.random())* (rX*0.95);
+    let x = Math.cos(a)*rr, y = Math.sin(a)*(rY*0.9) - 10;
+    // inside ellipse?
+    if((x*x)/(rX*rX) + (y*y)/(rY*rY) <= 1){
+      ctx.fillStyle = (y<-25) ? 'rgba(255,255,255,0.45)' : 'rgba(120,80,10,0.5)';
+      ctx.fillRect(x-1, y, 2, 2);
+    }
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+
+  // LEAF + STEM
+  const sway = Math.sin(now*0.004)*0.22;
+  // stem
+  ctx.fillStyle=p.stem;
+  ctx.save();
+  ctx.translate(22, -155);
+  ctx.rotate(-0.18);
+  ctx.fillRect(-10,-70, 22, 70);
+  ctx.restore();
+  // cap
+  const lg = ctx.createLinearGradient(0,-150,0,-40);
+  lg.addColorStop(0, p.leafA); lg.addColorStop(1, p.leafB);
+  ctx.fillStyle=lg;
+  ctx.beginPath();
+  ctx.ellipse(0,-115, 140, 70, 0, Math.PI, 0, true);
+  ctx.fill();
+  // leaf
+  ctx.save();
+  ctx.translate(70,-175);
+  ctx.rotate(0.7 + sway);
+  ctx.beginPath();
+  ctx.fillStyle=p.leafA;
+  ctx.ellipse(0,0, 45, 85, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle=p.leafB;
+  ctx.fillRect(-3,-70,6,70);
+  ctx.restore();
+
+  // CHEEK BLUSH
+  ctx.globalAlpha=0.22;
+  ctx.fillStyle = p.blush;
+  ctx.beginPath(); ctx.ellipse(-90, 40, 34, 22, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse( 90, 40, 34, 22, 0, 0, Math.PI*2); ctx.fill();
+  ctx.globalAlpha=1;
+
+  // HIGHLIGHTS
+  ctx.fillStyle='rgba(255,255,255,.20)';
+  ctx.beginPath(); ctx.ellipse(-70,-50,55,25, -0.2, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse( 30,-85,22,12, -0.1, 0, Math.PI*2); ctx.fill();
+
+  // EYES
+  drawEye(-85, -5, 28);
+  drawEye( 85, -5, 28);
+
+  // MOUTH
+  drawMouth(0, 75, now);
+
+  ctx.restore();
+}
+
+function drawEye(x,y,r){
+  const p = PALETTES[MOOD];
+  ctx.save();
+  ctx.translate(x,y);
+
+  // dark eye base
+  ctx.fillStyle=p.eye;
+  ctx.beginPath(); ctx.ellipse(0,0, r, r*1.18, 0, 0, Math.PI*2); ctx.fill();
+
+  // iris glow + reflections while open
+  if(blinkOpen>0.12){
+    // soft inner glow
+    const g = ctx.createRadialGradient(-6,-4, 2, 0,0, r*1.1);
+    g.addColorStop(0,'rgba(255,220,120,0.9)');
+    g.addColorStop(1,'rgba(255,220,120,0.0)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.ellipse(0,0, r, r*1.18, 0, 0, Math.PI*2); ctx.fill();
+
+    // bright spec
+    ctx.fillStyle=p.shine;
+    ctx.beginPath(); ctx.arc(-8,-8,6,0,Math.PI*2); ctx.fill();
+    ctx.globalAlpha=0.75;
+    ctx.beginPath(); ctx.arc(7,2,4,0,Math.PI*2); ctx.fill();
+    ctx.globalAlpha=1;
+  }
+
+  // eyelid (top mask)
+  if(blinkOpen<1){
+    ctx.save();
+    ctx.globalCompositeOperation='destination-out';
+    const h = (1-blinkOpen)*r*2.4;
+    ctx.fillRect(-r-4,-r*1.2, r*2+8, h);
+    ctx.restore();
+  }
+
+  ctx.restore();
+}
+
+function drawMouth(x,y,now){
+  ctx.save();
+  ctx.translate(x,y);
+  const base = '#6f200f', inner = '#f06a35';
+
+  if(FACE==='talk'){
+    talkPhase = (Math.sin(now*0.024)+1)/2;   // 0..1
+    const w = lerp(28, 60, talkPhase), h = lerp(12, 40, talkPhase);
+    ctx.fillStyle=base; roundRect(-w/2,-h/2,w,h, h*0.45); ctx.fill();
+    ctx.fillStyle=inner; roundRect(-w/2+10,-h/2+h*0.38, w-20, h*0.55, h*0.25); ctx.fill();
+  } else if(FACE==='smile' || MOOD==='happy'){
+    ctx.strokeStyle=base; ctx.lineWidth=12; ctx.lineCap='round';
+    ctx.beginPath(); ctx.arc(0,10, 40, Math.PI*0.15, Math.PI- Math.PI*0.15); ctx.stroke();
+  } else if(FACE==='frown' || MOOD==='annoyed'){
+    ctx.strokeStyle=base; ctx.lineWidth=12; ctx.lineCap='round';
+    ctx.beginPath(); ctx.arc(0,34, 32, Math.PI+0.2, -0.2, true); ctx.stroke();
+  } else {
+    ctx.fillStyle=base; roundRect(-26,-5,52,12,6); ctx.fill();
+  }
+  ctx.restore();
+}
+
+function roundRect(x,y,w,h,r){
+  const rr = Math.min(r, Math.abs(w)/2, Math.abs(h)/2);
+  ctx.beginPath();
+  ctx.moveTo(x+rr,y);
+  ctx.arcTo(x+w,y,x+w,y+h,rr);
+  ctx.arcTo(x+w,y+h,x,y+h,rr);
+  ctx.arcTo(x,y+h,x,y,rr);
+  ctx.arcTo(x,y,x+w,y,rr);
+  ctx.closePath();
+}
+
+/* ========= PARTICLES ========= */
+function burst(emoji='❤️'){
+  for(let i=0;i<26;i++){
+    particles.push({
+      x: canvas.width/2, y: canvas.height*0.56,
+      vx:(Math.random()-0.5)*2.2, vy:-Math.random()*2.4-0.8,
+      t:0, life:1.2, emoji, spin:(Math.random()-0.5)*0.5
+    });
+  }
+}
+function updateParticles(dt){
+  particles = particles.filter(p=> (p.t+=dt) < p.life);
+}
+function drawParticles(dt, now){
+  for(const p of particles){
+    const a = 1 - p.t/p.life;
+    p.vy += 0.9*dt;
+    p.x += p.vx*60*dt; p.y += p.vy*60*dt;
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.spin*now*0.001);
+    ctx.globalAlpha = Math.max(a,0);
+    ctx.font='30px system-ui,emoji';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(p.emoji,0,0);
+    ctx.restore();
+  }
+}
+
+/* ========= MAIN LOOP ========= */
+function loop(now){
+  const dt = (now-last)/1000; last = now;
+
+  // Blink controller
+  if(now > nextBlinkAt && !blinking){ blinking=true; blinkStart=now; }
+  if(blinking){
+    const p = Math.min(1, (now-blinkStart)/230);
+    blinkOpen = (p<0.5) ? 1-(p*2) : (p-0.5)*2;  // 1→0→1
+    if(p>=1){ blinking=false; blinkOpen=1; nextBlinkAt = now + 1200 + Math.random()*2400; }
+  }
+
+  drawBackground();
+  drawLemon(now);
+  updateParticles(dt);
+  drawParticles(dt, now);
+
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* ========= INPUT ========= */
+addEventListener('keydown', e=>{
+  const k = e.key.toLowerCase();
+  if(k==='1'){ MOOD='happy';   burst('✨'); }
+  if(k==='2'){ MOOD='excited'; burst('💛'); }
+  if(k==='3'){ MOOD='annoyed'; burst('💢'); }
+  if(k==='s'){ FACE = (FACE==='smile'?'idle':'smile'); if(FACE==='smile') burst('💛'); }
+  if(k==='t'){ FACE = (FACE==='talk'?'idle':'talk'); if(FACE==='talk') burst('✨'); }
+  if(k==='f'){ FACE = (FACE==='frown'?'idle':'frown'); burst('💢'); }
+  if(k==='b'){ blinking=true; blinkStart=performance.now(); }
+});
+
+/* ========= PUBLIC API (optional) ========= */
+window.setMood = (m)=>{ if(PALETTES[m]){ MOOD=m; burst(m==='annoyed'?'💢':'✨'); } };
+window.playFace = (f)=>{ FACE=f; if(f==='talk'||f==='smile') burst('💛'); };
+</script>
+</body>
+</html>

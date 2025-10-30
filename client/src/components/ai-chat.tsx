@@ -119,7 +119,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   // Default greeting message
   const DEFAULT_GREETING: Message = {
     role: "assistant",
-    content: "Hey! I'm SySop. What are we building?",
+    content: "Hey! I'm LomuAI. What are we building?",
     timestamp: new Date(),
   };
 
@@ -1175,7 +1175,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 onPaste={handlePaste}
-                placeholder="Message SySop..."
+                placeholder="Message LomuAI..."
                 className="min-h-[60px] max-h-[200px] resize-none text-base bg-[hsl(220,18%,16%)] border-[hsl(220,15%,28%)] text-[hsl(220,8%,98%)] placeholder:text-[hsl(220,12%,55%)] focus-visible:ring-1 focus-visible:ring-[hsl(220,70%,60%)] rounded-2xl px-4 py-3 pr-12"
                 disabled={chatMutation.isPending}
                 data-testid="input-chat-message"

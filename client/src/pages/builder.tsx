@@ -82,7 +82,7 @@ export default function Builder() {
   const { data: files = [], refetch: refetchFiles } = useQuery<File[]>({
     queryKey: ["/api/projects", currentProjectId, "files"],
     enabled: isAuthenticated && !!currentProjectId, // Only fetch when authenticated AND we have a projectId
-    refetchInterval: 5000, // Auto-refresh every 5 seconds to catch SySop file changes
+    refetchInterval: 5000, // Auto-refresh every 5 seconds to catch LomuAI file changes
   });
 
   // Log when files are loaded (replaces deprecated onSuccess)
@@ -354,13 +354,13 @@ export default function Builder() {
             </DropdownMenu>
           )}
           
-          {/* SySop AI Badge */}
+          {/* LomuAI Badge */}
           <Badge 
             variant="secondary" 
             className="hidden md:inline-flex bg-primary/10 text-primary border-primary/20 font-mono text-xs"
-            data-testid="badge-sysop-ai"
+            data-testid="badge-lomu-ai"
           >
-            SySop AI
+            LomuAI
           </Badge>
         </div>
 
