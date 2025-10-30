@@ -657,8 +657,13 @@ export function LumoPixelAvatar({
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         // DEBUG: Draw pink background to prove canvas is rendering
-        ctx.fillStyle = 'rgba(255, 192, 203, 0.3)'; // Light pink for debugging
+        ctx.fillStyle = 'rgba(255, 192, 203, 0.8)'; // BRIGHT pink for debugging - SHOULD BE VISIBLE!
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // DEBUG: Draw text to confirm canvas is working
+        ctx.fillStyle = 'black';
+        ctx.font = '20px Arial';
+        ctx.fillText('LUMO HERE', 10, 30);
 
         // Very subtle breathing animation
         const breathePhase = (timestamp * 0.0006) % (Math.PI * 2);
@@ -790,6 +795,9 @@ export function LumoPixelAvatar({
           borderRadius: showBackground ? "50%" : "0",
           zIndex: 20,
           position: 'absolute',
+          opacity: 1,
+          visibility: 'visible',
+          pointerEvents: 'none',
         }}
         data-testid="lumo-sprite-canvas"
       />
