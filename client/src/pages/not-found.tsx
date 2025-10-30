@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useLocation } from "wouter";
 import { Home, ArrowLeft, Search, Sparkles } from "lucide-react";
-import logoPath from "@assets/logo.svg";
+import { LogoEnhancedBadge, LogoAnimatedWordmark } from '@/components/final-logos';
 
 export default function NotFound() {
   const [, setLocation] = useLocation();
@@ -12,11 +12,7 @@ export default function NotFound() {
       <div className="max-w-2xl w-full text-center space-y-8">
         {/* Logo and Branding */}
         <div className="flex flex-col items-center gap-4">
-          <img 
-            src={logoPath} 
-            alt="LemonAid" 
-            className="w-20 h-20 rounded-2xl shadow-xl shadow-primary/20"
-          />
+          <LogoEnhancedBadge size={64} />
           <div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
               LemonAid

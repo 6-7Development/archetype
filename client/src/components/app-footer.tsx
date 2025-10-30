@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import logoPath from "@assets/logo.svg";
+import { LogoEnhancedBadge, LogoAnimatedWordmark } from '@/components/final-logos';
 import { Github, Twitter, Linkedin, Mail } from "lucide-react";
 
 export function AppFooter() {
@@ -11,21 +11,7 @@ export function AppFooter() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Column */}
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <img 
-                src={logoPath} 
-                alt="LemonAid" 
-                className="w-10 h-10 rounded-lg"
-              />
-              <div>
-                <div className="font-bold text-lg bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                  LemonAid
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  AI Code Generation
-                </div>
-              </div>
-            </div>
+            <LogoAnimatedWordmark size={140} variant="compact" />
             <p className="text-sm text-muted-foreground">
               Enterprise-grade AI-powered platform for rapid web development.
             </p>

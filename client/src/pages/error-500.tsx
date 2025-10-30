@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useLocation } from "wouter";
 import { Home, AlertTriangle, RefreshCw } from "lucide-react";
-import logoPath from "@assets/logo.svg";
+import { LogoEnhancedBadge, LogoAnimatedWordmark } from '@/components/final-logos';
 
 export default function Error500() {
   const [, setLocation] = useLocation();
@@ -15,11 +15,7 @@ export default function Error500() {
     <div className="min-h-screen w-full flex items-center justify-center bg-background p-4">
       <div className="max-w-2xl w-full text-center space-y-8">
         <div className="flex flex-col items-center gap-4">
-          <img 
-            src={logoPath} 
-            alt="LemonAid" 
-            className="w-20 h-20 rounded-2xl shadow-xl shadow-primary/20"
-          />
+          <LogoEnhancedBadge size={64} />
           <div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
               LemonAid

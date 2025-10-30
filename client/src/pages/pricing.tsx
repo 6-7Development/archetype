@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { MobileNav } from "@/components/mobile-nav";
 import { MotionToggle } from "@/components/motion-toggle";
 import { Check, Sparkles, Zap, Shield, TrendingUp, DollarSign } from "lucide-react";
-import logoPath from "@assets/logo.svg";
+import { LogoEnhancedBadge, LogoAnimatedWordmark } from '@/components/final-logos';
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -205,23 +205,12 @@ export default function Pricing() {
                   { href: "/builder", label: "Get Started" }
                 ]}
                 logo={
-                  <div className="flex items-center gap-3">
-                    <img src={logoPath} alt="LemonAid" className="w-10 h-10 rounded-lg shadow-md shadow-primary/30" />
-                    <div className="text-base font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                      LemonAid
-                    </div>
-                  </div>
+                  <LogoAnimatedWordmark size={120} variant="compact" />
                 }
               />
               <Link href="/" data-testid="link-home" className="hidden lg:flex">
-                <div className="flex items-center gap-4 hover-elevate active-elevate-2 transition-all cursor-pointer">
-                  <img src={logoPath} alt="LemonAid" className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl shadow-lg shadow-primary/20" />
-                  <div>
-                    <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                      LemonAid
-                    </div>
-                    <div className="text-sm text-slate-400 font-medium">AI Code Generation Platform</div>
-                  </div>
+                <div className="hover-elevate active-elevate-2 transition-all cursor-pointer">
+                  <LogoAnimatedWordmark size={160} variant="compact" />
                 </div>
               </Link>
             </div>
@@ -541,8 +530,7 @@ export default function Pricing() {
       <footer className="py-12 px-6 border-t border-white/10">
         <div className="container mx-auto max-w-6xl text-center text-slate-500">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <img src={logoPath} alt="LemonAid" className="w-12 h-12 rounded-xl shadow-lg shadow-primary/20" />
-            <span className="text-lg font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">LemonAid</span>
+            <LogoAnimatedWordmark size={140} variant="compact" />
           </div>
           <p className="text-sm">© 2025 LemonAid. Transparent AI-Powered Development.</p>
           <p className="text-xs mt-2">No hidden fees. No surprise bills. Pay for what you use.</p>

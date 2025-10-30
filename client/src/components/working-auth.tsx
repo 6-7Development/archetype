@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Sparkles, Github, Chrome, Building2 } from "lucide-react";
-import logoPath from "@assets/logo.svg";
+import { LogoEnhancedBadge, LogoAnimatedWordmark } from '@/components/final-logos';
 
 export default function WorkingAuth() {
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -126,14 +126,7 @@ export default function WorkingAuth() {
           <CardHeader className="space-y-4 text-center pb-6">
             {/* Logo */}
             <div className="flex justify-center">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary to-secondary opacity-20 blur-xl rounded-xl pointer-events-none" />
-                <img 
-                  src={logoPath} 
-                  alt="LemonAid" 
-                  className="w-20 h-20 rounded-xl shadow-xl relative"
-                />
-              </div>
+              <LogoEnhancedBadge size={64} />
             </div>
 
             <div>

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MotionToggle } from "@/components/motion-toggle";
 import { Sparkles, Zap, Shield, Code, Check, ArrowRight, Menu } from "lucide-react";
-import logoPath from "@assets/logo.svg";
+import { LogoEnhancedBadge, LogoAnimatedWordmark } from '@/components/final-logos';
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { taglines } from '@/lib/taglines';
@@ -19,10 +19,7 @@ export default function LandingMobile() {
         <div className="px-3 sm:px-4 py-3">
           <div className="flex items-center justify-between gap-2 sm:gap-3">
             <Link href="/" className="flex items-center gap-2 min-h-[44px] py-1 flex-1 min-w-0 max-w-[60%]" data-testid="link-brand">
-              <img src={logoPath} alt="LemonAid" className="w-10 h-10 flex-shrink-0 rounded-lg" />
-              <span className="text-sm sm:text-base md:text-lg font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent truncate">
-                LemonAid
-              </span>
+              <LogoAnimatedWordmark size={120} variant="compact" />
             </Link>
             
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -93,11 +90,7 @@ export default function LandingMobile() {
             }}
             aria-hidden="true"
           >
-            <img 
-              src={logoPath} 
-              alt="LemonAid" 
-              className="w-20 h-20 mx-auto rounded-2xl shadow-2xl shadow-primary/50"
-            />
+            <LogoAnimatedWordmark size={200} />
           </motion.div>
 
           <div className="space-y-3">
@@ -219,10 +212,7 @@ export default function LandingMobile() {
       <footer className="border-t border-white/10 py-8 px-4">
         <div className="max-w-md mx-auto text-center space-y-4">
           <div className="flex items-center justify-center gap-2">
-            <img src={logoPath} alt="LemonAid" className="w-8 h-8 rounded-lg" />
-            <span className="font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              LemonAid
-            </span>
+            <LogoAnimatedWordmark size={100} variant="compact" />
           </div>
           <p className="text-sm text-slate-400">
             {taglines.footer[0]}

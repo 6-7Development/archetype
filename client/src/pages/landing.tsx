@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MobileNav } from "@/components/mobile-nav";
 import { Sparkles, Zap, Shield, Gauge, Code, Rocket, Check, Terminal, Play, ArrowRight } from "lucide-react";
-import logoPath from "@assets/logo.svg";
+import { LogoEnhancedBadge, LogoAnimatedWordmark } from '@/components/final-logos';
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { MotionToggle } from "@/components/motion-toggle";
@@ -158,14 +158,7 @@ export default function Landing() {
           <div className="flex items-center justify-between gap-2">
             {/* Logo - Simplified on mobile */}
             <Link href="/" data-testid="link-home" className="flex items-center gap-2 flex-shrink-0">
-              <img 
-                src={logoPath} 
-                alt="LemonAid" 
-                className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg"
-              />
-              <span className="text-sm sm:text-lg font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hidden xs:inline">
-                LemonAid
-              </span>
+              <LogoAnimatedWordmark size={120} variant="compact" />
             </Link>
             
             {/* Right Side - Clean */}
@@ -178,12 +171,7 @@ export default function Landing() {
                   { href: "/builder", label: "Get Started" }
                 ]}
                 logo={
-                  <div className="flex items-center gap-3">
-                    <img src={logoPath} alt="LemonAid" className="w-10 h-10 rounded-lg" />
-                    <div className="text-base font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                      LemonAid
-                    </div>
-                  </div>
+                  <LogoAnimatedWordmark size={120} variant="compact" />
                 }
               />
               <Button variant="outline" className="min-h-[44px] hidden md:inline-flex text-white border-slate-600 hover:bg-slate-800" data-testid="button-nav-login" asChild>
@@ -686,14 +674,7 @@ export default function Landing() {
               className="flex items-center justify-center gap-3 mb-4"
               whileHover={{ scale: 1.05 }}
             >
-              <motion.img 
-                src={logoPath} 
-                alt="LemonAid" 
-                className="w-12 h-12 rounded-xl shadow-lg shadow-primary/20"
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.6 }}
-              />
-              <span className="text-lg font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">LemonAid</span>
+              <LogoAnimatedWordmark size={140} variant="compact" />
             </motion.div>
             <p className="text-sm mb-4">© 2025 LemonAid. When code throws you lemons, you get LemonAid.</p>
             <DeploymentStatus />

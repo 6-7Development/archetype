@@ -29,7 +29,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { queryClient } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 import type { User } from "@shared/schema";
-import logoPath from "@assets/logo.svg";
+import { LogoEnhancedBadge, LogoAnimatedWordmark } from '@/components/final-logos';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -159,13 +159,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       )}>
         {/* Logo - PROUD & PROMINENT! */}
         <div className="h-20 border-b flex items-center px-4 gap-4">
-          <img src={logoPath} alt="LemonAid" className="w-12 h-12 rounded-xl shadow-lg shadow-primary/30" />
-          <div>
-            <div className="text-lg font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              LemonAid
-            </div>
-            <div className="text-xs text-muted-foreground font-medium">AI Code Generation</div>
-          </div>
+          <LogoAnimatedWordmark size={140} variant="compact" />
         </div>
 
         {/* Navigation - Scrollable */}
