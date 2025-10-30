@@ -52,96 +52,168 @@ export function Lumo3DAvatar({
     const getConfig = (currentEmotion: EmotionType) => {
       switch (currentEmotion) {
         case "happy":
-          return { color: 0xFFD700, eyeGlow: 0x22C55E, intensity: 1.5, bounce: 0.15 };
+          return { color: 0xF4D03F, eyeGlow: 0x22C55E, intensity: 1.5, bounce: 0.15 };
         case "excited":
-          return { color: 0xFFA500, eyeGlow: 0xF59E0B, intensity: 2.5, bounce: 0.25 };
+          return { color: 0xFFB84D, eyeGlow: 0xF59E0B, intensity: 2.5, bounce: 0.25 };
         case "thinking":
-          return { color: 0xFFD700, eyeGlow: 0x3B82F6, intensity: 1.2, bounce: 0.08 };
+          return { color: 0xF4D03F, eyeGlow: 0x3B82F6, intensity: 1.2, bounce: 0.08 };
         case "working":
-          return { color: 0xFFD700, eyeGlow: 0x8B5CF6, intensity: 1.8, bounce: 0.12 };
+          return { color: 0xF4D03F, eyeGlow: 0x8B5CF6, intensity: 1.8, bounce: 0.12 };
         case "success":
-          return { color: 0x90EE90, eyeGlow: 0x22C55E, intensity: 2.0, bounce: 0.2 };
+          return { color: 0xA8E05F, eyeGlow: 0x22C55E, intensity: 2.0, bounce: 0.2 };
         case "error":
           return { color: 0xFFB6C1, eyeGlow: 0xEF4444, intensity: 1.3, bounce: 0.05 };
         case "worried":
-          return { color: 0xFFD700, eyeGlow: 0xF59E0B, intensity: 1.0, bounce: 0.1 };
+          return { color: 0xF4D03F, eyeGlow: 0xF59E0B, intensity: 1.0, bounce: 0.1 };
         case "sad":
-          return { color: 0xD3D3D3, eyeGlow: 0x6B7280, intensity: 0.8, bounce: 0.05 };
+          return { color: 0xD8D8AA, eyeGlow: 0x6B7280, intensity: 0.8, bounce: 0.05 };
         default:
-          return { color: 0xFFD700, eyeGlow: 0x22C55E, intensity: 1.2, bounce: 0.1 };
+          return { color: 0xF4D03F, eyeGlow: 0x22C55E, intensity: 1.2, bounce: 0.1 };
       }
     };
 
     const config = getConfig(emotion);
 
     // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     scene.add(ambientLight);
 
-    const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight1.position.set(5, 5, 5);
+    const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.9);
+    directionalLight1.position.set(3, 5, 4);
     scene.add(directionalLight1);
 
-    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.3);
-    directionalLight2.position.set(-5, -5, -5);
+    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+    directionalLight2.position.set(-3, -2, -3);
     scene.add(directionalLight2);
 
-    // Main lemon head
-    const headGeometry = new THREE.SphereGeometry(1, 32, 32);
-    const headMaterial = new THREE.MeshStandardMaterial({
-      color: config.color,
-      roughness: 0.3,
-      metalness: 0.1,
-      emissive: config.color,
-      emissiveIntensity: 0.2,
-    });
-    const head = new THREE.Mesh(headGeometry, headMaterial);
-    scene.add(head);
+    const rimLight = new THREE.DirectionalLight(0xFFFFAA, 0.3);
+    rimLight.position.set(0, -2, -5);
+    scene.add(rimLight);
 
-    // Left eye white
+    // Create lemon-shaped geometry with bumps
+    const lemonGeometry = new THREE.SphereGeometry(1, 64, 64);
+    const positions = lemonGeometry.attributes.position;
+    
+    // Add bumpy lemon texture by displacing vertices
+    for (let i = 0; i < positions.count; i++) {
+      const x = positions.getX(i);
+      const y = positions.getY(i);
+      const z = positions.getZ(i);
+      
+      // Make it lemon-shaped (elongated on Y axis)
+      const lemonScale = 1 + Math.abs(y) * 0.15;
+      positions.setX(i, x * (1 / lemonScale));
+      positions.setZ(i, z * (1 / lemonScale));
+      positions.setY(i, y * 1.2); // Stretch vertically
+      
+      // Add bumpy texture
+      const noise = Math.sin(x * 15) * Math.cos(z * 15) * 0.025;
+      const bumpNoise = Math.sin(x * 30) * Math.cos(y * 30) * Math.sin(z * 30) * 0.015;
+      
+      positions.setX(i, x * (1 / lemonScale) + noise + bumpNoise);
+      positions.setY(i, y * 1.2 + noise + bumpNoise);
+      positions.setZ(i, z * (1 / lemonScale) + noise + bumpNoise);
+    }
+    
+    positions.needsUpdate = true;
+    lemonGeometry.computeVertexNormals();
+
+    // Lemon material with realistic appearance
+    const lemonMaterial = new THREE.MeshStandardMaterial({
+      color: config.color,
+      roughness: 0.65,
+      metalness: 0.05,
+      emissive: new THREE.Color(config.color).multiplyScalar(0.15),
+      emissiveIntensity: 0.3,
+    });
+
+    const lemonHead = new THREE.Mesh(lemonGeometry, lemonMaterial);
+    scene.add(lemonHead);
+
+    // Stem at top
+    const stemGeometry = new THREE.CylinderGeometry(0.05, 0.08, 0.2, 8);
+    const stemMaterial = new THREE.MeshStandardMaterial({
+      color: 0x4A5D23,
+      roughness: 0.8,
+    });
+    const stem = new THREE.Mesh(stemGeometry, stemMaterial);
+    stem.position.set(0, 1.3, 0);
+    stem.rotation.z = 0.1;
+    scene.add(stem);
+
+    // Small leaf
+    const leafGeometry = new THREE.CircleGeometry(0.15, 16);
+    const leafMaterial = new THREE.MeshStandardMaterial({
+      color: 0x6B8E23,
+      roughness: 0.7,
+      side: THREE.DoubleSide,
+    });
+    const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
+    leaf.position.set(0.1, 1.35, 0);
+    leaf.rotation.set(0.2, 0, 0.3);
+    scene.add(leaf);
+
+    // Eyes - positioned on the lemon surface
     const eyeGeometry = new THREE.SphereGeometry(0.15, 16, 16);
     const eyeMaterial = new THREE.MeshStandardMaterial({ 
       color: 0xFFFFFF, 
-      roughness: 0.2 
+      roughness: 0.1,
+      metalness: 0.1,
     });
+    
     const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-    leftEye.position.set(0.35, 0.2, 0.7);
+    leftEye.position.set(0.35, 0.3, 0.75);
     scene.add(leftEye);
 
     const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial.clone());
-    rightEye.position.set(-0.35, 0.2, 0.7);
+    rightEye.position.set(-0.35, 0.3, 0.75);
     scene.add(rightEye);
 
-    // Pupils
+    // Pupils with glow
     const pupilGeometry = new THREE.SphereGeometry(0.08, 16, 16);
     const pupilMaterial = new THREE.MeshStandardMaterial({
       color: config.eyeGlow,
       emissive: config.eyeGlow,
       emissiveIntensity: config.intensity,
+      roughness: 0.3,
     });
+    
     const leftPupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
-    leftPupil.position.set(0.35, 0.2, 0.8);
+    leftPupil.position.set(0.35, 0.3, 0.85);
     scene.add(leftPupil);
 
     const rightPupil = new THREE.Mesh(pupilGeometry, pupilMaterial.clone());
-    rightPupil.position.set(-0.35, 0.2, 0.8);
+    rightPupil.position.set(-0.35, 0.3, 0.85);
     scene.add(rightPupil);
 
-    // Smile
-    const smileGeometry = new THREE.TorusGeometry(0.3, 0.04, 8, 32, Math.PI);
+    // Smile - curved line made with torus
+    const smileGeometry = new THREE.TorusGeometry(0.35, 0.05, 8, 32, Math.PI);
     const smileMaterial = new THREE.MeshStandardMaterial({
       color: 0x8B4513,
       emissive: emotion === "happy" || emotion === "excited" ? 0x22C55E : 0x000000,
       emissiveIntensity: emotion === "happy" || emotion === "excited" ? 0.5 : 0,
+      roughness: 0.6,
     });
     const smile = new THREE.Mesh(smileGeometry, smileMaterial);
-    smile.position.set(0, -0.2, 0.85);
+    smile.position.set(0, -0.15, 0.85);
     smile.rotation.x = Math.PI;
     scene.add(smile);
 
-    // Glow light
-    const glowLight = new THREE.PointLight(config.eyeGlow, 1, 3);
-    glowLight.position.set(0, 0.2, 1.5);
+    // Add subtle highlights to make lemon look shiny
+    const highlightGeometry = new THREE.SphereGeometry(0.25, 16, 16);
+    const highlightMaterial = new THREE.MeshBasicMaterial({
+      color: 0xFFFFFF,
+      transparent: true,
+      opacity: 0.3,
+    });
+    const highlight = new THREE.Mesh(highlightGeometry, highlightMaterial);
+    highlight.position.set(0.3, 0.5, 0.7);
+    highlight.scale.set(1, 0.7, 0.5);
+    scene.add(highlight);
+
+    // Glow light from eyes
+    const glowLight = new THREE.PointLight(config.eyeGlow, 1.2, 3);
+    glowLight.position.set(0, 0.3, 1.2);
     scene.add(glowLight);
 
     // Animation variables
@@ -156,22 +228,36 @@ export function Lumo3DAvatar({
       const time = clock.getElapsedTime();
 
       // Floating animation
-      head.position.y = Math.sin(time * 1.5) * config.bounce;
-      head.rotation.y = Math.sin(time * 0.5) * 0.1;
-      head.rotation.z = Math.cos(time * 0.3) * 0.05;
+      const floatY = Math.sin(time * 1.5) * config.bounce;
+      lemonHead.position.y = floatY;
+      lemonHead.rotation.y = Math.sin(time * 0.5) * 0.15;
+      lemonHead.rotation.z = Math.cos(time * 0.3) * 0.08;
 
-      // Move eyes and smile with head
-      leftEye.position.y = 0.2 + Math.sin(time * 1.5) * config.bounce;
-      rightEye.position.y = 0.2 + Math.sin(time * 1.5) * config.bounce;
-      leftPupil.position.y = 0.2 + Math.sin(time * 1.5) * config.bounce;
-      rightPupil.position.y = 0.2 + Math.sin(time * 1.5) * config.bounce;
-      smile.position.y = -0.2 + Math.sin(time * 1.5) * config.bounce;
+      // Move accessories with lemon
+      stem.position.y = 1.3 + floatY;
+      stem.rotation.y = Math.sin(time * 0.5) * 0.15;
+      
+      leaf.position.y = 1.35 + floatY;
+      leaf.rotation.y = Math.sin(time * 0.5) * 0.15;
+      leaf.rotation.z = 0.3 + Math.sin(time * 2) * 0.1;
 
-      leftEye.rotation.y = Math.sin(time * 0.5) * 0.1;
-      rightEye.rotation.y = Math.sin(time * 0.5) * 0.1;
-      leftPupil.rotation.y = Math.sin(time * 0.5) * 0.1;
-      rightPupil.rotation.y = Math.sin(time * 0.5) * 0.1;
-      smile.rotation.y = Math.sin(time * 0.5) * 0.1;
+      // Eyes follow lemon movement
+      const eyeY = 0.3 + floatY;
+      leftEye.position.y = eyeY;
+      rightEye.position.y = eyeY;
+      leftPupil.position.y = eyeY;
+      rightPupil.position.y = eyeY;
+      
+      leftEye.rotation.y = Math.sin(time * 0.5) * 0.15;
+      rightEye.rotation.y = Math.sin(time * 0.5) * 0.15;
+      leftPupil.rotation.y = Math.sin(time * 0.5) * 0.15;
+      rightPupil.rotation.y = Math.sin(time * 0.5) * 0.15;
+
+      smile.position.y = -0.15 + floatY;
+      smile.rotation.y = Math.sin(time * 0.5) * 0.15;
+
+      highlight.position.y = 0.5 + floatY;
+      highlight.rotation.y = Math.sin(time * 0.5) * 0.15;
 
       // Blinking logic
       blinkTimer += 0.016;
@@ -205,7 +291,7 @@ export function Lumo3DAvatar({
       }
 
       // Pupil glow pulsing
-      const glowIntensity = 0.5 + Math.sin(time * 2) * 0.3;
+      const glowIntensity = 0.6 + Math.sin(time * 2) * 0.4;
       (leftPupil.material as THREE.MeshStandardMaterial).emissiveIntensity = glowIntensity * config.intensity;
       (rightPupil.material as THREE.MeshStandardMaterial).emissiveIntensity = glowIntensity * config.intensity;
 
@@ -220,14 +306,20 @@ export function Lumo3DAvatar({
     // Cleanup
     return () => {
       renderer.dispose();
-      headGeometry.dispose();
-      headMaterial.dispose();
+      lemonGeometry.dispose();
+      lemonMaterial.dispose();
+      stemGeometry.dispose();
+      stemMaterial.dispose();
+      leafGeometry.dispose();
+      leafMaterial.dispose();
       eyeGeometry.dispose();
       eyeMaterial.dispose();
       pupilGeometry.dispose();
       pupilMaterial.dispose();
       smileGeometry.dispose();
       smileMaterial.dispose();
+      highlightGeometry.dispose();
+      highlightMaterial.dispose();
     };
   }, [emotion, containerSize, isDark]);
 
