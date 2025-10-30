@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
-interface LemonMascotProps {
+interface AppleMascotProps {
   emotion?: 'happy' | 'thinking' | 'working' | 'confused' | 'error' | 'idle';
   size?: 'small' | 'medium' | 'large';
   className?: string;
@@ -20,41 +20,35 @@ interface Particle {
 
 const COLOR_PALETTES = {
   happy: {
-    lemon1: '#FFE46B',
-    lemon2: '#F6BF2A',
-    cap1: '#1AA13B',
-    cap2: '#0E7A2C',
-    red1: '#D94A2C',
-    red2: '#9C2817',
-    glass: '#A82A1B',
-    pupil: '#FFD77A',
-    shine: '#FFFFFF',
+    apple1: '#E74C3C',      // Bright red
+    apple2: '#C0392B',      // Darker red
+    stem: '#8B4513',        // Brown stem
+    leaf: '#27AE60',        // Green leaf
+    eye: '#2C3E50',         // Dark eyes
+    pupil: '#FFFFFF',       // White shine
+    mouth: '#34495E',       // Dark mouth
   },
   excited: {
-    lemon1: '#FFF07A',
-    lemon2: '#F6C43A',
-    cap1: '#28B34A',
-    cap2: '#138B38',
-    red1: '#E35733',
-    red2: '#A02C1A',
-    glass: '#B63020',
-    pupil: '#FFE890',
-    shine: '#FFFFFF',
+    apple1: '#FF6B6B',      // Vibrant red
+    apple2: '#E84A3F',      // Bright darker red
+    stem: '#A0522D',        // Lighter brown
+    leaf: '#2ECC71',        // Brighter green
+    eye: '#2C3E50',
+    pupil: '#FFFFFF',
+    mouth: '#34495E',
   },
   annoyed: {
-    lemon1: '#E9D068',
-    lemon2: '#DBAB2D',
-    cap1: '#14823A',
-    cap2: '#0B5E29',
-    red1: '#B73E28',
-    red2: '#7D2213',
-    glass: '#7C1C10',
-    pupil: '#D4B854',
-    shine: '#DCDCDC',
+    apple1: '#C23E34',      // Dull red
+    apple2: '#A03228',      // Darker dull red
+    stem: '#6B3410',        // Dark brown
+    leaf: '#1E8449',        // Darker green
+    eye: '#1C2833',
+    pupil: '#ECF0F1',
+    mouth: '#2C3E50',
   },
 };
 
-export function LemonMascot({ emotion = 'idle', size = 'medium', className }: LemonMascotProps) {
+export function AppleMascot({ emotion = 'idle', size = 'medium', className }: AppleMascotProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
   const particlesRef = useRef<Particle[]>([]);
@@ -135,180 +129,122 @@ export function LemonMascot({ emotion = 'idle', size = 'medium', className }: Le
       ctx.restore();
     };
 
-    const drawRoundedLemon = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, palette: typeof COLOR_PALETTES.happy) => {
-      // Full lemon body - larger oval shape
-      const bodyGradient = ctx.createRadialGradient(x, y - r * 0.3, r * 0.2, x, y, r * 3);
-      bodyGradient.addColorStop(0, palette.lemon1);
-      bodyGradient.addColorStop(1, palette.lemon2);
+    const drawAppleBody = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, palette: typeof COLOR_PALETTES.happy) => {
+      // Simple round apple body
+      const bodyGradient = ctx.createRadialGradient(x - r * 0.5, y - r * 0.5, r * 0.3, x, y, r * 3.5);
+      bodyGradient.addColorStop(0, palette.apple1);
+      bodyGradient.addColorStop(1, palette.apple2);
       ctx.fillStyle = bodyGradient;
 
       ctx.beginPath();
-      // Main lemon body - bigger ellipse
-      ctx.ellipse(x, y, r * 2.0, r * 2.5, 0, 0, Math.PI * 2);
-      // Bottom point (chin)
-      ctx.moveTo(x, y + r * 2.5);
-      ctx.quadraticCurveTo(x + r * 0.3, y + r * 2.7, x, y + r * 3.0);
-      ctx.quadraticCurveTo(x - r * 0.3, y + r * 2.7, x, y + r * 2.5);
-      ctx.closePath();
+      // Round apple shape
+      ctx.arc(x, y, r * 3, 0, Math.PI * 2);
       ctx.fill();
 
-      // Lemon texture highlights
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+      // Apple shine/highlight
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
       ctx.beginPath();
-      ctx.arc(x - r * 0.5, y - r * 0.5, r * 0.4, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(x + r * 0.4, y - r * 0.8, r * 0.25, 0, Math.PI * 2);
+      ctx.arc(x - r * 1.2, y - r * 1.2, r * 0.8, 0, Math.PI * 2);
       ctx.fill();
     };
 
-    const drawLeafCap = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, palette: typeof COLOR_PALETTES.happy, swayAngle: number) => {
-      // Compact leaf cap that fits proportionally
-      const capY = y - r * 2.5;
-      const capW = r * 2.6;
-      const capH = r * 1.5;
-      
-      const capGradient = ctx.createLinearGradient(x, capY - capH * 0.5, x, capY + capH * 0.5);
-      capGradient.addColorStop(0, palette.cap1);
-      capGradient.addColorStop(1, palette.cap2);
-      ctx.fillStyle = capGradient;
-      ctx.beginPath();
-      ctx.ellipse(x, capY, capW, capH, 0, 0, Math.PI, true);
-      ctx.fill();
+    const drawStemAndLeaf = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, palette: typeof COLOR_PALETTES.happy, swayAngle: number) => {
+      // Small brown stem on top
+      const stemY = y - r * 3.2;
+      ctx.fillStyle = palette.stem;
+      ctx.fillRect(x - r * 0.2, stemY, r * 0.4, r * 1.2);
 
-      const stemX = x + r * 0.2;
-      const stemY = capY - capH;
-      const stemW = r * 0.4;
-      const stemH = r * 0.8;
-      ctx.fillStyle = '#0c5a24';
-      ctx.fillRect(stemX, stemY, stemW, stemH);
-
+      // Green leaf with sway animation
       ctx.save();
-      ctx.translate(stemX + stemW / 2, stemY);
-      ctx.rotate(-0.3 + swayAngle);
-      ctx.fillStyle = '#25a542';
+      ctx.translate(x + r * 0.3, stemY);
+      ctx.rotate(swayAngle);
+      
+      ctx.fillStyle = palette.leaf;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, r * 1.2, r * 0.7, -Math.PI / 6, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Leaf vein
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+      ctx.lineWidth = r * 0.08;
       ctx.beginPath();
       ctx.moveTo(0, 0);
-      ctx.quadraticCurveTo(r * 1.4, -r * 0.5, r * 2.3, 0);
-      ctx.quadraticCurveTo(r * 1.4, r * 0.5, 0, 0);
-      ctx.fill();
-      ctx.restore();
-
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
-      ctx.beginPath();
-      ctx.ellipse(x + r * 0.8, capY + capH * 0.2, r * 1.2, r * 0.4, 0, 0, Math.PI * 2);
-      ctx.fill();
-    };
-
-    const roundRect = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) => {
-      ctx.beginPath();
-      ctx.moveTo(x + radius, y);
-      ctx.lineTo(x + width - radius, y);
-      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-      ctx.lineTo(x + width, y + height - radius);
-      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-      ctx.lineTo(x + radius, y + height);
-      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-      ctx.lineTo(x, y + radius);
-      ctx.quadraticCurveTo(x, y, x + radius, y);
-      ctx.closePath();
-    };
-
-    const drawGoggle = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, palette: typeof COLOR_PALETTES.happy) => {
-      ctx.save();
-      ctx.translate(x, y);
-      
-      const gw = r * 1.36;
-      const gh = r * 2.05;
-      const grad = r * 0.68;
-      
-      ctx.fillStyle = palette.red1;
-      roundRect(ctx, -gw, -gh, gw * 2, gh * 2, grad);
-      ctx.fill();
-      
-      ctx.strokeStyle = palette.red2;
-      ctx.lineWidth = r * 0.14;
-      roundRect(ctx, -gw, -gh, gw * 2, gh * 2, grad);
+      ctx.lineTo(r * 0.6, -r * 0.2);
       ctx.stroke();
       
       ctx.restore();
     };
 
     const drawEye = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, palette: typeof COLOR_PALETTES.happy, eyelidOpen: number) => {
-      ctx.save();
-      ctx.translate(x, y);
-
-      const lw = r * 1.09;
-      const lh = r * 0.75;
-      const lrad = r * 0.59;
+      // Simple round eyes
+      const eyeSize = r * 0.6;
       
-      ctx.fillStyle = palette.glass;
-      roundRect(ctx, -lw, -lh, lw * 2, lh * 2, lrad);
+      // White of eye
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.arc(x, y, eyeSize, 0, Math.PI * 2);
       ctx.fill();
 
       if (eyelidOpen > 0.1) {
-        const sz = (emotion === 'error' || emotion === 'confused') ? r * 0.23 : r * 0.32;
+        // Eye color (dark)
+        const pupilSize = (emotion === 'error' || emotion === 'confused') ? eyeSize * 0.5 : eyeSize * 0.7;
+        ctx.fillStyle = palette.eye;
+        ctx.beginPath();
+        ctx.arc(x, y, pupilSize, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Shine/highlight
         ctx.fillStyle = palette.pupil;
         ctx.beginPath();
-        ctx.arc(-r * 0.23, -r * 0.05, sz, 0, Math.PI * 2);
-        ctx.fill();
-        
-        ctx.fillStyle = palette.shine;
-        ctx.beginPath();
-        ctx.arc(r * 0.09, -r * 0.27, r * 0.14, 0, Math.PI * 2);
+        ctx.arc(x - pupilSize * 0.3, y - pupilSize * 0.3, pupilSize * 0.3, 0, Math.PI * 2);
         ctx.fill();
       }
 
+      // Blinking - eyelid overlay
       if (eyelidOpen < 1) {
         ctx.save();
-        ctx.globalCompositeOperation = 'source-atop';
-        ctx.fillStyle = '#0d0f14';
-        const gw = r * 1.36;
-        const gh = r * 2.05;
-        const h = (1 - eyelidOpen) * (gh * 2);
-        ctx.fillRect(-gw, -gh, gw * 2, h);
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = palette.apple1;
+        const eyelidHeight = (1 - eyelidOpen) * (eyeSize * 2);
+        ctx.fillRect(x - eyeSize, y - eyeSize, eyeSize * 2, eyelidHeight);
         ctx.restore();
       }
-      
-      ctx.restore();
     };
 
-    const drawMouth = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, time: number) => {
+    const drawMouth = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, time: number, palette: typeof COLOR_PALETTES.happy) => {
       ctx.save();
-      ctx.translate(x, y + r * 1.59);
-      
-      const base = '#7a1e08';
-      const inner = '#ee6b31';
+      ctx.fillStyle = palette.mouth;
+      ctx.strokeStyle = palette.mouth;
+      ctx.lineWidth = r * 0.15;
+      ctx.lineCap = 'round';
 
-      if (emotion === 'working') {
-        const s = (Math.sin(time * 0.02) + 1) / 2;
-        const w = r * 0.68 + s * r * 0.68;
-        const h = r * 0.23 + s * r * 0.68;
-        const rad = h * 0.6;
-        
-        ctx.fillStyle = base;
-        roundRect(ctx, -w / 2, -h / 2, w, h, rad);
-        ctx.fill();
-        
-        ctx.fillStyle = inner;
-        roundRect(ctx, -w / 2 + r * 0.18, -h / 2 + h * 0.35, w - r * 0.36, h * 0.5, h * 0.25);
-        ctx.fill();
-      } else if (emotion === 'happy' || emotion === 'idle') {
-        ctx.fillStyle = base;
-        roundRect(ctx, -r * 1.25, -r * 0.36, r * 2.5, r * 0.73, r * 0.55);
-        ctx.fill();
-        
-        ctx.fillStyle = inner;
-        roundRect(ctx, -r * 1.07, -r * 0.18, r * 2.14, r * 0.36, r * 0.27);
-        ctx.fill();
-      } else if (emotion === 'error' || emotion === 'confused') {
-        ctx.fillStyle = base;
+      if (emotion === 'working' || emotion === 'thinking') {
+        // Talking mouth - opens/closes
+        const openness = (Math.sin(time * 0.02) + 1) / 2;
+        const mouthY = y + r * 0.8;
         ctx.beginPath();
-        ctx.ellipse(0, r * 0.23, r * 1.05, r * 0.36, 0, Math.PI, 0, true);
-        ctx.fill();
+        ctx.arc(x, mouthY, r * 0.8, 0.2 * Math.PI, 0.8 * Math.PI);
+        if (openness > 0.3) {
+          ctx.fill();
+        } else {
+          ctx.stroke();
+        }
+      } else if (emotion === 'happy' || emotion === 'idle') {
+        // Big smile
+        ctx.beginPath();
+        ctx.arc(x, y + r * 0.3, r * 1.2, 0.15 * Math.PI, 0.85 * Math.PI);
+        ctx.stroke();
+      } else if (emotion === 'error' || emotion === 'confused') {
+        // Frown
+        ctx.beginPath();
+        ctx.arc(x, y + r * 1.8, r * 1.2, 1.15 * Math.PI, 1.85 * Math.PI);
+        ctx.stroke();
       } else {
-        ctx.fillStyle = base;
-        ctx.fillRect(-r * 0.59, -r * 0.09, r * 1.18, r * 0.18);
+        // Neutral line
+        ctx.beginPath();
+        ctx.moveTo(x - r * 0.8, y + r * 0.8);
+        ctx.lineTo(x + r * 0.8, y + r * 0.8);
+        ctx.stroke();
       }
       
       ctx.restore();
@@ -319,29 +255,21 @@ export function LemonMascot({ emotion = 'idle', size = 'medium', className }: Le
       ctx.translate(x, y);
       ctx.rotate(angle * Math.PI / 180);
       
-      // Darker arm color so it's visible
-      ctx.strokeStyle = '#C8910B';
-      ctx.lineWidth = canvasSize * 0.06;
+      // Brown stick arms
+      ctx.strokeStyle = palette.stem;
+      ctx.lineWidth = r * 0.25;
       ctx.lineCap = 'round';
       ctx.beginPath();
       ctx.moveTo(0, 0);
-      ctx.quadraticCurveTo(-canvasSize * 0.07, canvasSize * 0.13, -canvasSize * 0.13, canvasSize * 0.15);
+      ctx.quadraticCurveTo(-r * 0.5, r * 0.8, -r * 0.8, r * 1.2);
       ctx.stroke();
       
-      // Dark outline to make arm stand out
-      ctx.strokeStyle = '#8B6914';
-      ctx.lineWidth = canvasSize * 0.04;
+      // Hand (small circle at end)
+      ctx.fillStyle = '#D2691E';
+      ctx.strokeStyle = palette.stem;
+      ctx.lineWidth = r * 0.1;
       ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.quadraticCurveTo(-canvasSize * 0.07, canvasSize * 0.13, -canvasSize * 0.13, canvasSize * 0.15);
-      ctx.stroke();
-      
-      // Hand with visible outline
-      ctx.fillStyle = '#B8860B';
-      ctx.strokeStyle = '#000';
-      ctx.lineWidth = canvasSize * 0.015;
-      ctx.beginPath();
-      ctx.arc(-canvasSize * 0.13, canvasSize * 0.15, canvasSize * 0.045, 0, Math.PI * 2);
+      ctx.arc(-r * 0.8, r * 1.2, r * 0.35, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
       
@@ -388,29 +316,24 @@ export function LemonMascot({ emotion = 'idle', size = 'medium', className }: Le
       ctx.scale(1 + breathe, 1 - breathe);
       ctx.translate(-cx, -cy);
 
-      // Arms on sides of lemon body
-      drawArm(ctx, cx - r * 2.0, cy, leftArmAngle, palette);
-      drawArm(ctx, cx + r * 2.0, cy, rightArmAngle, palette);
-
-      drawRoundedLemon(ctx, cx, cy, r, palette);
+      // Draw apple body
+      drawAppleBody(ctx, cx, cy, r, palette);
       
-      drawLeafCap(ctx, cx, cy, r, palette, swayAngle);
+      // Stem and leaf on top
+      drawStemAndLeaf(ctx, cx, cy, r, palette, swayAngle);
 
-      // Face is on upper part of lemon body
-      const faceY = cy - r * 1.2;
+      // Arms on sides (optional - apples with arms are cute!)
+      drawArm(ctx, cx - r * 3.2, cy + r * 0.5, leftArmAngle, palette);
+      drawArm(ctx, cx + r * 3.2, cy + r * 0.5, rightArmAngle, palette);
+
+      // Face in center of apple
+      const eyeY = cy - r * 0.3;
+      const eyeSpacing = r * 1.2;
       
-      // Goggle strap
-      ctx.fillStyle = '#b53b21';
-      ctx.fillRect(cx - r * 1.8, faceY - r * 0.4, r * 3.6, r * 0.8);
+      drawEye(ctx, cx - eyeSpacing, eyeY, r, palette, eyelidRef.current);
+      drawEye(ctx, cx + eyeSpacing, eyeY, r, palette, eyelidRef.current);
 
-      const goggleOffset = r * 1.2;
-      drawGoggle(ctx, cx - goggleOffset, faceY, r, palette);
-      drawGoggle(ctx, cx + goggleOffset, faceY, r, palette);
-
-      drawEye(ctx, cx - goggleOffset, faceY, r, palette, eyelidRef.current);
-      drawEye(ctx, cx + goggleOffset, faceY, r, palette, eyelidRef.current);
-
-      drawMouth(ctx, cx, faceY, r, now);
+      drawMouth(ctx, cx, eyeY, r, now, palette);
 
       ctx.restore();
 
@@ -434,8 +357,11 @@ export function LemonMascot({ emotion = 'idle', size = 'medium', className }: Le
       ref={canvasRef}
       width={canvasSize}
       height={canvasSize}
-      className={cn("lemon-mascot", className)}
+      className={cn("apple-mascot", className)}
       style={{ display: 'block', imageRendering: 'auto' }}
     />
   );
 }
+
+// Export both AppleMascot and LemonMascot (for backwards compatibility)
+export { AppleMascot, AppleMascot as LemonMascot };
