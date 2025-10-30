@@ -30,7 +30,7 @@ async function deployUpgrades() {
     'server/agentCommunicationExample.ts',
     
     // LomuAI Orchestrator
-    'server/routes/metaSysopChat.ts',
+    'server/routes/lomuChat.ts',
     'server/subagentOrchestration.ts',
   ];
   

@@ -9,7 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { MetaSySopChat } from '@/components/meta-sysop-chat';
+import { MetaSySopChat } from '@/components/lomu-chat';
 import { AdminGuard } from '@/components/admin-guard';
 import { DeploymentStatusWidget } from '@/components/deployment-status-widget';
 import { TaskProgressWidget } from '@/components/task-progress-widget';

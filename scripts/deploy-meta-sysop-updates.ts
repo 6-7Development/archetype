@@ -15,7 +15,7 @@ async function deployUpdates() {
 
   // Files to commit
   const filesToCommit = [
-    'server/routes/metaSysopChat.ts',
+    'server/routes/lomuChat.ts',
     'replit.md',
   ];
 

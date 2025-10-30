@@ -15,7 +15,7 @@ async function pushFixes() {
 
   // Files to commit
   const filesToCommit = [
-    'client/src/components/meta-sysop-chat.tsx',
+    'client/src/components/lomu-chat.tsx',
     'client/src/components/ai-chat.tsx',
     'client/src/components/mobile-workspace.tsx',
     'client/index.html',

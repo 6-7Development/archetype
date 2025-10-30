@@ -7,7 +7,7 @@ import { FEATURES } from "./routes/common";
 import toolsRouter from './routes/tools';
 import uploadRouter from './routes/upload';
 import platformRouter from './platformRoutes';
-import metaSySopChatRouter from './routes/metaSysopChat';
+import metaSySopChatRouter from './routes/lomuChat';
 import { getDeploymentInfo } from './deploymentInfo';
 import { storage } from "./storage";
 
@@ -154,12 +154,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   metricsBroadcaster.start();
 
   // Initialize LomuAI job manager with WebSocket support
-  const { initializeJobManager } = await import('./services/metaSysopJobManager');
+  const { initializeJobManager } = await import('./services/lomuJobManager');
   initializeJobManager(wss);
   console.log('[LOMU-AI-JOB-MANAGER] Job manager connected to WebSocket');
 
   // Initialize LomuAI chat with WebSocket for live preview
-  const { initializeMetaSysopWebSocket } = await import('./routes/metaSysopChat');
+  const { initializeMetaSysopWebSocket } = await import('./routes/lomuChat');
   initializeMetaSysopWebSocket(wss);
   console.log('[LOMU-AI-CHAT] Live preview WebSocket initialized');
 

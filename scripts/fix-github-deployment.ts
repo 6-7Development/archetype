@@ -10,10 +10,10 @@ async function fixGitHubDeployment() {
   // Read all 6 files from Replit
   const files = [
     'server/routes/chat.ts',
-    'server/routes/metaSysopChat.ts',
+    'server/routes/lomuChat.ts',
     'server/platformRoutes.ts',
     'server/db.ts',
-    'client/src/components/meta-sysop-chat.tsx',
+    'client/src/components/lomu-chat.tsx',
     'shared/schema.ts',
   ];
   

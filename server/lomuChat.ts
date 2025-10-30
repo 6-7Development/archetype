@@ -398,7 +398,7 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
       
       // Meta-SySop specific
       if (msg.includes('meta') || msg.includes('sysop') || msg.includes('platform')) {
-        return ['server/metaSysopChat.ts', 'server/platformHealing.ts'];
+        return ['server/lomuChat.ts', 'server/platformHealing.ts'];
       }
       
       // Upload/file issues

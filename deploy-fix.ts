@@ -94,7 +94,7 @@ async function deployFix() {
     const files = [
       'server/platformHealing.ts',
       'server/githubService.ts',
-      'server/routes/metaSysopChat.ts'
+      'server/routes/lomuChat.ts'
     ];
     
     const changes = await Promise.all(

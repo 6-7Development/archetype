@@ -9,8 +9,8 @@ async function pushLatestState() {
     // Get all modified files
     const files = [
       {
-        path: 'client/src/components/meta-sysop-chat.tsx',
-        content: await fs.readFile('client/src/components/meta-sysop-chat.tsx', 'utf-8'),
+        path: 'client/src/components/lomu-chat.tsx',
+        content: await fs.readFile('client/src/components/lomu-chat.tsx', 'utf-8'),
         operation: 'modify'
       },
       {

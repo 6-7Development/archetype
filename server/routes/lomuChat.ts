@@ -2346,7 +2346,7 @@ router.post('/start', isAuthenticated, async (req: any, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    const { createJob, startJobWorker } = await import('../services/metaSysopJobManager');
+    const { createJob, startJobWorker } = await import('../services/lomuJobManager');
     
     // Create the job
     const job = await createJob(userId, message);
@@ -2373,7 +2373,7 @@ router.post('/resume/:jobId', isAuthenticated, async (req: any, res) => {
     const { jobId } = req.params;
     const userId = req.authenticatedUserId;
     
-    const { resumeJob } = await import('../services/metaSysopJobManager');
+    const { resumeJob } = await import('../services/lomuJobManager');
     
     // Resume the job
     await resumeJob(jobId, userId);
@@ -2404,7 +2404,7 @@ router.get('/job/:jobId', isAuthenticated, async (req: any, res) => {
     const { jobId } = req.params;
     const userId = req.authenticatedUserId;
     
-    const { getJob } = await import('../services/metaSysopJobManager');
+    const { getJob } = await import('../services/lomuJobManager');
     
     // Get the job
     const job = await getJob(jobId, userId);
