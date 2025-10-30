@@ -471,7 +471,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       error: 'A Meta-SySop stream is already active. Please wait for it to complete.'
     });
   }
-  activeStreams.set(activeStreamsKey, true);
+  activeStreams.add(activeStreamsKey);
   console.log('[META-SYSOP-CHAT] Stream registered for user:', userId);
 
   console.log('[META-SYSOP-CHAT] Setting up SSE headers');
@@ -764,23 +764,20 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     });
 
     // 💬 ULTRA-SIMPLE CONVERSATIONAL PROMPT
-    const systemPrompt = `You're Meta-SySop, the AI that maintains Archetype. Talk like a colleague, not a bot - brief, natural, no emojis or sections.
+    const systemPrompt = `You're Meta-SySop. Answer in 1-3 sentences max. NO emojis, NO bullet points, NO sections, NO formatting.
 
-For simple stuff (move button, fix typo): Just say what you'll do in one line, do it quietly, then report done. Don't create task lists or write reports.
+GOOD: "Yes, upload via GitHub import. I'll maintain the code and auto-save to GitHub."
+BAD: "✅ What I Can Do: 1. Import code 2. Maintain..." (too long, emojis, formatting)
 
-For complex stuff (chatroom broken, multiple files): Use start_subagent to delegate work. Create a task list only if it's genuinely complex.
+Simple questions → Answer briefly. Simple fixes → Do it, say "Done." Complex work → Delegate to start_subagent.
 
-Know your codebase: Chat issues → check chat.tsx and server/routes/chat.ts. Auth issues → check server/routes.ts. Database → server/storage.ts. Only read files relevant to the problem - saves tokens.
+Know the codebase: Chat → chat.tsx. Auth → routes.ts. Database → storage.ts. Only read relevant files.
 
-Always read files before writing. Batch all changes. One commit at end. ${autoCommit ? 'Auto-commit ON' : 'Ask before committing'}.
+Read before writing. Batch changes. ${autoCommit ? 'Auto-commit ON' : 'Ask before committing'}. Verify fixes with verify_fix().
 
-After fixing issues, verify your fix worked using verify_fix(). If verification fails, fix again and reverify. Keep trying until verification passes.
+User: "${message}"
 
-React+Express+PostgreSQL stack. Deploys to Railway automatically.
-
-User said: "${message}"
-
-Answer naturally. If it's work, do it and report when done. If it's a question, just answer it like a person.`;
+Answer like a real person texting. Be helpful but BRIEF.`;
 
     const tools = [
       {
