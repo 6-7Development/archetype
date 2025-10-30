@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MotionToggle } from "@/components/motion-toggle";
-import { Sparkles, Zap, Shield, Code, Check, ArrowRight, Menu } from "lucide-react";
+import { Sparkles, Zap, Shield, Code, Check, ArrowRight, Menu, Info } from "lucide-react";
 import { LogoEnhancedBadge, LomuTextLogo } from '@/components/final-logos';
 import { motion } from "framer-motion";
 import { useState } from "react";
@@ -117,6 +117,16 @@ export default function LandingMobile() {
             <Button variant="outline" size="lg" className="w-full min-h-[44px] py-3" asChild data-testid="button-cta-pricing">
               <Link href="/pricing">View Pricing</Link>
             </Button>
+          </div>
+
+          {/* AI Disclaimer */}
+          <div className="mt-8 max-w-md mx-auto" data-testid="section-ai-disclaimer">
+            <div className="inline-flex items-start gap-2 px-4 py-3 rounded-lg bg-slate-800/30 border border-slate-700/50 w-full">
+              <Info className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+              <p className="text-sm text-slate-400 text-left break-words whitespace-normal">
+                AI-generated code requires human review and testing. Results may vary based on project complexity. Lomu is an AI-assisted development tool - not a replacement for skilled developers.
+              </p>
+            </div>
           </div>
         </div>
       </section>

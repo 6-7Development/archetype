@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MobileNav } from "@/components/mobile-nav";
 import { MotionToggle } from "@/components/motion-toggle";
-import { Check, Sparkles, Zap, Shield, TrendingUp, DollarSign } from "lucide-react";
+import { Check, Sparkles, Zap, Shield, TrendingUp, DollarSign, Info } from "lucide-react";
 import { LogoEnhancedBadge, LomuTextLogo } from '@/components/final-logos';
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -31,7 +31,7 @@ const plans = [
       "~3-6 simple projects",
       "Automatic complexity detection",
       "Real-time cost preview",
-      "Production-ready code",
+      "AI-generated code (requires review)",
       "Download projects (ZIP)",
       "Community support"
     ],
@@ -399,6 +399,16 @@ export default function Pricing() {
                 You'll see the exact cost BEFORE building any project that exceeds your plan.
               </p>
             </Card>
+          </div>
+
+          {/* AI Disclaimer */}
+          <div className="mt-8 text-center" data-testid="section-ai-disclaimer">
+            <div className="inline-flex items-start gap-2 px-4 py-3 rounded-lg bg-slate-800/30 border border-slate-700/50 max-w-3xl">
+              <Info className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+              <p className="text-sm text-slate-400 text-left">
+                Note: All plans include AI-assisted code generation that requires human review and testing. Actual development time varies based on project complexity.
+              </p>
+            </div>
           </div>
         </div>
       </section>

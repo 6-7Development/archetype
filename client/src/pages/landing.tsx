@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MobileNav } from "@/components/mobile-nav";
-import { Sparkles, Zap, Shield, Gauge, Code, Rocket, Check, Terminal, Play, ArrowRight } from "lucide-react";
+import { Sparkles, Zap, Shield, Gauge, Code, Rocket, Check, Terminal, Play, ArrowRight, Info } from "lucide-react";
 import { LogoEnhancedBadge, LomuTextLogo } from '@/components/final-logos';
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -342,6 +342,24 @@ export default function Landing() {
               <p className="text-slate-400 break-words">Join thousands of developers squeezing fresh code with AI</p>
             </div>
             <LeadCaptureForm source="landing_page_hero" />
+          </motion.div>
+
+          {/* AI Disclaimer */}
+          <motion.div
+            className="mt-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.6 }}
+            data-testid="section-ai-disclaimer"
+          >
+            <div className="max-w-3xl mx-auto">
+              <div className="inline-flex items-start gap-2 px-4 py-3 rounded-lg bg-slate-800/30 border border-slate-700/50 w-full">
+                <Info className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                <p className="text-sm text-slate-400 text-left">
+                  AI-generated code requires human review and testing. Results may vary based on project complexity. Lomu is an AI-assisted development tool - not a replacement for skilled developers.
+                </p>
+              </div>
+            </div>
           </motion.div>
         </div>
       </section>
