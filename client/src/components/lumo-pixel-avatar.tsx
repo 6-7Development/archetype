@@ -32,6 +32,7 @@ export function LumoPixelAvatar({
   className = "",
 }: LumoPixelAvatarProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const bgCanvasRef = useRef<HTMLCanvasElement>(null);
   const { theme } = useTheme();
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -47,18 +48,15 @@ export function LumoPixelAvatar({
 
   // Natural animation sequences with VARIED timing for organic feel
   const EMOTION_ANIMATIONS: Record<EmotionType, SpriteFrame[]> = {
-    // Happy - natural blinking and expressions
     happy: [
       { sheet: sheet3, col: 0, row: 1, duration: 1200 },
-      { sheet: sheet3, col: 1, row: 1, duration: 80 },    // Quick blink
+      { sheet: sheet3, col: 1, row: 1, duration: 80 },
       { sheet: sheet3, col: 0, row: 1, duration: 1800 },
-      { sheet: sheet3, col: 2, row: 1, duration: 120 },   // Wink
+      { sheet: sheet3, col: 2, row: 1, duration: 120 },
       { sheet: sheet3, col: 0, row: 1, duration: 2200 },
-      { sheet: sheet3, col: 1, row: 1, duration: 80 },    // Blink
+      { sheet: sheet3, col: 1, row: 1, duration: 80 },
       { sheet: sheet3, col: 0, row: 1, duration: 1500 },
     ],
-    
-    // Excited - faster, energetic
     excited: [
       { sheet: sheet3, col: 2, row: 0, duration: 180 },
       { sheet: sheet3, col: 3, row: 0, duration: 200 },
@@ -68,8 +66,6 @@ export function LumoPixelAvatar({
       { sheet: sheet3, col: 1, row: 0, duration: 100 },
       { sheet: sheet3, col: 3, row: 0, duration: 250 },
     ],
-    
-    // Thinking - slow, contemplative
     thinking: [
       { sheet: sheet2, col: 0, row: 0, duration: 1100 },
       { sheet: sheet2, col: 1, row: 0, duration: 800 },
@@ -78,27 +74,23 @@ export function LumoPixelAvatar({
       { sheet: sheet2, col: 1, row: 0, duration: 700 },
       { sheet: sheet2, col: 1, row: 0, duration: 1400 },
     ],
-    
-    // Working - varied mouth movement (like real talking)
     working: [
-      { sheet: sheet1, col: 0, row: 0, duration: 180 },   // Closed
-      { sheet: sheet1, col: 1, row: 0, duration: 95 },    // Small open
-      { sheet: sheet1, col: 2, row: 0, duration: 140 },   // Medium
-      { sheet: sheet1, col: 3, row: 0, duration: 110 },   // Wide
+      { sheet: sheet1, col: 0, row: 0, duration: 180 },
+      { sheet: sheet1, col: 1, row: 0, duration: 95 },
+      { sheet: sheet1, col: 2, row: 0, duration: 140 },
+      { sheet: sheet1, col: 3, row: 0, duration: 110 },
       { sheet: sheet1, col: 2, row: 0, duration: 85 },
       { sheet: sheet1, col: 1, row: 0, duration: 120 },
-      { sheet: sheet1, col: 0, row: 0, duration: 160 },   // Pause
+      { sheet: sheet1, col: 0, row: 0, duration: 160 },
       { sheet: sheet1, col: 1, row: 0, duration: 90 },
       { sheet: sheet1, col: 3, row: 0, duration: 130 },
       { sheet: sheet1, col: 2, row: 0, duration: 100 },
       { sheet: sheet1, col: 1, row: 0, duration: 95 },
-      { sheet: sheet1, col: 0, row: 0, duration: 200 },   // Longer pause
+      { sheet: sheet1, col: 0, row: 0, duration: 200 },
       { sheet: sheet1, col: 2, row: 0, duration: 110 },
       { sheet: sheet1, col: 3, row: 0, duration: 100 },
       { sheet: sheet1, col: 1, row: 0, duration: 95 },
     ],
-    
-    // Success - celebratory
     success: [
       { sheet: sheet3, col: 3, row: 0, duration: 300 },
       { sheet: sheet3, col: 2, row: 0, duration: 150 },
@@ -107,8 +99,6 @@ export function LumoPixelAvatar({
       { sheet: sheet3, col: 3, row: 0, duration: 350 },
       { sheet: sheet3, col: 0, row: 0, duration: 600 },
     ],
-    
-    // Error - agitated
     error: [
       { sheet: sheet4, col: 2, row: 0, duration: 400 },
       { sheet: sheet4, col: 3, row: 0, duration: 300 },
@@ -116,8 +106,6 @@ export function LumoPixelAvatar({
       { sheet: sheet4, col: 3, row: 0, duration: 350 },
       { sheet: sheet4, col: 2, row: 0, duration: 600 },
     ],
-    
-    // Worried - nervous
     worried: [
       { sheet: sheet4, col: 0, row: 0, duration: 650 },
       { sheet: sheet4, col: 1, row: 0, duration: 400 },
@@ -125,27 +113,91 @@ export function LumoPixelAvatar({
       { sheet: sheet4, col: 1, row: 0, duration: 500 },
       { sheet: sheet4, col: 0, row: 0, duration: 800 },
     ],
-    
-    // Sad - slow, heavy
     sad: [
       { sheet: sheet4, col: 0, row: 1, duration: 1600 },
       { sheet: sheet4, col: 1, row: 1, duration: 900 },
       { sheet: sheet4, col: 0, row: 1, duration: 1400 },
       { sheet: sheet4, col: 1, row: 1, duration: 1100 },
     ],
-    
-    // Idle - natural, relaxed breathing
     idle: [
       { sheet: sheet3, col: 0, row: 1, duration: 2000 },
-      { sheet: sheet3, col: 1, row: 1, duration: 90 },    // Blink
+      { sheet: sheet3, col: 1, row: 1, duration: 90 },
       { sheet: sheet3, col: 0, row: 1, duration: 2800 },
-      { sheet: sheet3, col: 1, row: 1, duration: 90 },    // Blink
+      { sheet: sheet3, col: 1, row: 1, duration: 90 },
       { sheet: sheet3, col: 0, row: 1, duration: 3500 },
-      { sheet: sheet3, col: 2, row: 1, duration: 180 },   // Small expression
+      { sheet: sheet3, col: 2, row: 1, duration: 180 },
       { sheet: sheet3, col: 0, row: 1, duration: 2200 },
     ],
   };
 
+  // Animated background effect
+  useEffect(() => {
+    if (!showBackground || !bgCanvasRef.current) return;
+
+    const bgCanvas = bgCanvasRef.current;
+    const bgCtx = bgCanvas.getContext("2d");
+    if (!bgCtx) return;
+
+    bgCanvas.width = containerSize;
+    bgCanvas.height = containerSize;
+
+    let bgAnimFrame: number | null = null;
+
+    const animateBackground = (timestamp: number) => {
+      if (!bgCanvasRef.current) return;
+      bgAnimFrame = requestAnimationFrame(animateBackground);
+
+      bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+      const centerX = containerSize / 2;
+      const centerY = containerSize / 2;
+
+      // Pulsing gradient background
+      const pulse = Math.sin(timestamp * 0.001) * 0.1 + 0.9;
+      const radius = (containerSize / 2) * pulse;
+
+      const gradient = bgCtx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+      
+      if (isDark) {
+        gradient.addColorStop(0, `rgba(59, 130, 246, ${0.15 * pulse})`);  // Blue glow
+        gradient.addColorStop(0.5, `rgba(30, 41, 59, ${0.3 * pulse})`);
+        gradient.addColorStop(1, "rgba(15, 23, 42, 0.1)");
+      } else {
+        gradient.addColorStop(0, `rgba(59, 130, 246, ${0.08 * pulse})`);  // Subtle blue
+        gradient.addColorStop(0.5, `rgba(241, 245, 249, ${0.2 * pulse})`);
+        gradient.addColorStop(1, "rgba(226, 232, 240, 0.05)");
+      }
+
+      bgCtx.fillStyle = gradient;
+      bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+      // Circuit-style particles
+      const particleCount = 8;
+      for (let i = 0; i < particleCount; i++) {
+        const angle = (timestamp * 0.0003 + (i * Math.PI * 2) / particleCount) % (Math.PI * 2);
+        const orbitRadius = containerSize * 0.35;
+        const x = centerX + Math.cos(angle) * orbitRadius;
+        const y = centerY + Math.sin(angle) * orbitRadius;
+        
+        const particleSize = 1 + Math.sin(timestamp * 0.002 + i) * 0.5;
+        
+        bgCtx.fillStyle = isDark 
+          ? `rgba(59, 130, 246, ${0.4 + Math.sin(timestamp * 0.002 + i) * 0.3})`
+          : `rgba(59, 130, 246, ${0.3 + Math.sin(timestamp * 0.002 + i) * 0.2})`;
+        bgCtx.beginPath();
+        bgCtx.arc(x, y, particleSize, 0, Math.PI * 2);
+        bgCtx.fill();
+      }
+    };
+
+    animateBackground(0);
+
+    return () => {
+      if (bgAnimFrame) cancelAnimationFrame(bgAnimFrame);
+    };
+  }, [containerSize, showBackground, isDark]);
+
+  // Main avatar animation
   useEffect(() => {
     if (!canvasRef.current) return;
 
@@ -156,7 +208,6 @@ export function LumoPixelAvatar({
     canvas.width = containerSize;
     canvas.height = containerSize;
 
-    // Load sprite images
     const images = new Map<string, HTMLImageElement>();
     const sheets = [sheet1, sheet2, sheet3, sheet4];
     let loadedCount = 0;
@@ -191,8 +242,9 @@ export function LumoPixelAvatar({
       let lastTimestamp = 0;
       const animSequence = EMOTION_ANIMATIONS[emotion];
       const FRAME_SIZE = 256;
+      const BUFFER_PADDING = 32; // Extra padding to prevent bleed
       
-      // Pre-render frames to off-screen buffer to prevent sprite bleed
+      // Pre-render frames with padding
       const frameBuffers = new Map<string, HTMLCanvasElement>();
       
       const prepareFrameBuffer = (frame: SpriteFrame) => {
@@ -200,8 +252,8 @@ export function LumoPixelAvatar({
         if (frameBuffers.has(key)) return frameBuffers.get(key)!;
         
         const buffer = document.createElement('canvas');
-        buffer.width = FRAME_SIZE;
-        buffer.height = FRAME_SIZE;
+        buffer.width = FRAME_SIZE + BUFFER_PADDING * 2;
+        buffer.height = FRAME_SIZE + BUFFER_PADDING * 2;
         const bufferCtx = buffer.getContext('2d');
         
         if (bufferCtx) {
@@ -214,7 +266,8 @@ export function LumoPixelAvatar({
               frame.row * FRAME_SIZE,
               FRAME_SIZE,
               FRAME_SIZE,
-              0, 0,
+              BUFFER_PADDING,
+              BUFFER_PADDING,
               FRAME_SIZE,
               FRAME_SIZE
             );
@@ -236,7 +289,6 @@ export function LumoPixelAvatar({
         
         frameTimer += deltaTime;
 
-        // Advance frame
         const currentFrame = animSequence[currentFrameIndex];
         if (frameTimer >= currentFrame.duration) {
           frameTimer = 0;
@@ -247,29 +299,35 @@ export function LumoPixelAvatar({
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Natural breathing animation (subtle, separate from frame changes)
-        const breatheY = Math.sin(timestamp * 0.0008) * 1.5;  // Slow breathing
-        const breatheScale = 1 + Math.sin(timestamp * 0.0008) * 0.008;  // Subtle scale
+        // Natural breathing (very subtle)
+        const breatheY = Math.sin(timestamp * 0.0008) * 1.2;
+        const breatheScale = 1 + Math.sin(timestamp * 0.0008) * 0.006;
         
-        // Prepare and draw the frame buffer
         const frameBuffer = prepareFrameBuffer(frame);
         
         if (frameBuffer) {
           const centerX = containerSize / 2;
           const centerY = containerSize / 2;
           
-          ctx.save();
-          ctx.translate(centerX, centerY + breatheY);
-          ctx.scale(breatheScale, breatheScale);
-          ctx.translate(-centerX, -centerY);
+          // Calculate render size to prevent showing padding
+          const renderSize = containerSize * breatheScale;
+          const offsetX = (containerSize - renderSize) / 2;
+          const offsetY = (containerSize - renderSize) / 2 + breatheY;
           
+          ctx.save();
           ctx.imageSmoothingEnabled = false;
           
           try {
             ctx.drawImage(
               frameBuffer,
-              0, 0, FRAME_SIZE, FRAME_SIZE,
-              0, 0, containerSize, containerSize
+              BUFFER_PADDING,
+              BUFFER_PADDING,
+              FRAME_SIZE,
+              FRAME_SIZE,
+              offsetX,
+              offsetY,
+              renderSize,
+              renderSize
             );
           } catch (error) {
             console.error("[LUMO] Draw error:", error);
@@ -295,34 +353,81 @@ export function LumoPixelAvatar({
       style={{
         width: containerSize,
         height: containerSize,
-        borderRadius: showBackground ? "50%" : "0",
-        background: showBackground
-          ? isDark
-            ? "radial-gradient(circle, rgba(30,41,59,0.8) 0%, rgba(15,23,42,0.95) 100%)"
-            : "radial-gradient(circle, rgba(241,245,249,0.8) 0%, rgba(226,232,240,0.95) 100%)"
-          : "transparent",
-        boxShadow: showBackground
-          ? isDark
-            ? "0 10px 40px rgba(0,0,0,0.4)"
-            : "0 10px 40px rgba(0,0,0,0.1)"
-          : "none",
-        imageRendering: "pixelated",
-        overflow: "hidden",
       }}
     >
-      <canvas 
-        ref={canvasRef} 
-        style={{ 
+      {/* Animated outer ring border */}
+      {showBackground && (
+        <div
+          className="absolute inset-0"
+          style={{
+            borderRadius: "50%",
+            background: isDark
+              ? "conic-gradient(from 0deg, rgba(59, 130, 246, 0.6), rgba(139, 92, 246, 0.4), rgba(59, 130, 246, 0.6))"
+              : "conic-gradient(from 0deg, rgba(59, 130, 246, 0.5), rgba(139, 92, 246, 0.3), rgba(59, 130, 246, 0.5))",
+            padding: "3px",
+            animation: "spin 8s linear infinite",
+          }}
+        >
+          <div
+            className="w-full h-full rounded-full"
+            style={{
+              background: isDark ? "rgb(15, 23, 42)" : "rgb(241, 245, 249)",
+            }}
+          />
+        </div>
+      )}
+
+      {/* Animated background canvas */}
+      {showBackground && (
+        <canvas
+          ref={bgCanvasRef}
+          className="absolute inset-0"
+          style={{
+            borderRadius: "50%",
+            imageRendering: "auto",
+          }}
+        />
+      )}
+
+      {/* Main avatar canvas */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0"
+        style={{
           imageRendering: "pixelated",
-          width: "100%",
-          height: "100%",
+          borderRadius: showBackground ? "50%" : "0",
         }}
       />
+
+      {/* Inner glow ring */}
+      {showBackground && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            borderRadius: "50%",
+            boxShadow: isDark
+              ? "inset 0 0 30px rgba(59, 130, 246, 0.3), 0 0 40px rgba(59, 130, 246, 0.2)"
+              : "inset 0 0 30px rgba(59, 130, 246, 0.2), 0 0 40px rgba(59, 130, 246, 0.15)",
+          }}
+        />
+      )}
+
       {!isLoaded && (
         <div className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">
           Loading Lumo...
         </div>
       )}
+
+      <style>{`
+        @keyframes spin {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
     </div>
   );
 }
