@@ -45,6 +45,8 @@ import {
   type MaintenanceMode,
   type SysopTask,
   type InsertSysopTask,
+  type UserAvatarState,
+  type InsertUserAvatarState,
   users,
   files,
   chatMessages,
@@ -74,7 +76,8 @@ import {
   serviceMilestones,
   serviceProgressLogs,
   satisfactionSurveys,
-  maintenanceMode
+  maintenanceMode,
+  userAvatarState
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, isNull, sql } from "drizzle-orm";
@@ -159,6 +162,11 @@ export interface IStorage {
   // Owner operations
   getOwner(): Promise<User | undefined>;
   setOwner(userId: string): Promise<User>;
+  
+  // Avatar State operations
+  getUserAvatarState(userId: string): Promise<UserAvatarState | undefined>;
+  upsertUserAvatarState(userId: string, state: Partial<InsertUserAvatarState>): Promise<UserAvatarState>;
+  updateAvatarMood(userId: string, mood: string): Promise<UserAvatarState>;
   
   // Template operations
   getTemplates(): Promise<Template[]>;
@@ -940,6 +948,56 @@ export class DatabaseStorage implements IStorage {
     }
     
     return updatedUser;
+  }
+
+  // Avatar State operations
+  async getUserAvatarState(userId: string): Promise<UserAvatarState | undefined> {
+    const [state] = await db
+      .select()
+      .from(userAvatarState)
+      .where(eq(userAvatarState.userId, userId));
+    
+    return state || undefined;
+  }
+
+  async upsertUserAvatarState(userId: string, state: Partial<InsertUserAvatarState>): Promise<UserAvatarState> {
+    const [avatarState] = await db
+      .insert(userAvatarState)
+      .values({
+        userId,
+        ...state,
+      })
+      .onConflictDoUpdate({
+        target: userAvatarState.userId,
+        set: {
+          ...state,
+          lastMoodChange: new Date(),
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    
+    return avatarState;
+  }
+
+  async updateAvatarMood(userId: string, mood: string): Promise<UserAvatarState> {
+    const [avatarState] = await db
+      .insert(userAvatarState)
+      .values({
+        userId,
+        currentMood: mood,
+      })
+      .onConflictDoUpdate({
+        target: userAvatarState.userId,
+        set: {
+          currentMood: mood,
+          lastMoodChange: new Date(),
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    
+    return avatarState;
   }
 
   // Deployment operations

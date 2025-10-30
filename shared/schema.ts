@@ -74,6 +74,27 @@ export const insertMaintenanceModeSchema = createInsertSchema(maintenanceMode).o
 export type InsertMaintenanceMode = z.infer<typeof insertMaintenanceModeSchema>;
 export type MaintenanceMode = typeof maintenanceMode.$inferSelect;
 
+// User Avatar State - Per-user Lumo mascot mood and preferences
+export const userAvatarState = pgTable("user_avatar_state", {
+  userId: varchar("user_id").primaryKey().notNull(),
+  currentMood: varchar("current_mood").notNull().default("happy"), // happy, excited, thinking, working, success, error, annoyed, sad, idle, confused, content, cheerful, love, angry, displeased
+  lastMoodChange: timestamp("last_mood_change").notNull().defaultNow(),
+  autoMoodEnabled: boolean("auto_mood_enabled").notNull().default(true), // Auto-change based on build status
+  customMessage: text("custom_message"), // Optional status message
+  particlePreference: varchar("particle_preference").notNull().default("auto"), // auto, minimal, off
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertUserAvatarStateSchema = createInsertSchema(userAvatarState).omit({
+  createdAt: true,
+  updatedAt: true,
+  lastMoodChange: true,
+});
+
+export type InsertUserAvatarState = z.infer<typeof insertUserAvatarStateSchema>;
+export type UserAvatarState = typeof userAvatarState.$inferSelect;
+
 export const projects = pgTable("projects", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),

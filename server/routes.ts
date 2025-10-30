@@ -349,6 +349,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ==================== AVATAR STATE ROUTES ====================
+  
+  // GET /api/avatar/state - Get user's avatar state
+  app.get("/api/avatar/state", async (req: any, res) => {
+    try {
+      const userId = req.session?.claims?.sub || req.session?.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      let avatarState = await storage.getUserAvatarState(userId);
+      
+      if (!avatarState) {
+        avatarState = await storage.upsertUserAvatarState(userId, {
+          userId,
+          currentMood: "happy",
+          autoMoodEnabled: true,
+          particlePreference: "auto",
+        });
+      }
+      
+      res.json(avatarState);
+    } catch (error) {
+      console.error('Error fetching avatar state:', error);
+      res.status(500).json({ error: "Failed to fetch avatar state" });
+    }
+  });
+
+  // POST /api/avatar/mood - Update avatar mood
+  app.post("/api/avatar/mood", async (req: any, res) => {
+    try {
+      const userId = req.session?.claims?.sub || req.session?.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const { mood, autoMoodEnabled, particlePreference } = req.body;
+
+      if (!mood || typeof mood !== 'string') {
+        return res.status(400).json({ error: "Mood is required" });
+      }
+
+      const validMoods = [
+        'happy', 'excited', 'thinking', 'working', 'success', 'error', 
+        'annoyed', 'sad', 'idle', 'confused', 'content', 'cheerful', 
+        'love', 'angry', 'displeased'
+      ];
+      
+      if (!validMoods.includes(mood)) {
+        return res.status(400).json({ 
+          error: `Invalid mood. Must be one of: ${validMoods.join(', ')}` 
+        });
+      }
+
+      const updateData: any = { currentMood: mood };
+      if (typeof autoMoodEnabled === 'boolean') {
+        updateData.autoMoodEnabled = autoMoodEnabled;
+      }
+      if (particlePreference && ['auto', 'minimal', 'off'].includes(particlePreference)) {
+        updateData.particlePreference = particlePreference;
+      }
+
+      const avatarState = await storage.upsertUserAvatarState(userId, {
+        userId,
+        ...updateData,
+      });
+      
+      try {
+        wss.clients.forEach((client: any) => {
+          if (client.readyState === 1) {
+            client.send(JSON.stringify({
+              type: 'AVATAR_MOOD_CHANGE',
+              userId,
+              mood,
+              timestamp: new Date().toISOString(),
+            }));
+          }
+        });
+      } catch (wsError) {
+        console.error('[AVATAR] WebSocket broadcast error:', wsError);
+      }
+      
+      res.json({ success: true, avatarState });
+    } catch (error: any) {
+      console.error('Error updating avatar mood:', error);
+      res.status(500).json({ error: error.message || "Failed to update avatar mood" });
+    }
+  });
+
   console.log('✅ All routes registered successfully');
   
   return httpServer;
