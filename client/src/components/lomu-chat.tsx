@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { AgentTaskList, type AgentTask } from "./agent-task-list";
 import { AgentProgressDisplay } from "./agent-progress-display";
 import { MarkdownRenderer } from "./markdown-renderer";
-import { LumoPixelAvatar } from "./lumo-pixel-avatar";
+import { LemonMascot } from "./lemon-mascot";
 
 interface Attachment {
   fileName: string;
@@ -807,18 +807,14 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
               <div className="text-center py-6 md:py-8 animate-in fade-in-up duration-700">
                 <div className="flex justify-center mb-4 md:mb-6">
                   {/* Responsive: medium on mobile, large on desktop */}
-                  <LumoPixelAvatar 
+                  <LemonMascot 
                     emotion={progressStatus === 'idle' ? 'happy' : progressStatus as any} 
                     size="medium"
-                    showBackground={true}
-                    backgroundTheme="auto"
                     className="md:hidden"
                   />
-                  <LumoPixelAvatar 
+                  <LemonMascot 
                     emotion={progressStatus === 'idle' ? 'happy' : progressStatus as any} 
                     size="large"
-                    showBackground={true}
-                    backgroundTheme="auto"
                     className="hidden md:block"
                   />
                 </div>
@@ -845,14 +841,13 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
               >
                 {message.role === "assistant" && (
                   <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10">
-                    <LumoPixelAvatar 
+                    <LemonMascot 
                       emotion={
                         progressStatus === 'thinking' ? 'thinking' : 
                         progressStatus === 'working' ? 'working' : 
                         'happy'
                       } 
-                      size="small" 
-                      showBackground={false}
+                      size="small"
                     />
                   </div>
                 )}

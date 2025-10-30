@@ -24,7 +24,7 @@ import { TaskBoard } from "@/components/task-board";
 import { AgentTaskList, type AgentTask } from "@/components/agent-task-list";
 import { AgentProgressDisplay } from "@/components/agent-progress-display";
 import { ChatInputToolbar } from "@/components/ui/chat-input-toolbar";
-import { LumoPixelAvatar } from "@/components/lumo-pixel-avatar";
+import { LemonMascot } from "@/components/lemon-mascot";
 
 interface CheckpointData {
   complexity: string;
@@ -900,10 +900,9 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
             >
               {message.role === "assistant" && (
                 <div className="flex-shrink-0">
-                  <LumoPixelAvatar
+                  <LemonMascot
                     emotion="happy"
                     size="small"
-                    showBackground={false}
                   />
                 </div>
               )}
