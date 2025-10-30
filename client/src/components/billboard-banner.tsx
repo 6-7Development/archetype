@@ -19,7 +19,7 @@ const REAL_FEATURES: FeatureMessage[] = [
     title: "New Feature: LomuAI Auto-Healing!",
     description: "Our AI now automatically fixes bugs and deploys updates - watch your platform heal itself in real-time",
     cta: "See It In Action",
-    link: "/platform-healing",
+    link: "/builder", // Changed to /builder (public) instead of /platform-healing (admin-only)
     type: "announcement"
   },
   {
@@ -43,7 +43,7 @@ const REAL_FEATURES: FeatureMessage[] = [
     title: "Meet Lumo - Your AI Companion!",
     description: "Interactive lemon mascot with mood-based animations and particle effects - alive and responsive",
     cta: "Meet Lumo",
-    link: "/platform-healing",
+    link: "/builder", // Changed to /builder where Lumo appears in SySop chat
     type: "celebration"
   },
   {
@@ -51,7 +51,7 @@ const REAL_FEATURES: FeatureMessage[] = [
     title: "Real-Time Task Management!",
     description: "Track AI agent progress with live task lists - see exactly what's being built in real-time",
     cta: "View Tasks",
-    link: "/platform-healing",
+    link: "/builder", // Changed to /builder where task management is visible
     type: "feature"
   },
   {
@@ -59,7 +59,7 @@ const REAL_FEATURES: FeatureMessage[] = [
     title: "Webhook Automation!",
     description: "Auto-deploy on every GitHub commit - your platform updates itself automatically",
     cta: "Configure Webhooks",
-    link: "/platform-healing",
+    link: "/publishing", // Changed to /publishing for deployment features
     type: "promo"
   },
 ];

@@ -185,15 +185,11 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* Billboard Banner */}
+      {/* Billboard Banner - Rotating through all 6 real features */}
       <div className="pt-20 pb-6 px-6 relative z-20">
         <div className="container mx-auto max-w-6xl">
           <BillboardBanner
-            type="announcement"
-            title="New Feature: LomuAI Auto-Healing!"
-            description="Our AI now automatically fixes bugs and deploys updates - watch your platform heal itself in real-time"
-            ctaText="See It In Action"
-            ctaLink="/platform-healing"
+            rotating={true}
             animated={true}
             dismissible={true}
           />
