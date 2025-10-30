@@ -524,6 +524,103 @@ export function LumoAvatar({
                 },
               }}
             />
+
+            {/* ANIMATED EYELIDS - INSIDE animated container so they move with Lumo */}
+            {/* Left eye eyelid (viewer's left, Lumo's right) */}
+            <motion.div
+              className="absolute pointer-events-none overflow-hidden rounded-full"
+              style={{
+                left: "58%",
+                top: "38%",
+                width: "12%",
+                height: "10%",
+                zIndex: 25,
+              }}
+            >
+              <motion.div
+                className="absolute inset-0 bg-black rounded-full"
+                style={{
+                  boxShadow: "inset 0 2px 8px rgba(0,0,0,0.8)",
+                }}
+                animate={{
+                  scaleY: isBlinking || isWinking === "left" ? 1 : 0,
+                }}
+                transition={{
+                  duration: isBlinking ? 0.15 : 0.2,
+                  ease: "easeInOut",
+                }}
+              />
+            </motion.div>
+
+            {/* Right eye eyelid (viewer's right, Lumo's left) */}
+            <motion.div
+              className="absolute pointer-events-none overflow-hidden rounded-full"
+              style={{
+                left: "30%",
+                top: "38%",
+                width: "12%",
+                height: "10%",
+                zIndex: 25,
+              }}
+            >
+              <motion.div
+                className="absolute inset-0 bg-black rounded-full"
+                style={{
+                  boxShadow: "inset 0 2px 8px rgba(0,0,0,0.8)",
+                }}
+                animate={{
+                  scaleY: isBlinking || isWinking === "right" ? 1 : 0,
+                }}
+                transition={{
+                  duration: isBlinking ? 0.15 : 0.2,
+                  ease: "easeInOut",
+                }}
+              />
+            </motion.div>
+
+            {/* ANIMATED SMILE - INSIDE animated container so it moves with Lumo */}
+            <motion.div
+              className="absolute pointer-events-none"
+              style={{
+                left: "50%",
+                top: "64%",
+                width: "28%",
+                height: "10%",
+                transform: "translateX(-50%)",
+                zIndex: 25,
+              }}
+              animate={{
+                opacity: isSmiling ? 1 : 0,
+                scale: isSmiling ? 1.15 : 0.8,
+              }}
+              transition={{
+                duration: 0.3,
+                ease: "easeOut",
+              }}
+            >
+              <svg
+                viewBox="0 0 60 25"
+                className="w-full h-full"
+                style={{
+                  filter: "drop-shadow(0 0 10px rgba(34, 197, 94, 0.9)) drop-shadow(0 0 5px rgba(255, 255, 255, 0.6))",
+                }}
+              >
+                <path
+                  d="M 6 8 Q 30 18 54 8"
+                  stroke="rgba(34, 197, 94, 1)"
+                  strokeWidth="4"
+                  fill="none"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M 8 10 Q 30 16 52 10"
+                  stroke="rgba(255, 255, 255, 0.9)"
+                  strokeWidth="2.5"
+                  fill="none"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </motion.div>
           </motion.div>
 
           {/* Sparkle effects for excited/success states */}
@@ -585,103 +682,6 @@ export function LumoAvatar({
               ))}
             </motion.div>
           )}
-
-          {/* ANIMATED EYELIDS - Positioned correctly over Lumo's actual eyes */}
-          {/* Left eye eyelid (viewer's left, Lumo's right) */}
-          <motion.div
-            className="absolute pointer-events-none overflow-hidden rounded-full"
-            style={{
-              left: "58%",
-              top: "38%",
-              width: "12%",
-              height: "10%",
-              zIndex: 25,
-            }}
-          >
-            <motion.div
-              className="absolute inset-0 bg-black rounded-full"
-              style={{
-                boxShadow: "inset 0 2px 8px rgba(0,0,0,0.8)",
-              }}
-              animate={{
-                scaleY: isBlinking || isWinking === "left" ? 1 : 0,
-              }}
-              transition={{
-                duration: isBlinking ? 0.15 : 0.2,
-                ease: "easeInOut",
-              }}
-            />
-          </motion.div>
-
-          {/* Right eye eyelid (viewer's right, Lumo's left) */}
-          <motion.div
-            className="absolute pointer-events-none overflow-hidden rounded-full"
-            style={{
-              left: "30%",
-              top: "38%",
-              width: "12%",
-              height: "10%",
-              zIndex: 25,
-            }}
-          >
-            <motion.div
-              className="absolute inset-0 bg-black rounded-full"
-              style={{
-                boxShadow: "inset 0 2px 8px rgba(0,0,0,0.8)",
-              }}
-              animate={{
-                scaleY: isBlinking || isWinking === "right" ? 1 : 0,
-              }}
-              transition={{
-                duration: isBlinking ? 0.15 : 0.2,
-                ease: "easeInOut",
-              }}
-            />
-          </motion.div>
-
-          {/* ANIMATED SMILE - Positioned over Lumo's actual mouth area */}
-          <motion.div
-            className="absolute pointer-events-none"
-            style={{
-              left: "50%",
-              top: "64%",
-              width: "28%",
-              height: "10%",
-              transform: "translateX(-50%)",
-              zIndex: 25,
-            }}
-            animate={{
-              opacity: isSmiling ? 1 : 0,
-              scale: isSmiling ? 1.15 : 0.8,
-            }}
-            transition={{
-              duration: 0.3,
-              ease: "easeOut",
-            }}
-          >
-            <svg
-              viewBox="0 0 60 25"
-              className="w-full h-full"
-              style={{
-                filter: "drop-shadow(0 0 10px rgba(34, 197, 94, 0.9)) drop-shadow(0 0 5px rgba(255, 255, 255, 0.6))",
-              }}
-            >
-              <path
-                d="M 6 8 Q 30 18 54 8"
-                stroke="rgba(34, 197, 94, 1)"
-                strokeWidth="4"
-                fill="none"
-                strokeLinecap="round"
-              />
-              <path
-                d="M 8 10 Q 30 16 52 10"
-                stroke="rgba(255, 255, 255, 0.9)"
-                strokeWidth="2.5"
-                fill="none"
-                strokeLinecap="round"
-              />
-            </svg>
-          </motion.div>
         </motion.div>
       </motion.div>
     </div>
