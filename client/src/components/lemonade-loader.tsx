@@ -7,10 +7,25 @@ interface LemonadeLoaderProps {
   className?: string;
 }
 
+// Cute loading messages based on progress
+const getProgressMessage = (progress: number): string => {
+  if (progress < 10) return "Squeezing lemons...";
+  if (progress < 20) return "Adding fresh zest...";
+  if (progress < 30) return "Pouring pitcher of water...";
+  if (progress < 40) return "Stirring with love...";
+  if (progress < 50) return "Adding ice cubes...";
+  if (progress < 60) return "Garnishing with lemon slices...";
+  if (progress < 70) return "Chilling to perfection...";
+  if (progress < 80) return "Adding finishing touches...";
+  if (progress < 90) return "Taste testing...";
+  if (progress < 100) return "Almost refreshing...";
+  return "Refreshingly ready!";
+};
+
 export function LemonadeLoader({
   progress = 0,
   size = "medium",
-  message = "Squeezing fresh code...",
+  message,
   className = "",
 }: LemonadeLoaderProps) {
   const [animatedProgress, setAnimatedProgress] = useState(0);
@@ -260,8 +275,8 @@ export function LemonadeLoader({
         <div className="text-2xl font-bold text-primary">
           {Math.round(animatedProgress)}%
         </div>
-        <div className="text-sm text-muted-foreground">
-          {message}
+        <div className="text-sm text-muted-foreground font-medium">
+          {message || getProgressMessage(animatedProgress)}
         </div>
       </div>
 

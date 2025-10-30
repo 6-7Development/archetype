@@ -567,8 +567,10 @@ function PlatformHealingContent() {
               </div>
             </div>
 
-            {/* Deployment Status Widget */}
-            <DeploymentStatusWidget />
+            {/* Deployment Status Widget - Hidden on mobile for better UX */}
+            <div className="hidden md:block">
+              <DeploymentStatusWidget />
+            </div>
           </div>
         </div>
       </div>
