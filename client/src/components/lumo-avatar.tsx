@@ -57,15 +57,24 @@ export function LumoAvatar({
 
   // Random blink effect (every 4-7 seconds)
   useEffect(() => {
+    let blinkTimeout: NodeJS.Timeout;
+    let resetTimeout: NodeJS.Timeout;
+    
     const scheduleNextBlink = () => {
       const delay = 4000 + Math.random() * 3000; // 4-7 seconds
-      setTimeout(() => {
+      blinkTimeout = setTimeout(() => {
         setIsBlinking(true);
-        setTimeout(() => setIsBlinking(false), 150);
+        resetTimeout = setTimeout(() => setIsBlinking(false), 150);
         scheduleNextBlink();
       }, delay);
     };
     scheduleNextBlink();
+    
+    // Cleanup on unmount
+    return () => {
+      clearTimeout(blinkTimeout);
+      clearTimeout(resetTimeout);
+    };
   }, []);
 
   // Generate floating particles for background
@@ -216,16 +225,32 @@ export function LumoAvatar({
             }}
           />
 
-          {/* Lumo image */}
-          <motion.img
-            src={lumoImage}
-            alt="Lumo - Meta-SySop Avatar"
-            className="w-full h-full object-contain relative z-10"
+          {/* Lumo image - 4-emotion sprite sheet */}
+          <motion.div
+            className="w-full h-full relative z-10 overflow-hidden rounded-full"
             style={{
               filter: isBlinking ? "brightness(0.7)" : "brightness(1)",
             }}
             transition={{ duration: 0.1 }}
-          />
+          >
+            <motion.img
+              src={lumoImage}
+              alt="Lumo - Meta-SySop Avatar"
+              className="absolute object-contain"
+              style={{
+                width: "200%",
+                height: "200%",
+                // Position based on emotion (2x2 grid)
+                // Top-left: happy, Top-right: sad, Bottom-left: worried, Bottom-right: excited
+                left: currentConfig.displayEmotion === "happy" || currentConfig.displayEmotion === "worried" ? "0%" : "-100%",
+                top: currentConfig.displayEmotion === "happy" || currentConfig.displayEmotion === "sad" ? "0%" : "-100%",
+              }}
+              animate={{
+                scale: isBlinking ? 0.95 : 1,
+              }}
+              transition={{ duration: 0.1 }}
+            />
+          </motion.div>
 
           {/* Sparkle effects for excited/success states */}
           {currentConfig.showSparkles && (
