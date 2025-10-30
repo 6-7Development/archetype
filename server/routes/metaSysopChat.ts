@@ -1955,9 +1955,18 @@ Answer naturally. If it's work, do it and report when done. If it's a question, 
                   verificationDetails = 'Basic log check passed (enhanced verification coming soon)';
                     
                 } else if (typedInput.checkType === 'endpoint' && typedInput.target) {
-                  // Simplified endpoint check - assume pass for now
-                  verificationPassed = true;
-                  verificationDetails = `Endpoint ${typedInput.target} check passed`;
+                  // Perform actual HTTP request to test endpoint
+                  try {
+                    const response = await fetch(`http://localhost:5000${typedInput.target}`, {
+                      method: 'GET',
+                      headers: { 'Content-Type': 'application/json' }
+                    });
+                    verificationPassed = response.ok; // 2xx status
+                    verificationDetails = `Endpoint ${typedInput.target} returned ${response.status} ${response.statusText}`;
+                  } catch (err: any) {
+                    verificationPassed = false;
+                    verificationDetails = `Endpoint ${typedInput.target} failed: ${err.message}`;
+                  }
                   
                 } else if (typedInput.checkType === 'file_exists' && typedInput.target) {
                   // Check if file exists
