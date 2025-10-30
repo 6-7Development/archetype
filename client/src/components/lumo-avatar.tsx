@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import lumoImage from "@assets/image_1761785678184.png";
+import lumoImage from "@assets/image_1761786985510.png";
 import { backgroundThemes, getAutoTheme, type BackgroundTheme } from "./lumo-background-themes";
 
 type EmotionState = "happy" | "sad" | "worried" | "excited" | "thinking" | "working" | "success" | "error" | "idle";
@@ -9,26 +9,101 @@ interface LumoAvatarProps {
   emotion?: EmotionState;
   size?: "small" | "medium" | "large";
   showBackground?: boolean;
-  backgroundTheme?: BackgroundTheme | "auto"; // "auto" = detect based on date
+  backgroundTheme?: BackgroundTheme | "auto";
   className?: string;
 }
 
-// Map activity states to emotions and visual effects
-const emotionConfig: Record<EmotionState, { 
-  displayEmotion: "happy" | "sad" | "worried" | "excited";
-  glowColor: string;
+// Facial feature configurations for each emotion
+const emotionConfig: Record<EmotionState, {
+  eyeGlow: string;
+  eyeIntensity: number;
+  mouthPath: string; // SVG path for mouth shape
+  eyeScale: number;
   pulseSpeed: number;
   showSparkles: boolean;
+  circuitGlow: string;
 }> = {
-  happy: { displayEmotion: "happy", glowColor: "rgba(6, 182, 212, 0.3)", pulseSpeed: 2.5, showSparkles: false },
-  sad: { displayEmotion: "sad", glowColor: "rgba(59, 130, 246, 0.3)", pulseSpeed: 3, showSparkles: false },
-  worried: { displayEmotion: "worried", glowColor: "rgba(251, 191, 36, 0.4)", pulseSpeed: 1.8, showSparkles: false },
-  excited: { displayEmotion: "excited", glowColor: "rgba(168, 85, 247, 0.4)", pulseSpeed: 1.5, showSparkles: true },
-  thinking: { displayEmotion: "worried", glowColor: "rgba(251, 191, 36, 0.4)", pulseSpeed: 2, showSparkles: false },
-  working: { displayEmotion: "worried", glowColor: "rgba(6, 182, 212, 0.5)", pulseSpeed: 1.5, showSparkles: false },
-  success: { displayEmotion: "excited", glowColor: "rgba(34, 197, 94, 0.5)", pulseSpeed: 1, showSparkles: true },
-  error: { displayEmotion: "sad", glowColor: "rgba(239, 68, 68, 0.4)", pulseSpeed: 2.5, showSparkles: false },
-  idle: { displayEmotion: "happy", glowColor: "rgba(6, 182, 212, 0.3)", pulseSpeed: 2.5, showSparkles: false },
+  happy: {
+    eyeGlow: "#00ffff",
+    eyeIntensity: 1,
+    mouthPath: "M35,45 Q50,55 65,45", // Smile
+    eyeScale: 1,
+    pulseSpeed: 2.5,
+    showSparkles: false,
+    circuitGlow: "rgba(6, 182, 212, 0.6)",
+  },
+  sad: {
+    eyeGlow: "#4ba3c3",
+    eyeIntensity: 0.6,
+    mouthPath: "M35,52 Q50,48 65,52", // Frown
+    eyeScale: 0.85,
+    pulseSpeed: 3,
+    showSparkles: false,
+    circuitGlow: "rgba(59, 130, 246, 0.4)",
+  },
+  worried: {
+    eyeGlow: "#fbbf24",
+    eyeIntensity: 0.8,
+    mouthPath: "M35,50 L65,50", // Straight line (concerned)
+    eyeScale: 0.9,
+    pulseSpeed: 1.8,
+    showSparkles: false,
+    circuitGlow: "rgba(251, 191, 36, 0.5)",
+  },
+  excited: {
+    eyeGlow: "#a855f7",
+    eyeIntensity: 1.2,
+    mouthPath: "M32,45 Q50,60 68,45", // Big smile
+    eyeScale: 1.1,
+    pulseSpeed: 1.5,
+    showSparkles: true,
+    circuitGlow: "rgba(168, 85, 247, 0.7)",
+  },
+  thinking: {
+    eyeGlow: "#fbbf24",
+    eyeIntensity: 0.75,
+    mouthPath: "M38,50 Q50,48 62,50", // Slight frown (thinking)
+    eyeScale: 0.95,
+    pulseSpeed: 2,
+    showSparkles: false,
+    circuitGlow: "rgba(251, 191, 36, 0.5)",
+  },
+  working: {
+    eyeGlow: "#06b6d4",
+    eyeIntensity: 1,
+    mouthPath: "M35,50 Q50,52 65,50", // Focused
+    eyeScale: 1,
+    pulseSpeed: 1.5,
+    showSparkles: false,
+    circuitGlow: "rgba(6, 182, 212, 0.8)",
+  },
+  success: {
+    eyeGlow: "#22c55e",
+    eyeIntensity: 1.3,
+    mouthPath: "M32,43 Q50,62 68,43", // Huge smile
+    eyeScale: 1.15,
+    pulseSpeed: 1,
+    showSparkles: true,
+    circuitGlow: "rgba(34, 197, 94, 0.8)",
+  },
+  error: {
+    eyeGlow: "#ef4444",
+    eyeIntensity: 0.7,
+    mouthPath: "M35,55 Q50,50 65,55", // Deep frown
+    eyeScale: 0.8,
+    pulseSpeed: 2.5,
+    showSparkles: false,
+    circuitGlow: "rgba(239, 68, 68, 0.6)",
+  },
+  idle: {
+    eyeGlow: "#00ffff",
+    eyeIntensity: 1,
+    mouthPath: "M35,45 Q50,55 65,45", // Smile
+    eyeScale: 1,
+    pulseSpeed: 2.5,
+    showSparkles: false,
+    circuitGlow: "rgba(6, 182, 212, 0.6)",
+  },
 };
 
 export function LumoAvatar({
@@ -40,6 +115,7 @@ export function LumoAvatar({
 }: LumoAvatarProps) {
   const [isBlinking, setIsBlinking] = useState(false);
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; delay: number }>>([]);
+  const [eyeMovement, setEyeMovement] = useState({ x: 0, y: 0 });
 
   // Size configurations
   const sizeConfig = {
@@ -70,11 +146,30 @@ export function LumoAvatar({
     };
     scheduleNextBlink();
     
-    // Cleanup on unmount
     return () => {
       clearTimeout(blinkTimeout);
       clearTimeout(resetTimeout);
     };
+  }, []);
+
+  // Subtle eye movement (looks around occasionally)
+  useEffect(() => {
+    let moveTimeout: NodeJS.Timeout;
+    
+    const scheduleNextMove = () => {
+      const delay = 3000 + Math.random() * 4000; // 3-7 seconds
+      moveTimeout = setTimeout(() => {
+        setEyeMovement({
+          x: (Math.random() - 0.5) * 3, // -1.5 to 1.5
+          y: (Math.random() - 0.5) * 2, // -1 to 1
+        });
+        setTimeout(() => setEyeMovement({ x: 0, y: 0 }), 800);
+        scheduleNextMove();
+      }, delay);
+    };
+    scheduleNextMove();
+    
+    return () => clearTimeout(moveTimeout);
   }, []);
 
   // Generate floating particles for background
@@ -208,14 +303,14 @@ export function LumoAvatar({
             },
           }}
         >
-          {/* Circuit glow pulse overlay - color changes with emotion */}
+          {/* Circuit glow pulse overlay */}
           <motion.div
-            className="absolute inset-0 rounded-full"
+            className="absolute inset-0 rounded-full blur-xl"
             style={{
-              background: `radial-gradient(circle, ${currentConfig.glowColor} 0%, transparent 70%)`,
+              background: `radial-gradient(circle, ${currentConfig.circuitGlow} 0%, transparent 70%)`,
             }}
             animate={{
-              opacity: [0.3, 0.7, 0.3],
+              opacity: [0.4, 0.8, 0.4],
               scale: [0.95, 1.05, 0.95],
             }}
             transition={{
@@ -225,32 +320,113 @@ export function LumoAvatar({
             }}
           />
 
-          {/* Lumo image - 4-emotion sprite sheet */}
-          <motion.div
-            className="w-full h-full relative z-10 overflow-hidden rounded-full"
-            style={{
-              filter: isBlinking ? "brightness(0.7)" : "brightness(1)",
-            }}
-            transition={{ duration: 0.1 }}
+          {/* Base Lumo image */}
+          <img
+            src={lumoImage}
+            alt="Lumo - Meta-SySop Avatar"
+            className="w-full h-full object-contain relative z-10"
+          />
+
+          {/* SVG overlay for animated facial features */}
+          <svg
+            className="absolute inset-0 w-full h-full z-20 pointer-events-none"
+            viewBox="0 0 100 100"
+            style={{ overflow: 'visible' }}
           >
-            <motion.img
-              src={lumoImage}
-              alt="Lumo - Meta-SySop Avatar"
-              className="absolute object-contain"
-              style={{
-                width: "200%",
-                height: "200%",
-                // Position based on emotion (2x2 grid)
-                // Top-left: happy, Top-right: sad, Bottom-left: worried, Bottom-right: excited
-                left: currentConfig.displayEmotion === "happy" || currentConfig.displayEmotion === "worried" ? "0%" : "-100%",
-                top: currentConfig.displayEmotion === "happy" || currentConfig.displayEmotion === "sad" ? "0%" : "-100%",
-              }}
+            {/* Left Eye */}
+            <motion.ellipse
+              cx="37"
+              cy="42"
+              rx="6"
+              ry={isBlinking ? "1" : "9"}
+              fill={currentConfig.eyeGlow}
+              opacity={currentConfig.eyeIntensity}
               animate={{
-                scale: isBlinking ? 0.95 : 1,
+                cx: 37 + eyeMovement.x,
+                cy: 42 + eyeMovement.y,
+                scale: currentConfig.eyeScale,
               }}
-              transition={{ duration: 0.1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <animate
+                attributeName="opacity"
+                values={`${currentConfig.eyeIntensity * 0.7};${currentConfig.eyeIntensity};${currentConfig.eyeIntensity * 0.7}`}
+                dur={`${currentConfig.pulseSpeed}s`}
+                repeatCount="indefinite"
+              />
+            </motion.ellipse>
+
+            {/* Right Eye */}
+            <motion.ellipse
+              cx="63"
+              cy="42"
+              rx="6"
+              ry={isBlinking ? "1" : "9"}
+              fill={currentConfig.eyeGlow}
+              opacity={currentConfig.eyeIntensity}
+              animate={{
+                cx: 63 + eyeMovement.x,
+                cy: 42 + eyeMovement.y,
+                scale: currentConfig.eyeScale,
+              }}
+              transition={{ duration: 0.3 }}
+            >
+              <animate
+                attributeName="opacity"
+                values={`${currentConfig.eyeIntensity * 0.7};${currentConfig.eyeIntensity};${currentConfig.eyeIntensity * 0.7}`}
+                dur={`${currentConfig.pulseSpeed}s`}
+                repeatCount="indefinite"
+              />
+            </motion.ellipse>
+
+            {/* Animated Mouth */}
+            <motion.path
+              d={currentConfig.mouthPath}
+              stroke="#d97706"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              fill="none"
+              opacity="0.9"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
             />
-          </motion.div>
+
+            {/* Circuit patterns pulse (left side) */}
+            <motion.path
+              d="M20,35 L25,35 L30,40 L30,45"
+              stroke={currentConfig.eyeGlow}
+              strokeWidth="1"
+              fill="none"
+              opacity={currentConfig.eyeIntensity * 0.6}
+              animate={{
+                opacity: [currentConfig.eyeIntensity * 0.3, currentConfig.eyeIntensity * 0.8, currentConfig.eyeIntensity * 0.3],
+              }}
+              transition={{
+                duration: currentConfig.pulseSpeed * 1.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+
+            {/* Circuit patterns pulse (right side) */}
+            <motion.path
+              d="M80,35 L75,35 L70,40 L70,45"
+              stroke={currentConfig.eyeGlow}
+              strokeWidth="1"
+              fill="none"
+              opacity={currentConfig.eyeIntensity * 0.6}
+              animate={{
+                opacity: [currentConfig.eyeIntensity * 0.3, currentConfig.eyeIntensity * 0.8, currentConfig.eyeIntensity * 0.3],
+              }}
+              transition={{
+                duration: currentConfig.pulseSpeed * 1.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 0.3,
+              }}
+            />
+          </svg>
 
           {/* Sparkle effects for excited/success states */}
           {currentConfig.showSparkles && (
@@ -279,7 +455,7 @@ export function LumoAvatar({
             </>
           )}
 
-          {/* Working indicator - animated dots for "working" state */}
+          {/* Working indicator - animated dots */}
           {emotion === "working" && (
             <motion.div
               className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex gap-1"
