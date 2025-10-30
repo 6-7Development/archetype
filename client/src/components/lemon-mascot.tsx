@@ -533,9 +533,10 @@ export function LemonMascot({ emotion = 'idle', size = 'medium', className }: Le
       {/* Gradient definitions */}
       <defs>
         <radialGradient id={`lemonGradient-${size}`}>
-          <stop offset="0%" stopColor="#FFF8DC" />
-          <stop offset="40%" stopColor={getBodyColor()} />
-          <stop offset="100%" stopColor="#D4AF37" />
+          <stop offset="0%" stopColor="#FFFACD" />
+          <stop offset="30%" stopColor={getBodyColor()} />
+          <stop offset="70%" stopColor="#D4AF37" />
+          <stop offset="100%" stopColor="#B8860B" />
         </radialGradient>
         
         <filter id={`glow-${size}`}>
@@ -545,46 +546,154 @@ export function LemonMascot({ emotion = 'idle', size = 'medium', className }: Le
             <feMergeNode in="SourceGraphic"/>
           </feMerge>
         </filter>
+
+        <filter id={`lemonTexture-${size}`}>
+          <feTurbulence 
+            type="fractalNoise" 
+            baseFrequency="0.9" 
+            numOctaves="4" 
+            result="turbulence"
+          />
+          <feColorMatrix
+            in="turbulence"
+            type="saturate"
+            values="0.05"
+            result="texture"
+          />
+          <feBlend in="SourceGraphic" in2="texture" mode="multiply" />
+        </filter>
       </defs>
 
       {/* Main group with breathing animation */}
       <g transform={`translate(${centerX}, ${centerY}) scale(${breathScale}) translate(${-centerX}, ${-centerY})`}>
-        {/* Left arm (behind body) */}
+        {/* Left arm (behind body) - darker with outline */}
         <path
-          d={`M ${centerX - svgSize * 0.25} ${centerY} Q ${centerX - svgSize * 0.3} ${centerY + svgSize * 0.1} ${centerX - svgSize * 0.35} ${centerY + svgSize * 0.05}`}
-          stroke="#FFD700"
-          strokeWidth={svgSize * 0.04}
+          d={`M ${centerX - svgSize * 0.28} ${centerY} Q ${centerX - svgSize * 0.35} ${centerY + svgSize * 0.12} ${centerX - svgSize * 0.4} ${centerY + svgSize * 0.08}`}
+          stroke="#8B4513"
+          strokeWidth={svgSize * 0.065}
           fill="none"
           strokeLinecap="round"
-          transform={`rotate(${leftArmAngle}, ${centerX - svgSize * 0.25}, ${centerY})`}
+          transform={`rotate(${leftArmAngle}, ${centerX - svgSize * 0.28}, ${centerY})`}
+          style={{ transition: 'all 0.1s ease-out' }}
+        />
+        <path
+          d={`M ${centerX - svgSize * 0.28} ${centerY} Q ${centerX - svgSize * 0.35} ${centerY + svgSize * 0.12} ${centerX - svgSize * 0.4} ${centerY + svgSize * 0.08}`}
+          stroke="#FFD700"
+          strokeWidth={svgSize * 0.05}
+          fill="none"
+          strokeLinecap="round"
+          transform={`rotate(${leftArmAngle}, ${centerX - svgSize * 0.28}, ${centerY})`}
           style={{ transition: 'all 0.1s ease-out' }}
         />
         <circle
-          cx={centerX - svgSize * 0.35}
-          cy={centerY + svgSize * 0.05}
-          r={svgSize * 0.03}
-          fill="#FFD700"
-          transform={`rotate(${leftArmAngle}, ${centerX - svgSize * 0.25}, ${centerY})`}
+          cx={centerX - svgSize * 0.4}
+          cy={centerY + svgSize * 0.08}
+          r={svgSize * 0.04}
+          fill="#D4AF37"
+          stroke="#8B4513"
+          strokeWidth={svgSize * 0.008}
+          transform={`rotate(${leftArmAngle}, ${centerX - svgSize * 0.28}, ${centerY})`}
           style={{ transition: 'all 0.1s ease-out' }}
         />
 
-        {/* Lemon body with gradient and segments */}
-        <ellipse
-          cx={centerX}
-          cy={centerY}
-          rx={svgSize * 0.3}
-          ry={svgSize * 0.35}
+        {/* Lemon body with realistic shape - oval with pointed ends */}
+        <path
+          d={`
+            M ${centerX} ${centerY - svgSize * 0.43}
+            C ${centerX + svgSize * 0.08} ${centerY - svgSize * 0.42},
+              ${centerX + svgSize * 0.25} ${centerY - svgSize * 0.35},
+              ${centerX + svgSize * 0.3} ${centerY - svgSize * 0.15}
+            C ${centerX + svgSize * 0.32} ${centerY + svgSize * 0.05},
+              ${centerX + svgSize * 0.3} ${centerY + svgSize * 0.25},
+              ${centerX + svgSize * 0.25} ${centerY + svgSize * 0.35}
+            C ${centerX + svgSize * 0.15} ${centerY + svgSize * 0.40},
+              ${centerX + svgSize * 0.05} ${centerY + svgSize * 0.42},
+              ${centerX} ${centerY + svgSize * 0.43}
+            C ${centerX - svgSize * 0.05} ${centerY + svgSize * 0.42},
+              ${centerX - svgSize * 0.15} ${centerY + svgSize * 0.40},
+              ${centerX - svgSize * 0.25} ${centerY + svgSize * 0.35}
+            C ${centerX - svgSize * 0.3} ${centerY + svgSize * 0.25},
+              ${centerX - svgSize * 0.32} ${centerY + svgSize * 0.05},
+              ${centerX - svgSize * 0.3} ${centerY - svgSize * 0.15}
+            C ${centerX - svgSize * 0.25} ${centerY - svgSize * 0.35},
+              ${centerX - svgSize * 0.08} ${centerY - svgSize * 0.42},
+              ${centerX} ${centerY - svgSize * 0.43}
+            Z
+          `}
           fill={`url(#lemonGradient-${size})`}
-          filter={emotion === 'idle' ? `url(#glow-${size})` : undefined}
+          filter={`url(#lemonTexture-${size})`}
         />
 
-        {/* Citrus segments */}
-        {[...Array(8)].map((_, i) => {
-          const angle = (Math.PI * 2 / 8) * i;
+        {/* Top lemon nipple (bumpy end) */}
+        <circle
+          cx={centerX}
+          cy={centerY - svgSize * 0.44}
+          r={svgSize * 0.025}
+          fill="#D4AF37"
+        />
+        <circle
+          cx={centerX - svgSize * 0.015}
+          cy={centerY - svgSize * 0.435}
+          r={svgSize * 0.012}
+          fill="#B8860B"
+          opacity="0.6"
+        />
+        <circle
+          cx={centerX + svgSize * 0.015}
+          cy={centerY - svgSize * 0.435}
+          r={svgSize * 0.012}
+          fill="#B8860B"
+          opacity="0.6"
+        />
+
+        {/* Bottom lemon nipple (bumpy end) */}
+        <circle
+          cx={centerX}
+          cy={centerY + svgSize * 0.44}
+          r={svgSize * 0.025}
+          fill="#D4AF37"
+        />
+        <circle
+          cx={centerX - svgSize * 0.015}
+          cy={centerY + svgSize * 0.435}
+          r={svgSize * 0.012}
+          fill="#B8860B"
+          opacity="0.6"
+        />
+        <circle
+          cx={centerX + svgSize * 0.015}
+          cy={centerY + svgSize * 0.435}
+          r={svgSize * 0.012}
+          fill="#B8860B"
+          opacity="0.6"
+        />
+
+        {/* Peel texture - small dimples across surface */}
+        {[...Array(20)].map((_, i) => {
+          const angle = (Math.random() * Math.PI * 2);
+          const distance = Math.random() * svgSize * 0.25;
+          const x = centerX + Math.cos(angle) * distance;
+          const y = centerY + Math.sin(angle) * distance * 1.2;
+          const size = svgSize * (0.008 + Math.random() * 0.01);
+          return (
+            <circle
+              key={`dimple-${i}`}
+              cx={x}
+              cy={y}
+              r={size}
+              fill="#D4AF37"
+              opacity="0.15"
+            />
+          );
+        })}
+
+        {/* Citrus segments - prominent dark lines */}
+        {[...Array(10)].map((_, i) => {
+          const angle = (Math.PI * 2 / 10) * i;
           const x1 = centerX;
           const y1 = centerY;
-          const x2 = centerX + Math.cos(angle) * svgSize * 0.3;
-          const y2 = centerY + Math.sin(angle) * svgSize * 0.35;
+          const x2 = centerX + Math.cos(angle) * svgSize * 0.28;
+          const y2 = centerY + Math.sin(angle) * svgSize * 0.38;
           return (
             <line
               key={`segment-${i}`}
@@ -592,37 +701,56 @@ export function LemonMascot({ emotion = 'idle', size = 'medium', className }: Le
               y1={y1}
               x2={x2}
               y2={y2}
-              stroke="rgba(200, 180, 0, 0.2)"
-              strokeWidth={svgSize * 0.01}
+              stroke="#D4AF37"
+              strokeWidth={svgSize * 0.018}
+              opacity="0.6"
             />
           );
         })}
 
-        {/* Highlight on body */}
+        {/* Highlight on body - shinier spot */}
+        <ellipse
+          cx={centerX - svgSize * 0.1}
+          cy={centerY - svgSize * 0.15}
+          rx={svgSize * 0.15}
+          ry={svgSize * 0.12}
+          fill="rgba(255, 255, 255, 0.4)"
+        />
         <ellipse
           cx={centerX - svgSize * 0.08}
-          cy={centerY - svgSize * 0.1}
-          rx={svgSize * 0.12}
-          ry={svgSize * 0.08}
-          fill="rgba(255, 255, 255, 0.3)"
+          cy={centerY - svgSize * 0.13}
+          rx={svgSize * 0.08}
+          ry={svgSize * 0.06}
+          fill="rgba(255, 255, 255, 0.25)"
         />
 
-        {/* Right arm (behind body) */}
+        {/* Right arm (behind body) - darker with outline */}
         <path
-          d={`M ${centerX + svgSize * 0.25} ${centerY} Q ${centerX + svgSize * 0.3} ${centerY + svgSize * 0.1} ${centerX + svgSize * 0.35} ${centerY + svgSize * 0.05}`}
-          stroke="#FFD700"
-          strokeWidth={svgSize * 0.04}
+          d={`M ${centerX + svgSize * 0.28} ${centerY} Q ${centerX + svgSize * 0.35} ${centerY + svgSize * 0.12} ${centerX + svgSize * 0.4} ${centerY + svgSize * 0.08}`}
+          stroke="#8B4513"
+          strokeWidth={svgSize * 0.065}
           fill="none"
           strokeLinecap="round"
-          transform={`rotate(${rightArmAngle}, ${centerX + svgSize * 0.25}, ${centerY})`}
+          transform={`rotate(${rightArmAngle}, ${centerX + svgSize * 0.28}, ${centerY})`}
+          style={{ transition: 'all 0.1s ease-out' }}
+        />
+        <path
+          d={`M ${centerX + svgSize * 0.28} ${centerY} Q ${centerX + svgSize * 0.35} ${centerY + svgSize * 0.12} ${centerX + svgSize * 0.4} ${centerY + svgSize * 0.08}`}
+          stroke="#FFD700"
+          strokeWidth={svgSize * 0.05}
+          fill="none"
+          strokeLinecap="round"
+          transform={`rotate(${rightArmAngle}, ${centerX + svgSize * 0.28}, ${centerY})`}
           style={{ transition: 'all 0.1s ease-out' }}
         />
         <circle
-          cx={centerX + svgSize * 0.35}
-          cy={centerY + svgSize * 0.05}
-          r={svgSize * 0.03}
-          fill="#FFD700"
-          transform={`rotate(${rightArmAngle}, ${centerX + svgSize * 0.25}, ${centerY})`}
+          cx={centerX + svgSize * 0.4}
+          cy={centerY + svgSize * 0.08}
+          r={svgSize * 0.04}
+          fill="#D4AF37"
+          stroke="#8B4513"
+          strokeWidth={svgSize * 0.008}
+          transform={`rotate(${rightArmAngle}, ${centerX + svgSize * 0.28}, ${centerY})`}
           style={{ transition: 'all 0.1s ease-out' }}
         />
 
