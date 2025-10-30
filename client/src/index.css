@@ -127,7 +127,7 @@
   }
 }
 
-/* LIGHT MODE - Fortune 500 Corporate Design */
+/* LIGHT MODE - LemonAid Fresh & Bright Theme */
 :root {
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
@@ -139,57 +139,64 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  --background: 220 15% 98%;
+  /* LemonAid Brand Colors - Light Mode */
+  --sparkling-lemon: 50 98% 58%;  /* Primary bright yellow */
+  --fresh-mint: 145 60% 45%;       /* Success green */
+  --citrus-bloom: 32 94% 62%;      /* Warning orange */
+  --slate-professional: 210 14% 24%; /* Professional text */
+  --cream-base: 48 46% 96%;        /* Soft background */
 
-  --foreground: 220 20% 18%;
+  --background: 48 40% 98%;        /* Very light cream */
 
-  --border: 220 15% 88%;
+  --foreground: 210 14% 24%;       /* Slate professional */
 
-  --card: 220 20% 99%;
+  --border: 48 30% 88%;            /* Subtle warm border */
 
-  --card-foreground: 220 20% 18%;
+  --card: 0 0% 100%;               /* Pure white cards */
 
-  --card-border: 220 15% 90%;
+  --card-foreground: 210 14% 24%;
 
-  --sidebar: 220 18% 96%;
+  --card-border: 48 25% 90%;
 
-  --sidebar-foreground: 220 20% 18%;
+  --sidebar: 48 46% 96%;           /* Cream base */
 
-  --sidebar-border: 220 15% 88%;
+  --sidebar-foreground: 210 14% 24%;
 
-  --sidebar-primary: 220 85% 42%;
+  --sidebar-border: 48 30% 88%;
 
-  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-primary: 50 98% 58%;   /* Sparkling lemon */
 
-  --sidebar-accent: 220 15% 90%;
+  --sidebar-primary-foreground: 210 14% 24%; /* Dark text on yellow */
 
-  --sidebar-accent-foreground: 220 20% 18%;
+  --sidebar-accent: 50 95% 95%;    /* Very light lemon tint */
 
-  --sidebar-ring: 220 85% 42%;
+  --sidebar-accent-foreground: 210 14% 24%;
+
+  --sidebar-ring: 50 98% 58%;
 
   --popover: 0 0% 100%;
 
-  --popover-foreground: 220 20% 18%;
+  --popover-foreground: 210 14% 24%;
 
-  --popover-border: 220 15% 88%;
+  --popover-border: 48 30% 88%;
 
-  --primary: 220 85% 42%;
+  --primary: 50 98% 58%;           /* Sparkling lemon */
 
-  --primary-foreground: 0 0% 100%;
+  --primary-foreground: 210 14% 24%; /* Dark text for contrast */
 
-  --secondary: 210 25% 48%;
+  --secondary: 145 60% 45%;        /* Fresh mint */
 
   --secondary-foreground: 0 0% 100%;
 
-  --muted: 220 15% 92%;
+  --muted: 48 35% 92%;             /* Warm muted */
 
-  --muted-foreground: 220 15% 42%;
+  --muted-foreground: 210 12% 55%;
 
-  --accent: 220 25% 97%;
+  --accent: 50 95% 95%;            /* Light lemon tint */
 
-  --accent-foreground: 220 20% 18%;
+  --accent-foreground: 210 14% 24%;
 
-  --destructive: 0 80% 62%;
+  --destructive: 0 85% 60%;
 
   --destructive-foreground: 0 0% 100%;
 
@@ -257,9 +264,14 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  --background: 220 20% 12%;
+  /* LemonAid Brand Colors - Dark Mode (deeper citrus tones) */
+  --sparkling-lemon: 50 90% 52%;   /* Deeper lemon for dark mode */
+  --fresh-mint: 145 52% 38%;       /* Deeper mint */
+  --citrus-bloom: 32 88% 58%;      /* Deeper orange */
 
-  --foreground: 220 8% 98%;
+  --background: 220 20% 12%;       /* Deep slate */
+
+  --foreground: 220 8% 98%;        /* Light text */
 
   --border: 220 15% 28%;
 
@@ -275,15 +287,15 @@
 
   --sidebar-border: 220 15% 28%;
 
-  --sidebar-primary: 220 70% 60%;
+  --sidebar-primary: 50 90% 52%;   /* Deeper sparkling lemon */
 
-  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-primary-foreground: 220 20% 12%;
 
   --sidebar-accent: 220 15% 22%;
 
   --sidebar-accent-foreground: 220 8% 98%;
 
-  --sidebar-ring: 220 70% 60%;
+  --sidebar-ring: 50 90% 52%;
 
   --popover: 220 18% 16%;
 
@@ -291,13 +303,13 @@
 
   --popover-border: 220 15% 28%;
 
-  --primary: 220 70% 60%;
+  --primary: 50 90% 52%;           /* Deeper lemon */
 
-  --primary-foreground: 0 0% 100%;
+  --primary-foreground: 220 20% 12%; /* Dark text on yellow */
 
-  --secondary: 210 20% 65%;
+  --secondary: 145 52% 38%;        /* Deeper mint */
 
-  --secondary-foreground: 220 20% 12%;
+  --secondary-foreground: 0 0% 100%;
 
   --muted: 220 12% 20%;
 
