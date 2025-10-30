@@ -159,10 +159,10 @@ export function AppLayout({ children }: AppLayoutProps) {
       )}>
         {/* Logo - PROUD & PROMINENT! */}
         <div className="h-20 border-b flex items-center px-4 gap-4">
-          <img src={logoPath} alt="ARCHETYPE" className="w-12 h-12 rounded-xl shadow-lg shadow-cyan-500/30" />
+          <img src={logoPath} alt="LemonAid" className="w-12 h-12 rounded-xl shadow-lg shadow-primary/30" />
           <div>
-            <div className="text-lg font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
-              ARCHETYPE
+            <div className="text-lg font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              LemonAid
             </div>
             <div className="text-xs text-muted-foreground font-medium">AI Code Generation</div>
           </div>

@@ -29,8 +29,8 @@ export default function PricingSuccess() {
             transition={{ delay: 0.3 }}
             className="text-4xl font-bold mb-4"
           >
-            <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-              Welcome to ARCHETYPE Pro!
+            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              Welcome to LemonAid Pro!
             </span>
           </motion.h1>
 

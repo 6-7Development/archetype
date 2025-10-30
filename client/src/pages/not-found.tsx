@@ -14,12 +14,12 @@ export default function NotFound() {
         <div className="flex flex-col items-center gap-4">
           <img 
             src={logoPath} 
-            alt="ARCHETYPE" 
+            alt="LemonAid" 
             className="w-20 h-20 rounded-2xl shadow-xl shadow-primary/20"
           />
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
-              ARCHETYPE
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              LemonAid
             </h1>
             <p className="text-sm text-muted-foreground">AI-Powered Code Generation Platform</p>
           </div>
@@ -29,7 +29,7 @@ export default function NotFound() {
         <Card className="p-8 md:p-12">
           <div className="space-y-6">
             <div className="flex items-center justify-center">
-              <div className="text-8xl md:text-9xl font-bold bg-gradient-to-br from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
+              <div className="text-8xl md:text-9xl font-bold bg-gradient-to-br from-primary via-secondary to-accent bg-clip-text text-transparent">
                 404
               </div>
             </div>

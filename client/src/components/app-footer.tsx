@@ -14,12 +14,12 @@ export function AppFooter() {
             <div className="flex items-center gap-3">
               <img 
                 src={logoPath} 
-                alt="ARCHETYPE" 
+                alt="LemonAid" 
                 className="w-10 h-10 rounded-lg"
               />
               <div>
-                <div className="font-bold text-lg bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
-                  ARCHETYPE
+                <div className="font-bold text-lg bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                  LemonAid
                 </div>
                 <div className="text-xs text-muted-foreground">
                   AI Code Generation

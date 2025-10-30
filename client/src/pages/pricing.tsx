@@ -23,7 +23,7 @@ const plans = [
     name: "Free",
     price: "$0",
     period: "/forever",
-    description: "Perfect for trying out ARCHETYPE",
+    description: "Perfect for trying out LemonAid",
     tokenAllowance: "30,000 tokens",
     projectEstimate: "~3-6 simple projects",
     features: [
@@ -206,19 +206,19 @@ export default function Pricing() {
                 ]}
                 logo={
                   <div className="flex items-center gap-3">
-                    <img src={logoPath} alt="ARCHETYPE" className="w-10 h-10 rounded-lg shadow-md shadow-cyan-500/30" />
-                    <div className="text-base font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
-                      ARCHETYPE
+                    <img src={logoPath} alt="LemonAid" className="w-10 h-10 rounded-lg shadow-md shadow-primary/30" />
+                    <div className="text-base font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                      LemonAid
                     </div>
                   </div>
                 }
               />
               <Link href="/" data-testid="link-home" className="hidden lg:flex">
                 <div className="flex items-center gap-4 hover-elevate active-elevate-2 transition-all cursor-pointer">
-                  <img src={logoPath} alt="ARCHETYPE" className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl shadow-lg shadow-cyan-500/20" />
+                  <img src={logoPath} alt="LemonAid" className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl shadow-lg shadow-primary/20" />
                   <div>
-                    <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
-                      ARCHETYPE
+                    <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                      LemonAid
                     </div>
                     <div className="text-sm text-slate-400 font-medium">AI Code Generation Platform</div>
                   </div>
@@ -241,11 +241,11 @@ export default function Pricing() {
       {/* Value Proposition Banner */}
       <section className="pt-24 pb-8 px-6">
         <div className="container mx-auto max-w-6xl">
-          <Card className="border-2 border-cyan-500/50 bg-gradient-to-br from-cyan-900/30 to-purple-900/30 overflow-hidden">
+          <Card className="border-2 border-primary/50 bg-gradient-to-br from-primary/30 to-secondary/30 overflow-hidden">
             <div className="p-8">
               <div className="flex items-start gap-4">
-                <div className="p-3 rounded-lg bg-cyan-500/20">
-                  <Shield className="w-8 h-8 text-cyan-400" />
+                <div className="p-3 rounded-lg bg-primary/20">
+                  <Shield className="w-8 h-8 text-primary" />
                 </div>
                 <div className="flex-1">
                   <h3 className="text-2xl font-bold text-white mb-3 flex items-center gap-2">
@@ -268,7 +268,7 @@ export default function Pricing() {
                     
                     <div className="rounded-lg bg-slate-900/50 p-4 border border-slate-700">
                       <div className="flex items-center gap-2 mb-2">
-                        <Zap className="w-5 h-5 text-cyan-400" />
+                        <Zap className="w-5 h-5 text-primary" />
                         <span className="font-semibold text-white">Smart Complexity Detection</span>
                       </div>
                       <p className="text-sm text-slate-400">
@@ -278,7 +278,7 @@ export default function Pricing() {
                     
                     <div className="rounded-lg bg-slate-900/50 p-4 border border-slate-700">
                       <div className="flex items-center gap-2 mb-2">
-                        <TrendingUp className="w-5 h-5 text-purple-400" />
+                        <TrendingUp className="w-5 h-5 text-secondary" />
                         <span className="font-semibold text-white">Usage Dashboard</span>
                       </div>
                       <p className="text-sm text-slate-400">
@@ -303,13 +303,13 @@ export default function Pricing() {
       {/* Hero */}
       <section className="pt-12 pb-12 px-6">
         <div className="container mx-auto max-w-6xl text-center">
-          <div className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 backdrop-blur-sm">
-            <Sparkles className="w-4 h-4 text-cyan-400" />
-            <span className="text-sm text-cyan-400 font-medium">Token-Based Pricing • No Hidden Fees</span>
+          <div className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/10 backdrop-blur-sm">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <span className="text-sm text-primary font-medium">Token-Based Pricing • No Hidden Fees</span>
           </div>
           
           <h1 className="text-4xl sm:text-6xl font-bold mb-6">
-            <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
               Transparent AI Pricing
             </span>
             <br />
@@ -331,13 +331,13 @@ export default function Pricing() {
                 key={i} 
                 className={`p-8 relative ${
                   plan.popular 
-                    ? 'bg-gradient-to-br from-cyan-900/30 to-purple-900/30 border-cyan-500/50 shadow-xl shadow-cyan-500/20' 
+                    ? 'bg-gradient-to-br from-primary/30 to-secondary/30 border-primary/50 shadow-xl shadow-primary/20' 
                     : 'bg-slate-900/50 border-slate-800'
                 } hover-elevate transition-all overflow-visible`}
                 data-testid={`card-plan-${plan.name.toLowerCase()}`}
               >
                 {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full text-xs font-semibold text-white">
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-primary to-secondary rounded-full text-xs font-semibold text-white">
                     MOST POPULAR
                   </div>
                 )}
@@ -346,7 +346,7 @@ export default function Pricing() {
                   <h3 className="text-2xl font-bold text-white mb-2" data-testid={`text-plan-name-${plan.name.toLowerCase()}`}>{plan.name}</h3>
                   <p className="text-sm text-slate-400 mb-4">{plan.description}</p>
                   <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent" data-testid={`text-price-${plan.name.toLowerCase()}`}>
+                    <span className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent" data-testid={`text-price-${plan.name.toLowerCase()}`}>
                       {plan.price}
                     </span>
                     <span className="text-slate-500">{plan.period}</span>
@@ -355,7 +355,7 @@ export default function Pricing() {
                   {/* Token Allowance Badge */}
                   <div className="mt-4 p-3 rounded-lg bg-slate-800/50 border border-slate-700">
                     <div className="text-xs text-slate-400 mb-1">Token Allowance</div>
-                    <div className="text-sm font-mono text-cyan-400">{plan.tokenAllowance}</div>
+                    <div className="text-sm font-mono text-primary">{plan.tokenAllowance}</div>
                     <div className="text-xs text-slate-500 mt-1">{plan.projectEstimate}</div>
                   </div>
                 </div>
@@ -363,7 +363,7 @@ export default function Pricing() {
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((feature, j) => (
                     <li key={j} className="flex items-start gap-2 text-sm" data-testid={`feature-${plan.name.toLowerCase()}-${j}`}>
-                      <Check className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
+                      <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                       <span className="text-slate-300">{feature}</span>
                     </li>
                   ))}
@@ -383,7 +383,7 @@ export default function Pricing() {
                 ) : (
                   <Button 
                     variant={plan.popular ? "default" : "secondary"}
-                    className={plan.popular ? "w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 border-0" : "w-full"}
+                    className={plan.popular ? "w-full bg-gradient-to-r from-secondary to-accent hover:opacity-90 border-0" : "w-full"}
                     data-testid={`button-plan-${plan.name.toLowerCase()}`}
                     onClick={() => handleCheckout(plan.name, plan.priceId, plan.planKey)}
                     disabled={loadingPlan === plan.name}
@@ -402,9 +402,9 @@ export default function Pricing() {
               <p className="text-slate-400 mb-4">
                 Need more tokens? No problem. No surprise bills.
               </p>
-              <div className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/30">
-                <Zap className="w-5 h-5 text-cyan-400" />
-                <span className="text-cyan-400 font-mono font-bold">$1.50 per 1,000 tokens</span>
+              <div className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/30">
+                <Zap className="w-5 h-5 text-primary" />
+                <span className="text-primary font-mono font-bold">$1.50 per 1,000 tokens</span>
               </div>
               <p className="text-xs text-slate-500 mt-3">
                 You'll see the exact cost BEFORE building any project that exceeds your plan.
@@ -418,16 +418,16 @@ export default function Pricing() {
       <section className="py-20 px-6 bg-slate-950/50">
         <div className="container mx-auto max-w-6xl">
           <h2 className="text-3xl font-bold text-center mb-12">
-            <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-              What Makes Archetype Different
+            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              What Makes LemonAid Different
             </span>
           </h2>
           
           <div className="grid md:grid-cols-3 gap-6">
             <Card className="p-8 bg-slate-900/50 border-slate-800">
               <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 rounded-lg bg-gradient-to-br from-cyan-500/20 to-purple-500/20">
-                  <DollarSign className="w-8 h-8 text-cyan-400" />
+                <div className="p-3 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20">
+                  <DollarSign className="w-8 h-8 text-primary" />
                 </div>
                 <h3 className="text-xl font-bold text-white">Cost Preview</h3>
               </div>
@@ -452,8 +452,8 @@ export default function Pricing() {
 
             <Card className="p-8 bg-slate-900/50 border-slate-800">
               <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 rounded-lg bg-gradient-to-br from-cyan-500/20 to-purple-500/20">
-                  <TrendingUp className="w-8 h-8 text-purple-400" />
+                <div className="p-3 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20">
+                  <TrendingUp className="w-8 h-8 text-secondary" />
                 </div>
                 <h3 className="text-xl font-bold text-white">Usage Dashboard</h3>
               </div>
@@ -478,7 +478,7 @@ export default function Pricing() {
 
             <Card className="p-8 bg-slate-900/50 border-slate-800">
               <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 rounded-lg bg-gradient-to-br from-cyan-500/20 to-purple-500/20">
+                <div className="p-3 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20">
                   <Shield className="w-8 h-8 text-green-400" />
                 </div>
                 <h3 className="text-xl font-bold text-white">Fair Pricing</h3>
@@ -509,7 +509,7 @@ export default function Pricing() {
       <section className="py-20 px-6">
         <div className="container mx-auto max-w-6xl">
           <h2 className="text-3xl font-bold text-center mb-12">
-            <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               Every Plan Includes
             </span>
           </h2>
@@ -527,8 +527,8 @@ export default function Pricing() {
               "Secure authentication"
             ].map((feature, i) => (
               <div key={i} className="flex items-center gap-3" data-testid={`common-feature-${i}`}>
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500/20 to-purple-500/20 flex items-center justify-center">
-                  <Check className="w-5 h-5 text-cyan-400" />
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                  <Check className="w-5 h-5 text-primary" />
                 </div>
                 <span className="text-slate-300">{feature}</span>
               </div>
@@ -541,10 +541,10 @@ export default function Pricing() {
       <footer className="py-12 px-6 border-t border-white/10">
         <div className="container mx-auto max-w-6xl text-center text-slate-500">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <img src={logoPath} alt="ARCHETYPE" className="w-12 h-12 rounded-xl shadow-lg shadow-cyan-500/20" />
-            <span className="text-lg font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">ARCHETYPE</span>
+            <img src={logoPath} alt="LemonAid" className="w-12 h-12 rounded-xl shadow-lg shadow-primary/20" />
+            <span className="text-lg font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">LemonAid</span>
           </div>
-          <p className="text-sm">© 2025 ARCHETYPE AI. Transparent AI-Powered Development.</p>
+          <p className="text-sm">© 2025 LemonAid. Transparent AI-Powered Development.</p>
           <p className="text-xs mt-2">No hidden fees. No surprise bills. Pay for what you use.</p>
         </div>
       </footer>

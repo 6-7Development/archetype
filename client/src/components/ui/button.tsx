@@ -21,7 +21,7 @@ const buttonVariants = cva(
         secondary: "border bg-secondary text-secondary-foreground border border-secondary-border ",
         // Add a transparent border so that when someone toggles a border on later, it doesn't shift layout/size.
         ghost: "border border-transparent",
-        gradient: "bg-gradient-to-r from-cyan-500 to-blue-600 text-white border border-cyan-600",
+        gradient: "bg-gradient-to-r from-primary to-secondary text-white border border-primary-border",
       },
       // Heights are set as "min" heights, because sometimes Ai will place large amount of content
       // inside buttons. With a min-height they will look appropriate with small amounts of content,

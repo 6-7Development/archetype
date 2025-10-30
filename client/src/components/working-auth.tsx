@@ -68,7 +68,7 @@ export default function WorkingAuth() {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
       toast({
         title: "Account created!",
-        description: "Welcome to Archetype. Redirecting...",
+        description: "Welcome to LemonAid. Redirecting...",
       });
       setTimeout(() => setLocation("/dashboard"), 500);
     },
@@ -127,17 +127,17 @@ export default function WorkingAuth() {
             {/* Logo */}
             <div className="flex justify-center">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-purple-600 opacity-20 blur-xl rounded-xl pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-br from-primary to-secondary opacity-20 blur-xl rounded-xl pointer-events-none" />
                 <img 
                   src={logoPath} 
-                  alt="ARCHETYPE" 
+                  alt="LemonAid" 
                   className="w-20 h-20 rounded-xl shadow-xl relative"
                 />
               </div>
             </div>
 
             <div>
-              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent mb-2">
+              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent mb-2">
                 {mode === "login" ? "Welcome Back" : "Get Started"}
               </CardTitle>
               <CardDescription className="text-base">

@@ -13,12 +13,12 @@ export default function Error403() {
         <div className="flex flex-col items-center gap-4">
           <img 
             src={logoPath} 
-            alt="ARCHETYPE" 
+            alt="LemonAid" 
             className="w-20 h-20 rounded-2xl shadow-xl shadow-primary/20"
           />
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
-              ARCHETYPE
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              LemonAid
             </h1>
             <p className="text-sm text-muted-foreground">AI-Powered Code Generation Platform</p>
           </div>
