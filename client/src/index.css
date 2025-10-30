@@ -63,6 +63,18 @@
   }
 }
 
+/* Billboard banner floating particles */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-100vh) rotate(360deg);
+    opacity: 0.8;
+  }
+}
+
 /* Glowing Jesus text effect */
 @keyframes jesus-glow {
   0%, 100% {

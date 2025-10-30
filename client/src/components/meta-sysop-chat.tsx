@@ -123,12 +123,12 @@ function AttachmentPreview({ attachment, onRemove }: { attachment: Attachment; o
   const [showPreview, setShowPreview] = useState(false);
   
   return (
-    <div className="relative group">
-      <div className="flex items-center gap-2 p-2 bg-muted rounded-lg border border-border">
+    <div className="relative group flex-shrink-0">
+      <div className="flex items-center gap-1.5 md:gap-2 p-1.5 md:p-2 bg-muted rounded-lg border border-border min-w-[140px] md:min-w-[160px]">
         {attachment.fileType === 'image' ? (
-          <Image className="w-4 h-4 text-muted-foreground shrink-0" />
+          <Image className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground shrink-0" />
         ) : (
-          <File className="w-4 h-4 text-muted-foreground shrink-0" />
+          <File className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground shrink-0" />
         )}
         <div className="flex-1 min-w-0">
           <div className="text-xs font-medium truncate">{attachment.fileName}</div>
@@ -137,16 +137,17 @@ function AttachmentPreview({ attachment, onRemove }: { attachment: Attachment; o
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="h-10 w-10 md:h-8 md:w-8 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0"
           onClick={onRemove}
+          data-testid="button-remove-attachment"
         >
-          <X className="h-3 w-3" />
+          <X className="h-4 w-4 md:h-3 md:w-3" />
         </Button>
       </div>
       
-      {/* Image preview on hover */}
+      {/* Image preview on hover - desktop only */}
       {attachment.fileType === 'image' && attachment.content && (
-        <div className="absolute bottom-full mb-2 left-0 z-10 hidden group-hover:block">
+        <div className="absolute bottom-full mb-2 left-0 z-10 hidden md:group-hover:block">
           <div className="p-2 bg-popover border border-border rounded-lg shadow-lg">
             <img 
               src={attachment.content} 
@@ -766,11 +767,11 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Active Task Header */}
         {isStreaming && activeTaskId && (
-          <div className="px-4 py-3 border-b border-border bg-muted/30">
-            <div className="flex items-center justify-between gap-4">
+          <div className="px-3 py-2 md:px-4 md:py-3 border-b border-border bg-muted/30">
+            <div className="flex items-center justify-between gap-2 md:gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h2 className="text-sm font-semibold truncate">
+                  <h2 className="text-xs md:text-sm font-semibold truncate">
                     {tasks.find(t => t.id === activeTaskId)?.title || 'Working...'}
                   </h2>
                   {tasks.length > 0 && (
@@ -785,11 +786,11 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                 variant="destructive"
                 size="sm"
                 onClick={handleStop}
-                className="shrink-0"
+                className="shrink-0 h-7 md:h-8"
                 data-testid="button-stop"
               >
-                <Square className="h-3.5 w-3.5 mr-1.5 fill-current" />
-                Stop
+                <Square className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1 md:mr-1.5 fill-current" />
+                <span className="text-xs">Stop</span>
               </Button>
             </div>
           </div>
@@ -798,38 +799,36 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
         {/* Messages Area */}
         <div 
           ref={scrollRef}
-          className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth"
+          className="flex-1 overflow-y-auto p-2 md:p-4 space-y-3 md:space-y-4 scroll-smooth"
         >
-          <div className="max-w-4xl mx-auto space-y-4">
+          <div className="max-w-4xl mx-auto space-y-3 md:space-y-4">
             {/* Welcome screen with Lumo */}
             {messages.length === 0 && !isStreaming && (
-              <div className="text-center py-4 md:py-8 animate-in fade-in-up duration-700">
+              <div className="text-center py-6 md:py-8 animate-in fade-in-up duration-700">
                 <div className="flex justify-center mb-4 md:mb-6">
                   {/* Responsive: medium on mobile, large on desktop */}
-                  <div className="block md:hidden">
-                    <LumoPixelAvatar 
-                      emotion={progressStatus === 'idle' ? 'happy' : progressStatus as any} 
-                      size="medium" 
-                      showBackground={true}
-                      backgroundTheme="auto"
-                    />
-                  </div>
-                  <div className="hidden md:block">
-                    <LumoPixelAvatar 
-                      emotion={progressStatus === 'idle' ? 'happy' : progressStatus as any} 
-                      size="large" 
-                      showBackground={true}
-                      backgroundTheme="auto"
-                    />
-                  </div>
+                  <LumoPixelAvatar 
+                    emotion={progressStatus === 'idle' ? 'happy' : progressStatus as any} 
+                    size="medium"
+                    showBackground={true}
+                    backgroundTheme="auto"
+                    className="md:hidden"
+                  />
+                  <LumoPixelAvatar 
+                    emotion={progressStatus === 'idle' ? 'happy' : progressStatus as any} 
+                    size="large"
+                    showBackground={true}
+                    backgroundTheme="auto"
+                    className="hidden md:block"
+                  />
                 </div>
-                <h3 className="text-xl md:text-2xl font-bold mb-2">Meet Lumo!</h3>
-                <h4 className="text-base md:text-lg text-muted-foreground mb-2 md:mb-3">Your Meta-SySop AI Assistant</h4>
-                <p className="text-sm md:text-base text-muted-foreground max-w-md mx-auto leading-relaxed px-4">
+                <h3 className="text-lg md:text-2xl font-bold mb-1 md:mb-2 px-2">Meet Lumo!</h3>
+                <h4 className="text-sm md:text-lg text-muted-foreground mb-2 md:mb-3 px-2">Your Meta-SySop AI Assistant</h4>
+                <p className="text-xs md:text-base text-muted-foreground max-w-md mx-auto leading-relaxed px-4">
                   I'm an autonomous platform healing agent. I can diagnose and fix issues 
                   with the Archetype platform itself. Tell me what needs to be fixed.
                 </p>
-                <div className="mt-3 md:mt-4 text-xs md:text-sm text-muted-foreground">
+                <div className="mt-2 md:mt-4 text-xs md:text-sm text-muted-foreground px-2">
                   💡 Tip: You can upload images, paste screenshots, or attach code/logs
                 </div>
               </div>
@@ -840,12 +839,12 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
               <div
                 key={message.id}
                 className={cn(
-                  "flex gap-3 animate-in fade-in-up",
+                  "flex gap-2 md:gap-3 animate-in fade-in-up",
                   message.role === "user" ? "justify-end" : "justify-start"
                 )}
               >
                 {message.role === "assistant" && (
-                  <div className="flex-shrink-0">
+                  <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10">
                     <LumoPixelAvatar 
                       emotion={
                         progressStatus === 'thinking' ? 'thinking' : 
@@ -854,29 +853,28 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                       } 
                       size="small" 
                       showBackground={false}
-                      className="scale-75"
                     />
                   </div>
                 )}
                 
-                <div className={cn("rounded-lg max-w-[85%]", message.role === "user" ? "w-auto" : "w-full")}>
+                <div className={cn("rounded-lg max-w-[90%] md:max-w-[85%]", message.role === "user" ? "w-auto" : "w-full")}>
                   {message.role === "user" ? (
-                    <div className="space-y-2">
-                      <div className="px-4 py-3 bg-primary text-primary-foreground border border-primary rounded-lg">
-                        <div className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</div>
+                    <div className="space-y-1.5 md:space-y-2">
+                      <div className="px-3 py-2 md:px-4 md:py-3 bg-primary text-primary-foreground border border-primary rounded-lg">
+                        <div className="text-xs md:text-sm leading-relaxed whitespace-pre-wrap">{message.content}</div>
                       </div>
                       {/* User attachments */}
                       {message.attachments && message.attachments.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-1.5 md:gap-2">
                           {message.attachments.map((attachment, idx) => (
-                            <div key={idx} className="flex items-center gap-2 p-2 bg-muted rounded-lg border border-border">
+                            <div key={idx} className="flex items-center gap-1.5 md:gap-2 p-1.5 md:p-2 bg-muted rounded-lg border border-border">
                               {attachment.fileType === 'image' ? (
-                                <Image className="w-4 h-4 text-muted-foreground shrink-0" />
+                                <Image className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground shrink-0" />
                               ) : (
-                                <File className="w-4 h-4 text-muted-foreground shrink-0" />
+                                <File className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground shrink-0" />
                               )}
                               <div className="text-xs">
-                                <div className="font-medium">{attachment.fileName}</div>
+                                <div className="font-medium truncate max-w-[120px]">{attachment.fileName}</div>
                                 <div className="text-muted-foreground">{formatFileSize(attachment.size)}</div>
                               </div>
                             </div>
@@ -886,18 +884,18 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                     </div>
                   ) : (
                     // 🔥 SIMPLIFIED ASSISTANT MESSAGE: Just content + streaming indicator
-                    <div className="px-4 py-3 bg-muted text-foreground border border-border rounded-lg">
+                    <div className="px-3 py-2 md:px-4 md:py-3 bg-muted text-foreground border border-border rounded-lg">
                       {message.content ? (
-                        <div className="prose prose-sm max-w-none dark:prose-invert">
+                        <div className="prose prose-sm max-w-none dark:prose-invert text-xs md:text-sm">
                           <MarkdownRenderer content={message.content} />
                         </div>
                       ) : null}
                       {message.isStreaming && (
-                        <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-                          <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                          <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
-                          <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
-                          <span className="text-xs ml-2">Meta-SySop is typing...</span>
+                        <div className="flex items-center gap-2 mt-2 text-xs md:text-sm text-muted-foreground">
+                          <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-primary rounded-full animate-pulse" />
+                          <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
+                          <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
+                          <span className="text-xs ml-1 md:ml-2">Meta-SySop is typing...</span>
                         </div>
                       )}
                     </div>
@@ -905,8 +903,8 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                 </div>
 
                 {message.role === "user" && (
-                  <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-                    <User className="h-5 w-5 text-primary-foreground" />
+                  <div className="flex-shrink-0 w-7 h-7 md:w-9 md:h-9 rounded-lg bg-primary flex items-center justify-center">
+                    <User className="h-4 w-4 md:h-5 md:w-5 text-primary-foreground" />
                   </div>
                 )}
               </div>
@@ -914,34 +912,34 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
           </div>
         </div>
 
-        {/* Input Area */}
-        <div className="border-t border-border p-4 bg-background flex-shrink-0">
-          <div className="max-w-3xl mx-auto space-y-3">
+        {/* Input Area - Sticky on mobile */}
+        <div className="sticky bottom-0 border-t border-border p-2 md:p-4 bg-background flex-shrink-0">
+          <div className="max-w-3xl mx-auto space-y-2 md:space-y-3">
             {/* 🎯 REDESIGNED CONTROLS: Project, Autonomy & Upload Button together */}
-            <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center justify-between gap-2 md:gap-4 flex-wrap">
               {/* Left side: Project Selector */}
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-muted-foreground font-medium">Target:</span>
+              <div className="flex items-center gap-1.5 md:gap-3 flex-1 min-w-0">
+                <span className="text-xs text-muted-foreground font-medium hidden sm:inline">Target:</span>
                 <Select
                   value={selectedProjectId || "platform"}
                   onValueChange={(value) => setSelectedProjectId(value === "platform" ? null : value)}
                   disabled={isStreaming}
                 >
-                  <SelectTrigger className="h-8 w-auto min-w-[180px] text-xs" data-testid="select-project">
+                  <SelectTrigger className="h-7 md:h-8 w-auto min-w-[120px] md:min-w-[180px] text-xs" data-testid="select-project">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="platform" data-testid="project-option-platform">
                       <div className="flex items-center gap-2">
-                        <Rocket className="h-3.5 w-3.5" />
-                        <span>Platform Code</span>
+                        <Rocket className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                        <span className="text-xs">Platform Code</span>
                       </div>
                     </SelectItem>
                     {projects?.map((project) => (
                       <SelectItem key={project.id} value={project.id} data-testid={`project-option-${project.id}`}>
                         <div className="flex items-center gap-2">
-                          <FileCode className="h-3.5 w-3.5" />
-                          <span className="truncate max-w-[160px]">{project.name}</span>
+                          <FileCode className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                          <span className="truncate max-w-[120px] md:max-w-[160px] text-xs">{project.name}</span>
                         </div>
                       </SelectItem>
                     ))}
@@ -950,17 +948,17 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
               </div>
 
               {/* Right side: Autonomy Selector + Upload Button */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 md:gap-3">
                 {/* Autonomy Level Selector */}
                 {autonomyData && (
                   <>
-                    <span className="text-xs text-muted-foreground font-medium">Autonomy:</span>
+                    <span className="text-xs text-muted-foreground font-medium hidden sm:inline">Autonomy:</span>
                     <Select
                       value={autonomyData.currentLevel}
                       onValueChange={(level) => updateAutonomyMutation.mutate(level)}
                       disabled={isStreaming}
                     >
-                      <SelectTrigger className="h-8 w-auto min-w-[140px] text-xs" data-testid="select-autonomy">
+                      <SelectTrigger className="h-7 md:h-8 w-auto min-w-[100px] md:min-w-[140px] text-xs" data-testid="select-autonomy">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -975,8 +973,8 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                               data-testid={`autonomy-option-${level.id}`}
                             >
                               <div className="flex items-center gap-2">
-                                <Icon className="h-3.5 w-3.5" />
-                                <span>{level.name}</span>
+                                <Icon className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                                <span className="text-xs">{level.name}</span>
                                 {!isAvailable && <span className="text-xs text-muted-foreground">(Upgrade)</span>}
                               </div>
                             </SelectItem>
@@ -987,24 +985,24 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                   </>
                 )}
 
-                {/* ✨ UPLOAD BUTTON - Now positioned next to autonomy selector */}
+                {/* ✨ UPLOAD BUTTON - Icon only on mobile, text on desktop */}
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 px-3 gap-1.5"
+                  className="h-7 md:h-8 px-2 md:px-3 gap-1.5"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isStreaming}
                   title="Upload files (images, code, logs)"
                 >
-                  <Upload className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline text-xs">Upload</span>
+                  <Upload className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                  <span className="hidden md:inline text-xs">Upload</span>
                 </Button>
               </div>
             </div>
 
-            {/* Attachments preview */}
+            {/* Attachments preview - Horizontal scroll on mobile */}
             {attachments.length > 0 && (
-              <div className="flex flex-wrap gap-2 p-2 bg-muted/50 rounded-lg border border-border">
+              <div className="flex overflow-x-auto gap-1.5 md:gap-2 p-1.5 md:p-2 bg-muted/50 rounded-lg border border-border scrollbar-thin">
                 {attachments.map((attachment, idx) => (
                   <AttachmentPreview
                     key={idx}
@@ -1016,25 +1014,26 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
             )}
 
             {/* 🎯 REDESIGNED INPUT AREA: Clean textarea without embedded button */}
-            <div className="flex gap-2">
+            <div className="flex gap-1.5 md:gap-2">
               <div className="flex-1">
                 <Textarea
                   ref={textareaRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Tell me what needs to be fixed... (paste images, drag files, or use upload button)"
-                  className="min-h-[60px] max-h-[200px] resize-none"
+                  placeholder="Tell me what needs to be fixed..."
+                  className="min-h-[48px] md:min-h-[60px] max-h-[150px] md:max-h-[200px] resize-none text-xs md:text-sm"
                   disabled={isStreaming}
                   data-testid="input-message"
                 />
               </div>
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1.5 md:gap-2">
                 {isStreaming ? (
                   <Button
                     onClick={handleStop}
                     variant="destructive"
                     size="icon"
+                    className="h-12 w-12 md:h-10 md:w-10"
                     data-testid="button-stop"
                   >
                     <Square className="h-4 w-4" />
@@ -1044,6 +1043,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                     onClick={handleSend}
                     disabled={!input.trim()}
                     size="icon"
+                    className="h-12 w-12 md:h-10 md:w-10"
                     data-testid="button-send"
                   >
                     <Send className="h-4 w-4" />

@@ -6,6 +6,8 @@ import { Sparkles, Zap, Shield, Code, Check, ArrowRight, Menu } from "lucide-rea
 import logoPath from "@assets/logo.svg";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { taglines } from '@/lib/taglines';
+import { BillboardBanner } from '@/components/billboard-banner';
 
 export default function LandingMobile() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -62,8 +64,21 @@ export default function LandingMobile() {
         </div>
       </nav>
 
+      {/* Billboard Banner */}
+      <div className="pt-20 pb-4 px-4 relative z-20">
+        <BillboardBanner
+          type="announcement"
+          title="New Feature: Meta-SySop Auto-Healing!"
+          description="Our AI now automatically fixes bugs and deploys updates - watch your platform heal itself in real-time"
+          ctaText="See It In Action"
+          ctaLink="/platform-healing"
+          animated={true}
+          dismissible={true}
+        />
+      </div>
+
       {/* Hero Section - Mobile Optimized */}
-      <section className="pt-24 pb-12 px-4">
+      <section className="pt-6 pb-12 px-4">
         <div className="text-center space-y-6">
           {/* Pulsing Logo */}
           <motion.div
@@ -95,7 +110,7 @@ export default function LandingMobile() {
             </h1>
             
             <p className="text-slate-300 text-base max-w-sm mx-auto">
-              When code throws you lemons, you get LemonAid! Build complete websites and web apps instantly with AI.
+              {taglines.hero[0]} Build complete websites and web apps instantly with AI.
             </p>
           </div>
 
@@ -210,7 +225,7 @@ export default function LandingMobile() {
             </span>
           </div>
           <p className="text-sm text-slate-400">
-            When code throws you lemons, you get LemonAid
+            {taglines.footer[0]}
           </p>
           <div className="flex justify-center gap-4">
             <Link href="/pricing" className="text-slate-400 hover:text-primary transition-colors min-h-[44px] flex items-center px-2" data-testid="footer-link-pricing">
