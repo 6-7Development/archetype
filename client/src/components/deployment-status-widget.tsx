@@ -27,6 +27,17 @@ interface DeploymentStatusWidgetProps {
   onClose?: () => void;
 }
 
+// Sanitize legacy branding in commit messages (historical Git data)
+function sanitizeCommitMessage(message: string): string {
+  return message
+    .replace(/\[Platform-SySop\]/gi, '[LomuAI]')
+    .replace(/\[Meta-SySop\]/gi, '[LomuAI]')
+    .replace(/Platform-SySop/gi, 'LomuAI')
+    .replace(/Meta-SySop/gi, 'LomuAI')
+    .replace(/SySop AI/gi, 'LomuAI')
+    .replace(/SySop/gi, 'LomuAI');
+}
+
 export function DeploymentStatusWidget({ floating = false, onClose }: DeploymentStatusWidgetProps = {}) {
   const { data, isLoading } = useQuery<DeploymentHistoryResponse>({
     queryKey: ['/api/platform/deployment-history'],
@@ -148,8 +159,8 @@ export function DeploymentStatusWidget({ floating = false, onClose }: Deployment
                         {latest.shortHash}
                       </Badge>
                     </div>
-                    <p className="text-sm font-medium truncate" title={latest.message}>
-                      {latest.message}
+                    <p className="text-sm font-medium truncate" title={sanitizeCommitMessage(latest.message)}>
+                      {sanitizeCommitMessage(latest.message)}
                     </p>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                       <Clock className="h-3 w-3" />
@@ -193,8 +204,8 @@ export function DeploymentStatusWidget({ floating = false, onClose }: Deployment
                       <code className="text-xs font-mono text-muted-foreground">
                         {deployment.shortHash}
                       </code>
-                      <span className="text-xs truncate" title={deployment.message}>
-                        {deployment.message}
+                      <span className="text-xs truncate" title={sanitizeCommitMessage(deployment.message)}>
+                        {sanitizeCommitMessage(deployment.message)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
