@@ -213,7 +213,7 @@ export function LogoCitrusWordmark({ size = 120 }: { size?: number }) {
           backgroundClip: 'text'
         }}
       >
-        LemonAid
+        Lomu
       </span>
     </div>
   );

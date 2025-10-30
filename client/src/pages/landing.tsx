@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MobileNav } from "@/components/mobile-nav";
 import { Sparkles, Zap, Shield, Gauge, Code, Rocket, Check, Terminal, Play, ArrowRight } from "lucide-react";
-import { LogoEnhancedBadge, LemonAidTextLogo } from '@/components/final-logos';
+import { LogoEnhancedBadge, LomuTextLogo } from '@/components/final-logos';
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { MotionToggle } from "@/components/motion-toggle";
@@ -158,7 +158,7 @@ export default function Landing() {
           <div className="flex items-center justify-between gap-2">
             {/* Logo - Simplified on mobile */}
             <Link href="/" data-testid="link-home" className="flex items-center gap-2 flex-shrink-0">
-              <LemonAidTextLogo size="sm" />
+              <LomuTextLogo size="sm" />
             </Link>
             
             {/* Right Side - Clean */}
@@ -171,7 +171,7 @@ export default function Landing() {
                   { href: "/builder", label: "Get Started" }
                 ]}
                 logo={
-                  <LemonAidTextLogo size="sm" />
+                  <LomuTextLogo size="sm" />
                 }
               />
               <Button variant="outline" className="min-h-[44px] hidden md:inline-flex text-white border-slate-600 hover:bg-slate-800" data-testid="button-nav-login" asChild>
@@ -468,7 +468,7 @@ export default function Landing() {
                 See AI in Action
               </span>
             </h2>
-            <p className="text-xl text-slate-400 break-words">Watch LemonAid squeeze fresh, production-ready code</p>
+            <p className="text-xl text-slate-400 break-words">Watch Lomu squeeze fresh, production-ready code</p>
           </motion.div>
 
           <motion.div
@@ -650,7 +650,7 @@ export default function Landing() {
                   Ready to Squeeze Fresh Code?
                 </h2>
                 <p className="text-xl text-slate-300 mb-8 break-words whitespace-normal">
-                  When code throws you lemons, LemonAid makes it sweet
+                  When code throws you lemons, Lomu makes it sweet
                 </p>
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button size="lg" variant="gradient" data-testid="button-cta" asChild>
@@ -674,9 +674,9 @@ export default function Landing() {
               className="flex items-center justify-center gap-3 mb-4"
               whileHover={{ scale: 1.05 }}
             >
-              <LemonAidTextLogo size="default" />
+              <LomuTextLogo size="default" />
             </motion.div>
-            <p className="text-sm mb-4 break-words">© 2025 LemonAid. When code throws you lemons, you get LemonAid.</p>
+            <p className="text-sm mb-4 break-words">© 2025 Lomu. When code throws you lemons, you get Lomu.</p>
             <DeploymentStatus />
           </div>
         </div>

@@ -57,7 +57,7 @@ export default function FinalLogoShowcase() {
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5" />
-                    <span>Vibrant LemonAid color palette (Sparkling Lemon, Fresh Mint, Citrus Bloom)</span>
+                    <span>Vibrant Lomu color palette (Sparkling Lemon, Fresh Mint, Citrus Bloom)</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5" />
@@ -204,7 +204,7 @@ export default function FinalLogoShowcase() {
                   <div className="w-2 h-2 rounded-full bg-accent mt-1" />
                   <div>
                     <p className="font-semibold">Splash Screen</p>
-                    <p className="text-muted-foreground">Enhanced Badge + "LemonAid" text</p>
+                    <p className="text-muted-foreground">Enhanced Badge + "Lomu" text</p>
                   </div>
                 </li>
               </ul>

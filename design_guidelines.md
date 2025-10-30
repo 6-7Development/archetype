@@ -1,13 +1,13 @@
-# Design Guidelines: LemonAid - "When Code Throws You Lemons"
+# Design Guidelines: Lomu - "When Code Throws You Lemons"
 
 ## Brand Identity
 
-**Platform Name**: LemonAid  
-**Tagline**: "When code throws you lemons, you get LemonAid"  
+**Platform Name**: Lomu  
+**Tagline**: "When code throws you lemons, you get Lomu"  
 **Mission**: The SaaS platform made to make life sweet  
 **Mascot**: Lumo the Lemon - Your AI coding buddy
 
-**Brand Story**: LemonAid transforms coding challenges (lemons) into delightful solutions. Fresh, optimistic, and energizing - we make development sweet with AI-powered assistance that feels like having a cheerful coding companion by your side.
+**Brand Story**: Lomu transforms coding challenges (lemons) into delightful solutions. Fresh, optimistic, and energizing - we make development sweet with AI-powered assistance that feels like having a cheerful coding companion by your side.
 
 ## Design Philosophy
 
@@ -221,7 +221,7 @@
 
 **CSS Variables**: Define in `:root` and `.dark` for theme switching  
 **Tailwind Config**: Map custom colors to Tailwind utilities  
-**Component Library**: Shadcn UI components styled with LemonAid palette  
+**Component Library**: Shadcn UI components styled with Lomu palette  
 **Icon System**: Lucide React for UI icons, custom lemon illustrations  
 
 **File Structure**:
@@ -232,4 +232,4 @@
 
 ---
 
-**Remember**: When code throws you lemons, LemonAid makes it sweet!
+**Remember**: When code throws you lemons, Lomu makes it sweet!

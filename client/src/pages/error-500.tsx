@@ -18,7 +18,7 @@ export default function Error500() {
           <LogoEnhancedBadge size={64} />
           <div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              LemonAid
+              Lomu
             </h1>
             <p className="text-sm text-muted-foreground">AI-Powered Code Generation Platform</p>
           </div>

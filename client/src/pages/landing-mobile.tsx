@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MotionToggle } from "@/components/motion-toggle";
 import { Sparkles, Zap, Shield, Code, Check, ArrowRight, Menu } from "lucide-react";
-import { LogoEnhancedBadge, LemonAidTextLogo } from '@/components/final-logos';
+import { LogoEnhancedBadge, LomuTextLogo } from '@/components/final-logos';
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { taglines } from '@/lib/taglines';
@@ -19,7 +19,7 @@ export default function LandingMobile() {
         <div className="px-3 sm:px-4 py-3">
           <div className="flex items-center justify-between gap-2 sm:gap-3">
             <Link href="/" className="flex items-center gap-2 min-h-[44px] py-1 flex-1 min-w-0 max-w-[60%]" data-testid="link-brand">
-              <LemonAidTextLogo size="sm" />
+              <LomuTextLogo size="sm" />
             </Link>
             
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -90,7 +90,7 @@ export default function LandingMobile() {
             }}
             aria-hidden="true"
           >
-            <LemonAidTextLogo size="default" />
+            <LomuTextLogo size="default" />
           </motion.div>
 
           <div className="space-y-3">
@@ -99,7 +99,7 @@ export default function LandingMobile() {
                 Squeeze Fresh Code
               </span>
               <br />
-              <span className="text-white break-words">With LemonAid</span>
+              <span className="text-white break-words">With Lomu</span>
             </h1>
             
             <p className="text-slate-300 text-base max-w-sm mx-auto break-words whitespace-normal">
@@ -126,7 +126,7 @@ export default function LandingMobile() {
         <div className="max-w-md mx-auto space-y-4">
           <h2 className="text-2xl font-bold text-center mb-6 break-words leading-snug">
             <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent break-words">
-              Why Choose LemonAid
+              Why Choose Lomu
             </span>
           </h2>
 
@@ -212,7 +212,7 @@ export default function LandingMobile() {
       <footer className="border-t border-white/10 py-8 px-4">
         <div className="max-w-md mx-auto text-center space-y-4">
           <div className="flex items-center justify-center gap-2">
-            <LemonAidTextLogo size="sm" />
+            <LomuTextLogo size="sm" />
           </div>
           <p className="text-sm text-slate-400 break-words whitespace-normal">
             {taglines.footer[0]}

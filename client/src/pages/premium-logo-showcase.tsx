@@ -29,7 +29,7 @@ export default function PremiumLogoShowcase() {
                 Premium Logo Collection
               </h1>
               <p className="text-muted-foreground text-lg">
-                Professional-grade designs for the LemonAid platform
+                Professional-grade designs for the Lomu platform
               </p>
             </div>
           </div>

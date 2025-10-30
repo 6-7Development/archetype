@@ -1,10 +1,10 @@
-# LemonAid - "When Code Throws You Lemons"
+# Lomu - "When Code Throws You Lemons"
 
 ## Overview
-**Tagline**: "When code throws you lemons, you get LemonAid"  
+**Tagline**: "When code throws you lemons, you get Lomu"  
 **Mission**: The SaaS platform made to make life sweet
 
-LemonAid is an AI-powered platform for rapid web development, featuring an AI coding agent (SySop) for autonomous code generation and dual-version IDE Workspaces (LemonAid for desktop, LemonAid5 for mobile). It offers a console-first interface, real-time preview, and comprehensive workspace features with a fresh, optimistic aesthetic. LemonAid aims for production readiness with fully portable deployment, incorporating monetization infrastructure, a template marketplace, and professional development services. A key feature is Meta-SySop, an autonomous system for platform self-healing, bug fixes, and UI/UX improvements to its own source code, complete with rollback and audit logging.
+Lomu is an AI-powered platform for rapid web development, featuring an AI coding agent (SySop) for autonomous code generation and dual-version IDE Workspaces (Lomu for desktop, Lomu5 for mobile). It offers a console-first interface, real-time preview, and comprehensive workspace features with a fresh, optimistic aesthetic. Lomu aims for production readiness with fully portable deployment, incorporating monetization infrastructure, a template marketplace, and professional development services. A key feature is Meta-SySop, an autonomous system for platform self-healing, bug fixes, and UI/UX improvements to its own source code, complete with rollback and audit logging.
 
 **Mascot**: Lumo the Lemon - An animated pixel art lemon with red goggles and a tech aesthetic, serving as your cheerful AI coding buddy with 9 emotional states (happy, excited, thinking, working, success, error, worried, sad, idle).
 
@@ -39,8 +39,8 @@ LemonAid is an AI-powered platform for rapid web development, featuring an AI co
 ## System Architecture
 The platform is built with a React frontend, an Express.js backend, and PostgreSQL for data persistence.
 
-### Dual-Version Architecture (LemonAid + LemonAid5)
-The platform uses a unified codebase to support two distinct user experiences: LemonAid (Desktop) with a 4-panel layout, and LemonAid5 (Mobile) with bottom tab navigation. Both versions share backend APIs, WebSocket connections, authentication, and database access.
+### Dual-Version Architecture (Lomu + Lomu5)
+The platform uses a unified codebase to support two distinct user experiences: Lomu (Desktop) with a 4-panel layout, and Lomu5 (Mobile) with bottom tab navigation. Both versions share backend APIs, WebSocket connections, authentication, and database access.
 
 ### UI/UX Decisions
 The user interface features a tab-based workspace (Overview, Build, Files, Preview, Activity, Versions) providing an IDE-like experience, primarily through a command console and real-time live preview. The design emphasizes a fresh, optimistic aesthetic with a citrus-inspired color palette (Sparkling Lemon, Fresh Mint, Citrus Bloom), card-based layouts, warm shadows, smooth transitions, and ADA/WCAG accessibility. Chat interfaces feature Lumo the Lemon mascot as an AI companion with natural sprite animations and emotional expressions. Loading states use the signature lemonade jar animation with liquid fill, bubbles, and ice cubes. New additions include a visible image attachment toolbar in the AI chat interface, Resume/Cancel controls for Meta-SySop jobs, and the animated Lumo avatar system. A real-time deployment status widget tracks GitHub commits and Meta-SySop's autonomous updates.
@@ -54,7 +54,7 @@ The user interface features a tab-based workspace (Overview, Build, Files, Previ
 - **Meta-SySop Token Optimization** (Oct 29, 2025): Aggressive token reduction to prevent excessive API costs and 200K token limit errors. Chat history reduced from 100→10 messages (~40K tokens saved), ultra-condensed platform knowledge (~2K saved), minimal memory summaries (~3K saved), deployment awareness removed (~2K saved). **Total savings: ~47K tokens per request**, making Meta-SySop sustainable for production use. System now maintains conversation context efficiently while staying well under Anthropic's limits.
 - **Meta-SySop Intimate Platform Knowledge System** (Oct 28, 2025): Complete context awareness combining bounded conversation history (10 messages optimized for tokens), condensed platform architecture knowledge, comprehensive bug/fix tracking, and conversational personality. Meta-SySop has intimate understanding of:
     - Recent conversation with user (goals, issues, fixes, completed work)
-    - Complete LemonAid platform architecture (SySop, healing system, database, deployment)
+    - Complete Lomu platform architecture (SySop, healing system, database, deployment)
     - Recent bugs fixed and features built
     - Technical implementation details and file structure
     - **Full replit.md access**: Can read/write platform documentation using readPlatformFile/writePlatformFile tools

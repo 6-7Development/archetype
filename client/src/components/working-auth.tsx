@@ -68,7 +68,7 @@ export default function WorkingAuth() {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
       toast({
         title: "Account created!",
-        description: "Welcome to LemonAid. Redirecting...",
+        description: "Welcome to Lomu. Redirecting...",
       });
       setTimeout(() => setLocation("/dashboard"), 500);
     },

@@ -155,7 +155,7 @@
   }
 }
 
-/* LIGHT MODE - LemonAid Fresh & Bright Theme */
+/* LIGHT MODE - Lomu Fresh & Bright Theme */
 :root {
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
@@ -167,7 +167,7 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  /* LemonAid Brand Colors - Light Mode */
+  /* Lomu Brand Colors - Light Mode */
   --sparkling-lemon: 50 98% 58%;  /* Primary bright yellow */
   --fresh-mint: 145 60% 45%;       /* Success green */
   --citrus-bloom: 32 94% 62%;      /* Warning orange */
@@ -292,7 +292,7 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  /* LemonAid Brand Colors - Dark Mode (deeper citrus tones) */
+  /* Lomu Brand Colors - Dark Mode (deeper citrus tones) */
   --sparkling-lemon: 50 90% 52%;   /* Deeper lemon for dark mode */
   --fresh-mint: 145 52% 38%;       /* Deeper mint */
   --citrus-bloom: 32 88% 58%;      /* Deeper orange */

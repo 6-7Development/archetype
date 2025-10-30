@@ -6,7 +6,7 @@ export default function LogoShowcaseSimple() {
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto space-y-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">LemonAid Logo Options</h1>
+          <h1 className="text-3xl font-bold mb-2">Lomu Logo Options</h1>
           <p className="text-muted-foreground">5 production-ready concepts for your platform</p>
         </div>
 
@@ -76,7 +76,7 @@ export default function LogoShowcaseSimple() {
               <LogoCitrusWordmark size={160} />
             </div>
             <p className="text-sm text-muted-foreground">
-              🎯 Best for headers and navigation - includes full "LemonAid" text
+              🎯 Best for headers and navigation - includes full "Lomu" text
             </p>
           </div>
         </Card>

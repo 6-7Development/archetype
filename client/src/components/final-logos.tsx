@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 // Enhanced Lemonade-Inspired Text Logo with Detailed Lemon
-export function LemonAidTextLogo({ className = "", size = "default" }: { className?: string; size?: "sm" | "default" | "lg" }) {
+export function LomuTextLogo({ className = "", size = "default" }: { className?: string; size?: "sm" | "default" | "lg" }) {
 
   const sizeClasses = {
     sm: "text-xl",
@@ -29,7 +29,7 @@ export function LemonAidTextLogo({ className = "", size = "default" }: { classNa
           filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))'
         }}
       >
-        Lem
+        L
       </span>
       {/* Enhanced Lemon replacing the "o" */}
       <div className="relative inline-flex items-center justify-center" style={{ width: s, height: s, marginTop: -2 }}>
@@ -111,7 +111,7 @@ export function LemonAidTextLogo({ className = "", size = "default" }: { classNa
           filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))'
         }}
       >
-        nAid
+        mu
       </span>
     </div>
   );
@@ -137,7 +137,7 @@ export function LogoEnhancedBadge({ size = 40 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 120 120" className="shrink-0">
       <defs>
-        {/* Enhanced color scheme using LemonAid palette */}
+        {/* Enhanced color scheme using Lomu palette */}
         <radialGradient id="enhanced-badge-outer">
           <stop offset="0%" stopColor="hsl(50, 98%, 70%)" />
           <stop offset="40%" stopColor="hsl(50, 98%, 58%)" />
@@ -308,7 +308,7 @@ export function LogoAnimatedWordmark({ size = 140, variant = "default" }: { size
             backgroundSize: '200% 200%'
           }}
         >
-          LemonAid
+          Lomu
         </span>
       </div>
     );
@@ -381,7 +381,7 @@ export function LogoAnimatedWordmark({ size = 140, variant = "default" }: { size
       {/* Animated Wordmark with wave effect */}
       <div className="flex flex-col">
         <div className="flex leading-none" style={{ fontSize: size / 4.5 }}>
-          {"LemonAid".split('').map((letter, i) => (
+          {"Lomu".split('').map((letter, i) => (
             <span
               key={i}
               className="font-bold inline-block"
@@ -394,7 +394,7 @@ export function LogoAnimatedWordmark({ size = 140, variant = "default" }: { size
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
-                letterSpacing: i === 4 ? '0.1em' : '-0.02em', // Space before "Aid"
+                letterSpacing: '-0.02em',
                 transition: 'transform 0.3s ease-out'
               }}
             >

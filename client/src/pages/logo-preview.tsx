@@ -16,9 +16,9 @@ export default function LogoPreview() {
               Back
             </Button>
           </Link>
-          <h1 className="text-4xl font-bold mb-2">LemonAid Logo Concepts</h1>
+          <h1 className="text-4xl font-bold mb-2">Lomu Logo Concepts</h1>
           <p className="text-muted-foreground">
-            Choose your favorite logo design - all options are production-ready and optimized for the LemonAid brand.
+            Choose your favorite logo design - all options are production-ready and optimized for the Lomu brand.
           </p>
         </div>
 

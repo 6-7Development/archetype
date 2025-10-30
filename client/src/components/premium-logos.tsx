@@ -360,7 +360,7 @@ export function LogoModernWordmark({ size = 140, variant = "default" }: { size?:
             backgroundClip: 'text'
           }}
         >
-          LemonAid
+          Lomu
         </span>
       </div>
     );
@@ -410,7 +410,7 @@ export function LogoModernWordmark({ size = 140, variant = "default" }: { size?:
             letterSpacing: '-0.02em'
           }}
         >
-          LemonAid
+          Lomu
         </span>
         <span 
           className="text-muted-foreground font-medium leading-none mt-1"

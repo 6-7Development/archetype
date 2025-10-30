@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { LogoEnhancedBadge, LemonAidTextLogo } from '@/components/final-logos';
+import { LogoEnhancedBadge, LomuTextLogo } from '@/components/final-logos';
 import { Github, Twitter, Linkedin, Mail } from "lucide-react";
 
 export function AppFooter() {
@@ -11,7 +11,7 @@ export function AppFooter() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Column */}
           <div className="space-y-4">
-            <LemonAidTextLogo size="sm" />
+            <LomuTextLogo size="sm" />
             <p className="text-sm text-muted-foreground">
               Enterprise-grade AI-powered platform for rapid web development.
             </p>

@@ -30,7 +30,7 @@ export default function PricingSuccess() {
             className="text-4xl font-bold mb-4"
           >
             <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Welcome to LemonAid Pro!
+              Welcome to Lomu Pro!
             </span>
           </motion.h1>
 
