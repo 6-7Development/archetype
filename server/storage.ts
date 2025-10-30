@@ -43,8 +43,8 @@ import {
   type SatisfactionSurvey,
   type InsertSatisfactionSurvey,
   type MaintenanceMode,
-  type SysopTask,
-  type InsertSysopTask,
+  type LomuAITask,
+  type InsertLomuAITask,
   type UserAvatarState,
   type InsertUserAvatarState,
   users,
@@ -52,7 +52,7 @@ import {
   chatMessages,
   projects,
   commands,
-  sysopTasks,
+  lomuAITasks,
   subscriptions,
   usageLogs,
   monthlyUsage,
@@ -122,10 +122,10 @@ export interface IStorage {
   updateCommand(id: string, userId: string, status: string, response: string | null, projectId?: string | null): Promise<Command>;
   
   // SySop Task operations
-  getTasks(commandId: string): Promise<SysopTask[]>;
-  getTasksByProject(projectId: string, userId: string): Promise<SysopTask[]>;
-  createTask(task: InsertSysopTask & { userId: string }): Promise<SysopTask>;
-  updateTaskStatus(taskId: string, status: string): Promise<SysopTask>;
+  getTasks(commandId: string): Promise<LomuAITask[]>;
+  getTasksByProject(projectId: string, userId: string): Promise<LomuAITask[]>;
+  createTask(task: InsertLomuAITask & { userId: string }): Promise<LomuAITask>;
+  updateTaskStatus(taskId: string, status: string): Promise<LomuAITask>;
   
   // Subscription operations
   getSubscription(userId: string): Promise<Subscription | undefined>;
@@ -534,31 +534,31 @@ export class DatabaseStorage implements IStorage {
     return command;
   }
 
-  async getTasks(commandId: string): Promise<SysopTask[]> {
+  async getTasks(commandId: string): Promise<LomuAITask[]> {
     return await db
       .select()
-      .from(sysopTasks)
-      .where(eq(sysopTasks.commandId, commandId))
-      .orderBy(sysopTasks.priority);
+      .from(lomuAITasks)
+      .where(eq(lomuAITasks.commandId, commandId))
+      .orderBy(lomuAITasks.priority);
   }
 
-  async getTasksByProject(projectId: string, userId: string): Promise<SysopTask[]> {
+  async getTasksByProject(projectId: string, userId: string): Promise<LomuAITask[]> {
     return await db
       .select()
-      .from(sysopTasks)
-      .where(and(eq(sysopTasks.projectId, projectId), eq(sysopTasks.userId, userId)))
-      .orderBy(desc(sysopTasks.createdAt));
+      .from(lomuAITasks)
+      .where(and(eq(lomuAITasks.projectId, projectId), eq(lomuAITasks.userId, userId)))
+      .orderBy(desc(lomuAITasks.createdAt));
   }
 
-  async createTask(task: InsertSysopTask & { userId: string }): Promise<SysopTask> {
+  async createTask(task: InsertLomuAITask & { userId: string }): Promise<LomuAITask> {
     const [created] = await db
-      .insert(sysopTasks)
+      .insert(lomuAITasks)
       .values(task)
       .returning();
     return created;
   }
 
-  async updateTaskStatus(taskId: string, status: string): Promise<SysopTask> {
+  async updateTaskStatus(taskId: string, status: string): Promise<LomuAITask> {
     const updateData: any = {
       status,
       updatedAt: new Date(),
@@ -569,9 +569,9 @@ export class DatabaseStorage implements IStorage {
     }
 
     const [task] = await db
-      .update(sysopTasks)
+      .update(lomuAITasks)
       .set(updateData)
-      .where(eq(sysopTasks.id, taskId))
+      .where(eq(lomuAITasks.id, taskId))
       .returning();
     
     if (!task) {

@@ -7,7 +7,7 @@ import { FEATURES } from "./routes/common";
 import toolsRouter from './routes/tools';
 import uploadRouter from './routes/upload';
 import platformRouter from './platformRoutes';
-import metaSySopChatRouter from './routes/lomuChat';
+import lomuAIChatRouter from './routes/lomuChat';
 import { getDeploymentInfo } from './deploymentInfo';
 import { storage } from "./storage";
 
@@ -159,8 +159,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   console.log('[LOMU-AI-JOB-MANAGER] Job manager connected to WebSocket');
 
   // Initialize LomuAI chat with WebSocket for live preview
-  const { initializeMetaSysopWebSocket } = await import('./routes/lomuChat');
-  initializeMetaSysopWebSocket(wss);
+  const { initializeLomuAIWebSocket } = await import('./routes/lomuChat');
+  initializeLomuAIWebSocket(wss);
   console.log('[LOMU-AI-CHAT] Live preview WebSocket initialized');
 
   // ==================== REGISTER ROUTE MODULES ====================
@@ -186,7 +186,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/platform', platformRouter);
   
   // Mount LomuAI chat router (chat-based platform healing)
-  app.use('/api/lomu-ai', metaSySopChatRouter);
+  app.use('/api/lomu-ai', lomuAIChatRouter);
 
   // ==================== REPLIT AGENT-STYLE FEATURES ====================
   

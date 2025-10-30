@@ -24,7 +24,7 @@ const router = Router();
 let wss: WebSocketServer | null = null;
 
 // Initialize WebSocket server reference
-export function initializeMetaSysopWebSocket(websocketServer: WebSocketServer) {
+export function initializeLomuAIWebSocket(websocketServer: WebSocketServer) {
   wss = websocketServer;
   console.log('[LOMU-AI] WebSocket server initialized for live preview broadcasts');
 }

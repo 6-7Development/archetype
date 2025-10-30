@@ -145,7 +145,7 @@ export const commands = pgTable("commands", {
   command: text("command").notNull(),
   response: text("response"),
   status: text("status").notNull().default("pending"),
-  platformMode: text("platform_mode").default("user"), // "user" or "platform" - determines if SySop modifies user project or Archetype itself
+  platformMode: text("platform_mode").default("user"), // "user" or "platform" - determines if LomuAI modifies user project or Archetype itself
   platformChanges: jsonb("platform_changes"), // Tracks platform file modifications for LomuAI
   autoCommitted: text("auto_committed").default("false"), // Tracks if platform changes were auto-committed to git
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -160,8 +160,8 @@ export const insertCommandSchema = createInsertSchema(commands).omit({
 export type InsertCommand = z.infer<typeof insertCommandSchema>;
 export type Command = typeof commands.$inferSelect;
 
-// SySop Tasks - Replit Agent-style task tracking for AI generations
-export const sysopTasks = pgTable("sysop_tasks", {
+// LomuAI Tasks - Replit Agent-style task tracking for AI generations
+export const lomuAITasks = pgTable("sysop_tasks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
   projectId: varchar("project_id"),
@@ -179,15 +179,15 @@ export const sysopTasks = pgTable("sysop_tasks", {
   index("idx_sysop_tasks_command_id").on(table.commandId),
 ]);
 
-export const insertSysopTaskSchema = createInsertSchema(sysopTasks).omit({
+export const insertLomuAITaskSchema = createInsertSchema(lomuAITasks).omit({
   id: true,
   userId: true, // Server-injected from auth session
   createdAt: true,
   updatedAt: true,
 });
 
-export type InsertSysopTask = z.infer<typeof insertSysopTaskSchema>;
-export type SysopTask = typeof sysopTasks.$inferSelect;
+export type InsertLomuAITask = z.infer<typeof insertLomuAITaskSchema>;
+export type LomuAITask = typeof lomuAITasks.$inferSelect;
 
 export const chatMessages = pgTable("chat_messages", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
