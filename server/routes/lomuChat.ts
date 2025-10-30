@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db';
-import { chatMessages, taskLists, tasks, metaSysopAttachments, metaSysopJobs, users, subscriptions, projects } from '@shared/schema';
+import { chatMessages, taskLists, tasks, lomuAttachments, lomuJobs, users, subscriptions, projects } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth';
 import Anthropic from '@anthropic-ai/sdk';
@@ -464,8 +464,8 @@ router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
       messages.map(async (msg) => {
         const attachments = await db
           .select()
-          .from(metaSysopAttachments)
-          .where(eq(metaSysopAttachments.messageId, msg.id));
+          .from(lomuAttachments)
+          .where(eq(lomuAttachments.messageId, msg.id));
         
         return {
           ...msg,
@@ -614,7 +614,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         size: att.size,
       }));
       
-      await db.insert(metaSysopAttachments).values(attachmentValues);
+      await db.insert(lomuAttachments).values(attachmentValues);
       console.log('[LOMU-AI-CHAT] Attachments saved successfully');
     }
 
@@ -2346,9 +2346,54 @@ router.post('/start', isAuthenticated, async (req: any, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    const { createJob, startJobWorker } = await import('../services/lomuJobManager');
+    // 🔥 CRITICAL FIX: SHORT-CIRCUIT for simple conversational messages
+    // Don't create jobs for "hi", "thanks", etc. - respond directly instead
+    const { isSimpleMessage, createJob, startJobWorker } = await import('../services/lomuJobManager');
     
-    // Create the job
+    if (isSimpleMessage(message)) {
+      console.log('[LOMU-AI] Simple message detected, responding directly without job:', message.substring(0, 30));
+      
+      // Prepare simple responses
+      const simpleResponses = {
+        greetings: "Hey! 👋 I'm LomuAI, your platform maintenance assistant. Need help with something?",
+        thanks: "You're welcome! Happy to help! 🍋",
+        yes_no: "Got it! Let me know if you need anything else.",
+        about: "I'm LomuAI - I maintain the Lomu platform, fix bugs, and handle deployments. What can I help you with today?"
+      };
+      
+      const msg = message.trim().toLowerCase();
+      let response = simpleResponses.about; // default
+      
+      if (/^(hi|hey|hello|yo|sup|howdy|greetings)/.test(msg)) {
+        response = simpleResponses.greetings;
+      } else if (/^(thanks?|thank you|thx|ty)/.test(msg)) {
+        response = simpleResponses.thanks;
+      } else if (/^(yes|no|ok|okay|nope|yep|yeah|nah)/.test(msg)) {
+        response = simpleResponses.yes_no;
+      }
+      
+      // Save simple exchange to chat history
+      const [assistantMsg] = await db
+        .insert(chatMessages)
+        .values({
+          userId,
+          projectId: null,
+          fileId: null,
+          role: 'assistant',
+          content: response,
+          isPlatformHealing: true,
+        })
+        .returning();
+      
+      return res.json({
+        success: true,
+        message: response,
+        messageId: assistantMsg.id,
+        isSimpleResponse: true, // Flag to indicate no job was created
+      });
+    }
+
+    // ONLY create job for actual work requests
     const job = await createJob(userId, message);
     
     // Start worker in background (fire and forget)
@@ -2429,7 +2474,7 @@ router.get('/active-job', isAuthenticated, async (req: any, res) => {
     const userId = req.authenticatedUserId;
     
     // Find the most recent active, interrupted, or pending job
-    const job = await db.query.metaSysopJobs.findFirst({
+    const job = await db.query.lomuJobs.findFirst({
       where: (jobs, { and, eq, inArray }) => and(
         eq(jobs.userId, userId),
         inArray(jobs.status, ['pending', 'running', 'interrupted'])
@@ -2456,7 +2501,7 @@ router.delete('/job/:jobId', isAuthenticated, isAdmin, async (req: any, res) => 
     const userId = req.authenticatedUserId;
     
     // Get the job
-    const job = await db.query.metaSysopJobs.findFirst({
+    const job = await db.query.lomuJobs.findFirst({
       where: (jobs, { eq }) => eq(jobs.id, jobId)
     });
     
@@ -2471,13 +2516,13 @@ router.delete('/job/:jobId', isAuthenticated, isAdmin, async (req: any, res) => 
     }
     
     // Mark as failed/interrupted
-    await db.update(metaSysopJobs)
+    await db.update(lomuJobs)
       .set({ 
         status: 'failed',
         error: 'Job cancelled by user',
         updatedAt: new Date()
       })
-      .where(eq(metaSysopJobs.id, jobId));
+      .where(eq(lomuJobs.id, jobId));
     
     console.log('[LOMU-AI] Job cancelled:', jobId, 'by user:', userId);
     

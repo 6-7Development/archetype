@@ -1,5 +1,5 @@
 import { db } from '../db';
-import { metaSysopJobs, users, subscriptions, chatMessages, taskLists, tasks, projects } from '@shared/schema';
+import { lomuJobs, users, subscriptions, chatMessages, taskLists, tasks, projects } from '@shared/schema';
 import { eq, and, inArray } from 'drizzle-orm';
 import type { WebSocketServer } from 'ws';
 import Anthropic from '@anthropic-ai/sdk';
@@ -62,8 +62,13 @@ function broadcast(userId: string, jobId: string, type: string, data: any) {
  * Create a new LomuAI job
  */
 export async function createJob(userId: string, initialMessage: string) {
+  // 🛡️ SAFETY CHECK - Don't create jobs for simple conversational messages
+  if (isSimpleMessage(initialMessage)) {
+    throw new Error('Simple conversational messages should not create jobs. Please respond directly instead.');
+  }
+
   // Check for existing active job
-  const existingJob = await db.query.metaSysopJobs.findFirst({
+  const existingJob = await db.query.lomuJobs.findFirst({
     where: (jobs, { and, eq, inArray }) => and(
       eq(jobs.userId, userId),
       inArray(jobs.status, ['pending', 'running'])
@@ -75,7 +80,7 @@ export async function createJob(userId: string, initialMessage: string) {
   }
 
   // Create new job
-  const [job] = await db.insert(metaSysopJobs).values({
+  const [job] = await db.insert(lomuJobs).values({
     userId,
     status: 'pending',
     conversationState: [{ role: 'user', content: initialMessage }],
@@ -116,14 +121,14 @@ export async function saveCheckpoint(
   iteration: number, 
   taskListId?: string
 ) {
-  await db.update(metaSysopJobs)
+  await db.update(lomuJobs)
     .set({
       conversationState: conversation,
       lastIteration: iteration,
       taskListId,
       updatedAt: new Date()
     })
-    .where(eq(metaSysopJobs.id, jobId));
+    .where(eq(lomuJobs.id, jobId));
   
   console.log(`[LOMU-AI-JOB-MANAGER] Saved checkpoint for job ${jobId} at iteration ${iteration}`);
 }
@@ -152,6 +157,31 @@ function validateProjectPath(filePath: string): string {
 }
 
 /**
+ * Detect simple conversational messages that don't need tasks
+ * EXPORTED for use in route handlers to prevent unnecessary job creation
+ */
+export function isSimpleMessage(msg: string): boolean {
+  const trimmed = msg.trim().toLowerCase();
+  
+  // Greetings
+  if (/^(hi|hey|hello|yo|sup|howdy|greetings)[\s!.]*$/.test(trimmed)) return true;
+  
+  // Thanks
+  if (/^(thanks?|thank you|thx|ty)[\s!.]*$/.test(trimmed)) return true;
+  
+  // Yes/No
+  if (/^(yes|no|ok|okay|nope|yep|yeah|nah)[\s!.]*$/.test(trimmed)) return true;
+  
+  // Questions about LomuAI
+  if (/^(who are you|what (are|can) you|what do you do)[\s?!.]*$/.test(trimmed)) return true;
+  
+  // Very short messages (< 15 chars) that aren't commands
+  if (trimmed.length < 15 && !/(fix|check|diagnose|update|deploy|commit|push)/.test(trimmed)) return true;
+  
+  return false;
+}
+
+/**
  * Main worker function that runs the LomuAI conversation loop
  */
 async function runMetaSysopWorker(jobId: string) {
@@ -159,8 +189,8 @@ async function runMetaSysopWorker(jobId: string) {
     // Fetch the job
     const [job] = await db
       .select()
-      .from(metaSysopJobs)
-      .where(eq(metaSysopJobs.id, jobId))
+      .from(lomuJobs)
+      .where(eq(lomuJobs.id, jobId))
       .limit(1);
 
     if (!job) {
@@ -175,9 +205,9 @@ async function runMetaSysopWorker(jobId: string) {
     const autoPush = (job.metadata as any).autoPush || false;
 
     // Update status to running
-    await db.update(metaSysopJobs)
+    await db.update(lomuJobs)
       .set({ status: 'running', updatedAt: new Date() })
-      .where(eq(metaSysopJobs.id, jobId));
+      .where(eq(lomuJobs.id, jobId));
 
     console.log('[LOMU-AI-JOB-MANAGER] Job started:', jobId);
     
@@ -221,36 +251,48 @@ async function runMetaSysopWorker(jobId: string) {
     }
 
     // Build system prompt - Natural and simple
-    const systemPrompt = `You are LomuAI - the autonomous platform maintenance agent for Archetype.
+    const systemPrompt = `You are LomuAI - the autonomous platform maintenance agent for Lomu.
 
-${projectId ? '🎯 RESCUE MODE: You are working on a user project' : '🏗️ PLATFORM MODE: You maintain the Archetype platform itself'}
+${projectId ? '🎯 RESCUE MODE: You are working on a user project' : '🏗️ PLATFORM MODE: You maintain the Lomu platform itself'}
 
 ⚡ YOUR AUTONOMY LEVEL: ${autonomyLevel.toUpperCase()}
 ${autoCommit ? '**AUTO-COMMIT ENABLED:** You can commit changes to GitHub autonomously' : '**MANUAL MODE:** Request approval before committing changes'}
 
 ═══════════════════════════════════════════════════════════════════
-🎯 HOW TO RESPOND
+🎯 HOW TO RESPOND - CRITICAL RULES
 ═══════════════════════════════════════════════════════════════════
 
-**CASUAL CONVERSATION** (no tools needed):
-- Greetings: "hi", "hello" → Be friendly, say hi back
-- Questions about you: "who are you?", "what can you do?" → Explain your role
-- Thanks: "thank you" → You're welcome!
-- **Just respond naturally with text. Don't call any tools.**
+**1. SIMPLE MESSAGES - NO TOOLS:**
+- Greetings: "hi", "hello", "hey" → Say hi back. **DO NOT create tasks!**
+- Thanks: "thanks", "thank you" → You're welcome. **DO NOT create tasks!**
+- Questions: "who are you?" → Explain briefly. **DO NOT create tasks!**
+- **If user is just being friendly, BE FRIENDLY. Don't overcomplicate it.**
 
-**WORK REQUESTS** (use tools to actually do the work):
-- "diagnose", "check", "fix", "analyze" → Create task list, run diagnostics
+**2. ACTUAL WORK - USE TOOLS:**
+- "fix", "diagnose", "check", "update" → Create task list, do the work
 - Mentions errors or problems → Investigate and fix
-- "update", "improve", "add feature" → Do the work
-- **Call tools immediately. Work while you talk.**
+- Specific requests → Execute them
+
+**3. WHEN TO ASK I AM ARCHITECT FOR HELP:**
+- **Complex architectural decisions** → Use architect_consult tool
+- **Not sure how to fix something** → Ask I AM before guessing
+- **Major refactoring** → Get I AM's approval first
+- **Breaking changes** → Consult I AM
+- **You're stuck** → architect_consult can unstick you
+
+**4. WHEN TO STOP:**
+- **All tasks completed** → Say "Done!" and STOP calling tools
+- **Nothing left to do** → Don't create fake work
+- **User says you're done** → Accept it and end
+- **You've looped 3+ times with no progress** → STOP and ask user
 
 ═══════════════════════════════════════════════════════════════════
 
-When doing work:
-1. Create a task list for complex requests
-2. Call tools to actually do the work (don't just talk about it)
-3. Update tasks as you complete them
-4. Be concise - explain what you're doing, but focus on action`;
+**EFFICIENCY RULES:**
+- Work while you talk (use tools immediately)
+- Don't create tasks for conversations
+- Ask I AM when stuck (don't waste tokens guessing)
+- **When done, STOP** - don't loop forever`;
 
     // Define tools (full tool set from SSE route)
     const tools: any[] = [
@@ -533,7 +575,7 @@ When doing work:
     let fullContent = '';
     const fileChanges: Array<{ path: string; operation: string; contentAfter?: string }> = [];
     let continueLoop = true;
-    const MAX_ITERATIONS = 25;
+    const MAX_ITERATIONS = 10; // Reduced from 25 - prevents infinite loops
     let commitSuccessful = false;
 
     // Main conversation loop
@@ -644,24 +686,35 @@ When doing work:
             // Tool execution logic (copied from SSE route)
             if (name === 'createTaskList') {
               const typedInput = input as { title: string; tasks: Array<{ title: string; description: string }> };
-              broadcast(userId, jobId, 'job_progress', { message: `📋 Creating task list...` });
-
-              const result = await createTaskList({
-                userId,
-                title: typedInput.title,
-                tasks: typedInput.tasks.map(t => ({
-                  title: t.title,
-                  description: t.description,
-                  status: 'pending' as const
-                }))
-              });
-
-              if (result.success) {
-                activeTaskListId = result.taskListId!;
-                toolResult = `✅ Task list created successfully!\n\nTask List ID: ${result.taskListId}`;
-                broadcast(userId, jobId, 'task_list_created', { taskListId: result.taskListId });
+              
+              // VALIDATION: Prevent task creation for simple conversational messages
+              const recentUserMessage = conversationMessages
+                .slice()
+                .reverse()
+                .find(msg => msg.role === 'user' && typeof msg.content === 'string');
+              
+              if (recentUserMessage && isSimpleMessage(recentUserMessage.content)) {
+                toolResult = `❌ ERROR: Don't create tasks for simple greetings/thanks. Just respond conversationally!`;
               } else {
-                toolResult = `❌ Failed to create task list: ${result.error}`;
+                broadcast(userId, jobId, 'job_progress', { message: `📋 Creating task list...` });
+
+                const result = await createTaskList({
+                  userId,
+                  title: typedInput.title,
+                  tasks: typedInput.tasks.map(t => ({
+                    title: t.title,
+                    description: t.description,
+                    status: 'pending' as const
+                  }))
+                });
+
+                if (result.success) {
+                  activeTaskListId = result.taskListId!;
+                  toolResult = `✅ Task list created successfully!\n\nTask List ID: ${result.taskListId}`;
+                  broadcast(userId, jobId, 'task_list_created', { taskListId: result.taskListId });
+                } else {
+                  toolResult = `❌ Failed to create task list: ${result.error}`;
+                }
               }
             } else if (name === 'updateTask') {
               const typedInput = input as { taskId: string; status: string; result?: string };
@@ -1065,6 +1118,24 @@ When doing work:
         });
       } else {
         // No tool calls - check if should continue
+        
+        // INTELLIGENT COMPLETION DETECTION
+        const lastAssistantMessage = fullContent.toLowerCase();
+        
+        // Check for completion keywords
+        const completionKeywords = [
+          'done', 'finished', 'complete', 'all set',
+          "that's it", "that's all", 'wrapped up',
+          'everything is fixed', 'no more work',
+          'successfully completed', 'task complete'
+        ];
+        
+        const hasCompletionKeyword = completionKeywords.some(keyword => 
+          lastAssistantMessage.includes(keyword)
+        );
+        
+        // Check task status
+        let hasIncompleteTasks = false;
         if (activeTaskListId) {
           try {
             const taskCheck = await readTaskList({ userId });
@@ -1073,18 +1144,35 @@ When doing work:
             const inProgressTasks = allTasks.filter((t: any) => t.status === 'in_progress');
             const pendingTasks = allTasks.filter((t: any) => t.status === 'pending');
             
-            const hasIncompleteTasks = inProgressTasks.length > 0 || pendingTasks.length > 0;
-            
-            if (hasIncompleteTasks && iterationCount < MAX_ITERATIONS) {
-              continueLoop = true;
-            } else {
-              continueLoop = false;
-            }
+            hasIncompleteTasks = inProgressTasks.length > 0 || pendingTasks.length > 0;
           } catch (error: any) {
             console.error('[LOMU-AI-JOB-MANAGER] Failed to check task status:', error);
-            continueLoop = false;
+            hasIncompleteTasks = false;
           }
+        }
+        
+        // STUCK DETECTION: No progress for 2+ iterations
+        const noProgressCount = conversationMessages
+          .slice(-4) // Last 4 messages (2 iterations)
+          .filter(msg => msg.role === 'assistant' && !msg.content?.some?.((c: any) => c.type === 'tool_use'))
+          .length;
+        
+        const isStuck = noProgressCount >= 2;
+        
+        // DECISION LOGIC
+        if (hasCompletionKeyword && !hasIncompleteTasks) {
+          // LomuAI says it's done AND no incomplete tasks
+          console.log('[LOMU-AI-JOB-MANAGER] Detected completion - ending conversation');
+          continueLoop = false;
+        } else if (isStuck) {
+          // Stuck - not making progress
+          console.log('[LOMU-AI-JOB-MANAGER] Stuck detection - ending to prevent infinite loop');
+          continueLoop = false;
+        } else if (hasIncompleteTasks && iterationCount < MAX_ITERATIONS) {
+          // Still have work to do
+          continueLoop = true;
         } else {
+          // Nothing to do or hit max iterations
           continueLoop = false;
         }
       }
@@ -1177,13 +1265,13 @@ When doing work:
     });
 
     // Mark job as completed
-    await db.update(metaSysopJobs)
+    await db.update(lomuJobs)
       .set({ 
         status: 'completed', 
         completedAt: new Date(),
         updatedAt: new Date()
       })
-      .where(eq(metaSysopJobs.id, jobId));
+      .where(eq(lomuJobs.id, jobId));
 
     broadcast(userId, jobId, 'job_completed', {
       status: 'completed',
@@ -1199,20 +1287,20 @@ When doing work:
     console.error('[LOMU-AI-JOB-MANAGER] Job error:', jobId, error);
 
     // Mark job as failed
-    await db.update(metaSysopJobs)
+    await db.update(lomuJobs)
       .set({ 
         status: 'failed', 
         error: error.message,
         updatedAt: new Date()
       })
-      .where(eq(metaSysopJobs.id, jobId));
+      .where(eq(lomuJobs.id, jobId));
 
     // Broadcast error
     try {
       const [job] = await db
         .select()
-        .from(metaSysopJobs)
-        .where(eq(metaSysopJobs.id, jobId))
+        .from(lomuJobs)
+        .where(eq(lomuJobs.id, jobId))
         .limit(1);
 
       if (job) {
@@ -1231,7 +1319,7 @@ When doing work:
  * Get job status
  */
 export async function getJob(jobId: string, userId: string) {
-  const job = await db.query.metaSysopJobs.findFirst({
+  const job = await db.query.lomuJobs.findFirst({
     where: (jobs, { and, eq }) => and(
       eq(jobs.id, jobId),
       eq(jobs.userId, userId)
@@ -1256,9 +1344,9 @@ export async function resumeJob(jobId: string, userId: string) {
   }
 
   // Update status to running
-  await db.update(metaSysopJobs)
+  await db.update(lomuJobs)
     .set({ status: 'running', updatedAt: new Date() })
-    .where(eq(metaSysopJobs.id, jobId));
+    .where(eq(lomuJobs.id, jobId));
 
   // Start the worker
   await startJobWorker(jobId);

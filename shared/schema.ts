@@ -200,7 +200,7 @@ export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 
 // LomuAI Attachments - Files attached to chat messages (images, code, logs)
-export const metaSysopAttachments = pgTable('meta_sysop_attachments', {
+export const lomuAttachments = pgTable('lomu_attachments', {
   id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
   messageId: varchar('message_id').notNull(), // References chatMessages.id
   fileName: varchar('file_name').notNull(),
@@ -211,16 +211,16 @@ export const metaSysopAttachments = pgTable('meta_sysop_attachments', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
-export const insertMetaSysopAttachmentSchema = createInsertSchema(metaSysopAttachments).omit({
+export const insertLomuAttachmentSchema = createInsertSchema(lomuAttachments).omit({
   id: true,
   createdAt: true,
 });
 
-export type InsertMetaSysopAttachment = z.infer<typeof insertMetaSysopAttachmentSchema>;
-export type MetaSysopAttachment = typeof metaSysopAttachments.$inferSelect;
+export type InsertLomuAttachment = z.infer<typeof insertLomuAttachmentSchema>;
+export type LomuAttachment = typeof lomuAttachments.$inferSelect;
 
 // LomuAI Sessions - Track pending changes in memory before batch commit
-export const metaSysopSessions = pgTable('meta_sysop_sessions', {
+export const lomuSessions = pgTable('lomu_sessions', {
   id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar('user_id').notNull(),
   pendingChanges: jsonb('pending_changes').$type<Array<{
@@ -233,17 +233,17 @@ export const metaSysopSessions = pgTable('meta_sysop_sessions', {
   lastUpdated: timestamp('last_updated').defaultNow(),
 });
 
-export const insertMetaSysopSessionSchema = createInsertSchema(metaSysopSessions).omit({
+export const insertLomuSessionSchema = createInsertSchema(lomuSessions).omit({
   id: true,
   createdAt: true,
   lastUpdated: true,
 });
 
-export type InsertMetaSysopSession = z.infer<typeof insertMetaSysopSessionSchema>;
-export type MetaSysopSession = typeof metaSysopSessions.$inferSelect;
+export type InsertLomuSession = z.infer<typeof insertLomuSessionSchema>;
+export type LomuSession = typeof lomuSessions.$inferSelect;
 
 // LomuAI Background Jobs - Long-running jobs with resumption capability
-export const metaSysopJobs = pgTable('meta_sysop_jobs', {
+export const lomuJobs = pgTable('lomu_jobs', {
   id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar('user_id').notNull(),
   status: varchar('status', { length: 20 }).notNull().default('pending'), // 'pending' | 'running' | 'completed' | 'failed' | 'interrupted'
@@ -265,15 +265,15 @@ export const metaSysopJobs = pgTable('meta_sysop_jobs', {
   completedAt: timestamp('completed_at'),
 });
 
-export const insertMetaSysopJobSchema = createInsertSchema(metaSysopJobs).omit({
+export const insertLomuJobSchema = createInsertSchema(lomuJobs).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
   completedAt: true,
 });
 
-export type InsertMetaSysopJob = z.infer<typeof insertMetaSysopJobSchema>;
-export type MetaSysopJob = typeof metaSysopJobs.$inferSelect;
+export type InsertLomuJob = z.infer<typeof insertLomuJobSchema>;
+export type LomuJob = typeof lomuJobs.$inferSelect;
 
 // Usage Tracking & Billing
 export const usageLogs = pgTable("usage_logs", {
@@ -1049,7 +1049,7 @@ export type InsertArchitectReview = z.infer<typeof insertArchitectReviewSchema>;
 export type ArchitectReview = typeof architectReviews.$inferSelect;
 
 // LomuAI Knowledge Base - Stores learned patterns, decisions, and fixes
-export const metaSysopKnowledge = pgTable("meta_sysop_knowledge", {
+export const lomuKnowledge = pgTable("lomu_knowledge", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   category: text("category").notNull(), // 'pattern' | 'fix' | 'decision' | 'rule' | 'preference'
   title: text("title").notNull(), // Brief description of the knowledge
@@ -1068,12 +1068,12 @@ export const metaSysopKnowledge = pgTable("meta_sysop_knowledge", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (table) => [
-  index("idx_meta_knowledge_category").on(table.category),
-  index("idx_meta_knowledge_active").on(table.active),
-  index("idx_meta_knowledge_priority").on(table.priority),
+  index("idx_lomu_knowledge_category").on(table.category),
+  index("idx_lomu_knowledge_active").on(table.active),
+  index("idx_lomu_knowledge_priority").on(table.priority),
 ]);
 
-export const insertMetaSysopKnowledgeSchema = createInsertSchema(metaSysopKnowledge).omit({
+export const insertLomuKnowledgeSchema = createInsertSchema(lomuKnowledge).omit({
   id: true,
   usageCount: true,
   lastUsedAt: true,
@@ -1081,11 +1081,11 @@ export const insertMetaSysopKnowledgeSchema = createInsertSchema(metaSysopKnowle
   updatedAt: true,
 });
 
-export type InsertMetaSysopKnowledge = z.infer<typeof insertMetaSysopKnowledgeSchema>;
-export type MetaSysopKnowledge = typeof metaSysopKnowledge.$inferSelect;
+export type InsertLomuKnowledge = z.infer<typeof insertLomuKnowledgeSchema>;
+export type LomuKnowledge = typeof lomuKnowledge.$inferSelect;
 
 // LomuAI Instructions - User-given permanent instructions and preferences
-export const metaSysopInstructions = pgTable("meta_sysop_instructions", {
+export const lomuInstructions = pgTable("lomu_instructions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   type: text("type").notNull(), // 'permanent' | 'conditional' | 'project-specific'
   instruction: text("instruction").notNull(), // The actual instruction text
@@ -1100,22 +1100,22 @@ export const metaSysopInstructions = pgTable("meta_sysop_instructions", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (table) => [
-  index("idx_meta_instructions_type").on(table.type),
-  index("idx_meta_instructions_scope").on(table.scope),
-  index("idx_meta_instructions_active").on(table.active),
+  index("idx_lomu_instructions_type").on(table.type),
+  index("idx_lomu_instructions_scope").on(table.scope),
+  index("idx_lomu_instructions_active").on(table.active),
 ]);
 
-export const insertMetaSysopInstructionSchema = createInsertSchema(metaSysopInstructions).omit({
+export const insertLomuInstructionSchema = createInsertSchema(lomuInstructions).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
 });
 
-export type InsertMetaSysopInstruction = z.infer<typeof insertMetaSysopInstructionSchema>;
-export type MetaSysopInstruction = typeof metaSysopInstructions.$inferSelect;
+export type InsertLomuInstruction = z.infer<typeof insertLomuInstructionSchema>;
+export type LomuInstruction = typeof lomuInstructions.$inferSelect;
 
 // LomuAI Automation Rules - Automated workflows and triggers
-export const metaSysopAutomation = pgTable("meta_sysop_automation", {
+export const lomuAutomation = pgTable("lomu_automation", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(), // Human-readable name for this automation
   description: text("description").notNull(),
@@ -1135,11 +1135,11 @@ export const metaSysopAutomation = pgTable("meta_sysop_automation", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (table) => [
-  index("idx_meta_automation_trigger").on(table.trigger),
-  index("idx_meta_automation_active").on(table.active),
+  index("idx_lomu_automation_trigger").on(table.trigger),
+  index("idx_lomu_automation_active").on(table.active),
 ]);
 
-export const insertMetaSysopAutomationSchema = createInsertSchema(metaSysopAutomation).omit({
+export const insertLomuAutomationSchema = createInsertSchema(lomuAutomation).omit({
   id: true,
   executionCount: true,
   lastExecutedAt: true,
@@ -1149,11 +1149,11 @@ export const insertMetaSysopAutomationSchema = createInsertSchema(metaSysopAutom
   updatedAt: true,
 });
 
-export type InsertMetaSysopAutomation = z.infer<typeof insertMetaSysopAutomationSchema>;
-export type MetaSysopAutomation = typeof metaSysopAutomation.$inferSelect;
+export type InsertLomuAutomation = z.infer<typeof insertLomuAutomationSchema>;
+export type LomuAutomation = typeof lomuAutomation.$inferSelect;
 
 // LomuAI Memory Log - Conversation memory and context retention
-export const metaSysopMemory = pgTable("meta_sysop_memory", {
+export const lomuMemory = pgTable("lomu_memory", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   sessionId: varchar("session_id"), // Groups related memories together
   memoryType: text("memory_type").notNull(), // 'conversation' | 'decision' | 'learning' | 'feedback'
@@ -1164,18 +1164,18 @@ export const metaSysopMemory = pgTable("meta_sysop_memory", {
   expiresAt: timestamp("expires_at"), // Optional expiry for temporary memories
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => [
-  index("idx_meta_memory_session").on(table.sessionId),
-  index("idx_meta_memory_type").on(table.memoryType),
-  index("idx_meta_memory_importance").on(table.importance),
+  index("idx_lomu_memory_session").on(table.sessionId),
+  index("idx_lomu_memory_type").on(table.memoryType),
+  index("idx_lomu_memory_importance").on(table.importance),
 ]);
 
-export const insertMetaSysopMemorySchema = createInsertSchema(metaSysopMemory).omit({
+export const insertLomuMemorySchema = createInsertSchema(lomuMemory).omit({
   id: true,
   createdAt: true,
 });
 
-export type InsertMetaSysopMemory = z.infer<typeof insertMetaSysopMemorySchema>;
-export type MetaSysopMemory = typeof metaSysopMemory.$inferSelect;
+export type InsertLomuMemory = z.infer<typeof insertLomuMemorySchema>;
+export type LomuMemory = typeof lomuMemory.$inferSelect;
 
 // ============================================================================
 // REPLIT AGENT-STYLE FEATURES (Message Queue, Autonomy, Image Gen, etc.)
