@@ -585,6 +585,103 @@ export function LumoAvatar({
               ))}
             </motion.div>
           )}
+
+          {/* ANIMATED EYELIDS - Black ovals that slide down to close eyes */}
+          {/* Left eye eyelid */}
+          <motion.div
+            className="absolute pointer-events-none overflow-hidden"
+            style={{
+              left: "32%",
+              top: "35%",
+              width: "14%",
+              height: "12%",
+              zIndex: 25,
+            }}
+          >
+            <motion.div
+              className="absolute inset-0 bg-black rounded-full"
+              style={{
+                boxShadow: "inset 0 2px 8px rgba(0,0,0,0.8)",
+              }}
+              animate={{
+                y: isBlinking || isWinking === "left" ? "0%" : "-100%",
+              }}
+              transition={{
+                duration: isBlinking ? 0.15 : 0.2,
+                ease: "easeInOut",
+              }}
+            />
+          </motion.div>
+
+          {/* Right eye eyelid */}
+          <motion.div
+            className="absolute pointer-events-none overflow-hidden"
+            style={{
+              left: "54%",
+              top: "35%",
+              width: "14%",
+              height: "12%",
+              zIndex: 25,
+            }}
+          >
+            <motion.div
+              className="absolute inset-0 bg-black rounded-full"
+              style={{
+                boxShadow: "inset 0 2px 8px rgba(0,0,0,0.8)",
+              }}
+              animate={{
+                y: isBlinking || isWinking === "right" ? "0%" : "-100%",
+              }}
+              transition={{
+                duration: isBlinking ? 0.15 : 0.2,
+                ease: "easeInOut",
+              }}
+            />
+          </motion.div>
+
+          {/* ANIMATED SMILE - Glowing curved line that appears over mouth */}
+          <motion.div
+            className="absolute pointer-events-none"
+            style={{
+              left: "50%",
+              top: "58%",
+              width: "30%",
+              height: "15%",
+              transform: "translateX(-50%)",
+              zIndex: 25,
+            }}
+            animate={{
+              opacity: isSmiling ? 1 : 0,
+              scale: isSmiling ? 1.1 : 0.8,
+            }}
+            transition={{
+              duration: 0.3,
+              ease: "easeOut",
+            }}
+          >
+            <svg
+              viewBox="0 0 60 30"
+              className="w-full h-full"
+              style={{
+                filter: "drop-shadow(0 0 8px rgba(34, 197, 94, 0.8)) drop-shadow(0 0 4px rgba(255, 255, 255, 0.5))",
+              }}
+            >
+              <path
+                d="M 8 10 Q 30 22 52 10"
+                stroke="rgba(34, 197, 94, 1)"
+                strokeWidth="4"
+                fill="none"
+                strokeLinecap="round"
+              />
+              <path
+                d="M 10 12 Q 30 20 50 12"
+                stroke="rgba(255, 255, 255, 0.8)"
+                strokeWidth="2"
+                fill="none"
+                strokeLinecap="round"
+              />
+            </svg>
+          </motion.div>
         </motion.div>
       </motion.div>
     </div>
