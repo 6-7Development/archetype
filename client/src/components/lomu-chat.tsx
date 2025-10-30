@@ -161,7 +161,7 @@ function AttachmentPreview({ attachment, onRemove }: { attachment: Attachment; o
   );
 }
 
-export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChange }: LomuAiChatProps) {
+export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }: LomuAiChatProps) {
   const { toast } = useToast();
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
@@ -1057,3 +1057,6 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
     </div>
   );
 }
+
+// Backwards compatibility export
+export { LomuAIChat as MetaSySopChat };

@@ -9,7 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { MetaSySopChat } from '@/components/lomu-chat';
+import { LomuAIChat } from '@/components/lomu-chat';
 import { AdminGuard } from '@/components/admin-guard';
 import { DeploymentStatusWidget } from '@/components/deployment-status-widget';
 import { TaskProgressWidget } from '@/components/task-progress-widget';
@@ -516,7 +516,7 @@ function PlatformHealingContent() {
         {/* Header - Clean and simple */}
         <div className="flex items-center gap-2 px-2 flex-wrap">
           <div className="text-xs text-muted-foreground">Home / Agents</div>
-          <div className="text-base sm:text-lg font-bold">Meta‑SySop</div>
+          <div className="text-base sm:text-lg font-bold">LomuAI</div>
           <Badge 
             variant={status?.safety?.safe ? 'default' : 'destructive'} 
             className="ml-auto"
@@ -576,8 +576,8 @@ function PlatformHealingContent() {
           </div>
 
           {/* Chat - Full width below task manager */}
-          <div className="bg-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col flex-1 min-h-0 relative" data-testid="panel-meta-sysop-chat">
-            <MetaSySopChat 
+          <div className="bg-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col flex-1 min-h-0 relative" data-testid="panel-lomu-ai-chat">
+            <LomuAIChat 
               autoCommit={true}
               autoPush={true}
               onTasksChange={(tasks, activeId) => {

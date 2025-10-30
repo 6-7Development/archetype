@@ -652,22 +652,30 @@ export function LumoPixelAvatar({
           ctx.imageSmoothingEnabled = false;
 
           try {
+            // Draw the buffer canvas content directly
             ctx.drawImage(
               frameBuffer,
-              BUFFER_PADDING,
-              BUFFER_PADDING,
-              FRAME_SIZE,
-              FRAME_SIZE,
+              0,  // Source x (full buffer)
+              0,  // Source y (full buffer)
+              frameBuffer.width,  // Source width
+              frameBuffer.height, // Source height
               offsetX,
               offsetY,
               renderSize,
               renderSize
             );
           } catch (error) {
-            console.error("[LUMO] Draw error:", error);
+            console.error("[LUMO] Draw error:", error, {
+              frameBuffer,
+              canvasSize: { width: canvas.width, height: canvas.height },
+              renderSize,
+              offset: { x: offsetX, y: offsetY }
+            });
           }
 
           ctx.restore();
+        } else {
+          console.warn("[LUMO] No frame buffer available for", frame);
         }
       };
 
@@ -691,9 +699,11 @@ export function LumoPixelAvatar({
         minHeight: containerSize,
         maxWidth: containerSize,
         maxHeight: containerSize,
+        position: 'relative', // Ensure positioning context for z-index
       }}
       data-testid="lumo-avatar-container"
     >
+      {/* Layer 1: Spinning border background (z-0) */}
       {showBackground && (
         <div
           className="absolute inset-0"
@@ -703,6 +713,7 @@ export function LumoPixelAvatar({
               "conic-gradient(from 0deg, rgba(255, 230, 0, 0.6), rgba(255, 183, 77, 0.4), rgba(72, 187, 120, 0.5), rgba(255, 230, 0, 0.6))",
             padding: "3px",
             animation: "spin 12s linear infinite",
+            zIndex: 0,
           }}
         >
           <div
@@ -714,6 +725,7 @@ export function LumoPixelAvatar({
         </div>
       )}
 
+      {/* Layer 2: Mood gradient background (z-10) */}
       {showBackground && (
         <canvas
           ref={bgCanvasRef}
@@ -721,10 +733,25 @@ export function LumoPixelAvatar({
           style={{
             borderRadius: "50%",
             imageRendering: "auto",
+            zIndex: 10,
           }}
         />
       )}
 
+      {/* Layer 3: Lumo sprite animation (z-20) - MAIN AVATAR */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0"
+        style={{
+          imageRendering: "pixelated",
+          borderRadius: showBackground ? "50%" : "0",
+          zIndex: 20,
+          position: 'absolute',
+        }}
+        data-testid="lumo-sprite-canvas"
+      />
+
+      {/* Layer 4: Particle effects (z-30) */}
       {enableParticles && (
         <canvas
           ref={particleCanvasRef}
@@ -732,25 +759,19 @@ export function LumoPixelAvatar({
           style={{
             borderRadius: showBackground ? "50%" : "0",
             imageRendering: "auto",
+            zIndex: 30,
           }}
         />
       )}
 
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0"
-        style={{
-          imageRendering: "pixelated",
-          borderRadius: showBackground ? "50%" : "0",
-        }}
-      />
-
+      {/* Layer 5: Glow overlay (z-40) */}
       {showBackground && (
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             borderRadius: "50%",
             boxShadow: "inset 0 0 30px rgba(255, 230, 0, 0.2), 0 0 40px rgba(255, 183, 77, 0.15)",
+            zIndex: 40,
           }}
         />
       )}

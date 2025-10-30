@@ -373,7 +373,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           {/* AI Agent Badge & Theme */}
           <div className="flex items-center justify-between pt-2">
             <Badge variant="secondary" className="font-mono text-xs">
-              SySop AI
+              LomuAI
             </Badge>
             <ThemeToggle />
           </div>
