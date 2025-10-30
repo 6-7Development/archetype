@@ -48,23 +48,21 @@ export function Lumo3DAvatar({
     const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
     camera.position.z = 3.5;
 
-    // Emotion-based configuration with VIBRANT colors
+    // Emotion configuration with VIBRANT colors
     const getConfig = (currentEmotion: EmotionType) => {
       switch (currentEmotion) {
         case "happy":
           return { 
-            color: 0xFFEB3B, // Bright vibrant yellow
-            irisColor: 0x00E676, // Bright green
-            intensity: 1.5, 
+            color: 0xFFEB3B,
+            irisColor: 0x00E676,
             bounce: 0.15,
             eyebrowAngle: 0.15,
             pupilSize: 1.0
           };
         case "excited":
           return { 
-            color: 0xFFD54F, // Bright orange-yellow
-            irisColor: 0xFF9800, // Bright orange
-            intensity: 2.0, 
+            color: 0xFFD54F,
+            irisColor: 0xFF9800,
             bounce: 0.25,
             eyebrowAngle: 0.3,
             pupilSize: 1.2
@@ -72,8 +70,7 @@ export function Lumo3DAvatar({
         case "thinking":
           return { 
             color: 0xFFEB3B,
-            irisColor: 0x2196F3, // Bright blue
-            intensity: 1.2, 
+            irisColor: 0x2196F3,
             bounce: 0.08,
             eyebrowAngle: -0.1,
             pupilSize: 0.9
@@ -81,26 +78,23 @@ export function Lumo3DAvatar({
         case "working":
           return { 
             color: 0xFFEB3B,
-            irisColor: 0x9C27B0, // Bright purple
-            intensity: 1.5, 
+            irisColor: 0x9C27B0,
             bounce: 0.12,
             eyebrowAngle: 0.05,
             pupilSize: 1.0
           };
         case "success":
           return { 
-            color: 0xCDDC39, // Lime green
-            irisColor: 0x4CAF50, // Bright green
-            intensity: 1.8, 
+            color: 0xCDDC39,
+            irisColor: 0x4CAF50,
             bounce: 0.2,
             eyebrowAngle: 0.25,
             pupilSize: 1.1
           };
         case "error":
           return { 
-            color: 0xFFCDD2, // Light red
-            irisColor: 0xF44336, // Bright red
-            intensity: 1.3, 
+            color: 0xFFCDD2,
+            irisColor: 0xF44336,
             bounce: 0.05,
             eyebrowAngle: -0.25,
             pupilSize: 0.8
@@ -108,17 +102,15 @@ export function Lumo3DAvatar({
         case "worried":
           return { 
             color: 0xFFEB3B,
-            irisColor: 0xFFC107, // Amber
-            intensity: 1.0, 
+            irisColor: 0xFFC107,
             bounce: 0.1,
             eyebrowAngle: -0.2,
             pupilSize: 1.1
           };
         case "sad":
           return { 
-            color: 0xE0E0E0, // Light gray
-            irisColor: 0x9E9E9E, // Gray
-            intensity: 0.8, 
+            color: 0xE0E0E0,
+            irisColor: 0x9E9E9E,
             bounce: 0.05,
             eyebrowAngle: -0.3,
             pupilSize: 0.85
@@ -127,7 +119,6 @@ export function Lumo3DAvatar({
           return { 
             color: 0xFFEB3B,
             irisColor: 0x00E676,
-            intensity: 1.2, 
             bounce: 0.1,
             eyebrowAngle: 0,
             pupilSize: 1.0
@@ -137,16 +128,15 @@ export function Lumo3DAvatar({
 
     const config = getConfig(emotion);
 
-    // MINIMAL LIGHTING for vibrant cartoon look
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    // Simple lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
 
-    // Single directional light
-    const mainLight = new THREE.DirectionalLight(0xffffff, 0.7);
+    const mainLight = new THREE.DirectionalLight(0xffffff, 0.6);
     mainLight.position.set(2, 3, 3);
     scene.add(mainLight);
 
-    // Create lemon geometry
+    // Lemon body
     const lemonGeometry = new THREE.SphereGeometry(1, 64, 64);
     const positions = lemonGeometry.attributes.position;
     
@@ -162,7 +152,6 @@ export function Lumo3DAvatar({
       
       const bigDimples = Math.sin(x * 12) * Math.cos(z * 12) * 0.035;
       const smallDimples = Math.sin(x * 25) * Math.cos(y * 25) * Math.sin(z * 25) * 0.02;
-      
       const totalDisplacement = bigDimples + smallDimples;
       
       positions.setX(i, x * (1 / lemonScale) + totalDisplacement);
@@ -173,13 +162,10 @@ export function Lumo3DAvatar({
     positions.needsUpdate = true;
     lemonGeometry.computeVertexNormals();
 
-    // VIBRANT lemon material
     const lemonMaterial = new THREE.MeshStandardMaterial({
       color: config.color,
       roughness: 0.4,
       metalness: 0.0,
-      emissive: config.color,
-      emissiveIntensity: 0.1,
     });
 
     const lemonHead = new THREE.Mesh(lemonGeometry, lemonMaterial);
@@ -215,58 +201,55 @@ export function Lumo3DAvatar({
     leaf.rotation.set(0.3, 0, 0.4);
     scene.add(leaf);
 
-    // REAL CARTOON EYES with white, iris, and pupil
+    // PROPER 3D CARTOON EYES
     const createEye = (xPos: number) => {
       const eyeGroup = new THREE.Group();
       
-      // White of eye (sclera)
-      const whiteGeometry = new THREE.CircleGeometry(0.16, 32);
+      // Eye white (slightly flattened sphere)
+      const whiteGeometry = new THREE.SphereGeometry(0.15, 16, 16);
       const whiteMaterial = new THREE.MeshBasicMaterial({ 
-        color: 0xFFFFFF,
-        side: THREE.DoubleSide
+        color: 0xFFFFFF
       });
       const white = new THREE.Mesh(whiteGeometry, whiteMaterial);
+      white.scale.z = 0.6; // Flatten slightly
       eyeGroup.add(white);
       
-      // Colored iris
-      const irisGeometry = new THREE.CircleGeometry(0.10, 32);
+      // Colored iris (smaller sphere in front)
+      const irisGeometry = new THREE.SphereGeometry(0.09, 16, 16);
       const irisMaterial = new THREE.MeshBasicMaterial({ 
-        color: config.irisColor,
-        side: THREE.DoubleSide
+        color: config.irisColor
       });
       const iris = new THREE.Mesh(irisGeometry, irisMaterial);
-      iris.position.z = 0.01;
+      iris.position.z = 0.08;
       eyeGroup.add(iris);
       
-      // Black pupil
-      const pupilGeometry = new THREE.CircleGeometry(0.05, 32);
+      // Black pupil (even smaller sphere)
+      const pupilGeometry = new THREE.SphereGeometry(0.045, 16, 16);
       const pupilMaterial = new THREE.MeshBasicMaterial({ 
-        color: 0x000000,
-        side: THREE.DoubleSide
+        color: 0x000000
       });
       const pupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
-      pupil.position.z = 0.02;
+      pupil.position.z = 0.13;
       eyeGroup.add(pupil);
       
-      // Sparkle/highlight
-      const sparkleGeometry = new THREE.CircleGeometry(0.025, 16);
+      // White highlight sparkle
+      const sparkleGeometry = new THREE.SphereGeometry(0.02, 8, 8);
       const sparkleMaterial = new THREE.MeshBasicMaterial({ 
-        color: 0xFFFFFF,
-        side: THREE.DoubleSide
+        color: 0xFFFFFF
       });
       const sparkle = new THREE.Mesh(sparkleGeometry, sparkleMaterial);
-      sparkle.position.set(0.025, 0.025, 0.03);
+      sparkle.position.set(0.03, 0.03, 0.15);
       eyeGroup.add(sparkle);
       
-      return { group: eyeGroup, white, iris, pupil };
+      return { group: eyeGroup, white, iris, pupil, sparkle };
     };
 
     const leftEye = createEye(0.32);
-    leftEye.group.position.set(0.32, 0.35, 0.85);
+    leftEye.group.position.set(0.32, 0.35, 0.75);
     scene.add(leftEye.group);
 
     const rightEye = createEye(-0.32);
-    rightEye.group.position.set(-0.32, 0.35, 0.85);
+    rightEye.group.position.set(-0.32, 0.35, 0.75);
     scene.add(rightEye.group);
 
     // EYEBROWS
@@ -282,47 +265,26 @@ export function Lumo3DAvatar({
     };
 
     const leftBrow = createEyebrow();
-    leftBrow.position.set(0.32, 0.55, 0.8);
+    leftBrow.position.set(0.32, 0.54, 0.75);
     scene.add(leftBrow);
 
     const rightBrow = createEyebrow();
-    rightBrow.position.set(-0.32, 0.55, 0.8);
+    rightBrow.position.set(-0.32, 0.54, 0.75);
     scene.add(rightBrow);
 
-    // DRAWN SMILE using canvas texture
-    const createSmileTexture = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = 256;
-      canvas.height = 128;
-      const ctx = canvas.getContext('2d')!;
-      
-      ctx.clearRect(0, 0, 256, 128);
-      
-      // Draw smile curve
-      ctx.strokeStyle = emotion === "happy" || emotion === "excited" ? '#22C55E' : '#8B4513';
-      ctx.lineWidth = 12;
-      ctx.lineCap = 'round';
-      
-      ctx.beginPath();
-      ctx.arc(128, -50, 120, 0.3, Math.PI - 0.3);
-      ctx.stroke();
-      
-      return new THREE.CanvasTexture(canvas);
-    };
-
-    const smileTexture = createSmileTexture();
-    const smileGeometry = new THREE.PlaneGeometry(0.6, 0.3);
+    // SMILE using 3D torus (curved smile)
+    const smileGeometry = new THREE.TorusGeometry(0.35, 0.04, 10, 32, Math.PI);
+    const smileColor = (emotion === "happy" || emotion === "excited") ? 0x22C55E : 0x8B4513;
     const smileMaterial = new THREE.MeshBasicMaterial({
-      map: smileTexture,
-      transparent: true,
-      side: THREE.DoubleSide
+      color: smileColor
     });
     const smile = new THREE.Mesh(smileGeometry, smileMaterial);
-    smile.position.set(0, -0.05, 0.88);
+    smile.position.set(0, -0.08, 0.85);
+    smile.rotation.x = Math.PI; // Flip upside down to make it a smile
     scene.add(smile);
 
-    // Eye glow
-    const glowLight = new THREE.PointLight(config.irisColor, 0.5, 2);
+    // Glow light from eyes
+    const glowLight = new THREE.PointLight(config.irisColor, 0.4, 2);
     glowLight.position.set(0, 0.35, 1.2);
     scene.add(glowLight);
 
@@ -355,15 +317,15 @@ export function Lumo3DAvatar({
       rightEye.group.position.y = eyeY;
       rightEye.group.rotation.y = eyeRotY;
 
-      leftBrow.position.y = 0.55 + floatY;
+      leftBrow.position.y = 0.54 + floatY;
       leftBrow.rotation.y = eyeRotY;
       leftBrow.rotation.x = config.eyebrowAngle;
       
-      rightBrow.position.y = 0.55 + floatY;
+      rightBrow.position.y = 0.54 + floatY;
       rightBrow.rotation.y = eyeRotY;
       rightBrow.rotation.x = -config.eyebrowAngle;
 
-      smile.position.y = -0.05 + floatY;
+      smile.position.y = -0.08 + floatY;
       smile.rotation.y = eyeRotY;
 
       // Blinking
@@ -384,9 +346,12 @@ export function Lumo3DAvatar({
         leftEye.white.scale.y = eyeScale;
         leftEye.iris.scale.y = eyeScale;
         leftEye.pupil.scale.y = eyeScale;
+        leftEye.sparkle.scale.y = eyeScale;
+        
         rightEye.white.scale.y = eyeScale;
         rightEye.iris.scale.y = eyeScale;
         rightEye.pupil.scale.y = eyeScale;
+        rightEye.sparkle.scale.y = eyeScale;
         
         if (blinkDuration >= 0.15) {
           isBlinking = false;
@@ -394,14 +359,17 @@ export function Lumo3DAvatar({
       } else {
         leftEye.white.scale.y = 1;
         leftEye.iris.scale.y = 1;
-        leftEye.pupil.scale.set(config.pupilSize, config.pupilSize, 1);
+        leftEye.pupil.scale.set(config.pupilSize, config.pupilSize, config.pupilSize);
+        leftEye.sparkle.scale.y = 1;
+        
         rightEye.white.scale.y = 1;
         rightEye.iris.scale.y = 1;
-        rightEye.pupil.scale.set(config.pupilSize, config.pupilSize, 1);
+        rightEye.pupil.scale.set(config.pupilSize, config.pupilSize, config.pupilSize);
+        rightEye.sparkle.scale.y = 1;
       }
 
       // Subtle glow pulse
-      glowLight.intensity = 0.4 + Math.sin(time * 2) * 0.15;
+      glowLight.intensity = 0.3 + Math.sin(time * 2) * 0.15;
 
       renderer.render(scene, camera);
     };
@@ -416,7 +384,6 @@ export function Lumo3DAvatar({
       stemMaterial.dispose();
       leafGeometry.dispose();
       leafMaterial.dispose();
-      smileTexture.dispose();
       smileGeometry.dispose();
       smileMaterial.dispose();
     };
