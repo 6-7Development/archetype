@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import lumoImage from "@assets/image_1761786985510.png";
+import lumoImageSrc from "@assets/image_1761786985510.png";
 import { backgroundThemes, getAutoTheme, type BackgroundTheme } from "./lumo-background-themes";
 
 type EmotionState = "happy" | "sad" | "worried" | "excited" | "thinking" | "working" | "success" | "error" | "idle";
@@ -26,7 +26,7 @@ const emotionConfig: Record<EmotionState, {
   rotationIntensity: number;
 }> = {
   happy: {
-    eyeGlowColor: "0, 255, 255", // Cyan
+    eyeGlowColor: "0, 255, 255",
     eyeGlowIntensity: 20,
     circuitGlowColor: "rgba(6, 182, 212, 0.6)",
     pulseSpeed: 2.5,
@@ -37,7 +37,7 @@ const emotionConfig: Record<EmotionState, {
     rotationIntensity: 1,
   },
   sad: {
-    eyeGlowColor: "75, 163, 195", // Dim blue
+    eyeGlowColor: "75, 163, 195",
     eyeGlowIntensity: 10,
     circuitGlowColor: "rgba(59, 130, 246, 0.4)",
     pulseSpeed: 3,
@@ -48,7 +48,7 @@ const emotionConfig: Record<EmotionState, {
     rotationIntensity: 0.5,
   },
   worried: {
-    eyeGlowColor: "251, 191, 36", // Yellow
+    eyeGlowColor: "251, 191, 36",
     eyeGlowIntensity: 15,
     circuitGlowColor: "rgba(251, 191, 36, 0.5)",
     pulseSpeed: 1.8,
@@ -59,7 +59,7 @@ const emotionConfig: Record<EmotionState, {
     rotationIntensity: 1.5,
   },
   excited: {
-    eyeGlowColor: "168, 85, 247", // Purple
+    eyeGlowColor: "168, 85, 247",
     eyeGlowIntensity: 25,
     circuitGlowColor: "rgba(168, 85, 247, 0.7)",
     pulseSpeed: 1.5,
@@ -70,7 +70,7 @@ const emotionConfig: Record<EmotionState, {
     rotationIntensity: 2,
   },
   thinking: {
-    eyeGlowColor: "251, 191, 36", // Yellow
+    eyeGlowColor: "251, 191, 36",
     eyeGlowIntensity: 12,
     circuitGlowColor: "rgba(251, 191, 36, 0.5)",
     pulseSpeed: 2,
@@ -81,7 +81,7 @@ const emotionConfig: Record<EmotionState, {
     rotationIntensity: 1.2,
   },
   working: {
-    eyeGlowColor: "6, 182, 212", // Cyan
+    eyeGlowColor: "6, 182, 212",
     eyeGlowIntensity: 22,
     circuitGlowColor: "rgba(6, 182, 212, 0.8)",
     pulseSpeed: 1.5,
@@ -92,7 +92,7 @@ const emotionConfig: Record<EmotionState, {
     rotationIntensity: 1,
   },
   success: {
-    eyeGlowColor: "34, 197, 94", // Green
+    eyeGlowColor: "34, 197, 94",
     eyeGlowIntensity: 30,
     circuitGlowColor: "rgba(34, 197, 94, 0.8)",
     pulseSpeed: 1,
@@ -103,7 +103,7 @@ const emotionConfig: Record<EmotionState, {
     rotationIntensity: 2.5,
   },
   error: {
-    eyeGlowColor: "239, 68, 68", // Red
+    eyeGlowColor: "239, 68, 68",
     eyeGlowIntensity: 18,
     circuitGlowColor: "rgba(239, 68, 68, 0.6)",
     pulseSpeed: 2.5,
@@ -114,7 +114,7 @@ const emotionConfig: Record<EmotionState, {
     rotationIntensity: 0.8,
   },
   idle: {
-    eyeGlowColor: "0, 255, 255", // Cyan
+    eyeGlowColor: "0, 255, 255",
     eyeGlowIntensity: 20,
     circuitGlowColor: "rgba(6, 182, 212, 0.6)",
     pulseSpeed: 2.5,
@@ -134,12 +134,15 @@ export function LumoAvatar({
   className = "",
 }: LumoAvatarProps) {
   const [isBlinking, setIsBlinking] = useState(false);
+  const [isWinking, setIsWinking] = useState<"left" | "right" | null>(null);
+  const [isSmiling, setIsSmiling] = useState(false);
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; delay: number }>>([]);
+  const [processedImage, setProcessedImage] = useState<string>("");
 
   // Size configurations
   const sizeConfig = {
-    small: { avatar: 80, container: 120 },
-    medium: { avatar: 140, container: 200 },
+    small: { avatar: 60, container: 80 },
+    medium: { avatar: 100, container: 140 },
     large: { avatar: 200, container: 280 },
   };
 
@@ -149,6 +152,79 @@ export function LumoAvatar({
   // Get theme config (auto-detect if "auto")
   const themeKey = backgroundTheme === "auto" ? getAutoTheme() : backgroundTheme;
   const theme = backgroundThemes[themeKey];
+
+  // Process image to remove black background with improved edge detection
+  useEffect(() => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = lumoImageSrc;
+    
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+          // Fallback to original image
+          setProcessedImage(lumoImageSrc);
+          return;
+        }
+        
+        canvas.width = img.width;
+        canvas.height = img.height;
+        
+        // Draw the original image
+        ctx.drawImage(img, 0, 0);
+        
+        // Get image data
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        
+        // First pass: Remove very dark pixels and create alpha gradient
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          const a = data[i + 3];
+          
+          // Calculate brightness (0-255)
+          const brightness = (r + g + b) / 3;
+          
+          // Calculate saturation to detect colored vs grayscale pixels
+          const max = Math.max(r, g, b);
+          const min = Math.min(r, g, b);
+          const saturation = max === 0 ? 0 : (max - min) / max;
+          
+          // Aggressive threshold for very dark pixels (pure black/dark gray)
+          if (brightness < 40) {
+            data[i + 3] = 0; // Fully transparent
+          }
+          // Gradient transparency for dark-ish pixels
+          else if (brightness < 80 && saturation < 0.2) {
+            // Dark and unsaturated = likely background shadow
+            data[i + 3] = Math.floor(a * (brightness / 80));
+          }
+        }
+        
+        // Put the processed data back
+        ctx.putImageData(imageData, 0, 0);
+        
+        // Convert to data URL
+        const dataUrl = canvas.toDataURL('image/png');
+        setProcessedImage(dataUrl);
+      } catch (error) {
+        console.error('Failed to process image:', error);
+        // Fallback to original image
+        setProcessedImage(lumoImageSrc);
+      }
+    };
+    
+    img.onerror = () => {
+      console.error('Failed to load image');
+      // Fallback to original image
+      setProcessedImage(lumoImageSrc);
+    };
+  }, []);
 
   // Random blink effect (every 4-7 seconds)
   useEffect(() => {
@@ -171,6 +247,39 @@ export function LumoAvatar({
     };
   }, []);
 
+  // Random wink effect (occasional, playful)
+  useEffect(() => {
+    let winkTimeout: NodeJS.Timeout;
+    let resetTimeout: NodeJS.Timeout;
+    
+    const scheduleNextWink = () => {
+      const delay = 8000 + Math.random() * 7000; // 8-15 seconds
+      winkTimeout = setTimeout(() => {
+        // Random wink (left or right eye)
+        setIsWinking(Math.random() > 0.5 ? "left" : "right");
+        resetTimeout = setTimeout(() => {
+          setIsWinking(null);
+          scheduleNextWink();
+        }, 200);
+      }, delay);
+    };
+    scheduleNextWink();
+    
+    return () => {
+      clearTimeout(winkTimeout);
+      clearTimeout(resetTimeout);
+    };
+  }, []);
+
+  // Smile animation (happens on success/excited states)
+  useEffect(() => {
+    if (emotion === "success" || emotion === "excited") {
+      setIsSmiling(true);
+      const timer = setTimeout(() => setIsSmiling(false), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [emotion]);
+
   // Generate floating particles for background
   useEffect(() => {
     if (!showBackground) return;
@@ -183,6 +292,18 @@ export function LumoAvatar({
     }));
     setParticles(newParticles);
   }, [showBackground, theme.particleCount]);
+
+  // Don't render until image is processed
+  if (!processedImage) {
+    return (
+      <div 
+        className={`relative ${className} flex items-center justify-center`}
+        style={{ width: config.container, height: config.container }}
+      >
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div 
@@ -281,18 +402,18 @@ export function LumoAvatar({
             perspective: "1000px",
           }}
         >
-          {/* Eye glow effect - positioned behind the image */}
+          {/* Eye glow effect - positioned behind the image with wink support */}
           <motion.div
             className="absolute inset-0 rounded-full pointer-events-none"
             style={{
               background: `radial-gradient(
                 ellipse 15% 20% at 37% 42%, 
-                rgba(${currentConfig.eyeGlowColor}, ${isBlinking ? 0 : 0.8}) 0%, 
+                rgba(${currentConfig.eyeGlowColor}, ${isBlinking || isWinking === "left" ? 0 : 0.8}) 0%, 
                 transparent 50%
               ),
               radial-gradient(
                 ellipse 15% 20% at 63% 42%, 
-                rgba(${currentConfig.eyeGlowColor}, ${isBlinking ? 0 : 0.8}) 0%, 
+                rgba(${currentConfig.eyeGlowColor}, ${isBlinking || isWinking === "right" ? 0 : 0.8}) 0%, 
                 transparent 50%
               )`,
               filter: `blur(${currentConfig.eyeGlowIntensity}px)`,
@@ -331,7 +452,7 @@ export function LumoAvatar({
             }}
           />
 
-          {/* The actual Lumo image with enhanced animations */}
+          {/* The actual Lumo image with enhanced animations - NOW WITH TRANSPARENT BACKGROUND */}
           <motion.div
             className="relative z-10"
             style={{
@@ -372,22 +493,23 @@ export function LumoAvatar({
             }}
           >
             <motion.img
-              src={lumoImage}
+              src={processedImage}
               alt="Lumo - Meta-SySop Avatar"
               className="w-full h-full object-contain"
               style={{
                 filter: `
-                  brightness(${isBlinking ? 0.7 : currentConfig.brightness})
-                  saturate(${currentConfig.saturate})
+                  brightness(${isBlinking ? 0.7 : isSmiling ? currentConfig.brightness * 1.15 : currentConfig.brightness})
+                  saturate(${isSmiling ? currentConfig.saturate * 1.2 : currentConfig.saturate})
                   hue-rotate(${currentConfig.hueRotate}deg)
-                  drop-shadow(0 0 ${currentConfig.eyeGlowIntensity}px rgba(${currentConfig.eyeGlowColor}, 0.6))
+                  drop-shadow(0 0 ${isSmiling ? currentConfig.eyeGlowIntensity * 1.5 : currentConfig.eyeGlowIntensity}px rgba(${currentConfig.eyeGlowColor}, 0.6))
                 `,
-                mixBlendMode: "screen",
                 transition: "filter 0.3s ease-out",
               }}
               animate={{
                 filter: isBlinking 
                   ? `brightness(0.7) saturate(${currentConfig.saturate}) hue-rotate(${currentConfig.hueRotate}deg)`
+                  : isSmiling
+                  ? `brightness(${currentConfig.brightness * 1.15}) saturate(${currentConfig.saturate * 1.2}) hue-rotate(${currentConfig.hueRotate}deg) drop-shadow(0 0 ${currentConfig.eyeGlowIntensity * 1.5}px rgba(${currentConfig.eyeGlowColor}, 0.9))`
                   : [
                       `brightness(${currentConfig.brightness}) saturate(${currentConfig.saturate}) hue-rotate(${currentConfig.hueRotate}deg) drop-shadow(0 0 ${currentConfig.eyeGlowIntensity}px rgba(${currentConfig.eyeGlowColor}, 0.6))`,
                       `brightness(${currentConfig.brightness * 1.05}) saturate(${currentConfig.saturate * 1.1}) hue-rotate(${currentConfig.hueRotate}deg) drop-shadow(0 0 ${currentConfig.eyeGlowIntensity * 1.3}px rgba(${currentConfig.eyeGlowColor}, 0.8))`,
@@ -396,8 +518,8 @@ export function LumoAvatar({
               }}
               transition={{
                 filter: {
-                  duration: isBlinking ? 0.15 : currentConfig.pulseSpeed,
-                  repeat: isBlinking ? 0 : Infinity,
+                  duration: isBlinking ? 0.15 : isSmiling ? 0.5 : currentConfig.pulseSpeed,
+                  repeat: isBlinking || isSmiling ? 0 : Infinity,
                   ease: "easeInOut",
                 },
               }}
@@ -464,16 +586,6 @@ export function LumoAvatar({
             </motion.div>
           )}
         </motion.div>
-      </motion.div>
-
-      {/* Emotion indicator badge (bottom right) */}
-      <motion.div
-        className="absolute bottom-2 right-2 bg-background/90 backdrop-blur-sm border border-border rounded-full px-3 py-1 text-xs font-medium"
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.5 }}
-      >
-        <span className="text-muted-foreground capitalize">{emotion}</span>
       </motion.div>
     </div>
   );

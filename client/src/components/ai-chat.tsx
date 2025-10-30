@@ -24,6 +24,7 @@ import { TaskBoard } from "@/components/task-board";
 import { AgentTaskList, type AgentTask } from "@/components/agent-task-list";
 import { AgentProgressDisplay } from "@/components/agent-progress-display";
 import { ChatInputToolbar } from "@/components/ui/chat-input-toolbar";
+import { LumoAvatar } from "@/components/lumo-avatar";
 
 interface CheckpointData {
   complexity: string;
@@ -898,8 +899,12 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
               )}
             >
               {message.role === "assistant" && (
-                <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-[hsl(220,70%,60%)] to-[hsl(220,70%,50%)] flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-white" />
+                <div className="flex-shrink-0">
+                  <LumoAvatar
+                    emotion="happy"
+                    size="small"
+                    showBackground={false}
+                  />
                 </div>
               )}
 
