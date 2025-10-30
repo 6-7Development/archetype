@@ -416,6 +416,7 @@ export function LumoPixelAvatar({
   };
 
   useEffect(() => {
+    console.log(`[LUMO-MOUNT] 🎨 Component mounted! Size: ${size} (${containerSize}px), Mood: ${currentMood}, BG: ${showBackground}, Particles: ${enableParticles}`);
     particleSystemRef.current = new ParticleSystem(containerSize);
   }, [containerSize]);
 
@@ -547,7 +548,9 @@ export function LumoPixelAvatar({
     let loadedCount = 0;
 
     const checkComplete = () => {
+      console.log(`[LUMO-LOAD] Progress: ${loadedCount}/${sheets.length} sprite sheets loaded`);
       if (loadedCount >= sheets.length) {
+        console.log('[LUMO-LOAD] ✅ All sprites loaded! Starting animation...');
         setIsLoaded(true);
         startAnimation();
       }
@@ -573,13 +576,16 @@ export function LumoPixelAvatar({
     let animFrame: number | null = null;
 
     const startAnimation = () => {
+      console.log(`[LUMO-ANIM] 🎬 Starting animation for mood: ${currentMood}`);
       let currentFrameIndex = 0;
       let frameTimer = 0;
       let lastTimestamp = 0;
+      let frameCount = 0; // Debug counter
       const animSequence = EMOTION_ANIMATIONS[currentMood];
       const FRAME_SIZE = 256;
-      const BUFFER_PADDING = 32;
+      const BUFFER_PADDING = 0; // REMOVED PADDING - was causing scaling issues!
 
+      console.log(`[LUMO-ANIM] Animation sequence has ${animSequence.length} frames`);
       const frameBuffers = new Map<string, HTMLCanvasElement>();
 
       const prepareFrameBuffer = (frame: SpriteFrame) => {
@@ -587,25 +593,37 @@ export function LumoPixelAvatar({
         if (frameBuffers.has(key)) return frameBuffers.get(key)!;
 
         const buffer = document.createElement("canvas");
-        buffer.width = FRAME_SIZE + BUFFER_PADDING * 2;
-        buffer.height = FRAME_SIZE + BUFFER_PADDING * 2;
+        buffer.width = FRAME_SIZE;  // FIXED: No padding!
+        buffer.height = FRAME_SIZE;
         const bufferCtx = buffer.getContext("2d");
 
         if (bufferCtx) {
           const img = images.get(frame.sheet);
-          if (img && img.complete) {
+          if (img && img.complete && img.naturalWidth > 0) {
             bufferCtx.imageSmoothingEnabled = false;
-            bufferCtx.drawImage(
-              img,
-              frame.col * FRAME_SIZE,
-              frame.row * FRAME_SIZE,
-              FRAME_SIZE,
-              FRAME_SIZE,
-              BUFFER_PADDING,
-              BUFFER_PADDING,
-              FRAME_SIZE,
-              FRAME_SIZE
-            );
+            try {
+              bufferCtx.drawImage(
+                img,
+                frame.col * FRAME_SIZE,  // Source X
+                frame.row * FRAME_SIZE,  // Source Y
+                FRAME_SIZE,              // Source Width
+                FRAME_SIZE,              // Source Height
+                0,                       // Dest X (no padding!)
+                0,                       // Dest Y (no padding!)
+                FRAME_SIZE,              // Dest Width
+                FRAME_SIZE               // Dest Height
+              );
+              console.log(`[LUMO-BUFFER] ✅ Created buffer for ${key}`);
+            } catch (error) {
+              console.error(`[LUMO-BUFFER] ❌ Failed to draw to buffer:`, error);
+            }
+          } else {
+            console.error(`[LUMO-BUFFER] ❌ Image not ready:`, {
+              hasImage: !!img,
+              complete: img?.complete,
+              naturalWidth: img?.naturalWidth,
+              sheet: frame.sheet
+            });
           }
         }
 
@@ -614,7 +632,10 @@ export function LumoPixelAvatar({
       };
 
       const animate = (timestamp: number) => {
-        if (!canvasRef.current) return;
+        if (!canvasRef.current) {
+          console.warn('[LUMO-ANIM] ⚠️ Canvas ref lost, stopping animation');
+          return;
+        }
 
         animFrame = requestAnimationFrame(animate);
 
@@ -632,18 +653,22 @@ export function LumoPixelAvatar({
 
         const frame = animSequence[currentFrameIndex];
 
+        // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Very subtle breathing animation (optional gentle scale, no displacement)
+        // DEBUG: Draw pink background to prove canvas is rendering
+        ctx.fillStyle = 'rgba(255, 192, 203, 0.3)'; // Light pink for debugging
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Very subtle breathing animation
         const breathePhase = (timestamp * 0.0006) % (Math.PI * 2);
         const breatheEase = (1 - Math.cos(breathePhase)) / 2;
-        const breatheScale = 1 + breatheEase * 0.01; // Reduced from 0.02 to 0.01 for subtle effect
+        const breatheScale = 1 + breatheEase * 0.01;
 
-        // REMOVED: swayX and breatheY to keep Lumo in fixed position
         const frameBuffer = prepareFrameBuffer(frame);
 
-        if (frameBuffer) {
-          // Fixed centered position - no displacement
+        if (frameBuffer && frameBuffer.width > 0) {
+          // Centered position with breathing
           const renderSize = containerSize * breatheScale;
           const offsetX = (containerSize - renderSize) / 2;
           const offsetY = (containerSize - renderSize) / 2;
@@ -652,21 +677,27 @@ export function LumoPixelAvatar({
           ctx.imageSmoothingEnabled = false;
 
           try {
-            // Draw the buffer canvas content directly
+            // Draw sprite from buffer
             ctx.drawImage(
               frameBuffer,
-              0,  // Source x (full buffer)
-              0,  // Source y (full buffer)
-              frameBuffer.width,  // Source width
-              frameBuffer.height, // Source height
-              offsetX,
-              offsetY,
-              renderSize,
-              renderSize
+              0,                    // Source x
+              0,                    // Source y
+              FRAME_SIZE,           // Source width (full frame, no padding!)
+              FRAME_SIZE,           // Source height
+              offsetX,              // Dest x
+              offsetY,              // Dest y
+              renderSize,           // Dest width
+              renderSize            // Dest height
             );
+
+            // Log first 10 frames to confirm animation is running
+            if (frameCount < 10) {
+              console.log(`[LUMO-DRAW] Frame ${frameCount}: Drew sprite at (${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}) size ${renderSize.toFixed(1)}px`);
+            }
+            frameCount++;
           } catch (error) {
-            console.error("[LUMO] Draw error:", error, {
-              frameBuffer,
+            console.error("[LUMO-DRAW] ❌ Draw error:", error, {
+              frameBuffer: { width: frameBuffer.width, height: frameBuffer.height },
               canvasSize: { width: canvas.width, height: canvas.height },
               renderSize,
               offset: { x: offsetX, y: offsetY }
@@ -675,7 +706,16 @@ export function LumoPixelAvatar({
 
           ctx.restore();
         } else {
-          console.warn("[LUMO] No frame buffer available for", frame);
+          console.warn(`[LUMO-DRAW] ⚠️ No valid frame buffer for frame ${currentFrameIndex}:`, frame);
+          
+          // DEBUG FALLBACK: Draw yellow circle when sprite fails
+          ctx.fillStyle = 'rgba(255, 230, 0, 0.8)';
+          ctx.beginPath();
+          ctx.arc(containerSize / 2, containerSize / 2, containerSize * 0.4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+          ctx.lineWidth = 2;
+          ctx.stroke();
         }
       };
 
@@ -719,7 +759,10 @@ export function LumoPixelAvatar({
           <div
             className="w-full h-full rounded-full"
             style={{
+              position: 'absolute',
+              inset: 0,
               background: isDark ? "rgb(15, 23, 42)" : "rgb(241, 245, 249)",
+              zIndex: 1,
             }}
           />
         </div>
