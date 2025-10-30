@@ -2,18 +2,6 @@ import { useEffect, useState } from 'react';
 
 // Enhanced Lemonade-Inspired Text Logo with Detailed Lemon
 export function LemonAidTextLogo({ className = "", size = "default" }: { className?: string; size?: "sm" | "default" | "lg" }) {
-  const [pulse, setPulse] = useState(1);
-  
-  useEffect(() => {
-    let frame = 0;
-    const animate = () => {
-      frame += 0.008;
-      setPulse(0.98 + Math.sin(frame) * 0.02); // Subtle breathing
-      requestAnimationFrame(animate);
-    };
-    const id = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(id);
-  }, []);
 
   const sizeClasses = {
     sm: "text-xl",
@@ -45,7 +33,7 @@ export function LemonAidTextLogo({ className = "", size = "default" }: { classNa
       </span>
       {/* Enhanced Lemon replacing the "o" */}
       <div className="relative inline-flex items-center justify-center" style={{ width: s, height: s, marginTop: -2 }}>
-        <svg width={s} height={s} viewBox="0 0 40 40" className="shrink-0" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }}>
+        <svg width={s} height={s} viewBox="0 0 40 40" className="shrink-0 motion-safe-only" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }}>
           <defs>
             <radialGradient id="detailed-lemon-outer">
               <stop offset="0%" stopColor="hsl(50, 98%, 75%)" />
@@ -66,7 +54,7 @@ export function LemonAidTextLogo({ className = "", size = "default" }: { classNa
             </linearGradient>
           </defs>
           
-          <g transform={`scale(${pulse}) translate(${(1 - pulse) * 20} ${(1 - pulse) * 20})`}>
+          <g className="lemon-breathe">
             {/* Lemon outer body */}
             <circle cx="20" cy="20" r="16" fill="url(#detailed-lemon-outer)" />
             
