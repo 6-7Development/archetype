@@ -158,6 +158,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   initializeJobManager(wss);
   console.log('[META-SYSOP-JOB-MANAGER] Job manager connected to WebSocket');
 
+  // Initialize Meta-SySop chat with WebSocket for live preview
+  const { initializeMetaSysopWebSocket } = await import('./routes/metaSysopChat');
+  initializeMetaSysopWebSocket(wss);
+  console.log('[META-SYSOP-CHAT] Live preview WebSocket initialized');
+
   // ==================== REGISTER ROUTE MODULES ====================
   
   // Register all route modules with dependencies

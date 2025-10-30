@@ -14,6 +14,7 @@ export function LivePreview({ projectId, fileCount = 0 }: LivePreviewProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [previewStatus, setPreviewStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [lastUpdate, setLastUpdate] = useState<string | null>(null);
 
   // Auto-refresh when projectId changes
   useEffect(() => {
@@ -22,6 +23,82 @@ export function LivePreview({ projectId, fileCount = 0 }: LivePreviewProps) {
       setErrorMessage(null);
       setIframeKey(prev => prev + 1);
     }
+  }, [projectId]);
+
+  // 📡 LIVE PREVIEW: Listen for Meta-SySop file updates via WebSocket
+  useEffect(() => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    
+    let ws: WebSocket | null = null;
+    let reconnectTimeout: NodeJS.Timeout | null = null;
+
+    const connect = () => {
+      try {
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+          console.log('[LIVE-PREVIEW] WebSocket connected for file updates');
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            
+            // Listen for Meta-SySop file updates
+            if (data.type === 'platform_file_updated') {
+              // Match current project OR platform code
+              const currentProject = projectId || 'platform';
+              const updateProject = data.projectId || 'platform';
+              
+              if (currentProject === updateProject) {
+                console.log('[LIVE-PREVIEW] 📡 File updated for project:', updateProject, data.path);
+                
+                // Force iframe reload to show changes
+                setPreviewStatus('loading');
+                setLastUpdate(data.path);
+                setIframeKey(prev => prev + 1);
+                
+                // Show update notification briefly
+                setTimeout(() => {
+                  setLastUpdate(null);
+                }, 3000);
+              } else {
+                console.log('[LIVE-PREVIEW] 🔇 Ignoring update for different project:', updateProject);
+              }
+            }
+          } catch (error) {
+            console.error('[LIVE-PREVIEW] Failed to parse WebSocket message:', error);
+          }
+        };
+
+        ws.onerror = (error) => {
+          console.error('[LIVE-PREVIEW] WebSocket error:', error);
+        };
+
+        ws.onclose = () => {
+          console.log('[LIVE-PREVIEW] WebSocket disconnected, will reconnect in 3s');
+          // Auto-reconnect after 3 seconds
+          reconnectTimeout = setTimeout(() => {
+            connect();
+          }, 3000);
+        };
+      } catch (error) {
+        console.error('[LIVE-PREVIEW] Failed to create WebSocket:', error);
+      }
+    };
+
+    connect();
+
+    // Cleanup on unmount
+    return () => {
+      if (ws) {
+        ws.close();
+      }
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+    };
   }, [projectId]);
 
   const handleRefresh = () => {
@@ -91,6 +168,12 @@ export function LivePreview({ projectId, fileCount = 0 }: LivePreviewProps) {
             <Badge variant="outline" className="text-xs border-red-500/20 text-red-600 dark:text-red-400">
               <AlertCircle className="w-3 h-3 mr-1" />
               Error
+            </Badge>
+          )}
+          
+          {lastUpdate && (
+            <Badge variant="outline" className="text-xs border-primary/20 bg-primary/5 animate-pulse">
+              📡 {lastUpdate}
             </Badge>
           )}
           

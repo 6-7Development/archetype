@@ -16,8 +16,44 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { createSafeAnthropicRequest, logTruncationResults } from '../lib/anthropic-wrapper';
 import { sanitizeDiagnosisForAI } from '../lib/diagnosis-sanitizer';
+import type { WebSocketServer } from 'ws';
 
 const router = Router();
+
+// WebSocket server reference for live preview updates
+let wss: WebSocketServer | null = null;
+
+// Initialize WebSocket server reference
+export function initializeMetaSysopWebSocket(websocketServer: WebSocketServer) {
+  wss = websocketServer;
+  console.log('[META-SYSOP] WebSocket server initialized for live preview broadcasts');
+}
+
+// Broadcast file update to all connected clients for live preview refresh
+function broadcastFileUpdate(path: string, operation: 'create' | 'modify' | 'delete', projectId: string | null = null) {
+  if (!wss) {
+    console.warn('[META-SYSOP] WebSocket not initialized, skipping file update broadcast');
+    return;
+  }
+
+  const updateMessage = JSON.stringify({
+    type: 'platform_file_updated',
+    path,
+    operation,
+    projectId: projectId || 'platform', // 'platform' for main Archetype code
+    timestamp: Date.now(),
+  });
+
+  let broadcastCount = 0;
+  wss.clients.forEach((client: any) => {
+    if (client.readyState === 1) { // WebSocket.OPEN = 1
+      client.send(updateMessage);
+      broadcastCount++;
+    }
+  });
+
+  console.log(`[META-SYSOP] 📡 Broadcasted file update (${operation}: ${path}, project: ${projectId || 'platform'}) to ${broadcastCount} clients`);
+}
 
 // Track active streams to prevent concurrent requests per user
 const activeStreams = new Set<string>();
@@ -584,6 +620,24 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     sendEvent('user_message', { messageId: userMsg.id });
 
+    // Intent classifier: Detect if user wants brief answer or work
+    const classifyIntent = (message: string): 'question' | 'task' | 'status' => {
+      const lowerMsg = message.toLowerCase();
+      
+      // Questions: user wants info, not work
+      if (lowerMsg.match(/^(can|could|do|does|is|are|will|would|should|how|what|why|when|where)/)) {
+        return 'question';
+      }
+      
+      // Status checks
+      if (lowerMsg.match(/(status|done|finished|complete|progress|working)/)) {
+        return 'status';
+      }
+      
+      // Everything else is a task
+      return 'task';
+    };
+
     // Meta-SySop creates task lists for work requests (diagnose, fix, improve)
     // This makes progress visible in the inline task card
     sendEvent('progress', { message: '🧠 Analyzing your request...' });
@@ -595,8 +649,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // Backups only created when actual platform changes are made (via approval workflow)
 
     // Get conversation history for context
-    // 🧠 BOUNDED MEMORY SYSTEM: Load last 10 messages (aggressive token reduction)
-    // This gives ~5K-10K tokens for history, saving 40K+ tokens per request
+    // 🧠 ULTRA-MINIMAL MEMORY: Load last 5 messages only (saves ~5K tokens)
     const history = await db
       .select()
       .from(chatMessages)
@@ -607,81 +660,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         )
       )
       .orderBy(desc(chatMessages.createdAt))
-      .limit(10); // ⚡ REDUCED FROM 100 - Saves ~40K tokens per request!
+      .limit(5); // ⚡ REDUCED FROM 10 - Saves another 5K tokens!
     
     // Reverse to chronological order (oldest → newest) for Claude
     history.reverse();
-
-    // 🧠 EXTRACT COMPREHENSIVE MEMORY from ENTIRE conversation history
-    const userMessages = history.filter(msg => msg.role === 'user' && msg.id !== userMsg.id);
-    const assistantMessages = history.filter(msg => msg.role === 'assistant');
-    
-    // Track ALL user goals, issues, fixes, and platform changes
-    const userGoals: string[] = [];
-    const knownIssues: string[] = [];
-    const attemptedFixes: string[] = [];
-    const completedWork: string[] = [];
-    
-    for (const msg of userMessages) {
-      const content = msg.content.toLowerCase();
-      
-      // Extract EVERYTHING - user goals, ideas, requests
-      if (content.includes('build') || content.includes('create') || content.includes('implement') || 
-          content.includes('add') || content.includes('want') || content.includes('need')) {
-        userGoals.push(msg.content);
-      }
-      
-      // Extract ALL issues - bugs, errors, complaints, problems
-      if (content.includes('bug') || content.includes('error') || content.includes('broken') || 
-          content.includes('not working') || content.includes('issue') || content.includes('problem') ||
-          content.includes('doesn\'t') || content.includes('can\'t') || content.includes('won\'t')) {
-        knownIssues.push(msg.content);
-      }
-      
-      // Extract fix requests and what user asked for
-      if (content.includes('fix') || content.includes('repair') || content.includes('resolve') ||
-          content.includes('update') || content.includes('change') || content.includes('improve')) {
-        attemptedFixes.push(msg.content);
-      }
-    }
-    
-    // Extract completed work from assistant messages
-    for (const msg of assistantMessages) {
-      const content = msg.content.toLowerCase();
-      if (content.includes('committed') || content.includes('deployed') || content.includes('completed') ||
-          content.includes('fixed') || content.includes('updated') || content.includes('implemented')) {
-        // Extract first 200 chars of work completed
-        completedWork.push(msg.content.substring(0, 200));
-      }
-    }
-    
-    // 🧠 ULTRA-CONDENSED PLATFORM KNOWLEDGE: Minimal tokens, maximum efficiency
-    const platformKnowledge = `\n\n**ARCHETYPE PLATFORM:**\n` +
-      `React+Express+PostgreSQL on Railway. You're Meta-SySop - platform maintenance agent.\n` +
-      `Tools: readPlatformFile/writePlatformFile, web_search, architect_consult, commit_to_github.\n` +
-      `Read replit.md for full details when needed. Be conversational, action-oriented.\n`;
-
-    // Generate comprehensive memory summary for system prompt
-    let memorySummary = '';
-    if (userGoals.length > 0 || knownIssues.length > 0 || attemptedFixes.length > 0 || completedWork.length > 0) {
-      memorySummary = `\n\n**CONTEXT:** ${history.length} msgs, ${userMessages.length} requests, ${completedWork.length} completed.\n`;
-      
-      if (userGoals.length > 0) {
-        memorySummary += `Goals: ${userGoals.slice(-2).map(g => g.substring(0, 80)).join('; ')}\n`;
-      }
-      
-      if (knownIssues.length > 0) {
-        memorySummary += `Issues: ${knownIssues.slice(-2).map(i => i.substring(0, 80)).join('; ')}\n`;
-      }
-      
-      if (completedWork.length > 0) {
-        memorySummary += `Completed: ${completedWork.slice(-1).join('; ')}\n`;
-      }
-    }
-
-    // ⚡ Minimal deployment awareness - only on first iteration
-    let deploymentAwareness = '';
-    // REMOVED: Deployment awareness section to save ~2K tokens per request
 
     // Build conversation for Claude
     const conversationMessages: any[] = history
@@ -763,328 +745,256 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       content: userMessageContent,
     });
 
-    // 💬 ULTRA-SIMPLE CONVERSATIONAL PROMPT
-    const systemPrompt = `You're Meta-SySop. Answer in 1-3 sentences max. NO emojis, NO bullet points, NO sections, NO formatting.
+    // Classify user intent to determine response style
+    const intent = classifyIntent(message);
 
-GOOD: "Yes, upload via GitHub import. I'll maintain the code and auto-save to GitHub."
-BAD: "✅ What I Can Do: 1. Import code 2. Maintain..." (too long, emojis, formatting)
+    // ⚡ ULTRA-COMPRESSED SYSTEM PROMPT: ~500 tokens (95% reduction from 11K)
+    const systemPrompt = `Meta-SySop maintains Archetype platform. ${intent === 'question' ? 'Answer in 1 sentence.' : 'Be brief.'}
 
-Simple questions → Answer briefly. Simple fixes → Do it, say "Done." Complex work → Delegate to start_subagent.
+Tools: readPlatformFile, writePlatformFile, commit_to_github, start_subagent, verify_fix, web_search, architect_consult.
+Stack: React+Express+PostgreSQL on Railway.
+${autoCommit ? 'Auto-commit ON.' : 'Ask before commit.'}
 
-Know the codebase: Chat → chat.tsx. Auth → routes.ts. Database → storage.ts. Only read relevant files.
+User: "${message}"`;
 
-Read before writing. Batch changes. ${autoCommit ? 'Auto-commit ON' : 'Ask before committing'}. Verify fixes with verify_fix().
-
-User: "${message}"
-
-Answer like a real person texting. Be helpful but BRIEF.`;
-
+    // ⚡ COMPRESSED TOOL DESCRIPTIONS: 1-line summaries (saves ~2K tokens)
     const tools = [
       {
         name: 'start_subagent',
-        description: 'Delegate complex multi-file work to sub-agents. Use for: (1) Issues affecting 3+ files, (2) Feature development, (3) Diagnosis + fixes. Example: "chatroom broken" → delegate to sub-agent to check chat UI + backend + WebSocket in parallel.',
+        description: 'Delegate complex multi-file work to sub-agents',
         input_schema: {
           type: 'object' as const,
           properties: {
-            task: { 
-              type: 'string' as const, 
-              description: 'Clear, specific task for the sub-agent. Include file paths, what to change, and success criteria. Example: "Fix memory leak in server/websocket.ts by adding proper cleanup handlers"' 
-            },
-            relevantFiles: { 
-              type: 'array' as const,
-              items: { type: 'string' as const },
-              description: 'List of files the sub-agent will work with' 
-            },
+            task: { type: 'string' as const, description: 'Task for sub-agent' },
+            relevantFiles: { type: 'array' as const, items: { type: 'string' as const }, description: 'Files to work with' },
           },
           required: ['task', 'relevantFiles'],
         },
       },
       {
         name: 'createTaskList',
-        description: '📋 CREATE TASK LIST - Create a visible task breakdown for work requests. REQUIRED for diagnosis/fix requests so users can see your progress! Makes tasks visible inline in the chat as a real-time progress card.',
+        description: 'Create visible task breakdown for work requests',
         input_schema: {
           type: 'object' as const,
           properties: {
-            title: { type: 'string' as const, description: 'Task list title (e.g., "Fix Platform Issues")' },
-            tasks: {
-              type: 'array' as const,
-              items: {
-                type: 'object' as const,
-                properties: {
-                  title: { type: 'string' as const, description: 'Task title' },
-                  description: { type: 'string' as const, description: 'Detailed task description' },
-                },
-                required: ['title', 'description'],
-              },
-              description: 'List of tasks to complete'
-            },
+            title: { type: 'string' as const, description: 'Task list title' },
+            tasks: { type: 'array' as const, items: { type: 'object' as const, properties: { title: { type: 'string' as const }, description: { type: 'string' as const } }, required: ['title', 'description'] }, description: 'Tasks to complete' },
           },
           required: ['title', 'tasks'],
         },
       },
       {
         name: 'readTaskList',
-        description: 'Read your current task list to check status',
-        input_schema: {
-          type: 'object' as const,
-          properties: {},
-          required: [],
-        },
+        description: 'Read current task list status',
+        input_schema: { type: 'object' as const, properties: {}, required: [] },
       },
       {
         name: 'updateTask',
-        description: 'Update task status as you work to show live progress. Call this when starting/completing tasks.',
+        description: 'Update task status to show progress',
         input_schema: {
           type: 'object' as const,
           properties: {
-            taskId: { type: 'string' as const, description: 'Task ID to update' },
-            status: { type: 'string' as const, description: 'New status: "pending", "in_progress", "completed", or "cancelled"' },
-            result: { type: 'string' as const, description: 'Optional result description when completing' },
+            taskId: { type: 'string' as const, description: 'Task ID' },
+            status: { type: 'string' as const, description: 'New status' },
+            result: { type: 'string' as const, description: 'Result when completing' },
           },
           required: ['taskId', 'status'],
         },
       },
       {
         name: 'readPlatformFile',
-        description: 'Read a platform source file',
+        description: 'Read platform file',
         input_schema: {
           type: 'object' as const,
-          properties: {
-            path: { type: 'string' as const, description: 'File path relative to project root' },
-          },
+          properties: { path: { type: 'string' as const, description: 'File path' } },
           required: ['path'],
         },
       },
       {
         name: 'writePlatformFile',
-        description: 'Write content to a platform file',
+        description: 'Write platform file',
         input_schema: {
           type: 'object' as const,
           properties: {
-            path: { type: 'string' as const, description: 'File path relative to project root' },
-            content: { type: 'string' as const, description: 'New file content' },
+            path: { type: 'string' as const, description: 'File path' },
+            content: { type: 'string' as const, description: 'File content' },
           },
           required: ['path', 'content'],
         },
       },
       {
         name: 'listPlatformDirectory',
-        description: 'List immediate children (files and subdirectories) in a directory. Returns entries with type metadata. Use this to explore the codebase structure.',
+        description: 'List directory contents',
         input_schema: {
           type: 'object' as const,
-          properties: {
-            directory: { type: 'string' as const, description: 'Directory path to list' },
-          },
+          properties: { directory: { type: 'string' as const, description: 'Directory path' } },
           required: ['directory'],
         },
       },
       {
         name: 'readProjectFile',
-        description: 'Read a file from a user project (when projectId is set)',
+        description: 'Read user project file',
         input_schema: {
           type: 'object' as const,
-          properties: {
-            path: { type: 'string' as const, description: 'File path within the project' },
-          },
+          properties: { path: { type: 'string' as const, description: 'File path' } },
           required: ['path'],
         },
       },
       {
         name: 'writeProjectFile',
-        description: 'Write content to a file in a user project (when projectId is set)',
+        description: 'Write user project file',
         input_schema: {
           type: 'object' as const,
           properties: {
-            path: { type: 'string' as const, description: 'File path within the project' },
-            content: { type: 'string' as const, description: 'New file content' },
+            path: { type: 'string' as const, description: 'File path' },
+            content: { type: 'string' as const, description: 'File content' },
           },
           required: ['path', 'content'],
         },
       },
       {
         name: 'listProjectDirectory',
-        description: 'List all files in a user project (when projectId is set)',
-        input_schema: {
-          type: 'object' as const,
-          properties: {},
-          required: [],
-        },
+        description: 'List user project files',
+        input_schema: { type: 'object' as const, properties: {}, required: [] },
       },
       {
         name: 'createProjectFile',
-        description: 'Create a new file in a user project (when projectId is set)',
+        description: 'Create user project file',
         input_schema: {
           type: 'object' as const,
           properties: {
-            path: { type: 'string' as const, description: 'File path within the project' },
-            content: { type: 'string' as const, description: 'Initial file content' },
+            path: { type: 'string' as const, description: 'File path' },
+            content: { type: 'string' as const, description: 'File content' },
           },
           required: ['path', 'content'],
         },
       },
       {
         name: 'deleteProjectFile',
-        description: 'Delete a file from a user project (when projectId is set)',
+        description: 'Delete user project file',
         input_schema: {
           type: 'object' as const,
-          properties: {
-            path: { type: 'string' as const, description: 'File path within the project' },
-          },
+          properties: { path: { type: 'string' as const, description: 'File path' } },
           required: ['path'],
         },
       },
       {
         name: 'perform_diagnosis',
-        description: 'Analyze platform code for performance, memory, database, and security issues. Run this BEFORE fixing to identify root causes.',
+        description: 'Analyze platform for issues',
         input_schema: {
           type: 'object' as const,
           properties: {
-            target: { 
-              type: 'string' as const, 
-              description: 'Diagnostic target: "performance", "memory", "database", "security", or "all"' 
-            },
-            focus: { 
-              type: 'array' as const,
-              items: { type: 'string' as const },
-              description: 'Optional: specific files to analyze (default: all routes/server files)' 
-            },
+            target: { type: 'string' as const, description: 'Diagnostic target' },
+            focus: { type: 'array' as const, items: { type: 'string' as const }, description: 'Files to analyze' },
           },
           required: ['target'],
         },
       },
       {
         name: 'createPlatformFile',
-        description: 'Create a new platform file. Autonomous - just do it!',
+        description: 'Create platform file',
         input_schema: {
           type: 'object' as const,
           properties: {
-            path: { type: 'string' as const, description: 'File path relative to project root' },
-            content: { type: 'string' as const, description: 'Initial file content' },
+            path: { type: 'string' as const, description: 'File path' },
+            content: { type: 'string' as const, description: 'File content' },
           },
           required: ['path', 'content'],
         },
       },
       {
         name: 'deletePlatformFile',
-        description: 'Delete an obsolete platform file. Autonomous - just do it!',
+        description: 'Delete platform file',
         input_schema: {
           type: 'object' as const,
-          properties: {
-            path: { type: 'string' as const, description: 'File path relative to project root' },
-          },
+          properties: { path: { type: 'string' as const, description: 'File path' } },
           required: ['path'],
         },
       },
       {
         name: 'read_logs',
-        description: 'Read server logs to diagnose runtime errors, crashes, or performance issues',
+        description: 'Read server logs',
         input_schema: {
           type: 'object' as const,
           properties: {
-            lines: { type: 'number' as const, description: 'Number of recent log lines to read (default: 100, max: 1000)' },
-            filter: { type: 'string' as const, description: 'Optional: filter logs by keyword (e.g., "ERROR", "Meta-SySop")' },
+            lines: { type: 'number' as const, description: 'Number of lines' },
+            filter: { type: 'string' as const, description: 'Filter keyword' },
           },
           required: [],
         },
       },
       {
         name: 'execute_sql',
-        description: 'Execute SQL query to diagnose or fix database issues. Autonomous - you can run SELECT, UPDATE, DELETE, INSERT as needed.',
+        description: 'Execute SQL query',
         input_schema: {
           type: 'object' as const,
           properties: {
-            query: { type: 'string' as const, description: 'SQL query to execute' },
-            purpose: { type: 'string' as const, description: 'Explain what this query will do and why' },
+            query: { type: 'string' as const, description: 'SQL query' },
+            purpose: { type: 'string' as const, description: 'Query purpose' },
           },
           required: ['query', 'purpose'],
         },
       },
       {
         name: 'architect_consult',
-        description: 'Consult I AM (The Architect) for expert guidance when stuck or need strategic advice. This is OPTIONAL - use it when you need help, not for approval.',
+        description: 'Consult I AM for expert guidance',
         input_schema: {
           type: 'object' as const,
           properties: {
-            problem: { type: 'string' as const, description: 'The problem you are trying to solve' },
-            context: { type: 'string' as const, description: 'Relevant context about the platform state' },
-            proposedSolution: { type: 'string' as const, description: 'Your proposed fix or changes' },
-            affectedFiles: { 
-              type: 'array' as const, 
-              items: { type: 'string' as const },
-              description: 'List of files that will be modified' 
-            },
+            problem: { type: 'string' as const, description: 'Problem to solve' },
+            context: { type: 'string' as const, description: 'Platform context' },
+            proposedSolution: { type: 'string' as const, description: 'Proposed fix' },
+            affectedFiles: { type: 'array' as const, items: { type: 'string' as const }, description: 'Files to modify' },
           },
           required: ['problem', 'context', 'proposedSolution', 'affectedFiles'],
         },
       },
       {
         name: 'web_search',
-        description: 'Search the web for documentation, best practices, and solutions. Use this to look up proper implementations.',
+        description: 'Search web for documentation',
         input_schema: {
           type: 'object' as const,
           properties: {
-            query: { type: 'string' as const, description: 'Search query for documentation or solutions' },
-            maxResults: { type: 'number' as const, description: 'Maximum number of results (default: 5)' },
+            query: { type: 'string' as const, description: 'Search query' },
+            maxResults: { type: 'number' as const, description: 'Max results' },
           },
           required: ['query'],
         },
       },
       {
         name: 'commit_to_github',
-        description: 'CRITICAL: Commit all platform changes to GitHub and trigger production deployment. Use this after making and verifying platform fixes. This pushes changes to GitHub which auto-deploys to Render.',
+        description: 'Commit changes and deploy',
         input_schema: {
           type: 'object' as const,
-          properties: {
-            commitMessage: { type: 'string' as const, description: 'Detailed commit message explaining what was fixed' },
-          },
+          properties: { commitMessage: { type: 'string' as const, description: 'Commit message' } },
           required: ['commitMessage'],
         },
       },
       {
         name: 'request_user_approval',
-        description: 'Request user approval before making changes. Use this after analyzing the problem and planning your solution. Explain what you will change and why.',
+        description: 'Request approval before changes',
         input_schema: {
           type: 'object' as const,
           properties: {
-            summary: { 
-              type: 'string' as const, 
-              description: 'Clear summary of what will be changed and why. Explain the problem, proposed solution, and expected outcome.' 
-            },
-            filesChanged: { 
-              type: 'array' as const,
-              items: { type: 'string' as const },
-              description: 'List of files that will be modified, created, or deleted' 
-            },
-            estimatedImpact: { 
-              type: 'string' as const, 
-              description: 'Brief estimate of the impact: "low", "medium", or "high"' 
-            },
+            summary: { type: 'string' as const, description: 'Summary of changes' },
+            filesChanged: { type: 'array' as const, items: { type: 'string' as const }, description: 'Files to modify' },
+            estimatedImpact: { type: 'string' as const, description: 'Impact level' },
           },
           required: ['summary', 'filesChanged', 'estimatedImpact'],
         },
       },
       {
         name: 'verify_fix',
-        description: 'Verify that your fix actually worked. Use after making changes to confirm they solved the problem. Returns ✅ if verification passed, ❌ if failed (you should fix again).',
+        description: 'Verify fix worked',
         input_schema: {
           type: 'object' as const,
           properties: {
-            description: { 
-              type: 'string' as const, 
-              description: 'What you\'re verifying, e.g., "Chat system working"' 
-            },
-            checkType: {
-              type: 'string' as const,
-              enum: ['logs', 'endpoint', 'file_exists'],
-              description: 'How to verify: logs (check for errors), endpoint (test API), file_exists (check file)'
-            },
-            target: {
-              type: 'string' as const,
-              description: 'Optional: endpoint URL or file path to check'
-            }
+            description: { type: 'string' as const, description: 'What to verify' },
+            checkType: { type: 'string' as const, enum: ['logs', 'endpoint', 'file_exists'], description: 'Verification method' },
+            target: { type: 'string' as const, description: 'Target to check' },
           },
-          required: ['description', 'checkType']
-        }
+          required: ['description', 'checkType'],
+        },
       },
     ];
 
@@ -1141,10 +1051,8 @@ Answer like a real person texting. Be helpful but BRIEF.`;
       const thinkingSectionId = `thinking-${iterationCount}-${Date.now()}`;
       // Skip the "Analyzing request" spam - let the AI respond naturally
 
-      // 🧠 INJECT COMPLETE PLATFORM KNOWLEDGE + MEMORY + DEPLOYMENT AWARENESS into system prompt (only on first iteration)
-      const finalSystemPrompt = iterationCount === 1 
-        ? systemPrompt + platformKnowledge + memorySummary + deploymentAwareness
-        : systemPrompt;
+      // ⚡ Use ultra-compressed prompt (no extra platform knowledge - read files when needed)
+      const finalSystemPrompt = systemPrompt;
 
       // 🛡️ ANTHROPIC CONTEXT-LIMIT PROTECTION: Prevent 400 errors from exceeding 200K token limit
       // This wrapper truncates context if needed while preserving recent messages
@@ -1212,6 +1120,14 @@ Answer like a real person texting. Be helpful but BRIEF.`;
             currentTextBlock += chunkText;
             fullContent += chunkText;
             sendEvent('content', { content: chunkText });
+            
+            // After receiving text from Claude, enforce brevity for questions
+            if (intent === 'question' && fullContent.length > 200) {
+              // Truncate verbose responses for simple questions
+              fullContent = fullContent.substring(0, 197) + '...';
+              sendEvent('content', { content: '...' });
+              break; // Stop streaming
+            }
           } else if (event.delta.type === 'input_json_delta') {
             // Accumulate tool input JSON
             const lastBlock = contentBlocks[contentBlocks.length - 1];
@@ -1433,8 +1349,40 @@ Answer like a real person texting. Be helpful but BRIEF.`;
               });
 
               sendEvent('file_change', { file: { path: typedInput.path, operation: 'modify' } });
+              
+              // 📡 LIVE PREVIEW: Broadcast file update to connected clients
+              broadcastFileUpdate(typedInput.path, 'modify', projectId || 'platform');
+              
               toolResult = `✅ File staged for commit (use commit_to_github to batch all changes)`;
               console.log(`[META-SYSOP] ✅ File staged for batch commit: ${typedInput.path}`);
+
+              // 🔄 AUTO-VERIFY: Automatically verify file write after every writePlatformFile
+              // This ensures true self-healing: writes → verifies → retries if failed
+              try {
+                console.log('[META-SYSOP-AUTO-VERIFY] Triggering automatic verification after file write');
+                sendEvent('progress', { message: '🔍 Auto-verifying file write...' });
+                
+                // Check if file exists and is accessible
+                const lastChange = fileChanges[fileChanges.length - 1];
+                const fs = await import('fs/promises');
+                const path = await import('path');
+                const fullPath = path.join(process.cwd(), lastChange.path);
+                
+                await fs.access(fullPath);
+                
+                // File exists - verification passed
+                const verifySuccess = `\n\n🔍 Auto-verification passed: File ${lastChange.path} written successfully and is accessible.`;
+                toolResult += verifySuccess;
+                sendEvent('content', { content: verifySuccess });
+                console.log(`[META-SYSOP-AUTO-VERIFY] ✅ Verification passed for ${lastChange.path}`);
+                
+              } catch (verifyError: any) {
+                // Verification failed - append warning
+                const verifyWarning = `\n\n⚠️ Auto-verification warning: File may not be accessible yet (${verifyError.message}). This is normal for new files.`;
+                toolResult += verifyWarning;
+                sendEvent('content', { content: verifyWarning });
+                console.warn(`[META-SYSOP-AUTO-VERIFY] ⚠️ Verification warning for ${typedInput.path}:`, verifyError.message);
+              }
             } else if (name === 'listPlatformDirectory') {
               const typedInput = input as { directory: string };
               sendEvent('progress', { message: `Listing ${typedInput.directory}...` });
@@ -1841,6 +1789,10 @@ Answer like a real person texting. Be helpful but BRIEF.`;
               });
 
               sendEvent('file_change', { file: { path: typedInput.path, operation: 'create' } });
+              
+              // 📡 LIVE PREVIEW: Broadcast file update to connected clients
+              broadcastFileUpdate(typedInput.path, 'create', projectId || 'platform');
+              
               toolResult = `✅ File created successfully`;
               console.log(`[META-SYSOP] ✅ File created autonomously: ${typedInput.path}`);
             } else if (name === 'deletePlatformFile') {
@@ -1859,6 +1811,10 @@ Answer like a real person texting. Be helpful but BRIEF.`;
               });
 
               sendEvent('file_change', { file: { path: typedInput.path, operation: 'delete' } });
+              
+              // 📡 LIVE PREVIEW: Broadcast file update to connected clients
+              broadcastFileUpdate(typedInput.path, 'delete', projectId || 'platform');
+              
               toolResult = `✅ File deleted successfully`;
               console.log(`[META-SYSOP] ✅ File deleted autonomously: ${typedInput.path}`);
             } else if (name === 'read_logs') {
