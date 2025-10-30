@@ -7,22 +7,23 @@ interface LemonMascotProps {
   className?: string;
 }
 
-interface Particle {
+interface Sparkle {
   x: number;
   y: number;
-  vx: number;
-  vy: number;
-  life: number;
+  scale: number;
+  opacity: number;
+  rotation: number;
   color: string;
 }
 
 export function LemonMascot({ emotion = 'idle', size = 'medium', className }: LemonMascotProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
   const animationRef = useRef<number>(0);
-  const timeRef = useRef<number>(0);
-  const particlesRef = useRef<Particle[]>([]);
-  const lastBlinkRef = useRef<number>(0);
-  const blinkingRef = useRef<boolean>(false);
+  const [isBlinking, setIsBlinking] = useState(false);
+  const [breathScale, setBreathScale] = useState(1);
+  const [leftArmAngle, setLeftArmAngle] = useState(-25);
+  const [rightArmAngle, setRightArmAngle] = useState(25);
+  const [sparkles, setSparkles] = useState<Sparkle[]>([]);
 
   const sizeMap = {
     small: 64,
@@ -30,289 +31,54 @@ export function LemonMascot({ emotion = 'idle', size = 'medium', className }: Le
     large: 192,
   };
 
-  const canvasSize = sizeMap[size];
+  const svgSize = sizeMap[size];
+  const centerX = svgSize / 2;
+  const centerY = svgSize / 2;
 
+  // Emotion-specific colors
+  const getBodyColor = () => {
+    switch (emotion) {
+      case 'error':
+        return '#FFB3B3';
+      case 'working':
+        return '#FFD700';
+      case 'happy':
+        return '#FFE600';
+      default:
+        return '#FFE600';
+    }
+  };
+
+  // Blinking animation
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const blinkInterval = setInterval(() => {
+      if (Math.random() > 0.7) {
+        setIsBlinking(true);
+        setTimeout(() => setIsBlinking(false), 150);
+      }
+    }, 3000);
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    return () => clearInterval(blinkInterval);
+  }, []);
 
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = canvasSize * dpr;
-    canvas.height = canvasSize * dpr;
-    canvas.style.width = `${canvasSize}px`;
-    canvas.style.height = `${canvasSize}px`;
-    ctx.scale(dpr, dpr);
-
+  // Breathing and arm animation
+  useEffect(() => {
     let startTime = Date.now();
 
-    const easeInOutSine = (t: number): number => {
-      return -(Math.cos(Math.PI * t) - 1) / 2;
-    };
-
-    const drawLemonBody = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, tint: string) => {
-      ctx.save();
-      
-      ctx.fillStyle = tint;
-      ctx.beginPath();
-      ctx.ellipse(x, y, width / 2, height / 2, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.strokeStyle = 'rgba(200, 180, 0, 0.3)';
-      ctx.lineWidth = 2;
-      const segments = 8;
-      for (let i = 0; i < segments; i++) {
-        const angle = (Math.PI * 2 / segments) * i;
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(
-          x + Math.cos(angle) * width / 2,
-          y + Math.sin(angle) * height / 2
-        );
-        ctx.stroke();
-      }
-
-      ctx.restore();
-    };
-
-    const drawArm = (ctx: CanvasRenderingContext2D, x: number, y: number, angle: number, length: number) => {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(angle);
-      
-      ctx.strokeStyle = '#FFD700';
-      ctx.lineWidth = 4;
-      ctx.lineCap = 'round';
-      
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.quadraticCurveTo(length / 2, -5, length, 0);
-      ctx.stroke();
-
-      ctx.fillStyle = '#FFD700';
-      ctx.beginPath();
-      ctx.arc(length, 0, 5, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.restore();
-    };
-
-    const drawEyes = (ctx: CanvasRenderingContext2D, x: number, y: number, emotion: string, isBlinking: boolean) => {
-      ctx.fillStyle = '#000';
-      
-      if (isBlinking) {
-        ctx.fillRect(x - 12, y, 8, 2);
-        ctx.fillRect(x + 4, y, 8, 2);
-        return;
-      }
-
-      switch (emotion) {
-        case 'thinking':
-          ctx.beginPath();
-          ctx.arc(x - 8, y, 4, 0, Math.PI * 2);
-          ctx.arc(x + 8, y - 2, 4, 0, Math.PI * 2);
-          ctx.fill();
-          break;
-        case 'confused':
-          ctx.save();
-          ctx.translate(x - 8, y);
-          ctx.rotate(-0.2);
-          ctx.fillRect(-3, -2, 6, 4);
-          ctx.restore();
-          ctx.save();
-          ctx.translate(x + 8, y);
-          ctx.rotate(0.2);
-          ctx.fillRect(-3, -2, 6, 4);
-          ctx.restore();
-          break;
-        case 'error':
-          ctx.save();
-          ctx.translate(x - 8, y);
-          ctx.rotate(-0.3);
-          ctx.fillRect(-4, -1, 8, 2);
-          ctx.restore();
-          ctx.save();
-          ctx.translate(x + 8, y);
-          ctx.rotate(0.3);
-          ctx.fillRect(-4, -1, 8, 2);
-          ctx.restore();
-          break;
-        default:
-          ctx.beginPath();
-          ctx.arc(x - 8, y, 4, 0, Math.PI * 2);
-          ctx.arc(x + 8, y, 4, 0, Math.PI * 2);
-          ctx.fill();
-      }
-    };
-
-    const drawMouth = (ctx: CanvasRenderingContext2D, x: number, y: number, emotion: string) => {
-      ctx.strokeStyle = '#000';
-      ctx.lineWidth = 2;
-      ctx.lineCap = 'round';
-
-      switch (emotion) {
-        case 'happy':
-        case 'working':
-          ctx.beginPath();
-          ctx.arc(x, y + 5, 10, 0.2, Math.PI - 0.2);
-          ctx.stroke();
-          break;
-        case 'thinking':
-          ctx.beginPath();
-          ctx.moveTo(x - 8, y + 10);
-          ctx.lineTo(x + 8, y + 10);
-          ctx.stroke();
-          break;
-        case 'confused':
-          ctx.beginPath();
-          ctx.moveTo(x - 10, y + 8);
-          ctx.quadraticCurveTo(x - 5, y + 12, x, y + 8);
-          ctx.quadraticCurveTo(x + 5, y + 4, x + 10, y + 8);
-          ctx.stroke();
-          break;
-        case 'error':
-          ctx.beginPath();
-          ctx.arc(x, y + 15, 10, Math.PI + 0.2, Math.PI * 2 - 0.2);
-          ctx.stroke();
-          break;
-        default:
-          ctx.beginPath();
-          ctx.moveTo(x - 8, y + 10);
-          ctx.lineTo(x + 8, y + 10);
-          ctx.stroke();
-      }
-    };
-
-    const drawAccessory = (ctx: CanvasRenderingContext2D, x: number, y: number, emotion: string, time: number) => {
-      if (emotion === 'working') {
-        ctx.save();
-        ctx.strokeStyle = '#888';
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-        
-        const toolX = x + 25;
-        const toolY = y + 10 + Math.sin(time * 0.003) * 3;
-        
-        ctx.beginPath();
-        ctx.moveTo(toolX, toolY);
-        ctx.lineTo(toolX + 15, toolY - 10);
-        ctx.stroke();
-        
-        ctx.fillStyle = '#666';
-        ctx.fillRect(toolX + 12, toolY - 13, 6, 6);
-        ctx.restore();
-      } else if (emotion === 'thinking') {
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        ctx.strokeStyle = '#999';
-        ctx.lineWidth = 2;
-        
-        const bubbleX = x + 20;
-        const bubbleY = y - 25;
-        
-        ctx.beginPath();
-        ctx.arc(bubbleX, bubbleY, 12, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-        
-        ctx.fillStyle = '#666';
-        ctx.font = 'bold 16px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('?', bubbleX, bubbleY + 6);
-      } else if (emotion === 'confused') {
-        ctx.fillStyle = '#666';
-        ctx.font = 'bold 20px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('?', x + 25, y - 20);
-      }
-    };
-
-    const spawnParticles = (x: number, y: number, emotion: string) => {
-      if (emotion !== 'happy' || Math.random() > 0.05) return;
-
-      for (let i = 0; i < 2; i++) {
-        particlesRef.current.push({
-          x: x + (Math.random() - 0.5) * 20,
-          y: y + (Math.random() - 0.5) * 20,
-          vx: (Math.random() - 0.5) * 2,
-          vy: -2 - Math.random() * 2,
-          life: 1.0,
-          color: ['#FFE600', '#FFB74D', '#FFF'][Math.floor(Math.random() * 3)],
-        });
-      }
-    };
-
-    const updateParticles = (deltaTime: number) => {
-      particlesRef.current = particlesRef.current.filter(p => {
-        p.x += p.vx * deltaTime * 0.06;
-        p.y += p.vy * deltaTime * 0.06;
-        p.life -= deltaTime * 0.001;
-        return p.life > 0;
-      });
-    };
-
-    const drawParticles = (ctx: CanvasRenderingContext2D) => {
-      particlesRef.current.forEach(p => {
-        ctx.save();
-        ctx.globalAlpha = p.life;
-        ctx.fillStyle = p.color;
-        ctx.fillRect(p.x - 2, p.y - 2, 4, 4);
-        ctx.restore();
-      });
-    };
-
     const animate = () => {
-      const now = Date.now();
-      const elapsed = now - startTime;
-      const deltaTime = elapsed - timeRef.current;
-      timeRef.current = elapsed;
+      const elapsed = Date.now() - startTime;
 
-      if (now - lastBlinkRef.current > 3000 && !blinkingRef.current && Math.random() > 0.95) {
-        blinkingRef.current = true;
-        lastBlinkRef.current = now;
-        setTimeout(() => {
-          blinkingRef.current = false;
-        }, 150);
-      }
-
-      ctx.clearRect(0, 0, canvasSize, canvasSize);
-
-      const centerX = canvasSize / 2;
-      const centerY = canvasSize / 2;
-
+      // Breathing animation (1.0 to 1.02 scale)
       const breathPhase = elapsed * 0.001;
-      const breathScale = 1 + Math.sin(breathPhase) * 0.02;
-      const swayPhase = elapsed * 0.0008;
-      const swayX = Math.sin(swayPhase) * 2;
-      const swayY = Math.cos(swayPhase * 0.5) * 1;
+      const newBreathScale = 1 + Math.sin(breathPhase) * 0.01;
+      setBreathScale(newBreathScale);
 
-      const bodyWidth = (canvasSize * 0.5) * breathScale;
-      const bodyHeight = (canvasSize * 0.6) * breathScale;
-
-      let bodyColor = '#FFE600';
-      if (emotion === 'error') {
-        bodyColor = '#FF9999';
-      } else if (emotion === 'working') {
-        bodyColor = '#FFD700';
-      }
-
-      const leftArmAngle = Math.sin(elapsed * 0.002) * 0.3 - 0.5;
-      const rightArmAngle = Math.sin(elapsed * 0.002 + Math.PI) * 0.3 + 0.5;
-
-      drawArm(ctx, centerX - bodyWidth / 3 + swayX, centerY + swayY, leftArmAngle, canvasSize * 0.15);
-      drawArm(ctx, centerX + bodyWidth / 3 + swayX, centerY + swayY, rightArmAngle, canvasSize * 0.15);
-
-      drawLemonBody(ctx, centerX + swayX, centerY + swayY, bodyWidth, bodyHeight, bodyColor);
-
-      drawEyes(ctx, centerX + swayX, centerY - 8 + swayY, emotion, blinkingRef.current);
-      drawMouth(ctx, centerX + swayX, centerY + 5 + swayY, emotion);
-
-      drawAccessory(ctx, centerX + swayX, centerY + swayY, emotion, elapsed);
-
-      spawnParticles(centerX + swayX, centerY + swayY, emotion);
-      updateParticles(deltaTime);
-      drawParticles(ctx);
+      // Arm wave animation (independent arms)
+      const armPhase = elapsed * 0.002;
+      const newLeftArmAngle = -25 + Math.sin(armPhase) * 15;
+      const newRightArmAngle = 25 + Math.sin(armPhase + Math.PI) * 15;
+      setLeftArmAngle(newLeftArmAngle);
+      setRightArmAngle(newRightArmAngle);
 
       animationRef.current = requestAnimationFrame(animate);
     };
@@ -324,13 +90,575 @@ export function LemonMascot({ emotion = 'idle', size = 'medium', className }: Le
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [emotion, canvasSize]);
+  }, []);
+
+  // Sparkle generation for happy emotion
+  useEffect(() => {
+    if (emotion === 'happy') {
+      const sparkleInterval = setInterval(() => {
+        if (Math.random() > 0.7) {
+          const newSparkle: Sparkle = {
+            x: centerX + (Math.random() - 0.5) * svgSize * 0.6,
+            y: centerY + (Math.random() - 0.5) * svgSize * 0.6,
+            scale: 0.5 + Math.random() * 0.5,
+            opacity: 1,
+            rotation: Math.random() * 360,
+            color: '#FFF4A3',
+          };
+          setSparkles(prev => [...prev, newSparkle]);
+
+          setTimeout(() => {
+            setSparkles(prev => prev.filter(s => s !== newSparkle));
+          }, 1000);
+        }
+      }, 300);
+
+      return () => clearInterval(sparkleInterval);
+    } else {
+      setSparkles([]);
+    }
+  }, [emotion, centerX, centerY, svgSize]);
+
+  // Eye configurations for different emotions
+  const renderEyes = () => {
+    const eyeY = centerY - svgSize * 0.1;
+    const leftEyeX = centerX - svgSize * 0.12;
+    const rightEyeX = centerX + svgSize * 0.12;
+    const eyeRadius = svgSize * 0.06;
+    const pupilRadius = svgSize * 0.03;
+
+    if (isBlinking) {
+      // Blinking - horizontal lines
+      return (
+        <>
+          <line
+            x1={leftEyeX - eyeRadius}
+            y1={eyeY}
+            x2={leftEyeX + eyeRadius}
+            y2={eyeY}
+            stroke="#000"
+            strokeWidth={svgSize * 0.02}
+            strokeLinecap="round"
+          />
+          <line
+            x1={rightEyeX - eyeRadius}
+            y1={eyeY}
+            x2={rightEyeX + eyeRadius}
+            y2={eyeY}
+            stroke="#000"
+            strokeWidth={svgSize * 0.02}
+            strokeLinecap="round"
+          />
+        </>
+      );
+    }
+
+    switch (emotion) {
+      case 'happy':
+        // Happy eyes - curved arcs (^_^)
+        return (
+          <>
+            <path
+              d={`M ${leftEyeX - eyeRadius} ${eyeY} Q ${leftEyeX} ${eyeY - eyeRadius * 0.8} ${leftEyeX + eyeRadius} ${eyeY}`}
+              stroke="#000"
+              strokeWidth={svgSize * 0.025}
+              fill="none"
+              strokeLinecap="round"
+            />
+            <path
+              d={`M ${rightEyeX - eyeRadius} ${eyeY} Q ${rightEyeX} ${eyeY - eyeRadius * 0.8} ${rightEyeX + eyeRadius} ${eyeY}`}
+              stroke="#000"
+              strokeWidth={svgSize * 0.025}
+              fill="none"
+              strokeLinecap="round"
+            />
+          </>
+        );
+
+      case 'thinking':
+        // Eyes looking to the side
+        return (
+          <>
+            <circle cx={leftEyeX} cy={eyeY} r={eyeRadius} fill="#fff" stroke="#000" strokeWidth={svgSize * 0.015} />
+            <circle cx={leftEyeX + pupilRadius} cy={eyeY} r={pupilRadius} fill="#000" />
+            <circle cx={leftEyeX + pupilRadius * 0.5} cy={eyeY - pupilRadius * 0.3} r={svgSize * 0.015} fill="#fff" />
+            
+            <circle cx={rightEyeX} cy={eyeY} r={eyeRadius} fill="#fff" stroke="#000" strokeWidth={svgSize * 0.015} />
+            <circle cx={rightEyeX + pupilRadius} cy={eyeY} r={pupilRadius} fill="#000" />
+            <circle cx={rightEyeX + pupilRadius * 0.5} cy={eyeY - pupilRadius * 0.3} r={svgSize * 0.015} fill="#fff" />
+          </>
+        );
+
+      case 'confused':
+        // Spiral/dizzy eyes
+        return (
+          <>
+            <path
+              d={`M ${leftEyeX} ${eyeY} m -${eyeRadius * 0.8} 0 a ${eyeRadius * 0.8} ${eyeRadius * 0.8} 0 1 1 ${eyeRadius * 1.6} 0 a ${eyeRadius * 0.5} ${eyeRadius * 0.5} 0 1 1 -${eyeRadius} 0`}
+              stroke="#000"
+              strokeWidth={svgSize * 0.02}
+              fill="none"
+            />
+            <path
+              d={`M ${rightEyeX} ${eyeY} m -${eyeRadius * 0.8} 0 a ${eyeRadius * 0.8} ${eyeRadius * 0.8} 0 1 1 ${eyeRadius * 1.6} 0 a ${eyeRadius * 0.5} ${eyeRadius * 0.5} 0 1 1 -${eyeRadius} 0`}
+              stroke="#000"
+              strokeWidth={svgSize * 0.02}
+              fill="none"
+            />
+          </>
+        );
+
+      case 'error':
+        // Narrowed/angry eyes
+        return (
+          <>
+            <line
+              x1={leftEyeX - eyeRadius}
+              y1={eyeY + eyeRadius * 0.3}
+              x2={leftEyeX + eyeRadius}
+              y2={eyeY - eyeRadius * 0.3}
+              stroke="#000"
+              strokeWidth={svgSize * 0.025}
+              strokeLinecap="round"
+            />
+            <line
+              x1={rightEyeX - eyeRadius}
+              y1={eyeY - eyeRadius * 0.3}
+              x2={rightEyeX + eyeRadius}
+              y2={eyeY + eyeRadius * 0.3}
+              stroke="#000"
+              strokeWidth={svgSize * 0.025}
+              strokeLinecap="round"
+            />
+          </>
+        );
+
+      case 'working':
+        // Focused eyes
+        return (
+          <>
+            <circle cx={leftEyeX} cy={eyeY} r={eyeRadius} fill="#fff" stroke="#000" strokeWidth={svgSize * 0.015} />
+            <circle cx={leftEyeX} cy={eyeY} r={pupilRadius} fill="#000" />
+            <circle cx={leftEyeX - pupilRadius * 0.3} cy={eyeY - pupilRadius * 0.3} r={svgSize * 0.015} fill="#fff" />
+            
+            <circle cx={rightEyeX} cy={eyeY} r={eyeRadius} fill="#fff" stroke="#000" strokeWidth={svgSize * 0.015} />
+            <circle cx={rightEyeX} cy={eyeY} r={pupilRadius} fill="#000" />
+            <circle cx={rightEyeX - pupilRadius * 0.3} cy={eyeY - pupilRadius * 0.3} r={svgSize * 0.015} fill="#fff" />
+          </>
+        );
+
+      default:
+        // Normal round eyes with pupils
+        return (
+          <>
+            <circle cx={leftEyeX} cy={eyeY} r={eyeRadius} fill="#fff" stroke="#000" strokeWidth={svgSize * 0.015} />
+            <circle cx={leftEyeX} cy={eyeY} r={pupilRadius} fill="#000" />
+            <circle cx={leftEyeX - pupilRadius * 0.3} cy={eyeY - pupilRadius * 0.3} r={svgSize * 0.015} fill="#fff" />
+            
+            <circle cx={rightEyeX} cy={eyeY} r={eyeRadius} fill="#fff" stroke="#000" strokeWidth={svgSize * 0.015} />
+            <circle cx={rightEyeX} cy={eyeY} r={pupilRadius} fill="#000" />
+            <circle cx={rightEyeX - pupilRadius * 0.3} cy={eyeY - pupilRadius * 0.3} r={svgSize * 0.015} fill="#fff" />
+          </>
+        );
+    }
+  };
+
+  // Eyebrow configurations
+  const renderEyebrows = () => {
+    const browY = centerY - svgSize * 0.18;
+    const leftBrowX = centerX - svgSize * 0.12;
+    const rightBrowX = centerX + svgSize * 0.12;
+    const browWidth = svgSize * 0.1;
+
+    switch (emotion) {
+      case 'happy':
+        // Slightly raised
+        return (
+          <>
+            <path
+              d={`M ${leftBrowX - browWidth} ${browY} Q ${leftBrowX} ${browY - svgSize * 0.02} ${leftBrowX + browWidth} ${browY}`}
+              stroke="#C8A000"
+              strokeWidth={svgSize * 0.02}
+              fill="none"
+              strokeLinecap="round"
+            />
+            <path
+              d={`M ${rightBrowX - browWidth} ${browY} Q ${rightBrowX} ${browY - svgSize * 0.02} ${rightBrowX + browWidth} ${browY}`}
+              stroke="#C8A000"
+              strokeWidth={svgSize * 0.02}
+              fill="none"
+              strokeLinecap="round"
+            />
+          </>
+        );
+
+      case 'error':
+        // Furrowed/angled down
+        return (
+          <>
+            <line
+              x1={leftBrowX - browWidth}
+              y1={browY + svgSize * 0.02}
+              x2={leftBrowX + browWidth}
+              y2={browY - svgSize * 0.02}
+              stroke="#C8A000"
+              strokeWidth={svgSize * 0.025}
+              strokeLinecap="round"
+            />
+            <line
+              x1={rightBrowX - browWidth}
+              y1={browY - svgSize * 0.02}
+              x2={rightBrowX + browWidth}
+              y2={browY + svgSize * 0.02}
+              stroke="#C8A000"
+              strokeWidth={svgSize * 0.025}
+              strokeLinecap="round"
+            />
+          </>
+        );
+
+      case 'confused':
+        // Raised high
+        return (
+          <>
+            <path
+              d={`M ${leftBrowX - browWidth} ${browY - svgSize * 0.03} Q ${leftBrowX} ${browY - svgSize * 0.05} ${leftBrowX + browWidth} ${browY - svgSize * 0.03}`}
+              stroke="#C8A000"
+              strokeWidth={svgSize * 0.02}
+              fill="none"
+              strokeLinecap="round"
+            />
+            <path
+              d={`M ${rightBrowX - browWidth} ${browY - svgSize * 0.03} Q ${rightBrowX} ${browY - svgSize * 0.05} ${rightBrowX + browWidth} ${browY - svgSize * 0.03}`}
+              stroke="#C8A000"
+              strokeWidth={svgSize * 0.02}
+              fill="none"
+              strokeLinecap="round"
+            />
+          </>
+        );
+
+      case 'thinking':
+        // One raised
+        return (
+          <>
+            <path
+              d={`M ${leftBrowX - browWidth} ${browY} Q ${leftBrowX} ${browY} ${leftBrowX + browWidth} ${browY}`}
+              stroke="#C8A000"
+              strokeWidth={svgSize * 0.02}
+              fill="none"
+              strokeLinecap="round"
+            />
+            <path
+              d={`M ${rightBrowX - browWidth} ${browY - svgSize * 0.03} Q ${rightBrowX} ${browY - svgSize * 0.05} ${rightBrowX + browWidth} ${browY - svgSize * 0.03}`}
+              stroke="#C8A000"
+              strokeWidth={svgSize * 0.02}
+              fill="none"
+              strokeLinecap="round"
+            />
+          </>
+        );
+
+      default:
+        // Neutral
+        return (
+          <>
+            <path
+              d={`M ${leftBrowX - browWidth} ${browY} Q ${leftBrowX} ${browY - svgSize * 0.01} ${leftBrowX + browWidth} ${browY}`}
+              stroke="#C8A000"
+              strokeWidth={svgSize * 0.02}
+              fill="none"
+              strokeLinecap="round"
+            />
+            <path
+              d={`M ${rightBrowX - browWidth} ${browY} Q ${rightBrowX} ${browY - svgSize * 0.01} ${rightBrowX + browWidth} ${browY}`}
+              stroke="#C8A000"
+              strokeWidth={svgSize * 0.02}
+              fill="none"
+              strokeLinecap="round"
+            />
+          </>
+        );
+    }
+  };
+
+  // Mouth configurations
+  const renderMouth = () => {
+    const mouthY = centerY + svgSize * 0.15;
+    const mouthWidth = svgSize * 0.15;
+
+    switch (emotion) {
+      case 'happy':
+      case 'working':
+        // Smile arc
+        return (
+          <path
+            d={`M ${centerX - mouthWidth} ${mouthY} Q ${centerX} ${mouthY + svgSize * 0.08} ${centerX + mouthWidth} ${mouthY}`}
+            stroke="#000"
+            strokeWidth={svgSize * 0.02}
+            fill="none"
+            strokeLinecap="round"
+          />
+        );
+
+      case 'thinking':
+        // Small line
+        return (
+          <line
+            x1={centerX - mouthWidth * 0.6}
+            y1={mouthY}
+            x2={centerX + mouthWidth * 0.6}
+            y2={mouthY}
+            stroke="#000"
+            strokeWidth={svgSize * 0.02}
+            strokeLinecap="round"
+          />
+        );
+
+      case 'confused':
+        // Wavy line
+        return (
+          <path
+            d={`M ${centerX - mouthWidth} ${mouthY} Q ${centerX - mouthWidth * 0.5} ${mouthY + svgSize * 0.03} ${centerX} ${mouthY} Q ${centerX + mouthWidth * 0.5} ${mouthY - svgSize * 0.03} ${centerX + mouthWidth} ${mouthY}`}
+            stroke="#000"
+            strokeWidth={svgSize * 0.02}
+            fill="none"
+            strokeLinecap="round"
+          />
+        );
+
+      case 'error':
+        // Frown arc
+        return (
+          <path
+            d={`M ${centerX - mouthWidth} ${mouthY + svgSize * 0.05} Q ${centerX} ${mouthY - svgSize * 0.03} ${centerX + mouthWidth} ${mouthY + svgSize * 0.05}`}
+            stroke="#000"
+            strokeWidth={svgSize * 0.02}
+            fill="none"
+            strokeLinecap="round"
+          />
+        );
+
+      default:
+        // Neutral
+        return (
+          <line
+            x1={centerX - mouthWidth * 0.6}
+            y1={mouthY}
+            x2={centerX + mouthWidth * 0.6}
+            y2={mouthY}
+            stroke="#000"
+            strokeWidth={svgSize * 0.02}
+            strokeLinecap="round"
+          />
+        );
+    }
+  };
+
+  // Extra accessories
+  const renderAccessories = () => {
+    switch (emotion) {
+      case 'thinking':
+        // Thought bubble
+        return (
+          <g>
+            <circle cx={centerX + svgSize * 0.3} cy={centerY - svgSize * 0.25} r={svgSize * 0.12} fill="#fff" stroke="#999" strokeWidth={svgSize * 0.015} />
+            <text
+              x={centerX + svgSize * 0.3}
+              y={centerY - svgSize * 0.2}
+              textAnchor="middle"
+              fontSize={svgSize * 0.15}
+              fontWeight="bold"
+              fill="#666"
+            >
+              ?
+            </text>
+            <circle cx={centerX + svgSize * 0.22} cy={centerY - svgSize * 0.12} r={svgSize * 0.03} fill="#fff" stroke="#999" strokeWidth={svgSize * 0.01} />
+            <circle cx={centerX + svgSize * 0.18} cy={centerY - svgSize * 0.05} r={svgSize * 0.02} fill="#fff" stroke="#999" strokeWidth={svgSize * 0.01} />
+          </g>
+        );
+
+      case 'working':
+        // Tool prop (wrench)
+        return (
+          <g>
+            <rect
+              x={centerX + svgSize * 0.25}
+              y={centerY + svgSize * 0.05}
+              width={svgSize * 0.05}
+              height={svgSize * 0.15}
+              fill="#888"
+              rx={svgSize * 0.01}
+            />
+            <rect
+              x={centerX + svgSize * 0.23}
+              y={centerY + svgSize * 0.17}
+              width={svgSize * 0.09}
+              height={svgSize * 0.06}
+              fill="#666"
+              rx={svgSize * 0.01}
+            />
+          </g>
+        );
+
+      case 'confused':
+        // Question mark
+        return (
+          <text
+            x={centerX + svgSize * 0.3}
+            y={centerY - svgSize * 0.15}
+            textAnchor="middle"
+            fontSize={svgSize * 0.2}
+            fontWeight="bold"
+            fill="#666"
+          >
+            ?
+          </text>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
-    <canvas
-      ref={canvasRef}
-      className={cn("lemon-mascot", className)}
+    <svg
+      ref={svgRef}
+      width={svgSize}
+      height={svgSize}
+      viewBox={`0 0 ${svgSize} ${svgSize}`}
+      className={cn("lemon-mascot transition-all duration-300", className)}
       style={{ display: 'block' }}
-    />
+    >
+      {/* Gradient definitions */}
+      <defs>
+        <radialGradient id={`lemonGradient-${size}`}>
+          <stop offset="0%" stopColor="#FFF8DC" />
+          <stop offset="40%" stopColor={getBodyColor()} />
+          <stop offset="100%" stopColor="#D4AF37" />
+        </radialGradient>
+        
+        <filter id={`glow-${size}`}>
+          <feGaussianBlur stdDeviation={emotion === 'idle' ? '2' : '0'} result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+
+      {/* Main group with breathing animation */}
+      <g transform={`translate(${centerX}, ${centerY}) scale(${breathScale}) translate(${-centerX}, ${-centerY})`}>
+        {/* Left arm (behind body) */}
+        <path
+          d={`M ${centerX - svgSize * 0.25} ${centerY} Q ${centerX - svgSize * 0.3} ${centerY + svgSize * 0.1} ${centerX - svgSize * 0.35} ${centerY + svgSize * 0.05}`}
+          stroke="#FFD700"
+          strokeWidth={svgSize * 0.04}
+          fill="none"
+          strokeLinecap="round"
+          transform={`rotate(${leftArmAngle}, ${centerX - svgSize * 0.25}, ${centerY})`}
+          style={{ transition: 'all 0.1s ease-out' }}
+        />
+        <circle
+          cx={centerX - svgSize * 0.35}
+          cy={centerY + svgSize * 0.05}
+          r={svgSize * 0.03}
+          fill="#FFD700"
+          transform={`rotate(${leftArmAngle}, ${centerX - svgSize * 0.25}, ${centerY})`}
+          style={{ transition: 'all 0.1s ease-out' }}
+        />
+
+        {/* Lemon body with gradient and segments */}
+        <ellipse
+          cx={centerX}
+          cy={centerY}
+          rx={svgSize * 0.3}
+          ry={svgSize * 0.35}
+          fill={`url(#lemonGradient-${size})`}
+          filter={emotion === 'idle' ? `url(#glow-${size})` : undefined}
+        />
+
+        {/* Citrus segments */}
+        {[...Array(8)].map((_, i) => {
+          const angle = (Math.PI * 2 / 8) * i;
+          const x1 = centerX;
+          const y1 = centerY;
+          const x2 = centerX + Math.cos(angle) * svgSize * 0.3;
+          const y2 = centerY + Math.sin(angle) * svgSize * 0.35;
+          return (
+            <line
+              key={`segment-${i}`}
+              x1={x1}
+              y1={y1}
+              x2={x2}
+              y2={y2}
+              stroke="rgba(200, 180, 0, 0.2)"
+              strokeWidth={svgSize * 0.01}
+            />
+          );
+        })}
+
+        {/* Highlight on body */}
+        <ellipse
+          cx={centerX - svgSize * 0.08}
+          cy={centerY - svgSize * 0.1}
+          rx={svgSize * 0.12}
+          ry={svgSize * 0.08}
+          fill="rgba(255, 255, 255, 0.3)"
+        />
+
+        {/* Right arm (behind body) */}
+        <path
+          d={`M ${centerX + svgSize * 0.25} ${centerY} Q ${centerX + svgSize * 0.3} ${centerY + svgSize * 0.1} ${centerX + svgSize * 0.35} ${centerY + svgSize * 0.05}`}
+          stroke="#FFD700"
+          strokeWidth={svgSize * 0.04}
+          fill="none"
+          strokeLinecap="round"
+          transform={`rotate(${rightArmAngle}, ${centerX + svgSize * 0.25}, ${centerY})`}
+          style={{ transition: 'all 0.1s ease-out' }}
+        />
+        <circle
+          cx={centerX + svgSize * 0.35}
+          cy={centerY + svgSize * 0.05}
+          r={svgSize * 0.03}
+          fill="#FFD700"
+          transform={`rotate(${rightArmAngle}, ${centerX + svgSize * 0.25}, ${centerY})`}
+          style={{ transition: 'all 0.1s ease-out' }}
+        />
+
+        {/* Eyebrows */}
+        <g style={{ transition: 'all 0.3s ease-in-out' }}>
+          {renderEyebrows()}
+        </g>
+
+        {/* Eyes */}
+        <g style={{ transition: 'all 0.3s ease-in-out' }}>
+          {renderEyes()}
+        </g>
+
+        {/* Mouth */}
+        <g style={{ transition: 'all 0.3s ease-in-out' }}>
+          {renderMouth()}
+        </g>
+
+        {/* Accessories */}
+        {renderAccessories()}
+
+        {/* Sparkles for happy emotion */}
+        {sparkles.map((sparkle, i) => (
+          <g
+            key={`sparkle-${i}`}
+            transform={`translate(${sparkle.x}, ${sparkle.y}) scale(${sparkle.scale}) rotate(${sparkle.rotation})`}
+            opacity={sparkle.opacity}
+            style={{ transition: 'opacity 1s ease-out' }}
+          >
+            <path
+              d={`M 0 -${svgSize * 0.04} L ${svgSize * 0.01} -${svgSize * 0.01} L ${svgSize * 0.04} 0 L ${svgSize * 0.01} ${svgSize * 0.01} L 0 ${svgSize * 0.04} L -${svgSize * 0.01} ${svgSize * 0.01} L -${svgSize * 0.04} 0 L -${svgSize * 0.01} -${svgSize * 0.01} Z`}
+              fill={sparkle.color}
+            />
+          </g>
+        ))}
+      </g>
+    </svg>
   );
 }
