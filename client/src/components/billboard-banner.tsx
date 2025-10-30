@@ -153,60 +153,46 @@ export function BillboardBanner({
         </div>
       )}
 
-      {/* Main content */}
-      <div className="relative p-6 md:p-8 flex items-center gap-4 md:gap-6">
-        {/* Animated icon */}
+      {/* Main content - Compact mobile, full desktop */}
+      <div className="relative p-2 md:p-8 flex items-center gap-2 md:gap-6">
+        {/* Animated icon - smaller on mobile */}
         <div className={cn(
-          "shrink-0 w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center",
-          "bg-background/80 backdrop-blur-sm border-2",
+          "shrink-0 w-8 h-8 md:w-16 md:h-16 rounded-lg md:rounded-xl flex items-center justify-center",
+          "bg-background/80 backdrop-blur-sm border md:border-2",
           colors.border,
           animated && "animate-bounce"
         )}>
-          <Icon className={cn("w-6 h-6 md:w-8 md:h-8", colors.icon)} />
+          <Icon className={cn("w-4 h-4 md:w-8 md:h-8", colors.icon)} />
         </div>
 
-        {/* Text content */}
+        {/* Text content - minimal on mobile */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-lg md:text-2xl font-bold mb-1 md:mb-2 flex items-center gap-2">
+          <h3 className="text-xs md:text-2xl font-bold mb-0 md:mb-2 flex items-center gap-1 md:gap-2">
             {title}
-            {type === 'celebration' && <Zap className={cn("w-5 h-5 animate-pulse", colors.icon)} />}
+            {type === 'celebration' && <Zap className={cn("w-3 h-3 md:w-5 md:h-5 animate-pulse", colors.icon)} />}
           </h3>
-          <p className="text-sm md:text-base text-muted-foreground">
+          <p className="hidden md:block text-sm md:text-base text-muted-foreground">
             {description}
           </p>
         </div>
 
-        {/* CTA Button */}
+        {/* CTA Button - use size="lg" for proper touch targets */}
         {ctaText && (
-          <div className="shrink-0">
-            <Button
-              variant="default"
-              size="lg"
-              className={cn(
-                "hidden md:flex font-bold",
-                animated && "hover:scale-105 transition-transform"
-              )}
-              onClick={() => ctaLink && (window.location.href = ctaLink)}
-              data-testid="button-billboard-cta"
-            >
-              {ctaText}
-            </Button>
-            <Button
-              variant="default"
-              size="sm"
-              className={cn(
-                "md:hidden font-semibold",
-                animated && "hover:scale-105 transition-transform"
-              )}
-              onClick={() => ctaLink && (window.location.href = ctaLink)}
-              data-testid="button-billboard-cta-mobile"
-            >
-              {ctaText}
-            </Button>
-          </div>
+          <Button
+            variant="default"
+            size="lg"
+            className={cn(
+              "shrink-0 text-xs md:text-base font-semibold md:font-bold",
+              animated && "hover:scale-105 transition-transform"
+            )}
+            onClick={() => ctaLink && (window.location.href = ctaLink)}
+            data-testid="button-billboard-cta"
+          >
+            {ctaText}
+          </Button>
         )}
 
-        {/* Dismiss button */}
+        {/* Dismiss button - size="icon" is default 36px (acceptable for non-primary actions) */}
         {dismissible && (
           <Button
             variant="ghost"
@@ -219,20 +205,6 @@ export function BillboardBanner({
           </Button>
         )}
       </div>
-
-      {/* Mobile CTA (full width at bottom) */}
-      {ctaText && (
-        <div className="md:hidden px-6 pb-6">
-          <Button
-            variant="default"
-            className="w-full font-semibold"
-            onClick={() => ctaLink && (window.location.href = ctaLink)}
-            data-testid="button-billboard-cta-full"
-          >
-            {ctaText}
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
