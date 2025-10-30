@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { AgentTaskList, type AgentTask } from "./agent-task-list";
 import { AgentProgressDisplay } from "./agent-progress-display";
 import { MarkdownRenderer } from "./markdown-renderer";
-import { Lumo3DAvatar } from "./lumo-3d-avatar";
+import { LumoPixelAvatar } from "./lumo-pixel-avatar";
 
 interface Attachment {
   fileName: string;
@@ -807,7 +807,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                 <div className="flex justify-center mb-4 md:mb-6">
                   {/* Responsive: medium on mobile, large on desktop */}
                   <div className="block md:hidden">
-                    <Lumo3DAvatar 
+                    <LumoPixelAvatar 
                       emotion={progressStatus === 'idle' ? 'happy' : progressStatus as any} 
                       size="medium" 
                       showBackground={true}
@@ -815,7 +815,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
                     />
                   </div>
                   <div className="hidden md:block">
-                    <Lumo3DAvatar 
+                    <LumoPixelAvatar 
                       emotion={progressStatus === 'idle' ? 'happy' : progressStatus as any} 
                       size="large" 
                       showBackground={true}
@@ -846,7 +846,7 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
               >
                 {message.role === "assistant" && (
                   <div className="flex-shrink-0">
-                    <Lumo3DAvatar 
+                    <LumoPixelAvatar 
                       emotion={
                         progressStatus === 'thinking' ? 'thinking' : 
                         progressStatus === 'working' ? 'working' : 
