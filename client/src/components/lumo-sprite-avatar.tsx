@@ -239,9 +239,11 @@ export function LumoSpriteAvatar({
   }, [showBackground, theme.particleCount]);
 
   // Calculate sprite position
+  // Background is 800% x 300% (8 columns x 3 rows)
+  // Each frame move is -100% in both directions
   const frame = SPRITE_FRAMES[currentFrame];
-  const spriteX = frame.x * -12.5; // 100% / 8 columns = 12.5%
-  const spriteY = frame.y * -33.33; // 100% / 3 rows = 33.33%
+  const spriteX = frame.x * -100; // Column 0 = 0%, Column 1 = -100%, etc.
+  const spriteY = frame.y * -100; // Row 0 = 0%, Row 1 = -100%, etc.
 
   return (
     <div 
