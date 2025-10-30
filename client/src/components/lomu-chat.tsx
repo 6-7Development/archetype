@@ -806,16 +806,9 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
             {messages.length === 0 && !isStreaming && (
               <div className="text-center py-6 md:py-8 animate-in fade-in-up duration-700">
                 <div className="flex justify-center mb-4 md:mb-6">
-                  {/* Responsive: medium on mobile, large on desktop */}
-                  <LemonMascot 
-                    emotion={progressStatus === 'idle' ? 'happy' : progressStatus as any} 
-                    size="medium"
-                    className="md:hidden"
-                  />
                   <LemonMascot 
                     emotion={progressStatus === 'idle' ? 'happy' : progressStatus as any} 
                     size="large"
-                    className="hidden md:block"
                   />
                 </div>
                 <h3 className="text-lg md:text-2xl font-bold mb-1 md:mb-2 px-2">Meet Lumo!</h3>

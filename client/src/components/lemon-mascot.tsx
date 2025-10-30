@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 interface LemonMascotProps {
@@ -7,23 +7,61 @@ interface LemonMascotProps {
   className?: string;
 }
 
-interface Sparkle {
+interface Particle {
   x: number;
   y: number;
-  scale: number;
-  opacity: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+  emoji: string;
   rotation: number;
-  color: string;
 }
 
+const COLOR_PALETTES = {
+  happy: {
+    lemon1: '#FFE46B',
+    lemon2: '#F6BF2A',
+    cap1: '#1AA13B',
+    cap2: '#0E7A2C',
+    red1: '#D94A2C',
+    red2: '#9C2817',
+    glass: '#A82A1B',
+    pupil: '#FFD77A',
+    shine: '#FFFFFF',
+  },
+  excited: {
+    lemon1: '#FFF07A',
+    lemon2: '#F6C43A',
+    cap1: '#28B34A',
+    cap2: '#138B38',
+    red1: '#E35733',
+    red2: '#A02C1A',
+    glass: '#B63020',
+    pupil: '#FFE890',
+    shine: '#FFFFFF',
+  },
+  annoyed: {
+    lemon1: '#E9D068',
+    lemon2: '#DBAB2D',
+    cap1: '#14823A',
+    cap2: '#0B5E29',
+    red1: '#B73E28',
+    red2: '#7D2213',
+    glass: '#7C1C10',
+    pupil: '#D4B854',
+    shine: '#DCDCDC',
+  },
+};
+
 export function LemonMascot({ emotion = 'idle', size = 'medium', className }: LemonMascotProps) {
-  const svgRef = useRef<SVGSVGElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
-  const [isBlinking, setIsBlinking] = useState(false);
-  const [breathScale, setBreathScale] = useState(1);
-  const [leftArmAngle, setLeftArmAngle] = useState(-25);
-  const [rightArmAngle, setRightArmAngle] = useState(25);
-  const [sparkles, setSparkles] = useState<Sparkle[]>([]);
+  const particlesRef = useRef<Particle[]>([]);
+  const blinkingRef = useRef(false);
+  const blinkTimerRef = useRef(0);
+  const nextBlinkRef = useRef(0);
+  const eyelidRef = useRef(1);
 
   const sizeMap = {
     small: 64,
@@ -31,762 +69,333 @@ export function LemonMascot({ emotion = 'idle', size = 'medium', className }: Le
     large: 192,
   };
 
-  const svgSize = sizeMap[size];
-  const centerX = svgSize / 2;
-  const centerY = svgSize / 2;
+  const canvasSize = sizeMap[size];
 
-  // Emotion-specific colors
-  const getBodyColor = () => {
-    switch (emotion) {
-      case 'error':
-        return '#FFB3B3';
-      case 'working':
-        return '#FFD700';
-      case 'happy':
-        return '#FFE600';
-      default:
-        return '#FFE600';
-    }
-  };
-
-  // Blinking animation
   useEffect(() => {
-    const blinkInterval = setInterval(() => {
-      if (Math.random() > 0.7) {
-        setIsBlinking(true);
-        setTimeout(() => setIsBlinking(false), 150);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let lastTime = performance.now();
+    nextBlinkRef.current = performance.now() + 1200 + Math.random() * 3000;
+
+    const getPalette = () => {
+      if (emotion === 'happy' || emotion === 'thinking' || emotion === 'idle') {
+        return COLOR_PALETTES.happy;
+      } else if (emotion === 'working') {
+        return COLOR_PALETTES.excited;
+      } else {
+        return COLOR_PALETTES.annoyed;
       }
-    }, 3000);
+    };
 
-    return () => clearInterval(blinkInterval);
-  }, []);
+    const addParticles = (emoji: string) => {
+      for (let i = 0; i < 12; i++) {
+        particlesRef.current.push({
+          x: canvasSize / 2,
+          y: canvasSize * 0.48,
+          vx: (Math.random() - 0.5) * 1.5,
+          vy: -Math.random() * 1.8 - 1.2,
+          life: 1,
+          maxLife: 1,
+          emoji,
+          rotation: (Math.random() - 0.5) * 0.3,
+        });
+      }
+    };
 
-  // Breathing and arm animation
-  useEffect(() => {
-    let startTime = Date.now();
+    const updateParticles = (dt: number) => {
+      for (let i = particlesRef.current.length - 1; i >= 0; i--) {
+        const p = particlesRef.current[i];
+        p.vy += 0.8 * dt;
+        p.x += p.vx * 50 * dt;
+        p.y += p.vy * 50 * dt;
+        p.life -= dt / p.maxLife;
+        if (p.life <= 0) {
+          particlesRef.current.splice(i, 1);
+        }
+      }
+    };
 
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
+    const drawParticles = (time: number) => {
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (const p of particlesRef.current) {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation * time * 0.001);
+        ctx.globalAlpha = Math.max(p.life, 0);
+        ctx.font = `${canvasSize * 0.18}px system-ui`;
+        ctx.fillText(p.emoji, 0, 0);
+        ctx.restore();
+      }
+      ctx.restore();
+    };
 
-      // Breathing animation (1.0 to 1.02 scale)
-      const breathPhase = elapsed * 0.001;
-      const newBreathScale = 1 + Math.sin(breathPhase) * 0.01;
-      setBreathScale(newBreathScale);
+    const drawRoundedLemon = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, palette: typeof COLOR_PALETTES.happy) => {
+      const bodyGradient = ctx.createRadialGradient(x, y - r * 0.3, r * 0.2, x, y, r + 20);
+      bodyGradient.addColorStop(0, palette.lemon1);
+      bodyGradient.addColorStop(1, palette.lemon2);
+      ctx.fillStyle = bodyGradient;
 
-      // Arm wave animation (independent arms)
-      const armPhase = elapsed * 0.002;
-      const newLeftArmAngle = -25 + Math.sin(armPhase) * 15;
-      const newRightArmAngle = 25 + Math.sin(armPhase + Math.PI) * 15;
-      setLeftArmAngle(newLeftArmAngle);
-      setRightArmAngle(newRightArmAngle);
+      ctx.beginPath();
+      ctx.ellipse(x, y - 10, r * 0.95, r * 0.85, 0, 0, Math.PI * 2);
+      ctx.moveTo(x, y + r * 0.85 - 10);
+      ctx.quadraticCurveTo(x + 10, y + r * 0.95, x, y + r * 1.07);
+      ctx.quadraticCurveTo(x - 10, y + r * 0.95, x, y + r * 0.85 - 10);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+      ctx.beginPath();
+      ctx.arc(x - r * 0.33, y - r * 0.47, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x + r * 0.27, y - r * 0.6, 6, 0, Math.PI * 2);
+      ctx.fill();
+    };
+
+    const drawLeafCap = (ctx: CanvasRenderingContext2D, x: number, y: number, palette: typeof COLOR_PALETTES.happy, swayAngle: number) => {
+      const capGradient = ctx.createLinearGradient(x, y - 150, x, y - 20);
+      capGradient.addColorStop(0, palette.cap1);
+      capGradient.addColorStop(1, palette.cap2);
+      ctx.fillStyle = capGradient;
+      ctx.beginPath();
+      ctx.ellipse(x, y - 125, 130, 80, 0, 0, Math.PI, true);
+      ctx.fill();
+
+      ctx.fillStyle = '#0c5a24';
+      ctx.fillRect(x + 10, y - 190, 18, 45);
+
+      ctx.save();
+      ctx.translate(x + 20, y - 190);
+      ctx.rotate(-0.3 + swayAngle);
+      ctx.fillStyle = '#25a542';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(70, -25, 120, 0);
+      ctx.quadraticCurveTo(70, 25, 0, 0);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
+      ctx.beginPath();
+      ctx.ellipse(x + 40, y - 150, 60, 20, 0, 0, Math.PI * 2);
+      ctx.fill();
+    };
+
+    const roundRect = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) => {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    };
+
+    const drawGoggle = (ctx: CanvasRenderingContext2D, x: number, y: number, palette: typeof COLOR_PALETTES.happy) => {
+      ctx.save();
+      ctx.translate(x, y);
+      
+      ctx.fillStyle = palette.red1;
+      roundRect(ctx, -60, -45, 120, 90, 30);
+      ctx.fill();
+      
+      ctx.strokeStyle = palette.red2;
+      ctx.lineWidth = 6;
+      roundRect(ctx, -60, -45, 120, 90, 30);
+      ctx.stroke();
+      
+      ctx.restore();
+    };
+
+    const drawEye = (ctx: CanvasRenderingContext2D, x: number, y: number, palette: typeof COLOR_PALETTES.happy, eyelidOpen: number) => {
+      ctx.save();
+      ctx.translate(x, y);
+
+      ctx.fillStyle = palette.glass;
+      roundRect(ctx, -48, -33, 96, 66, 26);
+      ctx.fill();
+
+      if (eyelidOpen > 0.1) {
+        const sz = (emotion === 'error' || emotion === 'confused') ? 10 : 14;
+        ctx.fillStyle = palette.pupil;
+        ctx.beginPath();
+        ctx.arc(-10, -2, sz, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = palette.shine;
+        ctx.beginPath();
+        ctx.arc(4, -12, 6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      if (eyelidOpen < 1) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'source-atop';
+        ctx.fillStyle = '#0d0f14';
+        const h = (1 - eyelidOpen) * 70;
+        ctx.fillRect(-60, -45, 120, h);
+        ctx.restore();
+      }
+      
+      ctx.restore();
+    };
+
+    const drawMouth = (ctx: CanvasRenderingContext2D, x: number, y: number, time: number) => {
+      ctx.save();
+      ctx.translate(x, y + 70);
+      
+      const base = '#7a1e08';
+      const inner = '#ee6b31';
+
+      if (emotion === 'working') {
+        const s = (Math.sin(time * 0.02) + 1) / 2;
+        const w = 30 + s * 30;
+        const h = 10 + s * 30;
+        const r = h * 0.6;
+        
+        ctx.fillStyle = base;
+        roundRect(ctx, -w / 2, -h / 2, w, h, r);
+        ctx.fill();
+        
+        ctx.fillStyle = inner;
+        roundRect(ctx, -w / 2 + 8, -h / 2 + h * 0.35, w - 16, h * 0.5, h * 0.25);
+        ctx.fill();
+      } else if (emotion === 'happy' || emotion === 'idle') {
+        ctx.fillStyle = base;
+        roundRect(ctx, -55, -16, 110, 32, 24);
+        ctx.fill();
+        
+        ctx.fillStyle = inner;
+        roundRect(ctx, -47, -8, 94, 16, 12);
+        ctx.fill();
+      } else if (emotion === 'error' || emotion === 'confused') {
+        ctx.fillStyle = base;
+        ctx.beginPath();
+        ctx.ellipse(0, 10, 46, 16, 0, Math.PI, 0, true);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = base;
+        ctx.fillRect(-26, -4, 52, 8);
+      }
+      
+      ctx.restore();
+    };
+
+    const drawArm = (ctx: CanvasRenderingContext2D, x: number, y: number, angle: number, palette: typeof COLOR_PALETTES.happy) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle * Math.PI / 180);
+      
+      ctx.strokeStyle = palette.lemon2;
+      ctx.lineWidth = canvasSize * 0.06;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(-canvasSize * 0.07, canvasSize * 0.13, -canvasSize * 0.13, canvasSize * 0.15);
+      ctx.stroke();
+      
+      ctx.fillStyle = '#B8860B';
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = canvasSize * 0.01;
+      ctx.beginPath();
+      ctx.arc(-canvasSize * 0.13, canvasSize * 0.15, canvasSize * 0.045, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      
+      ctx.restore();
+    };
+
+    const animate = (now: number) => {
+      const dt = (now - lastTime) / 1000;
+      lastTime = now;
+
+      if (now > nextBlinkRef.current && !blinkingRef.current) {
+        blinkingRef.current = true;
+        eyelidRef.current = 1;
+        blinkTimerRef.current = now;
+      }
+
+      if (blinkingRef.current) {
+        const elapsed = now - blinkTimerRef.current;
+        const dur = 240;
+        const p = Math.min(1, elapsed / dur);
+        eyelidRef.current = p < 0.5 ? 1 - p * 2 : (p - 0.5) * 2;
+        if (p >= 1) {
+          blinkingRef.current = false;
+          nextBlinkRef.current = now + 1200 + Math.random() * 3000;
+        }
+      }
+
+      const palette = getPalette();
+      const cx = canvasSize / 2;
+      const cy = canvasSize * 0.55;
+      const r = canvasSize * 0.23;
+
+      const breathe = Math.sin(now * 0.0025) * 0.02;
+      const bounce = emotion === 'working' ? Math.max(0, Math.sin(now * 0.009)) * 8 : 0;
+      const swayAngle = Math.sin(now * 0.004) * 0.15;
+      const leftArmAngle = -25 + Math.sin(now * 0.002) * 15;
+      const rightArmAngle = 25 + Math.sin(now * 0.002 + Math.PI) * 15;
+
+      ctx.clearRect(0, 0, canvasSize, canvasSize);
+
+      ctx.save();
+      ctx.translate(cx, cy + bounce);
+      ctx.scale(1 + breathe, 1 - breathe);
+      ctx.translate(-cx, -cy);
+
+      drawArm(ctx, cx - canvasSize * 0.25, cy - canvasSize * 0.05, leftArmAngle, palette);
+      drawArm(ctx, cx + canvasSize * 0.25, cy - canvasSize * 0.05, rightArmAngle, palette);
+
+      drawRoundedLemon(ctx, cx, cy, r, palette);
+      
+      drawLeafCap(ctx, cx, cy, palette, swayAngle);
+
+      ctx.fillStyle = '#b53b21';
+      ctx.fillRect(cx - r * 0.95, cy - 30, r * 1.9, 60);
+
+      drawGoggle(ctx, cx - 70, cy, palette);
+      drawGoggle(ctx, cx + 70, cy, palette);
+
+      drawEye(ctx, cx - 70, cy, palette, eyelidRef.current);
+      drawEye(ctx, cx + 70, cy, palette, eyelidRef.current);
+
+      drawMouth(ctx, cx, cy, now);
+
+      ctx.restore();
+
+      drawParticles(now);
+      updateParticles(dt);
 
       animationRef.current = requestAnimationFrame(animate);
     };
 
-    animate();
+    animationRef.current = requestAnimationFrame(animate);
 
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, []);
-
-  // Sparkle generation for happy emotion
-  useEffect(() => {
-    if (emotion === 'happy') {
-      const sparkleInterval = setInterval(() => {
-        if (Math.random() > 0.7) {
-          const newSparkle: Sparkle = {
-            x: centerX + (Math.random() - 0.5) * svgSize * 0.6,
-            y: centerY + (Math.random() - 0.5) * svgSize * 0.6,
-            scale: 0.5 + Math.random() * 0.5,
-            opacity: 1,
-            rotation: Math.random() * 360,
-            color: '#FFF4A3',
-          };
-          setSparkles(prev => [...prev, newSparkle]);
-
-          setTimeout(() => {
-            setSparkles(prev => prev.filter(s => s !== newSparkle));
-          }, 1000);
-        }
-      }, 300);
-
-      return () => clearInterval(sparkleInterval);
-    } else {
-      setSparkles([]);
-    }
-  }, [emotion, centerX, centerY, svgSize]);
-
-  // Eye configurations for different emotions
-  const renderEyes = () => {
-    const eyeY = centerY - svgSize * 0.1;
-    const leftEyeX = centerX - svgSize * 0.12;
-    const rightEyeX = centerX + svgSize * 0.12;
-    const eyeRadius = svgSize * 0.06;
-    const pupilRadius = svgSize * 0.03;
-
-    if (isBlinking) {
-      // Blinking - horizontal lines
-      return (
-        <>
-          <line
-            x1={leftEyeX - eyeRadius}
-            y1={eyeY}
-            x2={leftEyeX + eyeRadius}
-            y2={eyeY}
-            stroke="#000"
-            strokeWidth={svgSize * 0.02}
-            strokeLinecap="round"
-          />
-          <line
-            x1={rightEyeX - eyeRadius}
-            y1={eyeY}
-            x2={rightEyeX + eyeRadius}
-            y2={eyeY}
-            stroke="#000"
-            strokeWidth={svgSize * 0.02}
-            strokeLinecap="round"
-          />
-        </>
-      );
-    }
-
-    switch (emotion) {
-      case 'happy':
-        // Happy eyes - curved arcs (^_^)
-        return (
-          <>
-            <path
-              d={`M ${leftEyeX - eyeRadius} ${eyeY} Q ${leftEyeX} ${eyeY - eyeRadius * 0.8} ${leftEyeX + eyeRadius} ${eyeY}`}
-              stroke="#000"
-              strokeWidth={svgSize * 0.025}
-              fill="none"
-              strokeLinecap="round"
-            />
-            <path
-              d={`M ${rightEyeX - eyeRadius} ${eyeY} Q ${rightEyeX} ${eyeY - eyeRadius * 0.8} ${rightEyeX + eyeRadius} ${eyeY}`}
-              stroke="#000"
-              strokeWidth={svgSize * 0.025}
-              fill="none"
-              strokeLinecap="round"
-            />
-          </>
-        );
-
-      case 'thinking':
-        // Eyes looking to the side
-        return (
-          <>
-            <circle cx={leftEyeX} cy={eyeY} r={eyeRadius} fill="#fff" stroke="#000" strokeWidth={svgSize * 0.015} />
-            <circle cx={leftEyeX + pupilRadius} cy={eyeY} r={pupilRadius} fill="#000" />
-            <circle cx={leftEyeX + pupilRadius * 0.5} cy={eyeY - pupilRadius * 0.3} r={svgSize * 0.015} fill="#fff" />
-            
-            <circle cx={rightEyeX} cy={eyeY} r={eyeRadius} fill="#fff" stroke="#000" strokeWidth={svgSize * 0.015} />
-            <circle cx={rightEyeX + pupilRadius} cy={eyeY} r={pupilRadius} fill="#000" />
-            <circle cx={rightEyeX + pupilRadius * 0.5} cy={eyeY - pupilRadius * 0.3} r={svgSize * 0.015} fill="#fff" />
-          </>
-        );
-
-      case 'confused':
-        // Spiral/dizzy eyes
-        return (
-          <>
-            <path
-              d={`M ${leftEyeX} ${eyeY} m -${eyeRadius * 0.8} 0 a ${eyeRadius * 0.8} ${eyeRadius * 0.8} 0 1 1 ${eyeRadius * 1.6} 0 a ${eyeRadius * 0.5} ${eyeRadius * 0.5} 0 1 1 -${eyeRadius} 0`}
-              stroke="#000"
-              strokeWidth={svgSize * 0.02}
-              fill="none"
-            />
-            <path
-              d={`M ${rightEyeX} ${eyeY} m -${eyeRadius * 0.8} 0 a ${eyeRadius * 0.8} ${eyeRadius * 0.8} 0 1 1 ${eyeRadius * 1.6} 0 a ${eyeRadius * 0.5} ${eyeRadius * 0.5} 0 1 1 -${eyeRadius} 0`}
-              stroke="#000"
-              strokeWidth={svgSize * 0.02}
-              fill="none"
-            />
-          </>
-        );
-
-      case 'error':
-        // Narrowed/angry eyes
-        return (
-          <>
-            <line
-              x1={leftEyeX - eyeRadius}
-              y1={eyeY + eyeRadius * 0.3}
-              x2={leftEyeX + eyeRadius}
-              y2={eyeY - eyeRadius * 0.3}
-              stroke="#000"
-              strokeWidth={svgSize * 0.025}
-              strokeLinecap="round"
-            />
-            <line
-              x1={rightEyeX - eyeRadius}
-              y1={eyeY - eyeRadius * 0.3}
-              x2={rightEyeX + eyeRadius}
-              y2={eyeY + eyeRadius * 0.3}
-              stroke="#000"
-              strokeWidth={svgSize * 0.025}
-              strokeLinecap="round"
-            />
-          </>
-        );
-
-      case 'working':
-        // Focused eyes
-        return (
-          <>
-            <circle cx={leftEyeX} cy={eyeY} r={eyeRadius} fill="#fff" stroke="#000" strokeWidth={svgSize * 0.015} />
-            <circle cx={leftEyeX} cy={eyeY} r={pupilRadius} fill="#000" />
-            <circle cx={leftEyeX - pupilRadius * 0.3} cy={eyeY - pupilRadius * 0.3} r={svgSize * 0.015} fill="#fff" />
-            
-            <circle cx={rightEyeX} cy={eyeY} r={eyeRadius} fill="#fff" stroke="#000" strokeWidth={svgSize * 0.015} />
-            <circle cx={rightEyeX} cy={eyeY} r={pupilRadius} fill="#000" />
-            <circle cx={rightEyeX - pupilRadius * 0.3} cy={eyeY - pupilRadius * 0.3} r={svgSize * 0.015} fill="#fff" />
-          </>
-        );
-
-      default:
-        // Normal round eyes with pupils
-        return (
-          <>
-            <circle cx={leftEyeX} cy={eyeY} r={eyeRadius} fill="#fff" stroke="#000" strokeWidth={svgSize * 0.015} />
-            <circle cx={leftEyeX} cy={eyeY} r={pupilRadius} fill="#000" />
-            <circle cx={leftEyeX - pupilRadius * 0.3} cy={eyeY - pupilRadius * 0.3} r={svgSize * 0.015} fill="#fff" />
-            
-            <circle cx={rightEyeX} cy={eyeY} r={eyeRadius} fill="#fff" stroke="#000" strokeWidth={svgSize * 0.015} />
-            <circle cx={rightEyeX} cy={eyeY} r={pupilRadius} fill="#000" />
-            <circle cx={rightEyeX - pupilRadius * 0.3} cy={eyeY - pupilRadius * 0.3} r={svgSize * 0.015} fill="#fff" />
-          </>
-        );
-    }
-  };
-
-  // Eyebrow configurations
-  const renderEyebrows = () => {
-    const browY = centerY - svgSize * 0.18;
-    const leftBrowX = centerX - svgSize * 0.12;
-    const rightBrowX = centerX + svgSize * 0.12;
-    const browWidth = svgSize * 0.1;
-
-    switch (emotion) {
-      case 'happy':
-        // Slightly raised
-        return (
-          <>
-            <path
-              d={`M ${leftBrowX - browWidth} ${browY} Q ${leftBrowX} ${browY - svgSize * 0.02} ${leftBrowX + browWidth} ${browY}`}
-              stroke="#C8A000"
-              strokeWidth={svgSize * 0.02}
-              fill="none"
-              strokeLinecap="round"
-            />
-            <path
-              d={`M ${rightBrowX - browWidth} ${browY} Q ${rightBrowX} ${browY - svgSize * 0.02} ${rightBrowX + browWidth} ${browY}`}
-              stroke="#C8A000"
-              strokeWidth={svgSize * 0.02}
-              fill="none"
-              strokeLinecap="round"
-            />
-          </>
-        );
-
-      case 'error':
-        // Furrowed/angled down
-        return (
-          <>
-            <line
-              x1={leftBrowX - browWidth}
-              y1={browY + svgSize * 0.02}
-              x2={leftBrowX + browWidth}
-              y2={browY - svgSize * 0.02}
-              stroke="#C8A000"
-              strokeWidth={svgSize * 0.025}
-              strokeLinecap="round"
-            />
-            <line
-              x1={rightBrowX - browWidth}
-              y1={browY - svgSize * 0.02}
-              x2={rightBrowX + browWidth}
-              y2={browY + svgSize * 0.02}
-              stroke="#C8A000"
-              strokeWidth={svgSize * 0.025}
-              strokeLinecap="round"
-            />
-          </>
-        );
-
-      case 'confused':
-        // Raised high
-        return (
-          <>
-            <path
-              d={`M ${leftBrowX - browWidth} ${browY - svgSize * 0.03} Q ${leftBrowX} ${browY - svgSize * 0.05} ${leftBrowX + browWidth} ${browY - svgSize * 0.03}`}
-              stroke="#C8A000"
-              strokeWidth={svgSize * 0.02}
-              fill="none"
-              strokeLinecap="round"
-            />
-            <path
-              d={`M ${rightBrowX - browWidth} ${browY - svgSize * 0.03} Q ${rightBrowX} ${browY - svgSize * 0.05} ${rightBrowX + browWidth} ${browY - svgSize * 0.03}`}
-              stroke="#C8A000"
-              strokeWidth={svgSize * 0.02}
-              fill="none"
-              strokeLinecap="round"
-            />
-          </>
-        );
-
-      case 'thinking':
-        // One raised
-        return (
-          <>
-            <path
-              d={`M ${leftBrowX - browWidth} ${browY} Q ${leftBrowX} ${browY} ${leftBrowX + browWidth} ${browY}`}
-              stroke="#C8A000"
-              strokeWidth={svgSize * 0.02}
-              fill="none"
-              strokeLinecap="round"
-            />
-            <path
-              d={`M ${rightBrowX - browWidth} ${browY - svgSize * 0.03} Q ${rightBrowX} ${browY - svgSize * 0.05} ${rightBrowX + browWidth} ${browY - svgSize * 0.03}`}
-              stroke="#C8A000"
-              strokeWidth={svgSize * 0.02}
-              fill="none"
-              strokeLinecap="round"
-            />
-          </>
-        );
-
-      default:
-        // Neutral
-        return (
-          <>
-            <path
-              d={`M ${leftBrowX - browWidth} ${browY} Q ${leftBrowX} ${browY - svgSize * 0.01} ${leftBrowX + browWidth} ${browY}`}
-              stroke="#C8A000"
-              strokeWidth={svgSize * 0.02}
-              fill="none"
-              strokeLinecap="round"
-            />
-            <path
-              d={`M ${rightBrowX - browWidth} ${browY} Q ${rightBrowX} ${browY - svgSize * 0.01} ${rightBrowX + browWidth} ${browY}`}
-              stroke="#C8A000"
-              strokeWidth={svgSize * 0.02}
-              fill="none"
-              strokeLinecap="round"
-            />
-          </>
-        );
-    }
-  };
-
-  // Mouth configurations
-  const renderMouth = () => {
-    const mouthY = centerY + svgSize * 0.15;
-    const mouthWidth = svgSize * 0.15;
-
-    switch (emotion) {
-      case 'happy':
-      case 'working':
-        // Smile arc
-        return (
-          <path
-            d={`M ${centerX - mouthWidth} ${mouthY} Q ${centerX} ${mouthY + svgSize * 0.08} ${centerX + mouthWidth} ${mouthY}`}
-            stroke="#000"
-            strokeWidth={svgSize * 0.02}
-            fill="none"
-            strokeLinecap="round"
-          />
-        );
-
-      case 'thinking':
-        // Small line
-        return (
-          <line
-            x1={centerX - mouthWidth * 0.6}
-            y1={mouthY}
-            x2={centerX + mouthWidth * 0.6}
-            y2={mouthY}
-            stroke="#000"
-            strokeWidth={svgSize * 0.02}
-            strokeLinecap="round"
-          />
-        );
-
-      case 'confused':
-        // Wavy line
-        return (
-          <path
-            d={`M ${centerX - mouthWidth} ${mouthY} Q ${centerX - mouthWidth * 0.5} ${mouthY + svgSize * 0.03} ${centerX} ${mouthY} Q ${centerX + mouthWidth * 0.5} ${mouthY - svgSize * 0.03} ${centerX + mouthWidth} ${mouthY}`}
-            stroke="#000"
-            strokeWidth={svgSize * 0.02}
-            fill="none"
-            strokeLinecap="round"
-          />
-        );
-
-      case 'error':
-        // Frown arc
-        return (
-          <path
-            d={`M ${centerX - mouthWidth} ${mouthY + svgSize * 0.05} Q ${centerX} ${mouthY - svgSize * 0.03} ${centerX + mouthWidth} ${mouthY + svgSize * 0.05}`}
-            stroke="#000"
-            strokeWidth={svgSize * 0.02}
-            fill="none"
-            strokeLinecap="round"
-          />
-        );
-
-      default:
-        // Neutral
-        return (
-          <line
-            x1={centerX - mouthWidth * 0.6}
-            y1={mouthY}
-            x2={centerX + mouthWidth * 0.6}
-            y2={mouthY}
-            stroke="#000"
-            strokeWidth={svgSize * 0.02}
-            strokeLinecap="round"
-          />
-        );
-    }
-  };
-
-  // Extra accessories
-  const renderAccessories = () => {
-    switch (emotion) {
-      case 'thinking':
-        // Thought bubble
-        return (
-          <g>
-            <circle cx={centerX + svgSize * 0.3} cy={centerY - svgSize * 0.25} r={svgSize * 0.12} fill="#fff" stroke="#999" strokeWidth={svgSize * 0.015} />
-            <text
-              x={centerX + svgSize * 0.3}
-              y={centerY - svgSize * 0.2}
-              textAnchor="middle"
-              fontSize={svgSize * 0.15}
-              fontWeight="bold"
-              fill="#666"
-            >
-              ?
-            </text>
-            <circle cx={centerX + svgSize * 0.22} cy={centerY - svgSize * 0.12} r={svgSize * 0.03} fill="#fff" stroke="#999" strokeWidth={svgSize * 0.01} />
-            <circle cx={centerX + svgSize * 0.18} cy={centerY - svgSize * 0.05} r={svgSize * 0.02} fill="#fff" stroke="#999" strokeWidth={svgSize * 0.01} />
-          </g>
-        );
-
-      case 'working':
-        // Tool prop (wrench)
-        return (
-          <g>
-            <rect
-              x={centerX + svgSize * 0.25}
-              y={centerY + svgSize * 0.05}
-              width={svgSize * 0.05}
-              height={svgSize * 0.15}
-              fill="#888"
-              rx={svgSize * 0.01}
-            />
-            <rect
-              x={centerX + svgSize * 0.23}
-              y={centerY + svgSize * 0.17}
-              width={svgSize * 0.09}
-              height={svgSize * 0.06}
-              fill="#666"
-              rx={svgSize * 0.01}
-            />
-          </g>
-        );
-
-      case 'confused':
-        // Question mark
-        return (
-          <text
-            x={centerX + svgSize * 0.3}
-            y={centerY - svgSize * 0.15}
-            textAnchor="middle"
-            fontSize={svgSize * 0.2}
-            fontWeight="bold"
-            fill="#666"
-          >
-            ?
-          </text>
-        );
-
-      default:
-        return null;
-    }
-  };
+  }, [canvasSize, emotion]);
 
   return (
-    <svg
-      ref={svgRef}
-      width={svgSize}
-      height={svgSize}
-      viewBox={`0 0 ${svgSize} ${svgSize}`}
-      className={cn("lemon-mascot transition-all duration-300", className)}
-      style={{ display: 'block' }}
-    >
-      {/* Gradient definitions */}
-      <defs>
-        <radialGradient id={`lemonGradient-${size}`}>
-          <stop offset="0%" stopColor="#FFFACD" />
-          <stop offset="30%" stopColor={getBodyColor()} />
-          <stop offset="70%" stopColor="#D4AF37" />
-          <stop offset="100%" stopColor="#B8860B" />
-        </radialGradient>
-        
-        <filter id={`glow-${size}`}>
-          <feGaussianBlur stdDeviation={emotion === 'idle' ? '2' : '0'} result="coloredBlur"/>
-          <feMerge>
-            <feMergeNode in="coloredBlur"/>
-            <feMergeNode in="SourceGraphic"/>
-          </feMerge>
-        </filter>
-
-        <filter id={`lemonTexture-${size}`}>
-          <feTurbulence 
-            type="fractalNoise" 
-            baseFrequency="0.9" 
-            numOctaves="4" 
-            result="turbulence"
-          />
-          <feColorMatrix
-            in="turbulence"
-            type="saturate"
-            values="0.05"
-            result="texture"
-          />
-          <feBlend in="SourceGraphic" in2="texture" mode="multiply" />
-        </filter>
-      </defs>
-
-      {/* Main group with breathing animation */}
-      <g transform={`translate(${centerX}, ${centerY}) scale(${breathScale}) translate(${-centerX}, ${-centerY})`}>
-        {/* Left arm (behind body) - darker with outline */}
-        <path
-          d={`M ${centerX - svgSize * 0.28} ${centerY} Q ${centerX - svgSize * 0.35} ${centerY + svgSize * 0.12} ${centerX - svgSize * 0.4} ${centerY + svgSize * 0.08}`}
-          stroke="#8B4513"
-          strokeWidth={svgSize * 0.065}
-          fill="none"
-          strokeLinecap="round"
-          transform={`rotate(${leftArmAngle}, ${centerX - svgSize * 0.28}, ${centerY})`}
-          style={{ transition: 'all 0.1s ease-out' }}
-        />
-        <path
-          d={`M ${centerX - svgSize * 0.28} ${centerY} Q ${centerX - svgSize * 0.35} ${centerY + svgSize * 0.12} ${centerX - svgSize * 0.4} ${centerY + svgSize * 0.08}`}
-          stroke="#FFD700"
-          strokeWidth={svgSize * 0.05}
-          fill="none"
-          strokeLinecap="round"
-          transform={`rotate(${leftArmAngle}, ${centerX - svgSize * 0.28}, ${centerY})`}
-          style={{ transition: 'all 0.1s ease-out' }}
-        />
-        <circle
-          cx={centerX - svgSize * 0.4}
-          cy={centerY + svgSize * 0.08}
-          r={svgSize * 0.04}
-          fill="#D4AF37"
-          stroke="#8B4513"
-          strokeWidth={svgSize * 0.008}
-          transform={`rotate(${leftArmAngle}, ${centerX - svgSize * 0.28}, ${centerY})`}
-          style={{ transition: 'all 0.1s ease-out' }}
-        />
-
-        {/* Lemon body with realistic shape - oval with pointed ends */}
-        <path
-          d={`
-            M ${centerX} ${centerY - svgSize * 0.43}
-            C ${centerX + svgSize * 0.08} ${centerY - svgSize * 0.42},
-              ${centerX + svgSize * 0.25} ${centerY - svgSize * 0.35},
-              ${centerX + svgSize * 0.3} ${centerY - svgSize * 0.15}
-            C ${centerX + svgSize * 0.32} ${centerY + svgSize * 0.05},
-              ${centerX + svgSize * 0.3} ${centerY + svgSize * 0.25},
-              ${centerX + svgSize * 0.25} ${centerY + svgSize * 0.35}
-            C ${centerX + svgSize * 0.15} ${centerY + svgSize * 0.40},
-              ${centerX + svgSize * 0.05} ${centerY + svgSize * 0.42},
-              ${centerX} ${centerY + svgSize * 0.43}
-            C ${centerX - svgSize * 0.05} ${centerY + svgSize * 0.42},
-              ${centerX - svgSize * 0.15} ${centerY + svgSize * 0.40},
-              ${centerX - svgSize * 0.25} ${centerY + svgSize * 0.35}
-            C ${centerX - svgSize * 0.3} ${centerY + svgSize * 0.25},
-              ${centerX - svgSize * 0.32} ${centerY + svgSize * 0.05},
-              ${centerX - svgSize * 0.3} ${centerY - svgSize * 0.15}
-            C ${centerX - svgSize * 0.25} ${centerY - svgSize * 0.35},
-              ${centerX - svgSize * 0.08} ${centerY - svgSize * 0.42},
-              ${centerX} ${centerY - svgSize * 0.43}
-            Z
-          `}
-          fill={`url(#lemonGradient-${size})`}
-          filter={`url(#lemonTexture-${size})`}
-        />
-
-        {/* Top lemon nipple (bumpy end) */}
-        <circle
-          cx={centerX}
-          cy={centerY - svgSize * 0.44}
-          r={svgSize * 0.025}
-          fill="#D4AF37"
-        />
-        <circle
-          cx={centerX - svgSize * 0.015}
-          cy={centerY - svgSize * 0.435}
-          r={svgSize * 0.012}
-          fill="#B8860B"
-          opacity="0.6"
-        />
-        <circle
-          cx={centerX + svgSize * 0.015}
-          cy={centerY - svgSize * 0.435}
-          r={svgSize * 0.012}
-          fill="#B8860B"
-          opacity="0.6"
-        />
-
-        {/* Bottom lemon nipple (bumpy end) */}
-        <circle
-          cx={centerX}
-          cy={centerY + svgSize * 0.44}
-          r={svgSize * 0.025}
-          fill="#D4AF37"
-        />
-        <circle
-          cx={centerX - svgSize * 0.015}
-          cy={centerY + svgSize * 0.435}
-          r={svgSize * 0.012}
-          fill="#B8860B"
-          opacity="0.6"
-        />
-        <circle
-          cx={centerX + svgSize * 0.015}
-          cy={centerY + svgSize * 0.435}
-          r={svgSize * 0.012}
-          fill="#B8860B"
-          opacity="0.6"
-        />
-
-        {/* Peel texture - small dimples across surface */}
-        {[...Array(20)].map((_, i) => {
-          const angle = (Math.random() * Math.PI * 2);
-          const distance = Math.random() * svgSize * 0.25;
-          const x = centerX + Math.cos(angle) * distance;
-          const y = centerY + Math.sin(angle) * distance * 1.2;
-          const size = svgSize * (0.008 + Math.random() * 0.01);
-          return (
-            <circle
-              key={`dimple-${i}`}
-              cx={x}
-              cy={y}
-              r={size}
-              fill="#D4AF37"
-              opacity="0.15"
-            />
-          );
-        })}
-
-        {/* Citrus segments - prominent dark lines */}
-        {[...Array(10)].map((_, i) => {
-          const angle = (Math.PI * 2 / 10) * i;
-          const x1 = centerX;
-          const y1 = centerY;
-          const x2 = centerX + Math.cos(angle) * svgSize * 0.28;
-          const y2 = centerY + Math.sin(angle) * svgSize * 0.38;
-          return (
-            <line
-              key={`segment-${i}`}
-              x1={x1}
-              y1={y1}
-              x2={x2}
-              y2={y2}
-              stroke="#D4AF37"
-              strokeWidth={svgSize * 0.018}
-              opacity="0.6"
-            />
-          );
-        })}
-
-        {/* Highlight on body - shinier spot */}
-        <ellipse
-          cx={centerX - svgSize * 0.1}
-          cy={centerY - svgSize * 0.15}
-          rx={svgSize * 0.15}
-          ry={svgSize * 0.12}
-          fill="rgba(255, 255, 255, 0.4)"
-        />
-        <ellipse
-          cx={centerX - svgSize * 0.08}
-          cy={centerY - svgSize * 0.13}
-          rx={svgSize * 0.08}
-          ry={svgSize * 0.06}
-          fill="rgba(255, 255, 255, 0.25)"
-        />
-
-        {/* Right arm (behind body) - darker with outline */}
-        <path
-          d={`M ${centerX + svgSize * 0.28} ${centerY} Q ${centerX + svgSize * 0.35} ${centerY + svgSize * 0.12} ${centerX + svgSize * 0.4} ${centerY + svgSize * 0.08}`}
-          stroke="#8B4513"
-          strokeWidth={svgSize * 0.065}
-          fill="none"
-          strokeLinecap="round"
-          transform={`rotate(${rightArmAngle}, ${centerX + svgSize * 0.28}, ${centerY})`}
-          style={{ transition: 'all 0.1s ease-out' }}
-        />
-        <path
-          d={`M ${centerX + svgSize * 0.28} ${centerY} Q ${centerX + svgSize * 0.35} ${centerY + svgSize * 0.12} ${centerX + svgSize * 0.4} ${centerY + svgSize * 0.08}`}
-          stroke="#FFD700"
-          strokeWidth={svgSize * 0.05}
-          fill="none"
-          strokeLinecap="round"
-          transform={`rotate(${rightArmAngle}, ${centerX + svgSize * 0.28}, ${centerY})`}
-          style={{ transition: 'all 0.1s ease-out' }}
-        />
-        <circle
-          cx={centerX + svgSize * 0.4}
-          cy={centerY + svgSize * 0.08}
-          r={svgSize * 0.04}
-          fill="#D4AF37"
-          stroke="#8B4513"
-          strokeWidth={svgSize * 0.008}
-          transform={`rotate(${rightArmAngle}, ${centerX + svgSize * 0.28}, ${centerY})`}
-          style={{ transition: 'all 0.1s ease-out' }}
-        />
-
-        {/* Eyebrows */}
-        <g style={{ transition: 'all 0.3s ease-in-out' }}>
-          {renderEyebrows()}
-        </g>
-
-        {/* Eyes */}
-        <g style={{ transition: 'all 0.3s ease-in-out' }}>
-          {renderEyes()}
-        </g>
-
-        {/* Mouth */}
-        <g style={{ transition: 'all 0.3s ease-in-out' }}>
-          {renderMouth()}
-        </g>
-
-        {/* Accessories */}
-        {renderAccessories()}
-
-        {/* Sparkles for happy emotion */}
-        {sparkles.map((sparkle, i) => (
-          <g
-            key={`sparkle-${i}`}
-            transform={`translate(${sparkle.x}, ${sparkle.y}) scale(${sparkle.scale}) rotate(${sparkle.rotation})`}
-            opacity={sparkle.opacity}
-            style={{ transition: 'opacity 1s ease-out' }}
-          >
-            <path
-              d={`M 0 -${svgSize * 0.04} L ${svgSize * 0.01} -${svgSize * 0.01} L ${svgSize * 0.04} 0 L ${svgSize * 0.01} ${svgSize * 0.01} L 0 ${svgSize * 0.04} L -${svgSize * 0.01} ${svgSize * 0.01} L -${svgSize * 0.04} 0 L -${svgSize * 0.01} -${svgSize * 0.01} Z`}
-              fill={sparkle.color}
-            />
-          </g>
-        ))}
-      </g>
-    </svg>
+    <canvas
+      ref={canvasRef}
+      width={canvasSize}
+      height={canvasSize}
+      className={cn("lemon-mascot", className)}
+      style={{ display: 'block', imageRendering: 'auto' }}
+    />
   );
 }

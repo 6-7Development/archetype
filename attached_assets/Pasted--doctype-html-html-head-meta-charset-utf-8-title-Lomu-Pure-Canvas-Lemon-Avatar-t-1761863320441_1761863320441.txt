@@ -1,0 +1,336 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Lomu — Pure Canvas Lemon Avatar</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  html,body{height:100%;margin:0;background:#0d0f14;color:#cfd7ff;font:14px/1.2 system-ui}
+  #wrap{position:relative;height:100%;display:grid;place-items:center}
+  canvas{width:min(92vmin,720px);height:min(92vmin,720px);background:#0d0f14;display:block}
+  .hint{position:absolute;bottom:12px;left:12px;opacity:.8}
+  code{background:#111;padding:.2em .45em;border-radius:.5em}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c" width="640" height="640"></canvas>
+  <div class="hint">
+    Keys: <code>1</code>=happy <code>2</code>=excited <code>3</code>=annoyed
+    <code>I</code>=idle <code>T</code>=talk <code>S</code>=smile <code>B</code>=blink
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+let mood = 'happy';             // happy | excited | annoyed
+let state = 'idle';             // idle | talk | smile | blink (blink overlays)
+let talking = false, smiling = false;
+
+function setMood(m){ mood = m; burst(m==='annoyed'?'💢':'❤️'); }
+function setState(s){
+  if(s==='talk'){ talking = !talking; if(talking){ state='talk'; } else state='idle'; }
+  else if(s==='smile'){ smiling = !smiling; state = smiling?'smile':'idle'; }
+  else if(s==='blink'){ blinkTimer = performance.now()+50; forceBlink(); }
+  else state = s;
+}
+window.setMood = setMood; window.setState = setState;
+
+// ------- Simple particles (hearts/angry symbols) -------
+const particles=[];
+function burst(emoji='❤️'){
+  for(let i=0;i<22;i++){
+    particles.push({
+      x: canvas.width/2, y: canvas.height*0.48,
+      vx:(Math.random()-0.5)*2, vy:-Math.random()*2-1.4,
+      life:1.2, a:1, spin:(Math.random()-0.5)*0.4, emoji
+    });
+  }
+}
+function updateParticles(dt){
+  for(let i=particles.length-1;i>=0;i--){
+    const p = particles[i];
+    p.vy += 0.9*dt;
+    p.x += p.vx*60*dt; p.y += p.vy*60*dt;
+    p.a -= dt/1.2;
+    if(p.a<=0){ particles.splice(i,1); }
+  }
+}
+function drawParticles(t){
+  ctx.save();
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  for(const p of particles){
+    ctx.save();
+    ctx.translate(p.x,p.y);
+    ctx.rotate(p.spin*t*0.001);
+    ctx.globalAlpha=Math.max(p.a,0);
+    ctx.font='28px system-ui,emoji';
+    ctx.fillText(p.emoji,0,0);
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
+// ------- Auto blink -------
+let nextBlinkAt = 0;
+function scheduleBlink(){
+  nextBlinkAt = performance.now() + (1200 + Math.random()*3000);
+}
+function forceBlink(){ eyelid = 0; blinking = true; }
+let eyelid = 1;     // 1=open, 0=closed
+let blinking = false;
+
+// ------- Main draw helpers -------
+function lerp(a,b,t){ return a+(b-a)*t; }
+function drawBackground(){
+  // soft mood gradient
+  const g = ctx.createLinearGradient(0,0,canvas.width,canvas.height);
+  if(mood==='happy'){ g.addColorStop(0,'#162234'); g.addColorStop(1,'#14202b'); }
+  if(mood==='excited'){ g.addColorStop(0,'#20334a'); g.addColorStop(1,'#1b2f25'); }
+  if(mood==='annoyed'){ g.addColorStop(0,'#1a1a24'); g.addColorStop(1,'#14161a'); }
+  ctx.fillStyle=g; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // moving subtle sparkles
+  const t=performance.now()*0.0003;
+  ctx.globalAlpha=0.18;
+  ctx.fillStyle='#cfe8ff';
+  for(let i=0;i<140;i++){
+    const x=(i*53 + (t*300)%640)%640;
+    const y=(i*97 + (t*170)%640)%640;
+    ctx.fillRect(x,y,1,1);
+  }
+  ctx.globalAlpha=1;
+}
+
+function drawLemonHead(t){
+  const cx = canvas.width/2, cy = canvas.height*0.55;
+
+  // breathing & excited bounce
+  const breathe = Math.sin(t*0.0025)*0.02 + 0.02; // 0..about 0.04
+  const bounce = (mood==='excited') ? Math.max(0,Math.sin(t*0.009))*8 : 0;
+
+  ctx.save();
+  ctx.translate(cx, cy + bounce);
+  ctx.scale(1+breathe, 1-breathe); // squash & stretch
+
+  // Lemon body (with gradient)
+  const r = 150;
+  const bodyG = ctx.createRadialGradient(0,-50,40,0,0,r+20);
+  bodyG.addColorStop(0, '#ffe36a');
+  bodyG.addColorStop(1, '#f1b21f');
+  ctx.fillStyle = bodyG;
+  roundedLemon(ctx, 0, 0, r);
+  ctx.fill();
+  // rim shine dots
+  ctx.fillStyle='rgba(255,255,255,.18)';
+  ctx.beginPath(); ctx.arc(-50,-70,10,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(40,-90,6,0,Math.PI*2); ctx.fill();
+
+  // Leaf cap
+  drawLeafCap(ctx);
+
+  // Goggles strap
+  ctx.fillStyle = '#b53b21';
+  ctx.fillRect(-r*0.95, -30, r*1.9, 60);
+
+  // Goggles frames
+  drawGoggle(-70); drawGoggle(70);
+
+  // Eyes (respect eyelid)
+  drawEye(-70); drawEye(70);
+
+  // Mouth (varies by state)
+  drawMouth();
+
+  ctx.restore();
+}
+
+function roundedLemon(ctx, x,y, r){
+  // teardrop-ish: circle with a small chin point
+  ctx.beginPath();
+  ctx.ellipse(x, y-10, r*0.95, r*0.85, 0, 0, Math.PI*2);
+  ctx.moveTo(x, y+r*0.85-10);
+  ctx.quadraticCurveTo(x+10, y+r*0.95, x, y+r*1.07); // chin point
+  ctx.quadraticCurveTo(x-10, y+r*0.95, x, y+r*0.85-10);
+  ctx.closePath();
+}
+
+function drawLeafCap(ctx){
+  // green cap
+  const g = ctx.createLinearGradient(0,-150,0,-20);
+  g.addColorStop(0,'#1a8c38');
+  g.addColorStop(1,'#0e6a2b');
+  ctx.fillStyle=g;
+  ctx.beginPath();
+  ctx.ellipse(0,-125,130,80,0,0,Math.PI,true);
+  ctx.fill();
+
+  // stem
+  ctx.fillStyle='#0c5a24';
+  ctx.fillRect(10,-190,18,45);
+
+  // leaf (animated sway)
+  const sway = Math.sin(performance.now()*0.004)*0.15;
+  ctx.save();
+  ctx.translate(20,-190);
+  ctx.rotate(-0.3 + sway);
+  ctx.fillStyle='#25a542';
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.quadraticCurveTo(70,-25,120,0);
+  ctx.quadraticCurveTo(70,25,0,0);
+  ctx.fill();
+  ctx.restore();
+
+  // highlight
+  ctx.fillStyle='rgba(255,255,255,.22)';
+  ctx.beginPath();
+  ctx.ellipse(40,-150,60,20,0,0,Math.PI*2);
+  ctx.fill();
+}
+
+function drawGoggle(x){
+  ctx.save();
+  ctx.translate(x,0);
+  ctx.fillStyle='#d94b2c';
+  ctx.beginPath(); ctx.roundRect(-60,-45,120,90,30); ctx.fill();
+  ctx.fillStyle='#942917'; ctx.lineWidth=6; ctx.strokeStyle='#942917';
+  ctx.beginPath(); ctx.roundRect(-60,-45,120,90,30); ctx.stroke();
+  ctx.restore();
+}
+
+function drawEye(x){
+  ctx.save();
+  ctx.translate(x,0);
+
+  // lens tint
+  ctx.fillStyle = (mood==='annoyed') ? '#7c1e10' : '#a22717';
+  ctx.beginPath(); ctx.roundRect(-48,-33,96,66,26); ctx.fill();
+
+  // pupil glow (smaller when annoyed)
+  const sz = (mood==='annoyed') ? 10 : 14;
+  ctx.fillStyle='#ffd77a';
+  ctx.beginPath(); ctx.arc(-10,-2,sz,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#fff';
+  ctx.beginPath(); ctx.arc(4,-12,6,0,Math.PI*2); ctx.fill();
+
+  // eyelid overlay for blink
+  const open = eyelid;     // 1..0
+  if(open<1){
+    ctx.save();
+    ctx.globalCompositeOperation='source-atop';
+    ctx.fillStyle='#0d0f14';
+    const h=(1-open)*70;
+    ctx.fillRect(-60,-45,120,h);
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
+function drawMouth(){
+  ctx.save();
+  // mouth position
+  ctx.translate(0, 70);
+  const base = '#7a1e08';
+  const inner = '#ee6b31';
+  if(state==='talk'){
+    // simple open/close cycle
+    const s = (Math.sin(performance.now()*0.02)+1)/2; // 0..1
+    const w = lerp(30, 60, s), h = lerp(10, 40, s);
+    roundedMouth(-w/2,-h/2,w,h, h*0.6, base, inner);
+  } else if(state==='smile' || mood==='happy'){
+    roundedMouth(-55,-16,110,32,24, base, inner);
+  } else if(mood==='annoyed'){
+    // frown
+    ctx.fillStyle=base;
+    ctx.beginPath();
+    ctx.ellipse(0,10,46,16,0,Math.PI,0,true);
+    ctx.fill();
+  } else {
+    // neutral
+    ctx.fillStyle=base;
+    ctx.fillRect(-26, -4, 52, 8);
+  }
+  ctx.restore();
+}
+
+function roundedMouth(x,y,w,h,r, base, inner){
+  ctx.fillStyle=base;
+  ctx.beginPath();
+  ctx.roundRect(x,y,w,h,r);
+  ctx.fill();
+  // tongue / inside
+  ctx.fillStyle=inner;
+  ctx.beginPath();
+  ctx.roundRect(x+8,y+h*0.35,w-16,h*0.5, h*0.25);
+  ctx.fill();
+}
+
+// --------- Loop ---------
+let last = performance.now(), blinkTimer = 0;
+scheduleBlink();
+function step(now){
+  const dt=(now-last)/1000; last=now;
+
+  // auto blink while not actively blinking
+  if(now > nextBlinkAt && !blinking){ blinking=true; eyelid=1; blinkTimer=now; }
+  if(blinking){
+    // 120ms to close, 120ms to open
+    const elapsed = now - blinkTimer;
+    const dur = 240;
+    const p = Math.min(1, elapsed/dur);
+    eyelid = (p<0.5) ? 1-(p*2) : (p-0.5)*2; // 1->0->1
+    if(p>=1){ blinking=false; scheduleBlink(); }
+  }
+
+  // state from toggles
+  if(!talking && !smiling && state!=='blink' && state!=='idle'){
+    state='idle';
+  }
+
+  drawBackground();
+  drawParticles(now);
+  drawLemonHead(now);
+
+  updateParticles(dt);
+  requestAnimationFrame(step);
+}
+requestAnimationFrame(step);
+
+// ---------- Key bindings ----------
+addEventListener('keydown', (e)=>{
+  const k = e.key.toLowerCase();
+  if(k==='1') setMood('happy');
+  if(k==='2') setMood('excited');
+  if(k==='3') setMood('annoyed');
+  if(k==='i') setState('idle');
+  if(k==='t') setState('talk');
+  if(k==='s') setState('smile');
+  if(k==='b') setState('blink');
+});
+
+// Polyfill for roundRect on older browsers
+if(!CanvasRenderingContext2D.prototype.roundRect){
+  CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){
+    if(typeof r==='number') r={tl:r,tr:r,br:r,bl:r};
+    const tl=r.tl||0,tr=r.tr||0,br=r.br||0,bl=r.bl||0;
+    this.beginPath();
+    this.moveTo(x+tl,y);
+    this.lineTo(x+w-tr,y);
+    this.quadraticCurveTo(x+w,y,x+w,y+tr);
+    this.lineTo(x+w,y+h-br);
+    this.quadraticCurveTo(x+w,y+h,x+w-br,y+h);
+    this.lineTo(x+bl,y+h);
+    this.quadraticCurveTo(x,y+h,x,y+h-bl);
+    this.lineTo(x,y+tl);
+    this.quadraticCurveTo(x,y,x+tl,y);
+    this.closePath();
+    return this;
+  }
+}
+</script>
+</body>
+</html>
