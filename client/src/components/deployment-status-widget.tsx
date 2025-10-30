@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { GitCommit, Clock, ExternalLink, Bot, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { GitCommit, Clock, ExternalLink, Bot, User, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface Deployment {
   hash: string;
@@ -20,7 +22,12 @@ interface DeploymentHistoryResponse {
   repository: string;
 }
 
-export function DeploymentStatusWidget() {
+interface DeploymentStatusWidgetProps {
+  floating?: boolean;
+  onClose?: () => void;
+}
+
+export function DeploymentStatusWidget({ floating = false, onClose }: DeploymentStatusWidgetProps = {}) {
   const { data, isLoading } = useQuery<DeploymentHistoryResponse>({
     queryKey: ['/api/platform/deployment-history'],
     refetchInterval: 30000, // Refresh every 30 seconds
@@ -28,12 +35,36 @@ export function DeploymentStatusWidget() {
 
   if (isLoading) {
     return (
-      <Card data-testid="card-deployment-status">
-        <CardHeader className="space-y-0 pb-3">
-          <CardTitle className="text-base font-medium flex items-center gap-2">
-            <GitCommit className="h-4 w-4" />
-            Recent Deployments
-          </CardTitle>
+      <Card 
+        data-testid="card-deployment-status"
+        className={cn(
+          floating && "shadow-2xl backdrop-blur-sm bg-card/95"
+        )}
+      >
+        <CardHeader className={cn(
+          "space-y-0",
+          floating ? "pb-2 px-3 py-2" : "pb-3"
+        )}>
+          <div className="flex items-center justify-between">
+            <CardTitle className={cn(
+              "font-medium flex items-center gap-2",
+              floating ? "text-xs" : "text-base"
+            )}>
+              <GitCommit className={cn(floating ? "h-3 w-3" : "h-4 w-4")} />
+              Recent Deployments
+            </CardTitle>
+            {floating && onClose && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={onClose}
+                className="h-6 w-6 hover-elevate shrink-0"
+                data-testid="button-close-deployments"
+              >
+                <X className="w-3 h-3" />
+              </Button>
+            )}
+          </div>
           <CardDescription className="text-xs">Loading...</CardDescription>
         </CardHeader>
       </Card>
@@ -44,17 +75,45 @@ export function DeploymentStatusWidget() {
   const latest = deployments[0];
 
   return (
-    <Card data-testid="card-deployment-status" className="hover-elevate">
-      <CardHeader className="space-y-0 pb-3">
-        <CardTitle className="text-base font-medium flex items-center gap-2">
-          <GitCommit className="h-4 w-4" />
-          Recent Deployments
-        </CardTitle>
+    <Card 
+      data-testid="card-deployment-status" 
+      className={cn(
+        "hover-elevate",
+        floating && "shadow-2xl backdrop-blur-sm bg-card/95"
+      )}
+    >
+      <CardHeader className={cn(
+        "space-y-0",
+        floating ? "pb-2 px-3 py-2" : "pb-3"
+      )}>
+        <div className="flex items-center justify-between">
+          <CardTitle className={cn(
+            "font-medium flex items-center gap-2",
+            floating ? "text-xs" : "text-base"
+          )}>
+            <GitCommit className={cn(floating ? "h-3 w-3" : "h-4 w-4")} />
+            Recent Deployments
+          </CardTitle>
+          {floating && onClose && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={onClose}
+              className="h-6 w-6 hover-elevate shrink-0"
+              data-testid="button-close-deployments"
+            >
+              <X className="w-3 h-3" />
+            </Button>
+          )}
+        </div>
         <CardDescription className="text-xs">
           {data?.repository || 'Unknown repository'}
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className={cn(
+        "space-y-3",
+        floating && "p-2 max-h-64 overflow-y-auto"
+      )}>
         {deployments.length === 0 ? (
           <p className="text-sm text-muted-foreground">No deployments found</p>
         ) : (

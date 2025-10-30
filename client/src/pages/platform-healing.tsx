@@ -14,7 +14,8 @@ import { AdminGuard } from '@/components/admin-guard';
 import { DeploymentStatusWidget } from '@/components/deployment-status-widget';
 import { TaskProgressWidget } from '@/components/task-progress-widget';
 import { AgentTaskList, type AgentTask } from '@/components/agent-task-list';
-import { Rocket } from 'lucide-react';
+import { Rocket, ChevronDown } from 'lucide-react';
+import { BillboardBanner } from '@/components/billboard-banner';
 
 type StepState = 'pending' | 'running' | 'ok' | 'fail';
 
@@ -73,6 +74,8 @@ function PlatformHealingContent() {
   ]);
   const [lomuTasks, setLomuTasks] = useState<AgentTask[]>([]);
   const [lomuActiveTaskId, setLomuActiveTaskId] = useState<string | null>(null);
+  const [taskManagerExpanded, setTaskManagerExpanded] = useState(false); // Collapsed by default
+  const [showDeployments, setShowDeployments] = useState(true); // Show floating deployments
 
   // Force deploy mutation
   const forceDeployMutation = useMutation({
@@ -538,10 +541,42 @@ function PlatformHealingContent() {
           </Button>
         </div>
 
-        {/* Main Content Area - Chat + Task Manager */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6 flex-1 min-h-0">
-          {/* Left: Chat - 2 columns on desktop */}
-          <div className="lg:col-span-2 bg-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col min-h-0" data-testid="panel-meta-sysop-chat">
+        {/* Main Content Area - NEW LAYOUT: Billboard → Task Manager → Chat */}
+        <div className="flex flex-col gap-3 flex-1 min-h-0">
+          {/* Billboard Banner - Rotating feature messages */}
+          <BillboardBanner 
+            rotating={true}
+            animated={true}
+            dismissible={true}
+          />
+          
+          {/* Task Manager - Collapsible at top (Replit-style) */}
+          <div className="bg-card border border-border rounded-xl shadow-lg overflow-hidden" data-testid="panel-task-manager">
+            <button 
+              onClick={() => setTaskManagerExpanded(!taskManagerExpanded)}
+              className="w-full px-4 py-3 flex items-center justify-between border-b border-border hover-elevate active-elevate-2"
+              data-testid="button-toggle-task-manager"
+            >
+              <h3 className="text-sm font-semibold" data-testid="heading-task-manager">
+                Task Manager {lomuTasks.length > 0 && `(${lomuTasks.length})`}
+              </h3>
+              <ChevronDown 
+                className={`w-4 h-4 transition-transform duration-200 ${taskManagerExpanded ? 'rotate-180' : ''}`} 
+              />
+            </button>
+            
+            {taskManagerExpanded && (
+              <div className="max-h-64 overflow-y-auto" data-testid="container-task-list">
+                <AgentTaskList 
+                  tasks={lomuTasks} 
+                  activeTaskId={lomuActiveTaskId}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Chat - Full width below task manager */}
+          <div className="bg-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col flex-1 min-h-0 relative" data-testid="panel-meta-sysop-chat">
             <MetaSySopChat 
               autoCommit={true}
               autoPush={true}
@@ -550,27 +585,16 @@ function PlatformHealingContent() {
                 setLomuActiveTaskId(activeId);
               }}
             />
-          </div>
-
-          {/* Right: Task Manager - 1 column on desktop */}
-          <div className="lg:col-span-1 flex flex-col gap-3 min-h-0" data-testid="panel-task-manager">
-            {/* Task Manager Panel */}
-            <div className="bg-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col min-h-0">
-              <div className="px-4 py-3 border-b border-border">
-                <h3 className="text-sm font-semibold" data-testid="heading-task-manager">Task Manager</h3>
-              </div>
-              <div className="flex-1 overflow-y-auto" data-testid="container-task-list">
-                <AgentTaskList 
-                  tasks={lomuTasks} 
-                  activeTaskId={lomuActiveTaskId}
+            
+            {/* Floating Recent Deployments - Hidden on mobile, scrolls with chat */}
+            {showDeployments && (
+              <div className="hidden md:block absolute top-4 right-4 w-72 max-h-96 z-10">
+                <DeploymentStatusWidget 
+                  floating={true}
+                  onClose={() => setShowDeployments(false)}
                 />
               </div>
-            </div>
-
-            {/* Deployment Status Widget - Hidden on mobile for better UX */}
-            <div className="hidden md:block">
-              <DeploymentStatusWidget />
-            </div>
+            )}
           </div>
         </div>
       </div>
