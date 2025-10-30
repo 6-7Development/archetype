@@ -55,6 +55,7 @@
     "@types/multer": "^2.0.0",
     "@types/nock": "^10.0.3",
     "@types/pg": "^8.15.5",
+    "@types/three": "^0.180.0",
     "adm-zip": "^0.5.16",
     "bcrypt": "^6.0.0",
     "class-variance-authority": "^0.7.1",
