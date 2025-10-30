@@ -526,57 +526,32 @@ export function LumoAvatar({
             />
 
             {/* ANIMATED EYELIDS - INSIDE animated container so they move with Lumo */}
+            {/* DEBUG: Visible eyelids to check positioning */}
             {/* Cyan eye eyelid (viewer's right, Lumo's left eye) */}
             <motion.div
-              className="absolute pointer-events-none overflow-hidden rounded-full"
+              className="absolute pointer-events-none rounded-full border-2 border-red-500"
               style={{
                 left: "62%",
                 top: "42%",
                 width: "11%",
                 height: "9%",
                 zIndex: 25,
+                backgroundColor: isBlinking || isWinking === "left" ? "rgba(0,0,0,0.9)" : "rgba(255,0,0,0.3)",
               }}
-            >
-              <motion.div
-                className="absolute inset-0 bg-black rounded-full"
-                style={{
-                  boxShadow: "inset 0 2px 8px rgba(0,0,0,0.8)",
-                }}
-                animate={{
-                  scaleY: isBlinking || isWinking === "left" ? 1 : 0,
-                }}
-                transition={{
-                  duration: isBlinking ? 0.15 : 0.2,
-                  ease: "easeInOut",
-                }}
-              />
-            </motion.div>
+            />
 
             {/* Dark eye eyelid (viewer's left, Lumo's right eye) */}
             <motion.div
-              className="absolute pointer-events-none overflow-hidden rounded-full"
+              className="absolute pointer-events-none rounded-full border-2 border-blue-500"
               style={{
                 left: "36%",
                 top: "42%",
                 width: "11%",
                 height: "9%",
                 zIndex: 25,
+                backgroundColor: isBlinking || isWinking === "right" ? "rgba(0,0,0,0.9)" : "rgba(0,0,255,0.3)",
               }}
-            >
-              <motion.div
-                className="absolute inset-0 bg-black rounded-full"
-                style={{
-                  boxShadow: "inset 0 2px 8px rgba(0,0,0,0.8)",
-                }}
-                animate={{
-                  scaleY: isBlinking || isWinking === "right" ? 1 : 0,
-                }}
-                transition={{
-                  duration: isBlinking ? 0.15 : 0.2,
-                  ease: "easeInOut",
-                }}
-              />
-            </motion.div>
+            />
 
             {/* ANIMATED SMILE - INSIDE animated container so it moves with Lumo */}
             <motion.div
