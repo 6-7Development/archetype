@@ -17,9 +17,9 @@ export default function LandingMobile() {
         <div className="px-3 sm:px-4 py-3">
           <div className="flex items-center justify-between gap-2 sm:gap-3">
             <Link href="/" className="flex items-center gap-2 min-h-[44px] py-1 flex-1 min-w-0 max-w-[60%]" data-testid="link-brand">
-              <img src={logoPath} alt="ARCHETYPE" className="w-10 h-10 flex-shrink-0 rounded-lg" />
-              <span className="text-sm sm:text-base md:text-lg font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent truncate">
-                ARCHETYPE
+              <img src={logoPath} alt="LemonAid" className="w-10 h-10 flex-shrink-0 rounded-lg" />
+              <span className="text-sm sm:text-base md:text-lg font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent truncate">
+                LemonAid
               </span>
             </Link>
             
@@ -80,22 +80,22 @@ export default function LandingMobile() {
           >
             <img 
               src={logoPath} 
-              alt="ARCHETYPE" 
-              className="w-20 h-20 mx-auto rounded-2xl shadow-2xl shadow-cyan-500/50"
+              alt="LemonAid" 
+              className="w-20 h-20 mx-auto rounded-2xl shadow-2xl shadow-primary/50"
             />
           </motion.div>
 
           <div className="space-y-3">
             <h1 className="text-4xl font-bold leading-tight">
-              <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
-                AI-Powered
+              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                Squeeze Fresh Code
               </span>
               <br />
-              <span className="text-white">Code Generation</span>
+              <span className="text-white">With LemonAid</span>
             </h1>
             
             <p className="text-slate-300 text-base max-w-sm mx-auto">
-              Build complete websites and web apps instantly with natural language commands
+              When code throws you lemons, you get LemonAid! Build complete websites and web apps instantly with AI.
             </p>
           </div>
 
@@ -117,13 +117,13 @@ export default function LandingMobile() {
       <section className="py-12 px-4">
         <div className="max-w-md mx-auto space-y-4">
           <h2 className="text-2xl font-bold text-center mb-6">
-            <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-              Why Choose ARCHETYPE
+            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              Why Choose LemonAid
             </span>
           </h2>
 
           <Card className="p-4 space-y-3">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
             <h3 className="text-lg font-semibold text-white">AI-Powered</h3>
@@ -133,7 +133,7 @@ export default function LandingMobile() {
           </Card>
 
           <Card className="p-4 space-y-3">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-secondary to-accent flex items-center justify-center">
               <Zap className="w-6 h-6 text-white" />
             </div>
             <h3 className="text-lg font-semibold text-white">Lightning Fast</h3>
@@ -143,7 +143,7 @@ export default function LandingMobile() {
           </Card>
 
           <Card className="p-4 space-y-3">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-secondary to-primary flex items-center justify-center">
               <Code className="w-6 h-6 text-white" />
             </div>
             <h3 className="text-lg font-semibold text-white">Full Stack</h3>
@@ -167,10 +167,10 @@ export default function LandingMobile() {
       {/* Pricing Teaser */}
       <section className="py-12 px-4">
         <div className="max-w-md mx-auto">
-          <Card className="p-6 text-center space-y-4 border-cyan-500/30">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30">
-              <Sparkles className="w-4 h-4 text-cyan-400" />
-              <span className="text-sm text-cyan-400 font-medium">Limited Time Offer</span>
+          <Card className="p-6 text-center space-y-4 border-primary/30">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/30">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span className="text-sm text-primary font-medium">Limited Time Offer</span>
             </div>
             
             <h3 className="text-2xl font-bold text-white">Start Free</h3>
@@ -180,15 +180,15 @@ export default function LandingMobile() {
 
             <ul className="text-left space-y-2 py-4">
               <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
+                <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                 <span className="text-sm text-slate-300">AI code generation</span>
               </li>
               <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
+                <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                 <span className="text-sm text-slate-300">Live preview & editing</span>
               </li>
               <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
+                <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                 <span className="text-sm text-slate-300">Download projects</span>
               </li>
             </ul>
@@ -204,19 +204,19 @@ export default function LandingMobile() {
       <footer className="border-t border-white/10 py-8 px-4">
         <div className="max-w-md mx-auto text-center space-y-4">
           <div className="flex items-center justify-center gap-2">
-            <img src={logoPath} alt="ARCHETYPE" className="w-8 h-8 rounded-lg" />
-            <span className="font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-              ARCHETYPE
+            <img src={logoPath} alt="LemonAid" className="w-8 h-8 rounded-lg" />
+            <span className="font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              LemonAid
             </span>
           </div>
           <p className="text-sm text-slate-400">
-            AI-Powered Code Generation Platform
+            When code throws you lemons, you get LemonAid
           </p>
           <div className="flex justify-center gap-4">
-            <Link href="/pricing" className="text-slate-400 hover:text-cyan-400 transition-colors min-h-[44px] flex items-center px-2" data-testid="footer-link-pricing">
+            <Link href="/pricing" className="text-slate-400 hover:text-primary transition-colors min-h-[44px] flex items-center px-2" data-testid="footer-link-pricing">
               Pricing
             </Link>
-            <Link href="/builder" className="text-slate-400 hover:text-cyan-400 transition-colors min-h-[44px] flex items-center px-2" data-testid="footer-link-builder">
+            <Link href="/builder" className="text-slate-400 hover:text-primary transition-colors min-h-[44px] flex items-center px-2" data-testid="footer-link-builder">
               Get Started
             </Link>
           </div>
