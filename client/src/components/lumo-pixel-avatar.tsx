@@ -744,65 +744,66 @@ export function LumoPixelAvatar({
         minHeight: containerSize,
         maxWidth: containerSize,
         maxHeight: containerSize,
-        position: 'relative', // Ensure positioning context for z-index
       }}
       data-testid="lumo-avatar-container"
     >
-      {/* Layer 1: Spinning border background (z-0) */}
+      {/* Background container - all background layers grouped */}
       {showBackground && (
-        <div
-          className="absolute inset-0"
-          style={{
-            borderRadius: "50%",
-            background:
-              "conic-gradient(from 0deg, rgba(255, 230, 0, 0.6), rgba(255, 183, 77, 0.4), rgba(72, 187, 120, 0.5), rgba(255, 230, 0, 0.6))",
-            padding: "3px",
-            animation: "spin 12s linear infinite",
-            zIndex: 0,
-          }}
-        >
+        <div className="absolute inset-0" style={{ zIndex: 1 }}>
+          {/* Spinning border */}
           <div
-            className="w-full h-full rounded-full"
+            className="absolute inset-0"
             style={{
-              position: 'absolute',
-              inset: 0,
-              background: isDark ? "rgb(15, 23, 42)" : "rgb(241, 245, 249)",
-              zIndex: 1,
+              borderRadius: "50%",
+              background:
+                "conic-gradient(from 0deg, rgba(255, 230, 0, 0.6), rgba(255, 183, 77, 0.4), rgba(72, 187, 120, 0.5), rgba(255, 230, 0, 0.6))",
+              padding: "3px",
+              animation: "spin 12s linear infinite",
+            }}
+          >
+            <div
+              className="w-full h-full rounded-full"
+              style={{
+                background: isDark ? "rgb(15, 23, 42)" : "rgb(241, 245, 249)",
+              }}
+            />
+          </div>
+
+          {/* Mood gradient background */}
+          <canvas
+            ref={bgCanvasRef}
+            className="absolute inset-0"
+            style={{
+              borderRadius: "50%",
+              imageRendering: "auto",
+            }}
+          />
+
+          {/* Glow overlay */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              borderRadius: "50%",
+              boxShadow: "inset 0 0 30px rgba(255, 230, 0, 0.2), 0 0 40px rgba(255, 183, 77, 0.15)",
             }}
           />
         </div>
       )}
 
-      {/* Layer 2: Mood gradient background (z-10) */}
-      {showBackground && (
-        <canvas
-          ref={bgCanvasRef}
-          className="absolute inset-0"
-          style={{
-            borderRadius: "50%",
-            imageRendering: "auto",
-            zIndex: 10,
-          }}
-        />
-      )}
-
-      {/* Layer 3: Lumo sprite animation (z-20) - MAIN AVATAR */}
+      {/* SPRITE LAYER - Above all backgrounds */}
       <canvas
         ref={canvasRef}
         className="absolute inset-0"
         style={{
           imageRendering: "pixelated",
           borderRadius: showBackground ? "50%" : "0",
-          zIndex: 20,
-          position: 'absolute',
-          opacity: 1,
-          visibility: 'visible',
+          zIndex: 100,
           pointerEvents: 'none',
         }}
         data-testid="lumo-sprite-canvas"
       />
 
-      {/* Layer 4: Particle effects (z-30) */}
+      {/* PARTICLE LAYER - Above sprite */}
       {enableParticles && (
         <canvas
           ref={particleCanvasRef}
@@ -810,19 +811,7 @@ export function LumoPixelAvatar({
           style={{
             borderRadius: showBackground ? "50%" : "0",
             imageRendering: "auto",
-            zIndex: 30,
-          }}
-        />
-      )}
-
-      {/* Layer 5: Glow overlay (z-40) */}
-      {showBackground && (
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            borderRadius: "50%",
-            boxShadow: "inset 0 0 30px rgba(255, 230, 0, 0.2), 0 0 40px rgba(255, 183, 77, 0.15)",
-            zIndex: 40,
+            zIndex: 200,
           }}
         />
       )}
