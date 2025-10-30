@@ -634,23 +634,19 @@ export function LumoPixelAvatar({
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        // Very subtle breathing animation (optional gentle scale, no displacement)
         const breathePhase = (timestamp * 0.0006) % (Math.PI * 2);
         const breatheEase = (1 - Math.cos(breathePhase)) / 2;
-        const breatheY = breatheEase * 3;
-        const breatheScale = 1 + breatheEase * 0.02;
+        const breatheScale = 1 + breatheEase * 0.01; // Reduced from 0.02 to 0.01 for subtle effect
 
-        const swayPhase = (timestamp * 0.0004) % (Math.PI * 2);
-        const swayX = Math.sin(swayPhase) * 1.5;
-
+        // REMOVED: swayX and breatheY to keep Lumo in fixed position
         const frameBuffer = prepareFrameBuffer(frame);
 
         if (frameBuffer) {
-          const centerX = containerSize / 2;
-          const centerY = containerSize / 2;
-
+          // Fixed centered position - no displacement
           const renderSize = containerSize * breatheScale;
-          const offsetX = (containerSize - renderSize) / 2 + swayX;
-          const offsetY = (containerSize - renderSize) / 2 + breatheY;
+          const offsetX = (containerSize - renderSize) / 2;
+          const offsetY = (containerSize - renderSize) / 2;
 
           ctx.save();
           ctx.imageSmoothingEnabled = false;
@@ -687,11 +683,16 @@ export function LumoPixelAvatar({
 
   return (
     <div
-      className={`relative ${className}`}
+      className={`relative flex-shrink-0 ${className}`}
       style={{
         width: containerSize,
         height: containerSize,
+        minWidth: containerSize,
+        minHeight: containerSize,
+        maxWidth: containerSize,
+        maxHeight: containerSize,
       }}
+      data-testid="lumo-avatar-container"
     >
       {showBackground && (
         <div
