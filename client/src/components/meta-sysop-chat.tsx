@@ -803,21 +803,33 @@ export function MetaSySopChat({ autoCommit = true, autoPush = true, onTasksChang
           <div className="max-w-4xl mx-auto space-y-4">
             {/* Welcome screen with Lumo */}
             {messages.length === 0 && !isStreaming && (
-              <div className="text-center py-8 animate-in fade-in-up duration-700">
-                <div className="flex justify-center mb-6">
-                  <LumoAvatar 
-                    emotion={progressStatus === 'idle' ? 'happy' : progressStatus as any} 
-                    size="large" 
-                    showBackground={true}
-                  />
+              <div className="text-center py-4 md:py-8 animate-in fade-in-up duration-700">
+                <div className="flex justify-center mb-4 md:mb-6">
+                  {/* Responsive: medium on mobile, large on desktop */}
+                  <div className="block md:hidden">
+                    <LumoAvatar 
+                      emotion={progressStatus === 'idle' ? 'happy' : progressStatus as any} 
+                      size="medium" 
+                      showBackground={true}
+                      backgroundTheme="auto"
+                    />
+                  </div>
+                  <div className="hidden md:block">
+                    <LumoAvatar 
+                      emotion={progressStatus === 'idle' ? 'happy' : progressStatus as any} 
+                      size="large" 
+                      showBackground={true}
+                      backgroundTheme="auto"
+                    />
+                  </div>
                 </div>
-                <h3 className="text-2xl font-bold mb-2">Meet Lumo!</h3>
-                <h4 className="text-lg text-muted-foreground mb-3">Your Meta-SySop AI Assistant</h4>
-                <p className="text-muted-foreground max-w-md mx-auto leading-relaxed">
+                <h3 className="text-xl md:text-2xl font-bold mb-2">Meet Lumo!</h3>
+                <h4 className="text-base md:text-lg text-muted-foreground mb-2 md:mb-3">Your Meta-SySop AI Assistant</h4>
+                <p className="text-sm md:text-base text-muted-foreground max-w-md mx-auto leading-relaxed px-4">
                   I'm an autonomous platform healing agent. I can diagnose and fix issues 
                   with the Archetype platform itself. Tell me what needs to be fixed.
                 </p>
-                <div className="mt-4 text-sm text-muted-foreground">
+                <div className="mt-3 md:mt-4 text-xs md:text-sm text-muted-foreground">
                   💡 Tip: You can upload images, paste screenshots, or attach code/logs
                 </div>
               </div>
