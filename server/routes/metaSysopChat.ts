@@ -19,6 +19,9 @@ import { sanitizeDiagnosisForAI } from '../lib/diagnosis-sanitizer';
 
 const router = Router();
 
+// Track active streams to prevent concurrent requests per user
+const activeStreams = new Set<string>();
+
 // SECURITY: Validate project file paths to prevent path traversal attacks
 function validateProjectPath(filePath: string): string {
   // Reject null, undefined, or empty paths
@@ -460,6 +463,17 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     return res.status(503).json({ error: 'Anthropic API key not configured' });
   }
 
+  // Prevent concurrent streams per user
+  const activeStreamsKey = `meta-sysop-stream-${userId}`;
+  if (activeStreams.has(activeStreamsKey)) {
+    console.log('[META-SYSOP-CHAT] Concurrent stream detected for user:', userId);
+    return res.status(429).json({
+      error: 'A Meta-SySop stream is already active. Please wait for it to complete.'
+    });
+  }
+  activeStreams.set(activeStreamsKey, true);
+  console.log('[META-SYSOP-CHAT] Stream registered for user:', userId);
+
   console.log('[META-SYSOP-CHAT] Setting up SSE headers');
   // Set up Server-Sent Events with Railway-specific anti-buffering headers
   res.setHeader('Content-Type', 'text/event-stream');
@@ -509,6 +523,19 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
   }, 15000); // Every 15 seconds
 
   console.log('[META-SYSOP-CHAT] Heartbeat started - will send keepalive every 15s');
+  
+  // Wrap entire route handler in timeout to prevent infinite hanging
+  const STREAM_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes max
+  const streamTimeoutId = setTimeout(() => {
+    console.error('[META-SYSOP] ⏱️ STREAM TIMEOUT - Force closing after 5 minutes');
+    if (!res.writableEnded) {
+      sendEvent('error', { message: '⏱️ Stream timeout after 5 minutes. Please try again.' });
+      sendEvent('done', { messageId: 'timeout', error: true });
+      res.end();
+    }
+  }, STREAM_TIMEOUT_MS);
+  console.log('[META-SYSOP-CHAT] Stream timeout set - will force close after 5 minutes');
+  
   console.log('[META-SYSOP-CHAT] Entering try block');
   try {
 
@@ -2275,6 +2302,17 @@ Answer naturally. If it's work, do it and report when done. If it's a question, 
       terminateStream('error-' + Date.now(), error.message);
     }
   } finally {
+    // Remove from active streams
+    const activeStreamsKey = `meta-sysop-stream-${userId}`;
+    activeStreams.delete(activeStreamsKey);
+    console.log('[META-SYSOP-CHAT] Stream unregistered for user:', userId);
+    
+    // Clear stream timeout
+    if (streamTimeoutId) {
+      clearTimeout(streamTimeoutId);
+      console.log('[META-SYSOP-CHAT] Stream timeout cleared');
+    }
+    
     // 🔥 RAILWAY FIX: ALWAYS clear heartbeat when stream ends
     // This ensures cleanup happens on success, error, or early termination
     if (heartbeatInterval) {
