@@ -34,8 +34,28 @@ else
 fi
 
 echo ""
-echo "⏭️ Skipping database migrations (handled by application)"
-echo "✅ Database schema will be created automatically on startup"
+echo "🔄 Running database migrations with drizzle-kit..."
+
+# Add SSL params to DATABASE_URL for drizzle-kit (production needs sslmode=no-verify)
+if [ "$NODE_ENV" = "production" ]; then
+  if [[ ! "$DATABASE_URL" =~ sslmode ]]; then
+    export DATABASE_URL="${DATABASE_URL}?sslmode=no-verify"
+    echo "✅ Added sslmode=no-verify to DATABASE_URL for drizzle-kit"
+  fi
+fi
+
+echo "⚠️  NOTE: If healing tables have wrong schema, manually drop them in Railway DB:"
+echo "   DROP TABLE IF EXISTS ai_fix_attempts CASCADE;"
+echo "   DROP TABLE IF EXISTS platform_incidents CASCADE;"
+echo "   DROP TABLE IF EXISTS healing_targets CASCADE;"
+
+# Run drizzle-kit to sync schema
+if npx drizzle-kit push --force; then
+  echo "✅ Database migrations completed successfully!"
+else
+  echo "❌ Database migration failed!"
+  echo "Continuing anyway - tables may need manual cleanup..."
+fi
 
 echo ""
 echo "🔍 Environment Check:"

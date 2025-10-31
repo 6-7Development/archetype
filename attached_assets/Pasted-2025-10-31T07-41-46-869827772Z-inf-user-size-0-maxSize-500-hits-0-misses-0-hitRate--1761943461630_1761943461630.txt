@@ -1,0 +1,1001 @@
+2025-10-31T07:41:46.869827772Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T07:41:46.869833722Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T07:41:46.869838571Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T07:41:46.869843038Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T07:41:46.869847471Z [inf]  }
+2025-10-31T07:51:48.379195478Z [inf]  [CACHE] Stats: {
+2025-10-31T07:51:48.379200097Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T07:51:48.379213843Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T07:51:48.379220087Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T07:51:48.379290680Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T07:51:48.379296331Z [inf]  }
+2025-10-31T08:01:48.841821878Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T08:01:48.841829224Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T08:01:48.841835333Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T08:01:48.841841777Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T08:01:48.841848599Z [inf]  }
+2025-10-31T08:01:48.841893048Z [inf]  [CACHE] Stats: {
+2025-10-31T08:11:49.359700007Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T08:11:49.359705997Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T08:11:49.359711646Z [inf]  }
+2025-10-31T08:11:49.359741803Z [inf]  [CACHE] Stats: {
+2025-10-31T08:11:49.359747763Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T08:11:49.359753050Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T08:21:50.742339856Z [inf]  [CACHE] Stats: {
+2025-10-31T08:21:50.742350188Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T08:21:50.742357300Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T08:21:50.742364254Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T08:21:50.742371306Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T08:21:50.742377668Z [inf]  }
+2025-10-31T08:31:51.178465253Z [inf]  [CACHE] Stats: {
+2025-10-31T08:31:51.178477465Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T08:31:51.178485071Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T08:31:51.178492896Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T08:31:51.178499269Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T08:31:51.178507355Z [inf]  }
+2025-10-31T08:41:51.677472524Z [inf]  [CACHE] Stats: {
+2025-10-31T08:41:51.677478900Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T08:41:51.677486294Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T08:41:51.677493687Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T08:41:51.677499188Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T08:41:51.677503618Z [inf]  }
+2025-10-31T08:51:53.153851620Z [inf]  [CACHE] Stats: {
+2025-10-31T08:51:53.153860530Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T08:51:53.153868089Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T08:51:53.153876690Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T08:51:53.153883993Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T08:51:53.153891913Z [inf]  }
+2025-10-31T09:01:44.542356803Z [inf]  [CACHE] Stats: {
+2025-10-31T09:01:44.542365240Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T09:01:44.542370224Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T09:01:44.542377150Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T09:01:44.542384802Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T09:01:44.542391269Z [inf]  }
+2025-10-31T09:11:45.941985058Z [inf]  [CACHE] Stats: {
+2025-10-31T09:11:45.941991977Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T09:11:45.941997181Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T09:11:45.942001540Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T09:11:45.942006330Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T09:11:45.942012498Z [inf]  }
+2025-10-31T09:21:46.438018764Z [inf]  [CACHE] Stats: {
+2025-10-31T09:21:46.438033655Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T09:21:46.438042042Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T09:21:46.438050236Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T09:21:46.438058201Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T09:21:46.438066005Z [inf]  }
+2025-10-31T09:31:47.953756446Z [inf]  [CACHE] Stats: {
+2025-10-31T09:31:47.953766039Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T09:31:47.953771870Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T09:31:47.953776049Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T09:31:47.953780732Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T09:31:47.953785259Z [inf]  }
+2025-10-31T09:41:49.574502216Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T09:41:49.574520757Z [inf]  }
+2025-10-31T09:41:49.574763864Z [inf]  [CACHE] Stats: {
+2025-10-31T09:41:49.574770751Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T09:41:49.574778625Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T09:41:49.574786152Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T09:51:51.009193722Z [inf]  [CACHE] Stats: {
+2025-10-31T09:51:51.009201713Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T09:51:51.009206932Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T09:51:51.009211998Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T09:51:51.009216332Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T09:51:51.009220320Z [inf]  }
+2025-10-31T10:01:52.654127511Z [inf]  [CACHE] Stats: {
+2025-10-31T10:01:52.654140232Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T10:01:52.654148390Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T10:01:52.654158976Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T10:01:52.654165810Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T10:01:52.654173046Z [inf]  }
+2025-10-31T10:11:43.909641526Z [inf]  [CACHE] Stats: {
+2025-10-31T10:11:43.909649944Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T10:11:43.909705155Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T10:11:43.909712191Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T10:11:43.909716704Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T10:11:43.909720915Z [inf]  }
+2025-10-31T10:21:44.426139846Z [inf]  [CACHE] Stats: {
+2025-10-31T10:21:44.426144895Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T10:21:44.426148662Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T10:21:44.426152225Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T10:21:44.426155954Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T10:21:44.426160675Z [inf]  }
+2025-10-31T10:31:45.839033742Z [inf]  [CACHE] Stats: {
+2025-10-31T10:31:45.839041726Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T10:31:45.839046201Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T10:31:45.839052512Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T10:31:45.839059024Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T10:31:45.839080060Z [inf]  }
+2025-10-31T10:41:47.278795660Z [inf]  [CACHE] Stats: {
+2025-10-31T10:41:47.278806801Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T10:41:47.278818858Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T10:41:47.278825032Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T10:41:47.278829907Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T10:41:47.278833763Z [inf]  }
+2025-10-31T10:51:47.676549966Z [inf]  [CACHE] Stats: {
+2025-10-31T10:51:47.676556638Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T10:51:47.676561000Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T10:51:47.676565753Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T10:51:47.676570158Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T10:51:47.676574254Z [inf]  }
+2025-10-31T11:01:48.222417885Z [inf]  [CACHE] Stats: {
+2025-10-31T11:01:48.222430176Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T11:01:48.222439985Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T11:01:48.222446481Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T11:01:48.222455471Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T11:01:48.222462853Z [inf]  }
+2025-10-31T11:11:49.385201986Z [inf]  [CACHE] Stats: {
+2025-10-31T11:11:49.385219772Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T11:11:49.385230076Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T11:11:49.385238639Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T11:11:49.385245914Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T11:11:49.385256233Z [inf]  }
+2025-10-31T11:21:50.827445663Z [inf]  [CACHE] Stats: {
+2025-10-31T11:21:50.827451410Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T11:21:50.827457434Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T11:21:50.827463335Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T11:21:50.827471250Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T11:21:50.827478085Z [inf]  }
+2025-10-31T11:31:51.179280758Z [inf]  [CACHE] Stats: {
+2025-10-31T11:31:51.179288782Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T11:31:51.179295517Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T11:31:51.179302333Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T11:31:51.179309412Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T11:31:51.179319469Z [inf]  }
+2025-10-31T11:41:52.697828542Z [inf]  [CACHE] Stats: {
+2025-10-31T11:41:52.697838433Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T11:41:52.697845025Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T11:41:52.697850628Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T11:41:52.697856464Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T11:41:52.697862215Z [inf]  }
+2025-10-31T11:51:44.058375588Z [inf]  [CACHE] Stats: {
+2025-10-31T11:51:44.058383522Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T11:51:44.058390444Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T11:51:44.058397304Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T11:51:44.058403808Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T11:51:44.058409938Z [inf]  }
+2025-10-31T12:01:44.816707238Z [inf]  [CACHE] Stats: {
+2025-10-31T12:01:44.816716335Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T12:01:44.816722153Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T12:01:44.816728053Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T12:01:44.816733639Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T12:01:44.816739282Z [inf]  }
+2025-10-31T12:11:46.234262973Z [inf]  [CACHE] Stats: {
+2025-10-31T12:11:46.234269370Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T12:11:46.234275421Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T12:11:46.234283139Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T12:11:46.234289589Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T12:11:46.234296005Z [inf]  }
+2025-10-31T12:21:46.774348631Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T12:21:46.774355088Z [inf]  [CACHE] Stats: {
+2025-10-31T12:21:46.774369994Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T12:21:46.774372934Z [inf]  }
+2025-10-31T12:21:46.774380602Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T12:21:46.774390011Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T12:31:47.435987854Z [inf]  [CACHE] Stats: {
+2025-10-31T12:31:47.435995482Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T12:31:47.436002511Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T12:31:47.436009233Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T12:31:47.436016078Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T12:31:47.436023372Z [inf]  }
+2025-10-31T12:41:49.004182817Z [inf]  [CACHE] Stats: {
+2025-10-31T12:41:49.004187886Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T12:41:49.004192404Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T12:41:49.004197286Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T12:41:49.004201576Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T12:41:49.004205612Z [inf]  }
+2025-10-31T12:51:49.529333254Z [inf]  [CACHE] Stats: {
+2025-10-31T12:51:49.529341178Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T12:51:49.529347336Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T12:51:49.529353109Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T12:51:49.529359376Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T12:51:49.529369809Z [inf]  }
+2025-10-31T13:01:51.143652532Z [inf]  [CACHE] Stats: {
+2025-10-31T13:01:51.143661149Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T13:01:51.143667002Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T13:01:51.143673578Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T13:01:51.143686321Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T13:01:51.143697667Z [inf]  }
+2025-10-31T13:11:44.220292421Z [inf]  [CACHE] Stats: {
+2025-10-31T13:11:44.220304965Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T13:11:44.220313023Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T13:11:44.220320046Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T13:11:44.220328565Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T13:11:44.220336779Z [inf]  }
+2025-10-31T13:21:45.879820115Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T13:21:45.879828816Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T13:21:45.880006705Z [inf]  [CACHE] Stats: {
+2025-10-31T13:21:45.882850178Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T13:21:45.882864137Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T13:21:45.882876420Z [inf]  }
+2025-10-31T13:31:47.237004340Z [inf]  [CACHE] Stats: {
+2025-10-31T13:31:47.237015775Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T13:31:47.237023089Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T13:31:47.237031452Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T13:31:47.237037488Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T13:31:47.237043711Z [inf]  }
+2025-10-31T13:41:48.255264258Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T13:41:48.255273352Z [inf]  }
+2025-10-31T13:41:48.255310639Z [inf]  [CACHE] Stats: {
+2025-10-31T13:41:48.255318394Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T13:41:48.255325789Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T13:41:48.255332949Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T13:48:20.194999129Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T13:48:20.195013304Z [err]    length: 135,
+2025-10-31T13:48:20.195018150Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T13:48:20.195026082Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T13:48:20.195032256Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T13:48:20.195036455Z [err]    severity: 'ERROR',
+2025-10-31T13:48:20.195042688Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T13:48:20.195049903Z [err]    code: '42703',
+2025-10-31T13:48:20.195053881Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T13:48:20.195075384Z [err]    detail: undefined,
+2025-10-31T13:48:20.195079025Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11330:11) {
+2025-10-31T13:48:20.195080946Z [err]  }
+2025-10-31T13:48:20.195087694Z [err]    constraint: undefined,
+2025-10-31T13:48:20.195088444Z [err]    hint: undefined,
+2025-10-31T13:48:20.195099948Z [err]    position: '41',
+2025-10-31T13:48:20.195106469Z [err]    file: 'parse_target.c',
+2025-10-31T13:48:20.195110755Z [err]    internalPosition: undefined,
+2025-10-31T13:48:20.195119461Z [err]    line: '1065',
+2025-10-31T13:48:20.195121685Z [err]    internalQuery: undefined,
+2025-10-31T13:48:20.195132971Z [err]    routine: 'checkInsertTargets'
+2025-10-31T13:48:20.195135085Z [err]    where: undefined,
+2025-10-31T13:48:20.195147393Z [err]    schema: undefined,
+2025-10-31T13:48:20.195158746Z [err]    table: undefined,
+2025-10-31T13:48:20.195177449Z [err]    column: undefined,
+2025-10-31T13:48:20.195186791Z [err]    dataType: undefined,
+2025-10-31T13:48:20.196683327Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T13:48:20.196700045Z [err]    column: undefined,
+2025-10-31T13:48:20.196710981Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T13:48:20.196714631Z [err]    dataType: undefined,
+2025-10-31T13:48:20.196723307Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T13:48:20.196724840Z [err]    constraint: undefined,
+2025-10-31T13:48:20.196733848Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T13:48:20.196734129Z [err]    file: 'parse_target.c',
+2025-10-31T13:48:20.196743790Z [err]    line: '1065',
+2025-10-31T13:48:20.196744579Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11354:11) {
+2025-10-31T13:48:20.196753504Z [err]    routine: 'checkInsertTargets'
+2025-10-31T13:48:20.196755496Z [err]    length: 135,
+2025-10-31T13:48:20.196763020Z [err]  }
+2025-10-31T13:48:20.196765430Z [err]    severity: 'ERROR',
+2025-10-31T13:48:20.196774621Z [err]    code: '42703',
+2025-10-31T13:48:20.196781749Z [err]    detail: undefined,
+2025-10-31T13:48:20.196789799Z [err]    hint: undefined,
+2025-10-31T13:48:20.196796844Z [err]    position: '41',
+2025-10-31T13:48:20.196803544Z [err]    internalPosition: undefined,
+2025-10-31T13:48:20.196810774Z [err]    internalQuery: undefined,
+2025-10-31T13:48:20.196817198Z [err]    where: undefined,
+2025-10-31T13:48:20.196823653Z [err]    schema: undefined,
+2025-10-31T13:48:20.196830052Z [err]    table: undefined,
+2025-10-31T13:48:21.882998107Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T13:48:21.883004988Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T13:48:21.883011420Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T13:48:21.883018347Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T13:48:21.883025783Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T13:48:21.883033183Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11330:11) {
+2025-10-31T13:48:21.883040297Z [err]    length: 135,
+2025-10-31T13:48:21.883046840Z [err]    severity: 'ERROR',
+2025-10-31T13:48:21.883053875Z [err]    code: '42703',
+2025-10-31T13:48:21.883077587Z [err]    detail: undefined,
+2025-10-31T13:48:21.883084642Z [err]    hint: undefined,
+2025-10-31T13:48:21.883092023Z [err]    position: '41',
+2025-10-31T13:48:21.883098486Z [err]    internalPosition: undefined,
+2025-10-31T13:48:21.883105151Z [err]    internalQuery: undefined,
+2025-10-31T13:48:21.883111664Z [err]    where: undefined,
+2025-10-31T13:48:21.883118324Z [err]    schema: undefined,
+2025-10-31T13:48:21.883124297Z [err]    table: undefined,
+2025-10-31T13:48:21.883131123Z [err]    column: undefined,
+2025-10-31T13:48:21.883138539Z [err]    dataType: undefined,
+2025-10-31T13:48:21.883145215Z [err]    constraint: undefined,
+2025-10-31T13:48:21.883713541Z [err]    file: 'parse_target.c',
+2025-10-31T13:48:21.883721756Z [err]    line: '1065',
+2025-10-31T13:48:21.883729659Z [err]    routine: 'checkInsertTargets'
+2025-10-31T13:48:21.883735592Z [err]  }
+2025-10-31T13:48:21.883741810Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T13:48:21.884867300Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T13:48:21.884874974Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T13:48:21.884881593Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T13:48:21.884888201Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T13:48:21.884894806Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11354:11) {
+2025-10-31T13:48:21.884901111Z [err]    length: 135,
+2025-10-31T13:48:21.884911948Z [err]    severity: 'ERROR',
+2025-10-31T13:48:21.884917877Z [err]    code: '42703',
+2025-10-31T13:48:21.884923919Z [err]    detail: undefined,
+2025-10-31T13:48:21.884930315Z [err]    hint: undefined,
+2025-10-31T13:48:21.884936451Z [err]    position: '41',
+2025-10-31T13:48:21.884945342Z [err]    internalPosition: undefined,
+2025-10-31T13:48:21.884952016Z [err]    internalQuery: undefined,
+2025-10-31T13:48:21.884958306Z [err]    where: undefined,
+2025-10-31T13:48:21.884964492Z [err]    schema: undefined,
+2025-10-31T13:48:21.884971163Z [err]    table: undefined,
+2025-10-31T13:48:21.884977646Z [err]    column: undefined,
+2025-10-31T13:48:21.884984081Z [err]    dataType: undefined,
+2025-10-31T13:48:21.884990171Z [err]    constraint: undefined,
+2025-10-31T13:48:21.884996378Z [err]    file: 'parse_target.c',
+2025-10-31T13:48:21.885003180Z [err]    line: '1065',
+2025-10-31T13:48:21.885013134Z [err]    routine: 'checkInsertTargets'
+2025-10-31T13:48:21.885019245Z [err]  }
+2025-10-31T13:48:31.571646736Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T13:48:31.571660077Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T13:48:31.571668849Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T13:48:31.571676730Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T13:48:31.571684712Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T13:48:31.571692465Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11330:11) {
+2025-10-31T13:48:31.571699802Z [err]    length: 135,
+2025-10-31T13:48:31.571707227Z [err]    severity: 'ERROR',
+2025-10-31T13:48:31.571714854Z [err]    code: '42703',
+2025-10-31T13:48:31.571725734Z [err]    detail: undefined,
+2025-10-31T13:48:31.571733785Z [err]    hint: undefined,
+2025-10-31T13:48:31.571741031Z [err]    position: '41',
+2025-10-31T13:48:31.571749310Z [err]    internalPosition: undefined,
+2025-10-31T13:48:31.571757243Z [err]    internalQuery: undefined,
+2025-10-31T13:48:31.571765592Z [err]    where: undefined,
+2025-10-31T13:48:31.571772461Z [err]    schema: undefined,
+2025-10-31T13:48:31.571780000Z [err]    table: undefined,
+2025-10-31T13:48:31.571787630Z [err]    column: undefined,
+2025-10-31T13:48:31.571794612Z [err]    dataType: undefined,
+2025-10-31T13:48:31.571801571Z [err]    constraint: undefined,
+2025-10-31T13:48:31.571808870Z [err]    file: 'parse_target.c',
+2025-10-31T13:48:31.571815713Z [err]    line: '1065',
+2025-10-31T13:48:31.571822770Z [err]    routine: 'checkInsertTargets'
+2025-10-31T13:48:31.571829857Z [err]  }
+2025-10-31T13:48:32.056736318Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T13:48:32.056743345Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T13:48:32.056750468Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T13:48:32.056757520Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T13:48:32.056763735Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T13:48:32.057163488Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11354:11) {
+2025-10-31T13:48:32.057176520Z [err]    length: 135,
+2025-10-31T13:48:32.057186926Z [err]    severity: 'ERROR',
+2025-10-31T13:48:32.057193613Z [err]    code: '42703',
+2025-10-31T13:48:32.057211601Z [err]    detail: undefined,
+2025-10-31T13:48:32.057224677Z [err]    hint: undefined,
+2025-10-31T13:48:32.057232908Z [err]    position: '41',
+2025-10-31T13:48:32.057240969Z [err]    internalPosition: undefined,
+2025-10-31T13:48:32.057248313Z [err]    internalQuery: undefined,
+2025-10-31T13:48:32.057256399Z [err]    where: undefined,
+2025-10-31T13:48:32.057263584Z [err]    schema: undefined,
+2025-10-31T13:48:32.057270956Z [err]    table: undefined,
+2025-10-31T13:48:32.057278392Z [err]    column: undefined,
+2025-10-31T13:48:32.057286370Z [err]    dataType: undefined,
+2025-10-31T13:48:32.057294342Z [err]    constraint: undefined,
+2025-10-31T13:48:32.057301581Z [err]    file: 'parse_target.c',
+2025-10-31T13:48:32.057308417Z [err]    line: '1065',
+2025-10-31T13:48:32.057315573Z [err]    routine: 'checkInsertTargets'
+2025-10-31T13:48:32.057321350Z [err]  }
+2025-10-31T13:48:41.651480920Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11330:11) {
+2025-10-31T13:48:41.651490322Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T13:48:41.651495665Z [err]    length: 135,
+2025-10-31T13:48:41.651504058Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T13:48:41.651512207Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T13:48:41.651544561Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T13:48:41.651553384Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T13:48:41.658000935Z [err]    severity: 'ERROR',
+2025-10-31T13:48:41.658016195Z [err]    code: '42703',
+2025-10-31T13:48:41.658024581Z [err]    detail: undefined,
+2025-10-31T13:48:41.658031196Z [err]    hint: undefined,
+2025-10-31T13:48:41.658038922Z [err]    position: '41',
+2025-10-31T13:48:41.658049482Z [err]    internalPosition: undefined,
+2025-10-31T13:48:41.658059246Z [err]    internalQuery: undefined,
+2025-10-31T13:48:41.658065767Z [err]    where: undefined,
+2025-10-31T13:48:41.658075513Z [err]    schema: undefined,
+2025-10-31T13:48:41.658084100Z [err]    table: undefined,
+2025-10-31T13:48:41.658091423Z [err]    column: undefined,
+2025-10-31T13:48:41.658100684Z [err]    dataType: undefined,
+2025-10-31T13:48:41.658108069Z [err]    constraint: undefined,
+2025-10-31T13:48:41.658120997Z [err]    file: 'parse_target.c',
+2025-10-31T13:48:41.658129632Z [err]    line: '1065',
+2025-10-31T13:48:41.658139030Z [err]    routine: 'checkInsertTargets'
+2025-10-31T13:48:41.658146014Z [err]  }
+2025-10-31T13:48:41.664311452Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T13:48:41.664322410Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T13:48:41.664329509Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T13:48:41.664336046Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T13:48:41.664342340Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T13:48:41.664348462Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11354:11) {
+2025-10-31T13:48:41.664355010Z [err]    length: 135,
+2025-10-31T13:48:41.664362093Z [err]    severity: 'ERROR',
+2025-10-31T13:48:41.664370450Z [err]    code: '42703',
+2025-10-31T13:48:41.664377509Z [err]    detail: undefined,
+2025-10-31T13:48:41.664383809Z [err]    hint: undefined,
+2025-10-31T13:48:41.664390040Z [err]    position: '41',
+2025-10-31T13:48:41.664402089Z [err]    internalPosition: undefined,
+2025-10-31T13:48:41.664408291Z [err]    internalQuery: undefined,
+2025-10-31T13:48:41.664415107Z [err]    where: undefined,
+2025-10-31T13:48:41.664420787Z [err]    schema: undefined,
+2025-10-31T13:48:41.664425887Z [err]    table: undefined,
+2025-10-31T13:48:41.664432451Z [err]    column: undefined,
+2025-10-31T13:48:41.664438875Z [err]    dataType: undefined,
+2025-10-31T13:48:41.664445373Z [err]    constraint: undefined,
+2025-10-31T13:48:41.664451583Z [err]    file: 'parse_target.c',
+2025-10-31T13:48:41.664457318Z [err]    line: '1065',
+2025-10-31T13:48:41.664462693Z [err]    routine: 'checkInsertTargets'
+2025-10-31T13:48:41.664468649Z [err]  }
+2025-10-31T13:49:01.002565838Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T13:49:01.002576006Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T13:49:01.002582000Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T13:49:01.002588084Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T13:49:01.002594433Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T13:49:01.002602463Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11330:11) {
+2025-10-31T13:49:01.002602586Z [err]    schema: undefined,
+2025-10-31T13:49:01.002610122Z [err]    length: 135,
+2025-10-31T13:49:01.002617875Z [err]    table: undefined,
+2025-10-31T13:49:01.002618361Z [err]    severity: 'ERROR',
+2025-10-31T13:49:01.002627888Z [err]    column: undefined,
+2025-10-31T13:49:01.002628792Z [err]    code: '42703',
+2025-10-31T13:49:01.002637015Z [err]    detail: undefined,
+2025-10-31T13:49:01.002644960Z [err]    hint: undefined,
+2025-10-31T13:49:01.002647208Z [err]    dataType: undefined,
+2025-10-31T13:49:01.002653969Z [err]    position: '41',
+2025-10-31T13:49:01.002657427Z [err]    constraint: undefined,
+2025-10-31T13:49:01.002663631Z [err]    internalPosition: undefined,
+2025-10-31T13:49:01.002666715Z [err]    file: 'parse_target.c',
+2025-10-31T13:49:01.002673744Z [err]    internalQuery: undefined,
+2025-10-31T13:49:01.002675242Z [err]    line: '1065',
+2025-10-31T13:49:01.002679994Z [err]    where: undefined,
+2025-10-31T13:49:01.002742667Z [err]    routine: 'checkInsertTargets'
+2025-10-31T13:49:01.002751541Z [err]  }
+2025-10-31T13:49:01.002760215Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T13:49:01.007756982Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T13:49:01.007768680Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T13:49:01.007775974Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T13:49:01.007782629Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T13:49:01.007790390Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11354:11) {
+2025-10-31T13:49:01.007799546Z [err]    length: 135,
+2025-10-31T13:49:01.007806433Z [err]    severity: 'ERROR',
+2025-10-31T13:49:01.007812741Z [err]    code: '42703',
+2025-10-31T13:49:01.007819662Z [err]    detail: undefined,
+2025-10-31T13:49:01.007827438Z [err]    hint: undefined,
+2025-10-31T13:49:01.007833253Z [err]    position: '41',
+2025-10-31T13:49:01.007838962Z [err]    internalPosition: undefined,
+2025-10-31T13:49:01.007844299Z [err]    internalQuery: undefined,
+2025-10-31T13:49:01.007850266Z [err]    where: undefined,
+2025-10-31T13:49:01.007857169Z [err]    schema: undefined,
+2025-10-31T13:49:01.007863020Z [err]    table: undefined,
+2025-10-31T13:49:01.007868765Z [err]    column: undefined,
+2025-10-31T13:49:01.007874782Z [err]    dataType: undefined,
+2025-10-31T13:49:01.007880746Z [err]    constraint: undefined,
+2025-10-31T13:49:01.007886428Z [err]    file: 'parse_target.c',
+2025-10-31T13:49:01.007891760Z [err]    line: '1065',
+2025-10-31T13:49:01.007897237Z [err]    routine: 'checkInsertTargets'
+2025-10-31T13:49:01.007902606Z [err]  }
+2025-10-31T13:49:01.582555616Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T13:49:01.582563801Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T13:49:01.582576034Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T13:49:01.582581466Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T13:49:01.582586706Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T13:49:01.582592884Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11330:11) {
+2025-10-31T13:49:01.582599573Z [err]    length: 135,
+2025-10-31T13:49:01.582604912Z [err]    severity: 'ERROR',
+2025-10-31T13:49:01.582610144Z [err]    code: '42703',
+2025-10-31T13:49:01.582615805Z [err]    detail: undefined,
+2025-10-31T13:49:01.582621061Z [err]    hint: undefined,
+2025-10-31T13:49:01.582626581Z [err]    position: '41',
+2025-10-31T13:49:01.582630426Z [err]    internalPosition: undefined,
+2025-10-31T13:49:01.582634231Z [err]    internalQuery: undefined,
+2025-10-31T13:49:01.582638024Z [err]    where: undefined,
+2025-10-31T13:49:01.582642460Z [err]    schema: undefined,
+2025-10-31T13:49:01.582646550Z [err]    table: undefined,
+2025-10-31T13:49:01.582650803Z [err]    column: undefined,
+2025-10-31T13:49:01.582654538Z [err]    dataType: undefined,
+2025-10-31T13:49:01.582658411Z [err]    constraint: undefined,
+2025-10-31T13:49:01.582662198Z [err]    file: 'parse_target.c',
+2025-10-31T13:49:01.582666589Z [err]    line: '1065',
+2025-10-31T13:49:01.582670557Z [err]    routine: 'checkInsertTargets'
+2025-10-31T13:49:01.582674155Z [err]  }
+2025-10-31T13:49:01.661961151Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T13:49:01.661971942Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T13:49:01.661986508Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T13:49:01.661991838Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T13:49:01.661998022Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T13:49:01.662003503Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11354:11) {
+2025-10-31T13:49:01.662009194Z [err]    length: 135,
+2025-10-31T13:49:01.662014109Z [err]    severity: 'ERROR',
+2025-10-31T13:49:01.662019206Z [err]    code: '42703',
+2025-10-31T13:49:01.662026086Z [err]    detail: undefined,
+2025-10-31T13:49:01.662035785Z [err]    hint: undefined,
+2025-10-31T13:49:01.662040936Z [err]    position: '41',
+2025-10-31T13:49:01.662045891Z [err]    internalPosition: undefined,
+2025-10-31T13:49:01.662050789Z [err]    internalQuery: undefined,
+2025-10-31T13:49:01.662055173Z [err]    where: undefined,
+2025-10-31T13:49:01.662059498Z [err]    schema: undefined,
+2025-10-31T13:49:01.662063903Z [err]    table: undefined,
+2025-10-31T13:49:01.662068699Z [err]    column: undefined,
+2025-10-31T13:49:01.662074885Z [err]    dataType: undefined,
+2025-10-31T13:49:01.662079431Z [err]    constraint: undefined,
+2025-10-31T13:49:01.662083390Z [err]    file: 'parse_target.c',
+2025-10-31T13:49:01.662087497Z [err]    line: '1065',
+2025-10-31T13:49:01.662091758Z [err]    routine: 'checkInsertTargets'
+2025-10-31T13:49:01.662096699Z [err]  }
+2025-10-31T13:49:11.600132398Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T13:49:11.600137038Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T13:49:11.600141438Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T13:49:11.600145889Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T13:49:11.600150526Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T13:49:11.600155983Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11330:11) {
+2025-10-31T13:49:11.600160502Z [err]    length: 135,
+2025-10-31T13:49:11.600177528Z [err]    severity: 'ERROR',
+2025-10-31T13:49:11.600182590Z [err]    code: '42703',
+2025-10-31T13:49:11.600186894Z [err]    detail: undefined,
+2025-10-31T13:49:11.600192575Z [err]    hint: undefined,
+2025-10-31T13:49:11.600197724Z [err]    position: '41',
+2025-10-31T13:49:11.600202016Z [err]    internalPosition: undefined,
+2025-10-31T13:49:11.600206184Z [err]    internalQuery: undefined,
+2025-10-31T13:49:11.600212147Z [err]    where: undefined,
+2025-10-31T13:49:11.600215871Z [err]    schema: undefined,
+2025-10-31T13:49:11.600219708Z [err]    table: undefined,
+2025-10-31T13:49:11.600223777Z [err]    column: undefined,
+2025-10-31T13:49:11.600228445Z [err]    dataType: undefined,
+2025-10-31T13:49:11.600234016Z [err]    constraint: undefined,
+2025-10-31T13:49:11.600239006Z [err]    file: 'parse_target.c',
+2025-10-31T13:49:11.600244606Z [err]    line: '1065',
+2025-10-31T13:49:11.600251820Z [err]    routine: 'checkInsertTargets'
+2025-10-31T13:49:11.600256579Z [err]  }
+2025-10-31T13:49:11.663322114Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T13:49:11.663322220Z [err]    line: '1065',
+2025-10-31T13:49:11.663332269Z [err]    routine: 'checkInsertTargets'
+2025-10-31T13:49:11.663333499Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T13:49:11.663339410Z [err]  }
+2025-10-31T13:49:11.663342142Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T13:49:11.663348514Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T13:49:11.663356588Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T13:49:11.663362646Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11354:11) {
+2025-10-31T13:49:11.663368011Z [err]    length: 135,
+2025-10-31T13:49:11.663373457Z [err]    severity: 'ERROR',
+2025-10-31T13:49:11.663378713Z [err]    code: '42703',
+2025-10-31T13:49:11.663389458Z [err]    detail: undefined,
+2025-10-31T13:49:11.663395074Z [err]    hint: undefined,
+2025-10-31T13:49:11.663400660Z [err]    position: '41',
+2025-10-31T13:49:11.663405910Z [err]    internalPosition: undefined,
+2025-10-31T13:49:11.663411243Z [err]    internalQuery: undefined,
+2025-10-31T13:49:11.663416621Z [err]    where: undefined,
+2025-10-31T13:49:11.663421858Z [err]    schema: undefined,
+2025-10-31T13:49:11.663427462Z [err]    table: undefined,
+2025-10-31T13:49:11.663433541Z [err]    column: undefined,
+2025-10-31T13:49:11.663438791Z [err]    dataType: undefined,
+2025-10-31T13:49:11.663443816Z [err]    constraint: undefined,
+2025-10-31T13:49:11.663449248Z [err]    file: 'parse_target.c',
+2025-10-31T13:49:21.591548518Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T13:49:21.591557524Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T13:49:21.591569877Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T13:49:21.591574756Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T13:49:21.591582449Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T13:49:21.591589490Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11330:11) {
+2025-10-31T13:49:21.591596714Z [err]    length: 135,
+2025-10-31T13:49:21.591603762Z [err]    severity: 'ERROR',
+2025-10-31T13:49:21.591610450Z [err]    code: '42703',
+2025-10-31T13:49:21.591616233Z [err]    detail: undefined,
+2025-10-31T13:49:21.591623051Z [err]    hint: undefined,
+2025-10-31T13:49:21.591629179Z [err]    position: '41',
+2025-10-31T13:49:21.591636567Z [err]    internalPosition: undefined,
+2025-10-31T13:49:21.591643184Z [err]    internalQuery: undefined,
+2025-10-31T13:49:21.591649074Z [err]    where: undefined,
+2025-10-31T13:49:21.591654773Z [err]    schema: undefined,
+2025-10-31T13:49:21.591661108Z [err]    table: undefined,
+2025-10-31T13:49:21.591665426Z [err]    column: undefined,
+2025-10-31T13:49:21.591669752Z [err]    dataType: undefined,
+2025-10-31T13:49:21.591673968Z [err]    constraint: undefined,
+2025-10-31T13:49:21.591678068Z [err]    file: 'parse_target.c',
+2025-10-31T13:49:21.591682795Z [err]    line: '1065',
+2025-10-31T13:49:21.591687632Z [err]    routine: 'checkInsertTargets'
+2025-10-31T13:49:21.591692048Z [err]  }
+2025-10-31T13:49:21.679151315Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T13:49:21.679161467Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T13:49:21.679168234Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T13:49:21.679174554Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T13:49:21.679179841Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T13:49:21.679185896Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11354:11) {
+2025-10-31T13:49:21.679192328Z [err]    length: 135,
+2025-10-31T13:49:21.679197349Z [err]    severity: 'ERROR',
+2025-10-31T13:49:21.679202456Z [err]    code: '42703',
+2025-10-31T13:49:21.679207154Z [err]    detail: undefined,
+2025-10-31T13:49:21.679211904Z [err]    hint: undefined,
+2025-10-31T13:49:21.679218559Z [err]    position: '41',
+2025-10-31T13:49:21.679223699Z [err]    internalPosition: undefined,
+2025-10-31T13:49:21.679233558Z [err]    internalQuery: undefined,
+2025-10-31T13:49:21.679238836Z [err]    where: undefined,
+2025-10-31T13:49:21.679243931Z [err]    schema: undefined,
+2025-10-31T13:49:21.679248952Z [err]    table: undefined,
+2025-10-31T13:49:21.679254526Z [err]    column: undefined,
+2025-10-31T13:49:21.679260399Z [err]    dataType: undefined,
+2025-10-31T13:49:21.679265789Z [err]    constraint: undefined,
+2025-10-31T13:49:21.679271609Z [err]    file: 'parse_target.c',
+2025-10-31T13:49:21.679277023Z [err]    line: '1065',
+2025-10-31T13:49:21.679282968Z [err]    routine: 'checkInsertTargets'
+2025-10-31T13:49:21.679288642Z [err]  }
+2025-10-31T13:49:31.655794823Z [err]    internalQuery: undefined,
+2025-10-31T13:49:31.655807785Z [err]    where: undefined,
+2025-10-31T13:49:31.655813254Z [err]  }
+2025-10-31T13:49:31.655823599Z [err]    schema: undefined,
+2025-10-31T13:49:31.655828549Z [err]    table: undefined,
+2025-10-31T13:49:31.655833670Z [err]    column: undefined,
+2025-10-31T13:49:31.655839808Z [err]    dataType: undefined,
+2025-10-31T13:49:31.655853848Z [err]    constraint: undefined,
+2025-10-31T13:49:31.655859654Z [err]    file: 'parse_target.c',
+2025-10-31T13:49:31.655864554Z [err]    line: '1065',
+2025-10-31T13:49:31.655874207Z [err]    routine: 'checkInsertTargets'
+2025-10-31T13:49:31.656189606Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T13:49:31.656197597Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T13:49:31.656206239Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T13:49:31.656217110Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T13:49:31.656224668Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T13:49:31.656232309Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11330:11) {
+2025-10-31T13:49:31.656240127Z [err]    length: 135,
+2025-10-31T13:49:31.656249345Z [err]    severity: 'ERROR',
+2025-10-31T13:49:31.656256413Z [err]    code: '42703',
+2025-10-31T13:49:31.656264415Z [err]    detail: undefined,
+2025-10-31T13:49:31.656272914Z [err]    hint: undefined,
+2025-10-31T13:49:31.656282866Z [err]    position: '41',
+2025-10-31T13:49:31.656290400Z [err]    internalPosition: undefined,
+2025-10-31T13:49:31.682764301Z [err]    position: '41',
+2025-10-31T13:49:31.682774164Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T13:49:31.682779566Z [err]    internalPosition: undefined,
+2025-10-31T13:49:31.682789231Z [err]    internalQuery: undefined,
+2025-10-31T13:49:31.682792397Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T13:49:31.682802987Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T13:49:31.682807800Z [err]    dataType: undefined,
+2025-10-31T13:49:31.682810040Z [err]    schema: undefined,
+2025-10-31T13:49:31.682814051Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T13:49:31.682821259Z [err]    table: undefined,
+2025-10-31T13:49:31.682828106Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T13:49:31.682831225Z [err]    column: undefined,
+2025-10-31T13:49:31.682831641Z [err]    where: undefined,
+2025-10-31T13:49:31.682841091Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11354:11) {
+2025-10-31T13:49:31.682848950Z [err]    length: 135,
+2025-10-31T13:49:31.682855792Z [err]    severity: 'ERROR',
+2025-10-31T13:49:31.682865218Z [err]    code: '42703',
+2025-10-31T13:49:31.682873993Z [err]    detail: undefined,
+2025-10-31T13:49:31.682881141Z [err]    hint: undefined,
+2025-10-31T13:49:31.683956770Z [err]    constraint: undefined,
+2025-10-31T13:49:31.684373178Z [err]    file: 'parse_target.c',
+2025-10-31T13:49:31.684628237Z [err]    line: '1065',
+2025-10-31T13:49:31.684638049Z [err]    routine: 'checkInsertTargets'
+2025-10-31T13:49:31.684645546Z [err]  }
+2025-10-31T13:49:41.592880062Z [err]    column: undefined,
+2025-10-31T13:49:41.592890535Z [err]    dataType: undefined,
+2025-10-31T13:49:41.592890612Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T13:49:41.592897463Z [err]    constraint: undefined,
+2025-10-31T13:49:41.592902038Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T13:49:41.592907179Z [err]    file: 'parse_target.c',
+2025-10-31T13:49:41.592910903Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T13:49:41.592914612Z [err]    line: '1065',
+2025-10-31T13:49:41.592919764Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T13:49:41.592922730Z [err]    routine: 'checkInsertTargets'
+2025-10-31T13:49:41.592927540Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T13:49:41.592930706Z [err]  }
+2025-10-31T13:49:41.592935489Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11330:11) {
+2025-10-31T13:49:41.592947659Z [err]    length: 135,
+2025-10-31T13:49:41.592953682Z [err]    severity: 'ERROR',
+2025-10-31T13:49:41.592959471Z [err]    code: '42703',
+2025-10-31T13:49:41.592965361Z [err]    detail: undefined,
+2025-10-31T13:49:41.592970941Z [err]    hint: undefined,
+2025-10-31T13:49:41.592977710Z [err]    position: '41',
+2025-10-31T13:49:41.592983916Z [err]    internalPosition: undefined,
+2025-10-31T13:49:41.592990697Z [err]    internalQuery: undefined,
+2025-10-31T13:49:41.592996238Z [err]    where: undefined,
+2025-10-31T13:49:41.593001129Z [err]    schema: undefined,
+2025-10-31T13:49:41.593005344Z [err]    table: undefined,
+2025-10-31T13:49:41.674381475Z [err]    column: undefined,
+2025-10-31T13:49:41.674384318Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T13:49:41.674393011Z [err]    dataType: undefined,
+2025-10-31T13:49:41.674393534Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T13:49:41.674400747Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T13:49:41.674402456Z [err]    constraint: undefined,
+2025-10-31T13:49:41.674408075Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T13:49:41.674411453Z [err]    file: 'parse_target.c',
+2025-10-31T13:49:41.674414208Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T13:49:41.674420101Z [err]    line: '1065',
+2025-10-31T13:49:41.674425733Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11354:11) {
+2025-10-31T13:49:41.674426202Z [err]    routine: 'checkInsertTargets'
+2025-10-31T13:49:41.674433915Z [err]  }
+2025-10-31T13:49:41.674436213Z [err]    length: 135,
+2025-10-31T13:49:41.674453082Z [err]    severity: 'ERROR',
+2025-10-31T13:49:41.674459703Z [err]    code: '42703',
+2025-10-31T13:49:41.674466699Z [err]    detail: undefined,
+2025-10-31T13:49:41.674472517Z [err]    hint: undefined,
+2025-10-31T13:49:41.674477935Z [err]    position: '41',
+2025-10-31T13:49:41.674483711Z [err]    internalPosition: undefined,
+2025-10-31T13:49:41.674489666Z [err]    internalQuery: undefined,
+2025-10-31T13:49:41.674496778Z [err]    where: undefined,
+2025-10-31T13:49:41.674502541Z [err]    schema: undefined,
+2025-10-31T13:49:41.674508575Z [err]    table: undefined,
+2025-10-31T13:49:51.648571928Z [err]    table: undefined,
+2025-10-31T13:49:51.648582380Z [err]    column: undefined,
+2025-10-31T13:49:51.648588621Z [err]    dataType: undefined,
+2025-10-31T13:49:51.648618241Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T13:49:51.648626591Z [err]    constraint: undefined,
+2025-10-31T13:49:51.648631820Z [err]    file: 'parse_target.c',
+2025-10-31T13:49:51.648638146Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11354:11) {
+2025-10-31T13:49:51.648639420Z [err]    line: '1065',
+2025-10-31T13:49:51.648642174Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T13:49:51.648650609Z [err]    routine: 'checkInsertTargets'
+2025-10-31T13:49:51.648651419Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T13:49:51.648652092Z [err]    length: 135,
+2025-10-31T13:49:51.648659631Z [err]  }
+2025-10-31T13:49:51.648661121Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T13:49:51.648663339Z [err]    severity: 'ERROR',
+2025-10-31T13:49:51.648671185Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T13:49:51.648674929Z [err]    code: '42703',
+2025-10-31T13:49:51.648683022Z [err]    detail: undefined,
+2025-10-31T13:49:51.648690496Z [err]    hint: undefined,
+2025-10-31T13:49:51.648698163Z [err]    position: '41',
+2025-10-31T13:49:51.648710156Z [err]    internalPosition: undefined,
+2025-10-31T13:49:51.648718561Z [err]    internalQuery: undefined,
+2025-10-31T13:49:51.648725860Z [err]    where: undefined,
+2025-10-31T13:49:51.648732338Z [err]    schema: undefined,
+2025-10-31T13:51:51.308074414Z [inf]  [CACHE] Stats: {
+2025-10-31T13:51:51.308082749Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T13:51:51.308089254Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T13:51:51.308094125Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T13:51:51.308099136Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T13:51:51.308104967Z [inf]  }
+2025-10-31T14:01:53.735239750Z [inf]  }
+2025-10-31T14:01:53.735279960Z [inf]  [CACHE] Stats: {
+2025-10-31T14:01:53.735285674Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T14:01:53.735291807Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T14:01:53.735298918Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T14:01:53.735305575Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T14:11:46.836273886Z [inf]  [CACHE] Stats: {
+2025-10-31T14:11:46.836283136Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T14:11:46.836290034Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T14:11:46.836296671Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T14:11:46.836306750Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T14:11:46.836313233Z [inf]  }
+2025-10-31T14:21:51.101639321Z [inf]  [CACHE] Stats: {
+2025-10-31T14:21:51.101644517Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T14:21:51.101650031Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T14:21:51.101656306Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T14:21:51.101662092Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T14:21:51.101668095Z [inf]  }
+2025-10-31T14:31:53.355739070Z [inf]  }
+2025-10-31T14:31:53.356260578Z [inf]  [CACHE] Stats: {
+2025-10-31T14:31:53.356269747Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T14:31:53.356275258Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T14:31:53.356280954Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T14:31:53.356286880Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T14:40:54.901332325Z [err]  [HEALTH-MONITOR] Failed to create incident: error: column "type" of relation "platform_incidents" does not exist
+2025-10-31T14:40:54.901336965Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T14:40:54.901341639Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T14:40:54.901346616Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T14:40:54.901351811Z [err]      at async PlatformHealthMonitor.detectIncident (file:///app/dist/index.js:11375:33)
+2025-10-31T14:40:54.901356701Z [err]      at async PlatformHealthMonitor.checkHealth (file:///app/dist/index.js:11354:11) {
+2025-10-31T14:40:54.901363183Z [err]    length: 135,
+2025-10-31T14:40:54.901370168Z [err]    severity: 'ERROR',
+2025-10-31T14:40:54.901376442Z [err]    code: '42703',
+2025-10-31T14:40:54.901383565Z [err]    detail: undefined,
+2025-10-31T14:40:54.901390068Z [err]    hint: undefined,
+2025-10-31T14:40:54.901397416Z [err]    position: '41',
+2025-10-31T14:40:54.901403509Z [err]    internalPosition: undefined,
+2025-10-31T14:40:54.901410039Z [err]    internalQuery: undefined,
+2025-10-31T14:40:54.901415642Z [err]    where: undefined,
+2025-10-31T14:40:54.901421168Z [err]    schema: undefined,
+2025-10-31T14:40:54.901426700Z [err]    table: undefined,
+2025-10-31T14:40:54.901431046Z [err]    column: undefined,
+2025-10-31T14:40:54.901435165Z [err]    dataType: undefined,
+2025-10-31T14:40:54.901439587Z [err]    constraint: undefined,
+2025-10-31T14:40:54.901445209Z [err]    file: 'parse_target.c',
+2025-10-31T14:40:54.901450179Z [err]    line: '1065',
+2025-10-31T14:40:54.901454549Z [err]    routine: 'checkInsertTargets'
+2025-10-31T14:40:54.901459415Z [err]  }
+2025-10-31T14:41:44.913082910Z [inf]  [CACHE] Stats: {
+2025-10-31T14:41:44.913091123Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T14:41:44.913096839Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T14:41:44.913102874Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T14:41:44.913107722Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T14:41:44.913112080Z [inf]  }
+2025-10-31T14:51:47.197202814Z [inf]  [CACHE] Stats: {
+2025-10-31T14:51:47.197217826Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T14:51:47.197233739Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T14:51:47.197250630Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T14:51:47.197257874Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T14:51:47.197270098Z [inf]  }
+2025-10-31T15:01:51.350619028Z [inf]  [CACHE] Stats: {
+2025-10-31T15:01:51.350638031Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T15:01:51.350648688Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T15:01:51.350657139Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T15:01:51.350666440Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T15:01:51.350675174Z [inf]  }
+2025-10-31T15:11:53.107700114Z [inf]  [CACHE] Stats: {
+2025-10-31T15:11:53.107704956Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T15:11:53.107709735Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T15:11:53.107714941Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T15:11:53.107719878Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T15:11:53.107729857Z [inf]  }
+2025-10-31T15:21:44.221766250Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T15:21:44.221778539Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T15:21:44.221790098Z [inf]  }
+2025-10-31T15:21:44.221886296Z [inf]  [CACHE] Stats: {
+2025-10-31T15:21:44.221900509Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T15:21:44.221907698Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T15:31:46.013091538Z [inf]  [CACHE] Stats: {
+2025-10-31T15:31:46.013100499Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T15:31:46.013106134Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T15:31:46.013121615Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T15:31:46.013127784Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T15:31:46.013137009Z [inf]  }
+2025-10-31T15:41:48.009491020Z [inf]  [CACHE] Stats: {
+2025-10-31T15:41:48.009499784Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T15:41:48.009505224Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T15:41:48.009511657Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T15:41:48.009517999Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T15:41:48.009525161Z [inf]  }
+2025-10-31T15:51:50.225500369Z [inf]  [CACHE] Stats: {
+2025-10-31T15:51:50.225509930Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T15:51:50.225517949Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T15:51:50.225526986Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T15:51:50.225536956Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T15:51:50.225544157Z [inf]  }
+2025-10-31T16:01:51.476933875Z [inf]  [CACHE] Stats: {
+2025-10-31T16:01:51.476939655Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T16:01:51.476946012Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T16:01:51.476951393Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T16:01:51.476957427Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T16:01:51.476962330Z [inf]  }
+2025-10-31T16:11:53.127846582Z [inf]  [CACHE] Stats: {
+2025-10-31T16:11:53.127851917Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T16:11:53.127857565Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T16:11:53.127863509Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T16:11:53.127869574Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T16:11:53.127875354Z [inf]  }
+2025-10-31T16:21:44.851316111Z [inf]  [CACHE] Stats: {
+2025-10-31T16:21:44.851321312Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T16:21:44.851382973Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T16:21:44.851388124Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T16:21:44.851393742Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T16:21:44.851399061Z [inf]  }
+2025-10-31T16:31:47.317368291Z [inf]  [CACHE] Stats: {
+2025-10-31T16:31:47.317376323Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T16:31:47.317381560Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T16:31:47.317386698Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T16:31:47.317391631Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T16:31:47.317396689Z [inf]  }
+2025-10-31T16:41:49.883920317Z [inf]  [CACHE] Stats: {
+2025-10-31T16:41:49.883928167Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T16:41:49.883937781Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T16:41:49.883944630Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T16:41:49.883951663Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T16:41:49.883959934Z [inf]  }
+2025-10-31T16:51:51.654180351Z [inf]  [CACHE] Stats: {
+2025-10-31T16:51:51.654187519Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T16:51:51.654194238Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T16:51:51.654200548Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T16:51:51.654211478Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T16:51:51.654222871Z [inf]  }
+2025-10-31T17:01:44.278640922Z [inf]  [CACHE] Stats: {
+2025-10-31T17:01:44.278653037Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T17:01:44.278660475Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T17:01:44.278668670Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T17:01:44.278675101Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T17:01:44.278681515Z [inf]  }
+2025-10-31T17:11:48.613888424Z [inf]  [CACHE] Stats: {
+2025-10-31T17:11:48.613896250Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T17:11:48.613903890Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T17:11:48.613911265Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T17:11:48.613918286Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T17:11:48.613924781Z [inf]  }
+2025-10-31T17:21:50.893714845Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T17:21:50.893725787Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T17:21:50.893733492Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T17:21:50.893740583Z [inf]  }
+2025-10-31T17:21:50.893813824Z [inf]  [CACHE] Stats: {
+2025-10-31T17:21:50.893819652Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T17:31:52.184125175Z [inf]  }
+2025-10-31T17:31:52.184236826Z [inf]  [CACHE] Stats: {
+2025-10-31T17:31:52.184244208Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T17:31:52.184250981Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T17:31:52.184258516Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T17:31:52.184267465Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T17:41:45.287996529Z [inf]  [CACHE] Stats: {
+2025-10-31T17:41:45.288004271Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T17:41:45.288011583Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T17:41:45.288018881Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T17:41:45.288026328Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T17:41:45.288033577Z [inf]  }
+2025-10-31T17:51:47.973140257Z [inf]  [CACHE] Stats: {
+2025-10-31T17:51:47.973147616Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T17:51:47.973152787Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T17:51:47.973157764Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T17:51:47.973161697Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T17:51:47.973172046Z [inf]  }
+2025-10-31T18:01:50.461188730Z [inf]  [CACHE] Stats: {
+2025-10-31T18:01:50.461198966Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T18:01:50.461206106Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T18:01:50.461219125Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T18:01:50.461225239Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T18:01:50.461230943Z [inf]  }
+2025-10-31T18:11:52.982935533Z [inf]  [CACHE] Stats: {
+2025-10-31T18:11:52.982942713Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T18:11:52.982961165Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T18:11:52.982968141Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T18:11:52.982974938Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T18:11:52.982982483Z [inf]  }
+2025-10-31T18:21:44.790018204Z [inf]  [CACHE] Stats: {
+2025-10-31T18:21:44.790027051Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T18:21:44.790033915Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T18:21:44.790038447Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T18:21:44.790042657Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T18:21:44.790047302Z [inf]  }
+2025-10-31T18:31:47.182933126Z [inf]  [CACHE] Stats: {
+2025-10-31T18:31:47.182941852Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T18:31:47.182948047Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T18:31:47.182953796Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T18:31:47.182959909Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T18:31:47.182965157Z [inf]  }
+2025-10-31T18:41:49.074922361Z [inf]  [CACHE] Stats: {
+2025-10-31T18:41:49.074931082Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T18:41:49.074937269Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T18:41:49.074942552Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T18:41:49.075014709Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T18:41:49.075020143Z [inf]  }
+2025-10-31T18:51:51.754313247Z [inf]  [CACHE] Stats: {
+2025-10-31T18:51:51.754321726Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T18:51:51.754328618Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T18:51:51.754335759Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T18:51:51.754341529Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T18:51:51.754349413Z [inf]  }
+2025-10-31T19:01:44.144532779Z [inf]  }
+2025-10-31T19:01:44.144607777Z [inf]  [CACHE] Stats: {
+2025-10-31T19:01:44.144611980Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T19:01:44.144615760Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T19:01:44.144620181Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T19:01:44.144624163Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T19:11:46.105528825Z [inf]  [CACHE] Stats: {
+2025-10-31T19:11:46.105535767Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T19:11:46.105544680Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T19:11:46.105552470Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T19:11:46.105561640Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T19:11:46.105570265Z [inf]  }
+2025-10-31T19:21:48.130065286Z [inf]  [CACHE] Stats: {
+2025-10-31T19:21:48.130080814Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T19:21:48.130090018Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T19:21:48.130097321Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T19:21:48.130101863Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T19:21:48.130106424Z [inf]  }
+2025-10-31T19:31:50.712652269Z [inf]  [CACHE] Stats: {
+2025-10-31T19:31:50.712657265Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T19:31:50.712663471Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T19:31:50.712669916Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T19:31:50.712677776Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T19:31:50.712686476Z [inf]  }
+2025-10-31T19:41:51.912118357Z [inf]  [CACHE] Stats: {
+2025-10-31T19:41:51.912129550Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T19:41:51.912137330Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T19:41:51.912145979Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T19:41:51.912153506Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T19:41:51.912160409Z [inf]  }
+2025-10-31T19:51:53.540733528Z [inf]  [CACHE] Stats: {
+2025-10-31T19:51:53.540739825Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T19:51:53.540746733Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T19:51:53.540753040Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T19:51:53.540761573Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T19:51:53.540770974Z [inf]  }
+2025-10-31T20:01:46.197922165Z [inf]  [CACHE] Stats: {
+2025-10-31T20:01:46.197932881Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T20:01:46.197938804Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T20:01:46.197944477Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T20:01:46.197950238Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T20:01:46.197962420Z [inf]  }
+2025-10-31T20:11:48.558273510Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T20:11:48.558284939Z [inf]  }
+2025-10-31T20:11:48.558354106Z [inf]  [CACHE] Stats: {
+2025-10-31T20:11:48.558361594Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T20:11:48.558368685Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T20:11:48.558376358Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T20:21:50.855040982Z [inf]  [CACHE] Stats: {
+2025-10-31T20:21:50.855047918Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T20:21:50.855056117Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T20:21:50.855101466Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T20:21:50.855109660Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T20:21:50.855118247Z [inf]  }
+2025-10-31T20:31:53.282923687Z [inf]  [CACHE] Stats: {
+2025-10-31T20:31:53.282928771Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T20:31:53.282933930Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T20:31:53.282938834Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T20:31:53.282943733Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T20:31:53.282948696Z [inf]  }
+2025-10-31T20:41:44.752746235Z [inf]  [CACHE] Stats: {
+2025-10-31T20:41:44.752752908Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T20:41:44.752760081Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T20:41:44.752767471Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T20:41:44.752774112Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T20:41:44.752781090Z [inf]  }

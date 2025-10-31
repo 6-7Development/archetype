@@ -6,7 +6,6 @@ import { apiLimiter } from "./rateLimiting";
 import { db } from "./db";
 import { files } from "@shared/schema";
 import { autoHealing } from "./autoHealing";
-import { ensureTablesExist } from "./dbMigrations";
 
 // DEPLOYMENT VERIFICATION: October 28, 2025 01:50 UTC - LomuAI execution fix deployed
 // ✅ LomuAI system prompt rewritten to force immediate tool execution
@@ -157,14 +156,6 @@ app.use((req, res, next) => {
       await db.select().from(files).limit(1);
     }, 5, 1000);
     console.log('✅ Database connected successfully');
-    
-    // AUTO-CREATE MISSING TABLES (bypasses drizzle-kit issues on Railway)
-    try {
-      await ensureTablesExist();
-    } catch (tableError: any) {
-      console.error('⚠️ Failed to auto-create tables:', tableError.message);
-      // Continue - tables might already exist from previous run
-    }
   } catch (error: any) {
     console.error('❌ Database connection failed after retries:', error.message);
     console.error('⚠️ Running in degraded mode (database unavailable)');
