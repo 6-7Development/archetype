@@ -1,0 +1,251 @@
+2025-10-31T22:18:15.000000000Z [inf]  Starting Container
+2025-10-31T22:18:16.953889958Z [inf]  ======================================
+2025-10-31T22:18:16.953894438Z [inf]  🚂 RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-10-31T22:18:16.953898804Z [inf]  ======================================
+2025-10-31T22:18:16.953903748Z [inf]  Time: Fri Oct 31 22:18:15 UTC 2025
+2025-10-31T22:18:16.953907600Z [inf]  Node version: v20.19.5
+2025-10-31T22:18:16.953911182Z [inf]  NPM version: 10.8.2
+2025-10-31T22:18:16.953916041Z [inf]  
+2025-10-31T22:18:16.953920244Z [inf]  📁 Current directory: /app
+2025-10-31T22:18:16.953924831Z [inf]  📂 Listing root files:
+2025-10-31T22:18:16.953928710Z [inf]  total 416
+2025-10-31T22:18:16.953933158Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 31 22:17 .
+2025-10-31T22:18:16.953937514Z [inf]  dr-xr-xr-x    1 root     root          4096 Oct 31 22:18 ..
+2025-10-31T22:18:16.953942479Z [inf]  -rw-rw-r--    1 root     root          6775 Oct 31 22:15 create-healing-tables.sql
+2025-10-31T22:18:16.953946403Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 31 22:06 dist
+2025-10-31T22:18:16.953950196Z [inf]  -rw-rw-r--    1 root     root           325 Oct 31 22:05 drizzle.config.ts
+2025-10-31T22:18:16.953953912Z [inf]  -rw-rw-r--    1 root     root          2168 Oct 31 22:15 drop-old-tables.js
+2025-10-31T22:18:16.953959131Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 31 21:16 node_modules
+2025-10-31T22:18:16.953963008Z [inf]  -rw-rw-r--    1 root     root        355683 Oct 31 21:16 package-lock.json
+2025-10-31T22:18:16.953966540Z [inf]  -rw-rw-r--    1 root     root          4586 Oct 31 21:16 package.json
+2025-10-31T22:18:16.953970348Z [inf]  -rwxrwxr-x    1 root     root          3254 Oct 31 22:05 railway-start.sh
+2025-10-31T22:18:16.953973853Z [inf]  -rw-rw-r--    1 root     root          9465 Oct 31 22:05 replit.md
+2025-10-31T22:18:16.953977397Z [inf]  drwxr-xr-x   12 root     root          4096 Oct 31 22:05 server
+2025-10-31T22:18:16.958145062Z [inf]  [DROP-TABLES] ✅ Dropped platform_incident_playbooks
+2025-10-31T22:18:16.958154162Z [inf]  [DROP-TABLES] ✅ Dropped ai_fix_attempts
+2025-10-31T22:18:16.958160262Z [inf]  drwxr-xr-x    2 root     root          4096 Oct 31 22:05 shared
+2025-10-31T22:18:16.958161071Z [inf]  [DROP-TABLES] ✅ Dropped platform_heal_attempts
+2025-10-31T22:18:16.958166388Z [inf]  -rw-rw-r--    1 root     root           960 Oct 31 22:05 tsconfig.json
+2025-10-31T22:18:16.958168333Z [inf]  [DROP-TABLES] ✅ Dropped platform_healing_sessions
+2025-10-31T22:18:16.958171927Z [inf]  
+2025-10-31T22:18:16.958174537Z [inf]  [DROP-TABLES] ✅ Dropped platform_incidents
+2025-10-31T22:18:16.958177286Z [inf]  🔍 Checking for dist directory...
+2025-10-31T22:18:16.958182044Z [inf]  ✅ dist directory exists
+2025-10-31T22:18:16.958186697Z [inf]  📂 Contents:
+2025-10-31T22:18:16.958190669Z [inf]  total 812
+2025-10-31T22:18:16.958194922Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 31 22:06 .
+2025-10-31T22:18:16.958199435Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 31 22:17 ..
+2025-10-31T22:18:16.958203816Z [inf]  -rw-r--r--    1 root     root        817255 Oct 31 22:06 index.js
+2025-10-31T22:18:16.958207587Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 31 22:06 public
+2025-10-31T22:18:16.958211792Z [inf]  ✅ dist/index.js found
+2025-10-31T22:18:16.958215597Z [inf]  
+2025-10-31T22:18:16.958221445Z [inf]  🗑️ Dropping old tables with incorrect schema...
+2025-10-31T22:18:16.958226877Z [inf]  [DROP-TABLES] Dropping old healing tables with incorrect schema...
+2025-10-31T22:18:16.958231167Z [inf]  [DROP-TABLES] ✅ Dropped healing_messages
+2025-10-31T22:18:16.958234860Z [inf]  [DROP-TABLES] ✅ Dropped healing_conversations
+2025-10-31T22:18:16.958238877Z [inf]  [DROP-TABLES] ✅ Dropped healing_targets
+2025-10-31T22:18:16.958242989Z [inf]  [DROP-TABLES] ✅ Dropped ai_knowledge_base
+2025-10-31T22:18:16.960557411Z [inf]  [DROP-TABLES] ✅ All old tables dropped successfully
+2025-10-31T22:18:16.960562546Z [inf]  
+2025-10-31T22:18:16.960566668Z [inf]  🔧 Creating healing tables with correct schema...
+2025-10-31T22:18:16.960572241Z [inf]  ⚠️ psql not found, using node-postgres...
+2025-10-31T22:18:16.960576241Z [inf]  ✅ Tables created
+2025-10-31T22:18:16.960580556Z [inf]  
+2025-10-31T22:18:16.960585218Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-10-31T22:18:16.960589003Z [inf]  ✅ Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-10-31T22:18:17.269888180Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-10-31T22:18:17.269913415Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-10-31T22:18:17.994628751Z [inf]  Using 'pg' driver for database querying
+2025-10-31T22:18:17.994633780Z [inf]  [⣷] Pulling schema from database...
+2025-10-31T22:18:17.994639479Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-31T22:18:18.072264554Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-31T22:18:18.198342707Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-31T22:18:18.327430866Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-31T22:18:18.960085557Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-31T22:18:18.960091728Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-31T22:18:18.960097977Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-31T22:18:18.960105222Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-31T22:18:18.967202787Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-31T22:18:19.099275522Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-31T22:18:19.248540656Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-31T22:18:19.352201759Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-31T22:18:19.898051534Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-31T22:18:19.898099254Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-31T22:18:19.898111106Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-31T22:18:19.898149402Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-31T22:18:20.001056698Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-31T22:18:20.122292524Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-31T22:18:20.249531993Z [inf]  [2K[1G[✓] Pulling schema from database...
+2025-10-31T22:18:20.378001074Z [inf]    ~ meta_sysop_memory › conversation_states       rename table
+2025-10-31T22:18:20.378015478Z [inf]    ~ meta_sysop_attachments › conversation_states  rename table
+2025-10-31T22:18:20.378023554Z [inf]    ~ meta_sysop_sessions › conversation_states     rename table
+2025-10-31T22:18:20.378098937Z [inf]  [?25l
+2025-10-31T22:18:20.378104513Z [inf]  Is conversation_states table created or renamed from another table?
+2025-10-31T22:18:20.378109739Z [inf]  ❯ + conversation_states                           create table
+2025-10-31T22:18:20.378115000Z [inf]    ~ meta_sysop_automation › conversation_states   rename table
+2025-10-31T22:18:20.378122521Z [inf]    ~ meta_sysop_instructions › conversation_states rename table
+2025-10-31T22:18:20.378128395Z [inf]    ~ meta_sysop_knowledge › conversation_states    rename table
+2025-10-31T22:18:30.284828193Z [inf]  GITHUB_REPO: 6-7Development/archetype
+2025-10-31T22:18:30.284839482Z [inf]  GITHUB_BRANCH: main
+2025-10-31T22:18:30.284842860Z [inf]    ~ meta_sysop_jobs › conversation_states         rename table✅ Database schema ready!
+2025-10-31T22:18:30.284848770Z [inf]  ANTHROPIC_API_KEY: ✓ SET
+2025-10-31T22:18:30.284851959Z [inf]  
+2025-10-31T22:18:30.284857407Z [inf]  
+2025-10-31T22:18:30.284861110Z [inf]  🔍 Environment Check:
+2025-10-31T22:18:30.284865224Z [inf]  📄 Ensuring replit.md is available...
+2025-10-31T22:18:30.284870849Z [inf]  NODE_ENV: production
+2025-10-31T22:18:30.284876992Z [inf]  PORT: 8080
+2025-10-31T22:18:30.284883792Z [inf]  DATABASE_URL: ✓ SET (hidden for security)
+2025-10-31T22:18:30.284892387Z [inf]  GITHUB_TOKEN: ✓ SET
+2025-10-31T22:18:30.285770397Z [inf]  Command: node dist/index.js
+2025-10-31T22:18:30.285779478Z [inf]  
+2025-10-31T22:18:30.285783861Z [inf]  ✅ replit.md already present
+2025-10-31T22:18:30.285789666Z [inf]  
+2025-10-31T22:18:30.285794402Z [inf]  🚀 Starting Node.js application...
+2025-10-31T22:18:31.953220214Z [inf]  [LOMU-AI-CHAT] Live preview WebSocket initialized
+2025-10-31T22:18:31.953233260Z [inf]  [WEBHOOKS] Webhooks router mounted at /api/webhooks
+2025-10-31T22:18:31.953247779Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-31T22:18:31.953254847Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-31T22:18:31.953263890Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-31T22:18:31.953266702Z [inf]  [PLATFORM-HEALING] Platform healing service connected to WebSocket
+2025-10-31T22:18:31.953273910Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-10-31T22:18:31.953283144Z [inf]  [db] Connection string includes SSL params: true
+2025-10-31T22:18:31.953288299Z [inf]  [PERFORMANCE] System prompt base cached (1544 chars) - saves ~4KB per request
+2025-10-31T22:18:31.953295091Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-31T22:18:31.953298414Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-31T22:18:31.953302311Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller (SSE streams excluded)
+2025-10-31T22:18:31.953309928Z [inf]  📡 WebSocket server initialized at /ws
+2025-10-31T22:18:31.953315746Z [inf]  [HEAL-ORCHESTRATOR] Metrics broadcaster connected
+2025-10-31T22:18:31.953323416Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-31T22:18:31.953331918Z [inf]  [WEBHOOKS] Webhooks router connected to metrics broadcaster
+2025-10-31T22:18:31.953333001Z [inf]  [PLATFORM-HEALING] WebSocket server attached for preview broadcasts
+2025-10-31T22:18:31.953343714Z [inf]  [LOMU-AI-JOB-MANAGER] Initialized with WebSocket support
+2025-10-31T22:18:31.953353235Z [inf]  [LOMU-AI-JOB-MANAGER] Job manager connected to WebSocket
+2025-10-31T22:18:31.953361531Z [inf]  [LOMU-AI] WebSocket server initialized for live preview broadcasts
+2025-10-31T22:18:31.956655241Z [inf]  ✅ All routes registered successfully
+2025-10-31T22:18:31.956660609Z [inf]  🔍 Testing database connection...
+2025-10-31T22:18:31.956666246Z [inf]  10:18:31 PM [express] serving on port 8080
+2025-10-31T22:18:31.956672003Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-10-31T22:18:31.956678274Z [inf]  ✅ Database connected successfully
+2025-10-31T22:18:31.956684739Z [inf]  💡 Auto-healing system DISABLED (users trigger manually via UI)
+2025-10-31T22:18:31.956691938Z [inf]     👥 Users pay for their own AI tokens when using Platform Healing
+2025-10-31T22:18:31.956701476Z [inf]  [HEALTH-MONITOR] Starting platform health monitoring...
+2025-10-31T22:18:31.956707232Z [inf]  [HEALTH-MONITOR] Loaded 0 open incidents
+2025-10-31T22:18:31.956713032Z [inf]  [HEALTH-MONITOR] Monitoring started
+2025-10-31T22:18:31.956718529Z [inf]  [HEAL-ORCHESTRATOR] Starting autonomous healing orchestrator...
+2025-10-31T22:18:31.956724287Z [inf]  [HEAL-ORCHESTRATOR] Orchestrator started
+2025-10-31T22:18:31.956730640Z [inf]  
+2025-10-31T22:18:31.956736613Z [inf]  🔍 Checking GitHub integration configuration...
+2025-10-31T22:18:31.956742519Z [inf]  ✅ GitHub integration configured successfully
+2025-10-31T22:18:31.956749085Z [inf]     - Repository: 6-7Development/archetype
+2025-10-31T22:18:31.956754715Z [inf]     - Branch: main
+2025-10-31T22:18:31.956760218Z [inf]     - Token: ✓ (configured)
+2025-10-31T22:18:31.956766580Z [inf]     - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-31T22:18:31.956772876Z [inf]     - Maintenance mode: Available for owner
+2025-10-31T22:18:31.956780803Z [inf]  
+2025-10-31T22:28:34.393169871Z [inf]  [CACHE] Stats: {
+2025-10-31T22:28:34.393180087Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T22:28:34.393186201Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T22:28:34.393191834Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T22:28:34.393196165Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T22:28:34.393201225Z [inf]  }
+2025-10-31T22:38:35.845447313Z [inf]  [CACHE] Stats: {
+2025-10-31T22:38:35.845455682Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T22:38:35.845461343Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T22:38:35.845467277Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T22:38:35.845473362Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T22:38:35.845479814Z [inf]  }
+2025-10-31T22:44:57.887354398Z [inf]  [HEAL-ORCHESTRATOR] 🧠 Checking knowledge base for similar errors...
+2025-10-31T22:44:57.887365311Z [inf]  [AI-HEALING] Starting diagnosis and fix...
+2025-10-31T22:44:57.887374412Z [inf]  [AI-HEALING] Prompt: Diagnose platform safety issues: High CPU usage detected. Review recent changes and suggest corrections.
+2025-10-31T22:44:57.887374486Z [inf]    'package.json',
+2025-10-31T22:44:57.887382002Z [inf]  [AI-HEALING] Executing tool: search_platform_files { pattern: '*' }
+2025-10-31T22:44:57.887389757Z [inf]    'package-lock.json',
+2025-10-31T22:44:57.887390951Z [inf]  [AI-HEALING] Found files: [
+2025-10-31T22:44:57.887401180Z [inf]    'node_modules',
+2025-10-31T22:44:57.887401692Z [inf]    'tsconfig.json',
+2025-10-31T22:44:57.887413140Z [inf]    'drop-old-tables.js',
+2025-10-31T22:44:57.887419156Z [inf]    'shared',
+2025-10-31T22:44:57.887426030Z [inf]    'drizzle.config.ts',
+2025-10-31T22:44:57.887430645Z [inf]  [HEALTH-MONITOR] 🚨 Incident detected: safety_issue (ae34f87b-f7b3-43ba-adf8-cde290b6ecd8)
+2025-10-31T22:44:57.887433935Z [inf]    'server',
+2025-10-31T22:44:57.887437141Z [inf]    'dist',
+2025-10-31T22:44:57.887444599Z [inf]    'replit.md',
+2025-10-31T22:44:57.887445353Z [inf]  [HEAL-ORCHESTRATOR] 🚨 Handling incident: safety_issue (ae34f87b-f7b3-43ba-adf8-cde290b6ecd8)
+2025-10-31T22:44:57.887460747Z [inf]  [HEAL-ORCHESTRATOR] Starting healing session for incident ae34f87b-f7b3-43ba-adf8-cde290b6ecd8
+2025-10-31T22:44:57.887460867Z [inf]    'railway-start.sh',
+2025-10-31T22:44:57.887471571Z [inf]  [HEAL-ORCHESTRATOR] Created healing session 4dfc5176-3e83-4b06-87ee-2c0a7cf34545
+2025-10-31T22:44:57.887478543Z [inf]  [HEAL-ORCHESTRATOR] 🤖 Starting autonomous healing...
+2025-10-31T22:44:57.887486119Z [inf]  [HEAL-ORCHESTRATOR] Diagnostic prompt: Diagnose platform safety issues: High CPU usage detected. Review recent changes and suggest corrections.
+2025-10-31T22:44:57.890338467Z [inf]    'create-healing-tables.sql'
+2025-10-31T22:44:57.890343773Z [inf]  ]
+2025-10-31T22:44:57.890348896Z [inf]  [AI-HEALING] Diagnosis: I'll help you diagnose the high CPU usage issue on the platform. Let me start by exploring the codebase to understand the current state and identify potential causes.
+2025-10-31T22:44:57.890354231Z [inf]  [AI-HEALING] Files modified: []
+2025-10-31T22:44:57.890360069Z [inf]  [HEAL-ORCHESTRATOR] Running REAL verification checks (tsc --noEmit)...
+2025-10-31T22:45:02.085675895Z [inf]  [HEALTH-MONITOR] 🚨 Incident detected: high_cpu (4087ec61-804e-403f-abbf-919223b4694f)
+2025-10-31T22:45:02.085699352Z [inf]  [HEAL-ORCHESTRATOR] 🚨 Handling incident: high_cpu (4087ec61-804e-403f-abbf-919223b4694f)
+2025-10-31T22:45:02.085909512Z [inf]  [HEAL-ORCHESTRATOR] Already healing another incident, queuing...
+2025-10-31T22:45:21.948620809Z [inf]      '\n' +
+2025-10-31T22:45:21.948635801Z [inf]      '\n' +
+2025-10-31T22:45:21.948642714Z [inf]      '<--- JS stacktrace --->\n' +
+2025-10-31T22:45:21.948665483Z [inf]  [HEAL-ORCHESTRATOR] Verification result: ❌ FAIL {
+2025-10-31T22:45:21.948675027Z [inf]    filesExist: true,
+2025-10-31T22:45:21.948675844Z [inf]      '<--- Last few GCs --->\n' +
+2025-10-31T22:45:21.948685121Z [inf]    typescriptValid: false,
+2025-10-31T22:45:21.948686217Z [inf]      '\n' +
+2025-10-31T22:45:21.948694180Z [inf]    errorDetails: '\n' +
+2025-10-31T22:45:21.948698122Z [inf]      '[101:0x7ffae91dc660]    19744 ms: Mark-Compact 472.2 (486.1) -> 468.5 (486.6) MB, 413.78 / 0.00 ms  (average mu = 0.136, current mu = 0.045) allocation failure; scavenge might not succeed\n' +
+2025-10-31T22:45:21.948709141Z [inf]      '[101:0x7ffae91dc660]    20275 ms: Mark-Compact 472.7 (486.6) -> 469.2 (487.3) MB, 456.02 / 0.00 ms  (average mu = 0.139, current mu = 0.141) allocation failure; scavenge might not succeed\n' +
+2025-10-31T22:45:21.948711700Z [inf]      '----- Native stack trace -----\n' +
+2025-10-31T22:45:21.948716123Z [err]  [101:0x7ffae91dc660]    19744 ms: Mark-Compact 472.2 (486.1) -> 468.5 (486.6) MB, 413.78 / 0.00 ms  (average mu = 0.136, current mu = 0.045) allocation failure; scavenge might not succeed
+2025-10-31T22:45:21.948723338Z [inf]      '\n'
+2025-10-31T22:45:21.948728258Z [inf]      '\n' +
+2025-10-31T22:45:21.948733060Z [err]  [101:0x7ffae91dc660]    20275 ms: Mark-Compact 472.7 (486.6) -> 469.2 (487.3) MB, 456.02 / 0.00 ms  (average mu = 0.139, current mu = 0.141) allocation failure; scavenge might not succeed
+2025-10-31T22:45:21.948734467Z [inf]  }
+2025-10-31T22:45:21.948745449Z [inf]      'FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory\n' +
+2025-10-31T22:45:21.948750484Z [err]  [HEAL-ORCHESTRATOR] ❌ TypeScript compilation check FAILED: 
+2025-10-31T22:45:21.948758177Z [err]  <--- Last few GCs --->
+2025-10-31T22:45:21.948765770Z [err]  
+2025-10-31T22:45:21.970824934Z [err]  
+2025-10-31T22:45:21.970832281Z [err]  
+2025-10-31T22:45:21.970840699Z [err]  <--- JS stacktrace --->
+2025-10-31T22:45:21.970847655Z [err]  
+2025-10-31T22:45:21.970855542Z [err]  FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
+2025-10-31T22:45:21.970862847Z [err]  ----- Native stack trace -----
+2025-10-31T22:45:21.970869883Z [err]  
+2025-10-31T22:45:21.970876521Z [err]  
+2025-10-31T22:45:21.970883444Z [err]  [HEAL-ORCHESTRATOR] ❌ Verification failed, rolling back changes...
+2025-10-31T22:45:21.970889890Z [inf]  [HEAL-ORCHESTRATOR] Incident remains open for retry
+2025-10-31T22:48:32.936571871Z [inf]  10:48:30 PM [express] GET /api/projects 304 in 19ms :: []
+2025-10-31T22:48:32.936589269Z [inf]  [DEPLOYMENT-INFO] Using Railway environment variables
+2025-10-31T22:48:32.936593238Z [inf]  10:48:30 PM [express] GET /api/auth/me 304 in 112ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef9…
+2025-10-31T22:48:32.936597253Z [inf]  10:48:26 PM [express] GET /api/deployment-info 200 in 4ms :: {"version":"1.0.0","commitHash":"9872f85…
+2025-10-31T22:48:32.936603924Z [inf]  10:48:26 PM [express] GET /api/auth/me 304 in 7ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef954…
+2025-10-31T22:48:32.936606606Z [inf]  [CACHE] Stats: {
+2025-10-31T22:48:32.936612701Z [inf]  [AUTH] Login attempt for email: root@getdc360.com
+2025-10-31T22:48:32.936614486Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T22:48:32.936620609Z [inf]  [AUTH] Found users: 1
+2025-10-31T22:48:32.936623407Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T22:48:32.936629360Z [inf]  [AUTH] User found: root@getdc360.com has password: true
+2025-10-31T22:48:32.936631847Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T22:48:32.936636956Z [inf]  [AUTH] Verifying password...
+2025-10-31T22:48:32.936639139Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T22:48:32.936645043Z [inf]  [AUTH] Password valid: true
+2025-10-31T22:48:32.936647523Z [inf]  }
+2025-10-31T22:48:32.936653004Z [inf]  [AUTH] Authentication successful for: root@getdc360.com
+2025-10-31T22:48:32.936655999Z [inf]  [HEALING] Auto-creating healing targets for user: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-10-31T22:48:32.936659429Z [inf]  10:48:29 PM [express] POST /api/auth/login 200 in 302ms :: {"success":true,"user":{"id":"723e1301-c72…
+2025-10-31T22:48:32.936672669Z [inf]  [HEALING] Found 0 user projects to create targets for
+2025-10-31T22:48:32.937815254Z [inf]  [HEALING] Created 1 healing targets (1 platform + 0 projects)
+2025-10-31T22:48:32.937822094Z [inf]  10:48:31 PM [express] GET /api/healing/targets 200 in 15ms :: [{"id":"0b2dc4b5-0b9b-4237-bfb0-332743c…
+2025-10-31T22:48:35.004938249Z [inf]  10:48:34 PM [express] GET /api/healing/conversations/0b2dc4b5-0b9b-4237-bfb0-332743c64e48 200 in 10ms…
+2025-10-31T22:48:37.849129738Z [inf]  10:48:37 PM [express] GET /api/diagnostics/platform 200 in 12ms
+2025-10-31T22:48:39.137915259Z [inf]  10:48:39 PM [express] GET /api/diagnostics/platform 304 in 10ms
+2025-10-31T22:48:43.293649888Z [inf]  10:48:43 PM [express] POST /api/healing/conversations 200 in 14ms :: {"id":"7622be8c-1089-4a95-ab1f-8…
+2025-10-31T22:48:43.995386295Z [inf]  10:48:43 PM [express] GET /api/healing/conversations/0b2dc4b5-0b9b-4237-bfb0-332743c64e48 200 in 13ms…
+2025-10-31T22:48:43.995398592Z [inf]  10:48:43 PM [express] POST /api/healing/messages 200 in 18ms :: {"id":"c26061c1-a5b5-4867-82ac-f5ef2c…
+2025-10-31T22:48:43.995410217Z [inf]  10:48:43 PM [express] GET /api/healing/messages/7622be8c-1089-4a95-ab1f-8357bd9c4e3b 200 in 12ms :: […
+2025-10-31T22:48:43.995425461Z [inf]  10:48:43 PM [express] POST /api/lomu-ai/stream 200 in 14ms
+2025-10-31T22:49:14.793169543Z [inf]  10:49:08 PM [express] POST /api/healing/messages 200 in 113ms :: {"id":"08d951ae-2ec4-44b8-ae39-73214…
+2025-10-31T22:49:14.793180952Z [inf]  10:49:08 PM [express] POST /api/lomu-ai/stream 200 in 25ms
+2025-10-31T22:49:14.793190062Z [inf]  10:49:08 PM [express] GET /api/healing/messages/7622be8c-1089-4a95-ab1f-8357bd9c4e3b 200 in 41ms :: […
