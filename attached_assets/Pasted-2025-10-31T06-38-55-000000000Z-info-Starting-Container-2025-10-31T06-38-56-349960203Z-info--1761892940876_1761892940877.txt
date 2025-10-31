@@ -1,0 +1,156 @@
+2025-10-31T06:38:55.000000000Z [info] Starting Container
+2025-10-31T06:38:56.349960203Z [info] ======================================
+2025-10-31T06:38:56.349969562Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-10-31T06:38:56.349976661Z [info] ======================================
+2025-10-31T06:38:56.349984368Z [info] Time: Fri Oct 31 06:38:55 UTC 2025
+2025-10-31T06:38:56.350011878Z [info] Node version: v20.19.5
+2025-10-31T06:38:56.350019535Z [info] NPM version: 10.8.2
+2025-10-31T06:38:56.350032970Z [info] 
+2025-10-31T06:38:56.350041333Z [info] ðŸ“ Current directory: /app
+2025-10-31T06:38:56.350054719Z [info] ðŸ“‚ Listing root files:
+2025-10-31T06:38:56.350061187Z [info] total 404
+2025-10-31T06:38:56.350069210Z [info] drwxr-xr-x    1 root     root          4096 Oct 31 06:37 .
+2025-10-31T06:38:56.350075984Z [info] dr-xr-xr-x    1 root     root          4096 Oct 31 06:38 ..
+2025-10-31T06:38:56.350083724Z [info] drwxr-xr-x    3 root     root          4096 Oct 31 05:43 dist
+2025-10-31T06:38:56.350091390Z [info] -rw-rw-r--    1 root     root           325 Oct 31 05:41 drizzle.config.ts
+2025-10-31T06:38:56.350099334Z [info] drwxr-xr-x    1 root     root          4096 Oct 31 05:33 node_modules
+2025-10-31T06:38:56.350110848Z [info] -rw-rw-r--    1 root     root        355683 Oct 31 05:33 package-lock.json
+2025-10-31T06:38:56.350119653Z [info] -rw-rw-r--    1 root     root          4586 Oct 31 05:33 package.json
+2025-10-31T06:38:56.350126794Z [info] -rwxrwxr-x    1 root     root          2216 Oct 31 06:36 railway-start.sh
+2025-10-31T06:38:56.350134535Z [info] -rw-rw-r--    1 root     root          9465 Oct 31 05:41 replit.md
+2025-10-31T06:38:56.350140945Z [info] drwxr-xr-x   12 root     root          4096 Oct 31 05:41 server
+2025-10-31T06:38:56.350147168Z [info] drwxr-xr-x    2 root     root          4096 Oct 31 05:41 shared
+2025-10-31T06:38:56.350154159Z [info] -rw-rw-r--    1 root     root           960 Oct 31 05:41 tsconfig.json
+2025-10-31T06:38:56.350163074Z [info] 
+2025-10-31T06:38:56.493940428Z [info] ðŸ” Checking for dist directory...
+2025-10-31T06:38:56.493960092Z [info] âœ… dist directory exists
+2025-10-31T06:38:56.493970823Z [info] ðŸ“‚ Contents:
+2025-10-31T06:38:56.493983617Z [info] total 812
+2025-10-31T06:38:56.493993763Z [info] drwxr-xr-x    3 root     root          4096 Oct 31 05:43 .
+2025-10-31T06:38:56.494002907Z [info] drwxr-xr-x    1 root     root          4096 Oct 31 06:37 ..
+2025-10-31T06:38:56.494011367Z [info] -rw-r--r--    1 root     root        817191 Oct 31 05:43 index.js
+2025-10-31T06:38:56.494020243Z [info] drwxr-xr-x    3 root     root          4096 Oct 31 05:43 public
+2025-10-31T06:38:56.494027579Z [info] âœ… dist/index.js found
+2025-10-31T06:38:56.494035711Z [info] 
+2025-10-31T06:38:56.494043774Z [info] ðŸ”„ Running database migrations...
+2025-10-31T06:38:56.494050767Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-10-31T06:38:56.494074445Z [info] No config path provided, using default 'drizzle.config.ts'
+2025-10-31T06:38:56.494079719Z [info] Reading config file '/app/drizzle.config.ts'
+2025-10-31T06:38:57.349681532Z [info] Using 'pg' driver for database querying
+2025-10-31T06:38:57.349689674Z [info] [â£·] Pulling schema from database...
+2025-10-31T06:38:57.349697032Z [info] a from database...
+2025-10-31T06:38:57.486310190Z [info] a from database...
+2025-10-31T06:38:57.525362891Z [info] a from database...
+2025-10-31T06:38:57.713437420Z [info] a from database...
+2025-10-31T06:38:57.753990393Z [info] a from database...
+2025-10-31T06:38:58.510938469Z [info] a from database...
+2025-10-31T06:38:58.510954767Z [info] a from database...
+2025-10-31T06:38:58.510964204Z [info] a from database...
+2025-10-31T06:38:58.510972294Z [info] a from database...
+2025-10-31T06:38:58.510979573Z [info] a from database...
+2025-10-31T06:38:58.647852902Z [info] a from database...
+2025-10-31T06:38:58.648446513Z [info] a from database...
+2025-10-31T06:38:58.777262909Z [info] a from database...
+2025-10-31T06:38:59.516973308Z [info] a from database...
+2025-10-31T06:38:59.516982854Z [info] a from database...
+2025-10-31T06:38:59.516993640Z [info] a from database...
+2025-10-31T06:38:59.517002707Z [info] a from database...
+2025-10-31T06:38:59.517012935Z [info] a from database...
+2025-10-31T06:38:59.540865091Z [info] a from database...
+2025-10-31T06:38:59.676486610Z [info] a from database...
+2025-10-31T06:39:00.699100665Z [info] a from database...
+2025-10-31T06:39:00.699109808Z [info] a from database...
+2025-10-31T06:39:00.699117708Z [info] a from database...
+2025-10-31T06:39:00.699126173Z [info] pts table created or renamed from another table?
+2025-10-31T06:39:00.699142933Z [info] â¯ + ai_fix_attempts                           create table
+2025-10-31T06:39:00.699153489Z [info]   ~ meta_sysop_automation â€º ai_fix_attempts   rename table
+2025-10-31T06:39:00.699163732Z [info]   ~ meta_sysop_instructions â€º ai_fix_attempts rename table
+2025-10-31T06:39:00.699175372Z [info]   ~ meta_sysop_knowledge â€º ai_fix_attempts    rename table
+2025-10-31T06:39:00.699187147Z [info]   ~ meta_sysop_memory â€º ai_fix_attempts       rename table
+2025-10-31T06:39:00.699197656Z [info]   ~ meta_sysop_attachments â€º ai_fix_attempts  rename table
+2025-10-31T06:39:00.699205724Z [info]   ~ meta_sysop_sessions â€º ai_fix_attempts     rename table
+2025-10-31T06:39:10.390323354Z [info] ðŸš€ Starting Node.js application...
+2025-10-31T06:39:10.390338035Z [info] Command: node dist/index.js
+2025-10-31T06:39:10.390347764Z [info] 
+2025-10-31T06:39:10.390366903Z [info] 
+2025-10-31T06:39:10.390375968Z [info] ðŸ” Environment Check:
+2025-10-31T06:39:10.390384726Z [info] NODE_ENV: production
+2025-10-31T06:39:10.390392430Z [info] PORT: 8080
+2025-10-31T06:39:10.390400646Z [info] DATABASE_URL: âœ“ SET (hidden for security)
+2025-10-31T06:39:10.390406087Z [info]   ~ meta_sysop_jobs â€º ai_fix_attempts         rename tableâœ… Database migrations completed successfully!
+2025-10-31T06:39:10.390410380Z [info] GITHUB_TOKEN: âœ“ SET
+2025-10-31T06:39:10.390417740Z [info] GITHUB_REPO: 6-7Development/archetype
+2025-10-31T06:39:10.390425175Z [info] GITHUB_BRANCH: main
+2025-10-31T06:39:10.390432476Z [info] ANTHROPIC_API_KEY: âœ“ SET
+2025-10-31T06:39:10.390440229Z [info] 
+2025-10-31T06:39:10.390447666Z [info] ðŸ“„ Ensuring replit.md is available...
+2025-10-31T06:39:10.390455881Z [info] âœ… replit.md already present
+2025-10-31T06:39:10.390462644Z [info] 
+2025-10-31T06:39:12.016180626Z [info] [LOMU-AI-JOB-MANAGER] Initialized with WebSocket support
+2025-10-31T06:39:12.016194488Z [info] [LOMU-AI-JOB-MANAGER] Job manager connected to WebSocket
+2025-10-31T06:39:12.016202460Z [info] [LOMU-AI] WebSocket server initialized for live preview broadcasts
+2025-10-31T06:39:12.016213334Z [info] [LOMU-AI-CHAT] Live preview WebSocket initialized
+2025-10-31T06:39:12.016221100Z [info] [WEBHOOKS] Webhooks router mounted at /api/webhooks
+2025-10-31T06:39:12.016277945Z [info] [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-31T06:39:12.016285418Z [info] [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-31T06:39:12.016294324Z [info] [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-31T06:39:12.016303991Z [info] [db] SSL Configuration: {rejectUnauthorized:false}
+2025-10-31T06:39:12.016311822Z [info] [db] Connection string includes SSL params: true
+2025-10-31T06:39:12.016321620Z [info] [PERFORMANCE] System prompt base cached (1544 chars) - saves ~4KB per request
+2025-10-31T06:39:12.016329910Z [info] [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-31T06:39:12.016338095Z [info] [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller (SSE streams excluded)
+2025-10-31T06:39:12.016346063Z [info] ðŸ“¡ WebSocket server initialized at /ws
+2025-10-31T06:39:12.016354797Z [info] [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-31T06:39:12.016363936Z [info] [PLATFORM-HEALING] WebSocket server attached for preview broadcasts
+2025-10-31T06:39:12.016372847Z [info] [PLATFORM-HEALING] Platform healing service connected to WebSocket
+2025-10-31T06:39:12.016380788Z [info] [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-31T06:39:12.016387976Z [info] [HEAL-ORCHESTRATOR] Metrics broadcaster connected
+2025-10-31T06:39:12.016395635Z [info] [WEBHOOKS] Webhooks router connected to metrics broadcaster
+2025-10-31T06:39:12.020499032Z [info] âœ… All routes registered successfully
+2025-10-31T06:39:12.020508562Z [info] ðŸ” Testing database connection...
+2025-10-31T06:39:12.020517368Z [info] 6:39:11 AM [express] serving on port 8080
+2025-10-31T06:39:12.020526762Z [info] ðŸŒ Server accessible at http://0.0.0.0:8080
+2025-10-31T06:39:12.020535470Z [info] âœ… Database connected successfully
+2025-10-31T06:39:12.020545157Z [info] ðŸ”§ Auto-healing system ENABLED
+2025-10-31T06:39:12.020552367Z [info]    âš¡ Kill-switch: Disabled after 3 consecutive failures (1 hour cooldown)
+2025-10-31T06:39:12.020560039Z [info]    â±ï¸ Rate limit: Max 3 healing sessions per hour
+2025-10-31T06:39:12.020568752Z [info]    ðŸ“‹ Audit trail: All attempts logged to platformHealAttempts
+2025-10-31T06:39:12.020575499Z [info]    ðŸ”„ Rollback: Automatic rollback on verification/deployment failure
+2025-10-31T06:39:12.020585586Z [info] [HEALTH-MONITOR] Starting platform health monitoring...
+2025-10-31T06:39:12.020592573Z [error] [HEALTH-MONITOR] Failed to load open incidents: error: relation "platform_incidents" does not exist
+2025-10-31T06:39:12.020603694Z [error]     at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T06:39:12.020610146Z [error]     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T06:39:12.020617755Z [error]     at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T06:39:12.020624270Z [error]     at async PlatformHealthMonitor.loadOpenIncidents (file:///app/dist/index.js:11307:29)
+2025-10-31T06:39:12.020631896Z [error]     at async PlatformHealthMonitor.start (file:///app/dist/index.js:11286:9)
+2025-10-31T06:39:12.020638358Z [error]     at async file:///app/dist/index.js:20042:3 {
+2025-10-31T06:39:12.020645247Z [error]   length: 118,
+2025-10-31T06:39:12.020652693Z [error]   severity: 'ERROR',
+2025-10-31T06:39:12.020660048Z [error]   code: '42P01',
+2025-10-31T06:39:12.022719871Z [info] 
+2025-10-31T06:39:12.022737927Z [info] ðŸ” Checking GitHub integration configuration...
+2025-10-31T06:39:12.022749177Z [info] âœ… GitHub integration configured successfully
+2025-10-31T06:39:12.022760072Z [info]    - Repository: 6-7Development/archetype
+2025-10-31T06:39:12.022770581Z [info]    - Branch: main
+2025-10-31T06:39:12.022771483Z [error]   detail: undefined,
+2025-10-31T06:39:12.022787417Z [error]   hint: undefined,
+2025-10-31T06:39:12.022796832Z [error]   position: '298',
+2025-10-31T06:39:12.022805844Z [error]   internalPosition: undefined,
+2025-10-31T06:39:12.022816657Z [info]    - Token: âœ“ (configured)
+2025-10-31T06:39:12.022817088Z [error]   internalQuery: undefined,
+2025-10-31T06:39:12.022825331Z [error]   where: undefined,
+2025-10-31T06:39:12.022832403Z [info]    - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-31T06:39:12.022834853Z [error]   schema: undefined,
+2025-10-31T06:39:12.022842755Z [error]   table: undefined,
+2025-10-31T06:39:12.022843976Z [info]    - Maintenance mode: Available for owner
+2025-10-31T06:39:12.022853688Z [error]   column: undefined,
+2025-10-31T06:39:12.022853988Z [info] 
+2025-10-31T06:39:12.022863537Z [error]   dataType: undefined,
+2025-10-31T06:39:12.022871412Z [error]   constraint: undefined,
+2025-10-31T06:39:12.022880318Z [error]   file: 'parse_relation.c',
+2025-10-31T06:39:12.022888995Z [error]   line: '1449',
+2025-10-31T06:39:12.022897434Z [error]   routine: 'parserOpenTable'
+2025-10-31T06:39:12.022905970Z [error] }
+2025-10-31T06:39:12.022913710Z [info] [HEALTH-MONITOR] Monitoring started
+2025-10-31T06:39:12.022924448Z [info] [HEAL-ORCHESTRATOR] Starting autonomous healing orchestrator...
+2025-10-31T06:39:12.022931446Z [info] [HEAL-ORCHESTRATOR] Orchestrator started
