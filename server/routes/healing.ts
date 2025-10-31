@@ -3,10 +3,18 @@ import { insertHealingTargetSchema, insertHealingConversationSchema, insertHeali
 import { storage } from "../storage";
 import { isAuthenticated } from "../universalAuth";
 
+// Owner-only middleware for Platform Healing
+const isOwner = async (req: any, res: any, next: any) => {
+  if (!req.user || !req.user.isOwner) {
+    return res.status(403).json({ error: "Access denied. Platform Healing is owner-only." });
+  }
+  next();
+};
+
 export function registerHealingRoutes(app: Express) {
   
   // GET /api/healing/targets - List user's healing targets
-  app.get("/api/healing/targets", isAuthenticated, async (req, res) => {
+  app.get("/api/healing/targets", isAuthenticated, isOwner, async (req, res) => {
     try {
       const userId = req.user!.id;
       let targets = await storage.getHealingTargets(userId);
@@ -62,7 +70,7 @@ export function registerHealingRoutes(app: Express) {
   });
 
   // POST /api/healing/targets - Create new target
-  app.post("/api/healing/targets", isAuthenticated, async (req, res) => {
+  app.post("/api/healing/targets", isAuthenticated, isOwner, async (req, res) => {
     try {
       const userId = req.user!.id;
       const validated = insertHealingTargetSchema.parse(req.body);
@@ -84,7 +92,7 @@ export function registerHealingRoutes(app: Express) {
   });
 
   // GET /api/healing/conversations/:targetId - Get conversations for target
-  app.get("/api/healing/conversations/:targetId", isAuthenticated, async (req, res) => {
+  app.get("/api/healing/conversations/:targetId", isAuthenticated, isOwner, async (req, res) => {
     try {
       const userId = req.user!.id;
       const { targetId } = req.params;
@@ -98,7 +106,7 @@ export function registerHealingRoutes(app: Express) {
   });
 
   // POST /api/healing/conversations - Start new conversation
-  app.post("/api/healing/conversations", isAuthenticated, async (req, res) => {
+  app.post("/api/healing/conversations", isAuthenticated, isOwner, async (req, res) => {
     try {
       const userId = req.user!.id;
       const validated = insertHealingConversationSchema.parse(req.body);
@@ -120,7 +128,7 @@ export function registerHealingRoutes(app: Express) {
   });
 
   // GET /api/healing/messages/:conversationId - Get messages
-  app.get("/api/healing/messages/:conversationId", isAuthenticated, async (req, res) => {
+  app.get("/api/healing/messages/:conversationId", isAuthenticated, isOwner, async (req, res) => {
     try {
       const { conversationId } = req.params;
       
@@ -133,7 +141,7 @@ export function registerHealingRoutes(app: Express) {
   });
 
   // POST /api/healing/messages - Send message to Lomu (with AI response)
-  app.post("/api/healing/messages", isAuthenticated, async (req, res) => {
+  app.post("/api/healing/messages", isAuthenticated, isOwner, async (req, res) => {
     try {
       const userId = req.user!.id;
       const validated = insertHealingMessageSchema.parse(req.body);
@@ -219,16 +227,10 @@ Let's help maintain this platform!`;
           model: DEFAULT_MODEL,
           max_tokens: 4096,
           system: systemPrompt,
-          messages: [
-            ...validMessages.map((m: any) => ({
-              role: m.role === 'system' ? 'user' : m.role,
-              content: m.content
-            })),
-            {
-              role: "user",
-              content: validated.content,
-            },
-          ],
+          messages: validMessages.map((m: any) => ({
+            role: m.role === 'system' ? 'user' : m.role,
+            content: m.content
+          })),
         });
         return result;
       });
@@ -295,7 +297,7 @@ Let's help maintain this platform!`;
   });
 
   // PATCH /api/healing/conversations/:id - Auto-save conversation
-  app.patch("/api/healing/conversations/:id", isAuthenticated, async (req, res) => {
+  app.patch("/api/healing/conversations/:id", isAuthenticated, isOwner, async (req, res) => {
     try {
       const { id } = req.params;
       const updates = req.body;
@@ -309,7 +311,7 @@ Let's help maintain this platform!`;
   });
 
   // DELETE /api/healing/messages/:conversationId - Clear conversation messages
-  app.delete("/api/healing/messages/:conversationId", isAuthenticated, async (req, res) => {
+  app.delete("/api/healing/messages/:conversationId", isAuthenticated, isOwner, async (req, res) => {
     try {
       const { conversationId } = req.params;
       
