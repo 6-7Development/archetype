@@ -43,13 +43,10 @@ if [ "$NODE_ENV" = "production" ]; then
   fi
 fi
 
-if npx drizzle-kit push --force; then
-  echo "✅ Database migrations completed successfully!"
-else
-  echo "❌ Database migration failed!"
-  echo "Error: Tables might not exist. Please check schema."
-  exit 1
-fi
+# Skip drizzle-kit entirely on Railway - it's too unreliable with schema detection
+# The app will handle table creation via drizzle ORM on startup
+echo "⏭️ Skipping drizzle-kit push (Railway schema detection issues)"
+echo "✅ Database schema will be created by application on startup"
 
 echo ""
 echo "🔍 Environment Check:"

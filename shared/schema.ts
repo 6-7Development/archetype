@@ -98,39 +98,39 @@ export type UserAvatarState = typeof userAvatarState.$inferSelect;
 // Platform Incidents - Track detected problems that need healing
 export const platformIncidents = pgTable("platform_incidents", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
+
   // Incident details
   type: text("type").notNull(), // 'high_cpu', 'memory_leak', 'build_failure', 'runtime_error', 'lsp_error'
   severity: text("severity").notNull(), // 'low', 'medium', 'high', 'critical'
   title: text("title").notNull(), // "High CPU usage detected"
   description: text("description").notNull(), // Detailed error message
-  
+
   // Detection metadata
   source: text("source").notNull(), // 'metrics', 'logs', 'manual'
   detectedAt: timestamp("detected_at").notNull().defaultNow(),
   resolvedAt: timestamp("resolved_at"),
-  
+
   // Status tracking
   status: text("status").notNull().default("open"), // 'open', 'healing', 'resolved', 'failed', 'ignored'
-  
+
   // Healing session link
   healingSessionId: varchar("healing_session_id"), // Link to active healing session
-  
+
   // Metadata for diagnosis
   stackTrace: text("stack_trace"),
   affectedFiles: jsonb("affected_files"), // Array of file paths
   metrics: jsonb("metrics"), // Snapshot of metrics at detection time
   logs: text("logs"), // Relevant log excerpts
-  
+
   // Resolution tracking
   rootCause: text("root_cause"), // Determined root cause
   fixDescription: text("fix_description"), // How it was fixed
   commitHash: varchar("commit_hash"), // Git commit that fixed it
-  
+
   // Retry tracking
   attemptCount: integer("attempt_count").notNull().default(0),
   lastAttemptAt: timestamp("last_attempt_at"),
-  
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -147,25 +147,25 @@ export type PlatformIncident = typeof platformIncidents.$inferSelect;
 // Platform Healing Sessions - Track ongoing healing processes
 export const platformHealingSessions = pgTable("platform_healing_sessions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
+
   // Link to incident
   incidentId: varchar("incident_id").notNull(),
-  
+
   // Session metadata
   phase: text("phase").notNull(), // 'diagnosis', 'repair', 'verification', 'commit', 'deploy', 'complete'
   status: text("status").notNull().default("active"), // 'active', 'success', 'failed', 'cancelled'
-  
+
   // Diagnosis data
   diagnosisNotes: text("diagnosis_notes"), // AI's analysis
   proposedFix: text("proposed_fix"), // What AI plans to do
-  
+
   // Files changed
   filesChanged: jsonb("files_changed"), // Array of { path, action, diff }
-  
+
   // Verification results
   verificationResults: jsonb("verification_results"), // Test results, build status, etc.
   verificationPassed: boolean("verification_passed"),
-  
+
   // Git/Deploy tracking
   branchName: varchar("branch_name"), // "fix/incident-12345"
   commitHash: varchar("commit_hash"),
@@ -174,15 +174,15 @@ export const platformHealingSessions = pgTable("platform_healing_sessions", {
   deploymentUrl: text("deployment_url"), // Production deployment URL
   deploymentStartedAt: timestamp("deployment_started_at"),
   deploymentCompletedAt: timestamp("deployment_completed_at"),
-  
+
   // AI metadata
   tokensUsed: integer("tokens_used").default(0),
   model: varchar("model").default("claude-sonnet-4-20250514"),
-  
+
   // Timestamps
   startedAt: timestamp("started_at").notNull().defaultNow(),
   completedAt: timestamp("completed_at"),
-  
+
   // Error tracking
   error: text("error"),
 });
@@ -198,24 +198,23 @@ export type PlatformHealingSession = typeof platformHealingSessions.$inferSelect
 // Platform Heal Attempts - Track individual fix attempts (for retry logic)
 export const platformHealAttempts = pgTable("platform_heal_attempts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
+
   // Links
   incidentId: varchar("incident_id").notNull(),
-  sessionId: varchar("session_id").notNull(),
-  
+
   // Attempt details
   attemptNumber: integer("attempt_number").notNull(),
   strategy: text("strategy").notNull(), // 'standard', 'alternative', 'rollback'
-  
+
   // What was tried
   actionsTaken: jsonb("actions_taken"), // Array of actions
   filesModified: jsonb("files_modified"),
-  
+
   // Results
   success: boolean("success").notNull(),
   verificationPassed: boolean("verification_passed"),
   error: text("error"),
-  
+
   // Timestamps
   startedAt: timestamp("started_at").notNull().defaultNow(),
   completedAt: timestamp("completed_at"),
@@ -232,23 +231,23 @@ export type PlatformHealAttempt = typeof platformHealAttempts.$inferSelect;
 // Platform Incident Playbooks - Store learned patterns for automated fixes
 export const platformIncidentPlaybooks = pgTable("platform_incident_playbooks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
+
   // Pattern matching
   incidentType: text("incident_type").notNull(), // 'high_cpu', 'build_failure', etc.
   pattern: text("pattern").notNull(), // Error pattern to match
-  
+
   // Fix template
   fixTemplate: text("fix_template").notNull(), // AI prompt/instructions
   confidence: decimal("confidence", { precision: 3, scale: 2 }).notNull(), // 0.00-1.00
-  
+
   // Learning metadata
   successCount: integer("success_count").notNull().default(0),
   failureCount: integer("failure_count").notNull().default(0),
   lastUsedAt: timestamp("last_used_at"),
-  
+
   // Source
   learnedFrom: varchar("learned_from"), // incident ID that created this playbook
-  
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -265,11 +264,11 @@ export type PlatformIncidentPlaybook = typeof platformIncidentPlaybooks.$inferSe
 // AI Knowledge Base - Learn from past fixes to improve auto-healing
 export const aiKnowledgeBase = pgTable("ai_knowledge_base", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
+
   // Error identification
   errorSignature: varchar("error_signature", { length: 64 }).notNull().unique(), // MD5 hash of error pattern
   errorType: text("error_type").notNull(), // 'typescript_error', 'runtime_error', 'build_failure', etc.
-  
+
   // Context about the error
   context: jsonb("context").$type<{
     filePaths?: string[];
@@ -277,16 +276,16 @@ export const aiKnowledgeBase = pgTable("ai_knowledge_base", {
     errorMessage?: string;
     codeSnippet?: string;
   }>(),
-  
+
   // The fix that worked
   successfulFix: text("successful_fix").notNull(), // Description or diff of the fix
-  
+
   // Confidence and learning metrics
   confidence: decimal("confidence", { precision: 5, scale: 2 }).notNull().default("0.00"), // 0-100
   timesEncountered: integer("times_encountered").notNull().default(1),
   timesFixed: integer("times_fixed").notNull().default(0), // Successful fix applications
   lastEncountered: timestamp("last_encountered").notNull().defaultNow(),
-  
+
   // Additional metadata
   metadata: jsonb("metadata").$type<{
     complexity?: 'low' | 'medium' | 'high';
@@ -294,7 +293,7 @@ export const aiKnowledgeBase = pgTable("ai_knowledge_base", {
     averageFixTime?: number; // milliseconds
     relatedErrors?: string[]; // Other error signatures
   }>(),
-  
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (table) => [
@@ -314,16 +313,14 @@ export type AiKnowledgeBase = typeof aiKnowledgeBase.$inferSelect;
 // AI Fix Attempts - Track all fix attempts for learning and debugging
 export const aiFixAttempts = pgTable("ai_fix_attempts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
+
   // Links
   errorSignature: varchar("error_signature", { length: 64 }).notNull(), // Foreign key to aiKnowledgeBase
   healingSessionId: varchar("healing_session_id"), // Link to platformHealingSessions
-  
+
   // The proposed fix
   proposedFix: text("proposed_fix").notNull(), // What the AI plans to do
   confidenceScore: decimal("confidence_score", { precision: 5, scale: 2 }).notNull(), // 0-100
-  
-  // Outcome tracking
   outcome: text("outcome").notNull(), // 'success' | 'failure' | 'rolled_back' | 'pending'
   verificationResults: jsonb("verification_results").$type<{
     typescriptValid?: boolean;
@@ -332,12 +329,12 @@ export const aiFixAttempts = pgTable("ai_fix_attempts", {
     deploymentSuccess?: boolean;
     errorDetails?: string;
   }>(),
-  
+
   // PR tracking (for low-confidence fixes)
   prNumber: integer("pr_number"), // GitHub PR number if created
   prUrl: text("pr_url"), // GitHub PR URL
   autoMerged: boolean("auto_merged").default(false), // True if auto-merged after tests pass
-  
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
   completedAt: timestamp("completed_at"),
 }, (table) => [
@@ -1054,26 +1051,26 @@ export const costTracking = pgTable("cost_tracking", {
   projectId: varchar("project_id"),
   operationType: text("operation_type").notNull(), // 'ai_generation', 'ai_chat', 'storage', 'bandwidth', 'deployment'
   resourceType: text("resource_type").notNull(), // 'claude_tokens', 'storage_gb', 'bandwidth_gb', etc.
-  
+
   // Token usage (for AI operations)
   inputTokens: integer("input_tokens").default(0),
   outputTokens: integer("output_tokens").default(0),
   cachedTokens: integer("cached_tokens").default(0),
-  
+
   // Resource usage (for infrastructure)
   storageGb: decimal("storage_gb", { precision: 10, scale: 4 }).default("0"),
   bandwidthGb: decimal("bandwidth_gb", { precision: 10, scale: 4 }).default("0"),
-  
+
   // Cost breakdown
   inputCost: decimal("input_cost", { precision: 10, scale: 6 }).default("0"), // Cost of input tokens
   outputCost: decimal("output_cost", { precision: 10, scale: 6 }).default("0"), // Cost of output tokens
   infrastructureCost: decimal("infrastructure_cost", { precision: 10, scale: 6 }).default("0"), // Storage/bandwidth
   totalCost: decimal("total_cost", { precision: 10, scale: 6 }).notNull(), // Total cost of operation
-  
+
   // Pricing (what user was charged)
   userPrice: decimal("user_price", { precision: 10, scale: 2 }).notNull(), // What we charged the user
   marginPercent: decimal("margin_percent", { precision: 5, scale: 2 }).default("90"), // Profit margin %
-  
+
   metadata: jsonb("metadata"), // Additional context (model used, cache hit rate, etc.)
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -1090,15 +1087,15 @@ export type CostTracking = typeof costTracking.$inferSelect;
 export const pricingConfig = pgTable("pricing_config", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   resourceType: text("resource_type").notNull().unique(), // 'claude_input', 'claude_output', 'storage', etc.
-  
+
   // Cost (our cost from providers)
   providerCost: decimal("provider_cost", { precision: 10, scale: 6 }).notNull(), // What we pay (e.g., $3/M tokens)
   unit: text("unit").notNull(), // 'per_million_tokens', 'per_gb_month', 'per_gb_transfer'
-  
+
   // Pricing (what we charge)
   userPrice: decimal("user_price", { precision: 10, scale: 6 }).notNull(), // What users pay
   marginPercent: decimal("margin_percent", { precision: 5, scale: 2 }).notNull().default("90"), // Target margin %
-  
+
   // Metadata
   description: text("description"), // Human-readable description
   isActive: integer("is_active").notNull().default(1), // 1 = active, 0 = deprecated
@@ -1122,13 +1119,13 @@ export type PricingConfig = typeof pricingConfig.$inferSelect;
 export const serviceRequests = pgTable("service_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(), // Client who requested
-  
+
   // Project Details
   projectName: text("project_name").notNull(),
   projectType: text("project_type").notNull(), // 'landing_page', 'web_app', 'ecommerce', 'saas', 'custom'
   description: text("description").notNull(), // Full project requirements
   specifications: jsonb("specifications"), // Detailed specs, features list, etc.
-  
+
   // Pricing & Payment
   quotedPrice: decimal("quoted_price", { precision: 10, scale: 2 }).notNull(), // Total project cost
   depositAmount: decimal("deposit_amount", { precision: 10, scale: 2 }).notNull(), // 50% upfront
@@ -1138,26 +1135,26 @@ export const serviceRequests = pgTable("service_requests", {
   finalPaymentPaid: integer("final_payment_paid").notNull().default(0),
   finalPaymentStripeId: text("final_payment_stripe_id"),
   totalPaid: decimal("total_paid", { precision: 10, scale: 2 }).notNull().default("0.00"),
-  
+
   // Status & Timeline
   status: text("status").notNull().default("pending"), // pending, deposit_paid, in_progress, review, completed, cancelled
   priority: text("priority").notNull().default("normal"), // low, normal, high, urgent
   estimatedDelivery: timestamp("estimated_delivery"),
   actualDelivery: timestamp("actual_delivery"),
-  
+
   // Assignment
   assignedToAdminId: varchar("assigned_to_admin_id"), // Admin handling the request
-  
+
   // Preview & Export
   previewProjectId: varchar("preview_project_id"), // Project ID for live preview
   previewUrl: text("preview_url"), // Live preview URL
   exportReady: integer("export_ready").notNull().default(0), // 1 = ready for download
   exportedAt: timestamp("exported_at"),
-  
+
   // Hosting Decision
   hostingChoice: text("hosting_choice"), // 'archetype', 'export', 'undecided'
   hostingMonthlyFee: decimal("hosting_monthly_fee", { precision: 10, scale: 2 }), // If hosting with us
-  
+
   // Metadata
   metadata: jsonb("metadata"), // Additional info, attachments, etc.
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -1184,11 +1181,11 @@ export const serviceMessages = pgTable("service_messages", {
   requestId: varchar("request_id").notNull(), // Link to service request
   senderId: varchar("sender_id").notNull(), // User ID (could be client or admin)
   senderRole: text("sender_role").notNull(), // 'client' or 'admin'
-  
+
   message: text("message").notNull(),
   attachments: jsonb("attachments"), // File URLs, screenshots, etc.
   isRead: integer("is_read").notNull().default(0), // 0 = unread, 1 = read
-  
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -1206,16 +1203,16 @@ export type ServiceMessage = typeof serviceMessages.$inferSelect;
 export const serviceMilestones = pgTable("service_milestones", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   requestId: varchar("request_id").notNull(),
-  
+
   title: text("title").notNull(), // "Initial Design", "Backend Complete", "Final Delivery"
   description: text("description"),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   status: text("status").notNull().default("pending"), // pending, approved, paid
-  
+
   isPaid: integer("is_paid").notNull().default(0),
   stripePaymentId: text("stripe_payment_id"),
   paidAt: timestamp("paid_at"),
-  
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -1232,14 +1229,14 @@ export type ServiceMilestone = typeof serviceMilestones.$inferSelect;
 export const serviceProgressLogs = pgTable("service_progress_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   requestId: varchar("request_id").notNull(),
-  
+
   logType: text("log_type").notNull(), // 'update', 'change_request', 'milestone', 'note'
   title: text("title").notNull(), // "Added login page", "Updated color scheme"
   description: text("description"), // Detailed explanation
-  
+
   changedBy: varchar("changed_by"), // Admin who made the change
   metadata: jsonb("metadata"), // Files changed, features added, etc.
-  
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
