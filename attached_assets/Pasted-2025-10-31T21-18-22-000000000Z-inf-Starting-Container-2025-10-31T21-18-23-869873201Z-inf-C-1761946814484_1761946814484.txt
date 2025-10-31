@@ -1,0 +1,171 @@
+2025-10-31T21:18:22.000000000Z [inf]  Starting Container
+2025-10-31T21:18:23.869873201Z [inf]  📁 Current directory: /app
+2025-10-31T21:18:23.869885552Z [inf]  📂 Listing root files:
+2025-10-31T21:18:23.869893483Z [inf]  total 408
+2025-10-31T21:18:23.869896515Z [inf]  -rwxrwxr-x    1 root     root          2471 Oct 31 21:03 railway-start.sh
+2025-10-31T21:18:23.869904735Z [inf]  -rw-rw-r--    1 root     root          9465 Oct 31 21:03 replit.md
+2025-10-31T21:18:23.869909762Z [inf]  Time: Fri Oct 31 21:18:22 UTC 2025
+2025-10-31T21:18:23.869915951Z [inf]  drwxr-xr-x   12 root     root          4096 Oct 31 21:03 server
+2025-10-31T21:18:23.869920916Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 31 21:16 dist
+2025-10-31T21:18:23.869921724Z [inf]  Node version: v20.19.5
+2025-10-31T21:18:23.869926088Z [inf]  -rw-rw-r--    1 root     root        355683 Oct 31 21:16 package-lock.json
+2025-10-31T21:18:23.869931432Z [inf]  -rw-rw-r--    1 root     root           325 Oct 31 21:03 drizzle.config.ts
+2025-10-31T21:18:23.869933599Z [inf]  NPM version: 10.8.2
+2025-10-31T21:18:23.869936128Z [inf]  -rw-rw-r--    1 root     root          4586 Oct 31 21:16 package.json
+2025-10-31T21:18:23.869938801Z [inf]  drwxr-xr-x    2 root     root          4096 Oct 31 21:03 shared
+2025-10-31T21:18:23.869940609Z [inf]  -rw-rw-r--    1 root     root          1195 Oct 31 21:03 drop-old-tables.js
+2025-10-31T21:18:23.869943843Z [inf]  
+2025-10-31T21:18:23.869950191Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 31 21:16 node_modules
+2025-10-31T21:18:23.869957078Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 31 21:16 .
+2025-10-31T21:18:23.869957193Z [inf]  -rw-rw-r--    1 root     root           960 Oct 31 21:03 tsconfig.json
+2025-10-31T21:18:23.869972876Z [inf]  dr-xr-xr-x    1 root     root          4096 Oct 31 21:18 ..
+2025-10-31T21:18:23.870542137Z [inf]  ======================================
+2025-10-31T21:18:23.870547190Z [inf]  🚂 RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-10-31T21:18:23.870551714Z [inf]  ======================================
+2025-10-31T21:18:23.875543560Z [inf]  
+2025-10-31T21:18:23.875549951Z [inf]  🔍 Checking for dist directory...
+2025-10-31T21:18:23.875556602Z [inf]  ✅ dist directory exists
+2025-10-31T21:18:23.875569801Z [inf]  📂 Contents:
+2025-10-31T21:18:23.875577532Z [inf]  total 812
+2025-10-31T21:18:23.875594516Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 31 21:16 .
+2025-10-31T21:18:23.875602746Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 31 21:16 ..
+2025-10-31T21:18:23.875610468Z [inf]  -rw-r--r--    1 root     root        817114 Oct 31 21:16 index.js
+2025-10-31T21:18:23.875636788Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 31 21:16 public
+2025-10-31T21:18:23.875644488Z [inf]  ✅ dist/index.js found
+2025-10-31T21:18:23.875660565Z [inf]  
+2025-10-31T21:18:23.875667288Z [inf]  🗑️ Dropping old tables with incorrect schema...
+2025-10-31T21:18:23.875681372Z [inf]  [DROP-TABLES] Dropping old healing tables with incorrect schema...
+2025-10-31T21:18:23.875687979Z [inf]  [DROP-TABLES] ✅ Dropped ai_fix_attempts
+2025-10-31T21:18:23.875695018Z [inf]  [DROP-TABLES] ✅ Dropped platform_incidents
+2025-10-31T21:18:23.875702523Z [inf]  [DROP-TABLES] ✅ Dropped healing_targets
+2025-10-31T21:18:23.875710226Z [inf]  [DROP-TABLES] ✅ All old tables dropped successfully
+2025-10-31T21:18:23.875716391Z [inf]  
+2025-10-31T21:18:23.875723173Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-10-31T21:18:23.875730213Z [inf]  ✅ Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-10-31T21:18:24.752990701Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-10-31T21:18:24.753001363Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-10-31T21:18:24.753007255Z [inf]  Using 'pg' driver for database querying
+2025-10-31T21:18:24.772423747Z [inf]  [⣷] Pulling schema from database...
+2025-10-31T21:18:24.885577224Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-31T21:18:25.014054965Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-31T21:18:25.141256794Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-31T21:18:25.696177705Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-31T21:18:25.696182285Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-31T21:18:25.696188970Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-31T21:18:25.696193639Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-31T21:18:25.785280398Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-31T21:18:25.909599226Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-31T21:18:26.039444693Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-31T21:18:26.166495271Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-31T21:18:26.772587914Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-31T21:18:26.772594198Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-31T21:18:26.772599451Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-31T21:18:26.772608382Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-31T21:18:26.807042942Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-31T21:18:26.837323895Z [inf]  [2K[1G[✓] Pulling schema from database...
+2025-10-31T21:18:26.885959161Z [inf]  [?25l
+2025-10-31T21:18:26.885965690Z [inf]  Is ai_fix_attempts table created or renamed from another table?
+2025-10-31T21:18:26.885971818Z [inf]  ❯ + ai_fix_attempts                           create table
+2025-10-31T21:18:26.885977670Z [inf]    ~ meta_sysop_automation › ai_fix_attempts   rename table
+2025-10-31T21:18:26.885983523Z [inf]    ~ meta_sysop_instructions › ai_fix_attempts rename table
+2025-10-31T21:18:26.885989743Z [inf]    ~ meta_sysop_knowledge › ai_fix_attempts    rename table
+2025-10-31T21:18:26.885993470Z [inf]    ~ meta_sysop_memory › ai_fix_attempts       rename table
+2025-10-31T21:18:26.885997477Z [inf]    ~ meta_sysop_attachments › ai_fix_attempts  rename table
+2025-10-31T21:18:26.886001295Z [inf]    ~ meta_sysop_sessions › ai_fix_attempts     rename table
+2025-10-31T21:18:36.863338720Z [inf]    ~ meta_sysop_jobs › ai_fix_attempts         rename table✅ Database migrations completed successfully!
+2025-10-31T21:18:36.863344253Z [inf]  
+2025-10-31T21:18:36.863349117Z [inf]  🔍 Environment Check:
+2025-10-31T21:18:36.863354182Z [inf]  NODE_ENV: production
+2025-10-31T21:18:36.863359139Z [inf]  PORT: 8080
+2025-10-31T21:18:36.863366320Z [inf]  DATABASE_URL: ✓ SET (hidden for security)
+2025-10-31T21:18:36.863373950Z [inf]  GITHUB_TOKEN: ✓ SET
+2025-10-31T21:18:36.863379875Z [inf]  GITHUB_REPO: 6-7Development/archetype
+2025-10-31T21:18:36.863385592Z [inf]  GITHUB_BRANCH: main
+2025-10-31T21:18:36.863391469Z [inf]  ANTHROPIC_API_KEY: ✓ SET
+2025-10-31T21:18:36.863396885Z [inf]  
+2025-10-31T21:18:36.863402852Z [inf]  📄 Ensuring replit.md is available...
+2025-10-31T21:18:36.863408815Z [inf]  ✅ replit.md already present
+2025-10-31T21:18:36.863415776Z [inf]  
+2025-10-31T21:18:36.863422062Z [inf]  🚀 Starting Node.js application...
+2025-10-31T21:18:36.863427735Z [inf]  Command: node dist/index.js
+2025-10-31T21:18:36.863433841Z [inf]  
+2025-10-31T21:18:38.017207044Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-31T21:18:38.017216149Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-31T21:18:38.017221758Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-31T21:18:38.017226760Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-10-31T21:18:38.017231478Z [inf]  [db] Connection string includes SSL params: true
+2025-10-31T21:18:38.030326322Z [inf]  [PERFORMANCE] System prompt base cached (1544 chars) - saves ~4KB per request
+2025-10-31T21:18:38.030335292Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-31T21:18:38.043998527Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller (SSE streams excluded)
+2025-10-31T21:18:38.047134393Z [inf]  📡 WebSocket server initialized at /ws
+2025-10-31T21:18:38.047145537Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-31T21:18:38.047152821Z [inf]  [PLATFORM-HEALING] WebSocket server attached for preview broadcasts
+2025-10-31T21:18:38.047159310Z [inf]  [PLATFORM-HEALING] Platform healing service connected to WebSocket
+2025-10-31T21:18:38.047165627Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-31T21:18:38.049937826Z [inf]  [HEAL-ORCHESTRATOR] Metrics broadcaster connected
+2025-10-31T21:18:38.049946503Z [inf]  [WEBHOOKS] Webhooks router connected to metrics broadcaster
+2025-10-31T21:18:38.049952869Z [inf]  [LOMU-AI-JOB-MANAGER] Initialized with WebSocket support
+2025-10-31T21:18:38.049958601Z [inf]  [LOMU-AI-JOB-MANAGER] Job manager connected to WebSocket
+2025-10-31T21:18:38.049965689Z [inf]  [LOMU-AI] WebSocket server initialized for live preview broadcasts
+2025-10-31T21:18:38.049971570Z [inf]  [LOMU-AI-CHAT] Live preview WebSocket initialized
+2025-10-31T21:18:38.059611577Z [inf]  [WEBHOOKS] Webhooks router mounted at /api/webhooks
+2025-10-31T21:18:38.109401571Z [inf]  ✅ All routes registered successfully
+2025-10-31T21:18:38.112789072Z [inf]  🔍 Testing database connection...
+2025-10-31T21:18:38.154213929Z [inf]  9:18:38 PM [express] serving on port 8080
+2025-10-31T21:18:38.154218484Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-10-31T21:18:38.759663885Z [inf]  ✅ Database connected successfully
+2025-10-31T21:18:38.759757723Z [inf]  🔧 Auto-healing system ENABLED
+2025-10-31T21:18:38.759767484Z [inf]     ⚡ Kill-switch: Disabled after 3 consecutive failures (1 hour cooldown)
+2025-10-31T21:18:38.759775124Z [inf]     ⏱️ Rate limit: Max 3 healing sessions per hour
+2025-10-31T21:18:38.759782629Z [inf]     📋 Audit trail: All attempts logged to platformHealAttempts
+2025-10-31T21:18:38.759788670Z [inf]     🔄 Rollback: Automatic rollback on verification/deployment failure
+2025-10-31T21:18:38.759796197Z [inf]  [HEALTH-MONITOR] Starting platform health monitoring...
+2025-10-31T21:18:38.759802657Z [err]  [HEALTH-MONITOR] Failed to load open incidents: error: relation "platform_incidents" does not exist
+2025-10-31T21:18:38.759808547Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T21:18:38.759814402Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T21:18:38.759820066Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T21:18:38.759829694Z [err]      at async PlatformHealthMonitor.loadOpenIncidents (file:///app/dist/index.js:11305:29)
+2025-10-31T21:18:38.759835608Z [err]      at async PlatformHealthMonitor.start (file:///app/dist/index.js:11284:9)
+2025-10-31T21:18:38.759841394Z [err]      at async file:///app/dist/index.js:20040:3 {
+2025-10-31T21:18:38.759847477Z [err]    length: 118,
+2025-10-31T21:18:38.759853630Z [err]    severity: 'ERROR',
+2025-10-31T21:18:38.759860699Z [err]    code: '42P01',
+2025-10-31T21:18:38.759867404Z [err]    detail: undefined,
+2025-10-31T21:18:38.759873534Z [err]    hint: undefined,
+2025-10-31T21:18:38.759878958Z [err]    position: '298',
+2025-10-31T21:18:38.759883957Z [err]    internalPosition: undefined,
+2025-10-31T21:18:38.759889492Z [err]    internalQuery: undefined,
+2025-10-31T21:18:38.766035904Z [err]    where: undefined,
+2025-10-31T21:18:38.766054833Z [err]    schema: undefined,
+2025-10-31T21:18:38.766062247Z [err]    table: undefined,
+2025-10-31T21:18:38.766069290Z [err]    column: undefined,
+2025-10-31T21:18:38.766077059Z [err]    dataType: undefined,
+2025-10-31T21:18:38.766084093Z [err]    constraint: undefined,
+2025-10-31T21:18:38.766091690Z [err]    file: 'parse_relation.c',
+2025-10-31T21:18:38.766098948Z [err]    line: '1449',
+2025-10-31T21:18:38.766106698Z [err]    routine: 'parserOpenTable'
+2025-10-31T21:18:38.766113910Z [err]  }
+2025-10-31T21:18:38.766121577Z [inf]  [HEALTH-MONITOR] Monitoring started
+2025-10-31T21:18:38.766128342Z [inf]  [HEAL-ORCHESTRATOR] Starting autonomous healing orchestrator...
+2025-10-31T21:18:38.766136096Z [inf]  [HEAL-ORCHESTRATOR] Orchestrator started
+2025-10-31T21:18:38.766146823Z [inf]  
+2025-10-31T21:18:38.766153910Z [inf]  🔍 Checking GitHub integration configuration...
+2025-10-31T21:18:38.766160132Z [inf]  ✅ GitHub integration configured successfully
+2025-10-31T21:18:38.766166561Z [inf]     - Repository: 6-7Development/archetype
+2025-10-31T21:18:38.766172711Z [inf]     - Branch: main
+2025-10-31T21:18:38.766179822Z [inf]     - Token: ✓ (configured)
+2025-10-31T21:18:38.766188066Z [inf]     - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-31T21:18:38.766195789Z [inf]     - Maintenance mode: Available for owner
+2025-10-31T21:18:38.766216047Z [inf]  
+2025-10-31T21:28:39.804972654Z [inf]  [CACHE] Stats: {
+2025-10-31T21:28:39.804977366Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T21:28:39.804981182Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T21:28:39.804985245Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T21:28:39.804988897Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T21:28:39.804992835Z [inf]  }
+2025-10-31T21:38:40.879979467Z [inf]  [CACHE] Stats: {
+2025-10-31T21:38:40.879983620Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T21:38:40.879987671Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T21:38:40.879991399Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T21:38:40.879995277Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T21:38:40.879999735Z [inf]  }
