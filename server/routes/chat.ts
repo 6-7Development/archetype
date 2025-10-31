@@ -9,6 +9,7 @@ import { isAuthenticated } from "../universalAuth";
 import { aiLimiter } from "../rateLimiting";
 import { aiQueue } from '../priority-queue';
 import { buildSystemPrompt, FEATURES, activeGenerations } from "./common";
+import { getOrCreateState, autoUpdateFromMessage, formatStateForPrompt } from '../services/conversationState';
 
 //Helper function to summarize messages
 async function summarizeMessages(messages: any[]): Promise<string> {
@@ -298,8 +299,20 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
           }
         }
 
-        // Build system prompt using shared function
-        const systemPrompt = buildSystemPrompt(mode, existingFiles, chatHistory, secrets);
+        // 🎯 CONVERSATION STATE: Get or create state for context tracking
+        const conversationState = await getOrCreateState(userId, projectId || null);
+        
+        // Auto-update state from user command (extract goals and files)
+        await autoUpdateFromMessage(conversationState.id, command);
+        console.log('[CONVERSATION-STATE] Updated from user command:', conversationState.id);
+
+        // Get fresh conversation state and format for prompt injection
+        const freshState = await storage.getConversationState(userId, projectId || null);
+        const contextPrompt = formatStateForPrompt(freshState);
+
+        // Build system prompt using shared function with conversation context
+        const baseSystemPrompt = buildSystemPrompt(mode, existingFiles, chatHistory, secrets);
+        const systemPrompt = `${baseSystemPrompt}\n\n${contextPrompt}`;
 
         // SySop interprets the command and generates project structure using Claude
         const computeStartTime = Date.now();

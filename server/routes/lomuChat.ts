@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db';
-import { chatMessages, taskLists, tasks, lomuAttachments, lomuJobs, users, subscriptions, projects } from '@shared/schema';
+import { chatMessages, taskLists, tasks, lomuAttachments, lomuJobs, users, subscriptions, projects, conversationStates } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth';
 import Anthropic from '@anthropic-ai/sdk';
@@ -17,6 +17,7 @@ import * as path from 'path';
 import { createSafeAnthropicRequest, logTruncationResults } from '../lib/anthropic-wrapper';
 import { sanitizeDiagnosisForAI } from '../lib/diagnosis-sanitizer';
 import type { WebSocketServer } from 'ws';
+import { getOrCreateState, autoUpdateFromMessage, formatStateForPrompt } from '../services/conversationState';
 
 const router = Router();
 
@@ -620,6 +621,13 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     sendEvent('user_message', { messageId: userMsg.id });
 
+    // 🎯 CONVERSATION STATE: Get or create state for context tracking
+    const conversationState = await getOrCreateState(userId, null);
+    
+    // Auto-update state from user message (extract goals and files)
+    await autoUpdateFromMessage(conversationState.id, message);
+    console.log('[CONVERSATION-STATE] Updated from user message:', conversationState.id);
+
     // Intent classifier: Detect if user wants brief answer or work
     const classifyIntent = (message: string): 'question' | 'task' | 'status' => {
       const lowerMsg = message.toLowerCase();
@@ -748,12 +756,25 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // Classify user intent to determine response style
     const intent = classifyIntent(message);
 
+    // 🎯 Get fresh conversation state (may have been updated by auto-update)
+    const freshState = await db
+      .select()
+      .from(conversationStates)
+      .where(eq(conversationStates.id, conversationState.id))
+      .limit(1)
+      .then(rows => rows[0]);
+
+    // Format conversation context for AI injection
+    const contextPrompt = formatStateForPrompt(freshState);
+
     // ⚡ ULTRA-COMPRESSED SYSTEM PROMPT: ~500 tokens (95% reduction from 11K)
     const systemPrompt = `LomuAI maintains Archetype platform. ${intent === 'question' ? 'Answer in 1 sentence.' : 'Be brief.'}
 
 Tools: readPlatformFile, writePlatformFile, commit_to_github, start_subagent, verify_fix, web_search, architect_consult.
 Stack: React+Express+PostgreSQL on Railway.
 ${autoCommit ? 'Auto-commit ON.' : 'Ask before commit.'}
+
+${contextPrompt}
 
 User: "${message}"`;
 

@@ -9,6 +9,7 @@ import uploadRouter from './routes/upload';
 import platformRouter from './platformRoutes';
 import lomuAIChatRouter from './routes/lomuChat';
 import aiKnowledgeRouter from './routes/aiKnowledge';
+import conversationStateRouter from './routes/conversationState';
 import { getDeploymentInfo } from './deploymentInfo';
 import { storage } from "./storage";
 
@@ -207,6 +208,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Mount LomuAI chat router (chat-based platform healing)
   app.use('/api/lomuai', lomuAIChatRouter);
+  
+  // Mount conversation state router (context tracking for AI chats)
+  app.use('/api/conversation', conversationStateRouter);
   
   // Mount webhooks router (deployment status from Railway/Render)
   app.use('/api/webhooks', webhooksRouter);

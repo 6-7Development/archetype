@@ -53,6 +53,8 @@ import {
   type InsertHealingConversation,
   type HealingMessage,
   type InsertHealingMessage,
+  type ConversationState,
+  type InsertConversationState,
   users,
   files,
   chatMessages,
@@ -86,7 +88,8 @@ import {
   userAvatarState,
   healingTargets,
   healingConversations,
-  healingMessages
+  healingMessages,
+  conversationStates
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, isNull, sql } from "drizzle-orm";
@@ -293,6 +296,12 @@ export interface IStorage {
   getHealingMessages(conversationId: string): Promise<HealingMessage[]>;
   createHealingMessage(message: InsertHealingMessage): Promise<HealingMessage>;
   clearHealingMessages(conversationId: string): Promise<void>;
+  
+  // Conversation State operations (context tracking)
+  getConversationState(userId: string, projectId: string | null): Promise<ConversationState | null>;
+  createConversationState(state: InsertConversationState & { userId: string }): Promise<ConversationState>;
+  updateConversationState(id: string, updates: Partial<ConversationState>): Promise<ConversationState>;
+  clearConversationState(id: string): Promise<ConversationState>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2557,6 +2566,57 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(healingMessages)
       .where(eq(healingMessages.conversationId, conversationId));
+  }
+  
+  // Conversation State operations (context tracking)
+  async getConversationState(userId: string, projectId: string | null): Promise<ConversationState | null> {
+    const query = projectId
+      ? and(eq(conversationStates.userId, userId), eq(conversationStates.projectId, projectId))
+      : and(eq(conversationStates.userId, userId), isNull(conversationStates.projectId));
+
+    const [state] = await db
+      .select()
+      .from(conversationStates)
+      .where(query)
+      .orderBy(desc(conversationStates.lastUpdated))
+      .limit(1);
+
+    return state || null;
+  }
+
+  async createConversationState(state: InsertConversationState & { userId: string }): Promise<ConversationState> {
+    const [created] = await db
+      .insert(conversationStates)
+      .values(state)
+      .returning();
+    return created;
+  }
+
+  async updateConversationState(id: string, updates: Partial<ConversationState>): Promise<ConversationState> {
+    const [updated] = await db
+      .update(conversationStates)
+      .set({
+        ...updates,
+        lastUpdated: new Date(),
+      })
+      .where(eq(conversationStates.id, id))
+      .returning();
+    return updated;
+  }
+
+  async clearConversationState(id: string): Promise<ConversationState> {
+    const [cleared] = await db
+      .update(conversationStates)
+      .set({
+        currentGoal: null,
+        mentionedFiles: [],
+        sessionSummary: null,
+        context: {},
+        lastUpdated: new Date(),
+      })
+      .where(eq(conversationStates.id, id))
+      .returning();
+    return cleared;
   }
 }
 

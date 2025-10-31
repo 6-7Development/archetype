@@ -479,6 +479,37 @@ export const insertChatMessageSchema = createInsertSchema(chatMessages)
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 
+// Conversation States - Track context and prevent AI rambling
+export const conversationStates = pgTable("conversation_states", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  projectId: varchar("project_id"), // null for general chats
+  currentGoal: text("current_goal"), // What user is trying to accomplish
+  mentionedFiles: text("mentioned_files").array().default(sql`ARRAY[]::text[]`), // Files discussed
+  sessionSummary: text("session_summary"), // Running summary of conversation
+  context: jsonb("context").$type<{
+    recentTopics?: string[];
+    completedTasks?: string[];
+    pendingQuestions?: string[];
+    userPreferences?: Record<string, any>;
+  }>().default(sql`'{}'::jsonb`), // Additional structured context
+  lastUpdated: timestamp("last_updated").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_conversation_states_user_id").on(table.userId),
+  index("idx_conversation_states_project_id").on(table.projectId),
+  index("idx_conversation_states_last_updated").on(table.lastUpdated),
+]);
+
+export const insertConversationStateSchema = createInsertSchema(conversationStates).omit({
+  id: true,
+  createdAt: true,
+  lastUpdated: true,
+});
+
+export type InsertConversationState = z.infer<typeof insertConversationStateSchema>;
+export type ConversationState = typeof conversationStates.$inferSelect;
+
 // LomuAI Attachments - Files attached to chat messages (images, code, logs)
 export const lomuAttachments = pgTable('lomu_attachments', {
   id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),

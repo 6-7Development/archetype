@@ -3,6 +3,7 @@ import { db } from '../db';
 import { platformHealingSessions, platformIncidents } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import type { PlatformMetricsBroadcaster } from '../services/platformMetricsBroadcaster';
+import { verifyRailwayWebhook, verifyRenderWebhook } from '../services/webhookVerification';
 
 const router = Router();
 
@@ -16,7 +17,29 @@ export function setWebhookBroadcaster(broadcaster: PlatformMetricsBroadcaster) {
 /**
  * POST /api/webhooks/deployment
  * 
- * Receive deployment status notifications from Railway/Render
+ * Receive deployment status notifications from Railway/Render.
+ * 
+ * SECURITY: All webhooks MUST be signed with WEBHOOK_SECRET to prevent spoofing attacks.
+ * 
+ * ## Configuration Instructions:
+ * 
+ * ### Railway Setup:
+ * 1. Go to your Railway project settings
+ * 2. Navigate to "Webhooks" section
+ * 3. Add webhook URL: https://your-domain.com/api/webhooks/deployment
+ * 4. Generate a secret key: `openssl rand -hex 32`
+ * 5. Save the secret in Railway environment as WEBHOOK_SECRET
+ * 6. Railway will send signature in 'x-webhook-signature' header
+ * 
+ * ### Render Setup:
+ * 1. Go to your Render service settings
+ * 2. Navigate to "Notifications" > "Webhooks"
+ * 3. Add webhook URL: https://your-domain.com/api/webhooks/deployment
+ * 4. Generate a secret key: `openssl rand -hex 32`
+ * 5. Save the secret in Render environment as WEBHOOK_SECRET
+ * 6. Render will send signature in 'render-signature' header
+ * 
+ * ## Webhook Payloads:
  * 
  * Railway webhook payload:
  * {
@@ -33,19 +56,69 @@ export function setWebhookBroadcaster(broadcaster: PlatformMetricsBroadcaster) {
  *   "url": "https://archetype.onrender.com",
  *   "createdAt": "2025-10-31T12:00:00Z"
  * }
+ * 
+ * ## Security Notes:
+ * - Webhooks without valid signatures are rejected with 401 Unauthorized
+ * - Failed verification attempts are logged for security monitoring
+ * - Uses HMAC-SHA256 with constant-time comparison to prevent timing attacks
  */
 router.post('/deployment', async (req, res) => {
   try {
-    console.log('[WEBHOOK] Deployment notification received:', req.body);
+    console.log('[WEBHOOK] Deployment notification received');
     
-    // Verify webhook signature (Railway uses X-Railway-Signature, Render uses Render-Signature)
-    const signature = req.headers['x-railway-signature'] || req.headers['render-signature'];
-    const webhookSecret = process.env.DEPLOYMENT_WEBHOOK_SECRET;
+    // Extract signature from headers (Railway uses x-webhook-signature, Render uses render-signature)
+    const railwaySignature = req.headers['x-webhook-signature'] as string | undefined;
+    const renderSignature = req.headers['render-signature'] as string | undefined;
+    const webhookSecret = process.env.WEBHOOK_SECRET;
     
-    if (webhookSecret && signature) {
-      // TODO: Implement proper signature verification based on provider
-      console.log('[WEBHOOK] Webhook signature verification: SKIPPED (implement crypto.verify)');
+    // Determine provider based on which signature header is present
+    const isRailway = !!railwaySignature;
+    const isRender = !!renderSignature;
+    const signature = railwaySignature || renderSignature;
+    const provider = isRailway ? 'Railway' : isRender ? 'Render' : 'Unknown';
+    
+    // CRITICAL SECURITY: Verify webhook signature to prevent spoofing attacks
+    if (!webhookSecret) {
+      console.error('[WEBHOOK-SECURITY] ⚠️ WEBHOOK_SECRET not configured - webhooks are INSECURE');
+      console.error('[WEBHOOK-SECURITY] Generate secret: openssl rand -hex 32');
+      console.error('[WEBHOOK-SECURITY] Add to environment variables');
+      return res.status(500).json({ 
+        error: 'Webhook signature verification not configured' 
+      });
     }
+    
+    if (!signature) {
+      console.error('[WEBHOOK-SECURITY] 🚨 POTENTIAL ATTACK: Webhook received without signature');
+      console.error('[WEBHOOK-SECURITY] Source IP:', req.ip);
+      console.error('[WEBHOOK-SECURITY] Headers:', JSON.stringify(req.headers));
+      return res.status(401).json({ 
+        error: 'Missing webhook signature' 
+      });
+    }
+    
+    // Get raw request body for signature verification
+    const rawBody = JSON.stringify(req.body);
+    
+    // Verify signature based on provider
+    const verificationResult = isRailway
+      ? verifyRailwayWebhook(rawBody, signature, webhookSecret)
+      : verifyRenderWebhook(rawBody, signature, webhookSecret);
+    
+    if (!verificationResult.valid) {
+      console.error('[WEBHOOK-SECURITY] 🚨 POTENTIAL ATTACK: Invalid webhook signature');
+      console.error('[WEBHOOK-SECURITY] Provider:', provider);
+      console.error('[WEBHOOK-SECURITY] Source IP:', req.ip);
+      console.error('[WEBHOOK-SECURITY] Error:', verificationResult.error);
+      console.error('[WEBHOOK-SECURITY] Signature received:', signature.substring(0, 16) + '...');
+      return res.status(401).json({ 
+        error: 'Invalid webhook signature',
+        details: verificationResult.error,
+      });
+    }
+    
+    console.log('[WEBHOOK-SECURITY] ✅ Webhook signature verified successfully');
+    console.log('[WEBHOOK] Provider:', provider);
+    console.log('[WEBHOOK] Payload:', req.body);
     
     // Normalize payload from different providers
     const { status, deploymentId, deployId, url, timestamp, createdAt } = req.body;
