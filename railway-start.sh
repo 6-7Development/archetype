@@ -34,19 +34,8 @@ else
 fi
 
 echo ""
-echo "🔄 Running database migrations..."
-# Add SSL params to DATABASE_URL for drizzle-kit (production needs sslmode=no-verify)
-if [ "$NODE_ENV" = "production" ]; then
-  if [[ ! "$DATABASE_URL" =~ sslmode ]]; then
-    export DATABASE_URL="${DATABASE_URL}?sslmode=no-verify"
-    echo "✅ Added sslmode=no-verify to DATABASE_URL for drizzle-kit"
-  fi
-fi
-
-# Skip drizzle-kit entirely on Railway - it's too unreliable with schema detection
-# The app will handle table creation via drizzle ORM on startup
-echo "⏭️ Skipping drizzle-kit push (Railway schema detection issues)"
-echo "✅ Database schema will be created by application on startup"
+echo "⏭️ Skipping database migrations (handled by application)"
+echo "✅ Database schema will be created automatically on startup"
 
 echo ""
 echo "🔍 Environment Check:"
