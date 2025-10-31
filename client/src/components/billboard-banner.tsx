@@ -119,18 +119,8 @@ function getSeasonalTheme() {
   };
 }
 
-// REAL platform updates - Replace these with actual platform news
+// Platform updates - Current platform announcements
 const PLATFORM_UPDATES: PlatformUpdate[] = [
-  {
-    icon: "🎃",
-    title: "Happy Halloween from Lomu!",
-    description: "Enjoy spooky season with our themed billboard. New seasonal themes rotate throughout the year!",
-    cta: "Learn More",
-    link: "/",
-    requiresAuth: false,
-    type: "event",
-    date: "2025-10-30"
-  },
   {
     icon: "🤖",
     title: "LomuAI Auto-Healing Now Live",
@@ -142,10 +132,10 @@ const PLATFORM_UPDATES: PlatformUpdate[] = [
     date: "2025-10-29"
   },
   {
-    icon: "🍋",
-    title: "Meet Lumo Avatar System",
-    description: "Interactive lemon mascot with 9 emotions, breathing animations, and mood-based particle effects now available!",
-    cta: "Try Builder",
+    icon: "⚡",
+    title: "AI-Powered Code Generation",
+    description: "Build full-stack applications with natural language commands. Powered by Claude Sonnet 4 for superior code quality.",
+    cta: "Start Building",
     link: "/builder",
     requiresAuth: false,
     type: "feature",
@@ -153,19 +143,19 @@ const PLATFORM_UPDATES: PlatformUpdate[] = [
   },
   {
     icon: "📊",
-    title: "Platform Healing Page Redesigned",
-    description: "New Replit-style layout with collapsible task manager, full-width chat, and floating deployments widget.",
-    cta: "See What's New",
-    link: "/platform-healing",
+    title: "Real-Time Collaboration",
+    description: "Team workspaces with role-based access control. Build together with live preview and instant synchronization.",
+    cta: "Create Team",
+    link: "/team",
     requiresAuth: true,
     type: "update",
     date: "2025-10-30"
   },
   {
     icon: "🚀",
-    title: "One-Click Deployments Available",
+    title: "One-Click Deployments",
     description: "Deploy to Railway or Render with automatic SSL, health checks, and rollback support built-in.",
-    cta: "Start Deploying",
+    cta: "Deploy Now",
     link: "/publishing",
     requiresAuth: false,
     type: "feature",
