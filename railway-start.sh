@@ -34,6 +34,11 @@ else
 fi
 
 echo ""
+echo "🗑️ Dropping old tables with incorrect schema..."
+# Run Node script to drop old healing tables (they have wrong ID types)
+node drop-old-tables.js || echo "⚠️ Could not drop old tables (may not exist)"
+
+echo ""
 echo "🔄 Running database migrations with drizzle-kit..."
 
 # Add SSL params to DATABASE_URL for drizzle-kit (production needs sslmode=no-verify)
@@ -44,17 +49,12 @@ if [ "$NODE_ENV" = "production" ]; then
   fi
 fi
 
-echo "⚠️  NOTE: If healing tables have wrong schema, manually drop them in Railway DB:"
-echo "   DROP TABLE IF EXISTS ai_fix_attempts CASCADE;"
-echo "   DROP TABLE IF EXISTS platform_incidents CASCADE;"
-echo "   DROP TABLE IF EXISTS healing_targets CASCADE;"
-
-# Run drizzle-kit to sync schema
+# Run drizzle-kit to sync schema (will create tables with correct schema)
 if npx drizzle-kit push --force; then
   echo "✅ Database migrations completed successfully!"
 else
   echo "❌ Database migration failed!"
-  echo "Continuing anyway - tables may need manual cleanup..."
+  exit 1
 fi
 
 echo ""
