@@ -1950,3 +1950,220 @@ export const insertHealingMessageSchema = createInsertSchema(healingMessages).om
 
 export type InsertHealingMessage = z.infer<typeof insertHealingMessageSchema>;
 export type HealingMessage = typeof healingMessages.$inferSelect;
+
+// ==================== PREMIUM AUTO-FIX TABLES ====================
+// Premium Fix Attempts - Track paid one-click fix service with payment/rollback
+export const premiumFixAttempts = pgTable("premium_fix_attempts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  projectId: varchar("project_id").notNull(),
+  
+  // Error identification (prevent double-charging for same error)
+  errorSignature: varchar("error_signature", { length: 64 }).notNull(), // MD5 hash of error pattern
+  errorType: text("error_type").notNull(), // 'build_failure', 'runtime_error', 'typescript_error', etc.
+  errorDescription: text("error_description").notNull(), // User-facing error description
+  
+  // Confidence and diagnosis
+  confidenceScore: decimal("confidence_score", { precision: 5, scale: 2 }).notNull(), // 0-100
+  diagnosisNotes: text("diagnosis_notes"), // AI's analysis
+  proposedFix: text("proposed_fix"), // What AI plans to do
+  
+  // Sandbox testing results
+  sandboxTestId: varchar("sandbox_test_id"), // Link to sandboxTestResults
+  sandboxPassed: boolean("sandbox_passed").notNull().default(false),
+  
+  // Payment tracking (Stripe)
+  stripePaymentIntentId: text("stripe_payment_intent_id"), // Stripe payment intent ID
+  baseTokenCost: decimal("base_token_cost", { precision: 10, scale: 2 }).notNull(), // Actual AI cost
+  serviceFeePercent: decimal("service_fee_percent", { precision: 5, scale: 2 }).notNull().default("50.00"), // 50% markup
+  totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(), // What user pays
+  paymentStatus: text("payment_status").notNull().default("pending"), // 'pending' | 'held' | 'captured' | 'refunded' | 'cancelled'
+  paymentCapturedAt: timestamp("payment_captured_at"),
+  paymentRefundedAt: timestamp("payment_refunded_at"),
+  
+  // Execution tracking
+  status: text("status").notNull().default("pending"), // 'pending' | 'diagnosing' | 'sandbox_testing' | 'awaiting_payment' | 'applying_fix' | 'monitoring' | 'success' | 'failed' | 'rolled_back'
+  phase: text("phase").notNull().default("diagnosis"), // Current phase of fix process
+  
+  // Health monitoring
+  healthMonitoringId: varchar("health_monitoring_id"), // Link to healthMonitoringRecords
+  healthCheckPassed: boolean("health_check_passed"),
+  
+  // Git/Deploy tracking
+  commitHash: varchar("commit_hash"),
+  deploymentId: varchar("deployment_id"),
+  deploymentUrl: text("deployment_url"),
+  
+  // Rollback tracking
+  rolledBack: boolean("rolled_back").notNull().default(false),
+  rollbackReason: text("rollback_reason"),
+  rollbackAt: timestamp("rollback_at"),
+  snapshotBeforeFix: jsonb("snapshot_before_fix"), // Project state before fix
+  
+  // Summary for user
+  fixSummary: text("fix_summary"), // Short summary of what was fixed
+  issuesFixed: jsonb("issues_fixed").$type<Array<{
+    issue: string;
+    fix: string;
+    file?: string;
+  }>>(), // List of issues fixed
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  
+  // Error tracking
+  error: text("error"),
+}, (table) => [
+  index("idx_premium_fix_user").on(table.userId),
+  index("idx_premium_fix_project").on(table.projectId),
+  index("idx_premium_fix_error_sig").on(table.errorSignature),
+  index("idx_premium_fix_status").on(table.status),
+  index("idx_premium_fix_payment").on(table.paymentStatus),
+]);
+
+export const insertPremiumFixAttemptSchema = createInsertSchema(premiumFixAttempts).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+});
+
+export type InsertPremiumFixAttempt = z.infer<typeof insertPremiumFixAttemptSchema>;
+export type PremiumFixAttempt = typeof premiumFixAttempts.$inferSelect;
+
+// Sandbox Test Results - Track isolated testing before applying fixes
+export const sandboxTestResults = pgTable("sandbox_test_results", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  fixAttemptId: varchar("fix_attempt_id").notNull(), // Link to premiumFixAttempts
+  
+  // Test execution
+  testType: text("test_type").notNull(), // 'typescript' | 'unit_tests' | 'integration' | 'e2e' | 'build' | 'health'
+  passed: boolean("passed").notNull(),
+  
+  // Results
+  output: text("output"), // Test output/logs
+  errorMessage: text("error_message"),
+  stackTrace: text("stack_trace"),
+  
+  // Files tested
+  filesAffected: jsonb("files_affected").$type<string[]>(), // List of files in sandbox
+  changesApplied: jsonb("changes_applied").$type<Array<{
+    path: string;
+    operation: 'create' | 'modify' | 'delete';
+    diff?: string;
+  }>>(),
+  
+  // Performance
+  duration: integer("duration"), // Milliseconds
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_sandbox_fix_attempt").on(table.fixAttemptId),
+  index("idx_sandbox_test_type").on(table.testType),
+]);
+
+export const insertSandboxTestResultSchema = createInsertSchema(sandboxTestResults).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertSandboxTestResult = z.infer<typeof insertSandboxTestResultSchema>;
+export type SandboxTestResult = typeof sandboxTestResults.$inferSelect;
+
+// Health Monitoring Records - Track post-fix health for 5 minutes
+export const healthMonitoringRecords = pgTable("health_monitoring_records", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  fixAttemptId: varchar("fix_attempt_id").notNull(), // Link to premiumFixAttempts
+  
+  // Monitoring window
+  startedAt: timestamp("started_at").notNull().defaultNow(),
+  endedAt: timestamp("ended_at"),
+  monitoringDuration: integer("monitoring_duration").notNull().default(300), // 5 minutes in seconds
+  
+  // Health checks performed
+  checksPerformed: integer("checks_performed").notNull().default(0),
+  checksPassedCount: integer("checks_passed_count").notNull().default(0),
+  checksFailedCount: integer("checks_failed_count").notNull().default(0),
+  
+  // Overall status
+  overallHealth: text("overall_health").notNull().default("monitoring"), // 'monitoring' | 'healthy' | 'unhealthy' | 'degraded'
+  finalStatus: text("final_status"), // 'success' | 'failed' - set when monitoring completes
+  
+  // Detailed checks
+  healthChecks: jsonb("health_checks").$type<Array<{
+    timestamp: string;
+    checkType: 'http_ping' | 'error_logs' | 'user_report' | 'build_status';
+    passed: boolean;
+    message?: string;
+    details?: any;
+  }>>().default(sql`'[]'::jsonb`),
+  
+  // Failure details
+  failureReason: text("failure_reason"),
+  failureDetails: jsonb("failure_details"),
+  
+  // Action taken
+  actionTaken: text("action_taken"), // 'none' | 'rollback' | 'alert' | 'escalate'
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_health_fix_attempt").on(table.fixAttemptId),
+  index("idx_health_overall").on(table.overallHealth),
+]);
+
+export const insertHealthMonitoringRecordSchema = createInsertSchema(healthMonitoringRecords).omit({
+  id: true,
+  createdAt: true,
+  startedAt: true,
+});
+
+export type InsertHealthMonitoringRecord = z.infer<typeof insertHealthMonitoringRecordSchema>;
+export type HealthMonitoringRecord = typeof healthMonitoringRecords.$inferSelect;
+
+// Error Signature Deduplication - Prevent charging twice for same error
+export const errorSignatureDeduplication = pgTable("error_signature_deduplication", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  projectId: varchar("project_id").notNull(),
+  
+  // Error signature (MD5 hash)
+  errorSignature: varchar("error_signature", { length: 64 }).notNull(),
+  errorType: text("error_type").notNull(),
+  errorMessage: text("error_message").notNull(),
+  
+  // Fix tracking
+  firstAttemptId: varchar("first_attempt_id").notNull(), // First fix attempt for this error
+  lastAttemptId: varchar("last_attempt_id").notNull(), // Most recent fix attempt
+  totalAttempts: integer("total_attempts").notNull().default(1),
+  successfulAttempts: integer("successful_attempts").notNull().default(0),
+  
+  // Payment tracking (prevent double-charging)
+  totalCharged: decimal("total_charged", { precision: 10, scale: 2 }).notNull().default("0.00"),
+  lastChargedAt: timestamp("last_charged_at"),
+  
+  // Resolution status
+  resolved: boolean("resolved").notNull().default(false),
+  resolvedAt: timestamp("resolved_at"),
+  resolvedBy: varchar("resolved_by"), // Fix attempt ID that resolved it
+  
+  // Learning
+  confidence: decimal("confidence", { precision: 5, scale: 2 }).notNull().default("0.00"), // Increases with successful fixes
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_error_dedup_user_project").on(table.userId, table.projectId),
+  index("idx_error_dedup_signature").on(table.errorSignature),
+  index("idx_error_dedup_resolved").on(table.resolved),
+]);
+
+export const insertErrorSignatureDeduplicationSchema = createInsertSchema(errorSignatureDeduplication).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertErrorSignatureDeduplication = z.infer<typeof insertErrorSignatureDeduplicationSchema>;
+export type ErrorSignatureDeduplication = typeof errorSignatureDeduplication.$inferSelect;
