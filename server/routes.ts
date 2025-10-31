@@ -148,6 +148,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   sessionManager.setWebSocketServer(wss);
   console.log('[PLATFORM-HEALING] Session manager connected to WebSocket');
   
+  // Wire WebSocket server to platform healing service for preview broadcasts
+  const { platformHealing } = await import('./platformHealing');
+  platformHealing.setWebSocketServer(wss);
+  console.log('[PLATFORM-HEALING] Platform healing service connected to WebSocket');
+  
   // Initialize platform metrics broadcaster
   const { PlatformMetricsBroadcaster } = await import('./services/platformMetricsBroadcaster');
   const metricsBroadcaster = new PlatformMetricsBroadcaster(wss);
@@ -187,6 +192,177 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Mount LomuAI chat router (chat-based platform healing)
   app.use('/api/lomuai', lomuAIChatRouter);
+
+  // ==================== PLATFORM PREVIEW ROUTES ====================
+  
+  // Import preview builder service
+  const { 
+    getPreviewManifest, 
+    servePreviewFile,
+    getCacheStats 
+  } = await import('./services/platformPreviewBuilder');
+  
+  // Import rate limiting
+  const rateLimit = (await import('express-rate-limit')).default;
+  
+  // Import JWT for signed tokens
+  const { SignJWT, jwtVerify } = await import('jose');
+  
+  // Rate limiter for preview builds (max 10 builds/min per admin session)
+  const previewBuildLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 10, // Max 10 builds per minute
+    message: 'Too many preview builds. Please wait before building again.',
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req: any) => {
+      // Rate limit per session ID or user ID
+      return req.params.sessionId || req.session?.claims?.sub || 'anonymous';
+    },
+  });
+
+  // JWT secret for signed session tokens
+  const JWT_SECRET = new TextEncoder().encode(
+    process.env.SESSION_SECRET || 'fallback-preview-secret-key'
+  );
+
+  // Helper: Sign session token (valid for 10 minutes)
+  async function signSessionToken(sessionId: string, userId: string): Promise<string> {
+    const token = await new SignJWT({ sessionId, userId })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('10m')
+      .sign(JWT_SECRET);
+    return token;
+  }
+
+  // Helper: Verify session token
+  async function verifySessionToken(token: string): Promise<{ sessionId: string; userId: string } | null> {
+    try {
+      const { payload } = await jwtVerify(token, JWT_SECRET);
+      return {
+        sessionId: payload.sessionId as string,
+        userId: payload.userId as string,
+      };
+    } catch (error) {
+      console.error('[PREVIEW] Token verification failed:', error);
+      return null;
+    }
+  }
+
+  // GET /api/platform-preview/:sessionId - Get preview manifest and metadata
+  app.get('/api/platform-preview/:sessionId', previewBuildLimiter, async (req: any, res) => {
+    try {
+      const userId = req.session?.claims?.sub || req.session?.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      const { sessionId } = req.params;
+      
+      // Validate session token (if provided)
+      const token = req.query.token || req.headers['x-preview-token'];
+      if (token) {
+        const verified = await verifySessionToken(token as string);
+        if (!verified || verified.sessionId !== sessionId) {
+          return res.status(403).json({ error: 'Invalid session token' });
+        }
+      }
+
+      // Get manifest from builder
+      const manifest = getPreviewManifest(sessionId);
+      
+      if (!manifest) {
+        return res.status(404).json({ error: 'Preview session not found or expired' });
+      }
+
+      // Generate signed token for accessing preview assets
+      const signedToken = await signSessionToken(sessionId, userId);
+
+      res.json({
+        ...manifest,
+        previewUrl: `/platform-preview/${sessionId}/index.html?token=${signedToken}`,
+        token: signedToken,
+      });
+    } catch (error: any) {
+      console.error('[PREVIEW] Error fetching manifest:', error);
+      res.status(500).json({ error: error.message || 'Failed to fetch preview manifest' });
+    }
+  });
+
+  // GET /platform-preview/:sessionId/* - Serve preview assets with CSP headers
+  app.get('/platform-preview/:sessionId/*', async (req: any, res) => {
+    try {
+      const { sessionId } = req.params;
+      const filePath = req.params[0] || 'index.html';
+      
+      // Verify session token
+      const token = req.query.token || req.headers['x-preview-token'];
+      if (!token) {
+        return res.status(401).json({ error: 'Preview token required' });
+      }
+
+      const verified = await verifySessionToken(token as string);
+      if (!verified || verified.sessionId !== sessionId) {
+        return res.status(403).json({ error: 'Invalid session token' });
+      }
+
+      // Serve file from preview builder
+      const file = await servePreviewFile(sessionId, filePath);
+      
+      if (!file) {
+        return res.status(404).send('File not found');
+      }
+
+      // Security: Add strict CSP headers
+      res.setHeader('Content-Security-Policy', [
+        "default-src 'none'",
+        "script-src 'self' blob: 'unsafe-inline'", // Allow inline for bundled code
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' data: blob:",
+        "font-src 'self' data:",
+        "connect-src 'self'",
+        "frame-ancestors 'none'",
+      ].join('; '));
+      
+      // Prevent cookies in preview
+      res.setHeader('Set-Cookie', 'preview=isolated; Max-Age=0; SameSite=Strict');
+      
+      // Cache control (5 min TTL)
+      res.setHeader('Cache-Control', 'public, max-age=300');
+      
+      // Set MIME type
+      res.setHeader('Content-Type', file.mimeType);
+      
+      // Send file
+      res.send(file.content);
+    } catch (error: any) {
+      console.error('[PREVIEW] Error serving file:', error);
+      res.status(500).json({ error: error.message || 'Failed to serve preview file' });
+    }
+  });
+
+  // GET /api/platform-preview/stats - Get cache statistics (admin only)
+  app.get('/api/platform-preview/stats', async (req: any, res) => {
+    try {
+      const userId = req.session?.claims?.sub || req.session?.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      // Check if user is admin
+      const user = await storage.getUserById(userId);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+
+      const stats = getCacheStats();
+      res.json(stats);
+    } catch (error: any) {
+      console.error('[PREVIEW] Error fetching stats:', error);
+      res.status(500).json({ error: error.message || 'Failed to fetch cache stats' });
+    }
+  });
 
   // ==================== REPLIT AGENT-STYLE FEATURES ====================
   

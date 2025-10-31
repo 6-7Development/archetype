@@ -9,7 +9,7 @@ export interface Task {
 }
 
 interface StreamMessage {
-  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics' | 'heal:init' | 'heal:thought' | 'heal:tool' | 'heal:write-pending' | 'heal:approved' | 'heal:rejected' | 'heal:completed' | 'heal:error' | 'approval_requested' | 'progress';
+  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics' | 'heal:init' | 'heal:thought' | 'heal:tool' | 'heal:write-pending' | 'heal:approved' | 'heal:rejected' | 'heal:completed' | 'heal:error' | 'approval_requested' | 'progress' | 'platform_preview_ready' | 'platform_preview_error';
   commandId?: string;
   status?: string;
   message?: string;
@@ -61,6 +61,15 @@ interface StreamMessage {
   summary?: string;
   estimatedImpact?: string;
   messageId?: string;
+  // Preview-specific fields
+  manifest?: {
+    sessionId: string;
+    buildStatus: 'building' | 'success' | 'failed';
+    artifacts: any[];
+    errors: string[];
+    timestamp: string;
+  };
+  errors?: string[];
 }
 
 interface StreamState {
@@ -112,6 +121,14 @@ interface StreamState {
     };
     lastUpdate: string;
   } | null;
+  previewReady: {
+    sessionId: string;
+    manifest: any;
+  } | null;
+  previewError: {
+    sessionId: string;
+    errors: string[];
+  } | null;
 }
 
 const MAX_RECONNECT_ATTEMPTS = 5;
@@ -142,6 +159,8 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
     tasks: [],
     subAgentActive: null,
     platformMetrics: null,
+    previewReady: null,
+    previewError: null,
   });
 
   // NEW: State to track heal:* events
@@ -367,6 +386,30 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
               console.log(`🔧 [HEAL] ${message.type}:`, message);
               setHealEvents(prev => [...prev, message]);
               break;
+
+            case 'platform_preview_ready':
+              console.log('✅ Platform preview ready:', message);
+              setStreamState(prev => ({
+                ...prev,
+                previewReady: {
+                  sessionId: message.sessionId || '',
+                  manifest: message.manifest,
+                },
+                previewError: null, // Clear any previous errors
+              }));
+              break;
+
+            case 'platform_preview_error':
+              console.error('❌ Platform preview error:', message);
+              setStreamState(prev => ({
+                ...prev,
+                previewError: {
+                  sessionId: message.sessionId || '',
+                  errors: message.errors || [],
+                },
+                previewReady: null, // Clear any previous ready state
+              }));
+              break;
           }
         } catch (error) {
           console.error('❌ WebSocket message parse error:', error);
@@ -461,6 +504,8 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
       tasks: [],
       subAgentActive: null,
       platformMetrics: null,
+      previewReady: null,
+      previewError: null,
     }));
   }, []);
 

@@ -6,6 +6,8 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { getGitHubService, isGitHubServiceAvailable } from './githubService';
 import { storage } from './storage';
+import { buildPlatformPreview, type PreviewManifest } from './services/platformPreviewBuilder';
+import type { WebSocketServer } from 'ws';
 
 const execFileAsync = promisify(execFile);
 
@@ -46,10 +48,133 @@ const activePRs = new Map<string, PRMetadata>();
 export class PlatformHealingService {
   private readonly PROJECT_ROOT = PROJECT_ROOT;
   private readonly BACKUP_BRANCH_PREFIX = 'backup/lomuai-';
+  private wss: WebSocketServer | null = null;
+  private sessionChangedFiles = new Map<string, Set<string>>(); // sessionId -> Set of file paths
+  private sessionManifests = new Map<string, PreviewManifest>(); // sessionId -> manifest
   
   constructor() {
     // Log PROJECT_ROOT for debugging
     console.log(`[PLATFORM-HEALING] PROJECT_ROOT: ${this.PROJECT_ROOT}`);
+  }
+
+  /**
+   * Set WebSocket server for broadcasting preview events
+   */
+  setWebSocketServer(wss: WebSocketServer): void {
+    this.wss = wss;
+    console.log('[PLATFORM-HEALING] WebSocket server attached for preview broadcasts');
+  }
+
+  /**
+   * Track file change for preview building
+   */
+  private trackFileChange(sessionId: string, filePath: string): void {
+    if (!this.sessionChangedFiles.has(sessionId)) {
+      this.sessionChangedFiles.set(sessionId, new Set());
+    }
+    this.sessionChangedFiles.get(sessionId)!.add(filePath);
+    console.log(`[PREVIEW-TRACKER] Tracked change: ${filePath} in session ${sessionId}`);
+  }
+
+  /**
+   * Trigger preview build for a session
+   */
+  async triggerPreviewBuild(sessionId: string): Promise<PreviewManifest | null> {
+    const changedFiles = this.sessionChangedFiles.get(sessionId);
+    
+    if (!changedFiles || changedFiles.size === 0) {
+      console.log(`[PREVIEW-BUILD] No changed files for session: ${sessionId}`);
+      return null;
+    }
+
+    try {
+      console.log(`[PREVIEW-BUILD] Building preview for session ${sessionId} with ${changedFiles.size} files`);
+      
+      // Build preview
+      const manifest = await buildPlatformPreview(sessionId, Array.from(changedFiles));
+      
+      // Store manifest
+      this.sessionManifests.set(sessionId, manifest);
+      
+      // Broadcast WebSocket event
+      if (manifest.buildStatus === 'success') {
+        this.broadcastPreviewReady(sessionId, manifest);
+      } else {
+        this.broadcastPreviewError(sessionId, manifest.errors);
+      }
+      
+      return manifest;
+    } catch (error: any) {
+      console.error(`[PREVIEW-BUILD] Build failed for session ${sessionId}:`, error);
+      this.broadcastPreviewError(sessionId, [error.message]);
+      return null;
+    }
+  }
+
+  /**
+   * Broadcast preview ready event via WebSocket
+   */
+  private broadcastPreviewReady(sessionId: string, manifest: PreviewManifest): void {
+    if (!this.wss) {
+      console.warn('[PREVIEW-BROADCAST] No WebSocket server available');
+      return;
+    }
+
+    const message = JSON.stringify({
+      type: 'platform_preview_ready',
+      sessionId,
+      manifest,
+      timestamp: new Date().toISOString(),
+    });
+
+    this.wss.clients.forEach((client: any) => {
+      if (client.readyState === 1) { // OPEN
+        client.send(message);
+      }
+    });
+
+    console.log(`[PREVIEW-BROADCAST] ✅ Broadcast preview ready for session: ${sessionId}`);
+  }
+
+  /**
+   * Broadcast preview error event via WebSocket
+   */
+  private broadcastPreviewError(sessionId: string, errors: string[]): void {
+    if (!this.wss) {
+      console.warn('[PREVIEW-BROADCAST] No WebSocket server available');
+      return;
+    }
+
+    const message = JSON.stringify({
+      type: 'platform_preview_error',
+      sessionId,
+      errors,
+      timestamp: new Date().toISOString(),
+    });
+
+    this.wss.clients.forEach((client: any) => {
+      if (client.readyState === 1) { // OPEN
+        client.send(message);
+      }
+    });
+
+    console.log(`[PREVIEW-BROADCAST] ❌ Broadcast preview error for session: ${sessionId}`);
+  }
+
+  /**
+   * Get preview manifest for a session
+   */
+  getPreviewManifest(sessionId: string): PreviewManifest | undefined {
+    return this.sessionManifests.get(sessionId);
+  }
+
+  /**
+   * Clear session preview data
+   */
+  clearSessionPreview(sessionId: string): void {
+    this.sessionChangedFiles.delete(sessionId);
+    this.sessionManifests.delete(sessionId);
+    console.log(`[PREVIEW-CLEAR] Cleared preview data for session: ${sessionId}`);
   }
 
   /**
@@ -591,6 +716,66 @@ export class PlatformHealingService {
     } catch (error: any) {
       throw new Error(`Failed to create platform file ${filePath}: ${error.message}`);
     }
+  }
+
+  /**
+   * Write platform file with automatic preview tracking and building
+   * @param sessionId - Platform healing session ID for preview
+   * @param filePath - Relative path to file
+   * @param content - File content
+   * @param autoTriggerBuild - Whether to automatically trigger preview build after write
+   */
+  async writePlatformFileWithPreview(
+    sessionId: string,
+    filePath: string,
+    content: string,
+    autoTriggerBuild: boolean = false
+  ): Promise<{ success: boolean; message: string; commitHash?: string; commitUrl?: string; previewManifest?: PreviewManifest | null }> {
+    // Write the file normally
+    const result = await this.writePlatformFile(filePath, content);
+    
+    // Track file change for preview
+    this.trackFileChange(sessionId, filePath);
+    console.log(`[PREVIEW-TRACKING] Tracked file change: ${filePath} for session ${sessionId}`);
+    
+    // Optionally trigger preview build immediately
+    let previewManifest: PreviewManifest | null = null;
+    if (autoTriggerBuild) {
+      previewManifest = await this.triggerPreviewBuild(sessionId);
+    }
+    
+    return {
+      ...result,
+      previewManifest,
+    };
+  }
+
+  /**
+   * Create platform file with automatic preview tracking and building
+   */
+  async createPlatformFileWithPreview(
+    sessionId: string,
+    filePath: string,
+    content: string,
+    autoTriggerBuild: boolean = false
+  ): Promise<{ success: boolean; message: string; commitHash?: string; commitUrl?: string; previewManifest?: PreviewManifest | null }> {
+    // Create the file normally
+    const result = await this.createPlatformFile(filePath, content);
+    
+    // Track file change for preview
+    this.trackFileChange(sessionId, filePath);
+    console.log(`[PREVIEW-TRACKING] Tracked file creation: ${filePath} for session ${sessionId}`);
+    
+    // Optionally trigger preview build immediately
+    let previewManifest: PreviewManifest | null = null;
+    if (autoTriggerBuild) {
+      previewManifest = await this.triggerPreviewBuild(sessionId);
+    }
+    
+    return {
+      ...result,
+      previewManifest,
+    };
   }
 
   async deletePlatformFile(filePath: string): Promise<void> {

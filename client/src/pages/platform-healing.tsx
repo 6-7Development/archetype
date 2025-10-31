@@ -14,8 +14,10 @@ import { AdminGuard } from '@/components/admin-guard';
 import { DeploymentStatusWidget } from '@/components/deployment-status-widget';
 import { TaskProgressWidget } from '@/components/task-progress-widget';
 import { AgentTaskList, type AgentTask } from '@/components/agent-task-list';
+import { PlatformPreviewPanel } from '@/components/platform-preview-panel';
 import { Rocket, ChevronDown } from 'lucide-react';
 import { BillboardBanner } from '@/components/billboard-banner';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 
 type StepState = 'pending' | 'running' | 'ok' | 'fail';
 
@@ -76,6 +78,12 @@ function PlatformHealingContent() {
   const [lomuActiveTaskId, setLomuActiveTaskId] = useState<string | null>(null);
   const [taskManagerExpanded, setTaskManagerExpanded] = useState(false); // Collapsed by default
   const [showDeployments, setShowDeployments] = useState(true); // Show floating deployments
+  
+  // Platform preview state
+  const [previewManifest, setPreviewManifest] = useState<any>(null);
+  const [previewSessionId, setPreviewSessionId] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [testResults, setTestResults] = useState<any>(null);
 
   // Force deploy mutation
   const forceDeployMutation = useMutation({
@@ -130,6 +138,45 @@ function PlatformHealingContent() {
   // Use WebSocket metrics if available, otherwise HTTP metrics
   const status = metrics || httpMetrics;
 
+  // Listen for platform preview WebSocket events
+  useEffect(() => {
+    if (!wsStream.previewReady) return;
+
+    const { sessionId, manifest } = wsStream.previewReady;
+    console.log('[PLATFORM-HEALING] Preview ready:', { sessionId, manifest });
+    
+    setPreviewManifest(manifest);
+    setPreviewSessionId(sessionId);
+    
+    // Fetch the manifest with signed token
+    fetchPreviewManifest(sessionId);
+    
+    toast({
+      title: '✅ Preview Ready',
+      description: 'Platform preview built successfully',
+    });
+  }, [wsStream.previewReady, toast]);
+
+  // Listen for preview errors
+  useEffect(() => {
+    if (!wsStream.previewError) return;
+
+    const { sessionId, errors } = wsStream.previewError;
+    console.error('[PLATFORM-HEALING] Preview error:', { sessionId, errors });
+    
+    setPreviewManifest({ 
+      buildStatus: 'failed', 
+      errors: errors || ['Build failed'],
+      sessionId 
+    });
+    
+    toast({
+      title: '❌ Preview Build Failed',
+      description: errors?.[0] || 'Failed to build preview',
+      variant: 'destructive',
+    });
+  }, [wsStream.previewError, toast]);
+
   // Fetch pending changes
   const { data: pendingChangesData, isLoading: pendingChangesLoading, refetch: refetchPendingChanges } = useQuery<any>({
     queryKey: ['/api/lomuai/pending-changes'],
@@ -138,6 +185,68 @@ function PlatformHealingContent() {
 
   const [selectedFileForDiff, setSelectedFileForDiff] = useState<string | null>(null);
   const [showPendingChanges, setShowPendingChanges] = useState(true);
+
+  // Fetch preview manifest with signed token
+  const fetchPreviewManifest = async (sessionId: string) => {
+    try {
+      console.log('[PREVIEW] Fetching manifest for session:', sessionId);
+      const response = await fetch(`/api/platform-preview/${sessionId}`, {
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch preview manifest: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log('[PREVIEW] Manifest fetched:', data);
+      
+      if (data.success && data.manifest) {
+        setPreviewManifest(data.manifest);
+        
+        // Set preview URL with signed token
+        if (data.token) {
+          setPreviewUrl(`/platform-preview/${sessionId}/index.html?token=${data.token}`);
+          console.log('[PREVIEW] Preview URL set with token');
+        } else {
+          setPreviewUrl(`/platform-preview/${sessionId}/index.html`);
+          console.log('[PREVIEW] Preview URL set without token');
+        }
+      }
+    } catch (error) {
+      console.error('[PREVIEW] Failed to fetch manifest:', error);
+      toast({
+        title: '❌ Preview Fetch Failed',
+        description: 'Failed to load preview manifest',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Fetch existing preview on mount (for page reloads during active builds)
+  useEffect(() => {
+    const fetchExistingPreview = async () => {
+      try {
+        // Try to get the latest preview session from localStorage or API
+        const storedSessionId = localStorage.getItem('platform-preview-session');
+        if (storedSessionId) {
+          console.log('[PREVIEW] Found stored session, fetching manifest:', storedSessionId);
+          await fetchPreviewManifest(storedSessionId);
+        }
+      } catch (error) {
+        console.warn('[PREVIEW] No existing preview found on mount:', error);
+      }
+    };
+
+    fetchExistingPreview();
+  }, []); // Run once on mount
+
+  // Store session ID in localStorage when it changes
+  useEffect(() => {
+    if (previewSessionId) {
+      localStorage.setItem('platform-preview-session', previewSessionId);
+    }
+  }, [previewSessionId]);
 
   // LomuAI streaming mutation (NEW SYSTEM with all tools!)
   const autoHealMutation = useMutation({
@@ -575,26 +684,61 @@ function PlatformHealingContent() {
             )}
           </div>
 
-          {/* Chat - Full width below task manager */}
-          <div className="bg-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col flex-1 min-h-0 relative" data-testid="panel-lomu-ai-chat">
-            <LomuAIChat 
-              autoCommit={true}
-              autoPush={true}
-              onTasksChange={(tasks, activeId) => {
-                setLomuTasks(tasks);
-                setLomuActiveTaskId(activeId);
-              }}
-            />
-            
-            {/* Floating Recent Deployments - Hidden on mobile, scrolls with chat */}
-            {showDeployments && (
-              <div className="hidden md:block absolute top-4 right-4 w-72 max-h-96 z-10">
-                <DeploymentStatusWidget 
-                  floating={true}
-                  onClose={() => setShowDeployments(false)}
-                />
-              </div>
-            )}
+          {/* Chat and Preview - Resizable Split View */}
+          <div className="bg-card border border-border rounded-xl shadow-lg overflow-hidden flex-1 min-h-0">
+            <ResizablePanelGroup direction="horizontal">
+              {/* Left Panel: Chat */}
+              <ResizablePanel defaultSize={50} minSize={30}>
+                <div className="h-full flex flex-col relative" data-testid="panel-lomu-ai-chat">
+                  <LomuAIChat 
+                    autoCommit={true}
+                    autoPush={true}
+                    onTasksChange={(tasks, activeId) => {
+                      setLomuTasks(tasks);
+                      setLomuActiveTaskId(activeId);
+                    }}
+                  />
+                  
+                  {/* Floating Recent Deployments - Hidden on mobile, scrolls with chat */}
+                  {showDeployments && (
+                    <div className="hidden md:block absolute top-4 right-4 w-72 max-h-96 z-10">
+                      <DeploymentStatusWidget 
+                        floating={true}
+                        onClose={() => setShowDeployments(false)}
+                      />
+                    </div>
+                  )}
+                </div>
+              </ResizablePanel>
+
+              <ResizableHandle />
+
+              {/* Right Panel: Platform Preview */}
+              <ResizablePanel defaultSize={50} minSize={30}>
+                <div className="h-full" data-testid="panel-platform-preview">
+                  <PlatformPreviewPanel
+                    sessionId={previewSessionId}
+                    previewUrl={previewUrl || undefined}
+                    testResults={testResults}
+                    manifest={previewManifest}
+                    onRefresh={() => {
+                      if (previewSessionId) {
+                        // Trigger preview rebuild via API
+                        fetch(`/api/platform-preview/${previewSessionId}/rebuild`, {
+                          method: 'POST',
+                          credentials: 'include',
+                        }).catch(console.error);
+                      }
+                    }}
+                    onDeploy={() => {
+                      if (previewManifest?.buildStatus === 'success') {
+                        forceDeployMutation.mutate();
+                      }
+                    }}
+                  />
+                </div>
+              </ResizablePanel>
+            </ResizablePanelGroup>
           </div>
         </div>
       </div>
