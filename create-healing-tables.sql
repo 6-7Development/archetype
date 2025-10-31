@@ -1,83 +1,169 @@
--- Create healing tables with correct UUID schema
+-- Create healing tables with EXACT schema from shared/schema.ts
 -- This runs after drop-old-tables.js to ensure clean creation
 
 -- Platform Incidents (detection system)
 CREATE TABLE IF NOT EXISTS platform_incidents (
   id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::VARCHAR,
-  type VARCHAR NOT NULL,
-  source VARCHAR NOT NULL,
-  severity VARCHAR NOT NULL,
+  
+  -- Incident details
+  type TEXT NOT NULL,
+  severity TEXT NOT NULL,
+  title TEXT NOT NULL,
   description TEXT NOT NULL,
+  
+  -- Detection metadata
+  source TEXT NOT NULL,
   detected_at TIMESTAMP NOT NULL DEFAULT NOW(),
   resolved_at TIMESTAMP,
-  user_id VARCHAR,
-  metadata JSONB DEFAULT '{}'::JSONB
-);
-
--- AI Fix Attempts (healing attempts tracking)
-CREATE TABLE IF NOT EXISTS ai_fix_attempts (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::VARCHAR,
-  incident_id VARCHAR NOT NULL REFERENCES platform_incidents(id) ON DELETE CASCADE,
-  session_id VARCHAR,
-  attempt_number INTEGER NOT NULL,
-  approach VARCHAR NOT NULL,
-  actions JSONB DEFAULT '[]'::JSONB,
-  result VARCHAR,
-  verified BOOLEAN DEFAULT FALSE,
-  deployed BOOLEAN DEFAULT FALSE,
+  
+  -- Status tracking
+  status TEXT NOT NULL DEFAULT 'open',
+  
+  -- Healing session link
+  healing_session_id VARCHAR,
+  
+  -- Metadata for diagnosis
+  stack_trace TEXT,
+  affected_files JSONB,
+  metrics JSONB,
+  logs TEXT,
+  
+  -- Resolution tracking
+  root_cause TEXT,
+  fix_description TEXT,
   commit_hash VARCHAR,
+  
+  -- Retry tracking
+  attempt_count INTEGER NOT NULL DEFAULT 0,
+  last_attempt_at TIMESTAMP,
+  
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  completed_at TIMESTAMP
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- Healing Targets (manual chat targets)
-CREATE TABLE IF NOT EXISTS healing_targets (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::VARCHAR,
-  name VARCHAR NOT NULL,
-  description TEXT,
-  category VARCHAR NOT NULL,
-  priority INTEGER DEFAULT 1,
-  enabled BOOLEAN DEFAULT TRUE,
-  config JSONB DEFAULT '{}'::JSONB,
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-
--- Platform Healing Sessions (chat sessions)
+-- Platform Healing Sessions (ongoing healing processes)
 CREATE TABLE IF NOT EXISTS platform_healing_sessions (
-  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::VARCHAR,
-  target_id VARCHAR REFERENCES healing_targets(id) ON DELETE SET NULL,
-  user_id VARCHAR NOT NULL,
-  title VARCHAR NOT NULL,
-  status VARCHAR NOT NULL DEFAULT 'active',
-  metadata JSONB DEFAULT '{}'::JSONB,
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+  
+  -- Link to incident
+  incident_id VARCHAR NOT NULL,
+  
+  -- Session metadata
+  phase TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active',
+  
+  -- Diagnosis data
+  diagnosis_notes TEXT,
+  proposed_fix TEXT,
+  
+  -- Files changed
+  files_changed JSONB,
+  
+  -- Verification results
+  verification_results JSONB,
+  verification_passed BOOLEAN,
+  
+  -- Git/Deploy tracking
+  branch_name VARCHAR,
+  commit_hash VARCHAR,
+  deployment_id VARCHAR,
+  deployment_status TEXT,
+  deployment_url TEXT,
+  deployment_started_at TIMESTAMP,
+  deployment_completed_at TIMESTAMP,
+  
+  -- AI metadata
+  tokens_used INTEGER DEFAULT 0,
+  model VARCHAR DEFAULT 'claude-sonnet-4-20250514',
+  
+  -- Timestamps
+  started_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  completed_at TIMESTAMP,
+  
+  -- Error tracking
+  error TEXT
 );
 
--- Platform Heal Attempts (linked to sessions)
+-- Platform Heal Attempts (individual fix attempts)
 CREATE TABLE IF NOT EXISTS platform_heal_attempts (
   id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::VARCHAR,
-  incident_id VARCHAR REFERENCES platform_incidents(id) ON DELETE CASCADE,
-  session_id VARCHAR NOT NULL REFERENCES platform_healing_sessions(id) ON DELETE CASCADE,
+  
+  -- Links
+  incident_id VARCHAR NOT NULL,
+  session_id VARCHAR NOT NULL,
+  
+  -- Attempt details
   attempt_number INTEGER NOT NULL,
-  approach VARCHAR NOT NULL,
-  actions JSONB DEFAULT '[]'::JSONB,
-  result VARCHAR,
-  verified BOOLEAN DEFAULT FALSE,
-  deployed BOOLEAN DEFAULT FALSE,
-  commit_hash VARCHAR,
+  strategy TEXT NOT NULL,
+  
+  -- What was tried
+  actions_taken JSONB,
+  files_modified JSONB,
+  
+  -- Results
+  success BOOLEAN NOT NULL DEFAULT FALSE,
+  verification_passed BOOLEAN,
+  error TEXT,
+  
+  -- Timestamps
+  started_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  completed_at TIMESTAMP
+);
+
+-- AI Fix Attempts (learning/debugging)
+CREATE TABLE IF NOT EXISTS ai_fix_attempts (
+  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::VARCHAR,
+  
+  -- Links
+  error_signature VARCHAR(64) NOT NULL,
+  healing_session_id VARCHAR,
+  
+  -- The proposed fix
+  proposed_fix TEXT NOT NULL,
+  confidence_score DECIMAL(5, 2) NOT NULL,
+  outcome TEXT NOT NULL,
+  verification_results JSONB,
+  
+  -- PR tracking
+  pr_number INTEGER,
+  pr_url TEXT,
+  auto_merged BOOLEAN DEFAULT FALSE,
+  
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   completed_at TIMESTAMP
 );
 
+CREATE INDEX IF NOT EXISTS idx_ai_fix_error_signature ON ai_fix_attempts(error_signature);
+CREATE INDEX IF NOT EXISTS idx_ai_fix_outcome ON ai_fix_attempts(outcome);
+CREATE INDEX IF NOT EXISTS idx_ai_fix_confidence ON ai_fix_attempts(confidence_score);
+
+-- Healing Targets (what can be healed)
+CREATE TABLE IF NOT EXISTS healing_targets (
+  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::VARCHAR,
+  user_id VARCHAR NOT NULL,
+  type TEXT NOT NULL,
+  name TEXT NOT NULL,
+  project_id VARCHAR,
+  customer_id VARCHAR,
+  railway_project_id TEXT,
+  repository_url TEXT,
+  last_synced_at TIMESTAMP,
+  status TEXT NOT NULL DEFAULT 'active',
+  metadata JSONB,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_healing_targets_user ON healing_targets(user_id);
+CREATE INDEX IF NOT EXISTS idx_healing_targets_type ON healing_targets(type);
+
 -- Insert default healing target for Platform Code
-INSERT INTO healing_targets (id, name, description, category, priority, enabled)
+INSERT INTO healing_targets (id, user_id, type, name, status, metadata)
 VALUES (
   gen_random_uuid()::VARCHAR,
-  '🔧 Platform Code',
-  'Modify LomuAI platform source code, fix bugs, and add features',
+  'system',
   'platform',
-  1,
-  true
+  '🔧 Platform Code',
+  'active',
+  '{"description": "Modify LomuAI platform source code, fix bugs, and add features"}'::JSONB
 ) ON CONFLICT (id) DO NOTHING;
