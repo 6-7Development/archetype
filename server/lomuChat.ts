@@ -12,6 +12,12 @@ import { GitHubService } from '../githubService';
 import { createTaskList, updateTask, readTaskList } from '../tools/task-management';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { 
+  getSystemPrompt, 
+  ERROR_MESSAGES, 
+  PROGRESS_MESSAGES, 
+  TOOL_DESCRIPTIONS 
+} from './config/prompts';
 
 const router = Router();
 
@@ -50,7 +56,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     const anthropicKey = process.env.ANTHROPIC_API_KEY;
     if (!anthropicKey) {
-      return res.status(503).json({ error: 'Anthropic API key not configured' });
+      return res.status(503).json({ error: ERROR_MESSAGES.anthropicKeyMissing() });
     }
 
     // Set up Server-Sent Events
@@ -81,10 +87,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     let backup: any = null;
     try {
       backup = await platformHealing.createBackup(`LomuAI session: ${message.slice(0, 50)}`);
-      sendEvent('progress', { message: 'Backup created successfully' });
+      sendEvent('progress', { message: PROGRESS_MESSAGES.backupCreated() });
     } catch (backupError: any) {
       console.warn('[LOMUAI-CHAT] Backup creation failed (non-critical):', backupError.message);
-      sendEvent('progress', { message: 'Proceeding without backup (production mode)' });
+      sendEvent('progress', { message: 'Working without backup (we\'re in production mode)' });
     }
 
     // Get conversation history for context - OPTIMIZED: Only 10 messages to save tokens
@@ -125,99 +131,8 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                           message.toLowerCase().includes('analyze issues') ||
                           message.toLowerCase().includes('find problems');
 
-    const systemPrompt = isSimpleTask ? 
-      // SIMPLE TASK PROMPT (saves ~2K tokens)
-      `You are LomuAI, the AI that maintains Archetype platform. Talk like a colleague, not a bot.
-
-For simple fixes: Just do it quietly and report done. No task lists needed.
-For complex work: Use task lists and sub-agents.
-
-Read files before writing. Batch changes. One commit at end.
-React+Express+PostgreSQL stack. Auto-deploys to Railway.
-
-User request: ${message}` :
-      // FULL SYSTEM PROMPT (complex tasks only)  
-      `You are LomuAI, an AUTONOMOUS elite AI agent that maintains and fixes the Archetype platform itself.
-
-═══════════════════════════════════════════════════════════════════
-⚠️  CRITICAL: You modify PRODUCTION PLATFORM CODE - Be precise!
-═══════════════════════════════════════════════════════════════════
-
-🎯 MANDATORY WORKFLOW (FOLLOW EXACTLY):
-
-1️⃣ CREATE TASK LIST (FIRST - ALWAYS!)
-   → Call createTaskList() immediately
-   → Break down work into 4-6 clear steps
-   → Mark first task as "in_progress"
-
-2️⃣ INVESTIGATE & DIAGNOSE
-   → Use readPlatformFile() to examine relevant files
-   → Use listPlatformFiles() if you need to find files
-   → Use web_search() if you need documentation
-   → Call updateTask() when starting/completing each step
-   → Use readTaskList() to see your task IDs
-
-3️⃣ CONSULT I AM (MANDATORY BEFORE WRITING!)
-   → Call architect_consult() with:
-     • problem: Clear description of the bug/issue
-     • context: What you discovered in your investigation
-     • proposedSolution: Exact changes you plan to make
-     • affectedFiles: List of files you'll modify
-   → Wait for approval before proceeding
-
-4️⃣ IMPLEMENT FIXES (ONLY IF I AM APPROVES!)
-   → Call writePlatformFile() for each approved file
-   → Update tasks to "completed" as you finish each one
-   → Make precise, surgical changes - don't rewrite entire files
-
-5️⃣ AUTO-DEPLOY TO PRODUCTION
-   → Call commit_to_github() with detailed commit message
-   → This automatically deploys to Render (2-3 min)
-   → Mark all tasks "completed"
-
-6️⃣ REPORT COMPLETION
-   → Summarize what was fixed
-   → List files changed
-   → Confirm deployment initiated
-
-═══════════════════════════════════════════════════════════════════
-🚫 CRITICAL RULES:
-═══════════════════════════════════════════════════════════════════
-
-✅ DO:
-  • ALWAYS create task list FIRST (users watch progress live)
-  • ALWAYS consult I AM before writing any file
-  • ALWAYS update tasks as you work
-  • ALWAYS commit when done (auto-deploys to production)
-  • Make minimal, surgical changes
-  • Read files before modifying them
-
-❌ DO NOT:
-  • Ask "should I fix this?" - JUST FIX IT (you're autonomous)
-  • Ask permission to deploy - AUTO-DEPLOY with commit_to_github
-  • Write files without I AM approval (will be BLOCKED)
-  • Modify .git/, node_modules/, .env, package.json
-  • Make broad rewrites - be surgical
-  • Skip task list creation
-  • Skip architect_consult before writing files
-
-═══════════════════════════════════════════════════════════════════
-📚 PLATFORM ARCHITECTURE:
-═══════════════════════════════════════════════════════════════════
-
-• Frontend: React + TypeScript (client/src/)
-• Backend: Express.js (server/)
-• Database: PostgreSQL + Drizzle ORM
-• Deployment: Render (auto-deploy via GitHub commits)
-• AI: Anthropic Claude Sonnet 4
-
-═══════════════════════════════════════════════════════════════════
-📋 USER REQUEST:
-═══════════════════════════════════════════════════════════════════
-
-${message}
-
-Now execute the workflow autonomously - create tasks, investigate, consult I AM, fix, and deploy!`;
+    // Use the new friendly system prompts from config
+    const systemPrompt = getSystemPrompt(message, isSimpleTask);
 
     // TOKEN EFFICIENCY: Build smart tools array based on task complexity
     const basicTools = [
@@ -504,10 +419,10 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
               const isRelevant = relevantFiles.length === 0 || relevantFiles.some(f => f.includes(typedInput.path) || typedInput.path.includes(f.split('/').pop() || ''));
               
               if (!isRelevant && typedInput.path.includes('storage.ts')) {
-                toolResult = `Skipped reading ${typedInput.path} (large file, not relevant to "${message.slice(0, 50)}...")`;
-                sendEvent('progress', { message: `Skipped ${typedInput.path} (not relevant)` });
+                toolResult = `I'll skip reading ${typedInput.path} since it's not relevant to what you asked`;
+                sendEvent('progress', { message: `Skipping ${typedInput.path} (not needed for this)` });
               } else {
-                sendEvent('progress', { message: `📖 Reading ${typedInput.path}...` });
+                sendEvent('progress', { message: PROGRESS_MESSAGES.readingFile(typedInput.path) });
                 toolResult = await platformHealing.readPlatformFile(typedInput.path);
               }
             } else if (name === 'writePlatformFile') {
@@ -517,7 +432,7 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
               // For simple tasks, skip I AM approval requirement
               if (isSimpleTask) {
                 console.log(`[LOMUAI] Simple task - writing ${normalizedPath} without I AM approval`);
-                sendEvent('progress', { message: `✏️ Fixing ${normalizedPath}...` });
+                sendEvent('progress', { message: PROGRESS_MESSAGES.writingFile(normalizedPath) });
                 await platformHealing.writePlatformFile(normalizedPath, typedInput.content);
                 
                 fileChanges.push({ 
@@ -527,23 +442,23 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
                 });
                 
                 sendEvent('file_change', { file: { path: normalizedPath, operation: 'modify' } });
-                toolResult = `✅ File updated successfully (simple task bypass)`;
+                toolResult = `✅ ${normalizedPath} updated! That should do it.`;
               } else {
                 // CRITICAL ENFORCEMENT: Check per-file approval for complex tasks
                 const approval = approvedFiles.get(normalizedPath);
                 
                 if (!approval) {
-                  toolResult = `❌ BLOCKED: File "${normalizedPath}" has no architect approval. You must consult I AM (architect_consult) and get explicit approval for this file.`;
+                  toolResult = ERROR_MESSAGES.noArchitectApproval(normalizedPath);
                   console.error(`[LOMUAI] Blocked writePlatformFile for ${normalizedPath} - no approval found`);
-                  sendEvent('error', { message: `File write blocked - no approval for ${normalizedPath}` });
+                  sendEvent('error', { message: `Hold on - I need approval for ${normalizedPath} first` });
                 } else if (!approval.approved) {
-                  toolResult = `❌ BLOCKED: I AM rejected changes to "${normalizedPath}". You cannot proceed with this file modification.`;
+                  toolResult = ERROR_MESSAGES.architectRejection(`Changes to "${normalizedPath}" weren't approved`);
                   console.error(`[LOMUAI] Blocked writePlatformFile for ${normalizedPath} - approval was rejected`);
-                  sendEvent('error', { message: `File write blocked - ${normalizedPath} was rejected` });
+                  sendEvent('error', { message: `Can't modify ${normalizedPath} - it was rejected` });
                 } else {
                   console.log(`[LOMUAI] writePlatformFile called for: ${normalizedPath}`);
                   
-                  sendEvent('progress', { message: `✅ Modifying ${normalizedPath} (I AM approved)...` });
+                  sendEvent('progress', { message: PROGRESS_MESSAGES.writingFile(normalizedPath) });
                   await platformHealing.writePlatformFile(normalizedPath, typedInput.content);
                   
                   fileChanges.push({ 
@@ -553,12 +468,12 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
                   });
                   
                   sendEvent('file_change', { file: { path: normalizedPath, operation: 'modify' } });
-                  toolResult = `✅ File written successfully (with I AM approval at ${new Date(approval.timestamp).toISOString()})`;
+                  toolResult = `✅ Updated ${normalizedPath} successfully! (I AM gave the green light at ${new Date(approval.timestamp).toLocaleTimeString()})`;
                 }
               }
             } else if (name === 'listPlatformFiles') {
               const typedInput = input as { directory: string };
-              sendEvent('progress', { message: `📂 Listing ${typedInput.directory}...` });
+              sendEvent('progress', { message: `📂 Looking around ${typedInput.directory}...` });
               const files = await platformHealing.listPlatformFiles(typedInput.directory);
               toolResult = files.join('\n');
             } else if (name === 'architect_consult') {
@@ -568,7 +483,7 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
                 proposedSolution: string;
                 affectedFiles: string[];
               };
-              sendEvent('progress', { message: '🏗️ Consulting I AM (The Architect) for code review...' });
+              sendEvent('progress', { message: PROGRESS_MESSAGES.consultingArchitect() });
               
               const architectResult = await consultArchitect({
                 problem: typedInput.problem,
@@ -586,8 +501,8 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
                   approvedFiles.set(filePath, { approved: true, timestamp });
                 });
                 
-                sendEvent('progress', { message: `✅ I AM approved ${normalizedFiles.length} files` });
-                toolResult = `✅ APPROVED by I AM (The Architect)\n\n${architectResult.guidance}\n\nRecommendations:\n${architectResult.recommendations.join('\n')}\n\nYou may now proceed to modify these files:\n${normalizedFiles.map(f => `- ${f} (approved at ${new Date(timestamp).toISOString()})`).join('\n')}\n\nNote: Each file approval is tracked individually. You can modify these files in any order.`;
+                sendEvent('progress', { message: PROGRESS_MESSAGES.architectApproved() });
+                toolResult = `✅ Great news! I AM approved my approach.\n\n${architectResult.guidance}\n\nThey also suggested:\n${architectResult.recommendations.join('\n')}\n\nI can now modify these files:\n${normalizedFiles.map(f => `- ${f}`).join('\n')}\n\nLet me get to work!`;
               } else {
                 // Mark these files as rejected - DON'T overwrite existing approvals
                 const normalizedFiles = typedInput.affectedFiles.map(normalizePath);
@@ -595,12 +510,12 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
                   approvedFiles.set(filePath, { approved: false, timestamp });
                 });
                 
-                sendEvent('error', { message: `❌ I AM rejected ${normalizedFiles.length} files` });
-                toolResult = `❌ REJECTED by I AM (The Architect)\n\nReason: ${architectResult.error}\n\nRejected files:\n${normalizedFiles.map(f => `- ${f}`).join('\n')}\n\nYou CANNOT proceed with these modifications. Either:\n1. Revise your approach and consult I AM again with a different proposal\n2. Abandon these changes`;
+                sendEvent('error', { message: `I AM had concerns about my approach` });
+                toolResult = ERROR_MESSAGES.architectRejection(architectResult.error || 'Unknown issue') + `\n\nAffected files:\n${normalizedFiles.map(f => `- ${f}`).join('\n')}\n\nNo worries! I'll rethink this and come up with a better solution.`;
               }
             } else if (name === 'web_search') {
               const typedInput = input as { query: string; maxResults?: number };
-              sendEvent('progress', { message: `🔍 Searching: ${typedInput.query}...` });
+              sendEvent('progress', { message: `🔍 Searching the web for "${typedInput.query}"...` });
               
               const searchResult = await executeWebSearch({
                 query: typedInput.query,
@@ -616,10 +531,10 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
               
               // Verify we have file changes to commit
               if (fileChanges.length === 0) {
-                toolResult = `❌ No file changes to commit. Make platform changes first using writePlatformFile.`;
-                sendEvent('error', { message: 'No file changes to commit' });
+                toolResult = `Hmm, there's nothing to commit yet. I need to make some file changes first.`;
+                sendEvent('error', { message: 'No changes to commit yet' });
               } else {
-                sendEvent('progress', { message: `📤 Committing ${fileChanges.length} files to GitHub...` });
+                sendEvent('progress', { message: PROGRESS_MESSAGES.committingChanges() });
                 
                 try {
                   // Check if GitHub service is configured
@@ -627,8 +542,8 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
                   const hasRepo = !!process.env.GITHUB_REPO;
                   
                   if (!hasToken || !hasRepo) {
-                    toolResult = `❌ GitHub integration not configured. Required: GITHUB_TOKEN and GITHUB_REPO environment variables.`;
-                    sendEvent('error', { message: 'GitHub not configured' });
+                    toolResult = `Oops! GitHub isn't set up yet. I need GITHUB_TOKEN and GITHUB_REPO environment variables to push changes.`;
+                    sendEvent('error', { message: 'GitHub needs configuration' });
                   } else {
                     const githubService = new GitHubService();
                     const PROJECT_ROOT = process.cwd();
@@ -658,19 +573,18 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
                       typedInput.commitMessage
                     );
                     
-                    sendEvent('progress', { message: `✅ Committed to GitHub: ${result.commitHash}` });
-                    sendEvent('progress', { message: `🚀 Render will auto-deploy in 2-3 minutes` });
+                    sendEvent('progress', { message: `✅ Changes committed! (${result.commitHash.slice(0, 7)})` });
+                    sendEvent('progress', { message: PROGRESS_MESSAGES.pushing() });
                     
-                    toolResult = `✅ SUCCESS! Committed ${fileChanges.length} files to GitHub\n\n` +
+                    toolResult = `🎉 Perfect! I committed ${fileChanges.length} file(s) to GitHub successfully!\n\n` +
                       `Commit: ${result.commitHash}\n` +
-                      `URL: ${result.commitUrl}\n\n` +
-                      `🚀 Render auto-deployment triggered!\n` +
-                      `⏱️ Changes will be live in 2-3 minutes\n\n` +
-                      `Files committed:\n${filesToCommit.map(f => `- ${f.path}`).join('\n')}`;
+                      `View it here: ${result.commitUrl}\n\n` +
+                      `${PROGRESS_MESSAGES.deployed()}\n\n` +
+                      `Files I changed:\n${filesToCommit.map(f => `✓ ${f.path}`).join('\n')}`;
                   }
                 } catch (error: any) {
-                  toolResult = `❌ GitHub commit failed: ${error.message}`;
-                  sendEvent('error', { message: `GitHub commit failed: ${error.message}` });
+                  toolResult = ERROR_MESSAGES.commitFailed(error.message);
+                  sendEvent('error', { message: `Commit didn't work: ${error.message}` });
                 }
               }
             }
@@ -703,18 +617,18 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
 
     // Safety check (SKIP for simple tasks to save time)
     if (!isSimpleTask) {
-      sendEvent('progress', { message: 'Running safety checks...' });
+      sendEvent('progress', { message: '🔒 Running safety checks to make sure everything looks good...' });
       const safety = await platformHealing.validateSafety();
       
       if (!safety.safe) {
         if (backup?.id) {
           await platformHealing.rollback(backup.id);
           sendEvent('error', { 
-            message: `Safety check failed: ${safety.issues.join(', ')}. Changes rolled back.` 
+            message: `Whoa, safety check caught some issues: ${safety.issues.join(', ')}. I rolled everything back to be safe.` 
           });
         } else {
           sendEvent('error', { 
-            message: `Safety check failed: ${safety.issues.join(', ')}. No backup available to rollback.` 
+            message: `Safety check found problems: ${safety.issues.join(', ')}. Unfortunately there's no backup to roll back to.` 
           });
         }
         res.end();

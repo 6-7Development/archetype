@@ -118,6 +118,49 @@ function formatFileSize(bytes: number): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
+// Detect frustration in user messages
+function detectFrustration(message: string): boolean {
+  const frustrationPatterns = [
+    /broken/i,
+    /not working/i,
+    /doesn't work/i,
+    /won't work/i,
+    /keeps failing/i,
+    /always fails/i,
+    /frustrat(ed|ing)/i,
+    /annoying/i,
+    /stupid/i,
+    /hate/i,
+    /terrible/i,
+    /awful/i,
+    /wtf/i,
+    /why (is|does) this/i,
+    /help me/i,
+    /please fix/i,
+    /urgent/i,
+    /asap/i,
+    /critical/i,
+    /still not/i,
+    /keeps breaking/i,
+  ];
+
+  return frustrationPatterns.some(pattern => pattern.test(message));
+}
+
+// Get empathetic prefix for frustrated messages
+function getEmpathyPrefix(message: string): string {
+  const empathyPrefixes = [
+    "I can see this is frustrating. ",
+    "I totally understand - when things aren't working, it's really annoying. ",
+    "I hear you! ",
+    "No worries, I've got your back. ",
+    "Ugh, I know how frustrating this is! ",
+  ];
+  
+  // Randomly select one to keep it feeling natural
+  return empathyPrefixes[Math.floor(Math.random() * empathyPrefixes.length)];
+}
+
 // AttachmentPreview component
 function AttachmentPreview({ attachment, onRemove }: { attachment: Attachment; onRemove: () => void }) {
   const [showPreview, setShowPreview] = useState(false);
@@ -449,11 +492,21 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
   // Send message mutation - uses SSE streaming for real-time responses
   const sendMutation = useMutation({
     mutationFn: async (message: string) => {
-      // Add user message to session
+      // Detect frustration and add empathetic prefix
+      let processedMessage = message;
+      const isFrustrated = detectFrustration(message);
+      
+      if (isFrustrated) {
+        const empathyPrefix = getEmpathyPrefix(message);
+        processedMessage = empathyPrefix + message;
+        console.log('[LOMU-AI] 💛 Frustration detected - adding empathetic context');
+      }
+      
+      // Add user message to session (show original message, but send processed one)
       const userMsg: Message = {
         id: Date.now().toString(),
         role: "user",
-        content: message,
+        content: message, // Display the original message
         attachments: attachments.length > 0 ? [...attachments] : undefined,
       };
       setMessages(prev => [...prev, userMsg]);
@@ -499,7 +552,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
         credentials: 'include',
         signal: abortController.signal,
         body: JSON.stringify({
-          message,
+          message: processedMessage, // Send the message with empathy prefix if needed
           attachments: attachments.length > 0 ? attachments : undefined,
           projectId: selectedProjectId,
           autoCommit: true,
