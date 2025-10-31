@@ -501,7 +501,14 @@ export const conversationStates = pgTable("conversation_states", {
   index("idx_conversation_states_last_updated").on(table.lastUpdated),
 ]);
 
-export const insertConversationStateSchema = createInsertSchema(conversationStates).omit({
+export const insertConversationStateSchema = createInsertSchema(conversationStates, {
+  context: z.object({
+    recentTopics: z.array(z.string()).optional(),
+    completedTasks: z.array(z.string()).optional(),
+    pendingQuestions: z.array(z.string()).optional(),
+    userPreferences: z.record(z.any()).optional(),
+  }).optional().nullable(),
+}).omit({
   id: true,
   createdAt: true,
   lastUpdated: true,

@@ -1,6 +1,6 @@
 import { db } from '../db';
 import { conversationStates, type ConversationState, type InsertConversationState } from '@shared/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, isNull } from 'drizzle-orm';
 
 /**
  * ConversationState Service
@@ -48,7 +48,7 @@ export async function getState(
 ): Promise<ConversationState | null> {
   const query = projectId
     ? and(eq(conversationStates.userId, userId), eq(conversationStates.projectId, projectId))
-    : and(eq(conversationStates.userId, userId), eq(conversationStates.projectId, null));
+    : and(eq(conversationStates.userId, userId), isNull(conversationStates.projectId));
 
   const [state] = await db
     .select()
@@ -356,7 +356,7 @@ export function extractGoal(content: string): string | null {
       // Clean up the extracted goal
       let goal = match[1].trim();
       // Remove trailing punctuation and newlines
-      goal = goal.replace(/[.!?\n].*/s, '');
+      goal = goal.replace(/[.!?\n].*/, '');
       // Limit length
       if (goal.length > 150) {
         goal = goal.substring(0, 147) + '...';

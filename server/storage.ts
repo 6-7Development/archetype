@@ -2587,7 +2587,7 @@ export class DatabaseStorage implements IStorage {
   async createConversationState(state: InsertConversationState & { userId: string }): Promise<ConversationState> {
     const [created] = await db
       .insert(conversationStates)
-      .values(state)
+      .values(state as any)
       .returning();
     return created;
   }
