@@ -12,7 +12,6 @@ import { cn } from "@/lib/utils";
 import { AgentTaskList, type AgentTask } from "./agent-task-list";
 import { AgentProgressDisplay } from "./agent-progress-display";
 import { MarkdownRenderer } from "./markdown-renderer";
-import { LemonMascot } from "./lemon-mascot";
 
 interface Attachment {
   fileName: string;
@@ -802,17 +801,11 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
           className="flex-1 overflow-y-auto p-2 md:p-4 space-y-3 md:space-y-4 scroll-smooth"
         >
           <div className="max-w-4xl mx-auto space-y-3 md:space-y-4">
-            {/* Welcome screen with Lumo */}
+            {/* Welcome screen */}
             {messages.length === 0 && !isStreaming && (
               <div className="text-center py-6 md:py-8 animate-in fade-in-up duration-700">
-                <div className="flex justify-center mb-4 md:mb-6">
-                  <LemonMascot 
-                    emotion={progressStatus === 'idle' ? 'happy' : progressStatus as any} 
-                    size="large"
-                  />
-                </div>
-                <h3 className="text-lg md:text-2xl font-bold mb-1 md:mb-2 px-2">Meet Lumo!</h3>
-                <h4 className="text-sm md:text-lg text-muted-foreground mb-2 md:mb-3 px-2">Your LomuAI AI Assistant</h4>
+                <h3 className="text-lg md:text-2xl font-bold mb-1 md:mb-2 px-2">LomuAI Platform Healing</h3>
+                <h4 className="text-sm md:text-lg text-muted-foreground mb-2 md:mb-3 px-2">Autonomous Platform Assistant</h4>
                 <p className="text-xs md:text-base text-muted-foreground max-w-md mx-auto leading-relaxed px-4">
                   I'm an autonomous platform healing agent. I can diagnose and fix issues 
                   with the Archetype platform itself. Tell me what needs to be fixed.
@@ -833,15 +826,8 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                 )}
               >
                 {message.role === "assistant" && (
-                  <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10">
-                    <LemonMascot 
-                      emotion={
-                        progressStatus === 'thinking' ? 'thinking' : 
-                        progressStatus === 'working' ? 'working' : 
-                        'happy'
-                      } 
-                      size="small"
-                    />
+                  <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Wrench className="w-4 h-4 md:w-5 md:h-5 text-primary" />
                   </div>
                 )}
                 
