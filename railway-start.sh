@@ -34,10 +34,22 @@ else
 fi
 
 echo ""
-echo "🔄 Checking database schema..."
-# Skip migrations - tables already exist from Replit sync
-echo "⏭️  Skipping drizzle-kit push (tables synced via Replit)"
-echo "✅ Using existing database schema"
+echo "🔄 Running database migrations..."
+# Add SSL params to DATABASE_URL for drizzle-kit (production needs sslmode=no-verify)
+if [ "$NODE_ENV" = "production" ]; then
+  if [[ ! "$DATABASE_URL" =~ sslmode ]]; then
+    export DATABASE_URL="${DATABASE_URL}?sslmode=no-verify"
+    echo "✅ Added sslmode=no-verify to DATABASE_URL for drizzle-kit"
+  fi
+fi
+
+if npx drizzle-kit push --force; then
+  echo "✅ Database migrations completed successfully!"
+else
+  echo "❌ Database migration failed!"
+  echo "Error: Tables might not exist. Please check schema."
+  exit 1
+fi
 
 echo ""
 echo "🔍 Environment Check:"
