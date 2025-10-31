@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { LomuIconLogo } from "./lomu-logos-new";
 
 interface LemonadeLoaderProps {
   progress?: number; // 0-100
   size?: "small" | "medium" | "large";
   message?: string;
   className?: string;
+  showLogo?: boolean;
 }
 
 // Cute loading messages based on progress
@@ -27,6 +29,7 @@ export function LemonadeLoader({
   size = "medium",
   message,
   className = "",
+  showLogo = true,
 }: LemonadeLoaderProps) {
   const [animatedProgress, setAnimatedProgress] = useState(0);
   const [bubbles, setBubbles] = useState<{ id: number; x: number; delay: number; duration: number }[]>([]);
@@ -69,6 +72,13 @@ export function LemonadeLoader({
 
   return (
     <div className={`flex flex-col items-center gap-4 ${className}`}>
+      {/* Icon Logo */}
+      {showLogo && (
+        <div className="mb-2">
+          <LomuIconLogo size={Math.min(jarSize * 0.4, 80)} />
+        </div>
+      )}
+      
       {/* SVG Lemonade Jar */}
       <svg
         width={jarSize}

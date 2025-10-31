@@ -1,8 +1,16 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { runPlatformDiagnostics } from '../diagnostics';
 import { db } from '../db';
 import { sql } from 'drizzle-orm';
-import { requireAdminAuth } from './auth';
+
+// Admin middleware - checks if user is admin
+function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  const user = req.user as any;
+  if (!user || user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+}
 
 const router = Router();
 
@@ -27,7 +35,7 @@ router.get('/api/diagnostics/health', async (req, res) => {
 });
 
 // User-friendly platform diagnostics for debugging
-router.get('/api/diagnostics/platform', requireAdminAuth, async (req, res) => {
+router.get('/api/diagnostics/platform', requireAdmin, async (req, res) => {
   try {
     const diagnostics: any = {
       timestamp: new Date().toISOString(),

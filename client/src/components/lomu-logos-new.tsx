@@ -5,19 +5,25 @@ import wordLogoPath from "@assets/Gemini_Generated_Image_ixx4nbixx4nbixx4_176187
 export function LomuIconLogo({ size = 40, className = "" }: { size?: number; className?: string }) {
   return (
     <div 
-      className={`relative ${className}`}
+      className={`relative overflow-hidden rounded-full ${className}`}
       style={{
         width: size,
         height: size,
+        backgroundColor: 'transparent',
       }}
     >
       <img
         src={iconLogoPath}
         alt="Lomu"
-        className="w-full h-full object-cover"
+        className="absolute"
         style={{
-          objectPosition: 'center',
-          clipPath: 'circle(38% at 50% 50%)', // Crop to just the lemon icon
+          width: size * 1.4,
+          height: size * 1.4,
+          objectFit: 'contain',
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%) scale(1.05)',
+          // This removes background glow by focusing on the center lemon
         }}
       />
     </div>
@@ -38,10 +44,11 @@ export function LomuWordLogo({ height = 60, className = "" }: { height?: number;
         src={wordLogoPath}
         alt="Lomu"
         style={{
-          height: height * 2.8, // Scale up to crop properly
+          height: height * 3.2, // Scale up more to crop properly
           objectFit: 'contain',
-          transform: 'translateY(-12%)', // Shift up to remove glowing border at top
-          filter: 'brightness(1.1)', // Slightly brighten since we're removing glow
+          transform: 'translateY(-18%)', // Shift up more to remove glowing border and tagline
+          filter: 'brightness(1.05) contrast(1.1)', // Compensate for removed glow
+          maxWidth: 'none', // Allow full width scaling
         }}
       />
     </div>
