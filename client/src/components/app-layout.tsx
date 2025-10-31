@@ -29,7 +29,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { queryClient } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 import type { User } from "@shared/schema";
-import { LogoEnhancedBadge, LomuTextLogo } from '@/components/final-logos';
+import { LomuFullLogo } from '@/components/lomu-logos-new';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -159,7 +159,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       )}>
         {/* Logo - PROUD & PROMINENT! */}
         <div className="h-20 border-b flex items-center px-4 gap-4">
-          <LomuTextLogo size="sm" />
+          <LomuFullLogo iconSize={32} textHeight={28} />
         </div>
 
         {/* Navigation - Scrollable */}

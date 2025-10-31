@@ -9,7 +9,8 @@ import { AdminGuard } from '@/components/admin-guard';
 import { LomuAvatar } from '@/components/lomu-avatar';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Send, Upload, Rocket, Plus, Loader2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Send, Upload, Rocket, Plus, Loader2, Database, Activity, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface HealingTarget {
@@ -521,56 +522,218 @@ function PlatformHealingContent() {
 
             <ResizableHandle className="hidden md:flex" />
 
-            {/* Right Panel: Context/Preview (Desktop only) */}
+            {/* Right Panel: Info & Log Tabs (Desktop only) */}
             <ResizablePanel defaultSize={40} minSize={30} className="hidden md:block">
-              <div className="h-full p-4 overflow-y-auto bg-muted/20">
-                <h3 className="text-lg font-semibold mb-4">Target Info</h3>
-                {selectedTarget && (
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Type</p>
-                      <p className="font-medium">
-                        {getTargetIcon(selectedTarget.type)} {selectedTarget.type}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Name</p>
-                      <p className="font-medium">{selectedTarget.name}</p>
-                    </div>
-                    {conversations && conversations.length > 0 && (
+              <Tabs defaultValue="info" className="h-full flex flex-col">
+                <TabsList className="mx-4 mt-4">
+                  <TabsTrigger value="info" data-testid="tab-info">Info</TabsTrigger>
+                  <TabsTrigger value="log" data-testid="tab-log">Log</TabsTrigger>
+                </TabsList>
+
+                {/* Info Tab */}
+                <TabsContent value="info" className="flex-1 overflow-y-auto p-4 mt-0">
+                  <h3 className="text-lg font-semibold mb-4">Target Info</h3>
+                  {selectedTarget && (
+                    <div className="space-y-3">
                       <div>
-                        <p className="text-sm text-muted-foreground mb-2">Recent Conversations</p>
-                        <div className="space-y-1">
-                          {conversations
-                            .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-                            .slice(0, 5)
-                            .map((conv) => (
-                              <button
-                                key={conv.id}
-                                onClick={() => {
-                                  setConversationId(conv.id);
-                                  localStorage.setItem(`last-conv-${targetId}`, conv.id);
-                                }}
-                                className={cn(
-                                  'w-full text-left text-sm p-2 rounded hover-elevate active-elevate-2',
-                                  conv.id === conversationId ? 'bg-accent' : 'bg-card'
-                                )}
-                                data-testid={`conversation-${conv.id}`}
-                              >
-                                <p className="font-medium truncate">{conv.title}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {new Date(conv.updatedAt).toLocaleDateString()}
-                                </p>
-                              </button>
-                            ))}
-                        </div>
+                        <p className="text-sm text-muted-foreground">Type</p>
+                        <p className="font-medium">
+                          {getTargetIcon(selectedTarget.type)} {selectedTarget.type}
+                        </p>
                       </div>
-                    )}
-                  </div>
-                )}
-              </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Name</p>
+                        <p className="font-medium">{selectedTarget.name}</p>
+                      </div>
+                      {conversations && conversations.length > 0 && (
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-2">Recent Conversations</p>
+                          <div className="space-y-1">
+                            {conversations
+                              .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+                              .slice(0, 5)
+                              .map((conv) => (
+                                <button
+                                  key={conv.id}
+                                  onClick={() => {
+                                    setConversationId(conv.id);
+                                    localStorage.setItem(`last-conv-${targetId}`, conv.id);
+                                  }}
+                                  className={cn(
+                                    'w-full text-left text-sm p-2 rounded hover-elevate active-elevate-2',
+                                    conv.id === conversationId ? 'bg-accent' : 'bg-card'
+                                  )}
+                                  data-testid={`conversation-${conv.id}`}
+                                >
+                                  <p className="font-medium truncate">{conv.title}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {new Date(conv.updatedAt).toLocaleDateString()}
+                                  </p>
+                                </button>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* Log Tab */}
+                <TabsContent value="log" className="flex-1 overflow-hidden mt-0">
+                  <DiagnosticsLog />
+                </TabsContent>
+              </Tabs>
             </ResizablePanel>
           </ResizablePanelGroup>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Diagnostics Log Component
+function DiagnosticsLog() {
+  const [autoRefresh, setAutoRefresh] = useState(true);
+
+  const { data: diagnostics, isLoading, refetch } = useQuery({
+    queryKey: ['/api/diagnostics/platform'],
+    queryFn: async () => {
+      const res = await fetch('/api/diagnostics/platform', { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to load diagnostics');
+      return res.json();
+    },
+    refetchInterval: autoRefresh ? 5000 : false, // Auto-refresh every 5 seconds if enabled
+  });
+
+  const getHealthBadgeVariant = (health: string) => {
+    switch (health) {
+      case 'healthy': return 'default';
+      case 'warning': return 'outline';
+      case 'critical': return 'destructive';
+      default: return 'secondary';
+    }
+  };
+
+  const getHealthIcon = (health: string) => {
+    switch (health) {
+      case 'healthy': return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case 'warning': return <AlertCircle className="w-4 h-4 text-yellow-500" />;
+      case 'critical': return <AlertCircle className="w-4 h-4 text-red-500" />;
+      default: return <Activity className="w-4 h-4" />;
+    }
+  };
+
+  return (
+    <div className="h-full flex flex-col overflow-hidden">
+      {/* Header */}
+      <div className="p-4 border-b flex items-center justify-between">
+        <h3 className="text-lg font-semibold">System Log</h3>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isLoading}
+            data-testid="button-refresh-log"
+          >
+            <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
+          </Button>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {isLoading && !diagnostics ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : diagnostics ? (
+          <>
+            {/* Overall Health */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                {getHealthIcon(diagnostics.overallHealth)}
+                <p className="font-medium">{diagnostics.healthMessage}</p>
+              </div>
+              <Badge variant={getHealthBadgeVariant(diagnostics.overallHealth)}>
+                {diagnostics.overallHealth?.toUpperCase()}
+              </Badge>
+            </div>
+
+            {/* Database Status */}
+            <div className="space-y-2 border-t pt-4">
+              <div className="flex items-center gap-2">
+                <Database className="w-4 h-4" />
+                <p className="font-semibold">Database Connection</p>
+              </div>
+              <p className="text-sm">{diagnostics.database.message}</p>
+              {diagnostics.database.details && (
+                <div className="bg-muted/50 rounded p-3 space-y-1 text-xs">
+                  {diagnostics.database.details.userCount !== undefined && (
+                    <p>• {diagnostics.database.details.userCount} users in database</p>
+                  )}
+                  {diagnostics.database.details.projectCount !== undefined && (
+                    <p>• {diagnostics.database.details.projectCount} projects stored</p>
+                  )}
+                  {diagnostics.database.details.healingTargetCount !== undefined && (
+                    <p>• {diagnostics.database.details.healingTargetCount} healing targets configured</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* System Info */}
+            <div className="space-y-2 border-t pt-4">
+              <div className="flex items-center gap-2">
+                <Activity className="w-4 h-4" />
+                <p className="font-semibold">System Performance</p>
+              </div>
+              <div className="bg-muted/50 rounded p-3 space-y-1 text-xs">
+                <p>• Running for {diagnostics.system.uptimeFormatted}</p>
+                <p>• Memory: {diagnostics.system.memoryUsage}</p>
+                <p>• Node.js version: {diagnostics.system.nodeVersion}</p>
+              </div>
+            </div>
+
+            {/* Issues */}
+            {diagnostics.issues && diagnostics.issues.length > 0 && (
+              <div className="space-y-2 border-t pt-4">
+                <p className="font-semibold text-sm">Issues Detected</p>
+                {diagnostics.issues.map((issue: any, i: number) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      'rounded p-3 space-y-2 text-sm',
+                      issue.severity === 'critical' ? 'bg-destructive/10 border border-destructive/20' : 'bg-yellow-500/10 border border-yellow-500/20'
+                    )}
+                  >
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className={cn(
+                        "w-4 h-4 mt-0.5",
+                        issue.severity === 'critical' ? 'text-destructive' : 'text-yellow-600'
+                      )} />
+                      <div className="flex-1 space-y-1">
+                        <p className="font-medium">{issue.component}</p>
+                        <p className="text-xs">{issue.message}</p>
+                        {issue.suggestion && (
+                          <p className="text-xs text-muted-foreground italic">
+                            💡 {issue.suggestion}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Timestamp */}
+            <p className="text-xs text-muted-foreground text-center pt-4 border-t">
+              Last updated: {new Date(diagnostics.timestamp).toLocaleTimeString()}
+            </p>
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground text-center">No diagnostics available</p>
         )}
       </div>
     </div>
