@@ -1,10 +1,12 @@
 import { EventEmitter } from 'events';
 import { db } from '../db';
-import { platformHealingSessions, platformHealAttempts, platformIncidents } from '@shared/schema';
+import { platformHealingSessions, platformHealAttempts, platformIncidents, aiKnowledgeBase } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { aiHealingService } from './aiHealingService';
 import { platformHealing } from '../platformHealing';
 import type { PlatformMetricsBroadcaster } from './platformMetricsBroadcaster';
+import { ConfidenceScoring } from './confidenceScoring';
+import { getGitHubService } from '../githubService';
 
 /**
  * HealOrchestrator
@@ -276,6 +278,14 @@ export class HealOrchestrator extends EventEmitter {
         incident,
       });
       
+      // 🧠 Check knowledge base for similar errors BEFORE calling AI
+      console.log('[HEAL-ORCHESTRATOR] 🧠 Checking knowledge base for similar errors...');
+      const errorSignature = ConfidenceScoring.generateErrorSignature({
+        type: incident.type,
+        message: incident.description,
+        stackTrace: incident.stackTrace,
+      });
+      
       // Call AI healing service
       const healingResult = await aiHealingService.diagnoseAndFix(
         diagnosticPrompt,
@@ -287,9 +297,37 @@ export class HealOrchestrator extends EventEmitter {
         const verification = await this.verifyFix(healingResult.filesModified || []);
 
         if (verification.passed) {
-          // Verification passed - safe to commit
-          try {
-            console.log('[HEAL-ORCHESTRATOR] Verification passed, committing changes...');
+          // 📊 Calculate confidence score to determine auto-commit vs PR
+          console.log('[HEAL-ORCHESTRATOR] 📊 Calculating confidence score...');
+          const confidenceResult = await ConfidenceScoring.calculateConfidence({
+            errorType: incident.type,
+            errorMessage: incident.description,
+            stackTrace: incident.stackTrace,
+            filesModified: healingResult.filesModified || [],
+            proposedFix: healingResult.fixApplied || '',
+            verificationPassed: verification.passed,
+          });
+          
+          console.log(`[HEAL-ORCHESTRATOR] Confidence: ${confidenceResult.score}% - ${confidenceResult.recommendation}`);
+          console.log('[HEAL-ORCHESTRATOR] Reasoning:');
+          confidenceResult.reasoning.forEach(r => console.log(`  ${r}`));
+          
+          // Record fix attempt
+          await ConfidenceScoring.recordFixAttempt({
+            errorSignature,
+            healingSessionId: session.id,
+            proposedFix: healingResult.fixApplied || '',
+            confidenceScore: confidenceResult.score,
+            outcome: 'pending',
+            verificationResults: verification.results,
+          });
+          
+          // Decide: Auto-commit or Create PR
+          if (confidenceResult.recommendation === 'auto_commit') {
+            // HIGH CONFIDENCE: Auto-commit to main
+            console.log('[HEAL-ORCHESTRATOR] ✅ HIGH CONFIDENCE - Auto-committing to main...');
+            
+            try {
             
             // Manual commit since we skipped auto-commit
             const commitResult = await platformHealing.manualCommit(
@@ -366,6 +404,20 @@ export class HealOrchestrator extends EventEmitter {
               // Reset consecutive failures on success
               this.consecutiveFailures = 0;
               
+              // Update knowledge base with successful fix
+              await ConfidenceScoring.updateKnowledgeBase({
+                errorSignature,
+                errorType: incident.type,
+                context: {
+                  filePaths: healingResult.filesModified,
+                  stackTrace: incident.stackTrace,
+                  errorMessage: incident.description,
+                },
+                successfulFix: healingResult.fixApplied,
+                wasSuccessful: true,
+                confidence: confidenceResult.score,
+              });
+              
               // Broadcast success
               if (this.broadcaster) {
                 this.broadcaster.broadcastHealingEvent({
@@ -374,7 +426,7 @@ export class HealOrchestrator extends EventEmitter {
                   sessionId: session.id,
                   incident: { type: incident.type, title: incident.title },
                   result: 'success',
-                  message: `✅ Auto-fixed ${incident.type}: ${incident.title}`,
+                  message: `✅ Auto-fixed ${incident.type}: ${incident.title} (${confidenceResult.score}% confidence)`,
                 });
               }
               
@@ -392,6 +444,114 @@ export class HealOrchestrator extends EventEmitter {
             
             // Increment consecutive failures
             this.consecutiveFailures++;
+          }
+          } else {
+            // LOW CONFIDENCE: Create GitHub PR for human review
+            console.log('[HEAL-ORCHESTRATOR] ⚠️ LOW CONFIDENCE - Creating GitHub PR for review...');
+            
+            try {
+              const github = getGitHubService();
+              const branchName = `lomu-ai/auto-heal-${incidentId.substring(0, 8)}`;
+              
+              // Create branch
+              await github.createBranchFromMain(branchName);
+              
+              // Push changes to branch
+              const fs = await import('fs/promises');
+              const path = await import('path');
+              
+              const fileChanges = await Promise.all(
+                (healingResult.filesModified || []).map(async (filePath) => {
+                  try {
+                    const fullPath = path.join(process.cwd(), filePath);
+                    const content = await fs.readFile(fullPath, 'utf-8');
+                    return {
+                      path: filePath,
+                      content,
+                      operation: 'modify' as const,
+                    };
+                  } catch (error) {
+                    console.error(`[HEAL-ORCHESTRATOR] Failed to read file ${filePath}:`, error);
+                    // Skip files that can't be read
+                    return null;
+                  }
+                })
+              ).then(results => results.filter((r): r is NonNullable<typeof r> => r !== null));
+              
+              if (fileChanges.length === 0) {
+                throw new Error('No valid file changes to push');
+              }
+              
+              await github.pushChangesToBranch(
+                branchName,
+                fileChanges,
+                `Auto-heal: ${incident.title}`
+              );
+              
+              // Create PR
+              const prResult = await github.createOrUpdatePR(
+                branchName,
+                `🤖 Auto-Heal: ${incident.title}`,
+                `## Proposed Fix\n\n${healingResult.fixApplied}\n\n## Confidence Analysis\n\n**Score: ${confidenceResult.score}%**\n\n${confidenceResult.reasoning.join('\n')}\n\n## Verification Results\n\n✅ TypeScript: ${verification.results.typescriptValid ? 'PASS' : 'FAIL'}\n\n---\n\n*This PR was created automatically by LomuAI's self-healing system. Please review before merging.*`
+              );
+              
+              console.log(`[HEAL-ORCHESTRATOR] ✅ Created PR #${prResult.prNumber}: ${prResult.prUrl}`);
+              
+              // Update session with PR info
+              await db
+                .update(platformHealingSessions)
+                .set({
+                  phase: 'complete',
+                  status: 'success',
+                  verificationResults: verification.results,
+                  verificationPassed: true,
+                  completedAt: new Date(),
+                })
+                .where(eq(platformHealingSessions.id, session.id));
+              
+              // Update incident as resolved (pending PR merge)
+              await db
+                .update(platformIncidents)
+                .set({
+                  status: 'resolved',
+                  resolvedAt: new Date(),
+                  rootCause: healingResult.diagnosis,
+                  fixDescription: `PR created: ${prResult.prUrl}`,
+                })
+                .where(eq(platformIncidents.id, incidentId));
+              
+              // Record PR creation in fix attempts
+              await ConfidenceScoring.recordFixAttempt({
+                errorSignature,
+                healingSessionId: session.id,
+                proposedFix: healingResult.fixApplied || '',
+                confidenceScore: confidenceResult.score,
+                outcome: 'success',
+                verificationResults: verification.results,
+                prNumber: prResult.prNumber,
+                prUrl: prResult.prUrl,
+              });
+              
+              // Broadcast PR creation
+              if (this.broadcaster) {
+                this.broadcaster.broadcastHealingEvent({
+                  type: 'healing-complete',
+                  incidentId,
+                  sessionId: session.id,
+                  incident: { type: incident.type, title: incident.title },
+                  result: 'pr_created',
+                  message: `📋 Created PR for review: ${prResult.prUrl} (${confidenceResult.score}% confidence)`,
+                  prNumber: prResult.prNumber,
+                  prUrl: prResult.prUrl,
+                });
+              }
+              
+              this.consecutiveFailures = 0; // Reset since we successfully created a PR
+            } catch (prError) {
+              console.error('[HEAL-ORCHESTRATOR] Failed to create PR:', prError);
+              // Fall through to rollback
+              verification.passed = false;
+            }
           }
         }
         

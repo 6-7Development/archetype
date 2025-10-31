@@ -262,6 +262,98 @@ export const insertPlatformIncidentPlaybookSchema = createInsertSchema(platformI
 export type InsertPlatformIncidentPlaybook = z.infer<typeof insertPlatformIncidentPlaybookSchema>;
 export type PlatformIncidentPlaybook = typeof platformIncidentPlaybooks.$inferSelect;
 
+// AI Knowledge Base - Learn from past fixes to improve auto-healing
+export const aiKnowledgeBase = pgTable("ai_knowledge_base", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Error identification
+  errorSignature: varchar("error_signature", { length: 64 }).notNull().unique(), // MD5 hash of error pattern
+  errorType: text("error_type").notNull(), // 'typescript_error', 'runtime_error', 'build_failure', etc.
+  
+  // Context about the error
+  context: jsonb("context").$type<{
+    filePaths?: string[];
+    stackTrace?: string;
+    errorMessage?: string;
+    codeSnippet?: string;
+  }>(),
+  
+  // The fix that worked
+  successfulFix: text("successful_fix").notNull(), // Description or diff of the fix
+  
+  // Confidence and learning metrics
+  confidence: decimal("confidence", { precision: 5, scale: 2 }).notNull().default("0.00"), // 0-100
+  timesEncountered: integer("times_encountered").notNull().default(1),
+  timesFixed: integer("times_fixed").notNull().default(0), // Successful fix applications
+  lastEncountered: timestamp("last_encountered").notNull().defaultNow(),
+  
+  // Additional metadata
+  metadata: jsonb("metadata").$type<{
+    complexity?: 'low' | 'medium' | 'high';
+    testCoverage?: number;
+    averageFixTime?: number; // milliseconds
+    relatedErrors?: string[]; // Other error signatures
+  }>(),
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_ai_knowledge_error_type").on(table.errorType),
+  index("idx_ai_knowledge_confidence").on(table.confidence),
+]);
+
+export const insertAiKnowledgeBaseSchema = createInsertSchema(aiKnowledgeBase).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertAiKnowledgeBase = z.infer<typeof insertAiKnowledgeBaseSchema>;
+export type AiKnowledgeBase = typeof aiKnowledgeBase.$inferSelect;
+
+// AI Fix Attempts - Track all fix attempts for learning and debugging
+export const aiFixAttempts = pgTable("ai_fix_attempts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Links
+  errorSignature: varchar("error_signature", { length: 64 }).notNull(), // Foreign key to aiKnowledgeBase
+  healingSessionId: varchar("healing_session_id"), // Link to platformHealingSessions
+  
+  // The proposed fix
+  proposedFix: text("proposed_fix").notNull(), // What the AI plans to do
+  confidenceScore: decimal("confidence_score", { precision: 5, scale: 2 }).notNull(), // 0-100
+  
+  // Outcome tracking
+  outcome: text("outcome").notNull(), // 'success' | 'failure' | 'rolled_back' | 'pending'
+  verificationResults: jsonb("verification_results").$type<{
+    typescriptValid?: boolean;
+    testsPass?: boolean;
+    buildSuccess?: boolean;
+    deploymentSuccess?: boolean;
+    errorDetails?: string;
+  }>(),
+  
+  // PR tracking (for low-confidence fixes)
+  prNumber: integer("pr_number"), // GitHub PR number if created
+  prUrl: text("pr_url"), // GitHub PR URL
+  autoMerged: boolean("auto_merged").default(false), // True if auto-merged after tests pass
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  completedAt: timestamp("completed_at"),
+}, (table) => [
+  index("idx_ai_fix_error_signature").on(table.errorSignature),
+  index("idx_ai_fix_outcome").on(table.outcome),
+  index("idx_ai_fix_confidence").on(table.confidenceScore),
+]);
+
+export const insertAiFixAttemptSchema = createInsertSchema(aiFixAttempts).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertAiFixAttempt = z.infer<typeof insertAiFixAttemptSchema>;
+export type AiFixAttempt = typeof aiFixAttempts.$inferSelect;
+
 export const projects = pgTable("projects", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
