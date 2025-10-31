@@ -35,7 +35,7 @@ fi
 
 echo ""
 echo "🔄 Running database migrations with drizzle-kit..."
-if npx drizzle-kit push; then
+if npx drizzle-kit push --force; then
   echo "✅ Database migrations completed successfully!"
 else
   echo "⚠️  Database migration failed, but continuing..."
