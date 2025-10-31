@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lomu Animated Pixel Lemon Avatar</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #282c34;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #f7e034;
+            margin-bottom: 20px;
+        }
+        canvas {
+            background-color: #3a3f4a;
+            border: 4px solid #f7e034;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(247, 224, 52, 0.5);
+            image-rendering: pixelated; /* Modern browsers */
+        }
+        p {
+            margin-top: 20px;
+            font-size: 0.9em;
+            text-align: center;
+            max-width: 600px;
+        }
+        .controls button {
+            background-color: #32CD32;
+            color: #000000;
+            border: 2px solid #228B22;
+            padding: 8px 15px;
+            margin: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            font-weight: bold;
+        }
+        .controls button:hover {
+            background-color: #228B22;
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <h1>Lomu 2D Pixel Lemon Avatar</h1>
+    
+    <div class="controls">
+        <button onclick="setExpression('DEFAULT')">Default (Blinking)</button>
+        <button onclick="setExpression('HAPPY')">Happy</button>
+        <button onclick="setExpression('SKEPTICAL')">Skeptical</button>
+    </div>
+    
+    <canvas id="pixel2DLemonAvatarCanvas" width="256" height="256"></canvas>
+    
+    <p>
+        This **2D pixel lemon avatar** is drawn entirely using programmatic canvas drawing and is now scaled up for better web use. Use the buttons to change the avatar's expression.
+    </p>
+
+    <script>
+        const canvas = document.getElementById('pixel2DLemonAvatarCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const RENDER_SCALE = 8; // Each "logical" pixel is 8x8 actual canvas pixels (256/32=8)
+        const LOGICAL_SIZE = canvas.width / RENDER_SCALE; // 32 logical pixels wide/high
+
+        // New state for expressions
+        let currentExpression = 'DEFAULT'; // 'DEFAULT', 'HAPPY', 'SKEPTICAL'
+
+        // Function to draw a single logical pixel (a square of RENDER_SCALE)
+        function drawPixel(x, y, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x * RENDER_SCALE, y * RENDER_SCALE, RENDER_SCALE, RENDER_SCALE);
+        }
+
+        let frame = 0;
+        let blinkState = 0; // 0: open, 1: closing, 2: closed, 3: opening
+        let blinkCounter = 0;
+        const BLINK_INTERVAL_FRAMES = 100; // frames between blinks
+        const BLINK_DURATION_FRAMES = 8; // total frames for a blink animation
+
+        function setExpression(expression) {
+            currentExpression = expression;
+            // Reset blink state when changing expression to stop any animation in progress
+            if (expression !== 'DEFAULT') {
+                blinkState = 0;
+                blinkCounter = 0;
+            }
+             // Immediate redraw
+            drawLemonHead2D(blinkState); 
+        }
+
+        function drawLemonHead2D(currentBlinkState) {
+            // Clear logical canvas area
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // --- Colors and Coordinates ---
+            const outlineColor = '#DAA520';
+            const bodyColor = '#FFFF00';
+            const highlightColor = '#FFFFA0';
+            const shadowColor = '#C0A000';
+            const pupilColor = '#000000';
+            const irisColor = '#4B0082';
+
+            const leftEyeX = 14;
+            const rightEyeX = 18;
+            const eyeY = 14;
+            const mouthY = 18;
+
+            // --- Lemon Body (Head) ---
+            // Top outline (flat-ish)
+            for (let i = 12; i <= 19; i++) drawPixel(i, 8, outlineColor);
+            drawPixel(11, 9, outlineColor); drawPixel(20, 9, outlineColor);
+
+            // Side outlines
+            for (let i = 10; i <= 21; i++) {
+                drawPixel(10, i, outlineColor);
+                drawPixel(21, i, outlineColor);
+            }
+            
+            // Bottom outline (rounder)
+            drawPixel(11, 22, outlineColor); drawPixel(20, 22, outlineColor);
+            for (let i = 12; i <= 19; i++) drawPixel(i, 23, outlineColor);
+
+
+            // Fill main body
+            for (let y = 9; y <= 22; y++) {
+                for (let x = 11; x <= 20; x++) {
+                    drawPixel(x, y, bodyColor);
+                }
+            }
+
+            // Inner light highlight
+            for (let i = 13; i <= 18; i++) drawPixel(i, 10, highlightColor);
+            drawPixel(12, 11, highlightColor); drawPixel(19, 11, highlightColor);
+
+            // Inner shadow
+            for (let i = 13; i <= 18; i++) drawPixel(i, 21, shadowColor);
+            drawPixel(12, 20, shadowColor); drawPixel(19, 20, shadowColor);
+
+            // --- Leaf ---
+            drawPixel(15, 6, '#228B22'); // Stem
+            drawPixel(14, 7, '#32CD32'); drawPixel(15, 7, '#32CD32'); drawPixel(16, 7, '#32CD32');
+            drawPixel(13, 8, '#228B22'); drawPixel(16, 8, '#228B22');
+
+            // Helper function to draw full open eyes
+            const drawOpenEyes = (color) => {
+                // Left Eye
+                drawPixel(leftEyeX - 1, eyeY - 1, pupilColor); drawPixel(leftEyeX, eyeY - 1, pupilColor);
+                drawPixel(leftEyeX - 1, eyeY, pupilColor);     drawPixel(leftEyeX, eyeY, color); // Iris
+                drawPixel(leftEyeX, eyeY + 1, pupilColor);
+                drawPixel(leftEyeX + 1, eyeY, pupilColor); drawPixel(leftEyeX + 1, eyeY -1, pupilColor); // Outline top right
+                
+                // Right Eye
+                drawPixel(rightEyeX - 1, eyeY - 1, pupilColor); drawPixel(rightEyeX, eyeY - 1, pupilColor);
+                drawPixel(rightEyeX - 1, eyeY, pupilColor);     drawPixel(rightEyeX, eyeY, color); // Iris
+                drawPixel(rightEyeX, eyeY + 1, pupilColor);
+                drawPixel(rightEyeX + 1, eyeY, pupilColor); drawPixel(rightEyeX + 1, eyeY -1, pupilColor); // Outline top right
+            };
+
+            // --- Eyes and Mouth (Expression Dependent) ---
+
+            if (currentExpression === 'DEFAULT') {
+                if (currentBlinkState === 0) { // Open eyes
+                    drawOpenEyes(irisColor);
+                } else if (currentBlinkState === 1 || currentBlinkState === 3) { // Half-closed
+                    // A horizontal line for partially closed eyes
+                    drawPixel(leftEyeX - 1, eyeY, pupilColor); drawPixel(leftEyeX, eyeY, pupilColor); drawPixel(leftEyeX + 1, eyeY, pupilColor);
+                    drawPixel(rightEyeX - 1, eyeY, pupilColor); drawPixel(rightEyeX, eyeY, pupilColor); drawPixel(rightEyeX + 1, eyeY, pupilColor);
+                } else if (currentBlinkState === 2) { // Closed
+                    // A single line for fully closed eyes
+                    drawPixel(leftEyeX - 1, eyeY + 0, pupilColor); drawPixel(leftEyeX, eyeY + 0, pupilColor); drawPixel(leftEyeX + 1, eyeY + 0, pupilColor);
+                    drawPixel(rightEyeX - 1, eyeY + 0, pupilColor); drawPixel(rightEyeX, eyeY + 0, pupilColor); drawPixel(rightEyeX + 1, eyeY + 0, pupilColor);
+                }
+
+                // --- Mouth (DEFAULT - slight smile) ---
+                drawPixel(14, mouthY, pupilColor); drawPixel(15, mouthY, pupilColor); drawPixel(16, mouthY, pupilColor);
+                drawPixel(13, mouthY -1, pupilColor); drawPixel(17, mouthY -1, pupilColor);
+
+            } else if (currentExpression === 'HAPPY') {
+                // Eyes (always open)
+                drawOpenEyes('#FFD700'); // Happy, bright eyes
+
+                // --- Mouth (HAPPY - wide smile) ---
+                drawPixel(13, mouthY, pupilColor); drawPixel(17, mouthY, pupilColor); // Corner edges
+                drawPixel(14, mouthY + 1, pupilColor); drawPixel(15, mouthY + 1, pupilColor); drawPixel(16, mouthY + 1, pupilColor); // Smile curve
+                drawPixel(14, mouthY -1, pupilColor); drawPixel(16, mouthY -1, pupilColor); // Small teeth/inner mouth top
+
+            } else if (currentExpression === 'SKEPTICAL') {
+                // Eyes (confused/slanted eyebrows)
+                // Slanted brow lines
+                drawPixel(leftEyeX - 2, eyeY - 2, pupilColor); drawPixel(leftEyeX - 1, eyeY - 1, pupilColor); 
+                drawPixel(rightEyeX + 2, eyeY - 2, pupilColor); drawPixel(rightEyeX + 1, eyeY - 1, pupilColor);
+                drawOpenEyes(irisColor);
+                
+                // --- Mouth (SKEPTICAL - neutral/straight line) ---
+                drawPixel(13, mouthY + 1, pupilColor); drawPixel(14, mouthY + 1, pupilColor); drawPixel(15, mouthY + 1, pupilColor); drawPixel(16, mouthY + 1, pupilColor); drawPixel(17, mouthY + 1, pupilColor);
+            }
+        }
+
+        function animate() {
+            frame++;
+
+            // Only run blink logic if the expression is DEFAULT
+            if (currentExpression === 'DEFAULT') {
+                if (frame % BLINK_INTERVAL_FRAMES === 0) {
+                    blinkState = 1; // Start closing
+                    blinkCounter = 0;
+                }
+
+                if (blinkState > 0) {
+                    blinkCounter++;
+                    if (blinkState === 1 && blinkCounter >= BLINK_DURATION_FRAMES / 2) {
+                        blinkState = 2; // Fully closed
+                        blinkCounter = 0;
+                    } else if (blinkState === 2 && blinkCounter >= BLINK_DURATION_FRAMES / 2) {
+                        blinkState = 3; // Start opening
+                        blinkCounter = 0;
+                    } else if (blinkState === 3 && blinkCounter >= BLINK_DURATION_FRAMES / 2) {
+                        blinkState = 0; // Fully open
+                    }
+                }
+            } else {
+                // Static expressions don't blink
+                blinkState = 0; 
+            }
+
+            drawLemonHead2D(blinkState);
+            requestAnimationFrame(animate);
+        }
+
+        // Start the animation
+        animate();
+    </script>
+</body>
+</html>
