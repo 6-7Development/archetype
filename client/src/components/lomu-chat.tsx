@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
-import { Send, Square, ChevronDown, ChevronRight, Shield, Zap, Brain, Infinity, Rocket, Wrench, User, Copy, Check, Loader2, XCircle, FileCode, Terminal, CheckCircle, Clock, Upload, X, File, Image } from "lucide-react";
+import { Send, Square, ChevronDown, ChevronRight, Shield, Zap, Brain, Infinity, Rocket, User, Copy, Check, Loader2, XCircle, FileCode, Terminal, CheckCircle, Clock, Upload, X, File, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LomuAvatar } from "@/components/lomu-avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -826,8 +827,8 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                 )}
               >
                 {message.role === "assistant" && (
-                  <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Wrench className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+                  <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 flex items-center justify-center" data-testid="avatar-lomu-assistant">
+                    <LomuAvatar size="medium" expression="default" />
                   </div>
                 )}
                 

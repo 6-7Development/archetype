@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Send, Loader2, Sparkles, User, Key, AlertCircle, Square, ChevronDown } from "lucide-react";
+import { Send, Loader2, User, Key, AlertCircle, Square, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LomuAvatar } from "@/components/lomu-avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -118,7 +119,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   // Default greeting message
   const DEFAULT_GREETING: Message = {
     role: "assistant",
-    content: "Hey! I'm LomuAI. What are we building?",
+    content: "Hi! I'm LomuAI, your self-healing development assistant. What would you like to build today?",
     timestamp: new Date(),
   };
 
@@ -898,8 +899,8 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
               )}
             >
               {message.role === "assistant" && (
-                <div className="flex-shrink-0 w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-primary" />
+                <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center" data-testid="avatar-assistant">
+                  <LomuAvatar size="medium" expression="default" />
                 </div>
               )}
 
@@ -971,8 +972,8 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
           {/* Streaming Indicator */}
           {chatMutation.isPending && streamState.fullMessage && (
             <div className="flex gap-3 items-start">
-              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-[hsl(220,70%,60%)] to-[hsl(220,70%,50%)] flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white animate-pulse" />
+              <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center" data-testid="avatar-streaming">
+                <LomuAvatar size="medium" expression="happy" />
               </div>
               <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-[hsl(220,70%,60%)] shadow-sm">
                 <div className="prose prose-invert max-w-none">
@@ -985,8 +986,8 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
           {/* AI Streaming Indicator - Simple Loader */}
           {chatMutation.isPending && !streamState.fullMessage && (
             <div className="flex gap-3 items-start">
-              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-[hsl(220,70%,60%)] to-[hsl(220,70%,50%)] flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white animate-pulse" />
+              <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center" data-testid="avatar-thinking">
+                <LomuAvatar size="medium" expression="default" />
               </div>
               <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-[hsl(220,70%,60%)] shadow-sm">
                 <div className="flex items-center gap-2 text-sm text-white/70">
