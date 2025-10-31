@@ -1,0 +1,499 @@
+2025-10-31T05:34:33.000000000Z [inf]  Starting Container
+2025-10-31T05:34:33.761884104Z [inf]  -rwxrwxr-x    1 root     root          1865 Oct 31 05:31 railway-start.sh
+2025-10-31T05:34:33.761885214Z [inf]  📁 Current directory: /app
+2025-10-31T05:34:33.761895202Z [inf]  -rw-rw-r--    1 root     root          9465 Oct 31 05:31 replit.md
+2025-10-31T05:34:33.761896127Z [inf]  📂 Listing root files:
+2025-10-31T05:34:33.761902865Z [inf]  drwxr-xr-x   12 root     root          4096 Oct 31 05:31 server
+2025-10-31T05:34:33.761908302Z [inf]  drwxr-xr-x    2 root     root          4096 Oct 31 05:31 shared
+2025-10-31T05:34:33.761910856Z [inf]  total 404
+2025-10-31T05:34:33.761918692Z [inf]  -rw-rw-r--    1 root     root           960 Oct 31 05:31 tsconfig.json
+2025-10-31T05:34:33.761919212Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 31 05:33 .
+2025-10-31T05:34:33.761926471Z [inf]  dr-xr-xr-x    1 root     root          4096 Oct 31 05:34 ..
+2025-10-31T05:34:33.761932111Z [inf]  
+2025-10-31T05:34:33.761946352Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 31 05:33 dist
+2025-10-31T05:34:33.761951677Z [inf]  -rw-rw-r--    1 root     root           325 Oct 31 05:31 drizzle.config.ts
+2025-10-31T05:34:33.761956784Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 31 05:33 node_modules
+2025-10-31T05:34:33.761963437Z [inf]  -rw-rw-r--    1 root     root        355683 Oct 31 05:33 package-lock.json
+2025-10-31T05:34:33.761971770Z [inf]  -rw-rw-r--    1 root     root          4586 Oct 31 05:33 package.json
+2025-10-31T05:34:33.762066558Z [inf]  ======================================
+2025-10-31T05:34:33.762072654Z [inf]  🚂 RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-10-31T05:34:33.762078806Z [inf]  ======================================
+2025-10-31T05:34:33.762084316Z [inf]  Time: Fri Oct 31 05:34:33 UTC 2025
+2025-10-31T05:34:33.762090301Z [inf]  Node version: v20.19.5
+2025-10-31T05:34:33.762096710Z [inf]  NPM version: 10.8.2
+2025-10-31T05:34:33.762102905Z [inf]  
+2025-10-31T05:34:33.762426242Z [inf]  🔍 Checking for dist directory...
+2025-10-31T05:34:33.762430851Z [inf]  ✅ dist directory exists
+2025-10-31T05:34:33.762434320Z [inf]  📂 Contents:
+2025-10-31T05:34:33.762437886Z [inf]  total 812
+2025-10-31T05:34:33.762441476Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 31 05:33 .
+2025-10-31T05:34:33.762445261Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 31 05:33 ..
+2025-10-31T05:34:33.762448716Z [inf]  -rw-r--r--    1 root     root        817191 Oct 31 05:33 index.js
+2025-10-31T05:34:33.762452248Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 31 05:33 public
+2025-10-31T05:34:33.762456173Z [inf]  ✅ dist/index.js found
+2025-10-31T05:34:33.762460070Z [inf]  
+2025-10-31T05:34:33.762463568Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-10-31T05:34:34.153153635Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-10-31T05:34:34.153162919Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-10-31T05:34:34.770095026Z [inf]  Using 'pg' driver for database querying
+2025-10-31T05:34:34.770100934Z [inf]  [⣷] Pulling schema from database...
+2025-10-31T05:34:34.810490260Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-31T05:34:34.930528023Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-31T05:34:35.119698078Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-31T05:34:35.186587786Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-31T05:34:35.315866739Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-31T05:34:35.806158603Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-31T05:34:35.806169275Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-31T05:34:35.806176051Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-31T05:34:35.830177216Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-31T05:34:35.961182463Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-31T05:34:36.148852823Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-31T05:34:36.233906256Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-31T05:34:36.340283688Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-31T05:34:36.775615832Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-31T05:34:36.775625423Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-31T05:34:36.775634797Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-31T05:34:36.787219421Z [inf]  [2K[1G[✓] Pulling schema from database...
+2025-10-31T05:34:36.866929406Z [inf]  [?25l
+2025-10-31T05:34:36.866936470Z [inf]  Is ai_fix_attempts table created or renamed from another table?
+2025-10-31T05:34:36.866942766Z [inf]  ❯ + ai_fix_attempts                           create table
+2025-10-31T05:34:36.866949103Z [inf]    ~ meta_sysop_automation › ai_fix_attempts   rename table
+2025-10-31T05:34:36.866955354Z [inf]    ~ meta_sysop_instructions › ai_fix_attempts rename table
+2025-10-31T05:34:36.866962084Z [inf]    ~ meta_sysop_knowledge › ai_fix_attempts    rename table
+2025-10-31T05:34:36.866968111Z [inf]    ~ meta_sysop_memory › ai_fix_attempts       rename table
+2025-10-31T05:34:36.866974531Z [inf]    ~ meta_sysop_attachments › ai_fix_attempts  rename table
+2025-10-31T05:34:36.866980428Z [inf]    ~ meta_sysop_sessions › ai_fix_attempts     rename table
+2025-10-31T05:34:39.000000000Z [inf]  Stopping Container
+2025-10-31T05:34:39.497012971Z [err]  2025-10-31 05:34:38.285 UTC [23704] LOG:  could not receive data from client: Connection reset by peer
+2025-10-31T05:34:39.497021009Z [err]  2025-10-31 05:34:38.285 UTC [23742] LOG:  could not receive data from client: Connection reset by peer
+2025-10-31T05:34:48.421153957Z [err]  2025-10-31 05:34:48.100 UTC [23744] ERROR:  relation "platform_incidents" does not exist at character 298
+2025-10-31T05:34:48.421165182Z [err]  2025-10-31 05:34:48.100 UTC [23744] STATEMENT:  select "id", "type", "severity", "title", "description", "source", "detected_at", "resolved_at", "status", "healing_session_id", "stack_trace", "affected_files", "metrics", "logs", "root_cause", "fix_description", "commit_hash", "attempt_count", "last_attempt_at", "created_at", "updated_at" from "platform_incidents" where ("platform_incidents"."status" = $1 and "platform_incidents"."resolved_at" is null)
+2025-10-31T05:34:56.549384174Z [inf]  [PERFORMANCE] System prompt base cached (1544 chars) - saves ~4KB per request
+2025-10-31T05:34:56.549394295Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-31T05:34:56.549402843Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller (SSE streams excluded)
+2025-10-31T05:34:56.549421455Z [inf]    ~ meta_sysop_jobs › ai_fix_attempts         rename table✅ Database migrations completed successfully!
+2025-10-31T05:34:56.549427491Z [inf]  
+2025-10-31T05:34:56.549434119Z [inf]  🔍 Environment Check:
+2025-10-31T05:34:56.549440526Z [inf]  NODE_ENV: production
+2025-10-31T05:34:56.549447300Z [inf]  PORT: 8080
+2025-10-31T05:34:56.549453190Z [inf]  DATABASE_URL: ✓ SET (hidden for security)
+2025-10-31T05:34:56.549459074Z [inf]  GITHUB_TOKEN: ✓ SET
+2025-10-31T05:34:56.549464842Z [inf]  GITHUB_REPO: 6-7Development/archetype
+2025-10-31T05:34:56.549470514Z [inf]  GITHUB_BRANCH: main
+2025-10-31T05:34:56.549475943Z [inf]  ANTHROPIC_API_KEY: ✓ SET
+2025-10-31T05:34:56.549484791Z [inf]  
+2025-10-31T05:34:56.549489464Z [inf]  📄 Ensuring replit.md is available...
+2025-10-31T05:34:56.549493508Z [inf]  ✅ replit.md already present
+2025-10-31T05:34:56.549501395Z [inf]  
+2025-10-31T05:34:56.549505995Z [inf]  🚀 Starting Node.js application...
+2025-10-31T05:34:56.549510532Z [inf]  Command: node dist/index.js
+2025-10-31T05:34:56.549514713Z [inf]  
+2025-10-31T05:34:56.549518850Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-31T05:34:56.549522962Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-31T05:34:56.549529270Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-31T05:34:56.549534543Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-31T05:34:56.549539032Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-10-31T05:34:56.549543342Z [inf]  [db] Connection string includes SSL params: true
+2025-10-31T05:34:56.550708608Z [inf]     🔄 Rollback: Automatic rollback on verification/deployment failure
+2025-10-31T05:34:56.550721407Z [inf]  📡 WebSocket server initialized at /ws
+2025-10-31T05:34:56.550726449Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-31T05:34:56.550730987Z [inf]  [PLATFORM-HEALING] WebSocket server attached for preview broadcasts
+2025-10-31T05:34:56.550735688Z [inf]  [PLATFORM-HEALING] Platform healing service connected to WebSocket
+2025-10-31T05:34:56.550741663Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-31T05:34:56.550746670Z [inf]  [HEAL-ORCHESTRATOR] Metrics broadcaster connected
+2025-10-31T05:34:56.550751011Z [inf]  [WEBHOOKS] Webhooks router connected to metrics broadcaster
+2025-10-31T05:34:56.550755156Z [inf]  [LOMU-AI-JOB-MANAGER] Initialized with WebSocket support
+2025-10-31T05:34:56.550759752Z [inf]  [LOMU-AI-JOB-MANAGER] Job manager connected to WebSocket
+2025-10-31T05:34:56.550764232Z [inf]  [LOMU-AI] WebSocket server initialized for live preview broadcasts
+2025-10-31T05:34:56.550768861Z [inf]  [LOMU-AI-CHAT] Live preview WebSocket initialized
+2025-10-31T05:34:56.550772803Z [inf]  [WEBHOOKS] Webhooks router mounted at /api/webhooks
+2025-10-31T05:34:56.550778074Z [inf]  ✅ All routes registered successfully
+2025-10-31T05:34:56.550783274Z [inf]  🔍 Testing database connection...
+2025-10-31T05:34:56.550787217Z [inf]  5:34:47 AM [express] serving on port 8080
+2025-10-31T05:34:56.550792103Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-10-31T05:34:56.550796241Z [inf]  ✅ Database connected successfully
+2025-10-31T05:34:56.550800442Z [inf]  🔧 Auto-healing system ENABLED
+2025-10-31T05:34:56.550804457Z [inf]     ⚡ Kill-switch: Disabled after 3 consecutive failures (1 hour cooldown)
+2025-10-31T05:34:56.550808150Z [inf]     ⏱️ Rate limit: Max 3 healing sessions per hour
+2025-10-31T05:34:56.550812115Z [inf]     📋 Audit trail: All attempts logged to platformHealAttempts
+2025-10-31T05:34:56.552107222Z [inf]  [HEALTH-MONITOR] Starting platform health monitoring...
+2025-10-31T05:34:56.552109274Z [err]    column: undefined,
+2025-10-31T05:34:56.552116359Z [inf]  [HEALTH-MONITOR] Monitoring started
+2025-10-31T05:34:56.552118642Z [err]    dataType: undefined,
+2025-10-31T05:34:56.552123798Z [inf]  [HEAL-ORCHESTRATOR] Starting autonomous healing orchestrator...
+2025-10-31T05:34:56.552128957Z [inf]  [HEAL-ORCHESTRATOR] Orchestrator started
+2025-10-31T05:34:56.552132370Z [err]    detail: undefined,
+2025-10-31T05:34:56.552137388Z [err]  [HEALTH-MONITOR] Failed to load open incidents: error: relation "platform_incidents" does not exist
+2025-10-31T05:34:56.552144310Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T05:34:56.552146005Z [err]    hint: undefined,
+2025-10-31T05:34:56.552152633Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T05:34:56.552154759Z [err]    position: '298',
+2025-10-31T05:34:56.552159641Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T05:34:56.552161976Z [err]    internalPosition: undefined,
+2025-10-31T05:34:56.552165793Z [err]      at async PlatformHealthMonitor.loadOpenIncidents (file:///app/dist/index.js:11307:29)
+2025-10-31T05:34:56.552169745Z [err]    internalQuery: undefined,
+2025-10-31T05:34:56.552173395Z [err]      at async PlatformHealthMonitor.start (file:///app/dist/index.js:11286:9)
+2025-10-31T05:34:56.552177688Z [err]    where: undefined,
+2025-10-31T05:34:56.552181768Z [err]      at async file:///app/dist/index.js:20042:3 {
+2025-10-31T05:34:56.552188434Z [err]    length: 118,
+2025-10-31T05:34:56.552189844Z [err]    schema: undefined,
+2025-10-31T05:34:56.552194449Z [err]    severity: 'ERROR',
+2025-10-31T05:34:56.552198191Z [err]    table: undefined,
+2025-10-31T05:34:56.552200482Z [err]    code: '42P01',
+2025-10-31T05:34:56.553197498Z [err]    constraint: undefined,
+2025-10-31T05:34:56.553203643Z [inf]     - Branch: main
+2025-10-31T05:34:56.553204370Z [err]    file: 'parse_relation.c',
+2025-10-31T05:34:56.553209984Z [err]    line: '1449',
+2025-10-31T05:34:56.553211708Z [inf]     - Token: ✓ (configured)
+2025-10-31T05:34:56.553215361Z [err]    routine: 'parserOpenTable'
+2025-10-31T05:34:56.553217948Z [inf]     - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-31T05:34:56.553220719Z [err]  }
+2025-10-31T05:34:56.553226125Z [inf]  
+2025-10-31T05:34:56.553226203Z [inf]     - Maintenance mode: Available for owner
+2025-10-31T05:34:56.553232113Z [inf]  🔍 Checking GitHub integration configuration...
+2025-10-31T05:34:56.553234936Z [inf]  
+2025-10-31T05:34:56.553238695Z [inf]  ✅ GitHub integration configured successfully
+2025-10-31T05:34:56.553244288Z [inf]     - Repository: 6-7Development/archetype
+2025-10-31T05:35:56.694660503Z [err]    where: undefined,
+2025-10-31T05:35:56.694663674Z [err]    routine: 'parserOpenTable'
+2025-10-31T05:35:56.694668295Z [err]    schema: undefined,
+2025-10-31T05:35:56.694674444Z [err]    table: undefined,
+2025-10-31T05:35:56.694675851Z [err]  }
+2025-10-31T05:35:56.694681090Z [err]    column: undefined,
+2025-10-31T05:35:56.694685823Z [inf]  5:35:56 AM [express] GET /api/healing/targets 500 in 13ms :: {"error":"Failed to fetch healing targe…
+2025-10-31T05:35:56.694687317Z [err]    dataType: undefined,
+2025-10-31T05:35:56.694693005Z [err]    constraint: undefined,
+2025-10-31T05:35:56.694698613Z [err]    file: 'parse_relation.c',
+2025-10-31T05:35:56.694704308Z [err]    line: '1449',
+2025-10-31T05:35:56.694718346Z [inf]  5:35:55 AM [express] GET /api/auth/me 304 in 48ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef95…
+2025-10-31T05:35:56.694726235Z [err]  [HEALING] Error fetching targets: error: relation "healing_targets" does not exist
+2025-10-31T05:35:56.694731209Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T05:35:56.694735776Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T05:35:56.694740289Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T05:35:56.694745270Z [err]      at async DatabaseStorage.getHealingTargets (file:///app/dist/index.js:3630:16)
+2025-10-31T05:35:56.694750076Z [err]      at async file:///app/dist/index.js:19036:21 {
+2025-10-31T05:35:56.694754134Z [err]    length: 115,
+2025-10-31T05:35:56.694760117Z [err]    severity: 'ERROR',
+2025-10-31T05:35:56.694764969Z [err]    code: '42P01',
+2025-10-31T05:35:56.694770980Z [err]    detail: undefined,
+2025-10-31T05:35:56.694776553Z [err]    hint: undefined,
+2025-10-31T05:35:56.694784144Z [err]    position: '182',
+2025-10-31T05:35:56.694789683Z [err]    internalPosition: undefined,
+2025-10-31T05:35:56.694795750Z [err]    internalQuery: undefined,
+2025-10-31T05:35:58.242337445Z [err]  2025-10-31 05:35:56.028 UTC [23753] ERROR:  relation "healing_targets" does not exist at character 182
+2025-10-31T05:35:58.242341565Z [err]  2025-10-31 05:35:56.028 UTC [23753] STATEMENT:  select "id", "user_id", "type", "name", "project_id", "customer_id", "railway_project_id", "repository_url", "last_synced_at", "status", "metadata", "created_at", "updated_at" from "healing_targets" where "healing_targets"."user_id" = $1 order by "healing_targets"."updated_at" desc
+2025-10-31T05:36:02.743778561Z [inf]  5:36:02 AM [express] POST /api/auth/logout 200 in 6ms :: {"success":true}
+2025-10-31T05:36:02.848936996Z [inf]  5:36:02 AM [express] GET /api/auth/me 401 in 2ms :: {"error":"Not authenticated"}
+2025-10-31T05:36:02.848951319Z [inf]  [DEPLOYMENT-INFO] Using Railway environment variables
+2025-10-31T05:36:02.848958248Z [inf]  5:36:02 AM [express] GET /api/deployment-info 200 in 1ms :: {"version":"1.0.0","commitHash":"f9213e4…
+2025-10-31T05:36:04.776445614Z [inf]  5:36:04 AM [express] GET /api/auth/me 401 in 1ms :: {"error":"Not authenticated"}
+2025-10-31T05:36:04.776452468Z [inf]  5:36:04 AM [express] GET /api/deployment-info 200 in 0ms :: {"version":"1.0.0","commitHash":"f9213e4…
+2025-10-31T05:36:08.004526475Z [inf]  [AUTH] Login attempt for email: root@getdc360.com
+2025-10-31T05:36:08.004531032Z [inf]  [AUTH] Found users: 1
+2025-10-31T05:36:08.004535213Z [inf]  [AUTH] User found: root@getdc360.com has password: true
+2025-10-31T05:36:08.004539856Z [inf]  [AUTH] Verifying password...
+2025-10-31T05:36:08.004543606Z [inf]  [AUTH] Password valid: true
+2025-10-31T05:36:08.004547885Z [inf]  [AUTH] Authentication successful for: root@getdc360.com
+2025-10-31T05:36:08.004554255Z [inf]  5:36:07 AM [express] POST /api/auth/login 200 in 280ms :: {"success":true,"user":{"id":"723e1301-c72…
+2025-10-31T05:36:08.912354994Z [inf]  5:36:08 AM [express] GET /api/projects 304 in 10ms :: []
+2025-10-31T05:36:08.912362144Z [inf]  5:36:08 AM [express] GET /api/auth/me 304 in 86ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef95…
+2025-10-31T05:36:11.882563305Z [err]    table: undefined,
+2025-10-31T05:36:11.882571103Z [inf]  5:36:11 AM [express] GET /api/healing/targets 500 in 17ms :: {"error":"Failed to fetch healing targe…
+2025-10-31T05:36:11.882573075Z [err]    column: undefined,
+2025-10-31T05:36:11.882578984Z [err]  [HEALING] Error fetching targets: error: relation "healing_targets" does not exist
+2025-10-31T05:36:11.882581030Z [err]    dataType: undefined,
+2025-10-31T05:36:11.882588998Z [err]    constraint: undefined,
+2025-10-31T05:36:11.882589921Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T05:36:11.882594754Z [err]    file: 'parse_relation.c',
+2025-10-31T05:36:11.882596991Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T05:36:11.882603252Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T05:36:11.882603804Z [err]    line: '1449',
+2025-10-31T05:36:11.882609145Z [err]      at async DatabaseStorage.getHealingTargets (file:///app/dist/index.js:3630:16)
+2025-10-31T05:36:11.882613082Z [err]    routine: 'parserOpenTable'
+2025-10-31T05:36:11.882615292Z [err]      at async file:///app/dist/index.js:19036:21 {
+2025-10-31T05:36:11.882620806Z [err]  }
+2025-10-31T05:36:11.882621542Z [err]    length: 115,
+2025-10-31T05:36:11.882626448Z [err]    severity: 'ERROR',
+2025-10-31T05:36:11.882631133Z [err]    code: '42P01',
+2025-10-31T05:36:11.882640333Z [err]    detail: undefined,
+2025-10-31T05:36:11.882644515Z [err]    hint: undefined,
+2025-10-31T05:36:11.882648917Z [err]    position: '182',
+2025-10-31T05:36:11.882653047Z [err]    internalPosition: undefined,
+2025-10-31T05:36:11.882659364Z [err]    internalQuery: undefined,
+2025-10-31T05:36:11.882664030Z [err]    where: undefined,
+2025-10-31T05:36:11.882668222Z [err]    schema: undefined,
+2025-10-31T05:36:17.844872277Z [err]  2025-10-31 05:36:11.777 UTC [23751] ERROR:  relation "healing_targets" does not exist at character 182
+2025-10-31T05:36:17.844877946Z [err]  2025-10-31 05:36:11.777 UTC [23751] STATEMENT:  select "id", "user_id", "type", "name", "project_id", "customer_id", "railway_project_id", "repository_url", "last_synced_at", "status", "metadata", "created_at", "updated_at" from "healing_targets" where "healing_targets"."user_id" = $1 order by "healing_targets"."updated_at" desc
+2025-10-31T05:36:41.519142973Z [inf]  5:36:33 AM [express] GET /api/deployment-info 200 in 1ms :: {"version":"1.0.0","commitHash":"f9213e4…
+2025-10-31T05:36:41.519153207Z [inf]  5:36:33 AM [express] GET /api/auth/me 304 in 4ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef954…
+2025-10-31T05:36:41.519157380Z [inf]  [AUTH] Login attempt for email: root@getdc360.com
+2025-10-31T05:36:41.519161005Z [inf]  [AUTH] Found users: 1
+2025-10-31T05:36:41.519164841Z [inf]  [AUTH] User found: root@getdc360.com has password: true
+2025-10-31T05:36:41.519168654Z [inf]  [AUTH] Verifying password...
+2025-10-31T05:36:41.519172224Z [inf]  [AUTH] Password valid: true
+2025-10-31T05:36:41.519176627Z [inf]  [AUTH] Authentication successful for: root@getdc360.com
+2025-10-31T05:36:41.519180288Z [inf]  5:36:37 AM [express] POST /api/auth/login 200 in 282ms :: {"success":true,"user":{"id":"723e1301-c72…
+2025-10-31T05:36:41.519185266Z [inf]  5:36:38 AM [express] GET /api/projects 304 in 10ms :: []
+2025-10-31T05:36:41.519189171Z [inf]  5:36:38 AM [express] GET /api/auth/me 304 in 84ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef95…
+2025-10-31T05:36:41.658461848Z [err]  [HEALING] Error fetching targets: error: relation "healing_targets" does not exist
+2025-10-31T05:36:41.658469774Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T05:36:41.658475785Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T05:36:41.658481342Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T05:36:41.658487400Z [err]      at async DatabaseStorage.getHealingTargets (file:///app/dist/index.js:3630:16)
+2025-10-31T05:36:41.658492919Z [err]      at async file:///app/dist/index.js:19036:21 {
+2025-10-31T05:36:41.658498975Z [err]    length: 115,
+2025-10-31T05:36:41.658504649Z [err]    severity: 'ERROR',
+2025-10-31T05:36:41.658510461Z [err]    code: '42P01',
+2025-10-31T05:36:41.658515807Z [err]    detail: undefined,
+2025-10-31T05:36:41.658521010Z [err]    hint: undefined,
+2025-10-31T05:36:41.658526725Z [err]    position: '182',
+2025-10-31T05:36:41.658532149Z [err]    internalPosition: undefined,
+2025-10-31T05:36:41.658537795Z [err]    internalQuery: undefined,
+2025-10-31T05:36:41.658543455Z [err]    where: undefined,
+2025-10-31T05:36:41.658549464Z [err]    schema: undefined,
+2025-10-31T05:36:41.658554880Z [err]    table: undefined,
+2025-10-31T05:36:41.658560190Z [err]    column: undefined,
+2025-10-31T05:36:41.658565617Z [err]    dataType: undefined,
+2025-10-31T05:36:41.658572436Z [err]    constraint: undefined,
+2025-10-31T05:36:41.658577852Z [err]    file: 'parse_relation.c',
+2025-10-31T05:36:41.658583669Z [err]    line: '1449',
+2025-10-31T05:36:41.658589826Z [err]    routine: 'parserOpenTable'
+2025-10-31T05:36:41.658595670Z [err]  }
+2025-10-31T05:36:41.658601185Z [inf]  5:36:41 AM [express] GET /api/healing/targets 500 in 8ms :: {"error":"Failed to fetch healing target…
+2025-10-31T05:36:47.842699831Z [err]  2025-10-31 05:36:41.648 UTC [23761] ERROR:  relation "healing_targets" does not exist at character 182
+2025-10-31T05:36:47.842710379Z [err]  2025-10-31 05:36:41.648 UTC [23761] STATEMENT:  select "id", "user_id", "type", "name", "project_id", "customer_id", "railway_project_id", "repository_url", "last_synced_at", "status", "metadata", "created_at", "updated_at" from "healing_targets" where "healing_targets"."user_id" = $1 order by "healing_targets"."updated_at" desc
+2025-10-31T05:38:18.390884233Z [err]  2025-10-31 05:38:08.728 UTC [76] LOG:  checkpoint starting: time
+2025-10-31T05:38:18.390893306Z [err]  2025-10-31 05:38:09.272 UTC [76] LOG:  checkpoint complete: wrote 6 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.508 s, sync=0.007 s, total=0.545 s; sync files=5, longest=0.006 s, average=0.002 s; distance=10 kB, estimate=64 kB; lsn=0/27ED9B0, redo lsn=0/27ED958
+2025-10-31T05:38:58.079118609Z [err]  2025-10-31 05:38:54.856 UTC [23771] ERROR:  relation "healing_targets" does not exist at character 182
+2025-10-31T05:38:58.079126721Z [err]  2025-10-31 05:38:54.856 UTC [23771] STATEMENT:  select "id", "user_id", "type", "name", "project_id", "customer_id", "railway_project_id", "repository_url", "last_synced_at", "status", "metadata", "created_at", "updated_at" from "healing_targets" where "healing_targets"."user_id" = $1 order by "healing_targets"."updated_at" desc
+2025-10-31T05:39:02.926993091Z [inf]  5:38:54 AM [express] GET /api/auth/me 304 in 5ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef954…
+2025-10-31T05:39:02.927001713Z [err]  [HEALING] Error fetching targets: error: relation "healing_targets" does not exist
+2025-10-31T05:39:02.927006802Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T05:39:02.927013258Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T05:39:02.927616339Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T05:39:02.927621051Z [err]      at async DatabaseStorage.getHealingTargets (file:///app/dist/index.js:3630:16)
+2025-10-31T05:39:02.927625016Z [err]      at async file:///app/dist/index.js:19036:21 {
+2025-10-31T05:39:02.927629745Z [err]    length: 115,
+2025-10-31T05:39:02.927633644Z [err]    severity: 'ERROR',
+2025-10-31T05:39:02.927637666Z [err]    code: '42P01',
+2025-10-31T05:39:02.927642107Z [err]    detail: undefined,
+2025-10-31T05:39:02.927646031Z [err]    hint: undefined,
+2025-10-31T05:39:02.927649863Z [err]    position: '182',
+2025-10-31T05:39:02.927653833Z [err]    internalPosition: undefined,
+2025-10-31T05:39:02.927660786Z [err]    internalQuery: undefined,
+2025-10-31T05:39:02.927667569Z [err]    where: undefined,
+2025-10-31T05:39:02.927671274Z [err]    schema: undefined,
+2025-10-31T05:39:02.927675401Z [err]    table: undefined,
+2025-10-31T05:39:02.927679855Z [err]    column: undefined,
+2025-10-31T05:39:02.927683590Z [err]    dataType: undefined,
+2025-10-31T05:39:02.927687421Z [err]    constraint: undefined,
+2025-10-31T05:39:02.927691842Z [err]    file: 'parse_relation.c',
+2025-10-31T05:39:02.927695696Z [err]    line: '1449',
+2025-10-31T05:39:02.927700575Z [err]    routine: 'parserOpenTable'
+2025-10-31T05:39:02.927704485Z [err]  }
+2025-10-31T05:39:02.927708392Z [inf]  5:38:54 AM [express] GET /api/healing/targets 500 in 11ms :: {"error":"Failed to fetch healing targe…
+2025-10-31T05:43:09.632286695Z [err]  2025-10-31 05:43:08.372 UTC [76] LOG:  checkpoint starting: time
+2025-10-31T05:43:09.632298837Z [err]  2025-10-31 05:43:08.694 UTC [76] LOG:  checkpoint complete: wrote 4 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.304 s, sync=0.005 s, total=0.322 s; sync files=4, longest=0.004 s, average=0.002 s; distance=9 kB, estimate=59 kB; lsn=0/27F0FB0, redo lsn=0/27F00C8
+2025-10-31T05:43:14.939384091Z [inf]  5:43:08 AM [express] GET /api/deployment-info 200 in 0ms :: {"version":"1.0.0","commitHash":"f9213e4…
+2025-10-31T05:43:14.939390855Z [inf]  5:43:08 AM [express] GET /api/auth/me 304 in 6ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef954…
+2025-10-31T05:44:55.496128878Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-10-31T05:44:55.496137698Z [inf]  }
+2025-10-31T05:44:55.496162630Z [inf]  [CACHE] Stats: {
+2025-10-31T05:44:55.496168060Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T05:44:55.496172785Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T05:44:55.496177735Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-10-31T05:48:34.000000000Z [inf]  Starting Container
+2025-10-31T05:48:35.184234955Z [inf]  ======================================
+2025-10-31T05:48:35.184242741Z [inf]  🚂 RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-10-31T05:48:35.184249395Z [inf]  ======================================
+2025-10-31T05:48:35.184257603Z [inf]  Time: Fri Oct 31 05:48:34 UTC 2025
+2025-10-31T05:48:35.184265170Z [inf]  Node version: v20.19.5
+2025-10-31T05:48:35.184278624Z [inf]  NPM version: 10.8.2
+2025-10-31T05:48:35.184289925Z [inf]  
+2025-10-31T05:48:35.184297518Z [inf]  📁 Current directory: /app
+2025-10-31T05:48:35.184303766Z [inf]  📂 Listing root files:
+2025-10-31T05:48:35.185081691Z [inf]  total 404
+2025-10-31T05:48:35.185089158Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 31 05:43 .
+2025-10-31T05:48:35.185093655Z [inf]  dr-xr-xr-x    1 root     root          4096 Oct 31 05:48 ..
+2025-10-31T05:48:35.185098062Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 31 05:43 dist
+2025-10-31T05:48:35.185102112Z [inf]  -rw-rw-r--    1 root     root           325 Oct 31 05:41 drizzle.config.ts
+2025-10-31T05:48:35.185106296Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 31 05:33 node_modules
+2025-10-31T05:48:35.185110698Z [inf]  -rw-rw-r--    1 root     root        355683 Oct 31 05:33 package-lock.json
+2025-10-31T05:48:35.185115108Z [inf]  -rw-rw-r--    1 root     root          4586 Oct 31 05:33 package.json
+2025-10-31T05:48:35.185120971Z [inf]  -rwxrwxr-x    1 root     root          1865 Oct 31 05:41 railway-start.sh
+2025-10-31T05:48:35.185126102Z [inf]  -rw-rw-r--    1 root     root          9465 Oct 31 05:41 replit.md
+2025-10-31T05:48:35.185131055Z [inf]  drwxr-xr-x   12 root     root          4096 Oct 31 05:41 server
+2025-10-31T05:48:35.185135765Z [inf]  drwxr-xr-x    2 root     root          4096 Oct 31 05:41 shared
+2025-10-31T05:48:35.185140493Z [inf]  -rw-rw-r--    1 root     root           960 Oct 31 05:41 tsconfig.json
+2025-10-31T05:48:35.185145277Z [inf]  
+2025-10-31T05:48:35.185822428Z [inf]  🔍 Checking for dist directory...
+2025-10-31T05:48:35.185829433Z [inf]  ✅ dist directory exists
+2025-10-31T05:48:35.185867665Z [inf]  📂 Contents:
+2025-10-31T05:48:35.185872242Z [inf]  total 812
+2025-10-31T05:48:35.185876220Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 31 05:43 .
+2025-10-31T05:48:35.185880455Z [inf]  drwxr-xr-x    1 root     root          4096 Oct 31 05:43 ..
+2025-10-31T05:48:35.185884538Z [inf]  -rw-r--r--    1 root     root        817191 Oct 31 05:43 index.js
+2025-10-31T05:48:35.185888650Z [inf]  drwxr-xr-x    3 root     root          4096 Oct 31 05:43 public
+2025-10-31T05:48:35.185893010Z [inf]  ✅ dist/index.js found
+2025-10-31T05:48:35.185897248Z [inf]  
+2025-10-31T05:48:35.185907963Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-10-31T05:48:35.288778580Z [inf]  No config path provided, using default 'drizzle.config.ts'
+2025-10-31T05:48:35.288791949Z [inf]  Reading config file '/app/drizzle.config.ts'
+2025-10-31T05:48:35.611824164Z [inf]  Using 'pg' driver for database querying
+2025-10-31T05:48:36.265565534Z [inf]  [⣷] Pulling schema from database...
+2025-10-31T05:48:36.265572838Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-31T05:48:36.265579837Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-31T05:48:36.268834178Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-31T05:48:36.276405843Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-31T05:48:36.404671873Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-31T05:48:36.538049293Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-31T05:48:36.666374674Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-31T05:48:37.244238031Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-31T05:48:37.244244340Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-31T05:48:37.244250876Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-31T05:48:37.244256901Z [inf]  [2K[1G[⢿] Pulling schema from database...
+2025-10-31T05:48:37.300496624Z [inf]  [2K[1G[⣻] Pulling schema from database...
+2025-10-31T05:48:37.430184114Z [inf]  [2K[1G[⣽] Pulling schema from database...
+2025-10-31T05:48:37.557656841Z [inf]  [2K[1G[⣷] Pulling schema from database...
+2025-10-31T05:48:37.694564809Z [inf]  [2K[1G[⣯] Pulling schema from database...
+2025-10-31T05:48:38.233294119Z [inf]    ~ meta_sysop_automation › ai_fix_attempts   rename table
+2025-10-31T05:48:38.233306429Z [inf]    ~ meta_sysop_instructions › ai_fix_attempts rename table
+2025-10-31T05:48:38.233314766Z [inf]    ~ meta_sysop_knowledge › ai_fix_attempts    rename table
+2025-10-31T05:48:38.233321791Z [inf]    ~ meta_sysop_memory › ai_fix_attempts       rename table
+2025-10-31T05:48:38.233328902Z [inf]    ~ meta_sysop_attachments › ai_fix_attempts  rename table
+2025-10-31T05:48:38.233336241Z [inf]    ~ meta_sysop_sessions › ai_fix_attempts     rename table
+2025-10-31T05:48:38.233906653Z [inf]  [2K[1G[⣟] Pulling schema from database...
+2025-10-31T05:48:38.233913742Z [inf]  [2K[1G[⡿] Pulling schema from database...
+2025-10-31T05:48:38.233920221Z [inf]  [2K[1G[✓] Pulling schema from database...
+2025-10-31T05:48:38.233927325Z [inf]  [?25l
+2025-10-31T05:48:38.233934740Z [inf]  Is ai_fix_attempts table created or renamed from another table?
+2025-10-31T05:48:38.233942569Z [inf]  ❯ + ai_fix_attempts                           create table
+2025-10-31T05:48:41.567062824Z [err]  2025-10-31 05:48:39.570 UTC [23760] LOG:  could not receive data from client: Connection reset by peer
+2025-10-31T05:48:42.000000000Z [inf]  Stopping Container
+2025-10-31T05:48:49.653552239Z [err]  2025-10-31 05:48:49.232 UTC [23805] ERROR:  relation "platform_incidents" does not exist at character 298
+2025-10-31T05:48:49.653556936Z [err]  2025-10-31 05:48:49.232 UTC [23805] STATEMENT:  select "id", "type", "severity", "title", "description", "source", "detected_at", "resolved_at", "status", "healing_session_id", "stack_trace", "affected_files", "metrics", "logs", "root_cause", "fix_description", "commit_hash", "attempt_count", "last_attempt_at", "created_at", "updated_at" from "platform_incidents" where ("platform_incidents"."status" = $1 and "platform_incidents"."resolved_at" is null)
+2025-10-31T05:48:57.778577299Z [inf]    ~ meta_sysop_jobs › ai_fix_attempts         rename table✅ Database migrations completed successfully!
+2025-10-31T05:48:57.778584908Z [inf]  
+2025-10-31T05:48:57.778589831Z [inf]  🔍 Environment Check:
+2025-10-31T05:48:57.778591641Z [inf]  
+2025-10-31T05:48:57.778605295Z [inf]  🚀 Starting Node.js application...
+2025-10-31T05:48:57.778606560Z [inf]  NODE_ENV: production
+2025-10-31T05:48:57.778612084Z [inf]  PORT: 8080
+2025-10-31T05:48:57.778616482Z [inf]  Command: node dist/index.js
+2025-10-31T05:48:57.778617014Z [inf]  DATABASE_URL: ✓ SET (hidden for security)
+2025-10-31T05:48:57.778622784Z [inf]  GITHUB_TOKEN: ✓ SET
+2025-10-31T05:48:57.778628108Z [inf]  GITHUB_REPO: 6-7Development/archetype
+2025-10-31T05:48:57.778629301Z [inf]  
+2025-10-31T05:48:57.778633027Z [inf]  GITHUB_BRANCH: main
+2025-10-31T05:48:57.778638914Z [inf]  ANTHROPIC_API_KEY: ✓ SET
+2025-10-31T05:48:57.778641289Z [inf]  [db] ✅ Added sslmode=no-verify to connection string for production
+2025-10-31T05:48:57.778643764Z [inf]  
+2025-10-31T05:48:57.778650006Z [inf]  📄 Ensuring replit.md is available...
+2025-10-31T05:48:57.778652891Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-10-31T05:48:57.778656557Z [inf]  ✅ replit.md already present
+2025-10-31T05:48:57.778662209Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-10-31T05:48:57.778670509Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-10-31T05:48:57.778677724Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-10-31T05:48:57.778686493Z [inf]  [db] Connection string includes SSL params: true
+2025-10-31T05:48:57.778695307Z [inf]  [PERFORMANCE] System prompt base cached (1544 chars) - saves ~4KB per request
+2025-10-31T05:48:57.778702379Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-10-31T05:48:57.778709223Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller (SSE streams excluded)
+2025-10-31T05:48:57.780800229Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-10-31T05:48:57.780809915Z [inf]  ✅ Database connected successfully
+2025-10-31T05:48:57.780816016Z [inf]  📡 WebSocket server initialized at /ws
+2025-10-31T05:48:57.780816608Z [inf]  🔧 Auto-healing system ENABLED
+2025-10-31T05:48:57.780821642Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-10-31T05:48:57.780822791Z [inf]     ⚡ Kill-switch: Disabled after 3 consecutive failures (1 hour cooldown)
+2025-10-31T05:48:57.780829843Z [inf]  [PLATFORM-HEALING] WebSocket server attached for preview broadcasts
+2025-10-31T05:48:57.780830443Z [inf]     ⏱️ Rate limit: Max 3 healing sessions per hour
+2025-10-31T05:48:57.780836640Z [inf]  [PLATFORM-HEALING] Platform healing service connected to WebSocket
+2025-10-31T05:48:57.780836959Z [inf]     📋 Audit trail: All attempts logged to platformHealAttempts
+2025-10-31T05:48:57.780841959Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-10-31T05:48:57.780842769Z [inf]     🔄 Rollback: Automatic rollback on verification/deployment failure
+2025-10-31T05:48:57.780848919Z [inf]  [HEAL-ORCHESTRATOR] Metrics broadcaster connected
+2025-10-31T05:48:57.780853263Z [inf]  [WEBHOOKS] Webhooks router connected to metrics broadcaster
+2025-10-31T05:48:57.780857244Z [inf]  [LOMU-AI-JOB-MANAGER] Initialized with WebSocket support
+2025-10-31T05:48:57.780862820Z [inf]  [LOMU-AI-JOB-MANAGER] Job manager connected to WebSocket
+2025-10-31T05:48:57.780866667Z [inf]  [LOMU-AI] WebSocket server initialized for live preview broadcasts
+2025-10-31T05:48:57.780870990Z [inf]  [LOMU-AI-CHAT] Live preview WebSocket initialized
+2025-10-31T05:48:57.780875234Z [inf]  [WEBHOOKS] Webhooks router mounted at /api/webhooks
+2025-10-31T05:48:57.780879102Z [inf]  ✅ All routes registered successfully
+2025-10-31T05:48:57.780882798Z [inf]  🔍 Testing database connection...
+2025-10-31T05:48:57.780886555Z [inf]  5:48:49 AM [express] serving on port 8080
+2025-10-31T05:48:57.782850173Z [inf]  [HEALTH-MONITOR] Starting platform health monitoring...
+2025-10-31T05:48:57.782856215Z [err]  [HEALTH-MONITOR] Failed to load open incidents: error: relation "platform_incidents" does not exist
+2025-10-31T05:48:57.782860412Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T05:48:57.782865228Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T05:48:57.782867761Z [err]    constraint: undefined,
+2025-10-31T05:48:57.782870151Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T05:48:57.782875378Z [err]      at async PlatformHealthMonitor.loadOpenIncidents (file:///app/dist/index.js:11307:29)
+2025-10-31T05:48:57.782879373Z [err]    file: 'parse_relation.c',
+2025-10-31T05:48:57.782881459Z [err]      at async PlatformHealthMonitor.start (file:///app/dist/index.js:11286:9)
+2025-10-31T05:48:57.782881810Z [err]    code: '42P01',
+2025-10-31T05:48:57.782886929Z [err]      at async file:///app/dist/index.js:20042:3 {
+2025-10-31T05:48:57.782889733Z [err]    line: '1449',
+2025-10-31T05:48:57.782893259Z [err]    length: 118,
+2025-10-31T05:48:57.782894886Z [err]    detail: undefined,
+2025-10-31T05:48:57.782898760Z [err]    routine: 'parserOpenTable'
+2025-10-31T05:48:57.782898848Z [err]    severity: 'ERROR',
+2025-10-31T05:48:57.782903837Z [err]    hint: undefined,
+2025-10-31T05:48:57.782910909Z [err]    position: '298',
+2025-10-31T05:48:57.782918216Z [err]    internalPosition: undefined,
+2025-10-31T05:48:57.782926389Z [err]    internalQuery: undefined,
+2025-10-31T05:48:57.782941981Z [err]    where: undefined,
+2025-10-31T05:48:57.782950087Z [err]    schema: undefined,
+2025-10-31T05:48:57.782955090Z [err]    table: undefined,
+2025-10-31T05:48:57.782960859Z [err]    column: undefined,
+2025-10-31T05:48:57.782965650Z [err]    dataType: undefined,
+2025-10-31T05:48:57.784630504Z [inf]     - Branch: main
+2025-10-31T05:48:57.784633834Z [err]  }
+2025-10-31T05:48:57.784642973Z [inf]     - Token: ✓ (configured)
+2025-10-31T05:48:57.784643419Z [inf]  [HEALTH-MONITOR] Monitoring started
+2025-10-31T05:48:57.784651192Z [inf]  [HEAL-ORCHESTRATOR] Starting autonomous healing orchestrator...
+2025-10-31T05:48:57.784652349Z [inf]     - Owner User ID: Not set (owner must be manually marked in database)
+2025-10-31T05:48:57.784659279Z [inf]  [HEAL-ORCHESTRATOR] Orchestrator started
+2025-10-31T05:48:57.784660348Z [inf]     - Maintenance mode: Available for owner
+2025-10-31T05:48:57.784667371Z [inf]  
+2025-10-31T05:48:57.784668944Z [inf]  
+2025-10-31T05:48:57.784675625Z [inf]  🔍 Checking GitHub integration configuration...
+2025-10-31T05:48:57.784677284Z [inf]  [DEPLOYMENT-INFO] Using Railway environment variables
+2025-10-31T05:48:57.784683759Z [inf]  ✅ GitHub integration configured successfully
+2025-10-31T05:48:57.784685565Z [inf]  5:48:54 AM [express] GET /api/deployment-info 200 in 3ms :: {"version":"1.0.0","commitHash":"095c5a1…
+2025-10-31T05:48:57.784691944Z [inf]     - Repository: 6-7Development/archetype
+2025-10-31T05:48:57.784693482Z [inf]  5:48:54 AM [express] GET /api/auth/me 304 in 10ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef95…
+2025-10-31T05:49:00.338507335Z [inf]  [AUTH] Authentication successful for: root@getdc360.com
+2025-10-31T05:49:00.338517473Z [inf]  5:49:00 AM [express] POST /api/auth/login 200 in 284ms :: {"success":true,"user":{"id":"723e1301-c72…
+2025-10-31T05:49:00.338559386Z [inf]  [AUTH] Login attempt for email: root@getdc360.com
+2025-10-31T05:49:00.338567882Z [inf]  [AUTH] Found users: 1
+2025-10-31T05:49:00.338573663Z [inf]  [AUTH] User found: root@getdc360.com has password: true
+2025-10-31T05:49:00.338580666Z [inf]  [AUTH] Verifying password...
+2025-10-31T05:49:00.338585845Z [inf]  [AUTH] Password valid: true
+2025-10-31T05:49:00.790652424Z [inf]  5:49:00 AM [express] GET /api/auth/me 304 in 8ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef954…
+2025-10-31T05:49:01.310459112Z [inf]  5:49:00 AM [express] GET /api/projects 304 in 90ms :: []
+2025-10-31T05:49:04.688172750Z [err]  [HEALING] Error fetching targets: error: relation "healing_targets" does not exist
+2025-10-31T05:49:04.688176888Z [err]      at /app/node_modules/pg-pool/index.js:45:11
+2025-10-31T05:49:04.688180927Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-31T05:49:04.688184938Z [err]      at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-31T05:49:04.688188928Z [err]      at async DatabaseStorage.getHealingTargets (file:///app/dist/index.js:3630:16)
+2025-10-31T05:49:04.688192941Z [err]      at async file:///app/dist/index.js:19036:21 {
+2025-10-31T05:49:04.688197070Z [err]    length: 115,
+2025-10-31T05:49:04.688205966Z [err]    severity: 'ERROR',
+2025-10-31T05:49:04.688209556Z [err]    code: '42P01',
+2025-10-31T05:49:04.688213384Z [err]    detail: undefined,
+2025-10-31T05:49:04.688235014Z [err]    hint: undefined,
+2025-10-31T05:49:04.688248128Z [err]    position: '182',
+2025-10-31T05:49:04.688255005Z [err]    internalPosition: undefined,
+2025-10-31T05:49:04.688261097Z [err]    internalQuery: undefined,
+2025-10-31T05:49:04.688270495Z [err]    where: undefined,
+2025-10-31T05:49:04.688277796Z [err]    schema: undefined,
+2025-10-31T05:49:04.688285068Z [err]    table: undefined,
+2025-10-31T05:49:04.688291896Z [err]    column: undefined,
+2025-10-31T05:49:04.688299318Z [err]    dataType: undefined,
+2025-10-31T05:49:04.688306749Z [err]    constraint: undefined,
+2025-10-31T05:49:04.688313273Z [err]    file: 'parse_relation.c',
+2025-10-31T05:49:04.688318923Z [err]    line: '1449',
+2025-10-31T05:49:04.688324690Z [err]    routine: 'parserOpenTable'
+2025-10-31T05:49:04.688330239Z [err]  }
+2025-10-31T05:49:04.690065608Z [inf]  5:49:04 AM [express] GET /api/healing/targets 500 in 14ms :: {"error":"Failed to fetch healing targe…
+2025-10-31T05:49:09.316943209Z [err]  2025-10-31 05:49:04.676 UTC [23807] ERROR:  relation "healing_targets" does not exist at character 182
+2025-10-31T05:49:09.316954655Z [err]  2025-10-31 05:49:04.676 UTC [23807] STATEMENT:  select "id", "user_id", "type", "name", "project_id", "customer_id", "railway_project_id", "repository_url", "last_synced_at", "status", "metadata", "created_at", "updated_at" from "healing_targets" where "healing_targets"."user_id" = $1 order by "healing_targets"."updated_at" desc
