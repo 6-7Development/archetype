@@ -193,3 +193,37 @@ CREATE TABLE IF NOT EXISTS healing_messages (
 );
 
 CREATE INDEX IF NOT EXISTS idx_healing_messages_conversation ON healing_messages(conversation_id);
+
+-- Platform Incident Playbooks (learned patterns for automated fixes)
+CREATE TABLE IF NOT EXISTS platform_incident_playbooks (
+  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::VARCHAR,
+  incident_type TEXT NOT NULL,
+  pattern TEXT NOT NULL,
+  fix_template TEXT NOT NULL,
+  confidence DECIMAL(3, 2) NOT NULL,
+  success_count INTEGER NOT NULL DEFAULT 0,
+  failure_count INTEGER NOT NULL DEFAULT 0,
+  last_used_at TIMESTAMP,
+  learned_from VARCHAR,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- AI Knowledge Base (learn from past fixes to improve auto-healing)
+CREATE TABLE IF NOT EXISTS ai_knowledge_base (
+  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::VARCHAR,
+  error_signature VARCHAR(64) NOT NULL UNIQUE,
+  error_type TEXT NOT NULL,
+  context JSONB,
+  successful_fix TEXT NOT NULL,
+  confidence_score DECIMAL(5, 2) NOT NULL,
+  times_applied INTEGER NOT NULL DEFAULT 0,
+  success_rate DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+  tags TEXT[],
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  last_applied_at TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_knowledge_error_signature ON ai_knowledge_base(error_signature);
+CREATE INDEX IF NOT EXISTS idx_ai_knowledge_error_type ON ai_knowledge_base(error_type);
