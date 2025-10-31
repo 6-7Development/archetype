@@ -177,14 +177,27 @@ function PlatformHealingContent() {
   }, [toast]);
 
   // Load healing targets
-  const { data: targets, isLoading: targetsLoading } = useQuery<HealingTarget[]>({
+  const { data: targets, isLoading: targetsLoading, error: targetsError } = useQuery<HealingTarget[]>({
     queryKey: ['/api/healing/targets'],
     queryFn: async () => {
+      console.log('[HEALING-UI] Fetching targets...');
       const res = await fetch('/api/healing/targets', { credentials: 'include' });
-      if (!res.ok) throw new Error('Failed to load targets');
-      return res.json();
+      console.log('[HEALING-UI] Targets response status:', res.status);
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('[HEALING-UI] Targets fetch failed:', errorText);
+        throw new Error('Failed to load targets');
+      }
+      const data = await res.json();
+      console.log('[HEALING-UI] Targets loaded:', data);
+      return data;
     },
   });
+  
+  // Log targets state
+  useEffect(() => {
+    console.log('[HEALING-UI] Targets state:', { targets, targetsLoading, targetsError });
+  }, [targets, targetsLoading, targetsError]);
 
   // Load conversations for selected target
   const { data: conversations } = useQuery<HealingConversation[]>({
