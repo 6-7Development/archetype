@@ -132,25 +132,164 @@ export function registerHealingRoutes(app: Express) {
     }
   });
 
-  // POST /api/healing/messages - Send message to Lomu
+  // POST /api/healing/messages - Send message to Lomu (with AI response)
   app.post("/api/healing/messages", isAuthenticated, async (req, res) => {
     try {
+      const userId = req.user!.id;
       const validated = insertHealingMessageSchema.parse(req.body);
       
-      // Create user message
+      console.log("[HEALING-CHAT] User message received:", {
+        conversationId: validated.conversationId,
+        contentLength: validated.content.length,
+      });
+      
+      // Import required services
+      const { anthropic, DEFAULT_MODEL } = await import("../anthropic");
+      const { aiQueue } = await import("../priority-queue");
+      const { checkUsageLimits, trackAIUsage } = await import("../usage-tracking");
+      
+      // Check usage limits
+      const limitCheck = await checkUsageLimits(userId);
+      if (!limitCheck.allowed) {
+        return res.status(403).json({ 
+          error: limitCheck.reason,
+          usageLimitReached: true,
+          requiresUpgrade: limitCheck.requiresUpgrade || false,
+        });
+      }
+      
+      // Create user message in database
       const userMessage = await storage.createHealingMessage(validated);
+      console.log("[HEALING-CHAT] User message saved to database");
       
-      // TODO: Send to AI and get response
-      // For now, just return the user message
-      // In Phase 4, this will trigger AI response
+      // Get conversation history for context
+      const messages = await storage.getHealingMessages(validated.conversationId);
+      console.log(`[HEALING-CHAT] Loaded ${messages.length} messages from history`);
       
-      res.json(userMessage);
+      // Build Platform Healing system prompt
+      const systemPrompt = `You are Lomu, an AI assistant helping maintain and improve the LomuAI platform.
+
+**Your Role:**
+- Help diagnose and fix platform issues
+- Suggest improvements to the codebase
+- Explain platform architecture and decisions
+- Guide platform owners through complex changes
+
+**Platform Context:**
+- Platform: LomuAI - AI-powered development platform
+- Stack: React, TypeScript, Express, PostgreSQL, Railway
+- Repository: ${process.env.GITHUB_REPO || 'Not configured'}
+- Branch: ${process.env.GITHUB_BRANCH || 'main'}
+
+**Your Capabilities:**
+- Analyze code and suggest fixes
+- Explain technical decisions
+- Propose architectural improvements
+- Debug production issues
+- Review and improve code quality
+
+**Communication Style:**
+- Be concise and technical
+- Explain reasoning behind suggestions
+- Provide code examples when helpful
+- Ask clarifying questions when needed
+
+Let's help maintain this platform!`;
+
+      // Prepare messages for Claude
+      const validMessages = messages.filter((m: any) => {
+        const hasContent = m.content && typeof m.content === 'string' && m.content.trim().length > 0;
+        if (!hasContent) {
+          console.warn(`⚠️ [HEALING-CHAT] Filtering out message with empty content (ID: ${m.id})`);
+        }
+        return hasContent;
+      });
+
+      console.log(`🤖 [HEALING-CHAT] Calling Claude API with ${validMessages.length} valid messages...`);
+      
+      // Get user's subscription for queue priority
+      const subscription = await storage.getSubscription(userId);
+      const plan = subscription?.plan || 'free';
+      
+      const computeStartTime = Date.now();
+      
+      // Call Claude API through priority queue
+      const completion = await aiQueue.enqueue(userId, plan, async () => {
+        const result = await anthropic.messages.create({
+          model: DEFAULT_MODEL,
+          max_tokens: 4096,
+          system: systemPrompt,
+          messages: [
+            ...validMessages.map((m: any) => ({
+              role: m.role === 'system' ? 'user' : m.role,
+              content: m.content
+            })),
+            {
+              role: "user",
+              content: validated.content,
+            },
+          ],
+        });
+        return result;
+      });
+
+      const computeTimeMs = Date.now() - computeStartTime;
+      const responseText = completion.content[0].type === 'text' ? completion.content[0].text : "";
+
+      console.log(`✅ [HEALING-CHAT] Claude responded in ${computeTimeMs}ms (${responseText.length} chars)`);
+
+      // Save assistant's response to database
+      const assistantMessage = await storage.createHealingMessage({
+        conversationId: validated.conversationId,
+        role: 'assistant',
+        content: responseText,
+        metadata: {
+          model: DEFAULT_MODEL,
+          tokensUsed: (completion.usage?.input_tokens || 0) + (completion.usage?.output_tokens || 0),
+          computeTimeMs,
+        },
+      });
+
+      console.log("[HEALING-CHAT] Assistant message saved to database");
+
+      // Track AI usage for billing
+      const inputTokens = completion.usage?.input_tokens || 0;
+      const outputTokens = completion.usage?.output_tokens || 0;
+      
+      await trackAIUsage({
+        userId,
+        projectId: null, // Platform healing doesn't belong to a specific project
+        type: "ai_chat",
+        inputTokens,
+        outputTokens,
+        computeTimeMs,
+        metadata: {
+          conversationId: validated.conversationId,
+          messageLength: validated.content.length,
+          healingChat: true, // Flag to identify platform healing vs regular chat
+        },
+      });
+
+      console.log("[HEALING-CHAT] Usage tracked successfully");
+
+      // Return both user and assistant messages
+      res.json({
+        userMessage,
+        assistantMessage,
+        usage: {
+          inputTokens,
+          outputTokens,
+          totalTokens: inputTokens + outputTokens,
+          computeTimeMs,
+        },
+      });
+
     } catch (error: any) {
-      console.error("[HEALING] Error creating message:", error);
+      console.error("[HEALING-CHAT] Error:", error);
       if (error.name === 'ZodError') {
         res.status(400).json({ error: "Invalid message data", details: error.errors });
       } else {
-        res.status(500).json({ error: "Failed to create message" });
+        res.status(500).json({ error: error.message || "Failed to create message" });
       }
     }
   });
