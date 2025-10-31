@@ -2,7 +2,7 @@
  * Agent Communication Integration Examples
  * 
  * This file demonstrates how to integrate the agent communication system
- * into existing route handlers (SySop, Meta-SySop, Architect).
+ * into existing route handlers (SySop, LomuAI, Architect).
  * 
  * DO NOT import this file in production - these are reference examples only.
  */
@@ -155,18 +155,18 @@ async function attemptBugFix(): Promise<void> {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// EXAMPLE 2: Meta-SySop Platform Healing Integration
+// EXAMPLE 2: LomuAI Platform Healing Integration
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Example: How Meta-SySop uses delegation and approval workflows
+ * Example: How LomuAI uses delegation and approval workflows
  */
 export async function exampleMetaSySopIntegration(
   wss: WebSocketServer,
   userId: string,
   healingRequest: string
 ) {
-  // 1. Broadcast that Meta-SySop is analyzing the platform
+  // 1. Broadcast that LomuAI is analyzing the platform
   broadcastAgentStatus(wss, 'meta-sysop', {
     userId,
     status: 'thinking',
@@ -222,7 +222,7 @@ export async function exampleMetaSySopIntegration(
     urgency: 'high'
   });
 
-  console.log(`[META-SYSOP] Approval requested: ${approvalRequest.requestId}`);
+  console.log(`[LOMUAI] Approval requested: ${approvalRequest.requestId}`);
 
   // Broadcast waiting for approval
   broadcastAgentStatus(wss, 'meta-sysop', {
@@ -288,7 +288,7 @@ export async function exampleMetaSySopIntegration(
     }
   });
 
-  console.log(`[META-SYSOP] Delegated task: ${delegation.delegationId}`);
+  console.log(`[LOMUAI] Delegated task: ${delegation.delegationId}`);
 
   // Broadcast delegation status
   broadcastAgentStatus(wss, 'meta-sysop', {
@@ -339,7 +339,7 @@ export async function exampleArchitectReview(
   // 2. Perform code analysis
   const analysisResults = await performCodeAnalysis(codeToReview);
 
-  // 3. Share evidence with requesting agent (SySop or Meta-SySop)
+  // 3. Share evidence with requesting agent (SySop or LomuAI)
   const evidence = shareEvidencePackage({
     providedBy: 'architect',
     receivedBy: 'sysop', // or 'meta-sysop'
@@ -427,9 +427,9 @@ export function exampleCapabilityDiscovery() {
   console.log('  Expertise:', sysopCaps.expertiseAreas.slice(0, 3).join(', '));
   console.log('  Restrictions:', sysopCaps.restrictions[0]);
 
-  // Get Meta-SySop capabilities
+  // Get LomuAI capabilities
   const metaCaps = getAgentCapabilities('meta-sysop');
-  console.log('\n🔧 Meta-SySop (Platform Healer)');
+  console.log('\n🔧 LomuAI (Platform Healer)');
   console.log('  Capabilities:', metaCaps.capabilities.slice(0, 3).join(', '), '...');
   console.log('  Expertise:', metaCaps.expertiseAreas.slice(0, 3).join(', '));
   console.log('  Restrictions:', metaCaps.restrictions[0]);

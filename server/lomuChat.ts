@@ -15,7 +15,7 @@ import * as path from 'path';
 
 const router = Router();
 
-// Get Meta-SySop chat history
+// Get LomuAI chat history
 router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
     const userId = req.authenticatedUserId;
@@ -33,12 +33,12 @@ router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
 
     res.json({ messages });
   } catch (error: any) {
-    console.error('[META-SYSOP-CHAT] Error loading history:', error);
+    console.error('[LOMUAI-CHAT] Error loading history:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Stream Meta-SySop chat response
+// Stream LomuAI chat response
 router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
     const { message, autoCommit = false, autoPush = false } = req.body;
@@ -80,10 +80,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // Create backup before any changes (non-blocking - continue even if it fails)
     let backup: any = null;
     try {
-      backup = await platformHealing.createBackup(`Meta-SySop session: ${message.slice(0, 50)}`);
+      backup = await platformHealing.createBackup(`LomuAI session: ${message.slice(0, 50)}`);
       sendEvent('progress', { message: 'Backup created successfully' });
     } catch (backupError: any) {
-      console.warn('[META-SYSOP-CHAT] Backup creation failed (non-critical):', backupError.message);
+      console.warn('[LOMUAI-CHAT] Backup creation failed (non-critical):', backupError.message);
       sendEvent('progress', { message: 'Proceeding without backup (production mode)' });
     }
 
@@ -127,7 +127,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     const systemPrompt = isSimpleTask ? 
       // SIMPLE TASK PROMPT (saves ~2K tokens)
-      `You are Meta-SySop, the AI that maintains Archetype platform. Talk like a colleague, not a bot.
+      `You are LomuAI, the AI that maintains Archetype platform. Talk like a colleague, not a bot.
 
 For simple fixes: Just do it quietly and report done. No task lists needed.
 For complex work: Use task lists and sub-agents.
@@ -137,7 +137,7 @@ React+Express+PostgreSQL stack. Auto-deploys to Railway.
 
 User request: ${message}` :
       // FULL SYSTEM PROMPT (complex tasks only)  
-      `You are Meta-SySop, an AUTONOMOUS elite AI agent that maintains and fixes the Archetype platform itself.
+      `You are LomuAI, an AUTONOMOUS elite AI agent that maintains and fixes the Archetype platform itself.
 
 ═══════════════════════════════════════════════════════════════════
 ⚠️  CRITICAL: You modify PRODUCTION PLATFORM CODE - Be precise!
@@ -396,7 +396,7 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
         return ['server/storage.ts', 'server/db.ts'];
       }
       
-      // Meta-SySop specific
+      // LomuAI specific
       if (msg.includes('meta') || msg.includes('sysop') || msg.includes('platform')) {
         return ['server/lomuChat.ts', 'server/platformHealing.ts'];
       }
@@ -447,7 +447,7 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
               
               const result = await createTaskList({
                 userId,
-                projectId: undefined, // Meta-SySop works on platform, not user projects
+                projectId: undefined, // LomuAI works on platform, not user projects
                 chatMessageId: userMsg.id,
                 title: typedInput.title,
                 description: typedInput.description,
@@ -516,7 +516,7 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
               
               // For simple tasks, skip I AM approval requirement
               if (isSimpleTask) {
-                console.log(`[META-SYSOP] Simple task - writing ${normalizedPath} without I AM approval`);
+                console.log(`[LOMUAI] Simple task - writing ${normalizedPath} without I AM approval`);
                 sendEvent('progress', { message: `✏️ Fixing ${normalizedPath}...` });
                 await platformHealing.writePlatformFile(normalizedPath, typedInput.content);
                 
@@ -534,14 +534,14 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
                 
                 if (!approval) {
                   toolResult = `❌ BLOCKED: File "${normalizedPath}" has no architect approval. You must consult I AM (architect_consult) and get explicit approval for this file.`;
-                  console.error(`[META-SYSOP] Blocked writePlatformFile for ${normalizedPath} - no approval found`);
+                  console.error(`[LOMUAI] Blocked writePlatformFile for ${normalizedPath} - no approval found`);
                   sendEvent('error', { message: `File write blocked - no approval for ${normalizedPath}` });
                 } else if (!approval.approved) {
                   toolResult = `❌ BLOCKED: I AM rejected changes to "${normalizedPath}". You cannot proceed with this file modification.`;
-                  console.error(`[META-SYSOP] Blocked writePlatformFile for ${normalizedPath} - approval was rejected`);
+                  console.error(`[LOMUAI] Blocked writePlatformFile for ${normalizedPath} - approval was rejected`);
                   sendEvent('error', { message: `File write blocked - ${normalizedPath} was rejected` });
                 } else {
-                  console.log(`[META-SYSOP] writePlatformFile called for: ${normalizedPath}`);
+                  console.log(`[LOMUAI] writePlatformFile called for: ${normalizedPath}`);
                   
                   sendEvent('progress', { message: `✅ Modifying ${normalizedPath} (I AM approved)...` });
                   await platformHealing.writePlatformFile(normalizedPath, typedInput.content);
@@ -607,7 +607,7 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
                 maxResults: typedInput.maxResults || 5
               });
               
-              // Format results for Meta-SySop (using 'content' field from API)
+              // Format results for LomuAI (using 'content' field from API)
               toolResult = `Search Results:\n${searchResult.results.map((r: any) => 
                 `• ${r.title}\n  ${r.url}\n  ${r.content}\n`
               ).join('\n')}`;
@@ -740,7 +740,7 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
           sendEvent('error', { 
             message: `❌ AUTO-COMMIT BLOCKED: ${unapprovedFiles.length} file(s) lack I AM approval: ${unapprovedFiles.join(', ')}` 
           });
-          console.error('[META-SYSOP] Blocked auto-commit - unapproved files:', unapprovedFiles);
+          console.error('[LOMUAI] Blocked auto-commit - unapproved files:', unapprovedFiles);
           
           if (backup?.id) {
             await platformHealing.rollback(backup.id);
@@ -779,7 +779,7 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
     await platformAudit.log({
       userId,
       action: 'heal',
-      description: `Meta-SySop chat: ${message.slice(0, 100)}`,
+      description: `LomuAI chat: ${message.slice(0, 100)}`,
       changes: fileChanges,
       backupId: backup?.id || null,
       commitHash,
@@ -789,7 +789,7 @@ Now execute the workflow autonomously - create tasks, investigate, consult I AM,
     sendEvent('done', { messageId: assistantMsg.id, commitHash, filesChanged: fileChanges.length });
     res.end();
   } catch (error: any) {
-    console.error('[META-SYSOP-CHAT] Stream error:', error);
+    console.error('[LOMUAI-CHAT] Stream error:', error);
     const errorMessage = JSON.stringify({ type: 'error', message: error.message });
     res.write(`data: ${errorMessage}\n\n`);
     res.end();
