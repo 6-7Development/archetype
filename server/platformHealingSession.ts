@@ -121,7 +121,7 @@ class SessionManager {
     }
   }
 
-  complete(sessionId: string, changes?: Array<{ path: string; operation: string }>) {
+  complete(sessionId: string, changes?: Array<{ path: string; operation: 'modify' | 'create' | 'delete' }>) {
     const session = this.sessions.get(sessionId);
     if (!session) {
       throw new Error(`Session ${sessionId} not found`);
@@ -197,7 +197,7 @@ class SessionManager {
   // Cleanup old sessions (call periodically)
   cleanupOldSessions(maxAgeMs: number = 3600000) { // 1 hour default
     const now = Date.now();
-    for (const [sessionId, session] of this.sessions.entries()) {
+    for (const [sessionId, session] of Array.from(this.sessions.entries())) {
       if (now - session.createdAt.getTime() > maxAgeMs) {
         this.cleanup(sessionId);
       }

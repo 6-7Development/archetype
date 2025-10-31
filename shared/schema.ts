@@ -95,6 +95,170 @@ export const insertUserAvatarStateSchema = createInsertSchema(userAvatarState).o
 export type InsertUserAvatarState = z.infer<typeof insertUserAvatarStateSchema>;
 export type UserAvatarState = typeof userAvatarState.$inferSelect;
 
+// Platform Incidents - Track detected problems that need healing
+export const platformIncidents = pgTable("platform_incidents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Incident details
+  type: text("type").notNull(), // 'high_cpu', 'memory_leak', 'build_failure', 'runtime_error', 'lsp_error'
+  severity: text("severity").notNull(), // 'low', 'medium', 'high', 'critical'
+  title: text("title").notNull(), // "High CPU usage detected"
+  description: text("description").notNull(), // Detailed error message
+  
+  // Detection metadata
+  source: text("source").notNull(), // 'metrics', 'logs', 'manual'
+  detectedAt: timestamp("detected_at").notNull().defaultNow(),
+  resolvedAt: timestamp("resolved_at"),
+  
+  // Status tracking
+  status: text("status").notNull().default("open"), // 'open', 'healing', 'resolved', 'failed', 'ignored'
+  
+  // Healing session link
+  healingSessionId: varchar("healing_session_id"), // Link to active healing session
+  
+  // Metadata for diagnosis
+  stackTrace: text("stack_trace"),
+  affectedFiles: jsonb("affected_files"), // Array of file paths
+  metrics: jsonb("metrics"), // Snapshot of metrics at detection time
+  logs: text("logs"), // Relevant log excerpts
+  
+  // Resolution tracking
+  rootCause: text("root_cause"), // Determined root cause
+  fixDescription: text("fix_description"), // How it was fixed
+  commitHash: varchar("commit_hash"), // Git commit that fixed it
+  
+  // Retry tracking
+  attemptCount: integer("attempt_count").notNull().default(0),
+  lastAttemptAt: timestamp("last_attempt_at"),
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertPlatformIncidentSchema = createInsertSchema(platformIncidents).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertPlatformIncident = z.infer<typeof insertPlatformIncidentSchema>;
+export type PlatformIncident = typeof platformIncidents.$inferSelect;
+
+// Platform Healing Sessions - Track ongoing healing processes
+export const platformHealingSessions = pgTable("platform_healing_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Link to incident
+  incidentId: varchar("incident_id").notNull(),
+  
+  // Session metadata
+  phase: text("phase").notNull(), // 'diagnosis', 'repair', 'verification', 'commit', 'deploy', 'complete'
+  status: text("status").notNull().default("active"), // 'active', 'success', 'failed', 'cancelled'
+  
+  // Diagnosis data
+  diagnosisNotes: text("diagnosis_notes"), // AI's analysis
+  proposedFix: text("proposed_fix"), // What AI plans to do
+  
+  // Files changed
+  filesChanged: jsonb("files_changed"), // Array of { path, action, diff }
+  
+  // Verification results
+  verificationResults: jsonb("verification_results"), // Test results, build status, etc.
+  verificationPassed: boolean("verification_passed"),
+  
+  // Git/Deploy tracking
+  branchName: varchar("branch_name"), // "fix/incident-12345"
+  commitHash: varchar("commit_hash"),
+  deploymentId: varchar("deployment_id"),
+  deploymentStatus: text("deployment_status"), // 'pending', 'deploying', 'success', 'failed'
+  
+  // AI metadata
+  tokensUsed: integer("tokens_used").default(0),
+  model: varchar("model").default("claude-sonnet-4-20250514"),
+  
+  // Timestamps
+  startedAt: timestamp("started_at").notNull().defaultNow(),
+  completedAt: timestamp("completed_at"),
+  
+  // Error tracking
+  error: text("error"),
+});
+
+export const insertPlatformHealingSessionSchema = createInsertSchema(platformHealingSessions).omit({
+  id: true,
+  startedAt: true,
+});
+
+export type InsertPlatformHealingSession = z.infer<typeof insertPlatformHealingSessionSchema>;
+export type PlatformHealingSession = typeof platformHealingSessions.$inferSelect;
+
+// Platform Heal Attempts - Track individual fix attempts (for retry logic)
+export const platformHealAttempts = pgTable("platform_heal_attempts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Links
+  incidentId: varchar("incident_id").notNull(),
+  sessionId: varchar("session_id").notNull(),
+  
+  // Attempt details
+  attemptNumber: integer("attempt_number").notNull(),
+  strategy: text("strategy").notNull(), // 'standard', 'alternative', 'rollback'
+  
+  // What was tried
+  actionsTaken: jsonb("actions_taken"), // Array of actions
+  filesModified: jsonb("files_modified"),
+  
+  // Results
+  success: boolean("success").notNull(),
+  verificationPassed: boolean("verification_passed"),
+  error: text("error"),
+  
+  // Timestamps
+  startedAt: timestamp("started_at").notNull().defaultNow(),
+  completedAt: timestamp("completed_at"),
+});
+
+export const insertPlatformHealAttemptSchema = createInsertSchema(platformHealAttempts).omit({
+  id: true,
+  startedAt: true,
+});
+
+export type InsertPlatformHealAttempt = z.infer<typeof insertPlatformHealAttemptSchema>;
+export type PlatformHealAttempt = typeof platformHealAttempts.$inferSelect;
+
+// Platform Incident Playbooks - Store learned patterns for automated fixes
+export const platformIncidentPlaybooks = pgTable("platform_incident_playbooks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Pattern matching
+  incidentType: text("incident_type").notNull(), // 'high_cpu', 'build_failure', etc.
+  pattern: text("pattern").notNull(), // Error pattern to match
+  
+  // Fix template
+  fixTemplate: text("fix_template").notNull(), // AI prompt/instructions
+  confidence: decimal("confidence", { precision: 3, scale: 2 }).notNull(), // 0.00-1.00
+  
+  // Learning metadata
+  successCount: integer("success_count").notNull().default(0),
+  failureCount: integer("failure_count").notNull().default(0),
+  lastUsedAt: timestamp("last_used_at"),
+  
+  // Source
+  learnedFrom: varchar("learned_from"), // incident ID that created this playbook
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertPlatformIncidentPlaybookSchema = createInsertSchema(platformIncidentPlaybooks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertPlatformIncidentPlaybook = z.infer<typeof insertPlatformIncidentPlaybookSchema>;
+export type PlatformIncidentPlaybook = typeof platformIncidentPlaybooks.$inferSelect;
+
 export const projects = pgTable("projects", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),

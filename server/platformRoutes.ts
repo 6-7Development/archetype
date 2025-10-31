@@ -225,7 +225,7 @@ Analyze the issue, identify the root cause, and provide the fix.`;
       },
     ];
 
-    const changes: Array<{ path: string; operation: string }> = [];
+    const changes: Array<{ path: string; operation: 'modify' | 'create' | 'delete' }> = [];
     let continueLoop = true;
     let iterationCount = 0;
     const MAX_ITERATIONS = 10;

@@ -73,7 +73,7 @@ export function TaskProgressWidget({ tasks, activeTaskId }: TaskProgressWidgetPr
                     isActive && "text-primary",
                     isPending && "text-muted-foreground"
                   )}>
-                    {task.content}
+                    {task.title}
                   </div>
                   
                   {task.description && (

@@ -32,7 +32,9 @@ class LRUCache<K, V> {
     // Remove oldest entries if over max size
     if (this.cache.size >= this.maxSize) {
       const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey);
+      }
     }
     this.cache.set(key, value);
   }
@@ -297,7 +299,7 @@ export function clearAllCaches(): void {
   manifestStore.clear();
   
   // Clear all timers
-  for (const timer of sessionTimers.values()) {
+  for (const timer of Array.from(sessionTimers.values())) {
     clearTimeout(timer);
   }
   sessionTimers.clear();

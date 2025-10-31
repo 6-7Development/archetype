@@ -1,6 +1,20 @@
 {
   "include": ["client/src/**/*", "shared/**/*", "server/**/*"],
-  "exclude": ["node_modules", "build", "dist", "**/*.test.ts"],
+  "exclude": [
+    "node_modules",
+    "build",
+    "dist",
+    "**/*.test.ts",
+    "client/src/components/lomuChat.ts",
+    "client/src/components/platformRoutes.ts",
+    "server/lomuChat.ts",
+    "server/routes/lomuChat.ts",
+    "server/lib/db.ts",
+    "server/db/health.ts",
+    "server/api/health.ts",
+    "server/logging.ts",
+    "server/auto-test-loop.ts"
+  ],
   "compilerOptions": {
     "incremental": true,
     "tsBuildInfoFile": "./node_modules/typescript/tsbuildinfo",

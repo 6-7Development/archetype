@@ -53,7 +53,9 @@ export class LRUCache<T = any> {
     // Remove oldest entry if cache is full
     if (this.cache.size >= this.maxSize) {
       const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey);
+      }
     }
 
     const expiresAt = Date.now() + (ttlSeconds * 1000);
@@ -72,7 +74,7 @@ export class LRUCache<T = any> {
    */
   invalidatePattern(pattern: string): void {
     const regex = new RegExp(pattern);
-    for (const key of this.cache.keys()) {
+    for (const key of Array.from(this.cache.keys())) {
       if (regex.test(key)) {
         this.cache.delete(key);
       }
@@ -111,7 +113,7 @@ export class LRUCache<T = any> {
     const now = Date.now();
     let cleaned = 0;
     
-    for (const [key, entry] of this.cache.entries()) {
+    for (const [key, entry] of Array.from(this.cache.entries())) {
       if (now > entry.expiresAt) {
         this.cache.delete(key);
         cleaned++;

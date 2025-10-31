@@ -138,7 +138,7 @@ export class WorkflowEngine extends EventEmitter {
       userId,
       status: 'running',
       currentStep: 0,
-      totalSteps: workflow.steps.length,
+      totalSteps: (workflow.steps as any[]).length,
     }).returning();
 
     const runId = result[0].id;

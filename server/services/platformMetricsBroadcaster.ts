@@ -3,6 +3,7 @@ import os from 'os';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
+import { healthMonitor } from './healthMonitor';
 
 const execFileAsync = promisify(execFile);
 
@@ -35,6 +36,24 @@ export class PlatformMetricsBroadcaster {
     }
   }
 
+  /**
+   * Broadcast healing event to all connected clients
+   */
+  broadcastHealingEvent(event: any) {
+    if (!this.wss) return;
+    
+    console.log('[PLATFORM-METRICS] Broadcasting healing event:', event.type);
+    
+    this.wss.clients.forEach((client: any) => {
+      if (client.readyState === 1) { // WebSocket.OPEN
+        client.send(JSON.stringify({
+          type: 'platform-healing',
+          ...event,
+        }));
+      }
+    });
+  }
+
   private async broadcastMetrics() {
     try {
       const metrics = await this.collectMetrics();
@@ -49,6 +68,9 @@ export class PlatformMetricsBroadcaster {
           }));
         }
       });
+      
+      // Update health monitor with latest metrics
+      healthMonitor.updateMetrics(metrics);
     } catch (error: any) {
       console.error('[PLATFORM-METRICS] Broadcast error:', error.message);
     }

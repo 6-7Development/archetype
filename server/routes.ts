@@ -157,6 +157,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const { PlatformMetricsBroadcaster } = await import('./services/platformMetricsBroadcaster');
   const metricsBroadcaster = new PlatformMetricsBroadcaster(wss);
   metricsBroadcaster.start();
+  
+  // Connect heal orchestrator to metrics broadcaster for healing event notifications
+  const { healOrchestrator } = await import('./services/healOrchestrator');
+  healOrchestrator.setBroadcaster(metricsBroadcaster);
 
   // Initialize LomuAI job manager with WebSocket support
   const { initializeJobManager } = await import('./services/lomuJobManager');
@@ -351,8 +355,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if user is admin
-      const user = await storage.getUserById(userId);
-      if (!user || !user.isAdmin) {
+      const user = await storage.getUser(userId);
+      if (!user || user.role !== 'admin') {
         return res.status(403).json({ error: 'Admin access required' });
       }
 

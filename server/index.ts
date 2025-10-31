@@ -169,6 +169,14 @@ app.use((req, res, next) => {
     console.log('💡 Auto-healing system DISABLED (development mode - use manual healing)');
   }
 
+  // Start platform health monitor
+  const { healthMonitor } = await import('./services/healthMonitor');
+  await healthMonitor.start();
+
+  // Start heal orchestrator (listens to health monitor events)
+  const { healOrchestrator } = await import('./services/healOrchestrator');
+  await healOrchestrator.start(healthMonitor);
+
   // Check GitHub integration configuration for owner-controlled platform modifications
   console.log('\n🔍 Checking GitHub integration configuration...');
   const requiredEnvVars: string[] = [];

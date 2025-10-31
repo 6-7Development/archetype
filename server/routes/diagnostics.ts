@@ -18,7 +18,7 @@ router.get('/api/diagnostics/health', async (req, res) => {
     res.status(500).json({
       status: 'error',
       message: 'Failed to run diagnostics',
-      error: error.message
+      error: (error as Error).message
     });
   }
 });

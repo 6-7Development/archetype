@@ -28,7 +28,7 @@ export async function runPlatformDiagnostics(): Promise<DiagnosticResult[]> {
       status: 'error',
       category: 'database',
       message: 'Database connection failed',
-      details: { error: error.message }
+      details: { error: (error as Error).message }
     });
   }
 
@@ -47,7 +47,7 @@ export async function runPlatformDiagnostics(): Promise<DiagnosticResult[]> {
       status: 'error',
       category: 'filesystem',
       message: 'File system write permissions failed',
-      details: { error: error.message }
+      details: { error: (error as Error).message }
     });
   }
 

@@ -1,6 +1,6 @@
 import { db } from './db';
 import { sql } from 'drizzle-orm';
-import { users, projects, files, replitIntegrations } from '@shared/schema';
+import { users, projects, files } from '@shared/schema';
 
 export interface TableHealth {
   tableName: string;
@@ -46,13 +46,6 @@ export async function checkDatabaseHealth(): Promise<DatabaseHealth> {
       rowCount: Number(fileCount[0]?.count || 0)
     });
     
-    // Check replitIntegrations table
-    const integrationCount = await db.select({ count: sql`COUNT(*)` }).from(replitIntegrations);
-    tables.push({
-      tableName: 'replitIntegrations',
-      rowCount: Number(integrationCount[0]?.count || 0)
-    });
-    
     // Get PostgreSQL version
     const versionResult = await db.execute(sql`SELECT version()`);
     const version = versionResult.rows[0]?.version || 'Unknown';
@@ -61,20 +54,20 @@ export async function checkDatabaseHealth(): Promise<DatabaseHealth> {
     const sizeResult = await db.execute(sql`
       SELECT pg_database_size(current_database()) as size
     `);
-    const sizeBytes = sizeResult.rows[0]?.size || 0;
+    const sizeBytes = Number(sizeResult.rows[0]?.size || 0);
     const sizeMB = Math.round(sizeBytes / 1024 / 1024);
     
     return {
       connected: true,
       tables,
-      version,
+      version: String(version),
       size: `${sizeMB} MB`
     };
   } catch (error) {
     return {
       connected: false,
       tables: [],
-      error: error.message
+      error: (error as Error).message
     };
   }
 }
@@ -100,7 +93,7 @@ export async function repairDatabase(): Promise<{ success: boolean; message: str
   } catch (error) {
     return {
       success: false,
-      message: `Database repair failed: ${error.message}`
+      message: `Database repair failed: ${(error as Error).message}`
     };
   }
 }

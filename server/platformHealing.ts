@@ -339,6 +339,60 @@ export class PlatformHealingService {
     }
   }
 
+  /**
+   * Manual commit for healing changes after verification passes
+   */
+  async manualCommit(message: string, files: string[]): Promise<{ success: boolean; message: string; commitHash?: string }> {
+    console.log(`[PLATFORM-COMMIT] Committing ${files.length} file(s)...`);
+    
+    if (files.length === 0) {
+      console.log('[PLATFORM-COMMIT] No files to commit, skipping...');
+      return { success: true, message: 'No files to commit' };
+    }
+    
+    try {
+      // Add each file
+      for (const file of files) {
+        try {
+          await execFileAsync('git', ['add', file], { cwd: this.PROJECT_ROOT });
+          console.log(`[PLATFORM-COMMIT] Added file: ${file}`);
+        } catch (addError: any) {
+          console.error(`[PLATFORM-COMMIT] Failed to add file ${file}:`, addError.message);
+        }
+      }
+      
+      // Commit with LomuAI identity
+      try {
+        await execFileAsync('git', [
+          '-c', 'user.name=LomuAI',
+          '-c', 'user.email=lomu-ai@archetype.platform',
+          'commit', '-m', message
+        ], { cwd: this.PROJECT_ROOT });
+        
+        console.log('[PLATFORM-COMMIT] ✅ Commit successful');
+        
+        // Get commit hash
+        const { stdout: commitHash } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: this.PROJECT_ROOT });
+        
+        return { success: true, message: 'Committed successfully', commitHash: commitHash.trim() };
+      } catch (commitError: any) {
+        // Check if error is "nothing to commit" (not a real error)
+        const errorOutput = commitError.stdout || commitError.stderr || '';
+        if (errorOutput.includes('nothing to commit') || errorOutput.includes('no changes added to commit')) {
+          console.log('[PLATFORM-COMMIT] ℹ️  Nothing to commit (clean working tree)');
+          return { success: true, message: 'Nothing to commit (clean working tree)' };
+        }
+        
+        // Real error - propagate it
+        console.error('[PLATFORM-COMMIT] ❌ Commit failed:', commitError.message);
+        throw new Error(`Commit failed: ${commitError.message}`);
+      }
+    } catch (error: any) {
+      console.error('[PLATFORM-COMMIT] Error during commit:', error);
+      throw error;
+    }
+  }
+
   async listPlatformDirectory(directory: string = '.'): Promise<Array<{ name: string; type: 'file' | 'dir' }>> {
     try {
       if (path.isAbsolute(directory)) {
