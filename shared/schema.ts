@@ -1744,3 +1744,76 @@ export const insertProjectSettingsSchema = createInsertSchema(projectSettings).o
 
 export type InsertProjectSettings = z.infer<typeof insertProjectSettingsSchema>;
 export type ProjectSettings = typeof projectSettings.$inferSelect;
+
+// ==================== PLATFORM HEALING TABLES ====================
+// Healing Targets - What can be healed (platform code, user projects, customer projects)
+export const healingTargets = pgTable("healing_targets", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(), // Owner of this target
+  type: text("type").notNull(), // 'platform' | 'user_project' | 'customer_project'
+  name: text("name").notNull(), // Display name
+  projectId: varchar("project_id"), // Link to projects table if user_project
+  customerId: varchar("customer_id"), // Link to users table if customer_project
+  railwayProjectId: text("railway_project_id"), // Railway project ID for deployment
+  repositoryUrl: text("repository_url"), // Git repo URL
+  lastSyncedAt: timestamp("last_synced_at"),
+  status: text("status").notNull().default("active"), // 'active' | 'archived'
+  metadata: jsonb("metadata"), // Additional config
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_healing_targets_user").on(table.userId),
+  index("idx_healing_targets_type").on(table.type),
+]);
+
+export const insertHealingTargetSchema = createInsertSchema(healingTargets).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertHealingTarget = z.infer<typeof insertHealingTargetSchema>;
+export type HealingTarget = typeof healingTargets.$inferSelect;
+
+// Healing Conversations - Persistent chat sessions
+export const healingConversations = pgTable("healing_conversations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  targetId: varchar("target_id").notNull(), // Link to healingTargets
+  userId: varchar("user_id").notNull(),
+  title: text("title").notNull().default("New Healing Session"),
+  status: text("status").notNull().default("active"), // 'active' | 'completed' | 'paused'
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_healing_conversations_target").on(table.targetId),
+  index("idx_healing_conversations_user").on(table.userId),
+]);
+
+export const insertHealingConversationSchema = createInsertSchema(healingConversations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertHealingConversation = z.infer<typeof insertHealingConversationSchema>;
+export type HealingConversation = typeof healingConversations.$inferSelect;
+
+// Healing Messages - Chat history
+export const healingMessages = pgTable("healing_messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  conversationId: varchar("conversation_id").notNull(),
+  role: text("role").notNull(), // 'user' | 'assistant' | 'system'
+  content: text("content").notNull(),
+  metadata: jsonb("metadata"), // Tool calls, diffs, etc.
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_healing_messages_conversation").on(table.conversationId),
+]);
+
+export const insertHealingMessageSchema = createInsertSchema(healingMessages).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertHealingMessage = z.infer<typeof insertHealingMessageSchema>;
+export type HealingMessage = typeof healingMessages.$inferSelect;

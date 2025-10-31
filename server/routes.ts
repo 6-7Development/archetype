@@ -19,6 +19,7 @@ import { registerChatRoutes } from "./routes/chat";
 import { registerSubscriptionRoutes } from "./routes/subscriptions";
 import { registerAdminRoutes } from "./routes/admin";
 import { registerOwnerSetupRoutes } from "./routes/owner-setup";
+import { registerHealingRoutes } from "./routes/healing";
 import { setupWebSocket } from "./routes/websocket";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -182,6 +183,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerProjectRoutes(app);
   registerFileRoutes(app);
   registerChatRoutes(app, { wss });
+  registerHealingRoutes(app);
 
   // ==================== MOUNT EXISTING ROUTERS ====================
   

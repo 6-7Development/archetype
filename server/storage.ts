@@ -47,6 +47,12 @@ import {
   type InsertLomuAITask,
   type UserAvatarState,
   type InsertUserAvatarState,
+  type HealingTarget,
+  type InsertHealingTarget,
+  type HealingConversation,
+  type InsertHealingConversation,
+  type HealingMessage,
+  type InsertHealingMessage,
   users,
   files,
   chatMessages,
@@ -77,7 +83,10 @@ import {
   serviceProgressLogs,
   satisfactionSurveys,
   maintenanceMode,
-  userAvatarState
+  userAvatarState,
+  healingTargets,
+  healingConversations,
+  healingMessages
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, isNull, sql } from "drizzle-orm";
@@ -268,6 +277,21 @@ export interface IStorage {
   createProjectSnapshot(projectId: string, userId: string, label: string, description?: string): Promise<ProjectVersion>;
   getProjectSnapshots(projectId: string, userId: string): Promise<ProjectVersion[]>;
   rollbackToSnapshot(projectId: string, snapshotId: string, userId: string): Promise<void>;
+  
+  // Healing Target operations
+  getHealingTargets(userId: string): Promise<HealingTarget[]>;
+  getHealingTarget(id: string, userId: string): Promise<HealingTarget | undefined>;
+  createHealingTarget(target: InsertHealingTarget & { userId: string }): Promise<HealingTarget>;
+  
+  // Healing Conversation operations
+  getHealingConversations(targetId: string, userId: string): Promise<HealingConversation[]>;
+  getHealingConversation(id: string): Promise<HealingConversation | undefined>;
+  createHealingConversation(conversation: InsertHealingConversation & { userId: string }): Promise<HealingConversation>;
+  updateHealingConversation(id: string, updates: Partial<HealingConversation>): Promise<HealingConversation>;
+  
+  // Healing Message operations
+  getHealingMessages(conversationId: string): Promise<HealingMessage[]>;
+  createHealingMessage(message: InsertHealingMessage): Promise<HealingMessage>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2456,6 +2480,76 @@ export class DatabaseStorage implements IStorage {
       categoryBreakdown,
       ratingDistribution,
     };
+  }
+
+  // Healing Target methods
+  async getHealingTargets(userId: string): Promise<HealingTarget[]> {
+    return await db
+      .select()
+      .from(healingTargets)
+      .where(eq(healingTargets.userId, userId))
+      .orderBy(desc(healingTargets.updatedAt));
+  }
+
+  async getHealingTarget(id: string, userId: string): Promise<HealingTarget | undefined> {
+    const [target] = await db
+      .select()
+      .from(healingTargets)
+      .where(and(eq(healingTargets.id, id), eq(healingTargets.userId, userId)));
+    return target || undefined;
+  }
+
+  async createHealingTarget(target: InsertHealingTarget & { userId: string }): Promise<HealingTarget> {
+    const [created] = await db.insert(healingTargets).values(target).returning();
+    return created;
+  }
+
+  // Healing Conversation methods
+  async getHealingConversations(targetId: string, userId: string): Promise<HealingConversation[]> {
+    return await db
+      .select()
+      .from(healingConversations)
+      .where(and(eq(healingConversations.targetId, targetId), eq(healingConversations.userId, userId)))
+      .orderBy(desc(healingConversations.updatedAt));
+  }
+
+  async getHealingConversation(id: string): Promise<HealingConversation | undefined> {
+    const [conversation] = await db
+      .select()
+      .from(healingConversations)
+      .where(eq(healingConversations.id, id));
+    return conversation || undefined;
+  }
+
+  async createHealingConversation(conversation: InsertHealingConversation & { userId: string }): Promise<HealingConversation> {
+    const [created] = await db.insert(healingConversations).values(conversation).returning();
+    return created;
+  }
+
+  async updateHealingConversation(id: string, updates: Partial<HealingConversation>): Promise<HealingConversation> {
+    const [updated] = await db
+      .update(healingConversations)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(healingConversations.id, id))
+      .returning();
+    if (!updated) {
+      throw new Error('Conversation not found');
+    }
+    return updated;
+  }
+
+  // Healing Message methods
+  async getHealingMessages(conversationId: string): Promise<HealingMessage[]> {
+    return await db
+      .select()
+      .from(healingMessages)
+      .where(eq(healingMessages.conversationId, conversationId))
+      .orderBy(healingMessages.createdAt);
+  }
+
+  async createHealingMessage(message: InsertHealingMessage): Promise<HealingMessage> {
+    const [created] = await db.insert(healingMessages).values(message).returning();
+    return created;
   }
 }
 
