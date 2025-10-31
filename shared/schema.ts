@@ -171,6 +171,9 @@ export const platformHealingSessions = pgTable("platform_healing_sessions", {
   commitHash: varchar("commit_hash"),
   deploymentId: varchar("deployment_id"),
   deploymentStatus: text("deployment_status"), // 'pending', 'deploying', 'success', 'failed'
+  deploymentUrl: text("deployment_url"), // Production deployment URL
+  deploymentStartedAt: timestamp("deployment_started_at"),
+  deploymentCompletedAt: timestamp("deployment_completed_at"),
   
   // AI metadata
   tokensUsed: integer("tokens_used").default(0),

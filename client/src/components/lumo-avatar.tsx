@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 import lumoImageSrc from "@assets/image_1761786985510.png";
 import { backgroundThemes, getAutoTheme, type BackgroundTheme } from "./lumo-background-themes";
 
-type EmotionState = "happy" | "sad" | "worried" | "excited" | "thinking" | "working" | "success" | "error" | "idle";
+export type EmotionState = "happy" | "sad" | "worried" | "excited" | "thinking" | "working" | "success" | "error" | "idle";
 
-interface LumoAvatarProps {
+export interface LumoAvatarProps {
   emotion?: EmotionState;
   size?: "small" | "medium" | "large";
   showBackground?: boolean;

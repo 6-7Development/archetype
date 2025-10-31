@@ -11,14 +11,35 @@ import type { PlatformMetricsBroadcaster } from './platformMetricsBroadcaster';
  * 
  * Consumes incidents from healthMonitor and triggers automated healing.
  * Tracks healing sessions and coordinates the fix loop.
+ * 
+ * Safety Guards:
+ * - Kill-switch: Disable auto-healing after 3 consecutive failures
+ * - Rate limiting: Max 3 healing sessions per hour
+ * - Audit trail: All attempts logged to platformHealAttempts
+ * - Rollback: Automatic rollback on verification or deployment failure
  */
 export class HealOrchestrator extends EventEmitter {
   private isHealing: boolean = false;
   private currentSessionId: string | null = null;
   private broadcaster: PlatformMetricsBroadcaster | null = null;
   
+  // Safety Guards
+  private killSwitchActive: boolean = false;
+  private killSwitchUntil: Date | null = null;
+  private consecutiveFailures: number = 0;
+  private readonly MAX_CONSECUTIVE_FAILURES = 3;
+  private readonly KILL_SWITCH_DURATION_MS = 60 * 60 * 1000; // 1 hour
+  
+  // Rate Limiting
+  private healingSessionTimestamps: Date[] = [];
+  private readonly MAX_SESSIONS_PER_HOUR = 3;
+  private readonly RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+  
   constructor() {
     super();
+    
+    // Periodic cleanup of old session timestamps
+    setInterval(() => this.cleanupOldTimestamps(), 5 * 60 * 1000); // Every 5 minutes
   }
   
   /**
@@ -118,6 +139,32 @@ export class HealOrchestrator extends EventEmitter {
     
     console.log(`[HEAL-ORCHESTRATOR] 🚨 Handling incident: ${incident.type} (${incidentId})`);
     
+    // SAFETY GUARD: Check kill-switch status
+    if (this.killSwitchActive && this.killSwitchUntil) {
+      if (new Date() < this.killSwitchUntil) {
+        const minutesRemaining = Math.ceil((this.killSwitchUntil.getTime() - Date.now()) / 60000);
+        console.log(`[HEAL-ORCHESTRATOR] ⛔ Kill-switch active (${minutesRemaining} min remaining)`);
+        console.log('[HEAL-ORCHESTRATOR] Auto-healing disabled due to consecutive failures');
+        return;
+      } else {
+        // Kill-switch expired, reset
+        console.log('[HEAL-ORCHESTRATOR] ✅ Kill-switch expired, re-enabling auto-healing');
+        this.killSwitchActive = false;
+        this.killSwitchUntil = null;
+        this.consecutiveFailures = 0;
+      }
+    }
+    
+    // SAFETY GUARD: Check rate limiting
+    this.cleanupOldTimestamps();
+    if (this.healingSessionTimestamps.length >= this.MAX_SESSIONS_PER_HOUR) {
+      console.log(`[HEAL-ORCHESTRATOR] ⏱️ Rate limit reached: ${this.healingSessionTimestamps.length}/${this.MAX_SESSIONS_PER_HOUR} sessions in last hour`);
+      const oldestSession = this.healingSessionTimestamps[0];
+      const minutesUntilReset = Math.ceil((oldestSession.getTime() + this.RATE_LIMIT_WINDOW_MS - Date.now()) / 60000);
+      console.log(`[HEAL-ORCHESTRATOR] Wait ${minutesUntilReset} minutes before next healing session`);
+      return;
+    }
+    
     // Check if we're already healing something
     if (this.isHealing) {
       console.log('[HEAL-ORCHESTRATOR] Already healing another incident, queuing...');
@@ -134,9 +181,43 @@ export class HealOrchestrator extends EventEmitter {
       return;
     }
     
+    // Record session timestamp for rate limiting
+    this.healingSessionTimestamps.push(new Date());
+    
     // Start healing
     this.isHealing = true;
     await this.startHealingSession(incidentId, incident);
+  }
+  
+  /**
+   * Clean up old session timestamps (older than 1 hour)
+   */
+  private cleanupOldTimestamps(): void {
+    const cutoff = Date.now() - this.RATE_LIMIT_WINDOW_MS;
+    this.healingSessionTimestamps = this.healingSessionTimestamps.filter(
+      timestamp => timestamp.getTime() > cutoff
+    );
+  }
+  
+  /**
+   * Activate kill-switch after consecutive failures
+   */
+  private activateKillSwitch(): void {
+    this.killSwitchActive = true;
+    this.killSwitchUntil = new Date(Date.now() + this.KILL_SWITCH_DURATION_MS);
+    console.log(`[HEAL-ORCHESTRATOR] ⛔ KILL-SWITCH ACTIVATED`);
+    console.log(`[HEAL-ORCHESTRATOR] Auto-healing disabled until ${this.killSwitchUntil.toISOString()}`);
+    console.log(`[HEAL-ORCHESTRATOR] Reason: ${this.consecutiveFailures} consecutive failures`);
+    
+    // Broadcast kill-switch activation
+    if (this.broadcaster) {
+      this.broadcaster.broadcastHealingEvent({
+        type: 'kill-switch-activated',
+        consecutiveFailures: this.consecutiveFailures,
+        disabledUntil: this.killSwitchUntil.toISOString(),
+        message: `⛔ Auto-healing disabled for 1 hour due to ${this.consecutiveFailures} consecutive failures`,
+      });
+    }
   }
   
   /**
@@ -222,54 +303,95 @@ export class HealOrchestrator extends EventEmitter {
               console.log('[HEAL-ORCHESTRATOR] Commit hash:', commitResult.commitHash);
             }
             
-            // Update session as success
-            await db
-              .update(platformHealingSessions)
-              .set({
-                phase: 'complete',
-                status: 'success',
-                diagnosisNotes: healingResult.diagnosis,
-                proposedFix: healingResult.fixApplied,
-                filesChanged: healingResult.filesModified,
-                verificationResults: verification.results,
-                verificationPassed: true,
-                completedAt: new Date(),
-              })
-              .where(eq(platformHealingSessions.id, session.id));
+            // DEPLOYMENT TRACKING: Trigger deployment if in production or ENABLE_DEPLOY_ON_HEAL is set
+            const shouldDeploy = process.env.NODE_ENV === 'production' || process.env.ENABLE_DEPLOY_ON_HEAL === 'true';
             
-            // Update incident as resolved
-            await db
-              .update(platformIncidents)
-              .set({
-                status: 'resolved',
-                resolvedAt: new Date(),
-                rootCause: healingResult.diagnosis,
-                fixDescription: healingResult.fixApplied,
-              })
-              .where(eq(platformIncidents.id, incidentId));
-            
-            // Broadcast success
-            if (this.broadcaster) {
-              this.broadcaster.broadcastHealingEvent({
-                type: 'healing-complete',
+            if (shouldDeploy) {
+              console.log('[HEAL-ORCHESTRATOR] 🚀 Initiating deployment...');
+              
+              // Update session to deploy phase
+              await db
+                .update(platformHealingSessions)
+                .set({
+                  phase: 'deploy',
+                  commitHash: commitResult.commitHash || undefined,
+                  deploymentStatus: 'deploying',
+                  deploymentStartedAt: new Date(),
+                })
+                .where(eq(platformHealingSessions.id, session.id));
+              
+              // Broadcast deployment start
+              if (this.broadcaster) {
+                this.broadcaster.broadcastDeploymentStatus({
+                  sessionId: session.id,
+                  incidentId,
+                  deploymentStatus: 'deploying',
+                  timestamp: new Date().toISOString(),
+                });
+              }
+              
+              // NOTE: Actual deployment happens via Railway/Render auto-deploy on git push
+              // They will send a webhook to /api/webhooks/deployment with the status
+              console.log('[HEAL-ORCHESTRATOR] Waiting for deployment webhook...');
+              console.log('[HEAL-ORCHESTRATOR] Session will be updated when deployment completes');
+            } else {
+              // No deployment needed (development mode) - mark as complete
+              await db
+                .update(platformHealingSessions)
+                .set({
+                  phase: 'complete',
+                  status: 'success',
+                  diagnosisNotes: healingResult.diagnosis,
+                  proposedFix: healingResult.fixApplied,
+                  filesChanged: healingResult.filesModified,
+                  verificationResults: verification.results,
+                  verificationPassed: true,
+                  commitHash: commitResult.commitHash || undefined,
+                  completedAt: new Date(),
+                })
+                .where(eq(platformHealingSessions.id, session.id));
+              
+              // Update incident as resolved
+              await db
+                .update(platformIncidents)
+                .set({
+                  status: 'resolved',
+                  resolvedAt: new Date(),
+                  rootCause: healingResult.diagnosis,
+                  fixDescription: healingResult.fixApplied,
+                  commitHash: commitResult.commitHash || undefined,
+                })
+                .where(eq(platformIncidents.id, incidentId));
+              
+              // Reset consecutive failures on success
+              this.consecutiveFailures = 0;
+              
+              // Broadcast success
+              if (this.broadcaster) {
+                this.broadcaster.broadcastHealingEvent({
+                  type: 'healing-complete',
+                  incidentId,
+                  sessionId: session.id,
+                  incident: { type: incident.type, title: incident.title },
+                  result: 'success',
+                  message: `✅ Auto-fixed ${incident.type}: ${incident.title}`,
+                });
+              }
+              
+              this.emit('healing-complete', {
                 incidentId,
                 sessionId: session.id,
-                incident: { type: incident.type, title: incident.title },
-                result: 'success',
-                message: `✅ Auto-fixed ${incident.type}: ${incident.title}`,
+                result: healingResult,
               });
             }
-            
-            this.emit('healing-complete', {
-              incidentId,
-              sessionId: session.id,
-              result: healingResult,
-            });
             
           } catch (commitError) {
             // Only rollback on REAL commit errors
             console.error('[HEAL-ORCHESTRATOR] Commit failed with error:', commitError);
             verification.passed = false; // Treat as verification failure
+            
+            // Increment consecutive failures
+            this.consecutiveFailures++;
           }
         }
         
@@ -277,7 +399,18 @@ export class HealOrchestrator extends EventEmitter {
           // Verification FAILED - rollback changes
           console.error('[HEAL-ORCHESTRATOR] ❌ Verification failed, rolling back changes...');
           
-          // Revert files (use git checkout or restore from backup)
+          // AUDIT TRAIL: Log failed attempt
+          await db
+            .update(platformHealAttempts)
+            .set({
+              success: false,
+              verificationPassed: false,
+              error: 'Verification failed: ' + JSON.stringify(verification.results),
+              completedAt: new Date(),
+            })
+            .where(eq(platformHealAttempts.sessionId, session.id));
+          
+          // ROLLBACK: Revert files (use git checkout or restore from backup)
           try {
             const { exec } = await import('child_process');
             const { promisify } = await import('util');
@@ -304,6 +437,14 @@ export class HealOrchestrator extends EventEmitter {
             })
             .where(eq(platformHealingSessions.id, session.id));
           
+          // Increment consecutive failures
+          this.consecutiveFailures++;
+          
+          // Check if we should activate kill-switch
+          if (this.consecutiveFailures >= this.MAX_CONSECUTIVE_FAILURES) {
+            this.activateKillSwitch();
+          }
+          
           // Keep incident open for retry
           console.log('[HEAL-ORCHESTRATOR] Incident remains open for retry');
         }
@@ -318,6 +459,24 @@ export class HealOrchestrator extends EventEmitter {
             completedAt: new Date(),
           })
           .where(eq(platformHealingSessions.id, session.id));
+        
+        // AUDIT TRAIL: Log failed attempt
+        await db
+          .update(platformHealAttempts)
+          .set({
+            success: false,
+            error: healingResult.error,
+            completedAt: new Date(),
+          })
+          .where(eq(platformHealAttempts.sessionId, session.id));
+        
+        // Increment consecutive failures
+        this.consecutiveFailures++;
+        
+        // Check if we should activate kill-switch
+        if (this.consecutiveFailures >= this.MAX_CONSECUTIVE_FAILURES) {
+          this.activateKillSwitch();
+        }
         
         console.log('[HEAL-ORCHESTRATOR] ❌ Healing failed:', healingResult.error);
       }

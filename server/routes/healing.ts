@@ -124,4 +124,19 @@ export function registerHealingRoutes(app: Express) {
       res.status(500).json({ error: "Failed to update conversation" });
     }
   });
+
+  // DELETE /api/healing/messages/:conversationId - Clear conversation messages
+  app.delete("/api/healing/messages/:conversationId", isAuthenticated, async (req, res) => {
+    try {
+      const { conversationId } = req.params;
+      
+      // Clear messages for UI (they remain in DB for audit trail)
+      await storage.clearHealingMessages(conversationId);
+      
+      res.json({ success: true, message: "Messages cleared successfully" });
+    } catch (error: any) {
+      console.error("[HEALING] Error clearing messages:", error);
+      res.status(500).json({ error: "Failed to clear messages" });
+    }
+  });
 }

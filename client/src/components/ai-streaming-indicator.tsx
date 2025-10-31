@@ -10,7 +10,7 @@ interface AiStreamingIndicatorProps {
   currentStep: number;
   totalSteps: number;
   fullMessage: string;
-  showTeachingEmojis?: boolean; // For SySop teaching context only
+  showTeachingEmojis?: boolean; // For Lomu teaching context only
 }
 
 export function AiStreamingIndicator({

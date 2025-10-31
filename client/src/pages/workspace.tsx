@@ -502,12 +502,12 @@ export default function Workspace() {
           </div>
         )}
 
-        {/* CENTER-LEFT: AI Chat (SySop) - Always Visible */}
+        {/* CENTER-LEFT: AI Chat (Lomu) - Always Visible */}
         <div className="w-80 border-r flex flex-col bg-card">
           <div className="h-9 flex items-center px-3 border-b">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-pulse" />
-              <span className="text-xs font-semibold">AI Agent (SySop)</span>
+              <span className="text-xs font-semibold">AI Agent (Lomu)</span>
             </div>
           </div>
           <div className="flex-1 min-h-0 overflow-hidden">
@@ -533,9 +533,9 @@ export default function Workspace() {
               <div className="h-full flex items-center justify-center">
                 <div className="text-center">
                   <Code2 className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-                  <h2 className="text-base font-semibold mb-1.5">Welcome to Archetype</h2>
+                  <h2 className="text-base font-semibold mb-1.5">Welcome to Lomu</h2>
                   <p className="text-xs text-muted-foreground">Select or create a file to start coding</p>
-                  <p className="text-xs text-muted-foreground mt-1">Ask SySop on the left to generate code!</p>
+                  <p className="text-xs text-muted-foreground mt-1">Ask Lomu on the left to generate code!</p>
                 </div>
               </div>
             )}
@@ -657,7 +657,7 @@ export default function Workspace() {
         </div>
         <div className="flex items-center gap-3">
           <span>{files.length} files</span>
-          <span>Archetype IDE</span>
+          <span>Lomu IDE</span>
         </div>
       </footer>
     </div>

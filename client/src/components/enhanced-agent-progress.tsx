@@ -48,7 +48,7 @@ interface EnhancedAgentProgressProps {
   onStop?: () => void;
   metrics?: WorkMetrics;
   showMetrics?: boolean;
-  showTeachingEmojis?: boolean; // For SySop teaching context only
+  showTeachingEmojis?: boolean; // For Lomu teaching context only
 }
 
 export function EnhancedAgentProgress({ 
@@ -127,7 +127,7 @@ export function EnhancedAgentProgress({
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
             )}
             <span className="font-semibold text-sm">
-              {isWorking ? "🧠 SySop is teaching and building..." : "✅ Task Complete"}
+              {isWorking ? "🧠 Lomu is teaching and building..." : "✅ Task Complete"}
             </span>
           </div>
           

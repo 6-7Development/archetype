@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { Send, Square, ChevronDown, ChevronRight, Shield, Zap, Brain, Infinity, Rocket, User, Copy, Check, Loader2, XCircle, FileCode, Terminal, CheckCircle, Clock, Upload, X, File, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LomuAvatar } from "@/components/lomu-avatar";
+import { LumoAvatar } from "@/components/lumo-avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -202,6 +202,49 @@ function AttachmentPreview({ attachment, onRemove }: { attachment: Attachment; o
       )}
     </div>
   );
+}
+
+// Helper function to determine avatar emotion based on message state
+function getAvatarEmotion(
+  message: Message,
+  isStreaming: boolean,
+  progressStatus: 'thinking' | 'working' | 'vibing' | 'idle'
+): "happy" | "sad" | "worried" | "excited" | "thinking" | "working" | "success" | "error" | "idle" {
+  // Check if message indicates an error
+  if (message.content && (
+    message.content.toLowerCase().includes('error') ||
+    message.content.toLowerCase().includes('failed') ||
+    message.content.toLowerCase().includes('something went wrong')
+  )) {
+    return "error";
+  }
+
+  // Check if message indicates success
+  if (message.content && (
+    message.content.toLowerCase().includes('✅') ||
+    message.content.toLowerCase().includes('success') ||
+    message.content.toLowerCase().includes('completed') ||
+    message.content.toLowerCase().includes('done!')
+  )) {
+    return "success";
+  }
+
+  // If currently streaming, use the progress status
+  if (message.isStreaming || isStreaming) {
+    switch (progressStatus) {
+      case 'thinking':
+        return "thinking";
+      case 'working':
+        return "working";
+      case 'vibing':
+        return "excited";
+      default:
+        return "thinking";
+    }
+  }
+
+  // Default to happy for normal messages
+  return "happy";
 }
 
 export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }: LomuAiChatProps) {
@@ -862,7 +905,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                 <h4 className="text-sm md:text-lg text-muted-foreground mb-2 md:mb-3 px-2">Autonomous Platform Assistant</h4>
                 <p className="text-xs md:text-base text-muted-foreground max-w-md mx-auto leading-relaxed px-4">
                   I'm an autonomous platform healing agent. I can diagnose and fix issues 
-                  with the Archetype platform itself. Tell me what needs to be fixed.
+                  with the Lomu platform itself. Tell me what needs to be fixed.
                 </p>
                 <div className="mt-2 md:mt-4 text-xs md:text-sm text-muted-foreground px-2">
                   💡 Tip: You can upload images, paste screenshots, or attach code/logs
@@ -881,7 +924,10 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
               >
                 {message.role === "assistant" && (
                   <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 flex items-center justify-center" data-testid="avatar-lomu-assistant">
-                    <LomuAvatar size="medium" expression="default" />
+                    <LumoAvatar 
+                      size="small" 
+                      emotion={getAvatarEmotion(message, isStreaming && message.id === streamingMessageId, progressStatus)} 
+                    />
                   </div>
                 )}
                 

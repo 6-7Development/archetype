@@ -224,7 +224,7 @@ export default function APIKeysPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">
-                Upgrade your plan to create and manage API keys for programmatic access to Archetype.
+                Upgrade your plan to create and manage API keys for programmatic access to Lomu.
               </p>
               <Button data-testid="button-upgrade-for-api-keys">
                 Upgrade to Pro
@@ -324,7 +324,7 @@ export default function APIKeysPage() {
                 </p>
                 <pre className="bg-muted p-3 rounded-md text-sm font-mono overflow-x-auto">
                   {`curl -H "Authorization: Bearer YOUR_API_KEY" \\
-  https://api.archetype.dev/v1/generate`}
+  https://api.lomu.dev/v1/generate`}
                 </pre>
               </div>
               <div>

@@ -13,8 +13,8 @@ import {
 
 /**
  * Live Platform Preview
- * Shows the running Archetype platform in an iframe
- * Updates in real-time as SySop makes changes
+ * Shows the running Lomu platform in an iframe
+ * Updates in real-time as LomuAI makes changes
  */
 
 interface PlatformPreviewProps {

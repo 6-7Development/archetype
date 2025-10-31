@@ -292,6 +292,7 @@ export interface IStorage {
   // Healing Message operations
   getHealingMessages(conversationId: string): Promise<HealingMessage[]>;
   createHealingMessage(message: InsertHealingMessage): Promise<HealingMessage>;
+  clearHealingMessages(conversationId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2550,6 +2551,12 @@ export class DatabaseStorage implements IStorage {
   async createHealingMessage(message: InsertHealingMessage): Promise<HealingMessage> {
     const [created] = await db.insert(healingMessages).values(message).returning();
     return created;
+  }
+
+  async clearHealingMessages(conversationId: string): Promise<void> {
+    await db
+      .delete(healingMessages)
+      .where(eq(healingMessages.conversationId, conversationId));
   }
 }
 

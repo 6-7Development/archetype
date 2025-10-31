@@ -3,7 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Send, Loader2, User, Key, AlertCircle, Square, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LomuAvatar } from "@/components/lomu-avatar";
+import { LumoAvatar } from "@/components/lumo-avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,6 +59,51 @@ interface SecretsRequest {
 interface AIChatProps {
   onProjectGenerated?: (result: any) => void;
   currentProjectId?: string | null;
+}
+
+// Helper function to determine avatar emotion based on message state
+function getAvatarEmotion(
+  message: Message,
+  isGenerating: boolean,
+  progressStatus: 'thinking' | 'working' | 'vibing' | 'idle'
+): "happy" | "sad" | "worried" | "excited" | "thinking" | "working" | "success" | "error" | "idle" {
+  // Check if message indicates an error
+  if (message.content && (
+    message.content.toLowerCase().includes('error') ||
+    message.content.toLowerCase().includes('failed') ||
+    message.content.toLowerCase().includes('oops') ||
+    message.content.toLowerCase().includes('something went wrong')
+  )) {
+    return "error";
+  }
+
+  // Check if message indicates success
+  if (message.content && (
+    message.content.toLowerCase().includes('✅') ||
+    message.content.toLowerCase().includes('success') ||
+    message.content.toLowerCase().includes('completed') ||
+    message.content.toLowerCase().includes('great!') ||
+    message.content.toLowerCase().includes('done!')
+  )) {
+    return "success";
+  }
+
+  // If currently generating/streaming
+  if (isGenerating) {
+    switch (progressStatus) {
+      case 'thinking':
+        return "thinking";
+      case 'working':
+        return "working";
+      case 'vibing':
+        return "excited";
+      default:
+        return "thinking";
+    }
+  }
+
+  // Default to happy for normal messages
+  return "happy";
 }
 
 export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
@@ -194,10 +239,10 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
 
   // Check for quickstart prompt from onboarding
   useEffect(() => {
-    const quickstartPrompt = localStorage.getItem('archetype_ai_prompt');
+    const quickstartPrompt = localStorage.getItem('lomu_ai_prompt');
     if (quickstartPrompt) {
       setInput(quickstartPrompt);
-      localStorage.removeItem('archetype_ai_prompt');
+      localStorage.removeItem('lomu_ai_prompt');
     }
   }, []);
 
@@ -341,7 +386,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       return await apiRequest("POST", "/api/commands", data);
     },
     onSuccess: (data, variables) => {
-      // Check if SySop is requesting secrets
+      // Check if LomuAI is requesting secrets
       if (data.needsSecrets) {
         setSecretsRequest({
           commandId: data.commandId,
@@ -900,7 +945,10 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
             >
               {message.role === "assistant" && (
                 <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center" data-testid="avatar-assistant">
-                  <LomuAvatar size="medium" expression="default" />
+                  <LumoAvatar 
+                    size="small" 
+                    emotion={getAvatarEmotion(message, isGenerating, progressStatus)} 
+                  />
                 </div>
               )}
 
@@ -973,7 +1021,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
           {chatMutation.isPending && streamState.fullMessage && (
             <div className="flex gap-3 items-start">
               <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center" data-testid="avatar-streaming">
-                <LomuAvatar size="medium" expression="happy" />
+                <LumoAvatar size="medium" emotion="happy" />
               </div>
               <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-[hsl(220,70%,60%)] shadow-sm">
                 <div className="prose prose-invert max-w-none">
@@ -987,7 +1035,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
           {chatMutation.isPending && !streamState.fullMessage && (
             <div className="flex gap-3 items-start">
               <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center" data-testid="avatar-thinking">
-                <LomuAvatar size="medium" expression="default" />
+                <LumoAvatar size="medium" emotion="idle" />
               </div>
               <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-[hsl(220,70%,60%)] shadow-sm">
                 <div className="flex items-center gap-2 text-sm text-white/70">

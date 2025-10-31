@@ -185,7 +185,7 @@ export default function UsageDashboard() {
           <div className="rounded-lg bg-green-50 dark:bg-green-950 p-3">
             <p className="text-sm text-green-800 dark:text-green-200">
               ✓ <strong>No hidden fees.</strong> You'll always see the cost before building. 
-              Unlike Replit's surprise $2,000 Agent bills, Archetype shows transparent pricing.
+              Unlike Replit's surprise $2,000 Agent bills, Lomu shows transparent pricing.
             </p>
           </div>
         </CardContent>

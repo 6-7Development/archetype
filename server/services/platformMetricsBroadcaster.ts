@@ -54,6 +54,30 @@ export class PlatformMetricsBroadcaster {
     });
   }
 
+  /**
+   * Broadcast deployment status to all connected clients
+   */
+  broadcastDeploymentStatus(event: {
+    sessionId: string;
+    incidentId: string;
+    deploymentStatus: string;
+    deploymentUrl?: string;
+    timestamp: string;
+  }) {
+    if (!this.wss) return;
+    
+    console.log('[PLATFORM-METRICS] Broadcasting deployment status:', event.deploymentStatus);
+    
+    this.wss.clients.forEach((client: any) => {
+      if (client.readyState === 1) { // WebSocket.OPEN
+        client.send(JSON.stringify({
+          type: 'deployment-status',
+          ...event,
+        }));
+      }
+    });
+  }
+
   private async broadcastMetrics() {
     try {
       const metrics = await this.collectMetrics();

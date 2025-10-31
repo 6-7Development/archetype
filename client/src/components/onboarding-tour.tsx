@@ -12,7 +12,7 @@ interface OnboardingTourProps {
 
 const steps = [
   {
-    title: "Welcome to Archetype",
+    title: "Welcome to Lomu",
     description: "Your AI-powered development platform for building professional web applications instantly.",
     icon: Sparkles,
     features: [
@@ -24,7 +24,7 @@ const steps = [
   },
   {
     title: "Start Building",
-    description: "Use the Build tab to chat with SySop AI and generate your first project.",
+    description: "Use the Build tab to chat with Lomu AI and generate your first project.",
     icon: Code,
     features: [
       'Try: "Build a modern landing page"',
@@ -50,7 +50,7 @@ const steps = [
     icon: Rocket,
     features: [
       "Choose a template below",
-      "Or chat with SySop AI",
+      "Or chat with Lomu AI",
       "Build anything you can imagine",
       "Deploy in minutes, not days"
     ]
@@ -105,7 +105,7 @@ export function OnboardingTour({ onComplete }: OnboardingTourProps) {
   };
 
   const handleTemplateSelect = (template: typeof quickstartTemplates[0]) => {
-    localStorage.setItem('archetype_quickstart_prompt', template.prompt);
+    localStorage.setItem('lomu_quickstart_prompt', template.prompt);
     onComplete();
   };
 

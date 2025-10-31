@@ -21,6 +21,7 @@ import { registerAdminRoutes } from "./routes/admin";
 import { registerOwnerSetupRoutes } from "./routes/owner-setup";
 import { registerHealingRoutes } from "./routes/healing";
 import { setupWebSocket } from "./routes/websocket";
+import webhooksRouter, { setWebhookBroadcaster } from "./routes/webhooks";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // ==================== HEALTH & DIAGNOSTICS ====================
@@ -162,6 +163,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Connect heal orchestrator to metrics broadcaster for healing event notifications
   const { healOrchestrator } = await import('./services/healOrchestrator');
   healOrchestrator.setBroadcaster(metricsBroadcaster);
+  
+  // Connect webhooks router to metrics broadcaster for deployment status broadcasting
+  setWebhookBroadcaster(metricsBroadcaster);
+  console.log('[WEBHOOKS] Webhooks router connected to metrics broadcaster');
 
   // Initialize LomuAI job manager with WebSocket support
   const { initializeJobManager } = await import('./services/lomuJobManager');
@@ -198,6 +203,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Mount LomuAI chat router (chat-based platform healing)
   app.use('/api/lomuai', lomuAIChatRouter);
+  
+  // Mount webhooks router (deployment status from Railway/Render)
+  app.use('/api/webhooks', webhooksRouter);
+  console.log('[WEBHOOKS] Webhooks router mounted at /api/webhooks');
 
   // ==================== PLATFORM PREVIEW ROUTES ====================
   

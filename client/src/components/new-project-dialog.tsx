@@ -99,7 +99,7 @@ export function NewProjectDialog({ open, onOpenChange }: NewProjectDialogProps) 
               Create New Project
             </DialogTitle>
             <DialogDescription>
-              Start a new AI-powered project. Give it a name and SySop will help you build it.
+              Start a new AI-powered project. Give it a name and Lomu will help you build it.
             </DialogDescription>
           </DialogHeader>
 

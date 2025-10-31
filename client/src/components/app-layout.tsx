@@ -54,12 +54,6 @@ const mainNavItems = [
     path: "/marketplace",
     testId: "nav-marketplace",
   },
-  {
-    label: "Agent Features",
-    icon: Zap,
-    path: "/agent-features",
-    testId: "nav-agent-features",
-  },
 ];
 
 const platformNavItems = [
@@ -68,6 +62,12 @@ const platformNavItems = [
     icon: Sparkles,
     path: "/analytics",
     testId: "nav-analytics",
+  },
+  {
+    label: "Publishing",
+    icon: Zap,
+    path: "/publishing",
+    testId: "nav-publishing",
   },
   {
     label: "Team",

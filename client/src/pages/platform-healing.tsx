@@ -6,12 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { AdminGuard } from '@/components/admin-guard';
-import { LomuAvatar } from '@/components/lomu-avatar';
+import { LumoAvatar } from '@/components/lumo-avatar';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Send, Upload, Rocket, Plus, Loader2, Database, Activity, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Send, Upload, Rocket, Plus, Loader2, Database, Activity, AlertCircle, CheckCircle, RefreshCw, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatDistanceToNow } from 'date-fns';
 
 interface HealingTarget {
   id: string;
@@ -37,6 +39,41 @@ interface HealingMessage {
   createdAt: string;
 }
 
+// Helper function to determine avatar emotion based on message state
+function getAvatarEmotion(
+  message: HealingMessage,
+  isStreaming: boolean
+): "happy" | "sad" | "worried" | "excited" | "thinking" | "working" | "success" | "error" | "idle" {
+  // Check if message indicates an error
+  if (message.content && (
+    message.content.toLowerCase().includes('error') ||
+    message.content.toLowerCase().includes('failed') ||
+    message.content.toLowerCase().includes('oops') ||
+    message.content.toLowerCase().includes('something went wrong')
+  )) {
+    return "error";
+  }
+
+  // Check if message indicates success
+  if (message.content && (
+    message.content.toLowerCase().includes('✅') ||
+    message.content.toLowerCase().includes('success') ||
+    message.content.toLowerCase().includes('completed') ||
+    message.content.toLowerCase().includes('fixed') ||
+    message.content.toLowerCase().includes('done!')
+  )) {
+    return "success";
+  }
+
+  // If currently streaming, show thinking
+  if (isStreaming) {
+    return "working";
+  }
+
+  // Default to happy for normal messages
+  return "happy";
+}
+
 function PlatformHealingContent() {
   const { toast } = useToast();
   const [targetId, setTargetId] = useState<string | null>(null);
@@ -47,6 +84,97 @@ function PlatformHealingContent() {
   const [streamingContent, setStreamingContent] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  
+  // Deployment and healing status tracking
+  const [deploymentStatus, setDeploymentStatus] = useState<{
+    sessionId?: string;
+    status?: 'deploying' | 'success' | 'failed';
+    url?: string;
+  }>({});
+  const [healingSessions, setHealingSessions] = useState<any[]>([]);
+  
+  // WebSocket connection for real-time deployment and healing updates
+  useEffect(() => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}`;
+    const ws = new WebSocket(wsUrl);
+    
+    ws.onopen = () => {
+      console.log('[PLATFORM-HEALING] WebSocket connected for deployment updates');
+    };
+    
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        // Handle deployment status updates
+        if (data.type === 'deployment-status') {
+          console.log('[PLATFORM-HEALING] Deployment status update:', data);
+          setDeploymentStatus({
+            sessionId: data.sessionId,
+            status: data.deploymentStatus,
+            url: data.deploymentUrl,
+          });
+          
+          // Show toast notification
+          if (data.deploymentStatus === 'deploying') {
+            toast({
+              title: '🚀 Deployment Started',
+              description: 'Deploying fix to production...',
+            });
+          } else if (data.deploymentStatus === 'success') {
+            toast({
+              title: '✅ Deployment Successful',
+              description: data.deploymentUrl ? `Live at ${data.deploymentUrl}` : 'Fix deployed successfully',
+            });
+          } else if (data.deploymentStatus === 'failed') {
+            toast({
+              title: '❌ Deployment Failed',
+              description: 'Fix could not be deployed. Check logs for details.',
+              variant: 'destructive',
+            });
+          }
+        }
+        
+        // Handle healing event updates
+        if (data.type === 'platform-healing') {
+          console.log('[PLATFORM-HEALING] Healing event:', data);
+          
+          if (data.type === 'healing-complete') {
+            toast({
+              title: '✅ Auto-Healing Complete',
+              description: data.message || 'Platform issue fixed automatically',
+            });
+            
+            // Refresh healing sessions list
+            queryClient.invalidateQueries({ queryKey: ['/api/platform/healing/sessions'] });
+          }
+          
+          if (data.type === 'kill-switch-activated') {
+            toast({
+              title: '⛔ Auto-Healing Disabled',
+              description: data.message || 'Auto-healing disabled due to consecutive failures',
+              variant: 'destructive',
+            });
+          }
+        }
+      } catch (error) {
+        console.error('[PLATFORM-HEALING] WebSocket message parse error:', error);
+      }
+    };
+    
+    ws.onerror = (error) => {
+      console.error('[PLATFORM-HEALING] WebSocket error:', error);
+    };
+    
+    ws.onclose = () => {
+      console.log('[PLATFORM-HEALING] WebSocket disconnected');
+    };
+    
+    return () => {
+      ws.close();
+    };
+  }, [toast]);
 
   // Load healing targets
   const { data: targets, isLoading: targetsLoading } = useQuery<HealingTarget[]>({
@@ -70,7 +198,7 @@ function PlatformHealingContent() {
   });
 
   // Load messages for selected conversation
-  const { data: loadedMessages } = useQuery<HealingMessage[]>({
+  const { data: loadedMessages, isLoading: messagesLoading } = useQuery<HealingMessage[]>({
     queryKey: ['/api/healing/messages', conversationId],
     enabled: !!conversationId,
     queryFn: async () => {
@@ -137,6 +265,26 @@ function PlatformHealingContent() {
     onError: (error: any) => {
       toast({
         title: 'Failed to create conversation',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Clear conversation mutation
+  const clearConversationMutation = useMutation({
+    mutationFn: async () => {
+      if (!conversationId) throw new Error('No conversation selected');
+      return await apiRequest('DELETE', `/api/healing/messages/${conversationId}`);
+    },
+    onSuccess: () => {
+      setMessages([]);
+      queryClient.invalidateQueries({ queryKey: ['/api/healing/messages', conversationId] });
+      toast({ title: 'Chat cleared', description: 'Conversation history has been cleared' });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Failed to clear chat',
         description: error.message,
         variant: 'destructive',
       });
@@ -361,16 +509,59 @@ function PlatformHealingContent() {
 
         {/* New Conversation Button */}
         {targetId && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => createConversationMutation.mutate()}
-            disabled={createConversationMutation.isPending}
-            data-testid="button-new-conversation"
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            <span className="hidden sm:inline">New</span>
-          </Button>
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => createConversationMutation.mutate()}
+              disabled={createConversationMutation.isPending}
+              data-testid="button-new-conversation"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              <span className="hidden sm:inline">New</span>
+            </Button>
+
+            {/* Clear Chat Button with Confirmation */}
+            {conversationId && messages.length > 0 && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    data-testid="button-clear-chat"
+                  >
+                    <Trash2 className="w-4 h-4 sm:mr-1" />
+                    <span className="hidden sm:inline">Clear</span>
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Clear Chat History?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will clear all messages from this conversation. The history will still be saved in the database for audit purposes, but it won't be visible in the UI.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel data-testid="button-cancel-clear">Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => clearConversationMutation.mutate()}
+                      disabled={clearConversationMutation.isPending}
+                      data-testid="button-confirm-clear"
+                    >
+                      {clearConversationMutation.isPending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Clearing...
+                        </>
+                      ) : (
+                        'Clear Chat'
+                      )}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </>
         )}
 
         <div className="ml-auto flex items-center gap-2">
@@ -400,7 +591,7 @@ function PlatformHealingContent() {
           // Empty state
           <div className="h-full flex items-center justify-center p-4">
             <div className="text-center max-w-md">
-              <LomuAvatar expression="default" size="large" className="mx-auto mb-4" />
+              <LumoAvatar emotion="idle" size="large" className="mx-auto mb-4" />
               <h2 className="text-xl font-semibold mb-2">Welcome to Platform Healing</h2>
               <p className="text-muted-foreground mb-4">
                 Select a target to start a conversation with Lomu, your AI healing assistant.
@@ -421,14 +612,24 @@ function PlatformHealingContent() {
                   className="flex-1 overflow-y-auto p-4 space-y-4"
                   data-testid="chat-messages"
                 >
-                  {messages.length === 0 && !isStreaming && (
+                  {/* Loading state */}
+                  {messagesLoading && (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin text-muted-foreground mr-2" />
+                      <p className="text-sm text-muted-foreground">Loading conversation...</p>
+                    </div>
+                  )}
+
+                  {/* Empty state */}
+                  {!messagesLoading && messages.length === 0 && !isStreaming && (
                     <div className="text-center text-muted-foreground py-8">
-                      <LomuAvatar expression="happy" size="medium" className="mx-auto mb-3" />
+                      <LumoAvatar emotion="happy" size="medium" className="mx-auto mb-3" />
                       <p>Hi! I'm Lomu. Ask me anything about this target.</p>
                     </div>
                   )}
 
-                  {messages.map((msg, idx) => (
+                  {/* Messages */}
+                  {!messagesLoading && messages.map((msg, idx) => (
                     <div
                       key={msg.id || idx}
                       className={cn(
@@ -437,17 +638,32 @@ function PlatformHealingContent() {
                       )}
                     >
                       {msg.role === 'assistant' && (
-                        <LomuAvatar expression="happy" size="small" className="flex-shrink-0" />
+                        <LumoAvatar 
+                          emotion={getAvatarEmotion(msg, isStreaming)} 
+                          size="small" 
+                          className="flex-shrink-0" 
+                        />
                       )}
-                      <div
-                        className={cn(
-                          'max-w-[80%] rounded-lg px-4 py-2',
-                          msg.role === 'user'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted'
-                        )}
-                      >
-                        <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                      <div className="flex flex-col gap-1 max-w-[80%]">
+                        <div
+                          className={cn(
+                            'rounded-lg px-4 py-2',
+                            msg.role === 'user'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted'
+                          )}
+                        >
+                          <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                        </div>
+                        {/* Timestamp */}
+                        <p 
+                          className={cn(
+                            "text-xs text-muted-foreground",
+                            msg.role === 'user' ? 'text-right' : 'text-left'
+                          )}
+                        >
+                          {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -455,7 +671,7 @@ function PlatformHealingContent() {
                   {/* Streaming message */}
                   {isStreaming && streamingContent && (
                     <div className="flex gap-3 justify-start">
-                      <LomuAvatar expression="default" size="small" className="flex-shrink-0" />
+                      <LumoAvatar emotion="idle" size="small" className="flex-shrink-0" />
                       <div className="max-w-[80%] rounded-lg px-4 py-2 bg-muted">
                         <p className="text-sm whitespace-pre-wrap">{streamingContent}</p>
                       </div>
@@ -465,7 +681,7 @@ function PlatformHealingContent() {
                   {/* Typing indicator */}
                   {isStreaming && !streamingContent && (
                     <div className="flex gap-3 justify-start">
-                      <LomuAvatar expression="default" size="small" className="flex-shrink-0" />
+                      <LumoAvatar emotion="idle" size="small" className="flex-shrink-0" />
                       <div className="max-w-[80%] rounded-lg px-4 py-2 bg-muted">
                         <p className="text-sm text-muted-foreground">Lomu is working...</p>
                       </div>

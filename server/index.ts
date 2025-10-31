@@ -162,11 +162,22 @@ app.use((req, res, next) => {
     // Continue - graceful degradation will handle missing database
   }
 
-  // Initialize auto-healing system (production only for safety)
-  if (process.env.NODE_ENV === 'production') {
-    console.log('🔧 Auto-healing system ENABLED (production mode)');
+  // Initialize auto-healing system (production or development with opt-in)
+  const autoHealingEnabled = 
+    process.env.NODE_ENV === 'production' || 
+    process.env.ENABLE_AUTO_HEALING === 'true';
+  
+  if (autoHealingEnabled) {
+    console.log('🔧 Auto-healing system ENABLED');
+    console.log('   ⚡ Kill-switch: Disabled after 3 consecutive failures (1 hour cooldown)');
+    console.log('   ⏱️ Rate limit: Max 3 healing sessions per hour');
+    console.log('   📋 Audit trail: All attempts logged to platformHealAttempts');
+    console.log('   🔄 Rollback: Automatic rollback on verification/deployment failure');
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('   ⚠️ DEVELOPMENT MODE: Use ENABLE_AUTO_HEALING=true for testing');
+    }
   } else {
-    console.log('💡 Auto-healing system DISABLED (development mode - use manual healing)');
+    console.log('💡 Auto-healing system DISABLED (development mode - use ENABLE_AUTO_HEALING=true to enable)');
   }
 
   // Start platform health monitor

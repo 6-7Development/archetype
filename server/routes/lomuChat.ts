@@ -490,13 +490,13 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
   if (!message || typeof message !== 'string') {
     console.log('[LOMU-AI-CHAT] ERROR: Message validation failed');
-    return res.status(400).json({ error: 'Message is required' });
+    return res.status(400).json({ error: 'Oops! I need a message to help you. What would you like me to work on?' });
   }
 
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   if (!anthropicKey) {
     console.log('[LOMU-AI-CHAT] ERROR: No Anthropic API key');
-    return res.status(503).json({ error: 'Anthropic API key not configured' });
+    return res.status(503).json({ error: 'Hmm, my AI brain isn\'t connected yet. The Anthropic API key needs to be configured. Could you set it up in your environment variables?' });
   }
 
   // Prevent concurrent streams per user
@@ -504,7 +504,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
   if (activeStreams.has(activeStreamsKey)) {
     console.log('[LOMU-AI-CHAT] Concurrent stream detected for user:', userId);
     return res.status(429).json({
-      error: 'A LomuAI stream is already active. Please wait for it to complete.'
+      error: 'Hey! I\'m already working on something for you. Let me finish that first, then I\'ll be ready for the next task! 🍋'
     });
   }
   activeStreams.add(activeStreamsKey);
@@ -2250,7 +2250,7 @@ User: "${message}"`;
 
     // Save error message to DB
     try {
-      const errorMsg = `❌ Error: ${error.message}`;
+      const errorMsg = `Oops! Something went wrong: ${error.message}. Don't worry, I'm on it! Let me try a different approach. 🍋`;
       const [errorAssistantMsg] = await db.insert(chatMessages).values({
         userId,
         projectId: null,
@@ -2261,11 +2261,11 @@ User: "${message}"`;
       }).returning();
       
       // Send error and done events, then close stream
-      terminateStream(errorAssistantMsg.id, error.message);
+      terminateStream(errorAssistantMsg.id, `Oops! ${error.message}. Let me try again!`);
     } catch (dbError: any) {
       // If we can't save to DB, at least send done event with generic ID
       console.error('[LOMU-AI-CHAT] Failed to save error message:', dbError);
-      terminateStream('error-' + Date.now(), error.message);
+      terminateStream('error-' + Date.now(), `Something went sideways, but I'm still here to help!`);
     }
   } finally {
     // Remove from active streams

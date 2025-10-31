@@ -127,59 +127,59 @@ export function getSystemPrompt(userMessage: string, isSimpleTask: boolean): str
 export const ERROR_MESSAGES = {
   // File operation errors
   fileNotFound: (path: string) => 
-    `Hmm, I couldn't find "${path}". It might have been moved or renamed. Want me to search for it?`,
+    `Hmm, I couldn't find "${path}". It might have been moved or renamed. Want me to search for it? 🔍`,
   
   fileReadError: (path: string) => 
-    `Oops! I ran into trouble reading "${path}". The file might be locked or have permission issues. Let me try a different approach.`,
+    `Oops! I had trouble reading "${path}". Don't worry though, let me try a different way to access it.`,
   
   fileWriteError: (path: string) => 
-    `I couldn't write to "${path}". This usually means permissions are restricted. Let me see if there's another way to make this change.`,
+    `I couldn't save changes to "${path}". This sometimes happens with permissions. Let me see if there's another way we can make this work!`,
   
   // Tool errors
   toolCallFailed: (toolName: string, error: string) => 
-    `Hmm, my ${toolName} tool hit a snag: ${error}. No worries, let me try a different approach!`,
+    `My ${toolName} tool hit a little snag. No big deal - let me try a different approach!`,
   
   // API errors
   anthropicKeyMissing: () => 
-    `Uh oh! I need my Anthropic API key to work, but it's not configured. Can you add ANTHROPIC_API_KEY to your environment variables?`,
+    `Oops! I need my Anthropic API key to work my magic, but it's not set up. Could you add it as ANTHROPIC_API_KEY in your environment? I'll be ready to go once that's there! ✨`,
   
   // Architecture errors
   architectRejection: (reason: string) => 
-    `I AM (the code reviewer) flagged an issue with my approach: ${reason}. Let me rethink this and come up with a better solution!`,
+    `I AM (our code reviewer) suggested I rethink my approach: "${reason}". Good catch! Let me come up with something better.`,
   
   noArchitectApproval: (file: string) => 
-    `Hold on! I need to get I AM's approval before modifying "${file}". Let me consult with them first to make sure my approach is solid.`,
+    `Hold on a sec! I need to check in with I AM before modifying "${file}" - they help me make sure I'm following best practices. Be right back!`,
   
   // Task management errors
   taskListCreationFailed: (error: string) => 
-    `I ran into trouble creating the task list: ${error}. Don't worry, I can still work on your request, but you won't see the live progress updates.`,
+    `I had trouble creating the visual task list, but don't worry - I can still work on your request! You just won't see the step-by-step updates this time.`,
   
   taskUpdateFailed: (taskId: string, error: string) => 
-    `Couldn't update task "${taskId}": ${error}. The work is still happening behind the scenes though!`,
+    `Couldn't update the task display, but the work is still happening behind the scenes! Everything's going smoothly.`,
   
   // Git/GitHub errors
   gitNotAvailable: () => 
-    `Git isn't available in this environment (probably because we're in production). Changes will go through the GitHub API instead!`,
+    `Git isn't available here (we're in production mode), so I'll use the GitHub API directly. Same result, just a different path! 🚀`,
   
   commitFailed: (error: string) => 
-    `I couldn't commit the changes: ${error}. Let me save them locally and we can figure out the deployment separately.`,
+    `I couldn't commit the changes to GitHub. Let me save them locally for now, and we can sort out the deployment in a moment.`,
   
   pushFailed: (error: string) => 
-    `The commit worked, but pushing to GitHub failed: ${error}. The changes are safe locally, but they won't auto-deploy yet.`,
+    `The commit worked great, but pushing to GitHub hit a hiccup. The changes are safe though! Let me try again in a sec.`,
   
   // General errors
   unexpectedError: (context: string, error: string) => 
-    `Well, this is unexpected! Something went wrong with ${context}: ${error}. But don't worry, I'm on it!`,
+    `Well, that's unexpected! Something went sideways, but I'm on it. Give me a moment to figure out what happened.`,
   
   timeout: () => 
-    `Whoa, that took way longer than expected! The connection might have timed out. Want me to try again?`,
+    `Whoa, that took longer than expected! The connection might have timed out. Want me to give it another shot?`,
   
   // Validation errors
   invalidInput: (field: string) => 
-    `Hmm, the ${field} doesn't look quite right. Can you double-check that for me?`,
+    `Hmm, the ${field} doesn't look quite right. Mind double-checking that for me?`,
   
   missingRequired: (field: string) => 
-    `I need the ${field} to proceed. Could you provide that?`,
+    `I need the ${field} to move forward. Could you provide that? Thanks! 🙏`,
 };
 
 // ============================================================================
@@ -189,65 +189,65 @@ export const ERROR_MESSAGES = {
 export const PROGRESS_MESSAGES = {
   // Starting work
   starting: (task: string) => 
-    `Alright, starting work on ${task}! 🚀`,
+    `Alright, let's do this! Starting work on ${task}! 🚀`,
   
   // Reading files
   readingFile: (path: string) => 
-    `📖 Reading ${path} to understand what's going on...`,
+    `📖 Taking a look at ${path} to see what's going on...`,
   
   analyzingCode: () => 
-    `🔍 Analyzing the code... looking for the root cause...`,
+    `🔍 Analyzing the code to find the root cause...`,
   
   // Making changes
   writingFile: (path: string) => 
-    `✏️ Making changes to ${path}...`,
+    `✏️ Working my magic on ${path}...`,
   
   updatingMultipleFiles: (count: number) => 
-    `✨ Updating ${count} files to fix this...`,
+    `✨ Updating ${count} files to get this sorted...`,
   
   // Consulting architect
   consultingArchitect: () => 
-    `🏗️ Checking in with I AM for code review...`,
+    `🏗️ Checking in with I AM for a quick code review...`,
   
   architectApproved: () => 
-    `✅ I AM approved my approach! Proceeding with the changes...`,
+    `✅ I AM gave the thumbs up! Moving forward with the changes...`,
   
   // Task management
   creatingTaskList: (title: string) => 
-    `📋 Creating task list: "${title}"...`,
+    `📋 Breaking this down: "${title}"...`,
   
   taskStarted: (title: string) => 
-    `🔧 Starting: ${title}`,
+    `🔧 Working on: ${title}`,
   
   taskCompleted: (title: string) => 
-    `✅ Done: ${title}`,
+    `✅ Completed: ${title}`,
   
   // Git operations
   creatingBackup: () => 
-    `💾 Creating a backup before making changes...`,
+    `💾 Creating a safety backup before we start...`,
   
   backupCreated: () => 
-    `✅ Backup created! If anything goes wrong, we can roll back.`,
+    `✅ Backup is ready! We can roll back if anything goes sideways.`,
   
   committingChanges: () => 
-    `📦 Committing changes to GitHub...`,
+    `📦 Saving these changes to GitHub...`,
   
   pushing: () => 
-    `🚀 Pushing to GitHub (this will trigger auto-deployment to Railway)...`,
+    `🚀 Pushing to GitHub - this will auto-deploy to Railway...`,
   
   deployed: () => 
-    `🎉 Changes deployed! Railway is building now (takes ~2-3 minutes).`,
+    `🎉 Changes are live! Railway is building right now (usually takes 2-3 minutes).`,
   
   // Completion
   allDone: () => 
-    `🎉 All done! Everything's deployed and looking good.`,
+    `🎉 All done! Everything's deployed and running smoothly.`,
   
   // Waiting/thinking
   thinking: () => 
-    `🤔 Thinking about the best approach...`,
+    `🤔 Hmm, let me think about the best way to tackle this...`,
   
   working: (iteration: number, max: number) => 
-    `⚙️ Working on it (step ${iteration}/${max})...`,
+    `⚙️ Making progress (step ${iteration} of ${max})...`,
 };
 
 // ============================================================================
