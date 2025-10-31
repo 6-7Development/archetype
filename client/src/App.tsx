@@ -30,10 +30,6 @@ import Publishing from "@/pages/publishing";
 import PlatformHealing from "@/pages/platform-healing";
 import AgentFeatures from "@/pages/agent-features";
 import Setup from "@/pages/setup";
-import LogoPreview from "@/pages/logo-preview";
-import LogoShowcaseSimple from "@/pages/logo-showcase-simple";
-import PremiumLogoShowcase from "@/pages/premium-logo-showcase";
-import FinalLogoShowcase from "@/pages/final-logo-showcase";
 import NotFound from "@/pages/not-found";
 import Error403 from "@/pages/error-403";
 import Error500 from "@/pages/error-500";
@@ -176,12 +172,6 @@ function Router() {
       
       {/* Setup page - no layout needed */}
       <Route path="/setup" component={Setup} />
-      
-      {/* Logo Preview - no layout needed */}
-      <Route path="/logo-preview" component={LogoPreview} />
-      <Route path="/logos" component={LogoShowcaseSimple} />
-      <Route path="/premium-logos" component={PremiumLogoShowcase} />
-      <Route path="/final-logos" component={FinalLogoShowcase} />
       
       {/* Error pages */}
       <Route path="/error/403" component={Error403} />

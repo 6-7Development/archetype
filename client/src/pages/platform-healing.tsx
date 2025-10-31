@@ -132,7 +132,7 @@ function PlatformHealingContent() {
 
   // Fetch pending changes
   const { data: pendingChangesData, isLoading: pendingChangesLoading, refetch: refetchPendingChanges } = useQuery<any>({
-    queryKey: ['/api/meta-sysop/pending-changes'],
+    queryKey: ['/api/lomuai/pending-changes'],
     refetchInterval: 5000,
   });
 
@@ -150,7 +150,7 @@ function PlatformHealingContent() {
         timestamp: new Date() 
       }]);
 
-      const response = await fetch('/api/meta-sysop/stream', {
+      const response = await fetch('/api/lomuai/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -278,7 +278,7 @@ function PlatformHealingContent() {
   // Approve changes mutation
   const approveMutation = useMutation({
     mutationFn: async (messageId: string) => {
-      return await apiRequest('POST', `/api/meta-sysop/approve/${messageId}`, {
+      return await apiRequest('POST', `/api/lomuai/approve/${messageId}`, {
         sessionId: currentSessionId, // Pass sessionId to wire up the approval
       });
     },
@@ -306,7 +306,7 @@ function PlatformHealingContent() {
   // Reject changes mutation
   const rejectMutation = useMutation({
     mutationFn: async (messageId: string) => {
-      return await apiRequest('POST', `/api/meta-sysop/reject/${messageId}`, {
+      return await apiRequest('POST', `/api/lomuai/reject/${messageId}`, {
         sessionId: currentSessionId,
       });
     },
@@ -331,7 +331,7 @@ function PlatformHealingContent() {
   // Deploy All mutation - batch commit all pending changes
   const deployAllMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest('POST', '/api/meta-sysop/deploy-all', {});
+      return await apiRequest('POST', '/api/lomuai/deploy-all', {});
     },
     onSuccess: (result: any) => {
       refetchPendingChanges();
@@ -353,7 +353,7 @@ function PlatformHealingContent() {
   // Discard All mutation - clear all pending changes
   const discardAllMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest('DELETE', '/api/meta-sysop/discard-changes', {});
+      return await apiRequest('DELETE', '/api/lomuai/discard-changes', {});
     },
     onSuccess: () => {
       refetchPendingChanges();

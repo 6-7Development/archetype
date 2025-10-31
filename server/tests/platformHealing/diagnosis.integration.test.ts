@@ -6,7 +6,7 @@
  * - Falls back to GitHub source when needed
  * - Handles edge cases gracefully
  * 
- * Run with: npm run test:meta-sysop
+ * Run with: npm run test:lomuai
  * Or: tsx server/tests/platformHealing/diagnosis.integration.test.ts
  */
 

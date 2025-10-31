@@ -11,7 +11,7 @@ interface Deployment {
   shortHash: string;
   message: string;
   author: string;
-  authorType: 'meta-sysop' | 'manual';
+  authorType: 'lomuai' | 'manual';
   timestamp: string;
   url: string;
 }
@@ -139,11 +139,11 @@ export function DeploymentStatusWidget({ floating = false, onClose }: Deployment
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <Badge 
-                        variant={latest.authorType === 'meta-sysop' ? 'default' : 'secondary'}
+                        variant={latest.authorType === 'lomuai' ? 'default' : 'secondary'}
                         className="text-xs shrink-0"
                         data-testid={`badge-author-${latest.authorType}`}
                       >
-                        {latest.authorType === 'meta-sysop' ? (
+                        {latest.authorType === 'lomuai' ? (
                           <>
                             <Bot className="h-3 w-3 mr-1" />
                             LomuAI
@@ -192,10 +192,10 @@ export function DeploymentStatusWidget({ floating = false, onClose }: Deployment
                   >
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                       <Badge 
-                        variant={deployment.authorType === 'meta-sysop' ? 'default' : 'secondary'}
+                        variant={deployment.authorType === 'lomuai' ? 'default' : 'secondary'}
                         className="text-xs shrink-0"
                       >
-                        {deployment.authorType === 'meta-sysop' ? (
+                        {deployment.authorType === 'lomuai' ? (
                           <Bot className="h-3 w-3" />
                         ) : (
                           <User className="h-3 w-3" />

@@ -45,7 +45,7 @@ const activePRs = new Map<string, PRMetadata>();
 
 export class PlatformHealingService {
   private readonly PROJECT_ROOT = PROJECT_ROOT;
-  private readonly BACKUP_BRANCH_PREFIX = 'backup/lomu-ai-';
+  private readonly BACKUP_BRANCH_PREFIX = 'backup/lomuai-';
   
   constructor() {
     // Log PROJECT_ROOT for debugging
@@ -916,11 +916,11 @@ export class PlatformHealingService {
 
   async addPendingChange(userId: string, change: { path: string; operation: 'create' | 'modify' | 'delete'; oldContent?: string; newContent: string }): Promise<void> {
     const { db } = await import('./db');
-    const { metaSysopSessions } = await import('@shared/schema');
+    const { lomuSessions } = await import('@shared/schema');
     const { eq } = await import('drizzle-orm');
 
     try {
-      const [session] = await db.select().from(metaSysopSessions).where(eq(metaSysopSessions.userId, userId)).limit(1);
+      const [session] = await db.select().from(lomuSessions).where(eq(lomuSessions.userId, userId)).limit(1);
 
       if (session) {
         const pendingChanges = session.pendingChanges || [];
@@ -932,11 +932,11 @@ export class PlatformHealingService {
           pendingChanges.push(change);
         }
 
-        await db.update(metaSysopSessions)
+        await db.update(lomuSessions)
           .set({ pendingChanges, lastUpdated: new Date() })
-          .where(eq(metaSysopSessions.userId, userId));
+          .where(eq(lomuSessions.userId, userId));
       } else {
-        await db.insert(metaSysopSessions).values({
+        await db.insert(lomuSessions).values({
           userId,
           pendingChanges: [change],
         });
@@ -951,11 +951,11 @@ export class PlatformHealingService {
 
   async getPendingChanges(userId: string): Promise<Array<{ path: string; operation: 'create' | 'modify' | 'delete'; oldContent?: string; newContent: string }>> {
     const { db } = await import('./db');
-    const { metaSysopSessions } = await import('@shared/schema');
+    const { lomuSessions } = await import('@shared/schema');
     const { eq } = await import('drizzle-orm');
 
     try {
-      const [session] = await db.select().from(metaSysopSessions).where(eq(metaSysopSessions.userId, userId)).limit(1);
+      const [session] = await db.select().from(lomuSessions).where(eq(lomuSessions.userId, userId)).limit(1);
       return session?.pendingChanges || [];
     } catch (error: any) {
       console.error('[SESSION] Failed to get pending changes:', error);
@@ -965,7 +965,7 @@ export class PlatformHealingService {
 
   async deployAllChanges(userId: string): Promise<{ success: boolean; message: string; commitHash?: string; commitUrl?: string; filesDeployed: number }> {
     const { db } = await import('./db');
-    const { metaSysopSessions } = await import('@shared/schema');
+    const { lomuSessions } = await import('@shared/schema');
     const { eq } = await import('drizzle-orm');
 
     try {
@@ -999,7 +999,7 @@ export class PlatformHealingService {
 
         const result = await githubService.commitFiles(filesToCommit, commitMessage);
 
-        await db.delete(metaSysopSessions).where(eq(metaSysopSessions.userId, userId));
+        await db.delete(lomuSessions).where(eq(lomuSessions.userId, userId));
 
         return {
           success: true,
@@ -1020,7 +1020,7 @@ export class PlatformHealingService {
           }
         }
 
-        await db.delete(metaSysopSessions).where(eq(metaSysopSessions.userId, userId));
+        await db.delete(lomuSessions).where(eq(lomuSessions.userId, userId));
 
         return {
           success: true,
@@ -1036,11 +1036,11 @@ export class PlatformHealingService {
 
   async discardPendingChanges(userId: string): Promise<void> {
     const { db } = await import('./db');
-    const { metaSysopSessions } = await import('@shared/schema');
+    const { lomuSessions } = await import('@shared/schema');
     const { eq } = await import('drizzle-orm');
 
     try {
-      await db.delete(metaSysopSessions).where(eq(metaSysopSessions.userId, userId));
+      await db.delete(lomuSessions).where(eq(lomuSessions.userId, userId));
       console.log(`[SESSION] Discarded pending changes for user ${userId}`);
     } catch (error: any) {
       console.error('[SESSION] Failed to discard pending changes:', error);

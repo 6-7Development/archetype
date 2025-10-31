@@ -15,7 +15,7 @@ import * as path from 'path';
 
 const router = Router();
 
-// Get Meta-SySop chat history
+// Get LomuAI chat history
 router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
     const userId = req.authenticatedUserId;
@@ -33,12 +33,12 @@ router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
 
     res.json({ messages });
   } catch (error: any) {
-    console.error('[META-SYSOP-CHAT] Error loading history:', error);
+    console.error('[LOMUAI-CHAT] Error loading history:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Stream Meta-SySop chat response
+// Stream LomuAI chat response
 router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
     const { message, autoCommit = false, autoPush = false } = req.body;
@@ -80,10 +80,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // Create backup before any changes (non-blocking - continue even if it fails)
     let backup: any = null;
     try {
-      backup = await platformHealing.createBackup(`Meta-SySop session: ${message.slice(0, 50)}`);
+      backup = await platformHealing.createBackup(`LomuAI session: ${message.slice(0, 50)}`);
       sendEvent('progress', { message: 'Backup created successfully' });
     } catch (backupError: any) {
-      console.warn('[META-SYSOP-CHAT] Backup creation failed (non-critical):', backupError.message);
+      console.warn('[LOMUAI-CHAT] Backup creation failed (non-critical):', backupError.message);
       sendEvent('progress', { message: 'Proceeding without backup (production mode)' });
     }
 
@@ -114,7 +114,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       content: message,
     });
 
-    const systemPrompt = `You are Meta-SySop - AUTONOMOUS platform maintenance AI. You FIX issues immediately without endless analysis.
+    const systemPrompt = `You are LomuAI - AUTONOMOUS platform maintenance AI. You FIX issues immediately without endless analysis.
 
 ⚠️  ANTI-LOOP RULE: If you've already said "let me check" or "let me implement" MORE THAN ONCE, STOP ANALYZING and START EXECUTING TOOL CALLS NOW!
 
@@ -385,7 +385,7 @@ EXECUTE NOW - Create tasks, read files, get approval, write files, deploy. 3 tur
               
               const result = await createTaskList({
                 userId,
-                projectId: undefined, // Meta-SySop works on platform, not user projects
+                projectId: undefined, // LomuAI works on platform, not user projects
                 chatMessageId: userMsg.id,
                 title: typedInput.title,
                 description: typedInput.description,
@@ -447,17 +447,17 @@ EXECUTE NOW - Create tasks, read files, get approval, write files, deploy. 3 tur
               
               if (!approval) {
                 toolResult = `❌ BLOCKED: File "${normalizedPath}" has no architect approval. You must consult I AM (architect_consult) and get explicit approval for this file.`;
-                console.error(`[META-SYSOP] Blocked writePlatformFile for ${normalizedPath} - no approval found`);
+                console.error(`[LOMUAI] Blocked writePlatformFile for ${normalizedPath} - no approval found`);
                 sendEvent('error', { message: `File write blocked - no approval for ${normalizedPath}` });
               } else if (!approval.approved) {
                 toolResult = `❌ BLOCKED: I AM rejected changes to "${normalizedPath}". You cannot proceed with this file modification.`;
-                console.error(`[META-SYSOP] Blocked writePlatformFile for ${normalizedPath} - approval was rejected`);
+                console.error(`[LOMUAI] Blocked writePlatformFile for ${normalizedPath} - approval was rejected`);
                 sendEvent('error', { message: `File write blocked - ${normalizedPath} was rejected` });
               } else {
-                console.log(`[META-SYSOP] writePlatformFile called for: ${normalizedPath}`);
-                console.log(`[META-SYSOP] Content type: ${typeof typedInput.content}`);
-                console.log(`[META-SYSOP] Content defined: ${typedInput.content !== undefined}`);
-                console.log(`[META-SYSOP] Content length: ${typedInput.content?.length || 0} bytes`);
+                console.log(`[LOMUAI] writePlatformFile called for: ${normalizedPath}`);
+                console.log(`[LOMUAI] Content type: ${typeof typedInput.content}`);
+                console.log(`[LOMUAI] Content defined: ${typedInput.content !== undefined}`);
+                console.log(`[LOMUAI] Content length: ${typedInput.content?.length || 0} bytes`);
                 
                 sendEvent('progress', { message: `✅ Modifying ${normalizedPath} (I AM approved)...` });
                 await platformHealing.writePlatformFile(normalizedPath, typedInput.content);
@@ -523,7 +523,7 @@ EXECUTE NOW - Create tasks, read files, get approval, write files, deploy. 3 tur
                 maxResults: typedInput.maxResults || 5
               });
               
-              // Format results for Meta-SySop (using 'content' field from API)
+              // Format results for LomuAI (using 'content' field from API)
               toolResult = `Search Results:\n${searchResult.results.map((r: any) => 
                 `• ${r.title}\n  ${r.url}\n  ${r.content}\n`
               ).join('\n')}`;
@@ -653,7 +653,7 @@ EXECUTE NOW - Create tasks, read files, get approval, write files, deploy. 3 tur
         sendEvent('error', { 
           message: `❌ AUTO-COMMIT BLOCKED: ${unapprovedFiles.length} file(s) lack I AM approval: ${unapprovedFiles.join(', ')}` 
         });
-        console.error('[META-SYSOP] Blocked auto-commit - unapproved files:', unapprovedFiles);
+        console.error('[LOMUAI] Blocked auto-commit - unapproved files:', unapprovedFiles);
         
         if (backup?.id) {
           await platformHealing.rollback(backup.id);
@@ -691,7 +691,7 @@ EXECUTE NOW - Create tasks, read files, get approval, write files, deploy. 3 tur
     await platformAudit.log({
       userId,
       action: 'heal',
-      description: `Meta-SySop chat: ${message.slice(0, 100)}`,
+      description: `LomuAI chat: ${message.slice(0, 100)}`,
       changes: fileChanges,
       backupId: backup?.id || null,
       commitHash,
@@ -701,7 +701,7 @@ EXECUTE NOW - Create tasks, read files, get approval, write files, deploy. 3 tur
     sendEvent('done', { messageId: assistantMsg.id, commitHash, filesChanged: fileChanges.length });
     res.end();
   } catch (error: any) {
-    console.error('[META-SYSOP-CHAT] Stream error:', error);
+    console.error('[LOMUAI-CHAT] Stream error:', error);
     const errorMessage = JSON.stringify({ type: 'error', message: error.message });
     res.write(`data: ${errorMessage}\n\n`);
     res.end();

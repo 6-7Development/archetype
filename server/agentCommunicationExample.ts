@@ -167,7 +167,7 @@ export async function exampleMetaSySopIntegration(
   healingRequest: string
 ) {
   // 1. Broadcast that LomuAI is analyzing the platform
-  broadcastAgentStatus(wss, 'meta-sysop', {
+  broadcastAgentStatus(wss, 'lomuai', {
     userId,
     status: 'thinking',
     currentTask: 'Diagnosing platform issue',
@@ -176,7 +176,7 @@ export async function exampleMetaSySopIntegration(
 
   // 2. Request Architect approval for critical platform changes
   const approvalRequest = requestArchitectApproval({
-    requestedBy: 'meta-sysop',
+    requestedBy: 'lomuai',
     userId,
     changeType: 'architecture',
     description: 'Refactor session store to use connection pooling',
@@ -225,7 +225,7 @@ export async function exampleMetaSySopIntegration(
   console.log(`[LOMUAI] Approval requested: ${approvalRequest.requestId}`);
 
   // Broadcast waiting for approval
-  broadcastAgentStatus(wss, 'meta-sysop', {
+  broadcastAgentStatus(wss, 'lomuai', {
     userId,
     status: 'waiting_approval',
     currentTask: 'Waiting for Architect approval',
@@ -238,7 +238,7 @@ export async function exampleMetaSySopIntegration(
 
   // 3. Delegate database migration to specialist sub-agent
   const delegation = delegateToSubAgent({
-    delegatedBy: 'meta-sysop',
+    delegatedBy: 'lomuai',
     subAgentType: 'specialist',
     userId,
     task: {
@@ -291,7 +291,7 @@ export async function exampleMetaSySopIntegration(
   console.log(`[LOMUAI] Delegated task: ${delegation.delegationId}`);
 
   // Broadcast delegation status
-  broadcastAgentStatus(wss, 'meta-sysop', {
+  broadcastAgentStatus(wss, 'lomuai', {
     userId,
     status: 'delegating',
     currentTask: 'Sub-agent handling session migration',
@@ -303,7 +303,7 @@ export async function exampleMetaSySopIntegration(
   });
 
   // 4. Complete platform healing
-  broadcastAgentStatus(wss, 'meta-sysop', {
+  broadcastAgentStatus(wss, 'lomuai', {
     userId,
     status: 'completed',
     currentTask: 'Platform healing complete',
@@ -342,7 +342,7 @@ export async function exampleArchitectReview(
   // 3. Share evidence with requesting agent (SySop or LomuAI)
   const evidence = shareEvidencePackage({
     providedBy: 'architect',
-    receivedBy: 'sysop', // or 'meta-sysop'
+    receivedBy: 'sysop', // or 'lomuai'
     userId,
     evidenceType: 'code',
     title: 'Architectural review findings',
@@ -428,7 +428,7 @@ export function exampleCapabilityDiscovery() {
   console.log('  Restrictions:', sysopCaps.restrictions[0]);
 
   // Get LomuAI capabilities
-  const metaCaps = getAgentCapabilities('meta-sysop');
+  const metaCaps = getAgentCapabilities('lomuai');
   console.log('\n🔧 LomuAI (Platform Healer)');
   console.log('  Capabilities:', metaCaps.capabilities.slice(0, 3).join(', '), '...');
   console.log('  Expertise:', metaCaps.expertiseAreas.slice(0, 3).join(', '));

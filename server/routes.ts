@@ -186,7 +186,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/platform', platformRouter);
   
   // Mount LomuAI chat router (chat-based platform healing)
-  app.use('/api/lomu-ai', lomuAIChatRouter);
+  app.use('/api/lomuai', lomuAIChatRouter);
 
   // ==================== REPLIT AGENT-STYLE FEATURES ====================
   
