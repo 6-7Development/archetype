@@ -9,7 +9,51 @@ export function registerHealingRoutes(app: Express) {
   app.get("/api/healing/targets", isAuthenticated, async (req, res) => {
     try {
       const userId = req.user!.id;
-      const targets = await storage.getHealingTargets(userId);
+      let targets = await storage.getHealingTargets(userId);
+      
+      // Auto-create healing targets if user has none
+      if (targets.length === 0) {
+        console.log("[HEALING] Auto-creating healing targets for user:", userId);
+        const createdTargets = [];
+        
+        // 1. Create "Platform Code" target
+        const platformTarget = await storage.createHealingTarget({
+          userId,
+          type: "platform",
+          name: "🔧 Platform Code",
+          repositoryUrl: process.env.GITHUB_REPO ? `https://github.com/${process.env.GITHUB_REPO}` : null,
+          status: "active",
+          metadata: {
+            description: "Heal and improve the LomuAI platform itself",
+            autoCreated: true,
+          },
+        });
+        createdTargets.push(platformTarget);
+        
+        // 2. Create targets for all user projects
+        const userProjects = await storage.getProjects(userId);
+        console.log(`[HEALING] Found ${userProjects.length} user projects to create targets for`);
+        
+        for (const project of userProjects) {
+          const projectTarget = await storage.createHealingTarget({
+            userId,
+            type: "user_project",
+            name: `📦 ${project.name}`,
+            projectId: project.id,
+            status: "active",
+            metadata: {
+              description: project.description || "User project",
+              projectName: project.name,
+              autoCreated: true,
+            },
+          });
+          createdTargets.push(projectTarget);
+        }
+        
+        targets = createdTargets;
+        console.log(`[HEALING] Created ${targets.length} healing targets (1 platform + ${userProjects.length} projects)`);
+      }
+      
       res.json(targets);
     } catch (error: any) {
       console.error("[HEALING] Error fetching targets:", error);
