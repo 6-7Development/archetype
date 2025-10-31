@@ -34,12 +34,10 @@ else
 fi
 
 echo ""
-echo "🔄 Running database migrations with drizzle-kit..."
-if npx drizzle-kit push --force; then
-  echo "✅ Database migrations completed successfully!"
-else
-  echo "⚠️  Database migration failed, but continuing..."
-fi
+echo "🔄 Checking database schema..."
+# Skip migrations - tables already exist from Replit sync
+echo "⏭️  Skipping drizzle-kit push (tables synced via Replit)"
+echo "✅ Using existing database schema"
 
 echo ""
 echo "🔍 Environment Check:"

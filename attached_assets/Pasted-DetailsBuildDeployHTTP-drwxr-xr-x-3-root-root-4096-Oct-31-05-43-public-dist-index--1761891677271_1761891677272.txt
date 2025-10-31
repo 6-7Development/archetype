@@ -1,0 +1,107 @@
+DetailsBuildDeployHTTP
+drwxr-xr-x    3 root     root          4096 Oct 31 05:43 public
+✅ dist/index.js found
+🔄 Running database migrations with drizzle-kit...
+No config path provided, using default 'drizzle.config.ts'
+Reading config file '/app/drizzle.config.ts'
+Using 'pg' driver for database querying
+[⣷] Pulling schema from database...
+[⣯] Pulling schema from database...
+[⣟] Pulling schema from database...
+[⡿] Pulling schema from database...
+[⢿] Pulling schema from database...
+[⣻] Pulling schema from database...
+[⣽] Pulling schema from database...
+[⣷] Pulling schema from database...
+[⣯] Pulling schema from database...
+[⣟] Pulling schema from database...
+[⡿] Pulling schema from database...
+[⢿] Pulling schema from database...
+[⣷] Pulling schema from database...
+[⣻] Pulling schema from database...
+[⣯] Pulling schema from database...
+[⣽] Pulling schema from database...
+[⣟] Pulling schema from database...
+[⡿] Pulling schema from database...
+[⢿] Pulling schema from database...
+[⣻] Pulling schema from database...
+[✓] Pulling schema from database...
+  ~ meta_sysop_instructions › ai_fix_attempts rename table
+  ~ meta_sysop_knowledge › ai_fix_attempts    rename table
+  ~ meta_sysop_memory › ai_fix_attempts       rename table
+  ~ meta_sysop_attachments › ai_fix_attempts  rename table
+  ~ meta_sysop_sessions › ai_fix_attempts     rename table
+Is ai_fix_attempts table created or renamed from another table?
+❯ + ai_fix_attempts                           create table
+  ~ meta_sysop_automation › ai_fix_attempts   rename table
+  ~ meta_sysop_jobs › ai_fix_attempts         rename table✅ Database migrations completed successfully!
+🔍 Environment Check:
+NODE_ENV: production
+PORT: 8080
+DATABASE_URL: ✓ SET (hidden for security)
+GITHUB_TOKEN: ✓ SET
+GITHUB_REPO: 6-7Development/archetype
+GITHUB_BRANCH: main
+ANTHROPIC_API_KEY: ✓ SET
+📄 Ensuring replit.md is available...
+✅ replit.md already present
+🚀 Starting Node.js application...
+Command: node dist/index.js
+[db] ✅ Added sslmode=no-verify to connection string for production
+[db] Environment: NODE_ENV=production, PORT=8080
+[db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+[db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+[db] SSL Configuration: {"rejectUnauthorized":false}
+[db] Connection string includes SSL params: true
+[PERFORMANCE] System prompt base cached (1544 chars) - saves ~4KB per request
+[PLATFORM-HEALING] PROJECT_ROOT: /app
+[PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller (SSE streams excluded)
+📡 WebSocket server initialized at /ws
+[PLATFORM-HEALING] Session manager connected to WebSocket
+[PLATFORM-HEALING] WebSocket server attached for preview broadcasts
+[PLATFORM-HEALING] Platform healing service connected to WebSocket
+[PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+[HEAL-ORCHESTRATOR] Metrics broadcaster connected
+[WEBHOOKS] Webhooks router connected to metrics broadcaster
+[LOMU-AI-JOB-MANAGER] Initialized with WebSocket support
+[LOMU-AI-JOB-MANAGER] Job manager connected to WebSocket
+[LOMU-AI] WebSocket server initialized for live preview broadcasts
+[LOMU-AI-CHAT] Live preview WebSocket initialized
+[WEBHOOKS] Webhooks router mounted at /api/webhooks
+✅ All routes registered successfully
+🔍 Testing database connection...
+6:20:07 AM [express] serving on port 8080
+🌐 Server accessible at http://0.0.0.0:8080
+✅ Database connected successfully
+🔧 Auto-healing system ENABLED
+   ⚡ Kill-switch: Disabled after 3 consecutive failures (1 hour cooldown)
+   ⏱️ Rate limit: Max 3 healing sessions per hour
+   📋 Audit trail: All attempts logged to platformHealAttempts
+   🔄 Rollback: Automatic rollback on verification/deployment failure
+[HEALTH-MONITOR] Starting platform health monitoring...
+[HEALTH-MONITOR] Failed to load open incidents: error: relation "platform_incidents" does not exist
+[HEALTH-MONITOR] Monitoring started
+    at /app/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async file:///app/node_modules/drizzle-orm/node-postgres/session.js:83:22
+    at async PlatformHealthMonitor.loadOpenIncidents (file:///app/dist/index.js:11307:29)
+    at async PlatformHealthMonitor.start (file:///app/dist/index.js:11286:9)
+    at async file:///app/dist/index.js:20042:3 {
+  length: 118,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '298',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}
