@@ -1,0 +1,126 @@
+2025-10-31T21:56:18.975863579Z [inf]  
+2025-10-31T21:56:23.433771787Z [inf]  [35m[Region: us-east4][0m
+2025-10-31T21:56:23.446949270Z [inf]  [35m=========================
+2025-10-31T21:56:23.446974043Z [inf]  Using Detected Dockerfile
+2025-10-31T21:56:23.446977875Z [inf]  =========================
+2025-10-31T21:56:23.446981351Z [inf]  [0m
+2025-10-31T21:56:23.446992491Z [inf]  context: 8rdd-FRhC
+2025-10-31T21:56:23.603605771Z [inf]  [internal] load build definition from Dockerfile
+2025-10-31T21:56:23.603666436Z [inf]  [internal] load build definition from Dockerfile
+2025-10-31T21:56:23.603688270Z [inf]  [internal] load build definition from Dockerfile
+2025-10-31T21:56:23.615312648Z [inf]  [internal] load build definition from Dockerfile
+2025-10-31T21:56:23.618381458Z [inf]  [internal] load metadata for docker.io/library/node:20-alpine
+2025-10-31T21:56:23.621789017Z [inf]  [auth] library/node:pull token for registry-1.docker.io
+2025-10-31T21:56:23.621816607Z [inf]  [auth] library/node:pull token for registry-1.docker.io
+2025-10-31T21:56:23.712691929Z [inf]  [internal] load metadata for docker.io/library/node:20-alpine
+2025-10-31T21:56:23.712947196Z [inf]  [internal] load .dockerignore
+2025-10-31T21:56:23.713052424Z [inf]  [internal] load .dockerignore
+2025-10-31T21:56:23.713393512Z [inf]  [internal] load .dockerignore
+2025-10-31T21:56:23.723996697Z [inf]  [internal] load .dockerignore
+2025-10-31T21:56:23.727982563Z [inf]  [production  7/16] COPY --from=frontend-builder /app/dist ./dist
+2025-10-31T21:56:23.728001337Z [inf]  [frontend-builder 6/6] RUN npm run build
+2025-10-31T21:56:23.728009088Z [inf]  [frontend-builder 5/6] COPY . .
+2025-10-31T21:56:23.728016944Z [inf]  [frontend-builder 4/6] RUN npm ci
+2025-10-31T21:56:23.728024310Z [inf]  [frontend-builder 3/6] COPY package*.json ./
+2025-10-31T21:56:23.728030517Z [inf]  [production  9/16] COPY shared ./shared
+2025-10-31T21:56:23.728036710Z [inf]  [production  5/16] RUN npm ci
+2025-10-31T21:56:23.728043624Z [inf]  [production  4/16] COPY package*.json ./
+2025-10-31T21:56:23.728056901Z [inf]  [internal] load build context
+2025-10-31T21:56:23.728064379Z [inf]  [production  3/16] RUN apk add --no-cache git
+2025-10-31T21:56:23.728072236Z [inf]  [frontend-builder 2/6] WORKDIR /app
+2025-10-31T21:56:23.728078472Z [inf]  [production  8/16] COPY server ./server
+2025-10-31T21:56:23.728084181Z [inf]  [production 10/16] COPY tsconfig.json ./
+2025-10-31T21:56:23.728090672Z [inf]  [frontend-builder 1/6] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+2025-10-31T21:56:23.728103609Z [inf]  [production  6/16] RUN npm install drizzle-kit@^0.31.4
+2025-10-31T21:56:23.728128752Z [inf]  [production 16/16] RUN chmod +x railway-start.sh
+2025-10-31T21:56:23.728134528Z [inf]  [production 15/16] COPY create-healing-tables.sql ./
+2025-10-31T21:56:23.728140378Z [inf]  [production 14/16] COPY drop-old-tables.js ./
+2025-10-31T21:56:23.728145701Z [inf]  [production 13/16] COPY railway-start.sh ./
+2025-10-31T21:56:23.728153941Z [inf]  [production 12/16] COPY replit.md ./
+2025-10-31T21:56:23.728159658Z [inf]  [production 11/16] COPY drizzle.config.ts ./
+2025-10-31T21:56:23.728169190Z [inf]  [internal] load build context
+2025-10-31T21:56:23.730928131Z [inf]  [frontend-builder 1/6] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+2025-10-31T21:56:23.737685607Z [inf]  [internal] load build context
+2025-10-31T21:56:24.919172577Z [inf]  [internal] load build context
+2025-10-31T21:56:24.925941362Z [inf]  [frontend-builder 2/6] WORKDIR /app
+2025-10-31T21:56:24.925991458Z [inf]  [frontend-builder 3/6] COPY package*.json ./
+2025-10-31T21:56:24.926006070Z [inf]  [frontend-builder 4/6] RUN npm ci
+2025-10-31T21:56:24.926027842Z [inf]  [frontend-builder 5/6] COPY . .
+2025-10-31T21:56:25.316180682Z [inf]  [frontend-builder 5/6] COPY . .
+2025-10-31T21:56:25.317978842Z [inf]  [frontend-builder 6/6] RUN npm run build
+2025-10-31T21:56:25.643584898Z [inf]  
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+
+2025-10-31T21:56:25.885480737Z [inf]  vite v5.4.20 building for production...
+
+2025-10-31T21:56:26.355720739Z [inf]  transforming...
+
+2025-10-31T21:56:26.665246385Z [inf]  Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+2025-10-31T21:56:28.276678388Z [inf]  
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+
+2025-10-31T21:56:36.67283393Z [inf]  ✓ 3860 modules transformed.
+
+2025-10-31T21:56:37.681020392Z [inf]  rendering chunks...
+
+2025-10-31T21:56:37.704229383Z [inf]  computing gzip size...
+
+2025-10-31T21:56:37.752402015Z [inf]  ../dist/public/index.html                                                                     1.59 kB │ gzip:   0.73 kB
+../dist/public/assets/Gemini_Generated_Image_ixx4nbixx4nbixx4_1761874066746-BEG0Di2U.png    800.04 kB
+
+2025-10-31T21:56:37.75242189Z [inf]  ../dist/public/assets/Gemini_Generated_Image_z9tsxzz9tsxzz9ts_1761874066745-BD4RpQ52.png    849.30 kB
+../dist/public/assets/image_1761786985510-CHZof3Yf.png                                    1,380.89 kB
+
+2025-10-31T21:56:37.75258387Z [inf]  ../dist/public/assets/index-DsJTWmrZ.css                                                    143.70 kB │ gzip:  22.01 kB
+../dist/public/assets/index-CjHVnKiz.js                                                   1,864.08 kB │ gzip: 526.58 kB
+
+2025-10-31T21:56:37.752667061Z [inf]  
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+2025-10-31T21:56:37.753023057Z [inf]  ✓ built in 11.84s
+
+2025-10-31T21:56:37.845635113Z [inf]  
+  dist/index.js  798.1kb
+
+⚡ Done in 19ms
+
+2025-10-31T21:56:37.981494773Z [inf]  [frontend-builder 6/6] RUN npm run build
+2025-10-31T21:56:39.066324776Z [inf]  [production  3/16] RUN apk add --no-cache git
+2025-10-31T21:56:39.066369666Z [inf]  [production  4/16] COPY package*.json ./
+2025-10-31T21:56:39.066381232Z [inf]  [production  5/16] RUN npm ci
+2025-10-31T21:56:39.066388583Z [inf]  [production  6/16] RUN npm install drizzle-kit@^0.31.4
+2025-10-31T21:56:39.066402493Z [inf]  [production  7/16] COPY --from=frontend-builder /app/dist ./dist
+2025-10-31T21:56:39.102120676Z [inf]  [production  7/16] COPY --from=frontend-builder /app/dist ./dist
+2025-10-31T21:56:39.103599937Z [inf]  [production  8/16] COPY server ./server
+2025-10-31T21:56:39.139822308Z [inf]  [production  8/16] COPY server ./server
+2025-10-31T21:56:39.140866817Z [inf]  [production  9/16] COPY shared ./shared
+2025-10-31T21:56:39.154254965Z [inf]  [production  9/16] COPY shared ./shared
+2025-10-31T21:56:39.156165802Z [inf]  [production 10/16] COPY tsconfig.json ./
+2025-10-31T21:56:39.170277301Z [inf]  [production 10/16] COPY tsconfig.json ./
+2025-10-31T21:56:39.171835047Z [inf]  [production 11/16] COPY drizzle.config.ts ./
+2025-10-31T21:56:39.184459337Z [inf]  [production 11/16] COPY drizzle.config.ts ./
+2025-10-31T21:56:39.185936426Z [inf]  [production 12/16] COPY replit.md ./
+2025-10-31T21:56:39.198344022Z [inf]  [production 12/16] COPY replit.md ./
+2025-10-31T21:56:39.199981559Z [inf]  [production 13/16] COPY railway-start.sh ./
+2025-10-31T21:56:39.216590625Z [inf]  [production 13/16] COPY railway-start.sh ./
+2025-10-31T21:56:39.218344415Z [inf]  [production 14/16] COPY drop-old-tables.js ./
+2025-10-31T21:56:39.230773521Z [inf]  [production 14/16] COPY drop-old-tables.js ./
+2025-10-31T21:56:39.232585436Z [inf]  [production 15/16] COPY create-healing-tables.sql ./
+2025-10-31T21:56:39.295173334Z [inf]  [production 15/16] COPY create-healing-tables.sql ./
+2025-10-31T21:56:39.296303850Z [inf]  [production 16/16] RUN chmod +x railway-start.sh
+2025-10-31T21:56:39.387959144Z [inf]  [production 16/16] RUN chmod +x railway-start.sh
+2025-10-31T21:56:39.390060561Z [inf]  exporting to docker image format
+2025-10-31T21:56:39.390093721Z [inf]  exporting to image
+2025-10-31T21:56:39.670566924Z [inf]  [auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com
+2025-10-31T21:56:39.670625833Z [inf]  [auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com
+2025-10-31T21:56:41.147628457Z [inf]  importing to docker
+2025-10-31T21:56:50.882991676Z [inf]  importing to docker
+2025-10-31T21:57:00.362065102Z [inf]  [92mBuild time: 36.91 seconds[0m

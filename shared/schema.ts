@@ -1899,6 +1899,7 @@ export const healingTargets = pgTable("healing_targets", {
 
 export const insertHealingTargetSchema = createInsertSchema(healingTargets).omit({
   id: true,
+  userId: true,
   createdAt: true,
   updatedAt: true,
 });
@@ -1922,6 +1923,7 @@ export const healingConversations = pgTable("healing_conversations", {
 
 export const insertHealingConversationSchema = createInsertSchema(healingConversations).omit({
   id: true,
+  userId: true,
   createdAt: true,
   updatedAt: true,
 });
