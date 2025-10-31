@@ -201,6 +201,7 @@ export const platformHealAttempts = pgTable("platform_heal_attempts", {
 
   // Links
   incidentId: varchar("incident_id").notNull(),
+  sessionId: varchar("session_id").notNull(), // Link to platformHealingSessions
 
   // Attempt details
   attemptNumber: integer("attempt_number").notNull(),
@@ -211,7 +212,7 @@ export const platformHealAttempts = pgTable("platform_heal_attempts", {
   filesModified: jsonb("files_modified"),
 
   // Results
-  success: boolean("success").notNull(),
+  success: boolean("success").notNull().default(false),
   verificationPassed: boolean("verification_passed"),
   error: text("error"),
 

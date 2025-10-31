@@ -162,22 +162,20 @@ app.use((req, res, next) => {
     // Continue - graceful degradation will handle missing database
   }
 
-  // Initialize auto-healing system (production or development with opt-in)
-  const autoHealingEnabled = 
-    process.env.NODE_ENV === 'production' || 
-    process.env.ENABLE_AUTO_HEALING === 'true';
+  // Initialize auto-healing system (DISABLED by default to prevent token usage)
+  // Users trigger healing manually via Platform Healing UI and pay for their own tokens
+  const autoHealingEnabled = process.env.ENABLE_AUTO_HEALING === 'true';
   
   if (autoHealingEnabled) {
-    console.log('🔧 Auto-healing system ENABLED');
+    console.log('🔧 Auto-healing system ENABLED (uses platform credits - for testing only!)');
     console.log('   ⚡ Kill-switch: Disabled after 3 consecutive failures (1 hour cooldown)');
     console.log('   ⏱️ Rate limit: Max 3 healing sessions per hour');
     console.log('   📋 Audit trail: All attempts logged to platformHealAttempts');
     console.log('   🔄 Rollback: Automatic rollback on verification/deployment failure');
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('   ⚠️ DEVELOPMENT MODE: Use ENABLE_AUTO_HEALING=true for testing');
-    }
+    console.log('   💰 WARNING: This uses YOUR Anthropic credits!');
   } else {
-    console.log('💡 Auto-healing system DISABLED (development mode - use ENABLE_AUTO_HEALING=true to enable)');
+    console.log('💡 Auto-healing system DISABLED (users trigger manually via UI)');
+    console.log('   👥 Users pay for their own AI tokens when using Platform Healing');
   }
 
   // Start platform health monitor
