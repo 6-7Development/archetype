@@ -38,9 +38,10 @@ COPY drizzle.config.ts ./
 # CRITICAL: Copy replit.md for Meta-SySop platform knowledge
 COPY replit.md ./
 
-# Copy startup script and database cleanup script
+# Copy startup script and database setup scripts
 COPY railway-start.sh ./
 COPY drop-old-tables.js ./
+COPY create-healing-tables.sql ./
 RUN chmod +x railway-start.sh
 
 # Expose port
