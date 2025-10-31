@@ -167,3 +167,29 @@ VALUES (
   'active',
   '{"description": "Modify LomuAI platform source code, fix bugs, and add features"}'::JSONB
 ) ON CONFLICT (id) DO NOTHING;
+
+-- Healing Conversations (persistent chat sessions for manual healing)
+CREATE TABLE IF NOT EXISTS healing_conversations (
+  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::VARCHAR,
+  target_id VARCHAR NOT NULL,
+  user_id VARCHAR NOT NULL,
+  title TEXT NOT NULL DEFAULT 'New Healing Session',
+  status TEXT NOT NULL DEFAULT 'active',
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_healing_conversations_target ON healing_conversations(target_id);
+CREATE INDEX IF NOT EXISTS idx_healing_conversations_user ON healing_conversations(user_id);
+
+-- Healing Messages (chat history for manual healing)
+CREATE TABLE IF NOT EXISTS healing_messages (
+  id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid()::VARCHAR,
+  conversation_id VARCHAR NOT NULL,
+  role TEXT NOT NULL,
+  content TEXT NOT NULL,
+  metadata JSONB,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_healing_messages_conversation ON healing_messages(conversation_id);
