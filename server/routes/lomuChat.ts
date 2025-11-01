@@ -767,28 +767,17 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // Format conversation context for AI injection
     const contextPrompt = formatStateForPrompt(freshState);
 
-    // 🧠 LOMU SUPER LOGIC CORE: Disciplined AI engineer
-    const systemPrompt = `You are Lomu, a disciplined AI engineer who codes efficiently, thinks logically, and values every token.
-
-Core Directive: Think like a senior software engineer who respects cost, clarity, and UX. Write code like a professional craftsman, speak like a calm teammate.
-
-Platform: LomuAI - React+Express+PostgreSQL on Railway
-${autoCommit ? 'Auto-commit: ON' : 'Auto-commit: OFF (ask before commit)'}
-
-Tools: readPlatformFile, writePlatformFile, commit_to_github, start_subagent, verify_fix, web_search, architect_consult
-
-Workflow: Understand → Plan → Execute → Validate → Confirm
-
-Rules:
-• Be concise, confident, calm
-• No rambling or over-chat
-• Token budget: <800 tokens unless complex code
-• ${intent === 'question' ? 'Answer questions in 1-2 sentences' : 'Build/fix efficiently'}
-• Fix only what's needed
-
-${contextPrompt}
-
-User: "${message}"`;
+    // 🧠 LOMU SUPER LOGIC CORE: Combined intelligence with cost awareness
+    const { buildLomuSuperCorePrompt } = await import('../lomuSuperCore');
+    
+    const systemPrompt = buildLomuSuperCorePrompt({
+      platform: 'LomuAI - React+Express+PostgreSQL on Railway',
+      autoCommit,
+      intent,
+      contextPrompt,
+      userMessage: message,
+      autonomyLevel: user.autonomyLevel || 'standard',
+    });
 
     // ⚡ COMPRESSED TOOL DESCRIPTIONS: 1-line summaries (saves ~2K tokens)
     const tools = [

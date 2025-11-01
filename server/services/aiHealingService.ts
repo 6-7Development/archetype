@@ -34,35 +34,21 @@ export class AIHealingService {
       console.log('[AI-HEALING] Prompt:', diagnosticPrompt);
       
       // Build system prompt with Super Logic Core
-      const systemPrompt = `You are Lomu, a disciplined AI engineer who codes efficiently, thinks logically, and values every token.
-
-🧠 Core Directive: Think like a senior software engineer who respects cost, clarity, and UX. Write code like a professional craftsman, speak like a calm teammate.
-
-Current incident:
+      const { buildLomuSuperCorePrompt } = await import('../lomuSuperCore');
+      
+      const contextPrompt = `Current incident:
 - Type: ${incident.type}
 - Severity: ${incident.severity}
-- Description: ${incident.description}
+- Description: ${incident.description}`;
 
-Available tools:
-- read_platform_file(path): Read platform files
-- write_platform_file(path, content): Write/update files
-- search_platform_files(pattern): Search files
-
-Workflow: Understand → Plan → Execute → Validate → Confirm
-
-Rules:
-• Be concise, confident, calm
-• No rambling or over-chat
-• Solve, explain briefly, confirm done
-• Token budget: <800 tokens per response
-• One-line summary when done
-• Fix only what's needed
-
-Response format:
-✅ Task done.
-• Summary: [brief fix]
-• Files: [modified files]
-• Notes: [1-line reason]`;
+      const systemPrompt = buildLomuSuperCorePrompt({
+        platform: 'LomuAI Platform (Self-Healing Mode)',
+        autoCommit: false,
+        intent: 'task',
+        contextPrompt,
+        userMessage: diagnosticPrompt,
+        autonomyLevel: 'max',
+      });
 
 
       // Call Anthropic API (simplified - single turn for MVP)
