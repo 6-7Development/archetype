@@ -1330,6 +1330,211 @@ export class PlatformHealingService {
       throw error;
     }
   }
+
+  async editPlatformFile(filePath: string, oldString: string, newString: string, replaceAll: boolean = false): Promise<{ success: boolean; message: string; linesChanged: number }> {
+    try {
+      const content = await this.readPlatformFile(filePath);
+      
+      const occurrences = (content.match(new RegExp(oldString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+      
+      if (occurrences === 0) {
+        return {
+          success: false,
+          message: `String not found in ${filePath}`,
+          linesChanged: 0
+        };
+      }
+      
+      if (occurrences > 1 && !replaceAll) {
+        return {
+          success: false,
+          message: `String found ${occurrences} times in ${filePath}. Use replaceAll=true to replace all occurrences.`,
+          linesChanged: 0
+        };
+      }
+      
+      const newContent = replaceAll 
+        ? content.split(oldString).join(newString)
+        : content.replace(oldString, newString);
+      
+      await this.writePlatformFile(filePath, newContent, true);
+      
+      const linesChanged = newContent.split('\n').length - content.split('\n').length;
+      
+      return {
+        success: true,
+        message: `Replaced ${replaceAll ? occurrences : 1} occurrence(s) in ${filePath}`,
+        linesChanged: Math.abs(linesChanged)
+      };
+    } catch (error: any) {
+      throw new Error(`Failed to edit file: ${error.message}`);
+    }
+  }
+
+  async grepPlatformFiles(pattern: string, pathFilter?: string, outputMode: 'content' | 'files' | 'count' = 'files'): Promise<string> {
+    try {
+      const regex = new RegExp(pattern, 'i');
+      const results: Array<{ file: string; line: number; content: string }> = [];
+      
+      const searchInFile = async (filePath: string): Promise<void> => {
+        try {
+          const content = await this.readPlatformFile(filePath);
+          const lines = content.split('\n');
+          
+          lines.forEach((line, index) => {
+            if (regex.test(line)) {
+              results.push({
+                file: filePath,
+                line: index + 1,
+                content: line.trim()
+              });
+            }
+          });
+        } catch (error: any) {
+        }
+      };
+      
+      let filesToSearch: string[] = [];
+      
+      if (pathFilter) {
+        filesToSearch = await this.searchPlatformFiles(pathFilter);
+      } else {
+        filesToSearch = await this.searchPlatformFiles('*');
+      }
+      
+      await Promise.all(filesToSearch.map(f => searchInFile(f)));
+      
+      if (outputMode === 'count') {
+        const uniqueFileSet = new Set(results.map(r => r.file));
+        return `Found ${results.length} matches across ${uniqueFileSet.size} files`;
+      } else if (outputMode === 'files') {
+        const uniqueFiles = [...new Set(results.map(r => r.file))];
+        return uniqueFiles.length > 0 ? uniqueFiles.join('\n') : 'No matches found';
+      } else {
+        if (results.length === 0) return 'No matches found';
+        return results
+          .map(r => `${r.file}:${r.line}: ${r.content}`)
+          .join('\n');
+      }
+    } catch (error: any) {
+      throw new Error(`Grep failed: ${error.message}`);
+    }
+  }
+
+  async executeBashCommand(command: string, timeout: number = 120000): Promise<{ success: boolean; stdout: string; stderr: string; exitCode: number | null }> {
+    try {
+      if (command.includes('&&') || command.includes(';')) {
+        throw new Error('Command chaining (&&, ;) is not allowed for security');
+      }
+      
+      const { spawn } = await import('child_process');
+      
+      return new Promise((resolve, reject) => {
+        const parts = command.split(' ');
+        const cmd = parts[0];
+        const args = parts.slice(1);
+        
+        let stdout = '';
+        let stderr = '';
+        
+        const child = spawn(cmd, args, {
+          cwd: this.PROJECT_ROOT,
+          timeout,
+          env: {
+            ...process.env,
+            PATH: process.env.PATH,
+            NODE_ENV: process.env.NODE_ENV,
+          },
+        });
+        
+        child.stdout?.on('data', (data) => {
+          stdout += data.toString();
+        });
+        
+        child.stderr?.on('data', (data) => {
+          stderr += data.toString();
+        });
+        
+        child.on('close', (exitCode) => {
+          resolve({
+            success: exitCode === 0,
+            stdout,
+            stderr,
+            exitCode
+          });
+        });
+        
+        child.on('error', (error) => {
+          reject(error);
+        });
+        
+        setTimeout(() => {
+          child.kill();
+          reject(new Error(`Command timeout after ${timeout}ms`));
+        }, timeout);
+      });
+    } catch (error: any) {
+      throw new Error(`Bash execution failed: ${error.message}`);
+    }
+  }
+
+  async installPackages(packages: string[], operation: 'install' | 'uninstall'): Promise<{ success: boolean; message: string }> {
+    try {
+      const cmd = operation === 'install' 
+        ? `npm install ${packages.join(' ')}`
+        : `npm uninstall ${packages.join(' ')}`;
+      
+      const result = await this.executeBashCommand(cmd, 180000);
+      
+      return {
+        success: result.success,
+        message: result.success 
+          ? `${operation === 'install' ? 'Installed' : 'Uninstalled'} packages: ${packages.join(', ')}`
+          : `Failed to ${operation} packages: ${result.stderr}`
+      };
+    } catch (error: any) {
+      throw new Error(`Package ${operation} failed: ${error.message}`);
+    }
+  }
+
+  async getLSPDiagnostics(): Promise<{ success: boolean; diagnostics: Array<{ file: string; line: number; column: number; message: string; severity: string }>; summary: string }> {
+    try {
+      const result = await this.executeBashCommand('npm exec tsc -- --noEmit', 180000);
+      
+      const diagnostics: Array<{ file: string; line: number; column: number; message: string; severity: string }> = [];
+      
+      const lines = result.stdout.split('\n').concat(result.stderr.split('\n'));
+      
+      for (const line of lines) {
+        const match = line.match(/^(.+\.tsx?)\((\d+),(\d+)\):\s+(error|warning)\s+TS\d+:\s+(.+)$/);
+        if (match) {
+          diagnostics.push({
+            file: match[1],
+            line: parseInt(match[2]),
+            column: parseInt(match[3]),
+            severity: match[4],
+            message: match[5]
+          });
+        }
+      }
+      
+      const summary = diagnostics.length === 0 
+        ? 'No TypeScript errors found'
+        : `Found ${diagnostics.length} TypeScript issue(s)`;
+      
+      return {
+        success: true,
+        diagnostics,
+        summary
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        diagnostics: [],
+        summary: `TypeScript check failed: ${error.message}`
+      };
+    }
+  }
 }
 
 export const platformHealing = new PlatformHealingService();

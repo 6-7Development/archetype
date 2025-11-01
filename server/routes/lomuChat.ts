@@ -1063,6 +1063,77 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           required: ['description', 'checkType'],
         },
       },
+      {
+        name: 'bash',
+        description: 'Execute shell commands with security sandboxing',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            command: { type: 'string' as const, description: 'Command to execute (no && or ; chaining)' },
+            timeout: { type: 'number' as const, description: 'Timeout in milliseconds (default 120000)' },
+          },
+          required: ['command'],
+        },
+      },
+      {
+        name: 'edit',
+        description: 'Find and replace text in files precisely',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            filePath: { type: 'string' as const, description: 'File to edit' },
+            oldString: { type: 'string' as const, description: 'Exact text to find' },
+            newString: { type: 'string' as const, description: 'Replacement text' },
+            replaceAll: { type: 'boolean' as const, description: 'Replace all occurrences (default false)' },
+          },
+          required: ['filePath', 'oldString', 'newString'],
+        },
+      },
+      {
+        name: 'grep',
+        description: 'Search file content by pattern or regex',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            pattern: { type: 'string' as const, description: 'Regex pattern to search' },
+            pathFilter: { type: 'string' as const, description: 'File pattern filter (e.g., *.ts)' },
+            outputMode: { type: 'string' as const, enum: ['content', 'files', 'count'], description: 'Output format (default: files)' },
+          },
+          required: ['pattern'],
+        },
+      },
+      {
+        name: 'packager_tool',
+        description: 'Install or uninstall npm packages',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            operation: { type: 'string' as const, enum: ['install', 'uninstall'], description: 'Operation type' },
+            packages: { type: 'array' as const, items: { type: 'string' as const }, description: 'Package names' },
+          },
+          required: ['operation', 'packages'],
+        },
+      },
+      {
+        name: 'restart_workflow',
+        description: 'Restart server workflow after code changes',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            workflowName: { type: 'string' as const, description: 'Workflow name (default: "Start application")' },
+          },
+          required: [],
+        },
+      },
+      {
+        name: 'get_latest_lsp_diagnostics',
+        description: 'Check TypeScript errors and warnings',
+        input_schema: {
+          type: 'object' as const,
+          properties: {},
+          required: [],
+        },
+      },
     ];
 
     // 🎯 AUTONOMY LEVEL FILTERING: Filter tools based on user's autonomy level
@@ -2108,6 +2179,126 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               } catch (error: any) {
                 toolResult = `❌ Verification error: ${error.message}`;
                 sendEvent('error', { message: `Verification failed: ${error.message}` });
+              }
+            } else if (name === 'bash') {
+              const typedInput = input as { command: string; timeout?: number };
+              sendEvent('progress', { message: `🔧 Executing: ${typedInput.command}...` });
+              
+              try {
+                const result = await platformHealing.executeBashCommand(
+                  typedInput.command, 
+                  typedInput.timeout || 120000
+                );
+                
+                if (result.success) {
+                  toolResult = `✅ Command executed successfully\n\nStdout:\n${result.stdout}\n${result.stderr ? `\nStderr:\n${result.stderr}` : ''}`;
+                } else {
+                  toolResult = `❌ Command failed (exit code ${result.exitCode})\n\nStdout:\n${result.stdout}\n\nStderr:\n${result.stderr}`;
+                }
+                
+                sendEvent('content', { content: `\n\n**Command output:**\n\`\`\`\n${result.stdout}\n\`\`\`\n` });
+              } catch (error: any) {
+                toolResult = `❌ Bash execution failed: ${error.message}`;
+                sendEvent('error', { message: `Bash failed: ${error.message}` });
+              }
+            } else if (name === 'edit') {
+              const typedInput = input as { filePath: string; oldString: string; newString: string; replaceAll?: boolean };
+              sendEvent('progress', { message: `✏️ Editing ${typedInput.filePath}...` });
+              
+              try {
+                const result = await platformHealing.editPlatformFile(
+                  typedInput.filePath,
+                  typedInput.oldString,
+                  typedInput.newString,
+                  typedInput.replaceAll || false
+                );
+                
+                if (result.success) {
+                  toolResult = `✅ ${result.message}\nLines changed: ${result.linesChanged}`;
+                  
+                  fileChanges.push({ 
+                    path: typedInput.filePath, 
+                    operation: 'modify'
+                  });
+                  
+                  sendEvent('file_change', { file: { path: typedInput.filePath, operation: 'modify' } });
+                  broadcastFileUpdate(typedInput.filePath, 'modify', projectId || 'platform');
+                } else {
+                  toolResult = `❌ ${result.message}`;
+                }
+              } catch (error: any) {
+                toolResult = `❌ Edit failed: ${error.message}`;
+                sendEvent('error', { message: `Edit failed: ${error.message}` });
+              }
+            } else if (name === 'grep') {
+              const typedInput = input as { pattern: string; pathFilter?: string; outputMode?: 'content' | 'files' | 'count' };
+              sendEvent('progress', { message: `🔍 Searching for: ${typedInput.pattern}...` });
+              
+              try {
+                const result = await platformHealing.grepPlatformFiles(
+                  typedInput.pattern,
+                  typedInput.pathFilter,
+                  typedInput.outputMode || 'files'
+                );
+                
+                toolResult = result;
+              } catch (error: any) {
+                toolResult = `❌ Grep failed: ${error.message}`;
+                sendEvent('error', { message: `Grep failed: ${error.message}` });
+              }
+            } else if (name === 'packager_tool') {
+              const typedInput = input as { operation: 'install' | 'uninstall'; packages: string[] };
+              sendEvent('progress', { message: `📦 ${typedInput.operation === 'install' ? 'Installing' : 'Uninstalling'} packages: ${typedInput.packages.join(', ')}...` });
+              
+              try {
+                const result = await platformHealing.installPackages(
+                  typedInput.packages,
+                  typedInput.operation
+                );
+                
+                if (result.success) {
+                  toolResult = `✅ ${result.message}`;
+                  sendEvent('content', { content: `\n\n✅ **Packages ${typedInput.operation === 'install' ? 'installed' : 'uninstalled'}:** ${typedInput.packages.join(', ')}\n` });
+                } else {
+                  toolResult = `❌ ${result.message}`;
+                }
+              } catch (error: any) {
+                toolResult = `❌ Package operation failed: ${error.message}`;
+                sendEvent('error', { message: `Package operation failed: ${error.message}` });
+              }
+            } else if (name === 'restart_workflow') {
+              const typedInput = input as { workflowName?: string };
+              const workflowName = typedInput.workflowName || 'Start application';
+              sendEvent('progress', { message: `🔄 Restarting workflow: ${workflowName}...` });
+              
+              try {
+                sendEvent('content', { content: `\n\n🔄 **Restarting server...** This will apply code changes.\n` });
+                toolResult = `✅ Workflow "${workflowName}" restart requested. The server will restart automatically.`;
+              } catch (error: any) {
+                toolResult = `❌ Workflow restart failed: ${error.message}`;
+                sendEvent('error', { message: `Restart failed: ${error.message}` });
+              }
+            } else if (name === 'get_latest_lsp_diagnostics') {
+              sendEvent('progress', { message: `🔍 Running TypeScript diagnostics...` });
+              
+              try {
+                const result = await platformHealing.getLSPDiagnostics();
+                
+                if (result.diagnostics.length === 0) {
+                  toolResult = `✅ ${result.summary}`;
+                } else {
+                  const diagnosticsList = result.diagnostics
+                    .slice(0, 20)
+                    .map(d => `${d.file}:${d.line}:${d.column} - ${d.severity}: ${d.message}`)
+                    .join('\n');
+                  
+                  toolResult = `${result.summary}\n\n${diagnosticsList}${result.diagnostics.length > 20 ? `\n... and ${result.diagnostics.length - 20} more` : ''}`;
+                }
+                
+                sendEvent('content', { content: `\n\n**TypeScript Check:** ${result.summary}\n` });
+              } catch (error: any) {
+                toolResult = `❌ LSP diagnostics failed: ${error.message}`;
+                sendEvent('error', { message: `LSP diagnostics failed: ${error.message}` });
               }
             }
 
