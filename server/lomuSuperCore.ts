@@ -141,6 +141,48 @@ Remember: Fix only what's needed. No rambling. Value every token. Be precise.`;
 }
 
 /**
+ * Estimate tokens needed for a task and check if it exceeds budget
+ */
+export function estimateTokensAndCheckOverage(userMessage: string, planSize: number = 1): {
+  estimatedTokens: number;
+  isOverage: boolean;
+  overageCost: number;
+  warningMessage: string | null;
+} {
+  // Simple token estimation: ~4 characters per token
+  const inputTokens = Math.ceil(userMessage.length / 4);
+  
+  // Estimate output based on task complexity
+  const taskComplexity = userMessage.toLowerCase().includes('build') || 
+                         userMessage.toLowerCase().includes('create') ||
+                         userMessage.toLowerCase().includes('implement') ? 'high' : 'medium';
+  
+  const outputMultiplier = taskComplexity === 'high' ? 6 : 3; // High complexity tasks need more output
+  const outputTokens = inputTokens * outputMultiplier * planSize;
+  
+  const totalTokens = inputTokens + outputTokens;
+  const isOverage = totalTokens > LOMU_CORE_CONFIG.maxTokensPerAction;
+  
+  // Calculate overage cost (using Anthropic pricing: $3/1M input + $15/1M output)
+  const inputCost = (inputTokens / 1_000_000) * 3.00;
+  const outputCost = (outputTokens / 1_000_000) * 15.00;
+  const overageCost = parseFloat((inputCost + outputCost).toFixed(4));
+  
+  let warningMessage = null;
+  if (isOverage) {
+    const overageAmount = totalTokens - LOMU_CORE_CONFIG.maxTokensPerAction;
+    warningMessage = `⚠️ This task may use ~${totalTokens.toLocaleString()} tokens (${overageAmount.toLocaleString()} over budget). Estimated cost: $${overageCost.toFixed(4)}. Proceed?`;
+  }
+  
+  return {
+    estimatedTokens: totalTokens,
+    isOverage,
+    overageCost,
+    warningMessage,
+  };
+}
+
+/**
  * Response quality metrics for learning/adaptation
  */
 interface ResponseMetrics {
