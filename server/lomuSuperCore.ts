@@ -14,7 +14,7 @@ export interface LomuCoreConfig {
 
 export const LOMU_CORE_CONFIG: LomuCoreConfig = {
   mode: (process.env.LOMU_MODE as 'dev' | 'prod') || 'prod',
-  maxTokensPerAction: parseInt(process.env.MAX_TOKENS_PER_ACTION || '800'),
+  maxTokensPerAction: parseInt(process.env.MAX_TOKENS_PER_ACTION || '3500'), // Production-ready: Can build complete features
   maxReflectDepth: parseInt(process.env.MAX_REFLECT_DEPTH || '2'),
   chatTone: (process.env.CHAT_TONE as 'calm_minimalist' | 'detailed') || 'calm_minimalist',
   debugResponses: process.env.DEBUG_RESPONSES === 'true',
