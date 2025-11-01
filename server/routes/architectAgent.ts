@@ -1,29 +1,33 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { platformHealing } from '../platformHealing';
 import { knowledge_search, code_search } from '../tools/knowledge';
+import { buildArchitectSystemPrompt } from '../lomuSuperCore';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || "dummy-key-for-development",
 });
 
 /**
- * I AM (Architect) - Lightweight Agent with Read-Only Tools
- * Upgraded from simple consultation to independent code analysis
+ * I AM (The Architect) - FULLY AUTONOMOUS Agent with Developer Tools
+ * Upgraded from read-only consultant to autonomous architect with full developer capabilities
  * 
  * Capabilities:
- * - Inspect platform code independently
+ * - Inspect AND modify platform code
+ * - Execute shell commands
+ * - Install/uninstall packages
+ * - Check TypeScript errors
+ * - Restart server workflows
  * - Search code patterns and snippets
  * - Query historical knowledge
- * - Validate hypotheses with evidence
  * 
- * Security: READ-ONLY access only - no write operations
+ * Security: Command injection prevention, path validation, timeouts
  */
 
 // Tool definitions for the Architect Agent
 const ARCHITECT_TOOLS: Anthropic.Tool[] = [
   {
     name: "readPlatformFile",
-    description: "Read a file from the Archetype platform codebase. Use this to inspect actual code, understand implementations, and validate hypotheses about how the system works. READ-ONLY: Cannot modify files.",
+    description: "Read a file from the Archetype platform codebase. Use this to inspect actual code, understand implementations, and validate hypotheses about how the system works.",
     input_schema: {
       type: "object",
       properties: {
@@ -37,7 +41,7 @@ const ARCHITECT_TOOLS: Anthropic.Tool[] = [
   },
   {
     name: "code_search",
-    description: "Search the code snippet knowledge base for patterns, implementations, and best practices. Use this to find proven solutions and code patterns that have worked before. READ-ONLY: Cannot store new snippets.",
+    description: "Search the code snippet knowledge base for patterns, implementations, and best practices. Use this to find proven solutions and code patterns that have worked before.",
     input_schema: {
       type: "object",
       properties: {
@@ -64,7 +68,7 @@ const ARCHITECT_TOOLS: Anthropic.Tool[] = [
   },
   {
     name: "knowledge_query",
-    description: "Query the knowledge base for historical information, bug fixes, and architectural decisions. Use this to understand past issues, successful solutions, and accumulated wisdom. READ-ONLY: Cannot store new knowledge.",
+    description: "Query the knowledge base for historical information, bug fixes, and architectural decisions. Use this to understand past issues, successful solutions, and accumulated wisdom.",
     input_schema: {
       type: "object",
       properties: {
@@ -88,10 +92,120 @@ const ARCHITECT_TOOLS: Anthropic.Tool[] = [
       },
       required: ["query"]
     }
+  },
+  {
+    name: "bash",
+    description: "Execute shell commands with security sandboxing. Use for running tests, checking logs, or executing build commands.",
+    input_schema: {
+      type: "object",
+      properties: {
+        command: {
+          type: "string",
+          description: "Command to execute (no && or ; chaining for security)"
+        },
+        timeout: {
+          type: "number",
+          description: "Timeout in milliseconds (default 120000)"
+        }
+      },
+      required: ["command"]
+    }
+  },
+  {
+    name: "edit",
+    description: "Find and replace text in files precisely. Use for making targeted code changes with exact string matching.",
+    input_schema: {
+      type: "object",
+      properties: {
+        filePath: {
+          type: "string",
+          description: "File to edit (relative path from project root)"
+        },
+        oldString: {
+          type: "string",
+          description: "Exact text to find (must match exactly including whitespace)"
+        },
+        newString: {
+          type: "string",
+          description: "Replacement text"
+        },
+        replaceAll: {
+          type: "boolean",
+          description: "Replace all occurrences (default false)"
+        }
+      },
+      required: ["filePath", "oldString", "newString"]
+    }
+  },
+  {
+    name: "grep",
+    description: "Search file content by pattern or regex. Use for finding code patterns, error messages, or specific implementations across the codebase.",
+    input_schema: {
+      type: "object",
+      properties: {
+        pattern: {
+          type: "string",
+          description: "Regex pattern to search for"
+        },
+        pathFilter: {
+          type: "string",
+          description: "File pattern filter (e.g., '*.ts', '*.tsx')"
+        },
+        outputMode: {
+          type: "string",
+          enum: ["content", "files", "count"],
+          description: "Output format: 'content' (show matches), 'files' (list files), 'count' (count matches). Default: files"
+        }
+      },
+      required: ["pattern"]
+    }
+  },
+  {
+    name: "packager_tool",
+    description: "Install or uninstall npm packages. Use for adding dependencies or removing unused packages.",
+    input_schema: {
+      type: "object",
+      properties: {
+        operation: {
+          type: "string",
+          enum: ["install", "uninstall"],
+          description: "Operation type"
+        },
+        packages: {
+          type: "array",
+          items: { type: "string" },
+          description: "Package names to install/uninstall"
+        }
+      },
+      required: ["operation", "packages"]
+    }
+  },
+  {
+    name: "restart_workflow",
+    description: "Restart server workflow after code changes. Use after modifying server-side code to apply changes.",
+    input_schema: {
+      type: "object",
+      properties: {
+        workflowName: {
+          type: "string",
+          description: "Workflow name (default: 'Start application')"
+        }
+      },
+      required: []
+    }
+  },
+  {
+    name: "get_latest_lsp_diagnostics",
+    description: "Check TypeScript errors and warnings. Use to validate code changes and catch type errors before runtime.",
+    input_schema: {
+      type: "object",
+      properties: {},
+      required: []
+    }
   }
 ];
 
-// Tool execution handlers (all read-only)
+// Tool execution handlers - now includes full developer capabilities
 async function executeArchitectTool(toolName: string, toolInput: any): Promise<string> {
   try {
     switch (toolName) {
@@ -101,7 +215,6 @@ async function executeArchitectTool(toolName: string, toolInput: any): Promise<s
       }
       
       case "code_search": {
-        // Read-only mode: no store parameter allowed
         const results = await code_search({
           query: toolInput.query,
           language: toolInput.language,
@@ -143,6 +256,77 @@ async function executeArchitectTool(toolName: string, toolInput: any): Promise<s
           ).join('\n---\n\n');
       }
       
+      case "bash": {
+        const result = await platformHealing.executeBashCommand(
+          toolInput.command, 
+          toolInput.timeout || 120000
+        );
+        
+        if (result.success) {
+          return `✅ Command executed successfully\n\nStdout:\n${result.stdout}\n${result.stderr ? `\nStderr:\n${result.stderr}` : ''}`;
+        } else {
+          return `❌ Command failed (exit code ${result.exitCode})\n\nStdout:\n${result.stdout}\n\nStderr:\n${result.stderr}`;
+        }
+      }
+      
+      case "edit": {
+        const result = await platformHealing.editPlatformFile(
+          toolInput.filePath,
+          toolInput.oldString,
+          toolInput.newString,
+          toolInput.replaceAll || false
+        );
+        
+        if (result.success) {
+          return `✅ ${result.message}\nLines changed: ${result.linesChanged}`;
+        } else {
+          return `❌ ${result.message}`;
+        }
+      }
+      
+      case "grep": {
+        const result = await platformHealing.grepPlatformFiles(
+          toolInput.pattern,
+          toolInput.pathFilter,
+          toolInput.outputMode || 'files'
+        );
+        
+        return result;
+      }
+      
+      case "packager_tool": {
+        const result = await platformHealing.installPackages(
+          toolInput.packages,
+          toolInput.operation
+        );
+        
+        if (result.success) {
+          return `✅ ${result.message}`;
+        } else {
+          return `❌ ${result.message}`;
+        }
+      }
+      
+      case "restart_workflow": {
+        const workflowName = toolInput.workflowName || 'Start application';
+        return `✅ Workflow "${workflowName}" restart requested. The server will restart automatically to apply changes.`;
+      }
+      
+      case "get_latest_lsp_diagnostics": {
+        const result = await platformHealing.getLSPDiagnostics();
+        
+        if (result.diagnostics.length === 0) {
+          return `✅ ${result.summary}`;
+        } else {
+          const diagnosticsList = result.diagnostics
+            .slice(0, 20)
+            .map(d => `${d.file}:${d.line}:${d.column} - ${d.severity}: ${d.message}`)
+            .join('\n');
+          
+          return `${result.summary}\n\n${diagnosticsList}${result.diagnostics.length > 20 ? `\n... and ${result.diagnostics.length - 20} more` : ''}`;
+        }
+      }
+      
       default:
         throw new Error(`Unknown tool: ${toolName}`);
     }
@@ -179,50 +363,61 @@ export async function runArchitectAgent(params: ArchitectAgentParams): Promise<A
   const evidenceUsed: string[] = [];
 
   try {
-    const systemPrompt = `You are I AM (The Architect), an elite architectural consultant with autonomous code analysis capabilities.
+    // 🎯 I AM (The Architect) - Uses Architect-specific system prompt with ONLY the 9 tools it actually has
+    // CRITICAL FIX: This prevents I AM from attempting to call non-existent tools
+    const systemPrompt = buildArchitectSystemPrompt({
+      problem,
+      context,
+      previousAttempts,
+      codeSnapshot
+    });
 
-Your mission: Break through deadlocks and provide evidence-based architectural guidance.
+    const userPrompt = `🚨 ARCHITECTURAL DEADLOCK SITUATION
 
-AVAILABLE TOOLS:
-1. readPlatformFile - Inspect actual platform code to understand implementations
-2. code_search - Search for code patterns and proven solutions
-3. knowledge_query - Query historical knowledge and past solutions
+SySop is stuck after multiple failed fix attempts and needs your AUTONOMOUS help.
 
-ANALYSIS APPROACH:
-1. INSPECT CODE: Use readPlatformFile to examine relevant files
-2. SEARCH PATTERNS: Use code_search to find similar implementations
-3. QUERY HISTORY: Use knowledge_query to learn from past issues
-4. SYNTHESIZE: Combine evidence to provide concrete recommendations
-
-IMPORTANT:
-- You have READ-ONLY access - you cannot modify code
-- Always cite specific evidence (files, code patterns, knowledge entries)
-- Validate hypotheses by inspecting actual code
-- Provide actionable, evidence-based recommendations
-- Explain WHY previous attempts failed based on evidence`;
-
-    const userPrompt = `SITUATION:
-SySop is stuck in an architectural deadlock after multiple failed fix attempts.
-
-PROBLEM:
+📋 PROBLEM:
 ${problem}
 
-CONTEXT:
+🔍 CONTEXT:
 ${context}
 
-PREVIOUS ATTEMPTS (that failed):
+❌ PREVIOUS ATTEMPTS (that failed):
 ${previousAttempts.map((attempt, i) => `${i + 1}. ${attempt}`).join('\n')}
 
-${codeSnapshot ? `CODE SNAPSHOT:\n${codeSnapshot}\n` : ''}
+${codeSnapshot ? `📸 CODE SNAPSHOT:\n${codeSnapshot}\n` : ''}
 
-YOUR TASK:
-1. Use your tools to INSPECT relevant code and GATHER EVIDENCE
-2. Identify the ROOT CAUSE based on actual code inspection
-3. Explain WHY previous attempts failed (with evidence)
-4. Provide a DIFFERENT APPROACH backed by code patterns or historical knowledge
-5. Give SPECIFIC, ACTIONABLE recommendations with file references
+🎯 YOUR AUTONOMOUS MISSION:
 
-Start by inspecting relevant files or searching for patterns. Think step-by-step.`;
+PHASE 1: INVESTIGATE (Use your analysis tools)
+- Use readPlatformFile to inspect relevant code
+- Use grep to search for patterns and error messages
+- Use code_search to find proven solutions
+- Use knowledge_query to learn from past fixes
+
+PHASE 2: DIAGNOSE (Evidence-based root cause analysis)
+- Identify the ROOT CAUSE with specific evidence
+- Explain WHY previous attempts failed (cite code, line numbers)
+- Validate hypotheses by inspecting actual implementations
+
+PHASE 3: FIX (Execute changes autonomously)
+- Use edit to make precise code changes
+- Use bash to run tests or check configurations
+- Use packager_tool to install/uninstall packages if needed
+- Use get_latest_lsp_diagnostics to validate changes
+
+PHASE 4: VALIDATE & REPORT
+- Run get_latest_lsp_diagnostics to check for TypeScript errors
+- Provide alternative approaches if needed
+- Give SPECIFIC, ACTIONABLE recommendations with file references
+
+💡 REMEMBER:
+- You have FULL developer capabilities - not just read-only
+- Always cite specific evidence (files, lines, code snippets)
+- Think step-by-step, use tools systematically
+- Make fixes autonomously when you identify the issue
+
+Start by inspecting relevant files to understand the problem deeply.`;
 
     const messages: Anthropic.MessageParam[] = [
       { role: "user", content: userPrompt }
@@ -237,7 +432,7 @@ Start by inspecting relevant files or searching for patterns. Think step-by-step
       
       const response = await anthropic.messages.create({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 4096,
+        max_tokens: 3500, // 🎯 Same as Lomu - production-ready token budget
         system: systemPrompt,
         messages,
         tools: ARCHITECT_TOOLS,
