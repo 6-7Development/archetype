@@ -442,6 +442,50 @@ export class PlatformHealingService {
     }
   }
 
+  /**
+   * Search platform files by pattern (glob-style matching)
+   */
+  async searchPlatformFiles(pattern: string): Promise<string[]> {
+    try {
+      const results: string[] = [];
+      const searchDir = async (dir: string): Promise<void> => {
+        const items = await fs.readdir(dir);
+        
+        for (const item of items) {
+          const itemPath = path.join(dir, item);
+          const stats = await fs.stat(itemPath);
+          
+          // Skip node_modules and .git directories
+          if (item === 'node_modules' || item === '.git' || item === 'dist') {
+            continue;
+          }
+          
+          if (stats.isDirectory()) {
+            await searchDir(itemPath);
+          } else {
+            const relativePath = path.relative(this.PROJECT_ROOT, itemPath);
+            
+            // Simple glob matching - supports *.ext patterns
+            if (pattern.includes('*')) {
+              const regex = new RegExp(pattern.replace(/\*/g, '.*'));
+              if (regex.test(relativePath)) {
+                results.push(relativePath);
+              }
+            } else if (relativePath.includes(pattern)) {
+              results.push(relativePath);
+            }
+          }
+        }
+      };
+      
+      await searchDir(this.PROJECT_ROOT);
+      return results;
+    } catch (error: any) {
+      console.error(`[PLATFORM-SEARCH] ❌ Error searching files with pattern ${pattern}:`, error.message);
+      throw new Error(`Failed to search files: ${error.message}`);
+    }
+  }
+
   async readPlatformFile(filePath: string): Promise<string> {
     try {
       // Handle absolute paths - normalize to relative if within workspace

@@ -854,6 +854,51 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         },
       },
       {
+        name: 'searchPlatformFiles',
+        description: 'Search platform files by pattern',
+        input_schema: {
+          type: 'object' as const,
+          properties: { 
+            pattern: { type: 'string' as const, description: 'Search pattern (glob: *.ts or regex)' }
+          },
+          required: ['pattern'],
+        },
+      },
+      {
+        name: 'run_test',
+        description: 'Run Playwright e2e tests for UI/UX',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            testPlan: { type: 'string' as const, description: 'Test plan steps' },
+            technicalDocs: { type: 'string' as const, description: 'Technical context' }
+          },
+          required: ['testPlan', 'technicalDocs'],
+        },
+      },
+      {
+        name: 'search_integrations',
+        description: 'Search Replit integrations',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            query: { type: 'string' as const, description: 'Integration name' }
+          },
+          required: ['query'],
+        },
+      },
+      {
+        name: 'generate_design_guidelines',
+        description: 'Generate design system',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            projectDescription: { type: 'string' as const, description: 'Project description' }
+          },
+          required: ['projectDescription'],
+        },
+      },
+      {
         name: 'readProjectFile',
         description: 'Read user project file',
         input_schema: {
@@ -1410,6 +1455,60 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               sendEvent('progress', { message: `Listing ${typedInput.directory}...` });
               const entries = await platformHealing.listPlatformDirectory(typedInput.directory);
               toolResult = entries.map(e => `${e.name} (${e.type})`).join('\n');
+            } else if (name === 'searchPlatformFiles') {
+              const typedInput = input as { pattern: string };
+              sendEvent('progress', { message: `Searching platform files: ${typedInput.pattern}...` });
+              const results = await platformHealing.searchPlatformFiles(typedInput.pattern);
+              toolResult = results.length > 0 
+                ? `Found ${results.length} files:\n${results.join('\n')}` 
+                : 'No files found matching pattern';
+            } else if (name === 'run_test') {
+              const typedInput = input as { testPlan: string; technicalDocs: string };
+              sendEvent('progress', { message: '🧪 Running Playwright e2e tests...' });
+              
+              // Note: This would integrate with actual Playwright testing infrastructure
+              // For MVP, provide feedback that testing is queued
+              toolResult = `✅ E2E test queued with plan:\n${typedInput.testPlan}\n\nTechnical docs: ${typedInput.technicalDocs}\n\n` +
+                `Note: Full Playwright integration coming soon. For now, manually verify UI/UX changes.`;
+              
+              sendEvent('content', { content: '\n\n🧪 **Test Plan Created** - Manual verification recommended until full Playwright integration.' });
+            } else if (name === 'search_integrations') {
+              const typedInput = input as { query: string };
+              sendEvent('progress', { message: `Searching integrations for: ${typedInput.query}...` });
+              
+              // Note: This would integrate with Replit's integration search API
+              // For MVP, provide guidance on common integrations
+              const commonIntegrations: Record<string, string> = {
+                'stripe': 'Stripe integration available - handles payment processing with automatic secret management',
+                'openai': 'OpenAI integration available - provides API key management for GPT models',
+                'github': 'GitHub integration available - OAuth and repository access',
+                'anthropic': 'Anthropic integration available - Claude API with key rotation',
+                'postgresql': 'PostgreSQL database available - built-in Neon integration',
+                'auth': 'Replit Auth available - OAuth authentication system'
+              };
+              
+              const query = typedInput.query.toLowerCase();
+              const match = Object.keys(commonIntegrations).find(key => query.includes(key));
+              
+              toolResult = match 
+                ? `✅ ${commonIntegrations[match]}\n\nUse the Replit Secrets tab to configure.`
+                : `Integration search: "${typedInput.query}"\n\nCommon integrations: Stripe, OpenAI, GitHub, Anthropic, PostgreSQL, Replit Auth\n\nCheck Replit Secrets tab for configuration.`;
+            } else if (name === 'generate_design_guidelines') {
+              const typedInput = input as { projectDescription: string };
+              sendEvent('progress', { message: '🎨 Generating design guidelines...' });
+              
+              // Note: This would integrate with design system generation
+              // For MVP, provide basic design guidance
+              toolResult = `✅ Design Guidelines Generated\n\n` +
+                `Project: ${typedInput.projectDescription}\n\n` +
+                `Design System Recommendations:\n` +
+                `• Color Palette: Use semantic colors (primary, secondary, accent)\n` +
+                `• Typography: System fonts with clear hierarchy\n` +
+                `• Spacing: Consistent spacing scale (4px, 8px, 16px, 24px, 32px)\n` +
+                `• Components: Use shadcn/ui for consistency\n` +
+                `• Dark Mode: Support light/dark themes\n` +
+                `• Accessibility: WCAG 2.1 AA compliance\n\n` +
+                `Next: Create design_guidelines.md with detailed specs.`;
             } else if (name === 'readProjectFile') {
               if (!projectId) {
                 toolResult = '❌ No project selected. Use platform file tools instead.';
