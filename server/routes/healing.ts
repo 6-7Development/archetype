@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { insertHealingTargetSchema, insertHealingConversationSchema, insertHealingMessageSchema } from "@shared/schema";
 import { storage } from "../storage";
 import { isAuthenticated } from "../universalAuth";
+import { aiHealingService } from "../services/aiHealingService";
 
 // Owner-only middleware for Platform Healing
 const isOwner = async (req: any, res: any, next: any) => {
@@ -221,22 +222,16 @@ Let's help maintain this platform!`;
       
       const computeStartTime = Date.now();
       
-      // Call Claude API through priority queue
-      const completion = await aiQueue.enqueue(userId, plan, async () => {
-        const result = await anthropic.messages.create({
-          model: DEFAULT_MODEL,
-          max_tokens: 4096,
-          system: systemPrompt,
-          messages: validMessages.map((m: any) => ({
-            role: m.role === 'system' ? 'user' : m.role,
-            content: m.content
-          })),
-        });
-        return result;
+      // Use AI Healing Service with full tool capabilities
+      const healingResult = await aiHealingService.diagnoseAndFix(validated.content, {
+        type: 'platform_healing_chat',
+        severity: 'info',
+        description: 'User chat request'
       });
 
       const computeTimeMs = Date.now() - computeStartTime;
-      const responseText = completion.content[0].type === 'text' ? completion.content[0].text : "";
+      const responseText = healingResult.diagnosis || healingResult.error || "No response";
+      const estimatedTokens = Math.ceil(validated.content.length / 4) + Math.ceil(responseText.length / 4);
 
       console.log(`✅ [HEALING-CHAT] Claude responded in ${computeTimeMs}ms (${responseText.length} chars)`);
 
@@ -247,28 +242,27 @@ Let's help maintain this platform!`;
         content: responseText,
         metadata: {
           model: DEFAULT_MODEL,
-          tokensUsed: (completion.usage?.input_tokens || 0) + (completion.usage?.output_tokens || 0),
+          tokensUsed: estimatedTokens,
           computeTimeMs,
+          filesModified: healingResult.filesModified || [],
         },
       });
 
       console.log("[HEALING-CHAT] Assistant message saved to database");
 
-      // Track AI usage for billing
-      const inputTokens = completion.usage?.input_tokens || 0;
-      const outputTokens = completion.usage?.output_tokens || 0;
+      // Track AI usage for billing (estimated for now - full tracking in aiHealingService)
       
       await trackAIUsage({
         userId,
-        projectId: null, // Platform healing doesn't belong to a specific project
+        projectId: null,
         type: "ai_chat",
-        inputTokens,
-        outputTokens,
+        inputTokens: Math.ceil(estimatedTokens * 0.6),
+        outputTokens: Math.ceil(estimatedTokens * 0.4),
         computeTimeMs,
         metadata: {
           conversationId: validated.conversationId,
-          messageLength: validated.content.length,
-          healingChat: true, // Flag to identify platform healing vs regular chat
+          filesModified: healingResult.filesModified || [],
+          healingChat: true,
         },
       });
 
@@ -278,10 +272,11 @@ Let's help maintain this platform!`;
       res.json({
         userMessage,
         assistantMessage,
+        filesModified: healingResult.filesModified || [],
         usage: {
-          inputTokens,
-          outputTokens,
-          totalTokens: inputTokens + outputTokens,
+          inputTokens: Math.ceil(estimatedTokens * 0.6),
+          outputTokens: Math.ceil(estimatedTokens * 0.4),
+          totalTokens: estimatedTokens,
           computeTimeMs,
         },
       });
