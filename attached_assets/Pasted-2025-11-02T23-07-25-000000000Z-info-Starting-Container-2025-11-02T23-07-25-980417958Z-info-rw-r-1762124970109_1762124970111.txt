@@ -1,0 +1,107 @@
+2025-11-02T23:07:25.000000000Z [info] Starting Container
+2025-11-02T23:07:25.980417958Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 23:06 replit.md
+2025-11-02T23:07:25.980441498Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 23:06 drop-old-tables.js
+2025-11-02T23:07:25.980454245Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 node_modules
+2025-11-02T23:07:25.980459087Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 23:06 create-healing-tables.sql
+2025-11-02T23:07:25.980466143Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 22:53 package-lock.json
+2025-11-02T23:07:25.980479838Z [info] -rwxr-xr-x    1 root     root          1990 Nov  2 23:06 debug-start.sh
+2025-11-02T23:07:25.980485062Z [info] -rw-rw-r--    1 root     root          4631 Nov  2 22:53 package.json
+2025-11-02T23:07:25.980498024Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 22:53 dist
+2025-11-02T23:07:25.980500563Z [info] NPM version: 10.8.2
+2025-11-02T23:07:25.980501084Z [info] -rwxr-xr-x    1 root     root          3148 Nov  2 23:06 railway-start.sh
+2025-11-02T23:07:25.980515630Z [info] -rw-rw-r--    1 root     root           325 Nov  2 23:06 drizzle.config.ts
+2025-11-02T23:07:25.980517080Z [info] 
+2025-11-02T23:07:25.980524976Z [info] ======================================
+2025-11-02T23:07:25.980527379Z [info] total 432
+2025-11-02T23:07:25.980530339Z [info] ðŸ“ Current directory: /app
+2025-11-02T23:07:25.980534579Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T23:07:25.980541867Z [info] ðŸ“‚ Listing root files:
+2025-11-02T23:07:25.980545249Z [info] ======================================
+2025-11-02T23:07:25.980545936Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 23:06 .
+2025-11-02T23:07:25.980553533Z [info] Time: Sun Nov  2 23:07:25 UTC 2025
+2025-11-02T23:07:25.980558971Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 23:07 ..
+2025-11-02T23:07:25.980560277Z [info] Node version: v20.19.5
+2025-11-02T23:07:25.981330129Z [info] drwxr-xr-x   13 root     root          4096 Nov  2 23:06 server
+2025-11-02T23:07:25.981334939Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 23:06 shared
+2025-11-02T23:07:25.981340424Z [info] -rw-rw-r--    1 root     root           960 Nov  2 23:06 tsconfig.json
+2025-11-02T23:07:25.981346890Z [info] 
+2025-11-02T23:07:25.981353819Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-02T23:07:25.981360015Z [info] âœ… dist/public directory exists (frontend build)
+2025-11-02T23:07:25.981367006Z [info] 
+2025-11-02T23:07:25.981373681Z [info] ðŸ—‘ï¸ Dropping old tables with incorrect schema...
+2025-11-02T23:07:25.981381231Z [info] [DROP-TABLES] Dropping old healing tables with incorrect schema...
+2025-11-02T23:07:25.981387148Z [info] [DROP-TABLES] âœ… Dropped healing_messages
+2025-11-02T23:07:25.981393614Z [info] [DROP-TABLES] âœ… Dropped healing_conversations
+2025-11-02T23:07:25.981398839Z [info] [DROP-TABLES] âœ… Dropped healing_targets
+2025-11-02T23:07:25.981408125Z [info] [DROP-TABLES] âœ… Dropped ai_knowledge_base
+2025-11-02T23:07:25.981413372Z [info] [DROP-TABLES] âœ… Dropped platform_incident_playbooks
+2025-11-02T23:07:25.982032462Z [info] [DROP-TABLES] âœ… Dropped ai_fix_attempts
+2025-11-02T23:07:25.984519732Z [info] [DROP-TABLES] âœ… Dropped platform_heal_attempts
+2025-11-02T23:07:25.987924205Z [info] [DROP-TABLES] âœ… Dropped platform_healing_sessions
+2025-11-02T23:07:25.989572945Z [info] [DROP-TABLES] âœ… Dropped platform_incidents
+2025-11-02T23:07:25.989582402Z [info] [DROP-TABLES] âœ… All old tables dropped successfully
+2025-11-02T23:07:25.996846383Z [info] 
+2025-11-02T23:07:25.996856056Z [info] ðŸ”§ Creating healing tables with correct schema...
+2025-11-02T23:07:25.996870906Z [info] âš ï¸ psql not found, using node-postgres...
+2025-11-02T23:07:26.225101079Z [info] âœ… Tables created
+2025-11-02T23:07:26.233142589Z [info] ðŸš€ Starting Node.js application with debug wrapper...
+2025-11-02T23:07:26.233148112Z [info] 
+2025-11-02T23:07:26.233154801Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-11-02T23:07:26.233159662Z [info] Command: sh debug-start.sh
+2025-11-02T23:07:26.233164216Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-02T23:07:26.233172279Z [info] âš ï¸ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)
+2025-11-02T23:07:26.233173155Z [info] 
+2025-11-02T23:07:26.233179157Z [info] âœ… Database schema ready!
+2025-11-02T23:07:26.233184389Z [info] 
+2025-11-02T23:07:26.233193518Z [info] ðŸ” Environment Check:
+2025-11-02T23:07:26.233198793Z [info] NODE_ENV: production
+2025-11-02T23:07:26.233203965Z [info] PORT: 8080
+2025-11-02T23:07:26.233208995Z [info] DATABASE_URL: âœ“ SET (hidden for security)
+2025-11-02T23:07:26.233214164Z [info] GITHUB_TOKEN: âœ“ SET
+2025-11-02T23:07:26.233220672Z [info] GITHUB_REPO: 6-7Development/archetype
+2025-11-02T23:07:26.233225979Z [info] GITHUB_BRANCH: main
+2025-11-02T23:07:26.233232211Z [info] ANTHROPIC_API_KEY: âœ“ SET
+2025-11-02T23:07:26.233239333Z [info] 
+2025-11-02T23:07:26.233244309Z [info] ðŸ“„ Ensuring replit.md is available...
+2025-11-02T23:07:26.233249418Z [info] âœ… replit.md already present
+2025-11-02T23:07:26.233254429Z [info] 
+2025-11-02T23:07:26.237963997Z [info] âœ… server/index.ts exists
+2025-11-02T23:07:26.237977299Z [info] 
+2025-11-02T23:07:26.237986149Z [info] ðŸ“‹ Step 3: Check Node.js and tsx availability...
+2025-11-02T23:07:26.237994146Z [info] ==========================================
+2025-11-02T23:07:26.238012073Z [info] ðŸ” DEBUG MODE - VERBOSE ERROR CAPTURE
+2025-11-02T23:07:26.238020191Z [info] ==========================================
+2025-11-02T23:07:26.238030544Z [info] 
+2025-11-02T23:07:26.238038781Z [info] ðŸ“‹ Step 1: Verify server directory exists...
+2025-11-02T23:07:26.238046604Z [info] âœ… server/ directory exists
+2025-11-02T23:07:26.238057872Z [info] 
+2025-11-02T23:07:26.238065347Z [info] ðŸ“‹ Step 2: Verify server/index.ts exists...
+2025-11-02T23:07:26.247426786Z [info] Node version: v20.19.5
+2025-11-02T23:07:26.455991590Z [info] NODE_ENV: production
+2025-11-02T23:07:26.456002895Z [info] PORT: 8080
+2025-11-02T23:07:26.456009506Z [info] DATABASE_URL: âœ“ SET
+2025-11-02T23:07:26.456018040Z [info] 
+2025-11-02T23:07:26.456022111Z [info] NPM version: 10.8.2
+2025-11-02T23:07:26.456025952Z [info] ðŸ“‹ Step 5: Test tsx can load...
+2025-11-02T23:07:26.456033937Z [info] tsx location: /usr/local/bin/npx
+2025-11-02T23:07:26.456045791Z [info] 
+2025-11-02T23:07:26.456054837Z [info] ðŸ“‹ Step 4: Verify environment variables...
+2025-11-02T23:07:27.111067568Z [info] tsx v4.20.5
+2025-11-02T23:07:27.127478467Z [info] node v20.19.5
+2025-11-02T23:07:27.145661854Z [info] âœ… tsx is available
+2025-11-02T23:07:27.145670993Z [info] 
+2025-11-02T23:07:27.145678559Z [info] ðŸ“‹ Step 6: Starting server with tsx...
+2025-11-02T23:07:27.145687911Z [info] Command: npx tsx server/index.ts
+2025-11-02T23:07:27.145696561Z [info] ==========================================
+2025-11-02T23:07:27.145703516Z [info] 
+2025-11-02T23:07:30.635521705Z [info] /app/server/storage.ts:84
+2025-11-02T23:07:30.635530711Z [info]   buildJobs,
+2025-11-02T23:07:30.635537752Z [info]   ^
+2025-11-02T23:07:30.635544049Z [info] 
+2025-11-02T23:07:30.635549696Z [info] SyntaxError: The requested module '@shared/schema' does not provide an export named 'buildJobs'
+2025-11-02T23:07:30.635555546Z [info]     at ModuleJob._instantiate (node:internal/modules/esm/module_job:213:21)
+2025-11-02T23:07:30.635561217Z [info]     at async ModuleJob.run (node:internal/modules/esm/module_job:320:5)
+2025-11-02T23:07:30.635567235Z [info]     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-11-02T23:07:30.635572922Z [info]     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+2025-11-02T23:07:30.635578907Z [info] 
+2025-11-02T23:07:30.635584902Z [info] Node.js v20.19.5
