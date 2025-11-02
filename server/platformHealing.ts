@@ -1408,7 +1408,8 @@ export class PlatformHealingService {
         const uniqueFileSet = new Set(results.map(r => r.file));
         return `Found ${results.length} matches across ${uniqueFileSet.size} files`;
       } else if (outputMode === 'files') {
-        const uniqueFiles = [...new Set(results.map(r => r.file))];
+        const uniqueFileSet = new Set(results.map(r => r.file));
+        const uniqueFiles = Array.from(uniqueFileSet);
         return uniqueFiles.length > 0 ? uniqueFiles.join('\n') : 'No matches found';
       } else {
         if (results.length === 0) return 'No matches found';

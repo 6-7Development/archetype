@@ -186,6 +186,10 @@ app.use((req, res, next) => {
   const { healOrchestrator } = await import('./services/healOrchestrator');
   await healOrchestrator.start(healthMonitor);
 
+  // Initialize memory monitoring for production
+  const { setupMemoryMonitoring } = await import('./middleware/memoryMonitor');
+  setupMemoryMonitoring();
+
   // Check GitHub integration configuration for owner-controlled platform modifications
   console.log('\n🔍 Checking GitHub integration configuration...');
   const requiredEnvVars: string[] = [];
@@ -222,4 +226,27 @@ app.use((req, res, next) => {
     }
     console.log('   - Maintenance mode: Available for owner\n');
   }
+
+  // Graceful shutdown handler for Railway deployment
+  process.on('SIGTERM', async () => {
+    console.log('[RAILWAY] SIGTERM received, shutting down gracefully...');
+    
+    // Stop memory monitoring
+    const { stopMemoryMonitoring } = await import('./middleware/memoryMonitor');
+    stopMemoryMonitoring();
+    
+    // Close server
+    server.close(() => {
+      console.log('[RAILWAY] Server closed successfully');
+      process.exit(0);
+    });
+    
+    // Force exit after 10 seconds if graceful shutdown fails
+    setTimeout(() => {
+      console.error('[RAILWAY] Forcing shutdown after timeout');
+      process.exit(1);
+    }, 10000);
+  });
+
+  console.log('[RAILWAY] Graceful shutdown handler registered (SIGTERM)');
 })();

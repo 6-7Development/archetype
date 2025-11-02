@@ -4,6 +4,7 @@ import { chatMessages, taskLists, tasks, lomuAttachments, lomuJobs, users, subsc
 import { eq, and, desc } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth';
 import Anthropic from '@anthropic-ai/sdk';
+import { RAILWAY_CONFIG } from '../config/railway';
 import { platformHealing } from '../platformHealing';
 import { platformAudit } from '../platformAudit';
 import { consultArchitect } from '../tools/architect-consult';
@@ -12,6 +13,7 @@ import { GitHubService, getGitHubService } from '../githubService';
 import { createTaskList, updateTask, readTaskList } from '../tools/task-management';
 import { performDiagnosis } from '../tools/diagnosis';
 import { startSubagent } from '../subagentOrchestration';
+import { parallelSubagentQueue } from '../services/parallelSubagentQueue';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { createSafeAnthropicRequest, logTruncationResults } from '../lib/anthropic-wrapper';
@@ -562,7 +564,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
   console.log('[LOMU-AI-CHAT] Heartbeat started - will send keepalive every 15s');
   
   // Wrap entire route handler in timeout to prevent infinite hanging
-  const STREAM_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes max
+  const STREAM_TIMEOUT_MS = RAILWAY_CONFIG.STREAM_TIMEOUT; // Use Railway config (5 minutes)
   const streamTimeoutId = setTimeout(() => {
     console.error('[LOMU-AI] ⏱️ STREAM TIMEOUT - Force closing after 5 minutes');
     if (!res.writableEnded) {
@@ -783,12 +785,13 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     const tools = [
       {
         name: 'start_subagent',
-        description: 'Delegate complex multi-file work to sub-agents',
+        description: 'Delegate complex multi-file work to sub-agents. Supports parallel execution (max 2 concurrent per user).',
         input_schema: {
           type: 'object' as const,
           properties: {
             task: { type: 'string' as const, description: 'Task for sub-agent' },
             relevantFiles: { type: 'array' as const, items: { type: 'string' as const }, description: 'Files to work with' },
+            parallel: { type: 'boolean' as const, description: 'Run in parallel (max 2 concurrent). Default: false (sequential)' },
           },
           required: ['task', 'relevantFiles'],
         },
@@ -1140,27 +1143,15 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     let availableTools = tools;
     
     if (autonomyLevel === 'basic') {
-      // Basic: Manual approval required, no task tracking, no sub-agents, no web search
+      // Basic: NO subagents, NO task tracking, NO web search
       availableTools = tools.filter(tool => 
-        tool.name !== 'readTaskList' && 
+        tool.name !== 'start_subagent' && 
+        tool.name !== 'readTaskList' &&
         tool.name !== 'updateTask' &&
-        tool.name !== 'start_subagent' &&
         tool.name !== 'web_search'
-      );
-    } else if (autonomyLevel === 'standard') {
-      // Standard: Autonomous mode, has task tracking, but no sub-agents or web search
-      availableTools = tools.filter(tool => 
-        tool.name !== 'request_user_approval' &&
-        tool.name !== 'start_subagent' &&
-        tool.name !== 'web_search'
-      );
-    } else if (autonomyLevel === 'deep') {
-      // Deep: Everything in Standard + web search + sub-agents, no approval needed
-      availableTools = tools.filter(tool => 
-        tool.name !== 'request_user_approval'
       );
     } else {
-      // Max: ALL tools available (no filtering)
+      // Standard/Deep/Max: ALL tools including subagents ✅
       availableTools = tools.filter(tool => 
         tool.name !== 'request_user_approval'
       );
@@ -2098,28 +2089,65 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 sendEvent('error', { message: `SQL execution failed: ${error.message}` });
               }
             } else if (name === 'start_subagent') {
-              const typedInput = input as { task: string; relevantFiles: string[] };
-              sendEvent('progress', { message: `🎯 Delegating to sub-agent: ${typedInput.task.slice(0, 60)}...` });
+              const typedInput = input as { task: string; relevantFiles: string[]; parallel?: boolean };
               
-              try {
-                const result = await startSubagent({
-                  task: typedInput.task,
-                  relevantFiles: typedInput.relevantFiles,
-                  userId,
-                  sendEvent,
-                });
+              if (typedInput.parallel) {
+                // 🚀 PARALLEL EXECUTION MODE
+                sendEvent('progress', { message: `🚀 Queuing parallel sub-agent: ${typedInput.task.slice(0, 60)}...` });
                 
-                toolResult = `✅ Sub-agent completed work:\n\n${result.summary}\n\nFiles modified:\n${result.filesModified.map(f => `- ${f}`).join('\n')}`;
+                try {
+                  // Enqueue the task for parallel execution
+                  const taskId = await parallelSubagentQueue.enqueueSubagent({
+                    userId,
+                    task: typedInput.task,
+                    relevantFiles: typedInput.relevantFiles,
+                    sendEvent,
+                  });
+                  
+                  // Get queue status
+                  const status = parallelSubagentQueue.getStatus(userId);
+                  
+                  toolResult = `✅ Sub-agent task queued for parallel execution\n\n` +
+                    `Task ID: ${taskId}\n` +
+                    `Task: ${typedInput.task}\n\n` +
+                    `**Queue Status:**\n` +
+                    `- Running: ${status.running}/2\n` +
+                    `- Queued: ${status.queued}\n` +
+                    `- Completed: ${status.completed}\n\n` +
+                    `The sub-agent will start automatically when a slot is available. ` +
+                    `Progress updates will be broadcast via WebSocket.`;
+                  
+                  sendEvent('progress', { 
+                    message: `✅ Sub-agent queued (${status.running} running, ${status.queued} queued)` 
+                  });
+                } catch (error: any) {
+                  toolResult = `❌ Failed to queue sub-agent: ${error.message}`;
+                  sendEvent('error', { message: `Failed to queue sub-agent: ${error.message}` });
+                }
+              } else {
+                // 🔄 SEQUENTIAL EXECUTION MODE (existing behavior)
+                sendEvent('progress', { message: `🎯 Delegating to sub-agent: ${typedInput.task.slice(0, 60)}...` });
                 
-                // Track file changes
-                result.filesModified.forEach((filePath: string) => {
-                  fileChanges.push({ path: filePath, operation: 'modify' });
-                });
-                
-                sendEvent('progress', { message: `✅ Sub-agent completed: ${result.filesModified.length} files modified` });
-              } catch (error: any) {
-                toolResult = `❌ Sub-agent failed: ${error.message}`;
-                sendEvent('error', { message: `Sub-agent failed: ${error.message}` });
+                try {
+                  const result = await startSubagent({
+                    task: typedInput.task,
+                    relevantFiles: typedInput.relevantFiles,
+                    userId,
+                    sendEvent,
+                  });
+                  
+                  toolResult = `✅ Sub-agent completed work:\n\n${result.summary}\n\nFiles modified:\n${result.filesModified.map(f => `- ${f}`).join('\n')}`;
+                  
+                  // Track file changes
+                  result.filesModified.forEach((filePath: string) => {
+                    fileChanges.push({ path: filePath, operation: 'modify' });
+                  });
+                  
+                  sendEvent('progress', { message: `✅ Sub-agent completed: ${result.filesModified.length} files modified` });
+                } catch (error: any) {
+                  toolResult = `❌ Sub-agent failed: ${error.message}`;
+                  sendEvent('error', { message: `Sub-agent failed: ${error.message}` });
+                }
               }
             } else if (name === 'verify_fix') {
               const typedInput = input as { 

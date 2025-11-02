@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { platformHealing } from '../platformHealing';
 import { knowledge_search, code_search } from '../tools/knowledge';
 import { buildArchitectSystemPrompt } from '../lomuSuperCore';
+import { RAILWAY_CONFIG } from '../config/railway';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || "dummy-key-for-development",
@@ -430,13 +431,21 @@ Start by inspecting relevant files to understand the problem deeply.`;
     while (continueAnalysis && analysisRounds < MAX_ROUNDS) {
       analysisRounds++;
       
-      const response = await anthropic.messages.create({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 3500, // 🎯 Same as Lomu - production-ready token budget
-        system: systemPrompt,
-        messages,
-        tools: ARCHITECT_TOOLS,
-      });
+      // Wrap Anthropic call with timeout to prevent Railway container timeouts
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('AI request timeout')), RAILWAY_CONFIG.AI_REQUEST_TIMEOUT)
+      );
+      
+      const response = await Promise.race([
+        anthropic.messages.create({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 3500, // 🎯 Same as Lomu - production-ready token budget
+          system: systemPrompt,
+          messages,
+          tools: ARCHITECT_TOOLS,
+        }),
+        timeoutPromise
+      ]) as Anthropic.Message;
 
       // Track tool usage for evidence
       const toolUseCounts = response.content.filter(c => c.type === 'tool_use').length;
