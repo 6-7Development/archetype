@@ -14,22 +14,12 @@ echo "📂 Listing root files:"
 ls -la
 echo ""
 
-echo "🔍 Checking for dist directory..."
-if [ -d "dist" ]; then
-  echo "✅ dist directory exists"
-  echo "📂 Contents:"
-  ls -la dist/ || echo "Failed to list dist contents"
-  
-  if [ -f "dist/index.js" ]; then
-    echo "✅ dist/index.js found"
-  else
-    echo "❌ dist/index.js NOT found!"
-    exit 1
-  fi
+echo "🔍 Checking for dist/public directory (frontend)..."
+if [ -d "dist/public" ]; then
+  echo "✅ dist/public directory exists (frontend build)"
 else
-  echo "❌ dist directory NOT found!"
-  echo "📂 Available directories:"
-  ls -d */ || echo "No directories found"
+  echo "❌ dist/public directory NOT found!"
+  echo "Frontend build is missing - run 'npm run build' first"
   exit 1
 fi
 
