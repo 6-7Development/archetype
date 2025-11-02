@@ -1,0 +1,364 @@
+2025-11-02T21:58:45.000000000Z [info] Starting Container
+2025-11-02T21:58:46.215617478Z [info] ======================================
+2025-11-02T21:58:46.215631522Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T21:58:46.215644784Z [info] ======================================
+2025-11-02T21:58:46.215652170Z [info] Time: Sun Nov  2 21:58:45 UTC 2025
+2025-11-02T21:58:46.215659918Z [info] Node version: v20.19.5
+2025-11-02T21:58:46.215667675Z [info] NPM version: 10.8.2
+2025-11-02T21:58:46.215675287Z [info] 
+2025-11-02T21:58:46.215682234Z [info] ðŸ“ Current directory: /app
+2025-11-02T21:58:46.215689129Z [info] ðŸ“‚ Listing root files:
+2025-11-02T21:58:46.215697422Z [info] total 428
+2025-11-02T21:58:46.215704482Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:46.215712123Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 21:58 ..
+2025-11-02T21:58:46.215718736Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 21:56 create-healing-tables.sql
+2025-11-02T21:58:46.215725538Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 dist
+2025-11-02T21:58:46.215732516Z [info] -rw-rw-r--    1 root     root           325 Nov  2 21:56 drizzle.config.ts
+2025-11-02T21:58:46.215739418Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 21:56 drop-old-tables.js
+2025-11-02T21:58:46.215746435Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 node_modules
+2025-11-02T21:58:46.215760470Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 21:57 package-lock.json
+2025-11-02T21:58:46.215767593Z [info] -rw-rw-r--    1 root     root          4651 Nov  2 21:57 package.json
+2025-11-02T21:58:46.215775181Z [info] -rwxrwxr-x    1 root     root          3254 Nov  2 21:56 railway-start.sh
+2025-11-02T21:58:46.215781955Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 21:56 replit.md
+2025-11-02T21:58:46.215788240Z [info] drwxr-xr-x   12 root     root          4096 Nov  2 21:56 server
+2025-11-02T21:58:46.218763166Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 21:56 shared
+2025-11-02T21:58:46.218771041Z [info] -rw-rw-r--    1 root     root           960 Nov  2 21:56 tsconfig.json
+2025-11-02T21:58:46.218777393Z [info] 
+2025-11-02T21:58:46.218784021Z [info] ðŸ” Checking for dist directory...
+2025-11-02T21:58:46.218791027Z [info] âœ… dist directory exists
+2025-11-02T21:58:46.218797738Z [info] ðŸ“‚ Contents:
+2025-11-02T21:58:46.218803879Z [info] total 12
+2025-11-02T21:58:46.218810046Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:46.218816694Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 ..
+2025-11-02T21:58:46.218823287Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 public
+2025-11-02T21:58:46.218829373Z [info] âŒ dist/index.js NOT found!
+2025-11-02T21:58:47.135221339Z [info] ======================================
+2025-11-02T21:58:47.135228874Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T21:58:47.135240412Z [info] ======================================
+2025-11-02T21:58:47.135248587Z [info] Time: Sun Nov  2 21:58:47 UTC 2025
+2025-11-02T21:58:47.135256912Z [info] Node version: v20.19.5
+2025-11-02T21:58:47.280462057Z [info] NPM version: 10.8.2
+2025-11-02T21:58:47.280472724Z [info] 
+2025-11-02T21:58:47.280481090Z [info] ðŸ“ Current directory: /app
+2025-11-02T21:58:47.280488131Z [info] ðŸ“‚ Listing root files:
+2025-11-02T21:58:47.282977940Z [info] total 428
+2025-11-02T21:58:47.282986415Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:47.282993700Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 21:58 ..
+2025-11-02T21:58:47.283000851Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 21:56 create-healing-tables.sql
+2025-11-02T21:58:47.283008486Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 dist
+2025-11-02T21:58:47.283015432Z [info] -rw-rw-r--    1 root     root           325 Nov  2 21:56 drizzle.config.ts
+2025-11-02T21:58:47.283023280Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 21:56 drop-old-tables.js
+2025-11-02T21:58:47.283029763Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 node_modules
+2025-11-02T21:58:47.283043111Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 21:57 package-lock.json
+2025-11-02T21:58:47.283050158Z [info] -rw-rw-r--    1 root     root          4651 Nov  2 21:57 package.json
+2025-11-02T21:58:47.283056650Z [info] -rwxrwxr-x    1 root     root          3254 Nov  2 21:56 railway-start.sh
+2025-11-02T21:58:47.283063198Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 21:56 replit.md
+2025-11-02T21:58:47.283070722Z [info] drwxr-xr-x   12 root     root          4096 Nov  2 21:56 server
+2025-11-02T21:58:47.283077528Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 21:56 shared
+2025-11-02T21:58:47.283085944Z [info] -rw-rw-r--    1 root     root           960 Nov  2 21:56 tsconfig.json
+2025-11-02T21:58:47.283093313Z [info] 
+2025-11-02T21:58:47.283099895Z [info] ðŸ” Checking for dist directory...
+2025-11-02T21:58:47.283107357Z [info] âœ… dist directory exists
+2025-11-02T21:58:47.283113669Z [info] ðŸ“‚ Contents:
+2025-11-02T21:58:47.283120664Z [info] total 12
+2025-11-02T21:58:47.283127900Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:47.284773529Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 ..
+2025-11-02T21:58:47.284787163Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 public
+2025-11-02T21:58:47.284795752Z [info] âŒ dist/index.js NOT found!
+2025-11-02T21:58:48.293852881Z [info] ======================================
+2025-11-02T21:58:48.293860106Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T21:58:48.293867379Z [info] ======================================
+2025-11-02T21:58:48.293876057Z [info] Time: Sun Nov  2 21:58:48 UTC 2025
+2025-11-02T21:58:48.305072349Z [info] Node version: v20.19.5
+2025-11-02T21:58:48.511021587Z [info] -rw-rw-r--    1 root     root          4651 Nov  2 21:57 package.json
+2025-11-02T21:58:48.511041671Z [info] NPM version: 10.8.2
+2025-11-02T21:58:48.511045103Z [info] -rwxrwxr-x    1 root     root          3254 Nov  2 21:56 railway-start.sh
+2025-11-02T21:58:48.511049848Z [info] 
+2025-11-02T21:58:48.511053577Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 21:56 replit.md
+2025-11-02T21:58:48.511059539Z [info] drwxr-xr-x   12 root     root          4096 Nov  2 21:56 server
+2025-11-02T21:58:48.511066252Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 21:56 shared
+2025-11-02T21:58:48.511068468Z [info] ðŸ“ Current directory: /app
+2025-11-02T21:58:48.511075320Z [info] ðŸ“‚ Listing root files:
+2025-11-02T21:58:48.511082565Z [info] total 428
+2025-11-02T21:58:48.511086041Z [info] -rw-rw-r--    1 root     root           960 Nov  2 21:56 tsconfig.json
+2025-11-02T21:58:48.511089575Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:48.511095168Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 21:58 ..
+2025-11-02T21:58:48.511101001Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 21:56 create-healing-tables.sql
+2025-11-02T21:58:48.511105656Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 dist
+2025-11-02T21:58:48.511109810Z [info] -rw-rw-r--    1 root     root           325 Nov  2 21:56 drizzle.config.ts
+2025-11-02T21:58:48.511114775Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 21:56 drop-old-tables.js
+2025-11-02T21:58:48.511119075Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 node_modules
+2025-11-02T21:58:48.511123662Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 21:57 package-lock.json
+2025-11-02T21:58:48.513325987Z [info] 
+2025-11-02T21:58:48.513336710Z [info] ðŸ” Checking for dist directory...
+2025-11-02T21:58:48.513344530Z [info] âœ… dist directory exists
+2025-11-02T21:58:48.513354628Z [info] ðŸ“‚ Contents:
+2025-11-02T21:58:48.513363580Z [info] total 12
+2025-11-02T21:58:48.513371720Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:48.513379035Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 ..
+2025-11-02T21:58:48.513388269Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 public
+2025-11-02T21:58:48.513396378Z [info] âŒ dist/index.js NOT found!
+2025-11-02T21:58:49.578226244Z [info] ======================================
+2025-11-02T21:58:49.578235926Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T21:58:49.578243834Z [info] ======================================
+2025-11-02T21:58:49.578249612Z [info] Time: Sun Nov  2 21:58:49 UTC 2025
+2025-11-02T21:58:49.593617213Z [info] Node version: v20.19.5
+2025-11-02T21:58:50.208336805Z [info] NPM version: 10.8.2
+2025-11-02T21:58:50.208344832Z [info] 
+2025-11-02T21:58:50.208355431Z [info] ðŸ“ Current directory: /app
+2025-11-02T21:58:50.208364039Z [info] ðŸ“‚ Listing root files:
+2025-11-02T21:58:50.208372268Z [info] total 428
+2025-11-02T21:58:50.208380169Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:50.208388820Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 21:58 ..
+2025-11-02T21:58:50.208393992Z [info] -rwxrwxr-x    1 root     root          3254 Nov  2 21:56 railway-start.sh
+2025-11-02T21:58:50.208400474Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 21:56 create-healing-tables.sql
+2025-11-02T21:58:50.208404826Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 21:56 replit.md
+2025-11-02T21:58:50.208409986Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 dist
+2025-11-02T21:58:50.208417784Z [info] drwxr-xr-x   12 root     root          4096 Nov  2 21:56 server
+2025-11-02T21:58:50.208420362Z [info] -rw-rw-r--    1 root     root           325 Nov  2 21:56 drizzle.config.ts
+2025-11-02T21:58:50.208426787Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 21:56 shared
+2025-11-02T21:58:50.208431861Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 21:56 drop-old-tables.js
+2025-11-02T21:58:50.208435136Z [info] -rw-rw-r--    1 root     root           960 Nov  2 21:56 tsconfig.json
+2025-11-02T21:58:50.208442676Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 node_modules
+2025-11-02T21:58:50.208444153Z [info] 
+2025-11-02T21:58:50.208452823Z [info] ðŸ” Checking for dist directory...
+2025-11-02T21:58:50.208455916Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 21:57 package-lock.json
+2025-11-02T21:58:50.208464717Z [info] -rw-rw-r--    1 root     root          4651 Nov  2 21:57 package.json
+2025-11-02T21:58:50.208467795Z [info] âœ… dist directory exists
+2025-11-02T21:58:50.212271778Z [info] ðŸ“‚ Contents:
+2025-11-02T21:58:50.212279232Z [info] total 12
+2025-11-02T21:58:50.212286107Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:50.212294321Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 ..
+2025-11-02T21:58:50.212305794Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 public
+2025-11-02T21:58:50.212314027Z [info] âŒ dist/index.js NOT found!
+2025-11-02T21:58:51.116148067Z [info] -rw-rw-r--    1 root     root          4651 Nov  2 21:57 package.json
+2025-11-02T21:58:51.116158181Z [info] -rwxrwxr-x    1 root     root          3254 Nov  2 21:56 railway-start.sh
+2025-11-02T21:58:51.116165731Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 21:56 replit.md
+2025-11-02T21:58:51.116171572Z [info] drwxr-xr-x   12 root     root          4096 Nov  2 21:56 server
+2025-11-02T21:58:51.116185539Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 21:56 drop-old-tables.js
+2025-11-02T21:58:51.116187557Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 21:58 ..
+2025-11-02T21:58:51.116190300Z [info] ======================================
+2025-11-02T21:58:51.116197687Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 node_modules
+2025-11-02T21:58:51.116201418Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 21:56 create-healing-tables.sql
+2025-11-02T21:58:51.116208846Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T21:58:51.116210859Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 21:57 package-lock.json
+2025-11-02T21:58:51.116212154Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 dist
+2025-11-02T21:58:51.116217435Z [info] ======================================
+2025-11-02T21:58:51.116222636Z [info] -rw-rw-r--    1 root     root           325 Nov  2 21:56 drizzle.config.ts
+2025-11-02T21:58:51.116223721Z [info] Time: Sun Nov  2 21:58:50 UTC 2025
+2025-11-02T21:58:51.116225379Z [info] ðŸ“‚ Listing root files:
+2025-11-02T21:58:51.116231787Z [info] total 428
+2025-11-02T21:58:51.116238316Z [info] Node version: v20.19.5
+2025-11-02T21:58:51.116241576Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:51.116248691Z [info] NPM version: 10.8.2
+2025-11-02T21:58:51.116259027Z [info] 
+2025-11-02T21:58:51.116269128Z [info] ðŸ“ Current directory: /app
+2025-11-02T21:58:51.118977515Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 21:56 shared
+2025-11-02T21:58:51.118987795Z [info] -rw-rw-r--    1 root     root           960 Nov  2 21:56 tsconfig.json
+2025-11-02T21:58:51.118996231Z [info] 
+2025-11-02T21:58:51.119003277Z [info] ðŸ” Checking for dist directory...
+2025-11-02T21:58:51.119009563Z [info] âœ… dist directory exists
+2025-11-02T21:58:51.119016215Z [info] ðŸ“‚ Contents:
+2025-11-02T21:58:51.119022211Z [info] total 12
+2025-11-02T21:58:51.119028681Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:51.119034658Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 ..
+2025-11-02T21:58:51.119042459Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 public
+2025-11-02T21:58:51.119048558Z [info] âŒ dist/index.js NOT found!
+2025-11-02T21:58:52.153041163Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T21:58:52.153058234Z [info] ======================================
+2025-11-02T21:58:52.153067437Z [info] Time: Sun Nov  2 21:58:51 UTC 2025
+2025-11-02T21:58:52.153075792Z [info] Node version: v20.19.5
+2025-11-02T21:58:52.153142684Z [info] ======================================
+2025-11-02T21:58:52.163943678Z [info] NPM version: 10.8.2
+2025-11-02T21:58:52.163948688Z [info] 
+2025-11-02T21:58:52.167012541Z [info] ðŸ“ Current directory: /app
+2025-11-02T21:58:52.167022529Z [info] ðŸ“‚ Contents:
+2025-11-02T21:58:52.167023091Z [info] ðŸ“‚ Listing root files:
+2025-11-02T21:58:52.167030559Z [info] total 428
+2025-11-02T21:58:52.167033523Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 dist
+2025-11-02T21:58:52.167036546Z [info] total 12
+2025-11-02T21:58:52.167040049Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:52.167045960Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 21:58 ..
+2025-11-02T21:58:52.167049893Z [info] -rw-rw-r--    1 root     root           325 Nov  2 21:56 drizzle.config.ts
+2025-11-02T21:58:52.167052804Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 21:56 create-healing-tables.sql
+2025-11-02T21:58:52.167065230Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 21:56 drop-old-tables.js
+2025-11-02T21:58:52.167073596Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 node_modules
+2025-11-02T21:58:52.167080936Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 21:57 package-lock.json
+2025-11-02T21:58:52.167089407Z [info] -rw-rw-r--    1 root     root          4651 Nov  2 21:57 package.json
+2025-11-02T21:58:52.167098001Z [info] -rwxrwxr-x    1 root     root          3254 Nov  2 21:56 railway-start.sh
+2025-11-02T21:58:52.167104564Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 21:56 replit.md
+2025-11-02T21:58:52.167111576Z [info] drwxr-xr-x   12 root     root          4096 Nov  2 21:56 server
+2025-11-02T21:58:52.167120998Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 21:56 shared
+2025-11-02T21:58:52.167128144Z [info] -rw-rw-r--    1 root     root           960 Nov  2 21:56 tsconfig.json
+2025-11-02T21:58:52.167137068Z [info] 
+2025-11-02T21:58:52.167143891Z [info] ðŸ” Checking for dist directory...
+2025-11-02T21:58:52.167150136Z [info] âœ… dist directory exists
+2025-11-02T21:58:52.169026841Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:52.169035214Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 ..
+2025-11-02T21:58:52.169041562Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 public
+2025-11-02T21:58:52.169047157Z [info] âŒ dist/index.js NOT found!
+2025-11-02T21:58:53.317370404Z [info] ======================================
+2025-11-02T21:58:53.317377268Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T21:58:53.317384932Z [info] ======================================
+2025-11-02T21:58:53.317391715Z [info] Time: Sun Nov  2 21:58:53 UTC 2025
+2025-11-02T21:58:53.325702597Z [info] Node version: v20.19.5
+2025-11-02T21:58:53.470681027Z [info] NPM version: 10.8.2
+2025-11-02T21:58:53.470688331Z [info] 
+2025-11-02T21:58:53.470695249Z [info] ðŸ“ Current directory: /app
+2025-11-02T21:58:53.470815918Z [info] ðŸ“‚ Listing root files:
+2025-11-02T21:58:53.473314905Z [info] total 428
+2025-11-02T21:58:53.473325200Z [info] -rw-rw-r--    1 root     root           960 Nov  2 21:56 tsconfig.json
+2025-11-02T21:58:53.473336947Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:53.473339471Z [info] 
+2025-11-02T21:58:53.473344802Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 21:58 ..
+2025-11-02T21:58:53.473350095Z [info] ðŸ” Checking for dist directory...
+2025-11-02T21:58:53.473352669Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 21:56 create-healing-tables.sql
+2025-11-02T21:58:53.473357003Z [info] âœ… dist directory exists
+2025-11-02T21:58:53.473359620Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 dist
+2025-11-02T21:58:53.473362774Z [info] ðŸ“‚ Contents:
+2025-11-02T21:58:53.473367232Z [info] -rw-rw-r--    1 root     root           325 Nov  2 21:56 drizzle.config.ts
+2025-11-02T21:58:53.473372432Z [info] total 12
+2025-11-02T21:58:53.473373256Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 21:56 drop-old-tables.js
+2025-11-02T21:58:53.473378916Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:53.473379466Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 node_modules
+2025-11-02T21:58:53.473385523Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 21:57 package-lock.json
+2025-11-02T21:58:53.473390745Z [info] -rw-rw-r--    1 root     root          4651 Nov  2 21:57 package.json
+2025-11-02T21:58:53.473396139Z [info] -rwxrwxr-x    1 root     root          3254 Nov  2 21:56 railway-start.sh
+2025-11-02T21:58:53.473402944Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 21:56 replit.md
+2025-11-02T21:58:53.473409500Z [info] drwxr-xr-x   12 root     root          4096 Nov  2 21:56 server
+2025-11-02T21:58:53.473415553Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 21:56 shared
+2025-11-02T21:58:53.474955716Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 ..
+2025-11-02T21:58:53.474964074Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 public
+2025-11-02T21:58:53.474970570Z [info] âŒ dist/index.js NOT found!
+2025-11-02T21:58:54.465456169Z [info] ======================================
+2025-11-02T21:58:54.465462102Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T21:58:54.465467870Z [info] ======================================
+2025-11-02T21:58:54.465477516Z [info] Time: Sun Nov  2 21:58:54 UTC 2025
+2025-11-02T21:58:54.465485676Z [info] Node version: v20.19.5
+2025-11-02T21:58:54.644593971Z [info] âœ… dist directory exists
+2025-11-02T21:58:54.644691343Z [info] NPM version: 10.8.2
+2025-11-02T21:58:54.644697861Z [info] 
+2025-11-02T21:58:54.644705250Z [info] ðŸ“ Current directory: /app
+2025-11-02T21:58:54.644712601Z [info] ðŸ“‚ Listing root files:
+2025-11-02T21:58:54.644719493Z [info] total 428
+2025-11-02T21:58:54.644726064Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:54.644733303Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 21:58 ..
+2025-11-02T21:58:54.644739863Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 21:56 create-healing-tables.sql
+2025-11-02T21:58:54.644746453Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 dist
+2025-11-02T21:58:54.644752844Z [info] -rw-rw-r--    1 root     root           325 Nov  2 21:56 drizzle.config.ts
+2025-11-02T21:58:54.644760231Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 21:56 drop-old-tables.js
+2025-11-02T21:58:54.644766684Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 node_modules
+2025-11-02T21:58:54.644772916Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 21:57 package-lock.json
+2025-11-02T21:58:54.644779678Z [info] -rw-rw-r--    1 root     root          4651 Nov  2 21:57 package.json
+2025-11-02T21:58:54.644786319Z [info] -rwxrwxr-x    1 root     root          3254 Nov  2 21:56 railway-start.sh
+2025-11-02T21:58:54.644793620Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 21:56 replit.md
+2025-11-02T21:58:54.644801077Z [info] drwxr-xr-x   12 root     root          4096 Nov  2 21:56 server
+2025-11-02T21:58:54.644807306Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 21:56 shared
+2025-11-02T21:58:54.644813639Z [info] -rw-rw-r--    1 root     root           960 Nov  2 21:56 tsconfig.json
+2025-11-02T21:58:54.644822522Z [info] 
+2025-11-02T21:58:54.644829744Z [info] ðŸ” Checking for dist directory...
+2025-11-02T21:58:54.646381104Z [info] ðŸ“‚ Contents:
+2025-11-02T21:58:54.646393726Z [info] total 12
+2025-11-02T21:58:54.646400957Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:54.646408115Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 ..
+2025-11-02T21:58:54.646414432Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 public
+2025-11-02T21:58:54.646420708Z [info] âŒ dist/index.js NOT found!
+2025-11-02T21:58:55.585762038Z [info] ======================================
+2025-11-02T21:58:55.585773961Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T21:58:55.585782382Z [info] ======================================
+2025-11-02T21:58:55.585788554Z [info] Time: Sun Nov  2 21:58:55 UTC 2025
+2025-11-02T21:58:55.598779622Z [info] Node version: v20.19.5
+2025-11-02T21:58:56.118624209Z [info] -rw-rw-r--    1 root     root           960 Nov  2 21:56 tsconfig.json
+2025-11-02T21:58:56.118634776Z [info] 
+2025-11-02T21:58:56.118637122Z [info] ðŸ“‚ Listing root files:
+2025-11-02T21:58:56.118646052Z [info] ðŸ” Checking for dist directory...
+2025-11-02T21:58:56.118646690Z [info] total 428
+2025-11-02T21:58:56.118653775Z [info] âœ… dist directory exists
+2025-11-02T21:58:56.118655519Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:56.118668917Z [info] NPM version: 10.8.2
+2025-11-02T21:58:56.118682797Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 21:58 ..
+2025-11-02T21:58:56.118688727Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 21:56 create-healing-tables.sql
+2025-11-02T21:58:56.118693436Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 dist
+2025-11-02T21:58:56.118699071Z [info] -rw-rw-r--    1 root     root           325 Nov  2 21:56 drizzle.config.ts
+2025-11-02T21:58:56.118706059Z [info] 
+2025-11-02T21:58:56.118707359Z [info] -rw-rw-r--    1 root     root          4651 Nov  2 21:57 package.json
+2025-11-02T21:58:56.118716964Z [info] -rwxrwxr-x    1 root     root          3254 Nov  2 21:56 railway-start.sh
+2025-11-02T21:58:56.118718791Z [info] ðŸ“ Current directory: /app
+2025-11-02T21:58:56.118724759Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 21:56 replit.md
+2025-11-02T21:58:56.118731019Z [info] drwxr-xr-x   12 root     root          4096 Nov  2 21:56 server
+2025-11-02T21:58:56.118737218Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 21:56 shared
+2025-11-02T21:58:56.118747777Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 21:56 drop-old-tables.js
+2025-11-02T21:58:56.118759856Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 node_modules
+2025-11-02T21:58:56.118768512Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 21:57 package-lock.json
+2025-11-02T21:58:56.122377868Z [info] ðŸ“‚ Contents:
+2025-11-02T21:58:56.122384677Z [info] total 12
+2025-11-02T21:58:56.122415181Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:56.122422454Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 ..
+2025-11-02T21:58:56.122428938Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 public
+2025-11-02T21:58:56.122435403Z [info] âŒ dist/index.js NOT found!
+2025-11-02T21:58:57.144498059Z [info] ======================================
+2025-11-02T21:58:57.144502142Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T21:58:57.144506389Z [info] ======================================
+2025-11-02T21:58:57.144511295Z [info] Time: Sun Nov  2 21:58:56 UTC 2025
+2025-11-02T21:58:57.144516898Z [info] Node version: v20.19.5
+2025-11-02T21:58:57.144522534Z [info] NPM version: 10.8.2
+2025-11-02T21:58:57.144527811Z [info] 
+2025-11-02T21:58:57.144533484Z [info] ðŸ“ Current directory: /app
+2025-11-02T21:58:57.144537716Z [info] ðŸ“‚ Listing root files:
+2025-11-02T21:58:57.144541836Z [info] total 428
+2025-11-02T21:58:57.144546684Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:57.144552295Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 21:58 ..
+2025-11-02T21:58:57.144556193Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 21:56 create-healing-tables.sql
+2025-11-02T21:58:57.144560804Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 dist
+2025-11-02T21:58:57.144566869Z [info] -rw-rw-r--    1 root     root           325 Nov  2 21:56 drizzle.config.ts
+2025-11-02T21:58:57.144573039Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 21:56 drop-old-tables.js
+2025-11-02T21:58:57.144578559Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 node_modules
+2025-11-02T21:58:57.144584165Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 21:57 package-lock.json
+2025-11-02T21:58:57.144589704Z [info] -rw-rw-r--    1 root     root          4651 Nov  2 21:57 package.json
+2025-11-02T21:58:57.144595144Z [info] -rwxrwxr-x    1 root     root          3254 Nov  2 21:56 railway-start.sh
+2025-11-02T21:58:57.144601141Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 21:56 replit.md
+2025-11-02T21:58:57.144607981Z [info] drwxr-xr-x   12 root     root          4096 Nov  2 21:56 server
+2025-11-02T21:58:57.146835445Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 21:56 shared
+2025-11-02T21:58:57.146840137Z [info] -rw-rw-r--    1 root     root           960 Nov  2 21:56 tsconfig.json
+2025-11-02T21:58:57.146845185Z [info] 
+2025-11-02T21:58:57.146851280Z [info] ðŸ” Checking for dist directory...
+2025-11-02T21:58:57.146855872Z [info] âœ… dist directory exists
+2025-11-02T21:58:57.146860565Z [info] ðŸ“‚ Contents:
+2025-11-02T21:58:57.146867731Z [info] total 12
+2025-11-02T21:58:57.146872150Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:57.146876890Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 ..
+2025-11-02T21:58:57.146880789Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 public
+2025-11-02T21:58:57.146885046Z [info] âŒ dist/index.js NOT found!
+2025-11-02T21:58:58.140810640Z [info] ðŸ“‚ Listing root files:
+2025-11-02T21:58:58.140833020Z [info] total 428
+2025-11-02T21:58:58.140848334Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:58.140859494Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 21:58 ..
+2025-11-02T21:58:58.140873492Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 21:56 create-healing-tables.sql
+2025-11-02T21:58:58.140887412Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 dist
+2025-11-02T21:58:58.140899738Z [info] -rw-rw-r--    1 root     root           325 Nov  2 21:56 drizzle.config.ts
+2025-11-02T21:58:58.140908939Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 21:56 drop-old-tables.js
+2025-11-02T21:58:58.140918937Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 node_modules
+2025-11-02T21:58:58.140929705Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 21:57 package-lock.json
+2025-11-02T21:58:58.140939614Z [info] -rw-rw-r--    1 root     root          4651 Nov  2 21:57 package.json
+2025-11-02T21:58:58.140951168Z [info] -rwxrwxr-x    1 root     root          3254 Nov  2 21:56 railway-start.sh
+2025-11-02T21:58:58.140961440Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 21:56 replit.md
+2025-11-02T21:58:58.140972535Z [info] drwxr-xr-x   12 root     root          4096 Nov  2 21:56 server
+2025-11-02T21:58:58.141099031Z [info] ======================================
+2025-11-02T21:58:58.141103700Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T21:58:58.141111534Z [info] ======================================
+2025-11-02T21:58:58.141121654Z [info] Time: Sun Nov  2 21:58:57 UTC 2025
+2025-11-02T21:58:58.141128175Z [info] Node version: v20.19.5
+2025-11-02T21:58:58.141134691Z [info] NPM version: 10.8.2
+2025-11-02T21:58:58.141143188Z [info] 
+2025-11-02T21:58:58.141151553Z [info] ðŸ“ Current directory: /app
+2025-11-02T21:58:58.142464324Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 21:56 shared
+2025-11-02T21:58:58.142470107Z [info] -rw-rw-r--    1 root     root           960 Nov  2 21:56 tsconfig.json
+2025-11-02T21:58:58.142476449Z [info] 
+2025-11-02T21:58:58.142485895Z [info] ðŸ” Checking for dist directory...
+2025-11-02T21:58:58.142493489Z [info] âœ… dist directory exists
+2025-11-02T21:58:58.142500571Z [info] ðŸ“‚ Contents:
+2025-11-02T21:58:58.142507788Z [info] total 12
+2025-11-02T21:58:58.142514890Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 .
+2025-11-02T21:58:58.142521513Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 21:57 ..
+2025-11-02T21:58:58.142529615Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 21:57 public
+2025-11-02T21:58:58.142629724Z [info] âŒ dist/index.js NOT found!
