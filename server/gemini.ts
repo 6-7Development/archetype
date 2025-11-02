@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { WebSocket } from 'ws';
 
-const DEFAULT_MODEL = "gemini-2.0-flash-exp";
+const DEFAULT_MODEL = "gemini-2.5-flash";
 
 const genai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "dummy-key-for-development");
 
@@ -66,14 +66,89 @@ function convertMessagesToGemini(messages: any[]): any[] {
               // Get the original function name from the map
               const functionName = toolUseMap.get(c.tool_use_id) || c.tool_use_id;
               
-              // Try to parse as JSON, but handle plain text gracefully
-              let responseData;
-              try {
-                responseData = JSON.parse(c.content || '{}');
-              } catch {
-                // If not JSON, use the content as-is (plain text)
-                responseData = { result: c.content };
-              }
+              // Extract data from Anthropic block objects or handle raw content
+              const extractContent = (content: any): any => {
+                // Helper function to ensure we ALWAYS return an object
+                const ensureObject = (value: any): any => {
+                  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+                    return { result: value };
+                  }
+                  return value;
+                };
+
+                // Handle array of block objects (Anthropic format)
+                if (Array.isArray(content)) {
+                  if (content.length === 1) {
+                    const item = content[0];
+                    // Handle Anthropic block objects
+                    if (typeof item === 'object' && item !== null) {
+                      if ('json' in item) {
+                        // ✅ FIX: Ensure JSON payload is an object
+                        return ensureObject(item.json);
+                      }
+                      if ('text' in item) return { result: item.text }; // Extract text as object
+                    }
+                    if (typeof item === 'string') return { result: item };
+                  }
+                  
+                  // Handle multiple blocks: separate JSON and text
+                  const jsonBlocks: any[] = [];
+                  const textBlocks: string[] = [];
+                  
+                  content.forEach(c => {
+                    if (typeof c === 'string') {
+                      textBlocks.push(c);
+                    } else if (typeof c === 'object' && c !== null) {
+                      if ('json' in c) {
+                        jsonBlocks.push(c.json);
+                      } else if ('text' in c) {
+                        textBlocks.push(c.text);
+                      } else {
+                        // Unknown object type, stringify it
+                        textBlocks.push(JSON.stringify(c));
+                      }
+                    }
+                  });
+                  
+                  // Return structured object based on what we have
+                  if (jsonBlocks.length > 0 && textBlocks.length > 0) {
+                    // Both JSON and text: return structured object
+                    return {
+                      json: jsonBlocks.length === 1 ? jsonBlocks[0] : jsonBlocks,
+                      text: textBlocks.join('\n')
+                    };
+                  } else if (jsonBlocks.length > 0) {
+                    // ✅ FIX: Only JSON - ensure result is an object
+                    const jsonData = jsonBlocks.length === 1 ? jsonBlocks[0] : jsonBlocks;
+                    return ensureObject(jsonData);
+                  } else if (textBlocks.length > 0) {
+                    // Only text: return as result object
+                    return { result: textBlocks.join('\n') };
+                  }
+                  
+                  // Empty array fallback
+                  return {};
+                }
+                
+                // Handle direct string content
+                if (typeof content === 'string') {
+                  try {
+                    const parsed = JSON.parse(content);
+                    // ✅ FIX: Ensure parsed result is an object
+                    return ensureObject(parsed);
+                  } catch {
+                    return { result: content };
+                  }
+                }
+                
+                // ✅ FIX: Handle direct content - ensure it's an object
+                if (!content) {
+                  return {};
+                }
+                return ensureObject(content);
+              };
+              
+              const responseData = extractContent(c.content);
               
               return {
                 functionResponse: {
