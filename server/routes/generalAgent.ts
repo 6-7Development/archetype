@@ -3,7 +3,7 @@
  */
 
 import { Router } from 'express';
-import { generalAgentService } from '../services/generalAgent';
+import { generalAgentService } from '../services/generalAgent.ts';
 
 const router = Router();
 

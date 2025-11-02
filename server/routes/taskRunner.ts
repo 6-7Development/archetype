@@ -3,7 +3,7 @@
  */
 
 import express from 'express';
-import { taskRunnerService } from '../services/taskRunner';
+import { taskRunnerService } from '../services/taskRunner.ts';
 
 const router = express.Router();
 

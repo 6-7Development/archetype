@@ -3,7 +3,7 @@
  */
 
 import { Router } from 'express';
-import { workflowEngine } from '../services/workflowEngine';
+import { workflowEngine } from '../services/workflowEngine.ts';
 
 const router = Router();
 

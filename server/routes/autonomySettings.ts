@@ -3,7 +3,7 @@
  */
 
 import express from 'express';
-import { autonomySettingsService } from '../services/autonomySettings';
+import { autonomySettingsService } from '../services/autonomySettings.ts';
 
 const router = express.Router();
 

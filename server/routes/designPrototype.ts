@@ -3,7 +3,7 @@
  */
 
 import { Router } from 'express';
-import { designPrototypeService } from '../services/designPrototype';
+import { designPrototypeService } from '../services/designPrototype.ts';
 
 const router = Router();
 

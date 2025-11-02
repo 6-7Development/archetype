@@ -3,7 +3,7 @@
  */
 
 import { Router } from 'express';
-import { planModeService } from '../services/planMode';
+import { planModeService } from '../services/planMode.ts';
 
 const router = Router();
 

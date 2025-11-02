@@ -1,5 +1,5 @@
 import { Router, type Request, Response } from 'express';
-import { db } from '../db';
+import { db } from '../db.ts';
 import { aiKnowledgeBase, aiFixAttempts } from '@shared/schema';
 import { desc, eq, sql } from 'drizzle-orm';
 

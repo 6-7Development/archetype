@@ -3,7 +3,7 @@
  */
 
 import express from 'express';
-import { imageGenerationService } from '../services/imageGeneration';
+import { imageGenerationService } from '../services/imageGeneration.ts';
 
 const router = express.Router();
 
