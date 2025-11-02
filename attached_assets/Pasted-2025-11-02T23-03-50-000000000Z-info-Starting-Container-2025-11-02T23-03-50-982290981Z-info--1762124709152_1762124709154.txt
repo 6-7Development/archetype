@@ -1,0 +1,116 @@
+2025-11-02T23:03:50.000000000Z [info] Starting Container
+2025-11-02T23:03:50.982290981Z [info] ======================================
+2025-11-02T23:03:50.982296995Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T23:03:50.982302819Z [info] ======================================
+2025-11-02T23:03:50.982310306Z [info] Time: Sun Nov  2 23:03:50 UTC 2025
+2025-11-02T23:03:50.982316237Z [info] Node version: v20.19.5
+2025-11-02T23:03:50.982323131Z [info] NPM version: 10.8.2
+2025-11-02T23:03:50.982329221Z [info] 
+2025-11-02T23:03:50.982334482Z [info] ðŸ“ Current directory: /app
+2025-11-02T23:03:50.982340455Z [info] ðŸ“‚ Listing root files:
+2025-11-02T23:03:50.982346150Z [info] total 432
+2025-11-02T23:03:50.982351426Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 23:03 .
+2025-11-02T23:03:50.982357857Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 23:03 ..
+2025-11-02T23:03:50.982677312Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 23:02 create-healing-tables.sql
+2025-11-02T23:03:50.982689500Z [info] -rwxr-xr-x    1 root     root          1990 Nov  2 23:02 debug-start.sh
+2025-11-02T23:03:50.982696544Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 22:53 dist
+2025-11-02T23:03:50.982702418Z [info] -rw-rw-r--    1 root     root           325 Nov  2 23:02 drizzle.config.ts
+2025-11-02T23:03:50.982707745Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 23:02 drop-old-tables.js
+2025-11-02T23:03:50.982713574Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 node_modules
+2025-11-02T23:03:50.982719848Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 22:53 package-lock.json
+2025-11-02T23:03:50.982726103Z [info] -rw-rw-r--    1 root     root          4631 Nov  2 22:53 package.json
+2025-11-02T23:03:50.982736381Z [info] -rwxr-xr-x    1 root     root          3148 Nov  2 23:02 railway-start.sh
+2025-11-02T23:03:50.982742452Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 23:02 replit.md
+2025-11-02T23:03:50.983691487Z [info] 
+2025-11-02T23:03:50.983701210Z [info] ðŸ—‘ï¸ Dropping old tables with incorrect schema...
+2025-11-02T23:03:50.983708820Z [info] [DROP-TABLES] Dropping old healing tables with incorrect schema...
+2025-11-02T23:03:50.983721535Z [info] drwxr-xr-x   13 root     root          4096 Nov  2 23:02 server
+2025-11-02T23:03:50.983722563Z [info] -rw-rw-r--    1 root     root           960 Nov  2 23:02 tsconfig.json
+2025-11-02T23:03:50.983730449Z [info] 
+2025-11-02T23:03:50.983733076Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 23:02 shared
+2025-11-02T23:03:50.983740912Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-02T23:03:50.983746894Z [info] âœ… dist/public directory exists (frontend build)
+2025-11-02T23:03:51.018022202Z [info] [DROP-TABLES] âœ… Dropped healing_messages
+2025-11-02T23:03:51.018028449Z [info] [DROP-TABLES] âœ… Dropped healing_conversations
+2025-11-02T23:03:51.023212436Z [info] [DROP-TABLES] âœ… Dropped healing_targets
+2025-11-02T23:03:51.032144774Z [info] [DROP-TABLES] âœ… Dropped ai_knowledge_base
+2025-11-02T23:03:51.032154830Z [info] [DROP-TABLES] âœ… Dropped platform_incident_playbooks
+2025-11-02T23:03:51.038725481Z [info] [DROP-TABLES] âœ… Dropped ai_fix_attempts
+2025-11-02T23:03:51.038739903Z [info] [DROP-TABLES] âœ… Dropped platform_heal_attempts
+2025-11-02T23:03:51.053611236Z [info] [DROP-TABLES] âœ… Dropped platform_healing_sessions
+2025-11-02T23:03:51.053617565Z [info] [DROP-TABLES] âœ… Dropped platform_incidents
+2025-11-02T23:03:51.053623878Z [info] [DROP-TABLES] âœ… All old tables dropped successfully
+2025-11-02T23:03:51.061319996Z [info] 
+2025-11-02T23:03:51.061329289Z [info] ðŸ”§ Creating healing tables with correct schema...
+2025-11-02T23:03:51.061336343Z [info] âš ï¸ psql not found, using node-postgres...
+2025-11-02T23:03:51.279460023Z [info] âœ… Tables created
+2025-11-02T23:03:51.290393155Z [info] 
+2025-11-02T23:03:51.290399833Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-11-02T23:03:51.290407050Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-02T23:03:51.290413950Z [info] âš ï¸ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)
+2025-11-02T23:03:51.290423672Z [info] âœ… Database schema ready!
+2025-11-02T23:03:51.290430908Z [info] 
+2025-11-02T23:03:51.290437622Z [info] ðŸ” Environment Check:
+2025-11-02T23:03:51.290448381Z [info] NODE_ENV: production
+2025-11-02T23:03:51.290455058Z [info] PORT: 8080
+2025-11-02T23:03:51.290583290Z [info] ==========================================
+2025-11-02T23:03:51.290588232Z [info] ðŸ” DEBUG MODE - VERBOSE ERROR CAPTURE
+2025-11-02T23:03:51.290593454Z [info] ==========================================
+2025-11-02T23:03:51.290602733Z [info] 
+2025-11-02T23:03:51.290607273Z [info] ðŸ“‹ Step 1: Verify server directory exists...
+2025-11-02T23:03:51.290616279Z [info] âœ… server/ directory exists
+2025-11-02T23:03:51.290620612Z [info] 
+2025-11-02T23:03:51.290624610Z [info] ðŸ“‹ Step 2: Verify server/index.ts exists...
+2025-11-02T23:03:51.290635577Z [info] DATABASE_URL: âœ“ SET (hidden for security)
+2025-11-02T23:03:51.290641134Z [info] GITHUB_TOKEN: âœ“ SET
+2025-11-02T23:03:51.290647564Z [info] GITHUB_REPO: 6-7Development/archetype
+2025-11-02T23:03:51.290652741Z [info] GITHUB_BRANCH: main
+2025-11-02T23:03:51.290658146Z [info] ANTHROPIC_API_KEY: âœ“ SET
+2025-11-02T23:03:51.290663899Z [info] 
+2025-11-02T23:03:51.290669691Z [info] ðŸ“„ Ensuring replit.md is available...
+2025-11-02T23:03:51.290675259Z [info] âœ… replit.md already present
+2025-11-02T23:03:51.290681447Z [info] 
+2025-11-02T23:03:51.290687009Z [info] ðŸš€ Starting Node.js application with debug wrapper...
+2025-11-02T23:03:51.290691720Z [info] Command: sh debug-start.sh
+2025-11-02T23:03:51.290696383Z [info] 
+2025-11-02T23:03:51.293818657Z [info] âœ… server/index.ts exists
+2025-11-02T23:03:51.293837099Z [info] 
+2025-11-02T23:03:51.293846095Z [info] ðŸ“‹ Step 3: Check Node.js and tsx availability...
+2025-11-02T23:03:51.298141848Z [info] Node version: v20.19.5
+2025-11-02T23:03:51.991460393Z [info] NPM version: 10.8.2
+2025-11-02T23:03:51.991464816Z [info] tsx location: /usr/local/bin/npx
+2025-11-02T23:03:51.991469282Z [info] 
+2025-11-02T23:03:51.991473390Z [info] ðŸ“‹ Step 4: Verify environment variables...
+2025-11-02T23:03:51.991480342Z [info] NODE_ENV: production
+2025-11-02T23:03:51.991484520Z [info] PORT: 8080
+2025-11-02T23:03:51.991488514Z [info] DATABASE_URL: âœ“ SET
+2025-11-02T23:03:51.991493916Z [info] 
+2025-11-02T23:03:51.991500305Z [info] ðŸ“‹ Step 5: Test tsx can load...
+2025-11-02T23:03:52.155461081Z [info] tsx v4.20.5
+2025-11-02T23:03:52.181964264Z [info] node v20.19.5
+2025-11-02T23:03:52.210532379Z [info] 
+2025-11-02T23:03:52.210538632Z [info] âœ… tsx is available
+2025-11-02T23:03:52.210544826Z [info] ðŸ“‹ Step 6: Starting server with tsx...
+2025-11-02T23:03:52.210552561Z [info] Command: npx tsx server/index.ts
+2025-11-02T23:03:52.210559449Z [info] ==========================================
+2025-11-02T23:03:52.210565600Z [info] 
+2025-11-02T23:03:56.121063970Z [info]   url: 'file:///app/server/lomuSuperCore.ts'
+2025-11-02T23:03:56.121078188Z [info] }
+2025-11-02T23:03:56.121088550Z [info] 
+2025-11-02T23:03:56.121098777Z [info] Node.js v20.19.5
+2025-11-02T23:03:56.121376402Z [info]     at finalizeResolution (node:internal/modules/esm/resolve:283:11)
+2025-11-02T23:03:56.121379359Z [info] 
+2025-11-02T23:03:56.121380596Z [info] Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/server/lomuSuperCore.ts' imported from /app/server/routes/architectAgent.ts
+2025-11-02T23:03:56.121392534Z [info] node:internal/modules/run_main:123
+2025-11-02T23:03:56.121395698Z [info]     at moduleResolve (node:internal/modules/esm/resolve:952:10)
+2025-11-02T23:03:56.121404683Z [info]     at async resolve (file:///app/node_modules/tsx/dist/esm/index.mjs?1762124633037:2:5355)
+2025-11-02T23:03:56.121408586Z [info]     triggerUncaughtException(
+2025-11-02T23:03:56.121414862Z [info]     at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+2025-11-02T23:03:56.121420096Z [info]     at async nextResolve (node:internal/modules/esm/hooks:864:22)
+2025-11-02T23:03:56.121421039Z [info]     ^
+2025-11-02T23:03:56.121431508Z [info]     at async Hooks.resolve (node:internal/modules/esm/hooks:306:24)
+2025-11-02T23:03:56.121441871Z [info]     at nextResolve (node:internal/modules/esm/hooks:864:28)
+2025-11-02T23:03:56.121442190Z [info]     at async handleMessage (node:internal/modules/esm/worker:196:18) {
+2025-11-02T23:03:56.121459046Z [info]     at resolveBase (file:///app/node_modules/tsx/dist/esm/index.mjs?1762124633037:2:3744)
+2025-11-02T23:03:56.121459176Z [info]   code: 'ERR_MODULE_NOT_FOUND',
+2025-11-02T23:03:56.121518904Z [info]     at async resolveDirectory (file:///app/node_modules/tsx/dist/esm/index.mjs?1762124633037:2:4237)
