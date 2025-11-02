@@ -1,15 +1,15 @@
 import type { Express } from "express";
 import { WebSocket } from "ws";
-import { storage } from "../storage";
+import { storage } from '../storage.ts';
 import { insertCommandSchema } from "@shared/schema";
-import { anthropic, DEFAULT_MODEL, streamAnthropicResponse } from "../anthropic";
-import { SYSOP_TOOLS } from "../tools";
-import { checkUsageLimits, trackAIUsage, decrementAICredits, getUserUsageStats, updateStorageUsage } from "../usage-tracking";
-import { isAuthenticated } from "../universalAuth";
-import { aiLimiter } from "../rateLimiting";
-import { aiQueue } from '../priority-queue';
-import { buildSystemPrompt, FEATURES, activeGenerations } from "./common";
-import { getOrCreateState, autoUpdateFromMessage, formatStateForPrompt } from '../services/conversationState';
+import { anthropic, DEFAULT_MODEL, streamAnthropicResponse } from '../anthropic.ts';
+import { SYSOP_TOOLS } from '../tools.ts';
+import { checkUsageLimits, trackAIUsage, decrementAICredits, getUserUsageStats, updateStorageUsage } from '../usage-tracking.ts';
+import { isAuthenticated } from '../universalAuth.ts';
+import { aiLimiter } from '../rateLimiting.ts';
+import { aiQueue } from '../priority-queue.ts';
+import { buildSystemPrompt, FEATURES, activeGenerations } from './common.ts';
+import { getOrCreateState, autoUpdateFromMessage, formatStateForPrompt } from '../services/conversationState.ts';
 
 //Helper function to summarize messages
 async function summarizeMessages(messages: any[]): Promise<string> {

@@ -3,7 +3,7 @@
  */
 
 import express from 'express';
-import { dynamicIntelligenceService } from '../services/dynamicIntelligence';
+import { dynamicIntelligenceService } from '../services/dynamicIntelligence.ts';
 
 const router = express.Router();
 

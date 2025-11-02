@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { runPlatformDiagnostics } from '../diagnostics';
-import { db } from '../db';
+import { runPlatformDiagnostics } from '../diagnostics.ts';
+import { db } from '../db.ts';
 import { sql } from 'drizzle-orm';
 
 // Admin middleware - checks if user is admin

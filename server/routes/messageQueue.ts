@@ -3,7 +3,7 @@
  */
 
 import express from 'express';
-import { messageQueueService } from '../services/messageQueue';
+import { messageQueueService } from '../services/messageQueue.ts';
 
 const router = express.Router();
 

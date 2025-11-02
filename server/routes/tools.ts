@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { executeBrowserTest } from '../tools/browser-test';
-import { executeWebSearch } from '../tools/web-search';
-import { executeVisionAnalysis } from '../tools/vision-analyze';
-import { isAuthenticated } from '../universalAuth';
-import { checkUsageLimits } from '../usage-tracking';
+import { executeBrowserTest } from '../tools/browser-test.ts';
+import { executeWebSearch } from '../tools/web-search.ts';
+import { executeVisionAnalysis } from '../tools/vision-analyze.ts';
+import { isAuthenticated } from '../universalAuth.ts';
+import { checkUsageLimits } from '../usage-tracking.ts';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });

@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { platformHealing } from '../platformHealing';
-import { knowledge_search, code_search } from '../tools/knowledge';
-import { buildArchitectSystemPrompt } from '../lomuSuperCore';
+import { platformHealing } from '../platformHealing.ts';
+import { knowledge_search, code_search } from '../tools/knowledge.ts';
+import { buildArchitectSystemPrompt } from '../lomuSuperCore.ts';
 import { RAILWAY_CONFIG } from '../config/railway.ts';
 
 const anthropic = new Anthropic({

@@ -3,7 +3,7 @@
  */
 
 import { Router } from 'express';
-import { automationService } from '../services/automationService';
+import { automationService } from '../services/automationService.ts';
 
 const router = Router();
 

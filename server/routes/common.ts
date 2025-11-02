@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { responseCache } from '../cache';
+import { responseCache } from '../cache.ts';
 
 // Feature flags for graceful degradation
 export const FEATURES = {
