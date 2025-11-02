@@ -95,6 +95,25 @@ export const insertUserAvatarStateSchema = createInsertSchema(userAvatarState).o
 export type InsertUserAvatarState = z.infer<typeof insertUserAvatarStateSchema>;
 export type UserAvatarState = typeof userAvatarState.$inferSelect;
 
+// Terminal History - Track terminal command execution history
+export const terminalHistory = pgTable("terminal_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  command: text("command").notNull(),
+  output: text("output"),
+  exitCode: integer("exit_code"),
+  executedAt: timestamp("executed_at").notNull().defaultNow(),
+});
+
+export const insertTerminalHistorySchema = createInsertSchema(terminalHistory).omit({
+  id: true,
+  executedAt: true,
+});
+
+export type InsertTerminalHistory = z.infer<typeof insertTerminalHistorySchema>;
+export type TerminalHistory = typeof terminalHistory.$inferSelect;
+
 // Platform Incidents - Track detected problems that need healing
 export const platformIncidents = pgTable("platform_incidents", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -381,6 +400,7 @@ export const files = pgTable("files", {
   path: text("path").notNull().default(""), // Folder path (e.g., "src/components/")
   content: text("content").notNull().default(""),
   language: text("language").notNull().default("javascript"),
+  folderId: varchar("folder_id"), // Parent folder ID (NULL for root)
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -394,6 +414,51 @@ export const insertFileSchema = createInsertSchema(files).omit({
 
 export type InsertFile = z.infer<typeof insertFileSchema>;
 export type File = typeof files.$inferSelect;
+
+// Project Folders - Hierarchical folder structure
+export const projectFolders = pgTable("project_folders", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  name: text("name").notNull(), // Folder name (e.g., "components", "utils")
+  parentId: varchar("parent_id"), // NULL for root folders
+  path: text("path").notNull(), // Full path (e.g., "/src/components")
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertProjectFolderSchema = createInsertSchema(projectFolders).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertProjectFolder = z.infer<typeof insertProjectFolderSchema>;
+export type ProjectFolder = typeof projectFolders.$inferSelect;
+
+// File Uploads - Metadata for uploaded assets (images, fonts, etc.)
+export const fileUploads = pgTable("file_uploads", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  filename: text("filename").notNull(),
+  originalName: text("original_name").notNull(),
+  mimeType: text("mime_type").notNull(),
+  size: integer("size").notNull(), // Size in bytes
+  storageKey: text("storage_key").notNull(), // S3/R2 key or base64 reference
+  storageType: text("storage_type").notNull().default("base64"), // "base64", "s3", "r2"
+  url: text("url"), // Public URL if hosted
+  folderId: varchar("folder_id"), // Optional parent folder
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertFileUploadSchema = createInsertSchema(fileUploads).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertFileUpload = z.infer<typeof insertFileUploadSchema>;
+export type FileUpload = typeof fileUploads.$inferSelect;
 
 export const commands = pgTable("commands", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -418,7 +483,7 @@ export type InsertCommand = z.infer<typeof insertCommandSchema>;
 export type Command = typeof commands.$inferSelect;
 
 // LomuAI Tasks - Replit Agent-style task tracking for AI generations
-export const lomuAITasks = pgTable("sysop_tasks", {
+export const lomuAITasks = pgTable("lomu_ai_tasks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
   projectId: varchar("project_id"),
@@ -431,9 +496,9 @@ export const lomuAITasks = pgTable("sysop_tasks", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   completedAt: timestamp("completed_at"),
 }, (table) => [
-  index("idx_sysop_tasks_user_id").on(table.userId),
-  index("idx_sysop_tasks_project_id").on(table.projectId),
-  index("idx_sysop_tasks_command_id").on(table.commandId),
+  index("idx_lomu_ai_tasks_user_id").on(table.userId),
+  index("idx_lomu_ai_tasks_project_id").on(table.projectId),
+  index("idx_lomu_ai_tasks_command_id").on(table.commandId),
 ]);
 
 export const insertLomuAITaskSchema = createInsertSchema(lomuAITasks).omit({
@@ -665,31 +730,152 @@ export const insertMonthlyUsageSchema = createInsertSchema(monthlyUsage).omit({
 export type InsertMonthlyUsage = z.infer<typeof insertMonthlyUsageSchema>;
 export type MonthlyUsage = typeof monthlyUsage.$inferSelect;
 
-// Deployments - Static site hosting
+// Deployments - Track each deployment of a project (Cloudflare Pages integration)
 export const deployments = pgTable("deployments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull(),
   projectId: varchar("project_id").notNull(),
-  subdomain: varchar("subdomain").unique().notNull(), // Unique URL slug
-  customDomain: varchar("custom_domain"), // Optional custom domain (Business+ tier)
-  sslStatus: text("ssl_status").default("pending"), // pending, active, failed
-  envVariables: jsonb("env_variables"), // Environment variables (encrypted)
-  status: text("status").notNull().default("active"), // active, paused, deleted
-  monthlyVisits: integer("monthly_visits").notNull().default(0),
+  userId: varchar("user_id").notNull(),
+  
+  // Deployment info
+  subdomain: text("subdomain").notNull().unique(), // e.g., "my-project" for my-project.lomu.app
+  customDomain: text("custom_domain"), // e.g., "mysite.com" (if user sets custom domain)
+  
+  // Cloudflare Pages info
+  cfProjectId: text("cf_project_id"), // Cloudflare Pages project ID
+  cfDeploymentId: text("cf_deployment_id"), // Cloudflare deployment ID
+  cfUrl: text("cf_url"), // Full URL (e.g., https://my-project.pages.dev)
+  
+  // Status
+  status: text("status").notNull().default("pending"), // "pending", "building", "deploying", "active", "failed"
+  buildJobId: varchar("build_job_id"), // Link to build job
+  
+  // Metadata
+  environment: text("environment").notNull().default("production"), // "production", "preview"
+  branch: text("branch").default("main"),
+  commitHash: text("commit_hash"),
+  
+  // Analytics
+  monthlyVisits: integer("monthly_visits").notNull().default(0), // Track monthly visits for billing
+  
+  // Timestamps
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  deployedAt: timestamp("deployed_at"),
 });
+
+// Subdomain validation: lowercase alphanumeric + hyphens, 3-63 chars
+const subdomainRegex = /^[a-z0-9]([a-z0-9-]{1,61}[a-z0-9])?$/;
+export const subdomainSchema = z.string().min(3).max(63).regex(
+  subdomainRegex,
+  "Subdomain must be lowercase alphanumeric with hyphens, 3-63 characters"
+);
+
+// Custom domain validation: valid DNS name
+const domainRegex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/;
+export const customDomainSchema = z.string().min(4).max(253).regex(
+  domainRegex,
+  "Invalid domain format"
+);
 
 export const insertDeploymentSchema = createInsertSchema(deployments).omit({
   id: true,
-  userId: true, // Server-injected from auth session
-  monthlyVisits: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  subdomain: subdomainSchema,
+  customDomain: z.string().optional().nullable().refine(
+    (val) => !val || customDomainSchema.safeParse(val).success,
+    { message: "Invalid custom domain format" }
+  ),
 });
 
 export type InsertDeployment = z.infer<typeof insertDeploymentSchema>;
 export type Deployment = typeof deployments.$inferSelect;
+
+// Build Jobs - Track build process for deployments
+export const buildJobs = pgTable("build_jobs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  deploymentId: varchar("deployment_id"),
+  
+  // Build info
+  status: text("status").notNull().default("queued"), // "queued", "building", "success", "failed"
+  buildLogs: text("build_logs"), // Full build output
+  errorMessage: text("error_message"),
+  
+  // Artifacts
+  artifactPath: text("artifact_path"), // S3/R2 path to built files
+  artifactSize: integer("artifact_size"), // Size in bytes
+  
+  // Timing
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  duration: integer("duration"), // Seconds
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertBuildJobSchema = createInsertSchema(buildJobs).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertBuildJob = z.infer<typeof insertBuildJobSchema>;
+export type BuildJob = typeof buildJobs.$inferSelect;
+
+// Custom Domains - User-owned domains pointing to deployments
+export const customDomains = pgTable("custom_domains", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  deploymentId: varchar("deployment_id").notNull().unique(), // One domain per deployment
+  userId: varchar("user_id").notNull(),
+  
+  // Domain info
+  domain: text("domain").notNull().unique(), // e.g., "mysite.com"
+  
+  // DNS validation
+  status: text("status").notNull().default("pending_verification"), // "pending_verification", "verified", "active", "failed"
+  dnsVerificationToken: text("dns_verification_token"), // TXT record value for verification
+  dnsVerified: boolean("dns_verified").notNull().default(false),
+  
+  // Cloudflare info
+  cfCustomHostnameId: text("cf_custom_hostname_id"), // Cloudflare custom hostname ID
+  cfStatus: text("cf_status"), // Cloudflare status
+  cfSslStatus: text("cf_ssl_status"), // SSL certificate status
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  verifiedAt: timestamp("verified_at"),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertCustomDomainSchema = createInsertSchema(customDomains).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertCustomDomain = z.infer<typeof insertCustomDomainSchema>;
+export type CustomDomain = typeof customDomains.$inferSelect;
+
+// Deployment Logs - Real-time build/deploy logs streamed to UI
+export const deploymentLogs = pgTable("deployment_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  buildJobId: varchar("build_job_id").notNull(),
+  deploymentId: varchar("deployment_id"),
+  
+  // Log entry
+  message: text("message").notNull(),
+  level: text("level").notNull().default("info"), // "info", "warning", "error"
+  timestamp: timestamp("timestamp").notNull().defaultNow(),
+});
+
+export const insertDeploymentLogSchema = createInsertSchema(deploymentLogs).omit({
+  id: true,
+  timestamp: true,
+});
+
+export type InsertDeploymentLog = z.infer<typeof insertDeploymentLogSchema>;
+export type DeploymentLog = typeof deploymentLogs.$inferSelect;
 
 // Templates - Pre-built starter projects (Marketplace)
 export const templates = pgTable("templates", {
@@ -838,6 +1024,28 @@ export const insertGitRepositorySchema = createInsertSchema(gitRepositories).omi
 
 export type InsertGitRepository = z.infer<typeof insertGitRepositorySchema>;
 export type GitRepository = typeof gitRepositories.$inferSelect;
+
+// Project Migrations - Track generated database migrations for projects
+export const projectMigrations = pgTable("project_migrations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  name: text("name").notNull(), // Migration name (e.g., "add_users_table")
+  filename: text("filename").notNull(), // Generated SQL filename
+  sql: text("sql").notNull(), // Migration SQL content
+  status: text("status").notNull().default("pending"), // "pending", "applied", "failed"
+  appliedAt: timestamp("applied_at"),
+  rollbackSql: text("rollback_sql"), // Reverse migration SQL
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertProjectMigrationSchema = createInsertSchema(projectMigrations).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertProjectMigration = z.infer<typeof insertProjectMigrationSchema>;
+export type ProjectMigration = typeof projectMigrations.$inferSelect;
 
 export const insertTemplatePurchaseSchema = createInsertSchema(templatePurchases).omit({
   id: true,
@@ -1378,8 +1586,8 @@ export const lomuKnowledge = pgTable("lomu_knowledge", {
   active: boolean("active").notNull().default(true), // Can be deactivated without deletion
   usageCount: integer("usage_count").notNull().default(0), // How many times this was referenced
   lastUsedAt: timestamp("last_used_at"),
-  createdBy: varchar("created_by"), // User ID or 'system' or 'meta-sysop'
-  approvedBy: varchar("approved_by"), // User ID who approved this knowledge (I AM architect)
+  createdBy: varchar("created_by"), // User ID or 'system' or 'lomu-ai'
+  approvedBy: varchar("approved_by"), // User ID who approved this knowledge (I AM)
   metadata: jsonb("metadata"), // Additional structured data
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -2167,3 +2375,26 @@ export const insertErrorSignatureDeduplicationSchema = createInsertSchema(errorS
 
 export type InsertErrorSignatureDeduplication = z.infer<typeof insertErrorSignatureDeduplicationSchema>;
 export type ErrorSignatureDeduplication = typeof errorSignatureDeduplication.$inferSelect;
+
+// Project Git Configuration - Track Git settings per project
+export const projectGitConfig = pgTable("project_git_config", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull().unique(),
+  userId: varchar("user_id").notNull(),
+  repoPath: text("repo_path").notNull(), // Local path to git repo
+  defaultBranch: text("default_branch").notNull().default("main"),
+  authorName: text("author_name"), // User's git author name
+  authorEmail: text("author_email"), // User's git author email
+  initialized: boolean("initialized").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertProjectGitConfigSchema = createInsertSchema(projectGitConfig).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertProjectGitConfig = z.infer<typeof insertProjectGitConfigSchema>;
+export type ProjectGitConfig = typeof projectGitConfig.$inferSelect;
