@@ -33,7 +33,7 @@ RUN npm ci
 RUN npm install drizzle-kit@^0.31.4
 
 # Copy built frontend from builder stage
-COPY --from=frontend-builder /app/dist/public ./dist/public
+COPY --from=frontend-builder /app/dist ./dist
 
 # Copy server code (TypeScript)
 COPY server ./server
@@ -46,9 +46,10 @@ COPY replit.md ./
 
 # Copy startup script and database setup scripts
 COPY railway-start.sh ./
+COPY debug-start.sh ./
 COPY drop-old-tables.js ./
 COPY create-healing-tables.sql ./
-RUN chmod +x railway-start.sh
+RUN chmod +x railway-start.sh debug-start.sh
 
 # Expose port
 EXPOSE 5000
