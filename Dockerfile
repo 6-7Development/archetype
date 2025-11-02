@@ -8,11 +8,17 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# Copy source code
-COPY . .
+# Copy source code (needed for vite build)
+COPY client ./client
+COPY shared ./shared
+COPY attached_assets ./attached_assets
+COPY vite.config.ts ./
+COPY tsconfig.json ./
+COPY postcss.config.js ./
+COPY tailwind.config.ts ./
 
-# Build frontend
-RUN npm run build
+# Build frontend ONLY (not server)
+RUN npx vite build
 
 # Stage 2: Production runtime
 FROM node:20-alpine AS production
