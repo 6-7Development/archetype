@@ -114,6 +114,11 @@ function setupTerminalSession(ws: any, projectId: string) {
 
         // Create terminal session
         try {
+          // Type guard: userId is guaranteed to be non-null here
+          if (!userId) {
+            throw new Error('User ID is required');
+          }
+          
           await terminalService.createSession(
             sessionId,
             projectId,

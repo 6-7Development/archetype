@@ -118,6 +118,87 @@ import { PLAN_LIMITS } from "./usage-tracking";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 
+// SECURITY: Encryption utilities for sensitive data (git tokens, etc.)
+// Uses AES-256-GCM with SESSION_SECRET as the encryption key
+const ENCRYPTION_ALGORITHM = 'aes-256-gcm';
+const ENCRYPTION_KEY_LENGTH = 32;
+const IV_LENGTH = 16;
+const AUTH_TAG_LENGTH = 16;
+
+/**
+ * Encrypts sensitive data (e.g., git access tokens) using AES-256-GCM
+ * @param plaintext The data to encrypt
+ * @returns Base64-encoded encrypted data with IV and auth tag
+ */
+function encryptValue(plaintext: string): string {
+  if (!plaintext) return plaintext;
+  
+  const sessionSecret = process.env.SESSION_SECRET;
+  if (!sessionSecret) {
+    throw new Error('SESSION_SECRET not configured - cannot encrypt sensitive data');
+  }
+
+  // Derive a 32-byte key from SESSION_SECRET using SHA-256
+  const key = crypto.createHash('sha256').update(sessionSecret).digest();
+  
+  // Generate random IV
+  const iv = crypto.randomBytes(IV_LENGTH);
+  
+  // Create cipher
+  const cipher = crypto.createCipheriv(ENCRYPTION_ALGORITHM, key, iv);
+  
+  // Encrypt
+  let encrypted = cipher.update(plaintext, 'utf8', 'base64');
+  encrypted += cipher.final('base64');
+  
+  // Get auth tag
+  const authTag = cipher.getAuthTag();
+  
+  // Combine IV + authTag + encrypted data into single base64 string
+  const combined = Buffer.concat([iv, authTag, Buffer.from(encrypted, 'base64')]);
+  return combined.toString('base64');
+}
+
+/**
+ * Decrypts sensitive data encrypted with encryptValue()
+ * @param encrypted Base64-encoded encrypted data
+ * @returns Decrypted plaintext
+ */
+function decryptValue(encrypted: string): string {
+  if (!encrypted) return encrypted;
+  
+  const sessionSecret = process.env.SESSION_SECRET;
+  if (!sessionSecret) {
+    throw new Error('SESSION_SECRET not configured - cannot decrypt sensitive data');
+  }
+
+  try {
+    // Derive the same 32-byte key
+    const key = crypto.createHash('sha256').update(sessionSecret).digest();
+    
+    // Decode from base64
+    const combined = Buffer.from(encrypted, 'base64');
+    
+    // Extract IV, auth tag, and encrypted data
+    const iv = combined.subarray(0, IV_LENGTH);
+    const authTag = combined.subarray(IV_LENGTH, IV_LENGTH + AUTH_TAG_LENGTH);
+    const encryptedData = combined.subarray(IV_LENGTH + AUTH_TAG_LENGTH);
+    
+    // Create decipher
+    const decipher = crypto.createDecipheriv(ENCRYPTION_ALGORITHM, key, iv);
+    decipher.setAuthTag(authTag);
+    
+    // Decrypt
+    let decrypted = decipher.update(encryptedData, undefined, 'utf8');
+    decrypted += decipher.final('utf8');
+    
+    return decrypted;
+  } catch (error) {
+    console.error('[STORAGE] Decryption failed:', error);
+    throw new Error('Failed to decrypt sensitive data - invalid encryption or key mismatch');
+  }
+}
+
 // Server-side types that include userId (not exposed to client)
 type InsertFileWithUser = InsertFile & { userId: string };
 type InsertProjectWithUser = InsertProject & { userId: string };
@@ -2015,6 +2096,18 @@ export class DatabaseStorage implements IStorage {
         eq(gitRepositories.projectId, projectId),
         eq(gitRepositories.userId, userId)
       ));
+    
+    // SECURITY: Decrypt access token before returning
+    if (repo && repo.accessToken) {
+      try {
+        repo.accessToken = decryptValue(repo.accessToken);
+      } catch (error) {
+        console.error('[STORAGE] Failed to decrypt git access token:', error);
+        // Return repo without token rather than failing completely
+        repo.accessToken = null;
+      }
+    }
+    
     return repo;
   }
 
@@ -2027,9 +2120,10 @@ export class DatabaseStorage implements IStorage {
     branch?: string; 
     accessToken?: string 
   }): Promise<any> {
-    // Encrypt access token if provided
-    const encryptedToken = repo.accessToken ? this.encryptValue(repo.accessToken) : null;
-
+    // SECURITY: Encrypt access token before storing in database
+    // Uses AES-256-GCM with SESSION_SECRET to protect git credentials at rest
+    const encryptedToken = repo.accessToken ? encryptValue(repo.accessToken) : null;
+    
     const [newRepo] = await db
       .insert(gitRepositories)
       .values({
@@ -2038,6 +2132,12 @@ export class DatabaseStorage implements IStorage {
         syncStatus: 'pending'
       })
       .returning();
+    
+    // Return the repo with decrypted token for immediate use
+    if (newRepo.accessToken) {
+      newRepo.accessToken = repo.accessToken; // Use original plaintext
+    }
+    
     return newRepo;
   }
 

@@ -372,7 +372,9 @@ export class TerminalService {
   cleanupUserSessions(userId: string): void {
     console.log(`[TERMINAL] Cleaning up all sessions for user ${userId}`);
     
-    for (const [sessionId, session] of this.sessions.entries()) {
+    // Convert Map iterator to array to avoid downlevelIteration issues
+    const sessionEntries = Array.from(this.sessions.entries());
+    for (const [sessionId, session] of sessionEntries) {
       if (session.userId === userId) {
         this.cleanup(sessionId);
       }

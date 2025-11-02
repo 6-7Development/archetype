@@ -754,6 +754,9 @@ export const deployments = pgTable("deployments", {
   branch: text("branch").default("main"),
   commitHash: text("commit_hash"),
   
+  // Analytics
+  monthlyVisits: integer("monthly_visits").notNull().default(0), // Track monthly visits for billing
+  
   // Timestamps
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

@@ -86,6 +86,57 @@ LomuAI supports parallel subagent orchestration, allowing multiple tasks to exec
 - **Detailed Logging**: Build logs show script sanitization results (kept vs. removed scripts) for transparency.
 - **Defense-in-Depth**: Multiple layers (authorization, allowlisting, resource limits, rate limiting) ensure production safety even if one layer fails.
 
+#### npm Script Allowlist Policy - Detailed Documentation
+
+**Current Policy (Updated 2024-11-02):**
+- **ONLY PERMITTED**: `build` script (required for Vite/Webpack build process)
+- **ALL OTHER SCRIPTS BLOCKED**: This includes lifecycle hooks (install, postinstall, prepare, prepublish) and custom scripts (prebuild, postbuild, etc.)
+
+**Security Trade-off:**
+This strict allowlist policy prioritizes security over compatibility. It may break legitimate packages that rely on:
+- `prebuild`/`postbuild` scripts for code generation
+- `prepare` scripts for TypeScript compilation
+- `install`/`postinstall` scripts for native module compilation (node-gyp, etc.)
+
+**Handling Incompatible Packages:**
+If a user project requires a package with additional npm scripts:
+
+1. **Security Review Process:**
+   - Review the package's package.json scripts section
+   - Inspect the actual script commands for malicious code
+   - Check for shell execution, network calls, or file system modifications
+   - Verify the package is from a trusted source (npm verified, high download count, active maintenance)
+
+2. **If Safe, Update Allowlist:**
+   - Edit `server/services/buildService.ts`
+   - Add the script to `ALLOWED_NPM_SCRIPTS` array with a justification comment
+   - Example: `'postbuild',  // Required for @example/package - reviewed 2024-11-02`
+
+3. **Testing Protocol:**
+   - Test in isolated development environment first
+   - Monitor build logs for unexpected behavior
+   - Verify no unauthorized network/file access occurs
+
+4. **Documentation:**
+   - Update this section in replit.md with the new allowed script
+   - Document the package name, script purpose, and review date
+   - Include link to security review discussion/ticket if applicable
+
+**Example Safe Scripts to Consider:**
+- `postbuild`: Often used for minification or asset optimization (review carefully)
+- `prepare`: Used by TypeScript packages for compilation (common in dev dependencies)
+
+**Example Dangerous Scripts to ALWAYS BLOCK:**
+- `preinstall`/`install`/`postinstall`: Can execute arbitrary code during npm install
+- `prepublish`: Can run unexpected code before package publish
+- Custom scripts with shell execution (`sh -c`, `bash`, etc.)
+
+**Reference Implementation:**
+See `server/services/buildService.ts` lines 30-71 for the complete allowlist implementation and inline documentation.
+
+**Git Token Encryption:**
+Git repository access tokens are encrypted at rest using AES-256-GCM with SESSION_SECRET as the encryption key. See `server/storage.ts` lines 124-203 for implementation details.
+
 ## External Dependencies
 - **Frontend**: React, TypeScript, Monaco Editor, Tailwind CSS, Shadcn UI, next-themes
 - **Backend**: Express.js, WebSocket

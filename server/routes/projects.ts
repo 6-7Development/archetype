@@ -84,6 +84,44 @@ export function registerProjectRoutes(app: Express) {
     }
   });
 
+  // POST /api/projects/:projectId/files - Create a single file
+  app.post("/api/projects/:projectId/files", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.authenticatedUserId;
+      const { projectId } = req.params;
+      const { filename, content, language } = req.body;
+      
+      console.log(`📝 [FILES] Creating file "${filename}" for project ${projectId}`);
+      
+      if (!filename) {
+        return res.status(400).json({ error: "filename is required" });
+      }
+      
+      // Verify project exists and belongs to user
+      const project = await storage.getProject(projectId, userId);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      // Create the file
+      const file = await storage.createFile({
+        projectId,
+        userId,
+        filename,
+        content: content || '',
+        language: language || 'javascript',
+        path: undefined,
+        folderId: undefined,
+      });
+      
+      console.log(`✅ [FILES] Created file ${file.id} for project ${projectId}`);
+      res.status(201).json(file);
+    } catch (error: any) {
+      console.error(`❌ [FILES] Error creating file:`, error);
+      res.status(500).json({ error: error.message || "Failed to create file" });
+    }
+  });
+
   // POST /api/projects/:projectId/files/batch - Batch update project files
   app.post("/api/projects/:projectId/files/batch", isAuthenticated, async (req: any, res) => {
     try {

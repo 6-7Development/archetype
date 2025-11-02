@@ -24,17 +24,47 @@ import { storage } from '../storage';
  * - Artifacts saved to /tmp/artifacts/
  */
 
-// SECURITY: ALLOWLIST of safe npm scripts (all others are removed)
+// ============================================================================
+// SECURITY: npm Script Allowlist Policy
+// ============================================================================
+//
+// ** CRITICAL SECURITY CONTROL **
+// Only scripts in ALLOWED_NPM_SCRIPTS are permitted during builds.
+// All other scripts are stripped from package.json before `npm install`.
+//
+// ** WHY ALLOWLIST INSTEAD OF BLOCKLIST? **
 // Previous blocklist approach was insufficient - npm can run pre/post variants
 // of ANY script name, not just lifecycle hooks. An attacker could use custom
-// scripts like 'prebuild', 'postbuild', etc. to execute arbitrary code.
-// 
-// ALLOWLIST APPROACH: Only permit the exact scripts needed for building.
-// This prevents RCE via npm lifecycle hooks, custom scripts, and pre/post variants.
+// scripts like 'prebuild', 'postbuild', 'preinstall', etc. to execute 
+// arbitrary code during npm install or npm run build.
 //
-// See: https://docs.npmjs.com/cli/v8/using-npm/scripts#pre--post-scripts
+// ** SECURITY TRADE-OFF **
+// This strict allowlist may break legitimate packages that rely on:
+// - prebuild/postbuild scripts for code generation
+// - prepare scripts for compilation
+// - install/postinstall scripts for native module compilation
+//
+// ** HANDLING INCOMPATIBLE PACKAGES **
+// If a package requires additional scripts:
+// 1. Review the script carefully for malicious code
+// 2. If safe, add to ALLOWED_NPM_SCRIPTS with justification comment
+// 3. Test thoroughly in isolated environment first
+// 4. Document the security review in replit.md
+//
+// ** CURRENT POLICY **
+// - 'build': Required for Vite/Webpack/etc. build process
+// - Additional scripts may be added after security review
+//
+// References:
+// - https://docs.npmjs.com/cli/v8/using-npm/scripts#pre--post-scripts
+// - https://blog.npmjs.org/post/141702881055/package-install-scripts-vulnerability
+//
+// ============================================================================
 const ALLOWED_NPM_SCRIPTS = [
   'build',  // Required for Vite build process
+  // Additional scripts can be added here after security review
+  // Example:
+  // 'postbuild',  // Required for [package-name] - reviewed on [date]
 ];
 
 export class BuildService {
