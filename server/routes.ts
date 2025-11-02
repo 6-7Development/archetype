@@ -22,8 +22,15 @@ import { registerSubscriptionRoutes } from "./routes/subscriptions";
 import { registerAdminRoutes } from "./routes/admin";
 import { registerOwnerSetupRoutes } from "./routes/owner-setup";
 import { registerHealingRoutes } from "./routes/healing";
+import { registerFolderRoutes } from "./routes/folders";
+import { registerFileOperationRoutes } from "./routes/fileOps";
+import { registerFileUploadRoutes } from "./routes/fileUploads";
+import { registerMigrationRoutes } from "./routes/migrations";
 import { setupWebSocket } from "./routes/websocket";
+import { registerTerminalRoutes } from "./routes/terminal";
 import webhooksRouter, { setWebhookBroadcaster } from "./routes/webhooks";
+import gitRouter from "./routes/git";
+import { registerDeploymentRoutes } from "./routes/deployments";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // ==================== HEALTH & DIAGNOSTICS ====================
@@ -180,6 +187,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   initializeLomuAIWebSocket(wss);
   console.log('[LOMU-AI-CHAT] Live preview WebSocket initialized');
 
+  // Initialize terminal WebSocket routes
+  registerTerminalRoutes(wss, httpServer);
+  console.log('[TERMINAL] Terminal WebSocket routes registered');
+
   // ==================== REGISTER ROUTE MODULES ====================
   
   // Register all route modules with dependencies
@@ -189,6 +200,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerSubscriptionRoutes(app);
   registerProjectRoutes(app);
   registerFileRoutes(app);
+  registerFolderRoutes(app);
+  registerFileOperationRoutes(app);
+  registerFileUploadRoutes(app);
+  registerMigrationRoutes(app);
   registerChatRoutes(app, { wss });
   registerHealingRoutes(app);
 
@@ -215,6 +230,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Mount webhooks router (deployment status from Railway/Render)
   app.use('/api/webhooks', webhooksRouter);
   console.log('[WEBHOOKS] Webhooks router mounted at /api/webhooks');
+  
+  // Mount git router (version control UI)
+  app.use(gitRouter);
+  console.log('[GIT] Git router mounted');
 
   // ==================== PLATFORM PREVIEW ROUTES ====================
   
@@ -636,6 +655,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: error.message || "Failed to update avatar mood" });
     }
   });
+
+  // ==================== DEPLOYMENTS ====================
+  registerDeploymentRoutes(app);
 
   console.log('✅ All routes registered successfully');
   

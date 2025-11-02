@@ -7,6 +7,10 @@ import {
   type InsertChatMessage,
   type Project,
   type InsertProject,
+  type ProjectFolder,
+  type InsertProjectFolder,
+  type FileUpload,
+  type InsertFileUpload,
   type Command,
   type InsertCommand,
   type Subscription,
@@ -14,6 +18,12 @@ import {
   type MonthlyUsage,
   type Deployment,
   type InsertDeployment,
+  type BuildJob,
+  type InsertBuildJob,
+  type CustomDomain,
+  type InsertCustomDomain,
+  type DeploymentLog,
+  type InsertDeploymentLog,
   type Template,
   type InsertTemplate,
   type TemplateFile,
@@ -55,16 +65,25 @@ import {
   type InsertHealingMessage,
   type ConversationState,
   type InsertConversationState,
+  type TerminalHistory,
+  type InsertTerminalHistory,
+  type ProjectMigration,
+  type InsertProjectMigration,
   users,
   files,
   chatMessages,
   projects,
+  projectFolders,
+  fileUploads,
   commands,
   lomuAITasks,
   subscriptions,
   usageLogs,
   monthlyUsage,
   deployments,
+  buildJobs,
+  customDomains,
+  deploymentLogs,
   templates,
   templateFiles,
   projectVersions,
@@ -89,7 +108,9 @@ import {
   healingTargets,
   healingConversations,
   healingMessages,
-  conversationStates
+  conversationStates,
+  terminalHistory,
+  projectMigrations
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, isNull, sql } from "drizzle-orm";
@@ -104,6 +125,8 @@ type InsertCommandWithUser = InsertCommand & { userId: string };
 type InsertChatMessageWithUser = InsertChatMessage & { userId: string };
 type InsertDeploymentWithUser = InsertDeployment & { userId: string };
 type InsertProjectVersionWithUser = InsertProjectVersion & { userId: string };
+type InsertProjectFolderWithUser = InsertProjectFolder & { userId: string };
+type InsertFileUploadWithUser = InsertFileUpload & { userId: string };
 
 export interface IStorage {
   // User operations (IMPORTANT: mandatory for authentication)
@@ -146,17 +169,31 @@ export interface IStorage {
   cancelSubscription(userId: string): Promise<Subscription>;
   updateStripeCustomerId(userId: string, stripeCustomerId: string): Promise<Subscription>;
   
-  // Deployment operations
+  // Deployment operations (Cloudflare Pages integration)
   getDeployments(userId: string): Promise<Deployment[]>;
-  getDeployment(id: string, userId: string): Promise<Deployment | undefined>;
-  getDeploymentBySubdomain(subdomain: string): Promise<Deployment | undefined>;
-  createDeployment(deployment: InsertDeploymentWithUser): Promise<Deployment>;
-  updateDeployment(id: string, updates: Partial<Deployment>): Promise<Deployment>;
-  updateDeploymentStatus(id: string, userId: string, status: string): Promise<Deployment>;
-  updateDeploymentEnvVariables(id: string, userId: string, envVariables: Record<string, string>): Promise<Deployment>;
-  updateDeploymentCustomDomain(id: string, userId: string, customDomain: string | null): Promise<Deployment>;
-  deleteDeployment(id: string, userId: string): Promise<void>;
-  incrementDeploymentVisits(id: string): Promise<void>;
+  getDeployment(deploymentId: string): Promise<Deployment | null>;
+  getDeploymentBySubdomain(subdomain: string): Promise<Deployment | null>;
+  createDeployment(deployment: InsertDeployment): Promise<Deployment>;
+  updateDeployment(deploymentId: string, updates: Partial<Deployment>): Promise<Deployment>;
+  deleteDeployment(deploymentId: string): Promise<void>;
+  
+  // Build Job operations
+  getBuildJobs(projectId: string): Promise<BuildJob[]>;
+  getBuildJob(buildJobId: string): Promise<BuildJob | null>;
+  createBuildJob(buildJob: InsertBuildJob): Promise<BuildJob>;
+  updateBuildJob(buildJobId: string, updates: Partial<BuildJob>): Promise<BuildJob>;
+  
+  // Custom Domain operations
+  getCustomDomains(userId: string): Promise<CustomDomain[]>;
+  getCustomDomain(domainId: string): Promise<CustomDomain | null>;
+  getCustomDomainByDomain(domain: string): Promise<CustomDomain | null>;
+  createCustomDomain(domain: InsertCustomDomain): Promise<CustomDomain>;
+  updateCustomDomain(domainId: string, updates: Partial<CustomDomain>): Promise<CustomDomain>;
+  deleteCustomDomain(domainId: string): Promise<void>;
+  
+  // Deployment Logs operations
+  getDeploymentLogs(buildJobId: string): Promise<DeploymentLog[]>;
+  createDeploymentLog(log: InsertDeploymentLog): Promise<DeploymentLog>;
   
   // Admin operations
   getAllUsersWithDetails(): Promise<any[]>;
@@ -302,6 +339,36 @@ export interface IStorage {
   createConversationState(state: InsertConversationState & { userId: string }): Promise<ConversationState>;
   updateConversationState(id: string, updates: Partial<ConversationState>): Promise<ConversationState>;
   clearConversationState(id: string): Promise<ConversationState>;
+  
+  // Project Folder operations
+  getProjectFolders(projectId: string, userId: string): Promise<ProjectFolder[]>;
+  getProjectFolder(id: string, userId: string): Promise<ProjectFolder | undefined>;
+  createProjectFolder(folder: InsertProjectFolderWithUser): Promise<ProjectFolder>;
+  updateProjectFolder(id: string, userId: string, name: string): Promise<ProjectFolder>;
+  deleteProjectFolder(id: string, userId: string): Promise<void>;
+  
+  // File Upload operations
+  getFileUploads(projectId: string, userId: string): Promise<FileUpload[]>;
+  getFileUpload(id: string, userId: string): Promise<FileUpload | undefined>;
+  createFileUpload(upload: InsertFileUploadWithUser): Promise<FileUpload>;
+  deleteFileUpload(id: string, userId: string): Promise<void>;
+  
+  // File operations (move, rename, bulk delete)
+  moveFile(fileId: string, userId: string, folderId: string | null): Promise<File>;
+  renameFile(fileId: string, userId: string, filename: string): Promise<File>;
+  bulkDeleteFiles(fileIds: string[], userId: string): Promise<void>;
+  
+  // Terminal History operations
+  createTerminalHistory(history: InsertTerminalHistory): Promise<TerminalHistory>;
+  updateTerminalHistory(projectId: string, userId: string, command: string, output: string, exitCode: number): Promise<void>;
+  getTerminalHistory(projectId: string, userId: string, limit?: number): Promise<TerminalHistory[]>;
+  
+  // Project Migration operations
+  getProjectMigrations(projectId: string, userId: string): Promise<ProjectMigration[]>;
+  getProjectMigration(id: string, userId: string): Promise<ProjectMigration | undefined>;
+  createProjectMigration(migration: InsertProjectMigration & { userId: string }): Promise<ProjectMigration>;
+  updateMigrationStatus(id: string, status: string, appliedAt?: Date): Promise<ProjectMigration>;
+  getAppliedMigrations(projectId: string, userId: string): Promise<ProjectMigration[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1034,7 +1101,7 @@ export class DatabaseStorage implements IStorage {
     return avatarState;
   }
 
-  // Deployment operations
+  // Deployment operations (Cloudflare Pages integration)
   async getDeployments(userId: string): Promise<Deployment[]> {
     return await db
       .select()
@@ -1043,33 +1110,35 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(deployments.createdAt));
   }
 
-  async getDeployment(id: string, userId: string): Promise<Deployment | undefined> {
-    const [deployment] = await db.select().from(deployments).where(
-      and(eq(deployments.id, id), eq(deployments.userId, userId))
-    );
-    return deployment || undefined;
-  }
-
-  async getDeploymentBySubdomain(subdomain: string): Promise<Deployment | undefined> {
-    const [deployment] = await db.select().from(deployments).where(
-      eq(deployments.subdomain, subdomain)
-    );
-    return deployment || undefined;
-  }
-
-  async createDeployment(insertDeployment: InsertDeploymentWithUser): Promise<Deployment> {
+  async getDeployment(deploymentId: string): Promise<Deployment | null> {
     const [deployment] = await db
-      .insert(deployments)
-      .values(insertDeployment)
-      .returning();
-    return deployment;
+      .select()
+      .from(deployments)
+      .where(eq(deployments.id, deploymentId));
+    return deployment || null;
   }
 
-  async updateDeployment(id: string, updates: Partial<Deployment>): Promise<Deployment> {
+  async getDeploymentBySubdomain(subdomain: string): Promise<Deployment | null> {
+    const [deployment] = await db
+      .select()
+      .from(deployments)
+      .where(eq(deployments.subdomain, subdomain));
+    return deployment || null;
+  }
+
+  async createDeployment(deployment: InsertDeployment): Promise<Deployment> {
+    const [created] = await db
+      .insert(deployments)
+      .values(deployment)
+      .returning();
+    return created;
+  }
+
+  async updateDeployment(deploymentId: string, updates: Partial<Deployment>): Promise<Deployment> {
     const [deployment] = await db
       .update(deployments)
       .set({ ...updates, updatedAt: new Date() })
-      .where(eq(deployments.id, id))
+      .where(eq(deployments.id, deploymentId))
       .returning();
     if (!deployment) {
       throw new Error('Deployment not found');
@@ -1077,111 +1146,123 @@ export class DatabaseStorage implements IStorage {
     return deployment;
   }
 
-  async updateDeploymentStatus(id: string, userId: string, status: string): Promise<Deployment> {
-    const [deployment] = await db
-      .update(deployments)
-      .set({ status, updatedAt: new Date() })
-      .where(and(eq(deployments.id, id), eq(deployments.userId, userId)))
-      .returning();
-    if (!deployment) {
-      throw new Error('Deployment not found or access denied');
-    }
-    return deployment;
-  }
-
-  async updateDeploymentEnvVariables(id: string, userId: string, envVariables: Record<string, string>): Promise<Deployment> {
-    // Encrypt sensitive environment variables before storing
-    const encryptedEnvVars: Record<string, string> = {};
-    for (const [key, value] of Object.entries(envVariables)) {
-      encryptedEnvVars[key] = this.encryptValue(value);
-    }
-
-    const [deployment] = await db
-      .update(deployments)
-      .set({ 
-        envVariables: JSON.stringify(encryptedEnvVars), 
-        updatedAt: new Date() 
-      })
-      .where(and(eq(deployments.id, id), eq(deployments.userId, userId)))
-      .returning();
-    
-    if (!deployment) {
-      throw new Error('Deployment not found or access denied');
-    }
-    return deployment;
-  }
-
-  async updateDeploymentCustomDomain(id: string, userId: string, customDomain: string | null): Promise<Deployment> {
-    const [deployment] = await db
-      .update(deployments)
-      .set({ 
-        customDomain, 
-        sslStatus: customDomain ? 'pending' : null,
-        updatedAt: new Date() 
-      })
-      .where(and(eq(deployments.id, id), eq(deployments.userId, userId)))
-      .returning();
-    
-    if (!deployment) {
-      throw new Error('Deployment not found or access denied');
-    }
-    return deployment;
-  }
-
-  // Simple encryption for environment variables (use a more robust solution in production)
-  private encryptValue(value: string): string {
-    const algorithm = 'aes-256-gcm';
-    const key = Buffer.from(process.env.SESSION_SECRET || 'default-encryption-key-change-me', 'utf-8').slice(0, 32);
-    const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipheriv(algorithm, key, iv);
-    
-    let encrypted = cipher.update(value, 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-    const authTag = cipher.getAuthTag();
-    
-    return `${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted}`;
-  }
-
-  private decryptValue(encryptedValue: string): string {
-    try {
-      const algorithm = 'aes-256-gcm';
-      const key = Buffer.from(process.env.SESSION_SECRET || 'default-encryption-key-change-me', 'utf-8').slice(0, 32);
-      const parts = encryptedValue.split(':');
-      const iv = Buffer.from(parts[0], 'hex');
-      const authTag = Buffer.from(parts[1], 'hex');
-      const encrypted = parts[2];
-      
-      const decipher = crypto.createDecipheriv(algorithm, key, iv);
-      decipher.setAuthTag(authTag);
-      
-      let decrypted = decipher.update(encrypted, 'hex', 'utf8');
-      decrypted += decipher.final('utf8');
-      
-      return decrypted;
-    } catch (error) {
-      console.error('Decryption error:', error);
-      return encryptedValue; // Return encrypted value if decryption fails
-    }
-  }
-
-  async deleteDeployment(id: string, userId: string): Promise<void> {
+  async deleteDeployment(deploymentId: string): Promise<void> {
     const result = await db
       .delete(deployments)
-      .where(and(eq(deployments.id, id), eq(deployments.userId, userId)))
+      .where(eq(deployments.id, deploymentId))
       .returning();
     if (result.length === 0) {
-      throw new Error('Deployment not found or access denied');
+      throw new Error('Deployment not found');
     }
   }
 
-  async incrementDeploymentVisits(id: string): Promise<void> {
-    await db
-      .update(deployments)
-      .set({ 
-        monthlyVisits: sql`${deployments.monthlyVisits} + 1`,
-        updatedAt: new Date()
-      })
-      .where(eq(deployments.id, id));
+  // Build Job operations
+  async getBuildJobs(projectId: string): Promise<BuildJob[]> {
+    return await db
+      .select()
+      .from(buildJobs)
+      .where(eq(buildJobs.projectId, projectId))
+      .orderBy(desc(buildJobs.createdAt));
+  }
+
+  async getBuildJob(buildJobId: string): Promise<BuildJob | null> {
+    const [buildJob] = await db
+      .select()
+      .from(buildJobs)
+      .where(eq(buildJobs.id, buildJobId));
+    return buildJob || null;
+  }
+
+  async createBuildJob(buildJob: InsertBuildJob): Promise<BuildJob> {
+    const [created] = await db
+      .insert(buildJobs)
+      .values(buildJob)
+      .returning();
+    return created;
+  }
+
+  async updateBuildJob(buildJobId: string, updates: Partial<BuildJob>): Promise<BuildJob> {
+    const [buildJob] = await db
+      .update(buildJobs)
+      .set(updates)
+      .where(eq(buildJobs.id, buildJobId))
+      .returning();
+    if (!buildJob) {
+      throw new Error('Build job not found');
+    }
+    return buildJob;
+  }
+
+  // Custom Domain operations
+  async getCustomDomains(userId: string): Promise<CustomDomain[]> {
+    return await db
+      .select()
+      .from(customDomains)
+      .where(eq(customDomains.userId, userId))
+      .orderBy(desc(customDomains.createdAt));
+  }
+
+  async getCustomDomain(domainId: string): Promise<CustomDomain | null> {
+    const [domain] = await db
+      .select()
+      .from(customDomains)
+      .where(eq(customDomains.id, domainId));
+    return domain || null;
+  }
+
+  async getCustomDomainByDomain(domain: string): Promise<CustomDomain | null> {
+    const [customDomain] = await db
+      .select()
+      .from(customDomains)
+      .where(eq(customDomains.domain, domain));
+    return customDomain || null;
+  }
+
+  async createCustomDomain(domain: InsertCustomDomain): Promise<CustomDomain> {
+    const [created] = await db
+      .insert(customDomains)
+      .values(domain)
+      .returning();
+    return created;
+  }
+
+  async updateCustomDomain(domainId: string, updates: Partial<CustomDomain>): Promise<CustomDomain> {
+    const [customDomain] = await db
+      .update(customDomains)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(customDomains.id, domainId))
+      .returning();
+    if (!customDomain) {
+      throw new Error('Custom domain not found');
+    }
+    return customDomain;
+  }
+
+  async deleteCustomDomain(domainId: string): Promise<void> {
+    const result = await db
+      .delete(customDomains)
+      .where(eq(customDomains.id, domainId))
+      .returning();
+    if (result.length === 0) {
+      throw new Error('Custom domain not found');
+    }
+  }
+
+  // Deployment Logs operations
+  async getDeploymentLogs(buildJobId: string): Promise<DeploymentLog[]> {
+    return await db
+      .select()
+      .from(deploymentLogs)
+      .where(eq(deploymentLogs.buildJobId, buildJobId))
+      .orderBy(deploymentLogs.timestamp);
+  }
+
+  async createDeploymentLog(log: InsertDeploymentLog): Promise<DeploymentLog> {
+    const [created] = await db
+      .insert(deploymentLogs)
+      .values(log)
+      .returning();
+    return created;
   }
 
   // Template operations
@@ -2617,6 +2698,247 @@ export class DatabaseStorage implements IStorage {
       .where(eq(conversationStates.id, id))
       .returning();
     return cleared;
+  }
+
+  // Project Folder operations
+  async getProjectFolders(projectId: string, userId: string): Promise<ProjectFolder[]> {
+    const folders = await db
+      .select()
+      .from(projectFolders)
+      .where(and(eq(projectFolders.projectId, projectId), eq(projectFolders.userId, userId)))
+      .orderBy(projectFolders.path);
+    return folders;
+  }
+
+  async getProjectFolder(id: string, userId: string): Promise<ProjectFolder | undefined> {
+    const [folder] = await db
+      .select()
+      .from(projectFolders)
+      .where(and(eq(projectFolders.id, id), eq(projectFolders.userId, userId)));
+    return folder;
+  }
+
+  async createProjectFolder(folder: InsertProjectFolderWithUser): Promise<ProjectFolder> {
+    const [created] = await db
+      .insert(projectFolders)
+      .values(folder)
+      .returning();
+    return created;
+  }
+
+  async updateProjectFolder(id: string, userId: string, name: string): Promise<ProjectFolder> {
+    const [updated] = await db
+      .update(projectFolders)
+      .set({ name, updatedAt: new Date() })
+      .where(and(eq(projectFolders.id, id), eq(projectFolders.userId, userId)))
+      .returning();
+    return updated;
+  }
+
+  async deleteProjectFolder(id: string, userId: string): Promise<void> {
+    // Get the folder to be deleted
+    const folder = await this.getProjectFolder(id, userId);
+    if (!folder) {
+      throw new Error("Folder not found");
+    }
+
+    // Delete all child folders (cascade)
+    await db
+      .delete(projectFolders)
+      .where(
+        and(
+          eq(projectFolders.userId, userId),
+          sql`${projectFolders.path} LIKE ${folder.path + '/%'}`
+        )
+      );
+
+    // Delete all files in this folder and child folders
+    await db
+      .delete(files)
+      .where(
+        and(
+          eq(files.userId, userId),
+          sql`${files.path} LIKE ${folder.path + '%'}`
+        )
+      );
+
+    // Delete the folder itself
+    await db.delete(projectFolders).where(eq(projectFolders.id, id));
+  }
+
+  // File Upload operations
+  async getFileUploads(projectId: string, userId: string): Promise<FileUpload[]> {
+    const uploads = await db
+      .select()
+      .from(fileUploads)
+      .where(and(eq(fileUploads.projectId, projectId), eq(fileUploads.userId, userId)))
+      .orderBy(desc(fileUploads.createdAt));
+    return uploads;
+  }
+
+  async getFileUpload(id: string, userId: string): Promise<FileUpload | undefined> {
+    const [upload] = await db
+      .select()
+      .from(fileUploads)
+      .where(and(eq(fileUploads.id, id), eq(fileUploads.userId, userId)));
+    return upload;
+  }
+
+  async createFileUpload(upload: InsertFileUploadWithUser): Promise<FileUpload> {
+    const [created] = await db
+      .insert(fileUploads)
+      .values(upload)
+      .returning();
+    return created;
+  }
+
+  async deleteFileUpload(id: string, userId: string): Promise<void> {
+    await db
+      .delete(fileUploads)
+      .where(and(eq(fileUploads.id, id), eq(fileUploads.userId, userId)));
+  }
+
+  // File operations
+  async moveFile(fileId: string, userId: string, folderId: string | null): Promise<File> {
+    const [updated] = await db
+      .update(files)
+      .set({ folderId, updatedAt: new Date() })
+      .where(and(eq(files.id, fileId), eq(files.userId, userId)))
+      .returning();
+    return updated;
+  }
+
+  async renameFile(fileId: string, userId: string, filename: string): Promise<File> {
+    const [updated] = await db
+      .update(files)
+      .set({ filename, updatedAt: new Date() })
+      .where(and(eq(files.id, fileId), eq(files.userId, userId)))
+      .returning();
+    return updated;
+  }
+
+  async bulkDeleteFiles(fileIds: string[], userId: string): Promise<void> {
+    // Delete files in batches to avoid SQL statement size limits
+    const batchSize = 100;
+    for (let i = 0; i < fileIds.length; i += batchSize) {
+      const batch = fileIds.slice(i, i + batchSize);
+      await db
+        .delete(files)
+        .where(
+          and(
+            eq(files.userId, userId),
+            sql`${files.id} IN (${sql.join(batch.map(id => sql`${id}`), sql`, `)})`
+          )
+        );
+    }
+  }
+
+  // Terminal History operations
+  async createTerminalHistory(history: InsertTerminalHistory): Promise<TerminalHistory> {
+    const [created] = await db
+      .insert(terminalHistory)
+      .values(history)
+      .returning();
+    return created;
+  }
+
+  async updateTerminalHistory(
+    projectId: string,
+    userId: string,
+    command: string,
+    output: string,
+    exitCode: number
+  ): Promise<void> {
+    // Find the most recent matching command and update it
+    await db
+      .update(terminalHistory)
+      .set({ output, exitCode })
+      .where(
+        and(
+          eq(terminalHistory.projectId, projectId),
+          eq(terminalHistory.userId, userId),
+          eq(terminalHistory.command, command)
+        )
+      );
+  }
+
+  async getTerminalHistory(
+    projectId: string,
+    userId: string,
+    limit: number = 50
+  ): Promise<TerminalHistory[]> {
+    return await db
+      .select()
+      .from(terminalHistory)
+      .where(
+        and(
+          eq(terminalHistory.projectId, projectId),
+          eq(terminalHistory.userId, userId)
+        )
+      )
+      .orderBy(desc(terminalHistory.executedAt))
+      .limit(limit);
+  }
+
+  // Project Migration operations
+  async getProjectMigrations(projectId: string, userId: string): Promise<ProjectMigration[]> {
+    return await db
+      .select()
+      .from(projectMigrations)
+      .where(
+        and(
+          eq(projectMigrations.projectId, projectId),
+          eq(projectMigrations.userId, userId)
+        )
+      )
+      .orderBy(desc(projectMigrations.createdAt));
+  }
+
+  async getProjectMigration(id: string, userId: string): Promise<ProjectMigration | undefined> {
+    const [migration] = await db
+      .select()
+      .from(projectMigrations)
+      .where(
+        and(
+          eq(projectMigrations.id, id),
+          eq(projectMigrations.userId, userId)
+        )
+      );
+    return migration || undefined;
+  }
+
+  async createProjectMigration(migration: InsertProjectMigration & { userId: string }): Promise<ProjectMigration> {
+    const [created] = await db
+      .insert(projectMigrations)
+      .values(migration)
+      .returning();
+    return created;
+  }
+
+  async updateMigrationStatus(id: string, status: string, appliedAt?: Date): Promise<ProjectMigration> {
+    const [updated] = await db
+      .update(projectMigrations)
+      .set({ 
+        status, 
+        appliedAt: appliedAt || (status === 'applied' ? new Date() : undefined) 
+      })
+      .where(eq(projectMigrations.id, id))
+      .returning();
+    return updated;
+  }
+
+  async getAppliedMigrations(projectId: string, userId: string): Promise<ProjectMigration[]> {
+    return await db
+      .select()
+      .from(projectMigrations)
+      .where(
+        and(
+          eq(projectMigrations.projectId, projectId),
+          eq(projectMigrations.userId, userId),
+          eq(projectMigrations.status, 'applied')
+        )
+      )
+      .orderBy(desc(projectMigrations.appliedAt));
   }
 }
 

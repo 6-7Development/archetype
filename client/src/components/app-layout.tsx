@@ -17,7 +17,8 @@ import {
   Wrench,
   ChevronDown,
   Settings as SettingsIcon,
-  Zap
+  Zap,
+  Rocket
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,12 @@ const platformNavItems = [
     icon: Zap,
     path: "/publishing",
     testId: "nav-publishing",
+  },
+  {
+    label: "Deployments",
+    icon: Rocket,
+    path: "/deployments",
+    testId: "nav-deployments",
   },
   {
     label: "Team",

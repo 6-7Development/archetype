@@ -31,6 +31,9 @@ import Publishing from "@/pages/publishing";
 import PlatformHealing from "@/pages/platform-healing";
 import AgentFeatures from "@/pages/agent-features";
 import Setup from "@/pages/setup";
+import ArtifactDemo from "@/pages/artifact-demo";
+import Deployments from "@/pages/deployments";
+import DeploymentDetails from "@/pages/deployment-details";
 import NotFound from "@/pages/not-found";
 import Error403 from "@/pages/error-403";
 import Error500 from "@/pages/error-500";
@@ -170,6 +173,17 @@ function Router() {
           <Publishing />
         </AppLayout>
       </Route>
+      <Route path="/deployments">
+        <AppLayout>
+          <Deployments />
+        </AppLayout>
+      </Route>
+      <Route path="/deployments/:deploymentId">
+        <AppLayout>
+          <DeploymentDetails />
+        </AppLayout>
+      </Route>
+      <Route path="/artifact-demo" component={ArtifactDemo} />
       
       {/* Setup page - no layout needed */}
       <Route path="/setup" component={Setup} />

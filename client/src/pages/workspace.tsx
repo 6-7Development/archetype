@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { MonacoEditor } from "@/components/monaco-editor";
+import { SplitEditor } from "@/components/split-editor";
+import { useSplitEditor } from "@/hooks/useSplitEditor";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AIChat } from "@/components/ai-chat";
 import { MobileWorkspace } from "@/components/mobile-workspace";
@@ -36,7 +38,9 @@ import {
   ArrowLeft,
   Menu,
   CheckSquare,
-  Target
+  Target,
+  Database,
+  GitBranch
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -44,6 +48,8 @@ import { useVersion } from "@/providers/version-provider";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { File } from "@shared/schema";
 import { cn } from "@/lib/utils";
+import { MigrationsPanel } from "@/components/migrations-panel";
+import { GitPanel } from "@/components/git-panel";
 
 export default function Workspace() {
   const [activeFile, setActiveFile] = useState<File | null>(null);
@@ -66,6 +72,9 @@ export default function Workspace() {
   const { data: files = [] } = useQuery<File[]>({
     queryKey: ["/api/files"],
   });
+
+  // Split editor hook for desktop
+  const splitEditor = useSplitEditor(files);
 
   const saveFileMutation = useMutation({
     mutationFn: async (data: { id: string; content: string }) => {
@@ -108,16 +117,28 @@ export default function Workspace() {
     }
   }, [activeFile]);
 
-  // Auto-save on content change (debounced)
+  // Auto-save on content change (debounced) - for mobile single editor
   useEffect(() => {
-    if (!activeFile || editorContent === activeFile.content) return;
-    
-    const timeout = setTimeout(() => {
-      handleSave();
-    }, 2000);
-    
-    return () => clearTimeout(timeout);
-  }, [editorContent, activeFile]);
+    if (isMobile && activeFile && editorContent !== activeFile.content) {
+      const timeout = setTimeout(() => {
+        handleSave();
+      }, 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [editorContent, activeFile, isMobile]);
+
+  // Auto-save for split editor (desktop)
+  useEffect(() => {
+    if (!isMobile) {
+      const modifiedFiles = splitEditor.getModifiedFiles();
+      if (modifiedFiles.length === 0) return;
+      
+      const timeout = setTimeout(() => {
+        handleSplitSave();
+      }, 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [splitEditor.leftContent, splitEditor.rightContent, isMobile]);
 
   useEffect(() => {
     if (consoleRef.current) {
@@ -160,6 +181,13 @@ export default function Workspace() {
     if (activeFile) {
       saveFileMutation.mutate({ id: activeFile.id, content: editorContent });
     }
+  };
+
+  const handleSplitSave = () => {
+    const modifiedFiles = splitEditor.getModifiedFiles();
+    modifiedFiles.forEach(file => {
+      saveFileMutation.mutate({ id: file.id, content: file.content });
+    });
   };
 
   const handleRun = () => {
@@ -309,10 +337,16 @@ export default function Workspace() {
           )}
           
           {/* Active File */}
-          {activeFile && (
+          {splitEditor.getActiveFile() && (
             <div className="flex items-center gap-2 pl-3 border-l">
               <FileCode className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-xs" data-testid="text-active-file">{activeFile.filename}</span>
+              <span className="text-xs" data-testid="text-active-file">{splitEditor.getActiveFile()?.filename}</span>
+              {splitEditor.splitEnabled && splitEditor.rightFileId && (
+                <>
+                  <span className="text-xs text-muted-foreground">/</span>
+                  <span className="text-xs" data-testid="text-right-file">{files.find(f => f.id === splitEditor.rightFileId)?.filename}</span>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -322,8 +356,8 @@ export default function Workspace() {
           <Button
             size="sm"
             variant="outline"
-            onClick={handleSave}
-            disabled={!activeFile || saveFileMutation.isPending}
+            onClick={handleSplitSave}
+            disabled={splitEditor.getModifiedFiles().length === 0 || saveFileMutation.isPending}
             data-testid="button-save"
             className="h-8 text-xs"
           >
@@ -339,7 +373,7 @@ export default function Workspace() {
             size="sm"
             variant={isRunning ? "secondary" : "default"}
             onClick={isRunning ? handleStop : handleRun}
-            disabled={!activeFile}
+            disabled={!splitEditor.getActiveFile()}
             data-testid="button-run"
             className="h-8 text-xs gap-1.5"
           >
@@ -485,10 +519,10 @@ export default function Workspace() {
                   files.map((file) => (
                     <button
                       key={file.id}
-                      onClick={() => setActiveFile(file)}
+                      onClick={() => splitEditor.setLeftFile(file.id)}
                       className={cn(
                         "w-full flex items-center gap-1.5 px-2 py-1 rounded text-[11px] hover-elevate active-elevate-2 transition-colors",
-                        activeFile?.id === file.id && "bg-accent"
+                        splitEditor.leftFileId === file.id && "bg-accent"
                       )}
                       data-testid={`file-${file.filename}`}
                     >
@@ -521,24 +555,21 @@ export default function Workspace() {
 
         {/* CENTER-RIGHT: Code Editor + Console */}
         <div className="flex-1 flex flex-col min-w-0">
-          {/* Editor */}
+          {/* Split Editor */}
           <div className="flex-1 relative">
-            {activeFile ? (
-              <MonacoEditor
-                value={editorContent}
-                onChange={(value) => setEditorContent(value || "")}
-                language={activeFile.language}
-              />
-            ) : (
-              <div className="h-full flex items-center justify-center">
-                <div className="text-center">
-                  <Code2 className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-                  <h2 className="text-base font-semibold mb-1.5">Welcome to Lomu</h2>
-                  <p className="text-xs text-muted-foreground">Select or create a file to start coding</p>
-                  <p className="text-xs text-muted-foreground mt-1">Ask Lomu on the left to generate code!</p>
-                </div>
-              </div>
-            )}
+            <SplitEditor
+              files={files}
+              leftFileId={splitEditor.leftFileId}
+              rightFileId={splitEditor.rightFileId}
+              splitEnabled={splitEditor.splitEnabled}
+              onLeftFileChange={splitEditor.setLeftFile}
+              onRightFileChange={splitEditor.setRightFile}
+              onLeftContentChange={splitEditor.setLeftContent}
+              onRightContentChange={splitEditor.setRightContent}
+              onSplitToggle={splitEditor.toggleSplit}
+              leftContent={splitEditor.leftContent}
+              rightContent={splitEditor.rightContent}
+            />
           </div>
 
           {/* Bottom Console/Terminal */}
@@ -553,6 +584,14 @@ export default function Workspace() {
                   <TerminalIcon className="h-3 w-3 mr-1" />
                   Shell
                 </TabsTrigger>
+                <TabsTrigger value="migrations" className="text-xs h-7" data-testid="tab-migrations">
+                  <Database className="h-3 w-3 mr-1" />
+                  Migrations
+                </TabsTrigger>
+                <TabsTrigger value="git" className="text-xs h-7" data-testid="tab-git">
+                  <GitBranch className="h-3 w-3 mr-1" />
+                  Git
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="console" className="flex-1 m-0 p-2.5 overflow-auto font-mono text-xs" ref={consoleRef}>
                 {consoleOutput.length === 0 ? (
@@ -565,6 +604,12 @@ export default function Workspace() {
               </TabsContent>
               <TabsContent value="terminal" className="flex-1 m-0 p-2.5 font-mono text-xs">
                 <div className="text-muted-foreground">$ _</div>
+              </TabsContent>
+              <TabsContent value="migrations" className="flex-1 m-0 p-2.5 overflow-auto">
+                {user && <MigrationsPanel projectId={user.id} />}
+              </TabsContent>
+              <TabsContent value="git" className="flex-1 m-0 overflow-hidden">
+                <GitPanel />
               </TabsContent>
             </Tabs>
           </div>

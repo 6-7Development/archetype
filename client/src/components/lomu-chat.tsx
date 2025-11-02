@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils";
 import { AgentTaskList, type AgentTask } from "./agent-task-list";
 import { AgentProgressDisplay } from "./agent-progress-display";
 import { MarkdownRenderer } from "./markdown-renderer";
+import { TaskTimeline, type TaskTimelineTask } from "./task-timeline";
+import { ChatArtifact, type Artifact } from "./chat-artifact";
 
 interface Attachment {
   fileName: string;
@@ -28,6 +30,7 @@ interface Message {
   content: string;
   isStreaming?: boolean; // Flag to indicate if this message is currently streaming
   attachments?: Attachment[]; // File attachments
+  artifacts?: Artifact[]; // Rich inline content (code blocks, file previews, etc.)
 }
 
 interface LomuAiChatProps {
@@ -957,19 +960,66 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                       )}
                     </div>
                   ) : (
-                    // 🔥 SIMPLIFIED ASSISTANT MESSAGE: Just content + streaming indicator
-                    <div className="px-3 py-2 md:px-4 md:py-3 bg-muted text-foreground border border-border rounded-lg">
-                      {message.content ? (
-                        <div className="prose prose-sm max-w-none dark:prose-invert text-xs md:text-sm">
-                          <MarkdownRenderer content={message.content} />
+                    // 🎯 ASSISTANT MESSAGE: Content + Artifacts + Task Timeline + Streaming Indicator
+                    <div className="space-y-2 md:space-y-3">
+                      {message.content && (
+                        <div className="px-3 py-2 md:px-4 md:py-3 bg-muted text-foreground border border-border rounded-lg">
+                          <div className="prose prose-sm max-w-none dark:prose-invert text-xs md:text-sm">
+                            <MarkdownRenderer content={message.content} />
+                          </div>
                         </div>
-                      ) : null}
-                      {message.isStreaming && (
-                        <div className="flex items-center gap-2 mt-2 text-xs md:text-sm text-muted-foreground">
-                          <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-primary rounded-full animate-pulse" />
-                          <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
-                          <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
-                          <span className="text-xs ml-1 md:ml-2">LomuAI is typing...</span>
+                      )}
+                      
+                      {/* 🎯 ARTIFACTS: Rich inline code blocks, file previews, etc. */}
+                      {message.artifacts && message.artifacts.length > 0 && (
+                        <div className="space-y-2 md:space-y-3" data-testid="message-artifacts">
+                          {message.artifacts.map((artifact) => (
+                            <ChatArtifact
+                              key={artifact.id}
+                              artifact={artifact}
+                              onCopy={(content) => {
+                                toast({
+                                  title: "✅ Copied!",
+                                  description: "Code copied to clipboard",
+                                });
+                              }}
+                            />
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* 🎯 TASK TIMELINE: Show tasks when streaming or when there are tasks */}
+                      {(message.isStreaming || tasks.length > 0) && tasks.length > 0 && (
+                        <div className="w-full">
+                          <TaskTimeline 
+                            tasks={tasks.map(t => ({
+                              id: t.id,
+                              title: t.title,
+                              description: t.description,
+                              status: t.status,
+                              architectReviewed: undefined,
+                              architectReviewReason: undefined,
+                              result: undefined,
+                              error: undefined,
+                              startedAt: undefined,
+                              completedAt: undefined,
+                              createdAt: undefined,
+                            }))}
+                            activeTaskId={activeTaskId}
+                            showHeader={true}
+                            compact={false}
+                          />
+                        </div>
+                      )}
+                      
+                      {message.isStreaming && !message.content && (
+                        <div className="px-3 py-2 md:px-4 md:py-3 bg-muted text-foreground border border-border rounded-lg">
+                          <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
+                            <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-primary rounded-full animate-pulse" />
+                            <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
+                            <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
+                            <span className="text-xs ml-1 md:ml-2">LomuAI is typing...</span>
+                          </div>
                         </div>
                       )}
                     </div>

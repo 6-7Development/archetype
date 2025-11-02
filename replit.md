@@ -78,6 +78,14 @@ LomuAI supports parallel subagent orchestration, allowing multiple tasks to exec
 - **LomuAI Security**: Robust authentication/authorization, dedicated LomuAI identity for git operations.
 - **Parallel Subagent Queue**: FIFO queue with per-user concurrency limits (2 concurrent max), memory accounting (400MB total), WebSocket progress broadcasting, automatic cleanup, and task cancellation support.
 
+### Production Security Hardening
+**Comprehensive RCE Prevention (2024-11-02):**
+- **Terminal Security**: Owner-only access with command allow-listing (approved commands only), workspace jailing, path sanitization, and command validation. Prevents unauthorized shell execution.
+- **BuildService npm Script Sanitization (ALLOWLIST)**: ALL npm scripts removed except `build` script required for Vite. Prevents RCE via lifecycle hooks (install, prepare, publish), custom pre/post scripts (prebuild, postbuild), and arbitrary script execution. Blocklist approach was insufficient as npm runs pre/post variants of ANY script name.
+- **Resource Caps**: 256MB RAM limit via NODE_OPTIONS, 5-minute build timeout, per-user concurrent build limits (max 2), rate limiting (5 deployments/hour).
+- **Detailed Logging**: Build logs show script sanitization results (kept vs. removed scripts) for transparency.
+- **Defense-in-Depth**: Multiple layers (authorization, allowlisting, resource limits, rate limiting) ensure production safety even if one layer fails.
+
 ## External Dependencies
 - **Frontend**: React, TypeScript, Monaco Editor, Tailwind CSS, Shadcn UI, next-themes
 - **Backend**: Express.js, WebSocket
