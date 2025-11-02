@@ -4,7 +4,7 @@ import { chatMessages, taskLists, tasks, lomuAttachments, lomuJobs, users, subsc
 import { eq, and, desc } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth';
 import { streamGeminiResponse } from '../gemini';
-import { RAILWAY_CONFIG } from '../config/railway';
+import { RAILWAY_CONFIG } from '../config/railway.ts';
 import { platformHealing } from '../platformHealing';
 import { platformAudit } from '../platformAudit';
 import { consultArchitect } from '../tools/architect-consult';

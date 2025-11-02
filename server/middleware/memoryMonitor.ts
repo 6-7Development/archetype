@@ -5,7 +5,7 @@
  * Critical for Railway's 512MB container limit to prevent OOM crashes.
  */
 
-import { RAILWAY_CONFIG } from '../config/railway';
+import { RAILWAY_CONFIG } from '../config/railway.ts';
 
 let monitoringInterval: NodeJS.Timeout | null = null;
 let lastGCTime = 0;

@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { platformHealing } from '../platformHealing';
 import { knowledge_search, code_search } from '../tools/knowledge';
 import { buildArchitectSystemPrompt } from '../lomuSuperCore';
-import { RAILWAY_CONFIG } from '../config/railway';
+import { RAILWAY_CONFIG } from '../config/railway.ts';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || "dummy-key-for-development",
