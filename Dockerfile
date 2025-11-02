@@ -46,9 +46,10 @@ COPY replit.md ./
 
 # Copy startup script and database setup scripts
 COPY railway-start.sh ./
+COPY debug-start.sh ./
 COPY drop-old-tables.js ./
 COPY create-healing-tables.sql ./
-RUN chmod +x railway-start.sh
+RUN chmod +x railway-start.sh debug-start.sh
 
 # Expose port
 EXPOSE 5000

@@ -90,8 +90,8 @@ else
 fi
 echo ""
 
-echo "🚀 Starting Node.js application..."
-echo "Command: npx tsx server/index.ts"
+echo "🚀 Starting Node.js application with debug wrapper..."
+echo "Command: bash debug-start.sh"
 echo ""
 
-npx tsx server/index.ts
+bash debug-start.sh
