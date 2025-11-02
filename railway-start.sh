@@ -91,7 +91,7 @@ fi
 echo ""
 
 echo "🚀 Starting Node.js application..."
-echo "Command: node dist/index.js"
+echo "Command: npx tsx server/index.ts"
 echo ""
 
-node dist/index.js
+npx tsx server/index.ts
