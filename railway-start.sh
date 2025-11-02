@@ -71,8 +71,9 @@ if [ "$NODE_ENV" = "production" ]; then
   fi
 fi
 
-# Run drizzle-kit to sync other tables (healing tables already created via SQL)
-npx drizzle-kit push --force || echo "⚠️ drizzle-kit sync skipped (tables created manually)"
+# Skip drizzle-kit push on Railway (causes interactive prompts that block deployment)
+# All table creation happens via SQL files above
+echo "⚠️ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)"
 echo "✅ Database schema ready!"
 
 echo ""
