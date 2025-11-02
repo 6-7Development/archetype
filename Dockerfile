@@ -33,7 +33,7 @@ RUN npm ci
 RUN npm install drizzle-kit@^0.31.4
 
 # Copy built frontend from builder stage
-COPY --from=frontend-builder /app/dist ./dist
+COPY --from=frontend-builder /app/dist/public ./dist/public
 
 # Copy server code (TypeScript)
 COPY server ./server
