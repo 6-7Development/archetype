@@ -5,10 +5,18 @@ Lomu is an AI-powered platform for rapid web development, featuring an AI coding
 
 ## User Preferences
 ### API Configuration
-- Using Claude 3.5 Sonnet (Anthropic) for AI code generation
-- API key configured via ANTHROPIC_API_KEY environment variable
-- Model: claude-sonnet-4-20250514 (latest Sonnet 4)
-- Superior code quality compared to GPT-4
+**Hybrid AI Model Strategy (Cost-Optimized)**:
+- **LomuAI (Bulk Operations)**: Google Gemini 2.5 Flash via GEMINI_API_KEY
+  - Model: gemini-2.5-flash
+  - Cost: $0.10 input / $0.40 output per 1M tokens (97% cheaper than Claude)
+  - Direct Google API integration (Railway-independent)
+  - 1M token context window
+- **I AM Architect (Expert Reviews)**: Anthropic Claude Sonnet 4 via ANTHROPIC_API_KEY
+  - Model: claude-sonnet-4-20250514
+  - Cost: $3.00 input / $15.00 output per 1M tokens
+  - Superior code quality for architectural decisions
+  - 200K token context window
+- **Cost Savings**: ~97% reduction on everyday LomuAI operations while maintaining expert-level quality for complex architectural reviews
 
 ### Design Preferences
 - **Brand Identity**: Fresh, optimistic, citrus-inspired theme

@@ -3,7 +3,7 @@ import { db } from '../db';
 import { chatMessages, taskLists, tasks, lomuAttachments, lomuJobs, users, subscriptions, projects, conversationStates } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth';
-import Anthropic from '@anthropic-ai/sdk';
+import { streamGeminiResponse } from '../gemini';
 import { RAILWAY_CONFIG } from '../config/railway';
 import { platformHealing } from '../platformHealing';
 import { platformAudit } from '../platformAudit';
@@ -16,7 +16,7 @@ import { startSubagent } from '../subagentOrchestration';
 import { parallelSubagentQueue } from '../services/parallelSubagentQueue';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { createSafeAnthropicRequest, logTruncationResults } from '../lib/anthropic-wrapper';
+import { createSafeGeminiRequest, logGeminiTruncationResults } from '../lib/gemini-wrapper';
 import { sanitizeDiagnosisForAI } from '../lib/diagnosis-sanitizer';
 import type { WebSocketServer } from 'ws';
 import { getOrCreateState, autoUpdateFromMessage, formatStateForPrompt } from '../services/conversationState';
@@ -496,10 +496,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     return res.status(400).json({ error: 'Oops! I need a message to help you. What would you like me to work on?' });
   }
 
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  if (!anthropicKey) {
-    console.log('[LOMU-AI-CHAT] ERROR: No Anthropic API key');
-    return res.status(503).json({ error: 'Hmm, my AI brain isn\'t connected yet. The Anthropic API key needs to be configured. Could you set it up in your environment variables?' });
+  const geminiKey = process.env.GEMINI_API_KEY;
+  if (!geminiKey) {
+    console.log('[LOMU-AI-CHAT] ERROR: No Gemini API key');
+    return res.status(503).json({ error: 'Hmm, my AI brain isn\'t connected yet. The Gemini API key needs to be configured. Could you set it up in your environment variables?' });
   }
 
   // Prevent concurrent streams per user
@@ -1157,7 +1157,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       );
     }
 
-    const client = new Anthropic({ apiKey: anthropicKey });
+    // Gemini client is handled by streamGeminiResponse
     let fullContent = '';
     const fileChanges: Array<{ path: string; operation: string; contentAfter?: string }> = [];
     let continueLoop = true;
@@ -1183,14 +1183,14 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       // ⚡ Use ultra-compressed prompt (no extra platform knowledge - read files when needed)
       const finalSystemPrompt = systemPrompt;
 
-      // 🛡️ ANTHROPIC CONTEXT-LIMIT PROTECTION: Prevent 400 errors from exceeding 200K token limit
+      // 🛡️ GEMINI CONTEXT-LIMIT PROTECTION: Prevent errors from exceeding 1M token limit
       // This wrapper truncates context if needed while preserving recent messages
       const { messages: safeMessages, systemPrompt: safeSystemPrompt, estimatedTokens, truncated, originalTokens, removedMessages } = 
-        createSafeAnthropicRequest(conversationMessages, finalSystemPrompt);
+        createSafeGeminiRequest(conversationMessages, finalSystemPrompt);
       
       // Log truncation results for monitoring (only on first iteration)
       if (iterationCount === 1) {
-        logTruncationResults({ 
+        logGeminiTruncationResults({ 
           messages: safeMessages, 
           systemPrompt: safeSystemPrompt, 
           estimatedTokens, 
@@ -1200,48 +1200,28 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         });
       }
 
-      const stream = await client.messages.create({
-        model: 'claude-sonnet-4-20250514', // 💰 SONNET 4 - 5x cheaper than Opus ($3/M vs $15/M tokens)
-        max_tokens: config.maxTokens, // Use autonomy level's max_tokens
-        system: safeSystemPrompt, // ✅ Use truncated system prompt
-        messages: safeMessages, // ✅ Use truncated messages
-        tools: availableTools,
-        stream: true,
-        stop_sequences: ['\n\nHuman:', '\n\nAssistant:', 'END_OF_RESPONSE'], // 🎯 Prevent rambling and verbose responses
-      });
-
       // ✅ REAL-TIME STREAMING: Stream text to user AS IT ARRIVES while building content blocks
       const contentBlocks: any[] = [];
       let currentTextBlock = '';
       let lastChunkHash = ''; // 🔥 Track last chunk to prevent duplicate streaming
       
-      for await (const event of stream) {
-        if (event.type === 'content_block_start') {
-          if (event.content_block.type === 'tool_use') {
-            // Save any pending text block (already streamed via deltas)
-            if (currentTextBlock) {
-              contentBlocks.push({ type: 'text', text: currentTextBlock });
-              fullContent += currentTextBlock;
-              currentTextBlock = '';
-            }
-            // Start new tool_use block
-            contentBlocks.push({
-              type: 'tool_use',
-              id: event.content_block.id,
-              name: event.content_block.name,
-              input: {}
-            });
-          }
-        } else if (event.type === 'content_block_delta') {
-          if (event.delta.type === 'text_delta') {
+      // Use streamGeminiResponse for streaming
+      await streamGeminiResponse({
+        model: 'gemini-2.5-flash',
+        maxTokens: config.maxTokens,
+        system: safeSystemPrompt,
+        messages: safeMessages,
+        tools: availableTools,
+        onChunk: (chunk: any) => {
+          if (chunk.type === 'chunk' && chunk.content) {
             // 🔥 DUPLICATE CHUNK SUPPRESSION: Prevent duplicate text from SSE retries
-            const chunkText = event.delta.text;
+            const chunkText = chunk.content;
             const chunkHash = chunkText.slice(-Math.min(50, chunkText.length)); // Last 50 chars as fingerprint
             
             if (chunkHash === lastChunkHash && chunkText.length > 10) {
               // Skip duplicate chunk (likely from SSE retry)
               console.log('[LOMU-AI-STREAM] Skipped duplicate chunk:', chunkHash.substring(0, 20));
-              continue;
+              return;
             }
             lastChunkHash = chunkHash;
             
@@ -1250,48 +1230,39 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
             fullContent += chunkText;
             sendEvent('content', { content: chunkText });
             
-            // After receiving text from Claude, enforce brevity for questions
+            // After receiving text, enforce brevity for questions
             if (intent === 'question' && fullContent.length > 200) {
               // Truncate verbose responses for simple questions
               fullContent = fullContent.substring(0, 197) + '...';
               sendEvent('content', { content: '...' });
-              break; // Stop streaming
-            }
-          } else if (event.delta.type === 'input_json_delta') {
-            // Accumulate tool input JSON
-            const lastBlock = contentBlocks[contentBlocks.length - 1];
-            if (lastBlock && lastBlock.type === 'tool_use') {
-              const inputStr = (lastBlock._inputStr || '') + event.delta.partial_json;
-              lastBlock._inputStr = inputStr;
             }
           }
-        } else if (event.type === 'content_block_stop') {
-          // Finalize current text block
-          if (currentTextBlock && contentBlocks[contentBlocks.length - 1]?.type !== 'text') {
+        },
+        onToolUse: async (toolUse: any) => {
+          // Save any pending text
+          if (currentTextBlock) {
+            contentBlocks.push({ type: 'text', text: currentTextBlock });
+            fullContent += currentTextBlock;
+            currentTextBlock = '';
+          }
+          // Add tool use block
+          contentBlocks.push({
+            type: 'tool_use',
+            id: toolUse.id,
+            name: toolUse.name,
+            input: toolUse.input
+          });
+          return null; // Tool execution happens later
+        },
+        onComplete: (text: string, usage: any) => {
+          // Add any final text block
+          if (currentTextBlock && contentBlocks[contentBlocks.length - 1]?.text !== currentTextBlock) {
             contentBlocks.push({ type: 'text', text: currentTextBlock });
           }
-          // Finalize tool input
-          const lastBlock = contentBlocks[contentBlocks.length - 1];
-          if (lastBlock && lastBlock.type === 'tool_use' && lastBlock._inputStr) {
-            try {
-              lastBlock.input = JSON.parse(lastBlock._inputStr);
-              delete lastBlock._inputStr;
-            } catch (e) {
-              console.error('[LOMU-AI] Failed to parse tool input JSON:', e);
-            }
-          }
-        }
-      }
-      
-      // Add any final text block
-      if (currentTextBlock && contentBlocks[contentBlocks.length - 1]?.text !== currentTextBlock) {
-        contentBlocks.push({ type: 'text', text: currentTextBlock });
-      }
-
-      // 🔥 CLEANUP: Remove internal _inputStr fields before sending to Claude
-      contentBlocks.forEach(block => {
-        if (block.type === 'tool_use' && '_inputStr' in block) {
-          delete block._inputStr;
+        },
+        onError: (error: Error) => {
+          console.error('[LOMU-AI] Gemini stream error:', error);
+          throw error;
         }
       });
 

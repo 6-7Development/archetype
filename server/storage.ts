@@ -2135,7 +2135,7 @@ export class DatabaseStorage implements IStorage {
     
     // Return the repo with decrypted token for immediate use
     if (newRepo.accessToken) {
-      newRepo.accessToken = repo.accessToken; // Use original plaintext
+      newRepo.accessToken = repo.accessToken ?? null; // Use original plaintext, handle undefined
     }
     
     return newRepo;

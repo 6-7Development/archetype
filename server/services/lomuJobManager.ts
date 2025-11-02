@@ -2,7 +2,7 @@ import { db } from '../db';
 import { lomuJobs, users, subscriptions, chatMessages, taskLists, tasks, projects } from '@shared/schema';
 import { eq, and, inArray } from 'drizzle-orm';
 import type { WebSocketServer } from 'ws';
-import Anthropic from '@anthropic-ai/sdk';
+import { streamGeminiResponse } from '../gemini';
 import { platformHealing } from '../platformHealing';
 import { platformAudit } from '../platformAudit';
 import { consultArchitect } from '../tools/architect-consult';
@@ -217,10 +217,10 @@ async function runMetaSysopWorker(jobId: string) {
       message: 'LomuAI job started...',
     });
 
-    // Get Anthropic API key
-    const anthropicKey = process.env.ANTHROPIC_API_KEY;
-    if (!anthropicKey) {
-      throw new Error('Anthropic API key not configured');
+    // Get Gemini API key
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (!geminiKey) {
+      throw new Error('Gemini API key not configured');
     }
 
     // Fetch user's autonomy level
@@ -571,7 +571,6 @@ ${autoCommit ? '**AUTO-COMMIT ENABLED:** You can commit changes to GitHub autono
       availableTools = tools;
     }
 
-    const client = new Anthropic({ apiKey: anthropicKey });
     let fullContent = '';
     const fileChanges: Array<{ path: string; operation: string; contentAfter?: string }> = [];
     let continueLoop = true;
@@ -586,70 +585,55 @@ ${autoCommit ? '**AUTO-COMMIT ENABLED:** You can commit changes to GitHub autono
         message: `Analyzing (iteration ${iterationCount}/${MAX_ITERATIONS})...`
       });
 
-      console.log(`[LOMU-AI-JOB-MANAGER] Calling Anthropic API (iteration ${iterationCount})...`);
+      console.log(`[LOMU-AI-JOB-MANAGER] Calling Gemini API (iteration ${iterationCount})...`);
       
-      const stream = await client.messages.create({
-        model: 'claude-sonnet-4-20250514', // 💰 SONNET 4 - 5x cheaper than Opus ($3/M vs $15/M tokens)
-        max_tokens: config.maxTokens,
-        system: systemPrompt,
-        messages: conversationMessages,
-        tools: availableTools,
-        stream: true,
-      });
-      
-      console.log('[LOMU-AI-JOB-MANAGER] Anthropic stream started, processing events...');
-
-      // Stream processing
+      // Stream processing - collect content blocks
       const contentBlocks: any[] = [];
       let currentTextBlock = '';
       
-      for await (const event of stream) {
-        if (event.type === 'content_block_start') {
-          if (event.content_block.type === 'tool_use') {
-            if (currentTextBlock) {
-              contentBlocks.push({ type: 'text', text: currentTextBlock });
-              fullContent += currentTextBlock;
-              broadcast(userId, jobId, 'job_content', { content: currentTextBlock });
-              currentTextBlock = '';
-            }
-            contentBlocks.push({
-              type: 'tool_use',
-              id: event.content_block.id,
-              name: event.content_block.name,
-              input: {}
-            });
+      // Use streamGeminiResponse for streaming
+      await streamGeminiResponse({
+        model: 'gemini-2.5-flash',
+        maxTokens: config.maxTokens,
+        system: systemPrompt,
+        messages: conversationMessages,
+        tools: availableTools,
+        onChunk: (chunk: any) => {
+          if (chunk.type === 'chunk' && chunk.content) {
+            currentTextBlock += chunk.content;
+            fullContent += chunk.content;
+            broadcast(userId, jobId, 'job_content', { content: chunk.content });
           }
-        } else if (event.type === 'content_block_delta') {
-          if (event.delta.type === 'text_delta') {
-            currentTextBlock += event.delta.text;
-            fullContent += event.delta.text;
-            broadcast(userId, jobId, 'job_content', { content: event.delta.text });
-          } else if (event.delta.type === 'input_json_delta') {
-            const lastBlock = contentBlocks[contentBlocks.length - 1];
-            if (lastBlock && lastBlock.type === 'tool_use') {
-              const inputStr = (lastBlock._inputStr || '') + event.delta.partial_json;
-              lastBlock._inputStr = inputStr;
-            }
+        },
+        onToolUse: async (toolUse: any) => {
+          // Save any pending text
+          if (currentTextBlock) {
+            contentBlocks.push({ type: 'text', text: currentTextBlock });
+            currentTextBlock = '';
           }
-        } else if (event.type === 'content_block_stop') {
-          if (currentTextBlock && contentBlocks[contentBlocks.length - 1]?.type !== 'text') {
+          // Add tool use block
+          contentBlocks.push({
+            type: 'tool_use',
+            id: toolUse.id,
+            name: toolUse.name,
+            input: toolUse.input
+          });
+          return null; // Tool execution happens later in the loop
+        },
+        onComplete: (text: string, usage: any) => {
+          console.log('[LOMU-AI-JOB-MANAGER] Gemini stream completed');
+          // Add final text block if any
+          if (currentTextBlock && contentBlocks[contentBlocks.length - 1]?.text !== currentTextBlock) {
             contentBlocks.push({ type: 'text', text: currentTextBlock });
           }
-          const lastBlock = contentBlocks[contentBlocks.length - 1];
-          if (lastBlock && lastBlock.type === 'tool_use' && lastBlock._inputStr) {
-            try {
-              lastBlock.input = JSON.parse(lastBlock._inputStr);
-              delete lastBlock._inputStr;
-            } catch (e) {
-              console.error('[LOMU-AI-JOB-MANAGER] Failed to parse tool input JSON:', e);
-            }
-          }
+        },
+        onError: (error: Error) => {
+          console.error('[LOMU-AI-JOB-MANAGER] Gemini stream error:', error);
+          throw error;
         }
-      }
+      });
       
-      if (currentTextBlock && contentBlocks[contentBlocks.length - 1]?.text !== currentTextBlock) {
-        contentBlocks.push({ type: 'text', text: currentTextBlock });
-      }
+      console.log('[LOMU-AI-JOB-MANAGER] Gemini stream completed, processing tool calls...');
 
       // Cleanup internal fields
       contentBlocks.forEach(block => {
