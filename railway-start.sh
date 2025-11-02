@@ -14,11 +14,22 @@ echo "📂 Listing root files:"
 ls -la
 echo ""
 
-echo "🔍 Checking for dist/public directory (frontend)..."
-if [ -d "dist/public" ]; then
-  echo "✅ dist/public directory exists (frontend build)"
+echo "🔍 Checking for dist directory..."
+if [ -d "dist" ]; then
+  echo "✅ dist directory exists"
+  echo "📂 Contents:"
+  ls -la dist/ || echo "Failed to list dist contents"
+  
+  if [ -f "dist/index.js" ]; then
+    echo "✅ dist/index.js found"
+  else
+    echo "❌ dist/index.js NOT found!"
+    exit 1
+  fi
 else
-  echo "❌ dist/public directory NOT found!"
+  echo "❌ dist directory NOT found!"
+  echo "📂 Available directories:"
+  ls -d */ || echo "No directories found"
   exit 1
 fi
 
@@ -60,8 +71,9 @@ if [ "$NODE_ENV" = "production" ]; then
   fi
 fi
 
-# Run drizzle-kit to sync other tables (healing tables already created via SQL)
-npx drizzle-kit push --force || echo "⚠️ drizzle-kit sync skipped (tables created manually)"
+# Skip drizzle-kit push on Railway (causes interactive prompts that block deployment)
+# All table creation happens via SQL files above
+echo "⚠️ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)"
 echo "✅ Database schema ready!"
 
 echo ""
@@ -89,7 +101,7 @@ fi
 echo ""
 
 echo "🚀 Starting Node.js application..."
-echo "Command: npx tsx server/index.ts"
+echo "Command: node dist/index.js"
 echo ""
 
-npx tsx server/index.ts
+node dist/index.js
