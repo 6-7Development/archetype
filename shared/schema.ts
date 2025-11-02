@@ -483,7 +483,7 @@ export type InsertCommand = z.infer<typeof insertCommandSchema>;
 export type Command = typeof commands.$inferSelect;
 
 // LomuAI Tasks - Replit Agent-style task tracking for AI generations
-export const lomuAITasks = pgTable("sysop_tasks", {
+export const lomuAITasks = pgTable("lomu_ai_tasks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
   projectId: varchar("project_id"),
@@ -496,9 +496,9 @@ export const lomuAITasks = pgTable("sysop_tasks", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   completedAt: timestamp("completed_at"),
 }, (table) => [
-  index("idx_sysop_tasks_user_id").on(table.userId),
-  index("idx_sysop_tasks_project_id").on(table.projectId),
-  index("idx_sysop_tasks_command_id").on(table.commandId),
+  index("idx_lomu_ai_tasks_user_id").on(table.userId),
+  index("idx_lomu_ai_tasks_project_id").on(table.projectId),
+  index("idx_lomu_ai_tasks_command_id").on(table.commandId),
 ]);
 
 export const insertLomuAITaskSchema = createInsertSchema(lomuAITasks).omit({
@@ -1586,8 +1586,8 @@ export const lomuKnowledge = pgTable("lomu_knowledge", {
   active: boolean("active").notNull().default(true), // Can be deactivated without deletion
   usageCount: integer("usage_count").notNull().default(0), // How many times this was referenced
   lastUsedAt: timestamp("last_used_at"),
-  createdBy: varchar("created_by"), // User ID or 'system' or 'meta-sysop'
-  approvedBy: varchar("approved_by"), // User ID who approved this knowledge (I AM architect)
+  createdBy: varchar("created_by"), // User ID or 'system' or 'lomu-ai'
+  approvedBy: varchar("approved_by"), // User ID who approved this knowledge (I AM)
   metadata: jsonb("metadata"), // Additional structured data
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

@@ -237,7 +237,7 @@ export interface IStorage {
   createCommand(command: InsertCommandWithUser): Promise<Command>;
   updateCommand(id: string, userId: string, status: string, response: string | null, projectId?: string | null): Promise<Command>;
   
-  // SySop Task operations
+  // LomuAI Task operations
   getTasks(commandId: string): Promise<LomuAITask[]>;
   getTasksByProject(projectId: string, userId: string): Promise<LomuAITask[]>;
   createTask(task: InsertLomuAITask & { userId: string }): Promise<LomuAITask>;

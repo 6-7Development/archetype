@@ -1,0 +1,670 @@
+2025-11-02T22:08:35.000000000Z [info] Starting Container
+2025-11-02T22:08:36.126595939Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:07 .
+2025-11-02T22:08:36.126601465Z [info] Time: Sun Nov  2 22:08:35 UTC 2025
+2025-11-02T22:08:36.126612251Z [info] Node version: v20.19.5
+2025-11-02T22:08:36.126623589Z [info] NPM version: 10.8.2
+2025-11-02T22:08:36.126634153Z [info] 
+2025-11-02T22:08:36.126639504Z [info] ðŸ“ Current directory: /app
+2025-11-02T22:08:36.126649789Z [info] ðŸ“‚ Listing root files:
+2025-11-02T22:08:36.126657305Z [info] total 428
+2025-11-02T22:08:36.126674011Z [info] ======================================
+2025-11-02T22:08:36.126680983Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T22:08:36.126687808Z [info] ======================================
+2025-11-02T22:08:36.126705905Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 22:08 ..
+2025-11-02T22:08:36.126715083Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 22:06 create-healing-tables.sql
+2025-11-02T22:08:36.126722078Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 22:07 dist
+2025-11-02T22:08:36.126729406Z [info] -rw-rw-r--    1 root     root           325 Nov  2 22:06 drizzle.config.ts
+2025-11-02T22:08:36.126739428Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 22:06 drop-old-tables.js
+2025-11-02T22:08:36.126745984Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:07 node_modules
+2025-11-02T22:08:36.126751783Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 22:07 package-lock.json
+2025-11-02T22:08:36.126756653Z [info] -rw-rw-r--    1 root     root          4631 Nov  2 22:07 package.json
+2025-11-02T22:08:36.126761381Z [info] -rwxrwxr-x    1 root     root          3028 Nov  2 22:06 railway-start.sh
+2025-11-02T22:08:36.126766329Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 22:06 replit.md
+2025-11-02T22:08:36.126771084Z [info] drwxr-xr-x   12 root     root          4096 Nov  2 22:06 server
+2025-11-02T22:08:36.129830951Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 22:06 shared
+2025-11-02T22:08:36.129836995Z [info] -rw-rw-r--    1 root     root           960 Nov  2 22:06 tsconfig.json
+2025-11-02T22:08:36.129843182Z [info] 
+2025-11-02T22:08:36.129849293Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-02T22:08:36.129855492Z [info] âœ… dist/public directory exists (frontend build)
+2025-11-02T22:08:36.129862092Z [info] 
+2025-11-02T22:08:36.129867589Z [info] ðŸ—‘ï¸ Dropping old tables with incorrect schema...
+2025-11-02T22:08:36.129873175Z [info] [DROP-TABLES] Dropping old healing tables with incorrect schema...
+2025-11-02T22:08:36.129878775Z [info] [DROP-TABLES] âœ… Dropped healing_messages
+2025-11-02T22:08:36.129884659Z [info] [DROP-TABLES] âœ… Dropped healing_conversations
+2025-11-02T22:08:36.129895182Z [info] [DROP-TABLES] âœ… Dropped healing_targets
+2025-11-02T22:08:36.129900412Z [info] [DROP-TABLES] âœ… Dropped ai_knowledge_base
+2025-11-02T22:08:36.129904351Z [info] [DROP-TABLES] âœ… Dropped platform_incident_playbooks
+2025-11-02T22:08:36.129908421Z [info] [DROP-TABLES] âœ… Dropped ai_fix_attempts
+2025-11-02T22:08:36.129914551Z [info] [DROP-TABLES] âœ… Dropped platform_heal_attempts
+2025-11-02T22:08:36.129919711Z [info] [DROP-TABLES] âœ… Dropped platform_healing_sessions
+2025-11-02T22:08:36.129924993Z [info] [DROP-TABLES] âœ… Dropped platform_incidents
+2025-11-02T22:08:36.129930192Z [info] [DROP-TABLES] âœ… All old tables dropped successfully
+2025-11-02T22:08:36.129936605Z [info] 
+2025-11-02T22:08:36.129944520Z [info] ðŸ”§ Creating healing tables with correct schema...
+2025-11-02T22:08:36.129949788Z [info] âš ï¸ psql not found, using node-postgres...
+2025-11-02T22:08:36.129954868Z [info] âœ… Tables created
+2025-11-02T22:08:36.129960245Z [info] 
+2025-11-02T22:08:36.129965812Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-11-02T22:08:36.131019183Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-02T22:08:37.095811617Z [info] No config path provided, using default 'drizzle.config.ts'
+2025-11-02T22:08:37.095828951Z [info] Reading config file '/app/drizzle.config.ts'
+2025-11-02T22:08:37.131741078Z [info] Using 'pg' driver for database querying
+2025-11-02T22:08:37.321787051Z [info] [â£·] Pulling schema from database...
+2025-11-02T22:08:37.432227454Z [info] a from database...
+2025-11-02T22:08:37.562753181Z [info] a from database...
+2025-11-02T22:08:38.170487468Z [info] a from database...
+2025-11-02T22:08:38.170495995Z [info] a from database...
+2025-11-02T22:08:38.170501523Z [info] a from database...
+2025-11-02T22:08:38.170541502Z [info] a from database...
+2025-11-02T22:08:38.207605716Z [info] a from database...
+2025-11-02T22:08:38.327389530Z [info] a from database...
+2025-11-02T22:08:38.459149861Z [info] a from database...
+2025-11-02T22:08:38.585019169Z [info] a from database...
+2025-11-02T22:08:39.280057749Z [info] a from database...
+2025-11-02T22:08:39.280063214Z [info] a from database...
+2025-11-02T22:08:39.280068266Z [info] a from database...
+2025-11-02T22:08:39.280074239Z [info] a from database...
+2025-11-02T22:08:39.280080022Z [info] a from database...
+2025-11-02T22:08:39.354846091Z [info] a from database...
+2025-11-02T22:08:39.480911179Z [info] a from database...
+2025-11-02T22:08:40.174447207Z [info]   ~ meta_sysop_attachments â€º conversation_states  rename table
+2025-11-02T22:08:40.174447333Z [info] a from database...
+2025-11-02T22:08:40.174462952Z [info] a from database...
+2025-11-02T22:08:40.174464476Z [info]   ~ meta_sysop_sessions â€º conversation_states     rename table
+2025-11-02T22:08:40.174475585Z [info] ed from another table?
+2025-11-02T22:08:40.174491773Z [info] â¯ + conversation_states                           create table
+2025-11-02T22:08:40.174503124Z [info]   ~ meta_sysop_automation â€º conversation_states   rename table
+2025-11-02T22:08:40.174513102Z [info]   ~ meta_sysop_instructions â€º conversation_states rename table
+2025-11-02T22:08:40.174529477Z [info]   ~ meta_sysop_knowledge â€º conversation_states    rename table
+2025-11-02T22:08:40.174536619Z [info]   ~ meta_sysop_memory â€º conversation_states       rename table
+2025-11-02T22:08:40.174625546Z [info] a from database...
+2025-11-02T22:08:59.635651942Z [error]     at moduleResolve (node:internal/modules/esm/resolve:952:10)
+2025-11-02T22:08:59.635660820Z [info]   ~ meta_sysop_jobs â€º conversation_states         rename tableâœ… Database schema ready!
+2025-11-02T22:08:59.635661172Z [info] GITHUB_TOKEN: âœ“ SET
+2025-11-02T22:08:59.635664271Z [error]     at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+2025-11-02T22:08:59.635668090Z [info] 
+2025-11-02T22:08:59.635671895Z [info] GITHUB_REPO: 6-7Development/archetype
+2025-11-02T22:08:59.635673977Z [error]     at nextResolve (node:internal/modules/esm/hooks:864:28)
+2025-11-02T22:08:59.635675754Z [info] ðŸ” Environment Check:
+2025-11-02T22:08:59.635680650Z [info] GITHUB_BRANCH: main
+2025-11-02T22:08:59.635683540Z [error]     at resolveBase (file:///app/node_modules/tsx/dist/esm/index.mjs?1762121330719:2:3744)
+2025-11-02T22:08:59.635684260Z [info] NODE_ENV: production
+2025-11-02T22:08:59.635688758Z [info] ANTHROPIC_API_KEY: âœ“ SET
+2025-11-02T22:08:59.635691720Z [info] PORT: 8080
+2025-11-02T22:08:59.635696549Z [info] 
+2025-11-02T22:08:59.635698912Z [info] DATABASE_URL: âœ“ SET (hidden for security)
+2025-11-02T22:08:59.635710467Z [info] ðŸ“„ Ensuring replit.md is available...
+2025-11-02T22:08:59.635714795Z [info] âœ… replit.md already present
+2025-11-02T22:08:59.635719623Z [info] 
+2025-11-02T22:08:59.635725455Z [info] ðŸš€ Starting Node.js application...
+2025-11-02T22:08:59.635732034Z [info] Command: npx tsx server/index.ts
+2025-11-02T22:08:59.635740466Z [info] 
+2025-11-02T22:08:59.635746522Z [error] 
+2025-11-02T22:08:59.635752303Z [error] node:internal/modules/run_main:123
+2025-11-02T22:08:59.635758246Z [error]     triggerUncaughtException(
+2025-11-02T22:08:59.635765794Z [error]     ^
+2025-11-02T22:08:59.635772782Z [error] Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/server/config/railway' imported from /app/server/routes/lomuChat.ts
+2025-11-02T22:08:59.635783429Z [error]     at finalizeResolution (node:internal/modules/esm/resolve:283:11)
+2025-11-02T22:08:59.637888666Z [info] total 428
+2025-11-02T22:08:59.637897216Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:07 .
+2025-11-02T22:08:59.637903721Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 22:08 ..
+2025-11-02T22:08:59.637909870Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 22:06 create-healing-tables.sql
+2025-11-02T22:08:59.637919342Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 22:07 dist
+2025-11-02T22:08:59.637937302Z [error]     at async handleMessage (node:internal/modules/esm/worker:196:18) {
+2025-11-02T22:08:59.637954455Z [error]   code: 'ERR_MODULE_NOT_FOUND',
+2025-11-02T22:08:59.637964179Z [error]     at async resolveDirectory (file:///app/node_modules/tsx/dist/esm/index.mjs?1762121330719:2:4237)
+2025-11-02T22:08:59.637967463Z [error]   url: 'file:///app/server/config/railway'
+2025-11-02T22:08:59.637974247Z [error]     at async resolve (file:///app/node_modules/tsx/dist/esm/index.mjs?1762121330719:2:5355)
+2025-11-02T22:08:59.637979340Z [error] }
+2025-11-02T22:08:59.637985114Z [error]     at async nextResolve (node:internal/modules/esm/hooks:864:22)
+2025-11-02T22:08:59.638000373Z [error] 
+2025-11-02T22:08:59.638004643Z [error]     at async Hooks.resolve (node:internal/modules/esm/hooks:306:24)
+2025-11-02T22:08:59.638011460Z [error] Node.js v20.19.5
+2025-11-02T22:08:59.638020652Z [info] ======================================
+2025-11-02T22:08:59.638027806Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T22:08:59.638036646Z [info] ======================================
+2025-11-02T22:08:59.638045222Z [info] Time: Sun Nov  2 22:08:54 UTC 2025
+2025-11-02T22:08:59.638053649Z [info] Node version: v20.19.5
+2025-11-02T22:08:59.638062115Z [info] NPM version: 10.8.2
+2025-11-02T22:08:59.638071804Z [info] 
+2025-11-02T22:08:59.638078464Z [info] ðŸ“ Current directory: /app
+2025-11-02T22:08:59.638085262Z [info] ðŸ“‚ Listing root files:
+2025-11-02T22:08:59.640647155Z [info] ðŸ—‘ï¸ Dropping old tables with incorrect schema...
+2025-11-02T22:08:59.640657613Z [info] -rw-rw-r--    1 root     root           325 Nov  2 22:06 drizzle.config.ts
+2025-11-02T22:08:59.640660003Z [info] [DROP-TABLES] Dropping old healing tables with incorrect schema...
+2025-11-02T22:08:59.640665040Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 22:06 drop-old-tables.js
+2025-11-02T22:08:59.640671263Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:07 node_modules
+2025-11-02T22:08:59.640676129Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 22:07 package-lock.json
+2025-11-02T22:08:59.640680646Z [info] -rw-rw-r--    1 root     root          4631 Nov  2 22:07 package.json
+2025-11-02T22:08:59.640683659Z [info] [DROP-TABLES] âœ… Dropped healing_messages
+2025-11-02T22:08:59.640686286Z [info] -rwxrwxr-x    1 root     root          3028 Nov  2 22:06 railway-start.sh
+2025-11-02T22:08:59.640692030Z [info] [DROP-TABLES] âœ… Dropped healing_conversations
+2025-11-02T22:08:59.640693030Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 22:06 replit.md
+2025-11-02T22:08:59.640699074Z [info] [DROP-TABLES] âœ… Dropped healing_targets
+2025-11-02T22:08:59.640700289Z [info] drwxr-xr-x   12 root     root          4096 Nov  2 22:06 server
+2025-11-02T22:08:59.640706134Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 22:06 shared
+2025-11-02T22:08:59.640707039Z [info] [DROP-TABLES] âœ… Dropped ai_knowledge_base
+2025-11-02T22:08:59.640712478Z [info] -rw-rw-r--    1 root     root           960 Nov  2 22:06 tsconfig.json
+2025-11-02T22:08:59.640714836Z [info] [DROP-TABLES] âœ… Dropped platform_incident_playbooks
+2025-11-02T22:08:59.640717813Z [info] 
+2025-11-02T22:08:59.640721836Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-02T22:08:59.640726017Z [info] âœ… dist/public directory exists (frontend build)
+2025-11-02T22:08:59.640730223Z [info] 
+2025-11-02T22:08:59.642925747Z [info] [DROP-TABLES] âœ… Dropped ai_fix_attempts
+2025-11-02T22:08:59.642932926Z [info] [DROP-TABLES] âœ… Dropped platform_heal_attempts
+2025-11-02T22:08:59.642939561Z [info] [DROP-TABLES] âœ… Dropped platform_healing_sessions
+2025-11-02T22:08:59.642941083Z [info] a from database...
+2025-11-02T22:08:59.642941596Z [info] âœ… Tables created
+2025-11-02T22:08:59.642946820Z [info] [DROP-TABLES] âœ… Dropped platform_incidents
+2025-11-02T22:08:59.642950151Z [info] a from database...
+2025-11-02T22:08:59.642952782Z [info] [DROP-TABLES] âœ… All old tables dropped successfully
+2025-11-02T22:08:59.642953342Z [info] 
+2025-11-02T22:08:59.642957645Z [info] 
+2025-11-02T22:08:59.642961994Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-11-02T22:08:59.642963773Z [info] ðŸ”§ Creating healing tables with correct schema...
+2025-11-02T22:08:59.642968174Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-02T22:08:59.642972186Z [info] âš ï¸ psql not found, using node-postgres...
+2025-11-02T22:08:59.642974050Z [info] No config path provided, using default 'drizzle.config.ts'
+2025-11-02T22:08:59.642978903Z [info] Reading config file '/app/drizzle.config.ts'
+2025-11-02T22:08:59.642985988Z [info] Using 'pg' driver for database querying
+2025-11-02T22:08:59.642990598Z [info] [â£·] Pulling schema from database...
+2025-11-02T22:08:59.642995945Z [info] a from database...
+2025-11-02T22:08:59.643000637Z [info] a from database...
+2025-11-02T22:08:59.643005183Z [info] a from database...
+2025-11-02T22:08:59.643009738Z [info] a from database...
+2025-11-02T22:08:59.643015078Z [info] a from database...
+2025-11-02T22:08:59.643020955Z [info] a from database...
+2025-11-02T22:08:59.650203671Z [info]   ~ meta_sysop_knowledge â€º conversation_states    rename table
+2025-11-02T22:08:59.650213950Z [info] a from database...
+2025-11-02T22:08:59.650217330Z [info]   ~ meta_sysop_memory â€º conversation_states       rename table
+2025-11-02T22:08:59.650220976Z [info] a from database...
+2025-11-02T22:08:59.650226401Z [info]   ~ meta_sysop_attachments â€º conversation_states  rename table
+2025-11-02T22:08:59.650226513Z [info] a from database...
+2025-11-02T22:08:59.650234247Z [info] a from database...
+2025-11-02T22:08:59.650235232Z [info]   ~ meta_sysop_sessions â€º conversation_states     rename table
+2025-11-02T22:08:59.650239128Z [info] a from database...
+2025-11-02T22:08:59.650242941Z [info] a from database...
+2025-11-02T22:08:59.650246848Z [info] a from database...
+2025-11-02T22:08:59.650252506Z [info] a from database...
+2025-11-02T22:08:59.650257769Z [info] a from database...
+2025-11-02T22:08:59.650262062Z [info] a from database...
+2025-11-02T22:08:59.650266034Z [info] a from database...
+2025-11-02T22:08:59.650269959Z [info] a from database...
+2025-11-02T22:08:59.650274003Z [info] a from database...
+2025-11-02T22:08:59.650278043Z [info] ed from another table?
+2025-11-02T22:08:59.650286934Z [info] â¯ + conversation_states                           create table
+2025-11-02T22:08:59.650291146Z [info]   ~ meta_sysop_automation â€º conversation_states   rename table
+2025-11-02T22:08:59.650294963Z [info]   ~ meta_sysop_instructions â€º conversation_states rename table
+2025-11-02T22:09:09.351870616Z [info]   ~ meta_sysop_jobs â€º conversation_states         rename tableâœ… Database schema ready!
+2025-11-02T22:09:09.351876095Z [info] 
+2025-11-02T22:09:09.351884185Z [info] ðŸ” Environment Check:
+2025-11-02T22:09:09.351889795Z [info] NODE_ENV: production
+2025-11-02T22:09:09.351895010Z [info] PORT: 8080
+2025-11-02T22:09:09.351900561Z [info] DATABASE_URL: âœ“ SET (hidden for security)
+2025-11-02T22:09:09.351906714Z [info] GITHUB_TOKEN: âœ“ SET
+2025-11-02T22:09:09.351912358Z [info] GITHUB_REPO: 6-7Development/archetype
+2025-11-02T22:09:09.351917853Z [info] GITHUB_BRANCH: main
+2025-11-02T22:09:09.351923571Z [info] ANTHROPIC_API_KEY: âœ“ SET
+2025-11-02T22:09:09.351928935Z [info] 
+2025-11-02T22:09:09.351934399Z [info] ðŸ“„ Ensuring replit.md is available...
+2025-11-02T22:09:09.351938844Z [info] âœ… replit.md already present
+2025-11-02T22:09:09.351943693Z [info] 
+2025-11-02T22:09:09.351949504Z [info] ðŸš€ Starting Node.js application...
+2025-11-02T22:09:09.351956600Z [info] Command: npx tsx server/index.ts
+2025-11-02T22:09:09.351961981Z [info] 
+2025-11-02T22:09:10.652559440Z [error] 
+2025-11-02T22:09:10.652576415Z [error] node:internal/modules/run_main:123
+2025-11-02T22:09:10.652586598Z [error]     triggerUncaughtException(
+2025-11-02T22:09:10.652595977Z [error]     ^
+2025-11-02T22:09:10.655168115Z [error] Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/server/config/railway' imported from /app/server/routes/lomuChat.ts
+2025-11-02T22:09:10.655173645Z [error]     at async resolve (file:///app/node_modules/tsx/dist/esm/index.mjs?1762121350270:2:5355)
+2025-11-02T22:09:10.655174600Z [error]     at finalizeResolution (node:internal/modules/esm/resolve:283:11)
+2025-11-02T22:09:10.655183190Z [error]     at moduleResolve (node:internal/modules/esm/resolve:952:10)
+2025-11-02T22:09:10.655187573Z [error]     at async nextResolve (node:internal/modules/esm/hooks:864:22)
+2025-11-02T22:09:10.655190447Z [error]     at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+2025-11-02T22:09:10.655195645Z [error]     at nextResolve (node:internal/modules/esm/hooks:864:28)
+2025-11-02T22:09:10.655198328Z [error]     at async Hooks.resolve (node:internal/modules/esm/hooks:306:24)
+2025-11-02T22:09:10.655202031Z [error]     at resolveBase (file:///app/node_modules/tsx/dist/esm/index.mjs?1762121350270:2:3744)
+2025-11-02T22:09:10.655209365Z [error]     at async resolveDirectory (file:///app/node_modules/tsx/dist/esm/index.mjs?1762121350270:2:4237)
+2025-11-02T22:09:10.655209739Z [error]     at async handleMessage (node:internal/modules/esm/worker:196:18) {
+2025-11-02T22:09:10.655217053Z [error]   code: 'ERR_MODULE_NOT_FOUND',
+2025-11-02T22:09:10.655223397Z [error]   url: 'file:///app/server/config/railway'
+2025-11-02T22:09:10.655229661Z [error] }
+2025-11-02T22:09:10.655236301Z [error] 
+2025-11-02T22:09:10.655242344Z [error] Node.js v20.19.5
+2025-11-02T22:09:12.299119339Z [info] -rw-rw-r--    1 root     root          4631 Nov  2 22:07 package.json
+2025-11-02T22:09:12.299127435Z [info] -rwxrwxr-x    1 root     root          3028 Nov  2 22:06 railway-start.sh
+2025-11-02T22:09:12.299135933Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 22:06 replit.md
+2025-11-02T22:09:12.299144549Z [info] drwxr-xr-x   12 root     root          4096 Nov  2 22:06 server
+2025-11-02T22:09:12.299246827Z [info] ======================================
+2025-11-02T22:09:12.299256638Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T22:09:12.299263634Z [info] ======================================
+2025-11-02T22:09:12.299275372Z [info] Time: Sun Nov  2 22:09:11 UTC 2025
+2025-11-02T22:09:12.299282215Z [info] Node version: v20.19.5
+2025-11-02T22:09:12.299294209Z [info] NPM version: 10.8.2
+2025-11-02T22:09:12.299301589Z [info] 
+2025-11-02T22:09:12.299308764Z [info] ðŸ“ Current directory: /app
+2025-11-02T22:09:12.299316622Z [info] ðŸ“‚ Listing root files:
+2025-11-02T22:09:12.299324880Z [info] total 428
+2025-11-02T22:09:12.299332091Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:07 .
+2025-11-02T22:09:12.299346314Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 22:08 ..
+2025-11-02T22:09:12.299359149Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 22:06 create-healing-tables.sql
+2025-11-02T22:09:12.299365735Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 22:07 dist
+2025-11-02T22:09:12.299372081Z [info] -rw-rw-r--    1 root     root           325 Nov  2 22:06 drizzle.config.ts
+2025-11-02T22:09:12.299379887Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 22:06 drop-old-tables.js
+2025-11-02T22:09:12.299388113Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:07 node_modules
+2025-11-02T22:09:12.299395272Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 22:07 package-lock.json
+2025-11-02T22:09:12.304485622Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 22:06 shared
+2025-11-02T22:09:12.304491779Z [info] -rw-rw-r--    1 root     root           960 Nov  2 22:06 tsconfig.json
+2025-11-02T22:09:12.304497472Z [info] 
+2025-11-02T22:09:12.304504517Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-02T22:09:12.304510604Z [info] âœ… dist/public directory exists (frontend build)
+2025-11-02T22:09:12.304800818Z [info] 
+2025-11-02T22:09:12.304810037Z [info] ðŸ—‘ï¸ Dropping old tables with incorrect schema...
+2025-11-02T22:09:12.304817242Z [info] [DROP-TABLES] Dropping old healing tables with incorrect schema...
+2025-11-02T22:09:12.379233187Z [info] [DROP-TABLES] âœ… Dropped healing_messages
+2025-11-02T22:09:12.381386384Z [info] [DROP-TABLES] âœ… Dropped healing_conversations
+2025-11-02T22:09:12.386240438Z [info] [DROP-TABLES] âœ… Dropped healing_targets
+2025-11-02T22:09:12.389837730Z [info] [DROP-TABLES] âœ… Dropped ai_knowledge_base
+2025-11-02T22:09:12.394600238Z [info] [DROP-TABLES] âœ… Dropped platform_incident_playbooks
+2025-11-02T22:09:12.397284402Z [info] [DROP-TABLES] âœ… Dropped ai_fix_attempts
+2025-11-02T22:09:12.399424146Z [info] [DROP-TABLES] âœ… Dropped platform_heal_attempts
+2025-11-02T22:09:12.405602695Z [info] [DROP-TABLES] âœ… Dropped platform_healing_sessions
+2025-11-02T22:09:12.408129035Z [info] [DROP-TABLES] âœ… Dropped platform_incidents
+2025-11-02T22:09:12.408135194Z [info] [DROP-TABLES] âœ… All old tables dropped successfully
+2025-11-02T22:09:12.416756786Z [info] 
+2025-11-02T22:09:12.416766330Z [info] ðŸ”§ Creating healing tables with correct schema...
+2025-11-02T22:09:12.416772242Z [info] âš ï¸ psql not found, using node-postgres...
+2025-11-02T22:09:13.632652937Z [info] âœ… Tables created
+2025-11-02T22:09:13.632658901Z [info] 
+2025-11-02T22:09:13.632666361Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-11-02T22:09:13.632672765Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-02T22:09:13.646020594Z [info] No config path provided, using default 'drizzle.config.ts'
+2025-11-02T22:09:13.648949670Z [info] Reading config file '/app/drizzle.config.ts'
+2025-11-02T22:09:14.347596744Z [info] Using 'pg' driver for database querying
+2025-11-02T22:09:14.392263693Z [info] [â£·] Pulling schema from database...
+2025-11-02T22:09:14.504087563Z [info] a from database...
+2025-11-02T22:09:14.635101073Z [info] a from database...
+2025-11-02T22:09:15.233723471Z [info] a from database...
+2025-11-02T22:09:15.233728605Z [info] a from database...
+2025-11-02T22:09:15.233733794Z [info] a from database...
+2025-11-02T22:09:15.233738937Z [info] a from database...
+2025-11-02T22:09:15.273446991Z [info] a from database...
+2025-11-02T22:09:15.403473444Z [info] a from database...
+2025-11-02T22:09:15.528754524Z [info] a from database...
+2025-11-02T22:09:15.659039834Z [info] a from database...
+2025-11-02T22:09:16.320256707Z [info] a from database...
+2025-11-02T22:09:16.320264912Z [info] a from database...
+2025-11-02T22:09:16.320272744Z [info] a from database...
+2025-11-02T22:09:16.320279912Z [info] a from database...
+2025-11-02T22:09:16.320288597Z [info] a from database...
+2025-11-02T22:09:16.426263010Z [info] a from database...
+2025-11-02T22:09:16.554040907Z [info] a from database...
+2025-11-02T22:09:17.308489086Z [info] a from database...
+2025-11-02T22:09:17.308493258Z [info] a from database...
+2025-11-02T22:09:17.308497574Z [info] a from database...
+2025-11-02T22:09:17.308690615Z [info] a from database...
+2025-11-02T22:09:17.308700871Z [info] a from database...
+2025-11-02T22:09:17.308705759Z [info] a from database...
+2025-11-02T22:09:17.321951038Z [info] ed from another table?
+2025-11-02T22:09:17.321964206Z [info] â¯ + conversation_states                           create table
+2025-11-02T22:09:17.321971269Z [info]   ~ meta_sysop_automation â€º conversation_states   rename table
+2025-11-02T22:09:17.321978524Z [info]   ~ meta_sysop_instructions â€º conversation_states rename table
+2025-11-02T22:09:17.321989198Z [info]   ~ meta_sysop_knowledge â€º conversation_states    rename table
+2025-11-02T22:09:17.321996452Z [info]   ~ meta_sysop_memory â€º conversation_states       rename table
+2025-11-02T22:09:17.322003115Z [info]   ~ meta_sysop_attachments â€º conversation_states  rename table
+2025-11-02T22:09:17.322010062Z [info]   ~ meta_sysop_sessions â€º conversation_states     rename table
+2025-11-02T22:09:36.729550250Z [info]   ~ meta_sysop_jobs â€º conversation_states         rename tableâœ… Database schema ready!
+2025-11-02T22:09:36.729558983Z [info] 
+2025-11-02T22:09:36.729569023Z [info] ðŸ” Environment Check:
+2025-11-02T22:09:36.729578707Z [info] NODE_ENV: production
+2025-11-02T22:09:36.729583953Z [info] PORT: 8080
+2025-11-02T22:09:36.729589331Z [info] DATABASE_URL: âœ“ SET (hidden for security)
+2025-11-02T22:09:36.729594569Z [info] GITHUB_TOKEN: âœ“ SET
+2025-11-02T22:09:36.729599031Z [info] GITHUB_REPO: 6-7Development/archetype
+2025-11-02T22:09:36.729603456Z [info] GITHUB_BRANCH: main
+2025-11-02T22:09:36.729608830Z [info] ANTHROPIC_API_KEY: âœ“ SET
+2025-11-02T22:09:36.729614640Z [info] 
+2025-11-02T22:09:36.729625099Z [info] ðŸ“„ Ensuring replit.md is available...
+2025-11-02T22:09:36.729631381Z [info] âœ… replit.md already present
+2025-11-02T22:09:36.729636476Z [info] 
+2025-11-02T22:09:36.729642456Z [info] ðŸš€ Starting Node.js application...
+2025-11-02T22:09:36.729647578Z [info] Command: npx tsx server/index.ts
+2025-11-02T22:09:36.729652085Z [info] 
+2025-11-02T22:09:36.729657190Z [error] 
+2025-11-02T22:09:36.729661443Z [error] node:internal/modules/run_main:123
+2025-11-02T22:09:36.729665776Z [error]     triggerUncaughtException(
+2025-11-02T22:09:36.729671895Z [error]     ^
+2025-11-02T22:09:36.729677614Z [error] Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/server/config/railway' imported from /app/server/routes/lomuChat.ts
+2025-11-02T22:09:36.729681832Z [error]     at finalizeResolution (node:internal/modules/esm/resolve:283:11)
+2025-11-02T22:09:36.729686132Z [error]     at moduleResolve (node:internal/modules/esm/resolve:952:10)
+2025-11-02T22:09:36.729695283Z [error]     at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+2025-11-02T22:09:36.729699740Z [error]     at nextResolve (node:internal/modules/esm/hooks:864:28)
+2025-11-02T22:09:36.729704284Z [error]     at resolveBase (file:///app/node_modules/tsx/dist/esm/index.mjs?1762121368179:2:3744)
+2025-11-02T22:09:36.731371962Z [error]     at async resolveDirectory (file:///app/node_modules/tsx/dist/esm/index.mjs?1762121368179:2:4237)
+2025-11-02T22:09:36.731379302Z [error]     at async resolve (file:///app/node_modules/tsx/dist/esm/index.mjs?1762121368179:2:5355)
+2025-11-02T22:09:36.731383661Z [error]     at async nextResolve (node:internal/modules/esm/hooks:864:22)
+2025-11-02T22:09:36.731388135Z [error]     at async Hooks.resolve (node:internal/modules/esm/hooks:306:24)
+2025-11-02T22:09:36.731392237Z [error]     at async handleMessage (node:internal/modules/esm/worker:196:18) {
+2025-11-02T22:09:36.731396245Z [error]   code: 'ERR_MODULE_NOT_FOUND',
+2025-11-02T22:09:36.731400194Z [error]   url: 'file:///app/server/config/railway'
+2025-11-02T22:09:36.731407999Z [error] }
+2025-11-02T22:09:36.731414539Z [error] 
+2025-11-02T22:09:36.731418877Z [error] Node.js v20.19.5
+2025-11-02T22:09:36.731422925Z [info] ======================================
+2025-11-02T22:09:36.731426760Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T22:09:36.731431084Z [info] ======================================
+2025-11-02T22:09:36.731435114Z [info] Time: Sun Nov  2 22:09:30 UTC 2025
+2025-11-02T22:09:36.731439039Z [info] Node version: v20.19.5
+2025-11-02T22:09:36.731443465Z [info] NPM version: 10.8.2
+2025-11-02T22:09:36.731448641Z [info] 
+2025-11-02T22:09:36.731452664Z [info] ðŸ“ Current directory: /app
+2025-11-02T22:09:36.731457472Z [info] ðŸ“‚ Listing root files:
+2025-11-02T22:09:36.731461238Z [info] total 428
+2025-11-02T22:09:36.731464868Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:07 .
+2025-11-02T22:09:36.731468958Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 22:08 ..
+2025-11-02T22:09:36.731475620Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 22:06 create-healing-tables.sql
+2025-11-02T22:09:36.731481789Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 22:07 dist
+2025-11-02T22:09:36.734158332Z [info] -rw-rw-r--    1 root     root           325 Nov  2 22:06 drizzle.config.ts
+2025-11-02T22:09:36.734164100Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 22:06 drop-old-tables.js
+2025-11-02T22:09:36.734169485Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:07 node_modules
+2025-11-02T22:09:36.734174523Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 22:07 package-lock.json
+2025-11-02T22:09:36.734179424Z [info] -rw-rw-r--    1 root     root          4631 Nov  2 22:07 package.json
+2025-11-02T22:09:36.734184298Z [info] -rwxrwxr-x    1 root     root          3028 Nov  2 22:06 railway-start.sh
+2025-11-02T22:09:36.734188379Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 22:06 replit.md
+2025-11-02T22:09:36.734192380Z [info] drwxr-xr-x   12 root     root          4096 Nov  2 22:06 server
+2025-11-02T22:09:36.734196104Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 22:06 shared
+2025-11-02T22:09:36.734201746Z [info] -rw-rw-r--    1 root     root           960 Nov  2 22:06 tsconfig.json
+2025-11-02T22:09:36.734207840Z [info] 
+2025-11-02T22:09:36.734211974Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-02T22:09:36.734216071Z [info] âœ… dist/public directory exists (frontend build)
+2025-11-02T22:09:36.734220290Z [info] 
+2025-11-02T22:09:36.734224711Z [info] ðŸ—‘ï¸ Dropping old tables with incorrect schema...
+2025-11-02T22:09:36.734229343Z [info] [DROP-TABLES] Dropping old healing tables with incorrect schema...
+2025-11-02T22:09:36.734233082Z [info] [DROP-TABLES] âœ… Dropped healing_messages
+2025-11-02T22:09:36.734239452Z [info] [DROP-TABLES] âœ… Dropped healing_conversations
+2025-11-02T22:09:36.734244725Z [info] [DROP-TABLES] âœ… Dropped healing_targets
+2025-11-02T22:09:36.734250029Z [info] [DROP-TABLES] âœ… Dropped ai_knowledge_base
+2025-11-02T22:09:36.734257244Z [info] [DROP-TABLES] âœ… Dropped platform_incident_playbooks
+2025-11-02T22:09:36.737204202Z [info] No config path provided, using default 'drizzle.config.ts'
+2025-11-02T22:09:36.737204292Z [info] a from database...
+2025-11-02T22:09:36.737218990Z [info] Reading config file '/app/drizzle.config.ts'
+2025-11-02T22:09:36.737219526Z [info] a from database...
+2025-11-02T22:09:36.737225995Z [info] a from database...
+2025-11-02T22:09:36.737227601Z [info] Using 'pg' driver for database querying
+2025-11-02T22:09:36.737232767Z [info] a from database...
+2025-11-02T22:09:36.737234853Z [info] [â£·] Pulling schema from database...
+2025-11-02T22:09:36.737238525Z [info] a from database...
+2025-11-02T22:09:36.737245710Z [info] a from database...
+2025-11-02T22:09:36.737251043Z [info] a from database...
+2025-11-02T22:09:36.737255819Z [info] 
+2025-11-02T22:09:36.737257019Z [info] a from database...
+2025-11-02T22:09:36.737264522Z [info] ðŸ”§ Creating healing tables with correct schema...
+2025-11-02T22:09:36.737268402Z [info] [DROP-TABLES] âœ… Dropped ai_fix_attempts
+2025-11-02T22:09:36.737274356Z [info] [DROP-TABLES] âœ… Dropped platform_heal_attempts
+2025-11-02T22:09:36.737279750Z [info] [DROP-TABLES] âœ… Dropped platform_healing_sessions
+2025-11-02T22:09:36.737281999Z [info] âš ï¸ psql not found, using node-postgres...
+2025-11-02T22:09:36.737288880Z [info] [DROP-TABLES] âœ… Dropped platform_incidents
+2025-11-02T22:09:36.737290415Z [info] âœ… Tables created
+2025-11-02T22:09:36.737295579Z [info] [DROP-TABLES] âœ… All old tables dropped successfully
+2025-11-02T22:09:36.737298137Z [info] 
+2025-11-02T22:09:36.737303662Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-11-02T22:09:36.737310920Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-02T22:09:36.738848889Z [info] a from database...
+2025-11-02T22:09:36.738849827Z [info]   ~ meta_sysop_attachments â€º conversation_states  rename table
+2025-11-02T22:09:36.738859856Z [info] a from database...
+2025-11-02T22:09:36.738859919Z [info]   ~ meta_sysop_sessions â€º conversation_states     rename table
+2025-11-02T22:09:36.738867684Z [info] a from database...
+2025-11-02T22:09:36.738873794Z [info] â¯ + conversation_states                           create table
+2025-11-02T22:09:36.738874054Z [info] a from database...
+2025-11-02T22:09:36.738875886Z [info] a from database...
+2025-11-02T22:09:36.738882971Z [info] a from database...
+2025-11-02T22:09:36.738884332Z [info]   ~ meta_sysop_automation â€º conversation_states   rename table
+2025-11-02T22:09:36.738885700Z [info] a from database...
+2025-11-02T22:09:36.738891532Z [info] a from database...
+2025-11-02T22:09:36.738894056Z [info]   ~ meta_sysop_instructions â€º conversation_states rename table
+2025-11-02T22:09:36.738895060Z [info] a from database...
+2025-11-02T22:09:36.738899828Z [info] a from database...
+2025-11-02T22:09:36.738904145Z [info]   ~ meta_sysop_knowledge â€º conversation_states    rename table
+2025-11-02T22:09:36.738904704Z [info] a from database...
+2025-11-02T22:09:36.738908329Z [info] a from database...
+2025-11-02T22:09:36.738913198Z [info] a from database...
+2025-11-02T22:09:36.738917815Z [info] eta_sysop_memory â€º conversation_states       rename table
+2025-11-02T22:09:36.738924931Z [info] Is conversation_states table created or renamed from another table?
+2025-11-02T22:09:44.812248579Z [info] 
+2025-11-02T22:09:44.812260179Z [info] ðŸš€ Starting Node.js application...
+2025-11-02T22:09:44.812268354Z [info] Command: npx tsx server/index.ts
+2025-11-02T22:09:44.812274819Z [info] 
+2025-11-02T22:09:44.812353106Z [info]   ~ meta_sysop_jobs â€º conversation_states         rename tableâœ… Database schema ready!
+2025-11-02T22:09:44.812358660Z [info] 
+2025-11-02T22:09:44.812364131Z [info] ðŸ” Environment Check:
+2025-11-02T22:09:44.812368383Z [info] NODE_ENV: production
+2025-11-02T22:09:44.812375252Z [info] PORT: 8080
+2025-11-02T22:09:44.812379720Z [info] DATABASE_URL: âœ“ SET (hidden for security)
+2025-11-02T22:09:44.812388913Z [info] GITHUB_TOKEN: âœ“ SET
+2025-11-02T22:09:44.812393669Z [info] GITHUB_REPO: 6-7Development/archetype
+2025-11-02T22:09:44.812397896Z [info] GITHUB_BRANCH: main
+2025-11-02T22:09:44.812402398Z [info] ANTHROPIC_API_KEY: âœ“ SET
+2025-11-02T22:09:44.812407197Z [info] 
+2025-11-02T22:09:44.812411467Z [info] ðŸ“„ Ensuring replit.md is available...
+2025-11-02T22:09:44.812415648Z [info] âœ… replit.md already present
+2025-11-02T22:09:46.431580755Z [error] 
+2025-11-02T22:09:46.431586443Z [error] node:internal/modules/run_main:123
+2025-11-02T22:09:46.431591956Z [error]     triggerUncaughtException(
+2025-11-02T22:09:46.431597717Z [error]     ^
+2025-11-02T22:09:46.431603317Z [error] Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/server/config/railway' imported from /app/server/routes/lomuChat.ts
+2025-11-02T22:09:46.431609035Z [error]     at finalizeResolution (node:internal/modules/esm/resolve:283:11)
+2025-11-02T22:09:46.431613978Z [error]     at moduleResolve (node:internal/modules/esm/resolve:952:10)
+2025-11-02T22:09:46.431619995Z [error]     at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+2025-11-02T22:09:46.431625389Z [error]     at nextResolve (node:internal/modules/esm/hooks:864:28)
+2025-11-02T22:09:46.431630449Z [error]     at resolveBase (file:///app/node_modules/tsx/dist/esm/index.mjs?1762121385605:2:3744)
+2025-11-02T22:09:46.431637145Z [error]     at async resolveDirectory (file:///app/node_modules/tsx/dist/esm/index.mjs?1762121385605:2:4237)
+2025-11-02T22:09:46.431642323Z [error]     at async resolve (file:///app/node_modules/tsx/dist/esm/index.mjs?1762121385605:2:5355)
+2025-11-02T22:09:46.431650247Z [error]     at async nextResolve (node:internal/modules/esm/hooks:864:22)
+2025-11-02T22:09:46.431656619Z [error]     at async Hooks.resolve (node:internal/modules/esm/hooks:306:24)
+2025-11-02T22:09:46.431663770Z [error]     at async handleMessage (node:internal/modules/esm/worker:196:18) {
+2025-11-02T22:09:46.431670698Z [error]   code: 'ERR_MODULE_NOT_FOUND',
+2025-11-02T22:09:46.431678078Z [error]   url: 'file:///app/server/config/railway'
+2025-11-02T22:09:46.431685782Z [error] }
+2025-11-02T22:09:46.431692104Z [error] 
+2025-11-02T22:09:46.431698453Z [error] Node.js v20.19.5
+2025-11-02T22:09:47.448243802Z [info] ======================================
+2025-11-02T22:09:47.448255955Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T22:09:47.448262015Z [info] ======================================
+2025-11-02T22:09:47.448268284Z [info] Time: Sun Nov  2 22:09:47 UTC 2025
+2025-11-02T22:09:47.448273351Z [info] Node version: v20.19.5
+2025-11-02T22:09:47.448278655Z [info] NPM version: 10.8.2
+2025-11-02T22:09:47.448284820Z [info] 
+2025-11-02T22:09:47.448308476Z [info] ðŸ“ Current directory: /app
+2025-11-02T22:09:47.448317855Z [info] ðŸ“‚ Listing root files:
+2025-11-02T22:09:47.448327293Z [info] total 428
+2025-11-02T22:09:47.448335898Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 22:06 drop-old-tables.js
+2025-11-02T22:09:47.448336438Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:07 .
+2025-11-02T22:09:47.448346608Z [info] drwxr-xr-x   12 root     root          4096 Nov  2 22:06 server
+2025-11-02T22:09:47.448347247Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 22:08 ..
+2025-11-02T22:09:47.448351615Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:07 node_modules
+2025-11-02T22:09:47.448360635Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 22:07 package-lock.json
+2025-11-02T22:09:47.448361396Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 22:06 create-healing-tables.sql
+2025-11-02T22:09:47.448368205Z [info] -rw-rw-r--    1 root     root          4631 Nov  2 22:07 package.json
+2025-11-02T22:09:47.448371661Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 22:07 dist
+2025-11-02T22:09:47.448375575Z [info] -rwxrwxr-x    1 root     root          3028 Nov  2 22:06 railway-start.sh
+2025-11-02T22:09:47.448378598Z [info] -rw-rw-r--    1 root     root           325 Nov  2 22:06 drizzle.config.ts
+2025-11-02T22:09:47.448381576Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 22:06 replit.md
+2025-11-02T22:09:47.452052387Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 22:06 shared
+2025-11-02T22:09:47.452058965Z [info] -rw-rw-r--    1 root     root           960 Nov  2 22:06 tsconfig.json
+2025-11-02T22:09:47.452064417Z [info] 
+2025-11-02T22:09:47.452071146Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-02T22:09:47.452078704Z [info] âœ… dist/public directory exists (frontend build)
+2025-11-02T22:09:47.452084569Z [info] 
+2025-11-02T22:09:47.452091083Z [info] ðŸ—‘ï¸ Dropping old tables with incorrect schema...
+2025-11-02T22:09:47.552654158Z [info] [DROP-TABLES] Dropping old healing tables with incorrect schema...
+2025-11-02T22:09:47.702453494Z [info] [DROP-TABLES] âœ… Dropped healing_messages
+2025-11-02T22:09:47.705385370Z [info] [DROP-TABLES] âœ… Dropped healing_conversations
+2025-11-02T22:09:47.707959179Z [info] [DROP-TABLES] âœ… Dropped healing_targets
+2025-11-02T22:09:47.710838507Z [info] [DROP-TABLES] âœ… Dropped ai_knowledge_base
+2025-11-02T22:09:47.718325154Z [info] [DROP-TABLES] âœ… Dropped platform_incident_playbooks
+2025-11-02T22:09:47.718330610Z [info] [DROP-TABLES] âœ… Dropped ai_fix_attempts
+2025-11-02T22:09:47.720720396Z [info] [DROP-TABLES] âœ… Dropped platform_heal_attempts
+2025-11-02T22:09:47.723869514Z [info] [DROP-TABLES] âœ… Dropped platform_healing_sessions
+2025-11-02T22:09:47.726332648Z [info] [DROP-TABLES] âœ… Dropped platform_incidents
+2025-11-02T22:09:47.726339611Z [info] [DROP-TABLES] âœ… All old tables dropped successfully
+2025-11-02T22:09:47.737932729Z [info] 
+2025-11-02T22:09:47.737938634Z [info] ðŸ”§ Creating healing tables with correct schema...
+2025-11-02T22:09:47.737943938Z [info] âš ï¸ psql not found, using node-postgres...
+2025-11-02T22:09:48.339667818Z [info] âœ… Tables created
+2025-11-02T22:09:48.339675537Z [info] 
+2025-11-02T22:09:48.339681945Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-11-02T22:09:48.339687849Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-02T22:09:48.684398857Z [info] No config path provided, using default 'drizzle.config.ts'
+2025-11-02T22:09:48.684404755Z [info] Reading config file '/app/drizzle.config.ts'
+2025-11-02T22:09:49.411861656Z [info] Using 'pg' driver for database querying
+2025-11-02T22:09:49.411866612Z [info] [â£·] Pulling schema from database...
+2025-11-02T22:09:49.413124521Z [info] a from database...
+2025-11-02T22:09:49.542244537Z [info] a from database...
+2025-11-02T22:09:49.668179020Z [info] a from database...
+2025-11-02T22:09:49.799849658Z [info] a from database...
+2025-11-02T22:09:50.471850785Z [info] a from database...
+2025-11-02T22:09:50.471866653Z [info] a from database...
+2025-11-02T22:09:50.471899622Z [info] a from database...
+2025-11-02T22:09:50.471907567Z [info] a from database...
+2025-11-02T22:09:50.471916051Z [info] a from database...
+2025-11-02T22:09:50.564971993Z [info] a from database...
+2025-11-02T22:09:50.693161563Z [info] a from database...
+2025-11-02T22:09:50.820649326Z [info] a from database...
+2025-11-02T22:09:51.370769436Z [info] a from database...
+2025-11-02T22:09:51.370778746Z [info] a from database...
+2025-11-02T22:09:51.370784647Z [info] a from database...
+2025-11-02T22:09:51.370948180Z [info] a from database...
+2025-11-02T22:09:51.462727040Z [info] a from database...
+2025-11-02T22:09:51.590918983Z [info] a from database...
+2025-11-02T22:09:51.717568631Z [info] a from database...
+2025-11-02T22:09:51.846453344Z [info] a from database...
+2025-11-02T22:09:52.409143982Z [info] a from database...
+2025-11-02T22:09:52.409163081Z [info] a from database...
+2025-11-02T22:09:52.409171411Z [info] a from database...
+2025-11-02T22:09:52.409177251Z [info] ed from another table?
+2025-11-02T22:09:52.409190434Z [info] â¯ + conversation_states                           create table
+2025-11-02T22:09:52.409196048Z [info]   ~ meta_sysop_automation â€º conversation_states   rename table
+2025-11-02T22:09:52.409204820Z [info]   ~ meta_sysop_instructions â€º conversation_states rename table
+2025-11-02T22:09:52.409210905Z [info]   ~ meta_sysop_knowledge â€º conversation_states    rename table
+2025-11-02T22:09:52.409217242Z [info]   ~ meta_sysop_memory â€º conversation_states       rename table
+2025-11-02T22:09:52.409223718Z [info]   ~ meta_sysop_attachments â€º conversation_states  rename table
+2025-11-02T22:09:52.409229223Z [info]   ~ meta_sysop_sessions â€º conversation_states     rename table
+2025-11-02T22:10:11.905250355Z [info]   ~ meta_sysop_jobs â€º conversation_states         rename tableâœ… Database schema ready!
+2025-11-02T22:10:11.905254594Z [info] 
+2025-11-02T22:10:11.905258503Z [info] ðŸ” Environment Check:
+2025-11-02T22:10:11.905263507Z [info] NODE_ENV: production
+2025-11-02T22:10:11.905277725Z [info] PORT: 8080
+2025-11-02T22:10:11.905282212Z [info] DATABASE_URL: âœ“ SET (hidden for security)
+2025-11-02T22:10:11.905287412Z [info] GITHUB_TOKEN: âœ“ SET
+2025-11-02T22:10:11.905291468Z [info] GITHUB_REPO: 6-7Development/archetype
+2025-11-02T22:10:11.905295406Z [info] GITHUB_BRANCH: main
+2025-11-02T22:10:11.905300124Z [info] ANTHROPIC_API_KEY: âœ“ SET
+2025-11-02T22:10:11.905329382Z [info] 
+2025-11-02T22:10:11.905333490Z [info] ðŸ“„ Ensuring replit.md is available...
+2025-11-02T22:10:11.905338071Z [info] âœ… replit.md already present
+2025-11-02T22:10:11.905344614Z [info] 
+2025-11-02T22:10:11.905348880Z [info] ðŸš€ Starting Node.js application...
+2025-11-02T22:10:11.905353019Z [info] Command: npx tsx server/index.ts
+2025-11-02T22:10:11.905357069Z [info] 
+2025-11-02T22:10:11.905361121Z [error] 
+2025-11-02T22:10:11.905365737Z [error] node:internal/modules/run_main:123
+2025-11-02T22:10:11.905369958Z [error]     triggerUncaughtException(
+2025-11-02T22:10:11.905374710Z [error]     ^
+2025-11-02T22:10:11.905378808Z [error] Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/server/config/railway' imported from /app/server/routes/lomuChat.ts
+2025-11-02T22:10:11.905382860Z [error]     at finalizeResolution (node:internal/modules/esm/resolve:283:11)
+2025-11-02T22:10:11.905471160Z [error]     at moduleResolve (node:internal/modules/esm/resolve:952:10)
+2025-11-02T22:10:11.905477547Z [error]     at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+2025-11-02T22:10:11.905481972Z [error]     at nextResolve (node:internal/modules/esm/hooks:864:28)
+2025-11-02T22:10:11.905495791Z [error]     at resolveBase (file:///app/node_modules/tsx/dist/esm/index.mjs?1762121403015:2:3744)
+2025-11-02T22:10:11.907816528Z [error]     at async resolveDirectory (file:///app/node_modules/tsx/dist/esm/index.mjs?1762121403015:2:4237)
+2025-11-02T22:10:11.907827092Z [error]     at async resolve (file:///app/node_modules/tsx/dist/esm/index.mjs?1762121403015:2:5355)
+2025-11-02T22:10:11.907832791Z [error]     at async nextResolve (node:internal/modules/esm/hooks:864:22)
+2025-11-02T22:10:11.907838620Z [error]     at async Hooks.resolve (node:internal/modules/esm/hooks:306:24)
+2025-11-02T22:10:11.907843774Z [error]     at async handleMessage (node:internal/modules/esm/worker:196:18) {
+2025-11-02T22:10:11.907849892Z [error]   code: 'ERR_MODULE_NOT_FOUND',
+2025-11-02T22:10:11.907855622Z [error]   url: 'file:///app/server/config/railway'
+2025-11-02T22:10:11.907893606Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 22:07 dist
+2025-11-02T22:10:11.907907693Z [error] }
+2025-11-02T22:10:11.907920459Z [error] 
+2025-11-02T22:10:11.907930169Z [error] Node.js v20.19.5
+2025-11-02T22:10:11.907941614Z [info] ======================================
+2025-11-02T22:10:11.907962796Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T22:10:11.907970270Z [info] ======================================
+2025-11-02T22:10:11.907977105Z [info] Time: Sun Nov  2 22:10:04 UTC 2025
+2025-11-02T22:10:11.907989017Z [info] Node version: v20.19.5
+2025-11-02T22:10:11.907995508Z [info] NPM version: 10.8.2
+2025-11-02T22:10:11.908001833Z [info] 
+2025-11-02T22:10:11.908007928Z [info] ðŸ“ Current directory: /app
+2025-11-02T22:10:11.908013582Z [info] ðŸ“‚ Listing root files:
+2025-11-02T22:10:11.908019341Z [info] total 428
+2025-11-02T22:10:11.908025317Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:07 .
+2025-11-02T22:10:11.908030850Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 22:08 ..
+2025-11-02T22:10:11.908037319Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 22:06 create-healing-tables.sql
+2025-11-02T22:10:11.911854967Z [info] -rw-rw-r--    1 root     root           325 Nov  2 22:06 drizzle.config.ts
+2025-11-02T22:10:11.911862476Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 22:06 drop-old-tables.js
+2025-11-02T22:10:11.911869326Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:07 node_modules
+2025-11-02T22:10:11.911882286Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 22:07 package-lock.json
+2025-11-02T22:10:11.911890768Z [info] -rw-rw-r--    1 root     root          4631 Nov  2 22:07 package.json
+2025-11-02T22:10:11.911898630Z [info] -rwxrwxr-x    1 root     root          3028 Nov  2 22:06 railway-start.sh
+2025-11-02T22:10:11.911906914Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 22:06 replit.md
+2025-11-02T22:10:11.911915656Z [info] drwxr-xr-x   12 root     root          4096 Nov  2 22:06 server
+2025-11-02T22:10:11.911922602Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 22:06 shared
+2025-11-02T22:10:11.911930048Z [info] -rw-rw-r--    1 root     root           960 Nov  2 22:06 tsconfig.json
+2025-11-02T22:10:11.911937725Z [info] 
+2025-11-02T22:10:11.911945272Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-02T22:10:11.911953830Z [info] âœ… dist/public directory exists (frontend build)
+2025-11-02T22:10:11.911960730Z [info] 
+2025-11-02T22:10:11.911970692Z [info] ðŸ—‘ï¸ Dropping old tables with incorrect schema...
+2025-11-02T22:10:11.912402404Z [info] [DROP-TABLES] Dropping old healing tables with incorrect schema...
+2025-11-02T22:10:11.912411571Z [info] [DROP-TABLES] âœ… Dropped healing_messages
+2025-11-02T22:10:11.912416810Z [info] [DROP-TABLES] âœ… Dropped healing_conversations
+2025-11-02T22:10:11.912421400Z [info] [DROP-TABLES] âœ… Dropped healing_targets
+2025-11-02T22:10:11.912425621Z [info] [DROP-TABLES] âœ… Dropped ai_knowledge_base
+2025-11-02T22:10:11.912430016Z [info] [DROP-TABLES] âœ… Dropped platform_incident_playbooks
+2025-11-02T22:10:11.914783548Z [info] [DROP-TABLES] âœ… All old tables dropped successfully
+2025-11-02T22:10:11.914788416Z [info] [â£·] Pulling schema from database...
+2025-11-02T22:10:11.914801606Z [info] 
+2025-11-02T22:10:11.914806244Z [info] 
+2025-11-02T22:10:11.914810265Z [info] [DROP-TABLES] âœ… Dropped platform_heal_attempts
+2025-11-02T22:10:11.914816504Z [info] ðŸ”§ Creating healing tables with correct schema...
+2025-11-02T22:10:11.914817164Z [info] No config path provided, using default 'drizzle.config.ts'
+2025-11-02T22:10:11.914825497Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-11-02T22:10:11.914828594Z [info] [DROP-TABLES] âœ… Dropped platform_healing_sessions
+2025-11-02T22:10:11.914829632Z [info] Reading config file '/app/drizzle.config.ts'
+2025-11-02T22:10:11.914842695Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-02T22:10:11.914845792Z [info] [DROP-TABLES] âœ… Dropped platform_incidents
+2025-11-02T22:10:11.914845973Z [info] Using 'pg' driver for database querying
+2025-11-02T22:10:11.914860230Z [info] âš ï¸ psql not found, using node-postgres...
+2025-11-02T22:10:11.914868175Z [info] âœ… Tables created
+2025-11-02T22:10:11.914879818Z [info] a from database...
+2025-11-02T22:10:11.914893718Z [info] [DROP-TABLES] âœ… Dropped ai_fix_attempts
+2025-11-02T22:10:11.914897368Z [info] a from database...
+2025-11-02T22:10:11.914902912Z [info] a from database...
+2025-11-02T22:10:11.914907961Z [info] a from database...
+2025-11-02T22:10:11.914913708Z [info] a from database...
+2025-11-02T22:10:11.914919269Z [info] a from database...
+2025-11-02T22:10:11.914925627Z [info] a from database...
+2025-11-02T22:10:11.914932075Z [info] a from database...
+2025-11-02T22:10:11.919008080Z [info] a from database...
+2025-11-02T22:10:11.919015665Z [info] a from database...
+2025-11-02T22:10:11.919023302Z [info] a from database...
+2025-11-02T22:10:11.919091671Z [info] a from database...
+2025-11-02T22:10:11.919106478Z [info] a from database...
+2025-11-02T22:10:11.919112639Z [info] a from database...
+2025-11-02T22:10:11.919118504Z [info] a from database...
+2025-11-02T22:10:11.919123746Z [info] a from database...
+2025-11-02T22:10:11.919129491Z [info] a from database...
+2025-11-02T22:10:11.919135399Z [info] a from database...
+2025-11-02T22:10:11.919141085Z [info] a from database...
+2025-11-02T22:10:11.919145782Z [info] a from database...
+2025-11-02T22:10:11.919151273Z [info] a from database...
+2025-11-02T22:10:11.919162716Z [info] a from database...
+2025-11-02T22:10:11.919171177Z [info] ed from another table?
+2025-11-02T22:10:11.919188229Z [info] â¯ + conversation_states                           create table
+2025-11-02T22:10:11.919195805Z [info]   ~ meta_sysop_automation â€º conversation_states   rename table
+2025-11-02T22:10:11.919202301Z [info]   ~ meta_sysop_instructions â€º conversation_states rename table
+2025-11-02T22:10:11.919209583Z [info]   ~ meta_sysop_knowledge â€º conversation_states    rename table
+2025-11-02T22:10:11.919216952Z [info]   ~ meta_sysop_memory â€º conversation_states       rename table
+2025-11-02T22:10:11.919224623Z [info]   ~ meta_sysop_attachments â€º conversation_states  rename table
+2025-11-02T22:10:11.925025426Z [info]   ~ meta_sysop_sessions â€º conversation_states     rename table
