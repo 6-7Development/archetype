@@ -1,0 +1,120 @@
+2025-11-02T21:47:55.094439811Z [info] 
+2025-11-02T21:48:06.206271138Z [info] [Region: us-east4]
+2025-11-02T21:48:06.221531520Z [info] =========================
+2025-11-02T21:48:06.221559295Z [info] Using Detected Dockerfile
+2025-11-02T21:48:06.221564290Z [info] =========================
+2025-11-02T21:48:06.221567949Z [info] 
+2025-11-02T21:48:06.221581025Z [info] context: ljh9-800N
+2025-11-02T21:48:06.411902576Z [info] [internal] load build definition from Dockerfile
+2025-11-02T21:48:06.411959117Z [info] [internal] load build definition from Dockerfile
+2025-11-02T21:48:06.411974672Z [info] [internal] load build definition from Dockerfile
+2025-11-02T21:48:06.411986274Z [info] [internal] load build definition from Dockerfile
+2025-11-02T21:48:06.423732781Z [info] [internal] load build definition from Dockerfile
+2025-11-02T21:48:06.425864062Z [info] [internal] load metadata for docker.io/library/node:20-alpine
+2025-11-02T21:48:06.429333805Z [info] [auth] library/node:pull token for registry-1.docker.io
+2025-11-02T21:48:06.429358352Z [info] [auth] library/node:pull token for registry-1.docker.io
+2025-11-02T21:48:06.542487357Z [info] [internal] load metadata for docker.io/library/node:20-alpine
+2025-11-02T21:48:06.556575826Z [info] [internal] load .dockerignore
+2025-11-02T21:48:06.556673495Z [info] [internal] load .dockerignore
+2025-11-02T21:48:06.556689999Z [info] [internal] load .dockerignore
+2025-11-02T21:48:06.571309771Z [info] [internal] load .dockerignore
+2025-11-02T21:48:06.575700574Z [info] [frontend-builder  4/12] RUN npm ci
+2025-11-02T21:48:06.575760728Z [info] [frontend-builder  3/12] COPY package*.json ./
+2025-11-02T21:48:06.575774258Z [info] [production  6/16] RUN npm install drizzle-kit@^0.31.4
+2025-11-02T21:48:06.575789895Z [info] [production  5/16] RUN npm ci
+2025-11-02T21:48:06.575798401Z [info] [production  4/16] COPY package*.json ./
+2025-11-02T21:48:06.575805805Z [info] [internal] load build context
+2025-11-02T21:48:06.575812673Z [info] [production  3/16] RUN apk add --no-cache git
+2025-11-02T21:48:06.575818659Z [info] [frontend-builder  2/12] WORKDIR /app
+2025-11-02T21:48:06.575880020Z [info] [frontend-builder  1/12] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+2025-11-02T21:48:06.575986720Z [info] [production  9/16] COPY shared ./shared
+2025-11-02T21:48:06.575996365Z [info] [production  8/16] COPY server ./server
+2025-11-02T21:48:06.576006341Z [info] [production  7/16] COPY --from=frontend-builder /app/dist ./dist
+2025-11-02T21:48:06.576013275Z [info] [frontend-builder 12/12] RUN npx vite build
+2025-11-02T21:48:06.576021751Z [info] [frontend-builder 11/12] COPY tailwind.config.ts ./
+2025-11-02T21:48:06.576027670Z [info] [frontend-builder 10/12] COPY postcss.config.js ./
+2025-11-02T21:48:06.576033941Z [info] [frontend-builder  9/12] COPY tsconfig.json ./
+2025-11-02T21:48:06.576040504Z [info] [frontend-builder  8/12] COPY vite.config.ts ./
+2025-11-02T21:48:06.576047010Z [info] [frontend-builder  7/12] COPY attached_assets ./attached_assets
+2025-11-02T21:48:06.576057291Z [info] [frontend-builder  6/12] COPY shared ./shared
+2025-11-02T21:48:06.576083162Z [info] [frontend-builder  5/12] COPY client ./client
+2025-11-02T21:48:06.576101253Z [info] [production 11/16] COPY drizzle.config.ts ./
+2025-11-02T21:48:06.576111339Z [info] [production 10/16] COPY tsconfig.json ./
+2025-11-02T21:48:06.576132345Z [info] [production 15/16] COPY create-healing-tables.sql ./
+2025-11-02T21:48:06.576138962Z [info] [production 14/16] COPY drop-old-tables.js ./
+2025-11-02T21:48:06.576149335Z [info] [production 13/16] COPY railway-start.sh ./
+2025-11-02T21:48:06.576158595Z [info] [production 12/16] COPY replit.md ./
+2025-11-02T21:48:06.576171215Z [info] [production 16/16] RUN chmod +x railway-start.sh
+2025-11-02T21:48:06.576185162Z [info] [internal] load build context
+2025-11-02T21:48:06.576291023Z [info] [frontend-builder  1/12] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+2025-11-02T21:48:06.585634869Z [info] [frontend-builder  1/12] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+2025-11-02T21:48:06.586175388Z [info] [internal] load build context
+2025-11-02T21:48:07.730842551Z [info] [internal] load build context
+2025-11-02T21:48:07.737931937Z [info] [frontend-builder  2/12] WORKDIR /app
+2025-11-02T21:48:07.737987599Z [info] [frontend-builder  3/12] COPY package*.json ./
+2025-11-02T21:48:07.741757289Z [info] [production  3/16] RUN apk add --no-cache git
+2025-11-02T21:48:07.743729468Z [info] [production  3/16] RUN apk add --no-cache git
+2025-11-02T21:48:07.743764174Z [info] [production  4/16] COPY package*.json ./
+2025-11-02T21:48:07.833973265Z [info] [frontend-builder  3/12] COPY package*.json ./
+2025-11-02T21:48:07.835915620Z [info] [production  4/16] COPY package*.json ./
+2025-11-02T21:48:07.837139063Z [info] [frontend-builder  4/12] RUN npm ci
+2025-11-02T21:48:07.838411004Z [info] [production  5/16] RUN npm ci
+2025-11-02T21:48:09.895137586Z [info] npm error code EUSAGE
+
+2025-11-02T21:48:09.895206212Z [info] npm error
+npm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install` before continuing.
+npm error
+npm error Missing: @google/generative-ai@0.24.1 from lock file
+npm error Missing: @types/react-syntax-highlighter@15.5.13 from lock file
+npm error Missing: react-syntax-highlighter@16.1.0 from lock file
+npm error Missing: simple-git@3.30.0 from lock file
+npm error Invalid: lock file's @babel/runtime@7.27.0 does not satisfy @babel/runtime@7.28.4
+npm error Missing: highlight.js@10.7.3 from lock file
+npm error Missing: highlightjs-vue@1.0.0 from lock file
+npm error Missing: lowlight@1.20.0 from lock file
+npm error Missing: prismjs@1.30.0 from lock file
+npm error Missing: refractor@5.0.0 from lock file
+npm error Missing: @types/prismjs@1.26.5 from lock file
+npm error Missing: @kwsites/file-exists@1.1.1 from lock file
+npm error Missing: @kwsites/promise-deferred@1.1.1 from lock file
+npm error Invalid: lock file's debug@4.3.7 does not satisfy debug@4.4.3
+npm error Missing: fault@1.0.4 from lock file
+npm error Missing: format@0.2.2 from lock file
+npm error
+npm error Clean install a project
+npm error
+npm error Usage:
+npm error npm ci
+npm error
+npm error Options:
+npm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]
+npm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
+npm error [--no-bin-links] [--no-fund] [--dry-run]
+npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+npm error [-ws|--workspaces] [--include-workspace-root] [--install-links]
+npm error
+npm error aliases: clean-install, ic, install-clean, isntall-clean
+npm error
+npm error Run "npm help ci" for more info
+
+2025-11-02T21:48:09.897428972Z [info] npm notice
+npm notice New major version of npm available! 10.8.2 -> 11.6.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.2
+npm notice To update run: npm install -g npm@11.6.2
+npm notice
+
+2025-11-02T21:48:09.897456376Z [info] npm error A complete log of this run can be found in: /root/.npm/_logs/2025-11-02T21_48_08_030Z-debug-0.log
+
+2025-11-02T21:48:09.934967647Z [error] [frontend-builder  4/12] RUN npm ci
+2025-11-02T21:48:10.006412691Z [error] [production  5/16] RUN npm ci
+2025-11-02T21:48:10.022072945Z [error] Dockerfile:9
+2025-11-02T21:48:10.022116940Z [error] -------------------
+2025-11-02T21:48:10.022121239Z [error] 7 |     # Copy package files
+2025-11-02T21:48:10.022124719Z [error] 8 |     COPY package*.json ./
+2025-11-02T21:48:10.022132239Z [error] 9 | >>> RUN npm ci
+2025-11-02T21:48:10.022137468Z [error] 10 |
+2025-11-02T21:48:10.022142704Z [error] 11 |     # Copy source code (needed for vite build)
+2025-11-02T21:48:10.022147452Z [error] -------------------
+2025-11-02T21:48:10.022152354Z [error] ERROR: failed to build: failed to solve: process "/bin/sh -c npm ci" did not complete successfully: exit code: 1
