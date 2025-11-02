@@ -1,0 +1,738 @@
+2025-11-02T22:54:46.000000000Z [info] Starting Container
+2025-11-02T22:54:47.549369908Z [info] ======================================
+2025-11-02T22:54:47.549373864Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T22:54:47.549378177Z [info] ======================================
+2025-11-02T22:54:47.549382084Z [info] Time: Sun Nov  2 22:54:46 UTC 2025
+2025-11-02T22:54:47.549388250Z [info] Node version: v20.19.5
+2025-11-02T22:54:47.549392394Z [info] NPM version: 10.8.2
+2025-11-02T22:54:47.549396163Z [info] 
+2025-11-02T22:54:47.549400012Z [info] ðŸ“ Current directory: /app
+2025-11-02T22:54:47.549403844Z [info] ðŸ“‚ Listing root files:
+2025-11-02T22:54:47.549408350Z [info] total 432
+2025-11-02T22:54:47.549413900Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 .
+2025-11-02T22:54:47.549418135Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 22:54 ..
+2025-11-02T22:54:47.549421919Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 22:52 create-healing-tables.sql
+2025-11-02T22:54:47.549425483Z [info] -rwxr-xr-x    1 root     root          2033 Nov  2 22:52 debug-start.sh
+2025-11-02T22:54:47.549429962Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 22:53 dist
+2025-11-02T22:54:47.549435661Z [info] -rw-rw-r--    1 root     root           325 Nov  2 22:52 drizzle.config.ts
+2025-11-02T22:54:47.549440248Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 22:52 drop-old-tables.js
+2025-11-02T22:54:47.549446087Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 node_modules
+2025-11-02T22:54:47.549449774Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 22:53 package-lock.json
+2025-11-02T22:54:47.549453546Z [info] -rw-rw-r--    1 root     root          4631 Nov  2 22:53 package.json
+2025-11-02T22:54:47.549460315Z [info] -rwxr-xr-x    1 root     root          3152 Nov  2 22:52 railway-start.sh
+2025-11-02T22:54:47.549464340Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 22:52 replit.md
+2025-11-02T22:54:47.551573215Z [info] drwxr-xr-x   13 root     root          4096 Nov  2 22:52 server
+2025-11-02T22:54:47.551577158Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 22:52 shared
+2025-11-02T22:54:47.551581207Z [info] -rw-rw-r--    1 root     root           960 Nov  2 22:52 tsconfig.json
+2025-11-02T22:54:47.551585210Z [info] 
+2025-11-02T22:54:47.551589376Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-02T22:54:47.551593125Z [info] âœ… dist/public directory exists (frontend build)
+2025-11-02T22:54:47.551596989Z [info] 
+2025-11-02T22:54:47.551601150Z [info] ðŸ—‘ï¸ Dropping old tables with incorrect schema...
+2025-11-02T22:54:47.551606766Z [info] [DROP-TABLES] Dropping old healing tables with incorrect schema...
+2025-11-02T22:54:47.551610548Z [info] [DROP-TABLES] âœ… Dropped healing_messages
+2025-11-02T22:54:47.551614156Z [info] [DROP-TABLES] âœ… Dropped healing_conversations
+2025-11-02T22:54:47.551618623Z [info] [DROP-TABLES] âœ… Dropped healing_targets
+2025-11-02T22:54:47.551622778Z [info] [DROP-TABLES] âœ… Dropped ai_knowledge_base
+2025-11-02T22:54:47.551627066Z [info] [DROP-TABLES] âœ… Dropped platform_incident_playbooks
+2025-11-02T22:54:47.551631344Z [info] [DROP-TABLES] âœ… Dropped ai_fix_attempts
+2025-11-02T22:54:47.551635917Z [info] [DROP-TABLES] âœ… Dropped platform_heal_attempts
+2025-11-02T22:54:47.551639904Z [info] [DROP-TABLES] âœ… Dropped platform_healing_sessions
+2025-11-02T22:54:47.551643342Z [info] [DROP-TABLES] âœ… Dropped platform_incidents
+2025-11-02T22:54:47.551648283Z [info] [DROP-TABLES] âœ… All old tables dropped successfully
+2025-11-02T22:54:47.551652107Z [info] 
+2025-11-02T22:54:47.551655932Z [info] ðŸ”§ Creating healing tables with correct schema...
+2025-11-02T22:54:47.551667974Z [info] âš ï¸ psql not found, using node-postgres...
+2025-11-02T22:54:47.551672581Z [info] âœ… Tables created
+2025-11-02T22:54:47.551676449Z [info] 
+2025-11-02T22:54:47.553954380Z [info] Command: bash debug-start.sh
+2025-11-02T22:54:47.553967034Z [info] 
+2025-11-02T22:54:47.553975118Z [error] railway-start.sh: line 97: bash: not found
+2025-11-02T22:54:47.554155869Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-11-02T22:54:47.554161292Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-02T22:54:47.554167701Z [info] âš ï¸ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)
+2025-11-02T22:54:47.554174497Z [info] âœ… Database schema ready!
+2025-11-02T22:54:47.554185258Z [info] 
+2025-11-02T22:54:47.554194628Z [info] ðŸ” Environment Check:
+2025-11-02T22:54:47.554200829Z [info] NODE_ENV: production
+2025-11-02T22:54:47.554206979Z [info] PORT: 8080
+2025-11-02T22:54:47.554212719Z [info] DATABASE_URL: âœ“ SET (hidden for security)
+2025-11-02T22:54:47.554219617Z [info] GITHUB_TOKEN: âœ“ SET
+2025-11-02T22:54:47.554225687Z [info] GITHUB_REPO: 6-7Development/archetype
+2025-11-02T22:54:47.554231503Z [info] GITHUB_BRANCH: main
+2025-11-02T22:54:47.554237550Z [info] ANTHROPIC_API_KEY: âœ“ SET
+2025-11-02T22:54:47.554246270Z [info] 
+2025-11-02T22:54:47.554251871Z [info] ðŸ“„ Ensuring replit.md is available...
+2025-11-02T22:54:47.554257787Z [info] âœ… replit.md already present
+2025-11-02T22:54:47.554263633Z [info] 
+2025-11-02T22:54:47.554268899Z [info] ðŸš€ Starting Node.js application with debug wrapper...
+2025-11-02T22:54:48.568061814Z [info] -rw-rw-r--    1 root     root          4631 Nov  2 22:53 package.json
+2025-11-02T22:54:48.568072902Z [info] -rwxr-xr-x    1 root     root          3152 Nov  2 22:52 railway-start.sh
+2025-11-02T22:54:48.568080053Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 22:52 replit.md
+2025-11-02T22:54:48.568088259Z [info] ======================================
+2025-11-02T22:54:48.568094530Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T22:54:48.568098631Z [info] Time: Sun Nov  2 22:54:48 UTC 2025
+2025-11-02T22:54:48.568102849Z [info] ======================================
+2025-11-02T22:54:48.568108450Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 22:52 create-healing-tables.sql
+2025-11-02T22:54:48.568109300Z [info] Node version: v20.19.5
+2025-11-02T22:54:48.568118833Z [info] NPM version: 10.8.2
+2025-11-02T22:54:48.568119171Z [info] -rwxr-xr-x    1 root     root          2033 Nov  2 22:52 debug-start.sh
+2025-11-02T22:54:48.568128502Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 22:53 dist
+2025-11-02T22:54:48.568129116Z [info] 
+2025-11-02T22:54:48.568136559Z [info] -rw-rw-r--    1 root     root           325 Nov  2 22:52 drizzle.config.ts
+2025-11-02T22:54:48.568141165Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 22:52 drop-old-tables.js
+2025-11-02T22:54:48.568149057Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 node_modules
+2025-11-02T22:54:48.568150397Z [info] ðŸ“ Current directory: /app
+2025-11-02T22:54:48.568157051Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 22:53 package-lock.json
+2025-11-02T22:54:48.568159383Z [info] ðŸ“‚ Listing root files:
+2025-11-02T22:54:48.568165979Z [info] total 432
+2025-11-02T22:54:48.568181833Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 .
+2025-11-02T22:54:48.568188649Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 22:54 ..
+2025-11-02T22:54:48.571450459Z [info] drwxr-xr-x   13 root     root          4096 Nov  2 22:52 server
+2025-11-02T22:54:48.571455706Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 22:52 shared
+2025-11-02T22:54:48.571460499Z [info] -rw-rw-r--    1 root     root           960 Nov  2 22:52 tsconfig.json
+2025-11-02T22:54:48.571466790Z [info] 
+2025-11-02T22:54:48.571472301Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-02T22:54:48.571476949Z [info] âœ… dist/public directory exists (frontend build)
+2025-11-02T22:54:48.571482443Z [info] 
+2025-11-02T22:54:48.571487783Z [info] ðŸ—‘ï¸ Dropping old tables with incorrect schema...
+2025-11-02T22:54:48.617868391Z [info] [DROP-TABLES] Dropping old healing tables with incorrect schema...
+2025-11-02T22:54:48.694252033Z [info] [DROP-TABLES] âœ… Dropped healing_messages
+2025-11-02T22:54:48.698905777Z [info] [DROP-TABLES] âœ… Dropped healing_conversations
+2025-11-02T22:54:48.700892945Z [info] [DROP-TABLES] âœ… Dropped healing_targets
+2025-11-02T22:54:48.703043348Z [info] [DROP-TABLES] âœ… Dropped ai_knowledge_base
+2025-11-02T22:54:48.707732037Z [info] [DROP-TABLES] âœ… Dropped platform_incident_playbooks
+2025-11-02T22:54:48.711287608Z [info] [DROP-TABLES] âœ… Dropped ai_fix_attempts
+2025-11-02T22:54:48.715072650Z [info] [DROP-TABLES] âœ… Dropped platform_heal_attempts
+2025-11-02T22:54:48.717181507Z [info] [DROP-TABLES] âœ… Dropped platform_healing_sessions
+2025-11-02T22:54:48.725669224Z [info] [DROP-TABLES] âœ… Dropped platform_incidents
+2025-11-02T22:54:48.725675356Z [info] [DROP-TABLES] âœ… All old tables dropped successfully
+2025-11-02T22:54:48.735935373Z [info] 
+2025-11-02T22:54:48.735944122Z [info] ðŸ”§ Creating healing tables with correct schema...
+2025-11-02T22:54:48.735952631Z [info] âš ï¸ psql not found, using node-postgres...
+2025-11-02T22:54:48.969456825Z [info] ðŸ“„ Ensuring replit.md is available...
+2025-11-02T22:54:48.969466195Z [info] âœ… replit.md already present
+2025-11-02T22:54:48.969471773Z [info] 
+2025-11-02T22:54:48.969476238Z [info] ðŸš€ Starting Node.js application with debug wrapper...
+2025-11-02T22:54:48.969480231Z [info] Command: bash debug-start.sh
+2025-11-02T22:54:48.969486400Z [info] 
+2025-11-02T22:54:48.969491930Z [error] railway-start.sh: line 97: bash: not found
+2025-11-02T22:54:48.969519104Z [info] âœ… Tables created
+2025-11-02T22:54:48.969523387Z [info] 
+2025-11-02T22:54:48.969527874Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-11-02T22:54:48.969534518Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-02T22:54:48.969538593Z [info] âš ï¸ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)
+2025-11-02T22:54:48.969542825Z [info] âœ… Database schema ready!
+2025-11-02T22:54:48.969547144Z [info] 
+2025-11-02T22:54:48.969551671Z [info] ðŸ” Environment Check:
+2025-11-02T22:54:48.969555638Z [info] NODE_ENV: production
+2025-11-02T22:54:48.969560690Z [info] PORT: 8080
+2025-11-02T22:54:48.969565200Z [info] DATABASE_URL: âœ“ SET (hidden for security)
+2025-11-02T22:54:48.969572267Z [info] GITHUB_TOKEN: âœ“ SET
+2025-11-02T22:54:48.969575867Z [info] GITHUB_REPO: 6-7Development/archetype
+2025-11-02T22:54:48.969579929Z [info] GITHUB_BRANCH: main
+2025-11-02T22:54:48.969584089Z [info] ANTHROPIC_API_KEY: âœ“ SET
+2025-11-02T22:54:48.969588414Z [info] 
+2025-11-02T22:54:50.554667749Z [info] -rwxr-xr-x    1 root     root          2033 Nov  2 22:52 debug-start.sh
+2025-11-02T22:54:50.554673194Z [info] -rwxr-xr-x    1 root     root          3152 Nov  2 22:52 railway-start.sh
+2025-11-02T22:54:50.554678428Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 22:53 dist
+2025-11-02T22:54:50.554682056Z [info] ======================================
+2025-11-02T22:54:50.554682850Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 22:52 replit.md
+2025-11-02T22:54:50.554688385Z [info] -rw-rw-r--    1 root     root           325 Nov  2 22:52 drizzle.config.ts
+2025-11-02T22:54:50.554689890Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T22:54:50.554693355Z [info] 
+2025-11-02T22:54:50.554698072Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 22:52 drop-old-tables.js
+2025-11-02T22:54:50.554705590Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 .
+2025-11-02T22:54:50.554706047Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 node_modules
+2025-11-02T22:54:50.554706954Z [info] ðŸ“ Current directory: /app
+2025-11-02T22:54:50.554708374Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 22:53 package-lock.json
+2025-11-02T22:54:50.554715604Z [info] -rw-rw-r--    1 root     root          4631 Nov  2 22:53 package.json
+2025-11-02T22:54:50.554715624Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 22:54 ..
+2025-11-02T22:54:50.554717139Z [info] ðŸ“‚ Listing root files:
+2025-11-02T22:54:50.554722308Z [info] ======================================
+2025-11-02T22:54:50.554725425Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 22:52 create-healing-tables.sql
+2025-11-02T22:54:50.554726937Z [info] total 432
+2025-11-02T22:54:50.554729943Z [info] Time: Sun Nov  2 22:54:50 UTC 2025
+2025-11-02T22:54:50.554735192Z [info] Node version: v20.19.5
+2025-11-02T22:54:50.554739964Z [info] NPM version: 10.8.2
+2025-11-02T22:54:50.559305914Z [info] drwxr-xr-x   13 root     root          4096 Nov  2 22:52 server
+2025-11-02T22:54:50.559313344Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 22:52 shared
+2025-11-02T22:54:50.559318038Z [info] -rw-rw-r--    1 root     root           960 Nov  2 22:52 tsconfig.json
+2025-11-02T22:54:50.559322301Z [info] 
+2025-11-02T22:54:50.559326701Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-02T22:54:50.559330741Z [info] âœ… dist/public directory exists (frontend build)
+2025-11-02T22:54:50.559334960Z [info] 
+2025-11-02T22:54:50.559339027Z [info] ðŸ—‘ï¸ Dropping old tables with incorrect schema...
+2025-11-02T22:54:50.559343031Z [info] [DROP-TABLES] Dropping old healing tables with incorrect schema...
+2025-11-02T22:54:50.559347243Z [info] [DROP-TABLES] âœ… Dropped healing_messages
+2025-11-02T22:54:50.559351134Z [info] [DROP-TABLES] âœ… Dropped healing_conversations
+2025-11-02T22:54:50.559355268Z [info] [DROP-TABLES] âœ… Dropped healing_targets
+2025-11-02T22:54:50.559359403Z [info] [DROP-TABLES] âœ… Dropped ai_knowledge_base
+2025-11-02T22:54:50.559363415Z [info] [DROP-TABLES] âœ… Dropped platform_incident_playbooks
+2025-11-02T22:54:50.559368387Z [info] [DROP-TABLES] âœ… Dropped ai_fix_attempts
+2025-11-02T22:54:50.559373124Z [info] [DROP-TABLES] âœ… Dropped platform_heal_attempts
+2025-11-02T22:54:50.559377319Z [info] [DROP-TABLES] âœ… Dropped platform_healing_sessions
+2025-11-02T22:54:50.559381724Z [info] [DROP-TABLES] âœ… Dropped platform_incidents
+2025-11-02T22:54:50.559386473Z [info] [DROP-TABLES] âœ… All old tables dropped successfully
+2025-11-02T22:54:50.566393440Z [info] 
+2025-11-02T22:54:50.566406170Z [info] ðŸ”§ Creating healing tables with correct schema...
+2025-11-02T22:54:50.566417868Z [info] âš ï¸ psql not found, using node-postgres...
+2025-11-02T22:54:50.740363869Z [info] âœ… Tables created
+2025-11-02T22:54:50.750819523Z [info] NODE_ENV: production
+2025-11-02T22:54:50.750829123Z [info] PORT: 8080
+2025-11-02T22:54:50.750834469Z [info] DATABASE_URL: âœ“ SET (hidden for security)
+2025-11-02T22:54:50.750838969Z [info] GITHUB_TOKEN: âœ“ SET
+2025-11-02T22:54:50.750843521Z [info] GITHUB_REPO: 6-7Development/archetype
+2025-11-02T22:54:50.750847818Z [info] GITHUB_BRANCH: main
+2025-11-02T22:54:50.750852191Z [info] ANTHROPIC_API_KEY: âœ“ SET
+2025-11-02T22:54:50.750857021Z [info] 
+2025-11-02T22:54:50.750861105Z [info] ðŸ“„ Ensuring replit.md is available...
+2025-11-02T22:54:50.750865481Z [info] âœ… replit.md already present
+2025-11-02T22:54:50.750869640Z [info] 
+2025-11-02T22:54:50.750874647Z [info] ðŸš€ Starting Node.js application with debug wrapper...
+2025-11-02T22:54:50.750878909Z [info] Command: bash debug-start.sh
+2025-11-02T22:54:50.750883289Z [info] 
+2025-11-02T22:54:50.750889147Z [error] railway-start.sh: line 97: bash: not found
+2025-11-02T22:54:50.750920810Z [info] 
+2025-11-02T22:54:50.750925798Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-11-02T22:54:50.750929904Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-02T22:54:50.750933852Z [info] âš ï¸ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)
+2025-11-02T22:54:50.750938254Z [info] âœ… Database schema ready!
+2025-11-02T22:54:50.750942551Z [info] 
+2025-11-02T22:54:50.750946743Z [info] ðŸ” Environment Check:
+2025-11-02T22:54:51.700630091Z [info] ======================================
+2025-11-02T22:54:51.700637538Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T22:54:51.700643565Z [info] ======================================
+2025-11-02T22:54:51.700649853Z [info] Time: Sun Nov  2 22:54:51 UTC 2025
+2025-11-02T22:54:51.708508496Z [info] Node version: v20.19.5
+2025-11-02T22:54:51.841228153Z [info] -rw-rw-r--    1 root     root          4631 Nov  2 22:53 package.json
+2025-11-02T22:54:51.841236009Z [info] NPM version: 10.8.2
+2025-11-02T22:54:51.841237511Z [info] -rwxr-xr-x    1 root     root          3152 Nov  2 22:52 railway-start.sh
+2025-11-02T22:54:51.841243753Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 22:52 replit.md
+2025-11-02T22:54:51.841246281Z [info] 
+2025-11-02T22:54:51.841249214Z [info] drwxr-xr-x   13 root     root          4096 Nov  2 22:52 server
+2025-11-02T22:54:51.841253426Z [info] ðŸ“ Current directory: /app
+2025-11-02T22:54:51.841255826Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 22:52 shared
+2025-11-02T22:54:51.841258952Z [info] ðŸ“‚ Listing root files:
+2025-11-02T22:54:51.841261750Z [info] -rw-rw-r--    1 root     root           960 Nov  2 22:52 tsconfig.json
+2025-11-02T22:54:51.841264506Z [info] total 432
+2025-11-02T22:54:51.841268940Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 .
+2025-11-02T22:54:51.841273132Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 22:54 ..
+2025-11-02T22:54:51.841276801Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 22:52 create-healing-tables.sql
+2025-11-02T22:54:51.841280548Z [info] -rwxr-xr-x    1 root     root          2033 Nov  2 22:52 debug-start.sh
+2025-11-02T22:54:51.841284716Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 22:53 dist
+2025-11-02T22:54:51.841288775Z [info] -rw-rw-r--    1 root     root           325 Nov  2 22:52 drizzle.config.ts
+2025-11-02T22:54:51.841292804Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 22:52 drop-old-tables.js
+2025-11-02T22:54:51.841296687Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 node_modules
+2025-11-02T22:54:51.841300164Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 22:53 package-lock.json
+2025-11-02T22:54:51.842410463Z [info] 
+2025-11-02T22:54:51.842417447Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-02T22:54:51.842422049Z [info] âœ… dist/public directory exists (frontend build)
+2025-11-02T22:54:51.842426580Z [info] 
+2025-11-02T22:54:51.842431112Z [info] ðŸ—‘ï¸ Dropping old tables with incorrect schema...
+2025-11-02T22:54:51.943692702Z [info] [DROP-TABLES] Dropping old healing tables with incorrect schema...
+2025-11-02T22:54:52.031462830Z [info] [DROP-TABLES] âœ… Dropped healing_targets
+2025-11-02T22:54:52.031471197Z [info] [DROP-TABLES] âœ… Dropped ai_knowledge_base
+2025-11-02T22:54:52.031479739Z [info] [DROP-TABLES] âœ… Dropped healing_conversations
+2025-11-02T22:54:52.031516548Z [info] [DROP-TABLES] âœ… Dropped healing_messages
+2025-11-02T22:54:52.032892286Z [info] [DROP-TABLES] âœ… Dropped platform_incident_playbooks
+2025-11-02T22:54:52.034546691Z [info] [DROP-TABLES] âœ… Dropped ai_fix_attempts
+2025-11-02T22:54:52.042764818Z [info] [DROP-TABLES] âœ… Dropped platform_heal_attempts
+2025-11-02T22:54:52.042769136Z [info] [DROP-TABLES] âœ… Dropped platform_healing_sessions
+2025-11-02T22:54:52.049657454Z [info] [DROP-TABLES] âœ… Dropped platform_incidents
+2025-11-02T22:54:52.049665664Z [info] [DROP-TABLES] âœ… All old tables dropped successfully
+2025-11-02T22:54:52.051469233Z [info] 
+2025-11-02T22:54:52.051476572Z [info] ðŸ”§ Creating healing tables with correct schema...
+2025-11-02T22:54:52.051485692Z [info] âš ï¸ psql not found, using node-postgres...
+2025-11-02T22:54:52.432705774Z [info] ðŸš€ Starting Node.js application with debug wrapper...
+2025-11-02T22:54:52.432712756Z [info] Command: bash debug-start.sh
+2025-11-02T22:54:52.432713794Z [info] âœ… Tables created
+2025-11-02T22:54:52.432720068Z [info] 
+2025-11-02T22:54:52.432728700Z [error] railway-start.sh: line 97: bash: not found
+2025-11-02T22:54:52.432730839Z [info] 
+2025-11-02T22:54:52.432737067Z [info] ðŸ” Environment Check:
+2025-11-02T22:54:52.432740382Z [info] ðŸ“„ Ensuring replit.md is available...
+2025-11-02T22:54:52.432744739Z [info] âš ï¸ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)
+2025-11-02T22:54:52.432747581Z [info] âœ… replit.md already present
+2025-11-02T22:54:52.432751333Z [info] NODE_ENV: production
+2025-11-02T22:54:52.432752972Z [info] âœ… Database schema ready!
+2025-11-02T22:54:52.432756021Z [info] 
+2025-11-02T22:54:52.432759298Z [info] 
+2025-11-02T22:54:52.432761231Z [info] 
+2025-11-02T22:54:52.432762025Z [info] PORT: 8080
+2025-11-02T22:54:52.432771184Z [info] DATABASE_URL: âœ“ SET (hidden for security)
+2025-11-02T22:54:52.432771502Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-11-02T22:54:52.432778470Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-02T22:54:52.432783030Z [info] GITHUB_TOKEN: âœ“ SET
+2025-11-02T22:54:52.432798824Z [info] GITHUB_REPO: 6-7Development/archetype
+2025-11-02T22:54:52.432807714Z [info] GITHUB_BRANCH: main
+2025-11-02T22:54:52.432814971Z [info] ANTHROPIC_API_KEY: âœ“ SET
+2025-11-02T22:54:53.586948781Z [info] ======================================
+2025-11-02T22:54:53.586959576Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T22:54:53.586966193Z [info] ======================================
+2025-11-02T22:54:53.586972040Z [info] Time: Sun Nov  2 22:54:53 UTC 2025
+2025-11-02T22:54:53.596406864Z [info] Node version: v20.19.5
+2025-11-02T22:54:53.754092611Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 .
+2025-11-02T22:54:53.754103412Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 22:54 ..
+2025-11-02T22:54:53.754110034Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 22:52 create-healing-tables.sql
+2025-11-02T22:54:53.754119555Z [info] -rwxr-xr-x    1 root     root          2033 Nov  2 22:52 debug-start.sh
+2025-11-02T22:54:53.754125453Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 22:53 dist
+2025-11-02T22:54:53.754132234Z [info] -rw-rw-r--    1 root     root           325 Nov  2 22:52 drizzle.config.ts
+2025-11-02T22:54:53.754138331Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 22:52 drop-old-tables.js
+2025-11-02T22:54:53.754144929Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 node_modules
+2025-11-02T22:54:53.754150875Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 22:53 package-lock.json
+2025-11-02T22:54:53.754156943Z [info] -rw-rw-r--    1 root     root          4631 Nov  2 22:53 package.json
+2025-11-02T22:54:53.754163153Z [info] NPM version: 10.8.2
+2025-11-02T22:54:53.754165169Z [info] -rwxr-xr-x    1 root     root          3152 Nov  2 22:52 railway-start.sh
+2025-11-02T22:54:53.754168235Z [info] 
+2025-11-02T22:54:53.754172737Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 22:52 replit.md
+2025-11-02T22:54:53.754173560Z [info] ðŸ“ Current directory: /app
+2025-11-02T22:54:53.754179850Z [info] drwxr-xr-x   13 root     root          4096 Nov  2 22:52 server
+2025-11-02T22:54:53.754179906Z [info] ðŸ“‚ Listing root files:
+2025-11-02T22:54:53.754184836Z [info] total 432
+2025-11-02T22:54:53.754187230Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 22:52 shared
+2025-11-02T22:54:53.754194597Z [info] -rw-rw-r--    1 root     root           960 Nov  2 22:52 tsconfig.json
+2025-11-02T22:54:53.754201004Z [info] 
+2025-11-02T22:54:53.754518310Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-02T22:54:53.754524595Z [info] âœ… dist/public directory exists (frontend build)
+2025-11-02T22:54:53.754529631Z [info] 
+2025-11-02T22:54:53.754534953Z [info] ðŸ—‘ï¸ Dropping old tables with incorrect schema...
+2025-11-02T22:54:53.879021008Z [info] [DROP-TABLES] Dropping old healing tables with incorrect schema...
+2025-11-02T22:54:53.997003999Z [info] [DROP-TABLES] âœ… Dropped healing_messages
+2025-11-02T22:54:54.005495780Z [info] [DROP-TABLES] âœ… Dropped healing_conversations
+2025-11-02T22:54:54.005504487Z [info] [DROP-TABLES] âœ… Dropped healing_targets
+2025-11-02T22:54:54.007644406Z [info] [DROP-TABLES] âœ… Dropped ai_knowledge_base
+2025-11-02T22:54:54.016006884Z [info] [DROP-TABLES] âœ… Dropped platform_incident_playbooks
+2025-11-02T22:54:54.016013552Z [info] [DROP-TABLES] âœ… Dropped ai_fix_attempts
+2025-11-02T22:54:54.017694193Z [info] [DROP-TABLES] âœ… Dropped platform_heal_attempts
+2025-11-02T22:54:54.025428815Z [info] [DROP-TABLES] âœ… Dropped platform_healing_sessions
+2025-11-02T22:54:54.025438748Z [info] [DROP-TABLES] âœ… Dropped platform_incidents
+2025-11-02T22:54:54.025445122Z [info] [DROP-TABLES] âœ… All old tables dropped successfully
+2025-11-02T22:54:54.033209445Z [info] 
+2025-11-02T22:54:54.033216782Z [info] ðŸ”§ Creating healing tables with correct schema...
+2025-11-02T22:54:54.033221918Z [info] âš ï¸ psql not found, using node-postgres...
+2025-11-02T22:54:54.791941638Z [info] âœ… Tables created
+2025-11-02T22:54:54.791948599Z [info] 
+2025-11-02T22:54:54.791956723Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-11-02T22:54:54.791963291Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-02T22:54:54.791969025Z [info] âš ï¸ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)
+2025-11-02T22:54:54.791974829Z [info] âœ… Database schema ready!
+2025-11-02T22:54:54.791980527Z [info] 
+2025-11-02T22:54:54.791988943Z [info] ðŸ” Environment Check:
+2025-11-02T22:54:54.791994378Z [info] NODE_ENV: production
+2025-11-02T22:54:54.792001009Z [info] PORT: 8080
+2025-11-02T22:54:54.792006372Z [info] DATABASE_URL: âœ“ SET (hidden for security)
+2025-11-02T22:54:54.792012798Z [info] GITHUB_TOKEN: âœ“ SET
+2025-11-02T22:54:54.792018128Z [info] GITHUB_REPO: 6-7Development/archetype
+2025-11-02T22:54:54.792025217Z [info] GITHUB_BRANCH: main
+2025-11-02T22:54:54.792031100Z [info] ANTHROPIC_API_KEY: âœ“ SET
+2025-11-02T22:54:54.792037620Z [info] 
+2025-11-02T22:54:54.792042966Z [info] ðŸ“„ Ensuring replit.md is available...
+2025-11-02T22:54:54.792049246Z [info] âœ… replit.md already present
+2025-11-02T22:54:54.792054730Z [info] 
+2025-11-02T22:54:54.792062630Z [info] ðŸš€ Starting Node.js application with debug wrapper...
+2025-11-02T22:54:54.792068240Z [info] Command: bash debug-start.sh
+2025-11-02T22:54:54.792074117Z [info] 
+2025-11-02T22:54:54.792079401Z [error] railway-start.sh: line 97: bash: not found
+2025-11-02T22:54:55.765331447Z [info] ======================================
+2025-11-02T22:54:55.765337060Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T22:54:55.765342565Z [info] ======================================
+2025-11-02T22:54:55.765347878Z [info] Time: Sun Nov  2 22:54:55 UTC 2025
+2025-11-02T22:54:55.765353526Z [info] Node version: v20.19.5
+2025-11-02T22:54:55.765358891Z [info] NPM version: 10.8.2
+2025-11-02T22:54:55.765365429Z [info] 
+2025-11-02T22:54:55.765371469Z [info] ðŸ“ Current directory: /app
+2025-11-02T22:54:55.765377444Z [info] ðŸ“‚ Listing root files:
+2025-11-02T22:54:55.765382661Z [info] total 432
+2025-11-02T22:54:55.765387913Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 .
+2025-11-02T22:54:55.765392700Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 22:54 ..
+2025-11-02T22:54:55.765398305Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 22:52 create-healing-tables.sql
+2025-11-02T22:54:55.765403741Z [info] -rwxr-xr-x    1 root     root          2033 Nov  2 22:52 debug-start.sh
+2025-11-02T22:54:55.765409476Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 22:53 dist
+2025-11-02T22:54:55.765414650Z [info] -rw-rw-r--    1 root     root           325 Nov  2 22:52 drizzle.config.ts
+2025-11-02T22:54:55.765419871Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 22:52 drop-old-tables.js
+2025-11-02T22:54:55.765425760Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 node_modules
+2025-11-02T22:54:55.765431104Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 22:53 package-lock.json
+2025-11-02T22:54:55.765436638Z [info] -rw-rw-r--    1 root     root          4631 Nov  2 22:53 package.json
+2025-11-02T22:54:55.765442803Z [info] -rwxr-xr-x    1 root     root          3152 Nov  2 22:52 railway-start.sh
+2025-11-02T22:54:55.765448200Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 22:52 replit.md
+2025-11-02T22:54:55.765584431Z [info] 
+2025-11-02T22:54:55.765595687Z [info] ðŸ”§ Creating healing tables with correct schema...
+2025-11-02T22:54:55.765597889Z [info] drwxr-xr-x   13 root     root          4096 Nov  2 22:52 server
+2025-11-02T22:54:55.765603960Z [info] âš ï¸ psql not found, using node-postgres...
+2025-11-02T22:54:55.765606541Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 22:52 shared
+2025-11-02T22:54:55.765612472Z [info] -rw-rw-r--    1 root     root           960 Nov  2 22:52 tsconfig.json
+2025-11-02T22:54:55.765618124Z [info] 
+2025-11-02T22:54:55.765623688Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-02T22:54:55.765649285Z [info] âœ… dist/public directory exists (frontend build)
+2025-11-02T22:54:55.765655607Z [info] 
+2025-11-02T22:54:55.765661350Z [info] ðŸ—‘ï¸ Dropping old tables with incorrect schema...
+2025-11-02T22:54:55.765667117Z [info] [DROP-TABLES] Dropping old healing tables with incorrect schema...
+2025-11-02T22:54:55.765816162Z [info] [DROP-TABLES] âœ… Dropped healing_messages
+2025-11-02T22:54:55.765821010Z [info] [DROP-TABLES] âœ… Dropped healing_conversations
+2025-11-02T22:54:55.765825756Z [info] [DROP-TABLES] âœ… Dropped healing_targets
+2025-11-02T22:54:55.765830989Z [info] [DROP-TABLES] âœ… Dropped ai_knowledge_base
+2025-11-02T22:54:55.765836043Z [info] [DROP-TABLES] âœ… Dropped platform_incident_playbooks
+2025-11-02T22:54:55.765845415Z [info] [DROP-TABLES] âœ… Dropped ai_fix_attempts
+2025-11-02T22:54:55.765850384Z [info] [DROP-TABLES] âœ… Dropped platform_heal_attempts
+2025-11-02T22:54:55.765855754Z [info] [DROP-TABLES] âœ… Dropped platform_healing_sessions
+2025-11-02T22:54:55.765909888Z [info] [DROP-TABLES] âœ… Dropped platform_incidents
+2025-11-02T22:54:55.765914883Z [info] [DROP-TABLES] âœ… All old tables dropped successfully
+2025-11-02T22:54:55.918533813Z [info] âœ… Tables created
+2025-11-02T22:54:55.926742434Z [info] 
+2025-11-02T22:54:55.926752575Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-11-02T22:54:55.926758401Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-02T22:54:55.926763646Z [info] âš ï¸ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)
+2025-11-02T22:54:55.926768876Z [info] âœ… Database schema ready!
+2025-11-02T22:54:55.926775655Z [info] 
+2025-11-02T22:54:55.926781890Z [info] ðŸ” Environment Check:
+2025-11-02T22:54:55.926787260Z [info] NODE_ENV: production
+2025-11-02T22:54:55.926792700Z [info] PORT: 8080
+2025-11-02T22:54:55.926805625Z [info] DATABASE_URL: âœ“ SET (hidden for security)
+2025-11-02T22:54:55.926810132Z [info] GITHUB_TOKEN: âœ“ SET
+2025-11-02T22:54:55.926814787Z [info] GITHUB_REPO: 6-7Development/archetype
+2025-11-02T22:54:55.926820093Z [info] GITHUB_BRANCH: main
+2025-11-02T22:54:55.926824769Z [info] ANTHROPIC_API_KEY: âœ“ SET
+2025-11-02T22:54:55.926831140Z [info] 
+2025-11-02T22:54:55.926835890Z [info] ðŸ“„ Ensuring replit.md is available...
+2025-11-02T22:54:55.926840276Z [info] âœ… replit.md already present
+2025-11-02T22:54:55.926846800Z [info] 
+2025-11-02T22:54:55.926851521Z [info] ðŸš€ Starting Node.js application with debug wrapper...
+2025-11-02T22:54:55.926855758Z [info] Command: bash debug-start.sh
+2025-11-02T22:54:55.926860810Z [info] 
+2025-11-02T22:54:55.926866393Z [error] railway-start.sh: line 97: bash: not found
+2025-11-02T22:54:59.195239900Z [info] ======================================
+2025-11-02T22:54:59.195247351Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T22:54:59.195252992Z [info] ======================================
+2025-11-02T22:54:59.195257825Z [info] Time: Sun Nov  2 22:54:59 UTC 2025
+2025-11-02T22:54:59.760194872Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 22:52 shared
+2025-11-02T22:54:59.760205965Z [info] NPM version: 10.8.2
+2025-11-02T22:54:59.760216518Z [info] -rw-rw-r--    1 root     root           960 Nov  2 22:52 tsconfig.json
+2025-11-02T22:54:59.760216782Z [info] 
+2025-11-02T22:54:59.760233022Z [info] -rw-rw-r--    1 root     root           325 Nov  2 22:52 drizzle.config.ts
+2025-11-02T22:54:59.760235970Z [info] -rw-rw-r--    1 root     root          4631 Nov  2 22:53 package.json
+2025-11-02T22:54:59.760240595Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 22:52 drop-old-tables.js
+2025-11-02T22:54:59.760245452Z [info] -rwxr-xr-x    1 root     root          3152 Nov  2 22:52 railway-start.sh
+2025-11-02T22:54:59.760248933Z [info] ðŸ“ Current directory: /app
+2025-11-02T22:54:59.760253409Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 22:54 ..
+2025-11-02T22:54:59.760253577Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 node_modules
+2025-11-02T22:54:59.760256030Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 22:52 replit.md
+2025-11-02T22:54:59.760261772Z [info] ðŸ“‚ Listing root files:
+2025-11-02T22:54:59.760264613Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 22:52 create-healing-tables.sql
+2025-11-02T22:54:59.760265101Z [info] Node version: v20.19.5
+2025-11-02T22:54:59.760265313Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 22:53 package-lock.json
+2025-11-02T22:54:59.760266293Z [info] drwxr-xr-x   13 root     root          4096 Nov  2 22:52 server
+2025-11-02T22:54:59.760273757Z [info] -rwxr-xr-x    1 root     root          2033 Nov  2 22:52 debug-start.sh
+2025-11-02T22:54:59.760276395Z [info] total 432
+2025-11-02T22:54:59.760280014Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 22:53 dist
+2025-11-02T22:54:59.760283746Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 .
+2025-11-02T22:54:59.893063818Z [info] 
+2025-11-02T22:54:59.893070170Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-02T22:54:59.893076063Z [info] âœ… dist/public directory exists (frontend build)
+2025-11-02T22:54:59.893082749Z [info] 
+2025-11-02T22:54:59.893089776Z [info] ðŸ—‘ï¸ Dropping old tables with incorrect schema...
+2025-11-02T22:54:59.893095945Z [info] [DROP-TABLES] Dropping old healing tables with incorrect schema...
+2025-11-02T22:54:59.893102105Z [info] [DROP-TABLES] âœ… Dropped healing_messages
+2025-11-02T22:54:59.893108062Z [info] [DROP-TABLES] âœ… Dropped healing_conversations
+2025-11-02T22:54:59.893114093Z [info] [DROP-TABLES] âœ… Dropped healing_targets
+2025-11-02T22:54:59.893120103Z [info] [DROP-TABLES] âœ… Dropped ai_knowledge_base
+2025-11-02T22:54:59.893126748Z [info] [DROP-TABLES] âœ… Dropped platform_incident_playbooks
+2025-11-02T22:54:59.893133172Z [info] [DROP-TABLES] âœ… Dropped ai_fix_attempts
+2025-11-02T22:54:59.893139514Z [info] [DROP-TABLES] âœ… Dropped platform_heal_attempts
+2025-11-02T22:54:59.893145479Z [info] [DROP-TABLES] âœ… Dropped platform_healing_sessions
+2025-11-02T22:54:59.893154297Z [info] [DROP-TABLES] âœ… Dropped platform_incidents
+2025-11-02T22:54:59.893160784Z [info] [DROP-TABLES] âœ… All old tables dropped successfully
+2025-11-02T22:54:59.893166953Z [info] 
+2025-11-02T22:54:59.893174429Z [info] ðŸ”§ Creating healing tables with correct schema...
+2025-11-02T22:54:59.893180932Z [info] âš ï¸ psql not found, using node-postgres...
+2025-11-02T22:54:59.982036361Z [info] âœ… Tables created
+2025-11-02T22:54:59.985592585Z [info] ðŸš€ Starting Node.js application with debug wrapper...
+2025-11-02T22:54:59.985604171Z [info] âš ï¸ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)
+2025-11-02T22:54:59.985606005Z [info] Command: bash debug-start.sh
+2025-11-02T22:54:59.985615610Z [info] âœ… Database schema ready!
+2025-11-02T22:54:59.985616866Z [info] 
+2025-11-02T22:54:59.985626391Z [info] 
+2025-11-02T22:54:59.985644350Z [info] ðŸ” Environment Check:
+2025-11-02T22:54:59.985650707Z [error] railway-start.sh: line 97: bash: not found
+2025-11-02T22:54:59.985652072Z [info] NODE_ENV: production
+2025-11-02T22:54:59.985667057Z [info] PORT: 8080
+2025-11-02T22:54:59.985678225Z [info] DATABASE_URL: âœ“ SET (hidden for security)
+2025-11-02T22:54:59.985685615Z [info] 
+2025-11-02T22:54:59.985685616Z [info] GITHUB_TOKEN: âœ“ SET
+2025-11-02T22:54:59.985692142Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-11-02T22:54:59.985693530Z [info] GITHUB_REPO: 6-7Development/archetype
+2025-11-02T22:54:59.985698040Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-02T22:54:59.985700967Z [info] GITHUB_BRANCH: main
+2025-11-02T22:54:59.985707722Z [info] ANTHROPIC_API_KEY: âœ“ SET
+2025-11-02T22:54:59.985714172Z [info] 
+2025-11-02T22:54:59.985720031Z [info] ðŸ“„ Ensuring replit.md is available...
+2025-11-02T22:54:59.985725884Z [info] âœ… replit.md already present
+2025-11-02T22:54:59.985732312Z [info] 
+2025-11-02T22:55:01.883307551Z [info] ======================================
+2025-11-02T22:55:01.883317260Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T22:55:01.883323880Z [info] ======================================
+2025-11-02T22:55:01.883330515Z [info] Time: Sun Nov  2 22:55:01 UTC 2025
+2025-11-02T22:55:01.893095473Z [info] Node version: v20.19.5
+2025-11-02T22:55:02.027816059Z [info] NPM version: 10.8.2
+2025-11-02T22:55:02.027822380Z [info] 
+2025-11-02T22:55:02.027828512Z [info] ðŸ“ Current directory: /app
+2025-11-02T22:55:02.027835955Z [info] ðŸ“‚ Listing root files:
+2025-11-02T22:55:02.027842897Z [info] total 432
+2025-11-02T22:55:02.027849865Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 .
+2025-11-02T22:55:02.027856224Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 22:54 ..
+2025-11-02T22:55:02.027862299Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 22:52 create-healing-tables.sql
+2025-11-02T22:55:02.027868215Z [info] -rwxr-xr-x    1 root     root          2033 Nov  2 22:52 debug-start.sh
+2025-11-02T22:55:02.027874343Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 22:53 dist
+2025-11-02T22:55:02.027881097Z [info] -rw-rw-r--    1 root     root           325 Nov  2 22:52 drizzle.config.ts
+2025-11-02T22:55:02.027892604Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 22:52 drop-old-tables.js
+2025-11-02T22:55:02.027898567Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 node_modules
+2025-11-02T22:55:02.027904467Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 22:53 package-lock.json
+2025-11-02T22:55:02.027910744Z [info] -rw-rw-r--    1 root     root          4631 Nov  2 22:53 package.json
+2025-11-02T22:55:02.027917229Z [info] -rwxr-xr-x    1 root     root          3152 Nov  2 22:52 railway-start.sh
+2025-11-02T22:55:02.027922681Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 22:52 replit.md
+2025-11-02T22:55:02.027929176Z [info] drwxr-xr-x   13 root     root          4096 Nov  2 22:52 server
+2025-11-02T22:55:02.027935378Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 22:52 shared
+2025-11-02T22:55:02.027941323Z [info] -rw-rw-r--    1 root     root           960 Nov  2 22:52 tsconfig.json
+2025-11-02T22:55:02.028037131Z [info] 
+2025-11-02T22:55:02.030279419Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-02T22:55:02.030304182Z [info] âœ… dist/public directory exists (frontend build)
+2025-11-02T22:55:02.030309927Z [info] 
+2025-11-02T22:55:02.030315581Z [info] ðŸ—‘ï¸ Dropping old tables with incorrect schema...
+2025-11-02T22:55:02.147995209Z [info] [DROP-TABLES] Dropping old healing tables with incorrect schema...
+2025-11-02T22:55:02.694910443Z [info] [DROP-TABLES] âœ… Dropped healing_messages
+2025-11-02T22:55:02.694923305Z [info] [DROP-TABLES] âœ… Dropped healing_conversations
+2025-11-02T22:55:02.694930649Z [info] âœ… Tables created
+2025-11-02T22:55:02.694943576Z [info] [DROP-TABLES] âœ… Dropped platform_heal_attempts
+2025-11-02T22:55:02.694943812Z [info] 
+2025-11-02T22:55:02.694947106Z [info] 
+2025-11-02T22:55:02.694954122Z [info] [DROP-TABLES] âœ… Dropped platform_healing_sessions
+2025-11-02T22:55:02.694961579Z [info] ðŸ”§ Creating healing tables with correct schema...
+2025-11-02T22:55:02.694966726Z [info] [DROP-TABLES] âœ… Dropped healing_targets
+2025-11-02T22:55:02.694967410Z [info] [DROP-TABLES] âœ… Dropped platform_incidents
+2025-11-02T22:55:02.694972469Z [info] âš ï¸ psql not found, using node-postgres...
+2025-11-02T22:55:02.694977160Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-11-02T22:55:02.694980569Z [info] [DROP-TABLES] âœ… Dropped ai_knowledge_base
+2025-11-02T22:55:02.694981629Z [info] [DROP-TABLES] âœ… Dropped platform_incident_playbooks
+2025-11-02T22:55:02.694986303Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-02T22:55:02.694988443Z [info] [DROP-TABLES] âœ… All old tables dropped successfully
+2025-11-02T22:55:02.694992479Z [info] [DROP-TABLES] âœ… Dropped ai_fix_attempts
+2025-11-02T22:55:02.695004805Z [info] âš ï¸ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)
+2025-11-02T22:55:02.695013076Z [info] âœ… Database schema ready!
+2025-11-02T22:55:02.695018917Z [info] 
+2025-11-02T22:55:02.695026295Z [info] ðŸ” Environment Check:
+2025-11-02T22:55:02.695050833Z [info] NODE_ENV: production
+2025-11-02T22:55:02.695057566Z [info] PORT: 8080
+2025-11-02T22:55:02.695063706Z [info] DATABASE_URL: âœ“ SET (hidden for security)
+2025-11-02T22:55:02.695069944Z [info] GITHUB_TOKEN: âœ“ SET
+2025-11-02T22:55:02.695076266Z [info] GITHUB_REPO: 6-7Development/archetype
+2025-11-02T22:55:02.695633012Z [info] GITHUB_BRANCH: main
+2025-11-02T22:55:02.695640728Z [info] ANTHROPIC_API_KEY: âœ“ SET
+2025-11-02T22:55:02.695650207Z [info] 
+2025-11-02T22:55:02.695660004Z [info] ðŸ“„ Ensuring replit.md is available...
+2025-11-02T22:55:02.695667434Z [info] âœ… replit.md already present
+2025-11-02T22:55:02.695674708Z [info] 
+2025-11-02T22:55:02.695682849Z [info] ðŸš€ Starting Node.js application with debug wrapper...
+2025-11-02T22:55:02.695689847Z [info] Command: bash debug-start.sh
+2025-11-02T22:55:02.695697927Z [info] 
+2025-11-02T22:55:02.695705429Z [error] railway-start.sh: line 97: bash: not found
+2025-11-02T22:55:03.807897337Z [info] Node version: v20.19.5
+2025-11-02T22:55:03.807899043Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T22:55:03.807906711Z [info] ======================================
+2025-11-02T22:55:03.807915273Z [info] Time: Sun Nov  2 22:55:03 UTC 2025
+2025-11-02T22:55:03.807958702Z [info] ======================================
+2025-11-02T22:55:03.896655240Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 22:52 replit.md
+2025-11-02T22:55:03.896656046Z [info] total 432
+2025-11-02T22:55:03.896666309Z [info] drwxr-xr-x   13 root     root          4096 Nov  2 22:52 server
+2025-11-02T22:55:03.896668913Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 .
+2025-11-02T22:55:03.896673432Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 22:52 shared
+2025-11-02T22:55:03.896679526Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 22:54 ..
+2025-11-02T22:55:03.896682786Z [info] -rw-rw-r--    1 root     root           960 Nov  2 22:52 tsconfig.json
+2025-11-02T22:55:03.896690735Z [info] 
+2025-11-02T22:55:03.896701857Z [info] NPM version: 10.8.2
+2025-11-02T22:55:03.896710330Z [info] 
+2025-11-02T22:55:03.896715517Z [info] ðŸ“ Current directory: /app
+2025-11-02T22:55:03.896720531Z [info] ðŸ“‚ Listing root files:
+2025-11-02T22:55:03.896802233Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 22:52 create-healing-tables.sql
+2025-11-02T22:55:03.896814288Z [info] -rwxr-xr-x    1 root     root          2033 Nov  2 22:52 debug-start.sh
+2025-11-02T22:55:03.896825572Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 22:53 dist
+2025-11-02T22:55:03.896832100Z [info] -rw-rw-r--    1 root     root           325 Nov  2 22:52 drizzle.config.ts
+2025-11-02T22:55:03.896838572Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 22:52 drop-old-tables.js
+2025-11-02T22:55:03.896848804Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 node_modules
+2025-11-02T22:55:03.896856740Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 22:53 package-lock.json
+2025-11-02T22:55:03.896866422Z [info] -rw-rw-r--    1 root     root          4631 Nov  2 22:53 package.json
+2025-11-02T22:55:03.896873457Z [info] -rwxr-xr-x    1 root     root          3152 Nov  2 22:52 railway-start.sh
+2025-11-02T22:55:03.898355421Z [info] ðŸ—‘ï¸ Dropping old tables with incorrect schema...
+2025-11-02T22:55:03.898411703Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-02T22:55:03.898417433Z [info] âœ… dist/public directory exists (frontend build)
+2025-11-02T22:55:03.898423837Z [info] 
+2025-11-02T22:55:04.013663778Z [info] [DROP-TABLES] Dropping old healing tables with incorrect schema...
+2025-11-02T22:55:04.109122551Z [info] [DROP-TABLES] âœ… Dropped healing_messages
+2025-11-02T22:55:04.111975889Z [info] [DROP-TABLES] âœ… Dropped healing_conversations
+2025-11-02T22:55:04.114454230Z [info] [DROP-TABLES] âœ… Dropped healing_targets
+2025-11-02T22:55:04.125877786Z [info] [DROP-TABLES] âœ… Dropped ai_knowledge_base
+2025-11-02T22:55:04.125883112Z [info] [DROP-TABLES] âœ… Dropped platform_incident_playbooks
+2025-11-02T22:55:04.127569323Z [info] [DROP-TABLES] âœ… Dropped ai_fix_attempts
+2025-11-02T22:55:04.130260352Z [info] [DROP-TABLES] âœ… Dropped platform_heal_attempts
+2025-11-02T22:55:04.140706130Z [info] [DROP-TABLES] âœ… Dropped platform_healing_sessions
+2025-11-02T22:55:04.140714235Z [info] [DROP-TABLES] âœ… Dropped platform_incidents
+2025-11-02T22:55:04.140720115Z [info] [DROP-TABLES] âœ… All old tables dropped successfully
+2025-11-02T22:55:04.150280586Z [info] 
+2025-11-02T22:55:04.150285517Z [info] ðŸ”§ Creating healing tables with correct schema...
+2025-11-02T22:55:04.150290230Z [info] âš ï¸ psql not found, using node-postgres...
+2025-11-02T22:55:04.782365866Z [info] âœ… Tables created
+2025-11-02T22:55:04.782366371Z [info] 
+2025-11-02T22:55:04.782375230Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-11-02T22:55:04.782393650Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-02T22:55:04.782403542Z [info] âš ï¸ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)
+2025-11-02T22:55:04.782489099Z [info] âœ… Database schema ready!
+2025-11-02T22:55:04.782498092Z [info] 
+2025-11-02T22:55:04.791920011Z [info] ðŸ” Environment Check:
+2025-11-02T22:55:04.791931113Z [info] NODE_ENV: production
+2025-11-02T22:55:04.791937590Z [info] PORT: 8080
+2025-11-02T22:55:04.791943983Z [info] DATABASE_URL: âœ“ SET (hidden for security)
+2025-11-02T22:55:04.791950023Z [info] GITHUB_TOKEN: âœ“ SET
+2025-11-02T22:55:04.791956258Z [info] GITHUB_REPO: 6-7Development/archetype
+2025-11-02T22:55:04.791962405Z [info] GITHUB_BRANCH: main
+2025-11-02T22:55:04.791969818Z [info] ANTHROPIC_API_KEY: âœ“ SET
+2025-11-02T22:55:04.791976166Z [info] 
+2025-11-02T22:55:04.791982291Z [info] ðŸ“„ Ensuring replit.md is available...
+2025-11-02T22:55:04.791987916Z [info] âœ… replit.md already present
+2025-11-02T22:55:04.791993619Z [info] 
+2025-11-02T22:55:04.791999875Z [info] ðŸš€ Starting Node.js application with debug wrapper...
+2025-11-02T22:55:04.792005417Z [info] Command: bash debug-start.sh
+2025-11-02T22:55:04.792011474Z [info] 
+2025-11-02T22:55:04.792017790Z [error] railway-start.sh: line 97: bash: not found
+2025-11-02T22:55:05.763623895Z [info] ======================================
+2025-11-02T22:55:05.763628709Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T22:55:05.763633556Z [info] ======================================
+2025-11-02T22:55:05.763638409Z [info] Time: Sun Nov  2 22:55:05 UTC 2025
+2025-11-02T22:55:05.763643359Z [info] Node version: v20.19.5
+2025-11-02T22:55:05.888729689Z [info] NPM version: 10.8.2
+2025-11-02T22:55:05.888737129Z [info] 
+2025-11-02T22:55:05.888743938Z [info] ðŸ“ Current directory: /app
+2025-11-02T22:55:05.888750202Z [info] ðŸ“‚ Listing root files:
+2025-11-02T22:55:05.891353319Z [info] total 432
+2025-11-02T22:55:05.891361001Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 .
+2025-11-02T22:55:05.891366948Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 22:54 ..
+2025-11-02T22:55:05.891372870Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 22:52 create-healing-tables.sql
+2025-11-02T22:55:05.891378323Z [info] -rwxr-xr-x    1 root     root          2033 Nov  2 22:52 debug-start.sh
+2025-11-02T22:55:05.891384532Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 22:53 dist
+2025-11-02T22:55:05.891389914Z [info] -rw-rw-r--    1 root     root           325 Nov  2 22:52 drizzle.config.ts
+2025-11-02T22:55:05.891397656Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 22:52 drop-old-tables.js
+2025-11-02T22:55:05.891403564Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 node_modules
+2025-11-02T22:55:05.891411124Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 22:53 package-lock.json
+2025-11-02T22:55:05.891418168Z [info] -rw-rw-r--    1 root     root          4631 Nov  2 22:53 package.json
+2025-11-02T22:55:05.891423939Z [info] -rwxr-xr-x    1 root     root          3152 Nov  2 22:52 railway-start.sh
+2025-11-02T22:55:05.891428907Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 22:52 replit.md
+2025-11-02T22:55:05.891436896Z [info] drwxr-xr-x   13 root     root          4096 Nov  2 22:52 server
+2025-11-02T22:55:05.891441690Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 22:52 shared
+2025-11-02T22:55:05.891448280Z [info] -rw-rw-r--    1 root     root           960 Nov  2 22:52 tsconfig.json
+2025-11-02T22:55:05.891453531Z [info] 
+2025-11-02T22:55:05.891459858Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-02T22:55:05.891464256Z [info] âœ… dist/public directory exists (frontend build)
+2025-11-02T22:55:05.891469638Z [info] 
+2025-11-02T22:55:05.891475281Z [info] ðŸ—‘ï¸ Dropping old tables with incorrect schema...
+2025-11-02T22:55:06.002262947Z [info] [DROP-TABLES] Dropping old healing tables with incorrect schema...
+2025-11-02T22:55:06.097006733Z [info] [DROP-TABLES] âœ… Dropped healing_messages
+2025-11-02T22:55:06.097013191Z [info] [DROP-TABLES] âœ… Dropped healing_conversations
+2025-11-02T22:55:06.100166038Z [info] [DROP-TABLES] âœ… Dropped healing_targets
+2025-11-02T22:55:06.103737539Z [info] [DROP-TABLES] âœ… Dropped ai_knowledge_base
+2025-11-02T22:55:06.103742238Z [info] [DROP-TABLES] âœ… Dropped platform_incident_playbooks
+2025-11-02T22:55:06.107478778Z [info] [DROP-TABLES] âœ… Dropped ai_fix_attempts
+2025-11-02T22:55:06.111118626Z [info] [DROP-TABLES] âœ… Dropped platform_heal_attempts
+2025-11-02T22:55:06.114000707Z [info] [DROP-TABLES] âœ… Dropped platform_healing_sessions
+2025-11-02T22:55:06.116720398Z [info] [DROP-TABLES] âœ… Dropped platform_incidents
+2025-11-02T22:55:06.116728063Z [info] [DROP-TABLES] âœ… All old tables dropped successfully
+2025-11-02T22:55:06.127725448Z [info] 
+2025-11-02T22:55:06.127732579Z [info] ðŸ”§ Creating healing tables with correct schema...
+2025-11-02T22:55:06.127740149Z [info] âš ï¸ psql not found, using node-postgres...
+2025-11-02T22:55:06.720303272Z [info] 
+2025-11-02T22:55:06.720317463Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-11-02T22:55:06.720435086Z [info] âœ… Tables created
+2025-11-02T22:55:06.723496997Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-02T22:55:06.723507332Z [info] âš ï¸ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)
+2025-11-02T22:55:06.723513899Z [info] âœ… Database schema ready!
+2025-11-02T22:55:06.723520003Z [info] 
+2025-11-02T22:55:06.723525641Z [info] ðŸ” Environment Check:
+2025-11-02T22:55:06.723531940Z [info] NODE_ENV: production
+2025-11-02T22:55:06.723539424Z [info] PORT: 8080
+2025-11-02T22:55:06.723545715Z [info] DATABASE_URL: âœ“ SET (hidden for security)
+2025-11-02T22:55:06.723551600Z [info] GITHUB_TOKEN: âœ“ SET
+2025-11-02T22:55:06.723557110Z [info] GITHUB_REPO: 6-7Development/archetype
+2025-11-02T22:55:06.723562386Z [info] GITHUB_BRANCH: main
+2025-11-02T22:55:06.723568049Z [info] ANTHROPIC_API_KEY: âœ“ SET
+2025-11-02T22:55:06.723573521Z [info] 
+2025-11-02T22:55:06.723578902Z [info] ðŸ“„ Ensuring replit.md is available...
+2025-11-02T22:55:06.723584436Z [info] âœ… replit.md already present
+2025-11-02T22:55:06.723590015Z [info] 
+2025-11-02T22:55:06.723595633Z [info] ðŸš€ Starting Node.js application with debug wrapper...
+2025-11-02T22:55:06.723601128Z [info] Command: bash debug-start.sh
+2025-11-02T22:55:06.723605984Z [info] 
+2025-11-02T22:55:06.723611287Z [error] railway-start.sh: line 97: bash: not found
+2025-11-02T22:55:14.750437425Z [info] Node version: v20.19.5
+2025-11-02T22:55:14.750467609Z [info] ======================================
+2025-11-02T22:55:14.750476822Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-02T22:55:14.750484323Z [info] ======================================
+2025-11-02T22:55:14.750492296Z [info] Time: Sun Nov  2 22:55:14 UTC 2025
+2025-11-02T22:55:14.844521206Z [info] NPM version: 10.8.2
+2025-11-02T22:55:14.844535614Z [info] 
+2025-11-02T22:55:14.844545604Z [info] ðŸ“ Current directory: /app
+2025-11-02T22:55:14.844553603Z [info] ðŸ“‚ Listing root files:
+2025-11-02T22:55:14.844563631Z [info] total 432
+2025-11-02T22:55:14.844570781Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 .
+2025-11-02T22:55:14.844578641Z [info] dr-xr-xr-x    1 root     root          4096 Nov  2 22:54 ..
+2025-11-02T22:55:14.844589583Z [info] -rw-rw-r--    1 root     root          6775 Nov  2 22:52 create-healing-tables.sql
+2025-11-02T22:55:14.844598253Z [info] -rwxr-xr-x    1 root     root          2033 Nov  2 22:52 debug-start.sh
+2025-11-02T22:55:14.844606132Z [info] drwxr-xr-x    3 root     root          4096 Nov  2 22:53 dist
+2025-11-02T22:55:14.844613358Z [info] -rw-rw-r--    1 root     root           325 Nov  2 22:52 drizzle.config.ts
+2025-11-02T22:55:14.844621109Z [info] -rw-rw-r--    1 root     root          2168 Nov  2 22:52 drop-old-tables.js
+2025-11-02T22:55:14.844630097Z [info] drwxr-xr-x    1 root     root          4096 Nov  2 22:53 node_modules
+2025-11-02T22:55:14.844637485Z [info] -rw-rw-r--    1 root     root        361403 Nov  2 22:53 package-lock.json
+2025-11-02T22:55:14.844643472Z [info] -rw-rw-r--    1 root     root          4631 Nov  2 22:53 package.json
+2025-11-02T22:55:14.844654001Z [info] -rwxr-xr-x    1 root     root          3152 Nov  2 22:52 railway-start.sh
+2025-11-02T22:55:14.844661128Z [info] -rw-rw-r--    1 root     root         12632 Nov  2 22:52 replit.md
+2025-11-02T22:55:14.844668945Z [info] drwxr-xr-x   13 root     root          4096 Nov  2 22:52 server
+2025-11-02T22:55:14.844675903Z [info] drwxr-xr-x    2 root     root          4096 Nov  2 22:52 shared
+2025-11-02T22:55:14.844683231Z [info] -rw-rw-r--    1 root     root           960 Nov  2 22:52 tsconfig.json
+2025-11-02T22:55:14.853494750Z [info] 
+2025-11-02T22:55:14.853502463Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-02T22:55:14.853509915Z [info] âœ… dist/public directory exists (frontend build)
+2025-11-02T22:55:14.853518824Z [info] 
+2025-11-02T22:55:14.853527299Z [info] ðŸ—‘ï¸ Dropping old tables with incorrect schema...
+2025-11-02T22:55:14.973118464Z [info] [DROP-TABLES] Dropping old healing tables with incorrect schema...
+2025-11-02T22:55:15.126841354Z [info] [DROP-TABLES] âœ… Dropped healing_messages
+2025-11-02T22:55:15.130296048Z [info] [DROP-TABLES] âœ… Dropped healing_conversations
+2025-11-02T22:55:15.134638603Z [info] [DROP-TABLES] âœ… Dropped healing_targets
+2025-11-02T22:55:15.136709056Z [info] [DROP-TABLES] âœ… Dropped ai_knowledge_base
+2025-11-02T22:55:15.141900959Z [info] [DROP-TABLES] âœ… Dropped platform_incident_playbooks
+2025-11-02T22:55:15.144395795Z [info] [DROP-TABLES] âœ… Dropped ai_fix_attempts
+2025-11-02T22:55:15.149991693Z [info] [DROP-TABLES] âœ… Dropped platform_heal_attempts
+2025-11-02T22:55:15.152756723Z [info] [DROP-TABLES] âœ… Dropped platform_healing_sessions
+2025-11-02T22:55:15.157959377Z [info] [DROP-TABLES] âœ… Dropped platform_incidents
+2025-11-02T22:55:15.157972069Z [info] [DROP-TABLES] âœ… All old tables dropped successfully
+2025-11-02T22:55:15.166576989Z [info] 
+2025-11-02T22:55:15.166585811Z [info] ðŸ”§ Creating healing tables with correct schema...
+2025-11-02T22:55:15.166592274Z [info] âš ï¸ psql not found, using node-postgres...
+2025-11-02T22:55:15.755069577Z [info] GITHUB_REPO: 6-7Development/archetype
+2025-11-02T22:55:15.755077806Z [info] GITHUB_BRANCH: main
+2025-11-02T22:55:15.755094642Z [info] NODE_ENV: production
+2025-11-02T22:55:15.755096130Z [info] âœ… Tables created
+2025-11-02T22:55:15.755101456Z [info] PORT: 8080
+2025-11-02T22:55:15.755103095Z [info] 
+2025-11-02T22:55:15.755109705Z [info] DATABASE_URL: âœ“ SET (hidden for security)
+2025-11-02T22:55:15.755109929Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-02T22:55:15.755110119Z [info] 
+2025-11-02T22:55:15.755115499Z [info] ðŸ” Environment Check:
+2025-11-02T22:55:15.755119660Z [info] GITHUB_TOKEN: âœ“ SET
+2025-11-02T22:55:15.755120788Z [info] âš ï¸ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)
+2025-11-02T22:55:15.755121173Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-11-02T22:55:15.755131021Z [info] âœ… Database schema ready!
+2025-11-02T22:55:15.755141208Z [info] ANTHROPIC_API_KEY: âœ“ SET
+2025-11-02T22:55:15.755148975Z [info] 
+2025-11-02T22:55:15.755156255Z [info] ðŸ“„ Ensuring replit.md is available...
+2025-11-02T22:55:15.755162719Z [info] âœ… replit.md already present
+2025-11-02T22:55:15.755169541Z [info] 
+2025-11-02T22:55:15.755175718Z [info] ðŸš€ Starting Node.js application with debug wrapper...
+2025-11-02T22:55:15.755182845Z [info] Command: bash debug-start.sh
+2025-11-02T22:55:15.755188547Z [info] 
+2025-11-02T22:55:15.755194026Z [error] railway-start.sh: line 97: bash: not found

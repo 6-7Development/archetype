@@ -91,7 +91,7 @@ fi
 echo ""
 
 echo "🚀 Starting Node.js application with debug wrapper..."
-echo "Command: bash debug-start.sh"
+echo "Command: sh debug-start.sh"
 echo ""
 
-bash debug-start.sh
+sh debug-start.sh

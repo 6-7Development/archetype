@@ -1,8 +1,7 @@
-#!/bin/bash
+#!/bin/sh
 # Debug wrapper for Railway startup - captures all errors
 
 set -e  # Exit on error
-set -o pipefail  # Catch errors in pipes
 
 echo "=========================================="
 echo "🔍 DEBUG MODE - VERBOSE ERROR CAPTURE"
