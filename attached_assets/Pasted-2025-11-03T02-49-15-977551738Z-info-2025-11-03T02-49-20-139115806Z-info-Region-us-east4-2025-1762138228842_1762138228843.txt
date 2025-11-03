@@ -1,0 +1,135 @@
+2025-11-03T02:49:15.977551738Z [info] 
+2025-11-03T02:49:20.139115806Z [info] [Region: us-east4]
+2025-11-03T02:49:20.153148584Z [info] =========================
+2025-11-03T02:49:20.153166316Z [info] Using Detected Dockerfile
+2025-11-03T02:49:20.153170321Z [info] =========================
+2025-11-03T02:49:20.153173875Z [info] 
+2025-11-03T02:49:20.153183923Z [info] context: xndm-UHp3
+2025-11-03T02:49:20.308387202Z [info] [internal] load build definition from Dockerfile
+2025-11-03T02:49:20.308418113Z [info] [internal] load build definition from Dockerfile
+2025-11-03T02:49:20.308431880Z [info] [internal] load build definition from Dockerfile
+2025-11-03T02:49:20.308445094Z [info] [internal] load build definition from Dockerfile
+2025-11-03T02:49:20.317502323Z [info] [internal] load build definition from Dockerfile
+2025-11-03T02:49:20.319627680Z [info] [internal] load metadata for docker.io/library/node:20-alpine
+2025-11-03T02:49:20.387337137Z [info] [internal] load metadata for docker.io/library/node:20-alpine
+2025-11-03T02:49:20.387565146Z [info] [internal] load .dockerignore
+2025-11-03T02:49:20.387581313Z [info] [internal] load .dockerignore
+2025-11-03T02:49:20.387950686Z [info] [internal] load .dockerignore
+2025-11-03T02:49:20.397464974Z [info] [internal] load .dockerignore
+2025-11-03T02:49:20.401592333Z [info] [frontend-builder  7/12] COPY attached_assets ./attached_assets
+2025-11-03T02:49:20.401625424Z [info] [frontend-builder  6/12] COPY shared ./shared
+2025-11-03T02:49:20.401637528Z [info] [production  6/17] RUN npm install drizzle-kit@^0.31.4
+2025-11-03T02:49:20.401645988Z [info] [frontend-builder 12/12] RUN npx vite build
+2025-11-03T02:49:20.401652245Z [info] [frontend-builder  1/12] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+2025-11-03T02:49:20.401679402Z [info] [frontend-builder  9/12] COPY tsconfig.json ./
+2025-11-03T02:49:20.401690559Z [info] [frontend-builder 11/12] COPY tailwind.config.ts ./
+2025-11-03T02:49:20.401699768Z [info] [production  4/17] COPY package*.json ./
+2025-11-03T02:49:20.401709110Z [info] [frontend-builder  2/12] WORKDIR /app
+2025-11-03T02:49:20.401722358Z [info] [production  3/17] RUN apk add --no-cache git
+2025-11-03T02:49:20.401730776Z [info] [frontend-builder  3/12] COPY package*.json ./
+2025-11-03T02:49:20.401739379Z [info] [frontend-builder  8/12] COPY vite.config.ts ./
+2025-11-03T02:49:20.401746677Z [info] [frontend-builder 10/12] COPY postcss.config.js ./
+2025-11-03T02:49:20.401758265Z [info] [frontend-builder  5/12] COPY client ./client
+2025-11-03T02:49:20.401763677Z [info] [production  5/17] RUN npm ci
+2025-11-03T02:49:20.401769000Z [info] [internal] load build context
+2025-11-03T02:49:20.401774422Z [info] [frontend-builder  4/12] RUN npm ci
+2025-11-03T02:49:20.401795419Z [info] [production  7/17] COPY --from=frontend-builder /app/dist/public ./server/public
+2025-11-03T02:49:20.401825414Z [info] [production 17/17] RUN chmod +x railway-start.sh debug-start.sh
+2025-11-03T02:49:20.401832243Z [info] [production 16/17] COPY debug-start.sh ./
+2025-11-03T02:49:20.401837797Z [info] [production 15/17] COPY railway-db-setup.cjs ./
+2025-11-03T02:49:20.401842896Z [info] [production 14/17] COPY railway-start.sh ./
+2025-11-03T02:49:20.401851620Z [info] [production 13/17] COPY replit.md ./
+2025-11-03T02:49:20.401857108Z [info] [production 12/17] COPY migrations ./migrations
+2025-11-03T02:49:20.401862559Z [info] [production 11/17] COPY drizzle.config.ts ./
+2025-11-03T02:49:20.401869784Z [info] [production 10/17] COPY tsconfig.json ./
+2025-11-03T02:49:20.401876415Z [info] [production  9/17] COPY shared ./shared
+2025-11-03T02:49:20.401882586Z [info] [production  8/17] COPY server ./server
+2025-11-03T02:49:20.401892086Z [info] [internal] load build context
+2025-11-03T02:49:20.401900862Z [info] [frontend-builder  1/12] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+2025-11-03T02:49:20.408052093Z [info] [internal] load build context
+2025-11-03T02:49:21.579619692Z [info] [internal] load build context
+2025-11-03T02:49:21.599988261Z [info] [frontend-builder  2/12] WORKDIR /app
+2025-11-03T02:49:21.600034063Z [info] [production  3/17] RUN apk add --no-cache git
+2025-11-03T02:49:21.600809618Z [info] [frontend-builder  3/12] COPY package*.json ./
+2025-11-03T02:49:21.601002664Z [info] [production  4/17] COPY package*.json ./
+2025-11-03T02:49:21.685977786Z [info] [production  4/17] COPY package*.json ./
+2025-11-03T02:49:21.690314854Z [info] [frontend-builder  3/12] COPY package*.json ./
+2025-11-03T02:49:21.692068657Z [info] [production  5/17] RUN npm ci
+2025-11-03T02:49:21.693207323Z [info] [frontend-builder  4/12] RUN npm ci
+2025-11-03T02:49:22.895459058Z [info] npm error code EUSAGE
+
+2025-11-03T02:49:22.895516744Z [info] npm error
+npm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install` before continuing.
+npm error
+npm error Invalid: lock file's drizzle-kit@0.31.5 does not satisfy drizzle-kit@0.31.6
+npm error
+npm error Clean install a project
+npm error
+npm error Usage:
+npm error npm ci
+npm error
+npm error Options:
+npm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]
+npm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
+npm error [--no-bin-links] [--no-fund] [--dry-run]
+npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+npm error [-ws|--workspaces] [--include-workspace-root] [--install-links]
+npm error
+npm error aliases: clean-install, ic, install-clean, isntall-clean
+npm error
+npm error Run "npm help ci" for more info
+
+2025-11-03T02:49:22.897512829Z [info] npm notice
+npm notice New major version of npm available! 10.8.2 -> 11.6.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.2
+npm notice To update run: npm install -g npm@11.6.2
+npm notice
+
+2025-11-03T02:49:22.897551609Z [info] npm error A complete log of this run can be found in: /root/.npm/_logs/2025-11-03T02_49_21_922Z-debug-0.log
+
+2025-11-03T02:49:22.903720489Z [info] npm error code EUSAGE
+
+2025-11-03T02:49:22.903768471Z [info] npm error
+npm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install` before continuing.
+npm error
+npm error Invalid: lock file's drizzle-kit@0.31.5 does not satisfy drizzle-kit@0.31.6
+npm error
+npm error Clean install a project
+npm error
+npm error Usage:
+npm error npm ci
+npm error
+npm error Options:
+npm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]
+npm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
+npm error [--no-bin-links] [--no-fund] [--dry-run]
+npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+npm error [-ws|--workspaces] [--include-workspace-root] [--install-links]
+npm error
+npm error aliases: clean-install, ic, install-clean, isntall-clean
+npm error
+npm error Run "npm help ci" for more info
+
+2025-11-03T02:49:22.905842366Z [info] npm notice
+npm notice New major version of npm available! 10.8.2 -> 11.6.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.2
+npm notice To update run: npm install -g npm@11.6.2
+npm notice
+
+2025-11-03T02:49:22.906006062Z [info] npm error A complete log of this run can be found in: /root/.npm/_logs/2025-11-03T02_49_21_902Z-debug-0.log
+
+2025-11-03T02:49:22.929928982Z [error] [production  5/17] RUN npm ci
+2025-11-03T02:49:22.931391364Z [error] [frontend-builder  4/12] RUN npm ci
+2025-11-03T02:49:22.947382963Z [error] Dockerfile:32
+2025-11-03T02:49:22.947424573Z [error] -------------------
+2025-11-03T02:49:22.947430667Z [error] 30 |     # Install production dependencies + drizzle-kit for migrations
+2025-11-03T02:49:22.947435328Z [error] 31 |     COPY package*.json ./
+2025-11-03T02:49:22.947441418Z [error] 32 | >>> RUN npm ci
+2025-11-03T02:49:22.947446428Z [error] 33 |     RUN npm install drizzle-kit@^0.31.4
+2025-11-03T02:49:22.947452457Z [error] 34 |
+2025-11-03T02:49:22.947457376Z [error] -------------------
+2025-11-03T02:49:22.947461843Z [error] ERROR: failed to build: failed to solve: process "/bin/sh -c npm ci" did not complete successfully: exit code: 1
