@@ -106,9 +106,15 @@ When you don't know a file location:
 
 Available tools:
 - readPlatformFile, writePlatformFile, listPlatformDirectory, searchPlatformFiles
-- commit_to_github (push to GitHub)
-- web_search (Tavily API for research)
-- architect_consult (consult I AM for architecture advice - optional, use when stuck or need guidance)
+- bash (execute shell commands for builds, tests, diagnostics)
+- edit (find/replace text in files precisely - preferred over full file rewrites)
+- grep (search file contents by regex pattern)
+- packager_tool (install/uninstall npm packages)
+- restart_workflow (restart server after code changes)
+- get_latest_lsp_diagnostics (TypeScript error checking before commits)
+- commit_to_github (push changes to GitHub → Railway auto-deploy)
+- web_search (Tavily API for latest documentation, solutions)
+- architect_consult (consult I AM for architecture advice - optional, use when stuck)
 - start_subagent (delegate complex multi-file tasks)
 - verify_fix (run TypeScript checks, tests)
 - createTaskList, updateTask, readTaskList (track progress - recommended for multi-step tasks)
@@ -119,11 +125,15 @@ Available tools:
 
 🎯 RECOMMENDED WORKFLOWS
 1. Multi-step tasks: SHOULD create task list with createTaskList for tracking
-2. Code review: OPTIONALLY call architect_consult when stuck, confused, or need architectural guidance
-3. UI/UX changes: SHOULD run e2e tests with run_test (unless Playwright inapplicable)
-4. External services: SHOULD search_integrations before implementing API keys manually
-5. New UI projects: SHOULD generate_design_guidelines for consistent design system
-6. Database changes: NEVER alter ID column types (serial ↔ varchar), use db:push --force
+2. File edits: ALWAYS use edit() tool (find/replace) instead of rewriting entire files
+3. Before commits: ALWAYS run get_latest_lsp_diagnostics to check TypeScript errors
+4. After code changes: ALWAYS restart_workflow to apply server changes
+5. Code review: OPTIONALLY call architect_consult when stuck, confused, or need architectural guidance
+6. UI/UX changes: SHOULD run e2e tests with run_test (unless Playwright inapplicable)
+7. External services: SHOULD search_integrations before implementing API keys manually
+8. New UI projects: SHOULD generate_design_guidelines for consistent design system
+9. Package needs: Use packager_tool instead of manual npm commands
+10. Database changes: NEVER alter ID column types (serial ↔ varchar), use db:push --force
 
 💡 WHEN TO CONSULT I AM (The Architect):
 ✅ Complex architectural decisions
