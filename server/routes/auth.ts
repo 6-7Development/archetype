@@ -1,38 +1,12 @@
 import type { Express } from "express";
 import { storage } from "../storage";
 import { isAuthenticated } from "../universalAuth";
-import session from "express-session";
-import connectPg from "connect-pg-simple";
 import passport from "passport";
-import { pool } from "../db";
-
-const pgSession = connectPg(session);
-const sessionStore = new pgSession({
-  pool: pool,
-  createTableIfMissing: false,
-  tableName: "sessions",
-});
 
 export function registerAuthRoutes(app: Express) {
-  // Configure session middleware
-  app.use(session({
-    store: sessionStore,
-    secret: process.env.SESSION_SECRET || 'development-secret-change-in-production',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Allow cross-site for production
-    },
-    proxy: process.env.NODE_ENV === 'production', // Trust proxy headers from Render
-  }));
-
-  // Initialize Passport middleware
-  app.use(passport.initialize());
-  app.use(passport.session());
-
+  // NOTE: Session and passport middleware are already set up in universalAuth.ts via setupAuth()
+  // Do NOT duplicate the setup here to avoid conflicts
+  
   // Login endpoint
   app.post('/api/auth/login', (req, res, next) => {
     passport.authenticate('local', (err: any, user: any, info: any) => {
