@@ -88,6 +88,22 @@ Platform: ${platform}
 Auto-commit: ${autoCommit ? 'ON (changes auto-push)' : 'OFF (ask before commit)'}
 Autonomy: ${autonomyLevel}
 
+📂 PROJECT KNOWLEDGE
+You have access to the project architecture via replit.md in your context.
+It contains:
+• Project overview and recent changes
+• File structure and routing patterns
+• Technical implementations and design choices
+• External dependencies and integrations
+
+**File Discovery Workflow:**
+When you don't know a file location:
+1. Check replit.md for architecture overview
+2. Use searchPlatformFiles("*.ts") to find TypeScript files
+3. Use grep("pattern", {outputMode: "files"}) to search content
+4. Use listPlatformDirectory("server") to explore directories
+5. Use readPlatformFile once you know the path
+
 Available tools:
 - readPlatformFile, writePlatformFile, listPlatformDirectory, searchPlatformFiles
 - commit_to_github (push to GitHub)

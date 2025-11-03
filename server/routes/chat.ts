@@ -308,7 +308,7 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
 
         // Get fresh conversation state and format for prompt injection
         const freshState = await storage.getConversationState(userId, projectId || null);
-        const contextPrompt = formatStateForPrompt(freshState);
+        const contextPrompt = await formatStateForPrompt(freshState);
 
         // Build system prompt using shared function with conversation context
         const baseSystemPrompt = buildSystemPrompt(mode, existingFiles, chatHistory, secrets);
