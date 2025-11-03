@@ -260,6 +260,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
   const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null);
   const [tasks, setTasks] = useState<AgentTask[]>([]);
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
+  const [copiedChatHistory, setCopiedChatHistory] = useState(false);
   const [progressStatus, setProgressStatus] = useState<'thinking' | 'working' | 'vibing' | 'idle'>('idle');
   const [progressMessage, setProgressMessage] = useState("");
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
@@ -892,6 +893,39 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                 <span className="text-xs">Stop</span>
               </Button>
             </div>
+          </div>
+        )}
+
+        {/* Copy Chat History Button */}
+        {messages.length > 0 && (
+          <div className="px-3 py-2 md:px-4 md:py-2 border-b border-border bg-muted/20 flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const chatHistory = messages.map(m => 
+                  `${m.role === 'user' ? 'USER' : 'LOMU AI'}:\n${m.content}\n`
+                ).join('\n---\n\n');
+                navigator.clipboard.writeText(chatHistory);
+                setCopiedChatHistory(true);
+                setTimeout(() => setCopiedChatHistory(false), 2000);
+                toast({ title: "✅ Chat history copied!" });
+              }}
+              className="h-7 gap-1.5"
+              data-testid="button-copy-chat"
+            >
+              {copiedChatHistory ? (
+                <>
+                  <Check className="h-3.5 w-3.5" />
+                  <span className="text-xs">Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="h-3.5 w-3.5" />
+                  <span className="text-xs">Copy Chat History</span>
+                </>
+              )}
+            </Button>
           </div>
         )}
 
