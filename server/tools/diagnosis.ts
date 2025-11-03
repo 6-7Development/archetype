@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 
 export interface DiagnosisParams {
-  target: 'performance' | 'security' | 'memory' | 'database' | 'all';
+  target: 'performance' | 'security' | 'memory' | 'database' | 'system' | 'all';
   focus?: string[]; // Specific files to check
 }
 
@@ -140,12 +140,16 @@ export async function performDiagnosis(params: DiagnosisParams): Promise<Diagnos
     const filesAnalyzed: Set<string> = new Set();
     let totalLines = 0;
 
-    // Default files to check
+    // Default files to check - updated for actual platform structure
     const DEFAULT_FILES = [
-      'server/routes.ts',
+      'server/routes/lomuChat.ts',
+      'server/lomuSuperCore.ts',
+      'server/services/healOrchestrator.ts',
+      'server/gemini.ts',
       'server/anthropic.ts',
-      'server/storage.ts',
       'server/index.ts',
+      'server/db.ts',
+      'shared/schema.ts',
     ];
 
     // Sanitize all file paths to prevent command injection
@@ -193,19 +197,22 @@ export async function performDiagnosis(params: DiagnosisParams): Promise<Diagnos
     }
 
     // Run diagnosis based on target (using effectiveFiles instead of filesToCheck)
-    if (params.target === 'performance' || params.target === 'all') {
+    // 'system' target runs all checks (same as 'all')
+    const runAll = params.target === 'all' || params.target === 'system';
+    
+    if (params.target === 'performance' || runAll) {
       await diagnosePerformance(findings, effectiveFiles, filesAnalyzed);
     }
 
-    if (params.target === 'memory' || params.target === 'all') {
+    if (params.target === 'memory' || runAll) {
       await diagnoseMemory(findings, effectiveFiles, filesAnalyzed);
     }
 
-    if (params.target === 'database' || params.target === 'all') {
+    if (params.target === 'database' || runAll) {
       await diagnoseDatabase(findings, effectiveFiles, filesAnalyzed);
     }
 
-    if (params.target === 'security' || params.target === 'all') {
+    if (params.target === 'security' || runAll) {
       await diagnoseSecurity(findings, effectiveFiles, filesAnalyzed);
     }
 
