@@ -1275,6 +1275,39 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     let consecutiveEmptyIterations = 0; // Track iterations with no tool calls
     const MAX_EMPTY_ITERATIONS = 3; // Stop if 3 consecutive iterations without tool calls
     let totalToolCallCount = 0; // Track total tool calls for quality analysis
+    
+    // 📊 WORKFLOW TELEMETRY: Track read vs write operations to detect investigation-only loops
+    const workflowTelemetry = {
+      readOperations: 0,
+      writeOperations: 0,
+      consecutiveReadOnlyIterations: 0,
+      MAX_READ_ONLY_ITERATIONS: 5, // Halt after 5 iterations with only reads
+      hasProducedFixes: false, // Track if ANY write operations occurred
+    };
+    
+    // READ-ONLY TOOLS: Tools that don't modify platform/project code
+    // CRITICAL: This includes bash, knowledge_store, createTaskList, updateTask because they don't modify source code
+    const READ_ONLY_TOOLS = new Set([
+      'readPlatformFile', 'listPlatformDirectory', 'searchPlatformFiles',
+      'readProjectFile', 'listProjectDirectory', 'search_codebase', 'grep',
+      'knowledge_search', 'knowledge_recall', 'code_search',
+      'readTaskList', 'createTaskList', 'updateTask', // Task management doesn't modify code
+      'bash', 'read_logs', 'perform_diagnosis',
+      'get_latest_lsp_diagnostics', 'web_search',
+      'knowledge_store', // Storing knowledge doesn't fix the platform
+      'architect_consult', 'start_subagent' // Delegation tools don't modify code directly
+    ]);
+    
+    // CODE-MODIFYING TOOLS: Tools that actually modify platform/project source code
+    // These are REQUIRED for fix/implement requests to succeed
+    const CODE_MODIFYING_TOOLS = new Set([
+      'writePlatformFile', 'createPlatformFile', 'deletePlatformFile',
+      'writeProjectFile', 'createProjectFile', 'deleteProjectFile',
+      'edit', // Primary file editing tool
+      'commit_to_github', // Commits changes (implies code was modified)
+      'restart_workflow', // Restarts after code changes
+      'packager_tool' // Installs/uninstalls packages (modifies package.json)
+    ]);
 
     // ✅ REMOVED: Casual greeting bypass - LomuAI should ALWAYS be conversational like Replit Agent
     // Every message goes to Claude for proper conversational awareness and context
@@ -2621,6 +2654,42 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         // Track tool calls for quality analysis
         totalToolCallCount += toolResults.length;
         
+        // 📊 WORKFLOW TELEMETRY: Track read vs code-modifying operations
+        let iterationHadCodeModifications = false;
+        for (const toolName of toolNames) {
+          if (READ_ONLY_TOOLS.has(toolName)) {
+            workflowTelemetry.readOperations++;
+          } else if (CODE_MODIFYING_TOOLS.has(toolName)) {
+            workflowTelemetry.writeOperations++;
+            workflowTelemetry.hasProducedFixes = true;
+            iterationHadCodeModifications = true;
+          } else {
+            // Unknown tool - log warning but count as read-only (conservative)
+            console.warn(`[WORKFLOW-TELEMETRY] ⚠️ Unknown tool category: ${toolName} - treating as read-only`);
+            workflowTelemetry.readOperations++;
+          }
+        }
+        
+        // Track consecutive read-only iterations
+        if (!iterationHadCodeModifications) {
+          workflowTelemetry.consecutiveReadOnlyIterations++;
+          console.log(`[WORKFLOW-TELEMETRY] ⚠️ Iteration ${iterationCount}: Read-only (${workflowTelemetry.consecutiveReadOnlyIterations}/${workflowTelemetry.MAX_READ_ONLY_ITERATIONS})`);
+        } else {
+          workflowTelemetry.consecutiveReadOnlyIterations = 0;
+          console.log(`[WORKFLOW-TELEMETRY] ✅ Iteration ${iterationCount}: Code modifications detected - reset read-only counter`);
+        }
+        
+        console.log(`[WORKFLOW-TELEMETRY] Total: ${workflowTelemetry.readOperations} reads, ${workflowTelemetry.writeOperations} writes`);
+        
+        // 🚨 EARLY TERMINATION: Halt if too many consecutive read-only iterations
+        if (workflowTelemetry.consecutiveReadOnlyIterations >= workflowTelemetry.MAX_READ_ONLY_ITERATIONS) {
+          console.warn(`[WORKFLOW-TELEMETRY] 🛑 HALTING - ${workflowTelemetry.MAX_READ_ONLY_ITERATIONS} consecutive read-only iterations detected`);
+          const haltMsg = `\n\n⚠️ **Investigation-only loop detected**\n\nI've read ${workflowTelemetry.readOperations} files but haven't made any changes yet. This suggests I'm investigating without implementing fixes.\n\nI'll stop here to avoid wasting tokens. Please clarify what you'd like me to implement, or I can escalate this to the I AM Architect for expert guidance.`;
+          sendEvent('content', { content: haltMsg });
+          fullContent += haltMsg;
+          continueLoop = false;
+        }
+        
         conversationMessages.push({
           role: 'user',
           content: toolResults,
@@ -2698,6 +2767,80 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       sendEvent('content', { content: warningMsg });
       fullContent += warningMsg;
       console.warn(`[LOMU-AI] ⚠️ Hit MAX_ITERATIONS (${MAX_ITERATIONS}) - possible infinite loop`);
+    }
+    
+    // 📊 WORKFLOW VALIDATION: Detect zero-mutation jobs and flag as failed
+    console.log(`[WORKFLOW-VALIDATION] Job completed with ${workflowTelemetry.writeOperations} code-modifying operations`);
+    console.log(`[WORKFLOW-VALIDATION] Has produced fixes: ${workflowTelemetry.hasProducedFixes}`);
+    
+    // Detect if this was a fix/build request but no code modifications occurred
+    // CRITICAL: Comprehensive keyword matching for fix requests (case-insensitive)
+    const lowerMessage = message.toLowerCase();
+    const FIX_REQUEST_KEYWORDS = [
+      'fix', 'repair', 'resolve', 'patch', 'correct', 'address',
+      'diagnose', 'debug', 'troubleshoot',
+      'implement', 'build', 'create', 'add', 'develop', 'write',
+      'update', 'modify', 'change', 'edit', 'refactor',
+      'heal', 'platform-healing', 'self-healing',
+      'bug', 'issue', 'problem', 'error', 'broken', 'failing'
+    ];
+    
+    const isFixRequest = FIX_REQUEST_KEYWORDS.some(keyword => lowerMessage.includes(keyword));
+    const isZeroMutationJob = isFixRequest && !workflowTelemetry.hasProducedFixes;
+    
+    if (isZeroMutationJob) {
+      console.error(`[WORKFLOW-VALIDATION] 🚨 ZERO-MUTATION JOB FAILURE - Fix request with no code modifications`);
+      console.error(`[WORKFLOW-VALIDATION] Read operations: ${workflowTelemetry.readOperations}, Code modifications: ${workflowTelemetry.writeOperations}`);
+      console.error(`[WORKFLOW-VALIDATION] Message: "${message.slice(0, 100)}..."`);
+      
+      // CRITICAL: This is a workflow failure - add failure message and mark audit as failure
+      const zeroMutationFailure = `\n\n❌ **WORKFLOW FAILURE: Investigation without implementation**\n\nI completed ${workflowTelemetry.readOperations} read operations but failed to make any code changes to fix the issue.\n\n**What went wrong:**\n- I investigated the problem but didn't implement a solution\n- No files were modified, no fixes were applied\n- This violates the action-enforcement workflow\n\n**Next steps:**\n- This failure has been logged for platform improvement\n- I AM Architect will be notified for workflow re-guidance\n- Please clarify what specific changes you want me to make`;
+      
+      sendEvent('content', { content: zeroMutationFailure });
+      sendEvent('error', { message: 'Zero-mutation job failure - no code modifications made' });
+      fullContent += zeroMutationFailure;
+      
+      // Log as failure in audit trail (override the success status later)
+      await platformAudit.log({
+        userId,
+        action: 'heal',
+        description: `❌ ZERO-MUTATION FAILURE: ${message.slice(0, 100)}`,
+        changes: [],
+        backupId: undefined,
+        commitHash: '',
+        status: 'failure',
+      });
+      
+      // Create platform incident for I AM Architect to review
+      try {
+        const [incident] = await db.insert(platformIncidents).values({
+          type: 'agent_failure',
+          severity: 'high',
+          title: 'LomuAI Zero-Mutation Job Failure',
+          description: `LomuAI completed a fix request without making any code changes.\n\nUser request: "${message}"\n\nTelemetry: ${workflowTelemetry.readOperations} reads, ${workflowTelemetry.writeOperations} writes\n\nThis indicates a workflow enforcement failure that requires I AM Architect review.`,
+          source: 'agent_monitor',
+          incidentCategory: 'agent_failure',
+          isAgentFailure: true,
+          detectedAt: new Date(),
+          status: 'open',
+          resolutionStrategy: 'tier_3_iam',
+          metadata: {
+            userId,
+            message: message.slice(0, 200),
+            telemetry: workflowTelemetry,
+            jobId: null, // This is a chat job, not a healing job
+          }
+        }).returning();
+        
+        console.log(`[WORKFLOW-VALIDATION] 🚨 Created incident ${incident.id} for I AM Architect escalation`);
+        sendEvent('progress', { message: '🚨 Workflow failure logged - will escalate to I AM Architect' });
+      } catch (incidentError: any) {
+        console.error('[WORKFLOW-VALIDATION] Failed to create incident:', incidentError.message);
+      }
+    } else if (isFixRequest && workflowTelemetry.hasProducedFixes) {
+      console.log(`[WORKFLOW-VALIDATION] ✅ Fix request completed successfully with ${workflowTelemetry.writeOperations} code-modifying operations`);
+    } else {
+      console.log(`[WORKFLOW-VALIDATION] ℹ️ Non-fix request (question/status check) - no code modifications expected`);
     }
 
     // Safety check
