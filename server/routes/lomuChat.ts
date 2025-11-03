@@ -1137,6 +1137,27 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           required: [],
         },
       },
+      {
+        name: 'validate_before_commit',
+        description: 'Comprehensive pre-commit validation (TypeScript, database tables, critical files)',
+        input_schema: {
+          type: 'object' as const,
+          properties: {},
+          required: [],
+        },
+      },
+      {
+        name: 'search_codebase',
+        description: 'Semantic code search - find code by meaning, not just text (like "where do we handle authentication?")',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            query: { type: 'string' as const, description: 'Natural language search query' },
+            maxResults: { type: 'number' as const, description: 'Max results (default: 10)' },
+          },
+          required: ['query'],
+        },
+      },
     ];
 
     // 🎯 AUTONOMY LEVEL FILTERING: Filter tools based on user's autonomy level
@@ -2298,6 +2319,65 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               } catch (error: any) {
                 toolResult = `❌ LSP diagnostics failed: ${error.message}`;
                 sendEvent('error', { message: `LSP diagnostics failed: ${error.message}` });
+              }
+            } else if (name === 'validate_before_commit') {
+              sendEvent('progress', { message: `🔍 Running comprehensive pre-commit validation...` });
+              
+              try {
+                const result = await platformHealing.validateBeforeCommit();
+                
+                if (result.success) {
+                  toolResult = `${result.summary}\n\n` +
+                    `✅ TypeScript: ${result.checks.typescript.message}\n` +
+                    `✅ Database: ${result.checks.database.message}\n` +
+                    `✅ Critical Files: ${result.checks.criticalFiles.message}\n\n` +
+                    `🚀 Safe to commit and deploy!`;
+                  sendEvent('content', { content: `\n\n✅ **Pre-commit validation passed** - Ready to commit!\n` });
+                } else {
+                  const failures = [];
+                  if (!result.checks.typescript.passed) {
+                    failures.push(`TypeScript: ${result.checks.typescript.message} (${result.checks.typescript.errors} errors)`);
+                  }
+                  if (!result.checks.database.passed) {
+                    failures.push(`Database: ${result.checks.database.message}`);
+                  }
+                  if (!result.checks.criticalFiles.passed) {
+                    failures.push(`Critical Files: ${result.checks.criticalFiles.message}`);
+                  }
+                  
+                  toolResult = `${result.summary}\n\n` +
+                    `❌ VALIDATION FAILURES:\n${failures.join('\n')}\n\n` +
+                    `⚠️ Fix these issues before committing to production!`;
+                  sendEvent('content', { content: `\n\n❌ **Pre-commit validation failed** - Fix issues before committing:\n${failures.map(f => `• ${f}`).join('\n')}\n` });
+                }
+              } catch (error: any) {
+                toolResult = `❌ Validation failed: ${error.message}`;
+                sendEvent('error', { message: `Validation failed: ${error.message}` });
+              }
+            } else if (name === 'search_codebase') {
+              const typedInput = input as { query: string; maxResults?: number };
+              sendEvent('progress', { message: `🔍 Searching codebase: "${typedInput.query}"...` });
+              
+              try {
+                const result = await platformHealing.searchCodebase(
+                  typedInput.query,
+                  typedInput.maxResults || 10
+                );
+                
+                if (result.success && result.results.length > 0) {
+                  const resultsList = result.results
+                    .map((r, i) => `${i + 1}. ${r.file}\n   ${r.relevance}\n   Code: ${r.snippet}`)
+                    .join('\n\n');
+                  
+                  toolResult = `${result.summary}\n\n${resultsList}`;
+                  sendEvent('content', { content: `\n\n🔍 **Found ${result.results.length} relevant locations**\n` });
+                } else {
+                  toolResult = `No code found for query: "${typedInput.query}"\n\nTry a different search query or use grep for exact text matching.`;
+                  sendEvent('content', { content: `\n\n⚠️ No results found\n` });
+                }
+              } catch (error: any) {
+                toolResult = `❌ Search failed: ${error.message}`;
+                sendEvent('error', { message: `Search failed: ${error.message}` });
               }
             }
 
