@@ -119,13 +119,17 @@ export const platformIncidents = pgTable("platform_incidents", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
 
   // Incident details
-  type: text("type").notNull(), // 'high_cpu', 'memory_leak', 'build_failure', 'runtime_error', 'lsp_error'
+  type: text("type").notNull(), // 'high_cpu', 'memory_leak', 'build_failure', 'runtime_error', 'lsp_error', 'agent_failure'
   severity: text("severity").notNull(), // 'low', 'medium', 'high', 'critical'
   title: text("title").notNull(), // "High CPU usage detected"
   description: text("description").notNull(), // Detailed error message
 
+  // Incident classification (for intelligent routing)
+  incidentCategory: text("incident_category").notNull().default("unknown"), // 'platform_failure' | 'agent_failure' | 'unknown'
+  isAgentFailure: boolean("is_agent_failure").notNull().default(false), // Quick flag for agent-specific issues
+
   // Detection metadata
-  source: text("source").notNull(), // 'metrics', 'logs', 'manual'
+  source: text("source").notNull(), // 'metrics', 'logs', 'manual', 'agent_monitor'
   detectedAt: timestamp("detected_at").notNull().defaultNow(),
   resolvedAt: timestamp("resolved_at"),
 
@@ -174,6 +178,15 @@ export const platformHealingSessions = pgTable("platform_healing_sessions", {
   phase: text("phase").notNull(), // 'diagnosis', 'repair', 'verification', 'commit', 'deploy', 'complete'
   status: text("status").notNull().default("active"), // 'active', 'success', 'failed', 'cancelled'
 
+  // 3-Tier Intelligent Routing metadata
+  aiStrategy: text("ai_strategy").notNull().default("unknown"), // 'knowledge_base' | 'lomu_ai' | 'architect' | 'none' | 'unknown'
+  knowledgeBaseMatched: boolean("knowledge_base_matched").notNull().default(false), // Did we find a KB match?
+  knowledgeMatchConfidence: integer("knowledge_match_confidence").default(0), // 0-100 confidence score
+  knowledgeMatchId: varchar("knowledge_match_id"), // Link to matched knowledge entry
+  
+  // LomuAI delegation tracking (Tier 2)
+  lomuJobId: varchar("lomu_job_id"), // Link to lomuJobs table when delegated to LomuAI
+
   // Diagnosis data
   diagnosisNotes: text("diagnosis_notes"), // AI's analysis
   proposedFix: text("proposed_fix"), // What AI plans to do
@@ -196,7 +209,7 @@ export const platformHealingSessions = pgTable("platform_healing_sessions", {
 
   // AI metadata
   tokensUsed: integer("tokens_used").default(0),
-  model: varchar("model").default("claude-sonnet-4-20250514"),
+  model: varchar("model").default("claude-sonnet-4-20250514"), // or 'gemini-2.5-flash' for LomuAI
 
   // Timestamps
   startedAt: timestamp("started_at").notNull().defaultNow(),

@@ -2,11 +2,12 @@ import { EventEmitter } from 'events';
 import { db } from '../db';
 import { platformHealingSessions, platformHealAttempts, platformIncidents, aiKnowledgeBase } from '@shared/schema';
 import { eq } from 'drizzle-orm';
-import { aiHealingService } from './aiHealingService';
+import { aiHealingService, type AIStrategy } from './aiHealingService';
 import { platformHealing } from '../platformHealing';
 import type { PlatformMetricsBroadcaster } from './platformMetricsBroadcaster';
 import { ConfidenceScoring } from './confidenceScoring';
 import { getGitHubService } from '../githubService';
+import { AgentFailureDetector } from './agentFailureDetector';
 
 /**
  * HealOrchestrator
@@ -257,17 +258,185 @@ export class HealOrchestrator extends EventEmitter {
       // Generate diagnostic prompt based on incident type
       const diagnosticPrompt = this.generateDiagnosticPrompt(incident);
       
-      console.log('[HEAL-ORCHESTRATOR] 🤖 Starting autonomous healing...');
+      console.log('[HEAL-ORCHESTRATOR] 🤖 Starting 3-tier intelligent routing...');
       console.log('[HEAL-ORCHESTRATOR] Diagnostic prompt:', diagnosticPrompt);
+      
+      // 🔍 TIER 0: Analyze incident to classify as platform vs agent failure
+      console.log('[HEAL-ORCHESTRATOR] 🔍 Classifying incident type...');
+      const agentFailureDetector = new AgentFailureDetector();
+      const failureAnalysis = await agentFailureDetector.analyzeIncident({
+        type: incident.type,
+        severity: incident.severity,
+        description: incident.description,
+        stackTrace: incident.stackTrace,
+        source: incident.source,
+        logs: incident.logs,
+      });
+      
+      console.log(`[HEAL-ORCHESTRATOR] Incident classified as: ${failureAnalysis.incidentCategory}`);
+      console.log(`[HEAL-ORCHESTRATOR] Is agent failure: ${failureAnalysis.isAgentFailure}`);
+      console.log(`[HEAL-ORCHESTRATOR] Suggested strategy: ${failureAnalysis.suggestedStrategy}`);
+      console.log(`[HEAL-ORCHESTRATOR] Evidence:`, failureAnalysis.evidence);
+      
+      // Generate error signature for knowledge base lookup
+      const errorSignature = ConfidenceScoring.generateErrorSignature({
+        type: incident.type,
+        message: incident.description,
+        stackTrace: incident.stackTrace,
+      });
+      
+      // 🧠 TIER 1: Check knowledge base for similar errors (0 tokens)
+      console.log('[HEAL-ORCHESTRATOR] 🧠 TIER 1: Checking knowledge base...');
+      const kbResult = await ConfidenceScoring.searchKnowledgeBase(errorSignature);
+      
+      let healingResult: any;
+      let aiStrategy: string = 'unknown';
+      let usedKnowledgeBase = false;
+      
+      if (kbResult.canAutoApply && kbResult.match) {
+        // TIER 1: Knowledge Base Auto-Fix (>= 90% confidence)
+        console.log(`[HEAL-ORCHESTRATOR] ✅ TIER 1: Knowledge base match found! (${kbResult.confidence}% confidence)`);
+        console.log('[HEAL-ORCHESTRATOR] Auto-applying fix from knowledge base...');
+        
+        aiStrategy = 'knowledge_base';
+        usedKnowledgeBase = true;
+        
+        // Apply the successful fix from knowledge base
+        try {
+          const fix = kbResult.match.successfulFix;
+          
+          // Update session with KB info
+          await db.update(platformHealingSessions).set({
+            aiStrategy: 'knowledge_base',
+            knowledgeBaseMatched: true,
+            knowledgeMatchConfidence: kbResult.confidence,
+            knowledgeMatchId: kbResult.match.id,
+            diagnosisNotes: `Knowledge base match: ${kbResult.match.errorType}`,
+          }).where(eq(platformHealingSessions.id, session.id));
+          
+          healingResult = {
+            success: true,
+            diagnosis: `Knowledge base match: ${kbResult.match.errorType}`,
+            fixApplied: fix,
+            filesModified: [],
+            model: 'knowledge_base',
+          };
+          
+          console.log('[HEAL-ORCHESTRATOR] ✅ Knowledge base fix applied successfully (0 tokens used)');
+        } catch (kbError) {
+          console.error('[HEAL-ORCHESTRATOR] KB fix failed, falling back to AI:', kbError);
+          aiStrategy = failureAnalysis.suggestedStrategy === 'architect' ? 'architect' : 'lomu_ai';
+          usedKnowledgeBase = false;
+          
+          // Fall through to AI healing
+          healingResult = await this.callAIHealing(diagnosticPrompt, incident, aiStrategy as AIStrategy);
+        }
+      } else {
+        // No KB match or low confidence - use AI routing
+        if (kbResult.match) {
+          console.log(`[HEAL-ORCHESTRATOR] ⚠️ Knowledge base match found but confidence too low (${kbResult.confidence}% < 90%)`);
+        } else {
+          console.log('[HEAL-ORCHESTRATOR] ❌ No knowledge base match found');
+        }
+        
+        // TIER 2 or TIER 3: Route to appropriate AI based on incident classification
+        if (failureAnalysis.isAgentFailure || failureAnalysis.suggestedStrategy === 'architect') {
+          // TIER 3: I AM Architect (Claude Sonnet 4) for agent failures
+          console.log('[HEAL-ORCHESTRATOR] 🧑‍💼 TIER 3: Delegating to I AM Architect (Claude Sonnet 4)...');
+          aiStrategy = 'architect';
+          
+          // Update session with AI strategy
+          await db.update(platformHealingSessions).set({
+            aiStrategy: 'architect',
+            knowledgeBaseMatched: false,
+            knowledgeMatchConfidence: kbResult.confidence,
+          }).where(eq(platformHealingSessions.id, session.id));
+          
+          // Call AI healing with architect strategy
+          healingResult = await this.callAIHealing(diagnosticPrompt, incident, 'architect');
+          
+        } else {
+          // TIER 2: Delegate to LomuAI (tell agent to fix it)
+          console.log('[HEAL-ORCHESTRATOR] 🤖 TIER 2: Delegating to LomuAI agent...');
+          aiStrategy = 'lomu_ai';
+          
+          try {
+            // Get system user ID for LomuAI job creation
+            const systemUserId = await this.getSystemUserId();
+            
+            if (!systemUserId) {
+              throw new Error('No system user available for LomuAI delegation');
+            }
+            
+            // Create LomuAI job to fix the incident
+            const { createJob, startJobWorker } = await import('./lomuJobManager');
+            const diagnosticMessage = `[PLATFORM-HEALING] Fix incident: ${incident.title}\n\n${diagnosticPrompt}\n\nIncident Details:\n- Type: ${incident.type}\n- Severity: ${incident.severity}\n- Description: ${incident.description}`;
+            
+            const job = await createJob(systemUserId, diagnosticMessage);
+            
+            // Update session to track LomuAI delegation
+            await db.update(platformHealingSessions).set({
+              aiStrategy: 'lomu_ai',
+              model: 'gemini-2.5-flash',
+              lomuJobId: job.id,
+              diagnosisNotes: 'Delegated to LomuAI agent for autonomous fixing',
+              knowledgeBaseMatched: false,
+              knowledgeMatchConfidence: kbResult.confidence,
+            }).where(eq(platformHealingSessions.id, session.id));
+            
+            console.log(`[HEAL-ORCHESTRATOR] Created LomuAI job ${job.id} to fix incident`);
+            
+            // Start the LomuAI job worker in the background
+            await startJobWorker(job.id);
+            
+            // Return early - LomuAI will handle the fix autonomously
+            // The LomuAI job will have full tool access and can actually fix the issue
+            // TODO: Monitor LomuAI job completion and update incident status
+            console.log('[HEAL-ORCHESTRATOR] LomuAI job started - delegating fix to agent');
+            
+            // Mark session as delegated (not failed, but waiting for LomuAI)
+            await db.update(platformHealingSessions).set({
+              phase: 'repair',
+              status: 'active',
+            }).where(eq(platformHealingSessions.id, session.id));
+            
+            // Release lock and exit - LomuAI will handle it
+            this.isHealing = false;
+            this.currentSessionId = null;
+            return;
+            
+          } catch (lomuError: any) {
+            console.error('[HEAL-ORCHESTRATOR] Failed to create LomuAI job:', lomuError);
+            console.log('[HEAL-ORCHESTRATOR] Falling back to Tier 3 (I AM Architect)...');
+            
+            // Fall back to Tier 3 (Architect)
+            aiStrategy = 'architect';
+            
+            await db.update(platformHealingSessions).set({
+              aiStrategy: 'architect',
+              knowledgeBaseMatched: false,
+              knowledgeMatchConfidence: kbResult.confidence,
+              diagnosisNotes: `LomuAI delegation failed: ${lomuError.message}. Falling back to Architect.`,
+            }).where(eq(platformHealingSessions.id, session.id));
+            
+            // Call AI healing with architect strategy as fallback
+            healingResult = await this.callAIHealing(diagnosticPrompt, incident, 'architect');
+          }
+        }
+      }
       
       // Create heal attempt record
       await db.insert(platformHealAttempts).values({
         incidentId,
         sessionId: session.id,
         attemptNumber: incident.attemptCount + 1,
-        strategy: 'standard',
-        actionsTaken: [{ action: 'diagnosis_started', timestamp: new Date() }],
-        success: false, // Will update when complete
+        strategy: aiStrategy,
+        actionsTaken: [{ 
+          action: 'diagnosis_started', 
+          timestamp: new Date(),
+          tier: usedKnowledgeBase ? 'tier_1_kb' : (aiStrategy === 'lomu_ai' ? 'tier_2_lomu' : 'tier_3_architect'),
+        }],
+        success: false,
         verificationPassed: false,
       });
       
@@ -276,21 +445,9 @@ export class HealOrchestrator extends EventEmitter {
         incidentId,
         sessionId: session.id,
         incident,
+        strategy: aiStrategy,
+        usedKnowledgeBase,
       });
-      
-      // 🧠 Check knowledge base for similar errors BEFORE calling AI
-      console.log('[HEAL-ORCHESTRATOR] 🧠 Checking knowledge base for similar errors...');
-      const errorSignature = ConfidenceScoring.generateErrorSignature({
-        type: incident.type,
-        message: incident.description,
-        stackTrace: incident.stackTrace,
-      });
-      
-      // Call AI healing service
-      const healingResult = await aiHealingService.diagnoseAndFix(
-        diagnosticPrompt,
-        incident
-      );
 
       if (healingResult.success) {
         // Run verification BEFORE committing
@@ -652,6 +809,67 @@ export class HealOrchestrator extends EventEmitter {
         this.currentSessionId = null;
       }, 5000); // 5 second cooldown
     }
+  }
+  
+  /**
+   * Get system user ID for self-healing operations
+   */
+  private async getSystemUserId(): Promise<string | null> {
+    try {
+      // Try OWNER_USER_ID first
+      if (process.env.OWNER_USER_ID) {
+        console.log('[HEAL-ORCHESTRATOR] Using OWNER_USER_ID for system operations');
+        return process.env.OWNER_USER_ID;
+      }
+      
+      // Fallback: Find first owner/admin user
+      const { users } = await import('@shared/schema');
+      const [ownerUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.isOwner, true))
+        .limit(1);
+      
+      if (ownerUser) {
+        console.log('[HEAL-ORCHESTRATOR] Using platform owner user for system operations');
+        return ownerUser.id;
+      }
+      
+      // Last resort: Find any admin user
+      const [adminUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.role, 'admin'))
+        .limit(1);
+      
+      if (adminUser) {
+        console.log('[HEAL-ORCHESTRATOR] Using admin user for system operations');
+        return adminUser.id;
+      }
+      
+      console.warn('[HEAL-ORCHESTRATOR] No system user found - LomuAI delegation will fail');
+      return null;
+    } catch (error) {
+      console.error('[HEAL-ORCHESTRATOR] Error getting system user:', error);
+      return null;
+    }
+  }
+  
+  /**
+   * Helper method to call AI healing service with the selected strategy
+   */
+  private async callAIHealing(
+    diagnosticPrompt: string,
+    incident: any,
+    strategy: AIStrategy
+  ): Promise<any> {
+    console.log(`[HEAL-ORCHESTRATOR] Calling AI healing with strategy: ${strategy}`);
+    
+    return await aiHealingService.diagnoseAndFix(
+      diagnosticPrompt,
+      incident,
+      strategy
+    );
   }
   
   /**

@@ -157,6 +157,52 @@ export class ConfidenceScoring {
   }
 
   /**
+   * Search knowledge base for similar errors (public method for healOrchestrator)
+   */
+  static async searchKnowledgeBase(errorSignature: string): Promise<{
+    match: any | null;
+    confidence: number; // 0-100
+    canAutoApply: boolean; // true if confidence >= 90%
+  }> {
+    try {
+      const match = await this.checkKnowledgeBase(errorSignature);
+      
+      if (!match) {
+        return {
+          match: null,
+          confidence: 0,
+          canAutoApply: false,
+        };
+      }
+      
+      // Calculate confidence based on success rate
+      const successRate = match.timesFixed / match.timesEncountered;
+      const baseConfidence = parseFloat(match.confidence) || 0;
+      
+      // Weighted average: 60% historical success, 40% stored confidence
+      const confidence = Math.round(successRate * 60 + baseConfidence * 0.4);
+      
+      // Can auto-apply if >= 90% confidence
+      const canAutoApply = confidence >= 90;
+      
+      console.log(`[CONFIDENCE-SCORING] KB match found: ${match.timesFixed}/${match.timesEncountered} success (${confidence}% confidence)`);
+      
+      return {
+        match,
+        confidence,
+        canAutoApply,
+      };
+    } catch (error) {
+      console.error('[CONFIDENCE-SCORING] Error searching knowledge base:', error);
+      return {
+        match: null,
+        confidence: 0,
+        canAutoApply: false,
+      };
+    }
+  }
+
+  /**
    * Check knowledge base for similar errors
    */
   private static async checkKnowledgeBase(errorSignature: string) {

@@ -4,36 +4,63 @@ import { platformHealing } from '../platformHealing';
 import path from 'path';
 import fs from 'fs/promises';
 
+export type AIStrategy = 'architect';
+
 /**
- * Simplified AI healing service for autonomous fixes
- * (Synchronous version - no streaming, designed for healOrchestrator)
+ * AI Healing Service for Tier 3 (I AM Architect)
+ * 
+ * Note: Tier 2 (LomuAI) is now handled via LomuAI job delegation in healOrchestrator.ts
+ * This service only handles Tier 3 (Architect/Claude) for agent failures and complex issues.
+ * 
+ * Strategy:
+ * - 'architect': Use Claude Sonnet 4 (expensive, expert, for agent failures)
  */
 export class AIHealingService {
   private anthropic: Anthropic;
   
   constructor() {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
+    const anthropicKey = process.env.ANTHROPIC_API_KEY;
+    if (!anthropicKey) {
       throw new Error('ANTHROPIC_API_KEY not configured');
     }
-    this.anthropic = new Anthropic({ apiKey });
+    this.anthropic = new Anthropic({ apiKey: anthropicKey });
+    console.log('[AI-HEALING] Anthropic Claude initialized for Tier 3 (I AM Architect)');
   }
   
   /**
-   * Attempt to diagnose and fix an issue
+   * Attempt to diagnose and fix an issue using AI (Tier 3: I AM Architect)
    */
-  async diagnoseAndFix(diagnosticPrompt: string, incident: any): Promise<{
+  async diagnoseAndFix(
+    diagnosticPrompt: string, 
+    incident: any,
+    strategy: AIStrategy = 'architect'
+  ): Promise<{
     success: boolean;
     diagnosis?: string;
     fixApplied?: string;
     filesModified?: string[];
     error?: string;
+    model?: string;
+  }> {
+    console.log(`[AI-HEALING] Using strategy: ${strategy}`);
+    return this.diagnoseWithClaude(diagnosticPrompt, incident);
+  }
+  
+  /**
+   * Diagnose and fix using Claude Sonnet 4 (expensive, expert)
+   */
+  private async diagnoseWithClaude(diagnosticPrompt: string, incident: any): Promise<{
+    success: boolean;
+    diagnosis?: string;
+    fixApplied?: string;
+    filesModified?: string[];
+    error?: string;
+    model?: string;
   }> {
     try {
-      console.log('[AI-HEALING] Starting diagnosis and fix...');
+      console.log('[AI-HEALING] Starting Claude diagnosis...');
       console.log('[AI-HEALING] Prompt:', diagnosticPrompt);
       
-      // Build system prompt with Super Logic Core
       const { buildLomuSuperCorePrompt } = await import('../lomuSuperCore');
       
       const contextPrompt = `Current incident:
@@ -50,8 +77,6 @@ export class AIHealingService {
         autonomyLevel: 'max',
       });
 
-
-      // Call Anthropic API (simplified - single turn for MVP)
       const response = await this.anthropic.messages.create({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 4000,
@@ -98,7 +123,6 @@ export class AIHealingService {
         ]
       });
       
-      // Process response
       let diagnosis = '';
       let filesModified: string[] = [];
       
@@ -121,13 +145,12 @@ export class AIHealingService {
               await platformHealing.writePlatformFile(
                 toolInput.file_path,
                 toolInput.content,
-                true // skipAutoCommit=true - we'll commit after verification
+                true
               );
               filesModified.push(toolInput.file_path);
               console.log('[AI-HEALING] Modified file (not committed yet):', toolInput.file_path);
               
             } else if (toolName === 'search_platform_files') {
-              // Use glob to search for files
               const { glob } = await import('glob');
               const matches = await glob(toolInput.pattern, { cwd: process.cwd() });
               console.log('[AI-HEALING] Found files:', matches);
@@ -146,13 +169,15 @@ export class AIHealingService {
         diagnosis,
         fixApplied: filesModified.length > 0 ? `Modified ${filesModified.length} file(s)` : 'Diagnosis only, no files changed',
         filesModified,
+        model: 'claude-sonnet-4-20250514',
       };
       
     } catch (error: any) {
-      console.error('[AI-HEALING] Error:', error);
+      console.error('[AI-HEALING] Claude error:', error);
       return {
         success: false,
-        error: error.message || 'Unknown error'
+        error: error.message || 'Unknown error',
+        model: 'claude-sonnet-4-20250514',
       };
     }
   }
