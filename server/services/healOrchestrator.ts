@@ -618,7 +618,7 @@ export class HealOrchestrator extends EventEmitter {
               const path = await import('path');
               
               const fileChanges = await Promise.all(
-                (healingResult.filesModified || []).map(async (filePath) => {
+                (healingResult.filesModified || []).map(async (filePath: string) => {
                   try {
                     const fullPath = path.join(process.cwd(), filePath);
                     const content = await fs.readFile(fullPath, 'utf-8');
