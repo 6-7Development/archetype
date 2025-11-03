@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Component, type ReactNode } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { Send, Square, ChevronDown, ChevronRight, Shield, Zap, Brain, Infinity, Rocket, User, Copy, Check, Loader2, XCircle, FileCode, Terminal, CheckCircle, Clock, Upload, X, File, Image } from "lucide-react";
@@ -15,6 +15,34 @@ import { AgentProgressDisplay } from "./agent-progress-display";
 import { MarkdownRenderer } from "./markdown-renderer";
 import { TaskTimeline, type TaskTimelineTask } from "./task-timeline";
 import { ChatArtifact, type Artifact } from "./chat-artifact";
+
+// Error boundary for chat messages
+class ChatErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: any) {
+    console.error('[LOMU-CHAT] Error rendering message:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-4 bg-destructive/10 text-destructive rounded-md">
+          <p className="text-sm">Unable to display this message. The chat continues below.</p>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 interface Attachment {
   fileName: string;
@@ -953,13 +981,13 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
 
             {/* Message list */}
             {messages.map((message) => (
-              <div
-                key={message.id}
-                className={cn(
-                  "flex gap-2 md:gap-3 animate-in fade-in-up",
-                  message.role === "user" ? "justify-end" : "justify-start"
-                )}
-              >
+              <ChatErrorBoundary key={message.id}>
+                <div
+                  className={cn(
+                    "flex gap-2 md:gap-3 animate-in fade-in-up",
+                    message.role === "user" ? "justify-end" : "justify-start"
+                  )}
+                >
                 {message.role === "assistant" && (
                   <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 flex items-center justify-center" data-testid="avatar-lomu-assistant">
                     <LumoAvatar 
@@ -1067,6 +1095,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                   </div>
                 )}
               </div>
+              </ChatErrorBoundary>
             ))}
           </div>
         </div>
