@@ -230,6 +230,9 @@ Let's help maintain this platform!`;
       let iterationCount = 0;
       let continueLoop = true;
       
+      // RAILWAY FIX: Reduce logging in production
+      const isDev = process.env.NODE_ENV === 'development';
+      
       while (continueLoop && iterationCount < MAX_ITERATIONS) {
         iterationCount++;
         console.log(`[HEALING-CHAT] 🔄 Iteration ${iterationCount}/${MAX_ITERATIONS}`);
@@ -279,13 +282,18 @@ Let's help maintain this platform!`;
               }
             ],
             onToolUse: async (toolUse: any) => {
-              console.log(`[HEALING-CHAT] 🔧 Executing tool: ${toolUse.name}`);
+              // RAILWAY FIX: Reduce logging in production (only log essential actions)
+              if (isDev) {
+                console.log(`[HEALING-CHAT] 🔧 Executing tool: ${toolUse.name}`);
+              }
               
               try {
                 if (toolUse.name === 'read_platform_file') {
                   const filePath = path.join(process.cwd(), toolUse.input.file_path);
                   const content = await fs.readFile(filePath, 'utf-8');
-                  console.log(`[HEALING-CHAT] ✅ Read file: ${toolUse.input.file_path} (${content.length} chars)`);
+                  if (isDev) {
+                    console.log(`[HEALING-CHAT] ✅ Read file: ${toolUse.input.file_path} (${content.length} chars)`);
+                  }
                   return { success: true, content };
                   
                 } else if (toolUse.name === 'write_platform_file') {
@@ -295,14 +303,27 @@ Let's help maintain this platform!`;
                     true // skipAutoCommit=true (manual commit by root user)
                   );
                   filesModified.push(toolUse.input.file_path);
+                  // Always log writes (important for audit trail)
                   console.log(`[HEALING-CHAT] ✅ Wrote file: ${toolUse.input.file_path}`);
                   return { success: true, message: `File updated: ${toolUse.input.file_path}` };
                   
                 } else if (toolUse.name === 'search_platform_files') {
                   const { glob } = await import('glob');
-                  const matches = await glob(toolUse.input.pattern, { cwd: process.cwd() });
-                  console.log(`[HEALING-CHAT] ✅ Search found ${matches.length} files for pattern: ${toolUse.input.pattern}`);
-                  return { success: true, files: matches };
+                  const allMatches = await glob(toolUse.input.pattern, { cwd: process.cwd() });
+                  
+                  // RAILWAY FIX: Limit results to prevent log spam (max 100 files)
+                  const MAX_RESULTS = 100;
+                  const matches = allMatches.slice(0, MAX_RESULTS);
+                  const truncated = allMatches.length > MAX_RESULTS;
+                  
+                  console.log(`[HEALING-CHAT] ✅ Search found ${matches.length}${truncated ? `/${allMatches.length}` : ''} files for pattern: ${toolUse.input.pattern}`);
+                  
+                  return { 
+                    success: true, 
+                    files: matches,
+                    truncated,
+                    totalCount: allMatches.length
+                  };
                 }
                 
                 console.error(`[HEALING-CHAT] ❌ Unknown tool: ${toolUse.name}`);
@@ -330,14 +351,16 @@ Let's help maintain this platform!`;
           }
         }
         
-        // FIX #2: Track tokens with detailed logging
+        // FIX #2: Track tokens (silently in production)
         if (response.usage) {
           const iterInputTokens = response.usage.inputTokens || 0;
           const iterOutputTokens = response.usage.outputTokens || 0;
           totalInputTokens += iterInputTokens;
           totalOutputTokens += iterOutputTokens;
-          console.log(`[HEALING-CHAT] 📊 Iteration ${iterationCount} tokens: input=${iterInputTokens}, output=${iterOutputTokens}`);
-        } else {
+          if (isDev) {
+            console.log(`[HEALING-CHAT] 📊 Iteration ${iterationCount} tokens: input=${iterInputTokens}, output=${iterOutputTokens}`);
+          }
+        } else if (isDev) {
           console.warn(`[HEALING-CHAT] ⚠️ No usage data in iteration ${iterationCount} response`);
         }
         
@@ -346,7 +369,9 @@ Let's help maintain this platform!`;
         
         // FIX #1: Check if Gemini wants to continue (has tool results to process)
         if (response.needsContinuation && response.toolResults) {
-          console.log(`[HEALING-CHAT] 🔨 Gemini used ${response.toolResults.length} tools, saving to DB and continuing...`);
+          if (isDev) {
+            console.log(`[HEALING-CHAT] 🔨 Gemini used ${response.toolResults.length} tools, saving to DB and continuing...`);
+          }
           
           // PERSISTENCE FIX: Save intermediate assistant message (tool calls) to database
           try {
@@ -361,7 +386,9 @@ Let's help maintain this platform!`;
                 toolCount: response.assistantContent?.length || 0,
               },
             });
-            console.log(`[HEALING-CHAT] 💾 Saved assistant tool calls (iteration ${iterationCount})`);
+            if (isDev) {
+              console.log(`[HEALING-CHAT] 💾 Saved assistant tool calls (iteration ${iterationCount})`);
+            }
           } catch (dbError: any) {
             console.error(`[HEALING-CHAT] ⚠️ Failed to save assistant tool calls:`, dbError.message);
           }
