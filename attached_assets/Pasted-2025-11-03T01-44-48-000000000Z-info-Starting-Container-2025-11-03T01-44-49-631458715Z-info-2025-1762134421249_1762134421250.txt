@@ -1,0 +1,241 @@
+2025-11-03T01:44:48.000000000Z [info] Starting Container
+2025-11-03T01:44:49.631458715Z [info] 
+2025-11-03T01:44:49.631458958Z [info] -rw-rw-r--    1 root     root         12718 Nov  3 01:43 replit.md
+2025-11-03T01:44:49.631472078Z [info] ðŸ“ Current directory: /app
+2025-11-03T01:44:49.631472147Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 01:43 server
+2025-11-03T01:44:49.631472226Z [info] ======================================
+2025-11-03T01:44:49.631482998Z [info] ðŸ“‚ Listing root files:
+2025-11-03T01:44:49.631483512Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T01:44:49.631492362Z [info] total 424
+2025-11-03T01:44:49.631499859Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 01:44 .
+2025-11-03T01:44:49.631508145Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 01:44 ..
+2025-11-03T01:44:49.631518413Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 01:43 debug-start.sh
+2025-11-03T01:44:49.631525860Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:52 node_modules
+2025-11-03T01:44:49.631529594Z [info] -rw-rw-r--    1 root     root           325 Nov  3 01:43 drizzle.config.ts
+2025-11-03T01:44:49.631531572Z [info] ======================================
+2025-11-03T01:44:49.631540113Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:52 package-lock.json
+2025-11-03T01:44:49.631540915Z [info] drwxr-xr-x    3 root     root          4096 Nov  3 01:43 migrations
+2025-11-03T01:44:49.631554712Z [info] Time: Mon Nov  3 01:44:48 UTC 2025
+2025-11-03T01:44:49.631560214Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:52 package.json
+2025-11-03T01:44:49.631571214Z [info] -rw-rw-r--    1 root     root          2229 Nov  3 01:43 railway-db-setup.cjs
+2025-11-03T01:44:49.631572813Z [info] Node version: v20.19.5
+2025-11-03T01:44:49.631580498Z [info] -rwxr-xr-x    1 root     root          2334 Nov  3 01:43 railway-start.sh
+2025-11-03T01:44:49.631591376Z [info] NPM version: 10.8.2
+2025-11-03T01:44:49.634749954Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 01:43 shared
+2025-11-03T01:44:49.634757487Z [info] -rw-rw-r--    1 root     root           960 Nov  3 01:43 tsconfig.json
+2025-11-03T01:44:49.634764856Z [info] 
+2025-11-03T01:44:49.634773692Z [info] ðŸ” Checking for server/public directory (frontend)...
+2025-11-03T01:44:49.634781591Z [info] âœ… server/public directory exists (frontend build)
+2025-11-03T01:44:49.634789531Z [info] 
+2025-11-03T01:44:49.634797688Z [info] ðŸ”§ Running database migration and drift repair...
+2025-11-03T01:44:49.634805123Z [info] ðŸ“‹ Step 1: Running migration statements individually...
+2025-11-03T01:44:49.634812266Z [info]    Found 148 SQL statements to execute
+2025-11-03T01:44:53.763264328Z [info] GITHUB_REPO: 6-7Development/archetype
+2025-11-03T01:44:53.763282569Z [info] GITHUB_BRANCH: main
+2025-11-03T01:44:53.763292128Z [info] ANTHROPIC_API_KEY: âœ“ SET
+2025-11-03T01:44:53.763353101Z [info]    âœ… Migration complete: 0 created, 148 skipped, 0 failed
+2025-11-03T01:44:53.763363362Z [info] ðŸ“‹ Step 2: Repairing schema drift (adding missing columns)...
+2025-11-03T01:44:53.763373005Z [info] âœ… Schema drift repaired - all columns present
+2025-11-03T01:44:53.763383945Z [info] 
+2025-11-03T01:44:53.763392947Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-11-03T01:44:53.763400376Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-03T01:44:53.763407915Z [info] âš ï¸ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)
+2025-11-03T01:44:53.763415191Z [info] âœ… Database schema ready!
+2025-11-03T01:44:53.763423369Z [info] 
+2025-11-03T01:44:53.763433794Z [info] ðŸ” Environment Check:
+2025-11-03T01:44:53.763443882Z [info] NODE_ENV: production
+2025-11-03T01:44:53.763452069Z [info] PORT: 8080
+2025-11-03T01:44:53.763466244Z [info] DATABASE_URL: âœ“ SET (hidden for security)
+2025-11-03T01:44:53.763473780Z [info] GITHUB_TOKEN: âœ“ SET
+2025-11-03T01:44:53.763506147Z [info] 
+2025-11-03T01:44:53.763514075Z [info] ðŸ“„ Ensuring replit.md is available...
+2025-11-03T01:44:53.763521618Z [info] âœ… replit.md already present
+2025-11-03T01:44:53.763529694Z [info] 
+2025-11-03T01:44:53.763538983Z [info] ðŸš€ Starting Node.js application with debug wrapper...
+2025-11-03T01:44:53.763563560Z [info] Command: sh debug-start.sh
+2025-11-03T01:44:53.763573734Z [info] 
+2025-11-03T01:44:53.763582616Z [info] ==========================================
+2025-11-03T01:44:53.763592110Z [info] ðŸ” DEBUG MODE - VERBOSE ERROR CAPTURE
+2025-11-03T01:44:53.763600939Z [info] ==========================================
+2025-11-03T01:44:53.770088666Z [info] 
+2025-11-03T01:44:53.770095538Z [info] ðŸ“‹ Step 1: Verify server directory exists...
+2025-11-03T01:44:53.770102852Z [info] âœ… server/ directory exists
+2025-11-03T01:44:53.770112755Z [info] 
+2025-11-03T01:44:53.770119508Z [info] ðŸ“‹ Step 2: Verify server/index.ts exists...
+2025-11-03T01:44:53.770127304Z [info] âœ… server/index.ts exists
+2025-11-03T01:44:53.770134477Z [info] 
+2025-11-03T01:44:53.770143442Z [info] ðŸ“‹ Step 3: Check Node.js and tsx availability...
+2025-11-03T01:44:53.770150011Z [info] Node version: v20.19.5
+2025-11-03T01:44:53.770156682Z [info] NPM version: 10.8.2
+2025-11-03T01:44:53.770162787Z [info] tsx location: /usr/local/bin/npx
+2025-11-03T01:44:53.770169953Z [info] 
+2025-11-03T01:44:53.770179189Z [info] ðŸ“‹ Step 4: Verify environment variables...
+2025-11-03T01:44:53.770185903Z [info] NODE_ENV: production
+2025-11-03T01:44:53.770192353Z [info] PORT: 8080
+2025-11-03T01:44:53.770199140Z [info] DATABASE_URL: âœ“ SET
+2025-11-03T01:44:53.770209615Z [info] 
+2025-11-03T01:44:53.770216751Z [info] ðŸ“‹ Step 5: Test tsx can load...
+2025-11-03T01:44:55.033259681Z [info] tsx v4.20.5
+2025-11-03T01:44:55.033267847Z [info] node v20.19.5
+2025-11-03T01:44:55.033278740Z [info] âœ… tsx is available
+2025-11-03T01:44:55.033286842Z [info] 
+2025-11-03T01:44:55.033294785Z [info] ðŸ“‹ Step 6: Starting server with tsx...
+2025-11-03T01:44:55.033303341Z [info] Command: npx tsx server/index.ts
+2025-11-03T01:44:55.033310528Z [info] ==========================================
+2025-11-03T01:44:55.033347642Z [info] 
+2025-11-03T01:45:00.477045602Z [info] [db] Environment: NODE_ENV=production, PORT=8080
+2025-11-03T01:45:00.477053567Z [info] [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-11-03T01:45:00.477061416Z [info] [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-11-03T01:45:00.477071542Z [info] [db] SSL Configuration: {rejectUnauthorized:false}
+2025-11-03T01:45:00.477079898Z [info] [db] Connection string includes SSL params: true
+2025-11-03T01:45:00.477086991Z [info] [PERFORMANCE] System prompt base cached (1544 chars) - saves ~4KB per request
+2025-11-03T01:45:01.663125439Z [info] [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-11-03T01:45:01.663125441Z [info] [WEBHOOKS] Webhooks router mounted at /api/webhooks
+2025-11-03T01:45:01.663141626Z [info] [RAILWAY-CONFIG] Production hardening active
+2025-11-03T01:45:01.663145160Z [info] [RAILWAY-CONFIG] Max concurrent AI: 3
+2025-11-03T01:45:01.663155973Z [info] ðŸ“¡ WebSocket server initialized at /ws
+2025-11-03T01:45:01.663166339Z [info] [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller (SSE streams excluded)
+2025-11-03T01:45:01.663167708Z [info] [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-11-03T01:45:01.663172387Z [info] [RAILWAY-CONFIG] Memory limit: 512MB
+2025-11-03T01:45:01.663173897Z [info] [RAILWAY-CONFIG] AI timeout: 480s
+2025-11-03T01:45:01.663184042Z [info] [PLATFORM-HEALING] WebSocket server attached for preview broadcasts
+2025-11-03T01:45:01.663193027Z [info] [PLATFORM-HEALING] Platform healing service connected to WebSocket
+2025-11-03T01:45:01.663200464Z [info] [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-11-03T01:45:01.663208331Z [info] [HEAL-ORCHESTRATOR] Metrics broadcaster connected
+2025-11-03T01:45:01.663219803Z [info] [WEBHOOKS] Webhooks router connected to metrics broadcaster
+2025-11-03T01:45:01.663226354Z [info] [LOMU-AI-JOB-MANAGER] Initialized with WebSocket support
+2025-11-03T01:45:01.663233746Z [info] [LOMU-AI-JOB-MANAGER] Job manager connected to WebSocket
+2025-11-03T01:45:01.663241483Z [info] [LOMU-AI] WebSocket server initialized for live preview broadcasts
+2025-11-03T01:45:01.663250480Z [info] [LOMU-AI-CHAT] Live preview WebSocket initialized
+2025-11-03T01:45:02.689111547Z [info]    - Token: âœ“ (configured)
+2025-11-03T01:45:02.689124234Z [info]    - Owner User ID: Not set (owner must be manually marked in database)
+2025-11-03T01:45:02.689132500Z [info]    - Maintenance mode: Available for owner
+2025-11-03T01:45:02.689141747Z [info] 
+2025-11-03T01:45:02.689157795Z [info] âœ… Database connected successfully
+2025-11-03T01:45:02.689167678Z [info] ðŸ’¡ Auto-healing system DISABLED (users trigger manually via UI)
+2025-11-03T01:45:02.689170097Z [info] [HEAL-ORCHESTRATOR] Orchestrator started
+2025-11-03T01:45:02.689177086Z [info]    ðŸ‘¥ Users pay for their own AI tokens when using Platform Healing
+2025-11-03T01:45:02.689186823Z [info] 
+2025-11-03T01:45:02.689187551Z [info] [HEALTH-MONITOR] Starting platform health monitoring...
+2025-11-03T01:45:02.689197512Z [info] ðŸ” Checking GitHub integration configuration...
+2025-11-03T01:45:02.689197920Z [info] [HEALTH-MONITOR] Loaded 0 open incidents
+2025-11-03T01:45:02.689204602Z [info] âœ… GitHub integration configured successfully
+2025-11-03T01:45:02.689210611Z [info] [HEALTH-MONITOR] Monitoring started
+2025-11-03T01:45:02.689217833Z [info]    - Repository: 6-7Development/archetype
+2025-11-03T01:45:02.689222120Z [info] [HEAL-ORCHESTRATOR] Starting autonomous healing orchestrator...
+2025-11-03T01:45:02.689228624Z [info]    - Branch: main
+2025-11-03T01:45:02.689316177Z [info] âœ… All routes registered successfully
+2025-11-03T01:45:02.689321824Z [info] ðŸ” Testing database connection...
+2025-11-03T01:45:02.689327707Z [info] 1:45:01 AM [express] serving on port 8080
+2025-11-03T01:45:02.689333776Z [info] ðŸŒ Server accessible at http://0.0.0.0:8080
+2025-11-03T01:45:32.665395151Z [info] 1:45:31 AM [express] GET /api/auth/me 304 in 14ms :: {user:{id:"723e1301-c729-48fc-810a-39ddef95â€¦
+2025-11-03T01:45:32.665403409Z [info] [DEPLOYMENT-INFO] Using Railway environment variables
+2025-11-03T01:45:32.665409909Z [info] 1:45:25 AM [express] GET /api/deployment-info 200 in 11ms :: {version:"1.0.0",commitHash:"d2000bâ€¦
+2025-11-03T01:45:32.665411194Z [info] 1:45:31 AM [express] GET /api/projects 304 in 98ms :: []
+2025-11-03T01:45:32.665419814Z [info] 1:45:25 AM [express] GET /api/auth/me 304 in 13ms :: {user:{id:"723e1301-c729-48fc-810a-39ddef95â€¦
+2025-11-03T01:45:32.665426442Z [info] [AUTH] Login attempt for email: root@getdc360.com
+2025-11-03T01:45:32.665433366Z [info] [AUTH] Found users: 1
+2025-11-03T01:45:32.665439988Z [info] [AUTH] User found: root@getdc360.com has password: true
+2025-11-03T01:45:32.665447421Z [info] [AUTH] Verifying password...
+2025-11-03T01:45:32.665454055Z [info] [AUTH] Password valid: true
+2025-11-03T01:45:32.665460112Z [info] [AUTH] Authentication successful for: root@getdc360.com
+2025-11-03T01:45:32.665465763Z [info] 1:45:30 AM [express] POST /api/auth/login 200 in 294ms :: {success:true,user:{id:"723e1301-c72â€¦
+2025-11-03T01:45:36.421287744Z [info] 1:45:36 AM [express] GET /api/healing/targets 304 in 19ms :: [{id:"093abb1c-2699-45b4-acd7-fecf877â€¦
+2025-11-03T01:45:38.522164993Z [info] 1:45:38 AM [express] GET /api/healing/conversations/093abb1c-2699-45b4-acd7-fecf87731238 304 in 12msâ€¦
+2025-11-03T01:45:38.644763656Z [info] 1:45:38 AM [express] GET /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 304 in 9ms :: [{â€¦
+2025-11-03T01:46:08.690269490Z [info] [HEALING-CHAT] User message received: {
+2025-11-03T01:46:08.690274107Z [info]   conversationId: '227c165d-7f9f-46fc-b6e6-325d2b77fc60',
+2025-11-03T01:46:08.690280457Z [info]   contentLength: 107
+2025-11-03T01:46:08.690286844Z [info] }
+2025-11-03T01:46:08.690292584Z [info] [HEALING-CHAT] User message saved to database
+2025-11-03T01:46:08.690299508Z [info] [HEALING-CHAT] Loaded 10 messages from history (last 10)
+2025-11-03T01:46:08.690304734Z [info] ðŸ¤– [HEALING-CHAT] Starting Gemini conversation with 10 messages...
+2025-11-03T01:46:08.690308889Z [info] [HEALING-CHAT] Iteration 1/5
+2025-11-03T01:46:08.690312941Z [info] [GEMINI-TOOLS] âœ… Converted 3 tools for Gemini (first 3: read_platform_file, write_platform_file, search_platform_files...)
+2025-11-03T01:46:08.690317502Z [info] [GEMINI-TOOLS] Structure check: {
+2025-11-03T01:46:08.690321851Z [info]   name: "read_platform_file",
+2025-11-03T01:46:08.690326944Z [info]   description: "Read a file from the platform codebase",
+2025-11-03T01:46:08.690331890Z [info]   parameters: {
+2025-11-03T01:46:08.690337577Z [info]     type: "object",
+2025-11-03T01:46:08.690341520Z [info]     properties: {
+2025-11-03T01:46:08.690346264Z [info]       file_path: {
+2025-11-03T01:46:08.690350790Z [info]         type: "string",
+2025-11-03T01:46:08.690356105Z [info] 
+2025-11-03T01:46:08.690361855Z [info] âŒ Fatal error in Gemini streaming: GoogleGenerativeAIFetchError: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse: [400 Bad Request] API key not valid. Please pass a valid API key. [{@type:"type.googleapis.com/google.rpc.ErrorInfo",reason:"API_KEY_INVALID",domain:"googleapis.com",metadata:{service:"generativelanguage.googleapis.com"}},{@type:"type.googleapis.com/google.rpc.LocalizedMessage",locale:"en-US",message:"API key not valid. Please pass a valid API key."}]
+2025-11-03T01:46:08.694741971Z [info]     at handleResponseNotOk (file:///app/node_modules/@google/generative-ai/dist/index.mjs:432:11)
+2025-11-03T01:46:08.694748501Z [info]     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-03T01:46:08.694758180Z [info]     at async makeRequest (file:///app/node_modules/@google/generative-ai/dist/index.mjs:401:9)
+2025-11-03T01:46:08.694764916Z [info]     at async generateContentStream (file:///app/node_modules/@google/generative-ai/dist/index.mjs:860:22)
+2025-11-03T01:46:08.694771932Z [info]     at async streamGeminiResponse (/app/server/gemini.ts:262:20)
+2025-11-03T01:46:08.694778519Z [info]     at async <anonymous> (/app/server/routes/healing.ts:236:26) {
+2025-11-03T01:46:08.694785864Z [info]   status: 400,
+2025-11-03T01:46:08.694792561Z [info]   statusText: 'Bad Request',
+2025-11-03T01:46:08.694799417Z [info]   errorDetails: [
+2025-11-03T01:46:08.694806635Z [info]     {
+2025-11-03T01:46:08.694813567Z [info]       '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
+2025-11-03T01:46:08.694819971Z [info]       reason: 'API_KEY_INVALID',
+2025-11-03T01:46:08.694826277Z [info]       domain: 'googleapis.com',
+2025-11-03T01:46:08.694834681Z [info]       metadata: [Object]
+2025-11-03T01:46:08.694843252Z [info]     },
+2025-11-03T01:46:08.694854695Z [info]     {
+2025-11-03T01:46:08.694862228Z [info]       '@type': 'type.googleapis.com/google.rpc.LocalizedMessage',
+2025-11-03T01:46:08.694868780Z [info]       locale: 'en-US',
+2025-11-03T01:46:08.694875244Z [info]       message: 'API key not valid. Please pass a valid API key.'
+2025-11-03T01:46:08.694882523Z [info]     }
+2025-11-03T01:46:08.694890231Z [info]   ]
+2025-11-03T01:46:08.694896589Z [info] }
+2025-11-03T01:46:08.694903600Z [info] [HEALING-CHAT] Gemini completed in 1 iterations
+2025-11-03T01:46:08.694910124Z [info] âœ… [HEALING-CHAT] Gemini responded in 89ms (0 chars)
+2025-11-03T01:46:08.696550675Z [info] [HEALING-CHAT] Assistant message saved to database
+2025-11-03T01:46:08.696558090Z [info] [HEALING-CHAT] Usage tracked successfully
+2025-11-03T01:46:08.696565498Z [info] 1:46:03 AM [express] POST /api/healing/messages 200 in 229ms :: {userMessage:{id:"8c3716fe-8ebd-â€¦
+2025-11-03T01:46:08.696572588Z [info] 1:46:03 AM [express] GET /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 200 in 44ms :: [â€¦
+2025-11-03T01:46:08.696580068Z [info] 1:46:03 AM [express] POST /api/lomu-ai/stream 200 in 48ms
+2025-11-03T01:46:13.755116727Z [info] [HEALING-CHAT] User message received: {
+2025-11-03T01:46:13.755123593Z [info]   conversationId: '227c165d-7f9f-46fc-b6e6-325d2b77fc60',
+2025-11-03T01:46:13.755131935Z [info]   contentLength: 3
+2025-11-03T01:46:13.755138050Z [info] }
+2025-11-03T01:46:13.755143934Z [info] [HEALING-CHAT] User message saved to database
+2025-11-03T01:46:13.755149873Z [info] [HEALING-CHAT] Loaded 10 messages from history (last 10)
+2025-11-03T01:46:13.755156584Z [info] ðŸ¤– [HEALING-CHAT] Starting Gemini conversation with 10 messages...
+2025-11-03T01:46:13.755162674Z [info] [HEALING-CHAT] Iteration 1/5
+2025-11-03T01:46:13.755169558Z [info] [GEMINI-TOOLS] âœ… Converted 3 tools for Gemini (first 3: read_platform_file, write_platform_file, search_platform_files...)
+2025-11-03T01:46:13.755178230Z [info] [GEMINI-TOOLS] Structure check: {
+2025-11-03T01:46:13.755183435Z [info]     at async <anonymous> (/app/server/routes/healing.ts:236:26) {
+2025-11-03T01:46:13.755188993Z [info]   name: "read_platform_file",
+2025-11-03T01:46:13.755194380Z [info]   status: 400,
+2025-11-03T01:46:13.755197533Z [info]   description: "Read a file from the platform codebase",
+2025-11-03T01:46:13.755200932Z [info]   statusText: 'Bad Request',
+2025-11-03T01:46:13.755205747Z [info]   parameters: {
+2025-11-03T01:46:13.755208310Z [info]   errorDetails: [
+2025-11-03T01:46:13.755213450Z [info]     type: "object",
+2025-11-03T01:46:13.755220851Z [info]     properties: {
+2025-11-03T01:46:13.755223281Z [info]     {
+2025-11-03T01:46:13.755226722Z [info]       file_path: {
+2025-11-03T01:46:13.755231655Z [info]       '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
+2025-11-03T01:46:13.755234767Z [info]         type: "string",
+2025-11-03T01:46:13.755240755Z [info]       reason: 'API_KEY_INVALID',
+2025-11-03T01:46:13.755242149Z [info] 
+2025-11-03T01:46:13.755248471Z [info] âŒ Fatal error in Gemini streaming: GoogleGenerativeAIFetchError: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse: [400 Bad Request] API key not valid. Please pass a valid API key. [{@type:"type.googleapis.com/google.rpc.ErrorInfo",reason:"API_KEY_INVALID",domain:"googleapis.com",metadata:{service:"generativelanguage.googleapis.com"}},{@type:"type.googleapis.com/google.rpc.LocalizedMessage",locale:"en-US",message:"API key not valid. Please pass a valid API key."}]
+2025-11-03T01:46:13.755250883Z [info]       domain: 'googleapis.com',
+2025-11-03T01:46:13.755258477Z [info]       metadata: [Object]
+2025-11-03T01:46:13.755265788Z [info]     },
+2025-11-03T01:46:13.755272905Z [info]     {
+2025-11-03T01:46:13.755280448Z [info]       '@type': 'type.googleapis.com/google.rpc.LocalizedMessage',
+2025-11-03T01:46:13.755286118Z [info]       locale: 'en-US',
+2025-11-03T01:46:13.755291900Z [info]       message: 'API key not valid. Please pass a valid API key.'
+2025-11-03T01:46:13.755297680Z [info]     }
+2025-11-03T01:46:13.755301923Z [info]   ]
+2025-11-03T01:46:13.755306192Z [info] }
+2025-11-03T01:46:13.755312726Z [info] [HEALING-CHAT] Gemini completed in 1 iterations
+2025-11-03T01:46:13.755318771Z [info] âœ… [HEALING-CHAT] Gemini responded in 56ms (0 chars)
+2025-11-03T01:46:13.755568332Z [info]     at handleResponseNotOk (file:///app/node_modules/@google/generative-ai/dist/index.mjs:432:11)
+2025-11-03T01:46:13.755574815Z [info]     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-03T01:46:13.755580874Z [info]     at async makeRequest (file:///app/node_modules/@google/generative-ai/dist/index.mjs:401:9)
+2025-11-03T01:46:13.755589013Z [info]     at async generateContentStream (file:///app/node_modules/@google/generative-ai/dist/index.mjs:860:22)
+2025-11-03T01:46:13.755595635Z [info]     at async streamGeminiResponse (/app/server/gemini.ts:262:20)
+2025-11-03T01:46:13.761747121Z [info] [HEALING-CHAT] Assistant message saved to database
+2025-11-03T01:46:13.761753223Z [info] [HEALING-CHAT] Usage tracked successfully
+2025-11-03T01:46:13.761761026Z [info] 1:46:13 AM [express] POST /api/healing/messages 200 in 103ms :: {userMessage:{id:"214491f6-d761-â€¦
+2025-11-03T01:46:13.761766551Z [info] 1:46:13 AM [express] GET /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 200 in 19ms :: [â€¦
+2025-11-03T01:46:13.761772409Z [info] 1:46:13 AM [express] POST /api/lomu-ai/stream 200 in 18ms
