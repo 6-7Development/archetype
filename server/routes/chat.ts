@@ -3,7 +3,7 @@ import { WebSocket } from "ws";
 import { storage } from '../storage.ts';
 import { insertCommandSchema } from "@shared/schema";
 import { anthropic, DEFAULT_MODEL, streamAnthropicResponse } from '../anthropic.ts';
-import { SYSOP_TOOLS } from '../tools.ts';
+import { SYSOP_TOOLS } from '../tools/index.ts';
 import { checkUsageLimits, trackAIUsage, decrementAICredits, getUserUsageStats, updateStorageUsage } from '../usage-tracking.ts';
 import { isAuthenticated } from '../universalAuth.ts';
 import { aiLimiter } from '../rateLimiting.ts';
