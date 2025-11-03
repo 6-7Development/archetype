@@ -307,6 +307,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // Force deploy to production - commits and force pushes all workspace changes
+  // MEMORY-OPTIMIZED: Processes files in batches to prevent OOM on large codebases
   app.post('/api/admin/force-deploy', isAuthenticated, requireOwner, async (req, res) => {
     try {
       const user = req.user as any;
@@ -341,24 +342,11 @@ export function registerAdminRoutes(app: Express) {
       const allFiles = await readDirRecursive(PROJECT_ROOT, PROJECT_ROOT, EXCLUDE_PATTERNS);
       console.log(`[FORCE-DEPLOY] Found ${allFiles.length} files to deploy`);
 
-      // Read file contents
-      const fileChanges = await Promise.all(
-        allFiles.map(async (filePath) => {
-          const fullPath = path.join(PROJECT_ROOT, filePath);
-          const content = await fs.readFile(fullPath, 'utf-8');
-          return {
-            path: filePath,
-            content,
-            operation: 'modify' as const,
-          };
-        })
-      );
-
-      console.log(`[FORCE-DEPLOY] 📦 Committing ${fileChanges.length} files to GitHub...`);
+      // STREAMING IMPLEMENTATION: Create blobs directly without loading all files into memory
+      console.log(`[FORCE-DEPLOY] 📦 Streaming files to GitHub (memory-efficient)...`);
       
-      // Commit all files
       const commitMessage = message || 'Force deploy from Archetype platform';
-      const result = await github.commitFiles(fileChanges, commitMessage);
+      const result = await github.streamCommitFiles(allFiles, PROJECT_ROOT, commitMessage);
 
       console.log(`[FORCE-DEPLOY] ✅ Successfully deployed!`);
       console.log(`[FORCE-DEPLOY] Commit: ${result.commitHash}`);
@@ -369,7 +357,7 @@ export function registerAdminRoutes(app: Express) {
         success: true,
         commitHash: result.commitHash,
         commitUrl: result.commitUrl,
-        filesDeployed: fileChanges.length,
+        filesDeployed: allFiles.length,
         message: 'Force deploy successful. Railway will auto-deploy within 2-3 minutes.',
       });
     } catch (error: any) {

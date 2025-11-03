@@ -131,6 +131,7 @@ export class GitHubService {
   /**
    * Commit multiple files to the repository in a single commit
    * Uses GitHub's tree API for atomic multi-file commits
+   * MEMORY-OPTIMIZED: Batches blob creation to prevent OOM on large changesets
    */
   async commitFiles(changes: FileChange[], message: string, retries = 3): Promise<CommitResult> {
     let lastError: Error | undefined;
@@ -151,54 +152,73 @@ export class GitHubService {
         });
 
         // Step 3: Create tree entries for each changed file (blobs for creates/modifies, nulls for deletes)
-        const treeEntries = await Promise.all(
-          changes.map(async (change, index) => {
-            console.log(`[GITHUB-SERVICE] Processing file ${index + 1}/${changes.length}: ${change.path}`);
-            console.log(`[GITHUB-SERVICE] Operation: ${change.operation || 'modify'}`);
+        // MEMORY OPTIMIZATION: Process in batches to prevent OOM
+        const BLOB_BATCH_SIZE = 25; // Create 25 blobs at a time
+        const treeEntries: Array<{
+          path: string;
+          mode: '100644';
+          type: 'blob';
+          sha: string | null;
+        }> = [];
 
-            // Handle delete operations - create tree entry with sha: null
-            if (change.operation === 'delete') {
-              console.log(`[GITHUB-SERVICE] DELETE operation - creating tree entry with sha: null`);
+        console.log(`[GITHUB-SERVICE] Creating blobs in batches (${BLOB_BATCH_SIZE} per batch)...`);
+
+        for (let i = 0; i < changes.length; i += BLOB_BATCH_SIZE) {
+          const batch = changes.slice(i, i + BLOB_BATCH_SIZE);
+          const batchNum = Math.floor(i / BLOB_BATCH_SIZE) + 1;
+          const totalBatches = Math.ceil(changes.length / BLOB_BATCH_SIZE);
+          
+          console.log(`[GITHUB-SERVICE] Processing blob batch ${batchNum}/${totalBatches} (${batch.length} files)`);
+
+          const batchEntries = await Promise.all(
+            batch.map(async (change, index) => {
+              const globalIndex = i + index;
+              console.log(`[GITHUB-SERVICE] Processing file ${globalIndex + 1}/${changes.length}: ${change.path}`);
+
+              // Handle delete operations - create tree entry with sha: null
+              if (change.operation === 'delete') {
+                console.log(`[GITHUB-SERVICE] DELETE operation - creating tree entry with sha: null`);
+                return {
+                  path: change.path,
+                  mode: '100644' as const,
+                  type: 'blob' as const,
+                  sha: null as any, // GitHub API requires null for deletes
+                };
+              }
+
+              // CRITICAL: Validate content before blob creation
+              if (change.content === undefined || change.content === null) {
+                console.error(`[GITHUB-SERVICE] ❌ REJECTED: File ${change.path} has undefined/null content`);
+                throw new Error(`File ${change.path} has undefined/null content (${typeof change.content})`);
+              }
+              
+              if (typeof change.content !== 'string') {
+                console.error(`[GITHUB-SERVICE] ❌ REJECTED: File ${change.path} has invalid content type: ${typeof change.content}`);
+                throw new Error(`File ${change.path} must have string content, got ${typeof change.content}`);
+              }
+
+              const { data: blob } = await this.octokit.git.createBlob({
+                owner: this.owner,
+                repo: this.repo,
+                content: Buffer.from(change.content).toString('base64'),
+                encoding: 'base64',
+              });
               return {
                 path: change.path,
                 mode: '100644' as const,
                 type: 'blob' as const,
-                sha: null as any, // GitHub API requires null for deletes
+                sha: blob.sha,
               };
-            }
+            })
+          );
 
-            // Handle create/modify operations - create blob
-            console.log(`[GITHUB-SERVICE] Content type: ${typeof change.content}`);
-            console.log(`[GITHUB-SERVICE] Content defined: ${change.content !== undefined && change.content !== null}`);
-            console.log(`[GITHUB-SERVICE] Content length: ${change.content?.length || 0} bytes`);
+          treeEntries.push(...batchEntries);
 
-            // CRITICAL: Validate content before blob creation
-            if (change.content === undefined || change.content === null) {
-              console.error(`[GITHUB-SERVICE] ❌ REJECTED: File ${change.path} has undefined/null content`);
-              throw new Error(`File ${change.path} has undefined/null content (${typeof change.content})`);
-            }
-            
-            if (typeof change.content !== 'string') {
-              console.error(`[GITHUB-SERVICE] ❌ REJECTED: File ${change.path} has invalid content type: ${typeof change.content}`);
-              throw new Error(`File ${change.path} must have string content, got ${typeof change.content}`);
-            }
-            
-            console.log(`[GITHUB-SERVICE] ✅ Content validated for ${change.path}`);
-
-            const { data: blob } = await this.octokit.git.createBlob({
-              owner: this.owner,
-              repo: this.repo,
-              content: Buffer.from(change.content).toString('base64'),
-              encoding: 'base64',
-            });
-            return {
-              path: change.path,
-              mode: '100644' as const,
-              type: 'blob' as const,
-              sha: blob.sha,
-            };
-          })
-        );
+          // Allow garbage collection between batches
+          if (global.gc && i + BLOB_BATCH_SIZE < changes.length) {
+            global.gc();
+          }
+        }
 
         // Step 4: Create a new tree with the changed files
         const { data: newTree } = await this.octokit.git.createTree({
@@ -249,6 +269,161 @@ export class GitHubService {
     }
 
     throw new Error(`Failed to commit after ${retries} attempts: ${lastError?.message || 'Unknown error'}`);
+  }
+
+  /**
+   * STREAMING COMMIT: Stream files to GitHub without loading all into memory
+   * Reads files one-by-one, creates blobs, keeps only SHA references
+   * Memory usage: O(1) instead of O(total file size)
+   */
+  async streamCommitFiles(filePaths: string[], rootDir: string, message: string, retries = 3): Promise<CommitResult> {
+    const fs = await import('fs/promises');
+    const path = await import('path');
+    let lastError: Error | undefined;
+
+    for (let attempt = 0; attempt < retries; attempt++) {
+      try {
+        console.log(`[GITHUB-SERVICE-STREAM] Streaming ${filePaths.length} file(s) to GitHub (attempt ${attempt + 1}/${retries})`);
+
+        // Step 1: Get the latest commit
+        const latestCommitSha = await this.getLatestCommit();
+        console.log(`[GITHUB-SERVICE-STREAM] Latest commit: ${latestCommitSha}`);
+
+        // Step 2: Get the tree of the latest commit
+        const { data: latestCommit } = await this.octokit.git.getCommit({
+          owner: this.owner,
+          repo: this.repo,
+          commit_sha: latestCommitSha,
+        });
+
+        // Step 3: STREAM files and create blobs - keep only SHA references
+        const STREAM_BATCH_SIZE = 10; // Process 10 files at a time to balance speed and memory
+        const treeEntries: Array<{
+          path: string;
+          mode: '100644';
+          type: 'blob';
+          sha: string;
+        }> = [];
+
+        console.log(`[GITHUB-SERVICE-STREAM] Creating blobs in streaming batches (${STREAM_BATCH_SIZE} files per batch)...`);
+
+        for (let i = 0; i < filePaths.length; i += STREAM_BATCH_SIZE) {
+          const batch = filePaths.slice(i, i + STREAM_BATCH_SIZE);
+          const batchNum = Math.floor(i / STREAM_BATCH_SIZE) + 1;
+          const totalBatches = Math.ceil(filePaths.length / STREAM_BATCH_SIZE);
+          
+          console.log(`[GITHUB-SERVICE-STREAM] Processing batch ${batchNum}/${totalBatches} (${batch.length} files)`);
+
+          // Process batch: read file → create blob → discard content → keep SHA only
+          const batchEntries = await Promise.all(
+            batch.map(async (filePath) => {
+              const fullPath = path.join(rootDir, filePath);
+              
+              // Detect binary vs text files by extension
+              const binaryExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.ico', '.pdf', '.zip', '.woff', '.woff2', '.ttf', '.eot', '.mp4', '.webm', '.mp3', '.wav'];
+              const isBinary = binaryExtensions.some(ext => filePath.toLowerCase().endsWith(ext));
+              
+              if (isBinary) {
+                // Binary files: read as Buffer and encode as base64
+                const buffer = await fs.readFile(fullPath);
+                const base64Content = buffer.toString('base64');
+                
+                const { data: blob } = await this.octokit.git.createBlob({
+                  owner: this.owner,
+                  repo: this.repo,
+                  content: base64Content,
+                  encoding: 'base64',
+                });
+
+                return {
+                  path: filePath,
+                  mode: '100644' as const,
+                  type: 'blob' as const,
+                  sha: blob.sha,
+                };
+              } else {
+                // Text files: read as UTF-8 and let Octokit handle encoding
+                const content = await fs.readFile(fullPath, 'utf-8');
+                
+                const { data: blob } = await this.octokit.git.createBlob({
+                  owner: this.owner,
+                  repo: this.repo,
+                  content: content,
+                  encoding: 'utf-8' as 'utf-8',
+                });
+
+                return {
+                  path: filePath,
+                  mode: '100644' as const,
+                  type: 'blob' as const,
+                  sha: blob.sha,
+                };
+              }
+            })
+          );
+
+          treeEntries.push(...batchEntries);
+
+          // Force garbage collection after each batch if available
+          if (global.gc) {
+            global.gc();
+          }
+
+          // Progress logging
+          console.log(`[GITHUB-SERVICE-STREAM] Progress: ${treeEntries.length}/${filePaths.length} files processed`);
+        }
+
+        console.log(`[GITHUB-SERVICE-STREAM] ✅ All ${treeEntries.length} blobs created. Building tree...`);
+
+        // Step 4: Create a new tree with all the blob SHAs
+        const { data: newTree } = await this.octokit.git.createTree({
+          owner: this.owner,
+          repo: this.repo,
+          base_tree: latestCommit.tree.sha,
+          tree: treeEntries,
+        });
+
+        // Step 5: Create a new commit
+        const { data: newCommit } = await this.octokit.git.createCommit({
+          owner: this.owner,
+          repo: this.repo,
+          message: `[Platform-SySop] ${message}`,
+          tree: newTree.sha,
+          parents: [latestCommitSha],
+        });
+
+        // Step 6: Update the branch reference
+        await this.octokit.git.updateRef({
+          owner: this.owner,
+          repo: this.repo,
+          ref: `heads/${this.branch}`,
+          sha: newCommit.sha,
+        });
+
+        const commitUrl = `https://github.com/${this.owner}/${this.repo}/commit/${newCommit.sha}`;
+
+        console.log(`[GITHUB-SERVICE-STREAM] ✅ Successfully streamed ${filePaths.length} file(s)`);
+        console.log(`[GITHUB-SERVICE-STREAM] Commit: ${newCommit.sha}`);
+        console.log(`[GITHUB-SERVICE-STREAM] URL: ${commitUrl}`);
+
+        return {
+          commitHash: newCommit.sha,
+          commitUrl,
+        };
+      } catch (error: any) {
+        lastError = error;
+        console.error(`[GITHUB-SERVICE-STREAM] Attempt ${attempt + 1} failed:`, error.message);
+
+        if (attempt < retries - 1) {
+          // Exponential backoff: 1s, 2s, 4s
+          const delay = 1000 * Math.pow(2, attempt);
+          console.log(`[GITHUB-SERVICE-STREAM] Retrying in ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+    }
+
+    throw new Error(`Failed to stream commit after ${retries} attempts: ${lastError?.message || 'Unknown error'}`);
   }
 
   /**
