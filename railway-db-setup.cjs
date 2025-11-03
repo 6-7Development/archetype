@@ -8,20 +8,39 @@ const fs = require('fs');
   });
   
   try {
-    // STEP 1: Create all tables (or skip if they exist)
-    console.log('📋 Step 1: Running full migration (creating all tables)...');
+    // STEP 1: Create all tables (run each statement individually)
+    console.log('📋 Step 1: Running migration statements individually...');
     const sql = fs.readFileSync('migrations/0000_giant_paladin.sql', 'utf8');
     
-    try {
-      await pool.query(sql);
-      console.log('✅ All database tables created successfully');
-    } catch (err) {
-      if (err.code === '42P07') {
-        console.log('ℹ️  Tables already exist - continuing to drift repair');
-      } else {
-        throw err;
+    // Split into individual statements (separated by statement-breakpoint comments)
+    const statements = sql
+      .split('---> statement-breakpoint')
+      .map(s => s.trim())
+      .filter(s => s.length > 0 && !s.startsWith('--'));
+    
+    console.log(`   Found ${statements.length} SQL statements to execute`);
+    
+    let created = 0;
+    let skipped = 0;
+    let failed = 0;
+    
+    for (const statement of statements) {
+      try {
+        await pool.query(statement);
+        created++;
+      } catch (err) {
+        if (err.code === '42P07') {
+          // Table already exists - skip
+          skipped++;
+        } else {
+          // Other error - log but continue
+          console.log(`   ⚠️  Statement failed (continuing): ${err.message}`);
+          failed++;
+        }
       }
     }
+    
+    console.log(`   ✅ Migration complete: ${created} created, ${skipped} skipped, ${failed} failed`);
     
     // STEP 2: Add missing columns (drift repair)
     console.log('📋 Step 2: Repairing schema drift (adding missing columns)...');
