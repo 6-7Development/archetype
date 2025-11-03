@@ -47,8 +47,9 @@ COPY migrations ./migrations
 # CRITICAL: Copy replit.md for Meta-SySop platform knowledge
 COPY replit.md ./
 
-# Copy startup script
+# Copy startup scripts
 COPY railway-start.sh ./
+COPY railway-db-setup.js ./
 COPY debug-start.sh ./
 RUN chmod +x railway-start.sh debug-start.sh
 
