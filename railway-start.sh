@@ -40,18 +40,67 @@ node -e "
   pool.query(sql)
     .then(() => { 
       console.log('✅ All database tables created successfully'); 
-      pool.end(); 
+      return pool.end(); 
     })
     .catch(err => { 
-      // If tables already exist, that's fine - continue
+      // If tables already exist, that's fine - continue to drift repair
       if (err.code === '42P07') {
-        console.log('ℹ️  Tables already exist - skipping migration');
-        pool.end();
+        console.log('ℹ️  Tables already exist - continuing to drift repair');
+        return pool.end();
       } else {
         console.error('❌ Migration error:', err.message); 
         pool.end(); 
         process.exit(1); 
       }
+    });
+"
+
+echo ""
+echo "🔧 Repairing schema drift (adding missing columns)..."
+# Add missing columns to existing tables (idempotent - safe to run multiple times)
+node -e "
+  const pg = require('pg');
+  const pool = new pg.Pool({ 
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+  });
+  
+  // Idempotent column additions - safe even if columns exist
+  const driftRepairSQL = \`
+    -- Add folder_id to files table if missing
+    DO \$\$ 
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name='files' AND column_name='folder_id'
+      ) THEN
+        ALTER TABLE files ADD COLUMN folder_id varchar;
+        RAISE NOTICE 'Added folder_id to files table';
+      END IF;
+    END \$\$;
+
+    -- Add folder_id to file_uploads table if missing
+    DO \$\$ 
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name='file_uploads' AND column_name='folder_id'
+      ) THEN
+        ALTER TABLE file_uploads ADD COLUMN folder_id varchar;
+        RAISE NOTICE 'Added folder_id to file_uploads table';
+      END IF;
+    END \$\$;
+  \`;
+  
+  pool.query(driftRepairSQL)
+    .then(() => { 
+      console.log('✅ Schema drift repaired - all columns present'); 
+      pool.end(); 
+    })
+    .catch(err => { 
+      console.error('❌ Drift repair error:', err.message); 
+      pool.end(); 
+      process.exit(1); 
     });
 "
 
