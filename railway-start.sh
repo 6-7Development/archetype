@@ -24,13 +24,8 @@ else
 fi
 
 echo ""
-echo "🗑️ Dropping old tables with incorrect schema..."
-# Run Node script to drop old healing tables (they have wrong ID types)
-node drop-old-tables.js || echo "⚠️ Could not drop old tables (may not exist)"
-
-echo ""
-echo "🔧 Adding missing columns to existing tables..."
-# Add missing folder_id columns to files and file_uploads tables
+echo "🔧 Running FULL database migration (all tables)..."
+# Run the complete Drizzle migration that creates ALL tables
 node -e "
   const pg = require('pg');
   const fs = require('fs');
@@ -38,33 +33,27 @@ node -e "
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
   });
-  const sql = fs.readFileSync('add-missing-columns.sql', 'utf8');
+  
+  // Read the full migration SQL (creates all 80+ tables)
+  const sql = fs.readFileSync('migrations/0000_giant_paladin.sql', 'utf8');
+  
   pool.query(sql)
-    .then(() => { console.log('✅ Missing columns added'); pool.end(); })
-    .catch(err => { console.error('❌ Error:', err.message); pool.end(); process.exit(1); });
-"
-
-echo ""
-echo "🔧 Creating healing tables with correct schema..."
-# Create healing tables via SQL (drizzle-kit push is unreliable on Railway)
-if command -v psql &> /dev/null; then
-  psql "$DATABASE_URL" -f create-healing-tables.sql
-  echo "✅ Healing tables created via SQL"
-else
-  echo "⚠️ psql not found, using node-postgres..."
-  node -e "
-    const pg = require('pg');
-    const fs = require('fs');
-    const pool = new pg.Pool({ 
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }
+    .then(() => { 
+      console.log('✅ All database tables created successfully'); 
+      pool.end(); 
+    })
+    .catch(err => { 
+      // If tables already exist, that's fine - continue
+      if (err.code === '42P07') {
+        console.log('ℹ️  Tables already exist - skipping migration');
+        pool.end();
+      } else {
+        console.error('❌ Migration error:', err.message); 
+        pool.end(); 
+        process.exit(1); 
+      }
     });
-    const sql = fs.readFileSync('create-healing-tables.sql', 'utf8');
-    pool.query(sql)
-      .then(() => { console.log('✅ Tables created'); process.exit(0); })
-      .catch(err => { console.error('❌ Error:', err.message); process.exit(1); });
-  "
-fi
+"
 
 echo ""
 echo "🔄 Running database migrations with drizzle-kit..."

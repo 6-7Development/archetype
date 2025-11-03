@@ -41,15 +41,15 @@ COPY shared ./shared
 COPY tsconfig.json ./
 COPY drizzle.config.ts ./
 
+# Copy database migrations (REQUIRED for Railway deployment)
+COPY migrations ./migrations
+
 # CRITICAL: Copy replit.md for Meta-SySop platform knowledge
 COPY replit.md ./
 
-# Copy startup script and database setup scripts
+# Copy startup script
 COPY railway-start.sh ./
 COPY debug-start.sh ./
-COPY drop-old-tables.js ./
-COPY add-missing-columns.sql ./
-COPY create-healing-tables.sql ./
 RUN chmod +x railway-start.sh debug-start.sh
 
 # Expose port
