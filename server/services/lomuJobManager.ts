@@ -1,5 +1,5 @@
 import { db } from '../db';
-import { lomuJobs, users, subscriptions, chatMessages, taskLists, tasks, projects } from '@shared/schema';
+import { lomuJobs, users, subscriptions, chatMessages, taskLists, tasks, projects, platformIncidents } from '@shared/schema';
 import { eq, and, inArray } from 'drizzle-orm';
 import type { WebSocketServer } from 'ws';
 import { streamGeminiResponse } from '../gemini';
@@ -14,6 +14,10 @@ import { startSubagent } from '../subagentOrchestration';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { storage } from '../storage';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 interface JobContext {
   jobId: string;
@@ -577,6 +581,32 @@ ${autoCommit ? '**AUTO-COMMIT ENABLED:** You can commit changes to GitHub autono
     const MAX_ITERATIONS = 10; // Reduced from 25 - prevents infinite loops
     let commitSuccessful = false;
 
+    // 📊 WORKFLOW TELEMETRY: Track read vs code-modifying operations
+    const READ_ONLY_TOOLS = new Set([
+      'readPlatformFile', 'listPlatformDirectory', 'searchCode',
+      'readProjectFile', 'listProjectDirectory', 'perform_diagnosis', 'read_logs', 'read_metrics',
+      'readKnowledgeStore', 'searchKnowledgeStore', 'readTaskList',
+      // Meta tools that don't modify code
+      'createTaskList', 'updateTask', 'architect_consult', 'start_subagent', 'web_search',
+      // REMOVED: 'bash' (can modify files via git commit, npm install, etc.)
+      'execute_sql', // SQL can be read-only (SELECT) or modifying (INSERT/UPDATE/DELETE)
+    ]);
+
+    const CODE_MODIFYING_TOOLS = new Set([
+      'writePlatformFile', 'editPlatformFile', 'createPlatformFile', 'deletePlatformFile',
+      'writeProjectFile', 'createProjectFile', 'deleteProjectFile',
+      'commit_to_github', 'packager_tool',
+      'bash', // ADDED: can run git commit, file writes, npm install, etc.
+    ]);
+
+    const workflowTelemetry = {
+      readOperations: 0,
+      writeOperations: 0,
+      consecutiveReadOnlyIterations: 0,
+      hasProducedFixes: false,
+      MAX_READ_ONLY_ITERATIONS: 5,
+    };
+
     // Main conversation loop
     while (continueLoop && iterationCount < MAX_ITERATIONS) {
       iterationCount++;
@@ -1096,6 +1126,42 @@ ${autoCommit ? '**AUTO-COMMIT ENABLED:** You can commit changes to GitHub autono
       }
 
       if (toolResults.length > 0) {
+        // 📊 WORKFLOW TELEMETRY: Track read vs code-modifying operations
+        let iterationHadCodeModifications = false;
+        for (const toolName of toolNames) {
+          if (READ_ONLY_TOOLS.has(toolName)) {
+            workflowTelemetry.readOperations++;
+          } else if (CODE_MODIFYING_TOOLS.has(toolName)) {
+            workflowTelemetry.writeOperations++;
+            workflowTelemetry.hasProducedFixes = true;
+            iterationHadCodeModifications = true;
+          } else {
+            // Unknown tool - log warning but count as read-only (conservative)
+            console.warn(`[WORKFLOW-TELEMETRY] ⚠️ Unknown tool category: ${toolName} - treating as read-only`);
+            workflowTelemetry.readOperations++;
+          }
+        }
+        
+        // Track consecutive read-only iterations
+        if (!iterationHadCodeModifications) {
+          workflowTelemetry.consecutiveReadOnlyIterations++;
+          console.log(`[WORKFLOW-TELEMETRY] ⚠️ Iteration ${iterationCount}: Read-only (${workflowTelemetry.consecutiveReadOnlyIterations}/${workflowTelemetry.MAX_READ_ONLY_ITERATIONS})`);
+        } else {
+          workflowTelemetry.consecutiveReadOnlyIterations = 0;
+          console.log(`[WORKFLOW-TELEMETRY] ✅ Iteration ${iterationCount}: Code modifications detected - reset read-only counter`);
+        }
+        
+        console.log(`[WORKFLOW-TELEMETRY] Total: ${workflowTelemetry.readOperations} reads, ${workflowTelemetry.writeOperations} writes`);
+        
+        // 🚨 EARLY TERMINATION: Halt if too many consecutive read-only iterations
+        if (workflowTelemetry.consecutiveReadOnlyIterations >= workflowTelemetry.MAX_READ_ONLY_ITERATIONS) {
+          console.warn(`[WORKFLOW-TELEMETRY] 🛑 HALTING - ${workflowTelemetry.MAX_READ_ONLY_ITERATIONS} consecutive read-only iterations detected`);
+          const haltMsg = `\n\n⚠️ **Investigation-only loop detected**\n\nI've read ${workflowTelemetry.readOperations} files but haven't made any changes yet. This suggests I'm investigating without implementing fixes.\n\nI'll stop here to avoid wasting tokens. Please clarify what you'd like me to implement, or I can escalate this to the I AM Architect for expert guidance.`;
+          fullContent += haltMsg;
+          broadcast(userId, jobId, 'job_content', { content: haltMsg });
+          continueLoop = false;
+        }
+        
         conversationMessages.push({
           role: 'user',
           content: toolResults,
@@ -1165,6 +1231,99 @@ ${autoCommit ? '**AUTO-COMMIT ENABLED:** You can commit changes to GitHub autono
       if (iterationCount % 2 === 0) {
         await saveCheckpoint(jobId, conversationMessages, iterationCount, activeTaskListId);
       }
+    }
+
+    // 🔍 GIT-BASED FILE CHANGE DETECTION: Check if any files were actually modified
+    // This catches changes even if tool classification is wrong
+    try {
+      const { stdout: gitStatus } = await execAsync('git status --porcelain');
+      const hasFileChanges = gitStatus.trim().length > 0;
+
+      // CRITICAL: Git status is ground truth - override hasProducedFixes
+      workflowTelemetry.hasProducedFixes = hasFileChanges;
+
+      if (hasFileChanges) {
+        console.log('[WORKFLOW-TELEMETRY] ✅ Git detected file changes - marking as having fixes');
+        console.log('[WORKFLOW-TELEMETRY] Changed files:', gitStatus.trim().split('\n').slice(0, 5).join(', '));
+      } else {
+        console.log('[WORKFLOW-TELEMETRY] ⚠️ No file changes detected via git status - marking as zero-mutation');
+      }
+    } catch (gitError: any) {
+      console.warn('[WORKFLOW-TELEMETRY] ⚠️ Git status check failed (non-fatal):', gitError.message);
+      // Continue execution - git status failure is not critical
+    }
+
+    // 📊 WORKFLOW VALIDATION: Detect zero-mutation jobs and flag as failed
+    console.log(`[WORKFLOW-VALIDATION] Job completed with ${workflowTelemetry.writeOperations} code-modifying operations`);
+    console.log(`[WORKFLOW-VALIDATION] Has produced fixes: ${workflowTelemetry.hasProducedFixes}`);
+    
+    // Detect if this was a fix/build request but no code modifications occurred
+    // CRITICAL: Comprehensive keyword matching for fix requests (case-insensitive)
+    const lowerMessage = message.toLowerCase();
+    const FIX_REQUEST_KEYWORDS = [
+      'fix', 'repair', 'resolve', 'patch', 'correct', 'address',
+      'diagnose', 'debug', 'troubleshoot',
+      'implement', 'build', 'create', 'add', 'develop', 'write',
+      'update', 'modify', 'change', 'edit', 'refactor',
+      'heal', 'platform-healing', 'self-healing',
+      'bug', 'issue', 'problem', 'error', 'broken', 'failing'
+    ];
+    
+    const isFixRequest = FIX_REQUEST_KEYWORDS.some(keyword => lowerMessage.includes(keyword));
+    const isZeroMutationJob = isFixRequest && !workflowTelemetry.hasProducedFixes;
+    
+    if (isZeroMutationJob) {
+      console.error(`[WORKFLOW-VALIDATION] 🚨 ZERO-MUTATION JOB FAILURE - Fix request with no code modifications`);
+      console.error(`[WORKFLOW-VALIDATION] Read operations: ${workflowTelemetry.readOperations}, Code modifications: ${workflowTelemetry.writeOperations}`);
+      console.error(`[WORKFLOW-VALIDATION] Message: "${message.slice(0, 100)}..."`);
+      
+      // CRITICAL: This is a workflow failure - add failure message and mark audit as failure
+      const zeroMutationFailure = `\n\n❌ **WORKFLOW FAILURE: Investigation without implementation**\n\nI completed ${workflowTelemetry.readOperations} read operations but failed to make any code changes to fix the issue.\n\n**What went wrong:**\n- I investigated the problem but didn't implement a solution\n- No files were modified, no fixes were applied\n- This violates the action-enforcement workflow\n\n**Next steps:**\n- This failure has been logged for platform improvement\n- I AM Architect will be notified for workflow re-guidance\n- Please clarify what specific changes you want me to make`;
+      
+      fullContent += zeroMutationFailure;
+      broadcast(userId, jobId, 'job_content', { content: zeroMutationFailure });
+      broadcast(userId, jobId, 'job_error', { message: 'Zero-mutation job failure - no code modifications made' });
+      
+      // Log as failure in audit trail (override the success status later)
+      await platformAudit.log({
+        userId,
+        action: 'heal',
+        description: `❌ ZERO-MUTATION FAILURE: ${message.slice(0, 100)}`,
+        changes: [],
+        backupId: undefined,
+        commitHash: '',
+        status: 'failure',
+      });
+      
+      // Create platform incident for I AM Architect to review
+      try {
+        const [incident] = await db.insert(platformIncidents).values({
+          type: 'agent_failure',
+          severity: 'high',
+          title: 'LomuAI Zero-Mutation Job Failure',
+          description: `LomuAI completed a fix request without making any code changes.\n\nUser request: "${message}"\n\nTelemetry: ${workflowTelemetry.readOperations} reads, ${workflowTelemetry.writeOperations} writes\n\nThis indicates a workflow enforcement failure that requires I AM Architect review.`,
+          source: 'agent_monitor',
+          incidentCategory: 'agent_failure',
+          isAgentFailure: true,
+          detectedAt: new Date(),
+          status: 'open',
+          metrics: {
+            userId,
+            message: message.slice(0, 200),
+            telemetry: workflowTelemetry,
+            jobId: jobId,
+          }
+        }).returning();
+        
+        console.log(`[WORKFLOW-VALIDATION] 🚨 Created incident ${incident.id} for I AM Architect escalation`);
+        broadcast(userId, jobId, 'job_progress', { message: '🚨 Workflow failure logged - will escalate to I AM Architect' });
+      } catch (incidentError: any) {
+        console.error('[WORKFLOW-VALIDATION] Failed to create incident:', incidentError.message);
+      }
+    } else if (isFixRequest && workflowTelemetry.hasProducedFixes) {
+      console.log(`[WORKFLOW-VALIDATION] ✅ Fix request completed successfully with ${workflowTelemetry.writeOperations} code-modifying operations`);
+    } else {
+      console.log(`[WORKFLOW-VALIDATION] ℹ️ Non-fix request (question/status check) - no code modifications expected`);
     }
 
     // Safety check

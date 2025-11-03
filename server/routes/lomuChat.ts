@@ -17,11 +17,15 @@ import { startSubagent } from '../subagentOrchestration.ts';
 import { parallelSubagentQueue } from '../services/parallelSubagentQueue.ts';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 import { createSafeGeminiRequest, logGeminiTruncationResults } from '../lib/gemini-wrapper.ts';
 import { sanitizeDiagnosisForAI } from '../lib/diagnosis-sanitizer.ts';
 import type { WebSocketServer } from 'ws';
 import { getOrCreateState, autoUpdateFromMessage, formatStateForPrompt } from '../services/conversationState.ts';
 import { agentFailureDetector } from '../services/agentFailureDetector.ts';
+
+const execAsync = promisify(exec);
 
 const router = Router();
 
@@ -1286,13 +1290,14 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     };
     
     // READ-ONLY TOOLS: Tools that don't modify platform/project code
-    // CRITICAL: This includes bash, knowledge_store, createTaskList, updateTask because they don't modify source code
+    // CRITICAL: Task management, knowledge_store, and meta tools don't modify source code
     const READ_ONLY_TOOLS = new Set([
       'readPlatformFile', 'listPlatformDirectory', 'searchPlatformFiles',
       'readProjectFile', 'listProjectDirectory', 'search_codebase', 'grep',
       'knowledge_search', 'knowledge_recall', 'code_search',
       'readTaskList', 'createTaskList', 'updateTask', // Task management doesn't modify code
-      'bash', 'read_logs', 'perform_diagnosis',
+      'read_logs', 'perform_diagnosis',
+      // REMOVED: 'bash' (can modify files via git commit, npm install, etc.)
       'get_latest_lsp_diagnostics', 'web_search',
       'knowledge_store', // Storing knowledge doesn't fix the platform
       'architect_consult', 'start_subagent' // Delegation tools don't modify code directly
@@ -1306,7 +1311,8 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       'edit', // Primary file editing tool
       'commit_to_github', // Commits changes (implies code was modified)
       'restart_workflow', // Restarts after code changes
-      'packager_tool' // Installs/uninstalls packages (modifies package.json)
+      'packager_tool', // Installs/uninstalls packages (modifies package.json)
+      'bash', // ADDED: can run git commit, file writes, npm install, etc.
     ]);
 
     // ✅ REMOVED: Casual greeting bypass - LomuAI should ALWAYS be conversational like Replit Agent
@@ -2769,6 +2775,25 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       console.warn(`[LOMU-AI] ⚠️ Hit MAX_ITERATIONS (${MAX_ITERATIONS}) - possible infinite loop`);
     }
     
+    // 🎯 GIT-BASED FILE CHANGE DETECTION: Check if any files were actually modified
+    try {
+      const { stdout: gitStatus } = await execAsync('git status --porcelain');
+      const hasFileChanges = gitStatus.trim().length > 0;
+      
+      // CRITICAL: Git status is ground truth - override hasProducedFixes
+      workflowTelemetry.hasProducedFixes = hasFileChanges;
+      
+      if (hasFileChanges) {
+        console.log('[WORKFLOW-TELEMETRY] ✅ Git detected file changes - marking as having fixes');
+        console.log('[WORKFLOW-TELEMETRY] Changed files:', gitStatus.split('\n').slice(0, 5).join(', '));
+      } else {
+        console.log('[WORKFLOW-TELEMETRY] ⚠️ No file changes detected via git status - marking as zero-mutation');
+      }
+    } catch (gitError: any) {
+      // Non-fatal: if git fails, rely on tool classification
+      console.warn('[WORKFLOW-TELEMETRY] Git status check failed:', gitError.message);
+    }
+    
     // 📊 WORKFLOW VALIDATION: Detect zero-mutation jobs and flag as failed
     console.log(`[WORKFLOW-VALIDATION] Job completed with ${workflowTelemetry.writeOperations} code-modifying operations`);
     console.log(`[WORKFLOW-VALIDATION] Has produced fixes: ${workflowTelemetry.hasProducedFixes}`);
@@ -2823,8 +2848,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           isAgentFailure: true,
           detectedAt: new Date(),
           status: 'open',
-          resolutionStrategy: 'tier_3_iam',
-          metadata: {
+          metrics: {
             userId,
             message: message.slice(0, 200),
             telemetry: workflowTelemetry,
