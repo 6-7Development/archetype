@@ -14,7 +14,7 @@ const fs = require('fs');
     
     // Split into individual statements (separated by statement-breakpoint comments)
     const statements = sql
-      .split('---> statement-breakpoint')
+      .split('--> statement-breakpoint')
       .map(s => s.trim())
       .filter(s => s.length > 0 && !s.startsWith('--'));
     
@@ -54,18 +54,6 @@ const fs = require('fs');
         ) THEN
           ALTER TABLE files ADD COLUMN folder_id varchar;
           RAISE NOTICE 'Added folder_id to files table';
-        END IF;
-      END $$;
-
-      -- Add folder_id to file_uploads table if missing
-      DO $$ 
-      BEGIN
-        IF NOT EXISTS (
-          SELECT 1 FROM information_schema.columns 
-          WHERE table_name='file_uploads' AND column_name='folder_id'
-        ) THEN
-          ALTER TABLE file_uploads ADD COLUMN folder_id varchar;
-          RAISE NOTICE 'Added folder_id to file_uploads table';
         END IF;
       END $$;
     `;
