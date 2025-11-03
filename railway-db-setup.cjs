@@ -14,7 +14,7 @@ const fs = require('fs');
     
     // Split into individual statements (separated by statement-breakpoint comments)
     const statements = sql
-      .split('---> statement-breakpoint')
+      .split('--> statement-breakpoint')
       .map(s => s.trim())
       .filter(s => s.length > 0 && !s.startsWith('--'));
     
