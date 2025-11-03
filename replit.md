@@ -3,6 +3,9 @@
 ## Overview
 Lomu is an AI-powered platform for rapid web development, featuring an AI coding agent (LomuAI) for autonomous code generation and dual-version IDE Workspaces (Lomu for desktop, Lomu5 for mobile). It offers a console-first interface, real-time preview, and comprehensive workspace features, aiming for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. A core capability is LomuAI's autonomous self-healing, bug fixing, and UI/UX improvements to its own source code, complete with rollback and audit logging.
 
+## Recent Changes
+- **Railway Logging Optimization (2024-11-03):** Reduced healing chat logging verbosity in production to prevent Railway log limit issues. File search results limited to 100 max, debug logs silenced in production (NODE_ENV=production), keeping only essential logs (writes, errors).
+
 ## User Preferences
 ### API Configuration
 **Hybrid AI Model Strategy (Cost-Optimized)**:
