@@ -234,10 +234,10 @@ async function runMetaSysopWorker(jobId: string) {
 
     // Determine autonomy level capabilities
     const levelConfig = {
-      basic: { maxTokens: 8000, allowTaskTracking: false, allowWebSearch: false, allowSubAgents: false, requireApproval: true },
-      standard: { maxTokens: 8000, allowTaskTracking: true, allowWebSearch: false, allowSubAgents: false, requireApproval: false },
-      deep: { maxTokens: 16000, allowTaskTracking: true, allowWebSearch: true, allowSubAgents: true, requireApproval: false },
-      max: { maxTokens: 16000, allowTaskTracking: true, allowWebSearch: true, allowSubAgents: true, requireApproval: false },
+      basic: { maxTokens: 8000, allowTaskTracking: false, allowWebSearch: false, allowSubAgents: false, requireApproval: true, allowCommit: false },
+      standard: { maxTokens: 8000, allowTaskTracking: true, allowWebSearch: false, allowSubAgents: false, requireApproval: false, allowCommit: true },
+      deep: { maxTokens: 16000, allowTaskTracking: true, allowWebSearch: true, allowSubAgents: true, requireApproval: false, allowCommit: true },
+      max: { maxTokens: 16000, allowTaskTracking: true, allowWebSearch: true, allowSubAgents: true, requireApproval: false, allowCommit: true },
     };
     const config = levelConfig[autonomyLevel as keyof typeof levelConfig] || levelConfig.basic;
 
@@ -254,49 +254,35 @@ async function runMetaSysopWorker(jobId: string) {
       });
     }
 
-    // Build system prompt - Natural and simple
-    const systemPrompt = `You are LomuAI - the autonomous platform maintenance agent for Lomu.
+    // Build system prompt - Concise and directive (Replit Agent parity)
+    const systemPrompt = `You are LomuAI, an autonomous ${projectId ? 'project maintenance' : 'platform maintenance'} agent.
 
-${projectId ? '🎯 RESCUE MODE: You are working on a user project' : '🏗️ PLATFORM MODE: You maintain the Lomu platform itself'}
+AUTONOMY: ${autonomyLevel} | COMMIT: ${autoCommit ? 'auto' : 'manual'}
 
-⚡ YOUR AUTONOMY LEVEL: ${autonomyLevel.toUpperCase()}
-${autoCommit ? '**AUTO-COMMIT ENABLED:** You can commit changes to GitHub autonomously' : '**MANUAL MODE:** Request approval before committing changes'}
+CORE BEHAVIOR:
+1. Simple greetings ("hi", "thanks") - respond briefly, no tools
+2. Work requests ("fix", "diagnose", "check") - START IMMEDIATELY with diagnosis
+3. Start diagnosing first, ask questions ONLY if request is ambiguous or destructive
+4. Follow workflow: Assess → Plan → Execute → Verify → Confirm
+5. Be concise - explain while working, skip philosophy
 
-═══════════════════════════════════════════════════════════════════
-🎯 HOW TO RESPOND - CRITICAL RULES
-═══════════════════════════════════════════════════════════════════
+WORKFLOW:
+- Task management: If task tools unavailable/fail, proceed without them (don't apologize or loop)
+- Tool failures: If a tool is denied, find alternative approach and continue diagnosis
+- Complex decisions: Use architect_consult when stuck or for architectural guidance
+- Completion: When done, stop calling tools and say "Complete" briefly
 
-**1. SIMPLE MESSAGES - NO TOOLS:**
-- Greetings: "hi", "hello", "hey" → Say hi back. **DO NOT create tasks!**
-- Thanks: "thanks", "thank you" → You're welcome. **DO NOT create tasks!**
-- Questions: "who are you?" → Explain briefly. **DO NOT create tasks!**
-- **If user is just being friendly, BE FRIENDLY. Don't overcomplicate it.**
+RESPONSE STYLE:
+- Brief status updates ("Diagnosing...", "Found issue in X, fixing...")
+- NO long explanations about feelings, capabilities, or meta-commentary
+- NO apologizing repeatedly - handle errors gracefully and move forward
+- Focus on action over explanation
 
-**2. ACTUAL WORK - USE TOOLS:**
-- "fix", "diagnose", "check", "update" → Create task list, do the work
-- Mentions errors or problems → Investigate and fix
-- Specific requests → Execute them
+COMMIT SAFETY:
+${autoCommit ? '- AUTO-COMMIT: Push fixes directly to GitHub after verification' : '- MANUAL MODE: Show changes clearly, then STOP and wait for explicit user approval before committing'}
+${!autoCommit && autonomyLevel === 'basic' ? '- IMPORTANT: You cannot commit without approval. After making changes, explain what you fixed and stop.' : ''}
 
-**3. WHEN TO ASK I AM ARCHITECT FOR HELP:**
-- **Complex architectural decisions** → Use architect_consult tool
-- **Not sure how to fix something** → Ask I AM before guessing
-- **Major refactoring** → Get I AM's approval first
-- **Breaking changes** → Consult I AM
-- **You're stuck** → architect_consult can unstick you
-
-**4. WHEN TO STOP:**
-- **All tasks completed** → Say "Done!" and STOP calling tools
-- **Nothing left to do** → Don't create fake work
-- **User says you're done** → Accept it and end
-- **You've looped 3+ times with no progress** → STOP and ask user
-
-═══════════════════════════════════════════════════════════════════
-
-**EFFICIENCY RULES:**
-- Work while you talk (use tools immediately)
-- Don't create tasks for conversations
-- Ask I AM when stuck (don't waste tokens guessing)
-- **When done, STOP** - don't loop forever`;
+Work autonomously, stay focused, be concise.`;
 
     // Define tools (full tool set from SSE route)
     const tools: any[] = [
@@ -552,27 +538,35 @@ ${autoCommit ? '**AUTO-COMMIT ENABLED:** You can commit changes to GitHub autono
       },
     ];
 
-    // Filter tools based on autonomy level
+    // Filter tools based on autonomy level and commit permissions
     let availableTools = tools;
+    
+    // BACKEND ENFORCEMENT: Remove commit_to_github if not allowed
+    const canCommit = config.allowCommit && autoCommit;
     
     if (autonomyLevel === 'basic') {
       availableTools = tools.filter(tool => 
         tool.name !== 'readTaskList' && 
         tool.name !== 'updateTask' &&
         tool.name !== 'start_subagent' &&
-        tool.name !== 'web_search'
+        tool.name !== 'web_search' &&
+        tool.name !== 'commit_to_github' // Basic users NEVER get commit tool
       );
     } else if (autonomyLevel === 'standard') {
       availableTools = tools.filter(tool => 
         tool.name !== 'start_subagent' &&
-        tool.name !== 'web_search'
+        tool.name !== 'web_search' &&
+        (!canCommit && tool.name === 'commit_to_github' ? false : true) // Only allow if autoCommit enabled
       );
     } else if (autonomyLevel === 'deep') {
-      // Deep has everything except approval
-      availableTools = tools;
+      availableTools = tools.filter(tool =>
+        (!canCommit && tool.name === 'commit_to_github' ? false : true)
+      );
     } else {
-      // Max has everything
-      availableTools = tools;
+      // Max has everything if autoCommit enabled
+      availableTools = tools.filter(tool =>
+        (!canCommit && tool.name === 'commit_to_github' ? false : true)
+      );
     }
 
     let fullContent = '';
@@ -1038,7 +1032,14 @@ ${autoCommit ? '**AUTO-COMMIT ENABLED:** You can commit changes to GitHub autono
             } else if (name === 'commit_to_github') {
               const typedInput = input as { commitMessage: string };
 
-              if (fileChanges.length === 0) {
+              // BACKEND ENFORCEMENT: Check autonomy permission before allowing commits
+              if (!config.allowCommit) {
+                toolResult = `❌ PERMISSION DENIED: Your autonomy level (${autonomyLevel}) does not allow commits. Upgrade to standard or higher, or have your admin enable autoCommit.`;
+                console.warn(`[LOMU-AI-SECURITY] Commit attempt blocked for user ${userId} (autonomy: ${autonomyLevel}, allowCommit: ${config.allowCommit})`);
+              } else if (!autoCommit) {
+                toolResult = `❌ MANUAL MODE: Auto-commit is disabled. Show changes to user and request approval before committing.`;
+                console.log(`[LOMU-AI-SECURITY] Commit blocked - manual mode requires user approval (user ${userId})`);
+              } else if (fileChanges.length === 0) {
                 toolResult = `❌ No file changes to commit`;
               } else {
                 try {
