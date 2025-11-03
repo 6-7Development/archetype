@@ -135,7 +135,32 @@ export class HealOrchestrator extends EventEmitter {
   }
   
   /**
-   * Handle new incident detection
+   * Public API: Enqueue an incident for healing
+   * Safe for external callers (quality monitor, etc.)
+   */
+  public async enqueueIncident(incidentId: string): Promise<void> {
+    try {
+      // Fetch incident details from database
+      const [incident] = await db
+        .select()
+        .from(platformIncidents)
+        .where(eq(platformIncidents.id, incidentId))
+        .limit(1);
+      
+      if (!incident) {
+        console.error(`[HEAL-ORCHESTRATOR] Incident ${incidentId} not found in database`);
+        return;
+      }
+      
+      // Delegate to private handler
+      await this.handleIncidentDetected({ incidentId, incident });
+    } catch (error: any) {
+      console.error('[HEAL-ORCHESTRATOR] Failed to enqueue incident:', error);
+    }
+  }
+  
+  /**
+   * Handle new incident detection (private internal handler)
    */
   private async handleIncidentDetected(data: { incidentId: string; incident: any }) {
     const { incidentId, incident } = data;

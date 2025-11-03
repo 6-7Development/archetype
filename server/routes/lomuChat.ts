@@ -2855,6 +2855,30 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           // ✅ Fire-and-forget incident creation to prevent blocking
           Promise.resolve().then(async () => {
             try {
+              // 🔒 DEDUPLICATION: Check for recent quality incidents from same user
+              // Prevents spam from repeated bad responses
+              const recentIncidents = await db
+                .select()
+                .from(platformIncidents)
+                .where(
+                  and(
+                    eq(platformIncidents.type, 'agent_failure'),
+                    eq(platformIncidents.status, 'open'),
+                    sql`${platformIncidents.createdAt} > NOW() - INTERVAL '5 minutes'`
+                  )
+                )
+                .limit(10);
+              
+              // Count quality incidents in last 5 minutes for this user/type
+              const qualityIncidentCount = recentIncidents.filter(
+                inc => inc.title?.includes('Response Quality Issue')
+              ).length;
+              
+              if (qualityIncidentCount >= 3) {
+                console.log('[LOMU-AI-QUALITY] ⏱️ Throttled: 3+ quality incidents in last 5 min, skipping duplicate');
+                return;
+              }
+              
               const incidentId = await agentFailureDetector.createAgentFailureIncident({
                 title: `Agent Response Quality Issue (Score: ${qualityAnalysis.qualityScore})`,
                 description: `LomuAI generated a low-quality response.\n\n` +
@@ -2870,11 +2894,16 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
               console.log(`[LOMU-AI-QUALITY] Created incident: ${incidentId}`);
 
-              // If quality is critically poor, log for manual review
+              // If quality is critically poor, trigger architect healing
               if (qualityAnalysis.shouldEscalate) {
-                console.log('[LOMU-AI-QUALITY] 🚨 Critical quality issue - incident created for review');
-                console.log(`[LOMU-AI-QUALITY] Incident ${incidentId} flagged for architect review`);
-                // TODO: Auto-trigger architect healing once healOrchestrator exposes public API
+                console.log('[LOMU-AI-QUALITY] 🚨 Critical quality issue - triggering architect healing');
+                
+                // Trigger healing via public API (fire-and-forget, non-blocking)
+                healOrchestrator.enqueueIncident(incidentId).catch((error: any) => {
+                  console.error('[LOMU-AI-QUALITY] Failed to enqueue healing:', error.message);
+                });
+                
+                console.log('[LOMU-AI-QUALITY] ✅ Architect healing queued (async)');
               }
             } catch (incidentError: any) {
               console.error('[LOMU-AI-QUALITY] Incident creation failed (non-fatal):', incidentError.message);
