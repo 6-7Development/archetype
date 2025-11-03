@@ -257,12 +257,14 @@ async function runMetaSysopWorker(jobId: string) {
     // 🎯 PRE-FILTER: Handle simple greetings/questions without calling Gemini
     const lowerMsg = message.toLowerCase().trim();
     const CONVERSATIONAL_PATTERNS = [
-      { pattern: /^(hi|hello|hey|sup|what'?s up|yo)[\s!.?]*$/i, response: "Hey! Ready to help you build something amazing. What are we working on?" },
-      { pattern: /^(thanks|thank you|thx|ty)[\s!.?]*$/i, response: "You're welcome! Let me know if you need anything else." },
-      // Flexible pattern: "how does/do [optional words] feel" or "how are you"
-      { pattern: /^how('?s| (are you|do you feel|does .* feel|is .* feeling))[\s?!.]*$/i, response: "Feeling great and ready to build! The new updates make me much more capable. What would you like to create?" },
-      { pattern: /^(what (are|can) you|who are you|tell me about yourself)[\s?!.]*$/i, response: "I'm LomuAI, your AI development teammate! I can build complete apps, fix bugs, write code, test with Playwright, and commit to GitHub. What do you want to build?" },
-      { pattern: /^what does (the |that |this )?.* button do[\s?!.]*$/i, response: "The Clear button resets our conversation so we can start fresh. The New button starts a new healing session. Both help you work on different tasks!" },
+      { pattern: /^(hi|hello|hey|sup|what'?s up|yo)(\s|!|\?|\.)*$/i, response: "Hey! Ready to help you build something amazing. What are we working on?" },
+      { pattern: /^(thanks|thank you|thx|ty)(\s|!|\?|\.)*$/i, response: "You're welcome! Let me know if you need anything else." },
+      // PRECISE: Only "how" questions explicitly about feelings/state/wellbeing
+      { pattern: /^how (are you|do you feel|does (it|that|this|the .* |.* )feel|is (it|that|this|the .* |.* )(feeling|going)).*$/i, response: "Feeling great and ready to build! The new updates make me much more capable. What would you like to create?" },
+      { pattern: /^how'?s (it|everything|life) going.*$/i, response: "Feeling great and ready to build! The new updates make me much more capable. What would you like to create?" },
+      { pattern: /^how'?re you( doing| feeling)?.*$/i, response: "Feeling great and ready to build! The new updates make me much more capable. What would you like to create?" },
+      { pattern: /^(what (are|can) you|who are you|tell me about yourself).*$/i, response: "I'm LomuAI, your AI development teammate! I can build complete apps, fix bugs, write code, test with Playwright, and commit to GitHub. What do you want to build?" },
+      { pattern: /^what does (the |that |this )?.* button do.*$/i, response: "The Clear button resets our conversation so we can start fresh. The New button starts a new healing session. Both help you work on different tasks!" },
     ];
 
     for (const { pattern, response } of CONVERSATIONAL_PATTERNS) {
