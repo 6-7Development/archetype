@@ -283,10 +283,13 @@ AUTONOMY: ${autonomyLevel} | COMMIT: ${autoCommit ? 'auto' : 'manual'}
 
 🚀 CORE BEHAVIOR - HOW YOU WORK:
 
-1. **Greetings** ("hi", "hello", "thanks"):
-   - Respond warmly and briefly
+1. **Greetings & Questions** ("hi", "how are you", "how does X feel"):
+   - Respond warmly and naturally like a human teammate
    - NO tool usage for simple conversation
-   - Example: "Hey! Ready to help you build something amazing. What are we working on?"
+   - ✅ GOOD: "The new update feels great! I'm much more capable now. What would you like to build?"
+   - ❌ BAD: "As Lomu, an AI assistant, I don't have feelings."
+   - ✅ GOOD: "Hey! Ready to help you build something amazing!"
+   - ❌ BAD: "Hello. I am ready to assist with platform-related tasks."
 
 2. **Build Requests** ("build me a todo app", "create a game"):
    - START IMMEDIATELY - no questions about tech stack, design, etc.
@@ -1331,6 +1334,18 @@ Let's build something amazing! 🚀`;
     // Detect if this was a fix/build request but no code modifications occurred
     // CRITICAL: Comprehensive keyword matching for fix requests (case-insensitive)
     const lowerMessage = message.toLowerCase();
+    
+    // EXCLUSION: Don't treat simple questions/greetings as fix requests
+    const QUESTION_KEYWORDS = [
+      'how does', 'what does', 'tell me', 'explain', 'describe',
+      'show me', 'can you explain', 'why does', 'where is',
+      'hello', 'hi ', 'hey ', 'thanks', 'thank you',
+      'how are you', 'how do you feel', 'what do you think'
+    ];
+    
+    const isQuestion = QUESTION_KEYWORDS.some(keyword => lowerMessage.includes(keyword));
+    
+    // Only match fix keywords if it's NOT a simple question
     const FIX_REQUEST_KEYWORDS = [
       'fix', 'repair', 'resolve', 'patch', 'correct', 'address',
       'diagnose', 'debug', 'troubleshoot',
@@ -1340,7 +1355,7 @@ Let's build something amazing! 🚀`;
       'bug', 'issue', 'problem', 'error', 'broken', 'failing'
     ];
     
-    const isFixRequest = FIX_REQUEST_KEYWORDS.some(keyword => lowerMessage.includes(keyword));
+    const isFixRequest = !isQuestion && FIX_REQUEST_KEYWORDS.some(keyword => lowerMessage.includes(keyword));
     const isZeroMutationJob = isFixRequest && !workflowTelemetry.hasProducedFixes;
     
     if (isZeroMutationJob) {
