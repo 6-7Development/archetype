@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Send, Loader2, User, Key, AlertCircle, Square, ChevronDown } from "lucide-react";
+import { Send, Loader2, User, Key, AlertCircle, Square, ChevronDown, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LumoAvatar } from "@/components/lumo-avatar";
 import { Textarea } from "@/components/ui/textarea";
@@ -112,6 +112,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [copiedChatHistory, setCopiedChatHistory] = useState(false);
   const [pendingImages, setPendingImages] = useState<string[]>([]); // Image URLs to send with next message
   const [uploadingImages, setUploadingImages] = useState<Map<string, boolean>>(new Map()); // Track uploading images by temp ID
   const [zoomImage, setZoomImage] = useState<string | null>(null); // For image zoom modal
@@ -928,6 +929,39 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
           subAgentActive={streamState.subAgentActive}
           className="border-b border-[hsl(220,15%,28%)]" 
         />
+
+        {/* Copy Chat History Button */}
+        {messages.length > 1 && (
+          <div className="px-4 py-2 border-b border-border bg-muted/20 flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const chatHistory = messages.filter(m => !m.isSummary).map(m => 
+                  `${m.role === 'user' ? 'USER' : 'LOMU AI'}:\n${m.content}\n`
+                ).join('\n---\n\n');
+                navigator.clipboard.writeText(chatHistory);
+                setCopiedChatHistory(true);
+                setTimeout(() => setCopiedChatHistory(false), 2000);
+                toast({ title: "✅ Chat copied!" });
+              }}
+              className="h-7 gap-1.5"
+              data-testid="button-copy-chat"
+            >
+              {copiedChatHistory ? (
+                <>
+                  <Check className="h-3.5 w-3.5" />
+                  <span className="text-xs">Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="h-3.5 w-3.5" />
+                  <span className="text-xs">Copy Chat</span>
+                </>
+              )}
+            </Button>
+          </div>
+        )}
 
         {/* Messages Area */}
         <div
