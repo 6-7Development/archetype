@@ -1158,6 +1158,74 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           required: ['query'],
         },
       },
+      {
+        name: 'knowledge_store',
+        description: 'Store knowledge for future recall. Save learned patterns, fixes, decisions, and insights for platform evolution tracking',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            category: { type: 'string' as const, description: 'Category (e.g., "bug-fixes", "architecture", "best-practices", "user-preferences")' },
+            topic: { type: 'string' as const, description: 'Specific topic (e.g., "authentication-patterns", "deployment-steps")' },
+            content: { type: 'string' as const, description: 'Knowledge content to store' },
+            tags: { type: 'array' as const, items: { type: 'string' as const }, description: 'Tags for searching (e.g., ["react", "typescript"])' },
+            source: { type: 'string' as const, description: 'Source of knowledge (default: "lomuai")' },
+            confidence: { type: 'number' as const, description: 'Confidence score 0-1 (default: 0.8)' },
+          },
+          required: ['category', 'topic', 'content'],
+        },
+      },
+      {
+        name: 'knowledge_search',
+        description: 'Search the shared knowledge base for relevant information. Find solutions, patterns, or insights saved from previous tasks',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            query: { type: 'string' as const, description: 'Search query (searches in topic and content)' },
+            category: { type: 'string' as const, description: 'Filter by category (optional)' },
+            tags: { type: 'array' as const, items: { type: 'string' as const }, description: 'Filter by tags (optional)' },
+            limit: { type: 'number' as const, description: 'Maximum results (default: 10)' },
+          },
+          required: ['query'],
+        },
+      },
+      {
+        name: 'knowledge_recall',
+        description: 'Recall specific knowledge by category, topic, or ID. Retrieve saved information when you know what you are looking for',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            category: { type: 'string' as const, description: 'Recall by category (e.g., "bug-fixes")' },
+            topic: { type: 'string' as const, description: 'Recall by topic (partial match)' },
+            id: { type: 'string' as const, description: 'Recall specific entry by ID' },
+            limit: { type: 'number' as const, description: 'Maximum results (default: 20)' },
+          },
+          required: [],
+        },
+      },
+      {
+        name: 'code_search',
+        description: 'Search or store reusable code snippets. Save proven code patterns or find existing snippets to reuse',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            query: { type: 'string' as const, description: 'Search query for finding code snippets' },
+            language: { type: 'string' as const, description: 'Programming language filter (e.g., "typescript", "python")' },
+            tags: { type: 'array' as const, items: { type: 'string' as const }, description: 'Filter by tags' },
+            store: { 
+              type: 'object' as const, 
+              description: 'Store a new code snippet instead of searching',
+              properties: {
+                language: { type: 'string' as const, description: 'Programming language' },
+                description: { type: 'string' as const, description: 'What the code does' },
+                code: { type: 'string' as const, description: 'The actual code snippet' },
+                tags: { type: 'array' as const, items: { type: 'string' as const }, description: 'Tags for categorization' },
+              },
+            },
+            limit: { type: 'number' as const, description: 'Maximum results (default: 10)' },
+          },
+          required: [],
+        },
+      },
     ];
 
     // 🎯 AUTONOMY LEVEL FILTERING: Filter tools based on user's autonomy level
@@ -2376,8 +2444,115 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                   sendEvent('content', { content: `\n\n⚠️ No results found\n` });
                 }
               } catch (error: any) {
-                toolResult = `❌ Search failed: ${error.message}`;
-                sendEvent('error', { message: `Search failed: ${error.message}` });
+                toolResult = `❌ Codebase search failed: ${error.message}`;
+                sendEvent('error', { message: `Codebase search failed: ${error.message}` });
+              }
+            } else if (name === 'knowledge_store') {
+              const { knowledge_store } = await import('../tools/knowledge');
+              const typedInput = input as { category: string; topic: string; content: string; tags?: string[]; source?: string; confidence?: number };
+              sendEvent('progress', { message: `💾 Storing knowledge: ${typedInput.topic}...` });
+              
+              try {
+                const result = await knowledge_store({
+                  category: typedInput.category,
+                  topic: typedInput.topic,
+                  content: typedInput.content,
+                  tags: typedInput.tags,
+                  source: typedInput.source || 'lomuai',
+                  confidence: typedInput.confidence
+                });
+                toolResult = result;
+                sendEvent('content', { content: `\n\n💾 **Stored knowledge**: ${typedInput.topic}\n` });
+              } catch (error: any) {
+                toolResult = `❌ Knowledge storage failed: ${error.message}`;
+                sendEvent('error', { message: `Knowledge storage failed: ${error.message}` });
+              }
+            } else if (name === 'knowledge_search') {
+              const { knowledge_search } = await import('../tools/knowledge');
+              const typedInput = input as { query: string; category?: string; tags?: string[]; limit?: number };
+              sendEvent('progress', { message: `🔎 Searching knowledge: "${typedInput.query}"...` });
+              
+              try {
+                const results = await knowledge_search({
+                  query: typedInput.query,
+                  category: typedInput.category,
+                  tags: typedInput.tags,
+                  limit: typedInput.limit
+                });
+                
+                if (results.length > 0) {
+                  const resultsList = results
+                    .map((r, i) => `${i + 1}. **${r.topic}** (${r.category})\n   ${r.content}\n   Tags: ${r.tags.join(', ')}\n   Confidence: ${r.confidence}`)
+                    .join('\n\n');
+                  toolResult = `Found ${results.length} knowledge entries:\n\n${resultsList}`;
+                  sendEvent('content', { content: `\n\n🔎 **Found ${results.length} knowledge entries**\n` });
+                } else {
+                  toolResult = `No knowledge found for query: "${typedInput.query}"`;
+                  sendEvent('content', { content: `\n\n⚠️ No knowledge entries found\n` });
+                }
+              } catch (error: any) {
+                toolResult = `❌ Knowledge search failed: ${error.message}`;
+                sendEvent('error', { message: `Knowledge search failed: ${error.message}` });
+              }
+            } else if (name === 'knowledge_recall') {
+              const { knowledge_recall } = await import('../tools/knowledge');
+              const typedInput = input as { category?: string; topic?: string; id?: string; limit?: number };
+              sendEvent('progress', { message: `📚 Recalling knowledge...` });
+              
+              try {
+                const results = await knowledge_recall({
+                  category: typedInput.category,
+                  topic: typedInput.topic,
+                  id: typedInput.id,
+                  limit: typedInput.limit
+                });
+                
+                if (results.length > 0) {
+                  const resultsList = results
+                    .map((r, i) => `${i + 1}. **${r.topic}** (${r.category})\n   ${r.content}\n   Tags: ${r.tags.join(', ')}`)
+                    .join('\n\n');
+                  toolResult = `Recalled ${results.length} knowledge entries:\n\n${resultsList}`;
+                  sendEvent('content', { content: `\n\n📚 **Recalled ${results.length} entries**\n` });
+                } else {
+                  toolResult = `No knowledge entries found matching criteria`;
+                  sendEvent('content', { content: `\n\n⚠️ No matches found\n` });
+                }
+              } catch (error: any) {
+                toolResult = `❌ Knowledge recall failed: ${error.message}`;
+                sendEvent('error', { message: `Knowledge recall failed: ${error.message}` });
+              }
+            } else if (name === 'code_search') {
+              const { code_search } = await import('../tools/knowledge');
+              const typedInput = input as { query?: string; language?: string; tags?: string[]; store?: any; limit?: number };
+              sendEvent('progress', { message: typedInput.store ? `💾 Storing code snippet...` : `🔍 Searching code snippets...` });
+              
+              try {
+                const result = await code_search({
+                  query: typedInput.query,
+                  language: typedInput.language,
+                  tags: typedInput.tags,
+                  store: typedInput.store,
+                  limit: typedInput.limit
+                });
+                
+                if (typeof result === 'string') {
+                  // Store operation
+                  toolResult = result;
+                  sendEvent('content', { content: `\n\n💾 **Code snippet stored**\n` });
+                } else if (result.length > 0) {
+                  // Search operation
+                  const resultsList = result
+                    .map((r, i) => `${i + 1}. **${r.description}** (${r.language})\n\`\`\`${r.language}\n${r.code}\n\`\`\`\n   Tags: ${r.tags.join(', ')}`)
+                    .join('\n\n');
+                  toolResult = `Found ${result.length} code snippets:\n\n${resultsList}`;
+                  sendEvent('content', { content: `\n\n🔍 **Found ${result.length} code snippets**\n` });
+                } else {
+                  toolResult = `No code snippets found`;
+                  sendEvent('content', { content: `\n\n⚠️ No code snippets found\n` });
+                }
+              } catch (error: any) {
+                toolResult = `❌ Code search failed: ${error.message}`;
+                sendEvent('error', { message: `Code search failed: ${error.message}` });
               }
             }
 
