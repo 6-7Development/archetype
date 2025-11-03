@@ -2870,26 +2870,11 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
               console.log(`[LOMU-AI-QUALITY] Created incident: ${incidentId}`);
 
-              // If quality is critically poor, escalate to architect for healing
+              // If quality is critically poor, log for manual review
               if (qualityAnalysis.shouldEscalate) {
-                console.log('[LOMU-AI-QUALITY] 🚨 Critical quality issue - triggering architect healing');
-                
-                // Trigger healing with architect strategy (fire-and-forget)
-                platformHealing.heal({
-                  incidentId,
-                  strategy: 'architect',
-                  userId,
-                  context: {
-                    userMessage: message,
-                    agentResponse: finalMessage,
-                    qualityScore: qualityAnalysis.qualityScore,
-                    issues: qualityAnalysis.issues,
-                  },
-                }).catch((error: any) => {
-                  console.error('[LOMU-AI-QUALITY] Architect healing failed:', error);
-                });
-                
-                console.log('[LOMU-AI-QUALITY] ✅ Architect healing triggered (async)');
+                console.log('[LOMU-AI-QUALITY] 🚨 Critical quality issue - incident created for review');
+                console.log(`[LOMU-AI-QUALITY] Incident ${incidentId} flagged for architect review`);
+                // TODO: Auto-trigger architect healing once healOrchestrator exposes public API
               }
             } catch (incidentError: any) {
               console.error('[LOMU-AI-QUALITY] Incident creation failed (non-fatal):', incidentError.message);
