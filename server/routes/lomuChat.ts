@@ -2813,72 +2813,6 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       })
       .returning();
 
-    // 🔍 QUALITY ANALYSIS: Analyze agent response quality to detect failures
-    // This runs after the response is sent to the user (non-blocking)
-    try {
-      console.log('[LOMU-AI-QUALITY] Analyzing response quality...');
-      const qualityAnalysis = await agentFailureDetector.analyzeResponseQuality({
-        content: finalMessage,
-        userMessage: message,
-        toolCallCount: totalToolCallCount,
-      });
-
-      console.log(`[LOMU-AI-QUALITY] Quality score: ${qualityAnalysis.qualityScore}/100`);
-      console.log(`[LOMU-AI-QUALITY] Is poor quality: ${qualityAnalysis.isPoorQuality}`);
-      console.log(`[LOMU-AI-QUALITY] Should escalate: ${qualityAnalysis.shouldEscalate}`);
-      
-      if (qualityAnalysis.issues.length > 0) {
-        console.log(`[LOMU-AI-QUALITY] Issues detected:`, qualityAnalysis.issues);
-      }
-
-      // If response quality is poor, create an incident
-      if (qualityAnalysis.isPoorQuality) {
-        console.log('[LOMU-AI-QUALITY] ⚠️ Poor quality response detected - creating incident');
-        
-        const incidentId = await agentFailureDetector.createAgentFailureIncident({
-          title: `Agent Response Quality Issue (Score: ${qualityAnalysis.qualityScore})`,
-          description: `LomuAI generated a low-quality response.\n\n` +
-            `**User Message:** ${message.substring(0, 200)}${message.length > 200 ? '...' : ''}\n\n` +
-            `**Quality Score:** ${qualityAnalysis.qualityScore}/100\n\n` +
-            `**Issues Detected:**\n${qualityAnalysis.issues.map(i => `- ${i}`).join('\n')}\n\n` +
-            `**Tool Calls:** ${totalToolCallCount}\n\n` +
-            `**Response Length:** ${finalMessage.length} chars`,
-          severity: qualityAnalysis.shouldEscalate ? 'high' : 'medium',
-          stackTrace: `User Message: ${message}\n\nAgent Response: ${finalMessage.substring(0, 500)}...`,
-          logs: `Tool calls: ${totalToolCallCount}\nIssues: ${qualityAnalysis.issues.join(', ')}`,
-        });
-
-        console.log(`[LOMU-AI-QUALITY] Created incident: ${incidentId}`);
-
-        // If quality is critically poor, escalate to architect for healing
-        if (qualityAnalysis.shouldEscalate) {
-          console.log('[LOMU-AI-QUALITY] 🚨 Critical quality issue - triggering architect healing');
-          
-          // Trigger healing with architect strategy (non-blocking)
-          platformHealing.heal({
-            incidentId,
-            strategy: 'architect',
-            userId,
-            context: {
-              userMessage: message,
-              agentResponse: finalMessage,
-              qualityScore: qualityAnalysis.qualityScore,
-              issues: qualityAnalysis.issues,
-            },
-          }).catch((error: any) => {
-            console.error('[LOMU-AI-QUALITY] Architect healing failed:', error);
-          });
-          
-          console.log('[LOMU-AI-QUALITY] ✅ Architect healing triggered (async)');
-        }
-      } else {
-        console.log('[LOMU-AI-QUALITY] ✅ Response quality is acceptable');
-      }
-    } catch (qualityError: any) {
-      // Don't break the stream if quality analysis fails
-      console.error('[LOMU-AI-QUALITY] Quality analysis error (non-fatal):', qualityError.message);
-    }
-
     // Log audit trail
     await platformAudit.log({
       userId,
@@ -2890,8 +2824,85 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       status: 'success',
     });
 
+    // ✅ Send completion event immediately - don't wait for quality analysis
     sendEvent('done', { messageId: assistantMsg.id, commitHash, filesChanged: fileChanges.length });
     res.end();
+
+    // 🔍 QUALITY ANALYSIS: Analyze response quality in background (async, non-blocking)
+    // ✅ CRITICAL FIX: This runs AFTER stream completes to prevent blocking user
+    // ✅ Uses setImmediate() to ensure quality analysis doesn't delay response
+    setImmediate(async () => {
+      try {
+        console.log('[LOMU-AI-QUALITY] Analyzing response quality (background)...');
+        const qualityAnalysis = await agentFailureDetector.analyzeResponseQuality({
+          content: finalMessage,
+          userMessage: message,
+          toolCallCount: totalToolCallCount, // ✅ Using accumulated count across ALL iterations
+        });
+
+        console.log(`[LOMU-AI-QUALITY] Quality score: ${qualityAnalysis.qualityScore}/100`);
+        console.log(`[LOMU-AI-QUALITY] Is poor quality: ${qualityAnalysis.isPoorQuality}`);
+        console.log(`[LOMU-AI-QUALITY] Should escalate: ${qualityAnalysis.shouldEscalate}`);
+        
+        if (qualityAnalysis.issues.length > 0) {
+          console.log(`[LOMU-AI-QUALITY] Issues detected:`, qualityAnalysis.issues);
+        }
+
+        // If response quality is poor, create an incident (async, non-blocking)
+        if (qualityAnalysis.isPoorQuality) {
+          console.log('[LOMU-AI-QUALITY] ⚠️ Poor quality response detected - creating incident');
+          
+          // ✅ Fire-and-forget incident creation to prevent blocking
+          Promise.resolve().then(async () => {
+            try {
+              const incidentId = await agentFailureDetector.createAgentFailureIncident({
+                title: `Agent Response Quality Issue (Score: ${qualityAnalysis.qualityScore})`,
+                description: `LomuAI generated a low-quality response.\n\n` +
+                  `**User Message:** ${message.substring(0, 200)}${message.length > 200 ? '...' : ''}\n\n` +
+                  `**Quality Score:** ${qualityAnalysis.qualityScore}/100\n\n` +
+                  `**Issues Detected:**\n${qualityAnalysis.issues.map(i => `- ${i}`).join('\n')}\n\n` +
+                  `**Tool Calls:** ${totalToolCallCount}\n\n` +
+                  `**Response Length:** ${finalMessage.length} chars`,
+                severity: qualityAnalysis.shouldEscalate ? 'high' : 'medium',
+                stackTrace: `User Message: ${message}\n\nAgent Response: ${finalMessage.substring(0, 500)}...`,
+                logs: `Tool calls: ${totalToolCallCount}\nIssues: ${qualityAnalysis.issues.join(', ')}`,
+              });
+
+              console.log(`[LOMU-AI-QUALITY] Created incident: ${incidentId}`);
+
+              // If quality is critically poor, escalate to architect for healing
+              if (qualityAnalysis.shouldEscalate) {
+                console.log('[LOMU-AI-QUALITY] 🚨 Critical quality issue - triggering architect healing');
+                
+                // Trigger healing with architect strategy (fire-and-forget)
+                platformHealing.heal({
+                  incidentId,
+                  strategy: 'architect',
+                  userId,
+                  context: {
+                    userMessage: message,
+                    agentResponse: finalMessage,
+                    qualityScore: qualityAnalysis.qualityScore,
+                    issues: qualityAnalysis.issues,
+                  },
+                }).catch((error: any) => {
+                  console.error('[LOMU-AI-QUALITY] Architect healing failed:', error);
+                });
+                
+                console.log('[LOMU-AI-QUALITY] ✅ Architect healing triggered (async)');
+              }
+            } catch (incidentError: any) {
+              console.error('[LOMU-AI-QUALITY] Incident creation failed (non-fatal):', incidentError.message);
+            }
+          });
+        } else {
+          console.log('[LOMU-AI-QUALITY] ✅ Response quality is acceptable');
+        }
+      } catch (qualityError: any) {
+        // Don't break anything if quality analysis fails
+        console.error('[LOMU-AI-QUALITY] Quality analysis error (non-fatal):', qualityError.message);
+      }
+    });
   } catch (error: any) {
     console.error('[LOMU-AI-CHAT] Stream error:', error);
     
