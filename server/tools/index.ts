@@ -11,6 +11,29 @@ export { spawnSubAgent, checkSubAgentStatus } from './sub-agent';
 export { requestArchitectReview } from './architect-review';
 export { knowledge_search, knowledge_store, knowledge_recall, code_search } from './knowledge';
 
+// NEW TOOLS - Replit Agent Feature Parity (18 tools)
+// GROUP 1: Deployment & Rollback
+export { suggestDeploy, suggestRollback } from './deployment';
+
+// GROUP 2: Secrets Management
+export { askSecrets, checkSecrets } from './secrets';
+
+// GROUP 3: Database & Infrastructure
+export { checkDatabaseStatus, executeSql, createPostgresqlDatabase } from './database-tools';
+export { programmingLanguageInstall } from './programming-languages';
+
+// GROUP 4: Design & Assets
+export { generateDesignGuidelines } from './design-guidelines';
+export { stockImageTool } from './stock-images';
+
+// GROUP 5: Integrations
+export { searchIntegrations, useIntegration } from './integrations';
+
+// GROUP 6: File & System Operations
+export { webFetch } from './web-fetch';
+export { refreshAllLogs } from './logs';
+export { glob, ls, read, write } from './file-operations';
+
 /**
  * Tool definitions for Claude
  * These tools enhance SySop's autonomous capabilities
@@ -626,6 +649,324 @@ export const SYSOP_TOOLS = [
           description: 'Maximum results to return (default: 10)',
         },
       },
+    },
+  },
+  // ===== NEW REPLIT AGENT PARITY TOOLS (18 tools) =====
+  // GROUP 1: Deployment & Rollback
+  {
+    name: 'suggest_deploy',
+    description: 'Suggest deployment to production. Returns deployment instructions without actually deploying. User triggers deployment in UI.',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'suggest_rollback',
+    description: 'Suggest rolling back to previous checkpoint. Returns rollback instructions and available checkpoints without actually rolling back.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        checkpoint: {
+          type: 'string',
+          description: 'Optional checkpoint ID to rollback to',
+        },
+        reason: {
+          type: 'string',
+          description: 'Reason for suggesting rollback',
+        },
+      },
+    },
+  },
+  // GROUP 2: Secrets Management
+  {
+    name: 'ask_secrets',
+    description: 'Request API keys from user. Prompts user to provide secrets for services like OpenAI, Stripe, etc. Returns instructions for adding secrets.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        secret_keys: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Array of secret key names to request (e.g., ["OPENAI_API_KEY", "STRIPE_SECRET_KEY"])',
+        },
+        user_message: {
+          type: 'string',
+          description: 'Message explaining why these secrets are needed',
+        },
+      },
+      required: ['secret_keys', 'user_message'],
+    },
+  },
+  {
+    name: 'check_secrets',
+    description: 'Verify if secret environment variables exist. Returns boolean for each secret without exposing values. Use before making API calls.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        secret_keys: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Array of secret key names to check',
+        },
+      },
+      required: ['secret_keys'],
+    },
+  },
+  // GROUP 3: Database & Infrastructure
+  {
+    name: 'check_database_status',
+    description: 'Verify database connection and health. Returns connection status, version, size, and table information.',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'execute_sql_tool',
+    description: 'Execute SQL queries on development database. SAFETY: Only works on development DB, destructive operations require confirmation comment.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        sql_query: {
+          type: 'string',
+          description: 'SQL query to execute. Add "-- CONFIRMED" comment for destructive operations.',
+        },
+        environment: {
+          type: 'string',
+          enum: ['development'],
+          description: 'Must be "development" - production DB access not allowed',
+        },
+      },
+      required: ['sql_query'],
+    },
+  },
+  {
+    name: 'create_postgresql_database_tool',
+    description: 'Create or verify PostgreSQL database. Checks if DATABASE_URL is configured and verifies connection.',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'programming_language_install_tool',
+    description: 'Install programming languages and their package managers (Node.js, Python, Go, etc.). Returns installation status.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        programming_languages: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Languages to install (e.g., ["nodejs-20", "python-3.11", "go"])',
+        },
+      },
+      required: ['programming_languages'],
+    },
+  },
+  // GROUP 4: Design & Assets
+  {
+    name: 'generate_design_guidelines',
+    description: 'Generate comprehensive design system documentation. Creates design guidelines with colors, typography, spacing, components, and accessibility rules.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        description: {
+          type: 'string',
+          description: 'Description of the project and design requirements',
+        },
+        projectName: {
+          type: 'string',
+          description: 'Project name for the guidelines',
+        },
+        colorScheme: {
+          type: 'string',
+          enum: ['light', 'dark', 'both'],
+          description: 'Color scheme to support (default: both)',
+        },
+        includeComponents: {
+          type: 'boolean',
+          description: 'Include component library guidelines (default: true)',
+        },
+      },
+      required: ['description'],
+    },
+  },
+  {
+    name: 'stock_image_tool',
+    description: 'Fetch stock images from Unsplash. Downloads and saves images to attached_assets/stock_images. Requires UNSPLASH_ACCESS_KEY for real photos.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        description: {
+          type: 'string',
+          description: 'Description of desired images (e.g., "professional office", "sunset landscape")',
+        },
+        limit: {
+          type: 'number',
+          description: 'Number of images to fetch (1-10, default: 1)',
+        },
+        orientation: {
+          type: 'string',
+          enum: ['horizontal', 'vertical', 'all'],
+          description: 'Image orientation (default: horizontal)',
+        },
+      },
+      required: ['description'],
+    },
+  },
+  // GROUP 5: Integrations
+  {
+    name: 'search_integrations',
+    description: 'Search for available Replit-style integrations (OpenAI, Stripe, GitHub, Auth, etc.). Returns matching integrations with setup info.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Search query (e.g., "authentication", "payments", "AI")',
+        },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    name: 'use_integration',
+    description: 'Add or configure an integration in the project. Supports view (see details), add (install), and propose_setting_up (suggest setup) operations.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        integration_id: {
+          type: 'string',
+          description: 'Integration ID from search_integrations (e.g., "connector:openai")',
+        },
+        operation: {
+          type: 'string',
+          enum: ['view', 'add', 'propose_setting_up'],
+          description: 'Operation to perform',
+        },
+      },
+      required: ['integration_id', 'operation'],
+    },
+  },
+  // GROUP 6: File & System Operations
+  {
+    name: 'web_fetch',
+    description: 'Fetch full web page content. Downloads HTML and converts to readable text/markdown. Use after web_search for detailed content.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        url: {
+          type: 'string',
+          description: 'Full URL to fetch (must be valid HTTP/HTTPS)',
+        },
+      },
+      required: ['url'],
+    },
+  },
+  {
+    name: 'refresh_all_logs',
+    description: 'Get latest workflow, browser, and server logs. Returns recent log entries with filtering and limiting options.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        filter: {
+          type: 'string',
+          description: 'Filter logs by keyword',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum number of log entries to return (default: 100)',
+        },
+      },
+    },
+  },
+  {
+    name: 'glob',
+    description: 'Find files matching glob patterns (e.g., "**/*.ts", "src/**/*.tsx"). Uses platform file search.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        pattern: {
+          type: 'string',
+          description: 'Glob pattern to match (e.g., "**/*.ts", "*.json")',
+        },
+        path: {
+          type: 'string',
+          description: 'Base path to search from (default: ".")',
+        },
+      },
+      required: ['pattern'],
+    },
+  },
+  {
+    name: 'ls',
+    description: 'List directory contents with file/folder details. Supports recursive listing and filtering.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'Directory path to list (default: ".")',
+        },
+        recursive: {
+          type: 'boolean',
+          description: 'Recursively list subdirectories (default: false)',
+        },
+        include_hidden: {
+          type: 'boolean',
+          description: 'Include hidden files (default: false)',
+        },
+        max_files: {
+          type: 'number',
+          description: 'Maximum files to list (default: 1000)',
+        },
+        ignore: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Patterns to ignore (default: ["node_modules", ".git", "dist"])',
+        },
+      },
+    },
+  },
+  {
+    name: 'read',
+    description: 'Generic file read for any file. Supports offset and line limits. Works with both platform and project files.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        file_path: {
+          type: 'string',
+          description: 'File path to read',
+        },
+        offset: {
+          type: 'number',
+          description: 'Line number to start reading from (default: 0)',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum lines to read (default: 1000)',
+        },
+      },
+      required: ['file_path'],
+    },
+  },
+  {
+    name: 'write',
+    description: 'Generic file write for any file. Creates directories if needed. Works with both platform and project files.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        file_path: {
+          type: 'string',
+          description: 'File path to write to',
+        },
+        content: {
+          type: 'string',
+          description: 'Content to write to the file',
+        },
+      },
+      required: ['file_path', 'content'],
     },
   },
 ] as const;

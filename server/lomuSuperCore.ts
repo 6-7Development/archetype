@@ -178,14 +178,38 @@ AI Assistance:
 - start_subagent(task, files) - Delegate complex tasks to subagents
 - web_search(query) - Search web for latest documentation and solutions
 
-Database & Integrations:
-- execute_sql(query) - Run SQL queries on development database
-- search_integrations(query) - Find Replit integrations for external services
-- generate_design_guidelines(description) - Create design system for new UI projects
+Database & Infrastructure:
+- check_database_status() - Verify database connection and health status
+- execute_sql_tool(sql_query, environment) - Execute SQL queries on development database (safety: requires confirmation for destructive ops)
+- create_postgresql_database_tool() - Create or verify PostgreSQL database configuration
+- programming_language_install_tool(languages) - Install programming languages (Node.js, Python, Go, etc.)
+
+Secrets Management:
+- ask_secrets(secret_keys, user_message) - Request API keys from user (OpenAI, Stripe, etc.)
+- check_secrets(secret_keys) - Verify if secrets exist without exposing values
+
+Integrations:
+- search_integrations(query) - Search for Replit-style integrations (Auth, Payments, AI, etc.)
+- use_integration(integration_id, operation) - Add/configure integrations in project (view, add, propose_setting_up)
+
+Design & Assets:
+- generate_design_guidelines(description, projectName, colorScheme) - Generate comprehensive design system documentation
+- stock_image_tool(description, limit, orientation) - Fetch stock images from Unsplash (saves to attached_assets/stock_images)
+
+Deployment & Rollback:
+- suggest_deploy() - Suggest deployment to production with steps (user triggers actual deployment)
+- suggest_rollback(checkpoint, reason) - Suggest rollback to previous checkpoint with instructions
+
+File & System Operations (Generic):
+- web_fetch(url) - Fetch full web page content and convert to text/markdown
+- refresh_all_logs(filter, limit) - Get latest workflow, browser, and server logs
+- glob(pattern, path) - Find files matching glob patterns (e.g., "**/*.ts")
+- ls(path, recursive, include_hidden) - List directory contents with details
+- read(file_path, offset, limit) - Generic file read (works with platform and project files)
+- write(file_path, content) - Generic file write (creates directories if needed)
 
 Platform Diagnostics:
 - perform_diagnosis(target, focus) - Run platform diagnostics and health checks
-- read_logs(filter) - Read platform logs for debugging
 </available_tools>
 
 <tool_usage_guidelines>
