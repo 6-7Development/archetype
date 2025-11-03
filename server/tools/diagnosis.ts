@@ -153,7 +153,21 @@ export async function performDiagnosis(params: DiagnosisParams): Promise<Diagnos
     ];
 
     // Sanitize all file paths to prevent command injection
-    const rawFiles = params.focus || DEFAULT_FILES;
+    // FIX: Handle both string and array for focus parameter (AI agents sometimes pass strings)
+    let rawFiles: string[];
+    if (!params.focus) {
+      rawFiles = DEFAULT_FILES;
+    } else if (typeof params.focus === 'string') {
+      // Convert single string to array
+      console.log(`[DIAGNOSIS] ⚠️ Focus parameter was a string, converting to array`);
+      rawFiles = [params.focus];
+    } else if (Array.isArray(params.focus)) {
+      rawFiles = params.focus;
+    } else {
+      console.warn(`[DIAGNOSIS] Invalid focus parameter type: ${typeof params.focus}, falling back to defaults`);
+      rawFiles = DEFAULT_FILES;
+    }
+    
     console.log(`[DIAGNOSIS] Raw files to check: ${JSON.stringify(rawFiles)}`);
     
     const filesToCheck = rawFiles
