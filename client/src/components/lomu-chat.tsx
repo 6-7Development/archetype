@@ -665,7 +665,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                     })
                       .then(res => res.json())
                       .then(taskListData => {
-                        if (taskListData.success && taskListData.tasks) {
+                        if (taskListData.success && taskListData.tasks && taskListData.tasks.length > 0) {
                           const formattedTasks: AgentTask[] = taskListData.tasks.map((t: any) => ({
                             id: t.id,
                             title: t.title,
@@ -674,15 +674,16 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                           }));
                           setTasks(formattedTasks);
                           console.log('[LOMU-AI] ✅ Task list loaded with', formattedTasks.length, 'tasks');
+                        } else {
+                          console.log('[LOMU-AI] ℹ️ Task list empty or unavailable:', taskListData.message || 'No tasks');
+                          setTasks([]); // Clear any stale tasks
                         }
                       })
                       .catch(err => {
                         console.error('[LOMU-AI] ❌ Failed to fetch task list after retries:', err);
-                        toast({
-                          title: '❌ Failed to Load Tasks',
-                          description: 'Could not load task list after multiple attempts. The agent is still working.',
-                          variant: 'destructive',
-                        });
+                        setTasks([]); // Clear tasks on error
+                        // Don't show error toast - just log it and continue
+                        console.log('[LOMU-AI] Continuing without task list display');
                       });
                     break;
 
