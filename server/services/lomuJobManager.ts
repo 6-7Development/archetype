@@ -254,6 +254,41 @@ async function runMetaSysopWorker(jobId: string) {
       });
     }
 
+    // 🎯 PRE-FILTER: Handle simple greetings/questions without calling Gemini
+    const lowerMsg = message.toLowerCase().trim();
+    const CONVERSATIONAL_PATTERNS = [
+      { pattern: /^(hi|hello|hey|sup|what'?s up|yo)[\s!.?]*$/i, response: "Hey! Ready to help you build something amazing. What are we working on?" },
+      { pattern: /^(thanks|thank you|thx|ty)[\s!.?]*$/i, response: "You're welcome! Let me know if you need anything else." },
+      { pattern: /^how (are you|do you feel|does (it|that|this|the update) feel)[\s?!.]*$/i, response: "Feeling great and ready to build! The new updates make me much more capable. What would you like to create?" },
+      { pattern: /^(what (are|can) you|who are you|tell me about yourself)[\s?!.]*$/i, response: "I'm LomuAI, your AI development teammate! I can build complete apps, fix bugs, write code, test with Playwright, and commit to GitHub. What do you want to build?" },
+      { pattern: /^what does (the |that )?(clear|new) button do[\s?!.]*$/i, response: "The Clear button resets our conversation so we can start fresh. The New button starts a new healing session. Both help you work on different tasks!" },
+    ];
+
+    for (const { pattern, response } of CONVERSATIONAL_PATTERNS) {
+      if (pattern.test(lowerMsg)) {
+        console.log(`[LOMU-AI-PREFILTER] Matched conversational pattern: ${pattern.source}`);
+        console.log(`[LOMU-AI-PREFILTER] Responding without calling Gemini`);
+        
+        const friendlyResponse = response;
+        broadcast(userId, jobId, 'job_content', { content: friendlyResponse });
+        
+        // Mark job as completed immediately
+        await db.update(lomuJobs)
+          .set({ 
+            status: 'completed',
+            completedAt: new Date()
+          })
+          .where(eq(lomuJobs.id, jobId));
+        
+        broadcast(userId, jobId, 'job_completed', { 
+          status: 'completed',
+          content: friendlyResponse 
+        });
+        
+        return; // Exit early - no Gemini call needed
+      }
+    }
+
     // Build system prompt - Full awareness, personality, Replit Agent parity
     const systemPrompt = `You are LomuAI, an autonomous AI developer agent for the Lomu platform.
 
