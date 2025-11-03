@@ -25,7 +25,7 @@ fi
 
 echo ""
 echo "🔧 Running database migration and drift repair..."
-node railway-db-setup.js
+node railway-db-setup.cjs
 
 # Check if database setup succeeded
 if [ $? -ne 0 ]; then

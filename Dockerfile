@@ -49,7 +49,7 @@ COPY replit.md ./
 
 # Copy startup scripts
 COPY railway-start.sh ./
-COPY railway-db-setup.js ./
+COPY railway-db-setup.cjs ./
 COPY debug-start.sh ./
 RUN chmod +x railway-start.sh debug-start.sh
 

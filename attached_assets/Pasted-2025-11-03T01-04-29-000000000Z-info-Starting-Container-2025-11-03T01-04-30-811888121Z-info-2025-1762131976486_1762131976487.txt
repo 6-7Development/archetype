@@ -1,0 +1,452 @@
+2025-11-03T01:04:29.000000000Z [info] Starting Container
+2025-11-03T01:04:30.811888121Z [info] 
+2025-11-03T01:04:30.811961573Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:51 shared
+2025-11-03T01:04:30.811968726Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:51 tsconfig.json
+2025-11-03T01:04:30.812024463Z [info] ðŸ” Checking for server/public directory (frontend)...
+2025-11-03T01:04:30.812032758Z [info] âœ… server/public directory exists (frontend build)
+2025-11-03T01:04:30.812039945Z [info] 
+2025-11-03T01:04:30.812044877Z [info] ðŸ”§ Running database migration and drift repair...
+2025-11-03T01:04:30.812050318Z [error] file:///app/railway-db-setup.js:1
+2025-11-03T01:04:30.812055148Z [error] const pg = require('pg');
+2025-11-03T01:04:30.812059590Z [error]            ^
+2025-11-03T01:04:30.812064135Z [error] 
+2025-11-03T01:04:30.812071943Z [error] ReferenceError: require is not defined in ES module scope, you can use import instead
+2025-11-03T01:04:30.812076494Z [error] This file is being treated as an ES module because it has a '.js' file extension and '/app/package.json' contains type: "module". To treat it as a CommonJS script, rename it to use the '.cjs' file extension.
+2025-11-03T01:04:30.812081822Z [error]     at file:///app/railway-db-setup.js:1:12
+2025-11-03T01:04:30.812083392Z [info] ======================================
+2025-11-03T01:04:30.812087463Z [error]     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-11-03T01:04:30.812089774Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T01:04:30.812093870Z [info] ======================================
+2025-11-03T01:04:30.812097878Z [info] Time: Mon Nov  3 01:04:29 UTC 2025
+2025-11-03T01:04:30.812101939Z [info] Node version: v20.19.5
+2025-11-03T01:04:30.812109228Z [error]     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-11-03T01:04:30.812109352Z [info] NPM version: 10.8.2
+2025-11-03T01:04:30.812115106Z [error]     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+2025-11-03T01:04:30.812116686Z [info] 
+2025-11-03T01:04:30.812121519Z [error] 
+2025-11-03T01:04:30.812124054Z [info] ðŸ“ Current directory: /app
+2025-11-03T01:04:30.812127859Z [error] Node.js v20.19.5
+2025-11-03T01:04:30.812131163Z [info] ðŸ“‚ Listing root files:
+2025-11-03T01:04:30.812136700Z [info] total 424
+2025-11-03T01:04:30.812143535Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 01:03 .
+2025-11-03T01:04:30.812149561Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 01:04 ..
+2025-11-03T01:04:30.812155186Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 01:03 debug-start.sh
+2025-11-03T01:04:30.812160844Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:51 drizzle.config.ts
+2025-11-03T01:04:30.812164890Z [info] drwxr-xr-x    3 root     root          4096 Nov  3 00:51 migrations
+2025-11-03T01:04:30.812170465Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:52 node_modules
+2025-11-03T01:04:30.812174892Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:52 package-lock.json
+2025-11-03T01:04:30.812179722Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:52 package.json
+2025-11-03T01:04:30.812185086Z [info] -rw-rw-r--    1 root     root          1998 Nov  3 01:03 railway-db-setup.js
+2025-11-03T01:04:30.812189643Z [info] -rwxr-xr-x    1 root     root          2333 Nov  3 01:03 railway-start.sh
+2025-11-03T01:04:30.812193847Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:51 replit.md
+2025-11-03T01:04:30.812198182Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:51 server
+2025-11-03T01:04:31.726917966Z [info] ======================================
+2025-11-03T01:04:31.726922592Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T01:04:31.726928095Z [info] ======================================
+2025-11-03T01:04:31.726932818Z [info] Time: Mon Nov  3 01:04:31 UTC 2025
+2025-11-03T01:04:31.742732960Z [info] Node version: v20.19.5
+2025-11-03T01:04:31.878222412Z [info] 
+2025-11-03T01:04:31.878223541Z [info] -rw-rw-r--    1 root     root          1998 Nov  3 01:03 railway-db-setup.js
+2025-11-03T01:04:31.878231305Z [info] ðŸ” Checking for server/public directory (frontend)...
+2025-11-03T01:04:31.878233566Z [info] -rwxr-xr-x    1 root     root          2333 Nov  3 01:03 railway-start.sh
+2025-11-03T01:04:31.878237661Z [info] âœ… server/public directory exists (frontend build)
+2025-11-03T01:04:31.878241651Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:51 replit.md
+2025-11-03T01:04:31.878248353Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:51 server
+2025-11-03T01:04:31.878252425Z [info] NPM version: 10.8.2
+2025-11-03T01:04:31.878256063Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:51 shared
+2025-11-03T01:04:31.878258081Z [info] 
+2025-11-03T01:04:31.878263420Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:51 tsconfig.json
+2025-11-03T01:04:31.878267554Z [info] ðŸ“ Current directory: /app
+2025-11-03T01:04:31.878274055Z [info] ðŸ“‚ Listing root files:
+2025-11-03T01:04:31.878279704Z [info] total 424
+2025-11-03T01:04:31.878284747Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 01:03 .
+2025-11-03T01:04:31.878289456Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 01:04 ..
+2025-11-03T01:04:31.878294165Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 01:03 debug-start.sh
+2025-11-03T01:04:31.878299326Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:51 drizzle.config.ts
+2025-11-03T01:04:31.878304819Z [info] drwxr-xr-x    3 root     root          4096 Nov  3 00:51 migrations
+2025-11-03T01:04:31.878309311Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:52 node_modules
+2025-11-03T01:04:31.878314416Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:52 package-lock.json
+2025-11-03T01:04:31.878319718Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:52 package.json
+2025-11-03T01:04:31.879139131Z [info] 
+2025-11-03T01:04:31.879144396Z [info] ðŸ”§ Running database migration and drift repair...
+2025-11-03T01:04:31.919023971Z [error] file:///app/railway-db-setup.js:1
+2025-11-03T01:04:31.919033966Z [error] const pg = require('pg');
+2025-11-03T01:04:31.919034854Z [error] Node.js v20.19.5
+2025-11-03T01:04:31.919041973Z [error]            ^
+2025-11-03T01:04:31.919041991Z [error] This file is being treated as an ES module because it has a '.js' file extension and '/app/package.json' contains type: "module". To treat it as a CommonJS script, rename it to use the '.cjs' file extension.
+2025-11-03T01:04:31.919049173Z [error] 
+2025-11-03T01:04:31.919051865Z [error]     at file:///app/railway-db-setup.js:1:12
+2025-11-03T01:04:31.919057780Z [error] ReferenceError: require is not defined in ES module scope, you can use import instead
+2025-11-03T01:04:31.919059655Z [error]     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-11-03T01:04:31.919065701Z [error]     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-11-03T01:04:31.919071048Z [error]     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+2025-11-03T01:04:31.919077900Z [error] 
+2025-11-03T01:04:33.097705913Z [info] ======================================
+2025-11-03T01:04:33.097718371Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T01:04:33.097727107Z [info] ======================================
+2025-11-03T01:04:33.097732657Z [info] Time: Mon Nov  3 01:04:33 UTC 2025
+2025-11-03T01:04:33.104950105Z [info] Node version: v20.19.5
+2025-11-03T01:04:33.264038813Z [info] NPM version: 10.8.2
+2025-11-03T01:04:33.264048812Z [info] 
+2025-11-03T01:04:33.264054576Z [info] ðŸ“ Current directory: /app
+2025-11-03T01:04:33.264060886Z [info] ðŸ“‚ Listing root files:
+2025-11-03T01:04:33.264066134Z [info] total 424
+2025-11-03T01:04:33.264071027Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 01:03 .
+2025-11-03T01:04:33.264075908Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 01:04 ..
+2025-11-03T01:04:33.264081346Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 01:03 debug-start.sh
+2025-11-03T01:04:33.264085761Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:51 drizzle.config.ts
+2025-11-03T01:04:33.264091244Z [info] drwxr-xr-x    3 root     root          4096 Nov  3 00:51 migrations
+2025-11-03T01:04:33.264095646Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:52 node_modules
+2025-11-03T01:04:33.264099713Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:52 package-lock.json
+2025-11-03T01:04:33.264104413Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:52 package.json
+2025-11-03T01:04:33.264109475Z [info] -rw-rw-r--    1 root     root          1998 Nov  3 01:03 railway-db-setup.js
+2025-11-03T01:04:33.264113685Z [info] -rwxr-xr-x    1 root     root          2333 Nov  3 01:03 railway-start.sh
+2025-11-03T01:04:33.264117847Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:51 replit.md
+2025-11-03T01:04:33.264122390Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:51 server
+2025-11-03T01:04:33.264128057Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:51 shared
+2025-11-03T01:04:33.264133240Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:51 tsconfig.json
+2025-11-03T01:04:33.264138125Z [info] 
+2025-11-03T01:04:33.264142467Z [info] ðŸ” Checking for server/public directory (frontend)...
+2025-11-03T01:04:33.264146662Z [info] âœ… server/public directory exists (frontend build)
+2025-11-03T01:04:33.267085772Z [info] 
+2025-11-03T01:04:33.267091622Z [info] ðŸ”§ Running database migration and drift repair...
+2025-11-03T01:04:33.777546841Z [error] Node.js v20.19.5
+2025-11-03T01:04:33.777551166Z [error] 
+2025-11-03T01:04:33.777564103Z [error] ReferenceError: require is not defined in ES module scope, you can use import instead
+2025-11-03T01:04:33.777572864Z [error]     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-11-03T01:04:33.777574208Z [error] This file is being treated as an ES module because it has a '.js' file extension and '/app/package.json' contains type: "module". To treat it as a CommonJS script, rename it to use the '.cjs' file extension.
+2025-11-03T01:04:33.777584447Z [error]     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-11-03T01:04:33.777584750Z [error]     at file:///app/railway-db-setup.js:1:12
+2025-11-03T01:04:33.777597139Z [error]     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+2025-11-03T01:04:33.777599968Z [error] file:///app/railway-db-setup.js:1
+2025-11-03T01:04:33.777609932Z [error] 
+2025-11-03T01:04:33.777613823Z [error] const pg = require('pg');
+2025-11-03T01:04:33.777622579Z [error]            ^
+2025-11-03T01:04:35.708070908Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 01:03 .
+2025-11-03T01:04:35.708080840Z [info] Time: Mon Nov  3 01:04:35 UTC 2025
+2025-11-03T01:04:35.708080875Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 01:04 ..
+2025-11-03T01:04:35.708089456Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 01:03 debug-start.sh
+2025-11-03T01:04:35.708089971Z [info] ======================================
+2025-11-03T01:04:35.708103395Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:51 drizzle.config.ts
+2025-11-03T01:04:35.708105039Z [info] Node version: v20.19.5
+2025-11-03T01:04:35.708106619Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T01:04:35.708106848Z [info] drwxr-xr-x    3 root     root          4096 Nov  3 00:51 migrations
+2025-11-03T01:04:35.708121462Z [info] ======================================
+2025-11-03T01:04:35.708122965Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:52 node_modules
+2025-11-03T01:04:35.708125294Z [info] NPM version: 10.8.2
+2025-11-03T01:04:35.708125628Z [info] ðŸ“ Current directory: /app
+2025-11-03T01:04:35.708131526Z [info] -rw-rw-r--    1 root     root          1998 Nov  3 01:03 railway-db-setup.js
+2025-11-03T01:04:35.708134857Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:52 package-lock.json
+2025-11-03T01:04:35.708141845Z [info] ðŸ“‚ Listing root files:
+2025-11-03T01:04:35.708145559Z [info] 
+2025-11-03T01:04:35.708145955Z [info] -rwxr-xr-x    1 root     root          2333 Nov  3 01:03 railway-start.sh
+2025-11-03T01:04:35.708146875Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:52 package.json
+2025-11-03T01:04:35.708157404Z [info] total 424
+2025-11-03T01:04:35.708157464Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:51 replit.md
+2025-11-03T01:04:35.708166209Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:51 server
+2025-11-03T01:04:35.712765046Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:51 shared
+2025-11-03T01:04:35.712771038Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:51 tsconfig.json
+2025-11-03T01:04:35.712777069Z [info] 
+2025-11-03T01:04:35.712783330Z [info] ðŸ” Checking for server/public directory (frontend)...
+2025-11-03T01:04:35.712789224Z [info] âœ… server/public directory exists (frontend build)
+2025-11-03T01:04:35.712797393Z [info] 
+2025-11-03T01:04:35.712802896Z [info] ðŸ”§ Running database migration and drift repair...
+2025-11-03T01:04:35.712808829Z [error] file:///app/railway-db-setup.js:1
+2025-11-03T01:04:35.712815906Z [error] const pg = require('pg');
+2025-11-03T01:04:35.712825857Z [error]            ^
+2025-11-03T01:04:35.712832650Z [error] 
+2025-11-03T01:04:35.712839179Z [error] ReferenceError: require is not defined in ES module scope, you can use import instead
+2025-11-03T01:04:35.712844908Z [error] This file is being treated as an ES module because it has a '.js' file extension and '/app/package.json' contains type: "module". To treat it as a CommonJS script, rename it to use the '.cjs' file extension.
+2025-11-03T01:04:35.712851458Z [error]     at file:///app/railway-db-setup.js:1:12
+2025-11-03T01:04:35.712857427Z [error]     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-11-03T01:04:35.712863980Z [error]     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-11-03T01:04:35.712871504Z [error]     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+2025-11-03T01:04:35.712878263Z [error] 
+2025-11-03T01:04:35.712884745Z [error] Node.js v20.19.5
+2025-11-03T01:04:41.847761678Z [info] ======================================
+2025-11-03T01:04:41.847773780Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T01:04:41.847781054Z [info] ======================================
+2025-11-03T01:04:41.847793268Z [info] Time: Mon Nov  3 01:04:41 UTC 2025
+2025-11-03T01:04:41.854459459Z [info] Node version: v20.19.5
+2025-11-03T01:04:42.028842149Z [info] -rw-rw-r--    1 root     root          1998 Nov  3 01:03 railway-db-setup.js
+2025-11-03T01:04:42.028854662Z [info] -rwxr-xr-x    1 root     root          2333 Nov  3 01:03 railway-start.sh
+2025-11-03T01:04:42.028861159Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:51 replit.md
+2025-11-03T01:04:42.028866744Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:51 server
+2025-11-03T01:04:42.028872668Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:51 shared
+2025-11-03T01:04:42.028881315Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:51 tsconfig.json
+2025-11-03T01:04:42.028881458Z [info] NPM version: 10.8.2
+2025-11-03T01:04:42.028889674Z [info] 
+2025-11-03T01:04:42.028894001Z [info] 
+2025-11-03T01:04:42.028896916Z [info] ðŸ” Checking for server/public directory (frontend)...
+2025-11-03T01:04:42.028903558Z [info] ðŸ“ Current directory: /app
+2025-11-03T01:04:42.028904083Z [info] âœ… server/public directory exists (frontend build)
+2025-11-03T01:04:42.028911915Z [info] ðŸ“‚ Listing root files:
+2025-11-03T01:04:42.028918601Z [info] total 424
+2025-11-03T01:04:42.028926056Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 01:03 .
+2025-11-03T01:04:42.028932691Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 01:04 ..
+2025-11-03T01:04:42.028938833Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 01:03 debug-start.sh
+2025-11-03T01:04:42.028944379Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:51 drizzle.config.ts
+2025-11-03T01:04:42.028951635Z [info] drwxr-xr-x    3 root     root          4096 Nov  3 00:51 migrations
+2025-11-03T01:04:42.028959100Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:52 node_modules
+2025-11-03T01:04:42.028966256Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:52 package-lock.json
+2025-11-03T01:04:42.028980015Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:52 package.json
+2025-11-03T01:04:42.029253154Z [info] 
+2025-11-03T01:04:42.029258661Z [info] ðŸ”§ Running database migration and drift repair...
+2025-11-03T01:04:42.072495686Z [error]            ^
+2025-11-03T01:04:42.072499169Z [error] 
+2025-11-03T01:04:42.072502216Z [error] file:///app/railway-db-setup.js:1
+2025-11-03T01:04:42.072505061Z [error] 
+2025-11-03T01:04:42.072514297Z [error] Node.js v20.19.5
+2025-11-03T01:04:42.072514416Z [error] ReferenceError: require is not defined in ES module scope, you can use import instead
+2025-11-03T01:04:42.072517635Z [error] const pg = require('pg');
+2025-11-03T01:04:42.072524178Z [error] This file is being treated as an ES module because it has a '.js' file extension and '/app/package.json' contains type: "module". To treat it as a CommonJS script, rename it to use the '.cjs' file extension.
+2025-11-03T01:04:42.072532744Z [error]     at file:///app/railway-db-setup.js:1:12
+2025-11-03T01:04:42.072541285Z [error]     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-11-03T01:04:42.072547893Z [error]     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-11-03T01:04:42.072554165Z [error]     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+2025-11-03T01:04:43.800643082Z [error] ReferenceError: require is not defined in ES module scope, you can use import instead
+2025-11-03T01:04:43.800644243Z [info] ðŸ” Checking for server/public directory (frontend)...
+2025-11-03T01:04:43.800654206Z [info] âœ… server/public directory exists (frontend build)
+2025-11-03T01:04:43.800654251Z [error]     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-11-03T01:04:43.800655966Z [error] This file is being treated as an ES module because it has a '.js' file extension and '/app/package.json' contains type: "module". To treat it as a CommonJS script, rename it to use the '.cjs' file extension.
+2025-11-03T01:04:43.800665067Z [error]     at file:///app/railway-db-setup.js:1:12
+2025-11-03T01:04:43.800666127Z [error]     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-11-03T01:04:43.800673885Z [error]     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+2025-11-03T01:04:43.800679519Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:51 shared
+2025-11-03T01:04:43.800680661Z [info] 
+2025-11-03T01:04:43.800683840Z [error] 
+2025-11-03T01:04:43.800690838Z [info] ðŸ”§ Running database migration and drift repair...
+2025-11-03T01:04:43.800691132Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:51 tsconfig.json
+2025-11-03T01:04:43.800692880Z [error] Node.js v20.19.5
+2025-11-03T01:04:43.800699969Z [info] 
+2025-11-03T01:04:43.800702167Z [error] file:///app/railway-db-setup.js:1
+2025-11-03T01:04:43.800716391Z [error] const pg = require('pg');
+2025-11-03T01:04:43.800724434Z [error]            ^
+2025-11-03T01:04:43.800731472Z [error] 
+2025-11-03T01:04:43.800970146Z [info] ======================================
+2025-11-03T01:04:43.800976234Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T01:04:43.800981988Z [info] ======================================
+2025-11-03T01:04:43.800987897Z [info] Time: Mon Nov  3 01:04:43 UTC 2025
+2025-11-03T01:04:43.800995415Z [info] Node version: v20.19.5
+2025-11-03T01:04:43.801002419Z [info] NPM version: 10.8.2
+2025-11-03T01:04:43.801008753Z [info] 
+2025-11-03T01:04:43.801030138Z [info] ðŸ“ Current directory: /app
+2025-11-03T01:04:43.801038498Z [info] ðŸ“‚ Listing root files:
+2025-11-03T01:04:43.801046460Z [info] total 424
+2025-11-03T01:04:43.801053589Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 01:03 .
+2025-11-03T01:04:43.801097528Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 01:04 ..
+2025-11-03T01:04:43.801103864Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 01:03 debug-start.sh
+2025-11-03T01:04:43.801109910Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:51 drizzle.config.ts
+2025-11-03T01:04:43.801116064Z [info] drwxr-xr-x    3 root     root          4096 Nov  3 00:51 migrations
+2025-11-03T01:04:43.801121793Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:52 node_modules
+2025-11-03T01:04:43.801126629Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:52 package-lock.json
+2025-11-03T01:04:43.801132187Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:52 package.json
+2025-11-03T01:04:43.801138797Z [info] -rw-rw-r--    1 root     root          1998 Nov  3 01:03 railway-db-setup.js
+2025-11-03T01:04:43.801147192Z [info] -rwxr-xr-x    1 root     root          2333 Nov  3 01:03 railway-start.sh
+2025-11-03T01:04:43.801154557Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:51 replit.md
+2025-11-03T01:04:43.801159940Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:51 server
+2025-11-03T01:04:45.244271882Z [info] ======================================
+2025-11-03T01:04:45.244277458Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T01:04:45.244283169Z [info] ======================================
+2025-11-03T01:04:45.244289624Z [info] Time: Mon Nov  3 01:04:45 UTC 2025
+2025-11-03T01:04:45.253319455Z [info] Node version: v20.19.5
+2025-11-03T01:04:45.733744258Z [error]            ^
+2025-11-03T01:04:45.733752051Z [error] 
+2025-11-03T01:04:45.733758336Z [error]     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-11-03T01:04:45.733761377Z [error] Node.js v20.19.5
+2025-11-03T01:04:45.733767842Z [error] ReferenceError: require is not defined in ES module scope, you can use import instead
+2025-11-03T01:04:45.733769025Z [error]     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+2025-11-03T01:04:45.733771598Z [info] ðŸ”§ Running database migration and drift repair...
+2025-11-03T01:04:45.733778389Z [error] This file is being treated as an ES module because it has a '.js' file extension and '/app/package.json' contains type: "module". To treat it as a CommonJS script, rename it to use the '.cjs' file extension.
+2025-11-03T01:04:45.733779419Z [error] 
+2025-11-03T01:04:45.733782743Z [error] file:///app/railway-db-setup.js:1
+2025-11-03T01:04:45.733790243Z [error] const pg = require('pg');
+2025-11-03T01:04:45.733816921Z [info] 
+2025-11-03T01:04:45.733825570Z [error]     at file:///app/railway-db-setup.js:1:12
+2025-11-03T01:04:45.733832292Z [error]     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-11-03T01:04:45.734052431Z [info] NPM version: 10.8.2
+2025-11-03T01:04:45.734056282Z [info] 
+2025-11-03T01:04:45.734062142Z [info] ðŸ“ Current directory: /app
+2025-11-03T01:04:45.734066252Z [info] ðŸ“‚ Listing root files:
+2025-11-03T01:04:45.734070849Z [info] total 424
+2025-11-03T01:04:45.734074281Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 01:03 .
+2025-11-03T01:04:45.734078161Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 01:04 ..
+2025-11-03T01:04:45.734082063Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 01:03 debug-start.sh
+2025-11-03T01:04:45.734085962Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:51 drizzle.config.ts
+2025-11-03T01:04:45.734093013Z [info] drwxr-xr-x    3 root     root          4096 Nov  3 00:51 migrations
+2025-11-03T01:04:45.734096665Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:52 node_modules
+2025-11-03T01:04:45.734101247Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:52 package-lock.json
+2025-11-03T01:04:45.734105506Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:52 package.json
+2025-11-03T01:04:45.734109356Z [info] -rw-rw-r--    1 root     root          1998 Nov  3 01:03 railway-db-setup.js
+2025-11-03T01:04:45.734113998Z [info] -rwxr-xr-x    1 root     root          2333 Nov  3 01:03 railway-start.sh
+2025-11-03T01:04:45.734118762Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:51 replit.md
+2025-11-03T01:04:45.734123006Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:51 server
+2025-11-03T01:04:45.734127269Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:51 shared
+2025-11-03T01:04:45.734131814Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:51 tsconfig.json
+2025-11-03T01:04:45.734136612Z [info] 
+2025-11-03T01:04:45.734141536Z [info] ðŸ” Checking for server/public directory (frontend)...
+2025-11-03T01:04:45.734145400Z [info] âœ… server/public directory exists (frontend build)
+2025-11-03T01:04:47.013680341Z [info] ======================================
+2025-11-03T01:04:47.013687355Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T01:04:47.013692194Z [info] ======================================
+2025-11-03T01:04:47.013696550Z [info] Time: Mon Nov  3 01:04:47 UTC 2025
+2025-11-03T01:04:47.022967859Z [info] Node version: v20.19.5
+2025-11-03T01:04:47.156525342Z [info] drwxr-xr-x    3 root     root          4096 Nov  3 00:51 migrations
+2025-11-03T01:04:47.156527157Z [info] âœ… server/public directory exists (frontend build)
+2025-11-03T01:04:47.156536532Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:52 node_modules
+2025-11-03T01:04:47.156542135Z [info] NPM version: 10.8.2
+2025-11-03T01:04:47.156542542Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:52 package-lock.json
+2025-11-03T01:04:47.156547569Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:52 package.json
+2025-11-03T01:04:47.156553069Z [info] -rw-rw-r--    1 root     root          1998 Nov  3 01:03 railway-db-setup.js
+2025-11-03T01:04:47.156556079Z [info] 
+2025-11-03T01:04:47.156559048Z [info] -rwxr-xr-x    1 root     root          2333 Nov  3 01:03 railway-start.sh
+2025-11-03T01:04:47.156564772Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:51 replit.md
+2025-11-03T01:04:47.156566780Z [info] ðŸ“ Current directory: /app
+2025-11-03T01:04:47.156572697Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:51 server
+2025-11-03T01:04:47.156574241Z [info] ðŸ“‚ Listing root files:
+2025-11-03T01:04:47.156583021Z [info] total 424
+2025-11-03T01:04:47.156586516Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:51 shared
+2025-11-03T01:04:47.156591177Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 01:03 .
+2025-11-03T01:04:47.156594749Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:51 tsconfig.json
+2025-11-03T01:04:47.156600387Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 01:04 ..
+2025-11-03T01:04:47.156603564Z [info] 
+2025-11-03T01:04:47.156608278Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 01:03 debug-start.sh
+2025-11-03T01:04:47.156611505Z [info] ðŸ” Checking for server/public directory (frontend)...
+2025-11-03T01:04:47.156616461Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:51 drizzle.config.ts
+2025-11-03T01:04:47.157531248Z [info] 
+2025-11-03T01:04:47.157537625Z [info] ðŸ”§ Running database migration and drift repair...
+2025-11-03T01:04:47.197920447Z [error] ReferenceError: require is not defined in ES module scope, you can use import instead
+2025-11-03T01:04:47.197920584Z [error] Node.js v20.19.5
+2025-11-03T01:04:47.197930271Z [error] This file is being treated as an ES module because it has a '.js' file extension and '/app/package.json' contains type: "module". To treat it as a CommonJS script, rename it to use the '.cjs' file extension.
+2025-11-03T01:04:47.197937405Z [error]     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-11-03T01:04:47.197937825Z [error]     at file:///app/railway-db-setup.js:1:12
+2025-11-03T01:04:47.197944051Z [error]     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+2025-11-03T01:04:47.197945373Z [error]     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-11-03T01:04:47.197950395Z [error] 
+2025-11-03T01:04:47.197959411Z [error] file:///app/railway-db-setup.js:1
+2025-11-03T01:04:47.197974137Z [error] const pg = require('pg');
+2025-11-03T01:04:47.197980724Z [error]            ^
+2025-11-03T01:04:47.197987034Z [error] 
+2025-11-03T01:04:48.728657364Z [info] ======================================
+2025-11-03T01:04:48.728663746Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T01:04:48.728669748Z [info] ======================================
+2025-11-03T01:04:48.728677830Z [info] Time: Mon Nov  3 01:04:48 UTC 2025
+2025-11-03T01:04:48.728684594Z [info] Node version: v20.19.5
+2025-11-03T01:04:48.826972436Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 01:04 ..
+2025-11-03T01:04:48.826988361Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 01:03 debug-start.sh
+2025-11-03T01:04:48.826998525Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:51 drizzle.config.ts
+2025-11-03T01:04:48.827007409Z [info] drwxr-xr-x    3 root     root          4096 Nov  3 00:51 migrations
+2025-11-03T01:04:48.827013863Z [info] NPM version: 10.8.2
+2025-11-03T01:04:48.827026020Z [info] 
+2025-11-03T01:04:48.827026557Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:52 node_modules
+2025-11-03T01:04:48.827038734Z [info] ðŸ“ Current directory: /app
+2025-11-03T01:04:48.827041236Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:52 package-lock.json
+2025-11-03T01:04:48.827054005Z [info] ðŸ“‚ Listing root files:
+2025-11-03T01:04:48.827054737Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:52 package.json
+2025-11-03T01:04:48.827067790Z [info] total 424
+2025-11-03T01:04:48.827069196Z [info] -rw-rw-r--    1 root     root          1998 Nov  3 01:03 railway-db-setup.js
+2025-11-03T01:04:48.827082543Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 01:03 .
+2025-11-03T01:04:48.827082695Z [info] -rwxr-xr-x    1 root     root          2333 Nov  3 01:03 railway-start.sh
+2025-11-03T01:04:48.827092697Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:51 replit.md
+2025-11-03T01:04:48.827099139Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:51 server
+2025-11-03T01:04:48.827108440Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:51 shared
+2025-11-03T01:04:48.827115845Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:51 tsconfig.json
+2025-11-03T01:04:48.827124472Z [info] 
+2025-11-03T01:04:48.827133168Z [info] ðŸ” Checking for server/public directory (frontend)...
+2025-11-03T01:04:48.827139538Z [info] âœ… server/public directory exists (frontend build)
+2025-11-03T01:04:48.827953998Z [info] 
+2025-11-03T01:04:48.827963000Z [info] ðŸ”§ Running database migration and drift repair...
+2025-11-03T01:04:48.868266003Z [error] file:///app/railway-db-setup.js:1
+2025-11-03T01:04:48.868274802Z [error] const pg = require('pg');
+2025-11-03T01:04:48.868281375Z [error]            ^
+2025-11-03T01:04:48.868287008Z [error] 
+2025-11-03T01:04:48.868292198Z [error] ReferenceError: require is not defined in ES module scope, you can use import instead
+2025-11-03T01:04:48.868297944Z [error] This file is being treated as an ES module because it has a '.js' file extension and '/app/package.json' contains type: "module". To treat it as a CommonJS script, rename it to use the '.cjs' file extension.
+2025-11-03T01:04:48.868304070Z [error]     at file:///app/railway-db-setup.js:1:12
+2025-11-03T01:04:48.868309475Z [error]     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-11-03T01:04:48.868314585Z [error]     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-11-03T01:04:48.868319816Z [error]     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+2025-11-03T01:04:48.868324918Z [error] 
+2025-11-03T01:04:48.868332843Z [error] Node.js v20.19.5
+2025-11-03T01:04:50.085171784Z [info] ======================================
+2025-11-03T01:04:50.085193633Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T01:04:50.085234835Z [info] ======================================
+2025-11-03T01:04:50.085246629Z [info] Time: Mon Nov  3 01:04:50 UTC 2025
+2025-11-03T01:04:50.094128624Z [info] Node version: v20.19.5
+2025-11-03T01:04:50.243277167Z [info] NPM version: 10.8.2
+2025-11-03T01:04:50.243284715Z [info] ðŸ” Checking for server/public directory (frontend)...
+2025-11-03T01:04:50.243293969Z [info] 
+2025-11-03T01:04:50.243299033Z [info] âœ… server/public directory exists (frontend build)
+2025-11-03T01:04:50.243306695Z [info] ðŸ“ Current directory: /app
+2025-11-03T01:04:50.243313845Z [info] ðŸ“‚ Listing root files:
+2025-11-03T01:04:50.243320278Z [info] total 424
+2025-11-03T01:04:50.243327164Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 01:03 .
+2025-11-03T01:04:50.243333687Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 01:04 ..
+2025-11-03T01:04:50.243341071Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 01:03 debug-start.sh
+2025-11-03T01:04:50.243347426Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:51 drizzle.config.ts
+2025-11-03T01:04:50.243356437Z [info] drwxr-xr-x    3 root     root          4096 Nov  3 00:51 migrations
+2025-11-03T01:04:50.243364116Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:52 node_modules
+2025-11-03T01:04:50.243370510Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:52 package-lock.json
+2025-11-03T01:04:50.243376093Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:52 package.json
+2025-11-03T01:04:50.243381969Z [info] -rw-rw-r--    1 root     root          1998 Nov  3 01:03 railway-db-setup.js
+2025-11-03T01:04:50.243390250Z [info] -rwxr-xr-x    1 root     root          2333 Nov  3 01:03 railway-start.sh
+2025-11-03T01:04:50.243396379Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:51 replit.md
+2025-11-03T01:04:50.243402892Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:51 server
+2025-11-03T01:04:50.243410114Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:51 shared
+2025-11-03T01:04:50.243415455Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:51 tsconfig.json
+2025-11-03T01:04:50.243422534Z [info] 
+2025-11-03T01:04:50.244000286Z [info] 
+2025-11-03T01:04:50.244007196Z [info] ðŸ”§ Running database migration and drift repair...
+2025-11-03T01:04:50.280448084Z [error] file:///app/railway-db-setup.js:1
+2025-11-03T01:04:50.280459371Z [error] const pg = require('pg');
+2025-11-03T01:04:50.280466660Z [error]            ^
+2025-11-03T01:04:50.280473722Z [error] 
+2025-11-03T01:04:50.280480231Z [error] ReferenceError: require is not defined in ES module scope, you can use import instead
+2025-11-03T01:04:50.280490094Z [error] This file is being treated as an ES module because it has a '.js' file extension and '/app/package.json' contains type: "module". To treat it as a CommonJS script, rename it to use the '.cjs' file extension.
+2025-11-03T01:04:50.280496254Z [error]     at file:///app/railway-db-setup.js:1:12
+2025-11-03T01:04:50.280502739Z [error]     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-11-03T01:04:50.280507569Z [error]     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-11-03T01:04:50.280512344Z [error]     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+2025-11-03T01:04:50.280517393Z [error] 
+2025-11-03T01:04:50.280524833Z [error] Node.js v20.19.5
+2025-11-03T01:04:51.868672606Z [info] NPM version: 10.8.2
+2025-11-03T01:04:51.868681856Z [info] 
+2025-11-03T01:04:51.868688490Z [info] ðŸ“ Current directory: /app
+2025-11-03T01:04:51.868694793Z [info] ðŸ“‚ Listing root files:
+2025-11-03T01:04:51.868701830Z [info] total 424
+2025-11-03T01:04:51.868708948Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 01:03 .
+2025-11-03T01:04:51.868775824Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 01:04 ..
+2025-11-03T01:04:51.868782358Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 01:03 debug-start.sh
+2025-11-03T01:04:51.868783705Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:51 replit.md
+2025-11-03T01:04:51.868784060Z [info] drwxr-xr-x    3 root     root          4096 Nov  3 00:51 migrations
+2025-11-03T01:04:51.868784882Z [info] ======================================
+2025-11-03T01:04:51.868792327Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:51 drizzle.config.ts
+2025-11-03T01:04:51.868793254Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T01:04:51.868793454Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:52 node_modules
+2025-11-03T01:04:51.868794093Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:51 server
+2025-11-03T01:04:51.868800345Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:52 package-lock.json
+2025-11-03T01:04:51.868805711Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:52 package.json
+2025-11-03T01:04:51.868809133Z [info] ======================================
+2025-11-03T01:04:51.868813261Z [info] -rw-rw-r--    1 root     root          1998 Nov  3 01:03 railway-db-setup.js
+2025-11-03T01:04:51.868819406Z [info] Time: Mon Nov  3 01:04:51 UTC 2025
+2025-11-03T01:04:51.868819468Z [info] -rwxr-xr-x    1 root     root          2333 Nov  3 01:03 railway-start.sh
+2025-11-03T01:04:51.868826692Z [info] Node version: v20.19.5
+2025-11-03T01:04:51.872650231Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:51 shared
+2025-11-03T01:04:51.872654416Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:51 tsconfig.json
+2025-11-03T01:04:51.872658409Z [info] 
+2025-11-03T01:04:51.872662460Z [info] ðŸ” Checking for server/public directory (frontend)...
+2025-11-03T01:04:51.872666929Z [info] âœ… server/public directory exists (frontend build)
+2025-11-03T01:04:51.872670558Z [info] 
+2025-11-03T01:04:51.872674345Z [info] ðŸ”§ Running database migration and drift repair...
+2025-11-03T01:04:51.872678315Z [error] file:///app/railway-db-setup.js:1
+2025-11-03T01:04:51.872682464Z [error] const pg = require('pg');
+2025-11-03T01:04:51.872686606Z [error]            ^
+2025-11-03T01:04:51.872692146Z [error] 
+2025-11-03T01:04:51.872696599Z [error] ReferenceError: require is not defined in ES module scope, you can use import instead
+2025-11-03T01:04:51.872700375Z [error] This file is being treated as an ES module because it has a '.js' file extension and '/app/package.json' contains type: "module". To treat it as a CommonJS script, rename it to use the '.cjs' file extension.
+2025-11-03T01:04:51.872704373Z [error]     at file:///app/railway-db-setup.js:1:12
+2025-11-03T01:04:51.872708446Z [error]     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+2025-11-03T01:04:51.872712462Z [error]     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+2025-11-03T01:04:51.872716395Z [error]     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+2025-11-03T01:04:51.872720142Z [error] 
+2025-11-03T01:04:51.872724413Z [error] Node.js v20.19.5

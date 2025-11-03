@@ -1,0 +1,87 @@
+2025-11-03T01:03:52.204473032Z [info] 
+2025-11-03T01:03:56.464174496Z [info] [Region: us-east4]
+2025-11-03T01:03:56.478156453Z [info] =========================
+2025-11-03T01:03:56.478191363Z [info] Using Detected Dockerfile
+2025-11-03T01:03:56.478195360Z [info] =========================
+2025-11-03T01:03:56.478198668Z [info] 
+2025-11-03T01:03:56.478210675Z [info] context: xndm-UHp3
+2025-11-03T01:03:56.635262520Z [info] [internal] load build definition from Dockerfile
+2025-11-03T01:03:56.635309202Z [info] [internal] load build definition from Dockerfile
+2025-11-03T01:03:56.635321791Z [info] [internal] load build definition from Dockerfile
+2025-11-03T01:03:56.644295004Z [info] [internal] load build definition from Dockerfile
+2025-11-03T01:03:56.646221765Z [info] [internal] load metadata for docker.io/library/node:20-alpine
+2025-11-03T01:03:56.649244759Z [info] [auth] library/node:pull token for registry-1.docker.io
+2025-11-03T01:03:56.649281073Z [info] [auth] library/node:pull token for registry-1.docker.io
+2025-11-03T01:03:56.762464467Z [info] [internal] load metadata for docker.io/library/node:20-alpine
+2025-11-03T01:03:56.762675234Z [info] [internal] load .dockerignore
+2025-11-03T01:03:56.762690158Z [info] [internal] load .dockerignore
+2025-11-03T01:03:56.762707857Z [info] [internal] load .dockerignore
+2025-11-03T01:03:56.762733407Z [info] [internal] load .dockerignore
+2025-11-03T01:03:56.771695492Z [info] [internal] load .dockerignore
+2025-11-03T01:03:56.777352436Z [info] [production  4/17] COPY package*.json ./
+2025-11-03T01:03:56.777381766Z [info] [internal] load build context
+2025-11-03T01:03:56.777397788Z [info] [production  3/17] RUN apk add --no-cache git
+2025-11-03T01:03:56.777410008Z [info] [frontend-builder  2/12] WORKDIR /app
+2025-11-03T01:03:56.777421478Z [info] [frontend-builder  1/12] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+2025-11-03T01:03:56.777503010Z [info] [frontend-builder 12/12] RUN npx vite build
+2025-11-03T01:03:56.777510715Z [info] [frontend-builder 11/12] COPY tailwind.config.ts ./
+2025-11-03T01:03:56.777517577Z [info] [frontend-builder 10/12] COPY postcss.config.js ./
+2025-11-03T01:03:56.777528519Z [info] [frontend-builder  9/12] COPY tsconfig.json ./
+2025-11-03T01:03:56.777534757Z [info] [frontend-builder  8/12] COPY vite.config.ts ./
+2025-11-03T01:03:56.777540340Z [info] [production  8/17] COPY server ./server
+2025-11-03T01:03:56.777546030Z [info] [frontend-builder  6/12] COPY shared ./shared
+2025-11-03T01:03:56.777553578Z [info] [frontend-builder  5/12] COPY client ./client
+2025-11-03T01:03:56.777560755Z [info] [frontend-builder  4/12] RUN npm ci
+2025-11-03T01:03:56.777569431Z [info] [frontend-builder  3/12] COPY package*.json ./
+2025-11-03T01:03:56.777578155Z [info] [production  6/17] RUN npm install drizzle-kit@^0.31.4
+2025-11-03T01:03:56.777588236Z [info] [production  7/17] COPY --from=frontend-builder /app/dist/public ./server/public
+2025-11-03T01:03:56.777599426Z [info] [production  9/17] COPY shared ./shared
+2025-11-03T01:03:56.777608347Z [info] [production  5/17] RUN npm ci
+2025-11-03T01:03:56.777616687Z [info] [frontend-builder  7/12] COPY attached_assets ./attached_assets
+2025-11-03T01:03:56.777632507Z [info] [production 10/17] COPY tsconfig.json ./
+2025-11-03T01:03:56.777650219Z [info] [production 11/17] COPY drizzle.config.ts ./
+2025-11-03T01:03:56.777684351Z [info] [production 17/17] RUN chmod +x railway-start.sh debug-start.sh
+2025-11-03T01:03:56.777693744Z [info] [production 16/17] COPY debug-start.sh ./
+2025-11-03T01:03:56.777702609Z [info] [production 15/17] COPY railway-db-setup.js ./
+2025-11-03T01:03:56.777710882Z [info] [production 14/17] COPY railway-start.sh ./
+2025-11-03T01:03:56.777720351Z [info] [production 13/17] COPY replit.md ./
+2025-11-03T01:03:56.777730096Z [info] [production 12/17] COPY migrations ./migrations
+2025-11-03T01:03:56.777819527Z [info] [internal] load build context
+2025-11-03T01:03:56.777854139Z [info] [frontend-builder  1/12] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435
+2025-11-03T01:03:56.783654212Z [info] [internal] load build context
+2025-11-03T01:03:57.869367784Z [info] [internal] load build context
+2025-11-03T01:03:57.911416736Z [info] [frontend-builder  2/12] WORKDIR /app
+2025-11-03T01:03:57.911453494Z [info] [production  3/17] RUN apk add --no-cache git
+2025-11-03T01:03:57.911463429Z [info] [production  4/17] COPY package*.json ./
+2025-11-03T01:03:57.911472502Z [info] [production  5/17] RUN npm ci
+2025-11-03T01:03:57.911479233Z [info] [production  6/17] RUN npm install drizzle-kit@^0.31.4
+2025-11-03T01:03:57.911500350Z [info] [frontend-builder  3/12] COPY package*.json ./
+2025-11-03T01:03:57.911507057Z [info] [frontend-builder  4/12] RUN npm ci
+2025-11-03T01:03:57.911514528Z [info] [frontend-builder  5/12] COPY client ./client
+2025-11-03T01:03:57.911522776Z [info] [frontend-builder  6/12] COPY shared ./shared
+2025-11-03T01:03:57.911533966Z [info] [frontend-builder  7/12] COPY attached_assets ./attached_assets
+2025-11-03T01:03:57.911542745Z [info] [frontend-builder  8/12] COPY vite.config.ts ./
+2025-11-03T01:03:57.911549071Z [info] [frontend-builder  9/12] COPY tsconfig.json ./
+2025-11-03T01:03:57.911556077Z [info] [frontend-builder 10/12] COPY postcss.config.js ./
+2025-11-03T01:03:57.911562343Z [info] [frontend-builder 11/12] COPY tailwind.config.ts ./
+2025-11-03T01:03:57.911568819Z [info] [frontend-builder 12/12] RUN npx vite build
+2025-11-03T01:03:57.911574849Z [info] [production  7/17] COPY --from=frontend-builder /app/dist/public ./server/public
+2025-11-03T01:03:57.911582246Z [info] [production  8/17] COPY server ./server
+2025-11-03T01:03:57.911588600Z [info] [production  9/17] COPY shared ./shared
+2025-11-03T01:03:57.911594692Z [info] [production 10/17] COPY tsconfig.json ./
+2025-11-03T01:03:57.911600787Z [info] [production 11/17] COPY drizzle.config.ts ./
+2025-11-03T01:03:57.911606597Z [info] [production 12/17] COPY migrations ./migrations
+2025-11-03T01:03:57.911619335Z [info] [production 13/17] COPY replit.md ./
+2025-11-03T01:03:57.911640441Z [info] [production 14/17] COPY railway-start.sh ./
+2025-11-03T01:03:58.043747889Z [info] [production 14/17] COPY railway-start.sh ./
+2025-11-03T01:03:58.044721293Z [info] [production 15/17] COPY railway-db-setup.js ./
+2025-11-03T01:03:58.073154941Z [info] [production 15/17] COPY railway-db-setup.js ./
+2025-11-03T01:03:58.074217015Z [info] [production 16/17] COPY debug-start.sh ./
+2025-11-03T01:03:58.092812319Z [info] [production 16/17] COPY debug-start.sh ./
+2025-11-03T01:03:58.094167995Z [info] [production 17/17] RUN chmod +x railway-start.sh debug-start.sh
+2025-11-03T01:03:58.203633800Z [info] [production 17/17] RUN chmod +x railway-start.sh debug-start.sh
+2025-11-03T01:03:58.791676182Z [info] [auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com
+2025-11-03T01:03:58.791717659Z [info] [auth] sharing credentials for production-us-east4-eqdc4a.railway-registry.com
+2025-11-03T01:04:00.115839178Z [info] importing to docker
+2025-11-03T01:04:10.152573042Z [info] importing to docker
+2025-11-03T01:04:10.252520348Z [info] Build time: 13.77 seconds
