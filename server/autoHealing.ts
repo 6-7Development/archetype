@@ -19,8 +19,8 @@ interface ErrorLog {
 class AutoHealingService {
   private errorBuffer: ErrorLog[] = [];
   private isHealing = false;
-  private readonly ERROR_THRESHOLD = 3; // Number of errors before auto-healing
-  private readonly BUFFER_TIME = 5000; // Wait 5s to collect related errors
+  private readonly ERROR_THRESHOLD = 5; // Number of errors before auto-healing, increased from 3
+  private readonly BUFFER_TIME = 10000; // Wait 10s to collect related errors, increased from 5s
   private healingTimer: NodeJS.Timeout | null = null;
   private knowledgeBase: Map<string, string> = new Map(); // Store learned fixes
 
@@ -189,26 +189,7 @@ class AutoHealingService {
 
       const client = new Anthropic({ apiKey: anthropicKey });
 
-      const systemPrompt = `You are LomuAI's AUTO-HEALING module. You fix platform errors automatically.
-
-CRITICAL: This is AUTOMATIC healing - be conservative and surgical. Only fix what's broken.
-
-AVAILABLE TOOLS:
-1. readPlatformFile(path) - Read source code
-2. writePlatformFile(path, content) - Fix code
-3. listPlatformFiles(directory) - List files
-
-HEALING STRATEGY:
-1. Analyze error messages
-2. Identify root cause
-3. Apply minimal fix
-4. Verify safety
-5. Test the fix
-
-ERRORS TO FIX:
-${issue}
-
-Fix these errors with minimal changes. Explain each fix clearly.`;
+      const systemPrompt = `You are LomuAI's AUTO-HEALING module. You fix platform errors automatically.\n\nCRITICAL: This is AUTOMATIC healing - be conservative and surgical. Only fix what's broken.\n\nAVAILABLE TOOLS:\n1. readPlatformFile(path) - Read source code\n2. writePlatformFile(path, content) - Fix code\n3. listPlatformFiles(directory) - List files\n\nHEALING STRATEGY:\n1. Analyze error messages\n2. Identify root cause\n3. Apply minimal fix\n4. Verify safety\n5. Test the fix\n\nERRORS TO FIX:\n${issue}\n\nFix these errors with minimal changes. Explain each fix clearly.`;
 
       let conversationMessages: any[] = [{
         role: 'user',
@@ -252,10 +233,10 @@ Fix these errors with minimal changes. Explain each fix clearly.`;
         },
       ];
 
-      const changes: Array<{ path: string; content: string }> = [];
+      let changes: Array<{ path: string; content: string }> = [];
       let continueLoop = true;
       let iterationCount = 0;
-      const MAX_ITERATIONS = 5;
+      const MAX_ITERATIONS = 3; // Decreased from 5
 
       while (continueLoop && iterationCount < MAX_ITERATIONS) {
         iterationCount++;
