@@ -766,8 +766,8 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       .limit(1)
       .then(rows => rows[0]);
 
-    // Format conversation context for AI injection
-    const contextPrompt = formatStateForPrompt(freshState);
+    // Format conversation context for AI injection (with replit.md)
+    const contextPrompt = await formatStateForPrompt(freshState);
 
     // 🧠 LOMU SUPER LOGIC CORE: Combined intelligence with cost awareness
     const { buildLomuSuperCorePrompt } = await import('../lomuSuperCore');

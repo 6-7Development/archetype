@@ -285,9 +285,23 @@ export async function deleteState(stateId: string): Promise<void> {
 /**
  * Format state for injection into AI system prompt
  */
-export function formatStateForPrompt(state: ConversationState | null): string {
+export async function formatStateForPrompt(state: ConversationState | null): Promise<string> {
+  // Inject replit.md for project knowledge
+  let replitMdContent = '';
+  try {
+    const fs = await import('fs/promises');
+    const path = await import('path');
+    const replitMdPath = path.join(process.cwd(), 'replit.md');
+    replitMdContent = await fs.readFile(replitMdPath, 'utf-8');
+  } catch (error: any) {
+    console.warn('[CONTEXT] replit.md not found:', error.message);
+  }
+
   if (!state) {
-    return `CONVERSATION CONTEXT:
+    return `📂 PROJECT ARCHITECTURE (from replit.md):
+${replitMdContent ? `\n${replitMdContent}\n` : '(replit.md not available)'}
+
+CONVERSATION CONTEXT:
 - Current Goal: Not yet determined
 - Files Mentioned: None
 - Session Summary: New conversation`;
@@ -299,7 +313,10 @@ export function formatStateForPrompt(state: ConversationState | null): string {
     : 'None';
   const summary = state.sessionSummary || 'New conversation';
 
-  return `CONVERSATION CONTEXT:
+  return `📂 PROJECT ARCHITECTURE (from replit.md):
+${replitMdContent ? `\n${replitMdContent}\n` : '(replit.md not available)'}
+
+CONVERSATION CONTEXT:
 - Current Goal: ${goal}
 - Files Mentioned: ${files}
 - Session Summary: ${summary}`;

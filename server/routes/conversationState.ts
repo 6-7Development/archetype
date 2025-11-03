@@ -225,7 +225,7 @@ router.get('/state/:projectId/formatted', isAuthenticated, async (req: any, res)
     const projectId = req.params.projectId === 'general' ? null : req.params.projectId;
 
     const state = await getState(userId, projectId);
-    const formatted = formatStateForPrompt(state);
+    const formatted = await formatStateForPrompt(state);
 
     res.json({
       success: true,
