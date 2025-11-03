@@ -427,6 +427,16 @@ router.get('/task-list/:taskListId', isAuthenticated, isAdmin, async (req: any, 
   try {
     const { taskListId } = req.params;
     
+    if (!taskListId || taskListId === 'undefined' || taskListId === 'null') {
+      console.log(`[LOMU-AI] Invalid task list ID: ${taskListId}`);
+      return res.json({ 
+        success: true, 
+        tasks: [],
+        count: 0,
+        message: 'No task list available'
+      });
+    }
+    
     const taskList = await db
       .select()
       .from(tasks)
@@ -442,7 +452,13 @@ router.get('/task-list/:taskListId', isAuthenticated, isAdmin, async (req: any, 
     });
   } catch (error: any) {
     console.error('[LOMU-AI] Get task list error:', error);
-    res.status(500).json({ error: error.message });
+    // Return empty array instead of error to prevent UI crashes
+    res.json({ 
+      success: false,
+      tasks: [],
+      count: 0,
+      error: error.message 
+    });
   }
 });
 
