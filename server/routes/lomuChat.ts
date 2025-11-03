@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { db } from '../db.ts';
-import { chatMessages, taskLists, tasks, lomuAttachments, lomuJobs, users, subscriptions, projects, conversationStates } from '@shared/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { chatMessages, taskLists, tasks, lomuAttachments, lomuJobs, users, subscriptions, projects, conversationStates, platformIncidents } from '@shared/schema';
+import { eq, and, desc, sql } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth.ts';
 import { streamGeminiResponse } from '../gemini.ts';
 import { RAILWAY_CONFIG } from '../config/railway.ts';
 import { platformHealing } from '../platformHealing.ts';
 import { platformAudit } from '../platformAudit.ts';
+import { healOrchestrator } from '../services/healOrchestrator.ts';
 import { consultArchitect } from '../tools/architect-consult.ts';
 import { executeWebSearch } from '../tools/web-search.ts';
 import { GitHubService, getGitHubService } from '../githubService.ts';
