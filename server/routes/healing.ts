@@ -141,7 +141,7 @@ export function registerHealingRoutes(app: Express) {
     }
   });
 
-  // POST /api/healing/messages - Send message to Lomu (with AI response)
+  // POST /api/healing/messages - Send message to Lomu (GEMINI-POWERED with multi-turn tool execution)
   app.post("/api/healing/messages", isAuthenticated, isOwner, async (req, res) => {
     try {
       const userId = req.user!.id;
@@ -153,9 +153,11 @@ export function registerHealingRoutes(app: Express) {
       });
       
       // Import required services
-      const { anthropic, DEFAULT_MODEL } = await import("../anthropic");
-      const { aiQueue } = await import("../priority-queue");
+      const { streamGeminiResponse } = await import("../gemini");
       const { checkUsageLimits, trackAIUsage } = await import("../usage-tracking");
+      const { platformHealing } = await import("../platformHealing");
+      const fs = await import("fs/promises");
+      const path = await import("path");
       
       // Check usage limits
       const limitCheck = await checkUsageLimits(userId);
@@ -171,9 +173,10 @@ export function registerHealingRoutes(app: Express) {
       const userMessage = await storage.createHealingMessage(validated);
       console.log("[HEALING-CHAT] User message saved to database");
       
-      // Get conversation history for context
-      const messages = await storage.getHealingMessages(validated.conversationId);
-      console.log(`[HEALING-CHAT] Loaded ${messages.length} messages from history`);
+      // Get conversation history for context (last 10 messages to save tokens)
+      const allMessages = await storage.getHealingMessages(validated.conversationId);
+      const messages = allMessages.slice(-10);
+      console.log(`[HEALING-CHAT] Loaded ${messages.length} messages from history (last 10)`);
       
       // Build Platform Healing system prompt
       const systemPrompt = `You are Lomu, an AI assistant helping maintain and improve the LomuAI platform.
@@ -191,78 +194,187 @@ export function registerHealingRoutes(app: Express) {
 - Branch: ${process.env.GITHUB_BRANCH || 'main'}
 
 **Your Capabilities:**
-- Analyze code and suggest fixes
-- Explain technical decisions
-- Propose architectural improvements
-- Debug production issues
-- Review and improve code quality
+You have access to these tools:
+- read_platform_file: Read any file from the platform codebase
+- write_platform_file: Write or update platform files
+- search_platform_files: Search for files matching a pattern
 
 **Communication Style:**
-- Be concise and technical
-- Explain reasoning behind suggestions
+- Be concise and take action
+- When asked to fix something, use your tools to read, analyze, and fix the code
 - Provide code examples when helpful
-- Ask clarifying questions when needed
+- Ask clarifying questions only when absolutely necessary
 
 Let's help maintain this platform!`;
 
-      // Prepare messages for Claude
-      const validMessages = messages.filter((m: any) => {
-        const hasContent = m.content && typeof m.content === 'string' && m.content.trim().length > 0;
-        if (!hasContent) {
-          console.warn(`⚠️ [HEALING-CHAT] Filtering out message with empty content (ID: ${m.id})`);
-        }
-        return hasContent;
-      });
+      // Convert messages to API format
+      const conversationMessages: any[] = messages
+        .filter((m: any) => m.content && typeof m.content === 'string' && m.content.trim().length > 0)
+        .map((m: any) => ({
+          role: m.role === 'assistant' ? 'assistant' : 'user',
+          content: m.content
+        }));
 
-      console.log(`🤖 [HEALING-CHAT] Calling Claude API with ${validMessages.length} valid messages...`);
-      
-      // Get user's subscription for queue priority
-      const subscription = await storage.getSubscription(userId);
-      const plan = subscription?.plan || 'free';
+      console.log(`🤖 [HEALING-CHAT] Starting Gemini conversation with ${conversationMessages.length} messages...`);
       
       const computeStartTime = Date.now();
+      let totalInputTokens = 0;
+      let totalOutputTokens = 0;
+      let filesModified: string[] = [];
+      let fullResponse = '';
       
-      // Use AI Healing Service with full tool capabilities
-      const healingResult = await aiHealingService.diagnoseAndFix(validated.content, {
-        type: 'platform_healing_chat',
-        severity: 'info',
-        description: 'User chat request'
-      });
+      // Multi-turn tool execution loop
+      const MAX_ITERATIONS = 5;
+      let iterationCount = 0;
+      let continueLoop = true;
+      
+      while (continueLoop && iterationCount < MAX_ITERATIONS) {
+        iterationCount++;
+        console.log(`[HEALING-CHAT] Iteration ${iterationCount}/${MAX_ITERATIONS}`);
+        
+        // Call Gemini with tools
+        const response = await streamGeminiResponse({
+          model: "gemini-2.5-flash",
+          maxTokens: 4000,
+          system: systemPrompt,
+          messages: conversationMessages,
+          tools: [
+            {
+              name: 'read_platform_file',
+              description: 'Read a file from the platform codebase',
+              input_schema: {
+                type: 'object',
+                properties: {
+                  file_path: { type: 'string', description: 'Path to file relative to project root' }
+                },
+                required: ['file_path']
+              }
+            },
+            {
+              name: 'write_platform_file',
+              description: 'Write or update a platform file',
+              input_schema: {
+                type: 'object',
+                properties: {
+                  file_path: { type: 'string', description: 'Path to file' },
+                  content: { type: 'string', description: 'New file content' }
+                },
+                required: ['file_path', 'content']
+              }
+            },
+            {
+              name: 'search_platform_files',
+              description: 'Search for files matching a pattern',
+              input_schema: {
+                type: 'object',
+                properties: {
+                  pattern: { type: 'string', description: 'Search pattern (e.g., "*.ts", "server/**")' }
+                },
+                required: ['pattern']
+              }
+            }
+          ],
+          onToolUse: async (toolUse: any) => {
+            console.log(`[HEALING-CHAT] Executing tool: ${toolUse.name}`);
+            
+            try {
+              if (toolUse.name === 'read_platform_file') {
+                const filePath = path.join(process.cwd(), toolUse.input.file_path);
+                const content = await fs.readFile(filePath, 'utf-8');
+                return { success: true, content };
+                
+              } else if (toolUse.name === 'write_platform_file') {
+                await platformHealing.writePlatformFile(
+                  toolUse.input.file_path,
+                  toolUse.input.content,
+                  true // skipAutoCommit=true (manual commit by root user)
+                );
+                filesModified.push(toolUse.input.file_path);
+                return { success: true, message: `File updated: ${toolUse.input.file_path}` };
+                
+              } else if (toolUse.name === 'search_platform_files') {
+                const { glob } = await import('glob');
+                const matches = await glob(toolUse.input.pattern, { cwd: process.cwd() });
+                return { success: true, files: matches };
+              }
+              
+              return { error: 'Unknown tool' };
+            } catch (error: any) {
+              console.error(`[HEALING-CHAT] Tool error:`, error);
+              return { error: error.message };
+            }
+          }
+        });
+        
+        // Track tokens
+        if (response.usage) {
+          totalInputTokens += response.usage.inputTokens || 0;
+          totalOutputTokens += response.usage.outputTokens || 0;
+        }
+        
+        // Append AI response to conversation
+        fullResponse += response.fullText;
+        
+        // Check if Gemini wants to continue (has tool results to process)
+        if (response.needsContinuation && response.toolResults) {
+          console.log(`[HEALING-CHAT] Gemini used ${response.toolResults.length} tools, continuing...`);
+          
+          // Add assistant's tool calls to conversation
+          conversationMessages.push({
+            role: 'assistant',
+            content: response.assistantContent
+          });
+          
+          // Add tool results to conversation
+          conversationMessages.push({
+            role: 'user',
+            content: response.toolResults
+          });
+          
+          continueLoop = true;
+        } else {
+          // Gemini is done
+          continueLoop = false;
+          console.log(`[HEALING-CHAT] Gemini completed in ${iterationCount} iterations`);
+        }
+      }
 
       const computeTimeMs = Date.now() - computeStartTime;
-      const responseText = healingResult.diagnosis || healingResult.error || "No response";
-      const estimatedTokens = Math.ceil(validated.content.length / 4) + Math.ceil(responseText.length / 4);
 
-      console.log(`✅ [HEALING-CHAT] Claude responded in ${computeTimeMs}ms (${responseText.length} chars)`);
+      console.log(`✅ [HEALING-CHAT] Gemini responded in ${computeTimeMs}ms (${fullResponse.length} chars)`);
 
       // Save assistant's response to database
       const assistantMessage = await storage.createHealingMessage({
         conversationId: validated.conversationId,
         role: 'assistant',
-        content: responseText,
+        content: fullResponse || "I apologize, but I couldn't generate a response. Please try again.",
         metadata: {
-          model: DEFAULT_MODEL,
-          tokensUsed: estimatedTokens,
+          model: "gemini-2.5-flash",
+          tokensUsed: totalInputTokens + totalOutputTokens,
+          inputTokens: totalInputTokens,
+          outputTokens: totalOutputTokens,
           computeTimeMs,
-          filesModified: healingResult.filesModified || [],
+          iterations: iterationCount,
+          filesModified,
         },
       });
 
       console.log("[HEALING-CHAT] Assistant message saved to database");
 
-      // Track AI usage for billing (estimated for now - full tracking in aiHealingService)
-      
+      // Track AI usage for billing
       await trackAIUsage({
         userId,
         projectId: null,
         type: "ai_chat",
-        inputTokens: Math.ceil(estimatedTokens * 0.6),
-        outputTokens: Math.ceil(estimatedTokens * 0.4),
+        inputTokens: totalInputTokens,
+        outputTokens: totalOutputTokens,
         computeTimeMs,
         metadata: {
           conversationId: validated.conversationId,
-          filesModified: healingResult.filesModified || [],
+          filesModified,
           healingChat: true,
+          model: "gemini-2.5-flash",
+          iterations: iterationCount,
         },
       });
 
@@ -272,11 +384,11 @@ Let's help maintain this platform!`;
       res.json({
         userMessage,
         assistantMessage,
-        filesModified: healingResult.filesModified || [],
+        filesModified,
         usage: {
-          inputTokens: Math.ceil(estimatedTokens * 0.6),
-          outputTokens: Math.ceil(estimatedTokens * 0.4),
-          totalTokens: estimatedTokens,
+          inputTokens: totalInputTokens,
+          outputTokens: totalOutputTokens,
+          totalTokens: totalInputTokens + totalOutputTokens,
           computeTimeMs,
         },
       });
