@@ -119,7 +119,16 @@ Auto-commit: ${autoCommit ? 'ON (changes auto-push)' : 'OFF (ask before commit)'
 Autonomy Level: ${autonomyLevel}
 
 <environment>
-You have access to the full project codebase on this Linux machine. The project architecture is documented in replit.md which is automatically included in your context.
+You have access to the full project codebase on this Linux machine. 
+
+**CRITICAL: PLATFORM SELF-AWARENESS**
+The replit.md file (automatically included in your context below) contains comprehensive information about:
+1. **YOUR OWN CAPABILITIES**: Complete list of your tools, features, and recent updates
+2. **PLATFORM ARCHITECTURE**: Technical stack, database schema, API design, deployment infrastructure
+3. **RECENT CHANGES**: Latest improvements, bug fixes, and feature additions you should know about
+4. **USER PREFERENCES**: Design guidelines, development patterns, and workflow choices
+
+When users ask about "recent updates", "new features", "your capabilities", or "what you can do", refer to replit.md for accurate, up-to-date information about yourself and the platform.
 
 **File Discovery Workflow:**
 When you need to find files or understand code structure:
