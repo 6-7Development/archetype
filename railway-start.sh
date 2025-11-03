@@ -29,6 +29,22 @@ echo "🗑️ Dropping old tables with incorrect schema..."
 node drop-old-tables.js || echo "⚠️ Could not drop old tables (may not exist)"
 
 echo ""
+echo "🔧 Adding missing columns to existing tables..."
+# Add missing folder_id columns to files and file_uploads tables
+node -e "
+  const pg = require('pg');
+  const fs = require('fs');
+  const pool = new pg.Pool({ 
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+  });
+  const sql = fs.readFileSync('add-missing-columns.sql', 'utf8');
+  pool.query(sql)
+    .then(() => { console.log('✅ Missing columns added'); pool.end(); })
+    .catch(err => { console.error('❌ Error:', err.message); pool.end(); process.exit(1); });
+"
+
+echo ""
 echo "🔧 Creating healing tables with correct schema..."
 # Create healing tables via SQL (drizzle-kit push is unreliable on Railway)
 if command -v psql &> /dev/null; then

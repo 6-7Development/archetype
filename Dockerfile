@@ -48,6 +48,7 @@ COPY replit.md ./
 COPY railway-start.sh ./
 COPY debug-start.sh ./
 COPY drop-old-tables.js ./
+COPY add-missing-columns.sql ./
 COPY create-healing-tables.sql ./
 RUN chmod +x railway-start.sh debug-start.sh
 
