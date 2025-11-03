@@ -1,0 +1,329 @@
+2025-11-03T02:27:40.000000000Z [info] Starting Container
+2025-11-03T02:27:41.671834122Z [info] ðŸ“ Current directory: /app
+2025-11-03T02:27:41.671843821Z [info] ðŸ“‚ Listing root files:
+2025-11-03T02:27:41.671850674Z [info] total 424
+2025-11-03T02:27:41.671856433Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 02:26 .
+2025-11-03T02:27:41.671862955Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 02:27 ..
+2025-11-03T02:27:41.671868762Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 02:26 server
+2025-11-03T02:27:41.671870952Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 02:26 debug-start.sh
+2025-11-03T02:27:41.671876423Z [info] -rw-rw-r--    1 root     root           325 Nov  3 02:26 drizzle.config.ts
+2025-11-03T02:27:41.671886159Z [info] drwxr-xr-x    3 root     root          4096 Nov  3 02:26 migrations
+2025-11-03T02:27:41.671895809Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:52 node_modules
+2025-11-03T02:27:41.671904231Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:52 package-lock.json
+2025-11-03T02:27:41.671912954Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:52 package.json
+2025-11-03T02:27:41.671919834Z [info] -rw-rw-r--    1 root     root          2229 Nov  3 02:26 railway-db-setup.cjs
+2025-11-03T02:27:41.671928121Z [info] -rwxr-xr-x    1 root     root          2334 Nov  3 02:26 railway-start.sh
+2025-11-03T02:27:41.671936348Z [info] ======================================
+2025-11-03T02:27:41.671940545Z [info] -rw-rw-r--    1 root     root         13324 Nov  3 02:26 replit.md
+2025-11-03T02:27:41.671945690Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T02:27:41.671960450Z [info] ======================================
+2025-11-03T02:27:41.671972521Z [info] Time: Mon Nov  3 02:27:40 UTC 2025
+2025-11-03T02:27:41.671980015Z [info] Node version: v20.19.5
+2025-11-03T02:27:41.671986402Z [info] NPM version: 10.8.2
+2025-11-03T02:27:41.671991293Z [info] 
+2025-11-03T02:27:41.677860080Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 02:26 shared
+2025-11-03T02:27:41.677865080Z [info] -rw-rw-r--    1 root     root           960 Nov  3 02:26 tsconfig.json
+2025-11-03T02:27:41.677870822Z [info] 
+2025-11-03T02:27:41.677875876Z [info] ðŸ” Checking for server/public directory (frontend)...
+2025-11-03T02:27:41.677881850Z [info] âœ… server/public directory exists (frontend build)
+2025-11-03T02:27:41.677889705Z [info] 
+2025-11-03T02:27:41.677896492Z [info] ðŸ”§ Running database migration and drift repair...
+2025-11-03T02:27:41.677902991Z [info] ðŸ“‹ Step 1: Running migration statements individually...
+2025-11-03T02:27:41.677909326Z [info]    Found 148 SQL statements to execute
+2025-11-03T02:27:45.412973622Z [info]    âœ… Migration complete: 0 created, 148 skipped, 0 failed
+2025-11-03T02:27:45.412982799Z [info] ðŸ“‹ Step 2: Repairing schema drift (adding missing columns)...
+2025-11-03T02:27:45.413029451Z [info] âœ… Schema drift repaired - all columns present
+2025-11-03T02:27:45.413043159Z [info] 
+2025-11-03T02:27:45.413053371Z [info] ðŸ”„ Running database migrations with drizzle-kit...
+2025-11-03T02:27:45.413081719Z [info] âœ… Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-03T02:27:45.413089221Z [info] âš ï¸ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)
+2025-11-03T02:27:45.413106614Z [info] âœ… Database schema ready!
+2025-11-03T02:27:45.413113857Z [info] 
+2025-11-03T02:27:45.413122355Z [info] ðŸ” Environment Check:
+2025-11-03T02:27:45.413130808Z [info] NODE_ENV: production
+2025-11-03T02:27:45.413143479Z [info] PORT: 8080
+2025-11-03T02:27:45.413150737Z [info] DATABASE_URL: âœ“ SET (hidden for security)
+2025-11-03T02:27:45.413157347Z [info] GITHUB_TOKEN: âœ“ SET
+2025-11-03T02:27:45.413165250Z [info] ANTHROPIC_API_KEY: âœ“ SET
+2025-11-03T02:27:45.413168328Z [info] GITHUB_REPO: 6-7Development/archetype
+2025-11-03T02:27:45.413174596Z [info] 
+2025-11-03T02:27:45.413181530Z [info] ðŸ“„ Ensuring replit.md is available...
+2025-11-03T02:27:45.413187560Z [info] âœ… replit.md already present
+2025-11-03T02:27:45.413201254Z [info] GITHUB_BRANCH: main
+2025-11-03T02:27:45.419891653Z [info] 
+2025-11-03T02:27:45.419907083Z [info] ðŸš€ Starting Node.js application with debug wrapper...
+2025-11-03T02:27:45.419915842Z [info] Command: sh debug-start.sh
+2025-11-03T02:27:45.419927033Z [info] 
+2025-11-03T02:27:45.419934778Z [info] ==========================================
+2025-11-03T02:27:45.419942598Z [info] ðŸ” DEBUG MODE - VERBOSE ERROR CAPTURE
+2025-11-03T02:27:45.419951509Z [info] ==========================================
+2025-11-03T02:27:46.276797444Z [info] 
+2025-11-03T02:27:46.276802850Z [info] ðŸ“‹ Step 1: Verify server directory exists...
+2025-11-03T02:27:46.276809352Z [info] âœ… server/ directory exists
+2025-11-03T02:27:46.276816505Z [info] 
+2025-11-03T02:27:46.276823271Z [info] ðŸ“‹ Step 2: Verify server/index.ts exists...
+2025-11-03T02:27:46.276830551Z [info] âœ… server/index.ts exists
+2025-11-03T02:27:46.276836728Z [info] 
+2025-11-03T02:27:46.276842665Z [info] ðŸ“‹ Step 3: Check Node.js and tsx availability...
+2025-11-03T02:27:46.276848198Z [info] Node version: v20.19.5
+2025-11-03T02:27:46.276855699Z [info] NPM version: 10.8.2
+2025-11-03T02:27:46.276861514Z [info] tsx location: /usr/local/bin/npx
+2025-11-03T02:27:46.276866896Z [info] 
+2025-11-03T02:27:46.276872328Z [info] ðŸ“‹ Step 4: Verify environment variables...
+2025-11-03T02:27:46.276877347Z [info] NODE_ENV: production
+2025-11-03T02:27:46.276881637Z [info] PORT: 8080
+2025-11-03T02:27:46.276887780Z [info] DATABASE_URL: âœ“ SET
+2025-11-03T02:27:46.276895531Z [info] 
+2025-11-03T02:27:46.276900650Z [info] ðŸ“‹ Step 5: Test tsx can load...
+2025-11-03T02:27:46.276908296Z [info] tsx v4.20.5
+2025-11-03T02:27:46.276913408Z [info] node v20.19.5
+2025-11-03T02:27:46.283223309Z [info] âœ… tsx is available
+2025-11-03T02:27:46.283231075Z [info] 
+2025-11-03T02:27:46.283242070Z [info] ðŸ“‹ Step 6: Starting server with tsx...
+2025-11-03T02:27:46.283250202Z [info] Command: npx tsx server/index.ts
+2025-11-03T02:27:46.283260068Z [info] ==========================================
+2025-11-03T02:27:46.283268228Z [info] 
+2025-11-03T02:27:50.368612799Z [info] [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-11-03T02:27:50.368629267Z [info] [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-11-03T02:27:50.368629581Z [info] [db] Environment: NODE_ENV=production, PORT=8080
+2025-11-03T02:27:50.368638176Z [info] [db] SSL Configuration: {rejectUnauthorized:false}
+2025-11-03T02:27:50.368645407Z [info] [db] Connection string includes SSL params: true
+2025-11-03T02:27:51.197218774Z [info] [PERFORMANCE] System prompt base cached (1544 chars) - saves ~4KB per request
+2025-11-03T02:27:51.197230759Z [info] [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-11-03T02:27:51.197238848Z [info] [RAILWAY-CONFIG] Production hardening active
+2025-11-03T02:27:51.197246943Z [info] [RAILWAY-CONFIG] AI timeout: 480s
+2025-11-03T02:27:51.197252780Z [info] [RAILWAY-CONFIG] Memory limit: 512MB
+2025-11-03T02:27:51.197257679Z [info] [RAILWAY-CONFIG] Max concurrent AI: 3
+2025-11-03T02:27:51.197262022Z [info] [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller (SSE streams excluded)
+2025-11-03T02:27:51.197270149Z [info] ðŸ“¡ WebSocket server initialized at /ws
+2025-11-03T02:27:51.197276229Z [info] [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-11-03T02:27:51.197282248Z [info] [PLATFORM-HEALING] WebSocket server attached for preview broadcasts
+2025-11-03T02:27:51.197289148Z [info] [PLATFORM-HEALING] Platform healing service connected to WebSocket
+2025-11-03T02:27:51.197295127Z [info] [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-11-03T02:27:51.197304283Z [info] [HEAL-ORCHESTRATOR] Metrics broadcaster connected
+2025-11-03T02:27:51.197310121Z [info] [WEBHOOKS] Webhooks router connected to metrics broadcaster
+2025-11-03T02:27:51.220630726Z [info] [LOMU-AI-JOB-MANAGER] Initialized with WebSocket support
+2025-11-03T02:27:51.220637558Z [info] [LOMU-AI-JOB-MANAGER] Job manager connected to WebSocket
+2025-11-03T02:27:51.220644834Z [info] [LOMU-AI] WebSocket server initialized for live preview broadcasts
+2025-11-03T02:27:51.220652121Z [info] [LOMU-AI-CHAT] Live preview WebSocket initialized
+2025-11-03T02:27:51.224866075Z [info] [WEBHOOKS] Webhooks router mounted at /api/webhooks
+2025-11-03T02:27:52.144520211Z [info] [HEAL-ORCHESTRATOR] Starting autonomous healing orchestrator...
+2025-11-03T02:27:52.144536421Z [info] [HEAL-ORCHESTRATOR] Orchestrator started
+2025-11-03T02:27:52.144545075Z [info] 
+2025-11-03T02:27:52.144576516Z [info]    - Token: âœ“ (configured)
+2025-11-03T02:27:52.144590011Z [info]    - Owner User ID: Not set (owner must be manually marked in database)
+2025-11-03T02:27:52.144599037Z [info]    - Maintenance mode: Available for owner
+2025-11-03T02:27:52.144607487Z [info] 
+2025-11-03T02:27:52.144851147Z [info] âœ… All routes registered successfully
+2025-11-03T02:27:52.144860604Z [info] ðŸ” Testing database connection...
+2025-11-03T02:27:52.144867711Z [info] 2:27:51 AM [express] serving on port 8080
+2025-11-03T02:27:52.144875670Z [info] ðŸŒ Server accessible at http://0.0.0.0:8080
+2025-11-03T02:27:52.144881599Z [info] âœ… Database connected successfully
+2025-11-03T02:27:52.144887654Z [info] ðŸ’¡ Auto-healing system DISABLED (users trigger manually via UI)
+2025-11-03T02:27:52.144894308Z [info]    ðŸ‘¥ Users pay for their own AI tokens when using Platform Healing
+2025-11-03T02:27:52.144901420Z [info] [HEALTH-MONITOR] Starting platform health monitoring...
+2025-11-03T02:27:52.144909118Z [info] [HEALTH-MONITOR] Loaded 0 open incidents
+2025-11-03T02:27:52.144918211Z [info] [HEALTH-MONITOR] Monitoring started
+2025-11-03T02:27:52.144992272Z [info] ðŸ” Checking GitHub integration configuration...
+2025-11-03T02:27:52.145028500Z [info] âœ… GitHub integration configured successfully
+2025-11-03T02:27:52.145038788Z [info]    - Repository: 6-7Development/archetype
+2025-11-03T02:27:52.145048125Z [info]    - Branch: main
+2025-11-03T02:30:52.411972389Z [info] [DEPLOYMENT-INFO] Using Railway environment variables
+2025-11-03T02:30:52.411979200Z [info] 2:30:47 AM [express] GET /api/deployment-info 200 in 4ms :: {version:"1.0.0",commitHash:"3e49da9â€¦
+2025-11-03T02:30:52.411986305Z [info] 2:30:47 AM [express] GET /api/auth/me 304 in 9ms :: {user:{id:"723e1301-c729-48fc-810a-39ddef954â€¦
+2025-11-03T02:30:52.411993754Z [info] [AUTH] Login attempt for email: root@getdc360.com
+2025-11-03T02:30:52.412002094Z [info] [AUTH] Found users: 1
+2025-11-03T02:30:52.412008431Z [info] [AUTH] User found: root@getdc360.com has password: true
+2025-11-03T02:30:52.412014743Z [info] [AUTH] Verifying password...
+2025-11-03T02:30:52.412021385Z [info] [AUTH] Password valid: true
+2025-11-03T02:30:52.412030830Z [info] [AUTH] Authentication successful for: root@getdc360.com
+2025-11-03T02:30:52.412039620Z [info] 2:30:52 AM [express] POST /api/auth/login 200 in 330ms :: {success:true,user:{id:"723e1301-c72â€¦
+2025-11-03T02:30:53.314948366Z [info] 2:30:53 AM [express] GET /api/auth/me 304 in 9ms :: {user:{id:"723e1301-c729-48fc-810a-39ddef954â€¦
+2025-11-03T02:30:53.314955145Z [info] 2:30:53 AM [express] GET /api/projects 304 in 97ms :: []
+2025-11-03T02:30:57.176377379Z [info] 2:30:56 AM [express] GET /api/healing/targets 304 in 9ms :: [{id:"093abb1c-2699-45b4-acd7-fecf8773â€¦
+2025-11-03T02:30:58.345125141Z [info] 2:30:58 AM [express] GET /api/healing/conversations/093abb1c-2699-45b4-acd7-fecf87731238 304 in 14msâ€¦
+2025-11-03T02:30:58.456001168Z [info] 2:30:58 AM [express] GET /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 304 in 17ms :: [â€¦
+2025-11-03T02:31:18.458269262Z [info] 2:31:12 AM [express] POST /api/lomu-ai/stream 200 in 33ms
+2025-11-03T02:31:18.458290563Z [info] [HEALING-CHAT] User message received: {
+2025-11-03T02:31:18.458306948Z [info]   conversationId: '227c165d-7f9f-46fc-b6e6-325d2b77fc60',
+2025-11-03T02:31:18.458317855Z [info]   contentLength: 40
+2025-11-03T02:31:18.458326574Z [info] }
+2025-11-03T02:31:18.458341511Z [info] [HEALING-CHAT] User message saved to database
+2025-11-03T02:31:18.458354793Z [info] [HEALING-CHAT] Loaded 10 messages from history (last 10)
+2025-11-03T02:31:18.458365570Z [info] ðŸ¤– [HEALING-CHAT] Starting Gemini conversation with 10 messages...
+2025-11-03T02:31:18.458374640Z [info] [HEALING-CHAT] ðŸ”„ Iteration 1/5
+2025-11-03T02:31:18.458383700Z [info] [GEMINI-TOOLS] âœ… Converted 3 tools for Gemini (first 3: read_platform_file, write_platform_file, search_platform_files...)
+2025-11-03T02:31:18.458395665Z [info] [GEMINI-TOOLS] Structure check: {
+2025-11-03T02:31:18.458405268Z [info]   name: "read_platform_file",
+2025-11-03T02:31:18.458413489Z [info]   description: "Read a file from the platform codebase",
+2025-11-03T02:31:18.458421787Z [info]   parameters: {
+2025-11-03T02:31:18.458429386Z [info]     type: "object",
+2025-11-03T02:31:18.458437244Z [info]     properties: {
+2025-11-03T02:31:18.458446190Z [info]       file_path: {
+2025-11-03T02:31:18.458454124Z [info]         type: "string",
+2025-11-03T02:31:18.458469721Z [info] 
+2025-11-03T02:31:18.458483978Z [info] [HEALING-CHAT] âœ… Gemini completed in 1 iterations
+2025-11-03T02:31:18.458492286Z [info] âœ… [HEALING-CHAT] Total: 1158ms, 197 chars, 1626 input tokens, 49 output tokens
+2025-11-03T02:31:18.458500510Z [info] [HEALING-CHAT] ðŸ’¾ Final assistant message saved to database
+2025-11-03T02:31:18.458512811Z [info] [HEALING-CHAT] ðŸ“ˆ Usage tracked successfully
+2025-11-03T02:31:18.458528205Z [info] 2:31:11 AM [express] POST /api/healing/messages 200 in 1300ms :: {userMessage:{id:"5ec6852f-938fâ€¦
+2025-11-03T02:31:18.460306672Z [info] 2:31:12 AM [express] GET /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 200 in 62ms :: [â€¦
+2025-11-03T02:32:07.631267161Z [info] [HEALING-CHAT] Loaded 10 messages from history (last 10)
+2025-11-03T02:32:07.631279517Z [info] [HEALING-CHAT] User message received: {
+2025-11-03T02:32:07.631280848Z [info] ðŸ¤– [HEALING-CHAT] Starting Gemini conversation with 10 messages...
+2025-11-03T02:32:07.631283592Z [info] [GEMINI-TOOLS] ðŸ”§ Gemini requested tool: read_platform_file
+2025-11-03T02:32:07.631289118Z [info]   conversationId: '227c165d-7f9f-46fc-b6e6-325d2b77fc60',
+2025-11-03T02:32:07.631293085Z [info] [HEALING-CHAT] ðŸ”„ Iteration 1/5
+2025-11-03T02:32:07.631297783Z [info] [GEMINI-TOOLS] Tool args: {file_path:"replit.md"}
+2025-11-03T02:32:07.631299706Z [info]   contentLength: 48
+2025-11-03T02:32:07.631305165Z [info] [GEMINI-TOOLS] âœ… Converted 3 tools for Gemini (first 3: read_platform_file, write_platform_file, search_platform_files...)
+2025-11-03T02:32:07.631310005Z [info] }
+2025-11-03T02:32:07.631310010Z [info] [HEALING-CHAT] ðŸ’¾ Saved tool results (iteration 1)
+2025-11-03T02:32:07.631318606Z [info] [HEALING-CHAT] User message saved to database
+2025-11-03T02:32:07.631320404Z [info] [HEALING-CHAT] ðŸ”„ Iteration 2/5
+2025-11-03T02:32:07.631329345Z [info]     type: "object",
+2025-11-03T02:32:07.631330838Z [info] [GEMINI-TOOLS] âœ… Converted 3 tools for Gemini (first 3: read_platform_file, write_platform_file, search_platform_files...)
+2025-11-03T02:32:07.631340244Z [info] [GEMINI-TOOLS] Structure check: {
+2025-11-03T02:32:07.631346330Z [info]     properties: {
+2025-11-03T02:32:07.631355066Z [info]       file_path: {
+2025-11-03T02:32:07.631361087Z [info] [GEMINI-TOOLS] Structure check: {
+2025-11-03T02:32:07.631365087Z [info]         type: "string",
+2025-11-03T02:32:07.631374380Z [info] 
+2025-11-03T02:32:07.631381714Z [info]   name: "read_platform_file",
+2025-11-03T02:32:07.631391642Z [info]   description: "Read a file from the platform codebase",
+2025-11-03T02:32:07.631399496Z [info]   parameters: {
+2025-11-03T02:32:07.637064200Z [info]   name: "read_platform_file",
+2025-11-03T02:32:07.637071316Z [info]   description: "Read a file from the platform codebase",
+2025-11-03T02:32:07.637078741Z [info]   parameters: {
+2025-11-03T02:32:07.637105989Z [info]     type: "object",
+2025-11-03T02:32:07.637114281Z [info]     properties: {
+2025-11-03T02:32:07.637121062Z [info]       file_path: {
+2025-11-03T02:32:07.637127570Z [info]         type: "string",
+2025-11-03T02:32:07.637133878Z [info] 
+2025-11-03T02:32:07.637140600Z [info] [HEALING-CHAT] âœ… Gemini completed in 2 iterations
+2025-11-03T02:32:07.637169932Z [info] âœ… [HEALING-CHAT] Total: 8041ms, 852 chars, 6352 input tokens, 205 output tokens
+2025-11-03T02:32:07.637178394Z [info] [HEALING-CHAT] ðŸ’¾ Final assistant message saved to database
+2025-11-03T02:32:07.637186717Z [info] [HEALING-CHAT] ðŸ“ˆ Usage tracked successfully
+2025-11-03T02:32:07.637194844Z [info] 2:32:06 AM [express] POST /api/healing/messages 200 in 8175ms :: {userMessage:{id:"2be0fcf0-b9fcâ€¦
+2025-11-03T02:32:07.637203655Z [info] 2:32:06 AM [express] POST /api/lomu-ai/stream 200 in 13ms
+2025-11-03T02:32:07.637211593Z [info] 2:32:06 AM [express] GET /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 200 in 96ms :: [â€¦
+2025-11-03T02:32:58.040059212Z [info] [HEALING-CHAT] User message received: {
+2025-11-03T02:32:58.040069664Z [info]   conversationId: '227c165d-7f9f-46fc-b6e6-325d2b77fc60',
+2025-11-03T02:32:58.040076219Z [info]   contentLength: 39
+2025-11-03T02:32:58.040094830Z [info] }
+2025-11-03T02:32:58.040103493Z [info] [HEALING-CHAT] User message saved to database
+2025-11-03T02:32:58.040109501Z [info] [HEALING-CHAT] Loaded 10 messages from history (last 10)
+2025-11-03T02:32:58.040115704Z [info] ðŸ¤– [HEALING-CHAT] Starting Gemini conversation with 10 messages...
+2025-11-03T02:32:58.040121520Z [info] [HEALING-CHAT] ðŸ”„ Iteration 1/5
+2025-11-03T02:32:58.040132190Z [info] [GEMINI-TOOLS] âœ… Converted 3 tools for Gemini (first 3: read_platform_file, write_platform_file, search_platform_files...)
+2025-11-03T02:32:58.040138057Z [info] [GEMINI-TOOLS] Structure check: {
+2025-11-03T02:32:58.040143798Z [info]   name: "read_platform_file",
+2025-11-03T02:32:58.040149543Z [info]   description: "Read a file from the platform codebase",
+2025-11-03T02:32:58.040159554Z [info]   parameters: {
+2025-11-03T02:32:58.040170470Z [info]     type: "object",
+2025-11-03T02:32:58.040176402Z [info]     properties: {
+2025-11-03T02:32:58.040182696Z [info]       file_path: {
+2025-11-03T02:32:58.040188859Z [info]         type: "string",
+2025-11-03T02:32:58.040198725Z [info] 
+2025-11-03T02:32:58.040204886Z [info] [HEALING-CHAT] âœ… Gemini completed in 1 iterations
+2025-11-03T02:32:58.040212904Z [info] âœ… [HEALING-CHAT] Total: 5179ms, 1078 chars, 4196 input tokens, 241 output tokens
+2025-11-03T02:32:58.040218998Z [info] [HEALING-CHAT] ðŸ’¾ Final assistant message saved to database
+2025-11-03T02:32:58.040227082Z [info] [HEALING-CHAT] ðŸ“ˆ Usage tracked successfully
+2025-11-03T02:32:58.040232883Z [info] 2:32:53 AM [express] POST /api/healing/messages 200 in 5317ms :: {userMessage:{id:"e3ce96ee-b2e2â€¦
+2025-11-03T02:32:58.040238720Z [info] 2:32:53 AM [express] POST /api/lomu-ai/stream 200 in 16ms
+2025-11-03T02:32:58.041808097Z [info] 2:32:53 AM [express] GET /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 200 in 99ms :: [â€¦
+2025-11-03T02:33:59.310805341Z [info] [HEALING-CHAT] User message received: {
+2025-11-03T02:33:59.310814941Z [info]   conversationId: '227c165d-7f9f-46fc-b6e6-325d2b77fc60',
+2025-11-03T02:33:59.310824502Z [info]   contentLength: 18
+2025-11-03T02:33:59.310833653Z [info] }
+2025-11-03T02:33:59.310842112Z [info] [HEALING-CHAT] User message saved to database
+2025-11-03T02:33:59.310849007Z [info] [HEALING-CHAT] Loaded 10 messages from history (last 10)
+2025-11-03T02:33:59.310858711Z [info] ðŸ¤– [HEALING-CHAT] Starting Gemini conversation with 10 messages...
+2025-11-03T02:33:59.310869040Z [info] [HEALING-CHAT] ðŸ”„ Iteration 1/5
+2025-11-03T02:33:59.310877984Z [info] [GEMINI-TOOLS] âœ… Converted 3 tools for Gemini (first 3: read_platform_file, write_platform_file, search_platform_files...)
+2025-11-03T02:33:59.310887955Z [info] [GEMINI-TOOLS] Structure check: {
+2025-11-03T02:33:59.310897528Z [info]   name: "read_platform_file",
+2025-11-03T02:33:59.310903912Z [info]   description: "Read a file from the platform codebase",
+2025-11-03T02:33:59.310912187Z [info]   parameters: {
+2025-11-03T02:33:59.310920206Z [info]     type: "object",
+2025-11-03T02:33:59.424456549Z [info]     properties: {
+2025-11-03T02:33:59.424475737Z [info]       file_path: {
+2025-11-03T02:33:59.424485536Z [info]         type: "string",
+2025-11-03T02:33:59.424499828Z [info] 
+2025-11-03T02:33:59.424509713Z [info] [HEALING-CHAT] âœ… Gemini completed in 1 iterations
+2025-11-03T02:33:59.424518550Z [info] âœ… [HEALING-CHAT] Total: 4263ms, 1824 chars, 4331 input tokens, 380 output tokens
+2025-11-03T02:33:59.424528142Z [info] [HEALING-CHAT] ðŸ’¾ Final assistant message saved to database
+2025-11-03T02:33:59.424537150Z [info] [HEALING-CHAT] ðŸ“ˆ Usage tracked successfully
+2025-11-03T02:33:59.424545020Z [info] 2:33:54 AM [express] POST /api/healing/messages 200 in 4397ms :: {userMessage:{id:"0636ec9e-b05bâ€¦
+2025-11-03T02:33:59.424558652Z [info] 2:33:54 AM [express] POST /api/lomu-ai/stream 200 in 18ms
+2025-11-03T02:34:00.290758434Z [info] 2:33:54 AM [express] GET /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 200 in 102ms :: â€¦
+2025-11-03T02:34:39.930753716Z [info] [HEALING-CHAT] ðŸ’¾ Saved tool results (iteration 1)
+2025-11-03T02:34:39.930769565Z [info] [HEALING-CHAT] ðŸ”„ Iteration 2/5
+2025-11-03T02:34:39.930779410Z [info] [GEMINI-TOOLS] âœ… Converted 3 tools for Gemini (first 3: read_platform_file, write_platform_file, search_platform_files...)
+2025-11-03T02:34:39.930786344Z [info] }
+2025-11-03T02:34:39.930801440Z [info] [HEALING-CHAT] User message saved to database
+2025-11-03T02:34:39.930812461Z [info] [HEALING-CHAT] Loaded 10 messages from history (last 10)
+2025-11-03T02:34:39.930821069Z [info] ðŸ¤– [HEALING-CHAT] Starting Gemini conversation with 10 messages...
+2025-11-03T02:34:39.930828521Z [info] [HEALING-CHAT] ðŸ”„ Iteration 1/5
+2025-11-03T02:34:39.930836204Z [info] [GEMINI-TOOLS] âœ… Converted 3 tools for Gemini (first 3: read_platform_file, write_platform_file, search_platform_files...)
+2025-11-03T02:34:39.930843232Z [info] [GEMINI-TOOLS] Structure check: {
+2025-11-03T02:34:39.930850493Z [info]   name: "read_platform_file",
+2025-11-03T02:34:39.930858320Z [info]   description: "Read a file from the platform codebase",
+2025-11-03T02:34:39.930866242Z [info]   parameters: {
+2025-11-03T02:34:39.930874484Z [info]     type: "object",
+2025-11-03T02:34:39.930878911Z [info] [HEALING-CHAT] User message received: {
+2025-11-03T02:34:39.930885600Z [info]   conversationId: '227c165d-7f9f-46fc-b6e6-325d2b77fc60',
+2025-11-03T02:34:39.930888569Z [info]     properties: {
+2025-11-03T02:34:39.930895796Z [info]   contentLength: 41
+2025-11-03T02:34:39.930895915Z [info]       file_path: {
+2025-11-03T02:34:39.930904118Z [info]         type: "string",
+2025-11-03T02:34:39.930910560Z [info] 
+2025-11-03T02:34:39.930916077Z [info] [GEMINI-TOOLS] ðŸ”§ Gemini requested tool: search_platform_files
+2025-11-03T02:34:39.930922691Z [info] [GEMINI-TOOLS] Tool args: {pattern:"client/**"}
+2025-11-03T02:34:39.930929250Z [info] [HEALING-CHAT] âœ… Search found 0 files for pattern: client/**
+2025-11-03T02:34:39.933856155Z [info] [GEMINI-TOOLS] Tool args: {pattern:"client/**/*.ts"}
+2025-11-03T02:34:39.933873061Z [info] [GEMINI-TOOLS] ðŸ”§ Gemini requested tool: search_platform_files
+2025-11-03T02:34:39.933880404Z [info] [GEMINI-TOOLS] Tool args: {pattern:"client/**/*.tsx"}
+2025-11-03T02:34:39.933887593Z [info] [GEMINI-TOOLS] ðŸ”§ Gemini requested tool: search_platform_files
+2025-11-03T02:34:39.933893753Z [info] [GEMINI-TOOLS] Tool args: {pattern:"client/**/*.js"}
+2025-11-03T02:34:39.933925819Z [info] [GEMINI-TOOLS] Structure check: {
+2025-11-03T02:34:39.933973068Z [info]   name: "read_platform_file",
+2025-11-03T02:34:39.933980808Z [info]   description: "Read a file from the platform codebase",
+2025-11-03T02:34:39.933988065Z [info]   parameters: {
+2025-11-03T02:34:39.933994166Z [info]     type: "object",
+2025-11-03T02:34:39.934003996Z [info]     properties: {
+2025-11-03T02:34:39.934006973Z [info] [GEMINI-TOOLS] ðŸ”§ Gemini requested tool: search_platform_files
+2025-11-03T02:34:39.934014640Z [info] [GEMINI-TOOLS] Tool args: {pattern:"client/**/*.jsx"}
+2025-11-03T02:34:39.934027605Z [info]       file_path: {
+2025-11-03T02:34:39.934033661Z [info]         type: "string",
+2025-11-03T02:34:39.934041188Z [info] 
+2025-11-03T02:34:39.934048467Z [info] [GEMINI-TOOLS] ðŸ”§ Gemini requested tool: search_platform_files
+2025-11-03T02:34:39.941676626Z [info] [HEALING-CHAT] âœ… Search found 0 files for pattern: client/**/*.ts
+2025-11-03T02:34:39.941695668Z [info] [HEALING-CHAT] âœ… Search found 0 files for pattern: client/**/*.tsx
+2025-11-03T02:34:39.944341410Z [info] [HEALING-CHAT] âœ… Search found 0 files for pattern: client/**/*.js
+2025-11-03T02:34:39.944351977Z [info] [HEALING-CHAT] âœ… Search found 0 files for pattern: client/**/*.jsx
+2025-11-03T02:34:39.952421232Z [info] [HEALING-CHAT] ðŸ’¾ Saved tool results (iteration 2)
+2025-11-03T02:34:39.952435108Z [info] [HEALING-CHAT] ðŸ”„ Iteration 3/5
+2025-11-03T02:34:39.952446398Z [info] [GEMINI-TOOLS] âœ… Converted 3 tools for Gemini (first 3: read_platform_file, write_platform_file, search_platform_files...)
+2025-11-03T02:34:39.952454457Z [info] [GEMINI-TOOLS] Structure check: {
+2025-11-03T02:34:39.952466779Z [info]   name: "read_platform_file",
+2025-11-03T02:34:39.952474045Z [info]   description: "Read a file from the platform codebase",
+2025-11-03T02:34:39.952480861Z [info]   parameters: {
+2025-11-03T02:34:39.952489115Z [info]     type: "object",
+2025-11-03T02:34:39.952495681Z [info]     properties: {
+2025-11-03T02:34:39.952504020Z [info]       file_path: {
+2025-11-03T02:34:39.952516999Z [info]         type: "string",
+2025-11-03T02:34:39.952530702Z [info] 
+2025-11-03T02:34:42.804604679Z [info] [HEALING-CHAT] âœ… Gemini completed in 3 iterations
+2025-11-03T02:34:42.804612428Z [info] âœ… [HEALING-CHAT] Total: 9158ms, 2230 chars, 13837 input tokens, 576 output tokens
+2025-11-03T02:34:42.810942734Z [info] [HEALING-CHAT] ðŸ’¾ Final assistant message saved to database
+2025-11-03T02:34:42.822553255Z [info] [HEALING-CHAT] ðŸ“ˆ Usage tracked successfully
+2025-11-03T02:34:42.826843380Z [info] 2:34:42 AM [express] POST /api/healing/messages 200 in 9301ms :: {userMessage:{id:"886eca11-60bcâ€¦
+2025-11-03T02:34:43.865138729Z [info] 2:34:42 AM [express] POST /api/lomu-ai/stream 200 in 14ms
+2025-11-03T02:34:43.865147564Z [info] 2:34:43 AM [express] GET /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 200 in 112ms :: â€¦
+2025-11-03T02:37:56.175975992Z [info] [CACHE] Stats: {
+2025-11-03T02:37:56.175983970Z [info]   user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-11-03T02:37:56.176000345Z [info]   project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-11-03T02:37:56.176008469Z [info]   subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-11-03T02:37:56.176015596Z [info]   response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-11-03T02:37:56.176032577Z [info] }
