@@ -14,11 +14,11 @@ echo "📂 Listing root files:"
 ls -la
 echo ""
 
-echo "🔍 Checking for dist/public directory (frontend)..."
-if [ -d "dist/public" ]; then
-  echo "✅ dist/public directory exists (frontend build)"
+echo "🔍 Checking for server/public directory (frontend)..."
+if [ -d "server/public" ]; then
+  echo "✅ server/public directory exists (frontend build)"
 else
-  echo "❌ dist/public directory NOT found!"
+  echo "❌ server/public directory NOT found!"
   echo "Frontend build is missing - run 'npm run build' first"
   exit 1
 fi

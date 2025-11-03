@@ -1,0 +1,309 @@
+2025-11-03T00:33:21.000000000Z [info] Starting Container
+2025-11-03T00:33:22.211835223Z [info] -rw-rw-r--    1 root     root          2168 Nov  3 00:30 drop-old-tables.js
+2025-11-03T00:33:22.211844301Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 node_modules
+2025-11-03T00:33:22.211848254Z [info] ðŸ“ Current directory: /app
+2025-11-03T00:33:22.211850235Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:31 package-lock.json
+2025-11-03T00:33:22.211857548Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:31 package.json
+2025-11-03T00:33:22.211857812Z [info] ðŸ“‚ Listing root files:
+2025-11-03T00:33:22.211864491Z [info] total 428
+2025-11-03T00:33:22.211866783Z [info] -rwxr-xr-x    1 root     root          3148 Nov  3 00:30 railway-start.sh
+2025-11-03T00:33:22.211870373Z [info] ======================================
+2025-11-03T00:33:22.211872634Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 .
+2025-11-03T00:33:22.211875943Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:30 replit.md
+2025-11-03T00:33:22.211878654Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T00:33:22.211882617Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 00:33 ..
+2025-11-03T00:33:22.211884648Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:30 server
+2025-11-03T00:33:22.211885103Z [info] ======================================
+2025-11-03T00:33:22.211891308Z [info] -rw-rw-r--    1 root     root          6775 Nov  3 00:30 create-healing-tables.sql
+2025-11-03T00:33:22.211891379Z [info] Time: Mon Nov  3 00:33:21 UTC 2025
+2025-11-03T00:33:22.211899302Z [info] Node version: v20.19.5
+2025-11-03T00:33:22.211900244Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 00:30 debug-start.sh
+2025-11-03T00:33:22.211905633Z [info] NPM version: 10.8.2
+2025-11-03T00:33:22.211909273Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:30 drizzle.config.ts
+2025-11-03T00:33:22.211911849Z [info] 
+2025-11-03T00:33:22.212698778Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:30 shared
+2025-11-03T00:33:22.212702826Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:30 tsconfig.json
+2025-11-03T00:33:22.212706817Z [info] 
+2025-11-03T00:33:22.212714164Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-03T00:33:22.212718090Z [info] âŒ dist/public directory NOT found!
+2025-11-03T00:33:22.212722145Z [info] Frontend build is missing - run 'npm run build' first
+2025-11-03T00:33:22.849142210Z [info] ======================================
+2025-11-03T00:33:22.849149526Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T00:33:22.849158059Z [info] ======================================
+2025-11-03T00:33:22.849166360Z [info] Time: Mon Nov  3 00:33:22 UTC 2025
+2025-11-03T00:33:22.863529456Z [info] Node version: v20.19.5
+2025-11-03T00:33:23.245978595Z [info] ðŸ“ Current directory: /app
+2025-11-03T00:33:23.245985693Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 00:33 ..
+2025-11-03T00:33:23.245988515Z [info] ðŸ“‚ Listing root files:
+2025-11-03T00:33:23.245992733Z [info] -rw-rw-r--    1 root     root          6775 Nov  3 00:30 create-healing-tables.sql
+2025-11-03T00:33:23.246004886Z [info] total 428
+2025-11-03T00:33:23.246012020Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 .
+2025-11-03T00:33:23.246017552Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:31 package-lock.json
+2025-11-03T00:33:23.246023169Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 00:30 debug-start.sh
+2025-11-03T00:33:23.246028806Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:30 drizzle.config.ts
+2025-11-03T00:33:23.246041287Z [info] -rwxr-xr-x    1 root     root          3148 Nov  3 00:30 railway-start.sh
+2025-11-03T00:33:23.246041400Z [info] -rw-rw-r--    1 root     root          2168 Nov  3 00:30 drop-old-tables.js
+2025-11-03T00:33:23.246042496Z [info] NPM version: 10.8.2
+2025-11-03T00:33:23.246050974Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:30 replit.md
+2025-11-03T00:33:23.246052422Z [info] 
+2025-11-03T00:33:23.246056757Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:31 package.json
+2025-11-03T00:33:23.246058903Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 node_modules
+2025-11-03T00:33:23.246073363Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:30 server
+2025-11-03T00:33:23.246081791Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:30 shared
+2025-11-03T00:33:23.246092540Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:30 tsconfig.json
+2025-11-03T00:33:23.246878023Z [info] 
+2025-11-03T00:33:23.246888591Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-03T00:33:23.246896861Z [info] âŒ dist/public directory NOT found!
+2025-11-03T00:33:23.247412498Z [info] Frontend build is missing - run 'npm run build' first
+2025-11-03T00:33:23.704005747Z [info] ======================================
+2025-11-03T00:33:23.704011882Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T00:33:23.704018071Z [info] ======================================
+2025-11-03T00:33:23.704023385Z [info] Time: Mon Nov  3 00:33:23 UTC 2025
+2025-11-03T00:33:23.715718523Z [info] Node version: v20.19.5
+2025-11-03T00:33:23.842621936Z [info] NPM version: 10.8.2
+2025-11-03T00:33:23.842627114Z [info] 
+2025-11-03T00:33:23.842631620Z [info] ðŸ“ Current directory: /app
+2025-11-03T00:33:23.842635755Z [info] ðŸ“‚ Listing root files:
+2025-11-03T00:33:23.849685710Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 node_modules
+2025-11-03T00:33:23.849693848Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:31 package-lock.json
+2025-11-03T00:33:23.849699210Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:31 package.json
+2025-11-03T00:33:23.849703567Z [info] -rwxr-xr-x    1 root     root          3148 Nov  3 00:30 railway-start.sh
+2025-11-03T00:33:23.849709416Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:30 replit.md
+2025-11-03T00:33:23.849714329Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:30 server
+2025-11-03T00:33:23.849721737Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:30 shared
+2025-11-03T00:33:23.849726900Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:30 tsconfig.json
+2025-11-03T00:33:23.849731971Z [info] 
+2025-11-03T00:33:23.849737187Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-03T00:33:23.849740327Z [info] total 428
+2025-11-03T00:33:23.849742454Z [info] âŒ dist/public directory NOT found!
+2025-11-03T00:33:23.849746897Z [info] Frontend build is missing - run 'npm run build' first
+2025-11-03T00:33:23.849751274Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 .
+2025-11-03T00:33:23.849759848Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 00:33 ..
+2025-11-03T00:33:23.849765515Z [info] -rw-rw-r--    1 root     root          6775 Nov  3 00:30 create-healing-tables.sql
+2025-11-03T00:33:23.849771189Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 00:30 debug-start.sh
+2025-11-03T00:33:23.849777417Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:30 drizzle.config.ts
+2025-11-03T00:33:23.849784951Z [info] -rw-rw-r--    1 root     root          2168 Nov  3 00:30 drop-old-tables.js
+2025-11-03T00:33:24.492897850Z [info] ======================================
+2025-11-03T00:33:24.492902894Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T00:33:24.492907720Z [info] ======================================
+2025-11-03T00:33:24.492912544Z [info] Time: Mon Nov  3 00:33:24 UTC 2025
+2025-11-03T00:33:24.500462842Z [info] Node version: v20.19.5
+2025-11-03T00:33:24.643244926Z [info] NPM version: 10.8.2
+2025-11-03T00:33:24.643245097Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:31 package.json
+2025-11-03T00:33:24.643255556Z [info] -rwxr-xr-x    1 root     root          3148 Nov  3 00:30 railway-start.sh
+2025-11-03T00:33:24.643256815Z [info] 
+2025-11-03T00:33:24.643262889Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:30 replit.md
+2025-11-03T00:33:24.643265735Z [info] ðŸ“ Current directory: /app
+2025-11-03T00:33:24.643271176Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:30 server
+2025-11-03T00:33:24.643273241Z [info] ðŸ“‚ Listing root files:
+2025-11-03T00:33:24.643278570Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:30 shared
+2025-11-03T00:33:24.643278795Z [info] total 428
+2025-11-03T00:33:24.643284919Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 .
+2025-11-03T00:33:24.643287717Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:30 tsconfig.json
+2025-11-03T00:33:24.643292195Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 00:33 ..
+2025-11-03T00:33:24.643295976Z [info] 
+2025-11-03T00:33:24.643297963Z [info] -rw-rw-r--    1 root     root          6775 Nov  3 00:30 create-healing-tables.sql
+2025-11-03T00:33:24.643302637Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-03T00:33:24.643304178Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 00:30 debug-start.sh
+2025-11-03T00:33:24.643308975Z [info] âŒ dist/public directory NOT found!
+2025-11-03T00:33:24.643310441Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:30 drizzle.config.ts
+2025-11-03T00:33:24.643314679Z [info] -rw-rw-r--    1 root     root          2168 Nov  3 00:30 drop-old-tables.js
+2025-11-03T00:33:24.643319483Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 node_modules
+2025-11-03T00:33:24.643325416Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:31 package-lock.json
+2025-11-03T00:33:24.643905215Z [info] Frontend build is missing - run 'npm run build' first
+2025-11-03T00:33:25.550857450Z [info] ======================================
+2025-11-03T00:33:25.550863486Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T00:33:25.550869216Z [info] ======================================
+2025-11-03T00:33:25.550875606Z [info] Time: Mon Nov  3 00:33:25 UTC 2025
+2025-11-03T00:33:25.555602787Z [info] Node version: v20.19.5
+2025-11-03T00:33:25.691707391Z [info] NPM version: 10.8.2
+2025-11-03T00:33:25.691715433Z [info] 
+2025-11-03T00:33:25.693713440Z [info] ðŸ“ Current directory: /app
+2025-11-03T00:33:25.693717245Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:30 replit.md
+2025-11-03T00:33:25.693721664Z [info] ðŸ“‚ Listing root files:
+2025-11-03T00:33:25.693727648Z [info] total 428
+2025-11-03T00:33:25.693728617Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:30 server
+2025-11-03T00:33:25.693733243Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 .
+2025-11-03T00:33:25.693735400Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:30 shared
+2025-11-03T00:33:25.693740231Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 00:33 ..
+2025-11-03T00:33:25.693741568Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:30 tsconfig.json
+2025-11-03T00:33:25.693746735Z [info] -rw-rw-r--    1 root     root          6775 Nov  3 00:30 create-healing-tables.sql
+2025-11-03T00:33:25.693749181Z [info] 
+2025-11-03T00:33:25.693754581Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 00:30 debug-start.sh
+2025-11-03T00:33:25.693756614Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-03T00:33:25.693760695Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:30 drizzle.config.ts
+2025-11-03T00:33:25.693762727Z [info] âŒ dist/public directory NOT found!
+2025-11-03T00:33:25.693766875Z [info] -rw-rw-r--    1 root     root          2168 Nov  3 00:30 drop-old-tables.js
+2025-11-03T00:33:25.693769028Z [info] Frontend build is missing - run 'npm run build' first
+2025-11-03T00:33:25.693772702Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 node_modules
+2025-11-03T00:33:25.693778304Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:31 package-lock.json
+2025-11-03T00:33:25.693786382Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:31 package.json
+2025-11-03T00:33:25.693791865Z [info] -rwxr-xr-x    1 root     root          3148 Nov  3 00:30 railway-start.sh
+2025-11-03T00:33:26.697110521Z [info] ======================================
+2025-11-03T00:33:26.697118921Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T00:33:26.697126269Z [info] ======================================
+2025-11-03T00:33:26.697132511Z [info] Time: Mon Nov  3 00:33:26 UTC 2025
+2025-11-03T00:33:26.703222433Z [info] Node version: v20.19.5
+2025-11-03T00:33:26.847519663Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 00:33 ..
+2025-11-03T00:33:26.847523349Z [info] NPM version: 10.8.2
+2025-11-03T00:33:26.847530272Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:30 shared
+2025-11-03T00:33:26.847530856Z [info] -rw-rw-r--    1 root     root          6775 Nov  3 00:30 create-healing-tables.sql
+2025-11-03T00:33:26.847537558Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 00:30 debug-start.sh
+2025-11-03T00:33:26.847539945Z [info] 
+2025-11-03T00:33:26.847548348Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:30 drizzle.config.ts
+2025-11-03T00:33:26.847548617Z [info] ðŸ“ Current directory: /app
+2025-11-03T00:33:26.847549505Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:30 tsconfig.json
+2025-11-03T00:33:26.847565109Z [info] ðŸ“‚ Listing root files:
+2025-11-03T00:33:26.847569713Z [info] -rw-rw-r--    1 root     root          2168 Nov  3 00:30 drop-old-tables.js
+2025-11-03T00:33:26.847576989Z [info] total 428
+2025-11-03T00:33:26.847585851Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 .
+2025-11-03T00:33:26.847588352Z [info] 
+2025-11-03T00:33:26.847588517Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 node_modules
+2025-11-03T00:33:26.847600707Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-03T00:33:26.847606155Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:31 package-lock.json
+2025-11-03T00:33:26.847612724Z [info] âŒ dist/public directory NOT found!
+2025-11-03T00:33:26.847615943Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:31 package.json
+2025-11-03T00:33:26.847621827Z [info] -rwxr-xr-x    1 root     root          3148 Nov  3 00:30 railway-start.sh
+2025-11-03T00:33:26.847626624Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:30 replit.md
+2025-11-03T00:33:26.847631405Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:30 server
+2025-11-03T00:33:26.848398740Z [info] Frontend build is missing - run 'npm run build' first
+2025-11-03T00:33:30.230287764Z [info] ======================================
+2025-11-03T00:33:30.230293421Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T00:33:30.230299789Z [info] ======================================
+2025-11-03T00:33:30.230304391Z [info] Time: Mon Nov  3 00:33:30 UTC 2025
+2025-11-03T00:33:30.230309106Z [info] Node version: v20.19.5
+2025-11-03T00:33:30.351483043Z [info] NPM version: 10.8.2
+2025-11-03T00:33:30.351492557Z [info] 
+2025-11-03T00:33:30.352264712Z [info] ðŸ“ Current directory: /app
+2025-11-03T00:33:30.352271475Z [info] ðŸ“‚ Listing root files:
+2025-11-03T00:33:30.352276807Z [info] total 428
+2025-11-03T00:33:30.353763928Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 .
+2025-11-03T00:33:30.353773491Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 00:33 ..
+2025-11-03T00:33:30.353786905Z [info] -rw-rw-r--    1 root     root          6775 Nov  3 00:30 create-healing-tables.sql
+2025-11-03T00:33:30.353797713Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 00:30 debug-start.sh
+2025-11-03T00:33:30.353803587Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:30 drizzle.config.ts
+2025-11-03T00:33:30.353809922Z [info] -rw-rw-r--    1 root     root          2168 Nov  3 00:30 drop-old-tables.js
+2025-11-03T00:33:30.353815476Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 node_modules
+2025-11-03T00:33:30.353821741Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:31 package-lock.json
+2025-11-03T00:33:30.353827992Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:31 package.json
+2025-11-03T00:33:30.353834725Z [info] -rwxr-xr-x    1 root     root          3148 Nov  3 00:30 railway-start.sh
+2025-11-03T00:33:30.353842524Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:30 replit.md
+2025-11-03T00:33:30.353849619Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:30 server
+2025-11-03T00:33:30.353855550Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:30 shared
+2025-11-03T00:33:30.353861333Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:30 tsconfig.json
+2025-11-03T00:33:30.353867058Z [info] 
+2025-11-03T00:33:30.353873408Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-03T00:33:30.353879067Z [info] âŒ dist/public directory NOT found!
+2025-11-03T00:33:30.353885306Z [info] Frontend build is missing - run 'npm run build' first
+2025-11-03T00:33:31.016461797Z [info] ======================================
+2025-11-03T00:33:31.016466236Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T00:33:31.016479708Z [info] ======================================
+2025-11-03T00:33:31.016487192Z [info] Time: Mon Nov  3 00:33:31 UTC 2025
+2025-11-03T00:33:31.214648571Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:30 drizzle.config.ts
+2025-11-03T00:33:31.214660517Z [info] ðŸ“‚ Listing root files:
+2025-11-03T00:33:31.214669362Z [info] -rw-rw-r--    1 root     root          2168 Nov  3 00:30 drop-old-tables.js
+2025-11-03T00:33:31.214675448Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 node_modules
+2025-11-03T00:33:31.214681869Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:31 package-lock.json
+2025-11-03T00:33:31.214687768Z [info] total 428
+2025-11-03T00:33:31.214697162Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 .
+2025-11-03T00:33:31.214698950Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:31 package.json
+2025-11-03T00:33:31.214716098Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 00:33 ..
+2025-11-03T00:33:31.214717130Z [info] -rwxr-xr-x    1 root     root          3148 Nov  3 00:30 railway-start.sh
+2025-11-03T00:33:31.214732482Z [info] -rw-rw-r--    1 root     root          6775 Nov  3 00:30 create-healing-tables.sql
+2025-11-03T00:33:31.214733914Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:30 replit.md
+2025-11-03T00:33:31.214750663Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 00:30 debug-start.sh
+2025-11-03T00:33:31.214752322Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:30 server
+2025-11-03T00:33:31.214759610Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:30 shared
+2025-11-03T00:33:31.214765254Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:30 tsconfig.json
+2025-11-03T00:33:31.214769951Z [info] Node version: v20.19.5
+2025-11-03T00:33:31.214772094Z [info] 
+2025-11-03T00:33:31.214777746Z [info] NPM version: 10.8.2
+2025-11-03T00:33:31.214779389Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-03T00:33:31.214785005Z [info] 
+2025-11-03T00:33:31.214791314Z [info] ðŸ“ Current directory: /app
+2025-11-03T00:33:31.215456590Z [info] âŒ dist/public directory NOT found!
+2025-11-03T00:33:31.215463456Z [info] Frontend build is missing - run 'npm run build' first
+2025-11-03T00:33:31.770087430Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T00:33:31.770100488Z [info] ======================================
+2025-11-03T00:33:31.770107732Z [info] Time: Mon Nov  3 00:33:31 UTC 2025
+2025-11-03T00:33:31.770201095Z [info] ======================================
+2025-11-03T00:33:31.775587593Z [info] Node version: v20.19.5
+2025-11-03T00:33:31.928683780Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:30 server
+2025-11-03T00:33:31.928697684Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:30 shared
+2025-11-03T00:33:31.928707582Z [info] NPM version: 10.8.2
+2025-11-03T00:33:31.928711415Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:30 tsconfig.json
+2025-11-03T00:33:31.928717757Z [info] 
+2025-11-03T00:33:31.928722143Z [info] 
+2025-11-03T00:33:31.928726632Z [info] ðŸ“ Current directory: /app
+2025-11-03T00:33:31.928732868Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-03T00:33:31.928737214Z [info] ðŸ“‚ Listing root files:
+2025-11-03T00:33:31.928744978Z [info] total 428
+2025-11-03T00:33:31.928746350Z [info] âŒ dist/public directory NOT found!
+2025-11-03T00:33:31.928752093Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 .
+2025-11-03T00:33:31.928757425Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 00:33 ..
+2025-11-03T00:33:31.928762401Z [info] -rw-rw-r--    1 root     root          6775 Nov  3 00:30 create-healing-tables.sql
+2025-11-03T00:33:31.928767646Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 00:30 debug-start.sh
+2025-11-03T00:33:31.928772514Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:30 drizzle.config.ts
+2025-11-03T00:33:31.928776936Z [info] -rw-rw-r--    1 root     root          2168 Nov  3 00:30 drop-old-tables.js
+2025-11-03T00:33:31.928781148Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 node_modules
+2025-11-03T00:33:31.928785182Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:31 package-lock.json
+2025-11-03T00:33:31.928789456Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:31 package.json
+2025-11-03T00:33:31.928794543Z [info] -rwxr-xr-x    1 root     root          3148 Nov  3 00:30 railway-start.sh
+2025-11-03T00:33:31.928798702Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:30 replit.md
+2025-11-03T00:33:31.929418284Z [info] Frontend build is missing - run 'npm run build' first
+2025-11-03T00:33:32.536513651Z [info] ======================================
+2025-11-03T00:33:32.536521950Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T00:33:32.536528392Z [info] ======================================
+2025-11-03T00:33:32.536535045Z [info] Time: Mon Nov  3 00:33:32 UTC 2025
+2025-11-03T00:33:32.546970299Z [info] Node version: v20.19.5
+2025-11-03T00:33:32.690329570Z [info] 
+2025-11-03T00:33:32.690336521Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:31 package-lock.json
+2025-11-03T00:33:32.690341211Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-03T00:33:32.690347278Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:31 package.json
+2025-11-03T00:33:32.690351844Z [info] âŒ dist/public directory NOT found!
+2025-11-03T00:33:32.690356704Z [info] NPM version: 10.8.2
+2025-11-03T00:33:32.690357065Z [info] -rwxr-xr-x    1 root     root          3148 Nov  3 00:30 railway-start.sh
+2025-11-03T00:33:32.690362514Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:30 replit.md
+2025-11-03T00:33:32.690367458Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:30 server
+2025-11-03T00:33:32.690373382Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:30 shared
+2025-11-03T00:33:32.690378737Z [info] 
+2025-11-03T00:33:32.690378976Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:30 tsconfig.json
+2025-11-03T00:33:32.690383774Z [info] ðŸ“ Current directory: /app
+2025-11-03T00:33:32.690388201Z [info] ðŸ“‚ Listing root files:
+2025-11-03T00:33:32.690392288Z [info] total 428
+2025-11-03T00:33:32.690410393Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 .
+2025-11-03T00:33:32.690417290Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 00:33 ..
+2025-11-03T00:33:32.690423400Z [info] -rw-rw-r--    1 root     root          6775 Nov  3 00:30 create-healing-tables.sql
+2025-11-03T00:33:32.690443420Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 00:30 debug-start.sh
+2025-11-03T00:33:32.690448697Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:30 drizzle.config.ts
+2025-11-03T00:33:32.690452900Z [info] -rw-rw-r--    1 root     root          2168 Nov  3 00:30 drop-old-tables.js
+2025-11-03T00:33:32.690476436Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 node_modules
+2025-11-03T00:33:32.691501858Z [info] Frontend build is missing - run 'npm run build' first
+2025-11-03T00:33:33.382338012Z [info] ======================================
+2025-11-03T00:33:33.382346188Z [info] ðŸš‚ RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T00:33:33.382351839Z [info] ======================================
+2025-11-03T00:33:33.383175597Z [info] Time: Mon Nov  3 00:33:33 UTC 2025
+2025-11-03T00:33:33.396646453Z [info] Node version: v20.19.5
+2025-11-03T00:33:33.524335738Z [info] -rw-rw-r--    1 root     root           325 Nov  3 00:30 drizzle.config.ts
+2025-11-03T00:33:33.524352464Z [info] -rw-rw-r--    1 root     root          2168 Nov  3 00:30 drop-old-tables.js
+2025-11-03T00:33:33.524361879Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 node_modules
+2025-11-03T00:33:33.524371820Z [info] -rw-rw-r--    1 root     root        361403 Nov  3 00:31 package-lock.json
+2025-11-03T00:33:33.524378687Z [info] NPM version: 10.8.2
+2025-11-03T00:33:33.524384912Z [info] -rw-rw-r--    1 root     root          4631 Nov  3 00:31 package.json
+2025-11-03T00:33:33.524394626Z [info] 
+2025-11-03T00:33:33.524404536Z [info] -rwxr-xr-x    1 root     root          3148 Nov  3 00:30 railway-start.sh
+2025-11-03T00:33:33.524408803Z [info] ðŸ“ Current directory: /app
+2025-11-03T00:33:33.524417324Z [info] -rw-rw-r--    1 root     root         12632 Nov  3 00:30 replit.md
+2025-11-03T00:33:33.524423628Z [info] ðŸ“‚ Listing root files:
+2025-11-03T00:33:33.524433211Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:30 server
+2025-11-03T00:33:33.524438015Z [info] total 428
+2025-11-03T00:33:33.524445337Z [info] drwxr-xr-x    2 root     root          4096 Nov  3 00:30 shared
+2025-11-03T00:33:33.524453700Z [info] drwxr-xr-x    1 root     root          4096 Nov  3 00:31 .
+2025-11-03T00:33:33.524457113Z [info] -rw-rw-r--    1 root     root           960 Nov  3 00:30 tsconfig.json
+2025-11-03T00:33:33.524466746Z [info] dr-xr-xr-x    1 root     root          4096 Nov  3 00:33 ..
+2025-11-03T00:33:33.524471800Z [info] 
+2025-11-03T00:33:33.524476590Z [info] -rw-rw-r--    1 root     root          6775 Nov  3 00:30 create-healing-tables.sql
+2025-11-03T00:33:33.524485801Z [info] ðŸ” Checking for dist/public directory (frontend)...
+2025-11-03T00:33:33.524489212Z [info] -rwxr-xr-x    1 root     root          1990 Nov  3 00:30 debug-start.sh
+2025-11-03T00:33:33.524495638Z [info] âŒ dist/public directory NOT found!
+2025-11-03T00:33:33.526554492Z [info] Frontend build is missing - run 'npm run build' first
