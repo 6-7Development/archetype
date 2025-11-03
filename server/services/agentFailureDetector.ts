@@ -184,6 +184,94 @@ export class AgentFailureDetector {
   }
   
   /**
+   * Analyze agent response quality to detect poor/generic responses
+   * Returns quality score (0-100) and detected issues
+   */
+  async analyzeResponseQuality(response: {
+    content: string;
+    userMessage: string;
+    toolCallCount?: number;
+  }): Promise<{
+    qualityScore: number;
+    isPoorQuality: boolean;
+    issues: string[];
+    shouldEscalate: boolean;
+  }> {
+    const issues: string[] = [];
+    let qualityScore = 100;
+    
+    const content = response.content.toLowerCase();
+    const userMsg = response.userMessage.toLowerCase();
+    
+    // Pattern 1: Generic "I don't feel" / "As an AI" responses (major red flag)
+    const genericAiPatterns = [
+      /i don't (feel|have feelings|experience)/i,
+      /as an ai,? i (don't|cannot|can't)/i,
+      /i'm (just|simply) an ai/i,
+      /i don't have the ability to feel/i,
+    ];
+    
+    for (const pattern of genericAiPatterns) {
+      if (pattern.test(response.content)) {
+        qualityScore -= 40;
+        issues.push('Generic AI disclaimer response - lacks context awareness');
+      }
+    }
+    
+    // Pattern 2: User asks about platform capabilities but agent doesn't reference replit.md
+    const capabilityQuestions = [
+      /what can you do/i,
+      /new (features|updates|tools|capabilities)/i,
+      /recent (changes|updates|improvements)/i,
+      /how (do )?.*feel/i,
+    ];
+    
+    const hasCapabilityQuestion = capabilityQuestions.some(p => p.test(userMsg));
+    const referencesContext = /(recent|update|feature|tool|capability|improvement)/i.test(content);
+    
+    if (hasCapabilityQuestion && !referencesContext) {
+      qualityScore -= 30;
+      issues.push('User asked about capabilities but agent gave generic response without context');
+    }
+    
+    // Pattern 3: Very short response (<50 chars) when user asks complex question
+    if (response.content.length < 50 && userMsg.length > 20) {
+      qualityScore -= 20;
+      issues.push('Response too short for user question complexity');
+    }
+    
+    // Pattern 4: No tool usage when user asks for action
+    const actionVerbs = /(fix|create|build|deploy|test|check|update|install|run|execute)/i;
+    const hasActionRequest = actionVerbs.test(userMsg);
+    const usedTools = (response.toolCallCount || 0) > 0;
+    
+    if (hasActionRequest && !usedTools && response.content.length < 200) {
+      qualityScore -= 25;
+      issues.push('User requested action but agent neither used tools nor provided detailed plan');
+    }
+    
+    // Pattern 5: Repetitive/circular reasoning
+    const words = response.content.split(/\s+/);
+    const uniqueWords = new Set(words.map(w => w.toLowerCase()));
+    const repetitionRatio = uniqueWords.size / Math.max(words.length, 1);
+    
+    if (repetitionRatio < 0.3 && words.length > 20) {
+      qualityScore -= 15;
+      issues.push('Response contains excessive repetition');
+    }
+    
+    const isPoorQuality = qualityScore < 60;
+    const shouldEscalate = qualityScore < 40; // Critical quality issues need architect
+    
+    return {
+      qualityScore: Math.max(0, qualityScore),
+      isPoorQuality,
+      issues,
+      shouldEscalate,
+    };
+  }
+  
+  /**
    * Create agent failure incident
    */
   async createAgentFailureIncident(details: {
