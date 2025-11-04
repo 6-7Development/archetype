@@ -431,15 +431,71 @@ Let's help maintain this platform!`;
         }
       }
 
+      // 🔧 SMART RECOVERY: If Gemini executed tools but didn't provide final text, retry once
+      if (fullResponse.trim().length === 0 && iterationCount > 1 && continueLoop === false) {
+        console.log(`[HEALING-CHAT-RECOVERY] 🔄 Gemini executed ${iterationCount - 1} tool iterations but provided no final text`);
+        console.log(`[HEALING-CHAT-RECOVERY] 📝 Tools used: ${filesModified.length > 0 ? filesModified.join(', ') : 'none modified'}`);
+        console.log(`[HEALING-CHAT-RECOVERY] 🔨 Making recovery call to force completion...`);
+        
+        try {
+          // Add a forcing prompt to get a final answer
+          conversationMessages.push({
+            role: 'user',
+            content: 'Based on the tool results above, please provide your final answer to the user\'s question. Summarize what you found and provide clear guidance.'
+          });
+          
+          // Make ONE recovery call (no tools, just get the answer)
+          const recoveryResponse = await streamGeminiResponse({
+            model: "gemini-2.5-flash",
+            maxTokens: 2000, // Shorter response for summary
+            system: systemPrompt,
+            messages: conversationMessages,
+            // NO TOOLS - we just want the final answer
+            tools: undefined,
+          });
+          
+          if (recoveryResponse.fullText && recoveryResponse.fullText.trim().length > 0) {
+            fullResponse = recoveryResponse.fullText;
+            console.log(`[HEALING-CHAT-RECOVERY] ✅ Recovery successful: ${fullResponse.length} chars`);
+            
+            // Add recovery tokens to total
+            if (recoveryResponse.usage) {
+              totalInputTokens += recoveryResponse.usage.inputTokens || 0;
+              totalOutputTokens += recoveryResponse.usage.outputTokens || 0;
+              console.log(`[HEALING-CHAT-RECOVERY] 📊 Recovery tokens: input=${recoveryResponse.usage.inputTokens}, output=${recoveryResponse.usage.outputTokens}`);
+            }
+          } else {
+            console.error(`[HEALING-CHAT-RECOVERY] ❌ Recovery call returned empty response`);
+          }
+        } catch (recoveryError: any) {
+          console.error(`[HEALING-CHAT-RECOVERY] ❌ Recovery failed:`, recoveryError.message);
+          // Continue to fallback error message
+        }
+      }
+
       const computeTimeMs = Date.now() - computeStartTime;
 
       console.log(`✅ [HEALING-CHAT] Total: ${computeTimeMs}ms, ${fullResponse.length} chars, ${totalInputTokens} input tokens, ${totalOutputTokens} output tokens`);
+
+      // Improved fallback error message with context
+      let finalContent = fullResponse;
+      if (!finalContent || finalContent.trim().length === 0) {
+        if (iterationCount > 1) {
+          // Tools were used but no final answer
+          finalContent = `I gathered information using ${iterationCount - 1} tool call(s)${filesModified.length > 0 ? ` and modified ${filesModified.length} file(s)` : ''}, but encountered an issue formatting my response. Please try rephrasing your question or ask me to elaborate on what I found.`;
+          console.warn(`[HEALING-CHAT] ⚠️ Using enhanced fallback message after ${iterationCount} iterations`);
+        } else {
+          // No tools used, just empty response
+          finalContent = "I apologize, but I couldn't generate a response. Please try again or rephrase your question.";
+          console.warn(`[HEALING-CHAT] ⚠️ Using basic fallback message (no tools executed)`);
+        }
+      }
 
       // Save assistant's final response to database
       const assistantMessage = await storage.createHealingMessage({
         conversationId: validated.conversationId,
         role: 'assistant',
-        content: fullResponse || "I apologize, but I couldn't generate a response. Please try again.",
+        content: finalContent,
         metadata: {
           model: "gemini-2.5-flash",
           tokensUsed: totalInputTokens + totalOutputTokens,
@@ -449,6 +505,7 @@ Let's help maintain this platform!`;
           iterations: iterationCount,
           filesModified,
           type: 'final_response',
+          usedRecovery: fullResponse !== finalContent, // Track if we used recovery/fallback
         },
       });
 
