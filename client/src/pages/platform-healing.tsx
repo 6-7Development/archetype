@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { Link } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/componen
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Send, Upload, Rocket, Plus, Loader2, Database, Activity, AlertCircle, CheckCircle, RefreshCw, Trash2 } from 'lucide-react';
+import { Send, Upload, Rocket, Plus, Loader2, Database, Activity, AlertCircle, CheckCircle, RefreshCw, Trash2, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -482,6 +483,18 @@ function PlatformHealingContent() {
             )}
           </SelectContent>
         </Select>
+
+        {/* Workflow Analytics Link */}
+        <Link href="/workflow-analytics">
+          <Button
+            variant="outline"
+            size="sm"
+            data-testid="link-workflow-analytics"
+          >
+            <BarChart3 className="w-4 h-4 mr-1" />
+            <span className="hidden sm:inline">Analytics</span>
+          </Button>
+        </Link>
 
         {/* New Conversation Button */}
         {targetId && (

@@ -669,6 +669,73 @@ export const insertLomuJobSchema = createInsertSchema(lomuJobs).omit({
 export type InsertLomuJob = z.infer<typeof insertLomuJobSchema>;
 export type LomuJob = typeof lomuJobs.$inferSelect;
 
+// LomuAI Workflow Metrics - Track v2.0 workflow enforcement performance
+export const lomuWorkflowMetrics = pgTable('lomu_workflow_metrics', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  jobId: varchar('job_id').notNull(), // Link to lomuJobs table
+  userId: varchar('user_id').notNull(),
+  
+  // Workflow compliance metrics
+  phasesExecuted: jsonb('phases_executed').$type<string[]>().default(sql`'[]'::jsonb`), // ['assess', 'plan', 'execute', 'test', 'verify', 'confirm', 'commit']
+  phaseTimestamps: jsonb('phase_timestamps').$type<Record<string, string>>().default(sql`'{}'::jsonb`), // { 'assess': '2024-11-04T03:42:00Z', ... }
+  phasesSkipped: jsonb('phases_skipped').$type<string[]>().default(sql`'[]'::jsonb`), // Phases that were skipped (with/without justification)
+  planSkipJustified: boolean('plan_skip_justified').notNull().default(false), // Was PLAN skip properly justified?
+  
+  // Testing & verification metrics
+  testsRun: boolean('tests_run').notNull().default(false), // Did job run tests?
+  testsPassed: boolean('tests_passed').notNull().default(false), // Did all tests pass?
+  compilationChecked: boolean('compilation_checked').notNull().default(false), // Was TypeScript/compilation verified?
+  verificationComplete: boolean('verification_complete').notNull().default(false), // Full verification phase completed?
+  workflowRestarted: boolean('workflow_restarted').notNull().default(false), // Was workflow restarted for verification?
+  
+  // Violation & enforcement metrics
+  violationCount: integer('violation_count').notNull().default(0), // Number of workflow violations detected
+  violations: jsonb('violations').$type<Array<{
+    type: string;      // 'phase_skip' | 'test_skip' | 'direct_edit' | 'no_announcement' | 'excessive_rambling'
+    phase: string;     // Which phase the violation occurred in
+    message: string;   // Error/warning message
+    timestamp: string; // When it occurred
+  }>>().default(sql`'[]'::jsonb`),
+  restartCount: integer('restart_count').notNull().default(0), // Number of RESTART injections required
+  toolBlockCount: integer('tool_block_count').notNull().default(0), // Number of tool calls blocked
+  
+  // Token efficiency metrics
+  totalTokens: integer('total_tokens').notNull().default(0), // Total tokens used (input + output)
+  inputTokens: integer('input_tokens').notNull().default(0), // Input tokens
+  outputTokens: integer('output_tokens').notNull().default(0), // Output tokens
+  iterationCount: integer('iteration_count').notNull().default(0), // Number of conversation iterations
+  avgTokensPerIteration: decimal('avg_tokens_per_iteration', { precision: 10, scale: 2 }).notNull().default("0.00"), // Efficiency measure
+  
+  // Quality scores
+  phaseComplianceScore: integer('phase_compliance_score').notNull().default(0), // 0-100: % of required phases executed
+  testCoverageScore: integer('test_coverage_score').notNull().default(0), // 0-100: Test completion quality
+  tokenEfficiencyScore: integer('token_efficiency_score').notNull().default(0), // 0-100: Token usage efficiency
+  overallQualityScore: integer('overall_quality_score').notNull().default(0), // 0-100: Combined quality score
+  
+  // Performance metrics
+  totalDurationMs: integer('total_duration_ms').notNull().default(0), // Total job duration in milliseconds
+  assessDurationMs: integer('assess_duration_ms').notNull().default(0), // Time spent in ASSESS phase
+  planDurationMs: integer('plan_duration_ms').notNull().default(0), // Time spent in PLAN phase
+  executeDurationMs: integer('execute_duration_ms').notNull().default(0), // Time spent in EXECUTE phase
+  testDurationMs: integer('test_duration_ms').notNull().default(0), // Time spent in TEST phase
+  verifyDurationMs: integer('verify_duration_ms').notNull().default(0), // Time spent in VERIFY phase
+  
+  // Outcomes
+  jobStatus: varchar('job_status', { length: 20 }).notNull(), // 'completed' | 'failed' | 'interrupted'
+  commitExecuted: boolean('commit_executed').notNull().default(false), // Was code committed to GitHub?
+  filesModified: integer('files_modified').notNull().default(0), // Number of files changed
+  
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const insertLomuWorkflowMetricsSchema = createInsertSchema(lomuWorkflowMetrics).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertLomuWorkflowMetrics = z.infer<typeof insertLomuWorkflowMetricsSchema>;
+export type LomuWorkflowMetrics = typeof lomuWorkflowMetrics.$inferSelect;
+
 // Usage Tracking & Billing
 export const usageLogs = pgTable("usage_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

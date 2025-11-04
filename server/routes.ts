@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import type { Server } from "http";
 import { db } from "./db";
-import { files } from "@shared/schema";
+import { files, users } from "@shared/schema";
 import { setupAuth } from "./universalAuth";
 import { FEATURES } from "./routes/common";
 import toolsRouter from './routes/tools';
@@ -653,6 +653,268 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Error updating avatar mood:', error);
       res.status(500).json({ error: error.message || "Failed to update avatar mood" });
+    }
+  });
+
+  // ==================== WORKFLOW METRICS ANALYTICS ====================
+  
+  // Import lomu workflow metrics table
+  const { lomuWorkflowMetrics } = await import('@shared/schema');
+  const { sql: drizzleSql, desc, gte, lte, and, count, eq } = await import('drizzle-orm');
+  
+  // Helper: Calculate date range (default to last 7 days)
+  function getDateRange(startDate?: string, endDate?: string) {
+    const end = endDate ? new Date(endDate) : new Date();
+    const start = startDate ? new Date(startDate) : new Date(end.getTime() - 7 * 24 * 60 * 60 * 1000);
+    return { start, end };
+  }
+  
+  // GET /api/workflow-metrics/summary - Aggregated statistics (OWNER-ONLY)
+  app.get('/api/workflow-metrics/summary', async (req: any, res) => {
+    try {
+      const userId = req.session?.claims?.sub || req.session?.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+      
+      // 🔒 SECURITY: Owner-only access to workflow metrics
+      const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+      if (!user || !user.isOwner) {
+        return res.status(403).json({ error: 'Access denied. Workflow Analytics is owner-only.' });
+      }
+      
+      const { startDate, endDate } = req.query;
+      const { start, end } = getDateRange(startDate, endDate);
+      
+      // Query all metrics in date range
+      const metrics = await db
+        .select()
+        .from(lomuWorkflowMetrics)
+        .where(
+          and(
+            gte(lomuWorkflowMetrics.createdAt, start),
+            lte(lomuWorkflowMetrics.createdAt, end)
+          )
+        );
+      
+      if (metrics.length === 0) {
+        return res.json({
+          totalJobs: 0,
+          avgPhaseCompliance: 0,
+          avgTestCoverage: 0,
+          avgTokenEfficiency: 0,
+          avgOverallQuality: 0,
+          totalViolations: 0,
+          avgViolationsPerJob: 0,
+          complianceRate: 0,
+          testingRate: 0,
+        });
+      }
+      
+      // Calculate aggregates
+      const totalJobs = metrics.length;
+      const avgPhaseCompliance = Math.round(
+        metrics.reduce((sum, m) => sum + m.phaseComplianceScore, 0) / totalJobs
+      );
+      const avgTestCoverage = Math.round(
+        metrics.reduce((sum, m) => sum + m.testCoverageScore, 0) / totalJobs
+      );
+      const avgTokenEfficiency = Math.round(
+        metrics.reduce((sum, m) => sum + m.tokenEfficiencyScore, 0) / totalJobs
+      );
+      const avgOverallQuality = Math.round(
+        metrics.reduce((sum, m) => sum + m.overallQualityScore, 0) / totalJobs
+      );
+      const totalViolations = metrics.reduce((sum, m) => sum + m.violationCount, 0);
+      const avgViolationsPerJob = parseFloat((totalViolations / totalJobs).toFixed(2));
+      
+      // Calculate rates
+      const jobsWithAll7Phases = metrics.filter(m => 
+        (m.phasesExecuted as string[]).length === 7
+      ).length;
+      const complianceRate = Math.round((jobsWithAll7Phases / totalJobs) * 100);
+      
+      const jobsWithTests = metrics.filter(m => m.testsRun).length;
+      const testingRate = Math.round((jobsWithTests / totalJobs) * 100);
+      
+      res.json({
+        totalJobs,
+        avgPhaseCompliance,
+        avgTestCoverage,
+        avgTokenEfficiency,
+        avgOverallQuality,
+        totalViolations,
+        avgViolationsPerJob,
+        complianceRate,
+        testingRate,
+      });
+    } catch (error: any) {
+      console.error('[WORKFLOW-METRICS] Summary error:', error);
+      res.status(500).json({ error: error.message || 'Failed to fetch summary' });
+    }
+  });
+  
+  // GET /api/workflow-metrics/timeline - Time-series data for charts (OWNER-ONLY)
+  app.get('/api/workflow-metrics/timeline', async (req: any, res) => {
+    try {
+      const userId = req.session?.claims?.sub || req.session?.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+      
+      // 🔒 SECURITY: Owner-only access to workflow metrics
+      const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+      if (!user || !user.isOwner) {
+        return res.status(403).json({ error: 'Access denied. Workflow Analytics is owner-only.' });
+      }
+      
+      const { startDate, endDate} = req.query;
+      const { start, end } = getDateRange(startDate, endDate);
+      
+      // Query all metrics in date range
+      const metrics = await db
+        .select()
+        .from(lomuWorkflowMetrics)
+        .where(
+          and(
+            gte(lomuWorkflowMetrics.createdAt, start),
+            lte(lomuWorkflowMetrics.createdAt, end)
+          )
+        )
+        .orderBy(lomuWorkflowMetrics.createdAt);
+      
+      // Group by day
+      const dailyData = new Map<string, { jobs: typeof metrics, count: number }>();
+      
+      metrics.forEach(metric => {
+        const date = metric.createdAt?.toISOString().split('T')[0] || '';
+        if (!dailyData.has(date)) {
+          dailyData.set(date, { jobs: [], count: 0 });
+        }
+        const day = dailyData.get(date)!;
+        day.jobs.push(metric);
+        day.count++;
+      });
+      
+      // Calculate daily aggregates
+      const timeline = Array.from(dailyData.entries()).map(([date, { jobs, count }]) => ({
+        date,
+        jobCount: count,
+        avgQuality: Math.round(
+          jobs.reduce((sum, m) => sum + m.overallQualityScore, 0) / count
+        ),
+        violations: jobs.reduce((sum, m) => sum + m.violationCount, 0),
+      }));
+      
+      res.json(timeline);
+    } catch (error: any) {
+      console.error('[WORKFLOW-METRICS] Timeline error:', error);
+      res.status(500).json({ error: error.message || 'Failed to fetch timeline' });
+    }
+  });
+  
+  // GET /api/workflow-metrics/violations - Violation breakdown by type (OWNER-ONLY)
+  app.get('/api/workflow-metrics/violations', async (req: any, res) => {
+    try {
+      const userId = req.session?.claims?.sub || req.session?.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+      
+      // 🔒 SECURITY: Owner-only access to workflow metrics
+      const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+      if (!user || !user.isOwner) {
+        return res.status(403).json({ error: 'Access denied. Workflow Analytics is owner-only.' });
+      }
+      
+      const { startDate, endDate } = req.query;
+      const { start, end } = getDateRange(startDate, endDate);
+      
+      // Query all metrics in date range
+      const metrics = await db
+        .select()
+        .from(lomuWorkflowMetrics)
+        .where(
+          and(
+            gte(lomuWorkflowMetrics.createdAt, start),
+            lte(lomuWorkflowMetrics.createdAt, end)
+          )
+        )
+        .orderBy(desc(lomuWorkflowMetrics.createdAt));
+      
+      // Count violations by type
+      const byType: Record<string, number> = {
+        phase_skip: 0,
+        test_skip: 0,
+        direct_edit: 0,
+        no_announcement: 0,
+        excessive_rambling: 0,
+        tool_block: 0,
+      };
+      
+      const recentViolations: any[] = [];
+      
+      metrics.forEach(metric => {
+        const violations = (metric.violations as any[]) || [];
+        violations.forEach(v => {
+          const type = v.type || 'unknown';
+          if (byType.hasOwnProperty(type)) {
+            byType[type]++;
+          }
+          
+          // Collect recent violations (limit 10)
+          if (recentViolations.length < 10) {
+            recentViolations.push({
+              ...v,
+              jobId: metric.jobId,
+              createdAt: metric.createdAt,
+            });
+          }
+        });
+      });
+      
+      res.json({ byType, recentViolations });
+    } catch (error: any) {
+      console.error('[WORKFLOW-METRICS] Violations error:', error);
+      res.status(500).json({ error: error.message || 'Failed to fetch violations' });
+    }
+  });
+  
+  // GET /api/workflow-metrics/recent-jobs - Recent jobs with metrics (OWNER-ONLY)
+  app.get('/api/workflow-metrics/recent-jobs', async (req: any, res) => {
+    try {
+      const userId = req.session?.claims?.sub || req.session?.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+      
+      // 🔒 SECURITY: Owner-only access to workflow metrics
+      const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+      if (!user || !user.isOwner) {
+        return res.status(403).json({ error: 'Access denied. Workflow Analytics is owner-only.' });
+      }
+      
+      const { startDate, endDate } = req.query;
+      const { start, end } = getDateRange(startDate, endDate);
+      const limit = parseInt(req.query.limit as string) || 20;
+      
+      // Query recent metrics
+      const metrics = await db
+        .select()
+        .from(lomuWorkflowMetrics)
+        .where(
+          and(
+            gte(lomuWorkflowMetrics.createdAt, start),
+            lte(lomuWorkflowMetrics.createdAt, end)
+          )
+        )
+        .orderBy(desc(lomuWorkflowMetrics.createdAt))
+        .limit(limit);
+      
+      res.json(metrics);
+    } catch (error: any) {
+      console.error('[WORKFLOW-METRICS] Recent jobs error:', error);
+      res.status(500).json({ error: error.message || 'Failed to fetch recent jobs' });
     }
   });
 

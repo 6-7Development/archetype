@@ -29,6 +29,7 @@ import Support from "@/pages/support";
 import Admin from "@/pages/admin";
 import Publishing from "@/pages/publishing";
 import PlatformHealing from "@/pages/platform-healing";
+import WorkflowAnalytics from "@/pages/workflow-analytics";
 import AgentFeatures from "@/pages/agent-features";
 import Setup from "@/pages/setup";
 import ArtifactDemo from "@/pages/artifact-demo";
@@ -160,6 +161,13 @@ function Router() {
         <AppLayout>
           <OwnerGuard>
             <PlatformHealing />
+          </OwnerGuard>
+        </AppLayout>
+      </Route>
+      <Route path="/workflow-analytics">
+        <AppLayout>
+          <OwnerGuard>
+            <WorkflowAnalytics />
           </OwnerGuard>
         </AppLayout>
       </Route>

@@ -1,5 +1,5 @@
 import { db } from '../db';
-import { lomuJobs, users, subscriptions, chatMessages, taskLists, tasks, projects, platformIncidents } from '@shared/schema';
+import { lomuJobs, lomuWorkflowMetrics, users, subscriptions, chatMessages, taskLists, tasks, projects, platformIncidents } from '@shared/schema';
 import { eq, and, inArray } from 'drizzle-orm';
 import type { WebSocketServer } from 'ws';
 import { streamGeminiResponse } from '../gemini';
@@ -15,6 +15,7 @@ import { startSubagent } from '../subagentOrchestration';
 import { healthMonitor } from './healthMonitor';
 import { AgentFailureDetector } from './agentFailureDetector';
 import { WorkflowValidator } from './workflowValidator';
+import { WorkflowMetricsTracker } from './workflowMetricsTracker';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { storage } from '../storage';
@@ -255,6 +256,11 @@ async function runMetaSysopWorker(jobId: string) {
     // FIX 3: Set autoCommit context for commit enforcement
     workflowValidator.updateContext({ autoCommit });
     console.log('[WORKFLOW-VALIDATOR] Initialized for job:', jobId, '(autoCommit:', autoCommit, ')');
+
+    // 📊 METRICS TRACKER: Initialize metrics collection for workflow performance tracking
+    const metricsTracker = new WorkflowMetricsTracker(jobId, userId);
+    metricsTracker.recordPhaseTransition('assess');
+    console.log('[METRICS-TRACKER] Initialized for job:', jobId);
 
     // If resuming, notify user
     if (iterationCount > 0) {
@@ -929,6 +935,13 @@ Let's build! 🚀`;
                 const error = `WORKFLOW VIOLATION: Direct code edits only allowed in EXECUTE phase. Current: ${currentPhase}. Use tools instead.`;
                 console.error(`[WORKFLOW-VALIDATOR] ${error}`);
                 
+                // Track violation in metrics
+                metricsTracker.recordViolation(
+                  'direct_edit',
+                  currentPhase,
+                  error
+                );
+                
                 broadcast(userId, jobId, 'job_content', { 
                   content: `\n\n❌ ${error}\n\n`,
                   isError: true  
@@ -955,6 +968,13 @@ Let's build! 🚀`;
                 // HARD BLOCK: Inject error to AI conversation
                 const errorMessage = `\n\n❌ WORKFLOW VIOLATION: ${transition.reason}\n\nYou must fix this before proceeding. Current phase: ${workflowValidator.getCurrentPhase()}`;
                 
+                // Track phase skip violation in metrics
+                metricsTracker.recordViolation(
+                  'phase_skip',
+                  workflowValidator.getCurrentPhase(),
+                  `Invalid transition to ${detectedPhase}: ${transition.reason}`
+                );
+                
                 fullContent += errorMessage;
                 broadcast(userId, jobId, 'job_content', { 
                   content: errorMessage,
@@ -971,6 +991,7 @@ Let's build! 🚀`;
                 // Don't actually transition - the validator will keep current phase
               } else {
                 workflowValidator.transitionTo(detectedPhase);
+                metricsTracker.recordPhaseTransition(detectedPhase);
                 console.log(`[WORKFLOW-VALIDATOR] ✅ Phase transition: ${detectedPhase}`);
               }
             }
@@ -1004,6 +1025,7 @@ Let's build! 🚀`;
           if (usage && usage.inputTokens !== undefined && usage.outputTokens !== undefined) {
             cumulativeInputTokens += usage.inputTokens;
             cumulativeOutputTokens += usage.outputTokens;
+            metricsTracker.recordTokenUsage(usage.inputTokens, usage.outputTokens);
             console.log(`[TOKEN-TRACKING] Iteration ${iterationCount}: ${usage.inputTokens} input + ${usage.outputTokens} output tokens (cumulative: ${cumulativeInputTokens} + ${cumulativeOutputTokens})`);
           }
         },
@@ -1044,6 +1066,13 @@ Let's build! 🚀`;
             if (currentPhase !== 'execute') {
               console.error(`[WORKFLOW-VALIDATOR] Direct edit in final message outside EXECUTE: ${currentPhase}`);
               
+              // Track violation in metrics
+              metricsTracker.recordViolation(
+                'direct_edit',
+                currentPhase,
+                `Direct code edits in final message outside EXECUTE phase`
+              );
+              
               broadcast(userId, jobId, 'job_content', {
                 content: `\n\n❌ WORKFLOW VIOLATION: Direct code edits only allowed in EXECUTE phase. Current: ${currentPhase}.\n\n`,
                 isError: true
@@ -1083,6 +1112,14 @@ Let's build! 🚀`;
           const toolValidation = workflowValidator.validateToolCall(name, workflowValidator.getCurrentPhase());
           if (!toolValidation.allowed) {
             console.warn(`[WORKFLOW-VALIDATOR] ❌ Tool ${name} not allowed in ${workflowValidator.getCurrentPhase()} phase: ${toolValidation.reason}`);
+            
+            // Track tool block in metrics
+            metricsTracker.recordToolBlock();
+            metricsTracker.recordViolation(
+              'tool_block',
+              workflowValidator.getCurrentPhase(),
+              `Tool ${name} blocked: ${toolValidation.reason}`
+            );
             
             // Inject workflow violation error back to AI
             toolResults.push({
@@ -1491,6 +1528,7 @@ Let's build! 🚀`;
                     
                     // FIX 4: Wire commit confirmation
                     workflowValidator.confirmCommit(true);
+                    metricsTracker.recordCommit(fileChanges.length);
                     // 🔄 WORKFLOW VALIDATOR: Track commit execution
                     workflowValidator.updateContext({ commitExecuted: true });
                   }
@@ -1542,16 +1580,22 @@ Let's build! 🚀`;
                               !resultContent.includes('error') &&
                               !resultContent.includes('✗');
                 workflowValidator.confirmTestsRun(passed);
+                metricsTracker.recordTestExecution(passed);
               }
               
               // Detect verification runs (TypeScript compilation, linting)
               if (inputStr.includes('tsc --noemit') ||
+                  inputStr.includes('tsc --noEmit') ||
                   inputStr.includes('tsc -noemit') ||
                   inputStr.includes('npm run type-check') ||
                   inputStr.includes('eslint')) {
                 const compilationOk = !resultContent.includes('error') &&
                                      !resultContent.includes('failed');
                 workflowValidator.confirmVerification(compilationOk);
+                metricsTracker.recordCompilationCheck(compilationOk);
+                if (compilationOk) {
+                  metricsTracker.recordVerificationComplete();
+                }
               }
               
               // FIX 4: Detect git commit commands
@@ -1839,6 +1883,7 @@ Let's build! 🚀`;
     let commitHash = '';
     if (autoCommit && fileChanges.length > 0) {
       commitHash = await platformHealing.commitChanges(`Fix: ${message.slice(0, 100)}`, fileChanges as any);
+      metricsTracker.recordCommit(fileChanges.length);
 
       if (autoPush) {
         await platformHealing.pushToRemote();
@@ -1961,6 +2006,20 @@ Let's build! 🚀`;
 
     console.log('[LOMU-AI-JOB-MANAGER] Job completed:', jobId);
     
+    // 📊 SAVE WORKFLOW METRICS: Write comprehensive performance data to database
+    try {
+      metricsTracker.setJobStatus('completed');
+      const finalMetrics = metricsTracker.getFinalMetrics();
+      
+      await db.insert(lomuWorkflowMetrics).values([finalMetrics]);
+      
+      console.log(`[METRICS-TRACKER] ✅ Metrics saved for job ${jobId}`);
+      console.log(`[METRICS-TRACKER] Summary: ${metricsTracker.getSummary()}`);
+    } catch (metricsError: any) {
+      console.error('[METRICS-TRACKER] ❌ Failed to save metrics (non-fatal):', metricsError.message);
+      // Non-fatal: metrics tracking failure should not break job completion
+    }
+    
     // 🤖 AUTOMATIC QUALITY MONITORING: Analyze response quality (non-blocking)
     // Only analyze user-facing chat responses (not system/background tasks)
     setImmediate(async () => {
@@ -2017,6 +2076,25 @@ Let's build! 🚀`;
         updatedAt: new Date()
       })
       .where(eq(lomuJobs.id, jobId));
+
+    // 📊 SAVE WORKFLOW METRICS ON FAILURE: Track failed jobs for analysis
+    // Note: metricsTracker might not be initialized if error occurs very early
+    try {
+      // Check if metricsTracker exists (in case error occurred before initialization)
+      if (typeof metricsTracker !== 'undefined') {
+        metricsTracker.setJobStatus('failed');
+        const finalMetrics = metricsTracker.getFinalMetrics();
+        
+        await db.insert(lomuWorkflowMetrics).values([finalMetrics]);
+        
+        console.log(`[METRICS-TRACKER] ✅ Failure metrics saved for job ${jobId}`);
+      } else {
+        console.warn('[METRICS-TRACKER] Metrics tracker not initialized - skipping failure metrics');
+      }
+    } catch (metricsError: any) {
+      console.error('[METRICS-TRACKER] ❌ Failed to save failure metrics:', metricsError.message);
+      // Still non-fatal
+    }
 
     // Broadcast error
     try {
