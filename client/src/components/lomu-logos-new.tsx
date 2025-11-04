@@ -4,7 +4,7 @@ import wordLogoPath from "@assets/Gemini_Generated_Image_ixx4nbixx4nbixx4_176187
 // Icon Logo - Lemon with "L" (cropped to remove border and background)
 export function LomuIconLogo({ size = 40, className = "" }: { size?: number; className?: string }) {
   return (
-    <div 
+    <div
       className={`relative overflow-hidden rounded-full ${className}`}
       style={{
         width: size,
@@ -33,7 +33,7 @@ export function LomuIconLogo({ size = 40, className = "" }: { size?: number; cla
 // Word Logo - "LOMU" text (cropped to remove glowing border and tagline)
 export function LomuWordLogo({ height = 60, className = "" }: { height?: number; className?: string }) {
   return (
-    <div 
+    <div
       className={`relative ${className}`}
       style={{
         height: height,
@@ -55,12 +55,12 @@ export function LomuWordLogo({ height = 60, className = "" }: { height?: number;
 }
 
 // Combined Logo - Icon + Text
-export function LomuFullLogo({ 
-  iconSize = 40, 
+export function LomuFullLogo({
+  iconSize = 40,
   textHeight = 32,
-  className = "" 
-}: { 
-  iconSize?: number; 
+  className = ""
+}: {
+  iconSize?: number;
   textHeight?: number;
   className?: string;
 }) {
@@ -69,5 +69,5 @@ export function LomuFullLogo({
       <LomuIconLogo size={iconSize} />
       <LomuWordLogo height={textHeight} />
     </div>
-  );
+    );
 }

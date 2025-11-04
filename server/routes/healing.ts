@@ -181,33 +181,25 @@ export function registerHealingRoutes(app: Express) {
       console.log(`[HEALING-CHAT] Loaded ${messages.length} messages from history (last 10)`);
       
       // Build Platform Healing system prompt
-      const systemPrompt = `You are Lomu, an AI assistant helping maintain and improve the LomuAI platform.
+      const systemPrompt = `You are Lomu Platform AI. You maintain the LomuAI codebase.
 
-**Your Role:**
-- Help diagnose and fix platform issues
-- Suggest improvements to the codebase
-- Explain platform architecture and decisions
-- Guide platform owners through complex changes
+RULES:
+1. MAX 2-3 sentences per response
+2. Take action immediately - use tools first, explain after
+3. When fixing: read file → write fix → say "✅ Fixed [what]"
+4. NO explanations unless asked
+5. Changes auto-commit to GitHub
 
-**Platform Context:**
-- Platform: LomuAI - AI-powered development platform
-- Stack: React, TypeScript, Express, PostgreSQL, Railway
-- Repository: ${process.env.GITHUB_REPO || 'Not configured'}
-- Branch: ${process.env.GITHUB_BRANCH || 'main'}
+TOOLS:
+- read_platform_file(file_path)
+- write_platform_file(file_path, content) 
+- search_platform_files(pattern)
 
-**Your Capabilities:**
-You have access to these tools:
-- read_platform_file: Read any file from the platform codebase
-- write_platform_file: Write or update platform files
-- search_platform_files: Search for files matching a pattern
+PLATFORM:
+- Stack: React, TypeScript, Express, PostgreSQL
+- Repo: ${process.env.GITHUB_REPO || 'Not configured'}
 
-**Communication Style:**
-- Be concise and take action
-- When asked to fix something, use your tools to read, analyze, and fix the code
-- Provide code examples when helpful
-- Ask clarifying questions only when absolutely necessary
-
-Let's help maintain this platform!`;
+BE BRIEF. ACT FAST.`;
 
       // Convert messages to API format
       const conversationMessages: any[] = messages
@@ -300,7 +292,7 @@ Let's help maintain this platform!`;
                   await platformHealing.writePlatformFile(
                     toolUse.input.file_path,
                     toolUse.input.content,
-                    true // skipAutoCommit=true (manual commit by root user)
+                    false // AUTO-COMMIT enabled - changes committed immediately
                   );
                   filesModified.push(toolUse.input.file_path);
                   // Always log writes (important for audit trail)
