@@ -11,6 +11,8 @@ import { getGitHubService } from '../githubService';
 import { createTaskList, updateTask, readTaskList } from '../tools/task-management';
 import { performDiagnosis } from '../tools/diagnosis';
 import { startSubagent } from '../subagentOrchestration';
+import { healthMonitor } from './healthMonitor';
+import { AgentFailureDetector } from './agentFailureDetector';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { storage } from '../storage';
@@ -1554,6 +1556,51 @@ Let's build something amazing! 🚀`;
     });
 
     console.log('[LOMU-AI-JOB-MANAGER] Job completed:', jobId);
+    
+    // 🤖 AUTOMATIC QUALITY MONITORING: Analyze response quality (non-blocking)
+    // Only analyze user-facing chat responses (not system/background tasks)
+    setImmediate(async () => {
+      try {
+        console.log('[QUALITY-MONITOR] 🔍 Analyzing LomuAI response quality...');
+        
+        const agentFailureDetector = new AgentFailureDetector();
+        const qualityAnalysis = await agentFailureDetector.analyzeResponseQuality({
+          content: fullContent,
+          userMessage: message,
+          toolCallCount: toolResults.length || 0,
+        });
+        
+        console.log('[QUALITY-MONITOR] Quality score:', qualityAnalysis.qualityScore);
+        console.log('[QUALITY-MONITOR] Issues found:', qualityAnalysis.issues);
+        console.log('[QUALITY-MONITOR] Should escalate:', qualityAnalysis.shouldEscalate);
+        
+        // Only report incidents for poor quality responses
+        if (qualityAnalysis.shouldEscalate) {
+          console.log('[QUALITY-MONITOR] ⚠️ Poor quality detected - creating incident');
+          
+          await healthMonitor.reportAgentIncident({
+            type: 'agent_response_quality',
+            severity: qualityAnalysis.qualityScore < 30 ? 'high' : 'medium',
+            description: `Poor LomuAI response quality (score: ${qualityAnalysis.qualityScore}/100)\n\nIssues:\n${qualityAnalysis.issues.join('\n')}\n\nUser request: "${message.slice(0, 200)}..."`,
+            metrics: {
+              qualityScore: qualityAnalysis.qualityScore,
+              issues: qualityAnalysis.issues,
+              shouldEscalate: qualityAnalysis.shouldEscalate,
+              isPoorQuality: qualityAnalysis.isPoorQuality,
+            },
+            userMessage: message,
+            agentResponse: fullContent,
+          });
+          
+          console.log('[QUALITY-MONITOR] ✅ Incident reported to I AM Architect');
+        } else {
+          console.log('[QUALITY-MONITOR] ✅ Response quality acceptable - no incident created');
+        }
+      } catch (qualityError: any) {
+        console.error('[QUALITY-MONITOR] ❌ Quality analysis failed (non-fatal):', qualityError.message);
+        // Non-fatal: quality monitoring should not break job completion
+      }
+    });
 
   } catch (error: any) {
     console.error('[LOMU-AI-JOB-MANAGER] Job error:', jobId, error);

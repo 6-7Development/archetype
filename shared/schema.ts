@@ -119,7 +119,7 @@ export const platformIncidents = pgTable("platform_incidents", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
 
   // Incident details
-  type: text("type").notNull(), // 'high_cpu', 'memory_leak', 'build_failure', 'runtime_error', 'lsp_error', 'agent_failure'
+  type: text("type").notNull(), // 'high_cpu', 'memory_leak', 'build_failure', 'runtime_error', 'lsp_error', 'agent_failure', 'agent_response_quality'
   severity: text("severity").notNull(), // 'low', 'medium', 'high', 'critical'
   title: text("title").notNull(), // "High CPU usage detected"
   description: text("description").notNull(), // Detailed error message

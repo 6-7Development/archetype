@@ -20,6 +20,10 @@ export class PlatformHealthMonitor extends EventEmitter {
   private lastMetrics: any = null;
   private openIncidents: Map<string, string> = new Map(); // type -> incidentId
   
+  // Agent quality monitoring rate limiting
+  private agentIncidentTimestamps: Map<string, Date> = new Map(); // type -> last incident time
+  private readonly AGENT_INCIDENT_COOLDOWN_MS = 10 * 60 * 1000; // 10 minutes
+  
   constructor() {
     super();
   }
@@ -207,6 +211,73 @@ export class PlatformHealthMonitor extends EventEmitter {
       });
     } catch (error) {
       console.error('[HEALTH-MONITOR] Failed to resolve incident:', error);
+    }
+  }
+  
+  /**
+   * Report agent-specific incidents (quality issues, failures, etc.)
+   * Used by LomuAI quality monitoring system
+   * 
+   * Rate limiting: Max 1 incident per type per 10 minutes
+   * Source: Always set to 'agent_monitor' for I AM Architect routing
+   */
+  async reportAgentIncident(data: {
+    type: string;
+    severity: string;
+    description: string;
+    metrics: any;
+    userMessage?: string;
+    agentResponse?: string;
+  }): Promise<void> {
+    const { type, severity, description, metrics, userMessage, agentResponse } = data;
+    
+    // Rate limiting: Check if we've reported this type of incident recently
+    const lastIncidentTime = this.agentIncidentTimestamps.get(type);
+    if (lastIncidentTime) {
+      const timeSinceLastIncident = Date.now() - lastIncidentTime.getTime();
+      if (timeSinceLastIncident < this.AGENT_INCIDENT_COOLDOWN_MS) {
+        const minutesRemaining = Math.ceil((this.AGENT_INCIDENT_COOLDOWN_MS - timeSinceLastIncident) / 60000);
+        console.log(`[HEALTH-MONITOR] ⏳ Agent incident rate-limited: ${type} (${minutesRemaining}min cooldown remaining)`);
+        return;
+      }
+    }
+    
+    try {
+      // Create incident in database with agent_monitor source
+      const [incident] = await db
+        .insert(platformIncidents)
+        .values({
+          type,
+          severity,
+          title: `Agent Quality Issue: ${type}`,
+          description,
+          source: 'agent_monitor', // CRITICAL: Routes to I AM Architect
+          incidentCategory: 'agent_failure',
+          isAgentFailure: true,
+          status: 'open',
+          metrics: {
+            ...metrics,
+            userMessage: userMessage?.slice(0, 500), // Truncate to prevent excessive storage
+            agentResponse: agentResponse?.slice(0, 1000),
+            detectedAt: new Date().toISOString(),
+          },
+          attemptCount: 0,
+        })
+        .returning();
+      
+      // Update rate limit timestamp
+      this.agentIncidentTimestamps.set(type, new Date());
+      
+      console.log(`[HEALTH-MONITOR] 🤖 Agent incident reported: ${type} (${incident.id})`);
+      console.log(`[HEALTH-MONITOR] Quality metrics:`, metrics);
+      
+      // Emit event for heal orchestrator
+      this.emit('incident-detected', {
+        incidentId: incident.id,
+        incident,
+      });
+    } catch (error: any) {
+      console.error('[HEALTH-MONITOR] Failed to report agent incident:', error);
     }
   }
 }
