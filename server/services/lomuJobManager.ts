@@ -1062,34 +1062,37 @@ Let's build! 🚀`;
             if (cumulativeText.length === 0) {
               // Empty - allowed, continue processing
             } 
-            // Check if cumulative text is ONLY a phase marker (exact match, max 30 chars)
+            // Check if cumulative text is ONLY a phase marker (EXACT match required)
+            else if (ALLOWED_PHASE_MARKERS.some(marker => cumulativeText === marker || cumulativeText === marker.trim())) {
+              // Valid standalone phase marker - allow it
+              console.log(`[CUMULATIVE-GUARD] ✅ Phase marker valid (exact match): "${cumulativeText}"`);
+            }
+            // Check if it STARTS with a marker but isn't exact (VIOLATION)
             else if (ALLOWED_PHASE_MARKERS.some(marker => cumulativeText.startsWith(marker))) {
-              if (cumulativeText.length > 30) {
-                const violation = `⚠️ VIOLATION: Phase markers must stand alone (max 30 chars). Say "⚡ Executing..." then STOP and call tools.`;
-                console.error(`[CUMULATIVE-GUARD] Phase marker too long: "${cumulativeText}" (${cumulativeText.length} chars)`);
-                
-                metricsTracker?.recordViolation(
-                  'excessive_rambling',
-                  currentPhase,
-                  `Phase marker exceeded 30 chars: ${cumulativeText.length}`
-                );
-                
-                broadcast(userId, jobId, 'job_content', { 
-                  content: `\n\n❌ ${violation}\n\n`,
-                  isError: true  
-                });
-                
-                conversationMessages.push({
-                  role: 'user',
-                  content: violation
-                });
-                
-                violationInjected = true;
-                resetTextAccumulator();
-                continueLoop = true;
-                return;
-              }
-              console.log(`[CUMULATIVE-GUARD] ✅ Phase marker valid: "${cumulativeText}" (${cumulativeText.length} chars)`);
+              // VIOLATION: Phase marker with extra text
+              const violation = `⚠️ VIOLATION: Phase markers must stand ALONE. Say "⚡ Executing..." then STOP. No extra text.`;
+              console.error(`[CUMULATIVE-GUARD] Phase marker with extra text: "${cumulativeText}" (${cumulativeText.length} chars)`);
+              
+              metricsTracker?.recordViolation(
+                'excessive_rambling',
+                currentPhase,
+                `Phase marker with appended text: "${cumulativeText}"`
+              );
+              
+              broadcast(userId, jobId, 'job_content', { 
+                content: `\n\n❌ ${violation}\n\n`,
+                isError: true  
+              });
+              
+              conversationMessages.push({
+                role: 'user',
+                content: violation
+              });
+              
+              violationInjected = true;
+              resetTextAccumulator();
+              continueLoop = true;
+              return;
             }
             // Check status patterns with STRICT length limits (max 100 chars)
             else if (ALLOWED_STATUS_PATTERNS.some(pattern => pattern.test(cumulativeText))) {
