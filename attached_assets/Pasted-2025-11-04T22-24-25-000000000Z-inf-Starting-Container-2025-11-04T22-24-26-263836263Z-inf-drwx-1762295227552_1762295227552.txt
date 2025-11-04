@@ -1,0 +1,391 @@
+2025-11-04T22:24:25.000000000Z [inf]  Starting Container
+2025-11-04T22:24:26.263836263Z [inf]  drwxr-xr-x    2 root     root          4096 Nov  4 22:12 shared
+2025-11-04T22:24:26.263841184Z [inf]  -rw-rw-r--    1 root     root           960 Nov  4 22:12 tsconfig.json
+2025-11-04T22:24:26.263847543Z [inf]  
+2025-11-04T22:24:26.263852512Z [inf]  🔍 Checking for server/public directory (frontend)...
+2025-11-04T22:24:26.263857507Z [inf]  ✅ server/public directory exists (frontend build)
+2025-11-04T22:24:26.263862524Z [inf]  
+2025-11-04T22:24:26.263869548Z [inf]  🔧 Running database migration and drift repair...
+2025-11-04T22:24:26.263874469Z [inf]  📋 Step 1: Running migration statements individually...
+2025-11-04T22:24:26.263879355Z [inf]     Found 148 SQL statements to execute
+2025-11-04T22:24:26.264028255Z [inf]  ======================================
+2025-11-04T22:24:26.264034482Z [inf]  🚂 RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-04T22:24:26.264041112Z [inf]  ======================================
+2025-11-04T22:24:26.264051268Z [inf]  Time: Tue Nov  4 22:24:25 UTC 2025
+2025-11-04T22:24:26.264056560Z [inf]  Node version: v20.19.5
+2025-11-04T22:24:26.264064863Z [inf]  NPM version: 10.8.2
+2025-11-04T22:24:26.264069609Z [inf]  
+2025-11-04T22:24:26.264075595Z [inf]  📁 Current directory: /app
+2025-11-04T22:24:26.264082874Z [inf]  📂 Listing root files:
+2025-11-04T22:24:26.264087604Z [inf]  total 420
+2025-11-04T22:24:26.264092424Z [inf]  drwxr-xr-x    1 root     root          4096 Nov  4 22:22 .
+2025-11-04T22:24:26.264097147Z [inf]  dr-xr-xr-x    1 root     root          4096 Nov  4 22:24 ..
+2025-11-04T22:24:26.264102783Z [inf]  -rwxr-xr-x    1 root     root          1990 Nov  4 22:12 debug-start.sh
+2025-11-04T22:24:26.264107396Z [inf]  -rw-rw-r--    1 root     root           325 Nov  4 22:12 drizzle.config.ts
+2025-11-04T22:24:26.264112337Z [inf]  drwxr-xr-x    3 root     root          4096 Nov  4 22:12 migrations
+2025-11-04T22:24:26.264118411Z [inf]  drwxr-xr-x    1 root     root          4096 Nov  4 22:22 node_modules
+2025-11-04T22:24:26.264123122Z [inf]  -rw-rw-r--    1 root     root        361403 Nov  4 22:22 package-lock.json
+2025-11-04T22:24:26.264130983Z [inf]  -rw-rw-r--    1 root     root          4631 Nov  4 22:12 package.json
+2025-11-04T22:24:26.264135280Z [inf]  -rw-rw-r--    1 root     root          2229 Nov  4 22:12 railway-db-setup.cjs
+2025-11-04T22:24:26.264139473Z [inf]  -rwxrwxr-x    1 root     root          2334 Nov  4 22:12 railway-start.sh
+2025-11-04T22:24:26.264144340Z [inf]  -rw-rw-r--    1 root     root         11606 Nov  4 22:12 replit.md
+2025-11-04T22:24:26.264149253Z [inf]  drwxr-xr-x    1 root     root          4096 Nov  4 22:12 server
+2025-11-04T22:24:28.573425062Z [inf]     ✅ Migration complete: 0 created, 148 skipped, 0 failed
+2025-11-04T22:24:28.573431649Z [inf]  📋 Step 2: Repairing schema drift (adding missing columns)...
+2025-11-04T22:24:28.600235880Z [inf]  ✅ Schema drift repaired - all columns present
+2025-11-04T22:24:28.611742550Z [inf]  
+2025-11-04T22:24:28.611754336Z [inf]  📋 Step 2: Verify server/index.ts exists...
+2025-11-04T22:24:28.611766293Z [inf]  
+2025-11-04T22:24:28.611772819Z [inf]  ==========================================
+2025-11-04T22:24:28.611780116Z [inf]  📄 Ensuring replit.md is available...
+2025-11-04T22:24:28.611782354Z [inf]  
+2025-11-04T22:24:28.611789524Z [inf]  ✅ replit.md already present
+2025-11-04T22:24:28.611797857Z [inf]  
+2025-11-04T22:24:28.611805251Z [inf]  🚀 Starting Node.js application with debug wrapper...
+2025-11-04T22:24:28.611812979Z [inf]  Command: sh debug-start.sh
+2025-11-04T22:24:28.611821274Z [inf]  
+2025-11-04T22:24:28.611824738Z [inf]  📋 Step 1: Verify server directory exists...
+2025-11-04T22:24:28.611831336Z [inf]  ==========================================
+2025-11-04T22:24:28.611834605Z [inf]  ✅ server/ directory exists
+2025-11-04T22:24:28.611839008Z [inf]  🔍 DEBUG MODE - VERBOSE ERROR CAPTURE
+2025-11-04T22:24:28.611895230Z [inf]  
+2025-11-04T22:24:28.611912347Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-11-04T22:24:28.611918753Z [inf]  ✅ Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-04T22:24:28.611925159Z [inf]  ⚠️ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)
+2025-11-04T22:24:28.611931828Z [inf]  ✅ Database schema ready!
+2025-11-04T22:24:28.611938164Z [inf]  
+2025-11-04T22:24:28.611946501Z [inf]  🔍 Environment Check:
+2025-11-04T22:24:28.611951742Z [inf]  NODE_ENV: production
+2025-11-04T22:24:28.611957147Z [inf]  PORT: 8080
+2025-11-04T22:24:28.611963169Z [inf]  DATABASE_URL: ✓ SET (hidden for security)
+2025-11-04T22:24:28.611969335Z [inf]  GITHUB_TOKEN: ✓ SET
+2025-11-04T22:24:28.611974711Z [inf]  GITHUB_REPO: 6-7Development/archetype
+2025-11-04T22:24:28.611979527Z [inf]  GITHUB_BRANCH: main
+2025-11-04T22:24:28.611984226Z [inf]  ANTHROPIC_API_KEY: ✓ SET
+2025-11-04T22:24:28.612298816Z [inf]  ✅ server/index.ts exists
+2025-11-04T22:24:28.612304907Z [inf]  
+2025-11-04T22:24:28.612309047Z [inf]  📋 Step 3: Check Node.js and tsx availability...
+2025-11-04T22:24:28.618921583Z [inf]  Node version: v20.19.5
+2025-11-04T22:24:29.163368309Z [inf]  📋 Step 5: Test tsx can load...
+2025-11-04T22:24:29.163408236Z [inf]  NPM version: 10.8.2
+2025-11-04T22:24:29.163418875Z [inf]  tsx location: /usr/local/bin/npx
+2025-11-04T22:24:29.163424348Z [inf]  NODE_ENV: production
+2025-11-04T22:24:29.163428560Z [inf]  
+2025-11-04T22:24:29.163432971Z [inf]  PORT: 8080
+2025-11-04T22:24:29.163438306Z [inf]  📋 Step 4: Verify environment variables...
+2025-11-04T22:24:29.163441164Z [inf]  DATABASE_URL: ✓ SET
+2025-11-04T22:24:29.163448403Z [inf]  
+2025-11-04T22:24:29.573640697Z [inf]  tsx v4.20.5
+2025-11-04T22:24:29.587921770Z [inf]  node v20.19.5
+2025-11-04T22:24:29.607633427Z [inf]  Command: npx tsx server/index.ts
+2025-11-04T22:24:29.607644510Z [inf]  ==========================================
+2025-11-04T22:24:29.607654145Z [inf]  
+2025-11-04T22:24:29.607727255Z [inf]  ✅ tsx is available
+2025-11-04T22:24:29.607733625Z [inf]  
+2025-11-04T22:24:29.607741107Z [inf]  📋 Step 6: Starting server with tsx...
+2025-11-04T22:24:33.110611758Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-11-04T22:24:33.110616794Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-11-04T22:24:33.110620965Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-11-04T22:24:33.110624918Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-11-04T22:24:33.110630374Z [inf]  [db] Connection string includes SSL params: true
+2025-11-04T22:24:33.110634757Z [inf]  [PERFORMANCE] System prompt base cached (1544 chars) - saves ~4KB per request
+2025-11-04T22:24:33.314676569Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-11-04T22:24:33.323204868Z [inf]  [RAILWAY-CONFIG] Production hardening active
+2025-11-04T22:24:33.323210761Z [inf]  [RAILWAY-CONFIG] AI timeout: 480s
+2025-11-04T22:24:33.323218098Z [inf]  [RAILWAY-CONFIG] Memory limit: 512MB
+2025-11-04T22:24:33.323222347Z [inf]  [RAILWAY-CONFIG] Max concurrent AI: 3
+2025-11-04T22:24:33.324744363Z [inf]  [AI-HEALING] Anthropic Claude initialized for Tier 3 (I AM Architect)
+2025-11-04T22:24:33.376662035Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller (SSE streams excluded)
+2025-11-04T22:24:33.377798550Z [inf]  📡 WebSocket server initialized at /ws
+2025-11-04T22:24:33.385271136Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-11-04T22:24:33.385276385Z [inf]  [PLATFORM-HEALING] WebSocket server attached for preview broadcasts
+2025-11-04T22:24:33.385281133Z [inf]  [PLATFORM-HEALING] Platform healing service connected to WebSocket
+2025-11-04T22:24:33.402251352Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-11-04T22:24:33.402255382Z [inf]  [HEAL-ORCHESTRATOR] Metrics broadcaster connected
+2025-11-04T22:24:33.402259238Z [inf]  [WEBHOOKS] Webhooks router connected to metrics broadcaster
+2025-11-04T22:24:33.451473325Z [inf]  [ARCHITECT-GUIDANCE] I AM Architect initialized for real-time guidance
+2025-11-04T22:24:33.451479722Z [inf]  [LOMU-AI-JOB-MANAGER] Initialized with WebSocket support
+2025-11-04T22:24:33.451484795Z [inf]  [LOMU-AI-JOB-MANAGER] Job manager connected to WebSocket
+2025-11-04T22:24:33.451489135Z [inf]  [LOMU-AI] WebSocket server initialized for live preview broadcasts
+2025-11-04T22:24:33.451493481Z [inf]  [LOMU-AI-CHAT] Live preview WebSocket initialized
+2025-11-04T22:24:33.451497756Z [inf]  [TERMINAL-ROUTES] Registering WebSocket terminal handler
+2025-11-04T22:24:33.451503200Z [inf]  [TERMINAL] Terminal WebSocket routes registered
+2025-11-04T22:24:33.459113682Z [inf]  [WEBHOOKS] Webhooks router mounted at /api/webhooks
+2025-11-04T22:24:33.459131271Z [inf]  [GIT] Git router mounted
+2025-11-04T22:24:33.758793958Z [inf]  [DEPLOYMENTS] Routes registered successfully
+2025-11-04T22:24:33.758812385Z [inf]  ✅ All routes registered successfully
+2025-11-04T22:24:33.758821925Z [inf]  🔍 Testing database connection...
+2025-11-04T22:24:34.160147873Z [inf]  10:24:33 PM [express] serving on port 8080
+2025-11-04T22:24:34.160199466Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-11-04T22:24:34.160208788Z [inf]  ✅ Database connected successfully
+2025-11-04T22:24:34.160220039Z [inf]  💡 Auto-healing system DISABLED (users trigger manually via UI)
+2025-11-04T22:24:34.160230201Z [inf]     👥 Users pay for their own AI tokens when using Platform Healing
+2025-11-04T22:24:34.160237770Z [inf]  [HEALTH-MONITOR] Starting platform health monitoring...
+2025-11-04T22:24:34.160245207Z [inf]  [HEALTH-MONITOR] Failed to load open incidents: error: column "incident_category" does not exist
+2025-11-04T22:24:34.160278569Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-04T22:24:34.160287080Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-04T22:24:34.160293941Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-04T22:24:34.160299409Z [inf]      at async PlatformHealthMonitor.loadOpenIncidents (/app/server/services/healthMonitor.ts:64:25)
+2025-11-04T22:24:34.160306008Z [inf]      at async PlatformHealthMonitor.start (/app/server/services/healthMonitor.ts:38:5)
+2025-11-04T22:24:34.160312694Z [inf]      at async <anonymous> (/app/server/index.ts:185:3) {
+2025-11-04T22:24:34.160318738Z [inf]    length: 117,
+2025-11-04T22:24:34.160325943Z [inf]    severity: 'ERROR',
+2025-11-04T22:24:34.160332836Z [inf]    code: '42703',
+2025-11-04T22:24:34.160339797Z [inf]    detail: undefined,
+2025-11-04T22:24:34.160347101Z [inf]    hint: undefined,
+2025-11-04T22:24:34.160353512Z [inf]    position: '58',
+2025-11-04T22:24:34.160360812Z [inf]    internalPosition: undefined,
+2025-11-04T22:24:34.160366678Z [inf]    internalQuery: undefined,
+2025-11-04T22:24:34.160372478Z [inf]    where: undefined,
+2025-11-04T22:24:34.160378577Z [inf]    schema: undefined,
+2025-11-04T22:24:34.161472629Z [inf]    table: undefined,
+2025-11-04T22:24:34.161478391Z [inf]    column: undefined,
+2025-11-04T22:24:34.161483881Z [inf]    dataType: undefined,
+2025-11-04T22:24:34.161489493Z [inf]    constraint: undefined,
+2025-11-04T22:24:34.161495291Z [inf]    file: 'parse_relation.c',
+2025-11-04T22:24:34.161500685Z [inf]    line: '3716',
+2025-11-04T22:24:34.161506103Z [inf]    routine: 'errorMissingColumn'
+2025-11-04T22:24:34.161511439Z [inf]  }
+2025-11-04T22:24:34.161518366Z [inf]  [HEALTH-MONITOR] Monitoring started
+2025-11-04T22:24:34.161524276Z [inf]  [HEAL-ORCHESTRATOR] Starting autonomous healing orchestrator...
+2025-11-04T22:24:34.161529963Z [inf]  [HEAL-ORCHESTRATOR] Orchestrator started
+2025-11-04T22:24:34.161535719Z [inf]  [MEMORY-MONITOR] Starting memory monitoring
+2025-11-04T22:24:34.161541377Z [inf]  [MEMORY-MONITOR] Warning threshold: 400MB
+2025-11-04T22:24:34.161547158Z [inf]  [MEMORY-MONITOR] Container limit: 512MB
+2025-11-04T22:24:34.161552937Z [inf]  [MEMORY-MONITOR] Active - checking every 30s
+2025-11-04T22:24:34.161558880Z [inf]  
+2025-11-04T22:24:34.161564538Z [inf]  🔍 Checking GitHub integration configuration...
+2025-11-04T22:24:34.161571593Z [inf]  ✅ GitHub integration configured successfully
+2025-11-04T22:24:34.161578973Z [inf]     - Repository: 6-7Development/archetype
+2025-11-04T22:24:34.161590292Z [inf]     - Branch: main
+2025-11-04T22:24:34.161595646Z [inf]     - Token: ✓ (configured)
+2025-11-04T22:24:34.161600933Z [inf]     - Owner User ID: Not set (owner must be manually marked in database)
+2025-11-04T22:24:34.161606550Z [inf]     - Maintenance mode: Available for owner
+2025-11-04T22:24:34.161612173Z [inf]  
+2025-11-04T22:24:34.161618343Z [inf]  [RAILWAY] Graceful shutdown handler registered (SIGTERM)
+2025-11-04T22:25:13.792612541Z [inf]  [MEMORY] Heap: 72MB | RSS: 151MB | Usage: 29%
+2025-11-04T22:25:13.792617872Z [inf]  [DEPLOYMENT-INFO] Using Railway environment variables
+2025-11-04T22:25:13.792622108Z [inf]  10:25:11 PM [express] GET /api/deployment-info 200 in 3ms :: {"version":"1.0.0","commitHash":"9c07b74…
+2025-11-04T22:25:13.792626370Z [inf]  10:25:11 PM [express] GET /api/auth/me 304 in 7ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef954…
+2025-11-04T22:25:14.452611731Z [inf]  [AUTH] Login attempt for email: root@getdc360.com
+2025-11-04T22:25:14.456009998Z [inf]  [AUTH] Found users: 1
+2025-11-04T22:25:14.456017686Z [inf]  [AUTH] User found: root@getdc360.com has password: true
+2025-11-04T22:25:14.456023770Z [inf]  [AUTH] Verifying password...
+2025-11-04T22:25:14.716077471Z [inf]  [AUTH] Password valid: true
+2025-11-04T22:25:14.716089621Z [inf]  [AUTH] Authentication successful for: root@getdc360.com
+2025-11-04T22:25:14.725336561Z [inf]  10:25:14 PM [express] POST /api/auth/login 200 in 278ms :: {"success":true,"user":{"id":"723e1301-c72…
+2025-11-04T22:25:15.397464465Z [inf]  10:25:15 PM [express] GET /api/auth/me 304 in 100ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef9…
+2025-11-04T22:25:15.398830962Z [inf]  10:25:15 PM [express] GET /api/projects 304 in 104ms :: []
+2025-11-04T22:25:19.428423212Z [inf]  10:25:19 PM [express] GET /api/healing/targets 304 in 9ms :: [{"id":"093abb1c-2699-45b4-acd7-fecf8773…
+2025-11-04T22:25:21.252719026Z [inf]  10:25:21 PM [express] GET /api/healing/conversations/093abb1c-2699-45b4-acd7-fecf87731238 304 in 9ms …
+2025-11-04T22:25:21.329608085Z [inf]  10:25:21 PM [express] GET /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 304 in 8ms :: [{…
+2025-11-04T22:25:25.242092903Z [inf]  10:25:25 PM [express] DELETE /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 200 in 9ms ::…
+2025-11-04T22:25:25.242101147Z [inf]  10:25:25 PM [express] GET /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 200 in 7ms :: []
+2025-11-04T22:25:34.326908894Z [inf]  [MEMORY] Heap: 75MB | RSS: 154MB | Usage: 30%
+2025-11-04T22:25:38.510998020Z [inf]  [HEALING-CHAT] User message received: {
+2025-11-04T22:25:38.511002252Z [inf]    conversationId: '227c165d-7f9f-46fc-b6e6-325d2b77fc60',
+2025-11-04T22:25:38.511006427Z [inf]    contentLength: 40
+2025-11-04T22:25:38.511010668Z [inf]  }
+2025-11-04T22:25:38.521300236Z [inf]  [HEALING-CHAT] User message saved to database
+2025-11-04T22:25:38.521319307Z [inf]  [HEALING-CHAT] Loaded 1 messages from history (last 10)
+2025-11-04T22:25:38.521327449Z [inf]  🤖 [HEALING-CHAT] Starting Gemini conversation with 1 messages...
+2025-11-04T22:25:38.521334526Z [inf]  [HEALING-CHAT] 🔄 Iteration 1/5
+2025-11-04T22:25:38.523848126Z [inf]  [GEMINI-TOOLS] ✅ Converted 3 tools for Gemini (first 3: read_platform_file, write_platform_file, search_platform_files...)
+2025-11-04T22:25:38.523857457Z [inf]  [GEMINI-TOOLS] Structure check: {
+2025-11-04T22:25:38.523864262Z [inf]    "name": "read_platform_file",
+2025-11-04T22:25:38.523870105Z [inf]    "description": "Read a file from the platform codebase",
+2025-11-04T22:25:38.523876577Z [inf]    "parameters": {
+2025-11-04T22:25:38.523882658Z [inf]      "type": "object",
+2025-11-04T22:25:38.523897532Z [inf]      "properties": {
+2025-11-04T22:25:38.523904046Z [inf]        "file_path": {
+2025-11-04T22:25:38.523909869Z [inf]          "type": "string",
+2025-11-04T22:25:38.523918187Z [inf]  
+2025-11-04T22:25:40.094189045Z [inf]  [GEMINI-TOOLS] 🔧 Gemini requested tool: search_platform_files
+2025-11-04T22:25:40.094194609Z [inf]  [GEMINI-TOOLS] Tool args: {"pattern":"**/*error*.*"}
+2025-11-04T22:25:40.299453121Z [inf]  [HEALING-CHAT] ✅ Search found 100/170 files for pattern: **/*error*.*
+2025-11-04T22:25:40.306505392Z [inf]    "name": "read_platform_file",
+2025-11-04T22:25:40.306506572Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 1)
+2025-11-04T22:25:40.306507497Z [inf]        "file_path": {
+2025-11-04T22:25:40.306524145Z [inf]    "description": "Read a file from the platform codebase",
+2025-11-04T22:25:40.306524579Z [inf]          "type": "string",
+2025-11-04T22:25:40.306529671Z [inf]  [HEALING-CHAT] 🔄 Iteration 2/5
+2025-11-04T22:25:40.306540851Z [inf]  
+2025-11-04T22:25:40.306542012Z [inf]  [GEMINI-TOOLS] ✅ Converted 3 tools for Gemini (first 3: read_platform_file, write_platform_file, search_platform_files...)
+2025-11-04T22:25:40.306542244Z [inf]    "parameters": {
+2025-11-04T22:25:40.306557916Z [inf]  [GEMINI-TOOLS] Structure check: {
+2025-11-04T22:25:40.306559092Z [inf]      "type": "object",
+2025-11-04T22:25:40.306569490Z [inf]      "properties": {
+2025-11-04T22:25:42.540917449Z [inf]  [GEMINI-TOOLS] 🔧 Gemini requested tool: search_platform_files
+2025-11-04T22:25:42.540925976Z [inf]  [GEMINI-TOOLS] Tool args: {"pattern":"**/*(TODO|FIXME)*.*"}
+2025-11-04T22:25:42.540934099Z [inf]  [HEALING-CHAT] ✅ Search found 100/40707 files for pattern: **/*(TODO|FIXME)*.*
+2025-11-04T22:25:42.540943651Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 2)
+2025-11-04T22:25:42.540953501Z [inf]  [HEALING-CHAT] 🔄 Iteration 3/5
+2025-11-04T22:25:42.540962165Z [inf]  [GEMINI-TOOLS] ✅ Converted 3 tools for Gemini (first 3: read_platform_file, write_platform_file, search_platform_files...)
+2025-11-04T22:25:42.542072347Z [inf]  [GEMINI-TOOLS] Structure check: {
+2025-11-04T22:25:42.542087552Z [inf]    "name": "read_platform_file",
+2025-11-04T22:25:42.542096694Z [inf]    "description": "Read a file from the platform codebase",
+2025-11-04T22:25:42.542105826Z [inf]    "parameters": {
+2025-11-04T22:25:42.542114525Z [inf]      "type": "object",
+2025-11-04T22:25:42.542124026Z [inf]      "properties": {
+2025-11-04T22:25:42.542134462Z [inf]        "file_path": {
+2025-11-04T22:25:42.542142231Z [inf]          "type": "string",
+2025-11-04T22:25:42.542151726Z [inf]  
+2025-11-04T22:25:44.303942462Z [inf]  [GEMINI-TOOLS] 🔧 Gemini requested tool: search_platform_files
+2025-11-04T22:25:44.303948861Z [inf]  [GEMINI-TOOLS] Tool args: {"pattern":"server/**/*(TODO|FIXME)*.*"}
+2025-11-04T22:25:44.303955214Z [inf]  [HEALING-CHAT] ✅ Search found 100/159 files for pattern: server/**/*(TODO|FIXME)*.*
+2025-11-04T22:25:44.304010202Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 3)
+2025-11-04T22:25:44.304027170Z [inf]  [HEALING-CHAT] 🔄 Iteration 4/5
+2025-11-04T22:25:44.304037264Z [inf]  [GEMINI-TOOLS] ✅ Converted 3 tools for Gemini (first 3: read_platform_file, write_platform_file, search_platform_files...)
+2025-11-04T22:25:44.304266750Z [inf]  [GEMINI-TOOLS] Structure check: {
+2025-11-04T22:25:44.304291199Z [inf]    "name": "read_platform_file",
+2025-11-04T22:25:44.304298677Z [inf]    "description": "Read a file from the platform codebase",
+2025-11-04T22:25:44.304306191Z [inf]    "parameters": {
+2025-11-04T22:25:44.305101562Z [inf]      "type": "object",
+2025-11-04T22:25:44.305113518Z [inf]      "properties": {
+2025-11-04T22:25:44.305121094Z [inf]        "file_path": {
+2025-11-04T22:25:44.305127890Z [inf]          "type": "string",
+2025-11-04T22:25:44.305135425Z [inf]  
+2025-11-04T22:25:46.280686286Z [inf]  
+2025-11-04T22:25:46.280687139Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 4)
+2025-11-04T22:25:46.280702422Z [inf]  [GEMINI-TOOLS] ✅ Converted 3 tools for Gemini (first 3: read_platform_file, write_platform_file, search_platform_files...)
+2025-11-04T22:25:46.280711259Z [inf]  [HEALING-CHAT] 🔄 Iteration 5/5
+2025-11-04T22:25:46.280712469Z [inf]  [GEMINI-TOOLS] Structure check: {
+2025-11-04T22:25:46.280719481Z [inf]      "type": "object",
+2025-11-04T22:25:46.280721188Z [inf]    "name": "read_platform_file",
+2025-11-04T22:25:46.280727802Z [inf]    "description": "Read a file from the platform codebase",
+2025-11-04T22:25:46.280732237Z [inf]      "properties": {
+2025-11-04T22:25:46.280738466Z [inf]    "parameters": {
+2025-11-04T22:25:46.280739531Z [inf]        "file_path": {
+2025-11-04T22:25:46.280746374Z [inf]          "type": "string",
+2025-11-04T22:25:46.280755987Z [inf]  [GEMINI-TOOLS] 🔧 Gemini requested tool: read_platform_file
+2025-11-04T22:25:46.280762897Z [inf]  [GEMINI-TOOLS] Tool args: {"file_path":"server/index.ts"}
+2025-11-04T22:25:50.315017063Z [inf]  [GEMINI-TOOLS] 🔧 Gemini requested tool: read_platform_file
+2025-11-04T22:25:50.315021408Z [inf]  [GEMINI-TOOLS] Tool args: {"file_path":"server/autoHealing.ts"}
+2025-11-04T22:25:50.315026638Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 5)
+2025-11-04T22:25:50.315031804Z [inf]  ✅ [HEALING-CHAT] Total: 11723ms, 391 chars, 16935 input tokens, 205 output tokens
+2025-11-04T22:25:50.315050992Z [inf]  [HEALING-CHAT] 💾 Final assistant message saved to database
+2025-11-04T22:25:50.315055688Z [inf]  [HEALING-CHAT] 📈 Usage tracked successfully
+2025-11-04T22:25:50.350649889Z [inf]  10:25:50 PM [express] POST /api/healing/messages 200 in 11918ms :: {"userMessage":{"id":"459f3304-39f…
+2025-11-04T22:25:50.461425781Z [inf]  [GEMINI-WRAPPER] Original context size:
+2025-11-04T22:25:50.461581778Z [inf]    - System prompt: 8,667 tokens
+2025-11-04T22:25:50.461588541Z [inf]    - Messages: 5 messages, 479 tokens
+2025-11-04T22:25:50.461593178Z [inf]    - Total: 9,146 tokens
+2025-11-04T22:25:50.461597396Z [inf]    - Limit: 950,000 tokens (50K safety margin)
+2025-11-04T22:25:50.461601496Z [inf]  [GEMINI-WRAPPER] ✅ Within limits (9,146 / 950,000 tokens)
+2025-11-04T22:25:50.461605895Z [inf]  [GEMINI-WRAPPER] Safety margin: 940,854 tokens remaining
+2025-11-04T22:25:50.461610429Z [inf]  [GEMINI-WRAPPER] ═══════════════════════════════════════
+2025-11-04T22:25:50.461618521Z [inf]  [GEMINI-WRAPPER] ✅ NO TRUNCATION NEEDED
+2025-11-04T22:25:50.461622751Z [inf]  [GEMINI-WRAPPER] ═══════════════════════════════════════
+2025-11-04T22:25:50.461626710Z [inf]  [GEMINI-WRAPPER] Total tokens: 9,146 / 950,000
+2025-11-04T22:25:50.461633513Z [inf]  [GEMINI-WRAPPER] Safety margin: 940,854 tokens
+2025-11-04T22:25:50.461638294Z [inf]  [GEMINI-TOOLS] ✅ Converted 37 tools for Gemini (first 3: start_subagent, createTaskList, readTaskList...)
+2025-11-04T22:25:50.461642297Z [inf]  [GEMINI-TOOLS] Structure check: {
+2025-11-04T22:25:50.461646627Z [inf]    "name": "start_subagent",
+2025-11-04T22:25:50.461650725Z [inf]    "description": "Delegate complex multi-file work to sub-agents. Supports parallel execution (max 2 concurrent per user).",
+2025-11-04T22:25:50.461654821Z [inf]    "parameters": {
+2025-11-04T22:25:50.461658621Z [inf]      "type": "object",
+2025-11-04T22:25:50.461662761Z [inf]      "
+2025-11-04T22:25:50.461827939Z [inf]  [LOMU-AI-CHAT] Stream request received
+2025-11-04T22:25:50.461834410Z [inf]  [LOMU-AI-CHAT] Message: What issues do you see the platform has? Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-11-04T22:25:50.461840175Z [inf]  [LOMU-AI-CHAT] Stream registered for user: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-04T22:25:50.461845802Z [inf]  [LOMU-AI-CHAT] Setting up SSE headers
+2025-11-04T22:25:50.461851191Z [inf]  [LOMU-AI-CHAT] Heartbeat started - will send keepalive every 15s
+2025-11-04T22:25:50.461856620Z [inf]  [LOMU-AI-CHAT] Stream timeout set - will force close after 5 minutes
+2025-11-04T22:25:50.461862410Z [inf]  [LOMU-AI-CHAT] Entering try block
+2025-11-04T22:25:50.461868394Z [inf]  [LOMU-AI-CHAT] User autonomy level: max
+2025-11-04T22:25:50.461928710Z [inf]  [CONVERSATION-STATE] Updated from user message: b06f9865-ef4c-459c-9b5f-732e272dcc67
+2025-11-04T22:25:50.473271878Z [inf]  10:25:50 PM [express] GET /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 200 in 65ms :: […
+2025-11-04T22:25:53.723206665Z [inf]  [LOMU-AI] Response has tool calls: false
+2025-11-04T22:25:53.723211728Z [inf]  [LOMU-AI] Content blocks: text
+2025-11-04T22:25:53.723217222Z [inf]  [LOMU-AI-FORCE] === ITERATION 1 CHECK ===
+2025-11-04T22:25:53.723222655Z [inf]  [LOMU-AI-FORCE] Tools called this iteration: NONE
+2025-11-04T22:25:53.723229131Z [inf]  [LOMU-AI-CONTINUATION] Iteration 1: No tool calls, checking if should continue...
+2025-11-04T22:25:53.723234385Z [inf]  [LOMU-AI-CONTINUATION] Active task list ID: none
+2025-11-04T22:25:53.723238798Z [inf]  [LOMU-AI-CONTINUATION] Consecutive empty iterations: 1/3
+2025-11-04T22:25:53.723243915Z [inf]  [LOMU-AI-CONTINUATION] No task list - ending session naturally
+2025-11-04T22:25:53.729416963Z [inf]  [WORKFLOW-TELEMETRY] Git status check failed: Command failed: git status --porcelain
+2025-11-04T22:25:53.729422058Z [inf]  fatal: not a git repository (or any of the parent directories): .git
+2025-11-04T22:25:53.729427229Z [inf]  
+2025-11-04T22:25:53.729432667Z [inf]  [WORKFLOW-VALIDATION] Job completed with 0 code-modifying operations
+2025-11-04T22:25:53.729437975Z [inf]  [WORKFLOW-VALIDATION] Has produced fixes: false
+2025-11-04T22:25:53.729443831Z [inf]  [WORKFLOW-VALIDATION] 🚨 ZERO-MUTATION JOB FAILURE - Fix request with no code modifications
+2025-11-04T22:25:53.729448927Z [inf]  [WORKFLOW-VALIDATION] Read operations: 0, Code modifications: 0
+2025-11-04T22:25:53.729454261Z [inf]  [WORKFLOW-VALIDATION] Message: "What issues do you see the platform has?..."
+2025-11-04T22:25:53.732303414Z [inf]  [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: ❌ ZERO-MUTATION FAILURE: What issues do you see the platform has? - failure
+2025-11-04T22:25:53.738932868Z [inf]  [WORKFLOW-VALIDATION] Failed to create incident: column "incident_category" of relation "platform_incidents" does not exist
+2025-11-04T22:25:53.745372239Z [inf]  [LOMU-AI-CLEANUP] ℹ️ No task list in this session (task tracking is optional)
+2025-11-04T22:25:53.749804112Z [inf]  [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: LomuAI chat: What issues do you see the platform has? - success
+2025-11-04T22:25:53.749817912Z [inf]  [LOMU-AI-CHAT] Stream unregistered for user: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-04T22:25:53.749826663Z [inf]  [LOMU-AI-CHAT] Stream timeout cleared
+2025-11-04T22:25:53.749834796Z [inf]  [LOMU-AI-HEARTBEAT] Cleared on stream end
+2025-11-04T22:25:53.749843365Z [inf]  [LOMU-AI-QUALITY] Analyzing response quality (background)...
+2025-11-04T22:25:53.751199685Z [inf]  [LOMU-AI-QUALITY] Should escalate: false
+2025-11-04T22:25:53.751207374Z [inf]  [LOMU-AI-QUALITY] Quality score: 100/100
+2025-11-04T22:25:53.751212450Z [inf]  [LOMU-AI-QUALITY] Is poor quality: false
+2025-11-04T22:25:53.751213647Z [inf]  [LOMU-AI-QUALITY] ✅ Response quality is acceptable
+2025-11-04T22:25:53.751221177Z [inf]  10:25:53 PM [express] POST /api/lomu-ai/stream 200 in 3347ms
+2025-11-04T22:25:53.814591596Z [inf]  [HEALING-CHAT] User message received: {
+2025-11-04T22:25:53.814598169Z [inf]    conversationId: '227c165d-7f9f-46fc-b6e6-325d2b77fc60',
+2025-11-04T22:25:53.814603230Z [inf]    contentLength: 1301
+2025-11-04T22:25:53.814608523Z [inf]  }
+2025-11-04T22:25:53.831381091Z [inf]        "file_path": {
+2025-11-04T22:25:53.831393660Z [inf]          "type": "string",
+2025-11-04T22:25:53.831402003Z [inf]  
+2025-11-04T22:25:53.831439964Z [inf]  [HEALING-CHAT] User message saved to database
+2025-11-04T22:25:53.831445424Z [inf]  [HEALING-CHAT] Loaded 10 messages from history (last 10)
+2025-11-04T22:25:53.831450795Z [inf]  🤖 [HEALING-CHAT] Starting Gemini conversation with 10 messages...
+2025-11-04T22:25:53.831456454Z [inf]  [HEALING-CHAT] 🔄 Iteration 1/5
+2025-11-04T22:25:53.831463314Z [inf]  [GEMINI-TOOLS] ✅ Converted 3 tools for Gemini (first 3: read_platform_file, write_platform_file, search_platform_files...)
+2025-11-04T22:25:53.831468725Z [inf]  [GEMINI-TOOLS] Structure check: {
+2025-11-04T22:25:53.831474310Z [inf]    "name": "read_platform_file",
+2025-11-04T22:25:53.831479811Z [inf]    "description": "Read a file from the platform codebase",
+2025-11-04T22:25:53.831484907Z [inf]    "parameters": {
+2025-11-04T22:25:53.831490045Z [inf]      "type": "object",
+2025-11-04T22:25:53.831495782Z [inf]      "properties": {
+2025-11-04T22:26:13.831220133Z [inf]  [MEMORY] Heap: 78MB | RSS: 160MB | Usage: 31%
+2025-11-04T22:26:14.895930821Z [inf]  [GEMINI-TOOLS] 🔧 Gemini requested tool: write_platform_file
+2025-11-04T22:26:14.895934494Z [inf]  [GEMINI-TOOLS] Tool args: {"content":"import { platformHealing } from './platformHealing';\nimport { platformAudit } from './p
+2025-11-04T22:26:14.902045086Z [inf]  [PLATFORM-WRITE] ✅ Content validated for server/autoHealing.ts
+2025-11-04T22:26:14.902053068Z [inf]  [PLATFORM-WRITE] Content length: 12841 bytes
+2025-11-04T22:26:14.902060305Z [inf]  [PLATFORM-WRITE] Content type: string
+2025-11-04T22:26:14.911713538Z [inf]  [GITHUB-SERVICE] Initialized for 6-7Development/archetype on branch main
+2025-11-04T22:26:14.911726673Z [inf]  [PLATFORM-WRITE] 🔧 Committing to GitHub: server/autoHealing.ts
+2025-11-04T22:26:14.911732929Z [inf]  [PLATFORM-WRITE] Maintenance mode: ENABLED
+2025-11-04T22:26:14.911738250Z [inf]  [PLATFORM-WRITE] Reason: fixing
+2025-11-04T22:26:14.911742732Z [inf]  [PLATFORM-WRITE] Content to commit: 12841 bytes
+2025-11-04T22:26:14.911749519Z [inf]  [GITHUB-SERVICE] commitFile called with path: server/autoHealing.ts
+2025-11-04T22:26:14.911757165Z [inf]  [GITHUB-SERVICE] Content type: string
+2025-11-04T22:26:14.911768067Z [inf]  [GITHUB-SERVICE] Content defined: true
+2025-11-04T22:26:14.911773970Z [inf]  [GITHUB-SERVICE] Content length: 12841 bytes
+2025-11-04T22:26:14.911780301Z [inf]  [GITHUB-SERVICE] Committing 1 file(s) (attempt 1/3)
+2025-11-04T22:26:15.321171032Z [inf]  [GITHUB-SERVICE] Latest commit: 9c07b743537acb86ef302d22b15d10d424dff269
+2025-11-04T22:26:15.321181137Z [inf]  [GITHUB-SERVICE] Creating blobs in batches (25 per batch)...
+2025-11-04T22:26:15.321188356Z [inf]  [GITHUB-SERVICE] Processing blob batch 1/1 (1 files)
+2025-11-04T22:26:15.321197995Z [inf]  [GITHUB-SERVICE] Processing file 1/1: server/autoHealing.ts
+2025-11-04T22:26:16.375328420Z [inf]  [GITHUB-SERVICE] ✅ Successfully committed 1 file(s)
+2025-11-04T22:26:16.375332903Z [inf]  [GITHUB-SERVICE] Commit: 3aceb7f7605d15190c75848713e85c6f28f27f22
+2025-11-04T22:26:16.375337020Z [inf]  [GITHUB-SERVICE] URL: https://github.com/6-7Development/archetype/commit/3aceb7f7605d15190c75848713e85c6f28f27f22
+2025-11-04T22:26:16.375341364Z [inf]  [PLATFORM-WRITE] ✅ Committed to GitHub successfully
+2025-11-04T22:26:16.375346443Z [inf]  [PLATFORM-WRITE] Commit: 3aceb7f7605d15190c75848713e85c6f28f27f22
+2025-11-04T22:26:16.375352472Z [inf]  [PLATFORM-WRITE] URL: https://github.com/6-7Development/archetype/commit/3aceb7f7605d15190c75848713e85c6f28f27f22
+2025-11-04T22:26:16.375358199Z [inf]  [PLATFORM-WRITE] ⏳ Railway will auto-deploy from GitHub...
+2025-11-04T22:26:16.375363973Z [inf]  [HEALING-CHAT] ✅ Wrote file: server/autoHealing.ts
+2025-11-04T22:26:16.375370300Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 1)
+2025-11-04T22:26:16.375376454Z [inf]  [HEALING-CHAT] 🔄 Iteration 2/5
+2025-11-04T22:26:16.375382443Z [inf]  [GEMINI-TOOLS] ✅ Converted 3 tools for Gemini (first 3: read_platform_file, write_platform_file, search_platform_files...)
+2025-11-04T22:26:16.375388528Z [inf]  [GEMINI-TOOLS] Structure check: {
+2025-11-04T22:26:16.375394940Z [inf]    "name": "read_platform_file",
+2025-11-04T22:26:16.375400830Z [inf]    "description": "Read a file from the platform codebase",
+2025-11-04T22:26:16.375407068Z [inf]    "parameters": {
+2025-11-04T22:26:16.375412880Z [inf]      "type": "object",
+2025-11-04T22:26:16.375420819Z [inf]      "properties": {
+2025-11-04T22:26:16.375426542Z [inf]        "file_path": {
+2025-11-04T22:26:16.375431366Z [inf]          "type": "string",
+2025-11-04T22:26:16.375436231Z [inf]  
+2025-11-04T22:26:21.307446956Z [inf]  [HEALING-CHAT] ✅ Gemini completed in 2 iterations
+2025-11-04T22:26:21.307458046Z [inf]  ✅ [HEALING-CHAT] Total: 27230ms, 1571 chars, 23206 input tokens, 4144 output tokens
+2025-11-04T22:26:21.307465218Z [inf]  [HEALING-CHAT] 💾 Final assistant message saved to database
+2025-11-04T22:26:21.307472348Z [inf]  [HEALING-CHAT] 📈 Usage tracked successfully
+2025-11-04T22:26:21.307478365Z [inf]  10:26:21 PM [express] POST /api/healing/messages 200 in 27345ms :: {"userMessage":{"id":"061c8811-22a…
+2025-11-04T22:26:21.307484992Z [inf]  10:26:21 PM [express] GET /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 200 in 13ms :: […
+2025-11-04T22:26:40.982661664Z [inf]  [MEMORY] Heap: 80MB | RSS: 161MB | Usage: 31%
