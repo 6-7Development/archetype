@@ -86,6 +86,7 @@ LomuAI supports parallel subagent orchestration, allowing multiple tasks to exec
 - **Support Ticketing System**: Complete ticket lifecycle with priority levels and plan-based SLAs.
 - **AI Priority Queue**: EventEmitter-based queue with priority scoring and concurrent request limits.
 - **Usage Tracking & Billing**: 100% cost coverage for AI tokens, storage, deployment bandwidth, and infrastructure, with Stripe metered billing.
+- **Comprehensive Token Tracking**: Every LomuAI job (Gemini 2.5 Flash) and I AM Architect healing session (Claude Sonnet 4) tracks actual token usage and bills to the correct organization/user. Features: (1) Model-aware pricing (Gemini $0.10/$0.40 vs Claude $3/$15 per 1M tokens), (2) Accurate project attribution for organizational billing, (3) Platform owner lookup for platform-triggered incidents, (4) Compute time tracking, (5) Comprehensive error logging for billing failures, (6) Token efficiency guidelines in system prompts. Organizations pay for their own AI usage, not the platform owner.
 - **Monetization Infrastructure**: Lead capture, Stripe subscription system, webhooks, granular usage billing, and template marketplace commission model.
 - **Security & Production Readiness**: Full authentication/authorization (Replit Auth, PostgreSQL sessions), protected API routes, rate limiting, and bcrypt-hashed API keys.
 - **Deployment & Hosting System**: Supports public hosting of deployed projects under unique subdomains.
