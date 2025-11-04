@@ -69,7 +69,7 @@ interface LomuAiChatProps {
 // Helper to retry fetch with exponential backoff
 async function retryFetch(url: string, options: RequestInit, maxRetries = 3): Promise<Response> {
   let lastError: Error | null = null;
-  
+
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       const response = await fetch(url, options);
@@ -80,7 +80,7 @@ async function retryFetch(url: string, options: RequestInit, maxRetries = 3): Pr
     } catch (error) {
       lastError = error as Error;
     }
-    
+
     // If not the last attempt, wait with exponential backoff
     if (attempt < maxRetries - 1) {
       const delay = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s
@@ -88,22 +88,22 @@ async function retryFetch(url: string, options: RequestInit, maxRetries = 3): Pr
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
-  
+
   throw lastError || new Error('Fetch failed after retries');
 }
 
 // File type detection
 function detectFileType(fileName: string, mimeType?: string): Attachment['fileType'] {
   const ext = fileName.split('.').pop()?.toLowerCase() || '';
-  
+
   // Check mime type first
   if (mimeType?.startsWith('image/')) return 'image';
-  
+
   // Check by extension
   if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].includes(ext)) return 'image';
   if (['js', 'ts', 'tsx', 'jsx', 'py', 'java', 'cpp', 'c', 'cs', 'go', 'rs', 'php', 'rb', 'swift', 'kt', 'dart', 'vue', 'css', 'html', 'xml', 'json', 'yaml', 'yml', 'toml', 'ini', 'sh', 'bash', 'ps1', 'sql'].includes(ext)) return 'code';
   if (['log', 'txt'].includes(ext)) return 'log';
-  
+
   // Default to text
   return 'text';
 }
@@ -112,7 +112,7 @@ function detectFileType(fileName: string, mimeType?: string): Attachment['fileTy
 async function fileToContent(file: File): Promise<{ content: string; isBase64: boolean }> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    
+
     reader.onload = (e) => {
       const result = e.target?.result;
       if (typeof result === 'string') {
@@ -127,9 +127,9 @@ async function fileToContent(file: File): Promise<{ content: string; isBase64: b
         reject(new Error('Failed to read file'));
       }
     };
-    
+
     reader.onerror = () => reject(reader.error);
-    
+
     // Read images as data URL, text files as text
     if (file.type.startsWith('image/')) {
       reader.readAsDataURL(file);
@@ -186,7 +186,7 @@ function getEmpathyPrefix(message: string): string {
     "No worries, I've got your back. ",
     "Ugh, I know how frustrating this is! ",
   ];
-  
+
   // Randomly select one to keep it feeling natural
   return empathyPrefixes[Math.floor(Math.random() * empathyPrefixes.length)];
 }
@@ -194,7 +194,7 @@ function getEmpathyPrefix(message: string): string {
 // AttachmentPreview component
 function AttachmentPreview({ attachment, onRemove }: { attachment: Attachment; onRemove: () => void }) {
   const [showPreview, setShowPreview] = useState(false);
-  
+
   return (
     <div className="relative group flex-shrink-0">
       <div className="flex items-center gap-1.5 md:gap-2 p-1.5 md:p-2 bg-muted rounded-lg border border-border min-w-[140px] md:min-w-[160px]">
@@ -217,7 +217,7 @@ function AttachmentPreview({ attachment, onRemove }: { attachment: Attachment; o
           <X className="h-4 w-4 md:h-3 md:w-3" />
         </Button>
       </div>
-      
+
       {/* Image preview on hover - desktop only */}
       {attachment.fileType === 'image' && attachment.content && (
         <div className="absolute bottom-full mb-2 left-0 z-10 hidden md:group-hover:block">
@@ -268,7 +268,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
     if (scrollRef.current) {
       const scrollEl = scrollRef.current;
       const isNearBottom = scrollEl.scrollTop + scrollEl.clientHeight > scrollEl.scrollHeight - 100;
-      
+
       // Only auto-scroll if user is near the bottom (avoid interrupting reading)
       if (isNearBottom || isStreaming) {
         scrollEl.scrollTop = scrollEl.scrollHeight;
@@ -292,9 +292,9 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
     const handlePaste = async (e: ClipboardEvent) => {
       // Only handle paste in our textarea
       if (document.activeElement !== textareaRef.current) return;
-      
+
       const items = Array.from(e.clipboardData?.items || []);
-      
+
       for (const item of items) {
         // Handle images
         if (item.type.startsWith('image/')) {
@@ -330,14 +330,14 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
           const text = await new Promise<string>((resolve) => {
             item.getAsString(resolve);
           });
-          
+
           const looksLikeCode = text.includes('\n') && (
             text.includes('  ') || // indentation
             text.includes('\t') || // tabs
             /^(import|export|const|let|var|function|class|if|for|while)/m.test(text) || // code keywords
             /[{}\[\]();]/.test(text) // code syntax
           );
-          
+
           if (looksLikeCode && text.length > 100) {
             e.preventDefault();
             // Offer to add as code attachment
@@ -358,7 +358,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
         }
       }
     };
-    
+
     document.addEventListener('paste', handlePaste);
     return () => document.removeEventListener('paste', handlePaste);
   }, [toast]);
@@ -388,7 +388,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX;
     const y = e.clientY;
-    
+
     // If the mouse is outside the container bounds, hide the overlay
     if (x < rect.left || x >= rect.right || y < rect.top || y >= rect.bottom) {
       setIsDragging(false);
@@ -404,7 +404,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-    
+
     const files = Array.from(e.dataTransfer.files);
     await processFiles(files);
   };
@@ -413,7 +413,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
   const processFiles = async (files: File[]) => {
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB limit
     const newAttachments: Attachment[] = [];
-    
+
     for (const file of files) {
       if (file.size > MAX_FILE_SIZE) {
         toast({
@@ -423,7 +423,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
         });
         continue;
       }
-      
+
       try {
         const { content } = await fileToContent(file);
         const attachment: Attachment = {
@@ -443,7 +443,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
         });
       }
     }
-    
+
     if (newAttachments.length > 0) {
       setAttachments(prev => [...prev, ...newAttachments]);
       toast({
@@ -483,7 +483,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
           description: 'No updates received for 30 seconds. The connection may have stalled.',
           variant: 'destructive',
         });
-        
+
         // Clear the interval to avoid repeated warnings
         clearInterval(timeoutCheckInterval);
       }
@@ -520,19 +520,26 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
     },
   });
 
+  // Default greeting message - emphasizes platform awareness and maintenance role
+  const DEFAULT_GREETING: Message = {
+    role: "assistant",
+    content: "Hi! I'm LomuAI, your autonomous platform maintenance AI. I'm aware of the entire Archetype platform codebase and recent changes. I can diagnose issues, fix bugs, optimize performance, and evolve the platform. What needs my attention?",
+    timestamp: new Date(),
+  };
+
   // Send message mutation - uses SSE streaming for real-time responses
   const sendMutation = useMutation({
     mutationFn: async (message: string) => {
       // Detect frustration and add empathetic prefix
       let processedMessage = message;
       const isFrustrated = detectFrustration(message);
-      
+
       if (isFrustrated) {
         const empathyPrefix = getEmpathyPrefix(message);
         processedMessage = empathyPrefix + message;
         console.log('[LOMU-AI] 💛 Frustration detected - adding empathetic context');
       }
-      
+
       // Add user message to session (show original message, but send processed one)
       const userMsg: Message = {
         id: Date.now().toString(),
@@ -543,20 +550,20 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
       setMessages(prev => [...prev, userMsg]);
       setInput("");
       setAttachments([]); // Clear attachments after sending
-      
+
       setIsStreaming(true);
       setTasks([]);
       setActiveTaskId(null);
       setProgressStatus('thinking');
       setProgressMessage("Starting LomuAI...");
-      
+
       // Reset timeout detection timestamp
       lastEventTimeRef.current = Date.now();
 
       // Add initial assistant message that will be updated via streaming
       const assistantMsgId = `assistant-${Date.now()}`;
       setStreamingMessageId(assistantMsgId);
-      
+
       const assistantMsg: Message = {
         id: assistantMsgId,
         role: "assistant",
@@ -573,7 +580,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
 
       // Create abort controller for stopping stream
       const abortController = new AbortController();
-      
+
       // Start SSE stream using fetch
       const response = await fetch('/api/lomu-ai/stream', {
         method: 'POST',
@@ -617,7 +624,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
               try {
                 const data = JSON.parse(line.slice(6));
                 console.log('[LOMU-AI] SSE event:', data.type);
-                
+
                 // Update last event timestamp for timeout detection
                 lastEventTimeRef.current = Date.now();
 
@@ -678,14 +685,14 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                       if (!taskExists) {
                         console.warn('[LOMU-AI] ⚠️ Task update received for unknown taskId:', data.taskId);
                       }
-                      
+
                       return prev.map(t => 
                         t.id === data.taskId 
                           ? { ...t, status: data.status as AgentTask['status'] }
                           : t
                       );
                     });
-                    
+
                     if (data.status === 'in_progress') {
                       setActiveTaskId(data.taskId);
                     }
@@ -701,20 +708,20 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
 
                   case 'done': {
                     console.log('[LOMU-AI] ✅ Stream complete, messageId:', data.messageId);
-                    
+
                     // Mark the message as no longer streaming
                     setMessages(prev => prev.map(msg => 
                       msg.id === assistantMsgId
                         ? { ...msg, isStreaming: false }
                         : msg
                     ));
-                    
+
                     setStreamingMessageId(null);
                     setIsStreaming(false);
                     setProgressStatus('idle');
                     setProgressMessage('');
                     setTasks(prev => prev.map(t => ({ ...t, status: 'completed' as const })));
-                    
+
                     abortControllerRef.current = null;
                     toast({ title: "✅ Done" });
                     return;
@@ -722,25 +729,25 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
 
                   case 'error':
                     console.error('[LOMU-AI] ❌ Stream error:', data.message);
-                    
+
                     setIsStreaming(false);
                     setStreamingMessageId(null);
                     setProgressStatus('idle');
                     setProgressMessage('');
-                    
+
                     // Add error to the message
                     setMessages(prev => prev.map(msg => 
                       msg.id === assistantMsgId
                         ? { ...msg, content: msg.content + `\n\n❌ Error: ${data.message}`, isStreaming: false }
                         : msg
                     ));
-                    
+
                     toast({
                       title: '❌ Error',
                       description: data.message || 'Unknown error',
                       variant: 'destructive'
                     });
-                    
+
                     abortControllerRef.current = null;
                     return;
                 }
@@ -766,7 +773,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
       setProgressStatus('idle');
       setProgressMessage("");
       setAttachments([]); // Clear attachments on error
-      
+
       if (activeTaskId) {
         setTasks(prev => prev.map(t => 
           t.id === activeTaskId ? { ...t, status: 'failed' as const } : t
@@ -778,13 +785,19 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
         description: error.message || 'Failed to process request',
         variant: "destructive",
       });
-      
+
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
         abortControllerRef.current = null;
       }
     },
   });
+
+  // Start with clean greeting - NO auto-loading of old history
+  // This ensures AI gets fresh context without confusion from old conversations
+  useEffect(() => {
+    setMessages([DEFAULT_GREETING]);
+  }, []); // Only run once on mount
 
   const handleSend = () => {
     const trimmedInput = input.trim();
@@ -797,17 +810,17 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
       console.log('[LOMU-AI] Stopping stream...');
       (abortControllerRef.current as AbortController).abort();
       abortControllerRef.current = null;
-      
+
       setTasks(prev => prev.map(t => 
         t.status === 'in_progress' ? { ...t, status: 'failed' as const } : t
       ));
-      
+
       setIsStreaming(false);
       setStreamingMessageId(null);
       setProgressStatus('idle');
       setProgressMessage("");
       setAttachments([]); // Clear attachments when stopping
-      
+
       toast({ title: "🛑 Stopped" });
     }
   };
@@ -979,7 +992,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                           </div>
                         </div>
                       )}
-                      
+
                       {/* 🎯 ARTIFACTS: Rich inline code blocks, file previews, etc. */}
                       {message.artifacts && message.artifacts.length > 0 && (
                         <div className="space-y-2 md:space-y-3" data-testid="message-artifacts">
@@ -997,7 +1010,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                           ))}
                         </div>
                       )}
-                      
+
                       {/* 🎯 TASK TIMELINE: Show tasks when streaming or when there are tasks */}
                       {(message.isStreaming || tasks.length > 0) && tasks.length > 0 && (
                         <div className="w-full">
@@ -1021,7 +1034,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                           />
                         </div>
                       )}
-                      
+
                       {message.isStreaming && !message.content && (
                         <div className="px-3 py-2 md:px-4 md:py-3 bg-muted text-foreground border border-border rounded-lg">
                           <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">

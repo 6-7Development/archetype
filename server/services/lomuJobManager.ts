@@ -155,7 +155,7 @@ async function streamClaudeResponse(options: StreamOptions) {
       if (block.content_block.type === 'tool_use') {
         const toolUse = block.content_block;
         console.log(`[CLAUDE-TOOLS] 🔧 Claude requested tool: ${toolUse.name}`);
-        
+
         // Notify about tool use
         if (onAction && toolUse.name) {
           const toolMessages: Record<string, string> = {
@@ -174,7 +174,7 @@ async function streamClaudeResponse(options: StreamOptions) {
 
     // Wait for the stream to complete and get final message
     const finalMessage = await stream.finalMessage();
-    
+
     // Extract usage stats
     if (finalMessage.usage) {
       usage = {
@@ -372,7 +372,7 @@ export async function startJobWorker(jobId: string) {
 
   const jobPromise = runMetaSysopWorker(jobId);
   activeJobs.set(jobId, jobPromise);
-  
+
   jobPromise.finally(() => {
     activeJobs.delete(jobId);
     console.log('[LOMU-AI-JOB-MANAGER] Worker completed for job:', jobId);
@@ -396,7 +396,7 @@ export async function saveCheckpoint(
       updatedAt: new Date()
     })
     .where(eq(lomuJobs.id, jobId));
-  
+
   console.log(`[LOMU-AI-JOB-MANAGER] Saved checkpoint for job ${jobId} at iteration ${iteration}`);
 }
 
@@ -429,22 +429,22 @@ function validateProjectPath(filePath: string): string {
  */
 export function isSimpleMessage(msg: string): boolean {
   const trimmed = msg.trim().toLowerCase();
-  
+
   // Greetings
   if (/^(hi|hey|hello|yo|sup|howdy|greetings)[\s!.]*$/.test(trimmed)) return true;
-  
+
   // Thanks
   if (/^(thanks?|thank you|thx|ty)[\s!.]*$/.test(trimmed)) return true;
-  
+
   // Yes/No
   if (/^(yes|no|ok|okay|nope|yep|yeah|nah)[\s!.]*$/.test(trimmed)) return true;
-  
+
   // Questions about LomuAI
   if (/^(who are you|what (are|can) you|what do you do)[\s?!.]*$/.test(trimmed)) return true;
-  
+
   // Very short messages (< 15 chars) that aren't commands
   if (trimmed.length < 15 && !/(fix|check|diagnose|update|deploy|commit|push)/.test(trimmed)) return true;
-  
+
   return false;
 }
 
@@ -454,7 +454,7 @@ export function isSimpleMessage(msg: string): boolean {
 async function runMetaSysopWorker(jobId: string) {
   // 📊 METRICS TRACKER: Declare outside try block for catch block access
   let metricsTracker: WorkflowMetricsTracker | undefined;
-  
+
   try {
     // Fetch the job
     const [job] = await db
@@ -480,7 +480,7 @@ async function runMetaSysopWorker(jobId: string) {
       .where(eq(lomuJobs.id, jobId));
 
     console.log('[LOMU-AI-JOB-MANAGER] Job started:', jobId);
-    
+
     // Broadcast job started
     broadcast(userId, jobId, 'job_started', {
       status: 'running',
@@ -516,7 +516,7 @@ async function runMetaSysopWorker(jobId: string) {
     const enforcementOrchestrator = new EnforcementOrchestrator();
     enforcementOrchestrator.initializeJob(jobId);
     console.log('[ENFORCEMENT-ORCHESTRATOR] Initialized for job:', jobId, '(autoCommit:', autoCommit, ')');
-    
+
     // 🔄 WORKFLOW VALIDATOR: Keep for backward compatibility (temporary)
     const workflowValidator = new WorkflowValidator('assess', true);
     workflowValidator.updateContext({ autoCommit });
@@ -552,10 +552,10 @@ async function runMetaSysopWorker(jobId: string) {
       if (pattern.test(lowerMsg)) {
         console.log(`[LOMU-AI-PREFILTER] Matched conversational pattern: ${pattern.source}`);
         console.log(`[LOMU-AI-PREFILTER] Responding without calling Gemini`);
-        
+
         const friendlyResponse = response;
         broadcast(userId, jobId, 'job_content', { content: friendlyResponse });
-        
+
         // Mark job as completed immediately
         await db.update(lomuJobs)
           .set({ 
@@ -563,32 +563,29 @@ async function runMetaSysopWorker(jobId: string) {
             completedAt: new Date()
           })
           .where(eq(lomuJobs.id, jobId));
-        
+
         broadcast(userId, jobId, 'job_completed', { 
           status: 'completed',
           content: friendlyResponse 
         });
-        
+
         return; // Exit early - no Gemini call needed
       }
     }
 
     // Build system prompt - ULTRA-CONCISE: No rambling, immediate action, human tone
-    const systemPrompt = `You are LomuAI - a senior developer who just gets things done.
+    const systemPrompt = `You are LomuAI v2.0 - an autonomous coding agent that maintains and evolves the Archetype platform.
 
-${projectId ? 'Build complete applications from user requests.' : 'Fix bugs and maintain the Lomu platform.'}
-Mode: ${autonomyLevel} | ${autoCommit ? 'Auto-commit enabled' : 'Manual commit mode'}
+🧠 PLATFORM AWARENESS:
+- You have FULL ACCESS to the entire Archetype codebase via file read/write tools
+- You remember the platform architecture, recent changes, and common patterns
+- Each conversation starts FRESH - you're not confused by old context
+- You learn from the current state of files, not stale chat history
 
-🚫 NEVER DO THIS:
-- List your capabilities or say "I can help with..."
-- Explain what you're going to do before doing it
-- Use >5 words before calling tools
-- Say "I have access to..." or "My tools include..."
-
-✅ ALWAYS DO THIS:
-- Start with "📋 Planning..." then IMMEDIATELY call createTaskList
-- Be brief - let your work speak
-- Sound like a colleague, not a robot
+🚨 CRITICAL: YOU ARE NOT A CONSULTANT - YOU ARE A BUILDER
+- Your job is to CHANGE FILES, not just analyze them
+- Every job MUST result in file modifications
+- Investigation-only responses are FORBIDDEN
 
 7-PHASE WORKFLOW (MANDATORY):
 
@@ -907,10 +904,10 @@ Let's build! 🚀`;
 
     // Filter tools based on autonomy level and commit permissions
     let availableTools = tools;
-    
+
     // BACKEND ENFORCEMENT: Remove commit_to_github if not allowed
     const canCommit = config.allowCommit && autoCommit;
-    
+
     if (autonomyLevel === 'basic') {
       availableTools = tools.filter(tool => 
         tool.name !== 'readTaskList' && 
@@ -977,7 +974,7 @@ Let's build! 🚀`;
     // Main conversation loop
     while (continueLoop && iterationCount < MAX_ITERATIONS) {
       iterationCount++;
-      
+
       // FIX 1: Track iterations to enforce phase announcements
       workflowValidator.incrementIteration();
 
@@ -988,33 +985,33 @@ Let's build! 🚀`;
       // 🔀 MODEL TOGGLE: Switch between Gemini and Claude based on environment variable
       const model = process.env.LOMU_AI_MODEL || 'gemini'; // 'gemini' or 'claude'
       console.log(`[LOMU-AI-JOB-MANAGER] Using model: ${model} (iteration ${iterationCount})...`);
-      
+
       // Stream processing - collect content blocks
       const contentBlocks: any[] = [];
       let currentTextBlock = '';
-      
+
       // 🚨 CONTINUOUS NARRATION GUARD: Monitor ALL text throughout streaming, not just pre-tool
       let textBeforeTools = '';
       let hasCalledToolYet = false;
       let violationInjected = false;
       let currentPhase = workflowValidator.getCurrentPhase();
-      
+
       // ✅ FIX: Chunk-based grace period instead of time-based
       let hasJustCalledTool = false; // Track if we just completed a tool call
       let chunksAfterTool = 0; // Count chunks after tool call
       const ALLOWED_CHUNKS_BEFORE_JUDGMENT = 2; // REDUCED from 5 to 2 - tighter enforcement to prevent rambling
-      
+
       // 🔄 CUMULATIVE TEXT TRACKING: Track accumulated text between tools to prevent chunk-based bypasses
       let textSinceLastTool = '';
       let wordsSinceLastTool = 0;
-      
+
       // Reset accumulator after each tool call
       const resetTextAccumulator = () => {
         textSinceLastTool = '';
         wordsSinceLastTool = 0;
         console.log('[CUMULATIVE-GUARD] Text accumulator reset');
       };
-      
+
       // Define allowed phase markers (ONLY these are permitted)
       const ALLOWED_PHASE_MARKERS = [
         '🔍 Assessing...',
@@ -1027,7 +1024,7 @@ Let's build! 🚀`;
         '📤 Committed',
         '⏸️ Awaiting'
       ];
-      
+
       // ✅ FIX: Expand allowed text patterns for legitimate status messages
       const ALLOWED_STATUS_PATTERNS = [
         /^(Error|Warning|⚠️|❌|✅):/i,              // Error messages
@@ -1036,7 +1033,7 @@ Let's build! 🚀`;
         /^(Creating|Reading|Writing|Deleting)/i,  // Brief action status
         /^\d+ (file|error|test)/i,                // Counts (e.g., "3 files updated")
       ];
-      
+
       // Shared onChunk callback for both models
       const handleChunk = (chunk: any) => {
         if (chunk.type === 'chunk' && chunk.content) {
@@ -1049,15 +1046,15 @@ Let's build! 🚀`;
               console.log(`[CONTINUOUS-GUARD] Grace period ended after ${chunksAfterTool} chunks`);
             }
           }
-          
+
           // 🔄 CUMULATIVE TRACKING: Add chunk to accumulator
           textSinceLastTool += chunk.content;
           wordsSinceLastTool = textSinceLastTool.trim().split(/\s+/).filter((w: string) => w.length > 0).length;
-          
+
           // 🚨 CONTINUOUS GUARD: Check cumulative text AFTER grace period ends
           if (!violationInjected && !hasJustCalledTool) {
             const cumulativeText = textSinceLastTool.trim();
-            
+
             // Skip empty cumulative text
             if (cumulativeText.length === 0) {
               // Empty - allowed, continue processing
@@ -1072,23 +1069,23 @@ Let's build! 🚀`;
               // VIOLATION: Phase marker with extra text
               const violation = `⚠️ VIOLATION: Phase markers must stand ALONE. Say "⚡ Executing..." then STOP. No extra text.`;
               console.error(`[CUMULATIVE-GUARD] Phase marker with extra text: "${cumulativeText}" (${cumulativeText.length} chars)`);
-              
+
               metricsTracker?.recordViolation(
                 'excessive_rambling',
                 currentPhase,
                 `Phase marker with appended text: "${cumulativeText}"`
               );
-              
+
               broadcast(userId, jobId, 'job_content', { 
                 content: `\n\n❌ ${violation}\n\n`,
                 isError: true  
               });
-              
+
               conversationMessages.push({
                 role: 'user',
                 content: violation
               });
-              
+
               violationInjected = true;
               resetTextAccumulator();
               continueLoop = true;
@@ -1099,23 +1096,23 @@ Let's build! 🚀`;
               if (cumulativeText.length > 100) {
                 const violation = `⚠️ VIOLATION: Status messages must be brief (max 100 chars). Example: "Error: file not found" then STOP.`;
                 console.error(`[CUMULATIVE-GUARD] Status text too long: "${cumulativeText}" (${cumulativeText.length} chars)`);
-                
+
                 metricsTracker?.recordViolation(
                   'excessive_rambling',
                   currentPhase,
                   `Status message exceeded 100 chars: ${cumulativeText.length}`
                 );
-                
+
                 broadcast(userId, jobId, 'job_content', { 
                   content: `\n\n❌ ${violation}\n\n`,
                   isError: true  
                 });
-                
+
                 conversationMessages.push({
                   role: 'user',
                   content: violation
                 });
-                
+
                 violationInjected = true;
                 resetTextAccumulator();
                 continueLoop = true;
@@ -1129,23 +1126,23 @@ Let's build! 🚀`;
               if (summaryWords > 20) {
                 const violation = `⚠️ VIOLATION: Final summary has ${summaryWords} words. Max 20 words. Be brief.`;
                 console.error(`[CUMULATIVE-GUARD] ${violation}`);
-                
+
                 metricsTracker?.recordViolation(
                   'excessive_rambling',
                   currentPhase,
                   `Summary too long: ${summaryWords} words (max 20)`
                 );
-                
+
                 broadcast(userId, jobId, 'job_content', { 
                   content: `\n\n❌ ${violation}\n\n`,
                   isError: true  
                 });
-                
+
                 conversationMessages.push({
                   role: 'user',
                   content: violation
                 });
-                
+
                 violationInjected = true;
                 resetTextAccumulator();
                 continueLoop = true;
@@ -1157,54 +1154,54 @@ Let's build! 🚀`;
             else if (wordsSinceLastTool > 5) {
               const violation = `⚠️ VIOLATION: Detected ${wordsSinceLastTool} words since last tool call. Max 5 words allowed. Use phase markers only.`;
               console.error(`[CUMULATIVE-GUARD] ${violation}: "${cumulativeText.slice(0, 100)}..."`);
-              
+
               metricsTracker?.recordViolation(
                 'excessive_rambling',
                 currentPhase,
                 `Cumulative text: ${wordsSinceLastTool} words (max 5)`
               );
-              
+
               broadcast(userId, jobId, 'job_content', { 
                 content: `\n\n❌ ${violation}\n\n`,
                 isError: true  
               });
-              
+
               conversationMessages.push({
                 role: 'user',
                 content: violation
               });
-              
+
               violationInjected = true;
               resetTextAccumulator();
               continueLoop = true;
               return;
             }
-            
+
             // Track text before first tool (legacy check for initial response)
             if (!hasCalledToolYet) {
               textBeforeTools += chunk.content;
               const wordCount = textBeforeTools.trim().split(/\s+/).filter((w: string) => w.length > 0).length;
-              
+
               if (wordCount > 5) {
                 const violation = `⚠️ VIOLATION: Detected ${wordCount} words before tool call. You MUST start with "📋 Planning..." (max 5 words) then IMMEDIATELY call createTaskList. Do NOT ramble or explain.`;
                 console.error(`[PRE-RESPONSE-GUARD] ${violation}`);
-                
+
                 metricsTracker?.recordViolation(
                   'excessive_rambling',
                   currentPhase,
                   `Pre-response: ${wordCount} words before tool call`
                 );
-                
+
                 broadcast(userId, jobId, 'job_content', { 
                   content: `\n\n❌ ${violation}\n\n`,
                   isError: true  
                 });
-                
+
                 conversationMessages.push({
                   role: 'user',
                   content: violation
                 });
-                
+
                 violationInjected = true;
                 resetTextAccumulator();
                 continueLoop = true;
@@ -1212,7 +1209,7 @@ Let's build! 🚀`;
               }
             }
           }
-          
+
           // FIX 2: Detect inline file edits in streaming content
           const hasDirectEdit = 
             chunk.content.includes('--- a/') ||  // Diff format
@@ -1221,68 +1218,68 @@ Let's build! 🚀`;
             chunk.content.includes('>>>>>>> REPLACE') ||
             chunk.content.includes('apply_patch') ||
             /```[a-z]*\n\S+\.\S+\n/.test(chunk.content); // Code block with filename
-          
+
           if (hasDirectEdit) {
             const currentPhase = workflowValidator.getCurrentPhase();
             if (currentPhase !== 'execute') {
               // BLOCK direct edits outside EXECUTE phase
               const error = `WORKFLOW VIOLATION: Direct code edits only allowed in EXECUTE phase. Current: ${currentPhase}. Use tools instead.`;
               console.error(`[WORKFLOW-VALIDATOR] ${error}`);
-              
+
               // Track violation in metrics
               metricsTracker?.recordViolation(
                 'direct_edit',
                 currentPhase,
                 error
               );
-              
+
               broadcast(userId, jobId, 'job_content', { 
                 content: `\n\n❌ ${error}\n\n`,
                 isError: true  
               });
-              
+
               conversationMessages.push({
                 role: 'user',
                 content: `SYSTEM ERROR: ${error}`
               });
-              
+
               // Skip this chunk content - don't add to fullContent
               return;
             }
           }
-          
+
           currentTextBlock += chunk.content;
           fullContent += chunk.content;
-          
+
           // HARD ENFORCEMENT - Block invalid phase transitions
           const detectedPhase = workflowValidator.detectPhaseAnnouncement(chunk.content);
           if (detectedPhase) {
             // 🎯 ENFORCEMENT: Use orchestrator for phase transitions (checks + executes if allowed)
             const transition = enforcementOrchestrator.transitionToPhase(detectedPhase);
-            
+
             if (!transition.allowed) {
               // HARD BLOCK: Inject error to AI conversation
               const errorMessage = `\n\n❌ WORKFLOW VIOLATION: ${transition.reason}\n\nYou must fix this before proceeding. Current phase: ${enforcementOrchestrator.getCurrentPhase()}`;
-              
+
               // Track phase skip violation in metrics
               metricsTracker?.recordViolation(
                 'phase_skip',
                 enforcementOrchestrator.getCurrentPhase(),
                 `Invalid transition to ${detectedPhase}: ${transition.reason}`
               );
-              
+
               fullContent += errorMessage;
               broadcast(userId, jobId, 'job_content', { 
                 content: errorMessage,
                 isError: true  
               });
-              
+
               // Add system message to force correction in next iteration
               conversationMessages.push({
                 role: 'user',
                 content: `SYSTEM ERROR: ${transition.reason}. You must correct this violation before proceeding.`
               });
-              
+
               console.error(`[ENFORCEMENT] BLOCKED invalid transition: ${enforcementOrchestrator.getCurrentPhase()} → ${detectedPhase}`);
               // Don't actually transition - the orchestrator will keep current phase
             } else {
@@ -1290,30 +1287,30 @@ Let's build! 🚀`;
               // Also notify the legacy workflow validator for backward compatibility
               workflowValidator.transitionTo(detectedPhase);
               metricsTracker?.recordPhaseTransition(detectedPhase);
-              
+
               // 🔄 UPDATE CURRENT PHASE for continuous guard
               currentPhase = detectedPhase;
               console.log(`[ENFORCEMENT] ✅ Phase transition: ${detectedPhase}`);
             }
           }
-          
+
           broadcast(userId, jobId, 'job_content', { content: chunk.content });
         }
       };
-      
+
       // Shared onToolUse callback for both models
       const handleToolUse = async (toolUse: any) => {
         // Mark that we've seen a tool call (for pre-response guard)
         hasCalledToolYet = true;
-        
+
         // ✅ FIX: Reset chunk-based grace period when tool is called
         hasJustCalledTool = true;
         chunksAfterTool = 0;
         console.log(`[CONTINUOUS-GUARD] Tool called: ${toolUse.name}, grace period reset (${ALLOWED_CHUNKS_BEFORE_JUDGMENT} chunks)`);
-        
+
         // 🔄 RESET CUMULATIVE TEXT ACCUMULATOR after each tool call
         resetTextAccumulator();
-        
+
         // 🔄 UPDATE PHASE based on tool type
         if (toolUse.name === 'createTaskList') {
           currentPhase = 'plan';
@@ -1333,7 +1330,7 @@ Let's build! 🚀`;
           currentPhase = 'test';
           console.log(`[CONTINUOUS-GUARD] Phase auto-transitioned to TEST (test execution)`);
         }
-        
+
         // Save any pending text
         if (currentTextBlock) {
           contentBlocks.push({ type: 'text', text: currentTextBlock });
@@ -1348,7 +1345,7 @@ Let's build! 🚀`;
         });
         return null; // Tool execution happens later in the loop
       };
-      
+
       // Shared onComplete callback for both models
       const handleComplete = (text: string, usage: any) => {
         console.log(`[LOMU-AI-JOB-MANAGER] ${model} stream completed`);
@@ -1356,7 +1353,7 @@ Let's build! 🚀`;
         if (currentTextBlock && contentBlocks[contentBlocks.length - 1]?.text !== currentTextBlock) {
           contentBlocks.push({ type: 'text', text: currentTextBlock });
         }
-        
+
         // 🔢 Accumulate token usage
         if (usage && usage.inputTokens !== undefined && usage.outputTokens !== undefined) {
           cumulativeInputTokens += usage.inputTokens;
@@ -1365,13 +1362,13 @@ Let's build! 🚀`;
           console.log(`[TOKEN-TRACKING] Iteration ${iterationCount}: ${usage.inputTokens} input + ${usage.outputTokens} output tokens (cumulative: ${cumulativeInputTokens} + ${cumulativeOutputTokens})`);
         }
       };
-      
+
       // Shared onError callback for both models
       const handleError = (error: Error) => {
         console.error(`[LOMU-AI-JOB-MANAGER] ${model} stream error:`, error);
         throw error;
       };
-      
+
       // 🔀 Call appropriate streaming function based on model selection
       if (model === 'claude') {
         await streamClaudeResponse({
@@ -1398,25 +1395,25 @@ Let's build! 🚀`;
           onError: handleError
         });
       }
-      
+
       // 🚨 PRE-RESPONSE GUARD: If violation was injected, skip rest of iteration
       if (violationInjected) {
         console.log('[PRE-RESPONSE-GUARD] Violation injected, forcing restart in next iteration');
         continue; // Skip to next iteration immediately
       }
-      
+
       console.log(`[LOMU-AI-JOB-MANAGER] ${model} stream completed, processing tool calls...`);
-      
+
       // CRITICAL: Validate response with all 6 enforcement layers
       const lastUserMessage = conversationMessages
         .slice()
         .reverse()
         .find(msg => msg.role === 'user' && typeof msg.content === 'string')?.content || message;
-      
+
       const toolCallsFromResponse = contentBlocks
         .filter(block => block.type === 'tool_use')
         .map(block => ({ name: block.name, input: block.input }));
-      
+
       try {
         const validationResult = await enforcementOrchestrator.validateResponse(
           {
@@ -1431,7 +1428,7 @@ Let's build! 🚀`;
           cumulativeInputTokens,
           cumulativeOutputTokens
         );
-        
+
         // Inject I AM Architect guidance if provided
         if (validationResult.guidanceInjected) {
           console.log('[ENFORCEMENT] 🧑‍💼 I AM Architect guidance injected');
@@ -1444,7 +1441,7 @@ Let's build! 🚀`;
             violations: validationResult.violations 
           });
         }
-        
+
         // Inject reflection prompt if triggered
         if (validationResult.reflectionPrompt) {
           console.log('[ENFORCEMENT] 🔄 Reflection prompt injected');
@@ -1453,11 +1450,11 @@ Let's build! 🚀`;
             content: validationResult.reflectionPrompt
           });
         }
-        
+
         // CRITICAL: 3-strikes escalation - hand off to I AM Architect
         if (validationResult.shouldEscalate && validationResult.violations.some(v => v.includes('3 guidance attempts failed'))) {
           console.log('[ENFORCEMENT] 🚨 3 STRIKES REACHED - Escalating to I AM Architect for complete takeover');
-          
+
           // Mark job as failed (escalated)
           await db.update(lomuJobs)
             .set({ 
@@ -1470,10 +1467,10 @@ Let's build! 🚀`;
               completedAt: new Date()
             })
             .where(eq(lomuJobs.id, jobId));
-          
+
           // Create platform healing incident for I AM Architect to take over
           const incidentDescription = `LomuAI job ${jobId} escalated after 3 workflow violations. Original request: "${message}"\n\nViolations: ${validationResult.violations.join(', ')}\n\nConversation history and context available for takeover.`;
-          
+
           await healthMonitor.reportAgentIncident({
             type: 'workflow_escalation',
             severity: 'critical',
@@ -1487,19 +1484,19 @@ Let's build! 🚀`;
             userMessage: message,
             agentResponse: fullContent,
           });
-          
+
           // Broadcast escalation to user
           broadcast(userId, jobId, 'job_escalated', {
             message: '🚨 After 3 workflow violations, this job has been escalated to I AM Architect (Claude Sonnet 4) for expert handling. Please check the Platform Healing tab for updates.',
             violations: validationResult.violations
           });
-          
+
           console.log('[ENFORCEMENT] ✅ Job escalated - I AM Architect will take over via platform healing');
-          
+
           // Stop LomuAI job execution - I AM Architect takes over
           break;
         }
-        
+
         // TEMPORARILY DISABLED - too aggressive, causing infinite loops
         // The 5-word limit before tools was creating escalating violations:
         // 21 words → 41 words → 201 words, leading to job failures
@@ -1532,7 +1529,7 @@ Let's build! 🚀`;
         //   console.log('[ENFORCEMENT] 🔄 Forcing retry iteration to fix violations');
         //   continue;
         // }
-        
+
         // Just log violations as warnings, don't block execution
         if (validationResult.violations.length > 0) {
           console.warn('[ENFORCEMENT] ⚠️ Violations detected (non-blocking):', validationResult.violations);
@@ -1568,29 +1565,29 @@ Let's build! 🚀`;
             lastBlock.text.includes('>>>>>>> REPLACE') ||
             lastBlock.text.includes('apply_patch') ||
             /```[a-z]*\n\S+\.\S+\n/.test(lastBlock.text);
-          
+
           if (hasDirectEdit) {
             const currentPhase = workflowValidator.getCurrentPhase();
             if (currentPhase !== 'execute') {
               console.error(`[WORKFLOW-VALIDATOR] Direct edit in final message outside EXECUTE: ${currentPhase}`);
-              
+
               // Track violation in metrics
               metricsTracker?.recordViolation(
                 'direct_edit',
                 currentPhase,
                 `Direct code edits in final message outside EXECUTE phase`
               );
-              
+
               broadcast(userId, jobId, 'job_content', {
                 content: `\n\n❌ WORKFLOW VIOLATION: Direct code edits only allowed in EXECUTE phase. Current: ${currentPhase}.\n\n`,
                 isError: true
               });
-              
+
               conversationMessages.push({
                 role: 'user',
                 content: `SYSTEM ERROR: Direct code edits detected in ${currentPhase} phase. Only allowed in EXECUTE.`
               });
-              
+
               continueLoop = true; // Force another iteration to fix
               continue;
             }
@@ -1602,10 +1599,10 @@ Let's build! 🚀`;
       const toolResults: any[] = [];
       const hasToolUse = contentBlocks.some(block => block.type === 'tool_use');
       const toolNames = contentBlocks.filter(b => b.type === 'tool_use').map(b => b.name);
-      
+
       // Track total tool calls across iterations
       totalToolCalls += toolNames.length;
-      
+
       console.log(`[LOMU-AI-JOB-MANAGER] === ITERATION ${iterationCount} ===`);
       console.log(`[LOMU-AI-JOB-MANAGER] Tools called: ${toolNames.join(', ') || 'NONE'}`);
       console.log(`[LOMU-AI-JOB-MANAGER] Content blocks received: ${contentBlocks.length}`);
@@ -1620,7 +1617,7 @@ Let's build! 🚀`;
           const toolValidation = workflowValidator.validateToolCall(name, workflowValidator.getCurrentPhase());
           if (!toolValidation.allowed) {
             console.warn(`[WORKFLOW-VALIDATOR] ❌ Tool ${name} not allowed in ${workflowValidator.getCurrentPhase()} phase: ${toolValidation.reason}`);
-            
+
             // Track tool block in metrics
             metricsTracker?.recordToolBlock();
             metricsTracker?.recordViolation(
@@ -1628,19 +1625,19 @@ Let's build! 🚀`;
               workflowValidator.getCurrentPhase(),
               `Tool ${name} blocked: ${toolValidation.reason}`
             );
-            
+
             // Inject workflow violation error back to AI
             toolResults.push({
               tool_use_id: id,
               is_error: true,
               content: `⛔ WORKFLOW VIOLATION: Cannot use ${name} in ${workflowValidator.getCurrentPhase()} phase. ${toolValidation.reason}`
             });
-            
+
             continue; // Skip tool execution
           }
 
           broadcast(userId, jobId, 'job_progress', { message: `🔧 Executing tool: ${name}...` });
-          
+
           // 🎯 ENFORCEMENT: Record tool call for ReflectionHeartbeat tracking
           enforcementOrchestrator.recordToolCall(name);
 
@@ -1650,13 +1647,13 @@ Let's build! 🚀`;
             // Tool execution logic (copied from SSE route)
             if (name === 'createTaskList') {
               const typedInput = input as { title: string; tasks: Array<{ title: string; description: string }> };
-              
+
               // VALIDATION: Prevent task creation for simple conversational messages
               const recentUserMessage = conversationMessages
                 .slice()
                 .reverse()
                 .find(msg => msg.role === 'user' && typeof msg.content === 'string');
-              
+
               if (recentUserMessage && isSimpleMessage(recentUserMessage.content)) {
                 toolResult = `❌ ERROR: Don't create tasks for simple greetings/thanks. Just respond conversationally!`;
               } else {
@@ -1676,10 +1673,10 @@ Let's build! 🚀`;
                   activeTaskListId = result.taskListId!;
                   toolResult = `✅ Task list created successfully!\n\nTask List ID: ${result.taskListId}`;
                   broadcast(userId, jobId, 'task_list_created', { taskListId: result.taskListId });
-                  
+
                   // 🔄 WORKFLOW VALIDATOR: Track task list creation
                   workflowValidator.updateContext({ hasTaskList: true });
-                  
+
                   // 🎯 ENFORCEMENT: Record task list creation for parity tracking
                   enforcementOrchestrator.recordTaskListCreation(jobId);
                 } else {
@@ -1782,7 +1779,7 @@ Let's build! 🚀`;
                   (f.path ? `${f.path}/${f.filename}` : f.filename) === validatedPath ||
                   f.filename === validatedPath
                 );
-                
+
                 if (targetFile) {
                   toolResult = `File: ${targetFile.filename}\nContent:\n${targetFile.content}`;
                 } else {
@@ -1800,7 +1797,7 @@ Let's build! 🚀`;
                   (f.path ? `${f.path}/${f.filename}` : f.filename) === validatedPath ||
                   f.filename === validatedPath
                 );
-                
+
                 if (targetFile) {
                   await storage.updateFile(targetFile.id, targetFile.userId, typedInput.content);
                   toolResult = `✅ File updated: ${validatedPath}`;
@@ -1842,7 +1839,7 @@ Let's build! 🚀`;
                     'json': 'json', 'md': 'markdown',
                   };
                   const language = langMap[ext] || 'text';
-                  
+
                   await storage.createFile({
                     userId: projectOwnerId,
                     projectId,
@@ -1851,7 +1848,7 @@ Let's build! 🚀`;
                     content: typedInput.content,
                     language,
                   });
-                  
+
                   toolResult = `✅ File created: ${validatedPath}`;
                   broadcast(userId, jobId, 'file_change', { file: { path: validatedPath, operation: 'create' } });
                 } else {
@@ -1869,7 +1866,7 @@ Let's build! 🚀`;
                   (f.path ? `${f.path}/${f.filename}` : f.filename) === validatedPath ||
                   f.filename === validatedPath
                 );
-                
+
                 if (targetFile) {
                   await storage.deleteFile(targetFile.id, targetFile.userId);
                   toolResult = `✅ File deleted: ${validatedPath}`;
@@ -1906,11 +1903,11 @@ Let's build! 🚀`;
             } else if (name === 'read_logs') {
               const typedInput = input as { lines?: number; filter?: string };
               const maxLines = Math.min(typedInput.lines || 100, 1000);
-              
+
               try {
                 const logsDir = '/tmp/logs';
                 let logFiles: string[] = [];
-                
+
                 try {
                   await fs.access(logsDir);
                   logFiles = await fs.readdir(logsDir);
@@ -2028,7 +2025,7 @@ Let's build! 🚀`;
 
                     // Unique LomuAI commit prefix so user can distinguish from manual commits
                     const uniqueCommitMessage = `[LomuAI 🤖] ${typedInput.commitMessage}`;
-                    
+
                     const result = await githubService.commitFiles(
                       filesToCommit,
                       uniqueCommitMessage
@@ -2039,7 +2036,7 @@ Let's build! 🚀`;
                       `Commit: ${result.commitHash}\n` +
                       `URL: ${result.commitUrl}\n\n` +
                       `🚀 Railway auto-deployment triggered!`;
-                    
+
                     // FIX 4: Wire commit confirmation
                     workflowValidator.confirmCommit(true);
                     metricsTracker?.recordCommit(fileChanges.length);
@@ -2061,9 +2058,9 @@ Let's build! 🚀`;
                     broadcast(userId, jobId, `subagent_${type}`, data);
                   },
                 });
-                
+
                 toolResult = `✅ Sub-agent completed work:\n\n${result.summary}\n\nFiles modified:\n${result.filesModified.map(f => `- ${f}`).join('\n')}`;
-                
+
                 result.filesModified.forEach((filePath: string) => {
                   fileChanges.push({ path: filePath, operation: 'modify' });
                 });
@@ -2083,7 +2080,7 @@ Let's build! 🚀`;
             if (name === 'run_playwright_test' || name === 'bash') {
               const resultContent = toolResult?.toString().toLowerCase() || '';
               const inputStr = JSON.stringify(input).toLowerCase();
-              
+
               // Detect test runs
               if (name === 'run_playwright_test' || 
                   inputStr.includes('npm test') || 
@@ -2095,13 +2092,13 @@ Let's build! 🚀`;
                               !resultContent.includes('✗');
                 workflowValidator.confirmTestsRun(passed);
                 metricsTracker?.recordTestExecution(passed);
-                
+
                 // 🎯 ENFORCEMENT: Record test execution for parity tracking
                 if (passed) {
                   enforcementOrchestrator.recordTestExecution(jobId);
                 }
               }
-              
+
               // Detect verification runs (TypeScript compilation, linting)
               if (inputStr.includes('tsc --noemit') ||
                   inputStr.includes('tsc --noEmit') ||
@@ -2116,7 +2113,7 @@ Let's build! 🚀`;
                   metricsTracker?.recordVerificationComplete();
                 }
               }
-              
+
               // FIX 4: Detect git commit commands
               if (name === 'bash' && (inputStr.includes('git commit') || inputStr.includes('git push'))) {
                 const success = !resultContent.includes('error') &&
@@ -2158,7 +2155,7 @@ Let's build! 🚀`;
             workflowTelemetry.readOperations++;
           }
         }
-        
+
         // Track consecutive read-only iterations
         if (!iterationHadCodeModifications) {
           workflowTelemetry.consecutiveReadOnlyIterations++;
@@ -2167,9 +2164,9 @@ Let's build! 🚀`;
           workflowTelemetry.consecutiveReadOnlyIterations = 0;
           console.log(`[WORKFLOW-TELEMETRY] ✅ Iteration ${iterationCount}: Code modifications detected - reset read-only counter`);
         }
-        
+
         console.log(`[WORKFLOW-TELEMETRY] Total: ${workflowTelemetry.readOperations} reads, ${workflowTelemetry.writeOperations} writes`);
-        
+
         // 🚨 EARLY TERMINATION: Halt if too many consecutive read-only iterations
         if (workflowTelemetry.consecutiveReadOnlyIterations >= workflowTelemetry.MAX_READ_ONLY_ITERATIONS) {
           console.warn(`[WORKFLOW-TELEMETRY] 🛑 HALTING - ${workflowTelemetry.MAX_READ_ONLY_ITERATIONS} consecutive read-only iterations detected`);
@@ -2178,16 +2175,16 @@ Let's build! 🚀`;
           broadcast(userId, jobId, 'job_content', { content: haltMsg });
           continueLoop = false;
         }
-        
+
         // Convert tool results to plain text for Gemini (doesn't support Claude's tool_result format)
         const toolResultsText = toolResults.map(result => {
           let content = result.content;
-          
+
           // Handle missing/undefined content
           if (content === undefined || content === null) {
             content = result.is_error ? 'Error occurred' : 'Success';
           }
-          
+
           // Convert non-string content to readable format
           if (typeof content !== 'string') {
             try {
@@ -2196,12 +2193,12 @@ Let's build! 🚀`;
               content = String(content);
             }
           }
-          
+
           // Format with error indicator if needed
           if (result.is_error) {
             return `❌ ERROR:\n${content}`;
           }
-          
+
           return content;
         }).join('\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n');
 
@@ -2211,10 +2208,10 @@ Let's build! 🚀`;
         });
       } else {
         // No tool calls - check if should continue
-        
+
         // INTELLIGENT COMPLETION DETECTION
         const lastAssistantMessage = fullContent.toLowerCase();
-        
+
         // Check for completion keywords
         const completionKeywords = [
           'done', 'finished', 'complete', 'all set',
@@ -2222,11 +2219,11 @@ Let's build! 🚀`;
           'everything is fixed', 'no more work',
           'successfully completed', 'task complete'
         ];
-        
+
         const hasCompletionKeyword = completionKeywords.some(keyword => 
           lastAssistantMessage.includes(keyword)
         );
-        
+
         // Check task status
         let hasIncompleteTasks = false;
         if (activeTaskListId) {
@@ -2236,22 +2233,22 @@ Let's build! 🚀`;
             const allTasks = sessionTaskList?.tasks || [];
             const inProgressTasks = allTasks.filter((t: any) => t.status === 'in_progress');
             const pendingTasks = allTasks.filter((t: any) => t.status === 'pending');
-            
+
             hasIncompleteTasks = inProgressTasks.length > 0 || pendingTasks.length > 0;
           } catch (error: any) {
             console.error('[LOMU-AI-JOB-MANAGER] Failed to check task status:', error);
             hasIncompleteTasks = false;
           }
         }
-        
+
         // STUCK DETECTION: No progress for 2+ iterations
         const noProgressCount = conversationMessages
           .slice(-4) // Last 4 messages (2 iterations)
           .filter(msg => msg.role === 'assistant' && !msg.content?.some?.((c: any) => c.type === 'tool_use'))
           .length;
-        
+
         const isStuck = noProgressCount >= 2;
-        
+
         // DECISION LOGIC
         if (hasCompletionKeyword && !hasIncompleteTasks) {
           // LomuAI says it's done AND no incomplete tasks
@@ -2299,11 +2296,11 @@ Let's build! 🚀`;
     // 📊 WORKFLOW VALIDATION: Detect zero-mutation jobs and flag as failed
     console.log(`[WORKFLOW-VALIDATION] Job completed with ${workflowTelemetry.writeOperations} code-modifying operations`);
     console.log(`[WORKFLOW-VALIDATION] Has produced fixes: ${workflowTelemetry.hasProducedFixes}`);
-    
+
     // Detect if this was a fix/build request but no code modifications occurred
     // CRITICAL: Comprehensive keyword matching for fix requests (case-insensitive)
     const lowerMessage = message.toLowerCase();
-    
+
     // EXCLUSION: Don't treat simple questions/greetings as fix requests
     const QUESTION_KEYWORDS = [
       'how does', 'what does', 'tell me', 'explain', 'describe',
@@ -2311,9 +2308,9 @@ Let's build! 🚀`;
       'hello', 'hi ', 'hey ', 'thanks', 'thank you',
       'how are you', 'how do you feel', 'what do you think'
     ];
-    
+
     const isQuestion = QUESTION_KEYWORDS.some(keyword => lowerMessage.includes(keyword));
-    
+
     // Only match fix keywords if it's NOT a simple question
     const FIX_REQUEST_KEYWORDS = [
       'fix', 'repair', 'resolve', 'patch', 'correct', 'address',
@@ -2323,27 +2320,27 @@ Let's build! 🚀`;
       'heal', 'platform-healing', 'self-healing',
       'bug', 'issue', 'problem', 'error', 'broken', 'failing'
     ];
-    
+
     const isFixRequest = !isQuestion && FIX_REQUEST_KEYWORDS.some(keyword => lowerMessage.includes(keyword));
     const isZeroMutationJob = isFixRequest && !workflowTelemetry.hasProducedFixes;
-    
+
     if (isZeroMutationJob) {
       console.error(`[WORKFLOW-VALIDATION] 🚨 ZERO-MUTATION JOB FAILURE - Fix request with no code modifications`);
       console.error(`[WORKFLOW-VALIDATION] Read operations: ${workflowTelemetry.readOperations}, Code modifications: ${workflowTelemetry.writeOperations}`);
       console.error(`[WORKFLOW-VALIDATION] Message: "${message.slice(0, 100)}..."`);
-      
+
       // CRITICAL: This is a workflow failure - log internally but DON'T broadcast to users
       // These internal diagnostic messages make the platform look broken to users
       const zeroMutationFailure = `\n\n❌ **WORKFLOW FAILURE: Investigation without implementation**\n\nI completed ${workflowTelemetry.readOperations} read operations but failed to make any code changes to fix the issue.\n\n**What went wrong:**\n- I investigated the problem but didn't implement a solution\n- No files were modified, no fixes were applied\n- This violates the action-enforcement workflow\n\n**Next steps:**\n- This failure has been logged for platform improvement\n- I AM Architect will be notified for workflow re-guidance\n- Please clarify what specific changes you want me to make`;
-      
+
       // DON'T add failure message to user-facing content or broadcast
       // fullContent += zeroMutationFailure;
       // broadcast(userId, jobId, 'job_content', { content: zeroMutationFailure });
       // broadcast(userId, jobId, 'job_error', { message: 'Zero-mutation job failure - no code modifications made' });
-      
+
       // Log failure internally only
       console.error('[WORKFLOW-VALIDATION] Zero-mutation failure message suppressed from user broadcast');
-      
+
       // Log as failure in audit trail (override the success status later)
       await platformAudit.log({
         userId,
@@ -2354,7 +2351,7 @@ Let's build! 🚀`;
         commitHash: '',
         status: 'failure',
       });
-      
+
       // Create platform incident for I AM Architect to review
       try {
         const [incident] = await db.insert(platformIncidents).values({
@@ -2374,7 +2371,7 @@ Let's build! 🚀`;
             jobId: jobId,
           }
         }).returning();
-        
+
         console.log(`[WORKFLOW-VALIDATION] 🚨 Created incident ${incident.id} for I AM Architect escalation`);
         broadcast(userId, jobId, 'job_progress', { message: '🚨 Workflow failure logged - will escalate to I AM Architect' });
       } catch (incidentError: any) {
@@ -2401,7 +2398,7 @@ Let's build! 🚀`;
         const sessionTaskList = cleanupCheck.taskLists?.find((list: any) => list.id === activeTaskListId);
         if (sessionTaskList && sessionTaskList.status !== 'completed') {
           const stuckTasks = sessionTaskList.tasks.filter((t: any) => t.status === 'in_progress');
-          
+
           if (stuckTasks.length > 0) {
             for (const task of stuckTasks) {
               await updateTask({
@@ -2412,7 +2409,7 @@ Let's build! 🚀`;
                 completedAt: new Date()
               });
             }
-            
+
             await db
               .update(taskLists)
               .set({ status: 'completed', completedAt: new Date() })
@@ -2437,13 +2434,13 @@ Let's build! 🚀`;
 
     // Save assistant message
     let finalMessage = fullContent || '✅ Done!';
-    
+
     // CRITICAL FIX: Log the actual content being saved
     console.log(`[LOMU-AI-JOB-MANAGER] Saving assistant message (${finalMessage.length} chars)`);
     if (finalMessage.length === 0 || finalMessage === '✅ Done!') {
       console.warn('[LOMU-AI-JOB-MANAGER] WARNING: No content was generated by Claude!');
     }
-    
+
     const [assistantMsg] = await db
       .insert(chatMessages)
       .values({
@@ -2472,7 +2469,7 @@ Let's build! 🚀`;
     const computeTimeMs = Date.now() - jobStartTime;
     if (cumulativeInputTokens > 0 || cumulativeOutputTokens > 0) {
       console.log(`[TOKEN-TRACKING] LomuAI job ${jobId}: ${cumulativeInputTokens} input + ${cumulativeOutputTokens} output tokens, ${computeTimeMs}ms compute time`);
-      
+
       const usageResult = await trackAIUsage({
         userId,
         projectId: projectId,
@@ -2490,7 +2487,7 @@ Let's build! 🚀`;
           message: message.slice(0, 200),
         }
       });
-      
+
       if (!usageResult.success) {
         console.error('[TOKEN-TRACKING] ⚠️ BILLING FAILURE:', usageResult.error);
         console.error('[TOKEN-TRACKING] Job:', jobId, 'Tokens:', cumulativeInputTokens, cumulativeOutputTokens);
@@ -2504,13 +2501,13 @@ Let's build! 🚀`;
     const completionValidation = workflowValidator.validateWorkflowCompletion();
     if (!completionValidation.complete) {
       console.error(`[WORKFLOW-VALIDATOR] Cannot complete - missing: ${completionValidation.missingRequirements.join(', ')}`);
-      
+
       // Inject error message to notify user
       const errorMessage = `\n\n❌ WORKFLOW INCOMPLETE:\n${completionValidation.missingRequirements.map(r => `- ${r}`).join('\n')}\n\nThis job was stopped because critical workflow phases were not completed. Please create a new job that follows the complete workflow.`;
-      
+
       fullContent += errorMessage;
       broadcast(userId, jobId, 'job_content', { content: errorMessage, isError: true });
-      
+
       // Mark job as failed due to incomplete workflow
       await db.update(lomuJobs)
         .set({ 
@@ -2519,12 +2516,12 @@ Let's build! 🚀`;
           updatedAt: new Date()
         })
         .where(eq(lomuJobs.id, jobId));
-      
+
       broadcast(userId, jobId, 'job_failed', {
         status: 'failed',
         error: `Workflow incomplete: ${completionValidation.missingRequirements.join(', ')}`,
       });
-      
+
       console.log(`[WORKFLOW-VALIDATOR] ❌ Job marked as failed - workflow incomplete`);
       return; // Exit early - don't mark as completed
     } else {
@@ -2550,15 +2547,15 @@ Let's build! 🚀`;
     });
 
     console.log('[LOMU-AI-JOB-MANAGER] Job completed:', jobId);
-    
+
     // 📊 SAVE WORKFLOW METRICS: Write comprehensive performance data to database
     try {
       if (metricsTracker) {
         metricsTracker?.setJobStatus('completed');
         const finalMetrics = metricsTracker.getFinalMetrics();
-        
+
         await db.insert(lomuWorkflowMetrics).values([finalMetrics]);
-        
+
         console.log(`[METRICS-TRACKER] ✅ Metrics saved for job ${jobId}`);
         console.log(`[METRICS-TRACKER] Summary: ${metricsTracker?.getSummary()}`);
       } else {
@@ -2568,28 +2565,28 @@ Let's build! 🚀`;
       console.error('[METRICS-TRACKER] ❌ Failed to save metrics (non-fatal):', metricsError.message);
       // Non-fatal: metrics tracking failure should not break job completion
     }
-    
+
     // 🤖 AUTOMATIC QUALITY MONITORING: Analyze response quality (non-blocking)
     // Only analyze user-facing chat responses (not system/background tasks)
     setImmediate(async () => {
       try {
         console.log('[QUALITY-MONITOR] 🔍 Analyzing LomuAI response quality...');
-        
+
         const agentFailureDetector = new AgentFailureDetector();
         const qualityAnalysis = await agentFailureDetector.analyzeResponseQuality({
           content: fullContent,
           userMessage: message,
           toolCallCount: totalToolCalls,
         });
-        
+
         console.log('[QUALITY-MONITOR] Quality score:', qualityAnalysis.qualityScore);
         console.log('[QUALITY-MONITOR] Issues found:', qualityAnalysis.issues);
         console.log('[QUALITY-MONITOR] Should escalate:', qualityAnalysis.shouldEscalate);
-        
+
         // Only report incidents for poor quality responses
         if (qualityAnalysis.shouldEscalate) {
           console.log('[QUALITY-MONITOR] ⚠️ Poor quality detected - creating incident');
-          
+
           await healthMonitor.reportAgentIncident({
             type: 'agent_response_quality',
             severity: qualityAnalysis.qualityScore < 30 ? 'high' : 'medium',
@@ -2603,7 +2600,7 @@ Let's build! 🚀`;
             userMessage: message,
             agentResponse: fullContent,
           });
-          
+
           console.log('[QUALITY-MONITOR] ✅ Incident reported to I AM Architect');
         } else {
           console.log('[QUALITY-MONITOR] ✅ Response quality acceptable - no incident created');
@@ -2633,9 +2630,9 @@ Let's build! 🚀`;
       if (typeof metricsTracker !== 'undefined') {
         metricsTracker?.setJobStatus('failed');
         const finalMetrics = metricsTracker.getFinalMetrics();
-        
+
         await db.insert(lomuWorkflowMetrics).values([finalMetrics]);
-        
+
         console.log(`[METRICS-TRACKER] ✅ Failure metrics saved for job ${jobId}`);
       } else {
         console.warn('[METRICS-TRACKER] Metrics tracker not initialized - skipping failure metrics');
