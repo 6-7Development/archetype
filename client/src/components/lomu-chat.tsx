@@ -522,9 +522,9 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
 
   // Default greeting message - emphasizes platform awareness and maintenance role
   const DEFAULT_GREETING: Message = {
+    id: 'greeting',
     role: "assistant",
     content: "Hi! I'm LomuAI, your autonomous platform maintenance AI. I'm aware of the entire Archetype platform codebase and recent changes. I can diagnose issues, fix bugs, optimize performance, and evolve the platform. What needs my attention?",
-    timestamp: new Date(),
   };
 
   // Send message mutation - uses SSE streaming for real-time responses
@@ -894,38 +894,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
           </div>
         )}
 
-        {/* Copy Chat History Button */}
-        {messages.length > 0 && (
-          <div className="px-3 py-2 md:px-4 md:py-2 border-b border-border bg-muted/20 flex justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const chatHistory = messages.map(m => 
-                  `${m.role === 'user' ? 'USER' : 'LOMU AI'}:\n${m.content}\n`
-                ).join('\n---\n\n');
-                navigator.clipboard.writeText(chatHistory);
-                setCopiedChatHistory(true);
-                setTimeout(() => setCopiedChatHistory(false), 2000);
-                toast({ title: "✅ Chat history copied!" });
-              }}
-              className="h-7 gap-1.5"
-              data-testid="button-copy-chat"
-            >
-              {copiedChatHistory ? (
-                <>
-                  <Check className="h-3.5 w-3.5" />
-                  <span className="text-xs">Copied!</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="h-3.5 w-3.5" />
-                  <span className="text-xs">Copy Chat History</span>
-                </>
-              )}
-            </Button>
-          </div>
-        )}
+        
 
         {/* Messages Area */}
         <div 
@@ -1145,6 +1114,38 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                   <Upload className="h-3 w-3 md:h-3.5 md:w-3.5" />
                   <span className="hidden md:inline text-xs">Upload</span>
                 </Button>
+
+                {/* ✨ COPY CHAT BUTTON - Next to Upload */}
+                {messages.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 md:h-8 px-2 md:px-3 gap-1.5"
+                    onClick={() => {
+                      const chatHistory = messages.map(m => 
+                        `${m.role === 'user' ? 'USER' : 'LOMU AI'}:\n${m.content}\n`
+                      ).join('\n---\n\n');
+                      navigator.clipboard.writeText(chatHistory);
+                      setCopiedChatHistory(true);
+                      setTimeout(() => setCopiedChatHistory(false), 2000);
+                      toast({ title: "✅ Chat history copied!" });
+                    }}
+                    title="Copy chat history for debugging"
+                    data-testid="button-copy-chat-toolbar"
+                  >
+                    {copiedChatHistory ? (
+                      <>
+                        <Check className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                        <span className="hidden md:inline text-xs">Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                        <span className="hidden md:inline text-xs">Copy Chat</span>
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
             </div>
 
