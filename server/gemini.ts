@@ -250,6 +250,8 @@ export async function streamGeminiResponse(options: StreamOptions) {
       systemInstruction: system,
       generationConfig: {
         maxOutputTokens: maxTokens,
+        temperature: 0.2, // LOW = deterministic, rule-following behavior (vs default 1.0)
+        topP: 0.8,        // Slightly reduced randomness for consistency
       },
     };
 
