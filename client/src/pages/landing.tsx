@@ -18,6 +18,7 @@ export default function Landing() {
             </Link>
             
             <div className="flex items-center gap-1 sm:gap-2">
+              {/* Mobile hamburger menu - visible on small screens only */}
               <MobileNav
                 links={[
                   { href: "/", label: "Home" },
@@ -29,9 +30,19 @@ export default function Landing() {
                   <LomuTextLogo size="sm" />
                 }
               />
-              <Button variant="outline" className="min-h-[44px] hidden md:inline-flex text-white border-slate-600 hover:bg-slate-800" data-testid="button-nav-pricing" asChild>
-                <Link href="/pricing">View Pricing</Link>
-              </Button>
+              
+              {/* Desktop navigation buttons - visible on md screens and up */}
+              <div className="hidden md:flex items-center gap-2">
+                <Button variant="outline" className="min-h-[44px] text-white border-slate-600 hover:bg-slate-800" data-testid="button-nav-pricing" asChild>
+                  <Link href="/pricing">View Pricing</Link>
+                </Button>
+                <Button variant="ghost" className="min-h-[44px] text-white hover:bg-slate-800" data-testid="button-nav-login" asChild>
+                  <Link href="/auth">Login</Link>
+                </Button>
+                <Button variant="default" className="min-h-[44px]" data-testid="button-nav-get-started" asChild>
+                  <Link href="/builder">Get Started</Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>

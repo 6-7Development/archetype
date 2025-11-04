@@ -272,7 +272,7 @@ export class WorkflowMetricsTracker {
   /**
    * Get final metrics for database insertion
    */
-  getFinalMetrics(): Omit<InsertLomuWorkflowMetrics, 'id' | 'createdAt'> {
+  getFinalMetrics() {
     const now = new Date();
     const totalDurationMs = now.getTime() - this.startTime.getTime();
     
@@ -284,14 +284,14 @@ export class WorkflowMetricsTracker {
     // Calculate quality scores
     const scores = this.calculateQualityScores();
 
-    const metrics: Omit<InsertLomuWorkflowMetrics, 'id' | 'createdAt'> = {
+    const metrics = {
       jobId: this.jobId,
       userId: this.userId,
       
-      // Workflow compliance
-      phasesExecuted: this.phasesExecuted,
+      // Workflow compliance (use Array.from to ensure proper array type)
+      phasesExecuted: Array.from(this.phasesExecuted),
       phaseTimestamps: this.phaseTimestamps,
-      phasesSkipped: this.phasesSkipped,
+      phasesSkipped: Array.from(this.phasesSkipped),
       planSkipJustified: this.planSkipJustified,
       
       // Testing & verification

@@ -194,6 +194,9 @@ export function isSimpleMessage(msg: string): boolean {
  * Main worker function that runs the LomuAI conversation loop
  */
 async function runMetaSysopWorker(jobId: string) {
+  // 📊 METRICS TRACKER: Declare outside try block for catch block access
+  let metricsTracker: WorkflowMetricsTracker | undefined;
+  
   try {
     // Fetch the job
     const [job] = await db
@@ -258,8 +261,8 @@ async function runMetaSysopWorker(jobId: string) {
     console.log('[WORKFLOW-VALIDATOR] Initialized for job:', jobId, '(autoCommit:', autoCommit, ')');
 
     // 📊 METRICS TRACKER: Initialize metrics collection for workflow performance tracking
-    const metricsTracker = new WorkflowMetricsTracker(jobId, userId);
-    metricsTracker.recordPhaseTransition('assess');
+    metricsTracker = new WorkflowMetricsTracker(jobId, userId);
+    metricsTracker?.recordPhaseTransition('assess');
     console.log('[METRICS-TRACKER] Initialized for job:', jobId);
 
     // If resuming, notify user
@@ -1080,7 +1083,7 @@ Let's build! 🚀`;
                 console.error(`[WORKFLOW-VALIDATOR] ${error}`);
                 
                 // Track violation in metrics
-                metricsTracker.recordViolation(
+                metricsTracker?.recordViolation(
                   'direct_edit',
                   currentPhase,
                   error
@@ -1113,7 +1116,7 @@ Let's build! 🚀`;
                 const errorMessage = `\n\n❌ WORKFLOW VIOLATION: ${transition.reason}\n\nYou must fix this before proceeding. Current phase: ${workflowValidator.getCurrentPhase()}`;
                 
                 // Track phase skip violation in metrics
-                metricsTracker.recordViolation(
+                metricsTracker?.recordViolation(
                   'phase_skip',
                   workflowValidator.getCurrentPhase(),
                   `Invalid transition to ${detectedPhase}: ${transition.reason}`
@@ -1135,7 +1138,7 @@ Let's build! 🚀`;
                 // Don't actually transition - the validator will keep current phase
               } else {
                 workflowValidator.transitionTo(detectedPhase);
-                metricsTracker.recordPhaseTransition(detectedPhase);
+                metricsTracker?.recordPhaseTransition(detectedPhase);
                 console.log(`[WORKFLOW-VALIDATOR] ✅ Phase transition: ${detectedPhase}`);
               }
             }
@@ -1169,7 +1172,7 @@ Let's build! 🚀`;
           if (usage && usage.inputTokens !== undefined && usage.outputTokens !== undefined) {
             cumulativeInputTokens += usage.inputTokens;
             cumulativeOutputTokens += usage.outputTokens;
-            metricsTracker.recordTokenUsage(usage.inputTokens, usage.outputTokens);
+            metricsTracker?.recordTokenUsage(usage.inputTokens, usage.outputTokens);
             console.log(`[TOKEN-TRACKING] Iteration ${iterationCount}: ${usage.inputTokens} input + ${usage.outputTokens} output tokens (cumulative: ${cumulativeInputTokens} + ${cumulativeOutputTokens})`);
           }
         },
@@ -1211,7 +1214,7 @@ Let's build! 🚀`;
               console.error(`[WORKFLOW-VALIDATOR] Direct edit in final message outside EXECUTE: ${currentPhase}`);
               
               // Track violation in metrics
-              metricsTracker.recordViolation(
+              metricsTracker?.recordViolation(
                 'direct_edit',
                 currentPhase,
                 `Direct code edits in final message outside EXECUTE phase`
@@ -1258,8 +1261,8 @@ Let's build! 🚀`;
             console.warn(`[WORKFLOW-VALIDATOR] ❌ Tool ${name} not allowed in ${workflowValidator.getCurrentPhase()} phase: ${toolValidation.reason}`);
             
             // Track tool block in metrics
-            metricsTracker.recordToolBlock();
-            metricsTracker.recordViolation(
+            metricsTracker?.recordToolBlock();
+            metricsTracker?.recordViolation(
               'tool_block',
               workflowValidator.getCurrentPhase(),
               `Tool ${name} blocked: ${toolValidation.reason}`
@@ -1672,7 +1675,7 @@ Let's build! 🚀`;
                     
                     // FIX 4: Wire commit confirmation
                     workflowValidator.confirmCommit(true);
-                    metricsTracker.recordCommit(fileChanges.length);
+                    metricsTracker?.recordCommit(fileChanges.length);
                     // 🔄 WORKFLOW VALIDATOR: Track commit execution
                     workflowValidator.updateContext({ commitExecuted: true });
                   }
@@ -1724,7 +1727,7 @@ Let's build! 🚀`;
                               !resultContent.includes('error') &&
                               !resultContent.includes('✗');
                 workflowValidator.confirmTestsRun(passed);
-                metricsTracker.recordTestExecution(passed);
+                metricsTracker?.recordTestExecution(passed);
               }
               
               // Detect verification runs (TypeScript compilation, linting)
@@ -1736,9 +1739,9 @@ Let's build! 🚀`;
                 const compilationOk = !resultContent.includes('error') &&
                                      !resultContent.includes('failed');
                 workflowValidator.confirmVerification(compilationOk);
-                metricsTracker.recordCompilationCheck(compilationOk);
+                metricsTracker?.recordCompilationCheck(compilationOk);
                 if (compilationOk) {
-                  metricsTracker.recordVerificationComplete();
+                  metricsTracker?.recordVerificationComplete();
                 }
               }
               
@@ -2027,7 +2030,7 @@ Let's build! 🚀`;
     let commitHash = '';
     if (autoCommit && fileChanges.length > 0) {
       commitHash = await platformHealing.commitChanges(`Fix: ${message.slice(0, 100)}`, fileChanges as any);
-      metricsTracker.recordCommit(fileChanges.length);
+      metricsTracker?.recordCommit(fileChanges.length);
 
       if (autoPush) {
         await platformHealing.pushToRemote();
@@ -2152,13 +2155,17 @@ Let's build! 🚀`;
     
     // 📊 SAVE WORKFLOW METRICS: Write comprehensive performance data to database
     try {
-      metricsTracker.setJobStatus('completed');
-      const finalMetrics = metricsTracker.getFinalMetrics();
-      
-      await db.insert(lomuWorkflowMetrics).values([finalMetrics]);
-      
-      console.log(`[METRICS-TRACKER] ✅ Metrics saved for job ${jobId}`);
-      console.log(`[METRICS-TRACKER] Summary: ${metricsTracker.getSummary()}`);
+      if (metricsTracker) {
+        metricsTracker?.setJobStatus('completed');
+        const finalMetrics = metricsTracker.getFinalMetrics();
+        
+        await db.insert(lomuWorkflowMetrics).values([finalMetrics]);
+        
+        console.log(`[METRICS-TRACKER] ✅ Metrics saved for job ${jobId}`);
+        console.log(`[METRICS-TRACKER] Summary: ${metricsTracker?.getSummary()}`);
+      } else {
+        console.warn('[METRICS-TRACKER] Metrics tracker not initialized - skipping metrics save');
+      }
     } catch (metricsError: any) {
       console.error('[METRICS-TRACKER] ❌ Failed to save metrics (non-fatal):', metricsError.message);
       // Non-fatal: metrics tracking failure should not break job completion
@@ -2226,7 +2233,7 @@ Let's build! 🚀`;
     try {
       // Check if metricsTracker exists (in case error occurred before initialization)
       if (typeof metricsTracker !== 'undefined') {
-        metricsTracker.setJobStatus('failed');
+        metricsTracker?.setJobStatus('failed');
         const finalMetrics = metricsTracker.getFinalMetrics();
         
         await db.insert(lomuWorkflowMetrics).values([finalMetrics]);
