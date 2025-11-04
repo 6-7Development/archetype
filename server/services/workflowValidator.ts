@@ -76,25 +76,38 @@ export class WorkflowValidator {
   }
 
   /**
-   * Detect phase announcements in AI response text
-   * Looks for emoji markers: 🔍 📋 ⚡ 🧪 ✓ ✅ 📤
+   * STRICT: Detect phase announcements - REQUIRES emoji markers
+   * Matches case-insensitive variations with MANDATORY emoji: "🔍 assessing now", "🔍 ASSESSING...", "🔍Assessing"
+   * BLOCKS casual mentions like "I'm assessing this" - must have emoji prefix
+   * Emoji markers: 🔍 📋 ⚡ 🧪 ✓ ✅ 📤
    */
   detectPhaseAnnouncement(text: string): WorkflowPhase | null {
     if (!this.enabled || !text) return null;
 
-    const patterns: Array<{ phase: WorkflowPhase; regex: RegExp }> = [
-      { phase: 'assess', regex: /🔍\s*(Assessing|Assessment)/i },
-      { phase: 'plan', regex: /📋\s*(Planning|Plan)/i },
-      { phase: 'execute', regex: /⚡\s*(Executing|Execute)/i },
-      { phase: 'test', regex: /🧪\s*(Testing|Test)/i },
-      { phase: 'verify', regex: /✓\s*(Verifying|Verify)/i },
-      { phase: 'confirm', regex: /✅\s*(Complete|Confirmed)/i },
-      { phase: 'commit', regex: /📤\s*(Committed|Committing)/i },
+    // STRICT: Require emoji + keyword (case-insensitive keyword, mandatory emoji)
+    // Removed plain word patterns to prevent bypasses
+    const patterns = [
+      { phase: 'assess' as WorkflowPhase, 
+        patterns: [/🔍\s*assess/i] },
+      { phase: 'plan' as WorkflowPhase, 
+        patterns: [/📋\s*plan/i] },
+      { phase: 'execute' as WorkflowPhase, 
+        patterns: [/⚡\s*execut/i] },
+      { phase: 'test' as WorkflowPhase, 
+        patterns: [/🧪\s*test/i] },
+      { phase: 'verify' as WorkflowPhase, 
+        patterns: [/✓\s*verif/i, /✅\s*verif/i] },
+      { phase: 'confirm' as WorkflowPhase, 
+        patterns: [/✅\s*complet/i, /✅\s*confirm/i] },
+      { phase: 'commit' as WorkflowPhase, 
+        patterns: [/📤\s*commit/i] }
     ];
-
-    for (const { phase, regex } of patterns) {
-      if (regex.test(text)) {
-        return phase;
+    
+    for (const { phase, patterns: phasePatterns } of patterns) {
+      for (const pattern of phasePatterns) {
+        if (pattern.test(text)) { // Use original text, not lowerText (emoji check)
+          return phase;
+        }
       }
     }
 
@@ -447,8 +460,8 @@ export class WorkflowValidator {
 
   /**
    * FIX 3: Validate overall workflow completion with STRICT REQUIREMENTS
-   * Now requires positive confirmations - no assumptions allowed
-   * Updated to accept context parameter for commit enforcement
+   * CRITICAL CHANGE: Require BOTH phase history AND confirmations
+   * Prevents bypass where agent skips phase announcement but sets flags
    */
   validateWorkflowCompletion(context?: WorkflowContext): WorkflowCompletionValidation {
     if (!this.enabled) {
@@ -457,26 +470,35 @@ export class WorkflowValidator {
 
     const missing: string[] = [];
 
-    // FIX 3: Check phase history - PLAN required unless justified
-    if (!this.hasReachedPhase('plan') && !this.planSkipJustification) {
+    // Check phase history (not just flags)
+    const hasReachedTest = this.hasReachedPhase('test');
+    const hasReachedVerify = this.hasReachedPhase('verify');
+    const hasReachedPlan = this.hasReachedPhase('plan');
+    
+    // PLAN phase enforcement
+    if (!hasReachedPlan && !this.planSkipJustification) {
       missing.push('PLAN phase (no task list created or skip justification)');
     }
-
-    // FIX 3: REQUIRE positive test confirmation (not just context flag)
-    if (!this.confirmations.testsRun) {
-      missing.push('TEST phase (tests not run)');
+    
+    // FIX 3: TEST phase enforcement (require BOTH phase reached AND confirmation)
+    if (!hasReachedTest) {
+      missing.push('TEST phase (phase never announced)');
+    } else if (!this.confirmations.testsRun) {
+      missing.push('TEST phase (announced but tests not run)');
     } else if (!this.confirmations.testsPassed) {
       missing.push('TEST phase (tests failed)');
     }
-
-    // FIX 3: REQUIRE positive verification confirmation
-    if (!this.confirmations.verificationComplete) {
-      missing.push('VERIFY phase (verification not run)');
+    
+    // FIX 3: VERIFY phase enforcement (require BOTH phase reached AND confirmation)
+    if (!hasReachedVerify) {
+      missing.push('VERIFY phase (phase never announced)');
+    } else if (!this.confirmations.verificationComplete) {
+      missing.push('VERIFY phase (announced but verification not run)');
     } else if (!this.confirmations.compilationChecked) {
       missing.push('VERIFY phase (compilation failed)');
     }
-
-    // FIX 3: Check commit if autoCommit enabled
+    
+    // COMMIT enforcement (if autoCommit enabled)
     if (context?.autoCommit && !this.confirmations.commitExecuted) {
       missing.push('COMMIT phase (auto-commit enabled but no commit executed)');
     }

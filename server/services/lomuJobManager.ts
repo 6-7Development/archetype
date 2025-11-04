@@ -1027,6 +1027,40 @@ Let's build! 🚀`;
         content: contentBlocks,
       });
 
+      // FIX 2: Scan final assistant message for direct edits (bypasses streaming detection)
+      if (contentBlocks.length > 0) {
+        const lastBlock = contentBlocks[contentBlocks.length - 1];
+        if (lastBlock.type === 'text' && lastBlock.text) {
+          const hasDirectEdit = 
+            lastBlock.text.includes('--- a/') ||
+            lastBlock.text.includes('+++ b/') ||
+            lastBlock.text.includes('<<<<<<< SEARCH') ||
+            lastBlock.text.includes('>>>>>>> REPLACE') ||
+            lastBlock.text.includes('apply_patch') ||
+            /```[a-z]*\n\S+\.\S+\n/.test(lastBlock.text);
+          
+          if (hasDirectEdit) {
+            const currentPhase = workflowValidator.getCurrentPhase();
+            if (currentPhase !== 'execute') {
+              console.error(`[WORKFLOW-VALIDATOR] Direct edit in final message outside EXECUTE: ${currentPhase}`);
+              
+              broadcast(userId, jobId, 'job_content', {
+                content: `\n\n❌ WORKFLOW VIOLATION: Direct code edits only allowed in EXECUTE phase. Current: ${currentPhase}.\n\n`,
+                isError: true
+              });
+              
+              conversationMessages.push({
+                role: 'user',
+                content: `SYSTEM ERROR: Direct code edits detected in ${currentPhase} phase. Only allowed in EXECUTE.`
+              });
+              
+              continueLoop = true; // Force another iteration to fix
+              continue;
+            }
+          }
+        }
+      }
+
       // Tool execution
       const toolResults: any[] = [];
       const hasToolUse = contentBlocks.some(block => block.type === 'tool_use');
