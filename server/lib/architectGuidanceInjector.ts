@@ -35,15 +35,17 @@ export interface GuidanceResponse {
 }
 
 export class ArchitectGuidanceInjector {
-  private anthropic: Anthropic;
+  private anthropic: Anthropic | null;
   private guidanceHistory: Map<string, GuidanceResponse[]> = new Map();
   
   constructor() {
-    const anthropicKey = process.env.ANTHROPIC_API_KEY;
-    if (!anthropicKey) {
-      throw new Error('ANTHROPIC_API_KEY not configured');
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      console.warn('[ARCHITECT-GUIDANCE] ANTHROPIC_API_KEY missing - guidance injection will be disabled');
+      this.anthropic = null;
+      return;
     }
-    this.anthropic = new Anthropic({ apiKey: anthropicKey });
+    this.anthropic = new Anthropic({ apiKey });
     console.log('[ARCHITECT-GUIDANCE] I AM Architect initialized for real-time guidance');
   }
   
@@ -51,6 +53,17 @@ export class ArchitectGuidanceInjector {
    * Request guidance from I AM Architect when LomuAI violates workflow
    */
   async requestGuidance(request: GuidanceRequest): Promise<GuidanceResponse> {
+    // Graceful degradation - if no API key configured, return empty guidance
+    if (!this.anthropic) {
+      console.warn('[ARCHITECT-GUIDANCE] I AM Architect unavailable (no API key) - skipping guidance');
+      return {
+        guidance: '', // Empty guidance
+        severity: 'low',
+        shouldRetry: false,
+        suggestedActions: [],
+      };
+    }
+    
     console.log('[ARCHITECT-GUIDANCE] 🧑‍💼 Calling I AM Architect for guidance...');
     console.log('[ARCHITECT-GUIDANCE] Violation:', request.violation);
     console.log('[ARCHITECT-GUIDANCE] Phase:', request.context.phase);

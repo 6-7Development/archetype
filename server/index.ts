@@ -102,7 +102,9 @@ app.use((req, res, next) => {
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+        // Truncate JSON response for logging to prevent high CPU usage on large responses
+        const jsonString = JSON.stringify(capturedJsonResponse);
+        logLine += ` :: ${jsonString.substring(0, 200)}${jsonString.length > 200 ? '...' : ''}`;
       }
 
       if (logLine.length > 80) {

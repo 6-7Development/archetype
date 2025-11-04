@@ -15,6 +15,7 @@ import { startSubagent } from '../subagentOrchestration';
 import { healthMonitor } from './healthMonitor';
 import { AgentFailureDetector } from './agentFailureDetector';
 import { WorkflowValidator } from './workflowValidator';
+import { EnforcementOrchestrator } from '../lib/enforcementOrchestrator';
 import { WorkflowMetricsTracker } from './workflowMetricsTracker';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -254,9 +255,13 @@ async function runMetaSysopWorker(jobId: string) {
     let iterationCount = job.lastIteration || 0;
     let activeTaskListId = job.taskListId || undefined;
 
-    // 🔄 WORKFLOW VALIDATOR: Initialize state machine to enforce 7-phase workflow
+    // 🔄 ENFORCEMENT ORCHESTRATOR: Initialize all 6 enforcement layers + I AM Architect guidance
+    const enforcementOrchestrator = new EnforcementOrchestrator();
+    enforcementOrchestrator.initializeJob(jobId);
+    console.log('[ENFORCEMENT-ORCHESTRATOR] Initialized for job:', jobId, '(autoCommit:', autoCommit, ')');
+    
+    // 🔄 WORKFLOW VALIDATOR: Keep for backward compatibility (temporary)
     const workflowValidator = new WorkflowValidator('assess', true);
-    // FIX 3: Set autoCommit context for commit enforcement
     workflowValidator.updateContext({ autoCommit });
     console.log('[WORKFLOW-VALIDATOR] Initialized for job:', jobId, '(autoCommit:', autoCommit, ')');
 
@@ -1027,15 +1032,17 @@ Let's build! 🚀`;
             // HARD ENFORCEMENT - Block invalid phase transitions
             const detectedPhase = workflowValidator.detectPhaseAnnouncement(chunk.content);
             if (detectedPhase) {
-              const transition = workflowValidator.canTransitionTo(detectedPhase);
+              // 🎯 ENFORCEMENT: Use orchestrator for phase transitions (checks + executes if allowed)
+              const transition = enforcementOrchestrator.transitionToPhase(detectedPhase);
+              
               if (!transition.allowed) {
                 // HARD BLOCK: Inject error to AI conversation
-                const errorMessage = `\n\n❌ WORKFLOW VIOLATION: ${transition.reason}\n\nYou must fix this before proceeding. Current phase: ${workflowValidator.getCurrentPhase()}`;
+                const errorMessage = `\n\n❌ WORKFLOW VIOLATION: ${transition.reason}\n\nYou must fix this before proceeding. Current phase: ${enforcementOrchestrator.getCurrentPhase()}`;
                 
                 // Track phase skip violation in metrics
                 metricsTracker?.recordViolation(
                   'phase_skip',
-                  workflowValidator.getCurrentPhase(),
+                  enforcementOrchestrator.getCurrentPhase(),
                   `Invalid transition to ${detectedPhase}: ${transition.reason}`
                 );
                 
@@ -1051,12 +1058,14 @@ Let's build! 🚀`;
                   content: `SYSTEM ERROR: ${transition.reason}. You must correct this violation before proceeding.`
                 });
                 
-                console.error(`[WORKFLOW-VALIDATOR] BLOCKED invalid transition: ${workflowValidator.getCurrentPhase()} → ${detectedPhase}`);
-                // Don't actually transition - the validator will keep current phase
+                console.error(`[ENFORCEMENT] BLOCKED invalid transition: ${enforcementOrchestrator.getCurrentPhase()} → ${detectedPhase}`);
+                // Don't actually transition - the orchestrator will keep current phase
               } else {
+                // Transition was successful (already performed by orchestrator)
+                // Also notify the legacy workflow validator for backward compatibility
                 workflowValidator.transitionTo(detectedPhase);
                 metricsTracker?.recordPhaseTransition(detectedPhase);
-                console.log(`[WORKFLOW-VALIDATOR] ✅ Phase transition: ${detectedPhase}`);
+                console.log(`[ENFORCEMENT] ✅ Phase transition: ${detectedPhase}`);
               }
             }
             
@@ -1100,6 +1109,69 @@ Let's build! 🚀`;
       });
       
       console.log('[LOMU-AI-JOB-MANAGER] Gemini stream completed, processing tool calls...');
+      
+      // CRITICAL: Validate response with all 6 enforcement layers
+      const lastUserMessage = conversationMessages
+        .slice()
+        .reverse()
+        .find(msg => msg.role === 'user' && typeof msg.content === 'string')?.content || message;
+      
+      const toolCallsFromResponse = contentBlocks
+        .filter(block => block.type === 'tool_use')
+        .map(block => ({ name: block.name, input: block.input }));
+      
+      try {
+        const validationResult = await enforcementOrchestrator.validateResponse(
+          {
+            jobId,
+            userId,
+            userMessage: lastUserMessage,
+            currentPhase: enforcementOrchestrator.getCurrentPhase(),
+            autoCommit,
+          },
+          fullContent,
+          toolCallsFromResponse,
+          cumulativeInputTokens,
+          cumulativeOutputTokens
+        );
+        
+        // Inject I AM Architect guidance if provided
+        if (validationResult.guidanceInjected) {
+          console.log('[ENFORCEMENT] 🧑‍💼 I AM Architect guidance injected');
+          conversationMessages.push({
+            role: 'user',
+            content: validationResult.guidanceInjected
+          });
+          broadcast(userId, jobId, 'architect_guidance', { 
+            guidance: validationResult.guidanceInjected,
+            violations: validationResult.violations 
+          });
+        }
+        
+        // Inject reflection prompt if triggered
+        if (validationResult.reflectionPrompt) {
+          console.log('[ENFORCEMENT] 🔄 Reflection prompt injected');
+          conversationMessages.push({
+            role: 'user',
+            content: validationResult.reflectionPrompt
+          });
+        }
+        
+        // Escalate if needed
+        if (validationResult.shouldEscalate) {
+          console.log('[ENFORCEMENT] ⚠️ Escalating to I AM Architect for takeover');
+          // TODO: Implement full I AM Architect takeover
+        }
+        
+        // Log validation results
+        if (validationResult.violations.length > 0) {
+          console.warn('[ENFORCEMENT] Violations detected:', validationResult.violations);
+        }
+        console.log('[ENFORCEMENT] Quality score:', validationResult.qualityScore);
+      } catch (enforcementError: any) {
+        console.error('[ENFORCEMENT] Validation failed (non-fatal):', enforcementError.message);
+        // Continue execution - enforcement failure should not break the job
+      }
 
       // Cleanup internal fields
       contentBlocks.forEach(block => {
@@ -1196,6 +1268,9 @@ Let's build! 🚀`;
           }
 
           broadcast(userId, jobId, 'job_progress', { message: `🔧 Executing tool: ${name}...` });
+          
+          // 🎯 ENFORCEMENT: Record tool call for ReflectionHeartbeat tracking
+          enforcementOrchestrator.recordToolCall(name);
 
           try {
             let toolResult: any = null;
@@ -1232,6 +1307,9 @@ Let's build! 🚀`;
                   
                   // 🔄 WORKFLOW VALIDATOR: Track task list creation
                   workflowValidator.updateContext({ hasTaskList: true });
+                  
+                  // 🎯 ENFORCEMENT: Record task list creation for parity tracking
+                  enforcementOrchestrator.recordTaskListCreation(jobId);
                 } else {
                   toolResult = `❌ Failed to create task list: ${result.error}`;
                 }
@@ -1645,6 +1723,11 @@ Let's build! 🚀`;
                               !resultContent.includes('✗');
                 workflowValidator.confirmTestsRun(passed);
                 metricsTracker?.recordTestExecution(passed);
+                
+                // 🎯 ENFORCEMENT: Record test execution for parity tracking
+                if (passed) {
+                  enforcementOrchestrator.recordTestExecution(jobId);
+                }
               }
               
               // Detect verification runs (TypeScript compilation, linting)

@@ -74,6 +74,7 @@ export class EnforcementOrchestrator {
    */
   recordToolCall(toolName: string): void {
     this.workflowValidator.recordToolCall(toolName);
+    this.reflectionHeartbeat.recordToolCall(); // CRITICAL: Enable layer 4
   }
   
   /**
@@ -186,15 +187,20 @@ export class EnforcementOrchestrator {
           qualityScore: qualityAnalysis.qualityScore,
         });
         
-        guidanceInjected = architectGuidanceInjector.formatGuidanceForInjection(
-          guidance,
-          context.jobId
-        );
-        
-        shouldRetry = shouldRetry || guidance.shouldRetry;
-        shouldEscalate = shouldEscalate || guidance.severity === 'critical';
-        
-        console.log('[ENFORCEMENT-ORCHESTRATOR] ✅ I AM Architect guidance injected');
+        // Only inject if guidance is not empty
+        if (guidance.guidance && guidance.guidance.length > 0) {
+          guidanceInjected = architectGuidanceInjector.formatGuidanceForInjection(
+            guidance,
+            context.jobId
+          );
+          
+          shouldRetry = shouldRetry || guidance.shouldRetry;
+          shouldEscalate = shouldEscalate || guidance.severity === 'critical';
+          
+          console.log('[ENFORCEMENT-ORCHESTRATOR] ✅ I AM Architect guidance injected');
+        } else {
+          console.log('[ENFORCEMENT-ORCHESTRATOR] ℹ️ No guidance provided (API key missing or degraded mode)');
+        }
       } catch (error: any) {
         console.error('[ENFORCEMENT-ORCHESTRATOR] Failed to get I AM Architect guidance:', error.message);
         // Continue without guidance injection
