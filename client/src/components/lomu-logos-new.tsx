@@ -44,11 +44,10 @@ export function LomuWordLogo({ height = 60, className = "" }: { height?: number;
         src={wordLogoPath}
         alt="Lomu"
         style={{
-          height: height * 3.2, // Scale up more to crop properly
+          height: '100%', // Make image take full height of its container
+          width: 'auto', // Allow width to adjust proportionally
           objectFit: 'contain',
-          transform: 'translateY(-18%)', // Shift up more to remove glowing border and tagline
-          filter: 'brightness(1.05) contrast(1.1)', // Compensate for removed glow
-          maxWidth: 'none', // Allow full width scaling
+          // Removed transform and filter as they were for cropping/glow compensation
         }}
       />
     </div>
