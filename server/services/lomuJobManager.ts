@@ -1004,6 +1004,17 @@ Let's build! 🚀`;
       let chunksAfterTool = 0; // Count chunks after tool call
       const ALLOWED_CHUNKS_BEFORE_JUDGMENT = 5; // Wait for 5 chunks (few seconds) before judging
       
+      // 🔄 CUMULATIVE TEXT TRACKING: Track accumulated text between tools to prevent chunk-based bypasses
+      let textSinceLastTool = '';
+      let wordsSinceLastTool = 0;
+      
+      // Reset accumulator after each tool call
+      const resetTextAccumulator = () => {
+        textSinceLastTool = '';
+        wordsSinceLastTool = 0;
+        console.log('[CUMULATIVE-GUARD] Text accumulator reset');
+      };
+      
       // Define allowed phase markers (ONLY these are permitted)
       const ALLOWED_PHASE_MARKERS = [
         '🔍 Assessing...',
@@ -1039,60 +1050,33 @@ Let's build! 🚀`;
             }
           }
           
-          // 🚨 CONTINUOUS GUARD: Check EVERY text chunk, not just before first tool
-          if (!violationInjected) {
-            const text = chunk.content.trim();
+          // 🔄 CUMULATIVE TRACKING: Add chunk to accumulator
+          textSinceLastTool += chunk.content;
+          wordsSinceLastTool = textSinceLastTool.trim().split(/\s+/).filter((w: string) => w.length > 0).length;
+          
+          // 🚨 CONTINUOUS GUARD: Check cumulative text AFTER grace period ends
+          if (!violationInjected && !hasJustCalledTool) {
+            const cumulativeText = textSinceLastTool.trim();
             
-            // Skip empty chunks
-            if (text.length === 0) {
-              // Empty chunk - allowed, continue processing
+            // Skip empty cumulative text
+            if (cumulativeText.length === 0) {
+              // Empty - allowed, continue processing
             } 
-            // Allow phase markers
-            else if (ALLOWED_PHASE_MARKERS.some(marker => text.startsWith(marker))) {
-              console.log(`[CONTINUOUS-GUARD] ✅ Phase marker allowed: "${text}"`);
+            // Check if cumulative text is ONLY a phase marker (EXACT match required)
+            else if (ALLOWED_PHASE_MARKERS.some(marker => cumulativeText === marker || cumulativeText === marker.trim())) {
+              // Valid standalone phase marker - allow it
+              console.log(`[CUMULATIVE-GUARD] ✅ Phase marker valid (exact match): "${cumulativeText}"`);
             }
-            // ✅ FIX: Allow status patterns (error messages, tool status, etc.)
-            else if (ALLOWED_STATUS_PATTERNS.some(pattern => pattern.test(text))) {
-              console.log(`[CONTINUOUS-GUARD] ✅ Status message allowed: "${text}"`);
-            }
-            // Allow final summary in CONFIRM phase (max 20 words including marker)
-            else if (currentPhase === 'confirm' && text.startsWith('✅ Complete')) {
-              const wordCount = text.split(/\s+/).filter((w: string) => w.length > 0).length;
-              if (wordCount > 20) {
-                const violation = `⚠️ VIOLATION: Final summary too long (${wordCount} words). Max 20 words total after "✅ Complete". Be BRIEF.`;
-                console.error(`[CONTINUOUS-GUARD] ${violation}`);
-                
-                metricsTracker?.recordViolation(
-                  'excessive_rambling',
-                  currentPhase,
-                  `Summary too long: ${wordCount} words (max 20)`
-                );
-                
-                broadcast(userId, jobId, 'job_content', { 
-                  content: `\n\n❌ ${violation}\n\n`,
-                  isError: true  
-                });
-                
-                conversationMessages.push({
-                  role: 'user',
-                  content: violation
-                });
-                
-                violationInjected = true;
-                continueLoop = true;
-                return;
-              }
-              console.log(`[CONTINUOUS-GUARD] ✅ Final summary allowed (${wordCount} words)`);
-            }
-            // ✅ FIX: Relaxed narration detection (>50 chars instead of >10, check grace period)
-            else if (text.length > 50 && !hasJustCalledTool) {
-              const violation = `⚠️ VIOLATION: No explanations allowed. You MUST use ONLY phase markers:\n- "🔍 Assessing..."\n- "📋 Planning..."\n- "⚡ Executing..."\n- "🧪 Testing..."\n- "✓ Verifying..."\n- "✅ Complete" + max 15 words\n\nDo NOT narrate, explain, or describe what you're doing. Just announce phases and work.`;
-              console.error(`[CONTINUOUS-GUARD] Blocked narration: "${text.slice(0, 100)}..."`);
+            // Check if it STARTS with a marker but isn't exact (VIOLATION)
+            else if (ALLOWED_PHASE_MARKERS.some(marker => cumulativeText.startsWith(marker))) {
+              // VIOLATION: Phase marker with extra text
+              const violation = `⚠️ VIOLATION: Phase markers must stand ALONE. Say "⚡ Executing..." then STOP. No extra text.`;
+              console.error(`[CUMULATIVE-GUARD] Phase marker with extra text: "${cumulativeText}" (${cumulativeText.length} chars)`);
               
               metricsTracker?.recordViolation(
                 'excessive_rambling',
                 currentPhase,
-                `Narration detected: ${text.slice(0, 50)}`
+                `Phase marker with appended text: "${cumulativeText}"`
               );
               
               broadcast(userId, jobId, 'job_content', { 
@@ -1106,6 +1090,92 @@ Let's build! 🚀`;
               });
               
               violationInjected = true;
+              resetTextAccumulator();
+              continueLoop = true;
+              return;
+            }
+            // Check status patterns with STRICT length limits (max 100 chars)
+            else if (ALLOWED_STATUS_PATTERNS.some(pattern => pattern.test(cumulativeText))) {
+              if (cumulativeText.length > 100) {
+                const violation = `⚠️ VIOLATION: Status messages must be brief (max 100 chars). Example: "Error: file not found" then STOP.`;
+                console.error(`[CUMULATIVE-GUARD] Status text too long: "${cumulativeText}" (${cumulativeText.length} chars)`);
+                
+                metricsTracker?.recordViolation(
+                  'excessive_rambling',
+                  currentPhase,
+                  `Status message exceeded 100 chars: ${cumulativeText.length}`
+                );
+                
+                broadcast(userId, jobId, 'job_content', { 
+                  content: `\n\n❌ ${violation}\n\n`,
+                  isError: true  
+                });
+                
+                conversationMessages.push({
+                  role: 'user',
+                  content: violation
+                });
+                
+                violationInjected = true;
+                resetTextAccumulator();
+                continueLoop = true;
+                return;
+              }
+              console.log(`[CUMULATIVE-GUARD] ✅ Status message valid: "${cumulativeText}" (${cumulativeText.length} chars)`);
+            }
+            // Check final summary in CONFIRM phase (max 20 words total)
+            else if (currentPhase === 'confirm' && cumulativeText.startsWith('✅ Complete')) {
+              const summaryWords = cumulativeText.split(/\s+/).filter((w: string) => w.length > 0).length;
+              if (summaryWords > 20) {
+                const violation = `⚠️ VIOLATION: Final summary has ${summaryWords} words. Max 20 words. Be brief.`;
+                console.error(`[CUMULATIVE-GUARD] ${violation}`);
+                
+                metricsTracker?.recordViolation(
+                  'excessive_rambling',
+                  currentPhase,
+                  `Summary too long: ${summaryWords} words (max 20)`
+                );
+                
+                broadcast(userId, jobId, 'job_content', { 
+                  content: `\n\n❌ ${violation}\n\n`,
+                  isError: true  
+                });
+                
+                conversationMessages.push({
+                  role: 'user',
+                  content: violation
+                });
+                
+                violationInjected = true;
+                resetTextAccumulator();
+                continueLoop = true;
+                return;
+              }
+              console.log(`[CUMULATIVE-GUARD] ✅ Final summary valid (${summaryWords} words)`);
+            }
+            // Check cumulative words (max 5 words between tools)
+            else if (wordsSinceLastTool > 5) {
+              const violation = `⚠️ VIOLATION: Detected ${wordsSinceLastTool} words since last tool call. Max 5 words allowed. Use phase markers only.`;
+              console.error(`[CUMULATIVE-GUARD] ${violation}: "${cumulativeText.slice(0, 100)}..."`);
+              
+              metricsTracker?.recordViolation(
+                'excessive_rambling',
+                currentPhase,
+                `Cumulative text: ${wordsSinceLastTool} words (max 5)`
+              );
+              
+              broadcast(userId, jobId, 'job_content', { 
+                content: `\n\n❌ ${violation}\n\n`,
+                isError: true  
+              });
+              
+              conversationMessages.push({
+                role: 'user',
+                content: violation
+              });
+              
+              violationInjected = true;
+              resetTextAccumulator();
               continueLoop = true;
               return;
             }
@@ -1136,6 +1206,7 @@ Let's build! 🚀`;
                 });
                 
                 violationInjected = true;
+                resetTextAccumulator();
                 continueLoop = true;
                 return;
               }
@@ -1239,6 +1310,9 @@ Let's build! 🚀`;
         hasJustCalledTool = true;
         chunksAfterTool = 0;
         console.log(`[CONTINUOUS-GUARD] Tool called: ${toolUse.name}, grace period reset (${ALLOWED_CHUNKS_BEFORE_JUDGMENT} chunks)`);
+        
+        // 🔄 RESET CUMULATIVE TEXT ACCUMULATOR after each tool call
+        resetTextAccumulator();
         
         // 🔄 UPDATE PHASE based on tool type
         if (toolUse.name === 'createTaskList') {
