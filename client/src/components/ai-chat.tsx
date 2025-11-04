@@ -3,7 +3,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Send, Loader2, User, Key, AlertCircle, Square, ChevronDown, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LumoAvatar } from "@/components/lumo-avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -977,15 +976,6 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                 message.role === "user" ? "justify-end" : "justify-start"
               )}
             >
-              {message.role === "assistant" && (
-                <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center" data-testid="avatar-assistant">
-                  <LumoAvatar 
-                    size="small" 
-                    emotion={getAvatarEmotion(message, isGenerating, progressStatus)} 
-                  />
-                </div>
-              )}
-
               <div
                 className={cn(
                   "max-w-[75%] rounded-2xl px-4 py-3 shadow-sm",
@@ -1054,9 +1044,6 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
           {/* Streaming Indicator */}
           {chatMutation.isPending && streamState.fullMessage && (
             <div className="flex gap-3 items-start">
-              <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center" data-testid="avatar-streaming">
-                <LumoAvatar size="medium" emotion="happy" />
-              </div>
               <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-[hsl(220,70%,60%)] shadow-sm">
                 <div className="prose prose-invert max-w-none">
                   <MarkdownRenderer content={streamState.fullMessage} />
@@ -1068,9 +1055,6 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
           {/* AI Streaming Indicator - Simple Loader */}
           {chatMutation.isPending && !streamState.fullMessage && (
             <div className="flex gap-3 items-start">
-              <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center" data-testid="avatar-thinking">
-                <LumoAvatar size="medium" emotion="idle" />
-              </div>
               <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-[hsl(220,70%,60%)] shadow-sm">
                 <div className="flex items-center gap-2 text-sm text-white/70">
                   <Loader2 className="w-4 h-4 animate-spin" />
