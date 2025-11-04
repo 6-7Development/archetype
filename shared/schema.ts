@@ -124,10 +124,6 @@ export const platformIncidents = pgTable("platform_incidents", {
   title: text("title").notNull(), // "High CPU usage detected"
   description: text("description").notNull(), // Detailed error message
 
-  // Incident classification (for intelligent routing)
-  incidentCategory: text("incident_category").notNull().default("unknown"), // 'platform_failure' | 'agent_failure' | 'unknown'
-  isAgentFailure: boolean("is_agent_failure").notNull().default(false), // Quick flag for agent-specific issues
-
   // Detection metadata
   source: text("source").notNull(), // 'metrics', 'logs', 'manual', 'agent_monitor'
   detectedAt: timestamp("detected_at").notNull().defaultNow(),
@@ -183,7 +179,7 @@ export const platformHealingSessions = pgTable("platform_healing_sessions", {
   knowledgeBaseMatched: boolean("knowledge_base_matched").notNull().default(false), // Did we find a KB match?
   knowledgeMatchConfidence: integer("knowledge_match_confidence").default(0), // 0-100 confidence score
   knowledgeMatchId: varchar("knowledge_match_id"), // Link to matched knowledge entry
-  
+
   // LomuAI delegation tracking (Tier 2)
   lomuJobId: varchar("lomu_job_id"), // Link to lomuJobs table when delegated to LomuAI
 
@@ -674,20 +670,20 @@ export const lomuWorkflowMetrics = pgTable('lomu_workflow_metrics', {
   id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
   jobId: varchar('job_id').notNull(), // Link to lomuJobs table
   userId: varchar('user_id').notNull(),
-  
+
   // Workflow compliance metrics
   phasesExecuted: jsonb('phases_executed').$type<string[]>().default(sql`'[]'::jsonb`), // ['assess', 'plan', 'execute', 'test', 'verify', 'confirm', 'commit']
   phaseTimestamps: jsonb('phase_timestamps').$type<Record<string, string>>().default(sql`'{}'::jsonb`), // { 'assess': '2024-11-04T03:42:00Z', ... }
   phasesSkipped: jsonb('phases_skipped').$type<string[]>().default(sql`'[]'::jsonb`), // Phases that were skipped (with/without justification)
   planSkipJustified: boolean('plan_skip_justified').notNull().default(false), // Was PLAN skip properly justified?
-  
+
   // Testing & verification metrics
   testsRun: boolean('tests_run').notNull().default(false), // Did job run tests?
   testsPassed: boolean('tests_passed').notNull().default(false), // Did all tests pass?
   compilationChecked: boolean('compilation_checked').notNull().default(false), // Was TypeScript/compilation verified?
   verificationComplete: boolean('verification_complete').notNull().default(false), // Full verification phase completed?
   workflowRestarted: boolean('workflow_restarted').notNull().default(false), // Was workflow restarted for verification?
-  
+
   // Violation & enforcement metrics
   violationCount: integer('violation_count').notNull().default(0), // Number of workflow violations detected
   violations: jsonb('violations').$type<Array<{
@@ -698,20 +694,20 @@ export const lomuWorkflowMetrics = pgTable('lomu_workflow_metrics', {
   }>>().default(sql`'[]'::jsonb`),
   restartCount: integer('restart_count').notNull().default(0), // Number of RESTART injections required
   toolBlockCount: integer('tool_block_count').notNull().default(0), // Number of tool calls blocked
-  
+
   // Token efficiency metrics
   totalTokens: integer('total_tokens').notNull().default(0), // Total tokens used (input + output)
   inputTokens: integer('input_tokens').notNull().default(0), // Input tokens
   outputTokens: integer('output_tokens').notNull().default(0), // Output tokens
   iterationCount: integer('iteration_count').notNull().default(0), // Number of conversation iterations
   avgTokensPerIteration: decimal('avg_tokens_per_iteration', { precision: 10, scale: 2 }).notNull().default("0.00"), // Efficiency measure
-  
+
   // Quality scores
   phaseComplianceScore: integer('phase_compliance_score').notNull().default(0), // 0-100: % of required phases executed
   testCoverageScore: integer('test_coverage_score').notNull().default(0), // 0-100: Test completion quality
   tokenEfficiencyScore: integer('token_efficiency_score').notNull().default(0), // 0-100: Token usage efficiency
   overallQualityScore: integer('overall_quality_score').notNull().default(0), // 0-100: Combined quality score
-  
+
   // Performance metrics
   totalDurationMs: integer('total_duration_ms').notNull().default(0), // Total job duration in milliseconds
   assessDurationMs: integer('assess_duration_ms').notNull().default(0), // Time spent in ASSESS phase
@@ -719,12 +715,12 @@ export const lomuWorkflowMetrics = pgTable('lomu_workflow_metrics', {
   executeDurationMs: integer('execute_duration_ms').notNull().default(0), // Time spent in EXECUTE phase
   testDurationMs: integer('test_duration_ms').notNull().default(0), // Time spent in TEST phase
   verifyDurationMs: integer('verify_duration_ms').notNull().default(0), // Time spent in VERIFY phase
-  
+
   // Outcomes
   jobStatus: varchar('job_status', { length: 20 }).notNull(), // 'completed' | 'failed' | 'interrupted'
   commitExecuted: boolean('commit_executed').notNull().default(false), // Was code committed to GitHub?
   filesModified: integer('files_modified').notNull().default(0), // Number of files changed
-  
+
   createdAt: timestamp('created_at').defaultNow(),
 });
 
@@ -815,28 +811,28 @@ export const deployments = pgTable("deployments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   projectId: varchar("project_id").notNull(),
   userId: varchar("user_id").notNull(),
-  
+
   // Deployment info
   subdomain: text("subdomain").notNull().unique(), // e.g., "my-project" for my-project.lomu.app
   customDomain: text("custom_domain"), // e.g., "mysite.com" (if user sets custom domain)
-  
+
   // Cloudflare Pages info
   cfProjectId: text("cf_project_id"), // Cloudflare Pages project ID
   cfDeploymentId: text("cf_deployment_id"), // Cloudflare deployment ID
   cfUrl: text("cf_url"), // Full URL (e.g., https://my-project.pages.dev)
-  
+
   // Status
   status: text("status").notNull().default("pending"), // "pending", "building", "deploying", "active", "failed"
   buildJobId: varchar("build_job_id"), // Link to build job
-  
+
   // Metadata
   environment: text("environment").notNull().default("production"), // "production", "preview"
   branch: text("branch").default("main"),
   commitHash: text("commit_hash"),
-  
+
   // Analytics
   monthlyVisits: integer("monthly_visits").notNull().default(0), // Track monthly visits for billing
-  
+
   // Timestamps
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -878,16 +874,16 @@ export const buildJobs = pgTable("build_jobs", {
   projectId: varchar("project_id").notNull(),
   userId: varchar("user_id").notNull(),
   deploymentId: varchar("deployment_id"),
-  
+
   // Build info
   status: text("status").notNull().default("queued"), // "queued", "building", "success", "failed"
   buildLogs: text("build_logs"), // Full build output
   errorMessage: text("error_message"),
-  
+
   // Artifacts
   artifactPath: text("artifact_path"), // S3/R2 path to built files
   artifactSize: integer("artifact_size"), // Size in bytes
-  
+
   // Timing
   startedAt: timestamp("started_at"),
   completedAt: timestamp("completed_at"),
@@ -908,20 +904,20 @@ export const customDomains = pgTable("custom_domains", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   deploymentId: varchar("deployment_id").notNull().unique(), // One domain per deployment
   userId: varchar("user_id").notNull(),
-  
+
   // Domain info
   domain: text("domain").notNull().unique(), // e.g., "mysite.com"
-  
+
   // DNS validation
   status: text("status").notNull().default("pending_verification"), // "pending_verification", "verified", "active", "failed"
   dnsVerificationToken: text("dns_verification_token"), // TXT record value for verification
   dnsVerified: boolean("dns_verified").notNull().default(false),
-  
+
   // Cloudflare info
   cfCustomHostnameId: text("cf_custom_hostname_id"), // Cloudflare custom hostname ID
   cfStatus: text("cf_status"), // Cloudflare status
   cfSslStatus: text("cf_ssl_status"), // SSL certificate status
-  
+
   // Timestamps
   createdAt: timestamp("created_at").notNull().defaultNow(),
   verifiedAt: timestamp("verified_at"),
@@ -942,7 +938,7 @@ export const deploymentLogs = pgTable("deployment_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   buildJobId: varchar("build_job_id").notNull(),
   deploymentId: varchar("deployment_id"),
-  
+
   // Log entry
   message: text("message").notNull(),
   level: text("level").notNull().default("info"), // "info", "warning", "error"
@@ -2245,21 +2241,21 @@ export const premiumFixAttempts = pgTable("premium_fix_attempts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
   projectId: varchar("project_id").notNull(),
-  
+
   // Error identification (prevent double-charging for same error)
   errorSignature: varchar("error_signature", { length: 64 }).notNull(), // MD5 hash of error pattern
   errorType: text("error_type").notNull(), // 'build_failure', 'runtime_error', 'typescript_error', etc.
   errorDescription: text("error_description").notNull(), // User-facing error description
-  
+
   // Confidence and diagnosis
   confidenceScore: decimal("confidence_score", { precision: 5, scale: 2 }).notNull(), // 0-100
   diagnosisNotes: text("diagnosis_notes"), // AI's analysis
   proposedFix: text("proposed_fix"), // What AI plans to do
-  
+
   // Sandbox testing results
   sandboxTestId: varchar("sandbox_test_id"), // Link to sandboxTestResults
   sandboxPassed: boolean("sandbox_passed").notNull().default(false),
-  
+
   // Payment tracking (Stripe)
   stripePaymentIntentId: text("stripe_payment_intent_id"), // Stripe payment intent ID
   baseTokenCost: decimal("base_token_cost", { precision: 10, scale: 2 }).notNull(), // Actual AI cost
@@ -2268,26 +2264,26 @@ export const premiumFixAttempts = pgTable("premium_fix_attempts", {
   paymentStatus: text("payment_status").notNull().default("pending"), // 'pending' | 'held' | 'captured' | 'refunded' | 'cancelled'
   paymentCapturedAt: timestamp("payment_captured_at"),
   paymentRefundedAt: timestamp("payment_refunded_at"),
-  
+
   // Execution tracking
   status: text("status").notNull().default("pending"), // 'pending' | 'diagnosing' | 'sandbox_testing' | 'awaiting_payment' | 'applying_fix' | 'monitoring' | 'success' | 'failed' | 'rolled_back'
   phase: text("phase").notNull().default("diagnosis"), // Current phase of fix process
-  
+
   // Health monitoring
   healthMonitoringId: varchar("health_monitoring_id"), // Link to healthMonitoringRecords
   healthCheckPassed: boolean("health_check_passed"),
-  
+
   // Git/Deploy tracking
   commitHash: varchar("commit_hash"),
   deploymentId: varchar("deployment_id"),
   deploymentUrl: text("deployment_url"),
-  
+
   // Rollback tracking
   rolledBack: boolean("rolled_back").notNull().default(false),
   rollbackReason: text("rollback_reason"),
   rollbackAt: timestamp("rollback_at"),
   snapshotBeforeFix: jsonb("snapshot_before_fix"), // Project state before fix
-  
+
   // Summary for user
   fixSummary: text("fix_summary"), // Short summary of what was fixed
   issuesFixed: jsonb("issues_fixed").$type<Array<{
@@ -2295,12 +2291,12 @@ export const premiumFixAttempts = pgTable("premium_fix_attempts", {
     fix: string;
     file?: string;
   }>>(), // List of issues fixed
-  
+
   // Timestamps
   createdAt: timestamp("created_at").notNull().defaultNow(),
   startedAt: timestamp("started_at"),
   completedAt: timestamp("completed_at"),
-  
+
   // Error tracking
   error: text("error"),
 }, (table) => [
@@ -2324,16 +2320,16 @@ export type PremiumFixAttempt = typeof premiumFixAttempts.$inferSelect;
 export const sandboxTestResults = pgTable("sandbox_test_results", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   fixAttemptId: varchar("fix_attempt_id").notNull(), // Link to premiumFixAttempts
-  
+
   // Test execution
   testType: text("test_type").notNull(), // 'typescript' | 'unit_tests' | 'integration' | 'e2e' | 'build' | 'health'
   passed: boolean("passed").notNull(),
-  
+
   // Results
   output: text("output"), // Test output/logs
   errorMessage: text("error_message"),
   stackTrace: text("stack_trace"),
-  
+
   // Files tested
   filesAffected: jsonb("files_affected").$type<string[]>(), // List of files in sandbox
   changesApplied: jsonb("changes_applied").$type<Array<{
@@ -2341,10 +2337,10 @@ export const sandboxTestResults = pgTable("sandbox_test_results", {
     operation: 'create' | 'modify' | 'delete';
     diff?: string;
   }>>(),
-  
+
   // Performance
   duration: integer("duration"), // Milliseconds
-  
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => [
   index("idx_sandbox_fix_attempt").on(table.fixAttemptId),
@@ -2363,21 +2359,21 @@ export type SandboxTestResult = typeof sandboxTestResults.$inferSelect;
 export const healthMonitoringRecords = pgTable("health_monitoring_records", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   fixAttemptId: varchar("fix_attempt_id").notNull(), // Link to premiumFixAttempts
-  
+
   // Monitoring window
   startedAt: timestamp("started_at").notNull().defaultNow(),
   endedAt: timestamp("ended_at"),
   monitoringDuration: integer("monitoring_duration").notNull().default(300), // 5 minutes in seconds
-  
+
   // Health checks performed
   checksPerformed: integer("checks_performed").notNull().default(0),
   checksPassedCount: integer("checks_passed_count").notNull().default(0),
   checksFailedCount: integer("checks_failed_count").notNull().default(0),
-  
+
   // Overall status
   overallHealth: text("overall_health").notNull().default("monitoring"), // 'monitoring' | 'healthy' | 'unhealthy' | 'degraded'
   finalStatus: text("final_status"), // 'success' | 'failed' - set when monitoring completes
-  
+
   // Detailed checks
   healthChecks: jsonb("health_checks").$type<Array<{
     timestamp: string;
@@ -2386,14 +2382,14 @@ export const healthMonitoringRecords = pgTable("health_monitoring_records", {
     message?: string;
     details?: any;
   }>>().default(sql`'[]'::jsonb`),
-  
+
   // Failure details
   failureReason: text("failure_reason"),
   failureDetails: jsonb("failure_details"),
-  
+
   // Action taken
   actionTaken: text("action_taken"), // 'none' | 'rollback' | 'alert' | 'escalate'
-  
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => [
   index("idx_health_fix_attempt").on(table.fixAttemptId),
@@ -2414,30 +2410,30 @@ export const errorSignatureDeduplication = pgTable("error_signature_deduplicatio
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
   projectId: varchar("project_id").notNull(),
-  
+
   // Error signature (MD5 hash)
   errorSignature: varchar("error_signature", { length: 64 }).notNull(),
   errorType: text("error_type").notNull(),
   errorMessage: text("error_message").notNull(),
-  
+
   // Fix tracking
   firstAttemptId: varchar("first_attempt_id").notNull(), // First fix attempt for this error
   lastAttemptId: varchar("last_attempt_id").notNull(), // Most recent fix attempt
   totalAttempts: integer("total_attempts").notNull().default(1),
   successfulAttempts: integer("successful_attempts").notNull().default(0),
-  
+
   // Payment tracking (prevent double-charging)
   totalCharged: decimal("total_charged", { precision: 10, scale: 2 }).notNull().default("0.00"),
   lastChargedAt: timestamp("last_charged_at"),
-  
+
   // Resolution status
   resolved: boolean("resolved").notNull().default(false),
   resolvedAt: timestamp("resolved_at"),
   resolvedBy: varchar("resolved_by"), // Fix attempt ID that resolved it
-  
+
   // Learning
   confidence: decimal("confidence", { precision: 5, scale: 2 }).notNull().default("0.00"), // Increases with successful fixes
-  
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (table) => [
