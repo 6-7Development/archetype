@@ -1807,9 +1807,35 @@ Let's build! 🚀`;
           continueLoop = false;
         }
         
+        // Convert tool results to plain text for Gemini (doesn't support Claude's tool_result format)
+        const toolResultsText = toolResults.map(result => {
+          let content = result.content;
+          
+          // Handle missing/undefined content
+          if (content === undefined || content === null) {
+            content = result.is_error ? 'Error occurred' : 'Success';
+          }
+          
+          // Convert non-string content to readable format
+          if (typeof content !== 'string') {
+            try {
+              content = JSON.stringify(content, null, 2);
+            } catch (e) {
+              content = String(content);
+            }
+          }
+          
+          // Format with error indicator if needed
+          if (result.is_error) {
+            return `❌ ERROR:\n${content}`;
+          }
+          
+          return content;
+        }).join('\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n');
+
         conversationMessages.push({
           role: 'user',
-          content: toolResults,
+          content: toolResultsText,
         });
       } else {
         // No tool calls - check if should continue
