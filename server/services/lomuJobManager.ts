@@ -5,6 +5,7 @@ import type { WebSocketServer } from 'ws';
 import { streamGeminiResponse } from '../gemini';
 import { platformHealing } from '../platformHealing';
 import { platformAudit } from '../platformAudit';
+import { trackAIUsage } from '../usage-tracking';
 import { consultArchitect } from '../tools/architect-consult';
 import { executeWebSearch } from '../tools/web-search';
 import { getGitHubService } from '../githubService';
@@ -714,6 +715,11 @@ Let's build something amazing! 🚀`;
       MAX_READ_ONLY_ITERATIONS: 5,
     };
 
+    // 🔢 TOKEN TRACKING: Accumulate usage across all iterations
+    let cumulativeInputTokens = 0;
+    let cumulativeOutputTokens = 0;
+    const jobStartTime = Date.now();
+
     // Main conversation loop
     while (continueLoop && iterationCount < MAX_ITERATIONS) {
       iterationCount++;
@@ -762,6 +768,13 @@ Let's build something amazing! 🚀`;
           // Add final text block if any
           if (currentTextBlock && contentBlocks[contentBlocks.length - 1]?.text !== currentTextBlock) {
             contentBlocks.push({ type: 'text', text: currentTextBlock });
+          }
+          
+          // 🔢 Accumulate token usage from Gemini response
+          if (usage && usage.inputTokens !== undefined && usage.outputTokens !== undefined) {
+            cumulativeInputTokens += usage.inputTokens;
+            cumulativeOutputTokens += usage.outputTokens;
+            console.log(`[TOKEN-TRACKING] Iteration ${iterationCount}: ${usage.inputTokens} input + ${usage.outputTokens} output tokens (cumulative: ${cumulativeInputTokens} + ${cumulativeOutputTokens})`);
           }
         },
         onError: (error: Error) => {
@@ -1537,6 +1550,38 @@ Let's build something amazing! 🚀`;
       commitHash,
       status: 'success',
     });
+
+    // 🔢 TRACK AI USAGE: Critical billing implementation
+    const computeTimeMs = Date.now() - jobStartTime;
+    if (cumulativeInputTokens > 0 || cumulativeOutputTokens > 0) {
+      console.log(`[TOKEN-TRACKING] LomuAI job ${jobId}: ${cumulativeInputTokens} input + ${cumulativeOutputTokens} output tokens, ${computeTimeMs}ms compute time`);
+      
+      const usageResult = await trackAIUsage({
+        userId,
+        projectId: projectId,
+        type: 'ai_generation',
+        inputTokens: cumulativeInputTokens,
+        outputTokens: cumulativeOutputTokens,
+        computeTimeMs,
+        model: 'gemini',
+        metadata: {
+          model: 'gemini-2.5-flash',
+          jobId: jobId,
+          autonomyLevel: autonomyLevel || 'standard',
+          iterationCount,
+          fileChangesCount: fileChanges.length,
+          message: message.slice(0, 200),
+        }
+      });
+      
+      if (!usageResult.success) {
+        console.error('[TOKEN-TRACKING] ⚠️ BILLING FAILURE:', usageResult.error);
+        console.error('[TOKEN-TRACKING] Job:', jobId, 'Tokens:', cumulativeInputTokens, cumulativeOutputTokens);
+        // Still continue - don't fail the job
+      }
+    } else {
+      console.warn(`[TOKEN-TRACKING] WARNING: No tokens tracked for job ${jobId} - this should not happen!`);
+    }
 
     // Mark job as completed
     await db.update(lomuJobs)

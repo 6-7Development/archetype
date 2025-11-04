@@ -8,6 +8,12 @@ const ANTHROPIC_PRICING = {
   OUTPUT_COST_PER_1M: 15.00, // $15 per 1M output tokens
 };
 
+// Google Gemini 2.5 Flash Pricing (per 1M tokens)
+const GEMINI_PRICING = {
+  INPUT_COST_PER_1M: 0.10,  // $0.10 per 1M input tokens (Gemini 2.5 Flash)
+  OUTPUT_COST_PER_1M: 0.40, // $0.40 per 1M output tokens
+};
+
 // Replit-style Granular Pricing
 const COMPUTE_PRICING = {
   COST_PER_HOUR: 0.16, // $0.16 per compute hour
@@ -73,9 +79,14 @@ export const PLAN_LIMITS = {
 /**
  * Calculate exact cost for AI tokens
  */
-export function calculateTokenCost(inputTokens: number, outputTokens: number): number {
-  const inputCost = (inputTokens / 1_000_000) * ANTHROPIC_PRICING.INPUT_COST_PER_1M;
-  const outputCost = (outputTokens / 1_000_000) * ANTHROPIC_PRICING.OUTPUT_COST_PER_1M;
+export function calculateTokenCost(
+  inputTokens: number, 
+  outputTokens: number, 
+  model: 'claude' | 'gemini' = 'claude'  // Add model parameter with default
+): number {
+  const pricing = model === 'gemini' ? GEMINI_PRICING : ANTHROPIC_PRICING;
+  const inputCost = (inputTokens / 1_000_000) * pricing.INPUT_COST_PER_1M;
+  const outputCost = (outputTokens / 1_000_000) * pricing.OUTPUT_COST_PER_1M;
   return parseFloat((inputCost + outputCost).toFixed(4));
 }
 
@@ -129,13 +140,14 @@ export async function trackAIUsage(params: {
   inputTokens: number;
   outputTokens: number;
   computeTimeMs?: number; // Optional compute time in milliseconds
+  model?: 'claude' | 'gemini'; // Model used for pricing
   metadata?: any;
 }): Promise<{ success: boolean; cost: number; error?: string }> {
-  const { userId, projectId, type, inputTokens, outputTokens, computeTimeMs, metadata } = params;
+  const { userId, projectId, type, inputTokens, outputTokens, computeTimeMs, model = 'claude', metadata } = params;
 
   try {
     const totalTokens = inputTokens + outputTokens;
-    const tokenCost = calculateTokenCost(inputTokens, outputTokens);
+    const tokenCost = calculateTokenCost(inputTokens, outputTokens, model);
     const computeCost = computeTimeMs ? calculateComputeCost(computeTimeMs) : 0;
     const totalCost = tokenCost + computeCost;
 
