@@ -1500,42 +1500,46 @@ Let's build! 🚀`;
           break;
         }
         
-        // CRITICAL FIX: Block execution when violations detected (not just log)
+        // TEMPORARILY DISABLED - too aggressive, causing infinite loops
+        // The 5-word limit before tools was creating escalating violations:
+        // 21 words → 41 words → 201 words, leading to job failures
+        // 
+        // if (validationResult.violations.length > 0) {
+        //   console.warn('[ENFORCEMENT] ❌ Violations detected - blocking iteration:', validationResult.violations);
+        //   
+        //   const violationMessage = `❌ WORKFLOW VIOLATION DETECTED:\n${validationResult.violations.join('\n')}\n\nYou MUST follow workflow rules. Fix this before proceeding.`;
+        //   
+        //   conversationMessages.push({
+        //     role: 'user',
+        //     content: violationMessage
+        //   });
+        //   
+        //   broadcast(userId, jobId, 'job_content', {
+        //     content: `\n\n${violationMessage}\n\n`,
+        //     isError: true
+        //   });
+        //   
+        //   continueLoop = true;
+        //   
+        //   if (metricsTracker) {
+        //     metricsTracker.recordViolation(
+        //       'enforcement_violation',
+        //       enforcementOrchestrator.getCurrentPhase(),
+        //       validationResult.violations.join('; ')
+        //     );
+        //   }
+        //   
+        //   console.log('[ENFORCEMENT] 🔄 Forcing retry iteration to fix violations');
+        //   continue;
+        // }
+        
+        // Just log violations as warnings, don't block execution
         if (validationResult.violations.length > 0) {
-          console.warn('[ENFORCEMENT] ❌ Violations detected - blocking iteration:', validationResult.violations);
-          
-          // Inject blocking message into conversation (forces LomuAI to see the violation)
-          const violationMessage = `❌ WORKFLOW VIOLATION DETECTED:\n${validationResult.violations.join('\n')}\n\nYou MUST follow workflow rules. Fix this before proceeding.`;
-          
-          conversationMessages.push({
-            role: 'user',
-            content: violationMessage
-          });
-          
-          // Broadcast violation to user UI
-          broadcast(userId, jobId, 'job_content', {
-            content: `\n\n${violationMessage}\n\n`,
-            isError: true
-          });
-          
-          // CRITICAL: Force another iteration to fix the violation
-          continueLoop = true;
-          
-          // Track violation in metrics
-          if (metricsTracker) {
-            metricsTracker.recordViolation(
-              'enforcement_violation',
-              enforcementOrchestrator.getCurrentPhase(),
-              validationResult.violations.join('; ')
-            );
-          }
-          
-          console.log('[ENFORCEMENT] 🔄 Forcing retry iteration to fix violations');
-          
-          // Skip tool execution and restart loop
-          continue;
+          console.warn('[ENFORCEMENT] ⚠️ Violations detected (non-blocking):', validationResult.violations);
+          // Note: Not tracking these violations since enforcement is disabled
+        } else {
+          console.log('[ENFORCEMENT] ✅ No violations - quality score:', validationResult.qualityScore);
         }
-        console.log('[ENFORCEMENT] ✅ No violations - quality score:', validationResult.qualityScore);
       } catch (enforcementError: any) {
         console.error('[ENFORCEMENT] Validation failed (non-fatal):', enforcementError.message);
         // Continue execution - enforcement failure should not break the job
