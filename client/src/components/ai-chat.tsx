@@ -60,51 +60,6 @@ interface AIChatProps {
   currentProjectId?: string | null;
 }
 
-// Helper function to determine avatar emotion based on message state
-function getAvatarEmotion(
-  message: Message,
-  isGenerating: boolean,
-  progressStatus: 'thinking' | 'working' | 'vibing' | 'idle'
-): "happy" | "sad" | "worried" | "excited" | "thinking" | "working" | "success" | "error" | "idle" {
-  // Check if message indicates an error
-  if (message.content && (
-    message.content.toLowerCase().includes('error') ||
-    message.content.toLowerCase().includes('failed') ||
-    message.content.toLowerCase().includes('oops') ||
-    message.content.toLowerCase().includes('something went wrong')
-  )) {
-    return "error";
-  }
-
-  // Check if message indicates success
-  if (message.content && (
-    message.content.toLowerCase().includes('✅') ||
-    message.content.toLowerCase().includes('success') ||
-    message.content.toLowerCase().includes('completed') ||
-    message.content.toLowerCase().includes('great!') ||
-    message.content.toLowerCase().includes('done!')
-  )) {
-    return "success";
-  }
-
-  // If currently generating/streaming
-  if (isGenerating) {
-    switch (progressStatus) {
-      case 'thinking':
-        return "thinking";
-      case 'working':
-        return "working";
-      case 'vibing':
-        return "excited";
-      default:
-        return "thinking";
-    }
-  }
-
-  // Default to happy for normal messages
-  return "happy";
-}
-
 export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   const { user } = useAuth(); // Get current user to check if admin
   const isAdmin = user?.role === 'admin';

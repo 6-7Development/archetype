@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { AdminGuard } from '@/components/admin-guard';
-import { LumoAvatar } from '@/components/lumo-avatar';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -37,41 +36,6 @@ interface HealingMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
   createdAt: string;
-}
-
-// Helper function to determine avatar emotion based on message state
-function getAvatarEmotion(
-  message: HealingMessage,
-  isStreaming: boolean
-): "happy" | "sad" | "worried" | "excited" | "thinking" | "working" | "success" | "error" | "idle" {
-  // Check if message indicates an error
-  if (message.content && (
-    message.content.toLowerCase().includes('error') ||
-    message.content.toLowerCase().includes('failed') ||
-    message.content.toLowerCase().includes('oops') ||
-    message.content.toLowerCase().includes('something went wrong')
-  )) {
-    return "error";
-  }
-
-  // Check if message indicates success
-  if (message.content && (
-    message.content.toLowerCase().includes('✅') ||
-    message.content.toLowerCase().includes('success') ||
-    message.content.toLowerCase().includes('completed') ||
-    message.content.toLowerCase().includes('fixed') ||
-    message.content.toLowerCase().includes('done!')
-  )) {
-    return "success";
-  }
-
-  // If currently streaming, show thinking
-  if (isStreaming) {
-    return "working";
-  }
-
-  // Default to happy for normal messages
-  return "happy";
 }
 
 function PlatformHealingContent() {
@@ -604,7 +568,6 @@ function PlatformHealingContent() {
           // Empty state
           <div className="h-full flex items-center justify-center p-4">
             <div className="text-center max-w-md">
-              <LumoAvatar emotion="idle" size="large" className="mx-auto mb-4" />
               <h2 className="text-xl font-semibold mb-2">Welcome to Platform Healing</h2>
               <p className="text-muted-foreground mb-4">
                 Select a target to start a conversation with Lomu, your AI healing assistant.
@@ -636,7 +599,6 @@ function PlatformHealingContent() {
                   {/* Empty state */}
                   {!messagesLoading && messages.length === 0 && !isStreaming && (
                     <div className="text-center text-muted-foreground py-8">
-                      <LumoAvatar emotion="happy" size="medium" className="mx-auto mb-3" />
                       <p>Hi! I'm Lomu. Ask me anything about this target.</p>
                     </div>
                   )}
@@ -650,13 +612,6 @@ function PlatformHealingContent() {
                         msg.role === 'user' ? 'justify-end' : 'justify-start'
                       )}
                     >
-                      {msg.role === 'assistant' && (
-                        <LumoAvatar 
-                          emotion={getAvatarEmotion(msg, isStreaming)} 
-                          size="small" 
-                          className="flex-shrink-0" 
-                        />
-                      )}
                       <div className="flex flex-col gap-1 max-w-[80%]">
                         <div
                           className={cn(
@@ -684,7 +639,6 @@ function PlatformHealingContent() {
                   {/* Streaming message */}
                   {isStreaming && streamingContent && (
                     <div className="flex gap-3 justify-start">
-                      <LumoAvatar emotion="idle" size="small" className="flex-shrink-0" />
                       <div className="max-w-[80%] rounded-lg px-4 py-2 bg-muted">
                         <p className="text-sm whitespace-pre-wrap">{streamingContent}</p>
                       </div>
@@ -694,7 +648,6 @@ function PlatformHealingContent() {
                   {/* Typing indicator */}
                   {isStreaming && !streamingContent && (
                     <div className="flex gap-3 justify-start">
-                      <LumoAvatar emotion="idle" size="small" className="flex-shrink-0" />
                       <div className="max-w-[80%] rounded-lg px-4 py-2 bg-muted">
                         <p className="text-sm text-muted-foreground">Lomu is working...</p>
                       </div>

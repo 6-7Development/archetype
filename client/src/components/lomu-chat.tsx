@@ -3,7 +3,6 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { Send, Square, ChevronDown, ChevronRight, Shield, Zap, Brain, Infinity, Rocket, User, Copy, Check, Loader2, XCircle, FileCode, Terminal, CheckCircle, Clock, Upload, X, File, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LumoAvatar } from "@/components/lumo-avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -233,49 +232,6 @@ function AttachmentPreview({ attachment, onRemove }: { attachment: Attachment; o
       )}
     </div>
   );
-}
-
-// Helper function to determine avatar emotion based on message state
-function getAvatarEmotion(
-  message: Message,
-  isStreaming: boolean,
-  progressStatus: 'thinking' | 'working' | 'vibing' | 'idle'
-): "happy" | "sad" | "worried" | "excited" | "thinking" | "working" | "success" | "error" | "idle" {
-  // Check if message indicates an error
-  if (message.content && (
-    message.content.toLowerCase().includes('error') ||
-    message.content.toLowerCase().includes('failed') ||
-    message.content.toLowerCase().includes('something went wrong')
-  )) {
-    return "error";
-  }
-
-  // Check if message indicates success
-  if (message.content && (
-    message.content.toLowerCase().includes('✅') ||
-    message.content.toLowerCase().includes('success') ||
-    message.content.toLowerCase().includes('completed') ||
-    message.content.toLowerCase().includes('done!')
-  )) {
-    return "success";
-  }
-
-  // If currently streaming, use the progress status
-  if (message.isStreaming || isStreaming) {
-    switch (progressStatus) {
-      case 'thinking':
-        return "thinking";
-      case 'working':
-        return "working";
-      case 'vibing':
-        return "excited";
-      default:
-        return "thinking";
-    }
-  }
-
-  // Default to happy for normal messages
-  return "happy";
 }
 
 export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }: LomuAiChatProps) {
@@ -988,15 +944,6 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                     message.role === "user" ? "justify-end" : "justify-start"
                   )}
                 >
-                {message.role === "assistant" && (
-                  <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 flex items-center justify-center" data-testid="avatar-lomu-assistant">
-                    <LumoAvatar 
-                      size="small" 
-                      emotion={getAvatarEmotion(message, isStreaming && message.id === streamingMessageId, progressStatus)} 
-                    />
-                  </div>
-                )}
-                
                 <div className={cn("rounded-lg max-w-[90%] md:max-w-[85%]", message.role === "user" ? "w-auto" : "w-full")}>
                   {message.role === "user" ? (
                     <div className="space-y-1.5 md:space-y-2">
