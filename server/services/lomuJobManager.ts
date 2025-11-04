@@ -1002,7 +1002,7 @@ Let's build! 🚀`;
       // ✅ FIX: Chunk-based grace period instead of time-based
       let hasJustCalledTool = false; // Track if we just completed a tool call
       let chunksAfterTool = 0; // Count chunks after tool call
-      const ALLOWED_CHUNKS_BEFORE_JUDGMENT = 5; // Wait for 5 chunks (few seconds) before judging
+      const ALLOWED_CHUNKS_BEFORE_JUDGMENT = 2; // REDUCED from 5 to 2 - tighter enforcement to prevent rambling
       
       // 🔄 CUMULATIVE TEXT TRACKING: Track accumulated text between tools to prevent chunk-based bypasses
       let textSinceLastTool = '';
@@ -1500,11 +1500,42 @@ Let's build! 🚀`;
           break;
         }
         
-        // Log validation results
+        // CRITICAL FIX: Block execution when violations detected (not just log)
         if (validationResult.violations.length > 0) {
-          console.warn('[ENFORCEMENT] Violations detected:', validationResult.violations);
+          console.warn('[ENFORCEMENT] ❌ Violations detected - blocking iteration:', validationResult.violations);
+          
+          // Inject blocking message into conversation (forces LomuAI to see the violation)
+          const violationMessage = `❌ WORKFLOW VIOLATION DETECTED:\n${validationResult.violations.join('\n')}\n\nYou MUST follow workflow rules. Fix this before proceeding.`;
+          
+          conversationMessages.push({
+            role: 'user',
+            content: violationMessage
+          });
+          
+          // Broadcast violation to user UI
+          broadcast(userId, jobId, 'job_content', {
+            content: `\n\n${violationMessage}\n\n`,
+            isError: true
+          });
+          
+          // CRITICAL: Force another iteration to fix the violation
+          continueLoop = true;
+          
+          // Track violation in metrics
+          if (metricsTracker) {
+            metricsTracker.recordViolation(
+              'enforcement_violation',
+              enforcementOrchestrator.getCurrentPhase(),
+              validationResult.violations.join('; ')
+            );
+          }
+          
+          console.log('[ENFORCEMENT] 🔄 Forcing retry iteration to fix violations');
+          
+          // Skip tool execution and restart loop
+          continue;
         }
-        console.log('[ENFORCEMENT] Quality score:', validationResult.qualityScore);
+        console.log('[ENFORCEMENT] ✅ No violations - quality score:', validationResult.qualityScore);
       } catch (enforcementError: any) {
         console.error('[ENFORCEMENT] Validation failed (non-fatal):', enforcementError.message);
         // Continue execution - enforcement failure should not break the job
