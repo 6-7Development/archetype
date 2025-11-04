@@ -205,23 +205,22 @@ function PlatformHealingContent() {
     setMessages([]);
   }, [targetId]);
 
-  // Resume last conversation on target change
-  useEffect(() => {
-    if (!targetId) return;
-
-    // Try to resume last conversation from localStorage
-    const lastConvId = localStorage.getItem(`last-conv-${targetId}`);
-    if (lastConvId && conversations?.some(c => c.id === lastConvId)) {
-      setConversationId(lastConvId);
-    } else if (conversations && conversations.length > 0) {
-      // Otherwise, load most recent conversation
-      const mostRecent = conversations.sort((a, b) => 
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-      )[0];
-      setConversationId(mostRecent.id);
-      localStorage.setItem(`last-conv-${targetId}`, mostRecent.id);
-    }
-  }, [targetId, conversations]);
+  // DISABLED: Auto-loading chat breaks LomuAI workflow by loading old context
+  // Users must manually select "New Chat" or choose existing conversation
+  // This ensures clean state for each healing session
+  // useEffect(() => {
+  //   if (!targetId) return;
+  //   const lastConvId = localStorage.getItem(`last-conv-${targetId}`);
+  //   if (lastConvId && conversations?.some(c => c.id === lastConvId)) {
+  //     setConversationId(lastConvId);
+  //   } else if (conversations && conversations.length > 0) {
+  //     const mostRecent = conversations.sort((a, b) => 
+  //       new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+  //     )[0];
+  //     setConversationId(mostRecent.id);
+  //     localStorage.setItem(`last-conv-${targetId}`, mostRecent.id);
+  //   }
+  // }, [targetId, conversations]);
 
   // Create new conversation mutation
   const createConversationMutation = useMutation({
