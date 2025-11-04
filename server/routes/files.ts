@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { insertFileSchema, insertChatMessageSchema } from "@shared/schema";
 import { storage } from "../storage";
 import { isAuthenticated } from "../universalAuth";
+import { filterToolCallsFromMessages } from "../lib/message-filter";
 import multer from "multer";
 import path from "path";
 import { promises as fs } from "fs";
@@ -92,7 +93,10 @@ export function registerFileRoutes(app: Express) {
       
       console.log(`📝 [CHAT-HISTORY] Found ${history?.length || 0} messages for project ${projectId}`);
       
-      res.json(history || []);
+      // Filter out tool calls from messages before sending to frontend
+      const filteredHistory = filterToolCallsFromMessages(history || []);
+      
+      res.json(filteredHistory);
     } catch (error) {
       console.error('Error fetching chat history:', error);
       res.status(500).json({ error: "Failed to fetch chat history" });

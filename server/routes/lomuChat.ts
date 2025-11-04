@@ -21,6 +21,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { createSafeGeminiRequest, logGeminiTruncationResults } from '../lib/gemini-wrapper.ts';
 import { sanitizeDiagnosisForAI } from '../lib/diagnosis-sanitizer.ts';
+import { filterToolCallsFromMessages } from '../lib/message-filter.ts';
 import type { WebSocketServer } from 'ws';
 import { getOrCreateState, autoUpdateFromMessage, formatStateForPrompt } from '../services/conversationState.ts';
 import { agentFailureDetector } from '../services/agentFailureDetector.ts';
@@ -499,7 +500,10 @@ router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
       })
     );
 
-    res.json({ messages: messagesWithAttachments });
+    // Filter out tool calls from messages before sending to frontend
+    const filteredMessages = filterToolCallsFromMessages(messagesWithAttachments);
+
+    res.json({ messages: filteredMessages });
   } catch (error: any) {
     console.error('[LOMU-AI-CHAT] Error loading history:', error);
     res.status(500).json({ error: error.message });
@@ -3401,10 +3405,13 @@ router.get('/chat-history', isAuthenticated, async (req: any, res) => {
       .orderBy(desc(chatMessages.createdAt))
       .limit(limit);
     
+    // Filter out tool calls from messages before sending to frontend
+    const filteredMessages = filterToolCallsFromMessages(messages.reverse());
+    
     // Return in chronological order (oldest first)
     res.json({ 
       success: true, 
-      messages: messages.reverse() 
+      messages: filteredMessages 
     });
   } catch (error: any) {
     console.error('[LOMU-AI] Failed to fetch chat history:', error);

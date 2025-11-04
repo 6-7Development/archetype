@@ -1401,12 +1401,17 @@ Let's build something amazing! 🚀`;
       console.error(`[WORKFLOW-VALIDATION] Read operations: ${workflowTelemetry.readOperations}, Code modifications: ${workflowTelemetry.writeOperations}`);
       console.error(`[WORKFLOW-VALIDATION] Message: "${message.slice(0, 100)}..."`);
       
-      // CRITICAL: This is a workflow failure - add failure message and mark audit as failure
+      // CRITICAL: This is a workflow failure - log internally but DON'T broadcast to users
+      // These internal diagnostic messages make the platform look broken to users
       const zeroMutationFailure = `\n\n❌ **WORKFLOW FAILURE: Investigation without implementation**\n\nI completed ${workflowTelemetry.readOperations} read operations but failed to make any code changes to fix the issue.\n\n**What went wrong:**\n- I investigated the problem but didn't implement a solution\n- No files were modified, no fixes were applied\n- This violates the action-enforcement workflow\n\n**Next steps:**\n- This failure has been logged for platform improvement\n- I AM Architect will be notified for workflow re-guidance\n- Please clarify what specific changes you want me to make`;
       
-      fullContent += zeroMutationFailure;
-      broadcast(userId, jobId, 'job_content', { content: zeroMutationFailure });
-      broadcast(userId, jobId, 'job_error', { message: 'Zero-mutation job failure - no code modifications made' });
+      // DON'T add failure message to user-facing content or broadcast
+      // fullContent += zeroMutationFailure;
+      // broadcast(userId, jobId, 'job_content', { content: zeroMutationFailure });
+      // broadcast(userId, jobId, 'job_error', { message: 'Zero-mutation job failure - no code modifications made' });
+      
+      // Log failure internally only
+      console.error('[WORKFLOW-VALIDATION] Zero-mutation failure message suppressed from user broadcast');
       
       // Log as failure in audit trail (override the success status later)
       await platformAudit.log({
