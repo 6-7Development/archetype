@@ -66,7 +66,7 @@ class AutoHealingService {
     // Use error type, file, and key parts of message
     const messageKey = error.message
       .replace(/\d+/g, 'N') // Replace numbers
-      .replace(/['"]/g, '') // Remove quotes
+      .replace(/['\"]/g, '') // Remove quotes
       .slice(0, 100);
     
     return `${error.type}:${error.file || 'unknown'}:${messageKey}`;
@@ -145,13 +145,6 @@ class AutoHealingService {
 
       // Use LomuAI to fix
       await this.executeHealing(issue);
-
-      // Learn from this fix
-      if (this.errorBuffer.length > 0) {
-        // Store the pattern for future use
-        const primaryError = this.errorBuffer[0];
-        // We'll store the fix pattern after successful healing
-      }
 
       this.errorBuffer = [];
     } catch (error) {
