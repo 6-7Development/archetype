@@ -252,7 +252,9 @@ async function runMetaSysopWorker(jobId: string) {
 
     // 🔄 WORKFLOW VALIDATOR: Initialize state machine to enforce 7-phase workflow
     const workflowValidator = new WorkflowValidator('assess', true);
-    console.log('[WORKFLOW-VALIDATOR] Initialized for job:', jobId);
+    // FIX 3: Set autoCommit context for commit enforcement
+    workflowValidator.updateContext({ autoCommit });
+    console.log('[WORKFLOW-VALIDATOR] Initialized for job:', jobId, '(autoCommit:', autoCommit, ')');
 
     // If resuming, notify user
     if (iterationCount > 0) {
@@ -888,6 +890,9 @@ Let's build! 🚀`;
     // Main conversation loop
     while (continueLoop && iterationCount < MAX_ITERATIONS) {
       iterationCount++;
+      
+      // FIX 1: Track iterations to enforce phase announcements
+      workflowValidator.incrementIteration();
 
       broadcast(userId, jobId, 'job_progress', {
         message: `Analyzing (iteration ${iterationCount}/${MAX_ITERATIONS})...`
@@ -908,17 +913,65 @@ Let's build! 🚀`;
         tools: availableTools,
         onChunk: (chunk: any) => {
           if (chunk.type === 'chunk' && chunk.content) {
+            // FIX 2: Detect inline file edits in streaming content
+            const hasDirectEdit = 
+              chunk.content.includes('--- a/') ||  // Diff format
+              chunk.content.includes('+++ b/') ||
+              chunk.content.includes('<<<<<<< SEARCH') || // Search/replace
+              chunk.content.includes('>>>>>>> REPLACE') ||
+              chunk.content.includes('apply_patch') ||
+              /```[a-z]*\n\S+\.\S+\n/.test(chunk.content); // Code block with filename
+            
+            if (hasDirectEdit) {
+              const currentPhase = workflowValidator.getCurrentPhase();
+              if (currentPhase !== 'execute') {
+                // BLOCK direct edits outside EXECUTE phase
+                const error = `WORKFLOW VIOLATION: Direct code edits only allowed in EXECUTE phase. Current: ${currentPhase}. Use tools instead.`;
+                console.error(`[WORKFLOW-VALIDATOR] ${error}`);
+                
+                broadcast(userId, jobId, 'job_content', { 
+                  content: `\n\n❌ ${error}\n\n`,
+                  isError: true  
+                });
+                
+                conversationMessages.push({
+                  role: 'user',
+                  content: `SYSTEM ERROR: ${error}`
+                });
+                
+                // Skip this chunk content - don't add to fullContent
+                return;
+              }
+            }
+            
             currentTextBlock += chunk.content;
             fullContent += chunk.content;
             
-            // 🔄 WORKFLOW VALIDATOR: Detect phase announcements
+            // HARD ENFORCEMENT - Block invalid phase transitions
             const detectedPhase = workflowValidator.detectPhaseAnnouncement(chunk.content);
             if (detectedPhase) {
-              if (workflowValidator.canTransitionTo(detectedPhase)) {
+              const transition = workflowValidator.canTransitionTo(detectedPhase);
+              if (!transition.allowed) {
+                // HARD BLOCK: Inject error to AI conversation
+                const errorMessage = `\n\n❌ WORKFLOW VIOLATION: ${transition.reason}\n\nYou must fix this before proceeding. Current phase: ${workflowValidator.getCurrentPhase()}`;
+                
+                fullContent += errorMessage;
+                broadcast(userId, jobId, 'job_content', { 
+                  content: errorMessage,
+                  isError: true  
+                });
+                
+                // Add system message to force correction in next iteration
+                conversationMessages.push({
+                  role: 'user',
+                  content: `SYSTEM ERROR: ${transition.reason}. You must correct this violation before proceeding.`
+                });
+                
+                console.error(`[WORKFLOW-VALIDATOR] BLOCKED invalid transition: ${workflowValidator.getCurrentPhase()} → ${detectedPhase}`);
+                // Don't actually transition - the validator will keep current phase
+              } else {
                 workflowValidator.transitionTo(detectedPhase);
                 console.log(`[WORKFLOW-VALIDATOR] ✅ Phase transition: ${detectedPhase}`);
-              } else {
-                console.warn(`[WORKFLOW-VALIDATOR] ❌ Invalid phase transition to ${detectedPhase} from ${workflowValidator.getCurrentPhase()}`);
               }
             }
             
@@ -1402,6 +1455,8 @@ Let's build! 🚀`;
                       `URL: ${result.commitUrl}\n\n` +
                       `🚀 Railway auto-deployment triggered!`;
                     
+                    // FIX 4: Wire commit confirmation
+                    workflowValidator.confirmCommit(true);
                     // 🔄 WORKFLOW VALIDATOR: Track commit execution
                     workflowValidator.updateContext({ commitExecuted: true });
                   }
@@ -1436,6 +1491,43 @@ Let's build! 🚀`;
               tool_use_id: id,
               content: toolResult || 'Success',
             });
+
+            // FIX 4: Wire confirmations when test/verify/commit tools succeed
+            // Check if this was a test execution
+            if (name === 'run_playwright_test' || name === 'bash') {
+              const resultContent = toolResult?.toString().toLowerCase() || '';
+              const inputStr = JSON.stringify(input).toLowerCase();
+              
+              // Detect test runs
+              if (name === 'run_playwright_test' || 
+                  inputStr.includes('npm test') || 
+                  inputStr.includes('npm run test') ||
+                  inputStr.includes('pytest') ||
+                  inputStr.includes('jest')) {
+                const passed = !resultContent.includes('failed') && 
+                              !resultContent.includes('error') &&
+                              !resultContent.includes('✗');
+                workflowValidator.confirmTestsRun(passed);
+              }
+              
+              // Detect verification runs (TypeScript compilation, linting)
+              if (inputStr.includes('tsc --noemit') ||
+                  inputStr.includes('tsc -noemit') ||
+                  inputStr.includes('npm run type-check') ||
+                  inputStr.includes('eslint')) {
+                const compilationOk = !resultContent.includes('error') &&
+                                     !resultContent.includes('failed');
+                workflowValidator.confirmVerification(compilationOk);
+              }
+              
+              // FIX 4: Detect git commit commands
+              if (name === 'bash' && (inputStr.includes('git commit') || inputStr.includes('git push'))) {
+                const success = !resultContent.includes('error') &&
+                               !resultContent.includes('failed') &&
+                               !resultContent.includes('fatal');
+                workflowValidator.confirmCommit(success);
+              }
+            }
 
             broadcast(userId, jobId, 'job_progress', { message: `✅ Tool ${name} completed` });
           } catch (error: any) {
@@ -1784,22 +1876,33 @@ Let's build! 🚀`;
       console.warn(`[TOKEN-TRACKING] WARNING: No tokens tracked for job ${jobId} - this should not happen!`);
     }
 
-    // 🔄 WORKFLOW VALIDATOR: Validate workflow completion before marking job complete
-    const workflowCompletion = workflowValidator.validateWorkflowCompletion({
-      hasTaskList: !!activeTaskListId,
-      testsRun: false, // TODO: Track when tests are run
-      verificationComplete: false, // TODO: Track when verification is run
-      commitExecuted: commitSuccessful,
-    });
-    
-    if (!workflowCompletion.complete) {
-      console.warn(`[WORKFLOW-VALIDATOR] ⚠️ Workflow incomplete: Missing phases: ${workflowCompletion.missingPhases.join(', ')}`);
-      workflowCompletion.warnings.forEach(warning => {
-        console.warn(`[WORKFLOW-VALIDATOR] ⚠️ ${warning}`);
+    // FIX 5: BLOCK COMPLETION if workflow requirements not met
+    const completionValidation = workflowValidator.validateWorkflowCompletion();
+    if (!completionValidation.complete) {
+      console.error(`[WORKFLOW-VALIDATOR] Cannot complete - missing: ${completionValidation.missingRequirements.join(', ')}`);
+      
+      // Inject error message to notify user
+      const errorMessage = `\n\n❌ WORKFLOW INCOMPLETE:\n${completionValidation.missingRequirements.map(r => `- ${r}`).join('\n')}\n\nThis job was stopped because critical workflow phases were not completed. Please create a new job that follows the complete workflow.`;
+      
+      fullContent += errorMessage;
+      broadcast(userId, jobId, 'job_content', { content: errorMessage, isError: true });
+      
+      // Mark job as failed due to incomplete workflow
+      await db.update(lomuJobs)
+        .set({ 
+          status: 'failed',
+          error: `Workflow incomplete: ${completionValidation.missingRequirements.join(', ')}`,
+          updatedAt: new Date()
+        })
+        .where(eq(lomuJobs.id, jobId));
+      
+      broadcast(userId, jobId, 'job_failed', {
+        status: 'failed',
+        error: `Workflow incomplete: ${completionValidation.missingRequirements.join(', ')}`,
       });
       
-      // Log workflow summary for debugging
-      console.log(`[WORKFLOW-VALIDATOR] Workflow summary: ${workflowValidator.getSummary()}`);
+      console.log(`[WORKFLOW-VALIDATOR] ❌ Job marked as failed - workflow incomplete`);
+      return; // Exit early - don't mark as completed
     } else {
       console.log(`[WORKFLOW-VALIDATOR] ✅ Workflow completed successfully`);
       console.log(`[WORKFLOW-VALIDATOR] Summary: ${workflowValidator.getSummary()}`);

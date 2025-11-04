@@ -26,10 +26,14 @@ interface PhaseValidationResult {
   reason?: string;
 }
 
+interface PhaseTransitionResult {
+  allowed: boolean;
+  reason?: string;
+}
+
 interface WorkflowCompletionValidation {
   complete: boolean;
-  missingPhases: string[];
-  warnings: string[];
+  missingRequirements: string[];
 }
 
 interface WorkflowContext {
@@ -37,6 +41,15 @@ interface WorkflowContext {
   testsRun?: boolean;
   verificationComplete?: boolean;
   commitExecuted?: boolean;
+  autoCommit?: boolean;
+}
+
+interface WorkflowConfirmations {
+  testsRun: boolean;
+  testsPassed: boolean;
+  verificationComplete: boolean;
+  compilationChecked: boolean;
+  commitExecuted: boolean;
 }
 
 export class WorkflowValidator {
@@ -44,6 +57,17 @@ export class WorkflowValidator {
   private phaseHistory: PhaseHistoryEntry[] = [];
   private enabled: boolean = true;
   private context: WorkflowContext = {};
+  private planSkipJustification: string | null = null;
+  private confirmations: WorkflowConfirmations = {
+    testsRun: false,
+    testsPassed: false,
+    verificationComplete: false,
+    compilationChecked: false,
+    commitExecuted: false
+  };
+  private iterationsSincePhaseChange = 0;
+  private maxIterationsWithoutPhase = 2;
+  private blockToolsUntilPhaseAnnouncement = false;
 
   constructor(initialPhase: WorkflowPhase = 'assess', enabled: boolean = true) {
     this.currentPhase = initialPhase;
@@ -78,11 +102,30 @@ export class WorkflowValidator {
   }
 
   /**
-   * Validate if transition to new phase is allowed
-   * Enforces sequential progression with some flexibility
+   * FIX 1: Justify skipping PLAN phase
+   * Agent must call this to explicitly justify assess→execute transition
    */
-  canTransitionTo(newPhase: WorkflowPhase): boolean {
-    if (!this.enabled) return true;
+  justifyPlanSkip(reason: string): boolean {
+    const validReasons = ['single file read', 'read-only query', 'status check', 'trivial'];
+    const isValid = validReasons.some(v => reason.toLowerCase().includes(v));
+    
+    if (isValid) {
+      this.planSkipJustification = reason;
+      console.log(`[WORKFLOW-VALIDATOR] Plan skip justified: ${reason}`);
+      return true;
+    }
+    
+    console.error(`[WORKFLOW-VALIDATOR] Invalid plan skip reason: ${reason}`);
+    return false;
+  }
+
+  /**
+   * Validate if transition to new phase is allowed
+   * FIX 1: Returns object with allowed + reason (for hard blocking)
+   * FIX 1: Requires explicit justification for assess→execute
+   */
+  canTransitionTo(newPhase: WorkflowPhase): PhaseTransitionResult {
+    if (!this.enabled) return { allowed: true };
 
     const phaseOrder: WorkflowPhase[] = [
       'assess',
@@ -99,40 +142,51 @@ export class WorkflowValidator {
     const newIndex = phaseOrder.indexOf(newPhase);
 
     // Allow staying in same phase
-    if (currentIndex === newIndex) return true;
+    if (currentIndex === newIndex) return { allowed: true };
 
     // Allow moving forward sequentially
-    if (newIndex === currentIndex + 1) return true;
+    if (newIndex === currentIndex + 1) return { allowed: true };
 
-    // Special cases: Allow skipping PLAN for trivial tasks
-    // (from assess directly to execute)
+    // FIX 1: STRICT ENFORCEMENT - Require explicit justification for PLAN skip
     if (this.currentPhase === 'assess' && newPhase === 'execute') {
-      console.log('[WORKFLOW-VALIDATOR] Allowing PLAN skip (trivial task)');
-      return true;
+      if (!this.planSkipJustification) {
+        return {
+          allowed: false,
+          reason: 'PLAN phase required unless explicitly justified. Call justifyPlanSkip() first or transition to PLAN phase.'
+        };
+      }
+      console.log('[WORKFLOW-VALIDATOR] Allowing PLAN skip (justified)');
+      return { allowed: true };
     }
 
     // Allow skipping to CONFIRM from VERIFY (if no commit needed)
     if (this.currentPhase === 'verify' && newPhase === 'confirm') {
-      return true;
+      return { allowed: true };
     }
 
     // Disallow backwards movement (except restarts)
     if (newIndex < currentIndex && newPhase !== 'assess') {
-      console.warn(`[WORKFLOW-VALIDATOR] Cannot move backwards from ${this.currentPhase} to ${newPhase}`);
-      return false;
+      return {
+        allowed: false,
+        reason: `Cannot move backwards from ${this.currentPhase} to ${newPhase}`
+      };
     }
 
     // Disallow skipping multiple phases
     if (newIndex > currentIndex + 1) {
-      console.warn(`[WORKFLOW-VALIDATOR] Cannot skip from ${this.currentPhase} to ${newPhase}`);
-      return false;
+      return {
+        allowed: false,
+        reason: `Cannot skip from ${this.currentPhase} to ${newPhase} - must follow sequential phases`
+      };
     }
 
-    return false;
+    return { allowed: false, reason: 'Invalid phase transition' };
   }
 
   /**
    * Transition to a new phase
+   * Updated for FIX 2: Now uses PhaseTransitionResult
+   * Updated for FIX 1: Reset iteration counter on valid transition
    */
   transitionTo(newPhase: WorkflowPhase): void {
     if (!this.enabled) {
@@ -140,22 +194,99 @@ export class WorkflowValidator {
       return;
     }
 
-    if (this.canTransitionTo(newPhase)) {
+    const transition = this.canTransitionTo(newPhase);
+    if (transition.allowed) {
       this.currentPhase = newPhase;
       this.recordPhaseTransition(newPhase);
+      this.iterationsSincePhaseChange = 0;
+      this.blockToolsUntilPhaseAnnouncement = false;
       console.log(`[WORKFLOW-VALIDATOR] ✅ Transitioned to ${newPhase}`);
     } else {
-      console.warn(`[WORKFLOW-VALIDATOR] ❌ Invalid transition to ${newPhase} from ${this.currentPhase}`);
+      console.warn(`[WORKFLOW-VALIDATOR] ❌ Invalid transition to ${newPhase} from ${this.currentPhase}: ${transition.reason}`);
+    }
+  }
+
+  /**
+   * FIX 3: Confirm tests have been run
+   */
+  confirmTestsRun(passed: boolean): void {
+    this.confirmations.testsRun = true;
+    this.confirmations.testsPassed = passed;
+    console.log(`[WORKFLOW-VALIDATOR] Tests confirmed: ${passed ? 'PASSED' : 'FAILED'}`);
+  }
+
+  /**
+   * FIX 3: Confirm verification has been completed
+   */
+  confirmVerification(compilationOk: boolean): void {
+    this.confirmations.verificationComplete = true;
+    this.confirmations.compilationChecked = compilationOk;
+    console.log(`[WORKFLOW-VALIDATOR] Verification confirmed: ${compilationOk ? 'OK' : 'FAILED'}`);
+  }
+
+  /**
+   * FIX 3: Confirm commit has been executed
+   */
+  confirmCommit(success: boolean): void {
+    this.confirmations.commitExecuted = success;
+    console.log(`[WORKFLOW-VALIDATOR] Commit confirmed: ${success ? 'SUCCESS' : 'FAILED'}`);
+  }
+
+  /**
+   * FIX 1: Increment iteration counter to enforce phase announcements
+   */
+  incrementIteration(): void {
+    this.iterationsSincePhaseChange++;
+    
+    if (this.iterationsSincePhaseChange >= this.maxIterationsWithoutPhase) {
+      console.warn(`[WORKFLOW-VALIDATOR] No phase announcement for ${this.iterationsSincePhaseChange} iterations - BLOCKING tools`);
+      this.blockToolsUntilPhaseAnnouncement = true;
     }
   }
 
   /**
    * Validate tool call based on current phase
+   * FIX 1: Check if tools are blocked due to missing phase announcement
+   * FIX 5: Tighten ASSESS phase to only allow read-only tools
    */
   validateToolCall(toolName: string, phase?: WorkflowPhase): PhaseValidationResult {
     if (!this.enabled) return { allowed: true };
 
+    // FIX 1: HARD BLOCK if no phase announcement detected
+    if (this.blockToolsUntilPhaseAnnouncement) {
+      return {
+        allowed: false,
+        reason: `No phase announcement detected. You must announce current phase with emoji (🔍 Assessing, 📋 Planning, ⚡ Executing, etc.) before using tools.`
+      };
+    }
+
     const currentPhase = phase || this.currentPhase;
+
+    // FIX 5: Define STRICT read-only allowlist for ASSESS phase
+    const ASSESS_READ_ONLY_TOOLS = [
+      'readPlatformFile',
+      'readProjectFile',
+      'listPlatformDirectory',
+      'listProjectDirectory',
+      'perform_diagnosis',
+      'read_logs',
+      'searchCodebase',
+      'grep',
+    ];
+
+    // FIX 5: ASSESS phase ONLY allows read-only tools - explicitly block everything else
+    if (currentPhase === 'assess') {
+      const isReadOnly = ASSESS_READ_ONLY_TOOLS.some(pattern => 
+        toolName === pattern || toolName.startsWith(pattern)
+      );
+      
+      if (!isReadOnly) {
+        return {
+          allowed: false,
+          reason: `ASSESS phase only allows read-only tools. ${toolName} is a write/execute operation. Announce "⚡ Executing..." first.`
+        };
+      }
+    }
 
     // Define allowed tools per phase
     const phaseToolRules: Record<WorkflowPhase, {
@@ -164,16 +295,7 @@ export class WorkflowValidator {
       description: string;
     }> = {
       assess: {
-        allowed: [
-          'readPlatformFile',
-          'readProjectFile',
-          'listPlatformDirectory',
-          'listProjectDirectory',
-          'perform_diagnosis',
-          'read_logs',
-          'searchCodebase',
-          'grep',
-        ],
+        allowed: ASSESS_READ_ONLY_TOOLS,
         description: 'ASSESS phase: Only read/diagnostic tools allowed',
       },
       plan: {
@@ -317,48 +439,51 @@ export class WorkflowValidator {
   }
 
   /**
-   * Validate overall workflow completion
+   * Helper: Check if a phase has been reached in history
    */
-  validateWorkflowCompletion(context: WorkflowContext): WorkflowCompletionValidation {
+  private hasReachedPhase(phase: WorkflowPhase): boolean {
+    return this.phaseHistory.some(entry => entry.phase === phase);
+  }
+
+  /**
+   * FIX 3: Validate overall workflow completion with STRICT REQUIREMENTS
+   * Now requires positive confirmations - no assumptions allowed
+   * Updated to accept context parameter for commit enforcement
+   */
+  validateWorkflowCompletion(context?: WorkflowContext): WorkflowCompletionValidation {
     if (!this.enabled) {
-      return { complete: true, missingPhases: [], warnings: [] };
+      return { complete: true, missingRequirements: [] };
     }
 
-    const missingPhases: string[] = [];
-    const warnings: string[] = [];
+    const missing: string[] = [];
 
-    // Check if PLAN phase was executed (unless skipped for trivial task)
-    const hasPlanned = this.phaseHistory.some(entry => entry.phase === 'plan');
-    if (!hasPlanned && !context.hasTaskList) {
-      warnings.push('PLAN phase skipped - ensure this was a trivial single-step task');
+    // FIX 3: Check phase history - PLAN required unless justified
+    if (!this.hasReachedPhase('plan') && !this.planSkipJustification) {
+      missing.push('PLAN phase (no task list created or skip justification)');
     }
 
-    // Check if TEST phase was executed
-    const hasTested = this.phaseHistory.some(entry => entry.phase === 'test');
-    if (!hasTested && !context.testsRun) {
-      missingPhases.push('TEST');
-      warnings.push('TEST phase not executed - functionality not verified');
+    // FIX 3: REQUIRE positive test confirmation (not just context flag)
+    if (!this.confirmations.testsRun) {
+      missing.push('TEST phase (tests not run)');
+    } else if (!this.confirmations.testsPassed) {
+      missing.push('TEST phase (tests failed)');
     }
 
-    // Check if VERIFY phase was executed
-    const hasVerified = this.phaseHistory.some(entry => entry.phase === 'verify');
-    if (!hasVerified && !context.verificationComplete) {
-      missingPhases.push('VERIFY');
-      warnings.push('VERIFY phase not executed - compilation/quality not checked');
+    // FIX 3: REQUIRE positive verification confirmation
+    if (!this.confirmations.verificationComplete) {
+      missing.push('VERIFY phase (verification not run)');
+    } else if (!this.confirmations.compilationChecked) {
+      missing.push('VERIFY phase (compilation failed)');
     }
 
-    // Check if COMMIT phase was executed (if needed)
-    const hasCommitted = this.phaseHistory.some(entry => entry.phase === 'commit');
-    if (!hasCommitted && !context.commitExecuted) {
-      warnings.push('COMMIT phase not executed - changes not persisted');
+    // FIX 3: Check commit if autoCommit enabled
+    if (context?.autoCommit && !this.confirmations.commitExecuted) {
+      missing.push('COMMIT phase (auto-commit enabled but no commit executed)');
     }
-
-    const complete = missingPhases.length === 0;
 
     return {
-      complete,
-      missingPhases,
-      warnings,
+      complete: missing.length === 0,
+      missingRequirements: missing
     };
   }
 
@@ -391,6 +516,16 @@ export class WorkflowValidator {
     this.currentPhase = 'assess';
     this.phaseHistory = [];
     this.context = {};
+    this.planSkipJustification = null;
+    this.confirmations = {
+      testsRun: false,
+      testsPassed: false,
+      verificationComplete: false,
+      compilationChecked: false,
+      commitExecuted: false
+    };
+    this.iterationsSincePhaseChange = 0;
+    this.blockToolsUntilPhaseAnnouncement = false;
     this.recordPhaseTransition('assess');
     console.log('[WORKFLOW-VALIDATOR] Reset to initial state');
   }
