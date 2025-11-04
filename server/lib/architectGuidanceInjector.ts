@@ -223,5 +223,14 @@ Provide brief, direct corrective guidance (max 100 words):`;
   }
 }
 
-// Global singleton instance
-export const architectGuidanceInjector = new ArchitectGuidanceInjector();
+// Global singleton instance (with graceful fallback if API key missing)
+let architectGuidanceInjectorInstance: ArchitectGuidanceInjector | null = null;
+
+try {
+  architectGuidanceInjectorInstance = new ArchitectGuidanceInjector();
+} catch (error: any) {
+  console.warn('[ARCHITECT-GUIDANCE] Failed to initialize I AM Architect:', error.message);
+  console.warn('[ARCHITECT-GUIDANCE] Real-time guidance injection will be disabled');
+}
+
+export const architectGuidanceInjector = architectGuidanceInjectorInstance;
