@@ -718,6 +718,7 @@ Let's build something amazing! 🚀`;
     // 🔢 TOKEN TRACKING: Accumulate usage across all iterations
     let cumulativeInputTokens = 0;
     let cumulativeOutputTokens = 0;
+    let totalToolCalls = 0; // Track total tool calls across all iterations
     const jobStartTime = Date.now();
 
     // Main conversation loop
@@ -801,6 +802,9 @@ Let's build something amazing! 🚀`;
       const toolResults: any[] = [];
       const hasToolUse = contentBlocks.some(block => block.type === 'tool_use');
       const toolNames = contentBlocks.filter(b => b.type === 'tool_use').map(b => b.name);
+      
+      // Track total tool calls across iterations
+      totalToolCalls += toolNames.length;
       
       console.log(`[LOMU-AI-JOB-MANAGER] === ITERATION ${iterationCount} ===`);
       console.log(`[LOMU-AI-JOB-MANAGER] Tools called: ${toolNames.join(', ') || 'NONE'}`);
@@ -1612,7 +1616,7 @@ Let's build something amazing! 🚀`;
         const qualityAnalysis = await agentFailureDetector.analyzeResponseQuality({
           content: fullContent,
           userMessage: message,
-          toolCallCount: toolResults.length || 0,
+          toolCallCount: totalToolCalls,
         });
         
         console.log('[QUALITY-MONITOR] Quality score:', qualityAnalysis.qualityScore);
