@@ -1,0 +1,413 @@
+2025-11-03T22:23:56.000000000Z [inf]  Starting Container
+2025-11-03T22:23:57.024192002Z [inf]  total 420
+2025-11-03T22:23:57.024201222Z [inf]  -rw-rw-r--    1 root     root           325 Nov  3 22:20 drizzle.config.ts
+2025-11-03T22:23:57.024206124Z [inf]  drwxr-xr-x    1 root     root          4096 Nov  3 22:22 .
+2025-11-03T22:23:57.024213929Z [inf]  drwxr-xr-x    1 root     root          4096 Nov  3 22:20 server
+2025-11-03T22:23:57.024218039Z [inf]  drwxr-xr-x    3 root     root          4096 Nov  3 22:20 migrations
+2025-11-03T22:23:57.024219087Z [inf]  dr-xr-xr-x    1 root     root          4096 Nov  3 22:23 ..
+2025-11-03T22:23:57.024227636Z [inf]  drwxr-xr-x    1 root     root          4096 Nov  3 22:21 node_modules
+2025-11-03T22:23:57.024230588Z [inf]  NPM version: 10.8.2
+2025-11-03T22:23:57.024234265Z [inf]  -rwxr-xr-x    1 root     root          1990 Nov  3 22:20 debug-start.sh
+2025-11-03T22:23:57.024234510Z [inf]  -rw-rw-r--    1 root     root        361403 Nov  3 22:21 package-lock.json
+2025-11-03T22:23:57.024242437Z [inf]  -rw-rw-r--    1 root     root          4631 Nov  3 22:20 package.json
+2025-11-03T22:23:57.024247444Z [inf]  
+2025-11-03T22:23:57.024254760Z [inf]  📁 Current directory: /app
+2025-11-03T22:23:57.024261874Z [inf]  📂 Listing root files:
+2025-11-03T22:23:57.024269985Z [inf]  -rw-rw-r--    1 root     root          2229 Nov  3 22:20 railway-db-setup.cjs
+2025-11-03T22:23:57.024282072Z [inf]  -rwxrwxr-x    1 root     root          2334 Nov  3 22:20 railway-start.sh
+2025-11-03T22:23:57.024286031Z [inf]  🚂 RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-03T22:23:57.024293419Z [inf]  -rw-rw-r--    1 root     root         10741 Nov  3 22:20 replit.md
+2025-11-03T22:23:57.024294241Z [inf]  ======================================
+2025-11-03T22:23:57.024306032Z [inf]  Time: Mon Nov  3 22:23:56 UTC 2025
+2025-11-03T22:23:57.024306620Z [inf]  ======================================
+2025-11-03T22:23:57.024315096Z [inf]  Node version: v20.19.5
+2025-11-03T22:23:57.026063970Z [inf]  📋 Step 1: Running migration statements individually...
+2025-11-03T22:23:57.026072420Z [inf]     Found 148 SQL statements to execute
+2025-11-03T22:23:57.026145609Z [inf]  drwxr-xr-x    2 root     root          4096 Nov  3 22:20 shared
+2025-11-03T22:23:57.026151037Z [inf]  -rw-rw-r--    1 root     root           960 Nov  3 22:20 tsconfig.json
+2025-11-03T22:23:57.026156920Z [inf]  
+2025-11-03T22:23:57.026162551Z [inf]  🔍 Checking for server/public directory (frontend)...
+2025-11-03T22:23:57.026168071Z [inf]  ✅ server/public directory exists (frontend build)
+2025-11-03T22:23:57.026174420Z [inf]  
+2025-11-03T22:23:57.026180411Z [inf]  🔧 Running database migration and drift repair...
+2025-11-03T22:24:00.113452547Z [inf]  ==========================================
+2025-11-03T22:24:00.113462342Z [inf]  🔍 DEBUG MODE - VERBOSE ERROR CAPTURE
+2025-11-03T22:24:00.113467612Z [inf]  ==========================================
+2025-11-03T22:24:00.113479955Z [inf]  GITHUB_BRANCH: main
+2025-11-03T22:24:00.113482402Z [inf]  PORT: 8080
+2025-11-03T22:24:00.113486284Z [inf]  ANTHROPIC_API_KEY: ✓ SET
+2025-11-03T22:24:00.113489799Z [inf]  
+2025-11-03T22:24:00.113492901Z [inf]  DATABASE_URL: ✓ SET (hidden for security)
+2025-11-03T22:24:00.113494515Z [inf]  
+2025-11-03T22:24:00.113498765Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-11-03T22:24:00.113502388Z [inf]  GITHUB_TOKEN: ✓ SET
+2025-11-03T22:24:00.113502704Z [inf]  📄 Ensuring replit.md is available...
+2025-11-03T22:24:00.113509275Z [inf]  ✅ Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-03T22:24:00.113511897Z [inf]  GITHUB_REPO: 6-7Development/archetype
+2025-11-03T22:24:00.113512554Z [inf]  ✅ replit.md already present
+2025-11-03T22:24:00.113519194Z [inf]  
+2025-11-03T22:24:00.113519244Z [inf]  ⚠️ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)
+2025-11-03T22:24:00.113525003Z [inf]  🚀 Starting Node.js application with debug wrapper...
+2025-11-03T22:24:00.113531275Z [inf]  Command: sh debug-start.sh
+2025-11-03T22:24:00.113537445Z [inf]  
+2025-11-03T22:24:00.113546030Z [inf]  ✅ Database schema ready!
+2025-11-03T22:24:00.113550686Z [inf]     ✅ Migration complete: 0 created, 148 skipped, 0 failed
+2025-11-03T22:24:00.113557271Z [inf]  📋 Step 2: Repairing schema drift (adding missing columns)...
+2025-11-03T22:24:00.113566094Z [inf]  ✅ Schema drift repaired - all columns present
+2025-11-03T22:24:00.113571940Z [inf]  
+2025-11-03T22:24:00.113581102Z [inf]  🔍 Environment Check:
+2025-11-03T22:24:00.113597195Z [inf]  NODE_ENV: production
+2025-11-03T22:24:00.116875592Z [inf]  
+2025-11-03T22:24:00.116881100Z [inf]  📋 Step 1: Verify server directory exists...
+2025-11-03T22:24:00.116885832Z [inf]  ✅ server/ directory exists
+2025-11-03T22:24:00.116891248Z [inf]  
+2025-11-03T22:24:00.116895921Z [inf]  📋 Step 2: Verify server/index.ts exists...
+2025-11-03T22:24:00.116900366Z [inf]  ✅ server/index.ts exists
+2025-11-03T22:24:00.116905097Z [inf]  
+2025-11-03T22:24:00.116909822Z [inf]  📋 Step 3: Check Node.js and tsx availability...
+2025-11-03T22:24:00.116914972Z [inf]  Node version: v20.19.5
+2025-11-03T22:24:00.116920130Z [inf]  NPM version: 10.8.2
+2025-11-03T22:24:00.116924905Z [inf]  tsx location: /usr/local/bin/npx
+2025-11-03T22:24:00.116930387Z [inf]  
+2025-11-03T22:24:00.116935410Z [inf]  📋 Step 4: Verify environment variables...
+2025-11-03T22:24:00.116940556Z [inf]  NODE_ENV: production
+2025-11-03T22:24:00.116945595Z [inf]  PORT: 8080
+2025-11-03T22:24:00.116950406Z [inf]  DATABASE_URL: ✓ SET
+2025-11-03T22:24:00.116954870Z [inf]  
+2025-11-03T22:24:00.116960355Z [inf]  📋 Step 5: Test tsx can load...
+2025-11-03T22:24:01.169190031Z [inf]  tsx v4.20.5
+2025-11-03T22:24:01.169193669Z [inf]  node v20.19.5
+2025-11-03T22:24:01.169197615Z [inf]  ✅ tsx is available
+2025-11-03T22:24:01.169201535Z [inf]  
+2025-11-03T22:24:01.169205444Z [inf]  📋 Step 6: Starting server with tsx...
+2025-11-03T22:24:01.169209283Z [inf]  Command: npx tsx server/index.ts
+2025-11-03T22:24:01.169212954Z [inf]  ==========================================
+2025-11-03T22:24:01.169217460Z [inf]  
+2025-11-03T22:24:04.086957213Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-11-03T22:24:04.086963026Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-11-03T22:24:04.086968386Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-11-03T22:24:04.086973618Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-11-03T22:24:04.086978849Z [inf]  [db] Connection string includes SSL params: true
+2025-11-03T22:24:04.086984619Z [inf]  [PERFORMANCE] System prompt base cached (1544 chars) - saves ~4KB per request
+2025-11-03T22:24:04.410685105Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-11-03T22:24:04.419006737Z [inf]  [RAILWAY-CONFIG] Production hardening active
+2025-11-03T22:24:04.419019465Z [inf]  [RAILWAY-CONFIG] AI timeout: 480s
+2025-11-03T22:24:04.419025879Z [inf]  [RAILWAY-CONFIG] Memory limit: 512MB
+2025-11-03T22:24:04.419032915Z [inf]  [RAILWAY-CONFIG] Max concurrent AI: 3
+2025-11-03T22:24:04.419037709Z [inf]  [AI-HEALING] Anthropic Claude initialized for Tier 3 (I AM Architect)
+2025-11-03T22:24:04.476785258Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller (SSE streams excluded)
+2025-11-03T22:24:04.476790563Z [inf]  📡 WebSocket server initialized at /ws
+2025-11-03T22:24:04.476795913Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-11-03T22:24:04.476804176Z [inf]  [PLATFORM-HEALING] WebSocket server attached for preview broadcasts
+2025-11-03T22:24:04.476809585Z [inf]  [PLATFORM-HEALING] Platform healing service connected to WebSocket
+2025-11-03T22:24:04.494392962Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-11-03T22:24:04.494399796Z [inf]  [HEAL-ORCHESTRATOR] Metrics broadcaster connected
+2025-11-03T22:24:04.494404906Z [inf]  [WEBHOOKS] Webhooks router connected to metrics broadcaster
+2025-11-03T22:24:04.522912003Z [inf]  [LOMU-AI-JOB-MANAGER] Initialized with WebSocket support
+2025-11-03T22:24:04.522931908Z [inf]  [LOMU-AI-JOB-MANAGER] Job manager connected to WebSocket
+2025-11-03T22:24:04.522939102Z [inf]  [LOMU-AI] WebSocket server initialized for live preview broadcasts
+2025-11-03T22:24:04.522946387Z [inf]  [LOMU-AI-CHAT] Live preview WebSocket initialized
+2025-11-03T22:24:04.522953631Z [inf]  [TERMINAL-ROUTES] Registering WebSocket terminal handler
+2025-11-03T22:24:04.522961562Z [inf]  [TERMINAL] Terminal WebSocket routes registered
+2025-11-03T22:24:04.525082543Z [inf]  [WEBHOOKS] Webhooks router mounted at /api/webhooks
+2025-11-03T22:24:04.525201783Z [inf]  [GIT] Git router mounted
+2025-11-03T22:24:05.086293796Z [inf]  [DEPLOYMENTS] Routes registered successfully
+2025-11-03T22:24:05.086297556Z [inf]  ✅ All routes registered successfully
+2025-11-03T22:24:05.086301125Z [inf]  🔍 Testing database connection...
+2025-11-03T22:24:05.086304696Z [inf]  10:24:04 PM [express] serving on port 8080
+2025-11-03T22:24:05.086308671Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-11-03T22:24:05.086312100Z [inf]  ✅ Database connected successfully
+2025-11-03T22:24:05.086315770Z [inf]  💡 Auto-healing system DISABLED (users trigger manually via UI)
+2025-11-03T22:24:05.086319324Z [inf]     👥 Users pay for their own AI tokens when using Platform Healing
+2025-11-03T22:24:05.086322811Z [inf]  [HEALTH-MONITOR] Starting platform health monitoring...
+2025-11-03T22:24:05.086326465Z [inf]  [HEALTH-MONITOR] Failed to load open incidents: error: column "incident_category" does not exist
+2025-11-03T22:24:05.086330449Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-03T22:24:05.086334793Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-03T22:24:05.086338421Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-03T22:24:05.086342284Z [inf]      at async PlatformHealthMonitor.loadOpenIncidents (/app/server/services/healthMonitor.ts:60:25)
+2025-11-03T22:24:05.086346031Z [inf]      at async PlatformHealthMonitor.start (/app/server/services/healthMonitor.ts:34:5)
+2025-11-03T22:24:05.086349925Z [inf]      at async <anonymous> (/app/server/index.ts:183:3) {
+2025-11-03T22:24:05.086353629Z [inf]    length: 117,
+2025-11-03T22:24:05.086357078Z [inf]    severity: 'ERROR',
+2025-11-03T22:24:05.086360889Z [inf]    code: '42703',
+2025-11-03T22:24:05.086364927Z [inf]    detail: undefined,
+2025-11-03T22:24:05.086368750Z [inf]    hint: undefined,
+2025-11-03T22:24:05.086372587Z [inf]    position: '58',
+2025-11-03T22:24:05.088993496Z [inf]    internalPosition: undefined,
+2025-11-03T22:24:05.089000012Z [inf]    internalQuery: undefined,
+2025-11-03T22:24:05.089310450Z [inf]     - Owner User ID: Not set (owner must be manually marked in database)
+2025-11-03T22:24:05.089319338Z [inf]    where: undefined,
+2025-11-03T22:24:05.089328448Z [inf]     - Maintenance mode: Available for owner
+2025-11-03T22:24:05.089328614Z [inf]    schema: undefined,
+2025-11-03T22:24:05.089336569Z [inf]    table: undefined,
+2025-11-03T22:24:05.089341167Z [inf]    column: undefined,
+2025-11-03T22:24:05.089346490Z [inf]    dataType: undefined,
+2025-11-03T22:24:05.089353464Z [inf]    constraint: undefined,
+2025-11-03T22:24:05.089360629Z [inf]    file: 'parse_relation.c',
+2025-11-03T22:24:05.089367722Z [inf]    line: '3716',
+2025-11-03T22:24:05.089374358Z [inf]    routine: 'errorMissingColumn'
+2025-11-03T22:24:05.089383808Z [inf]  }
+2025-11-03T22:24:05.089391699Z [inf]  [HEALTH-MONITOR] Monitoring started
+2025-11-03T22:24:05.089398138Z [inf]  [HEAL-ORCHESTRATOR] Starting autonomous healing orchestrator...
+2025-11-03T22:24:05.089402394Z [inf]  [HEAL-ORCHESTRATOR] Orchestrator started
+2025-11-03T22:24:05.089407355Z [inf]  [MEMORY-MONITOR] Starting memory monitoring
+2025-11-03T22:24:05.089412511Z [inf]  [MEMORY-MONITOR] Warning threshold: 400MB
+2025-11-03T22:24:05.089417934Z [inf]  [MEMORY-MONITOR] Container limit: 512MB
+2025-11-03T22:24:05.089422090Z [inf]  [MEMORY-MONITOR] Active - checking every 30s
+2025-11-03T22:24:05.089428058Z [inf]  
+2025-11-03T22:24:05.089432681Z [inf]  🔍 Checking GitHub integration configuration...
+2025-11-03T22:24:05.089438319Z [inf]  ✅ GitHub integration configured successfully
+2025-11-03T22:24:05.089442839Z [inf]     - Repository: 6-7Development/archetype
+2025-11-03T22:24:05.089447524Z [inf]     - Branch: main
+2025-11-03T22:24:05.089451984Z [inf]     - Token: ✓ (configured)
+2025-11-03T22:24:05.090609685Z [inf]  
+2025-11-03T22:24:05.090616140Z [inf]  [RAILWAY] Graceful shutdown handler registered (SIGTERM)
+2025-11-03T22:24:44.729002930Z [inf]  [MEMORY] Heap: 71MB | RSS: 150MB | Usage: 29%
+2025-11-03T22:25:14.725922012Z [inf]  [MEMORY] Heap: 71MB | RSS: 150MB | Usage: 29%
+2025-11-03T22:25:14.725928446Z [inf]  [DEPLOYMENT-INFO] Using Railway environment variables
+2025-11-03T22:25:14.725933999Z [inf]  10:25:12 PM [express] GET /api/deployment-info 200 in 3ms :: {"version":"1.0.0","commitHash":"39e114b…
+2025-11-03T22:25:14.725939044Z [inf]  10:25:12 PM [express] GET /api/auth/me 304 in 8ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef954…
+2025-11-03T22:25:18.720048644Z [inf]  [AUTH] Login attempt for email: root@getdc360.com
+2025-11-03T22:25:18.720053744Z [inf]  [AUTH] Found users: 1
+2025-11-03T22:25:18.720058375Z [inf]  [AUTH] User found: root@getdc360.com has password: true
+2025-11-03T22:25:18.720064102Z [inf]  [AUTH] Verifying password...
+2025-11-03T22:25:18.985147395Z [inf]  [AUTH] Authentication successful for: root@getdc360.com
+2025-11-03T22:25:18.985178487Z [inf]  [AUTH] Password valid: true
+2025-11-03T22:25:18.993039334Z [inf]  10:25:18 PM [express] POST /api/auth/login 200 in 280ms :: {"success":true,"user":{"id":"723e1301-c72…
+2025-11-03T22:25:19.581368774Z [inf]  10:25:19 PM [express] GET /api/auth/me 304 in 19ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef95…
+2025-11-03T22:25:19.673266861Z [inf]  10:25:19 PM [express] GET /api/projects 304 in 91ms :: []
+2025-11-03T22:25:39.058407432Z [inf]  10:25:32 PM [express] GET /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 200 in 17ms :: […
+2025-11-03T22:25:39.058419272Z [inf]  [MEMORY] Heap: 74MB | RSS: 153MB | Usage: 30%
+2025-11-03T22:25:39.058427028Z [inf]  10:25:35 PM [express] DELETE /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 200 in 9ms ::…
+2025-11-03T22:25:39.058433060Z [inf]  10:25:35 PM [express] GET /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 200 in 9ms :: []
+2025-11-03T22:25:39.058495830Z [inf]  10:25:30 PM [express] GET /api/healing/targets 200 in 91ms :: [{"id":"093abb1c-2699-45b4-acd7-fecf877…
+2025-11-03T22:25:39.058502121Z [inf]  10:25:32 PM [express] GET /api/healing/conversations/093abb1c-2699-45b4-acd7-fecf87731238 200 in 12ms…
+2025-11-03T22:25:39.810817348Z [inf]  10:25:39 PM [express] GET /api/auth/me 200 in 8ms :: {"user":{"id":"723e1301-c729-48fc-810a-39ddef954…
+2025-11-03T22:25:39.810823329Z [inf]  10:25:39 PM [express] GET /api/healing/targets 200 in 9ms :: [{"id":"093abb1c-2699-45b4-acd7-fecf8773…
+2025-11-03T22:25:41.905006910Z [inf]  10:25:41 PM [express] GET /api/healing/conversations/093abb1c-2699-45b4-acd7-fecf87731238 304 in 9ms …
+2025-11-03T22:25:41.963193758Z [inf]  10:25:41 PM [express] GET /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 304 in 6ms :: []
+2025-11-03T22:26:01.967750450Z [inf]  [GEMINI-TOOLS] ✅ Converted 3 tools for Gemini (first 3: read_platform_file, write_platform_file, search_platform_files...)
+2025-11-03T22:26:01.967760829Z [inf]  [GEMINI-TOOLS] Structure check: {
+2025-11-03T22:26:01.967766941Z [inf]    "name": "read_platform_file",
+2025-11-03T22:26:01.967772395Z [inf]    "description": "Read a file from the platform codebase",
+2025-11-03T22:26:01.967778467Z [inf]  [HEALING-CHAT] User message received: {
+2025-11-03T22:26:01.967778760Z [inf]    "parameters": {
+2025-11-03T22:26:01.967785333Z [inf]      "type": "object",
+2025-11-03T22:26:01.967786197Z [inf]    conversationId: '227c165d-7f9f-46fc-b6e6-325d2b77fc60',
+2025-11-03T22:26:01.967793177Z [inf]    contentLength: 30
+2025-11-03T22:26:01.967796458Z [inf]      "properties": {
+2025-11-03T22:26:01.967799348Z [inf]  }
+2025-11-03T22:26:01.967806230Z [inf]  [HEALING-CHAT] User message saved to database
+2025-11-03T22:26:01.967806449Z [inf]        "file_path": {
+2025-11-03T22:26:01.967812878Z [inf]  [HEALING-CHAT] Loaded 1 messages from history (last 10)
+2025-11-03T22:26:01.967814477Z [inf]          "type": "string",
+2025-11-03T22:26:01.967819360Z [inf]  🤖 [HEALING-CHAT] Starting Gemini conversation with 1 messages...
+2025-11-03T22:26:01.967823090Z [inf]  
+2025-11-03T22:26:01.967826017Z [inf]  [HEALING-CHAT] 🔄 Iteration 1/5
+2025-11-03T22:26:01.967829878Z [inf]  [HEALING-CHAT] ✅ Gemini completed in 1 iterations
+2025-11-03T22:26:01.967854031Z [inf]  ✅ [HEALING-CHAT] Total: 1072ms, 166 chars, 385 input tokens, 45 output tokens
+2025-11-03T22:26:01.967859856Z [inf]  [HEALING-CHAT] 💾 Final assistant message saved to database
+2025-11-03T22:26:01.967865950Z [inf]  [HEALING-CHAT] 📈 Usage tracked successfully
+2025-11-03T22:26:01.967871802Z [inf]  10:25:54 PM [express] POST /api/healing/messages 200 in 1174ms :: {"userMessage":{"id":"ded3970e-d52b…
+2025-11-03T22:26:01.967877507Z [inf]  [LOMU-AI-CHAT] Stream request received
+2025-11-03T22:26:01.970359337Z [inf]  [LOMU-AI-CHAT] Message: How does that new update feel? Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-11-03T22:26:01.970365841Z [inf]  [LOMU-AI-CHAT] Stream registered for user: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-03T22:26:01.970371176Z [inf]  [LOMU-AI-CHAT] Setting up SSE headers
+2025-11-03T22:26:01.970472027Z [inf]  [LOMU-AI-CHAT] Heartbeat started - will send keepalive every 15s
+2025-11-03T22:26:01.970477175Z [inf]  [LOMU-AI-CHAT] Stream timeout set - will force close after 5 minutes
+2025-11-03T22:26:01.970481728Z [inf]  [LOMU-AI-CHAT] Entering try block
+2025-11-03T22:26:01.970486416Z [inf]  [LOMU-AI-CHAT] User autonomy level: max
+2025-11-03T22:26:01.970491926Z [inf]  [CONVERSATION-STATE] ✅ Initialized state for user 723e1301-c729-48fc-810a-39ddef954ae2, project: general
+2025-11-03T22:26:01.970496907Z [inf]  [CONVERSATION-STATE] Updated from user message: b06f9865-ef4c-459c-9b5f-732e272dcc67
+2025-11-03T22:26:01.970501318Z [inf]  10:25:54 PM [express] GET /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 200 in 39ms :: […
+2025-11-03T22:26:01.970538449Z [inf]  [GEMINI-WRAPPER] Original context size:
+2025-11-03T22:26:01.970543093Z [inf]    - System prompt: 8,175 tokens
+2025-11-03T22:26:01.970548239Z [inf]    - Messages: 5 messages, 255 tokens
+2025-11-03T22:26:01.970552865Z [inf]    - Total: 8,430 tokens
+2025-11-03T22:26:01.970560090Z [inf]    - Limit: 950,000 tokens (50K safety margin)
+2025-11-03T22:26:01.970565338Z [inf]  [GEMINI-WRAPPER] ✅ Within limits (8,430 / 950,000 tokens)
+2025-11-03T22:26:01.970570141Z [inf]  [GEMINI-WRAPPER] Safety margin: 941,570 tokens remaining
+2025-11-03T22:26:01.970574588Z [inf]  [GEMINI-WRAPPER] ═══════════════════════════════════════
+2025-11-03T22:26:01.970579258Z [inf]  [GEMINI-WRAPPER] ✅ NO TRUNCATION NEEDED
+2025-11-03T22:26:01.972516293Z [inf]  [GEMINI-WRAPPER] ═══════════════════════════════════════
+2025-11-03T22:26:01.972523304Z [inf]  [GEMINI-WRAPPER] Total tokens: 8,430 / 950,000
+2025-11-03T22:26:01.972528342Z [inf]  [GEMINI-WRAPPER] Safety margin: 941,570 tokens
+2025-11-03T22:26:01.972533018Z [inf]  [GEMINI-TOOLS] ✅ Converted 37 tools for Gemini (first 3: start_subagent, createTaskList, readTaskList...)
+2025-11-03T22:26:01.972538246Z [inf]  [GEMINI-TOOLS] Structure check: {
+2025-11-03T22:26:01.972543709Z [inf]    "name": "start_subagent",
+2025-11-03T22:26:01.972548595Z [inf]    "description": "Delegate complex multi-file work to sub-agents. Supports parallel execution (max 2 concurrent per user).",
+2025-11-03T22:26:01.972553358Z [inf]    "parameters": {
+2025-11-03T22:26:01.972558499Z [inf]      "type": "object",
+2025-11-03T22:26:01.972563816Z [inf]      "
+2025-11-03T22:26:01.972569686Z [inf]  [LOMU-AI] Response has tool calls: false
+2025-11-03T22:26:01.972576773Z [inf]  [LOMU-AI] Content blocks: text
+2025-11-03T22:26:01.972582276Z [inf]  [LOMU-AI-FORCE] === ITERATION 1 CHECK ===
+2025-11-03T22:26:01.972587462Z [inf]  [LOMU-AI-FORCE] Tools called this iteration: NONE
+2025-11-03T22:26:01.972592563Z [inf]  [LOMU-AI-CONTINUATION] Iteration 1: No tool calls, checking if should continue...
+2025-11-03T22:26:01.972597245Z [inf]  [LOMU-AI-CONTINUATION] Active task list ID: none
+2025-11-03T22:26:01.972602204Z [inf]  [LOMU-AI-CONTINUATION] Consecutive empty iterations: 1/3
+2025-11-03T22:26:01.972607458Z [inf]  [LOMU-AI-CONTINUATION] No task list - ending session naturally
+2025-11-03T22:26:01.972612353Z [inf]  [WORKFLOW-TELEMETRY] Git status check failed: Command failed: git status --porcelain
+2025-11-03T22:26:01.972617504Z [inf]  fatal: not a git repository (or any of the parent directories): .git
+2025-11-03T22:26:01.972622464Z [inf]  
+2025-11-03T22:26:01.975789064Z [inf]  [LOMU-AI-CHAT] Stream unregistered for user: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-03T22:26:01.975797037Z [inf]  [LOMU-AI-CHAT] Stream timeout cleared
+2025-11-03T22:26:01.975801996Z [inf]  [LOMU-AI-HEARTBEAT] Cleared on stream end
+2025-11-03T22:26:01.975806398Z [inf]  [LOMU-AI-QUALITY] Analyzing response quality (background)...
+2025-11-03T22:26:01.975811361Z [inf]  [LOMU-AI-QUALITY] Quality score: 100/100
+2025-11-03T22:26:01.975815928Z [inf]  [LOMU-AI-QUALITY] Is poor quality: false
+2025-11-03T22:26:01.975820149Z [inf]  [LOMU-AI-QUALITY] Should escalate: false
+2025-11-03T22:26:01.975825076Z [inf]  [LOMU-AI-QUALITY] ✅ Response quality is acceptable
+2025-11-03T22:26:01.975829851Z [inf]  10:25:56 PM [express] POST /api/lomu-ai/stream 200 in 1425ms
+2025-11-03T22:26:01.975850048Z [inf]  [HEALING-CHAT] User message received: {
+2025-11-03T22:26:01.975860408Z [inf]  [WORKFLOW-VALIDATION] Job completed with 0 code-modifying operations
+2025-11-03T22:26:01.975865222Z [inf]  [WORKFLOW-VALIDATION] Has produced fixes: false
+2025-11-03T22:26:01.975871322Z [inf]  [WORKFLOW-VALIDATION] 🚨 ZERO-MUTATION JOB FAILURE - Fix request with no code modifications
+2025-11-03T22:26:01.975875886Z [inf]  [WORKFLOW-VALIDATION] Read operations: 0, Code modifications: 0
+2025-11-03T22:26:01.975880730Z [inf]  [WORKFLOW-VALIDATION] Message: "How does that new update feel?..."
+2025-11-03T22:26:01.975884843Z [inf]  [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: ❌ ZERO-MUTATION FAILURE: How does that new update feel? - failure
+2025-11-03T22:26:01.975889058Z [inf]  [WORKFLOW-VALIDATION] Failed to create incident: column "incident_category" of relation "platform_incidents" does not exist
+2025-11-03T22:26:01.975893098Z [inf]  [LOMU-AI-CLEANUP] ℹ️ No task list in this session (task tracking is optional)
+2025-11-03T22:26:01.975897504Z [inf]  [AUDIT] heal by user 723e1301-c729-48fc-810a-39ddef954ae2: LomuAI chat: How does that new update feel? - success
+2025-11-03T22:26:01.978632964Z [inf]  10:25:56 PM [express] POST /api/healing/messages 200 in 566ms :: {"userMessage":{"id":"6f1488ec-2ece-…
+2025-11-03T22:26:01.978640722Z [inf]  10:25:56 PM [express] GET /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 200 in 7ms :: [{…
+2025-11-03T22:26:01.978651361Z [inf]    conversationId: '227c165d-7f9f-46fc-b6e6-325d2b77fc60',
+2025-11-03T22:26:01.978655840Z [inf]    contentLength: 701
+2025-11-03T22:26:01.978660183Z [inf]  }
+2025-11-03T22:26:01.978664633Z [inf]  [HEALING-CHAT] User message saved to database
+2025-11-03T22:26:01.978669081Z [inf]  [HEALING-CHAT] Loaded 3 messages from history (last 10)
+2025-11-03T22:26:01.978673752Z [inf]  🤖 [HEALING-CHAT] Starting Gemini conversation with 3 messages...
+2025-11-03T22:26:01.978679231Z [inf]  [HEALING-CHAT] 🔄 Iteration 1/5
+2025-11-03T22:26:01.978684001Z [inf]  [GEMINI-TOOLS] ✅ Converted 3 tools for Gemini (first 3: read_platform_file, write_platform_file, search_platform_files...)
+2025-11-03T22:26:01.978689555Z [inf]  [GEMINI-TOOLS] Structure check: {
+2025-11-03T22:26:01.978694985Z [inf]    "name": "read_platform_file",
+2025-11-03T22:26:01.978700605Z [inf]    "description": "Read a file from the platform codebase",
+2025-11-03T22:26:01.978706871Z [inf]    "parameters": {
+2025-11-03T22:26:01.978712330Z [inf]      "type": "object",
+2025-11-03T22:26:01.978716601Z [inf]      "properties": {
+2025-11-03T22:26:01.978720810Z [inf]        "file_path": {
+2025-11-03T22:26:01.978725133Z [inf]          "type": "string",
+2025-11-03T22:26:01.978731078Z [inf]  
+2025-11-03T22:26:01.978735492Z [inf]  [HEALING-CHAT] ✅ Gemini completed in 1 iterations
+2025-11-03T22:26:01.978739590Z [inf]  ✅ [HEALING-CHAT] Total: 538ms, 57 chars, 585 input tokens, 14 output tokens
+2025-11-03T22:26:01.978743689Z [inf]  [HEALING-CHAT] 💾 Final assistant message saved to database
+2025-11-03T22:26:01.978747921Z [inf]  [HEALING-CHAT] 📈 Usage tracked successfully
+2025-11-03T22:26:04.941503051Z [inf]  [MEMORY] Heap: 76MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:26:44.941154138Z [inf]  [MEMORY] Heap: 77MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:27:14.420185219Z [inf]  [MEMORY] Heap: 77MB | RSS: 158MB | Usage: 31%
+2025-11-03T22:27:44.429136848Z [inf]  [MEMORY] Heap: 77MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:28:14.528849183Z [inf]  [MEMORY] Heap: 77MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:28:44.524301185Z [inf]  [MEMORY] Heap: 77MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:29:14.529436948Z [inf]  [MEMORY] Heap: 77MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:29:44.132207767Z [inf]  [MEMORY] Heap: 77MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:30:14.141837221Z [inf]  [MEMORY] Heap: 77MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:30:44.277142909Z [inf]  [MEMORY] Heap: 77MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:31:14.261263891Z [inf]  [MEMORY] Heap: 77MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:31:43.681766839Z [inf]  [MEMORY] Heap: 77MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:32:13.692375185Z [inf]  [MEMORY] Heap: 77MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:32:43.695654805Z [inf]  [MEMORY] Heap: 77MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:33:13.704989765Z [inf]  [MEMORY] Heap: 77MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:33:43.211248260Z [inf]  [MEMORY] Heap: 78MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:34:13.213071873Z [inf]  [CACHE] Stats: {
+2025-11-03T22:34:13.213080348Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-11-03T22:34:13.213086370Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-11-03T22:34:13.213091848Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-11-03T22:34:13.213097441Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-11-03T22:34:13.213104585Z [inf]  }
+2025-11-03T22:34:13.213109611Z [inf]  [MEMORY] Heap: 78MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:34:43.212113476Z [inf]  [MEMORY] Heap: 77MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:35:13.183377800Z [inf]  [MEMORY] Heap: 78MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:35:42.762222802Z [inf]  [MEMORY] Heap: 78MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:36:12.762298403Z [inf]  [MEMORY] Heap: 78MB | RSS: 155MB | Usage: 30%
+2025-11-03T22:36:42.769458928Z [inf]  [MEMORY] Heap: 78MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:37:12.771162137Z [inf]  [MEMORY] Heap: 78MB | RSS: 155MB | Usage: 30%
+2025-11-03T22:37:42.261774973Z [inf]  [MEMORY] Heap: 79MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:38:12.266126877Z [inf]  [MEMORY] Heap: 78MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:38:42.312198143Z [inf]  [MEMORY] Heap: 78MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:39:12.310496736Z [inf]  [MEMORY] Heap: 79MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:39:42.381927335Z [inf]  [MEMORY] Heap: 79MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:40:12.457986379Z [inf]  [MEMORY] Heap: 78MB | RSS: 155MB | Usage: 30%
+2025-11-03T22:40:42.611636364Z [inf]  [MEMORY] Heap: 79MB | RSS: 154MB | Usage: 30%
+2025-11-03T22:41:12.126123991Z [inf]  [MEMORY] Heap: 79MB | RSS: 155MB | Usage: 30%
+2025-11-03T22:41:42.120595149Z [inf]  [MEMORY] Heap: 78MB | RSS: 154MB | Usage: 30%
+2025-11-03T22:42:12.121161061Z [inf]  [MEMORY] Heap: 79MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:42:42.122143386Z [inf]  [MEMORY] Heap: 79MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:43:11.600612617Z [inf]  [MEMORY] Heap: 78MB | RSS: 155MB | Usage: 30%
+2025-11-03T22:43:41.610261736Z [inf]  [MEMORY] Heap: 79MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:44:11.614476483Z [inf]  [CACHE] Stats: {
+2025-11-03T22:44:11.614486270Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-11-03T22:44:11.614492265Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-11-03T22:44:11.614497886Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-11-03T22:44:11.614502950Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-11-03T22:44:11.614508162Z [inf]  }
+2025-11-03T22:44:11.614512548Z [inf]  [MEMORY] Heap: 79MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:44:41.615533293Z [inf]  [MEMORY] Heap: 79MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:45:11.978064402Z [inf]  [MEMORY] Heap: 79MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:45:41.656072958Z [inf]  [MEMORY] Heap: 79MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:46:11.941824577Z [inf]  [MEMORY] Heap: 79MB | RSS: 155MB | Usage: 30%
+2025-11-03T22:46:41.938552382Z [inf]  [MEMORY] Heap: 79MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:47:12.059753011Z [inf]  [MEMORY] Heap: 79MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:47:41.631461276Z [inf]  [MEMORY] Heap: 80MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:48:11.643554563Z [inf]  [MEMORY] Heap: 79MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:48:41.651634027Z [inf]  [MEMORY] Heap: 80MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:49:11.644777465Z [inf]  [MEMORY] Heap: 80MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:49:41.646454669Z [inf]  [MEMORY] Heap: 79MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:50:11.176927221Z [inf]  [MEMORY] Heap: 80MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:50:41.173428743Z [inf]  [MEMORY] Heap: 80MB | RSS: 158MB | Usage: 31%
+2025-11-03T22:51:11.176087833Z [inf]  [MEMORY] Heap: 80MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:51:41.186778734Z [inf]  [MEMORY] Heap: 80MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:52:11.188078867Z [inf]  [MEMORY] Heap: 80MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:52:40.769421458Z [inf]  [MEMORY] Heap: 80MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:53:10.771441268Z [inf]  [MEMORY] Heap: 80MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:53:40.766258045Z [inf]  [MEMORY] Heap: 73MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:54:10.771310243Z [inf]  [CACHE] Stats: {
+2025-11-03T22:54:10.771325739Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-11-03T22:54:10.771332125Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-11-03T22:54:10.771336775Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-11-03T22:54:10.771341472Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-11-03T22:54:10.771346158Z [inf]  }
+2025-11-03T22:54:10.771349868Z [inf]  [MEMORY] Heap: 73MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:54:40.759140298Z [inf]  [MEMORY] Heap: 74MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:55:10.327892343Z [inf]  [MEMORY] Heap: 74MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:55:40.330113328Z [inf]  [MEMORY] Heap: 74MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:56:10.333962797Z [inf]  [MEMORY] Heap: 74MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:56:40.345553924Z [inf]  [MEMORY] Heap: 74MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:57:10.418671423Z [inf]  [MEMORY] Heap: 74MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:57:40.437541405Z [inf]  [MEMORY] Heap: 74MB | RSS: 157MB | Usage: 31%
+2025-11-03T22:58:10.080493204Z [inf]  [MEMORY] Heap: 74MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:58:40.081533236Z [inf]  [MEMORY] Heap: 74MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:59:10.083975994Z [inf]  [MEMORY] Heap: 74MB | RSS: 156MB | Usage: 30%
+2025-11-03T22:59:40.085453395Z [inf]  [MEMORY] Heap: 74MB | RSS: 156MB | Usage: 30%
+2025-11-03T23:00:10.082563531Z [inf]  [MEMORY] Heap: 74MB | RSS: 156MB | Usage: 30%
+2025-11-03T23:00:39.682811203Z [inf]  [MEMORY] Heap: 74MB | RSS: 156MB | Usage: 30%
+2025-11-03T23:01:09.687929982Z [inf]  [MEMORY] Heap: 74MB | RSS: 156MB | Usage: 30%
+2025-11-03T23:01:39.690892340Z [inf]  [MEMORY] Heap: 75MB | RSS: 156MB | Usage: 30%
+2025-11-03T23:02:09.691121516Z [inf]  [MEMORY] Heap: 74MB | RSS: 157MB | Usage: 31%
+2025-11-03T23:02:39.691440310Z [inf]  [MEMORY] Heap: 75MB | RSS: 157MB | Usage: 31%
+2025-11-03T23:03:09.839486677Z [inf]  [MEMORY] Heap: 75MB | RSS: 156MB | Usage: 30%
+2025-11-03T23:03:39.890292961Z [inf]  [MEMORY] Heap: 75MB | RSS: 156MB | Usage: 30%
+2025-11-03T23:04:09.448134093Z [inf]  [CACHE] Stats: {
+2025-11-03T23:04:09.448140505Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-11-03T23:04:09.448145538Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-11-03T23:04:09.448150215Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-11-03T23:04:09.448156150Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-11-03T23:04:09.448161914Z [inf]  }
+2025-11-03T23:04:09.448169089Z [inf]  [MEMORY] Heap: 75MB | RSS: 156MB | Usage: 30%
+2025-11-03T23:04:39.465525448Z [inf]  [MEMORY] Heap: 75MB | RSS: 156MB | Usage: 30%
+2025-11-03T23:05:09.475444103Z [inf]  [MEMORY] Heap: 75MB | RSS: 155MB | Usage: 30%
+2025-11-03T23:05:39.478333766Z [inf]  [MEMORY] Heap: 75MB | RSS: 156MB | Usage: 30%
+2025-11-03T23:06:09.480798133Z [inf]  [MEMORY] Heap: 75MB | RSS: 156MB | Usage: 30%
+2025-11-03T23:06:39.648778323Z [inf]  [MEMORY] Heap: 75MB | RSS: 156MB | Usage: 30%
+2025-11-03T23:07:09.736685493Z [inf]  [MEMORY] Heap: 75MB | RSS: 157MB | Usage: 31%
+2025-11-03T23:07:39.723230118Z [inf]  [MEMORY] Heap: 75MB | RSS: 157MB | Usage: 31%
+2025-11-03T23:08:09.843389081Z [inf]  [MEMORY] Heap: 75MB | RSS: 156MB | Usage: 30%
+2025-11-03T23:08:39.403363848Z [inf]  [MEMORY] Heap: 76MB | RSS: 157MB | Usage: 31%
+2025-11-03T23:09:09.409440248Z [inf]  [MEMORY] Heap: 75MB | RSS: 156MB | Usage: 30%
+2025-11-03T23:09:39.379549742Z [inf]  [MEMORY] Heap: 75MB | RSS: 155MB | Usage: 30%
+2025-11-03T23:10:09.376152335Z [inf]  [MEMORY] Heap: 76MB | RSS: 156MB | Usage: 30%
+2025-11-03T23:10:39.376288199Z [inf]  [MEMORY] Heap: 76MB | RSS: 156MB | Usage: 30%
+2025-11-03T23:11:08.984669553Z [inf]  [MEMORY] Heap: 75MB | RSS: 156MB | Usage: 30%
+2025-11-03T23:11:38.985216733Z [inf]  [MEMORY] Heap: 76MB | RSS: 156MB | Usage: 30%
+2025-11-03T23:12:08.984191473Z [inf]  [MEMORY] Heap: 76MB | RSS: 156MB | Usage: 30%
+2025-11-03T23:12:38.984051262Z [inf]  [MEMORY] Heap: 76MB | RSS: 157MB | Usage: 31%
+2025-11-03T23:12:43.000000000Z [inf]  Stopping Container
