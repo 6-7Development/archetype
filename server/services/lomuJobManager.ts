@@ -3,6 +3,7 @@ import { lomuJobs, lomuWorkflowMetrics, users, subscriptions, chatMessages, task
 import { eq, and, inArray } from 'drizzle-orm';
 import type { WebSocketServer } from 'ws';
 import { streamGeminiResponse } from '../gemini';
+import Anthropic from '@anthropic-ai/sdk';
 import { platformHealing } from '../platformHealing';
 import { platformAudit } from '../platformAudit';
 import { trackAIUsage } from '../usage-tracking';
@@ -25,12 +26,268 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
+// Initialize Anthropic client for Claude streaming
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY || "dummy-key-for-development",
+});
+
 interface JobContext {
   jobId: string;
   userId: string;
   conversation: any[];
   lastIteration: number;
   taskListId?: string;
+}
+
+interface StreamOptions {
+  model?: string;
+  maxTokens?: number;
+  system: string;
+  messages: any[];
+  tools?: any[];
+  signal?: AbortSignal;
+  onChunk?: (chunk: any) => void;
+  onThought?: (thought: string) => void;
+  onAction?: (action: string) => void;
+  onToolUse?: (toolUse: any) => Promise<any>;
+  onComplete?: (fullText: string, usage: any) => void;
+  onError?: (error: Error) => void;
+}
+
+/**
+ * Stream Claude AI responses with real-time chunk processing
+ * Compatible with streamGeminiResponse interface for drop-in replacement
+ */
+async function streamClaudeResponse(options: StreamOptions) {
+  const {
+    model = 'claude-sonnet-4-20250514',
+    maxTokens = 4096,
+    system,
+    messages,
+    tools,
+    signal,
+    onChunk,
+    onThought,
+    onAction,
+    onToolUse,
+    onComplete,
+    onError,
+  } = options;
+
+  let fullText = '';
+  let currentThought = '';
+  let currentAction = '';
+  let usage: any = null;
+  let contentBlocks: any[] = [];
+  let abortHandler: (() => void) | null = null;
+
+  try {
+    if (signal?.aborted) {
+      throw new Error('Request aborted before starting');
+    }
+
+    // Prepare Claude API request
+    const requestParams: any = {
+      model: model || 'claude-sonnet-4-20250514',
+      max_tokens: maxTokens,
+      system,
+      messages,
+    };
+
+    // Add tools if provided
+    if (tools && tools.length > 0) {
+      requestParams.tools = tools;
+      console.log(`[CLAUDE-TOOLS] ✅ Provided ${tools.length} tools to Claude (first 3: ${tools.slice(0, 3).map((t: any) => t.name).join(', ')}...)`);
+    }
+
+    // Set up abort handler
+    if (signal) {
+      abortHandler = () => {
+        console.log('[CLAUDE-STREAM] Stream aborted by signal');
+      };
+      signal.addEventListener('abort', abortHandler);
+    }
+
+    // Start streaming with Claude
+    const stream = await anthropic.messages.stream(requestParams);
+
+    // Process stream events
+    stream.on('text', (text: string, snapshot: any) => {
+      fullText += text;
+
+      // Send chunk callback
+      if (onChunk) {
+        try {
+          onChunk({ type: 'chunk', content: text });
+        } catch (chunkError) {
+          console.error('❌ Error in onChunk callback:', chunkError);
+        }
+      }
+
+      // Detect thoughts
+      try {
+        if (text.toLowerCase().includes('thinking:') || 
+            text.includes('🤔') || 
+            /\b(analyzing|considering|evaluating)\b/i.test(text)) {
+          currentThought += text;
+          if (onThought && currentThought.trim().length > 0) {
+            onThought(currentThought.trim());
+          }
+        }
+      } catch (thoughtError) {
+        console.error('❌ Error detecting thoughts:', thoughtError);
+      }
+
+      // Detect actions
+      try {
+        if (/step \d+|action:|analyzing|generating|building|creating|optimizing|validating|testing/i.test(text)) {
+          currentAction += text;
+          if (onAction && currentAction.trim().length > 0) {
+            onAction(currentAction.trim());
+          }
+        }
+      } catch (actionError) {
+        console.error('❌ Error detecting actions:', actionError);
+      }
+    });
+
+    (stream as any).on('content_block_start', (block: any) => {
+      if (block.content_block.type === 'tool_use') {
+        const toolUse = block.content_block;
+        console.log(`[CLAUDE-TOOLS] 🔧 Claude requested tool: ${toolUse.name}`);
+        
+        // Notify about tool use
+        if (onAction && toolUse.name) {
+          const toolMessages: Record<string, string> = {
+            'browser_test': '🧪 Testing in browser...',
+            'web_search': '🔍 Searching for solutions...',
+            'vision_analyze': '👁️ Analyzing visuals...',
+            'architect_consult': '🧑‍💼 Consulting architect...',
+            'readPlatformFile': '📖 Reading platform code...',
+            'writePlatformFile': '✏️ Fixing platform code...',
+          };
+          const message = toolMessages[toolUse.name] || `🔨 Working on ${toolUse.name}...`;
+          onAction(message);
+        }
+      }
+    });
+
+    // Wait for the stream to complete and get final message
+    const finalMessage = await stream.finalMessage();
+    
+    // Extract usage stats
+    if (finalMessage.usage) {
+      usage = {
+        inputTokens: finalMessage.usage.input_tokens || 0,
+        outputTokens: finalMessage.usage.output_tokens || 0,
+      };
+    }
+
+    // Process content blocks for tool calls
+    const toolCalls: any[] = [];
+    finalMessage.content.forEach((block: any) => {
+      if (block.type === 'tool_use') {
+        toolCalls.push({
+          id: block.id,
+          name: block.name,
+          input: block.input
+        });
+        contentBlocks.push(block);
+      } else if (block.type === 'text') {
+        contentBlocks.push(block);
+      }
+    });
+
+    // Execute tools if Claude requested them
+    if (toolCalls.length > 0 && onToolUse) {
+      try {
+        if (onAction) {
+          const actionMessage = toolCalls.length === 1 
+            ? '🔨 Running checks...' 
+            : `🔨 Running ${toolCalls.length} checks...`;
+          onAction(actionMessage);
+        }
+
+        // Execute all tool calls
+        const toolResults = await Promise.all(
+          toolCalls.map(async (call) => {
+            try {
+              const result = await onToolUse({
+                type: 'tool_use',
+                id: call.id,
+                name: call.name,
+                input: call.input
+              });
+              return {
+                type: 'tool_result',
+                tool_use_id: call.id,
+                content: typeof result === 'string' ? result : JSON.stringify(result),
+              };
+            } catch (toolError) {
+              console.error(`❌ Tool execution error (${call.name}):`, toolError);
+              return {
+                type: 'tool_result',
+                tool_use_id: call.id,
+                content: JSON.stringify({
+                  error: toolError instanceof Error ? toolError.message : String(toolError),
+                }),
+                is_error: true,
+              };
+            }
+          })
+        );
+
+        // Return tool results in Anthropic-compatible format
+        return {
+          fullText,
+          usage: usage || { inputTokens: 0, outputTokens: 0 },
+          toolResults,
+          assistantContent: toolCalls.map(call => ({
+            type: 'tool_use',
+            id: call.id,
+            name: call.name,
+            input: call.input
+          })),
+          needsContinuation: true,
+        };
+      } catch (toolExecError) {
+        console.error('❌ Error executing tools:', toolExecError);
+      }
+    }
+
+    // Call completion callback
+    if (onComplete) {
+      try {
+        onComplete(fullText, usage);
+      } catch (completeError) {
+        console.error('❌ Error in onComplete callback:', completeError);
+      }
+    }
+
+    return { fullText, usage: usage || { inputTokens: 0, outputTokens: 0 } };
+
+  } catch (error) {
+    console.error('❌ Fatal error in Claude streaming:', error);
+
+    if (onError) {
+      try {
+        onError(error instanceof Error ? error : new Error(String(error)));
+      } catch (callbackError) {
+        console.error('❌ Error in onError callback:', callbackError);
+      }
+    }
+
+    return {
+      fullText: fullText || '',
+      usage: usage || { inputTokens: 0, outputTokens: 0 },
+      error: error instanceof Error ? error.message : String(error)
+    };
+  } finally {
+    // Clean up abort event listener
+    if (signal && abortHandler) {
+      signal.removeEventListener('abort', abortHandler);
+    }
+  }
 }
 
 // In-memory active jobs (prevent concurrent jobs per user)
@@ -728,142 +985,424 @@ Let's build! 🚀`;
         message: `Analyzing (iteration ${iterationCount}/${MAX_ITERATIONS})...`
       });
 
-      console.log(`[LOMU-AI-JOB-MANAGER] Calling Gemini API (iteration ${iterationCount})...`);
+      // 🔀 MODEL TOGGLE: Switch between Gemini and Claude based on environment variable
+      const model = process.env.LOMU_AI_MODEL || 'gemini'; // 'gemini' or 'claude'
+      console.log(`[LOMU-AI-JOB-MANAGER] Using model: ${model} (iteration ${iterationCount})...`);
       
       // Stream processing - collect content blocks
       const contentBlocks: any[] = [];
       let currentTextBlock = '';
       
-      // Use streamGeminiResponse for streaming
-      await streamGeminiResponse({
-        model: 'gemini-2.5-flash',
-        maxTokens: config.maxTokens,
-        system: systemPrompt,
-        messages: conversationMessages,
-        tools: availableTools,
-        onChunk: (chunk: any) => {
-          if (chunk.type === 'chunk' && chunk.content) {
-            // FIX 2: Detect inline file edits in streaming content
-            const hasDirectEdit = 
-              chunk.content.includes('--- a/') ||  // Diff format
-              chunk.content.includes('+++ b/') ||
-              chunk.content.includes('<<<<<<< SEARCH') || // Search/replace
-              chunk.content.includes('>>>>>>> REPLACE') ||
-              chunk.content.includes('apply_patch') ||
-              /```[a-z]*\n\S+\.\S+\n/.test(chunk.content); // Code block with filename
+      // 🚨 CONTINUOUS NARRATION GUARD: Monitor ALL text throughout streaming, not just pre-tool
+      let textBeforeTools = '';
+      let hasCalledToolYet = false;
+      let violationInjected = false;
+      let currentPhase = workflowValidator.getCurrentPhase();
+      
+      // ✅ FIX: Chunk-based grace period instead of time-based
+      let hasJustCalledTool = false; // Track if we just completed a tool call
+      let chunksAfterTool = 0; // Count chunks after tool call
+      const ALLOWED_CHUNKS_BEFORE_JUDGMENT = 5; // Wait for 5 chunks (few seconds) before judging
+      
+      // 🔄 CUMULATIVE TEXT TRACKING: Track accumulated text between tools to prevent chunk-based bypasses
+      let textSinceLastTool = '';
+      let wordsSinceLastTool = 0;
+      
+      // Reset accumulator after each tool call
+      const resetTextAccumulator = () => {
+        textSinceLastTool = '';
+        wordsSinceLastTool = 0;
+        console.log('[CUMULATIVE-GUARD] Text accumulator reset');
+      };
+      
+      // Define allowed phase markers (ONLY these are permitted)
+      const ALLOWED_PHASE_MARKERS = [
+        '🔍 Assessing...',
+        '✅ Assessment complete',
+        '📋 Planning...',
+        '⚡ Executing...',
+        '🧪 Testing...',
+        '✓ Verifying...',
+        '✅ Complete',
+        '📤 Committed',
+        '⏸️ Awaiting'
+      ];
+      
+      // ✅ FIX: Expand allowed text patterns for legitimate status messages
+      const ALLOWED_STATUS_PATTERNS = [
+        /^(Error|Warning|⚠️|❌|✅):/i,              // Error messages
+        /^Tool (completed|failed)/i,               // Tool status
+        /^Waiting for/i,                          // Approval prompts
+        /^(Creating|Reading|Writing|Deleting)/i,  // Brief action status
+        /^\d+ (file|error|test)/i,                // Counts (e.g., "3 files updated")
+      ];
+      
+      // Shared onChunk callback for both models
+      const handleChunk = (chunk: any) => {
+        if (chunk.type === 'chunk' && chunk.content) {
+          // ✅ FIX: Chunk-based grace period tracking
+          if (hasJustCalledTool) {
+            chunksAfterTool++;
+            if (chunksAfterTool >= ALLOWED_CHUNKS_BEFORE_JUDGMENT) {
+              // Grace period ended - resume normal checking
+              hasJustCalledTool = false;
+              console.log(`[CONTINUOUS-GUARD] Grace period ended after ${chunksAfterTool} chunks`);
+            }
+          }
+          
+          // 🔄 CUMULATIVE TRACKING: Add chunk to accumulator
+          textSinceLastTool += chunk.content;
+          wordsSinceLastTool = textSinceLastTool.trim().split(/\s+/).filter((w: string) => w.length > 0).length;
+          
+          // 🚨 CONTINUOUS GUARD: Check cumulative text AFTER grace period ends
+          if (!violationInjected && !hasJustCalledTool) {
+            const cumulativeText = textSinceLastTool.trim();
             
-            if (hasDirectEdit) {
-              const currentPhase = workflowValidator.getCurrentPhase();
-              if (currentPhase !== 'execute') {
-                // BLOCK direct edits outside EXECUTE phase
-                const error = `WORKFLOW VIOLATION: Direct code edits only allowed in EXECUTE phase. Current: ${currentPhase}. Use tools instead.`;
-                console.error(`[WORKFLOW-VALIDATOR] ${error}`);
+            // Skip empty cumulative text
+            if (cumulativeText.length === 0) {
+              // Empty - allowed, continue processing
+            } 
+            // Check if cumulative text is ONLY a phase marker (exact match, max 30 chars)
+            else if (ALLOWED_PHASE_MARKERS.some(marker => cumulativeText.startsWith(marker))) {
+              if (cumulativeText.length > 30) {
+                const violation = `⚠️ VIOLATION: Phase markers must stand alone (max 30 chars). Say "⚡ Executing..." then STOP and call tools.`;
+                console.error(`[CUMULATIVE-GUARD] Phase marker too long: "${cumulativeText}" (${cumulativeText.length} chars)`);
                 
-                // Track violation in metrics
                 metricsTracker?.recordViolation(
-                  'direct_edit',
+                  'excessive_rambling',
                   currentPhase,
-                  error
+                  `Phase marker exceeded 30 chars: ${cumulativeText.length}`
                 );
                 
                 broadcast(userId, jobId, 'job_content', { 
-                  content: `\n\n❌ ${error}\n\n`,
+                  content: `\n\n❌ ${violation}\n\n`,
                   isError: true  
                 });
                 
                 conversationMessages.push({
                   role: 'user',
-                  content: `SYSTEM ERROR: ${error}`
+                  content: violation
                 });
                 
-                // Skip this chunk content - don't add to fullContent
+                violationInjected = true;
+                resetTextAccumulator();
+                continueLoop = true;
+                return;
+              }
+              console.log(`[CUMULATIVE-GUARD] ✅ Phase marker valid: "${cumulativeText}" (${cumulativeText.length} chars)`);
+            }
+            // Check status patterns with STRICT length limits (max 100 chars)
+            else if (ALLOWED_STATUS_PATTERNS.some(pattern => pattern.test(cumulativeText))) {
+              if (cumulativeText.length > 100) {
+                const violation = `⚠️ VIOLATION: Status messages must be brief (max 100 chars). Example: "Error: file not found" then STOP.`;
+                console.error(`[CUMULATIVE-GUARD] Status text too long: "${cumulativeText}" (${cumulativeText.length} chars)`);
+                
+                metricsTracker?.recordViolation(
+                  'excessive_rambling',
+                  currentPhase,
+                  `Status message exceeded 100 chars: ${cumulativeText.length}`
+                );
+                
+                broadcast(userId, jobId, 'job_content', { 
+                  content: `\n\n❌ ${violation}\n\n`,
+                  isError: true  
+                });
+                
+                conversationMessages.push({
+                  role: 'user',
+                  content: violation
+                });
+                
+                violationInjected = true;
+                resetTextAccumulator();
+                continueLoop = true;
+                return;
+              }
+              console.log(`[CUMULATIVE-GUARD] ✅ Status message valid: "${cumulativeText}" (${cumulativeText.length} chars)`);
+            }
+            // Check final summary in CONFIRM phase (max 20 words total)
+            else if (currentPhase === 'confirm' && cumulativeText.startsWith('✅ Complete')) {
+              const summaryWords = cumulativeText.split(/\s+/).filter((w: string) => w.length > 0).length;
+              if (summaryWords > 20) {
+                const violation = `⚠️ VIOLATION: Final summary has ${summaryWords} words. Max 20 words. Be brief.`;
+                console.error(`[CUMULATIVE-GUARD] ${violation}`);
+                
+                metricsTracker?.recordViolation(
+                  'excessive_rambling',
+                  currentPhase,
+                  `Summary too long: ${summaryWords} words (max 20)`
+                );
+                
+                broadcast(userId, jobId, 'job_content', { 
+                  content: `\n\n❌ ${violation}\n\n`,
+                  isError: true  
+                });
+                
+                conversationMessages.push({
+                  role: 'user',
+                  content: violation
+                });
+                
+                violationInjected = true;
+                resetTextAccumulator();
+                continueLoop = true;
+                return;
+              }
+              console.log(`[CUMULATIVE-GUARD] ✅ Final summary valid (${summaryWords} words)`);
+            }
+            // Check cumulative words (max 5 words between tools)
+            else if (wordsSinceLastTool > 5) {
+              const violation = `⚠️ VIOLATION: Detected ${wordsSinceLastTool} words since last tool call. Max 5 words allowed. Use phase markers only.`;
+              console.error(`[CUMULATIVE-GUARD] ${violation}: "${cumulativeText.slice(0, 100)}..."`);
+              
+              metricsTracker?.recordViolation(
+                'excessive_rambling',
+                currentPhase,
+                `Cumulative text: ${wordsSinceLastTool} words (max 5)`
+              );
+              
+              broadcast(userId, jobId, 'job_content', { 
+                content: `\n\n❌ ${violation}\n\n`,
+                isError: true  
+              });
+              
+              conversationMessages.push({
+                role: 'user',
+                content: violation
+              });
+              
+              violationInjected = true;
+              resetTextAccumulator();
+              continueLoop = true;
+              return;
+            }
+            
+            // Track text before first tool (legacy check for initial response)
+            if (!hasCalledToolYet) {
+              textBeforeTools += chunk.content;
+              const wordCount = textBeforeTools.trim().split(/\s+/).filter((w: string) => w.length > 0).length;
+              
+              if (wordCount > 5) {
+                const violation = `⚠️ VIOLATION: Detected ${wordCount} words before tool call. You MUST start with "📋 Planning..." (max 5 words) then IMMEDIATELY call createTaskList. Do NOT ramble or explain.`;
+                console.error(`[PRE-RESPONSE-GUARD] ${violation}`);
+                
+                metricsTracker?.recordViolation(
+                  'excessive_rambling',
+                  currentPhase,
+                  `Pre-response: ${wordCount} words before tool call`
+                );
+                
+                broadcast(userId, jobId, 'job_content', { 
+                  content: `\n\n❌ ${violation}\n\n`,
+                  isError: true  
+                });
+                
+                conversationMessages.push({
+                  role: 'user',
+                  content: violation
+                });
+                
+                violationInjected = true;
+                resetTextAccumulator();
+                continueLoop = true;
                 return;
               }
             }
-            
-            currentTextBlock += chunk.content;
-            fullContent += chunk.content;
-            
-            // HARD ENFORCEMENT - Block invalid phase transitions
-            const detectedPhase = workflowValidator.detectPhaseAnnouncement(chunk.content);
-            if (detectedPhase) {
-              // 🎯 ENFORCEMENT: Use orchestrator for phase transitions (checks + executes if allowed)
-              const transition = enforcementOrchestrator.transitionToPhase(detectedPhase);
-              
-              if (!transition.allowed) {
-                // HARD BLOCK: Inject error to AI conversation
-                const errorMessage = `\n\n❌ WORKFLOW VIOLATION: ${transition.reason}\n\nYou must fix this before proceeding. Current phase: ${enforcementOrchestrator.getCurrentPhase()}`;
-                
-                // Track phase skip violation in metrics
-                metricsTracker?.recordViolation(
-                  'phase_skip',
-                  enforcementOrchestrator.getCurrentPhase(),
-                  `Invalid transition to ${detectedPhase}: ${transition.reason}`
-                );
-                
-                fullContent += errorMessage;
-                broadcast(userId, jobId, 'job_content', { 
-                  content: errorMessage,
-                  isError: true  
-                });
-                
-                // Add system message to force correction in next iteration
-                conversationMessages.push({
-                  role: 'user',
-                  content: `SYSTEM ERROR: ${transition.reason}. You must correct this violation before proceeding.`
-                });
-                
-                console.error(`[ENFORCEMENT] BLOCKED invalid transition: ${enforcementOrchestrator.getCurrentPhase()} → ${detectedPhase}`);
-                // Don't actually transition - the orchestrator will keep current phase
-              } else {
-                // Transition was successful (already performed by orchestrator)
-                // Also notify the legacy workflow validator for backward compatibility
-                workflowValidator.transitionTo(detectedPhase);
-                metricsTracker?.recordPhaseTransition(detectedPhase);
-                console.log(`[ENFORCEMENT] ✅ Phase transition: ${detectedPhase}`);
-              }
-            }
-            
-            broadcast(userId, jobId, 'job_content', { content: chunk.content });
-          }
-        },
-        onToolUse: async (toolUse: any) => {
-          // Save any pending text
-          if (currentTextBlock) {
-            contentBlocks.push({ type: 'text', text: currentTextBlock });
-            currentTextBlock = '';
-          }
-          // Add tool use block
-          contentBlocks.push({
-            type: 'tool_use',
-            id: toolUse.id,
-            name: toolUse.name,
-            input: toolUse.input
-          });
-          return null; // Tool execution happens later in the loop
-        },
-        onComplete: (text: string, usage: any) => {
-          console.log('[LOMU-AI-JOB-MANAGER] Gemini stream completed');
-          // Add final text block if any
-          if (currentTextBlock && contentBlocks[contentBlocks.length - 1]?.text !== currentTextBlock) {
-            contentBlocks.push({ type: 'text', text: currentTextBlock });
           }
           
-          // 🔢 Accumulate token usage from Gemini response
-          if (usage && usage.inputTokens !== undefined && usage.outputTokens !== undefined) {
-            cumulativeInputTokens += usage.inputTokens;
-            cumulativeOutputTokens += usage.outputTokens;
-            metricsTracker?.recordTokenUsage(usage.inputTokens, usage.outputTokens);
-            console.log(`[TOKEN-TRACKING] Iteration ${iterationCount}: ${usage.inputTokens} input + ${usage.outputTokens} output tokens (cumulative: ${cumulativeInputTokens} + ${cumulativeOutputTokens})`);
+          // FIX 2: Detect inline file edits in streaming content
+          const hasDirectEdit = 
+            chunk.content.includes('--- a/') ||  // Diff format
+            chunk.content.includes('+++ b/') ||
+            chunk.content.includes('<<<<<<< SEARCH') || // Search/replace
+            chunk.content.includes('>>>>>>> REPLACE') ||
+            chunk.content.includes('apply_patch') ||
+            /```[a-z]*\n\S+\.\S+\n/.test(chunk.content); // Code block with filename
+          
+          if (hasDirectEdit) {
+            const currentPhase = workflowValidator.getCurrentPhase();
+            if (currentPhase !== 'execute') {
+              // BLOCK direct edits outside EXECUTE phase
+              const error = `WORKFLOW VIOLATION: Direct code edits only allowed in EXECUTE phase. Current: ${currentPhase}. Use tools instead.`;
+              console.error(`[WORKFLOW-VALIDATOR] ${error}`);
+              
+              // Track violation in metrics
+              metricsTracker?.recordViolation(
+                'direct_edit',
+                currentPhase,
+                error
+              );
+              
+              broadcast(userId, jobId, 'job_content', { 
+                content: `\n\n❌ ${error}\n\n`,
+                isError: true  
+              });
+              
+              conversationMessages.push({
+                role: 'user',
+                content: `SYSTEM ERROR: ${error}`
+              });
+              
+              // Skip this chunk content - don't add to fullContent
+              return;
+            }
           }
-        },
-        onError: (error: Error) => {
-          console.error('[LOMU-AI-JOB-MANAGER] Gemini stream error:', error);
-          throw error;
+          
+          currentTextBlock += chunk.content;
+          fullContent += chunk.content;
+          
+          // HARD ENFORCEMENT - Block invalid phase transitions
+          const detectedPhase = workflowValidator.detectPhaseAnnouncement(chunk.content);
+          if (detectedPhase) {
+            // 🎯 ENFORCEMENT: Use orchestrator for phase transitions (checks + executes if allowed)
+            const transition = enforcementOrchestrator.transitionToPhase(detectedPhase);
+            
+            if (!transition.allowed) {
+              // HARD BLOCK: Inject error to AI conversation
+              const errorMessage = `\n\n❌ WORKFLOW VIOLATION: ${transition.reason}\n\nYou must fix this before proceeding. Current phase: ${enforcementOrchestrator.getCurrentPhase()}`;
+              
+              // Track phase skip violation in metrics
+              metricsTracker?.recordViolation(
+                'phase_skip',
+                enforcementOrchestrator.getCurrentPhase(),
+                `Invalid transition to ${detectedPhase}: ${transition.reason}`
+              );
+              
+              fullContent += errorMessage;
+              broadcast(userId, jobId, 'job_content', { 
+                content: errorMessage,
+                isError: true  
+              });
+              
+              // Add system message to force correction in next iteration
+              conversationMessages.push({
+                role: 'user',
+                content: `SYSTEM ERROR: ${transition.reason}. You must correct this violation before proceeding.`
+              });
+              
+              console.error(`[ENFORCEMENT] BLOCKED invalid transition: ${enforcementOrchestrator.getCurrentPhase()} → ${detectedPhase}`);
+              // Don't actually transition - the orchestrator will keep current phase
+            } else {
+              // Transition was successful (already performed by orchestrator)
+              // Also notify the legacy workflow validator for backward compatibility
+              workflowValidator.transitionTo(detectedPhase);
+              metricsTracker?.recordPhaseTransition(detectedPhase);
+              
+              // 🔄 UPDATE CURRENT PHASE for continuous guard
+              currentPhase = detectedPhase;
+              console.log(`[ENFORCEMENT] ✅ Phase transition: ${detectedPhase}`);
+            }
+          }
+          
+          broadcast(userId, jobId, 'job_content', { content: chunk.content });
         }
-      });
+      };
       
-      console.log('[LOMU-AI-JOB-MANAGER] Gemini stream completed, processing tool calls...');
+      // Shared onToolUse callback for both models
+      const handleToolUse = async (toolUse: any) => {
+        // Mark that we've seen a tool call (for pre-response guard)
+        hasCalledToolYet = true;
+        
+        // ✅ FIX: Reset chunk-based grace period when tool is called
+        hasJustCalledTool = true;
+        chunksAfterTool = 0;
+        console.log(`[CONTINUOUS-GUARD] Tool called: ${toolUse.name}, grace period reset (${ALLOWED_CHUNKS_BEFORE_JUDGMENT} chunks)`);
+        
+        // 🔄 RESET CUMULATIVE TEXT ACCUMULATOR after each tool call
+        resetTextAccumulator();
+        
+        // 🔄 UPDATE PHASE based on tool type
+        if (toolUse.name === 'createTaskList') {
+          currentPhase = 'plan';
+          console.log(`[CONTINUOUS-GUARD] Phase auto-transitioned to PLAN (createTaskList called)`);
+        } else if (['readPlatformFile', 'listPlatformDirectory', 'readProjectFile', 'listProjectDirectory'].includes(toolUse.name)) {
+          if (currentPhase === 'assess' || currentPhase === 'plan') {
+            // Reading during assess stays in assess, reading after plan is execute
+            console.log(`[CONTINUOUS-GUARD] Phase remains ${currentPhase} (read operation)`);
+          } else {
+            currentPhase = 'execute';
+            console.log(`[CONTINUOUS-GUARD] Phase auto-transitioned to EXECUTE (file read during work)`);
+          }
+        } else if (['writePlatformFile', 'createPlatformFile', 'deletePlatformFile', 'writeProjectFile', 'createProjectFile', 'deleteProjectFile'].includes(toolUse.name)) {
+          currentPhase = 'execute';
+          console.log(`[CONTINUOUS-GUARD] Phase auto-transitioned to EXECUTE (file write)`);
+        } else if (toolUse.name === 'run_playwright_test' || toolUse.name === 'bash') {
+          currentPhase = 'test';
+          console.log(`[CONTINUOUS-GUARD] Phase auto-transitioned to TEST (test execution)`);
+        }
+        
+        // Save any pending text
+        if (currentTextBlock) {
+          contentBlocks.push({ type: 'text', text: currentTextBlock });
+          currentTextBlock = '';
+        }
+        // Add tool use block
+        contentBlocks.push({
+          type: 'tool_use',
+          id: toolUse.id,
+          name: toolUse.name,
+          input: toolUse.input
+        });
+        return null; // Tool execution happens later in the loop
+      };
+      
+      // Shared onComplete callback for both models
+      const handleComplete = (text: string, usage: any) => {
+        console.log(`[LOMU-AI-JOB-MANAGER] ${model} stream completed`);
+        // Add final text block if any
+        if (currentTextBlock && contentBlocks[contentBlocks.length - 1]?.text !== currentTextBlock) {
+          contentBlocks.push({ type: 'text', text: currentTextBlock });
+        }
+        
+        // 🔢 Accumulate token usage
+        if (usage && usage.inputTokens !== undefined && usage.outputTokens !== undefined) {
+          cumulativeInputTokens += usage.inputTokens;
+          cumulativeOutputTokens += usage.outputTokens;
+          metricsTracker?.recordTokenUsage(usage.inputTokens, usage.outputTokens);
+          console.log(`[TOKEN-TRACKING] Iteration ${iterationCount}: ${usage.inputTokens} input + ${usage.outputTokens} output tokens (cumulative: ${cumulativeInputTokens} + ${cumulativeOutputTokens})`);
+        }
+      };
+      
+      // Shared onError callback for both models
+      const handleError = (error: Error) => {
+        console.error(`[LOMU-AI-JOB-MANAGER] ${model} stream error:`, error);
+        throw error;
+      };
+      
+      // 🔀 Call appropriate streaming function based on model selection
+      if (model === 'claude') {
+        await streamClaudeResponse({
+          model: 'claude-sonnet-4-20250514',
+          maxTokens: config.maxTokens,
+          system: systemPrompt,
+          messages: conversationMessages,
+          tools: availableTools,
+          onChunk: handleChunk,
+          onToolUse: handleToolUse,
+          onComplete: handleComplete,
+          onError: handleError
+        });
+      } else {
+        await streamGeminiResponse({
+          model: 'gemini-2.5-flash',
+          maxTokens: config.maxTokens,
+          system: systemPrompt,
+          messages: conversationMessages,
+          tools: availableTools,
+          onChunk: handleChunk,
+          onToolUse: handleToolUse,
+          onComplete: handleComplete,
+          onError: handleError
+        });
+      }
+      
+      // 🚨 PRE-RESPONSE GUARD: If violation was injected, skip rest of iteration
+      if (violationInjected) {
+        console.log('[PRE-RESPONSE-GUARD] Violation injected, forcing restart in next iteration');
+        continue; // Skip to next iteration immediately
+      }
+      
+      console.log(`[LOMU-AI-JOB-MANAGER] ${model} stream completed, processing tool calls...`);
       
       // CRITICAL: Validate response with all 6 enforcement layers
       const lastUserMessage = conversationMessages
