@@ -17,7 +17,7 @@ All 6 layers are coordinated by **EnforcementOrchestrator**, which provides a si
 
 ## Integration Points in lomuJobManager.ts
 
-### 1. Imports (Line 21)
+### 1. Imports (Line 18)
 ```typescript
 import { EnforcementOrchestrator } from '../lib/enforcementOrchestrator';
 ```
@@ -29,6 +29,37 @@ enforcementOrchestrator.initializeJob(jobId);
 ```
 
 Called at the start of `runMetaSysopWorker()` to initialize enforcement for the job.
+
+### 3-Strikes Escalation (Lines 1164-1202)
+**CRITICAL PRODUCTION FEATURE** - After 3 workflow violations, LomuAI job is stopped and escalated to I AM Architect:
+
+```typescript
+// Check for 3-strikes after guidance injection
+if (validationResult.shouldEscalate && validationResult.violations.some(v => v.includes('3 guidance attempts failed'))) {
+  // Mark job as failed with escalation metadata
+  await db.update(lomuJobs).set({ 
+    status: 'failed',
+    metadata: { ...metadata, escalated: true, escalationReason: '3 workflow violations' },
+    completedAt: new Date()
+  });
+  
+  // Create platform healing incident for I AM Architect takeover
+  await healthMonitor.reportAgentIncident({
+    type: 'workflow_escalation',
+    severity: 'critical',
+    description: 'LomuAI escalated after 3 violations',
+    metrics: { jobId, violations, qualityScore, strikes: 3 }
+  });
+  
+  // Broadcast escalation to user
+  broadcast(userId, jobId, 'job_escalated', { message: '...' });
+  
+  // Stop LomuAI execution - I AM Architect takes over
+  break;
+}
+```
+
+This ensures jobs that repeatedly violate workflow rules are handed off to the more powerful Claude Sonnet 4 model for expert handling.
 
 ### 3. Phase Transitions (Lines 1038-1072)
 ```typescript

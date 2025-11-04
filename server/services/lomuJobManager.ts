@@ -1157,10 +1157,50 @@ Let's build! 🚀`;
           });
         }
         
-        // Escalate if needed
-        if (validationResult.shouldEscalate) {
-          console.log('[ENFORCEMENT] ⚠️ Escalating to I AM Architect for takeover');
-          // TODO: Implement full I AM Architect takeover
+        // CRITICAL: 3-strikes escalation - hand off to I AM Architect
+        if (validationResult.shouldEscalate && validationResult.violations.some(v => v.includes('3 guidance attempts failed'))) {
+          console.log('[ENFORCEMENT] 🚨 3 STRIKES REACHED - Escalating to I AM Architect for complete takeover');
+          
+          // Mark job as failed (escalated)
+          await db.update(lomuJobs)
+            .set({ 
+              status: 'failed',
+              metadata: {
+                ...(job.metadata as any),
+                escalated: true,
+                escalationReason: '3 workflow violations - handed off to I AM Architect'
+              },
+              completedAt: new Date()
+            })
+            .where(eq(lomuJobs.id, jobId));
+          
+          // Create platform healing incident for I AM Architect to take over
+          const incidentDescription = `LomuAI job ${jobId} escalated after 3 workflow violations. Original request: "${message}"\n\nViolations: ${validationResult.violations.join(', ')}\n\nConversation history and context available for takeover.`;
+          
+          await healthMonitor.reportAgentIncident({
+            type: 'workflow_escalation',
+            severity: 'critical',
+            description: incidentDescription,
+            metrics: {
+              jobId,
+              violations: validationResult.violations,
+              qualityScore: validationResult.qualityScore,
+              strikes: 3
+            },
+            userMessage: message,
+            agentResponse: fullContent,
+          });
+          
+          // Broadcast escalation to user
+          broadcast(userId, jobId, 'job_escalated', {
+            message: '🚨 After 3 workflow violations, this job has been escalated to I AM Architect (Claude Sonnet 4) for expert handling. Please check the Platform Healing tab for updates.',
+            violations: validationResult.violations
+          });
+          
+          console.log('[ENFORCEMENT] ✅ Job escalated - I AM Architect will take over via platform healing');
+          
+          // Stop LomuAI job execution - I AM Architect takes over
+          break;
         }
         
         // Log validation results

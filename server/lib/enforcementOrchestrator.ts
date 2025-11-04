@@ -198,6 +198,13 @@ export class EnforcementOrchestrator {
           shouldEscalate = shouldEscalate || guidance.severity === 'critical';
           
           console.log('[ENFORCEMENT-ORCHESTRATOR] ✅ I AM Architect guidance injected');
+          
+          // CRITICAL: Check for 3-strikes escalation after guidance injection
+          if (architectGuidanceInjector.shouldEscalateJob(context.jobId)) {
+            shouldEscalate = true;
+            console.log('[ENFORCEMENT-ORCHESTRATOR] 🚨 3 STRIKES REACHED - Job escalation recommended');
+            violations.push('CRITICAL: 3 guidance attempts failed - job requires I AM Architect takeover');
+          }
         } else {
           console.log('[ENFORCEMENT-ORCHESTRATOR] ℹ️ No guidance provided (API key missing or degraded mode)');
         }
