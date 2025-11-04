@@ -110,17 +110,17 @@ export default function Landing() {
           </h2>
           
           <div className="grid md:grid-cols-2 gap-8">
-            {/* Screenshot 1: Workspace */}
+            {/* Screenshot 1: Mobile Workspace */}
             <Card className="p-4 bg-slate-800 border-slate-700" data-testid="screenshot-workspace">
-              <div className="aspect-video bg-slate-900/50 rounded-lg border border-slate-700 flex items-center justify-center">
-                <div className="text-center">
-                  <Code className="w-12 h-12 mx-auto mb-2 text-primary" />
-                  <p className="text-sm text-slate-400">4-Panel IDE Workspace</p>
-                  <p className="text-xs text-slate-500 mt-1">Screenshot needed: /workspace view</p>
-                </div>
+              <div className="aspect-[9/16] md:aspect-video bg-slate-900/50 rounded-lg border border-slate-700 overflow-hidden">
+                <img 
+                  src="/screenshots/mobile-workspace.jpg" 
+                  alt="Lomu mobile workspace interface"
+                  className="w-full h-full object-cover object-top"
+                />
               </div>
-              <h3 className="mt-4 font-semibold text-white">Professional IDE Experience</h3>
-              <p className="text-sm text-slate-400 mt-2">Split-pane editor, live preview, AI chat, and terminal - all in one</p>
+              <h3 className="mt-4 font-semibold text-white">Mobile-First Development</h3>
+              <p className="text-sm text-slate-400 mt-2">Build apps on any device - desktop or mobile with our responsive workspace</p>
             </Card>
 
             {/* Screenshot 2: AI Building */}
@@ -129,7 +129,7 @@ export default function Landing() {
                 <div className="text-center">
                   <Sparkles className="w-12 h-12 mx-auto mb-2 text-primary" />
                   <p className="text-sm text-slate-400">AI Chat Building Project</p>
-                  <p className="text-xs text-slate-500 mt-1">Screenshot needed: LomuAI in action</p>
+                  <p className="text-xs text-slate-500 mt-1">Real-time code generation</p>
                 </div>
               </div>
               <h3 className="mt-4 font-semibold text-white">Watch AI Code in Real-Time</h3>
@@ -142,7 +142,7 @@ export default function Landing() {
                 <div className="text-center">
                   <Play className="w-12 h-12 mx-auto mb-2 text-primary" />
                   <p className="text-sm text-slate-400">Live Preview Panel</p>
-                  <p className="text-xs text-slate-500 mt-1">Screenshot needed: Real-time updates</p>
+                  <p className="text-xs text-slate-500 mt-1">Instant updates as you build</p>
                 </div>
               </div>
               <h3 className="mt-4 font-semibold text-white">Instant Visual Feedback</h3>
@@ -155,18 +155,12 @@ export default function Landing() {
                 <div className="text-center">
                   <Rocket className="w-12 h-12 mx-auto mb-2 text-primary" />
                   <p className="text-sm text-slate-400">Deployment Dashboard</p>
-                  <p className="text-xs text-slate-500 mt-1">Screenshot needed: Analytics view</p>
+                  <p className="text-xs text-slate-500 mt-1">One-click production deploy</p>
                 </div>
               </div>
               <h3 className="mt-4 font-semibold text-white">One-Click Deployment</h3>
               <p className="text-sm text-slate-400 mt-2">Deploy to production with custom domains and SSL automatically</p>
             </Card>
-          </div>
-
-          <div className="mt-8 text-center">
-            <p className="text-sm text-slate-400">
-              📸 Platform owner: Add screenshots to <code className="bg-slate-800 px-2 py-1 rounded">client/public/screenshots/</code> and update this section
-            </p>
           </div>
         </div>
       </section>
