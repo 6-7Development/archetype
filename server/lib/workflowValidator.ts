@@ -31,7 +31,7 @@ export interface WorkflowState {
 export class WorkflowValidator {
   private state: WorkflowState;
   private constraints: Map<WorkflowPhase, PhaseConstraints>;
-  
+
   constructor() {
     // Initialize state
     this.state = {
@@ -43,7 +43,7 @@ export class WorkflowValidator {
       violations: [],
       canComplete: false,
     };
-    
+
     // Define per-phase constraints
     this.constraints = new Map([
       ['ASSESS', {
@@ -88,7 +88,7 @@ export class WorkflowValidator {
       }],
     ]);
   }
-  
+
   /**
    * Validate phase transition
    */
@@ -97,11 +97,11 @@ export class WorkflowValidator {
     reason?: string;
   } {
     const currentConstraints = this.constraints.get(this.state.currentPhase);
-    
+
     if (!currentConstraints) {
       return { allowed: false, reason: 'Unknown phase' };
     }
-    
+
     // Check if transition is allowed
     if (!currentConstraints.allowedTransitions.includes(targetPhase)) {
       return {
@@ -109,7 +109,7 @@ export class WorkflowValidator {
         reason: `Invalid transition: ${this.state.currentPhase} → ${targetPhase}. Allowed: ${currentConstraints.allowedTransitions.join(', ')}`,
       };
     }
-    
+
     // Check if mandatory tools were called
     if (currentConstraints.minToolCalls > 0 && this.state.toolCallsInPhase < currentConstraints.minToolCalls) {
       return {
@@ -117,47 +117,47 @@ export class WorkflowValidator {
         reason: `Cannot exit ${this.state.currentPhase}: Required ${currentConstraints.minToolCalls} tool calls, only made ${this.state.toolCallsInPhase}`,
       };
     }
-    
+
     return { allowed: true };
   }
-  
+
   /**
    * Execute phase transition
    */
   transitionTo(targetPhase: WorkflowPhase): void {
     const validation = this.canTransitionTo(targetPhase);
-    
+
     if (!validation.allowed) {
       const violation = `⛔ TRANSITION BLOCKED: ${validation.reason}`;
       this.state.violations.push(violation);
       throw new Error(violation);
     }
-    
+
     // Mark current phase as completed
     if (!this.state.phasesCompleted.includes(this.state.currentPhase)) {
       this.state.phasesCompleted.push(this.state.currentPhase);
     }
-    
+
     // Transition to new phase
     this.state.currentPhase = targetPhase;
     this.state.toolCallsInPhase = 0;
-    
+
     console.log(`[WORKFLOW-VALIDATOR] Phase transition: → ${targetPhase}`);
   }
-  
+
   /**
    * Record tokens used in current phase
    */
   recordTokenUsage(inputTokens: number, outputTokens: number): void {
     const totalTokens = inputTokens + outputTokens;
-    
+
     // Update total
     this.state.totalTokensUsed += totalTokens;
-    
+
     // Update phase tokens
     const currentPhaseTokens = this.state.phaseTokens.get(this.state.currentPhase) || 0;
     this.state.phaseTokens.set(this.state.currentPhase, currentPhaseTokens + totalTokens);
-    
+
     // Check if phase exceeded token ceiling
     const constraints = this.constraints.get(this.state.currentPhase);
     if (constraints && currentPhaseTokens + totalTokens > constraints.maxTokens) {
@@ -166,7 +166,7 @@ export class WorkflowValidator {
       console.warn(`[WORKFLOW-VALIDATOR] ${violation}`);
     }
   }
-  
+
   /**
    * Record a tool call in current phase
    */
@@ -174,7 +174,7 @@ export class WorkflowValidator {
     this.state.toolCallsInPhase++;
     console.log(`[WORKFLOW-VALIDATOR] Tool call #${this.state.toolCallsInPhase} in ${this.state.currentPhase}: ${toolName}`);
   }
-  
+
   /**
    * Check if workflow can complete (all mandatory phases done)
    */
@@ -183,7 +183,7 @@ export class WorkflowValidator {
     reason?: string;
   } {
     const mandatoryPhases: WorkflowPhase[] = ['ASSESS', 'PLAN', 'EXECUTE', 'TEST', 'VERIFY'];
-    
+
     for (const phase of mandatoryPhases) {
       if (!this.state.phasesCompleted.includes(phase)) {
         return {
@@ -192,40 +192,40 @@ export class WorkflowValidator {
         };
       }
     }
-    
+
     return { allowed: true };
   }
-  
+
   /**
    * Validate completion attempt
    */
   validateCompletion(): void {
     const validation = this.canCompleteWorkflow();
-    
+
     if (!validation.allowed) {
       const violation = validation.reason!;
       this.state.violations.push(violation);
       throw new Error(violation);
     }
-    
+
     this.state.canComplete = true;
     console.log('[WORKFLOW-VALIDATOR] ✅ Workflow completion validated');
   }
-  
+
   /**
    * Get current state
    */
   getState(): WorkflowState {
     return { ...this.state };
   }
-  
+
   /**
    * Get violations
    */
   getViolations(): string[] {
     return [...this.state.violations];
   }
-  
+
   /**
    * Check if critical violations exist (should escalate to I AM Architect)
    */
@@ -236,7 +236,7 @@ export class WorkflowValidator {
       v.includes('TOKEN CEILING EXCEEDED')
     );
   }
-  
+
   /**
    * Generate compliance report
    */
@@ -244,21 +244,21 @@ export class WorkflowValidator {
     let report = '\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
     report += '  WORKFLOW COMPLIANCE REPORT\n';
     report += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
-    
+
     report += `Current Phase: ${this.state.currentPhase}\n`;
     report += `Phases Completed: ${this.state.phasesCompleted.join(' → ')}\n`;
     report += `Total Tokens Used: ${this.state.totalTokensUsed}\n`;
     report += `Tool Calls (current phase): ${this.state.toolCallsInPhase}\n\n`;
-    
+
     if (this.state.violations.length > 0) {
       report += `VIOLATIONS (${this.state.violations.length}):\n`;
       this.state.violations.forEach((v, i) => report += `  ${i + 1}. ${v}\n`);
     } else {
       report += `✅ No violations detected\n`;
     }
-    
+
     report += '\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
-    
+
     return report;
   }
 }

@@ -25,6 +25,7 @@ import { filterToolCallsFromMessages } from '../lib/message-filter.ts';
 import type { WebSocketServer } from 'ws';
 import { getOrCreateState, autoUpdateFromMessage, formatStateForPrompt } from '../services/conversationState.ts';
 import { agentFailureDetector } from '../services/agentFailureDetector.ts';
+import * as workflowValidator from '../services/workflowValidator.ts';
 
 const execAsync = promisify(exec);
 
@@ -102,7 +103,7 @@ const approvalPromises = new Map<string, { resolve: (value: boolean) => void; re
 export function waitForApproval(messageId: string): Promise<boolean> {
   return new Promise((resolve, reject) => {
     approvalPromises.set(messageId, { resolve, reject });
-    
+
     // Timeout after 10 minutes
     setTimeout(() => {
       if (approvalPromises.has(messageId)) {
@@ -272,7 +273,7 @@ router.get('/autonomy-level', isAuthenticated, isAdmin, async (req: any, res) =>
     if (isOwner) {
       maxAllowedLevel = 'max';
       plan = 'owner';
-      
+
       // Auto-set owner to 'max' if not already set
       if (!user.autonomyLevel || user.autonomyLevel === 'basic') {
         await db.update(users).set({ autonomyLevel: 'max' }).where(eq(users.id, userId));
@@ -364,7 +365,7 @@ router.put('/autonomy-level', isAuthenticated, isAdmin, async (req: any, res) =>
 
     // 🔑 Platform owners bypass subscription checks
     const isOwner = user.isOwner === true;
-    
+
     if (!isOwner) {
       // Regular users: check subscription tier
       const plan = subscription?.plan || 'free';
@@ -419,9 +420,9 @@ router.get('/projects', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
     const { storage } = await import('../storage');
     const projects = await storage.getAllProjects();
-    
+
     console.log(`[LOMU-AI] Fetched ${projects.length} projects for admin project selector`);
-    
+
     res.json(projects);
   } catch (error: any) {
     console.error('[LOMU-AI] Get projects error:', error);
@@ -433,7 +434,7 @@ router.get('/projects', isAuthenticated, isAdmin, async (req: any, res) => {
 router.get('/task-list/:taskListId', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
     const { taskListId } = req.params;
-    
+
     if (!taskListId || taskListId === 'undefined' || taskListId === 'null') {
       console.log(`[LOMU-AI] Invalid task list ID: ${taskListId}`);
       return res.json({ 
@@ -443,15 +444,15 @@ router.get('/task-list/:taskListId', isAuthenticated, isAdmin, async (req: any, 
         message: 'No task list available'
       });
     }
-    
+
     const taskList = await db
       .select()
       .from(tasks)
       .where(eq(tasks.taskListId, taskListId))
       .orderBy(tasks.createdAt);
-    
+
     console.log(`[LOMU-AI] Fetched ${taskList.length} tasks for task list ${taskListId}`);
-    
+
     res.json({ 
       success: true, 
       tasks: taskList,
@@ -492,7 +493,7 @@ router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
           .select()
           .from(lomuAttachments)
           .where(eq(lomuAttachments.messageId, msg.id));
-        
+
         return {
           ...msg,
           attachments: attachments.length > 0 ? attachments : undefined,
@@ -588,7 +589,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
   }, 15000); // Every 15 seconds
 
   console.log('[LOMU-AI-CHAT] Heartbeat started - will send keepalive every 15s');
-  
+
   // Wrap entire route handler in timeout to prevent infinite hanging
   const STREAM_TIMEOUT_MS = RAILWAY_CONFIG.STREAM_TIMEOUT; // Use Railway config (5 minutes)
   const streamTimeoutId = setTimeout(() => {
@@ -600,7 +601,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     }
   }, STREAM_TIMEOUT_MS);
   console.log('[LOMU-AI-CHAT] Stream timeout set - will force close after 5 minutes');
-  
+
   console.log('[LOMU-AI-CHAT] Entering try block');
   try {
 
@@ -642,7 +643,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         mimeType: att.mimeType,
         size: att.size,
       }));
-      
+
       await db.insert(lomuAttachments).values(attachmentValues);
       console.log('[LOMU-AI-CHAT] Attachments saved successfully');
     }
@@ -651,7 +652,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     // 🎯 CONVERSATION STATE: Get or create state for context tracking
     const conversationState = await getOrCreateState(userId, null);
-    
+
     // Auto-update state from user message (extract goals and files)
     await autoUpdateFromMessage(conversationState.id, message);
     console.log('[CONVERSATION-STATE] Updated from user message:', conversationState.id);
@@ -659,17 +660,17 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // Intent classifier: Detect if user wants brief answer or work
     const classifyIntent = (message: string): 'question' | 'task' | 'status' => {
       const lowerMsg = message.toLowerCase();
-      
+
       // Questions: user wants info, not work
       if (lowerMsg.match(/^(can|could|do|does|is|are|will|would|should|how|what|why|when|where)/)) {
         return 'question';
       }
-      
+
       // Status checks
       if (lowerMsg.match(/(status|done|finished|complete|progress|working)/)) {
         return 'status';
       }
-      
+
       // Everything else is a task
       return 'task';
     };
@@ -677,7 +678,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // LomuAI creates task lists for work requests (diagnose, fix, improve)
     // This makes progress visible in the inline task card
     sendEvent('progress', { message: '🧠 Analyzing your request...' });
-    
+
     // Track task list ID if created during conversation
     let activeTaskListId: string | undefined;
 
@@ -697,7 +698,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       )
       .orderBy(desc(chatMessages.createdAt))
       .limit(5); // ⚡ REDUCED FROM 10 - Saves another 5K tokens!
-    
+
     // Reverse to chronological order (oldest → newest) for Claude
     history.reverse();
 
@@ -736,17 +737,17 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     // Add current user message with attachments
     let userMessageContent: any = message;
-    
+
     // If attachments exist, build multimodal content for Claude
     if (attachments && attachments.length > 0) {
       const contentBlocks: any[] = [];
-      
+
       // Add text message first
       contentBlocks.push({
         type: 'text',
         text: message,
       });
-      
+
       // Add attachments
       for (const att of attachments) {
         if (att.fileType === 'image') {
@@ -772,10 +773,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           });
         }
       }
-      
+
       userMessageContent = contentBlocks;
     }
-    
+
     conversationMessages.push({
       role: 'user',
       content: userMessageContent,
@@ -797,7 +798,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     // 🧠 LOMU SUPER LOGIC CORE: Combined intelligence with cost awareness
     const { buildLomuSuperCorePrompt } = await import('../lomuSuperCore');
-    
+
     const systemPrompt = buildLomuSuperCorePrompt({
       platform: 'LomuAI - React+Express+PostgreSQL on Railway',
       autoCommit,
@@ -1256,7 +1257,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     // 🎯 AUTONOMY LEVEL FILTERING: Filter tools based on user's autonomy level
     let availableTools = tools;
-    
+
     if (autonomyLevel === 'basic') {
       // Basic: NO subagents, NO task tracking, NO web search
       availableTools = tools.filter(tool => 
@@ -1283,7 +1284,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     let consecutiveEmptyIterations = 0; // Track iterations with no tool calls
     const MAX_EMPTY_ITERATIONS = 3; // Stop if 3 consecutive iterations without tool calls
     let totalToolCallCount = 0; // Track total tool calls for quality analysis
-    
+
     // 📊 WORKFLOW TELEMETRY: Track read vs write operations to detect investigation-only loops
     const workflowTelemetry = {
       readOperations: 0,
@@ -1292,7 +1293,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       MAX_READ_ONLY_ITERATIONS: 5, // Halt after 5 iterations with only reads
       hasProducedFixes: false, // Track if ANY write operations occurred
     };
-    
+
     // READ-ONLY TOOLS: Tools that don't modify platform/project code
     // CRITICAL: Task management, knowledge_store, and meta tools don't modify source code
     const READ_ONLY_TOOLS = new Set([
@@ -1306,7 +1307,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       'knowledge_store', // Storing knowledge doesn't fix the platform
       'architect_consult', 'start_subagent' // Delegation tools don't modify code directly
     ]);
-    
+
     // CODE-MODIFYING TOOLS: Tools that actually modify platform/project source code
     // These are REQUIRED for fix/implement requests to succeed
     const CODE_MODIFYING_TOOLS = new Set([
@@ -1338,7 +1339,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       // This wrapper truncates context if needed while preserving recent messages
       const { messages: safeMessages, systemPrompt: safeSystemPrompt, estimatedTokens, truncated, originalTokens, removedMessages } = 
         createSafeGeminiRequest(conversationMessages, finalSystemPrompt);
-      
+
       // Log truncation results for monitoring (only on first iteration)
       if (iterationCount === 1) {
         logGeminiTruncationResults({ 
@@ -1355,7 +1356,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       const contentBlocks: any[] = [];
       let currentTextBlock = '';
       let lastChunkHash = ''; // 🔥 Track last chunk to prevent duplicate streaming
-      
+      let taskListId: string | null = null; // Track if a task list exists
+      let detectedComplexity = 1; // Track task complexity for workflow validation
+
       // Use streamGeminiResponse for streaming
       await streamGeminiResponse({
         model: 'gemini-2.5-flash',
@@ -1368,19 +1371,19 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
             // 🔥 DUPLICATE CHUNK SUPPRESSION: Prevent duplicate text from SSE retries
             const chunkText = chunk.content;
             const chunkHash = chunkText.slice(-Math.min(50, chunkText.length)); // Last 50 chars as fingerprint
-            
+
             if (chunkHash === lastChunkHash && chunkText.length > 10) {
               // Skip duplicate chunk (likely from SSE retry)
               console.log('[LOMU-AI-STREAM] Skipped duplicate chunk:', chunkHash.substring(0, 20));
               return;
             }
             lastChunkHash = chunkHash;
-            
+
             // 🔥 STREAM TEXT IMMEDIATELY - Don't wait!
             currentTextBlock += chunkText;
             fullContent += chunkText;
             sendEvent('content', { content: chunkText });
-            
+
             // After receiving text, enforce brevity for questions
             if (intent === 'question' && fullContent.length > 200) {
               // Truncate verbose responses for simple questions
@@ -1390,6 +1393,30 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           }
         },
         onToolUse: async (toolUse: any) => {
+          // Process tool calls with workflow validation
+          if (event.type === 'content_block_start' && event.content_block?.type === 'tool_use') {
+            const toolUse = event.content_block;
+
+            // Validate workflow phase before executing tool
+            const validation = workflowValidator.validateWorkflowPhase(
+              currentPhase, // Assuming currentPhase is tracked
+              toolUse.name,
+              {
+                hasTaskList: !!taskListId,
+                isMultiStepTask: detectedComplexity > 3
+              }
+            );
+
+            if (!validation.allowed) {
+              // Inject RESTART command to force agent back to correct phase
+              sendEvent({ 
+                type: 'error', 
+                error: validation.reason,
+                suggestedAction: 'restart'
+              });
+              continue; // Skip tool execution and proceed to next iteration
+            }
+          }
           // Save any pending text
           if (currentTextBlock) {
             contentBlocks.push({ type: 'text', text: currentTextBlock });
@@ -1434,7 +1461,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       const toolResults: any[] = [];
       const hasToolUse = contentBlocks.some(block => block.type === 'tool_use');
       const toolNames = contentBlocks.filter(b => b.type === 'tool_use').map(b => b.name);
-      
+
       // 🎯 PRE-EXECUTION LOGGING
       console.log(`[LOMU-AI-FORCE] === ITERATION ${iterationCount} CHECK ===`);
       console.log(`[LOMU-AI-FORCE] Tools called this iteration: ${toolNames.join(', ') || 'NONE'}`);
@@ -1496,12 +1523,13 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
               if (result.success) {
                 // Track the active task list ID for cleanup
-                activeTaskListId = result.taskListId!;
+                taskListId = result.taskListId!; // Set taskListId here
+                detectedComplexity = typedInput.tasks.length; // Update complexity based on tasks
                 toolResult = `✅ Task list created successfully!\n\nTask List ID: ${result.taskListId}\n\nTasks are now visible inline in the chat. The user can see your progress in real-time! Update task status as you work using updateTask().`;
                 sendEvent('task_list_created', { taskListId: result.taskListId });
                 sendEvent('content', { content: `✅ **Task list created!** Track my progress in the card above.\n\n` });
                 console.log('[LOMU-AI] Task list created:', result.taskListId);
-                
+
                 // ✅ FULL AUTONOMY: No forcing, no micromanagement
                 // LomuAI will naturally proceed with tasks like Replit Agent does
               } else {
@@ -1536,6 +1564,8 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               if (result.success && result.taskLists) {
                 const activeList = result.taskLists.find((list: any) => list.status === 'active');
                 if (activeList) {
+                  // Set taskListId if an active list is found
+                  taskListId = activeList.id; // Set taskListId here
                   const tasks = activeList.tasks || [];
                   if (tasks.length === 0) {
                     toolResult = `Task list found but no tasks exist yet.\n\n` +
@@ -1582,7 +1612,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
               // ✅ AUTONOMOUS MODE: No approval required - LomuAI works like Replit Agent
               sendEvent('progress', { message: `✅ Modifying ${typedInput.path}...` });
-              
+
               // 📦 BATCH COMMIT: Stage files for single commit at the end
               // This prevents multiple commits - all changes committed together via commit_to_github()
               const writeResult = await platformHealing.writePlatformFile(
@@ -1600,10 +1630,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               });
 
               sendEvent('file_change', { file: { path: typedInput.path, operation: 'modify' } });
-              
+
               // 📡 LIVE PREVIEW: Broadcast file update to connected clients
               broadcastFileUpdate(typedInput.path, 'modify', projectId || 'platform');
-              
+
               toolResult = `✅ File staged for commit (use commit_to_github to batch all changes)`;
               console.log(`[LOMU-AI] ✅ File staged for batch commit: ${typedInput.path}`);
 
@@ -1612,21 +1642,21 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               try {
                 console.log('[LOMU-AI-AUTO-VERIFY] Triggering automatic verification after file write');
                 sendEvent('progress', { message: '🔍 Auto-verifying file write...' });
-                
+
                 // Check if file exists and is accessible
                 const lastChange = fileChanges[fileChanges.length - 1];
                 const fs = await import('fs/promises');
                 const path = await import('path');
                 const fullPath = path.join(process.cwd(), lastChange.path);
-                
+
                 await fs.access(fullPath);
-                
+
                 // File exists - verification passed
                 const verifySuccess = `\n\n🔍 Auto-verification passed: File ${lastChange.path} written successfully and is accessible.`;
                 toolResult += verifySuccess;
                 sendEvent('content', { content: verifySuccess });
                 console.log(`[LOMU-AI-AUTO-VERIFY] ✅ Verification passed for ${lastChange.path}`);
-                
+
               } catch (verifyError: any) {
                 // Verification failed - append warning
                 const verifyWarning = `\n\n⚠️ Auto-verification warning: File may not be accessible yet (${verifyError.message}). This is normal for new files.`;
@@ -1649,17 +1679,17 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
             } else if (name === 'run_test') {
               const typedInput = input as { testPlan: string; technicalDocs: string };
               sendEvent('progress', { message: '🧪 Running Playwright e2e tests...' });
-              
+
               // Note: This would integrate with actual Playwright testing infrastructure
               // For MVP, provide feedback that testing is queued
               toolResult = `✅ E2E test queued with plan:\n${typedInput.testPlan}\n\nTechnical docs: ${typedInput.technicalDocs}\n\n` +
                 `Note: Full Playwright integration coming soon. For now, manually verify UI/UX changes.`;
-              
+
               sendEvent('content', { content: '\n\n🧪 **Test Plan Created** - Manual verification recommended until full Playwright integration.' });
             } else if (name === 'search_integrations') {
               const typedInput = input as { query: string };
               sendEvent('progress', { message: `Searching integrations for: ${typedInput.query}...` });
-              
+
               // Note: This would integrate with Replit's integration search API
               // For MVP, provide guidance on common integrations
               const commonIntegrations: Record<string, string> = {
@@ -1670,17 +1700,17 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 'postgresql': 'PostgreSQL database available - built-in Neon integration',
                 'auth': 'Replit Auth available - OAuth authentication system'
               };
-              
+
               const query = typedInput.query.toLowerCase();
               const match = Object.keys(commonIntegrations).find(key => query.includes(key));
-              
+
               toolResult = match 
                 ? `✅ ${commonIntegrations[match]}\n\nUse the Replit Secrets tab to configure.`
                 : `Integration search: "${typedInput.query}"\n\nCommon integrations: Stripe, OpenAI, GitHub, Anthropic, PostgreSQL, Replit Auth\n\nCheck Replit Secrets tab for configuration.`;
             } else if (name === 'generate_design_guidelines') {
               const typedInput = input as { projectDescription: string };
               sendEvent('progress', { message: '🎨 Generating design guidelines...' });
-              
+
               // Note: This would integrate with design system generation
               // For MVP, provide basic design guidance
               toolResult = `✅ Design Guidelines Generated\n\n` +
@@ -1698,19 +1728,19 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 toolResult = '❌ No project selected. Use platform file tools instead.';
               } else {
                 const typedInput = input as { path: string };
-                
+
                 try {
                   // SECURITY: Validate path to prevent traversal attacks
                   const validatedPath = validateProjectPath(typedInput.path);
                   sendEvent('progress', { message: `Reading ${validatedPath} from user project...` });
-                  
+
                   const { storage } = await import('../storage');
                   const projectFiles = await storage.getProjectFiles(projectId);
                   const targetFile = projectFiles.find(f => 
                     (f.path ? `${f.path}/${f.filename}` : f.filename) === validatedPath ||
                     f.filename === validatedPath
                   );
-                  
+
                   if (targetFile) {
                     toolResult = `File: ${targetFile.filename}\nLanguage: ${targetFile.language}\nContent:\n${targetFile.content}`;
                   } else {
@@ -1726,19 +1756,19 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 toolResult = '❌ No project selected. Use platform file tools instead.';
               } else {
                 const typedInput = input as { path: string; content: string };
-                
+
                 try {
                   // SECURITY: Validate path to prevent traversal attacks
                   const validatedPath = validateProjectPath(typedInput.path);
                   sendEvent('progress', { message: `Writing ${validatedPath} to user project...` });
-                  
+
                   const { storage } = await import('../storage');
                   const projectFiles = await storage.getProjectFiles(projectId);
                   const targetFile = projectFiles.find(f => 
                     (f.path ? `${f.path}/${f.filename}` : f.filename) === validatedPath ||
                     f.filename === validatedPath
                   );
-                  
+
                   if (targetFile) {
                     // Update existing file
                     await storage.updateFile(targetFile.id, targetFile.userId, typedInput.content);
@@ -1757,10 +1787,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 toolResult = '❌ No project selected. Use platform file tools instead.';
               } else {
                 sendEvent('progress', { message: `Listing files in user project...` });
-                
+
                 const { storage } = await import('../storage');
                 const projectFiles = await storage.getProjectFiles(projectId);
-                
+
                 if (projectFiles.length === 0) {
                   toolResult = 'No files in project';
                 } else {
@@ -1774,26 +1804,26 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 toolResult = '❌ No project selected. Use platform file tools instead.';
               } else {
                 const typedInput = input as { path: string; content: string };
-                
+
                 try {
                   // SECURITY: Validate path to prevent traversal attacks
                   const validatedPath = validateProjectPath(typedInput.path);
                   sendEvent('progress', { message: `Creating ${validatedPath} in user project...` });
-                  
+
                   const { storage } = await import('../storage');
-                  
+
                   // Get project owner to set correct userId
                   const project = await db.select().from(projects).where(eq(projects.id, projectId)).limit(1);
                   if (!project || project.length === 0) {
                     toolResult = '❌ Project not found';
                   } else {
                     const projectOwnerId = project[0].userId;
-                    
+
                     // Parse filename and path from validated path
                     const parts = validatedPath.split('/');
                     const filename = parts.pop() || validatedPath;
                     const filePath = parts.join('/');
-                    
+
                     // Determine language from extension
                     const ext = filename.split('.').pop()?.toLowerCase() || 'text';
                     const langMap: Record<string, string> = {
@@ -1803,7 +1833,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                       'json': 'json', 'md': 'markdown',
                     };
                     const language = langMap[ext] || 'text';
-                    
+
                     await storage.createFile({
                       userId: projectOwnerId,
                       projectId,
@@ -1812,7 +1842,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                       content: typedInput.content,
                       language,
                     });
-                    
+
                     toolResult = `✅ File created: ${validatedPath}`;
                     sendEvent('file_change', { file: { path: validatedPath, operation: 'create' } });
                   }
@@ -1826,19 +1856,19 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 toolResult = '❌ No project selected. Use platform file tools instead.';
               } else {
                 const typedInput = input as { path: string };
-                
+
                 try {
                   // SECURITY: Validate path to prevent traversal attacks
                   const validatedPath = validateProjectPath(typedInput.path);
                   sendEvent('progress', { message: `Deleting ${validatedPath} from user project...` });
-                  
+
                   const { storage } = await import('../storage');
                   const projectFiles = await storage.getProjectFiles(projectId);
                   const targetFile = projectFiles.find(f => 
                     (f.path ? `${f.path}/${f.filename}` : f.filename) === validatedPath ||
                     f.filename === validatedPath
                   );
-                  
+
                   if (targetFile) {
                     await storage.deleteFile(targetFile.id, targetFile.userId);
                     toolResult = `✅ File deleted: ${validatedPath}`;
@@ -1948,9 +1978,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                       `URL: ${result.commitUrl}\n\n` +
                       `🚀 Railway auto-deployment triggered!\n` +
                       `⏱️ Changes will be live in 2-3 minutes\n\n` +
-                      `Files committed:\n${filesToCommit.map(f => `- ${f.path}`).join('\n')}\n\n` +
+                      `Files committed:\n${filesToCommit.map(f => `- ${f}`).join('\n')}\n\n` +
                       `Note: This works on Railway production (no local .git required)!`;
-                    
+
                     // ✅ CRITICAL: Clear fileChanges to prevent fallback commit from trying again
                     // Without this, the cleanup section would still attempt local git commit → error on Railway
                     fileChanges.length = 0;
@@ -1967,9 +1997,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 filesChanged: string[]; 
                 estimatedImpact: string;
               };
-              
+
               sendEvent('progress', { message: '🔔 Requesting user approval...' });
-              
+
               // Create assistant message with approval request
               const [approvalMsg] = await db
                 .insert(chatMessages)
@@ -1985,7 +2015,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                   platformChanges: { filesChanged: typedInput.filesChanged, estimatedImpact: typedInput.estimatedImpact },
                 })
                 .returning();
-              
+
               // Send SSE event to notify frontend
               sendEvent('approval_requested', { 
                 summary: typedInput.summary,
@@ -1993,14 +2023,14 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 estimatedImpact: typedInput.estimatedImpact,
                 messageId: approvalMsg.id 
               });
-              
+
               console.log('[LOMU-AI] Waiting for user approval...');
               sendEvent('progress', { message: '⏳ Waiting for your approval...' });
-              
+
               try {
                 // WAIT for user approval/rejection (blocks until resolved)
                 const approved = await waitForApproval(approvalMsg.id);
-                
+
                 if (approved) {
                   toolResult = `✅ USER APPROVED! You may now proceed with the changes.\n\n` +
                     `Approved changes:\n${typedInput.filesChanged.map(f => `- ${f}`).join('\n')}\n\n` +
@@ -2033,7 +2063,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 if (diagnosisResult.success) {
                   // 🛡️ SANITIZE DIAGNOSIS: Reduce token consumption from large reports
                   const sanitizedResult = sanitizeDiagnosisForAI(diagnosisResult as any);
-                  
+
                   // Format findings nicely (using sanitized data)
                   const findingsList = (sanitizedResult.findings || diagnosisResult.findings)
                     .map((f: any, idx: number) => 
@@ -2048,9 +2078,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                     `${sanitizedResult.summary || diagnosisResult.summary}\n\n` +
                     `Findings:\n${findingsList || 'No issues found'}\n\n` +
                     `Recommendations:\n${(sanitizedResult.recommendations || diagnosisResult.recommendations).map((r: string, i: number) => `${i + 1}. ${r}`).join('\n')}`;
-                  
+
                   sendEvent('progress', { message: `✅ Found ${diagnosisResult.findings.length} issues` });
-                  
+
                   // 🔥 FIX: Stream diagnosis results to chat immediately (don't wait for Claude to explain)
                   const postMessage = getPostToolMessage('perform_diagnosis', toolResult);
                   const diagnosisOutput = postMessage + toolResult;
@@ -2094,10 +2124,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               });
 
               sendEvent('file_change', { file: { path: typedInput.path, operation: 'create' } });
-              
+
               // 📡 LIVE PREVIEW: Broadcast file update to connected clients
               broadcastFileUpdate(typedInput.path, 'create', projectId || 'platform');
-              
+
               toolResult = `✅ File created successfully`;
               console.log(`[LOMU-AI] ✅ File created autonomously: ${typedInput.path}`);
             } else if (name === 'deletePlatformFile') {
@@ -2116,22 +2146,22 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               });
 
               sendEvent('file_change', { file: { path: typedInput.path, operation: 'delete' } });
-              
+
               // 📡 LIVE PREVIEW: Broadcast file update to connected clients
               broadcastFileUpdate(typedInput.path, 'delete', projectId || 'platform');
-              
+
               toolResult = `✅ File deleted successfully`;
               console.log(`[LOMU-AI] ✅ File deleted autonomously: ${typedInput.path}`);
             } else if (name === 'read_logs') {
               const typedInput = input as { lines?: number; filter?: string };
               const maxLines = Math.min(typedInput.lines || 100, 1000);
-              
+
               sendEvent('progress', { message: 'Reading server logs...' });
 
               try {
                 const logsDir = '/tmp/logs';
                 let logFiles: string[] = [];
-                
+
                 // Check if logs directory exists
                 try {
                   await fs.access(logsDir);
@@ -2187,20 +2217,20 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               }
             } else if (name === 'execute_sql') {
               const typedInput = input as { query: string; purpose: string };
-              
+
               sendEvent('progress', { message: `Executing SQL query: ${typedInput.purpose}...` });
 
               try {
                 // ✅ AUTONOMOUS MODE: Execute any SQL query without approval
                 sendEvent('progress', { message: `Executing SQL...` });
                 const result = await db.execute(typedInput.query as any);
-                
+
                 toolResult = `✅ SQL executed successfully\n\n` +
                   `Purpose: ${typedInput.purpose}\n` +
                   `Query: ${typedInput.query}\n` +
                   `Rows returned: ${Array.isArray(result) ? result.length : 'N/A'}\n` +
                   `Result:\n${JSON.stringify(result, null, 2)}`;
-                
+
                 sendEvent('progress', { message: `✅ Query completed` });
                 console.log(`[LOMU-AI] ✅ SQL executed autonomously: ${typedInput.purpose}`);
               } catch (error: any) {
@@ -2212,11 +2242,11 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               }
             } else if (name === 'start_subagent') {
               const typedInput = input as { task: string; relevantFiles: string[]; parallel?: boolean };
-              
+
               if (typedInput.parallel) {
                 // 🚀 PARALLEL EXECUTION MODE
                 sendEvent('progress', { message: `🚀 Queuing parallel sub-agent: ${typedInput.task.slice(0, 60)}...` });
-                
+
                 try {
                   // Enqueue the task for parallel execution
                   const taskId = await parallelSubagentQueue.enqueueSubagent({
@@ -2225,10 +2255,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                     relevantFiles: typedInput.relevantFiles,
                     sendEvent,
                   });
-                  
+
                   // Get queue status
                   const status = parallelSubagentQueue.getStatus(userId);
-                  
+
                   toolResult = `✅ Sub-agent task queued for parallel execution\n\n` +
                     `Task ID: ${taskId}\n` +
                     `Task: ${typedInput.task}\n\n` +
@@ -2238,7 +2268,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                     `- Completed: ${status.completed}\n\n` +
                     `The sub-agent will start automatically when a slot is available. ` +
                     `Progress updates will be broadcast via WebSocket.`;
-                  
+
                   sendEvent('progress', { 
                     message: `✅ Sub-agent queued (${status.running} running, ${status.queued} queued)` 
                   });
@@ -2249,7 +2279,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               } else {
                 // 🔄 SEQUENTIAL EXECUTION MODE (existing behavior)
                 sendEvent('progress', { message: `🎯 Delegating to sub-agent: ${typedInput.task.slice(0, 60)}...` });
-                
+
                 try {
                   const result = await startSubagent({
                     task: typedInput.task,
@@ -2257,14 +2287,14 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                     userId,
                     sendEvent,
                   });
-                  
+
                   toolResult = `✅ Sub-agent completed work:\n\n${result.summary}\n\nFiles modified:\n${result.filesModified.map(f => `- ${f}`).join('\n')}`;
-                  
+
                   // Track file changes
                   result.filesModified.forEach((filePath: string) => {
                     fileChanges.push({ path: filePath, operation: 'modify' });
                   });
-                  
+
                   sendEvent('progress', { message: `✅ Sub-agent completed: ${result.filesModified.length} files modified` });
                 } catch (error: any) {
                   toolResult = `❌ Sub-agent failed: ${error.message}`;
@@ -2277,18 +2307,18 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 checkType: 'logs' | 'endpoint' | 'file_exists'; 
                 target?: string;
               };
-              
+
               sendEvent('progress', { message: `🔍 Verifying: ${typedInput.description}...` });
-              
+
               try {
                 let verificationPassed = false;
                 let verificationDetails = '';
-                
+
                 if (typedInput.checkType === 'logs') {
                   // Simplified log check - assume pass for now (can be enhanced later)
                   verificationPassed = true;
                   verificationDetails = 'Basic log check passed (enhanced verification coming soon)';
-                    
+
                 } else if (typedInput.checkType === 'endpoint' && typedInput.target) {
                   // Perform actual HTTP request to test endpoint
                   try {
@@ -2302,7 +2332,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                     verificationPassed = false;
                     verificationDetails = `Endpoint ${typedInput.target} failed: ${err.message}`;
                   }
-                  
+
                 } else if (typedInput.checkType === 'file_exists' && typedInput.target) {
                   // Check if file exists
                   try {
@@ -2317,15 +2347,15 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                     verificationDetails = `File ${typedInput.target} not found or not accessible`;
                   }
                 }
-                
+
                 toolResult = verificationPassed
                   ? `✅ Verification passed: ${verificationDetails}`
                   : `❌ Verification failed: ${verificationDetails}\n\nYou should fix the issue and verify again.`;
-                  
+
                 sendEvent('content', { 
                   content: `\n${verificationPassed ? '✅' : '❌'} ${typedInput.description}: ${verificationDetails}\n` 
                 });
-                
+
               } catch (error: any) {
                 toolResult = `❌ Verification error: ${error.message}`;
                 sendEvent('error', { message: `Verification failed: ${error.message}` });
@@ -2333,19 +2363,19 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
             } else if (name === 'bash') {
               const typedInput = input as { command: string; timeout?: number };
               sendEvent('progress', { message: `🔧 Executing: ${typedInput.command}...` });
-              
+
               try {
                 const result = await platformHealing.executeBashCommand(
                   typedInput.command, 
                   typedInput.timeout || 120000
                 );
-                
+
                 if (result.success) {
                   toolResult = `✅ Command executed successfully\n\nStdout:\n${result.stdout}\n${result.stderr ? `\nStderr:\n${result.stderr}` : ''}`;
                 } else {
                   toolResult = `❌ Command failed (exit code ${result.exitCode})\n\nStdout:\n${result.stdout}\n\nStderr:\n${result.stderr}`;
                 }
-                
+
                 sendEvent('content', { content: `\n\n**Command output:**\n\`\`\`\n${result.stdout}\n\`\`\`\n` });
               } catch (error: any) {
                 toolResult = `❌ Bash execution failed: ${error.message}`;
@@ -2354,7 +2384,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
             } else if (name === 'edit') {
               const typedInput = input as { filePath: string; oldString: string; newString: string; replaceAll?: boolean };
               sendEvent('progress', { message: `✏️ Editing ${typedInput.filePath}...` });
-              
+
               try {
                 const result = await platformHealing.editPlatformFile(
                   typedInput.filePath,
@@ -2362,15 +2392,15 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                   typedInput.newString,
                   typedInput.replaceAll || false
                 );
-                
+
                 if (result.success) {
                   toolResult = `✅ ${result.message}\nLines changed: ${result.linesChanged}`;
-                  
+
                   fileChanges.push({ 
                     path: typedInput.filePath, 
                     operation: 'modify'
                   });
-                  
+
                   sendEvent('file_change', { file: { path: typedInput.filePath, operation: 'modify' } });
                   broadcastFileUpdate(typedInput.filePath, 'modify', projectId || 'platform');
                 } else {
@@ -2383,14 +2413,14 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
             } else if (name === 'grep') {
               const typedInput = input as { pattern: string; pathFilter?: string; outputMode?: 'content' | 'files' | 'count' };
               sendEvent('progress', { message: `🔍 Searching for: ${typedInput.pattern}...` });
-              
+
               try {
                 const result = await platformHealing.grepPlatformFiles(
                   typedInput.pattern,
                   typedInput.pathFilter,
                   typedInput.outputMode || 'files'
                 );
-                
+
                 toolResult = result;
               } catch (error: any) {
                 toolResult = `❌ Grep failed: ${error.message}`;
@@ -2399,13 +2429,13 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
             } else if (name === 'packager_tool') {
               const typedInput = input as { operation: 'install' | 'uninstall'; packages: string[] };
               sendEvent('progress', { message: `📦 ${typedInput.operation === 'install' ? 'Installing' : 'Uninstalling'} packages: ${typedInput.packages.join(', ')}...` });
-              
+
               try {
                 const result = await platformHealing.installPackages(
                   typedInput.packages,
                   typedInput.operation
                 );
-                
+
                 if (result.success) {
                   toolResult = `✅ ${result.message}`;
                   sendEvent('content', { content: `\n\n✅ **Packages ${typedInput.operation === 'install' ? 'installed' : 'uninstalled'}:** ${typedInput.packages.join(', ')}\n` });
@@ -2420,7 +2450,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               const typedInput = input as { workflowName?: string };
               const workflowName = typedInput.workflowName || 'Start application';
               sendEvent('progress', { message: `🔄 Restarting workflow: ${workflowName}...` });
-              
+
               try {
                 sendEvent('content', { content: `\n\n🔄 **Restarting server...** This will apply code changes.\n` });
                 toolResult = `✅ Workflow "${workflowName}" restart requested. The server will restart automatically.`;
@@ -2430,10 +2460,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               }
             } else if (name === 'get_latest_lsp_diagnostics') {
               sendEvent('progress', { message: `🔍 Running TypeScript diagnostics...` });
-              
+
               try {
                 const result = await platformHealing.getLSPDiagnostics();
-                
+
                 if (result.diagnostics.length === 0) {
                   toolResult = `✅ ${result.summary}`;
                 } else {
@@ -2441,10 +2471,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                     .slice(0, 20)
                     .map(d => `${d.file}:${d.line}:${d.column} - ${d.severity}: ${d.message}`)
                     .join('\n');
-                  
+
                   toolResult = `${result.summary}\n\n${diagnosticsList}${result.diagnostics.length > 20 ? `\n... and ${result.diagnostics.length - 20} more` : ''}`;
                 }
-                
+
                 sendEvent('content', { content: `\n\n**TypeScript Check:** ${result.summary}\n` });
               } catch (error: any) {
                 toolResult = `❌ LSP diagnostics failed: ${error.message}`;
@@ -2452,10 +2482,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               }
             } else if (name === 'validate_before_commit') {
               sendEvent('progress', { message: `🔍 Running comprehensive pre-commit validation...` });
-              
+
               try {
                 const result = await platformHealing.validateBeforeCommit();
-                
+
                 if (result.success) {
                   toolResult = `${result.summary}\n\n` +
                     `✅ TypeScript: ${result.checks.typescript.message}\n` +
@@ -2474,7 +2504,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                   if (!result.checks.criticalFiles.passed) {
                     failures.push(`Critical Files: ${result.checks.criticalFiles.message}`);
                   }
-                  
+
                   toolResult = `${result.summary}\n\n` +
                     `❌ VALIDATION FAILURES:\n${failures.join('\n')}\n\n` +
                     `⚠️ Fix these issues before committing to production!`;
@@ -2487,18 +2517,18 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
             } else if (name === 'search_codebase') {
               const typedInput = input as { query: string; maxResults?: number };
               sendEvent('progress', { message: `🔍 Searching codebase: "${typedInput.query}"...` });
-              
+
               try {
                 const result = await platformHealing.searchCodebase(
                   typedInput.query,
                   typedInput.maxResults || 10
                 );
-                
+
                 if (result.success && result.results.length > 0) {
                   const resultsList = result.results
                     .map((r, i) => `${i + 1}. ${r.file}\n   ${r.relevance}\n   Code: ${r.snippet}`)
                     .join('\n\n');
-                  
+
                   toolResult = `${result.summary}\n\n${resultsList}`;
                   sendEvent('content', { content: `\n\n🔍 **Found ${result.results.length} relevant locations**\n` });
                 } else {
@@ -2513,7 +2543,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               const { knowledge_store } = await import('../tools/knowledge');
               const typedInput = input as { category: string; topic: string; content: string; tags?: string[]; source?: string; confidence?: number };
               sendEvent('progress', { message: `💾 Storing knowledge: ${typedInput.topic}...` });
-              
+
               try {
                 const result = await knowledge_store({
                   category: typedInput.category,
@@ -2533,7 +2563,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               const { knowledge_search } = await import('../tools/knowledge');
               const typedInput = input as { query: string; category?: string; tags?: string[]; limit?: number };
               sendEvent('progress', { message: `🔎 Searching knowledge: "${typedInput.query}"...` });
-              
+
               try {
                 const results = await knowledge_search({
                   query: typedInput.query,
@@ -2541,7 +2571,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                   tags: typedInput.tags,
                   limit: typedInput.limit
                 });
-                
+
                 if (results.length > 0) {
                   const resultsList = results
                     .map((r, i) => `${i + 1}. **${r.topic}** (${r.category})\n   ${r.content}\n   Tags: ${r.tags.join(', ')}\n   Confidence: ${r.confidence}`)
@@ -2560,7 +2590,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               const { knowledge_recall } = await import('../tools/knowledge');
               const typedInput = input as { category?: string; topic?: string; id?: string; limit?: number };
               sendEvent('progress', { message: `📚 Recalling knowledge...` });
-              
+
               try {
                 const results = await knowledge_recall({
                   category: typedInput.category,
@@ -2568,7 +2598,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                   id: typedInput.id,
                   limit: typedInput.limit
                 });
-                
+
                 if (results.length > 0) {
                   const resultsList = results
                     .map((r, i) => `${i + 1}. **${r.topic}** (${r.category})\n   ${r.content}\n   Tags: ${r.tags.join(', ')}`)
@@ -2587,7 +2617,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               const { code_search } = await import('../tools/knowledge');
               const typedInput = input as { query?: string; language?: string; tags?: string[]; store?: any; limit?: number };
               sendEvent('progress', { message: typedInput.store ? `💾 Storing code snippet...` : `🔍 Searching code snippets...` });
-              
+
               try {
                 const result = await code_search({
                   query: typedInput.query,
@@ -2596,7 +2626,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                   store: typedInput.store,
                   limit: typedInput.limit
                 });
-                
+
                 if (typeof result === 'string') {
                   // Store operation
                   toolResult = result;
@@ -2663,7 +2693,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       if (toolResults.length > 0) {
         // Track tool calls for quality analysis
         totalToolCallCount += toolResults.length;
-        
+
         // 📊 WORKFLOW TELEMETRY: Track read vs code-modifying operations
         let iterationHadCodeModifications = false;
         for (const toolName of toolNames) {
@@ -2679,7 +2709,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
             workflowTelemetry.readOperations++;
           }
         }
-        
+
         // Track consecutive read-only iterations
         if (!iterationHadCodeModifications) {
           workflowTelemetry.consecutiveReadOnlyIterations++;
@@ -2688,9 +2718,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           workflowTelemetry.consecutiveReadOnlyIterations = 0;
           console.log(`[WORKFLOW-TELEMETRY] ✅ Iteration ${iterationCount}: Code modifications detected - reset read-only counter`);
         }
-        
+
         console.log(`[WORKFLOW-TELEMETRY] Total: ${workflowTelemetry.readOperations} reads, ${workflowTelemetry.writeOperations} writes`);
-        
+
         // 🚨 EARLY TERMINATION: Halt if too many consecutive read-only iterations
         if (workflowTelemetry.consecutiveReadOnlyIterations >= workflowTelemetry.MAX_READ_ONLY_ITERATIONS) {
           console.warn(`[WORKFLOW-TELEMETRY] 🛑 HALTING - ${workflowTelemetry.MAX_READ_ONLY_ITERATIONS} consecutive read-only iterations detected`);
@@ -2699,20 +2729,20 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           fullContent += haltMsg;
           continueLoop = false;
         }
-        
+
         conversationMessages.push({
           role: 'user',
           content: toolResults,
         });
-        
+
         // 🚨 FORCING LOGIC (AFTER tool execution to avoid 400 errors)
         const createdTaskListThisIteration = toolNames.includes('createTaskList');
         const calledDiagnosisTools = toolNames.some(name => ['perform_diagnosis', 'architect_consult', 'execute_sql'].includes(name));
-        
+
         console.log(`[LOMU-AI-FORCE] Created task list: ${createdTaskListThisIteration}`);
         console.log(`[LOMU-AI-FORCE] Called diagnosis tools: ${calledDiagnosisTools}`);
         console.log(`[LOMU-AI-FORCE] Iteration count: ${iterationCount}`);
-        
+
         // ✅ NO AUTO-DIAGNOSIS FORCING - Let LomuAI work naturally
         // Only run diagnosis when user explicitly asks for it
         console.log('[LOMU-AI-FORCE] ✓ No forcing - LomuAI works autonomously');
@@ -2721,11 +2751,11 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         // 🐛 FIX: Don't end if there are tasks still in progress - LomuAI might need another turn
         console.log(`[LOMU-AI-CONTINUATION] Iteration ${iterationCount}: No tool calls, checking if should continue...`);
         console.log(`[LOMU-AI-CONTINUATION] Active task list ID: ${activeTaskListId || 'none'}`);
-        
+
         // 🚨 INFINITE LOOP PREVENTION: Track consecutive empty iterations
         consecutiveEmptyIterations++;
         console.log(`[LOMU-AI-CONTINUATION] Consecutive empty iterations: ${consecutiveEmptyIterations}/${MAX_EMPTY_ITERATIONS}`);
-        
+
         if (consecutiveEmptyIterations >= MAX_EMPTY_ITERATIONS) {
           console.log(`[LOMU-AI-CONTINUATION] 🛑 STOPPING - ${MAX_EMPTY_ITERATIONS} consecutive iterations without tool calls (infinite loop detected)`);
           sendEvent('progress', { message: `⚠️ LomuAI appears stuck - stopping after ${consecutiveEmptyIterations} empty iterations` });
@@ -2735,22 +2765,22 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
             const taskCheck = await readTaskList({ userId });
             console.log(`[LOMU-AI-CONTINUATION] Task list read success: ${taskCheck.success}`);
             console.log(`[LOMU-AI-CONTINUATION] Task lists found: ${taskCheck.taskLists?.length || 0}`);
-            
+
             const sessionTaskList = taskCheck.taskLists?.find((list: any) => list.id === activeTaskListId);
             console.log(`[LOMU-AI-CONTINUATION] Session task list found: ${!!sessionTaskList}`);
             console.log(`[LOMU-AI-CONTINUATION] Tasks: ${sessionTaskList?.tasks?.length || 0}`);
-            
+
             const allTasks = sessionTaskList?.tasks || [];
             const inProgressTasks = allTasks.filter((t: any) => t.status === 'in_progress');
             const pendingTasks = allTasks.filter((t: any) => t.status === 'pending');
             const completedTasks = allTasks.filter((t: any) => t.status === 'completed');
-            
+
             console.log(`[LOMU-AI-CONTINUATION] Completed: ${completedTasks.length}, In-progress: ${inProgressTasks.length}, Pending: ${pendingTasks.length}`);
-            
+
             // ✅ FULL AUTONOMY: Let LomuAI decide when to continue
             // No forcing, no micromanagement - trust the AI to do its job
             const hasIncompleteTasks = inProgressTasks.length > 0 || pendingTasks.length > 0;
-            
+
             if (hasIncompleteTasks && iterationCount < MAX_ITERATIONS) {
               console.log(`[LOMU-AI-CONTINUATION] ✅ Continuing naturally - incomplete tasks remain`);
               continueLoop = true; // Continue but don't inject forcing messages
@@ -2778,15 +2808,15 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       fullContent += warningMsg;
       console.warn(`[LOMU-AI] ⚠️ Hit MAX_ITERATIONS (${MAX_ITERATIONS}) - possible infinite loop`);
     }
-    
+
     // 🎯 GIT-BASED FILE CHANGE DETECTION: Check if any files were actually modified
     try {
       const { stdout: gitStatus } = await execAsync('git status --porcelain');
       const hasFileChanges = gitStatus.trim().length > 0;
-      
+
       // CRITICAL: Git status is ground truth - override hasProducedFixes
       workflowTelemetry.hasProducedFixes = hasFileChanges;
-      
+
       if (hasFileChanges) {
         console.log('[WORKFLOW-TELEMETRY] ✅ Git detected file changes - marking as having fixes');
         console.log('[WORKFLOW-TELEMETRY] Changed files:', gitStatus.split('\n').slice(0, 5).join(', '));
@@ -2797,11 +2827,11 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       // Non-fatal: if git fails, rely on tool classification
       console.warn('[WORKFLOW-TELEMETRY] Git status check failed:', gitError.message);
     }
-    
+
     // 📊 WORKFLOW VALIDATION: Detect zero-mutation jobs and flag as failed
     console.log(`[WORKFLOW-VALIDATION] Job completed with ${workflowTelemetry.writeOperations} code-modifying operations`);
     console.log(`[WORKFLOW-VALIDATION] Has produced fixes: ${workflowTelemetry.hasProducedFixes}`);
-    
+
     // Detect if this was a fix/build request but no code modifications occurred
     // CRITICAL: Comprehensive keyword matching for fix requests (case-insensitive)
     const lowerMessage = message.toLowerCase();
@@ -2813,22 +2843,22 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       'heal', 'platform-healing', 'self-healing',
       'bug', 'issue', 'problem', 'error', 'broken', 'failing'
     ];
-    
+
     const isFixRequest = FIX_REQUEST_KEYWORDS.some(keyword => lowerMessage.includes(keyword));
     const isZeroMutationJob = isFixRequest && !workflowTelemetry.hasProducedFixes;
-    
+
     if (isZeroMutationJob) {
       console.error(`[WORKFLOW-VALIDATION] 🚨 ZERO-MUTATION JOB FAILURE - Fix request with no code modifications`);
       console.error(`[WORKFLOW-VALIDATION] Read operations: ${workflowTelemetry.readOperations}, Code modifications: ${workflowTelemetry.writeOperations}`);
       console.error(`[WORKFLOW-VALIDATION] Message: "${message.slice(0, 100)}..."`);
-      
+
       // CRITICAL: This is a workflow failure - add failure message and mark audit as failure
       const zeroMutationFailure = `\n\n❌ **WORKFLOW FAILURE: Investigation without implementation**\n\nI completed ${workflowTelemetry.readOperations} read operations but failed to make any code changes to fix the issue.\n\n**What went wrong:**\n- I investigated the problem but didn't implement a solution\n- No files were modified, no fixes were applied\n- This violates the action-enforcement workflow\n\n**Next steps:**\n- This failure has been logged for platform improvement\n- I AM Architect will be notified for workflow re-guidance\n- Please clarify what specific changes you want me to make`;
-      
+
       sendEvent('content', { content: zeroMutationFailure });
       sendEvent('error', { message: 'Zero-mutation job failure - no code modifications made' });
       fullContent += zeroMutationFailure;
-      
+
       // Log as failure in audit trail (override the success status later)
       await platformAudit.log({
         userId,
@@ -2839,7 +2869,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         commitHash: '',
         status: 'failure',
       });
-      
+
       // Create platform incident for I AM Architect to review
       try {
         const [incident] = await db.insert(platformIncidents).values({
@@ -2859,7 +2889,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
             jobId: null, // This is a chat job, not a healing job
           }
         }).returning();
-        
+
         console.log(`[WORKFLOW-VALIDATION] 🚨 Created incident ${incident.id} for I AM Architect escalation`);
         sendEvent('progress', { message: '🚨 Workflow failure logged - will escalate to I AM Architect' });
       } catch (incidentError: any) {
@@ -2899,7 +2929,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
             // NEVER touch "pending" tasks - they were never started
             // This prevents auto-completing tasks that LomuAI hasn't started yet
             const stuckTasks = sessionTaskList.tasks.filter((t: any) => t.status === 'in_progress');
-            
+
             if (stuckTasks.length > 0) {
               console.log(`[LOMU-AI-CLEANUP] Found ${stuckTasks.length} stuck in_progress tasks - will auto-complete`);
               sendEvent('progress', { message: `Cleaning up ${stuckTasks.length} stuck tasks...` });
@@ -2919,7 +2949,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                   console.error(`[LOMU-AI-CLEANUP] Failed to cleanup task ${task.id}:`, error);
                 }
               }
-              
+
               // Mark task list as completed since we cleaned up stuck tasks
               try {
                 await db
@@ -3015,7 +3045,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         console.log(`[LOMU-AI-QUALITY] Quality score: ${qualityAnalysis.qualityScore}/100`);
         console.log(`[LOMU-AI-QUALITY] Is poor quality: ${qualityAnalysis.isPoorQuality}`);
         console.log(`[LOMU-AI-QUALITY] Should escalate: ${qualityAnalysis.shouldEscalate}`);
-        
+
         if (qualityAnalysis.issues.length > 0) {
           console.log(`[LOMU-AI-QUALITY] Issues detected:`, qualityAnalysis.issues);
         }
@@ -3023,7 +3053,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         // If response quality is poor, create an incident (async, non-blocking)
         if (qualityAnalysis.isPoorQuality) {
           console.log('[LOMU-AI-QUALITY] ⚠️ Poor quality response detected - creating incident');
-          
+
           // ✅ Fire-and-forget incident creation to prevent blocking
           Promise.resolve().then(async () => {
             try {
@@ -3040,17 +3070,17 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                   )
                 )
                 .limit(10);
-              
+
               // Count quality incidents in last 5 minutes for this user/type
               const qualityIncidentCount = recentIncidents.filter(
                 inc => inc.title?.includes('Response Quality Issue')
               ).length;
-              
+
               if (qualityIncidentCount >= 3) {
                 console.log('[LOMU-AI-QUALITY] ⏱️ Throttled: 3+ quality incidents in last 5 min, skipping duplicate');
                 return;
               }
-              
+
               const incidentId = await agentFailureDetector.createAgentFailureIncident({
                 title: `Agent Response Quality Issue (Score: ${qualityAnalysis.qualityScore})`,
                 description: `LomuAI generated a low-quality response.\n\n` +
@@ -3069,12 +3099,12 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               // If quality is critically poor, trigger architect healing
               if (qualityAnalysis.shouldEscalate) {
                 console.log('[LOMU-AI-QUALITY] 🚨 Critical quality issue - triggering architect healing');
-                
+
                 // Trigger healing via public API (fire-and-forget, non-blocking)
                 healOrchestrator.enqueueIncident(incidentId).catch((error: any) => {
                   console.error('[LOMU-AI-QUALITY] Failed to enqueue healing:', error.message);
                 });
-                
+
                 console.log('[LOMU-AI-QUALITY] ✅ Architect healing queued (async)');
               }
             } catch (incidentError: any) {
@@ -3091,7 +3121,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     });
   } catch (error: any) {
     console.error('[LOMU-AI-CHAT] Stream error:', error);
-    
+
     // 🔥 RAILWAY FIX: Clear heartbeat on error
     if (heartbeatInterval) {
       clearInterval(heartbeatInterval);
@@ -3109,7 +3139,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         content: errorMsg,
         isPlatformHealing: true,
       }).returning();
-      
+
       // Send error and done events, then close stream
       terminateStream(errorAssistantMsg.id, `Oops! ${error.message}. Let me try again!`);
     } catch (dbError: any) {
@@ -3122,13 +3152,13 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     const activeStreamsKey = `lomu-ai-stream-${userId}`;
     activeStreams.delete(activeStreamsKey);
     console.log('[LOMU-AI-CHAT] Stream unregistered for user:', userId);
-    
+
     // Clear stream timeout
     if (streamTimeoutId) {
       clearTimeout(streamTimeoutId);
       console.log('[LOMU-AI-CHAT] Stream timeout cleared');
     }
-    
+
     // 🔥 RAILWAY FIX: ALWAYS clear heartbeat when stream ends
     // This ensures cleanup happens on success, error, or early termination
     if (heartbeatInterval) {
@@ -3191,7 +3221,7 @@ router.post('/start', isAuthenticated, async (req: any, res) => {
   try {
     const { message } = req.body;
     const userId = req.authenticatedUserId;
-    
+
     if (!message || typeof message !== 'string') {
       return res.status(400).json({ error: 'Message is required' });
     }
@@ -3199,10 +3229,10 @@ router.post('/start', isAuthenticated, async (req: any, res) => {
     // 🔥 CRITICAL FIX: SHORT-CIRCUIT for simple conversational messages
     // Don't create jobs for "hi", "thanks", etc. - respond directly instead
     const { isSimpleMessage, createJob, startJobWorker } = await import('../services/lomuJobManager');
-    
+
     if (isSimpleMessage(message)) {
       console.log('[LOMU-AI] Simple message detected, responding directly without job:', message.substring(0, 30));
-      
+
       // Prepare simple responses
       const simpleResponses = {
         greetings: "Hey! 👋 I'm LomuAI, your platform maintenance assistant. Need help with something?",
@@ -3210,10 +3240,10 @@ router.post('/start', isAuthenticated, async (req: any, res) => {
         yes_no: "Got it! Let me know if you need anything else.",
         about: "I'm LomuAI - I maintain the Lomu platform, fix bugs, and handle deployments. What can I help you with today?"
       };
-      
+
       const msg = message.trim().toLowerCase();
       let response = simpleResponses.about; // default
-      
+
       if (/^(hi|hey|hello|yo|sup|howdy|greetings)/.test(msg)) {
         response = simpleResponses.greetings;
       } else if (/^(thanks?|thank you|thx|ty)/.test(msg)) {
@@ -3221,7 +3251,7 @@ router.post('/start', isAuthenticated, async (req: any, res) => {
       } else if (/^(yes|no|ok|okay|nope|yep|yeah|nah)/.test(msg)) {
         response = simpleResponses.yes_no;
       }
-      
+
       // Save simple exchange to chat history
       const [assistantMsg] = await db
         .insert(chatMessages)
@@ -3234,7 +3264,7 @@ router.post('/start', isAuthenticated, async (req: any, res) => {
           isPlatformHealing: true,
         })
         .returning();
-      
+
       return res.json({
         success: true,
         message: response,
@@ -3245,12 +3275,12 @@ router.post('/start', isAuthenticated, async (req: any, res) => {
 
     // ONLY create job for actual work requests
     const job = await createJob(userId, message);
-    
+
     // Start worker in background (fire and forget)
     startJobWorker(job.id);
-    
+
     console.log('[LOMU-AI] Started background job:', job.id);
-    
+
     res.json({ 
       success: true, 
       jobId: job.id,
@@ -3267,28 +3297,28 @@ router.post('/resume/:jobId', isAuthenticated, async (req: any, res) => {
   try {
     const { jobId } = req.params;
     const userId = req.authenticatedUserId;
-    
+
     const { resumeJob } = await import('../services/lomuJobManager');
-    
+
     // Resume the job
     await resumeJob(jobId, userId);
-    
+
     console.log('[LOMU-AI] Resumed job:', jobId);
-    
+
     res.json({ 
       success: true,
       message: 'Job resumed successfully',
     });
   } catch (error: any) {
     console.error('[LOMU-AI] Failed to resume job:', error);
-    
+
     if (error.message.includes('not found')) {
       return res.status(404).json({ error: error.message });
     }
     if (error.message.includes('cannot be resumed')) {
       return res.status(400).json({ error: error.message });
     }
-    
+
     res.status(500).json({ error: error.message });
   }
 });
@@ -3298,16 +3328,16 @@ router.get('/job/:jobId', isAuthenticated, async (req: any, res) => {
   try {
     const { jobId } = req.params;
     const userId = req.authenticatedUserId;
-    
+
     const { getJob } = await import('../services/lomuJobManager');
-    
+
     // Get the job
     const job = await getJob(jobId, userId);
-    
+
     if (!job) {
       return res.status(404).json({ error: 'Job not found' });
     }
-    
+
     res.json({ 
       success: true, 
       job,
@@ -3322,7 +3352,7 @@ router.get('/job/:jobId', isAuthenticated, async (req: any, res) => {
 router.get('/active-job', isAuthenticated, async (req: any, res) => {
   try {
     const userId = req.authenticatedUserId;
-    
+
     // Find the most recent active, interrupted, or pending job
     const job = await db.query.lomuJobs.findFirst({
       where: (jobs, { and, eq, inArray }) => and(
@@ -3331,9 +3361,9 @@ router.get('/active-job', isAuthenticated, async (req: any, res) => {
       ),
       orderBy: (jobs, { desc }) => [desc(jobs.createdAt)],
     });
-    
+
     console.log('[LOMU-AI] Active job query for user:', userId, job ? `found ${job.id}` : 'none found');
-    
+
     res.json({ 
       success: true, 
       job: job || null,
@@ -3349,22 +3379,22 @@ router.delete('/job/:jobId', isAuthenticated, isAdmin, async (req: any, res) => 
   try {
     const { jobId } = req.params;
     const userId = req.authenticatedUserId;
-    
+
     // Get the job
     const job = await db.query.lomuJobs.findFirst({
       where: (jobs, { eq }) => eq(jobs.id, jobId)
     });
-    
+
     if (!job) {
       return res.status(404).json({ error: 'Job not found' });
     }
-    
+
     // Admins can clean up any job, regular users can only clean up their own
     const user = req.user as any;
     if (!user.isOwner && job.userId !== userId) {
       return res.status(403).json({ error: 'You can only cancel your own jobs' });
     }
-    
+
     // Mark as failed/interrupted
     await db.update(lomuJobs)
       .set({ 
@@ -3373,9 +3403,9 @@ router.delete('/job/:jobId', isAuthenticated, isAdmin, async (req: any, res) => 
         updatedAt: new Date()
       })
       .where(eq(lomuJobs.id, jobId));
-    
+
     console.log('[LOMU-AI] Job cancelled:', jobId, 'by user:', userId);
-    
+
     res.json({ 
       success: true,
       message: 'Job cancelled successfully',
@@ -3391,7 +3421,7 @@ router.get('/chat-history', isAuthenticated, async (req: any, res) => {
   try {
     const userId = req.authenticatedUserId;
     const limit = parseInt(req.query.limit as string) || 50;
-    
+
     // Fetch recent messages for this user
     const messages = await db
       .select({
@@ -3404,10 +3434,10 @@ router.get('/chat-history', isAuthenticated, async (req: any, res) => {
       .where(eq(chatMessages.userId, userId))
       .orderBy(desc(chatMessages.createdAt))
       .limit(limit);
-    
+
     // Filter out tool calls from messages before sending to frontend
     const filteredMessages = filterToolCallsFromMessages(messages.reverse());
-    
+
     // Return in chronological order (oldest first)
     res.json({ 
       success: true, 

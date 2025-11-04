@@ -603,7 +603,7 @@ async function runMetaSysopWorker(jobId: string) {
 4. TEST: "🧪 Testing..." → [run tests]
    • Web: run_playwright_test
    • Backend: bash("npm test")
-   • Python: bash("pytest")
+   • Python: pytest
 
 5. VERIFY: "✓ Verifying..." → [check compilation/workflow]
    • TypeScript: bash("npx tsc --noEmit")
@@ -613,7 +613,7 @@ async function runMetaSysopWorker(jobId: string) {
    • Example: "Todo app built. Tests pass."
    • NO apologies, meta-commentary, or rambling
 
-7. COMMIT: ${autoCommit ? '"📤 Committed to GitHub" (after Phase 5 passes)' : '"⏸️ Awaiting commit approval" (show changes, WAIT)'}
+7. COMMIT: ${autoCommit ? '"📤 Committed to GitHub" (after Phase 5 passes)' : '"PAUSED: Awaiting commit approval" (show changes, WAIT)'}
 
 FAILURE CONDITIONS (auto-restart or escalate):
 • Skip createTaskList → Restart Phase 2
@@ -1022,7 +1022,7 @@ Let's build! 🚀`;
         '✓ Verifying...',
         '✅ Complete',
         '📤 Committed',
-        '⏸️ Awaiting'
+        'PAUSED: Awaiting'
       ];
 
       // ✅ FIX: Expand allowed text patterns for legitimate status messages
