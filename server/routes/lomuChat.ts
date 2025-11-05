@@ -166,8 +166,12 @@ function broadcastFileUpdate(path: string, operation: 'create' | 'modify' | 'del
   let broadcastCount = 0;
   wss.clients.forEach((client: any) => {
     if (client.readyState === 1) { // WebSocket.OPEN = 1
-      client.send(updateMessage);
-      broadcastCount++;
+      try {
+        client.send(updateMessage);
+        broadcastCount++;
+      } catch (error: any) {
+        console.warn('[LOMU-AI] Failed to send WebSocket message:', error.message);
+      }
     }
   });
 

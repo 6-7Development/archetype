@@ -38,7 +38,7 @@ function convertMessagesToGemini(messages: any[]): any[] {
     }
   });
 
-  return messages.map(msg => {
+  const convertedMessages = messages.map(msg => {
     if (msg.role === 'assistant') {
       return {
         role: 'model',
@@ -161,6 +161,11 @@ function convertMessagesToGemini(messages: any[]): any[] {
           })
     };
   });
+  
+  // Cleanup memory leak: Clear the toolUseMap after processing
+  toolUseMap.clear();
+  
+  return convertedMessages;
 }
 
 /**
