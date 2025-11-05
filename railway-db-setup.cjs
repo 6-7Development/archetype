@@ -43,15 +43,16 @@ const path = require('path'); // Import the path module
 
     console.log(`   ✅ Migration complete: ${created} created, ${skipped} skipped, ${failed} failed`);
 
-    // STEP 2: Add missing columns (drift repair)
+    // STEP 2: Add missing columns (drift repair) - OPTIONAL
     console.log('📋 Step 2: Repairing schema drift (adding missing columns)...');
-    const addMissingColumnsSQL = fs.readFileSync(
-      path.join(__dirname, 'add-missing-columns.sql'),
-      'utf-8'
-    );
-
-    await pool.query(addMissingColumnsSQL);
-    console.log('✅ Schema drift repaired - all columns present');
+    const addMissingColumnsPath = path.join(__dirname, 'add-missing-columns.sql');
+    if (fs.existsSync(addMissingColumnsPath)) {
+      const addMissingColumnsSQL = fs.readFileSync(addMissingColumnsPath, 'utf-8');
+      await pool.query(addMissingColumnsSQL);
+      console.log('✅ Schema drift repaired - all columns present');
+    } else {
+      console.log('⚠️  add-missing-columns.sql not found - skipping drift repair (optional)');
+    }
 
     // Execute incident category migration
     console.log('📋 Step 3: Adding incident category columns...');
