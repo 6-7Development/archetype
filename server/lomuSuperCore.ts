@@ -595,6 +595,23 @@ interface ResponseMetrics {
 export class LomuLearningSystem {
   private static successPatterns = new Map<string, ResponseMetrics[]>();
   
+  // 🧹 MEMORY MANAGEMENT: Add cleanup method
+  static cleanup() {
+    this.successPatterns.clear();
+    console.log('[LOMU-LEARNING] Pattern cache cleared');
+  }
+  
+  // 🧹 MEMORY MANAGEMENT: Get current cache stats
+  static getCacheStats() {
+    const totalPatterns = Array.from(this.successPatterns.values())
+      .reduce((sum, patterns) => sum + patterns.length, 0);
+    return {
+      taskTypes: this.successPatterns.size,
+      totalPatterns,
+      memoryEstimateKB: Math.round((totalPatterns * 200) / 1024), // ~200 bytes per pattern
+    };
+  }
+  
   static recordSuccess(taskType: string, metrics: ResponseMetrics) {
     if (!this.successPatterns.has(taskType)) {
       this.successPatterns.set(taskType, []);
@@ -605,6 +622,13 @@ export class LomuLearningSystem {
     const patterns = this.successPatterns.get(taskType)!;
     if (patterns.length > 10) {
       patterns.shift();
+    }
+    
+    // 🧹 MEMORY LEAK PREVENTION: Limit total Map size
+    if (this.successPatterns.size > 50) {
+      // Remove oldest task types when Map grows too large
+      const oldestKey = this.successPatterns.keys().next().value;
+      this.successPatterns.delete(oldestKey);
     }
   }
   
