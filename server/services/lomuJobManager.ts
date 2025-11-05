@@ -1209,6 +1209,7 @@ Let's build! 🚀`;
 
           // Inject workflow violation error back to AI
           toolResults.push({
+            type: 'tool_result',
             tool_use_id: id,
             is_error: true,
             content: `⛔ WORKFLOW VIOLATION: Cannot use ${name} in ${workflowValidator.getCurrentPhase()} phase. ${toolValidation.reason}`
