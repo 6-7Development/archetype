@@ -118,6 +118,32 @@ export function registerHealingRoutes(app: Express) {
         userId
       });
       
+      // AUTO-CLEANUP: Keep only last 2 conversations per target
+      try {
+        const allConversations = await storage.getHealingConversations(validated.targetId, userId);
+        
+        // Sort by creation date (newest first)
+        const sorted = allConversations.sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        
+        // Keep the 2 most recent, delete the rest
+        const toDelete = sorted.slice(2);
+        
+        if (toDelete.length > 0) {
+          console.log(`[HEALING] Auto-cleanup: Deleting ${toDelete.length} old conversations for target ${validated.targetId}`);
+          
+          for (const oldConv of toDelete) {
+            await storage.deleteHealingConversation(oldConv.id);
+          }
+          
+          console.log(`[HEALING] ✅ Cleanup complete - kept 2 recent conversations, deleted ${toDelete.length} old ones`);
+        }
+      } catch (cleanupError) {
+        console.error("[HEALING] Warning: Auto-cleanup failed:", cleanupError);
+        // Don't fail the request if cleanup fails
+      }
+      
       res.json(conversation);
     } catch (error: any) {
       console.error("[HEALING] Error creating conversation:", error);

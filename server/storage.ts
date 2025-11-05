@@ -408,6 +408,7 @@ export interface IStorage {
   getHealingConversations(targetId: string, userId: string): Promise<HealingConversation[]>;
   getHealingConversation(id: string): Promise<HealingConversation | undefined>;
   createHealingConversation(conversation: InsertHealingConversation & { userId: string }): Promise<HealingConversation>;
+  deleteHealingConversation(conversationId: string): Promise<void>;
   updateHealingConversation(id: string, updates: Partial<HealingConversation>): Promise<HealingConversation>;
   
   // Healing Message operations
@@ -2715,6 +2716,18 @@ export class DatabaseStorage implements IStorage {
   async createHealingConversation(conversation: InsertHealingConversation & { userId: string }): Promise<HealingConversation> {
     const [created] = await db.insert(healingConversations).values(conversation).returning();
     return created;
+  }
+
+  async deleteHealingConversation(conversationId: string): Promise<void> {
+    // First delete all messages in the conversation
+    await db
+      .delete(healingMessages)
+      .where(eq(healingMessages.conversationId, conversationId));
+    
+    // Then delete the conversation itself
+    await db
+      .delete(healingConversations)
+      .where(eq(healingConversations.id, conversationId));
   }
 
   async updateHealingConversation(id: string, updates: Partial<HealingConversation>): Promise<HealingConversation> {
