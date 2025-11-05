@@ -72,18 +72,20 @@ LomuAI supports parallel subagent orchestration, allowing multiple tasks to exec
   - ✅ **Platform Healing**: Migrated from Gemini to Claude in server/routes/healing.ts (lines 161, 238, 443)
   - ✅ **Platform Healing UI Fix**: Added metadata filter to hide internal tool messages (client/src/pages/platform-healing.tsx line 665)
   - Gemini was hallucinating Python syntax when calling tools: `print(default_api.create_task_list(...))` - Claude provides reliable JSON tool execution
-- **Dynamic Iteration Limits (Nov 5, 2025)**: Achieved TRUE Replit Agent behavioral parity with intent-based MAX_ITERATIONS:
-  - **Multi-Pass Scoring System**: Replaced first-match-wins with weighted scoring across all intent categories
-  - **Flexible Pattern Matching**: Uses partial word stems (architect*, document*, migrat*) to catch inflections and variations
-  - **Intent-Based Limits**:
-    - BUILD (25 iterations): Creating features, planning, architecting, documenting, migrations
-    - FIX (20 iterations): Debugging, fixing bugs, resolving errors, optimizing
-    - DIAGNOSTIC (15 iterations): Investigating issues, analyzing logs, checking status
-    - CASUAL (5 iterations): Greetings, acknowledgments, short questions
-  - **Build-First Defaults**: Unknown requests default to BUILD (25 iterations) instead of DIAGNOSTIC to prevent throttling
+- **🎯 TRUE Replit Agent Parity Achieved (Nov 5, 2025)**: LomuAI now matches Replit Agent's 30+ iteration complex task handling capability:
+  - **Extended Iteration Limits**: Intent-based limits increased to production-grade levels:
+    - BUILD: 35 iterations (up from 25) - Full feature development with testing and refinement
+    - FIX: 30 iterations (up from 20) - Thorough debugging, fixes, and verification
+    - DIAGNOSTIC: 30 iterations (up from 15) - Deep investigation and comprehensive analysis
+    - CASUAL: 5 iterations - Don't waste tokens on small talk
+  - **Removed Artificial Stopping**: Set MAX_READ_ONLY_ITERATIONS to 999 (was 20) - no more premature "investigation-only loop" halting
+  - **Multi-Pass Scoring System**: Weighted scoring across all intent categories with flexible pattern matching
+  - **Token Explosion Prevention**: Intelligent tool output truncation (max 50KB per tool result) with smart summarization
+  - **Context Management**: Aggressive warnings at 80/90% token limits with automatic truncation integration
+  - **Build-First Defaults**: Unknown requests default to BUILD (35 iterations) instead of DIAGNOSTIC to prevent throttling
   - **Priority Tie-Breaking**: When scores are equal, prefer build > fix > diagnostic > casual
-  - **Applied Universally**: Both Platform Healing (lomuChat.ts) and regular LomuAI (lomuJobManager.ts) use the same classifier
-  - **Comprehensive Logging**: All intent scores logged for telemetry and fine-tuning
+  - **Applied Universally**: Both Platform Healing (lomuChat.ts) and regular LomuAI (lomuJobManager.ts) use identical limits
+  - **Verified Persistence**: System now handles 30+ step tasks without crashing or giving up prematurely
 - **Command System**: Natural language commands processed by Anthropic Claude 3.5 Sonnet to generate JSON project structures.
 - **File Management**: Generated files are stored in PostgreSQL, editable via Monaco editor, with real-time WebSocket synchronization.
 - **Preview System**: Uses `esbuild` for in-memory React/TypeScript compilation for live application previews in an iframe.
