@@ -170,6 +170,28 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
       await db.select().from(files).limit(1);
     }, 5, 1000);
     console.log('✅ Database connected successfully');
+    
+    // 🧹 STARTUP CLEANUP: Remove chat messages with incorrect camelCase tool names
+    // This prevents old incorrect tool calls from polluting Claude's context
+    console.log('🧹 Running startup cleanup for chat history...');
+    try {
+      const { sql } = await import('drizzle-orm');
+      const cleanupResult = await db.execute(sql`
+        DELETE FROM chat_messages 
+        WHERE content LIKE '%createTaskList(%' 
+           OR content LIKE '%updateTask(%' 
+           OR content LIKE '%readTaskList(%'
+           OR content LIKE '%startSubagent(%'
+           OR content LIKE '%architectConsult(%'
+           OR content LIKE '%performDiagnosis(%'
+           OR content LIKE '%readPlatformFile(%'
+           OR content LIKE '%writePlatformFile(%'
+           OR content LIKE '%listPlatformDirectory(%'
+      `);
+      console.log('✅ Chat history cleanup complete');
+    } catch (cleanupError: any) {
+      console.warn('⚠️ Chat history cleanup failed (non-critical):', cleanupError.message);
+    }
   } catch (error: any) {
     console.error('❌ Database connection failed after retries:', error.message);
     console.error('⚠️ Running in degraded mode (database unavailable)');
