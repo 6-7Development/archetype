@@ -1251,8 +1251,9 @@ Let's build! 🚀`;
           // HARD ENFORCEMENT - Block invalid phase transitions
           const detectedPhase = workflowValidator.detectPhaseAnnouncement(chunk.content);
           if (detectedPhase) {
-            // 🎯 ENFORCEMENT: Use orchestrator for phase transitions (checks + executes if allowed)
-            const transition = enforcementOrchestrator.transitionToPhase(detectedPhase);
+            // 🎯 FIX: Convert to uppercase for enforcementOrchestrator (uses UPPERCASE phases)
+            const uppercasePhase = detectedPhase.toUpperCase() as any;
+            const transition = enforcementOrchestrator.transitionToPhase(uppercasePhase);
 
             if (!transition.allowed) {
               // HARD BLOCK: Inject error to AI conversation
@@ -1277,17 +1278,17 @@ Let's build! 🚀`;
                 content: `SYSTEM ERROR: ${transition.reason}. You must correct this violation before proceeding.`
               });
 
-              console.error(`[ENFORCEMENT] BLOCKED invalid transition: ${enforcementOrchestrator.getCurrentPhase()} → ${detectedPhase}`);
+              console.error(`[ENFORCEMENT] BLOCKED invalid transition: ${enforcementOrchestrator.getCurrentPhase()} → ${uppercasePhase}`);
               // Don't actually transition - the orchestrator will keep current phase
             } else {
               // Transition was successful (already performed by orchestrator)
               // Also notify the legacy workflow validator for backward compatibility
               workflowValidator.transitionTo(detectedPhase);
-              metricsTracker?.recordPhaseTransition(detectedPhase);
+              metricsTracker?.recordPhaseTransition(uppercasePhase);
 
               // 🔄 UPDATE CURRENT PHASE for continuous guard
               currentPhase = detectedPhase;
-              console.log(`[ENFORCEMENT] ✅ Phase transition: ${detectedPhase}`);
+              console.log(`[ENFORCEMENT] ✅ Phase transition: ${uppercasePhase}`);
             }
           }
 
