@@ -132,8 +132,23 @@ export function createSafeAnthropicRequest(
   
   // Step 2: Check if we're within limits
   if (originalTotalTokens <= MAX_CONTEXT_TOKENS) {
-    console.log(`[ANTHROPIC-WRAPPER] ✅ Within limits (${originalTotalTokens.toLocaleString()} / ${MAX_CONTEXT_TOKENS.toLocaleString()} tokens)`);
-    console.log(`[ANTHROPIC-WRAPPER] Safety margin: ${(MAX_CONTEXT_TOKENS - originalTotalTokens).toLocaleString()} tokens remaining`);
+    const remainingTokens = MAX_CONTEXT_TOKENS - originalTotalTokens;
+    const usagePercent = ((originalTotalTokens / MAX_CONTEXT_TOKENS) * 100).toFixed(1);
+    
+    // 🚨 Add escalating warnings as we approach limits
+    if (usagePercent >= '90') {
+      console.log(`[ANTHROPIC-WRAPPER] 🚨 CRITICAL: ${usagePercent}% of context limit used!`);
+      console.log(`[ANTHROPIC-WRAPPER] 🚨 Only ${remainingTokens.toLocaleString()} tokens remaining - context explosion imminent!`);
+    } else if (usagePercent >= '75') {
+      console.log(`[ANTHROPIC-WRAPPER] ⚠️ WARNING: ${usagePercent}% of context limit used`);
+      console.log(`[ANTHROPIC-WRAPPER] ⚠️ ${remainingTokens.toLocaleString()} tokens remaining - monitor carefully`);
+    } else if (usagePercent >= '50') {
+      console.log(`[ANTHROPIC-WRAPPER] ⚡ ${usagePercent}% of context used (${remainingTokens.toLocaleString()} tokens left)`);
+    } else {
+      console.log(`[ANTHROPIC-WRAPPER] ✅ Within limits (${originalTotalTokens.toLocaleString()} / ${MAX_CONTEXT_TOKENS.toLocaleString()} tokens)`);
+      console.log(`[ANTHROPIC-WRAPPER] Safety margin: ${remainingTokens.toLocaleString()} tokens remaining`);
+    }
+    
     return {
       messages,
       systemPrompt,
