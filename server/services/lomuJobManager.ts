@@ -605,7 +605,7 @@ async function runMetaSysopWorker(jobId: string) {
 - If you're unsure: READ THE FILE AND FIND OUT
 
 ⚡ IMMEDIATE ACTION REQUIREMENT:
-- FIRST RESPONSE: Must call at least ONE tool (readPlatformFile, listPlatformDirectory, or createTaskList)
+- FIRST RESPONSE: Must call at least ONE tool (read_platform_file, list_platform_files, or create_task_list)
 - NO pure text responses without tool calls
 - NO excuses like "file doesn't exist" or "I can't do that" without verification
 - If you're unsure: READ THE FILE AND FIND OUT
@@ -615,9 +615,9 @@ async function runMetaSysopWorker(jobId: string) {
 1. ASSESS: "🔍 Assessing..." → [silent file reading] → "✅ Assessment complete"
    • Read files/logs silently, NO explanations
 
-2. PLAN: "📋 Planning..." → [createTaskList call IMMEDIATELY]
+2. PLAN: "📋 Planning..." → [create_task_list call IMMEDIATELY]
    • MANDATORY for every job (even 1-line fixes)
-   • Format: createTaskList({title: "Goal", tasks: [{title, description}]})
+   • Format: create_task_list({title: "Goal", tasks: [{title, description}]})
 
 3. EXECUTE: "⚡ Executing..." → [call tools IMMEDIATELY]
    • Max 5 words before tools
@@ -639,7 +639,7 @@ async function runMetaSysopWorker(jobId: string) {
 7. COMMIT: ${autoCommit ? '"📤 Committed to GitHub" (after Phase 5 passes)' : '"PAUSED: Awaiting commit approval" (show changes, WAIT)'}
 
 FAILURE CONDITIONS (auto-restart or escalate):
-• Skip createTaskList → Restart Phase 2
+• Skip create_task_list → Restart Phase 2
 • Skip tests → Restart Phase 4
 • >5 words before tools → Restart Phase 3
 • Fail same task 2x → Call architect_consult (mandatory)

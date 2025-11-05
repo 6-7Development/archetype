@@ -119,7 +119,7 @@ export async function updateTask(params: {
     if (userTaskLists.length === 0) {
       return {
         success: false,
-        error: 'No task list found. You need to read your task list with readTaskList() first to see available task IDs. Tasks are created automatically when conversations start.',
+        error: 'No task list found. You need to read your task list with read_task_list() first to see available task IDs. Tasks are created automatically when conversations start.',
       };
     }
 
@@ -142,7 +142,7 @@ export async function updateTask(params: {
       if (taskExists.length === 0) {
         return {
           success: false,
-          error: `Task ID "${params.taskId}" not found. Call readTaskList() to see your current task IDs and use one of those instead.`,
+          error: `Task ID "${params.taskId}" not found. Call read_task_list() to see your current task IDs and use one of those instead.`,
         };
       } else {
         return {

@@ -129,7 +129,7 @@ Provide brief, direct corrective guidance (max 100 words):`;
       else severity = 'low';
       
       // Determine if LomuAI should retry (for critical violations)
-      const shouldRetry = severity === 'critical' || request.violation.includes('Missing createTaskList');
+      const shouldRetry = severity === 'critical' || request.violation.includes('Missing create_task_list');
       
       // Extract suggested actions from guidance
       const suggestedActions = this.extractActions(guidanceText);

@@ -2785,7 +2785,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         });
 
         // 🚨 FORCING LOGIC (AFTER tool execution to avoid 400 errors)
-        const createdTaskListThisIteration = toolNames.includes('createTaskList');
+        const createdTaskListThisIteration = toolNames.includes('create_task_list');
         const calledDiagnosisTools = toolNames.some(name => ['perform_diagnosis', 'architect_consult', 'execute_sql'].includes(name));
 
         console.log(`[LOMU-AI-FORCE] Created task list: ${createdTaskListThisIteration}`);

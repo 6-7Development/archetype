@@ -63,12 +63,12 @@ export class PhaseGatekeeper {
       }
     }
     
-    // PHASE 2: PLAN - MANDATORY createTaskList
+    // PHASE 2: PLAN - MANDATORY create_task_list
     if (expectedPhase === 'PLAN') {
       if (!analysis.hasTaskList) {
-        violations.push('⛔ PHASE 2 VIOLATION: Missing createTaskList - ALWAYS MANDATORY (no exceptions)');
+        violations.push('⛔ PHASE 2 VIOLATION: Missing create_task_list - ALWAYS MANDATORY (no exceptions)');
         qualityScore -= 50;
-        suggestions.push('Call write_task_list() with 3-7 specific, actionable tasks');
+        suggestions.push('Call create_task_list() with 3-7 specific, actionable tasks');
       }
       
       if (analysis.wordCountBeforeTools > 10) {
@@ -232,7 +232,7 @@ export class PhaseGatekeeper {
     
     // Escalate if critical violations (missing task list or test)
     const hasCriticalViolation = validation.violations.some(v =>
-      v.includes('PHASE 2 VIOLATION: Missing createTaskList') ||
+      v.includes('PHASE 2 VIOLATION: Missing create_task_list') ||
       v.includes('PHASE 4 VIOLATION: Testing skipped')
     );
     
