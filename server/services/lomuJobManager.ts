@@ -586,6 +586,14 @@ async function runMetaSysopWorker(jobId: string) {
 - Your job is to CHANGE FILES, not just analyze them
 - Every job MUST result in file modifications
 - Investigation-only responses are FORBIDDEN
+- NEVER claim files don't exist without calling readPlatformFile first
+- If a user mentions a file, ALWAYS try to read it - don't assume anything
+
+⚡ IMMEDIATE ACTION REQUIREMENT:
+- FIRST RESPONSE: Must call at least ONE tool (readPlatformFile, listPlatformDirectory, or createTaskList)
+- NO pure text responses without tool calls
+- NO excuses like "file doesn't exist" or "I can't do that" without verification
+- If you're unsure: READ THE FILE AND FIND OUT
 
 7-PHASE WORKFLOW (MANDATORY):
 
