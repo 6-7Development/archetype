@@ -1708,14 +1708,14 @@ Let's build! 🚀`;
               });
               broadcast(userId, jobId, 'file_change', { file: { path: typedInput.path, operation: 'modify' } });
               toolResult = `✅ File staged for batch commit (${fileChanges.length} files total)`;
-            } else if (name === 'listPlatformDirectory') {
+            } else if (name === 'list_platform_files') {
               const typedInput = input as { directory: string };
               const entries = await platformHealing.listPlatformDirectory(typedInput.directory);
               toolResult = entries.map(e => `${e.name} (${e.type})`).join('\n');
-            } else if (name === 'createPlatformFile') {
+            } else if (name === 'create_platform_file') {
               const typedInput = input as { path: string; content: string };
               if (!typedInput.content && typedInput.content !== '') {
-                throw new Error(`createPlatformFile called without content for ${typedInput.path}`);
+                throw new Error(`create_platform_file called without content for ${typedInput.path}`);
               }
               const createResult = await platformHealing.createPlatformFile(
                 typedInput.path,
@@ -1729,7 +1729,7 @@ Let's build! 🚀`;
               });
               broadcast(userId, jobId, 'file_change', { file: { path: typedInput.path, operation: 'create' } });
               toolResult = `✅ File created successfully`;
-            } else if (name === 'deletePlatformFile') {
+            } else if (name === 'delete_platform_file') {
               const typedInput = input as { path: string };
               await platformHealing.deletePlatformFile(typedInput.path);
               fileChanges.push({ 
@@ -1738,7 +1738,7 @@ Let's build! 🚀`;
               });
               broadcast(userId, jobId, 'file_change', { file: { path: typedInput.path, operation: 'delete' } });
               toolResult = `✅ File deleted successfully`;
-            } else if (name === 'readProjectFile') {
+            } else if (name === 'read_project_file') {
               if (!projectId) {
                 toolResult = '❌ No project selected';
               } else {
@@ -1756,7 +1756,7 @@ Let's build! 🚀`;
                   toolResult = `❌ File not found: ${validatedPath}`;
                 }
               }
-            } else if (name === 'writeProjectFile') {
+            } else if (name === 'write_project_file') {
               if (!projectId) {
                 toolResult = '❌ No project selected';
               } else {
@@ -1776,7 +1776,7 @@ Let's build! 🚀`;
                   toolResult = `❌ File not found: ${validatedPath}`;
                 }
               }
-            } else if (name === 'listProjectDirectory') {
+            } else if (name === 'list_project_files') {
               if (!projectId) {
                 toolResult = '❌ No project selected';
               } else {
@@ -1789,7 +1789,7 @@ Let's build! 🚀`;
                   ).join('\n');
                 }
               }
-            } else if (name === 'createProjectFile') {
+            } else if (name === 'create_project_file') {
               if (!projectId) {
                 toolResult = '❌ No project selected';
               } else {
@@ -1825,7 +1825,7 @@ Let's build! 🚀`;
                   toolResult = '❌ Project not found';
                 }
               }
-            } else if (name === 'deleteProjectFile') {
+            } else if (name === 'delete_project_file') {
               if (!projectId) {
                 toolResult = '❌ No project selected';
               } else {
