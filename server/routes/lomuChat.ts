@@ -823,7 +823,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         },
       },
       {
-        name: 'createTaskList',
+        name: 'create_task_list',
         description: 'Create visible task breakdown for work requests',
         input_schema: {
           type: 'object' as const,
@@ -835,12 +835,12 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         },
       },
       {
-        name: 'readTaskList',
+        name: 'read_task_list',
         description: 'Read current task list status',
         input_schema: { type: 'object' as const, properties: {}, required: [] },
       },
       {
-        name: 'updateTask',
+        name: 'update_task',
         description: 'Update task status to show progress',
         input_schema: {
           type: 'object' as const,
@@ -853,7 +853,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         },
       },
       {
-        name: 'readPlatformFile',
+        name: 'read_platform_file',
         description: 'Read platform file',
         input_schema: {
           type: 'object' as const,
@@ -862,7 +862,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         },
       },
       {
-        name: 'writePlatformFile',
+        name: 'write_platform_file',
         description: 'Write platform file',
         input_schema: {
           type: 'object' as const,
@@ -874,7 +874,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         },
       },
       {
-        name: 'listPlatformDirectory',
+        name: 'list_platform_files',
         description: 'List directory contents',
         input_schema: {
           type: 'object' as const,
@@ -883,7 +883,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         },
       },
       {
-        name: 'searchPlatformFiles',
+        name: 'search_platform_files',
         description: 'Search platform files by pattern',
         input_schema: {
           type: 'object' as const,
@@ -928,7 +928,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         },
       },
       {
-        name: 'readProjectFile',
+        name: 'read_project_file',
         description: 'Read user project file',
         input_schema: {
           type: 'object' as const,
@@ -937,7 +937,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         },
       },
       {
-        name: 'writeProjectFile',
+        name: 'write_project_file',
         description: 'Write user project file',
         input_schema: {
           type: 'object' as const,
@@ -949,12 +949,12 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         },
       },
       {
-        name: 'listProjectDirectory',
+        name: 'list_project_files',
         description: 'List user project files',
         input_schema: { type: 'object' as const, properties: {}, required: [] },
       },
       {
-        name: 'createProjectFile',
+        name: 'create_project_file',
         description: 'Create user project file',
         input_schema: {
           type: 'object' as const,
@@ -966,7 +966,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         },
       },
       {
-        name: 'deleteProjectFile',
+        name: 'delete_project_file',
         description: 'Delete user project file',
         input_schema: {
           type: 'object' as const,
@@ -987,7 +987,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         },
       },
       {
-        name: 'createPlatformFile',
+        name: 'create_platform_file',
         description: 'Create platform file',
         input_schema: {
           type: 'object' as const,
@@ -999,7 +999,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         },
       },
       {
-        name: 'deletePlatformFile',
+        name: 'delete_platform_file',
         description: 'Delete platform file',
         input_schema: {
           type: 'object' as const,
