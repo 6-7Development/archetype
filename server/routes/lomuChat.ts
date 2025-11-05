@@ -1295,11 +1295,12 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     // READ-ONLY TOOLS: Tools that don't modify platform/project code
     // CRITICAL: Task management, knowledge_store, and meta tools don't modify source code
+    // CRITICAL: Use snake_case to match actual tool names!
     const READ_ONLY_TOOLS = new Set([
-      'readPlatformFile', 'listPlatformDirectory', 'searchPlatformFiles',
-      'readProjectFile', 'listProjectDirectory', 'search_codebase', 'grep',
+      'read_platform_file', 'list_platform_directory', 'search_platform_files',
+      'read_project_file', 'list_project_directory', 'search_codebase', 'grep',
       'knowledge_search', 'knowledge_recall', 'code_search',
-      'readTaskList', 'createTaskList', 'updateTask', // Task management doesn't modify code
+      'read_task_list', 'create_task_list', 'update_task', // Task management doesn't modify code
       'read_logs', 'perform_diagnosis',
       // REMOVED: 'bash' (can modify files via git commit, npm install, etc.)
       'get_latest_lsp_diagnostics', 'web_search',
@@ -1309,9 +1310,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     // CODE-MODIFYING TOOLS: Tools that actually modify platform/project source code
     // These are REQUIRED for fix/implement requests to succeed
+    // CRITICAL: Use snake_case to match actual tool names!
     const CODE_MODIFYING_TOOLS = new Set([
-      'writePlatformFile', 'createPlatformFile', 'deletePlatformFile',
-      'writeProjectFile', 'createProjectFile', 'deleteProjectFile',
+      'write_platform_file', 'create_platform_file', 'delete_platform_file',
+      'write_project_file', 'create_project_file', 'delete_project_file',
       'edit', // Primary file editing tool
       'commit_to_github', // Commits changes (implies code was modified)
       'restart_workflow', // Restarts after code changes
@@ -2771,13 +2773,16 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         console.log(`[WORKFLOW-TELEMETRY] Total: ${workflowTelemetry.readOperations} reads, ${workflowTelemetry.writeOperations} writes`);
 
         // 🚨 EARLY TERMINATION: Halt if too many consecutive read-only iterations
-        // BUT: Only halt if this is a FIX request, not a diagnostic/status request
+        // BUT: Only halt if this is a FIX request AND no writes have occurred at all
         if (workflowTelemetry.consecutiveReadOnlyIterations >= workflowTelemetry.MAX_READ_ONLY_ITERATIONS) {
           // Check if user requested diagnostic/investigation (not implementation)
-          const isDiagnosticRequest = /diagnos|investigat|check|analyz|review|what.*wrong|status|health/i.test(message);
+          const isDiagnosticRequest = /diagnos|investigat|check|analyz|review|what.*wrong|status|health|scan|find.*bug|search|look.*for/i.test(message);
           
-          if (!isDiagnosticRequest && workflowTelemetry.readOperations > 0 && workflowTelemetry.writeOperations === 0) {
-            console.warn(`[WORKFLOW-TELEMETRY] 🛑 HALTING - ${workflowTelemetry.MAX_READ_ONLY_ITERATIONS} consecutive read-only iterations without fixes`);
+          // ENFORCEMENT: Don't halt if ANY writes occurred during the session
+          const hasProducedAnyFixes = workflowTelemetry.hasProducedFixes || workflowTelemetry.writeOperations > 0;
+          
+          if (!isDiagnosticRequest && !hasProducedAnyFixes && workflowTelemetry.readOperations > 0) {
+            console.warn(`[WORKFLOW-TELEMETRY] 🛑 HALTING - ${workflowTelemetry.MAX_READ_ONLY_ITERATIONS} consecutive read-only iterations without ANY fixes`);
             const haltMsg = `\n\n⚠️ **Ready to implement fixes**\n\nI've analyzed ${workflowTelemetry.readOperations} files and identified the issues. Now I need to implement the fixes.\n\n**Next steps:** I should now use edit() or write_platform_file() to make the necessary changes. Would you like me to proceed with implementing the fixes, or shall I escalate to I AM Architect for review first?`;
             sendEvent('content', { content: haltMsg });
             fullContent += haltMsg;
@@ -2785,6 +2790,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           } else if (isDiagnosticRequest) {
             // Diagnostic requests are allowed to be read-only - reset counter
             console.log(`[WORKFLOW-TELEMETRY] ✓ Diagnostic request detected - investigation is appropriate`);
+            workflowTelemetry.consecutiveReadOnlyIterations = 0;
+          } else if (hasProducedAnyFixes) {
+            // If writes have occurred, allow continued investigation - reset counter
+            console.log(`[WORKFLOW-TELEMETRY] ✓ Writes detected (${workflowTelemetry.writeOperations}) - allowing continued work`);
             workflowTelemetry.consecutiveReadOnlyIterations = 0;
           }
         }
