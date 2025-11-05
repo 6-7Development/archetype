@@ -144,4 +144,130 @@ router.get('/api/diagnostics/platform', requireAdmin, async (req, res) => {
   }
 });
 
+// Platform healing activity log - shows what the AI has done
+router.get('/api/diagnostics/activity', requireAdmin, async (req, res) => {
+  try {
+    // Fetch recent platform healing sessions with their outcomes
+    const sessions = await db.execute(sql`
+      SELECT 
+        id,
+        incident_id,
+        phase,
+        status,
+        diagnosis_notes,
+        proposed_fix,
+        files_changed,
+        verification_passed,
+        commit_hash,
+        deployment_status,
+        ai_strategy,
+        error,
+        started_at,
+        completed_at
+      FROM platform_healing_sessions
+      ORDER BY started_at DESC
+      LIMIT 50
+    `);
+
+    // Fetch recent open incidents
+    const incidents = await db.execute(sql`
+      SELECT 
+        id,
+        type,
+        severity,
+        title,
+        description,
+        status,
+        created_at,
+        resolved_at
+      FROM platform_incidents
+      WHERE status != 'resolved'
+      ORDER BY created_at DESC
+      LIMIT 20
+    `);
+
+    // Format activity log entries
+    const activityLog = [];
+
+    // Add recent incidents
+    for (const incident of incidents.rows) {
+      activityLog.push({
+        timestamp: incident.created_at,
+        type: 'incident_detected',
+        severity: incident.severity || 'medium',
+        title: incident.title || `${incident.type} Issue`,
+        message: incident.description || 'Platform issue detected',
+        status: incident.status,
+        action: incident.status === 'open' ? 'Investigation in progress...' : 'Being resolved'
+      });
+    }
+
+    // Add healing session results
+    for (const session of sessions.rows) {
+      const filesChanged = session.files_changed ? JSON.parse(session.files_changed as string) : [];
+      const fileCount = filesChanged.length;
+
+      if (session.status === 'completed' && session.verification_passed) {
+        activityLog.push({
+          timestamp: session.completed_at || session.started_at,
+          type: 'fix_applied',
+          severity: 'success',
+          title: `✅ Fix Applied Successfully`,
+          message: session.proposed_fix || 'Platform issue resolved',
+          details: {
+            strategy: session.ai_strategy === 'architect' ? 'I AM Architect (Claude Sonnet 4)' : 'LomuAI',
+            filesModified: fileCount,
+            commitHash: session.commit_hash,
+            deploymentStatus: session.deployment_status
+          },
+          action: session.commit_hash ? `Committed to GitHub (${String(session.commit_hash).substring(0, 7)})` : 'Changes applied'
+        });
+      } else if (session.status === 'failed' || session.error) {
+        activityLog.push({
+          timestamp: session.completed_at || session.started_at,
+          type: 'fix_failed',
+          severity: 'error',
+          title: `❌ Fix Attempt Failed`,
+          message: session.error || 'Unable to resolve issue automatically',
+          details: {
+            strategy: session.ai_strategy === 'architect' ? 'I AM Architect' : 'LomuAI',
+            phase: session.phase
+          },
+          action: 'Manual intervention may be required'
+        });
+      } else if (session.status === 'in_progress') {
+        activityLog.push({
+          timestamp: session.started_at,
+          type: 'fix_in_progress',
+          severity: 'info',
+          title: `🔧 Working on Fix...`,
+          message: session.diagnosis_notes || 'AI is analyzing and fixing the issue',
+          details: {
+            strategy: session.ai_strategy === 'architect' ? 'I AM Architect' : 'LomuAI',
+            phase: session.phase
+          },
+          action: 'In progress...'
+        });
+      }
+    }
+
+    // Sort by timestamp descending
+    activityLog.sort((a, b) => new Date(b.timestamp as string).getTime() - new Date(a.timestamp as string).getTime());
+
+    res.json({
+      timestamp: new Date().toISOString(),
+      totalActivities: activityLog.length,
+      openIncidents: incidents.rows.length,
+      recentSessions: sessions.rows.length,
+      activities: activityLog.slice(0, 30) // Return last 30 activities
+    });
+  } catch (error: any) {
+    console.error('[DIAGNOSTICS] Activity log error:', error);
+    res.status(500).json({ 
+      error: 'Failed to load activity log',
+      message: error.message 
+    });
+  }
+});
+
 export { router as diagnosticsRouter };

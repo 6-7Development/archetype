@@ -838,31 +838,35 @@ function PlatformHealingContent() {
 function DiagnosticsLog() {
   const [autoRefresh, setAutoRefresh] = useState(true);
 
-  const { data: diagnostics, isLoading, refetch } = useQuery({
-    queryKey: ['/api/diagnostics/platform'],
+  const { data: activityLog, isLoading, refetch } = useQuery({
+    queryKey: ['/api/diagnostics/activity'],
     queryFn: async () => {
-      const res = await fetch('/api/diagnostics/platform', { credentials: 'include' });
-      if (!res.ok) throw new Error('Failed to load diagnostics');
+      const res = await fetch('/api/diagnostics/activity', { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to load activity log');
       return res.json();
     },
     refetchInterval: autoRefresh ? 5000 : false, // Auto-refresh every 5 seconds if enabled
   });
 
-  const getHealthBadgeVariant = (health: string) => {
-    switch (health) {
-      case 'healthy': return 'default';
-      case 'warning': return 'outline';
-      case 'critical': return 'destructive';
-      default: return 'secondary';
+  const getSeverityIcon = (severity: string) => {
+    switch (severity) {
+      case 'success': return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case 'error': return <AlertCircle className="w-4 h-4 text-red-500" />;
+      case 'info': return <Activity className="w-4 h-4 text-blue-500" />;
+      case 'high':
+      case 'medium': return <AlertCircle className="w-4 h-4 text-yellow-500" />;
+      default: return <Activity className="w-4 h-4" />;
     }
   };
 
-  const getHealthIcon = (health: string) => {
-    switch (health) {
-      case 'healthy': return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'warning': return <AlertCircle className="w-4 h-4 text-yellow-500" />;
-      case 'critical': return <AlertCircle className="w-4 h-4 text-red-500" />;
-      default: return <Activity className="w-4 h-4" />;
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'success': return 'bg-green-500/10 border-green-500/20 text-green-700 dark:text-green-400';
+      case 'error': return 'bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-400';
+      case 'info': return 'bg-blue-500/10 border-blue-500/20 text-blue-700 dark:text-blue-400';
+      case 'high': return 'bg-orange-500/10 border-orange-500/20 text-orange-700 dark:text-orange-400';
+      case 'medium': return 'bg-yellow-500/10 border-yellow-500/20 text-yellow-700 dark:text-yellow-400';
+      default: return 'bg-muted/50 border-border';
     }
   };
 
@@ -870,113 +874,97 @@ function DiagnosticsLog() {
     <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b flex items-center justify-between">
-        <h3 className="text-lg font-semibold">System Log</h3>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => refetch()}
-            disabled={isLoading}
-            data-testid="button-refresh-log"
-          >
-            <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
-          </Button>
+        <div>
+          <h3 className="text-lg font-semibold">Platform Activity Log</h3>
+          {activityLog && (
+            <p className="text-xs text-muted-foreground mt-1">
+              {activityLog.openIncidents} open incidents • {activityLog.recentSessions} recent sessions
+            </p>
+          )}
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => refetch()}
+          disabled={isLoading}
+          data-testid="button-refresh-log"
+        >
+          <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
+        </Button>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {isLoading && !diagnostics ? (
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {isLoading && !activityLog ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
           </div>
-        ) : diagnostics ? (
+        ) : activityLog?.activities && activityLog.activities.length > 0 ? (
           <>
-            {/* Overall Health */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                {getHealthIcon(diagnostics.overallHealth)}
-                <p className="font-medium">{diagnostics.healthMessage}</p>
-              </div>
-              <Badge variant={getHealthBadgeVariant(diagnostics.overallHealth)}>
-                {diagnostics.overallHealth?.toUpperCase()}
-              </Badge>
-            </div>
+            {activityLog.activities.map((activity: any, i: number) => (
+              <div
+                key={i}
+                className={cn(
+                  'rounded-lg p-4 space-y-2 text-sm border',
+                  getSeverityColor(activity.severity)
+                )}
+              >
+                <div className="flex items-start gap-3">
+                  {getSeverityIcon(activity.severity)}
+                  <div className="flex-1 space-y-2">
+                    {/* Title and timestamp */}
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="font-semibold">{activity.title}</p>
+                      <p className="text-xs opacity-70 whitespace-nowrap">
+                        {new Date(activity.timestamp).toLocaleTimeString()}
+                      </p>
+                    </div>
 
-            {/* Database Status */}
-            <div className="space-y-2 border-t pt-4">
-              <div className="flex items-center gap-2">
-                <Database className="w-4 h-4" />
-                <p className="font-semibold">Database Connection</p>
-              </div>
-              <p className="text-sm">{diagnostics.database.message}</p>
-              {diagnostics.database.details && (
-                <div className="bg-muted/50 rounded p-3 space-y-1 text-xs">
-                  {diagnostics.database.details.userCount !== undefined && (
-                    <p>• {diagnostics.database.details.userCount} users in database</p>
-                  )}
-                  {diagnostics.database.details.projectCount !== undefined && (
-                    <p>• {diagnostics.database.details.projectCount} projects stored</p>
-                  )}
-                  {diagnostics.database.details.healingTargetCount !== undefined && (
-                    <p>• {diagnostics.database.details.healingTargetCount} healing targets configured</p>
-                  )}
-                </div>
-              )}
-            </div>
+                    {/* Message */}
+                    <p className="text-sm">{activity.message}</p>
 
-            {/* System Info */}
-            <div className="space-y-2 border-t pt-4">
-              <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4" />
-                <p className="font-semibold">System Performance</p>
-              </div>
-              <div className="bg-muted/50 rounded p-3 space-y-1 text-xs">
-                <p>• Running for {diagnostics.system.uptimeFormatted}</p>
-                <p>• Memory: {diagnostics.system.memoryUsage}</p>
-                <p>• Node.js version: {diagnostics.system.nodeVersion}</p>
-              </div>
-            </div>
-
-            {/* Issues */}
-            {diagnostics.issues && diagnostics.issues.length > 0 && (
-              <div className="space-y-2 border-t pt-4">
-                <p className="font-semibold text-sm">Issues Detected</p>
-                {diagnostics.issues.map((issue: any, i: number) => (
-                  <div
-                    key={i}
-                    className={cn(
-                      'rounded p-3 space-y-2 text-sm',
-                      issue.severity === 'critical' ? 'bg-destructive/10 border border-destructive/20' : 'bg-yellow-500/10 border border-yellow-500/20'
-                    )}
-                  >
-                    <div className="flex items-start gap-2">
-                      <AlertCircle className={cn(
-                        "w-4 h-4 mt-0.5",
-                        issue.severity === 'critical' ? 'text-destructive' : 'text-yellow-600'
-                      )} />
-                      <div className="flex-1 space-y-1">
-                        <p className="font-medium">{issue.component}</p>
-                        <p className="text-xs">{issue.message}</p>
-                        {issue.suggestion && (
-                          <p className="text-xs text-muted-foreground italic">
-                            💡 {issue.suggestion}
-                          </p>
+                    {/* Details */}
+                    {activity.details && (
+                      <div className="bg-black/5 dark:bg-white/5 rounded p-2 space-y-1 text-xs">
+                        {activity.details.strategy && (
+                          <p>• <span className="font-medium">AI Strategy:</span> {activity.details.strategy}</p>
+                        )}
+                        {activity.details.filesModified !== undefined && (
+                          <p>• <span className="font-medium">Files Modified:</span> {activity.details.filesModified}</p>
+                        )}
+                        {activity.details.commitHash && (
+                          <p>• <span className="font-medium">Commit:</span> {activity.details.commitHash}</p>
+                        )}
+                        {activity.details.phase && (
+                          <p>• <span className="font-medium">Phase:</span> {activity.details.phase}</p>
                         )}
                       </div>
-                    </div>
+                    )}
+
+                    {/* Action */}
+                    {activity.action && (
+                      <p className="text-xs font-medium opacity-80">
+                        → {activity.action}
+                      </p>
+                    )}
                   </div>
-                ))}
+                </div>
               </div>
-            )}
+            ))}
 
             {/* Timestamp */}
-            <p className="text-xs text-muted-foreground text-center pt-4 border-t">
-              Last updated: {new Date(diagnostics.timestamp).toLocaleTimeString()}
+            <p className="text-xs text-muted-foreground text-center pt-2">
+              Last updated: {new Date(activityLog.timestamp).toLocaleTimeString()}
             </p>
           </>
         ) : (
-          <p className="text-sm text-muted-foreground text-center">No diagnostics available</p>
+          <div className="text-center py-8 space-y-2">
+            <Activity className="w-8 h-8 mx-auto text-muted-foreground/50" />
+            <p className="text-sm text-muted-foreground">No recent activity</p>
+            <p className="text-xs text-muted-foreground">
+              Platform healing sessions and incidents will appear here
+            </p>
+          </div>
         )}
       </div>
     </div>
