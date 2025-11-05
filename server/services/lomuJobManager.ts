@@ -28,6 +28,56 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
+// 🎯 INTENT CLASSIFICATION (like Replit Agent)
+// Classify user messages to set appropriate iteration limits
+type UserIntent = 'build' | 'fix' | 'diagnostic' | 'casual';
+
+function classifyUserIntent(message: string): UserIntent {
+  const lowerMessage = message.toLowerCase();
+  
+  // BUILD intent: Creating new features, adding functionality
+  const buildKeywords = /\b(build|create|add|implement|make|develop|set up|setup|install|integrate|deploy|publish)\b/;
+  if (buildKeywords.test(lowerMessage)) {
+    return 'build';
+  }
+  
+  // FIX intent: Fixing bugs, errors, or issues
+  const fixKeywords = /\b(fix|repair|resolve|solve|debug|correct|patch|update|modify|change|refactor|improve|optimize)\b/;
+  if (fixKeywords.test(lowerMessage)) {
+    return 'fix';
+  }
+  
+  // DIAGNOSTIC intent: Investigating, analyzing, checking status
+  const diagnosticKeywords = /\b(diagnos|investigat|check|analyz|review|examine|inspect|scan|search|find|look|what.*wrong|status|health|why|how.*work)\b/;
+  if (diagnosticKeywords.test(lowerMessage)) {
+    return 'diagnostic';
+  }
+  
+  // CASUAL: Questions, greetings, short responses
+  // Heuristic: Short messages (<50 chars) without action keywords
+  if (lowerMessage.length < 50 && !/\b(file|code|function|error|bug)\b/.test(lowerMessage)) {
+    return 'casual';
+  }
+  
+  // Default to diagnostic for safety (moderate iteration limit)
+  return 'diagnostic';
+}
+
+function getMaxIterationsForIntent(intent: UserIntent): number {
+  switch (intent) {
+    case 'build':
+      return 25; // Let LomuAI work freely to build complete features
+    case 'fix':
+      return 20; // Allow thorough debugging and fixes
+    case 'diagnostic':
+      return 15; // Moderate investigation
+    case 'casual':
+      return 5; // Don't waste tokens on small talk
+    default:
+      return 15; // Safe default
+  }
+}
+
 // Initialize Anthropic client for Claude streaming
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || "dummy-key-for-development",
@@ -956,10 +1006,16 @@ Let's build! 🚀`;
       );
     }
 
+    // 🎯 DYNAMIC ITERATION LIMITS (like Replit Agent)
+    // Classify user intent to set appropriate iteration limits
+    const userIntent = classifyUserIntent(message);
+    const MAX_ITERATIONS = getMaxIterationsForIntent(userIntent);
+    
+    console.log(`[LOMU-AI-INTENT] User intent: ${userIntent}, max iterations: ${MAX_ITERATIONS}`);
+
     let fullContent = '';
     const fileChanges: Array<{ path: string; operation: string; contentAfter?: string }> = [];
     let continueLoop = true;
-    const MAX_ITERATIONS = 10; // Reduced from 25 - prevents infinite loops
     let commitSuccessful = false;
 
     // 📊 WORKFLOW TELEMETRY: Track read vs code-modifying operations
