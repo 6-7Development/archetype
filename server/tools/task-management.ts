@@ -18,7 +18,7 @@ export async function createTaskList(params: {
     description?: string;
     status?: string;
   }>;
-}): Promise<{ success: boolean; taskListId?: string; error?: string }> {
+}): Promise<{ success: boolean; taskListId?: string; tasks?: Array<{ id: string; title: string; status: string }>; error?: string }> {
   try {
     // Verify project ownership if projectId provided
     if (params.projectId) {
@@ -64,7 +64,8 @@ export async function createTaskList(params: {
       .values(taskListData)
       .returning();
 
-    // Create individual tasks with validation
+    // Create individual tasks with validation and return their IDs
+    const createdTasks: Array<{ id: string; title: string; status: string }> = [];
     if (params.tasks && params.tasks.length > 0) {
       const taskValues = params.tasks.map((task) => {
         const taskData = insertTaskSchema.parse({
@@ -76,12 +77,20 @@ export async function createTaskList(params: {
         return taskData;
       });
 
-      await db.insert(tasks).values(taskValues);
+      const insertedTasks = await db.insert(tasks).values(taskValues).returning();
+      
+      // Return task IDs so AI knows which IDs to use for update_task()
+      createdTasks.push(...insertedTasks.map(t => ({
+        id: t.id,
+        title: t.title,
+        status: t.status
+      })));
     }
 
     return {
       success: true,
       taskListId: taskList.id,
+      tasks: createdTasks, // ← NEW: Return actual task IDs!
     };
   } catch (error: any) {
     console.error('Failed to create task list:', error);

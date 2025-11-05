@@ -247,17 +247,22 @@ Workflow (like Replit Agent - FOLLOW THIS EXACTLY):
 
 Example (FOLLOW THIS PATTERN):
 User: "fix the broken login page"
-You: 
-- create_task_list("Fix Login Page", [{title: "Read login component", description: "Check for bugs"}, {title: "Fix validation bug", description: "Update regex"}, {title: "Test changes", description: "Verify fix works"}])
-- update_task("task-1-id", "in_progress")  // ← USER SEES SPINNER
+You:
+Step 1: Create task list - it returns task IDs!
+- create_task_list("Fix Login Page", [...]) 
+  → Returns: { taskListId: "abc123", tasks: [{id: "task-uuid-1", title: "Read..."}, {id: "task-uuid-2", ...}] }
+
+Step 2: Use the ACTUAL task IDs from the response:
+- update_task("task-uuid-1", "in_progress")  // ← USER SEES SPINNER (use ID from create_task_list response!)
 - read_platform_file("client/src/pages/Login.tsx")
-- update_task("task-1-id", "completed", "Read login component - found validation issue")  // ← USER SEES CHECKMARK
-- update_task("task-2-id", "in_progress")  // ← USER SEES SPINNER
+- update_task("task-uuid-1", "completed", "Read login component - found validation issue")  // ← USER SEES CHECKMARK
+- update_task("task-uuid-2", "in_progress")  // ← USER SEES SPINNER
 - write_platform_file("client/src/pages/Login.tsx", ...)
-- update_task("task-2-id", "completed", "Fixed email validation regex")  // ← USER SEES CHECKMARK
-- update_task("task-3-id", "in_progress")
-- ... (test the fix)
-- update_task("task-3-id", "completed", "Verified login works correctly")
+- update_task("task-uuid-2", "completed", "Fixed email validation regex")  // ← USER SEES CHECKMARK
+
+❌ WRONG: update_task("1", "in_progress") - Don't use numbers!
+❌ WRONG: update_task("task-1", "in_progress") - Don't guess IDs!
+✅ CORRECT: update_task("e4c7903-7851-4498-acf1", "in_progress") - Use UUIDs returned by create_task_list!
 
 REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`;
 
