@@ -1611,14 +1611,17 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
               if (isCriticalFile) {
                 // Check if file was read in this conversation
-                const hasReadFile = conversationMessages.some((msg: any) => 
-                  msg.role === 'assistant' && 
-                  msg.content?.some((block: any) => 
+                const hasReadFile = conversationMessages.some((msg: any) => {
+                  // msg.content is a STRING for user messages, ARRAY for assistant messages
+                  if (msg.role !== 'assistant' || !Array.isArray(msg.content)) {
+                    return false;
+                  }
+                  return msg.content.some((block: any) => 
                     block.type === 'tool_use' && 
                     block.name === 'read_platform_file' &&
                     block.input?.path === typedInput.path
-                  )
-                );
+                  );
+                });
 
                 if (!hasReadFile) {
                   toolResult = `❌ PROTECTION: "${typedInput.path}" is a critical infrastructure file!\n\n` +
