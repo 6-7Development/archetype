@@ -35,10 +35,10 @@ export { refreshAllLogs } from './logs';
 export { glob, ls, read, write } from './file-operations';
 
 /**
- * Tool definitions for Claude
- * These tools enhance SySop's autonomous capabilities
+ * LomuAI Tool Definitions
+ * Complete toolset for LomuAI's autonomous development capabilities
  */
-export const SYSOP_TOOLS = [
+export const LOMU_TOOLS = [
   {
     name: 'browser_test',
     description: 'Test the generated code in a real browser using Playwright. Verify UI functionality, run assertions, and capture screenshots.',

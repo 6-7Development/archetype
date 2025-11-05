@@ -1309,7 +1309,7 @@ Let's build! 🚀`;
         // 🔄 RESET CUMULATIVE TEXT ACCUMULATOR after each tool call
         resetTextAccumulator();
 
-        // 🔄 UPDATE PHASE based on tool type (FIXED: use snake_case to match SYSOP_TOOLS)
+        // 🔄 UPDATE PHASE based on tool type (FIXED: use snake_case to match LOMU_TOOLS)
         if (toolUse.name === 'create_task_list') {
           currentPhase = 'plan';
           console.log(`[CONTINUOUS-GUARD] Phase auto-transitioned to PLAN (create_task_list called)`);
