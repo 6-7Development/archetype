@@ -1289,7 +1289,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       readOperations: 0,
       writeOperations: 0,
       consecutiveReadOnlyIterations: 0,
-      MAX_READ_ONLY_ITERATIONS: 5, // Halt after 5 iterations with only reads
+      MAX_READ_ONLY_ITERATIONS: 20, // Increased from 5 - allow thorough investigation before halting
       hasProducedFixes: false, // Track if ANY write operations occurred
     };
 
@@ -2771,12 +2771,22 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         console.log(`[WORKFLOW-TELEMETRY] Total: ${workflowTelemetry.readOperations} reads, ${workflowTelemetry.writeOperations} writes`);
 
         // 🚨 EARLY TERMINATION: Halt if too many consecutive read-only iterations
+        // BUT: Only halt if this is a FIX request, not a diagnostic/status request
         if (workflowTelemetry.consecutiveReadOnlyIterations >= workflowTelemetry.MAX_READ_ONLY_ITERATIONS) {
-          console.warn(`[WORKFLOW-TELEMETRY] 🛑 HALTING - ${workflowTelemetry.MAX_READ_ONLY_ITERATIONS} consecutive read-only iterations detected`);
-          const haltMsg = `\n\n⚠️ **Investigation-only loop detected**\n\nI've read ${workflowTelemetry.readOperations} files but haven't made any changes yet. This suggests I'm investigating without implementing fixes.\n\nI'll stop here to avoid wasting tokens. Please clarify what you'd like me to implement, or I can escalate this to the I AM Architect for expert guidance.`;
-          sendEvent('content', { content: haltMsg });
-          fullContent += haltMsg;
-          continueLoop = false;
+          // Check if user requested diagnostic/investigation (not implementation)
+          const isDiagnosticRequest = /diagnos|investigat|check|analyz|review|what.*wrong|status|health/i.test(message);
+          
+          if (!isDiagnosticRequest && workflowTelemetry.readOperations > 0 && workflowTelemetry.writeOperations === 0) {
+            console.warn(`[WORKFLOW-TELEMETRY] 🛑 HALTING - ${workflowTelemetry.MAX_READ_ONLY_ITERATIONS} consecutive read-only iterations without fixes`);
+            const haltMsg = `\n\n⚠️ **Ready to implement fixes**\n\nI've analyzed ${workflowTelemetry.readOperations} files and identified the issues. Now I need to implement the fixes.\n\n**Next steps:** I should now use edit() or write_platform_file() to make the necessary changes. Would you like me to proceed with implementing the fixes, or shall I escalate to I AM Architect for review first?`;
+            sendEvent('content', { content: haltMsg });
+            fullContent += haltMsg;
+            continueLoop = false;
+          } else if (isDiagnosticRequest) {
+            // Diagnostic requests are allowed to be read-only - reset counter
+            console.log(`[WORKFLOW-TELEMETRY] ✓ Diagnostic request detected - investigation is appropriate`);
+            workflowTelemetry.consecutiveReadOnlyIterations = 0;
+          }
         }
 
         conversationMessages.push({
