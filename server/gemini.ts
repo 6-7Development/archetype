@@ -260,11 +260,23 @@ export async function streamGeminiResponse(options: StreamOptions) {
       requestParams.tools = geminiTools;
     }
 
+    // 🔍 DEBUG: Log what we're sending to Gemini
+    console.log('[GEMINI-DEBUG] Request params:');
+    console.log('  - Messages:', geminiMessages.length);
+    console.log('  - System prompt length:', typeof system === 'string' ? system.length : 'unknown');
+    console.log('  - Tools provided:', geminiTools ? geminiTools.length : 0);
+    console.log('  - Max tokens:', maxTokens);
+    
     // Start streaming
     const result = await generativeModel.generateContentStream(requestParams);
 
     // Process stream chunks
+    let chunkCount = 0;
     for await (const chunk of result.stream) {
+      chunkCount++;
+      if (chunkCount <= 3) {
+        console.log(`[GEMINI-DEBUG] Chunk #${chunkCount}:`, JSON.stringify(chunk).substring(0, 300));
+      }
       try {
         // Check for abort
         if (signal?.aborted || abortController?.signal.aborted) {
@@ -272,11 +284,27 @@ export async function streamGeminiResponse(options: StreamOptions) {
         }
 
         const candidates = chunk.candidates;
-        if (!candidates || candidates.length === 0) continue;
+        if (!candidates || candidates.length === 0) {
+          console.log('[GEMINI-DEBUG] Chunk with no candidates:', JSON.stringify(chunk).substring(0, 200));
+          continue;
+        }
 
         const candidate = candidates[0];
+        
+        // 🔍 DEBUG: Check for safety blocks or finish reasons
+        if (candidate.finishReason) {
+          console.log('[GEMINI-DEBUG] Finish reason:', candidate.finishReason);
+          if (candidate.finishReason === 'SAFETY') {
+            console.error('🚨 [GEMINI-SAFETY] Response blocked by safety filters!');
+            console.error('[GEMINI-SAFETY] Safety ratings:', JSON.stringify(candidate.safetyRatings, null, 2));
+          }
+        }
+        
         const content = candidate.content;
-        if (!content || !content.parts) continue;
+        if (!content || !content.parts) {
+          console.log('[GEMINI-DEBUG] Candidate with no content/parts:', JSON.stringify(candidate).substring(0, 200));
+          continue;
+        }
 
         // Process each part
         for (const part of content.parts) {
