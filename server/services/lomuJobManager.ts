@@ -1615,7 +1615,7 @@ Let's build! 🚀`;
             let toolResult: any = null;
 
             // Tool execution logic (copied from SSE route)
-            if (name === 'createTaskList') {
+            if (name === 'create_task_list') {
               const typedInput = input as { title: string; tasks: Array<{ title: string; description: string }> };
 
               // VALIDATION: Prevent task creation for simple conversational messages
@@ -1653,7 +1653,7 @@ Let's build! 🚀`;
                   toolResult = `❌ Failed to create task list: ${result.error}`;
                 }
               }
-            } else if (name === 'updateTask') {
+            } else if (name === 'update_task') {
               const typedInput = input as { taskId: string; status: string; result?: string };
               const result = await updateTask({
                 userId,
@@ -1670,7 +1670,7 @@ Let's build! 🚀`;
               } else {
                 toolResult = `❌ Failed to update task: ${result.error}`;
               }
-            } else if (name === 'readTaskList') {
+            } else if (name === 'read_task_list') {
               const result = await readTaskList({ userId });
               if (result.success && result.taskLists) {
                 const activeList = result.taskLists.find((list: any) => list.status === 'active');
@@ -1686,13 +1686,13 @@ Let's build! 🚀`;
               } else {
                 toolResult = `Error reading task list: ${result.error}`;
               }
-            } else if (name === 'readPlatformFile') {
+            } else if (name === 'read_platform_file') {
               const typedInput = input as { path: string };
               toolResult = await platformHealing.readPlatformFile(typedInput.path);
-            } else if (name === 'writePlatformFile') {
+            } else if (name === 'write_platform_file') {
               const typedInput = input as { path: string; content: string };
               if (!typedInput.content && typedInput.content !== '') {
-                throw new Error(`writePlatformFile called without content for ${typedInput.path}`);
+                throw new Error(`write_platform_file called without content for ${typedInput.path}`);
               }
               // BATCH MODE: Skip auto-commit, accumulate changes for ONE commit at end
               const writeResult = await platformHealing.writePlatformFile(
