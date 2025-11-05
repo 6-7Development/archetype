@@ -505,22 +505,41 @@ export async function startJobWorker(jobId: string) {
 export async function cancelJob(jobId: string, reason: string = 'Cancelled by user') {
   console.log('[LOMU-AI-JOB-MANAGER] Cancelling job:', jobId, 'Reason:', reason);
   
+  // First, check if job exists and is in a cancellable state
+  const existingJob = await db.query.lomuJobs.findFirst({
+    where: (jobs, { eq }) => eq(jobs.id, jobId)
+  });
+  
+  if (!existingJob) {
+    throw new Error(`Job ${jobId} not found`);
+  }
+  
+  // Only allow cancellation of pending or running jobs
+  if (existingJob.status !== 'pending' && existingJob.status !== 'running') {
+    throw new Error(`Cannot cancel job in ${existingJob.status} state. Only pending/running jobs can be cancelled.`);
+  }
+  
   // Set cancellation flag
   jobCancellationFlags.set(jobId, true);
   
-  // Update database
+  // Update database to interrupted status ONLY if still in pending/running state
+  // This prevents race condition where job completes between check and update
   const [job] = await db.update(lomuJobs)
     .set({
-      status: 'failed',
+      status: 'interrupted',
       error: reason,
       updatedAt: new Date(),
       completedAt: new Date(),
     })
-    .where(eq(lomuJobs.id, jobId))
+    .where(and(
+      eq(lomuJobs.id, jobId),
+      inArray(lomuJobs.status, ['pending', 'running'])
+    ))
     .returning();
   
   if (!job) {
-    throw new Error(`Job ${jobId} not found`);
+    // Job was not updated - either doesn't exist or is already in terminal state
+    throw new Error(`Cannot cancel job ${jobId}. Job may have already completed or been cancelled.`);
   }
   
   // Broadcast cancellation
