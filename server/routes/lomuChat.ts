@@ -3525,6 +3525,46 @@ router.get('/job/:jobId', isAuthenticated, async (req: any, res) => {
   }
 });
 
+// POST /api/lomu-ai/job/:jobId/cancel - Cancel a running or pending job (graceful)
+router.post('/job/:jobId/cancel', isAuthenticated, async (req: any, res) => {
+  try {
+    const userId = req.authenticatedUserId;
+    const { jobId } = req.params;
+    const { reason } = req.body;
+    
+    // Get the job
+    const job = await db.query.lomuJobs.findFirst({
+      where: (jobs, { eq }) => eq(jobs.id, jobId)
+    });
+    
+    if (!job) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+    
+    // Allow admins/owners to cancel any job, or user to cancel their own
+    const user = req.user as any;
+    if (job.userId !== userId && !user?.isOwner && user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Not authorized to cancel this job' });
+    }
+    
+    // Import cancelJob function for graceful cancellation
+    const { cancelJob } = await import('../services/lomuJobManager');
+    
+    const cancelledJob = await cancelJob(jobId, reason || 'Cancelled by user');
+    
+    console.log('[LOMU-AI] Job gracefully cancelled:', jobId, 'by user:', userId);
+    
+    res.json({ 
+      success: true,
+      job: cancelledJob,
+      message: 'Job cancelled successfully'
+    });
+  } catch (error: any) {
+    console.error('[LOMU-AI] Cancel job error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // GET /api/lomu-ai/active-job - Get user's active or interrupted job
 router.get('/active-job', isAuthenticated, async (req: any, res) => {
   try {
