@@ -1414,7 +1414,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 error: validation.reason,
                 suggestedAction: 'restart'
               });
-              continue; // Skip tool execution and proceed to next iteration
+              return; // Skip tool execution
             }
           }
           // Save any pending text
