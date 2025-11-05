@@ -5,18 +5,19 @@ Lomu is an AI-powered platform for rapid web development, featuring an AI coding
 
 ## User Preferences
 ### API Configuration
-**Hybrid AI Model Strategy (Cost-Optimized)**:
-- **LomuAI (Bulk Operations)**: Google Gemini 2.5 Flash via GEMINI_API_KEY
-  - Model: gemini-2.5-flash
-  - Cost: $0.10 input / $0.40 output per 1M tokens (97% cheaper than Claude)
-  - Direct Google API integration (Railway-independent)
-  - 1M token context window
-- **I AM Architect (Expert Reviews)**: Anthropic Claude Sonnet 4 via ANTHROPIC_API_KEY
+**Claude Sonnet 4 Unified Strategy (Nov 5, 2025)**:
+- **ALL AI Operations Use Claude Sonnet 4** via ANTHROPIC_API_KEY
   - Model: claude-sonnet-4-20250514
   - Cost: $3.00 input / $15.00 output per 1M tokens
-  - Superior code quality for architectural decisions
   - 200K token context window
-- **Cost Savings**: ~97% reduction on everyday LomuAI operations while maintaining expert-level quality for complex architectural reviews
+  - Used for: LomuAI Chat (37 tools), Platform Healing (3 tools), I AM Architect
+  
+**Why Claude-Only?**
+- ✅ Reliable tool execution (no hallucinated Python syntax like Gemini)
+- ✅ Better token control (prevents token waste)
+- ✅ Consistent behavior across all AI operations
+- ✅ Costs more but provides full internal control
+- ⚠️ Gemini temporarily disabled until tool reliability issues are resolved
 
 ### Design Preferences
 - **Brand Identity**: Fresh, optimistic, citrus-inspired theme
@@ -55,7 +56,7 @@ LomuAI supports parallel subagent orchestration, allowing multiple tasks to exec
 - **AI Architecture**: LomuAI v2.0 follows a strict 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT) with programmatic enforcement via WorkflowValidator. Features include real-time streaming, usage-based billing, self-testing (Playwright), web search (Tavily API), vision analysis (Claude Vision), architectural guidance (I AM Architect), and an automatic reflection/self-correction loop.
 - **Autonomous AI System (LomuAI v2.0)**: LomuAI diagnoses issues, implements fixes, and automatically commits changes to GitHub, triggering auto-deployment. It prioritizes tool execution and code writing, using a PostgreSQL-backed job queue for asynchronous execution with WebSocket broadcasting and checkpointing.
 - **Developer Tools**: LomuAI includes 56 tools covering core operations, deployment, secrets management, database, design, integrations, and file operations. All tools include security sandboxing, WebSocket event streaming, and integrate with existing platform healing infrastructure.
-- **Platform Healing System**: Complete self-healing infrastructure with 3-tier intelligent routing for cost-optimized incident resolution: Tier 1 (Knowledge Base Auto-Fix), Tier 2 (LomuAI v2.0/Gemini 2.5 Flash), and Tier 3 (I AM Architect/Claude Sonnet 4). Automatic response quality monitoring triggers I AM Architect for autonomous diagnosis and fixes when quality is low.
+- **Platform Healing System**: Complete self-healing infrastructure with 3-tier intelligent routing for incident resolution: Tier 1 (Knowledge Base Auto-Fix), Tier 2 (LomuAI v2.0/Claude Sonnet 4), and Tier 3 (I AM Architect/Claude Sonnet 4). Automatic response quality monitoring triggers I AM Architect for autonomous diagnosis and fixes when quality is low. Platform Healing chat interface uses Claude with 3 tools (read/write/search platform files).
 - **LomuAI v2.0 Workflow Enforcement**: Achieves Replit Agent behavioral parity through dual-layer enforcement: an enhanced system prompt with strict 7-phase workflow rules and a WorkflowValidator State Machine for programmatic runtime enforcement.
 - **Real-Time Enforcement System**: A 6-layer real-time enforcement system fully integrated into lomuJobManager validates LomuAI responses and triggers I AM Architect guidance when violations occur.
 - **Real-Time LomuAI + I AM Teamwork**: I AM Architect intervenes during active LomuAI sessions when workflow rules are violated, injecting corrective guidance. A "3-Strikes Escalation" policy automatically escalates jobs to I AM Architect for complete takeover after three failed guidance attempts.
@@ -66,6 +67,11 @@ LomuAI supports parallel subagent orchestration, allowing multiple tasks to exec
   3. **Raw HTML in Chat UI**: Enhanced frontend filter in client/src/pages/platform-healing.tsx to remove leaked HTML/JSX tags, escaped newlines, and JSON fragments from chat responses.
   
   **Combined Impact**: Task lists now work, phase transitions succeed, tools execute properly, and chat UI is clean with no raw code leaking.
+- **Claude Migration (Nov 5, 2025)**: Switched ALL AI operations from Gemini to Claude Sonnet 4 for reliable tool execution:
+  - ✅ **LomuAI Chat**: Migrated from Gemini to Claude in server/routes/lomuChat.ts (line 1362)
+  - ✅ **Platform Healing**: Migrated from Gemini to Claude in server/routes/healing.ts (lines 161, 238, 443)
+  - ✅ **Platform Healing UI Fix**: Added metadata filter to hide internal tool messages (client/src/pages/platform-healing.tsx line 665)
+  - Gemini was hallucinating Python syntax when calling tools: `print(default_api.create_task_list(...))` - Claude provides reliable JSON tool execution
 - **Command System**: Natural language commands processed by Anthropic Claude 3.5 Sonnet to generate JSON project structures.
 - **File Management**: Generated files are stored in PostgreSQL, editable via Monaco editor, with real-time WebSocket synchronization.
 - **Preview System**: Uses `esbuild` for in-memory React/TypeScript compilation for live application previews in an iframe.
@@ -104,7 +110,7 @@ LomuAI supports parallel subagent orchestration, allowing multiple tasks to exec
 - **Frontend**: React, TypeScript, Monaco Editor, Tailwind CSS, Shadcn UI, next-themes
 - **Backend**: Express.js, WebSocket
 - **Database**: PostgreSQL (Neon), Drizzle ORM
-- **AI**: Anthropic Claude 3.5 Sonnet, OpenAI (gpt-image-1), Google Gemini 2.5 Flash
+- **AI**: Anthropic Claude Sonnet 4 (primary), OpenAI (gpt-image-1), Google Gemini 2.5 Flash (deprecated until tool reliability fixed)
 - **Deployment**: Render.com, Railway
 - **Payment Processing**: Stripe
 - **Authentication**: Passport.js, bcrypt, `connect-pg-simple`

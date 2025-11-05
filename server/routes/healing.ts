@@ -141,7 +141,7 @@ export function registerHealingRoutes(app: Express) {
     }
   });
 
-  // POST /api/healing/messages - Send message to Lomu (GEMINI-POWERED with multi-turn tool execution)
+  // POST /api/healing/messages - Send message to Lomu (CLAUDE-POWERED with multi-turn tool execution)
   app.post("/api/healing/messages", isAuthenticated, isOwner, async (req, res) => {
     let userMessage: any = null;
     
@@ -329,17 +329,17 @@ BE BRIEF. ACT FAST.`;
               }
             }
           });
-        } catch (geminiError: any) {
-          console.error(`[HEALING-CHAT] ❌ Gemini API error on iteration ${iterationCount}:`, geminiError);
+        } catch (claudeError: any) {
+          console.error(`[HEALING-CHAT] ❌ Claude API error on iteration ${iterationCount}:`, claudeError);
           
-          // On Gemini API error, break the loop and return what we have
+          // On Claude API error, break the loop and return what we have
           if (fullResponse.trim().length > 0) {
             // We have a partial response from previous iterations
             console.log(`[HEALING-CHAT] 🔄 Using partial response from ${iterationCount - 1} successful iterations`);
             break;
           } else {
             // First iteration failed, throw error
-            throw new Error(`Gemini API error: ${geminiError.message || 'Unknown error'}`);
+            throw new Error(`Claude API error: ${claudeError.message || 'Unknown error'}`);
           }
         }
         
@@ -359,7 +359,7 @@ BE BRIEF. ACT FAST.`;
         // Append AI response to conversation
         fullResponse += response.fullText;
         
-        // FIX #1: Check if Gemini wants to continue (has tool results to process)
+        // FIX #1: Check if Claude wants to continue (has tool results to process)
         if (response.needsContinuation && response.toolResults) {
           if (isDev) {
             console.log(`[HEALING-CHAT] 🔨 Claude used ${response.toolResults.length} tools, saving to DB and continuing...`);
@@ -489,7 +489,7 @@ BE BRIEF. ACT FAST.`;
         role: 'assistant',
         content: finalContent,
         metadata: {
-          model: "gemini-2.5-flash",
+          model: "claude-sonnet-4-20250514",
           tokensUsed: totalInputTokens + totalOutputTokens,
           inputTokens: totalInputTokens,
           outputTokens: totalOutputTokens,
@@ -516,7 +516,7 @@ BE BRIEF. ACT FAST.`;
             conversationId: validated.conversationId,
             filesModified,
             healingChat: true,
-            model: "gemini-2.5-flash",
+            model: "claude-sonnet-4-20250514",
             iterations: iterationCount,
           },
         });
@@ -553,7 +553,7 @@ BE BRIEF. ACT FAST.`;
       // Handle specific error types
       if (error.message?.includes('API key')) {
         return res.status(500).json({ 
-          error: "Gemini API configuration error. Please check API key.",
+          error: "Claude API configuration error. Please check API key.",
           type: 'CONFIG_ERROR',
         });
       }
@@ -567,7 +567,7 @@ BE BRIEF. ACT FAST.`;
       
       if (error.code === 'ENOTFOUND' || error.code === 'ETIMEDOUT') {
         return res.status(503).json({ 
-          error: "Network error connecting to Gemini API. Please try again.",
+          error: "Network error connecting to Claude API. Please try again.",
           type: 'NETWORK_ERROR',
         });
       }
