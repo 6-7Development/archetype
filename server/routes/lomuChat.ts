@@ -1491,7 +1491,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           try {
             let toolResult: any = null;
 
-            if (name === 'createTaskList') {
+            if (name === 'create_task_list') {
               const typedInput = input as { title: string; tasks: Array<{ title: string; description: string }> };
               sendEvent('progress', { message: `📋 Creating task list with ${typedInput.tasks.length} tasks...` });
               sendEvent('content', { content: `\n\n*Creating task list: "${typedInput.title}"...*\n` });
@@ -1522,7 +1522,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 sendEvent('content', { content: `❌ Failed to create task list: ${result.error}\n\n` });
                 console.error('[LOMU-AI] Task list creation failed:', result.error);
               }
-            } else if (name === 'updateTask') {
+            } else if (name === 'update_task') {
               const typedInput = input as { taskId: string; status: string; result?: string };
               sendEvent('progress', { message: `Updating task to ${typedInput.status}...` });
 
@@ -1543,7 +1543,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               } else {
                 toolResult = `❌ Failed to update task: ${result.error}`;
               }
-            } else if (name === 'readTaskList') {
+            } else if (name === 'read_task_list') {
               const result = await readTaskList({ userId });
 
               if (result.success && result.taskLists) {
@@ -1577,11 +1577,11 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 toolResult = `Error reading task list: ${result.error}\n\n` +
                   `Proceed with your work anyway - task tracking is optional.`;
               }
-            } else if (name === 'readPlatformFile') {
+            } else if (name === 'read_platform_file') {
               const typedInput = input as { path: string };
               sendEvent('progress', { message: `Reading ${typedInput.path}...` });
               toolResult = await platformHealing.readPlatformFile(typedInput.path);
-            } else if (name === 'writePlatformFile') {
+            } else if (name === 'write_platform_file') {
               const typedInput = input as { path: string; content: string };
 
               // CRITICAL: Validate content exists before calling platformHealing
@@ -1649,12 +1649,12 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 sendEvent('content', { content: verifyWarning });
                 console.warn(`[LOMU-AI-AUTO-VERIFY] ⚠️ Verification warning for ${typedInput.path}:`, verifyError.message);
               }
-            } else if (name === 'listPlatformDirectory') {
+            } else if (name === 'list_platform_files') {
               const typedInput = input as { directory: string };
               sendEvent('progress', { message: `Listing ${typedInput.directory}...` });
               const entries = await platformHealing.listPlatformDirectory(typedInput.directory);
               toolResult = entries.map(e => `${e.name} (${e.type})`).join('\n');
-            } else if (name === 'searchPlatformFiles') {
+            } else if (name === 'search_platform_files') {
               const typedInput = input as { pattern: string };
               sendEvent('progress', { message: `Searching platform files: ${typedInput.pattern}...` });
               const results = await platformHealing.searchPlatformFiles(typedInput.pattern);
@@ -1708,7 +1708,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 `• Dark Mode: Support light/dark themes\n` +
                 `• Accessibility: WCAG 2.1 AA compliance\n\n` +
                 `Next: Create design_guidelines.md with detailed specs.`;
-            } else if (name === 'readProjectFile') {
+            } else if (name === 'read_project_file') {
               if (!projectId) {
                 toolResult = '❌ No project selected. Use platform file tools instead.';
               } else {
@@ -1736,7 +1736,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                   sendEvent('error', { message: error.message });
                 }
               }
-            } else if (name === 'writeProjectFile') {
+            } else if (name === 'write_project_file') {
               if (!projectId) {
                 toolResult = '❌ No project selected. Use platform file tools instead.';
               } else {
@@ -1767,7 +1767,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                   sendEvent('error', { message: error.message });
                 }
               }
-            } else if (name === 'listProjectDirectory') {
+            } else if (name === 'list_project_files') {
               if (!projectId) {
                 toolResult = '❌ No project selected. Use platform file tools instead.';
               } else {
@@ -1784,7 +1784,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                   ).join('\n');
                 }
               }
-            } else if (name === 'createProjectFile') {
+            } else if (name === 'create_project_file') {
               if (!projectId) {
                 toolResult = '❌ No project selected. Use platform file tools instead.';
               } else {
@@ -1836,7 +1836,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                   sendEvent('error', { message: error.message });
                 }
               }
-            } else if (name === 'deleteProjectFile') {
+            } else if (name === 'delete_project_file') {
               if (!projectId) {
                 toolResult = '❌ No project selected. Use platform file tools instead.';
               } else {
@@ -2079,7 +2079,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 toolResult = `❌ Diagnosis error: ${error.message}`;
                 sendEvent('error', { message: `Diagnosis error: ${error.message}` });
               }
-            } else if (name === 'createPlatformFile') {
+            } else if (name === 'create_platform_file') {
               const typedInput = input as { path: string; content: string };
 
               // CRITICAL: Validate content exists before calling platformHealing
@@ -2115,7 +2115,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
               toolResult = `✅ File created successfully`;
               console.log(`[LOMU-AI] ✅ File created autonomously: ${typedInput.path}`);
-            } else if (name === 'deletePlatformFile') {
+            } else if (name === 'delete_platform_file') {
               const typedInput = input as { path: string };
 
               console.log(`[LOMU-AI] Deleting file: ${typedInput.path}`);
