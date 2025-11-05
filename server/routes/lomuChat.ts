@@ -3,7 +3,7 @@ import { db } from '../db.ts';
 import { chatMessages, taskLists, tasks, lomuAttachments, lomuJobs, users, subscriptions, projects, conversationStates, platformIncidents } from '@shared/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth.ts';
-import { streamGeminiResponse } from '../gemini.ts';
+import { streamAnthropicResponse } from '../anthropic.ts';
 import { RAILWAY_CONFIG } from '../config/railway.ts';
 import { platformHealing } from '../platformHealing.ts';
 import { platformAudit } from '../platformAudit.ts';
@@ -19,7 +19,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { createSafeGeminiRequest, logGeminiTruncationResults } from '../lib/gemini-wrapper.ts';
+import { createSafeAnthropicRequest } from '../lib/anthropic-wrapper.ts';
 import { sanitizeDiagnosisForAI } from '../lib/diagnosis-sanitizer.ts';
 import { filterToolCallsFromMessages } from '../lib/message-filter.ts';
 import type { WebSocketServer } from 'ws';
@@ -1334,21 +1334,14 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       // ⚡ Use ultra-compressed prompt (no extra platform knowledge - read files when needed)
       const finalSystemPrompt = systemPrompt;
 
-      // 🛡️ GEMINI CONTEXT-LIMIT PROTECTION: Prevent errors from exceeding 1M token limit
+      // TEMPORARY: Claude context-limit protection (200K token limit)
       // This wrapper truncates context if needed while preserving recent messages
       const { messages: safeMessages, systemPrompt: safeSystemPrompt, estimatedTokens, truncated, originalTokens, removedMessages } = 
-        createSafeGeminiRequest(conversationMessages, finalSystemPrompt);
+        createSafeAnthropicRequest(conversationMessages, finalSystemPrompt);
 
       // Log truncation results for monitoring (only on first iteration)
-      if (iterationCount === 1) {
-        logGeminiTruncationResults({ 
-          messages: safeMessages, 
-          systemPrompt: safeSystemPrompt, 
-          estimatedTokens, 
-          truncated,
-          removedMessages,
-          originalTokens // ✅ Use accurate original tokens from wrapper
-        });
+      if (iterationCount === 1 && truncated) {
+        console.log(`[CLAUDE-WRAPPER] Truncated context: ${originalTokens} → ${estimatedTokens} tokens (removed ${removedMessages} messages)`);
       }
 
       // ✅ REAL-TIME STREAMING: Stream text to user AS IT ARRIVES while building content blocks
@@ -1358,9 +1351,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       let taskListId: string | null = null; // Track if a task list exists
       let detectedComplexity = 1; // Track task complexity for workflow validation
 
-      // Use streamGeminiResponse for streaming
-      await streamGeminiResponse({
-        model: 'gemini-2.5-flash',
+      // TEMPORARY: Use Claude due to Gemini MALFORMED_FUNCTION_CALL with 37 tools
+      await streamAnthropicResponse({
+        model: 'claude-sonnet-4-20250514',
         maxTokens: config.maxTokens,
         system: safeSystemPrompt,
         messages: safeMessages,
