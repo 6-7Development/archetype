@@ -1034,6 +1034,16 @@ Let's build! 🚀`;
         /^\d+ (file|error|test)/i,                // Counts (e.g., "3 files updated")
       ];
 
+      // 🔧 CHUNK BUFFERING: Prevent garbled message display
+      let chunkBuffer = '';
+      const BUFFER_SIZE = 80; // Characters before considering flush
+      const flushBuffer = (force = false) => {
+        if (chunkBuffer.length > 0 && (force || chunkBuffer.length >= BUFFER_SIZE)) {
+          broadcast(userId, jobId, 'job_content', { content: chunkBuffer });
+          chunkBuffer = '';
+        }
+      };
+
       // Shared onChunk callback for both models
       const handleChunk = (chunk: any) => {
         if (chunk.type === 'chunk' && chunk.content) {
@@ -1219,6 +1229,17 @@ Let's build! 🚀`;
           currentTextBlock += chunk.content;
           fullContent += chunk.content;
 
+          // 🔧 BUFFER CHUNKS: Accumulate and flush at natural breakpoints
+          chunkBuffer += chunk.content;
+          const hasLineBreak = chunkBuffer.includes('\n');
+          const hasSentenceEnd = /[.!?]\s*$/.test(chunkBuffer);
+          const isLongEnough = chunkBuffer.length >= BUFFER_SIZE;
+          
+          // Flush if we hit a natural breakpoint or buffer is full
+          if (hasLineBreak || hasSentenceEnd || isLongEnough) {
+            flushBuffer(true);
+          }
+
           // HARD ENFORCEMENT - Block invalid phase transitions
           const detectedPhase = workflowValidator.detectPhaseAnnouncement(chunk.content);
           if (detectedPhase) {
@@ -1262,7 +1283,8 @@ Let's build! 🚀`;
             }
           }
 
-          broadcast(userId, jobId, 'job_content', { content: chunk.content });
+          // ❌ REMOVED: Old garbled broadcast - now using chunk buffering
+          // broadcast(userId, jobId, 'job_content', { content: chunk.content });
         }
       };
 
@@ -1317,6 +1339,10 @@ Let's build! 🚀`;
       // Shared onComplete callback for both models
       const handleComplete = (text: string, usage: any) => {
         console.log(`[LOMU-AI-JOB-MANAGER] ${model} stream completed`);
+        
+        // 🔧 FLUSH remaining buffer on completion
+        flushBuffer(true);
+        
         // Add final text block if any
         if (currentTextBlock && contentBlocks[contentBlocks.length - 1]?.text !== currentTextBlock) {
           contentBlocks.push({ type: 'text', text: currentTextBlock });
