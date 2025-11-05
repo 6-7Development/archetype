@@ -39,13 +39,13 @@ function classifyUserIntent(message: string): UserIntent {
   let scores = { build: 0, fix: 0, diagnostic: 0, casual: 0 };
   
   // BUILD intent: Creating new features, planning, architecting, adding functionality
-  // EXPANDED: Include planning/design/architecture vocabulary
+  // EXPANDED: Include planning/design/architecture vocabulary with FLEXIBLE MATCHING
   const buildPatterns = [
-    /\b(build|create|add|implement|make|develop|write)\b/g,           // +3 each
-    /\b(set up|setup|install|integrate|deploy|publish)\b/g,           // +3 each
-    /\b(plan|design|architect|outline|draft|prepare|document)\b/g,    // +3 each (ADDED)
-    /\b(migration|refactor|restructure|reorganize)\b/g,               // +2 each (ADDED)
-    /\b(new feature|new module|new component|new page)\b/g,           // +4 each
+    /\b(build|creat|add|implement|mak|develop|writ)/g,                // +3 each (partial match)
+    /\b(set up|setup|install|integrat|deploy|publish)/g,              // +3 each (partial)
+    /\b(plan|design|architect|outline|draft|prepar|document)/g,       // +3 each (FLEXIBLE)
+    /\b(migrat|refactor|restructur|reorganiz)/g,                      // +2 each (FLEXIBLE)
+    /\b(new feature|new module|new component|new page)/g,             // +4 each
   ];
   buildPatterns.forEach((pattern, idx) => {
     const matches = lowerMessage.match(pattern);
@@ -102,10 +102,18 @@ function classifyUserIntent(message: string): UserIntent {
     scores.casual += 2; // Short messages with no keywords → likely casual
   }
   
-  // Find highest score
-  const intent = Object.entries(scores).reduce((max, [key, val]) => 
-    val > max[1] ? [key, val] : max, ['diagnostic', 0]
-  )[0] as UserIntent;
+  // Find highest score - FAVOR BUILD over diagnostic for ties/zeros
+  const maxScore = Math.max(...Object.values(scores));
+  let intent: UserIntent;
+  
+  if (maxScore === 0) {
+    // No keywords matched → default to BUILD (safe, allows full iteration budget)
+    intent = 'build';
+  } else {
+    // Find highest score, prefer build > fix > diagnostic > casual in ties
+    const priorityOrder: UserIntent[] = ['build', 'fix', 'diagnostic', 'casual'];
+    intent = priorityOrder.find(key => scores[key] === maxScore) || 'build';
+  }
   
   console.log(`[LOMU-INTENT-SCORE] Message: "${message.substring(0, 80)}..." | Scores:`, scores, `| Intent: ${intent}`);
   

@@ -72,6 +72,18 @@ LomuAI supports parallel subagent orchestration, allowing multiple tasks to exec
   - ✅ **Platform Healing**: Migrated from Gemini to Claude in server/routes/healing.ts (lines 161, 238, 443)
   - ✅ **Platform Healing UI Fix**: Added metadata filter to hide internal tool messages (client/src/pages/platform-healing.tsx line 665)
   - Gemini was hallucinating Python syntax when calling tools: `print(default_api.create_task_list(...))` - Claude provides reliable JSON tool execution
+- **Dynamic Iteration Limits (Nov 5, 2025)**: Achieved TRUE Replit Agent behavioral parity with intent-based MAX_ITERATIONS:
+  - **Multi-Pass Scoring System**: Replaced first-match-wins with weighted scoring across all intent categories
+  - **Flexible Pattern Matching**: Uses partial word stems (architect*, document*, migrat*) to catch inflections and variations
+  - **Intent-Based Limits**:
+    - BUILD (25 iterations): Creating features, planning, architecting, documenting, migrations
+    - FIX (20 iterations): Debugging, fixing bugs, resolving errors, optimizing
+    - DIAGNOSTIC (15 iterations): Investigating issues, analyzing logs, checking status
+    - CASUAL (5 iterations): Greetings, acknowledgments, short questions
+  - **Build-First Defaults**: Unknown requests default to BUILD (25 iterations) instead of DIAGNOSTIC to prevent throttling
+  - **Priority Tie-Breaking**: When scores are equal, prefer build > fix > diagnostic > casual
+  - **Applied Universally**: Both Platform Healing (lomuChat.ts) and regular LomuAI (lomuJobManager.ts) use the same classifier
+  - **Comprehensive Logging**: All intent scores logged for telemetry and fine-tuning
 - **Command System**: Natural language commands processed by Anthropic Claude 3.5 Sonnet to generate JSON project structures.
 - **File Management**: Generated files are stored in PostgreSQL, editable via Monaco editor, with real-time WebSocket synchronization.
 - **Preview System**: Uses `esbuild` for in-memory React/TypeScript compilation for live application previews in an iframe.
