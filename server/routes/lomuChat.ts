@@ -1630,33 +1630,37 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                   console.error(`[LOMU-AI-PROTECTION] ❌ Blocked write to critical file without reading: ${typedInput.path}`);
                   sendEvent('error', { message: `Critical file protection: Must read ${typedInput.path} before writing` });
                   
-                  // Don't throw - let LomuAI see the error and correct itself
-                  continue; // Skip to next block
-                }
+                  // Skip the actual write - just return error message to LomuAI
+                  // toolResult is already set above, it will be pushed to toolResults array normally
+                } else {
+                  // File was read - allow the write
 
-                // Additional check: Warn if file size changes drastically
-                try {
-                  const fs = await import('fs/promises');
-                  const path = await import('path');
-                  const fullPath = path.join(process.cwd(), typedInput.path);
-                  const stats = await fs.stat(fullPath);
-                  const originalSize = stats.size;
-                  const newSize = typedInput.content.length;
-                  const sizeChangePercent = Math.abs((newSize - originalSize) / originalSize) * 100;
+                  // Additional check: Warn if file size changes drastically
+                  try {
+                    const fs = await import('fs/promises');
+                    const path = await import('path');
+                    const fullPath = path.join(process.cwd(), typedInput.path);
+                    const stats = await fs.stat(fullPath);
+                    const originalSize = stats.size;
+                    const newSize = typedInput.content.length;
+                    const sizeChangePercent = Math.abs((newSize - originalSize) / originalSize) * 100;
 
-                  if (sizeChangePercent > 50) {
-                    const warning = `\n\n⚠️ **SIZE WARNING**: This change will ${newSize > originalSize ? 'increase' : 'decrease'} ` +
-                      `file size by ${sizeChangePercent.toFixed(0)}% (${originalSize} → ${newSize} bytes).\n` +
-                      `Please verify you're making targeted edits, not replacing the entire file!\n`;
-                    sendEvent('content', { content: warning });
-                    console.warn(`[LOMU-AI-PROTECTION] ⚠️ Large size change for ${typedInput.path}: ${sizeChangePercent.toFixed(0)}%`);
+                    if (sizeChangePercent > 50) {
+                      const warning = `\n\n⚠️ **SIZE WARNING**: This change will ${newSize > originalSize ? 'increase' : 'decrease'} ` +
+                        `file size by ${sizeChangePercent.toFixed(0)}% (${originalSize} → ${newSize} bytes).\n` +
+                        `Please verify you're making targeted edits, not replacing the entire file!\n`;
+                      sendEvent('content', { content: warning });
+                      console.warn(`[LOMU-AI-PROTECTION] ⚠️ Large size change for ${typedInput.path}: ${sizeChangePercent.toFixed(0)}%`);
+                    }
+                  } catch (err) {
+                    // File might not exist yet - that's okay
                   }
-                } catch (err) {
-                  // File might not exist yet - that's okay
                 }
               }
 
-              console.log(`[LOMU-AI] Writing file: ${typedInput.path} (${typedInput.content.length} bytes)`);
+              // Only proceed with write if not blocked by protection
+              if (toolResult === undefined || !toolResult.includes('❌ PROTECTION')) {
+                console.log(`[LOMU-AI] Writing file: ${typedInput.path} (${typedInput.content.length} bytes)`);
 
               // ✅ AUTONOMOUS MODE: No approval required - LomuAI works like Replit Agent
               sendEvent('progress', { message: `✅ Modifying ${typedInput.path}...` });
@@ -1712,6 +1716,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 sendEvent('content', { content: verifyWarning });
                 console.warn(`[LOMU-AI-AUTO-VERIFY] ⚠️ Verification warning for ${typedInput.path}:`, verifyError.message);
               }
+              } // Close the protection check
             } else if (name === 'list_platform_files') {
               const typedInput = input as { directory: string };
               sendEvent('progress', { message: `Listing ${typedInput.directory}...` });
