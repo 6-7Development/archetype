@@ -124,6 +124,13 @@ async function streamClaudeResponse(options: StreamOptions) {
         }
       }
 
+      // REPLIT-STYLE: Auto-detect code blocks and propose changes
+      const codeBlockRegex = /```(\w+)?\s*\n([\s\S]*?)\n```/g;
+      const matches = [...text.matchAll(codeBlockRegex)];
+      if (matches.length > 0) {
+        console.log(`[LOMU-AUTO-DETECT] Found ${matches.length} code blocks in response`);
+      }
+
       // Detect thoughts
       try {
         if (text.toLowerCase().includes('thinking:') ||
