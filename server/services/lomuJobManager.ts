@@ -985,7 +985,7 @@ Let's build! 🚀`;
       writeOperations: 0,
       consecutiveReadOnlyIterations: 0,
       hasProducedFixes: false,
-      MAX_READ_ONLY_ITERATIONS: 10, // Increased from 5 - allows diagnostic operations to complete
+      MAX_READ_ONLY_ITERATIONS: 20, // Increased from 5 to 20 - allows thorough investigation before halting
     };
 
     // 🔢 TOKEN TRACKING: Accumulate usage across all iterations
