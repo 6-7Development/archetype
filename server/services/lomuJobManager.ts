@@ -1309,11 +1309,11 @@ Let's build! 🚀`;
         // 🔄 RESET CUMULATIVE TEXT ACCUMULATOR after each tool call
         resetTextAccumulator();
 
-        // 🔄 UPDATE PHASE based on tool type
-        if (toolUse.name === 'createTaskList') {
+        // 🔄 UPDATE PHASE based on tool type (FIXED: use snake_case to match SYSOP_TOOLS)
+        if (toolUse.name === 'create_task_list') {
           currentPhase = 'plan';
-          console.log(`[CONTINUOUS-GUARD] Phase auto-transitioned to PLAN (createTaskList called)`);
-        } else if (['readPlatformFile', 'listPlatformDirectory', 'readProjectFile', 'listProjectDirectory'].includes(toolUse.name)) {
+          console.log(`[CONTINUOUS-GUARD] Phase auto-transitioned to PLAN (create_task_list called)`);
+        } else if (['read_platform_file', 'list_platform_files', 'read_project_file', 'list_project_files', 'read', 'ls', 'glob'].includes(toolUse.name)) {
           if (currentPhase === 'assess' || currentPhase === 'plan') {
             // Reading during assess stays in assess, reading after plan is execute
             console.log(`[CONTINUOUS-GUARD] Phase remains ${currentPhase} (read operation)`);
@@ -1321,7 +1321,7 @@ Let's build! 🚀`;
             currentPhase = 'execute';
             console.log(`[CONTINUOUS-GUARD] Phase auto-transitioned to EXECUTE (file read during work)`);
           }
-        } else if (['writePlatformFile', 'createPlatformFile', 'deletePlatformFile', 'writeProjectFile', 'createProjectFile', 'deleteProjectFile'].includes(toolUse.name)) {
+        } else if (['write_platform_file', 'create_platform_file', 'delete_platform_file', 'write_project_file', 'create_project_file', 'delete_project_file', 'write'].includes(toolUse.name)) {
           currentPhase = 'execute';
           console.log(`[CONTINUOUS-GUARD] Phase auto-transitioned to EXECUTE (file write)`);
         } else if (toolUse.name === 'run_playwright_test' || toolUse.name === 'bash') {
