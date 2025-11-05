@@ -252,32 +252,28 @@ export class WorkflowValidator {
     this.iterationsSincePhaseChange++;
     
     if (this.iterationsSincePhaseChange >= this.maxIterationsWithoutPhase) {
-      console.warn(`[WORKFLOW-VALIDATOR] No phase announcement for ${this.iterationsSincePhaseChange} iterations - BLOCKING tools`);
-      this.blockToolsUntilPhaseAnnouncement = true;
+      console.warn(`[WORKFLOW-VALIDATOR] ⚠️ No phase announcement for ${this.iterationsSincePhaseChange} iterations (passive monitoring - not blocking)`);
+      this.blockToolsUntilPhaseAnnouncement = true; // Flag is set but no longer blocks tools
     }
   }
 
   /**
-   * Validate tool call based on current phase
-   * FIX 1: Check if tools are blocked due to missing phase announcement
-   * FIX 5: Tighten ASSESS phase to only allow read-only tools
+   * Validate tool call based on current phase (PASSIVE MONITORING MODE)
+   * Logs violations but NEVER blocks tools - lets Claude work naturally
    */
   validateToolCall(toolName: string, phase?: WorkflowPhase): PhaseValidationResult {
     if (!this.enabled) return { allowed: true };
 
-    // FIX 1: HARD BLOCK if no phase announcement detected
-    if (this.blockToolsUntilPhaseAnnouncement) {
-      return {
-        allowed: false,
-        reason: `No phase announcement detected. You must announce current phase with emoji (🔍 Assessing, 📋 Planning, ⚡ Executing, etc.) before using tools.`
-      };
-    }
-
     const currentPhase = phase || this.currentPhase;
 
-    // FIX 5: Define STRICT read-only allowlist for ASSESS phase
+    // PASSIVE: Warn about missing phase announcement but don't block
+    if (this.blockToolsUntilPhaseAnnouncement) {
+      console.warn(`[WORKFLOW-VALIDATOR] ⚠️ No phase announcement for ${this.iterationsSincePhaseChange} iterations (passive warning)`);
+      // Don't block - let it continue
+    }
+
+    // Define read-only tools for monitoring
     const ASSESS_READ_ONLY_TOOLS = [
-      // File reading (both camelCase and snake_case variants)
       'readPlatformFile',
       'read_platform_file',
       'readProjectFile',
@@ -287,29 +283,25 @@ export class WorkflowValidator {
       'list_platform_files',
       'listProjectDirectory',
       'list_project_directory',
-      // Diagnostics
       'perform_diagnosis',
       'read_logs',
       'searchCodebase',
       'search_codebase',
       'grep',
-      // Task management (planning tools - non-destructive)
       'create_task_list',
       'read_task_list',
       'update_task',
     ];
 
-    // FIX 5: ASSESS phase ONLY allows read-only tools - explicitly block everything else
+    // PASSIVE: Log phase violations but allow tools
     if (currentPhase === 'assess') {
       const isReadOnly = ASSESS_READ_ONLY_TOOLS.some(pattern => 
         toolName === pattern || toolName.startsWith(pattern)
       );
       
       if (!isReadOnly) {
-        return {
-          allowed: false,
-          reason: `ASSESS phase only allows read-only tools. ${toolName} is a write/execute operation. Announce "⚡ Executing..." first.`
-        };
+        console.warn(`[WORKFLOW-VALIDATOR] ⚠️ Tool ${toolName} used in ASSESS phase (expected read-only) - passive warning, allowing execution`);
+        // Don't block - just log and continue
       }
     }
 
@@ -385,25 +377,22 @@ export class WorkflowValidator {
 
     const rules = phaseToolRules[currentPhase];
 
-    // Check explicit allow list
+    // PASSIVE: Check allow list and log violations but don't block
     if (rules.allowed) {
       const isAllowed = rules.allowed.some(pattern => {
         if (pattern.includes('(')) {
-          // Pattern like "bash(npm test)"
           return toolName.startsWith(pattern.split('(')[0]);
         }
         return toolName === pattern || toolName.startsWith(pattern);
       });
 
       if (!isAllowed) {
-        return {
-          allowed: false,
-          reason: `${rules.description}. Tool "${toolName}" not in allowed list.`,
-        };
+        console.warn(`[WORKFLOW-VALIDATOR] ⚠️ Tool ${toolName} not in ${currentPhase} allowed list - passive warning, allowing execution`);
+        // Don't block - just log and continue
       }
     }
 
-    // Check explicit disallow list
+    // PASSIVE: Check disallow list and log violations but don't block
     if (rules.disallowed) {
       const isDisallowed = rules.disallowed.some(pattern => {
         if (pattern.includes('(')) {
@@ -413,13 +402,12 @@ export class WorkflowValidator {
       });
 
       if (isDisallowed) {
-        return {
-          allowed: false,
-          reason: `${rules.description}. Tool "${toolName}" is disallowed in this phase.`,
-        };
+        console.warn(`[WORKFLOW-VALIDATOR] ⚠️ Tool ${toolName} is disallowed in ${currentPhase} phase - passive warning, allowing execution`);
+        // Don't block - just log and continue
       }
     }
 
+    // ALWAYS allow tools - passive monitoring only
     return { allowed: true };
   }
 
