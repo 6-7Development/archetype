@@ -1314,6 +1314,7 @@ Let's build! 🚀`;
               .reverse()
               .find(msg => msg.role === 'user' && typeof msg.content === 'string');
 
+<<<<<<< HEAD
             if (recentUserMessage && isSimpleMessage(recentUserMessage.content)) {
               toolResult = `❌ ERROR: Don't create tasks for simple greetings/thanks. Just respond conversationally!`;
             } else {
@@ -1726,6 +1727,166 @@ Let's build! 🚀`;
               });
             } catch (error: any) {
               toolResult = `❌ Sub-agent failed: ${error.message}`;
+=======
+                violationInjected = true;
+                resetTextAccumulator();
+                continueLoop = true;
+                return;
+              }
+              console.log(`[CUMULATIVE-GUARD] ✅ Status message valid: "${cumulativeText}" (${cumulativeText.length} chars)`);
+            }
+            // Check final summary in CONFIRM phase (max 20 words total)
+            else if (currentPhase === 'confirm' && cumulativeText.startsWith('✅ Complete')) {
+              const summaryWords = cumulativeText.split(/\s+/).filter((w: string) => w.length > 0).length;
+              if (summaryWords > 20) {
+                const violation = `⚠️ VIOLATION: Final summary has ${summaryWords} words. Max 20 words. Be brief.`;
+                console.error(`[CUMULATIVE-GUARD] ${violation}`);
+
+                metricsTracker?.recordViolation(
+                  'excessive_rambling',
+                  currentPhase,
+                  `Summary too long: ${summaryWords} words (max 20)`
+                );
+
+                broadcast(userId, jobId, 'job_content', { 
+                  content: `\n\n❌ ${violation}\n\n`,
+                  isError: true  
+                });
+
+                conversationMessages.push({
+                  role: 'user',
+                  content: violation
+                });
+
+                violationInjected = true;
+                resetTextAccumulator();
+                continueLoop = true;
+                return;
+              }
+              console.log(`[CUMULATIVE-GUARD] ✅ Final summary valid (${summaryWords} words)`);
+            }
+            // Check cumulative words (max 5 words between tools)
+            else if (wordsSinceLastTool > 5) {
+              const violation = `⚠️ VIOLATION: Detected ${wordsSinceLastTool} words since last tool call. Max 5 words allowed. Use phase markers only.`;
+              console.error(`[CUMULATIVE-GUARD] ${violation}: "${cumulativeText.slice(0, 100)}..."`);
+
+              metricsTracker?.recordViolation(
+                'excessive_rambling',
+                currentPhase,
+                `Cumulative text: ${wordsSinceLastTool} words (max 5)`
+              );
+
+              broadcast(userId, jobId, 'job_content', { 
+                content: `\n\n❌ ${violation}\n\n`,
+                isError: true  
+              });
+
+              conversationMessages.push({
+                role: 'user',
+                content: violation
+              });
+
+              violationInjected = true;
+              resetTextAccumulator();
+              continueLoop = true;
+            }
+          }
+
+          // FIX 2: Detect inline file edits in streaming content
+          const hasDirectEdit = 
+            chunk.content.includes('--- a/') ||  // Diff format
+            chunk.content.includes('+++ b/') ||
+            chunk.content.includes('<<<<<<< SEARCH') || // Search/replace
+            chunk.content.includes('>>>>>>> REPLACE') ||
+            chunk.content.includes('apply_patch') ||
+            /```[a-z]*\n\S+\.\S+\n/.test(chunk.content); // Code block with filename
+
+          if (hasDirectEdit && !violationInjected) {
+            const currentPhase = workflowValidator.getCurrentPhase();
+            if (currentPhase !== 'execute') {
+              // BLOCK direct edits outside EXECUTE phase
+              const error = `WORKFLOW VIOLATION: Direct code edits only allowed in EXECUTE phase. Current: ${currentPhase}. Use tools instead.`;
+              console.error(`[WORKFLOW-VALIDATOR] ${error}`);
+
+              // Track violation in metrics
+              metricsTracker?.recordViolation(
+                'direct_edit',
+                currentPhase,
+                error
+              );
+
+              broadcast(userId, jobId, 'job_content', { 
+                content: `\n\n❌ ${error}\n\n`,
+                isError: true  
+              });
+
+              conversationMessages.push({
+                role: 'user',
+                content: `SYSTEM ERROR: ${error}`
+              });
+
+              violationInjected = true;
+              resetTextAccumulator();
+              continueLoop = true;
+            }
+          }
+
+          currentTextBlock += chunk.content;
+          fullContent += chunk.content;
+
+          // 🔧 BUFFER CHUNKS: Accumulate and flush at natural breakpoints
+          chunkBuffer += chunk.content;
+          const hasLineBreak = chunkBuffer.includes('\n');
+          const hasSentenceEnd = /[.!?]\s*$/.test(chunkBuffer);
+          const isLongEnough = chunkBuffer.length >= BUFFER_SIZE;
+          
+          // Flush if we hit a natural breakpoint or buffer is full
+          if (hasLineBreak || hasSentenceEnd || isLongEnough) {
+            flushBuffer(true);
+          }
+
+          // HARD ENFORCEMENT - Block invalid phase transitions
+          const detectedPhase = workflowValidator.detectPhaseAnnouncement(chunk.content);
+          if (detectedPhase) {
+            // 🎯 FIX: Convert to uppercase for enforcementOrchestrator (uses UPPERCASE phases)
+            const uppercasePhase = detectedPhase.toUpperCase() as any;
+            const transition = enforcementOrchestrator.transitionToPhase(uppercasePhase);
+
+            if (!transition.allowed) {
+              // HARD BLOCK: Inject error to AI conversation
+              const errorMessage = `\n\n❌ WORKFLOW VIOLATION: ${transition.reason}\n\nYou must fix this before proceeding. Current phase: ${enforcementOrchestrator.getCurrentPhase()}`;
+
+              // Track phase skip violation in metrics
+              metricsTracker?.recordViolation(
+                'phase_skip',
+                enforcementOrchestrator.getCurrentPhase(),
+                `Invalid transition to ${detectedPhase}: ${transition.reason}`
+              );
+
+              fullContent += errorMessage;
+              broadcast(userId, jobId, 'job_content', { 
+                content: errorMessage,
+                isError: true  
+              });
+
+              // Add system message to force correction in next iteration
+              conversationMessages.push({
+                role: 'user',
+                content: `SYSTEM ERROR: ${transition.reason}. You must correct this violation before proceeding.`
+              });
+
+              console.error(`[ENFORCEMENT] BLOCKED invalid transition: ${enforcementOrchestrator.getCurrentPhase()} → ${uppercasePhase}`);
+              // Don't actually transition - the orchestrator will keep current phase
+            } else {
+              // Transition was successful (already performed by orchestrator)
+              // Also notify the legacy workflow validator for backward compatibility
+              workflowValidator.transitionTo(detectedPhase);
+              metricsTracker?.recordPhaseTransition(uppercasePhase);
+
+              // 🔄 UPDATE CURRENT PHASE for continuous guard
+              currentPhase = detectedPhase;
+              console.log(`[ENFORCEMENT] ✅ Phase transition: ${uppercasePhase}`);
+>>>>>>> 3e359d75566599a8cac6f578c58f9b7b3c60b12c
             }
           }
 
