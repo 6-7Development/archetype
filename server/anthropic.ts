@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { WebSocket } from 'ws';
+import { truncateToolOutput, formatTruncationLog } from './utils/toolOutputTruncator';
 
 /*
 <important_code_snippet_instructions>
@@ -219,10 +220,27 @@ export async function streamAnthropicResponse(options: StreamOptions) {
           toolUses.map(async (toolUse) => {
             try {
               const result = await onToolUse(toolUse);
+              
+              // 🛡️ CRITICAL: Truncate tool output to prevent token explosions
+              const truncResult = truncateToolOutput(toolUse.name, result);
+              console.log(formatTruncationLog(toolUse.name, truncResult));
+              
+              // Add truncation warning if output was truncated
+              let finalContent = truncResult.content;
+              if (truncResult.wasTruncated && truncResult.summary) {
+                finalContent = {
+                  _truncated: true,
+                  _summary: truncResult.summary,
+                  _originalTokens: truncResult.originalSize,
+                  _truncatedTokens: truncResult.truncatedSize,
+                  result: truncResult.content
+                };
+              }
+              
               return {
                 type: 'tool_result',
                 tool_use_id: toolUse.id,
-                content: JSON.stringify(result),
+                content: JSON.stringify(finalContent),
               };
             } catch (toolError) {
               console.error(`❌ Tool execution error (${toolUse.name}):`, toolError);
