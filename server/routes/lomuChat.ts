@@ -1593,6 +1593,69 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 throw new Error(`Tool writePlatformFile called with invalid content type (${typeof typedInput.content}) for ${typedInput.path}`);
               }
 
+              // 🛡️ CRITICAL FILES PROTECTION: Require confirmation for core infrastructure
+              const CRITICAL_FILES = [
+                'server/index.ts',
+                'server/routes.ts', 
+                'server/db.ts',
+                'server/vite.ts',
+                'package.json',
+                'drizzle.config.ts',
+                'vite.config.ts',
+                'shared/schema.ts'
+              ];
+
+              const isCriticalFile = CRITICAL_FILES.some(criticalPath => 
+                typedInput.path === criticalPath || typedInput.path.endsWith(`/${criticalPath}`)
+              );
+
+              if (isCriticalFile) {
+                // Check if file was read in this conversation
+                const hasReadFile = conversationMessages.some((msg: any) => 
+                  msg.role === 'assistant' && 
+                  msg.content?.some((block: any) => 
+                    block.type === 'tool_use' && 
+                    block.name === 'read_platform_file' &&
+                    block.input?.path === typedInput.path
+                  )
+                );
+
+                if (!hasReadFile) {
+                  toolResult = `❌ PROTECTION: "${typedInput.path}" is a critical infrastructure file!\n\n` +
+                    `You MUST read this file first using read_platform_file() before modifying it.\n` +
+                    `This prevents accidental overwrites of production code.\n\n` +
+                    `**Next step:** Call read_platform_file("${typedInput.path}") to see the current content, ` +
+                    `then make targeted edits instead of replacing the entire file.`;
+                  
+                  console.error(`[LOMU-AI-PROTECTION] ❌ Blocked write to critical file without reading: ${typedInput.path}`);
+                  sendEvent('error', { message: `Critical file protection: Must read ${typedInput.path} before writing` });
+                  
+                  // Don't throw - let LomuAI see the error and correct itself
+                  continue; // Skip to next block
+                }
+
+                // Additional check: Warn if file size changes drastically
+                try {
+                  const fs = await import('fs/promises');
+                  const path = await import('path');
+                  const fullPath = path.join(process.cwd(), typedInput.path);
+                  const stats = await fs.stat(fullPath);
+                  const originalSize = stats.size;
+                  const newSize = typedInput.content.length;
+                  const sizeChangePercent = Math.abs((newSize - originalSize) / originalSize) * 100;
+
+                  if (sizeChangePercent > 50) {
+                    const warning = `\n\n⚠️ **SIZE WARNING**: This change will ${newSize > originalSize ? 'increase' : 'decrease'} ` +
+                      `file size by ${sizeChangePercent.toFixed(0)}% (${originalSize} → ${newSize} bytes).\n` +
+                      `Please verify you're making targeted edits, not replacing the entire file!\n`;
+                    sendEvent('content', { content: warning });
+                    console.warn(`[LOMU-AI-PROTECTION] ⚠️ Large size change for ${typedInput.path}: ${sizeChangePercent.toFixed(0)}%`);
+                  }
+                } catch (err) {
+                  // File might not exist yet - that's okay
+                }
+              }
+
               console.log(`[LOMU-AI] Writing file: ${typedInput.path} (${typedInput.content.length} bytes)`);
 
               // ✅ AUTONOMOUS MODE: No approval required - LomuAI works like Replit Agent
