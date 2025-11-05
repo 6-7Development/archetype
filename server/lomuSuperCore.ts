@@ -633,7 +633,9 @@ export class LomuLearningSystem {
     if (this.successPatterns.size > 50) {
       // Remove oldest task types when Map grows too large
       const oldestKey = this.successPatterns.keys().next().value;
-      this.successPatterns.delete(oldestKey);
+      if (oldestKey) {
+        this.successPatterns.delete(oldestKey);
+      }
     }
   }
   

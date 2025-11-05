@@ -277,14 +277,26 @@ export class WorkflowValidator {
 
     // FIX 5: Define STRICT read-only allowlist for ASSESS phase
     const ASSESS_READ_ONLY_TOOLS = [
+      // File reading (both camelCase and snake_case variants)
       'readPlatformFile',
+      'read_platform_file',
       'readProjectFile',
+      'read_project_file',
       'listPlatformDirectory',
+      'list_platform_directory',
+      'list_platform_files',
       'listProjectDirectory',
+      'list_project_directory',
+      // Diagnostics
       'perform_diagnosis',
       'read_logs',
       'searchCodebase',
+      'search_codebase',
       'grep',
+      // Task management (planning tools - non-destructive)
+      'create_task_list',
+      'read_task_list',
+      'update_task',
     ];
 
     // FIX 5: ASSESS phase ONLY allows read-only tools - explicitly block everything else
