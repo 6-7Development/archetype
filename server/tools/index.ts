@@ -183,19 +183,18 @@ export const LOMU_TOOLS = [
   },
   {
     name: 'perform_diagnosis',
-    description: 'Diagnose performance, security, memory, or database issues by analyzing actual code. Returns evidence-based findings with real metrics (file sizes, pattern counts, actual code issues). Use this to verify claims with concrete data instead of theoretical diagnosis.',
+    description: 'Diagnose platform issues by analyzing actual code. Automatically detects what to check based on your description. Returns evidence-based findings with real metrics (file sizes, pattern counts, actual code issues). Examples: "check performance", "security audit", "platform-wide health check", "memory leaks", "database queries".',
     input_schema: {
       type: 'object',
       properties: {
         target: {
           type: 'string',
-          enum: ['performance', 'security', 'memory', 'database', 'all'],
-          description: 'Type of diagnosis to perform. Use "all" for comprehensive analysis.',
+          description: 'Describe what to diagnose (e.g., "performance issues", "security vulnerabilities", "platform health", "memory leaks", "database problems"). The tool will automatically determine which checks to run.',
         },
         focus: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Optional: specific files to analyze (e.g., ["server/routes.ts"]). If not provided, analyzes common files.',
+          description: 'Optional: specific files to analyze (e.g., ["server/routes.ts"]). If not provided, analyzes common platform files.',
         },
       },
       required: ['target'],

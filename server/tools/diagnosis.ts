@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 
 export interface DiagnosisParams {
-  target: 'performance' | 'security' | 'memory' | 'database' | 'system' | 'all';
+  target: string; // Any description - will be mapped to actual check types
   focus?: string[]; // Specific files to check
 }
 
@@ -210,27 +210,52 @@ export async function performDiagnosis(params: DiagnosisParams): Promise<Diagnos
       effectiveFiles = filesToCheck;
     }
 
-    // Run diagnosis based on target (using effectiveFiles instead of filesToCheck)
-    // 'system' target runs all checks (same as 'all')
+    // Intelligent target mapping - convert any description to actual check types
     console.log(`[DIAGNOSIS] Target: ${params.target}, Files: ${effectiveFiles.length}`);
-    const runAll = params.target === 'all' || params.target === 'system';
+    const targetLower = params.target.toLowerCase();
     
-    if (params.target === 'performance' || runAll) {
+    // Map natural language to check types
+    const checkPerformance = targetLower.includes('performance') || targetLower.includes('slow') || 
+                             targetLower.includes('cpu') || targetLower.includes('speed') ||
+                             targetLower.includes('all') || targetLower.includes('platform') || 
+                             targetLower.includes('health') || targetLower.includes('comprehensive');
+    
+    const checkMemory = targetLower.includes('memory') || targetLower.includes('leak') || 
+                        targetLower.includes('ram') || targetLower.includes('all') || 
+                        targetLower.includes('platform') || targetLower.includes('health') ||
+                        targetLower.includes('comprehensive');
+    
+    const checkDatabase = targetLower.includes('database') || targetLower.includes('db') || 
+                          targetLower.includes('query') || targetLower.includes('sql') ||
+                          targetLower.includes('all') || targetLower.includes('platform') || 
+                          targetLower.includes('health') || targetLower.includes('comprehensive');
+    
+    const checkSecurity = targetLower.includes('security') || targetLower.includes('vulnerability') || 
+                          targetLower.includes('safe') || targetLower.includes('auth') ||
+                          targetLower.includes('all') || targetLower.includes('platform') || 
+                          targetLower.includes('health') || targetLower.includes('comprehensive');
+    
+    // If no specific keywords matched, run all checks as fallback
+    const runAll = !checkPerformance && !checkMemory && !checkDatabase && !checkSecurity;
+    
+    console.log(`[DIAGNOSIS] Checks enabled: perf=${checkPerformance || runAll}, mem=${checkMemory || runAll}, db=${checkDatabase || runAll}, sec=${checkSecurity || runAll}`);
+    
+    if (checkPerformance || runAll) {
       console.log('[DIAGNOSIS] Running performance checks...');
       await diagnosePerformance(findings, effectiveFiles, filesAnalyzed);
     }
 
-    if (params.target === 'memory' || runAll) {
+    if (checkMemory || runAll) {
       console.log('[DIAGNOSIS] Running memory checks...');
       await diagnoseMemory(findings, effectiveFiles, filesAnalyzed);
     }
 
-    if (params.target === 'database' || runAll) {
+    if (checkDatabase || runAll) {
       console.log('[DIAGNOSIS] Running database checks...');
       await diagnoseDatabase(findings, effectiveFiles, filesAnalyzed);
     }
 
-    if (params.target === 'security' || runAll) {
+    if (checkSecurity || runAll) {
       console.log('[DIAGNOSIS] Running security checks...');
       await diagnoseSecurity(findings, effectiveFiles, filesAnalyzed);
     }

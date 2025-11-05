@@ -2893,22 +2893,19 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       'bug', 'issue', 'problem', 'error', 'broken', 'failing'
     ];
 
+    // Check if this conversation used diagnostic tools (perform_diagnosis, architect_consult, execute_sql)
+    const diagnosticKeywords = ['diagnose', 'diagnosis', 'check', 'analyze', 'inspect', 'investigate', 'audit'];
+    const isDiagnosticRequest = diagnosticKeywords.some(keyword => lowerMessage.includes(keyword));
+    
     const isFixRequest = FIX_REQUEST_KEYWORDS.some(keyword => lowerMessage.includes(keyword));
-    const isZeroMutationJob = isFixRequest && !workflowTelemetry.hasProducedFixes;
+    const isZeroMutationJob = isFixRequest && !workflowTelemetry.hasProducedFixes && !isDiagnosticRequest;
 
     if (isZeroMutationJob) {
       console.error(`[WORKFLOW-VALIDATION] 🚨 ZERO-MUTATION JOB FAILURE - Fix request with no code modifications`);
       console.error(`[WORKFLOW-VALIDATION] Read operations: ${workflowTelemetry.readOperations}, Code modifications: ${workflowTelemetry.writeOperations}`);
       console.error(`[WORKFLOW-VALIDATION] Message: "${message.slice(0, 100)}..."`);
 
-      // CRITICAL: This is a workflow failure - DON'T broadcast to users (looks broken)
-      // TEMPORARY FIX: Allow diagnostic responses to be shown to user
-      // The full content was already streamed to the user during execution
-      // Just log internally that no code changes were made
-      console.warn('[WORKFLOW-VALIDATION] ⚠️ Zero mutations detected (diagnostic/investigation only)');
-      console.log(`[WORKFLOW-VALIDATION] Claude completed ${workflowTelemetry.readOperations} diagnostic operations successfully`);
-
-      // Log as failure in audit trail (override the success status later)
+      // Log as failure in audit trail
       await platformAudit.log({
         userId,
         action: 'heal',
@@ -2941,6 +2938,8 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       } catch (incidentError: any) {
         console.error('[WORKFLOW-VALIDATION] Failed to create incident:', incidentError.message);
       }
+    } else if (isDiagnosticRequest && !workflowTelemetry.hasProducedFixes) {
+      console.log(`[WORKFLOW-VALIDATION] ✅ Diagnostic operation completed successfully - ${workflowTelemetry.readOperations} read operations, no code changes expected`);
     } else if (isFixRequest && workflowTelemetry.hasProducedFixes) {
       console.log(`[WORKFLOW-VALIDATION] ✅ Fix request completed successfully with ${workflowTelemetry.writeOperations} code-modifying operations`);
     } else {

@@ -128,7 +128,7 @@ async function streamClaudeResponse(options: StreamOptions) {
 
       // REPLIT-STYLE: Auto-detect code blocks and propose changes
       const codeBlockRegex = /```(\w+)?\s*\n([\s\S]*?)\n```/g;
-      const matches = [...text.matchAll(codeBlockRegex)];
+      const matches = Array.from(text.matchAll(codeBlockRegex));
       if (matches.length > 0) {
         console.log(`[LOMU-AUTO-DETECT] Found ${matches.length} code blocks in response`);
       }
@@ -985,7 +985,7 @@ Let's build! 🚀`;
       writeOperations: 0,
       consecutiveReadOnlyIterations: 0,
       hasProducedFixes: false,
-      MAX_READ_ONLY_ITERATIONS: 5,
+      MAX_READ_ONLY_ITERATIONS: 10, // Increased from 5 - allows diagnostic operations to complete
     };
 
     // 🔢 TOKEN TRACKING: Accumulate usage across all iterations
