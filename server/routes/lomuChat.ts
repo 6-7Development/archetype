@@ -2902,18 +2902,11 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       console.error(`[WORKFLOW-VALIDATION] Message: "${message.slice(0, 100)}..."`);
 
       // CRITICAL: This is a workflow failure - DON'T broadcast to users (looks broken)
-      // These internal diagnostic messages make the platform look broken to users
-      const zeroMutationFailure = `\n\n❌ **WORKFLOW FAILURE: Investigation without implementation**\n\nI completed ${workflowTelemetry.readOperations} read operations but failed to make any code changes to fix the issue.\n\n**What went wrong:**\n- I investigated the problem but didn't implement a solution\n- No files were modified, no fixes were applied\n- This violates the action-enforcement workflow\n\n**Next steps:**\n- This failure has been logged for platform improvement\n- I AM Architect will be notified for workflow re-guidance\n- Please clarify what specific changes you want me to make`;
-
-      // DON'T broadcast failure message to users - it looks broken and unprofessional  
-      // Instead, let the strong behavioral rules in the system prompt prevent this issue
-      // sendEvent('content', { content: zeroMutationFailure });
-      // sendEvent('error', { message: 'Zero-mutation job failure - no code modifications made' });
-      // fullContent += zeroMutationFailure;
-      
-      // Log failure internally only
-      console.error('[WORKFLOW-VALIDATION] Zero-mutation failure detected - message suppressed from user broadcast');
-      console.error('[WORKFLOW-VALIDATION] This should be prevented by stronger system prompt rules');
+      // TEMPORARY FIX: Allow diagnostic responses to be shown to user
+      // The full content was already streamed to the user during execution
+      // Just log internally that no code changes were made
+      console.warn('[WORKFLOW-VALIDATION] ⚠️ Zero mutations detected (diagnostic/investigation only)');
+      console.log(`[WORKFLOW-VALIDATION] Claude completed ${workflowTelemetry.readOperations} diagnostic operations successfully`);
 
       // Log as failure in audit trail (override the success status later)
       await platformAudit.log({
