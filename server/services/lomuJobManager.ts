@@ -1918,7 +1918,7 @@ Let's build! 🚀`;
               } catch (error: any) {
                 toolResult = `❌ Failed to read logs: ${error.message}`;
               }
-            } else if (name === 'execute_sql') {
+            } else if (name === 'execute_sql_tool') {
               const typedInput = input as { query: string; purpose: string };
               try {
                 const result = await db.execute(typedInput.query as any);

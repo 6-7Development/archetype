@@ -969,4 +969,121 @@ export const SYSOP_TOOLS = [
       required: ['file_path', 'content'],
     },
   },
+  {
+    name: 'bash',
+    description: 'Execute bash commands in the terminal. Use for running npm commands, testing, building, or any shell operations.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        command: {
+          type: 'string',
+          description: 'The bash command to execute',
+        },
+        timeout: {
+          type: 'number',
+          description: 'Timeout in milliseconds (default: 120000 = 2 minutes)',
+        },
+      },
+      required: ['command'],
+    },
+  },
+  {
+    name: 'run_playwright_test',
+    description: 'Run Playwright end-to-end tests to verify application functionality. Use after implementing features to ensure they work correctly.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        testFile: {
+          type: 'string',
+          description: 'Path to the test file to run (e.g., "tests/login.spec.ts")',
+        },
+        headless: {
+          type: 'boolean',
+          description: 'Run in headless mode (default: true)',
+        },
+      },
+      required: ['testFile'],
+    },
+  },
+  {
+    name: 'commit_to_github',
+    description: 'Commit all changes to GitHub with a descriptive message. Use after completing a fix or feature implementation.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        commitMessage: {
+          type: 'string',
+          description: 'Clear, descriptive commit message explaining what was changed and why',
+        },
+      },
+      required: ['commitMessage'],
+    },
+  },
+  {
+    name: 'read_logs',
+    description: 'Read application logs to diagnose issues. Returns workflow logs, browser console logs, and server logs.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        lines: {
+          type: 'number',
+          description: 'Number of log lines to retrieve (default: 100, max: 1000)',
+        },
+        filter: {
+          type: 'string',
+          description: 'Filter logs by keyword (e.g., "error", "warning", "user-123")',
+        },
+      },
+    },
+  },
+  {
+    name: 'create_platform_file',
+    description: 'Create a new platform source code file. Use when adding new features to the Lomu platform itself.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'File path relative to platform root (e.g., "client/src/components/NewFeature.tsx")',
+        },
+        content: {
+          type: 'string',
+          description: 'Complete file content',
+        },
+      },
+      required: ['path', 'content'],
+    },
+  },
+  {
+    name: 'delete_platform_file',
+    description: 'Delete a platform source code file. Use with caution - only when removing obsolete platform files.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'File path relative to platform root',
+        },
+      },
+      required: ['path'],
+    },
+  },
+  {
+    name: 'create_project_file',
+    description: 'Create a new file in the user project. Use when generating code for the user.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'File path in the project (e.g., "src/components/Button.tsx")',
+        },
+        content: {
+          type: 'string',
+          description: 'Complete file content',
+        },
+      },
+      required: ['path', 'content'],
+    },
+  },
 ] as const;
