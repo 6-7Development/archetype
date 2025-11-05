@@ -2043,7 +2043,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                     `Stop this approach and ask the user what they would like to do instead.`;
                   sendEvent('progress', { message: '❌ Rejected by user' });
                   console.log('[LOMU-AI] User rejected - stopping work');
-                  continueLoop = false; // Stop if rejected
+                  continueLoop = false;
                 }
               } catch (error: any) {
                 toolResult = `⏱️ Approval timeout: ${error.message}\n\nNo response from user after 10 minutes.`;
@@ -2616,7 +2616,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
             } else if (name === 'code_search') {
               const { code_search } = await import('../tools/knowledge');
               const typedInput = input as { query?: string; language?: string; tags?: string[]; store?: any; limit?: number };
-              sendEvent('progress', { message: typedInput.store ? `💾 Storing code snippet...` : `🔍 Searching code snippets...` });
+              sendEvent('progress', typedInput.store ? `💾 Storing code snippet...` : `🔍 Searching code snippets...`);
 
               try {
                 const result = await code_search({
