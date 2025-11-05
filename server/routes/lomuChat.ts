@@ -121,17 +121,19 @@ function classifyUserIntent(message: string): UserIntent {
 }
 
 function getMaxIterationsForIntent(intent: UserIntent): number {
+  // 🎯 REPLIT AGENT PARITY: Match Replit Agent's 30+ iteration capability
+  // These limits allow LomuAI to complete complex multi-step tasks like Replit Agent
   switch (intent) {
     case 'build':
-      return 25; // Let LomuAI work freely to build complete features
+      return 35; // Full feature development with testing and refinement
     case 'fix':
-      return 20; // Allow thorough debugging and fixes
+      return 30; // Thorough debugging, fixes, and verification
     case 'diagnostic':
-      return 15; // Moderate investigation
+      return 30; // Deep investigation and comprehensive analysis
     case 'casual':
       return 5; // Don't waste tokens on small talk
     default:
-      return 15; // Safe default
+      return 30; // Safe default - favor completing work over conserving tokens
   }
 }
 
@@ -1397,12 +1399,13 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     const MAX_EMPTY_ITERATIONS = 3; // Stop if 3 consecutive iterations without tool calls
     let totalToolCallCount = 0; // Track total tool calls for quality analysis
 
-    // 📊 WORKFLOW TELEMETRY: Track read vs write operations to detect investigation-only loops
+    // 📊 WORKFLOW TELEMETRY: Track read vs write operations
+    // 🎯 REPLIT AGENT PARITY: Removed artificial stopping - let LomuAI work until natural completion
     const workflowTelemetry = {
       readOperations: 0,
       writeOperations: 0,
       consecutiveReadOnlyIterations: 0,
-      MAX_READ_ONLY_ITERATIONS: 20, // Increased from 5 - allow thorough investigation before halting
+      MAX_READ_ONLY_ITERATIONS: 999, // Effectively disabled - no premature stopping
       hasProducedFixes: false, // Track if ANY write operations occurred
     };
 
