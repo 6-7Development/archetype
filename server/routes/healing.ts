@@ -296,6 +296,18 @@ Be natural and conversational. Use tools to do the actual work.`;
                   },
                   required: ['pattern']
                 }
+              },
+              {
+                name: 'cancel_lomu_job',
+                description: 'Cancel a running or stuck LomuAI job. Use this when a job is stuck, no longer needed, or blocking new tasks. Returns the cancelled job details.',
+                input_schema: {
+                  type: 'object',
+                  properties: {
+                    job_id: { type: 'string', description: 'ID of the job to cancel' },
+                    reason: { type: 'string', description: 'Reason for cancellation (optional)', default: 'Cancelled by I AM Architect' }
+                  },
+                  required: ['job_id']
+                }
               }
             ],
             onToolUse: async (toolUse: any) => {
@@ -340,6 +352,27 @@ Be natural and conversational. Use tools to do the actual work.`;
                     files: matches,
                     truncated,
                     totalCount: allMatches.length
+                  };
+                  
+                } else if (toolUse.name === 'cancel_lomu_job') {
+                  const { cancelJob } = await import('../services/lomuJobManager');
+                  const jobId = toolUse.input.job_id;
+                  const reason = toolUse.input.reason || 'Cancelled by I AM Architect';
+                  
+                  console.log(`[HEALING-CHAT] 🛑 Cancelling LomuAI job: ${jobId}`);
+                  
+                  const cancelledJob = await cancelJob(jobId, reason);
+                  
+                  console.log(`[HEALING-CHAT] ✅ Job cancelled: ${jobId}`);
+                  
+                  return {
+                    success: true,
+                    job: {
+                      id: cancelledJob.id,
+                      status: cancelledJob.status,
+                      error: cancelledJob.error,
+                    },
+                    message: `Job ${jobId} cancelled successfully`
                   };
                 }
                 
