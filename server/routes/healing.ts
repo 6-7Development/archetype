@@ -180,34 +180,59 @@ export function registerHealingRoutes(app: Express) {
       const messages = allMessages.slice(-10);
       console.log(`[HEALING-CHAT] Loaded ${messages.length} messages from history (last 10)`);
       
-      // Build Platform Healing system prompt
-      const systemPrompt = `You are Lomu Platform AI. You maintain the LomuAI codebase.
+      // Build Platform Healing system prompt - Conversational like Replit Agent
+      const systemPrompt = `You are Lomu, a friendly AI assistant helping maintain the LomuAI platform codebase.
 
-RULES:
-1. MAX 2-3 sentences per response
-2. Take action immediately - use tools first, explain after
-3. When fixing: read file → write fix → say "✅ Fixed [what]"
-4. NO explanations unless asked
-5. Changes auto-commit to GitHub
+Your role:
+- Help developers understand, fix, and improve the platform code
+- Use tools to read files, make changes, and search the codebase
+- Be conversational and helpful - explain what you're doing
+- Focus on doing the work, not planning extensively
 
-TOOLS:
-- read_platform_file(file_path)
-- write_platform_file(file_path, content) 
-- search_platform_files(pattern)
+Available tools:
+- read_platform_file(file_path) - Read any file in the project
+- write_platform_file(file_path, content) - Update files
+- search_platform_files(pattern) - Find files by pattern
 
-PLATFORM:
+Platform info:
 - Stack: React, TypeScript, Express, PostgreSQL
-- Repo: ${process.env.GITHUB_REPO || 'Not configured'}
+- Repository: ${process.env.GITHUB_REPO || 'Not configured'}
+- All changes auto-commit to GitHub
 
-BE BRIEF. ACT FAST.`;
+When fixing issues:
+1. Use tools to investigate (read files, search)
+2. Make the changes (write files)
+3. Briefly explain what you did
 
-      // Convert messages to API format
+Be natural and conversational. Use tools to do the actual work.`;
+
+      // Convert messages to API format - properly structure tool_use/tool_result blocks
       const conversationMessages: any[] = messages
-        .filter((m: any) => m.content && typeof m.content === 'string' && m.content.trim().length > 0)
-        .map((m: any) => ({
-          role: m.role === 'assistant' ? 'assistant' : 'user',
-          content: m.content
-        }));
+        .filter((m: any) => {
+          // Skip empty messages
+          if (!m.content || (typeof m.content === 'string' && m.content.trim().length === 0)) {
+            return false;
+          }
+          return true;
+        })
+        .map((m: any) => {
+          const role = m.role === 'assistant' ? 'assistant' : 'user';
+          
+          // If content is a string, use it directly
+          if (typeof m.content === 'string') {
+            try {
+              // Try to parse as JSON (tool_use/tool_result blocks)
+              const parsed = JSON.parse(m.content);
+              return { role, content: parsed };
+            } catch {
+              // Not JSON, use as text
+              return { role, content: m.content };
+            }
+          }
+          
+          // Already an object/array, use directly
+          return { role, content: m.content };
+        });
 
       console.log(`🤖 [HEALING-CHAT] Starting Claude conversation with ${conversationMessages.length} messages...`);
       
@@ -403,13 +428,15 @@ BE BRIEF. ACT FAST.`;
             console.error(`[HEALING-CHAT] ⚠️ Failed to save tool results:`, dbError.message);
           }
           
-          // Add assistant's tool calls to conversation (for next Claude call)
+          // CRITICAL: Proper tool_use/tool_result pairing for Claude
+          // This happens AFTER tool execution to ensure proper message structure
+          // Assistant message contains tool_use blocks
           conversationMessages.push({
             role: 'assistant',
             content: response.assistantContent
           });
           
-          // Add tool results to conversation (for next Claude call)
+          // User message contains tool_result blocks (paired with tool_use above)
           conversationMessages.push({
             role: 'user',
             content: response.toolResults
