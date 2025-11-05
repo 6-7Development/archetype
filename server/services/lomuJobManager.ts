@@ -637,9 +637,9 @@ ${!autoCommit && autonomyLevel === 'basic' ?
   '\n• BASIC AUTONOMY: NEVER commit without explicit approval' : ''}
 
 TOOL USAGE:
-• Files: readPlatformFile, writePlatformFile, editPlatformFile
+• Files: read_platform_file, write_platform_file, editPlatformFile
 • Search: grep (not whole directory reads)
-• Tasks: createTaskList (MANDATORY first step), updateTask
+• Tasks: create_task_list (MANDATORY first step), update_task
 • Tests: run_playwright_test, bash("npm test")
 • Architect: architect_consult (after 2 failures)
 
@@ -647,7 +647,7 @@ TONE: Friendly senior dev. Brief updates. No apologies. No "As an AI..." explana
 
 Example workflow:
 User: "Build todo app"
-You: "📋 Planning..." [createTaskList immediately]
+You: "📋 Planning..." [create_task_list immediately]
      "⚡ Executing..." [batch write files]
      "🧪 Testing..." [bash: npm test]
      "✓ Verifying..." [bash: npx tsc --noEmit]
@@ -659,7 +659,7 @@ Let's build! 🚀`;
     // Define tools (full tool set from SSE route)
     const tools: any[] = [
       {
-        name: 'createTaskList',
+        name: 'create_task_list',
         description: '📋 CREATE TASK LIST - Create a visible task breakdown for work requests.',
         input_schema: {
           type: 'object' as const,
@@ -681,7 +681,7 @@ Let's build! 🚀`;
         },
       },
       {
-        name: 'updateTask',
+        name: 'update_task',
         description: 'Update task status as you work',
         input_schema: {
           type: 'object' as const,
@@ -694,7 +694,7 @@ Let's build! 🚀`;
         },
       },
       {
-        name: 'readTaskList',
+        name: 'read_task_list',
         description: 'Read current task list',
         input_schema: {
           type: 'object' as const,
@@ -703,7 +703,7 @@ Let's build! 🚀`;
         },
       },
       {
-        name: 'readPlatformFile',
+        name: 'read_platform_file',
         description: 'Read a platform source file. IMPORTANT: Use RELATIVE paths only (e.g., "replit.md", "server/index.ts"), NOT absolute paths',
         input_schema: {
           type: 'object' as const,
@@ -714,7 +714,7 @@ Let's build! 🚀`;
         },
       },
       {
-        name: 'writePlatformFile',
+        name: 'write_platform_file',
         description: 'Write content to a platform file',
         input_schema: {
           type: 'object' as const,
@@ -726,7 +726,7 @@ Let's build! 🚀`;
         },
       },
       {
-        name: 'listPlatformDirectory',
+        name: 'list_platform_files',
         description: 'List directory contents. IMPORTANT: Use RELATIVE paths only (e.g., ".", "server", "client/src"), NOT absolute paths',
         input_schema: {
           type: 'object' as const,
@@ -737,7 +737,7 @@ Let's build! 🚀`;
         },
       },
       {
-        name: 'createPlatformFile',
+        name: 'create_platform_file',
         description: 'Create a new platform file',
         input_schema: {
           type: 'object' as const,
@@ -749,7 +749,7 @@ Let's build! 🚀`;
         },
       },
       {
-        name: 'deletePlatformFile',
+        name: 'delete_platform_file',
         description: 'Delete a platform file',
         input_schema: {
           type: 'object' as const,
@@ -760,7 +760,7 @@ Let's build! 🚀`;
         },
       },
       {
-        name: 'readProjectFile',
+        name: 'read_project_file',
         description: 'Read a file from user project',
         input_schema: {
           type: 'object' as const,
@@ -771,7 +771,7 @@ Let's build! 🚀`;
         },
       },
       {
-        name: 'writeProjectFile',
+        name: 'write_project_file',
         description: 'Write to user project file',
         input_schema: {
           type: 'object' as const,
@@ -783,7 +783,7 @@ Let's build! 🚀`;
         },
       },
       {
-        name: 'listProjectDirectory',
+        name: 'list_project_files',
         description: 'List project files',
         input_schema: {
           type: 'object' as const,
@@ -792,7 +792,7 @@ Let's build! 🚀`;
         },
       },
       {
-        name: 'createProjectFile',
+        name: 'create_project_file',
         description: 'Create new project file',
         input_schema: {
           type: 'object' as const,
@@ -804,7 +804,7 @@ Let's build! 🚀`;
         },
       },
       {
-        name: 'deleteProjectFile',
+        name: 'delete_project_file',
         description: 'Delete project file',
         input_schema: {
           type: 'object' as const,
@@ -918,8 +918,8 @@ Let's build! 🚀`;
 
     if (autonomyLevel === 'basic') {
       availableTools = tools.filter(tool => 
-        tool.name !== 'readTaskList' && 
-        tool.name !== 'updateTask' &&
+        tool.name !== 'read_task_list' && 
+        tool.name !== 'update_task' &&
         tool.name !== 'start_subagent' &&
         tool.name !== 'web_search' &&
         tool.name !== 'commit_to_github' // Basic users NEVER get commit tool
@@ -949,18 +949,18 @@ Let's build! 🚀`;
 
     // 📊 WORKFLOW TELEMETRY: Track read vs code-modifying operations
     const READ_ONLY_TOOLS = new Set([
-      'readPlatformFile', 'listPlatformDirectory', 'searchCode',
-      'readProjectFile', 'listProjectDirectory', 'perform_diagnosis', 'read_logs', 'read_metrics',
-      'readKnowledgeStore', 'searchKnowledgeStore', 'readTaskList',
+      'read_platform_file', 'list_platform_files', 'searchCode',
+      'read_project_file', 'list_project_files', 'perform_diagnosis', 'read_logs', 'read_metrics',
+      'readKnowledgeStore', 'searchKnowledgeStore', 'read_task_list',
       // Meta tools that don't modify code
-      'createTaskList', 'updateTask', 'architect_consult', 'start_subagent', 'web_search',
+      'create_task_list', 'update_task', 'architect_consult', 'start_subagent', 'web_search',
       // REMOVED: 'bash' (can modify files via git commit, npm install, etc.)
-      'execute_sql', // SQL can be read-only (SELECT) or modifying (INSERT/UPDATE/DELETE)
+      'execute_sql_tool', // SQL can be read-only (SELECT) or modifying (INSERT/UPDATE/DELETE)
     ]);
 
     const CODE_MODIFYING_TOOLS = new Set([
-      'writePlatformFile', 'editPlatformFile', 'createPlatformFile', 'deletePlatformFile',
-      'writeProjectFile', 'createProjectFile', 'deleteProjectFile',
+      'write_platform_file', 'editPlatformFile', 'create_platform_file', 'delete_platform_file',
+      'write_project_file', 'create_project_file', 'delete_project_file',
       'commit_to_github', 'packager_tool',
       'bash', // ADDED: can run git commit, file writes, npm install, etc.
     ]);
