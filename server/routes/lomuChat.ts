@@ -1662,7 +1662,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               }
 
               // Only proceed with write if not blocked by protection
-              if (toolResult === undefined || !toolResult.includes('❌ PROTECTION')) {
+              if (!toolResult || !toolResult.includes('❌ PROTECTION')) {
                 console.log(`[LOMU-AI] Writing file: ${typedInput.path} (${typedInput.content.length} bytes)`);
 
               // ✅ AUTONOMOUS MODE: No approval required - LomuAI works like Replit Agent
