@@ -192,6 +192,37 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
     } catch (cleanupError: any) {
       console.warn('⚠️ Chat history cleanup failed (non-critical):', cleanupError.message);
     }
+    
+    // 🧹 CLEANUP: Fix stuck/zombie LomuAI jobs (running for >30 minutes)
+    console.log('🧹 Cleaning up stale LomuAI jobs...');
+    try {
+      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+      const { lomuJobs } = await import('@shared/schema');
+      const { sql: drizzleSql, and, inArray } = await import('drizzle-orm');
+      
+      const staleJobs = await db
+        .update(lomuJobs)
+        .set({
+          status: 'failed',
+          error: 'Job timed out (automatic cleanup on server restart)',
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            inArray(lomuJobs.status, ['pending', 'running']),
+            drizzleSql`${lomuJobs.updatedAt} < ${thirtyMinutesAgo}`
+          )
+        )
+        .returning({ id: lomuJobs.id });
+      
+      if (staleJobs.length > 0) {
+        console.log(`✅ Cleaned up ${staleJobs.length} stale LomuAI jobs`);
+      } else {
+        console.log('✅ No stale LomuAI jobs found');
+      }
+    } catch (jobCleanupError: any) {
+      console.warn('⚠️ LomuAI job cleanup failed (non-critical):', jobCleanupError.message);
+    }
   } catch (error: any) {
     console.error('❌ Database connection failed after retries:', error.message);
     console.error('⚠️ Running in degraded mode (database unavailable)');
