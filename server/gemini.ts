@@ -252,6 +252,7 @@ export async function streamGeminiResponse(options: StreamOptions) {
         maxOutputTokens: maxTokens,
         temperature: 0.2, // LOW = deterministic, rule-following behavior (vs default 1.0)
         topP: 0.8,        // Slightly reduced randomness for consistency
+        responseMimeType: "text/plain", // Force plain text to avoid Python hallucination
       },
     };
 

@@ -991,7 +991,7 @@ Let's build! 🚀`;
       });
 
       // 🔀 MODEL TOGGLE: Switch between Gemini and Claude based on environment variable
-      const model = process.env.LOMU_AI_MODEL || 'gemini'; // 'gemini' or 'claude'
+      const model = process.env.LOMU_AI_MODEL || 'claude'; // TEMPORARY: Claude due to Gemini 37-tool issue
       console.log(`[LOMU-AI-JOB-MANAGER] Using model: ${model} (iteration ${iterationCount})...`);
 
       // Stream processing - collect content blocks
