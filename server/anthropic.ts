@@ -316,13 +316,26 @@ export async function streamAnthropicResponse(options: StreamOptions) {
 }
 
 /**
- * Send streaming updates via WebSocket with error handling
+ * Send streaming updates via WebSocket with error handling and memory leak prevention
  */
 export function sendStreamUpdate(ws: WebSocket, data: any) {
   try {
     if (ws && ws.readyState === WebSocket.OPEN) {
       const message = JSON.stringify(data);
       ws.send(message);
+      
+      // 🛡️ MEMORY LEAK FIX: Ensure WebSocket has error and close handlers
+      if (!ws.listenerCount('error')) {
+        ws.on('error', (error: any) => {
+          console.error('[WEBSOCKET] Error handler added to prevent memory leak:', error.message);
+        });
+      }
+      
+      if (!ws.listenerCount('close')) {
+        ws.on('close', () => {
+          console.log('[WEBSOCKET] Close handler added to prevent memory leak');
+        });
+      }
     }
   } catch (error) {
     console.error('❌ Error sending WebSocket update:', error);

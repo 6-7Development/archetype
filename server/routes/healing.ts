@@ -4,6 +4,7 @@ import { storage } from "../storage";
 import { isAuthenticated } from "../universalAuth";
 import { aiHealingService } from "../services/aiHealingService";
 import { createTaskList, updateTask, readTaskList } from "../tools/task-management";
+import { classifyUserIntent, getMaxIterationsForIntent } from "../shared/chatConfig";
 
 // Owner-only middleware for Platform Healing
 const isOwner = async (req: any, res: any, next: any) => {
@@ -286,7 +287,11 @@ Be natural, conversational, and show your work through task updates!`;
       let fullResponse = '';
       
       // Multi-turn tool execution loop
-      const MAX_ITERATIONS = 5;
+      // 🎯 SHARED LOGIC: Use same intent classification and iteration limits as regular LomuAI
+      const userIntent = classifyUserIntent(validated.content);
+      const MAX_ITERATIONS = getMaxIterationsForIntent(userIntent);
+      console.log(`[HEALING-CHAT] User intent: ${userIntent}, max iterations: ${MAX_ITERATIONS}`);
+      
       let iterationCount = 0;
       let continueLoop = true;
       

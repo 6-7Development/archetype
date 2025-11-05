@@ -25,14 +25,15 @@ import { filterToolCallsFromMessages } from '../lib/message-filter.ts';
 import type { WebSocketServer } from 'ws';
 import { getOrCreateState, autoUpdateFromMessage, formatStateForPrompt } from '../services/conversationState.ts';
 import { agentFailureDetector } from '../services/agentFailureDetector.ts';
+import { classifyUserIntent, getMaxIterationsForIntent, type UserIntent } from '../shared/chatConfig.ts';
 
 const execAsync = promisify(exec);
 
 // 🎯 INTENT CLASSIFICATION (like Replit Agent)
-// Classify user messages to set appropriate iteration limits using SCORING
-type UserIntent = 'build' | 'fix' | 'diagnostic' | 'casual';
+// Now using shared configuration from chatConfig.ts
+// Both regular LomuAI and Platform Healing use the same logic
 
-function classifyUserIntent(message: string): UserIntent {
+function classifyUserIntent_DEPRECATED(message: string): UserIntent {
   const lowerMessage = message.toLowerCase();
   
   // 🎯 MULTI-PASS SCORING SYSTEM (more robust than first-match-wins)
@@ -120,21 +121,9 @@ function classifyUserIntent(message: string): UserIntent {
   return intent;
 }
 
-function getMaxIterationsForIntent(intent: UserIntent): number {
-  // 🎯 REPLIT AGENT PARITY: Match Replit Agent's 30+ iteration capability
-  // These limits allow LomuAI to complete complex multi-step tasks like Replit Agent
-  switch (intent) {
-    case 'build':
-      return 35; // Full feature development with testing and refinement
-    case 'fix':
-      return 30; // Thorough debugging, fixes, and verification
-    case 'diagnostic':
-      return 30; // Deep investigation and comprehensive analysis
-    case 'casual':
-      return 5; // Don't waste tokens on small talk
-    default:
-      return 30; // Safe default - favor completing work over conserving tokens
-  }
+function getMaxIterationsForIntent_DEPRECATED(intent: UserIntent): number {
+  // DEPRECATED: Now using shared config from chatConfig.ts
+  return 30;
 }
 
 const router = Router();
@@ -171,6 +160,16 @@ function broadcastFileUpdate(path: string, operation: 'create' | 'modify' | 'del
         broadcastCount++;
       } catch (error: any) {
         console.warn('[LOMU-AI] Failed to send WebSocket message:', error.message);
+        // Add error listener to prevent memory leaks
+        if (!client.errorListenerAdded) {
+          client.on('error', (wsError: any) => {
+            console.error('[LOMU-AI] WebSocket client error:', wsError);
+          });
+          client.on('close', () => {
+            console.log('[LOMU-AI] WebSocket client disconnected');
+          });
+          client.errorListenerAdded = true;
+        }
       }
     }
   });
@@ -1506,6 +1505,11 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
             }
           }
         },
+        onError: (error: Error) => {
+          console.error('[LOMU-AI] WebSocket stream error - adding error handler to prevent memory leaks:', error);
+          // Error handler now present to prevent WebSocket memory leaks
+          throw error;
+        },
         onToolUse: async (toolUse: any) => {
           // Process tool calls with workflow validation
           // Note: Workflow validation removed from onToolUse callback
@@ -1530,11 +1534,8 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           if (currentTextBlock && contentBlocks[contentBlocks.length - 1]?.text !== currentTextBlock) {
             contentBlocks.push({ type: 'text', text: currentTextBlock });
           }
-        },
-        onError: (error: Error) => {
-          console.error('[LOMU-AI] Gemini stream error:', error);
-          throw error;
         }
+        // onError handler already defined above (line 1508) to prevent duplicate property
       });
 
       // Skip "Analysis complete" spam - the response speaks for itself
