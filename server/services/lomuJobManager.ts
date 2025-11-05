@@ -949,17 +949,17 @@ Let's build! 🚀`;
 
     // 📊 WORKFLOW TELEMETRY: Track read vs code-modifying operations
     const READ_ONLY_TOOLS = new Set([
-      'read_platform_file', 'list_platform_files', 'searchCode',
+      'read_platform_file', 'list_platform_files', 'search_platform_files', 'searchCode',
       'read_project_file', 'list_project_files', 'perform_diagnosis', 'read_logs', 'read_metrics',
       'readKnowledgeStore', 'searchKnowledgeStore', 'read_task_list',
       // Meta tools that don't modify code
       'create_task_list', 'update_task', 'architect_consult', 'start_subagent', 'web_search',
       // REMOVED: 'bash' (can modify files via git commit, npm install, etc.)
-      'execute_sql_tool', // SQL can be read-only (SELECT) or modifying (INSERT/UPDATE/DELETE)
+      'execute_sql', // SQL can be read-only (SELECT) or modifying (INSERT/UPDATE/DELETE)
     ]);
 
     const CODE_MODIFYING_TOOLS = new Set([
-      'write_platform_file', 'editPlatformFile', 'create_platform_file', 'delete_platform_file',
+      'write_platform_file', 'edit', 'create_platform_file', 'delete_platform_file',
       'write_project_file', 'create_project_file', 'delete_project_file',
       'commit_to_github', 'packager_tool',
       'bash', // ADDED: can run git commit, file writes, npm install, etc.

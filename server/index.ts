@@ -6,6 +6,7 @@ import { apiLimiter } from "./rateLimiting";
 import { db } from "./db";
 import { files } from "@shared/schema";
 import { autoHealing } from "./autoHealing";
+import multer from "multer"; // Import multer
 
 // DEPLOYMENT VERIFICATION: October 28, 2025 01:50 UTC - LomuAI execution fix deployed
 // ✅ LomuAI system prompt rewritten to force immediate tool execution
@@ -118,11 +119,22 @@ app.use((req, res, next) => {
   next();
 });
 
+// Configure Multer for file uploads
+const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'uploads/' directory
+
 (async () => {
   const server = await registerRoutes(app);
 
   // Serve attached_assets as static files
   app.use('/attached_assets', express.static('attached_assets'));
+
+  // Add a new route for file uploads
+  app.post('/api/upload', upload.single('file'), (req: Request, res: Response) => {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+    res.status(200).json({ message: 'File uploaded successfully', filename: req.file.filename });
+  });
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
