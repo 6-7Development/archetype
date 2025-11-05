@@ -409,6 +409,9 @@ async function streamClaudeResponse(options: StreamOptions) {
 // In-memory active jobs (prevent concurrent jobs per user)
 const activeJobs = new Map<string, Promise<void>>();
 
+// Track cancellation signals for jobs
+const jobCancellationFlags = new Map<string, boolean>();
+
 // WebSocket server reference (will be set on initialization)
 let wss: WebSocketServer | null = null;
 
@@ -491,8 +494,52 @@ export async function startJobWorker(jobId: string) {
 
   jobPromise.finally(() => {
     activeJobs.delete(jobId);
+    jobCancellationFlags.delete(jobId);
     console.log('[LOMU-AI-JOB-MANAGER] Worker completed for job:', jobId);
   });
+}
+
+/**
+ * Cancel a running job
+ */
+export async function cancelJob(jobId: string, reason: string = 'Cancelled by user') {
+  console.log('[LOMU-AI-JOB-MANAGER] Cancelling job:', jobId, 'Reason:', reason);
+  
+  // Set cancellation flag
+  jobCancellationFlags.set(jobId, true);
+  
+  // Update database
+  const [job] = await db.update(lomuJobs)
+    .set({
+      status: 'failed',
+      error: reason,
+      updatedAt: new Date(),
+      completedAt: new Date(),
+    })
+    .where(eq(lomuJobs.id, jobId))
+    .returning();
+  
+  if (!job) {
+    throw new Error(`Job ${jobId} not found`);
+  }
+  
+  // Broadcast cancellation
+  if (wss) {
+    broadcast(job.userId, jobId, 'job_cancelled', { 
+      message: reason,
+      jobId 
+    });
+  }
+  
+  console.log('[LOMU-AI-JOB-MANAGER] Job cancelled:', jobId);
+  return job;
+}
+
+/**
+ * Check if a job should be cancelled
+ */
+function shouldCancelJob(jobId: string): boolean {
+  return jobCancellationFlags.get(jobId) === true;
 }
 
 /**
@@ -1110,6 +1157,16 @@ Let's build! 🚀`;
     // Main conversation loop
     while (continueLoop && iterationCount < MAX_ITERATIONS) {
       iterationCount++;
+      
+      // 🛑 Check for cancellation
+      if (shouldCancelJob(jobId)) {
+        console.log('[LOMU-AI-JOB-MANAGER] Job cancelled during execution:', jobId);
+        broadcast(userId, jobId, 'job_cancelled', { 
+          message: 'Job cancelled by user',
+          iteration: iterationCount 
+        });
+        break; // Exit loop immediately
+      }
 
       broadcast(userId, jobId, 'job_progress', {
         message: `Working (${iterationCount}/${MAX_ITERATIONS})...`
