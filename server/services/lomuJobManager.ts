@@ -471,7 +471,7 @@ async function runMetaSysopWorker(jobId: string) {
     const userId = job.userId;
     const message = (job.metadata as any).initialMessage;
     const projectId = (job.metadata as any).projectId || null;
-    const autoCommit = (job.metadata as any).autoCommit || false;
+    const autoCommit = (job.metadata as any).autoCommit !== false; // DEFAULT TO TRUE (like before)
     const autoPush = (job.metadata as any).autoPush || false;
 
     // Update status to running
@@ -1465,23 +1465,10 @@ Let's build! 🚀`;
           break;
         }
 
-        // ENFORCEMENT ENABLED - Block violations to ensure workflow compliance
+        // ENFORCEMENT DISABLED - Too aggressive, causing infinite loops
+        // Log violations but don't block execution
         if (validationResult.violations.length > 0) {
-          console.warn('[ENFORCEMENT] ❌ Violations detected - blocking iteration:', validationResult.violations);
-          
-          const violationMessage = `❌ WORKFLOW VIOLATION DETECTED:\n${validationResult.violations.join('\n')}\n\nYou MUST follow workflow rules. Fix this before proceeding.`;
-          
-          conversationMessages.push({
-            role: 'user',
-            content: violationMessage
-          });
-          
-          broadcast(userId, jobId, 'job_content', {
-            content: `\n\n${violationMessage}\n\n`,
-            isError: true
-          });
-          
-          continueLoop = true;
+          console.warn('[ENFORCEMENT] ⚠️ Violations detected (non-blocking):', validationResult.violations);
           
           if (metricsTracker) {
             metricsTracker.recordViolation(
@@ -1490,9 +1477,6 @@ Let's build! 🚀`;
               validationResult.violations.join('; ')
             );
           }
-          
-          console.log('[ENFORCEMENT] 🔄 Forcing retry iteration to fix violations');
-          continue;
         } else {
           console.log('[ENFORCEMENT] ✅ No violations - quality score:', validationResult.qualityScore);
         }
@@ -2497,15 +2481,26 @@ Let's build! 🚀`;
       })
       .where(eq(lomuJobs.id, jobId));
 
+    // 🎉 CLEAR COMPLETION SIGNAL - User needs to know work is DONE
+    const completionMessage = autoCommit 
+      ? `✅ COMPLETE - Changes committed to GitHub (${fileChanges.length} files${commitHash ? `, hash: ${commitHash.substring(0, 7)}` : ''})`
+      : `✅ COMPLETE - Review ${fileChanges.length} changed files (commit when ready)`;
+    
+    broadcast(userId, jobId, 'job_content', {
+      content: `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${completionMessage}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`,
+      isComplete: true
+    });
+
     broadcast(userId, jobId, 'job_completed', {
       status: 'completed',
-      message: 'LomuAI job completed successfully!',
+      message: completionMessage,
       messageId: assistantMsg.id,
       commitHash,
       filesChanged: fileChanges.length,
+      autoCommitted: autoCommit
     });
 
-    console.log('[LOMU-AI-JOB-MANAGER] Job completed:', jobId);
+    console.log('[LOMU-AI-JOB-MANAGER] ✅ Job completed:', jobId, `(${fileChanges.length} files, autoCommit: ${autoCommit})`);
 
     // 📊 SAVE WORKFLOW METRICS: Write comprehensive performance data to database
     try {
