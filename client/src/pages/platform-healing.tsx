@@ -36,6 +36,7 @@ interface HealingMessage {
   conversationId: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
+  metadata?: { type?: string; [key: string]: any };
   createdAt: string;
 }
 
@@ -658,7 +659,13 @@ function PlatformHealingContent() {
                   )}
 
                   {/* Messages */}
-                  {!messagesLoading && messages.map((msg, idx) => (
+                  {!messagesLoading && messages
+                    .filter(msg => {
+                      // Hide internal tool messages (used for Gemini multi-turn but not for display)
+                      const metadata = msg.metadata as any;
+                      return metadata?.type !== 'tool_calls' && metadata?.type !== 'tool_results';
+                    })
+                    .map((msg, idx) => (
                     <div
                       key={msg.id || idx}
                       className={cn(
