@@ -1,7 +1,9 @@
 import type { Express } from "express";
 import { WebSocket } from "ws";
 import { storage } from '../storage.ts';
-import { insertCommandSchema } from "@shared/schema";
+import { insertCommandSchema, taskLists, tasks } from "@shared/schema";
+import { db } from '../db.ts';
+import { eq, desc } from 'drizzle-orm';
 import { anthropic, DEFAULT_MODEL, streamAnthropicResponse } from '../anthropic.ts';
 import { LOMU_TOOLS } from '../tools/index.ts';
 import { checkUsageLimits, trackAIUsage, decrementAICredits, getUserUsageStats, updateStorageUsage } from '../usage-tracking.ts';
@@ -139,6 +141,45 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
     } catch (error) {
       console.error('Error fetching commands:', error);
       res.status(500).json({ error: "Failed to fetch commands" });
+    }
+  });
+
+  // Get active task list with tasks for current user
+  app.get("/api/task-lists/active", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.authenticatedUserId;
+      console.log(`[GET /api/task-lists/active] Fetching active task list for userId: ${userId}`);
+      
+      // Get most recent task list for user
+      const recentTaskLists = await db
+        .select()
+        .from(taskLists)
+        .where(eq(taskLists.userId, userId))
+        .orderBy(desc(taskLists.createdAt))
+        .limit(1);
+      
+      if (recentTaskLists.length === 0) {
+        return res.json({ taskList: null, tasks: [] });
+      }
+      
+      const taskList = recentTaskLists[0];
+      
+      // Get all tasks for this task list
+      const taskRecords = await db
+        .select()
+        .from(tasks)
+        .where(eq(tasks.taskListId, taskList.id))
+        .orderBy(tasks.createdAt);
+      
+      console.log(`[GET /api/task-lists/active] Found task list ${taskList.id} with ${taskRecords.length} tasks`);
+      
+      res.json({
+        taskList,
+        tasks: taskRecords
+      });
+    } catch (error) {
+      console.error('Error fetching active task list:', error);
+      res.status(500).json({ error: "Failed to fetch active task list" });
     }
   });
 

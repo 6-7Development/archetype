@@ -11,9 +11,10 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/componen
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Send, Upload, Rocket, Plus, Loader2, Database, Activity, AlertCircle, CheckCircle, RefreshCw, Trash2, BarChart3 } from 'lucide-react';
+import { Send, Upload, Rocket, Plus, Loader2, Database, Activity, AlertCircle, CheckCircle, RefreshCw, Trash2, BarChart3, ListTodo } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
+import { AgentTaskList, type AgentTask } from '@/components/agent-task-list';
 
 interface HealingTarget {
   id: string;
@@ -92,6 +93,7 @@ function PlatformHealingContent() {
   const [streamingContent, setStreamingContent] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const [tasks, setTasks] = useState<AgentTask[]>([]);
   
   // Deployment and healing status tracking
   const [deploymentStatus, setDeploymentStatus] = useState<{
@@ -236,6 +238,27 @@ function PlatformHealingContent() {
     }
   }, [loadedMessages]);
 
+  // Load active task list for current user
+  const { data: taskListData } = useQuery({
+    queryKey: ['/api/task-lists/active'],
+    queryFn: async () => {
+      const res = await fetch('/api/task-lists/active', { credentials: 'include' });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data;
+    },
+    refetchInterval: 2000, // Poll every 2 seconds for real-time updates
+  });
+
+  // Update tasks when task list data changes
+  useEffect(() => {
+    if (taskListData?.tasks) {
+      setTasks(taskListData.tasks);
+    } else {
+      setTasks([]);
+    }
+  }, [taskListData]);
+
   // Auto-scroll to bottom
   useEffect(() => {
     if (scrollRef.current) {
@@ -247,6 +270,7 @@ function PlatformHealingContent() {
   useEffect(() => {
     setConversationId(null);
     setMessages([]);
+    setTasks([]); // Clear tasks when changing targets
   }, [targetId]);
 
   // DISABLED: Auto-loading chat breaks LomuAI workflow by loading old context
@@ -765,13 +789,36 @@ function PlatformHealingContent() {
 
             <ResizableHandle className="hidden md:flex" />
 
-            {/* Right Panel: Info & Log Tabs (Desktop only) */}
+            {/* Right Panel: Tasks, Info & Log Tabs (Desktop only) */}
             <ResizablePanel defaultSize={40} minSize={30} className="hidden md:block">
-              <Tabs defaultValue="info" className="h-full flex flex-col">
+              <Tabs defaultValue={tasks.length > 0 ? "tasks" : "info"} className="h-full flex flex-col">
                 <TabsList className="mx-4 mt-4">
+                  <TabsTrigger value="tasks" data-testid="tab-tasks">
+                    <ListTodo className="w-4 h-4 mr-1.5" />
+                    Tasks {tasks.length > 0 && `(${tasks.length})`}
+                  </TabsTrigger>
                   <TabsTrigger value="info" data-testid="tab-info">Info</TabsTrigger>
                   <TabsTrigger value="log" data-testid="tab-log">Log</TabsTrigger>
                 </TabsList>
+
+                {/* Tasks Tab */}
+                <TabsContent value="tasks" className="flex-1 overflow-y-auto mt-0">
+                  <div className="p-4">
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <ListTodo className="w-5 h-5" />
+                      Agent Tasks
+                    </h3>
+                    {tasks.length > 0 ? (
+                      <AgentTaskList tasks={tasks} />
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <ListTodo className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                        <p className="text-sm">No active tasks</p>
+                        <p className="text-xs mt-1">Tasks will appear here when Lomu starts working</p>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
 
                 {/* Info Tab */}
                 <TabsContent value="info" className="flex-1 overflow-y-auto p-4 mt-0">
