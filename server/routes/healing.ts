@@ -155,7 +155,7 @@ export function registerHealingRoutes(app: Express) {
       });
       
       // Import required services
-      const { streamGeminiResponse } = await import("../gemini");
+      const { streamAnthropicResponse } = await import("../anthropic");
       const { checkUsageLimits, trackAIUsage } = await import("../usage-tracking");
       const { platformHealing } = await import("../platformHealing");
       const fs = await import("fs/promises");
@@ -209,7 +209,7 @@ BE BRIEF. ACT FAST.`;
           content: m.content
         }));
 
-      console.log(`🤖 [HEALING-CHAT] Starting Gemini conversation with ${conversationMessages.length} messages...`);
+      console.log(`🤖 [HEALING-CHAT] Starting Claude conversation with ${conversationMessages.length} messages...`);
       
       const computeStartTime = Date.now();
       let totalInputTokens = 0;
@@ -231,9 +231,9 @@ BE BRIEF. ACT FAST.`;
         
         let response: any;
         try {
-          // Call Gemini with tools
-          response = await streamGeminiResponse({
-            model: "gemini-2.5-flash",
+          // Call Claude with tools
+          response = await streamAnthropicResponse({
+            model: "claude-sonnet-4-20250514",
             maxTokens: 4000,
             system: systemPrompt,
             messages: conversationMessages,
@@ -362,7 +362,7 @@ BE BRIEF. ACT FAST.`;
         // FIX #1: Check if Gemini wants to continue (has tool results to process)
         if (response.needsContinuation && response.toolResults) {
           if (isDev) {
-            console.log(`[HEALING-CHAT] 🔨 Gemini used ${response.toolResults.length} tools, saving to DB and continuing...`);
+            console.log(`[HEALING-CHAT] 🔨 Claude used ${response.toolResults.length} tools, saving to DB and continuing...`);
           }
           
           // PERSISTENCE FIX: Save intermediate assistant message (tool calls) to database
@@ -403,13 +403,13 @@ BE BRIEF. ACT FAST.`;
             console.error(`[HEALING-CHAT] ⚠️ Failed to save tool results:`, dbError.message);
           }
           
-          // Add assistant's tool calls to conversation (for next Gemini call)
+          // Add assistant's tool calls to conversation (for next Claude call)
           conversationMessages.push({
             role: 'assistant',
             content: response.assistantContent
           });
           
-          // Add tool results to conversation (for next Gemini call)
+          // Add tool results to conversation (for next Claude call)
           conversationMessages.push({
             role: 'user',
             content: response.toolResults
@@ -417,15 +417,15 @@ BE BRIEF. ACT FAST.`;
           
           continueLoop = true;
         } else {
-          // Gemini is done
+          // Claude is done
           continueLoop = false;
-          console.log(`[HEALING-CHAT] ✅ Gemini completed in ${iterationCount} iterations`);
+          console.log(`[HEALING-CHAT] ✅ Claude completed in ${iterationCount} iterations`);
         }
       }
 
-      // 🔧 SMART RECOVERY: If Gemini executed tools but didn't provide final text, retry once
+      // 🔧 SMART RECOVERY: If Claude executed tools but didn't provide final text, retry once
       if (fullResponse.trim().length === 0 && iterationCount > 1 && continueLoop === false) {
-        console.log(`[HEALING-CHAT-RECOVERY] 🔄 Gemini executed ${iterationCount - 1} tool iterations but provided no final text`);
+        console.log(`[HEALING-CHAT-RECOVERY] 🔄 Claude executed ${iterationCount - 1} tool iterations but provided no final text`);
         console.log(`[HEALING-CHAT-RECOVERY] 📝 Tools used: ${filesModified.length > 0 ? filesModified.join(', ') : 'none modified'}`);
         console.log(`[HEALING-CHAT-RECOVERY] 🔨 Making recovery call to force completion...`);
         
@@ -437,8 +437,8 @@ BE BRIEF. ACT FAST.`;
           });
           
           // Make ONE recovery call (no tools, just get the answer)
-          const recoveryResponse = await streamGeminiResponse({
-            model: "gemini-2.5-flash",
+          const recoveryResponse = await streamAnthropicResponse({
+            model: "claude-sonnet-4-20250514",
             maxTokens: 2000, // Shorter response for summary
             system: systemPrompt,
             messages: conversationMessages,
