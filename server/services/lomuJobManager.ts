@@ -1174,39 +1174,6 @@ Let's build! 🚀`;
               violationInjected = true;
               resetTextAccumulator();
               continueLoop = true;
-              return;
-            }
-
-            // Track text before first tool (legacy check for initial response)
-            if (!hasCalledToolYet) {
-              textBeforeTools += chunk.content;
-              const wordCount = textBeforeTools.trim().split(/\s+/).filter((w: string) => w.length > 0).length;
-
-              if (wordCount > 5) {
-                const violation = `⚠️ VIOLATION: Detected ${wordCount} words before tool call. You MUST start with "📋 Planning..." (max 5 words) then IMMEDIATELY call createTaskList. Do NOT ramble or explain.`;
-                console.error(`[PRE-RESPONSE-GUARD] ${violation}`);
-
-                metricsTracker?.recordViolation(
-                  'excessive_rambling',
-                  currentPhase,
-                  `Pre-response: ${wordCount} words before tool call`
-                );
-
-                broadcast(userId, jobId, 'job_content', { 
-                  content: `\n\n❌ ${violation}\n\n`,
-                  isError: true  
-                });
-
-                conversationMessages.push({
-                  role: 'user',
-                  content: violation
-                });
-
-                violationInjected = true;
-                resetTextAccumulator();
-                continueLoop = true;
-                return;
-              }
             }
           }
 
@@ -1219,7 +1186,7 @@ Let's build! 🚀`;
             chunk.content.includes('apply_patch') ||
             /```[a-z]*\n\S+\.\S+\n/.test(chunk.content); // Code block with filename
 
-          if (hasDirectEdit) {
+          if (hasDirectEdit && !violationInjected) {
             const currentPhase = workflowValidator.getCurrentPhase();
             if (currentPhase !== 'execute') {
               // BLOCK direct edits outside EXECUTE phase
@@ -1243,8 +1210,9 @@ Let's build! 🚀`;
                 content: `SYSTEM ERROR: ${error}`
               });
 
-              // Skip this chunk content - don't add to fullContent
-              return;
+              violationInjected = true;
+              resetTextAccumulator();
+              continueLoop = true;
             }
           }
 
@@ -1497,43 +1465,34 @@ Let's build! 🚀`;
           break;
         }
 
-        // TEMPORARILY DISABLED - too aggressive, causing infinite loops
-        // The 5-word limit before tools was creating escalating violations:
-        // 21 words → 41 words → 201 words, leading to job failures
-        // 
-        // if (validationResult.violations.length > 0) {
-        //   console.warn('[ENFORCEMENT] ❌ Violations detected - blocking iteration:', validationResult.violations);
-        //   
-        //   const violationMessage = `❌ WORKFLOW VIOLATION DETECTED:\n${validationResult.violations.join('\n')}\n\nYou MUST follow workflow rules. Fix this before proceeding.`;
-        //   
-        //   conversationMessages.push({
-        //     role: 'user',
-        //     content: violationMessage
-        //   });
-        //   
-        //   broadcast(userId, jobId, 'job_content', {
-        //     content: `\n\n${violationMessage}\n\n`,
-        //     isError: true
-        //   });
-        //   
-        //   continueLoop = true;
-        //   
-        //   if (metricsTracker) {
-        //     metricsTracker.recordViolation(
-        //       'enforcement_violation',
-        //       enforcementOrchestrator.getCurrentPhase(),
-        //       validationResult.violations.join('; ')
-        //     );
-        //   }
-        //   
-        //   console.log('[ENFORCEMENT] 🔄 Forcing retry iteration to fix violations');
-        //   continue;
-        // }
-
-        // Just log violations as warnings, don't block execution
+        // ENFORCEMENT ENABLED - Block violations to ensure workflow compliance
         if (validationResult.violations.length > 0) {
-          console.warn('[ENFORCEMENT] ⚠️ Violations detected (non-blocking):', validationResult.violations);
-          // Note: Not tracking these violations since enforcement is disabled
+          console.warn('[ENFORCEMENT] ❌ Violations detected - blocking iteration:', validationResult.violations);
+          
+          const violationMessage = `❌ WORKFLOW VIOLATION DETECTED:\n${validationResult.violations.join('\n')}\n\nYou MUST follow workflow rules. Fix this before proceeding.`;
+          
+          conversationMessages.push({
+            role: 'user',
+            content: violationMessage
+          });
+          
+          broadcast(userId, jobId, 'job_content', {
+            content: `\n\n${violationMessage}\n\n`,
+            isError: true
+          });
+          
+          continueLoop = true;
+          
+          if (metricsTracker) {
+            metricsTracker.recordViolation(
+              'enforcement_violation',
+              enforcementOrchestrator.getCurrentPhase(),
+              validationResult.violations.join('; ')
+            );
+          }
+          
+          console.log('[ENFORCEMENT] 🔄 Forcing retry iteration to fix violations');
+          continue;
         } else {
           console.log('[ENFORCEMENT] ✅ No violations - quality score:', validationResult.qualityScore);
         }
