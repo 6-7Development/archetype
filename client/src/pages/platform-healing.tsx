@@ -40,8 +40,8 @@ interface HealingMessage {
 }
 
 /**
- * Filter out tool-related JSON from AI responses
- * Removes raw tool_use and tool_result blocks that leak through from the backend
+ * Filter out tool-related JSON and raw code from AI responses
+ * Removes raw tool_use, tool_result blocks, and leaked implementation code
  */
 function filterToolJSON(content: string): string {
   if (!content) return content;
@@ -53,9 +53,27 @@ function filterToolJSON(content: string): string {
   // Remove standalone tool JSON objects
   filtered = filtered.replace(/\{"type":"tool_(use|result)"[^\}]*\}/g, '');
   
-  // Remove raw HTML/JSX code snippets that look like implementation details
-  // Pattern: <div className="..." /> with lots of classes
-  filtered = filtered.replace(/<div className="[^"]{50,}"[^>]*\/>/g, '');
+  // Remove raw HTML/JSX code blocks (opening and closing tags)
+  // Pattern: <div...>, </div>, <span...>, etc with \n escapes
+  filtered = filtered.replace(/<\/?[a-z]+[^>]*>\\n/gi, '');
+  filtered = filtered.replace(/<\/?[a-z]+[^>]*>/gi, '');
+  
+  // Remove escaped JSON fragments at end of responses
+  // Pattern: );\n"}"}] or similar garbage
+  filtered = filtered.replace(/\)[;\s]*\\n["'}]+\]/g, '');
+  filtered = filtered.replace(/[}"']+\]\s*$/g, '');
+  
+  // Remove lines that are just JSX/HTML fragments
+  filtered = filtered.split('\n')
+    .filter(line => {
+      const trimmed = line.trim();
+      // Skip lines that are only HTML tags or fragments
+      if (trimmed.match(/^<\/?\w+[^>]*>$/)) return false;
+      // Skip lines with escaped newlines (code fragments)
+      if (trimmed.match(/\\n["'}]*$/)) return false;
+      return true;
+    })
+    .join('\n');
   
   // Clean up extra newlines left behind
   filtered = filtered.replace(/\n{3,}/g, '\n\n');
