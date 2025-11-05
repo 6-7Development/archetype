@@ -1400,12 +1400,12 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     let totalToolCallCount = 0; // Track total tool calls for quality analysis
 
     // 📊 WORKFLOW TELEMETRY: Track read vs write operations
-    // 🎯 REPLIT AGENT PARITY: Removed artificial stopping - let LomuAI work until natural completion
+    // 🎯 REPLIT AGENT PARITY: High ceiling for diagnostics while preserving stall detection
     const workflowTelemetry = {
       readOperations: 0,
       writeOperations: 0,
       consecutiveReadOnlyIterations: 0,
-      MAX_READ_ONLY_ITERATIONS: 999, // Effectively disabled - no premature stopping
+      MAX_READ_ONLY_ITERATIONS: 60, // High ceiling for thorough diagnostics, still catches true stalls
       hasProducedFixes: false, // Track if ANY write operations occurred
     };
 
