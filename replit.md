@@ -1,5 +1,21 @@
 # Lomu - "When Code Throws You Lemons"
 
+## Recent Changes
+
+### Task List Support for Platform Healing Chat (Nov 5, 2025)
+**CRITICAL FIX - Restored Task Management System:**
+- **Issue:** Platform Healing chat was "quiet" - no task lists showing, just silent execution
+- **Root Cause:** Platform Healing had only 4 tools (read/write/search/cancel_job) but **no task management tools**
+- **Solution:** Added 3 task management tools to Platform Healing chat:
+  - `create_task_list()` - Creates visible task breakdown (REQUIRED for all work)
+  - `read_task_list()` - Checks current task status  
+  - `update_task()` - Updates task progress (pending → in_progress → completed)
+- **Impact:** Platform Healing now matches regular LomuAI behavior with visible task lists and progress tracking
+- **Files Modified:**
+  - `server/routes/healing.ts` - Added task tools, handlers, and updated system prompt with workflow example
+  - Uses same task management implementation as regular LomuAI from `../tools/task-management.ts`
+- **User Experience:** Users now see task lists in Platform Healing chat showing what AI is doing step-by-step
+
 ## Overview
 Lomu is an AI-powered platform for rapid web development. It features LomuAI, an AI coding agent for autonomous code generation, and dual-version IDE Workspaces (Lomu for desktop, Lomu5 for mobile). Key capabilities include a console-first interface, real-time preview, and comprehensive workspace features. The platform aims for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. A core capability is LomuAI's autonomous self-healing, bug fixing, and UI/UX improvements to its own source code, complete with rollback and audit logging.
 

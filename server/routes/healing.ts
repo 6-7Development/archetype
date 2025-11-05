@@ -3,6 +3,7 @@ import { insertHealingTargetSchema, insertHealingConversationSchema, insertHeali
 import { storage } from "../storage";
 import { isAuthenticated } from "../universalAuth";
 import { aiHealingService } from "../services/aiHealingService";
+import { createTaskList, updateTask, readTaskList } from "../tools/task-management";
 
 // Owner-only middleware for Platform Healing
 const isOwner = async (req: any, res: any, next: any) => {
@@ -187,24 +188,40 @@ Your role:
 - Help developers understand, fix, and improve the platform code
 - Use tools to read files, make changes, and search the codebase
 - Be conversational and helpful - explain what you're doing
-- Focus on doing the work, not planning extensively
+- Work autonomously like Replit Agent - show task progress with task lists
 
 Available tools:
 - read_platform_file(file_path) - Read any file in the project
 - write_platform_file(file_path, content) - Update files
 - search_platform_files(pattern) - Find files by pattern
+- create_task_list(title, tasks) - **REQUIRED** for all work requests - creates visible task breakdown
+- read_task_list() - Check current task status
+- update_task(taskId, status, result) - Update task progress
+- cancel_lomu_job(job_id, reason) - Cancel stuck LomuAI jobs
 
 Platform info:
 - Stack: React, TypeScript, Express, PostgreSQL
 - Repository: ${process.env.GITHUB_REPO || 'Not configured'}
 - All changes auto-commit to GitHub
 
-When fixing issues:
-1. Use tools to investigate (read files, search)
-2. Make the changes (write files)
-3. Briefly explain what you did
+Workflow (like Replit Agent):
+1. **FIRST:** Create task list with create_task_list() - this shows the user what you'll do
+2. Work through each task, updating status with update_task()
+3. Make changes with read/write tools
+4. Mark tasks completed as you finish them
 
-Be natural and conversational. Use tools to do the actual work.`;
+Example:
+User: "fix the broken login page"
+You: 
+- create_task_list("Fix Login Page", [{title: "Read login component", description: "..."}, {title: "Fix validation bug", description: "..."}, {title: "Test changes", description: "..."}])
+- update_task(task1, "in_progress")
+- read_platform_file("client/src/pages/Login.tsx")
+- update_task(task1, "completed", "Read login component - found validation issue")
+- update_task(task2, "in_progress")
+- write_platform_file("client/src/pages/Login.tsx", ...)
+- update_task(task2, "completed", "Fixed email validation regex")
+
+Be natural, conversational, and show your work through task updates!`;
 
       // Convert messages to API format - properly structure tool_use/tool_result blocks
       const conversationMessages: any[] = messages
@@ -308,6 +325,51 @@ Be natural and conversational. Use tools to do the actual work.`;
                   },
                   required: ['job_id']
                 }
+              },
+              {
+                name: 'create_task_list',
+                description: 'Create a visible task breakdown showing what you will do. REQUIRED for all work requests.',
+                input_schema: {
+                  type: 'object',
+                  properties: {
+                    title: { type: 'string', description: 'Task list title summarizing the work' },
+                    tasks: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          title: { type: 'string', description: 'Task title' },
+                          description: { type: 'string', description: 'What this task does' }
+                        },
+                        required: ['title', 'description']
+                      },
+                      description: 'List of tasks to complete'
+                    }
+                  },
+                  required: ['title', 'tasks']
+                }
+              },
+              {
+                name: 'read_task_list',
+                description: 'Read current task list status to see what has been completed',
+                input_schema: {
+                  type: 'object',
+                  properties: {},
+                  required: []
+                }
+              },
+              {
+                name: 'update_task',
+                description: 'Update task status to show progress (e.g., in_progress, completed)',
+                input_schema: {
+                  type: 'object',
+                  properties: {
+                    taskId: { type: 'string', description: 'Task ID from task list' },
+                    status: { type: 'string', description: 'New status: pending, in_progress, or completed' },
+                    result: { type: 'string', description: 'Brief result summary when completing a task' }
+                  },
+                  required: ['taskId', 'status']
+                }
               }
             ],
             onToolUse: async (toolUse: any) => {
@@ -374,6 +436,76 @@ Be natural and conversational. Use tools to do the actual work.`;
                     },
                     message: `Job ${jobId} cancelled successfully`
                   };
+                  
+                } else if (toolUse.name === 'create_task_list') {
+                  const result = await createTaskList({
+                    userId,
+                    title: toolUse.input.title,
+                    tasks: toolUse.input.tasks.map((t: any) => ({
+                      title: t.title,
+                      description: t.description,
+                      status: 'pending' as const
+                    }))
+                  });
+                  
+                  if (result.success) {
+                    console.log(`[HEALING-CHAT] ✅ Created task list: ${result.taskListId} with ${toolUse.input.tasks.length} tasks`);
+                    return {
+                      success: true,
+                      taskListId: result.taskListId,
+                      message: `Task list created with ${toolUse.input.tasks.length} tasks`
+                    };
+                  } else {
+                    console.error(`[HEALING-CHAT] ❌ Failed to create task list:`, result.error);
+                    return { success: false, error: result.error };
+                  }
+                  
+                } else if (toolUse.name === 'read_task_list') {
+                  const result = await readTaskList({ userId });
+                  
+                  if (result.success && result.taskLists) {
+                    const activeList = result.taskLists.find((list: any) => list.status === 'active');
+                    if (activeList) {
+                      const tasks = activeList.tasks || [];
+                      return {
+                        success: true,
+                        taskList: {
+                          id: activeList.id,
+                          title: activeList.title,
+                          status: activeList.status
+                        },
+                        tasks: tasks.map((t: any) => ({
+                          id: t.id,
+                          title: t.title,
+                          description: t.description,
+                          status: t.status,
+                          result: t.result
+                        }))
+                      };
+                    } else {
+                      return { success: true, taskList: null, message: 'No active task list' };
+                    }
+                  } else {
+                    return { success: false, error: result.error || 'Failed to read task list' };
+                  }
+                  
+                } else if (toolUse.name === 'update_task') {
+                  const result = await updateTask({
+                    userId,
+                    taskId: toolUse.input.taskId,
+                    status: toolUse.input.status,
+                    result: toolUse.input.result,
+                    startedAt: toolUse.input.status === 'in_progress' ? new Date() : undefined,
+                    completedAt: toolUse.input.status === 'completed' ? new Date() : undefined,
+                  });
+                  
+                  if (result.success) {
+                    console.log(`[HEALING-CHAT] ✅ Updated task: ${toolUse.input.taskId} → ${toolUse.input.status}`);
+                    return { success: true, message: `Task updated to ${toolUse.input.status}` };
+                  } else {
+                    console.error(`[HEALING-CHAT] ❌ Failed to update task:`, result.error);
+                    return { success: false, error: result.error };
+                  }
                 }
                 
                 console.error(`[HEALING-CHAT] ❌ Unknown tool: ${toolUse.name}`);
