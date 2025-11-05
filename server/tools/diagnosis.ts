@@ -212,23 +212,30 @@ export async function performDiagnosis(params: DiagnosisParams): Promise<Diagnos
 
     // Run diagnosis based on target (using effectiveFiles instead of filesToCheck)
     // 'system' target runs all checks (same as 'all')
+    console.log(`[DIAGNOSIS] Target: ${params.target}, Files: ${effectiveFiles.length}`);
     const runAll = params.target === 'all' || params.target === 'system';
     
     if (params.target === 'performance' || runAll) {
+      console.log('[DIAGNOSIS] Running performance checks...');
       await diagnosePerformance(findings, effectiveFiles, filesAnalyzed);
     }
 
     if (params.target === 'memory' || runAll) {
+      console.log('[DIAGNOSIS] Running memory checks...');
       await diagnoseMemory(findings, effectiveFiles, filesAnalyzed);
     }
 
     if (params.target === 'database' || runAll) {
+      console.log('[DIAGNOSIS] Running database checks...');
       await diagnoseDatabase(findings, effectiveFiles, filesAnalyzed);
     }
 
     if (params.target === 'security' || runAll) {
+      console.log('[DIAGNOSIS] Running security checks...');
       await diagnoseSecurity(findings, effectiveFiles, filesAnalyzed);
     }
+    
+    console.log(`[DIAGNOSIS] Completed checks: ${filesAnalyzed.size} files analyzed, ${findings.length} findings`);
 
     // Calculate metrics
     for (const file of Array.from(filesAnalyzed)) {
