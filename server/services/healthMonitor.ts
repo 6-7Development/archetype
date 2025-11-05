@@ -252,8 +252,6 @@ export class PlatformHealthMonitor extends EventEmitter {
           title: `Agent Quality Issue: ${type}`,
           description,
           source: 'agent_monitor', // CRITICAL: Routes to I AM Architect
-          incidentCategory: 'agent_failure',
-          isAgentFailure: true,
           status: 'open',
           metrics: {
             ...metrics,

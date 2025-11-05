@@ -292,8 +292,6 @@ export class AgentFailureDetector {
           stackTrace: details.stackTrace,
           logs: details.logs,
           source: 'agent_monitor',
-          incidentCategory: 'agent_failure',
-          isAgentFailure: true,
           status: 'open',
         })
         .returning();

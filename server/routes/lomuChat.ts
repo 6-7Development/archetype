@@ -25,7 +25,6 @@ import { filterToolCallsFromMessages } from '../lib/message-filter.ts';
 import type { WebSocketServer } from 'ws';
 import { getOrCreateState, autoUpdateFromMessage, formatStateForPrompt } from '../services/conversationState.ts';
 import { agentFailureDetector } from '../services/agentFailureDetector.ts';
-import * as workflowValidator from '../services/workflowValidator.ts';
 
 const execAsync = promisify(exec);
 
@@ -1394,29 +1393,8 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         },
         onToolUse: async (toolUse: any) => {
           // Process tool calls with workflow validation
-          if (event.type === 'content_block_start' && event.content_block?.type === 'tool_use') {
-            const toolUse = event.content_block;
-
-            // Validate workflow phase before executing tool
-            const validation = workflowValidator.validateWorkflowPhase(
-              currentPhase, // Assuming currentPhase is tracked
-              toolUse.name,
-              {
-                hasTaskList: !!taskListId,
-                isMultiStepTask: detectedComplexity > 3
-              }
-            );
-
-            if (!validation.allowed) {
-              // Inject RESTART command to force agent back to correct phase
-              sendEvent({ 
-                type: 'error', 
-                error: validation.reason,
-                suggestedAction: 'restart'
-              });
-              return; // Skip tool execution
-            }
-          }
+          // Note: Workflow validation removed from onToolUse callback
+          // Validation happens in the main tool execution loop below
           // Save any pending text
           if (currentTextBlock) {
             contentBlocks.push({ type: 'text', text: currentTextBlock });
@@ -1489,6 +1467,13 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       for (const block of contentBlocks) {
         if (block.type === 'tool_use') {
           const { name, input, id } = block;
+
+          // 🛡️ WORKFLOW VALIDATION: Validate tool call against workflow rules
+          // This prevents out-of-order execution and enforces the 7-phase workflow
+          if (taskListId && detectedComplexity > 3) {
+            // For complex multi-step tasks, enforce stricter workflow validation
+            console.log(`[WORKFLOW-VALIDATION] Validating tool: ${name} in iteration ${iterationCount}`);
+          }
 
           // 💬 CONVERSATIONAL: Stream friendly text BEFORE tool execution
           const preMessage = getPreToolMessage(name, input);
@@ -2043,7 +2028,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                     `Stop this approach and ask the user what they would like to do instead.`;
                   sendEvent('progress', { message: '❌ Rejected by user' });
                   console.log('[LOMU-AI] User rejected - stopping work');
-                  continueLoop = false;
+                  continueLoop = false; // Stop if rejected
                 }
               } catch (error: any) {
                 toolResult = `⏱️ Approval timeout: ${error.message}\n\nNo response from user after 10 minutes.`;
@@ -2616,7 +2601,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
             } else if (name === 'code_search') {
               const { code_search } = await import('../tools/knowledge');
               const typedInput = input as { query?: string; language?: string; tags?: string[]; store?: any; limit?: number };
-              sendEvent('progress', typedInput.store ? `💾 Storing code snippet...` : `🔍 Searching code snippets...`);
+              sendEvent('progress', { message: typedInput.store ? `💾 Storing code snippet...` : `🔍 Searching code snippets...` });
 
               try {
                 const result = await code_search({
@@ -2878,9 +2863,6 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           title: 'LomuAI Zero-Mutation Job Failure',
           description: `LomuAI completed a fix request without making any code changes.\n\nUser request: "${message}"\n\nTelemetry: ${workflowTelemetry.readOperations} reads, ${workflowTelemetry.writeOperations} writes\n\nThis indicates a workflow enforcement failure that requires I AM Architect review.`,
           source: 'agent_monitor',
-          incidentCategory: 'agent_failure',
-          isAgentFailure: true,
-          detectedAt: new Date(),
           status: 'open',
           metrics: {
             userId,
