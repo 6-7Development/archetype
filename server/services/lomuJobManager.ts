@@ -29,38 +29,87 @@ import { promisify } from 'util';
 const execAsync = promisify(exec);
 
 // 🎯 INTENT CLASSIFICATION (like Replit Agent)
-// Classify user messages to set appropriate iteration limits
+// Classify user messages to set appropriate iteration limits using SCORING
 type UserIntent = 'build' | 'fix' | 'diagnostic' | 'casual';
 
 function classifyUserIntent(message: string): UserIntent {
   const lowerMessage = message.toLowerCase();
   
-  // BUILD intent: Creating new features, adding functionality
-  const buildKeywords = /\b(build|create|add|implement|make|develop|set up|setup|install|integrate|deploy|publish)\b/;
-  if (buildKeywords.test(lowerMessage)) {
-    return 'build';
-  }
+  // 🎯 MULTI-PASS SCORING SYSTEM (more robust than first-match-wins)
+  let scores = { build: 0, fix: 0, diagnostic: 0, casual: 0 };
   
-  // FIX intent: Fixing bugs, errors, or issues
-  const fixKeywords = /\b(fix|repair|resolve|solve|debug|correct|patch|update|modify|change|refactor|improve|optimize)\b/;
-  if (fixKeywords.test(lowerMessage)) {
-    return 'fix';
-  }
+  // BUILD intent: Creating new features, planning, architecting, adding functionality
+  // EXPANDED: Include planning/design/architecture vocabulary
+  const buildPatterns = [
+    /\b(build|create|add|implement|make|develop|write)\b/g,           // +3 each
+    /\b(set up|setup|install|integrate|deploy|publish)\b/g,           // +3 each
+    /\b(plan|design|architect|outline|draft|prepare|document)\b/g,    // +3 each (ADDED)
+    /\b(migration|refactor|restructure|reorganize)\b/g,               // +2 each (ADDED)
+    /\b(new feature|new module|new component|new page)\b/g,           // +4 each
+  ];
+  buildPatterns.forEach((pattern, idx) => {
+    const matches = lowerMessage.match(pattern);
+    if (matches) {
+      scores.build += matches.length * (idx < 3 ? 3 : idx === 3 ? 2 : 4);
+    }
+  });
+  
+  // FIX intent: Fixing bugs, errors, issues, updates
+  const fixPatterns = [
+    /\b(fix|repair|resolve|solve|debug|correct|patch)\b/g,            // +3 each
+    /\b(update|modify|change|improve|optimize|enhance)\b/g,           // +2 each
+    /\b(broken|bug|error|issue|problem|crash|fail)\b/g,               // +3 each
+    /\b(not working|doesn't work|won't run|failing)\b/g,              // +4 each
+  ];
+  fixPatterns.forEach((pattern, idx) => {
+    const matches = lowerMessage.match(pattern);
+    if (matches) {
+      scores.fix += matches.length * (idx === 1 ? 2 : idx === 3 ? 4 : 3);
+    }
+  });
   
   // DIAGNOSTIC intent: Investigating, analyzing, checking status
-  const diagnosticKeywords = /\b(diagnos|investigat|check|analyz|review|examine|inspect|scan|search|find|look|what.*wrong|status|health|why|how.*work)\b/;
-  if (diagnosticKeywords.test(lowerMessage)) {
-    return 'diagnostic';
+  const diagnosticPatterns = [
+    /\b(diagnos|investigat|analyz|examine|inspect)\b/g,               // +3 each
+    /\b(check|review|scan|search|find|look)\b/g,                      // +1 each (low weight)
+    /\b(what.*wrong|why.*not|how.*work|what.*happen)\b/g,            // +3 each
+    /\b(status|health|metrics|logs|telemetry)\b/g,                    // +3 each
+  ];
+  diagnosticPatterns.forEach((pattern, idx) => {
+    const matches = lowerMessage.match(pattern);
+    if (matches) {
+      scores.diagnostic += matches.length * (idx === 1 ? 1 : 3);
+    }
+  });
+  
+  // CASUAL: Greetings, short questions, acknowledgments
+  const casualPatterns = [
+    /^(hi|hello|hey|thanks|thank you|ok|okay|yes|no|sure)$/,         // +5 if entire message
+    /\b(hi|hello|hey|thanks|cool|nice|great|awesome)\b/g,             // +2 each
+  ];
+  casualPatterns.forEach((pattern, idx) => {
+    const matches = lowerMessage.match(pattern);
+    if (matches) {
+      scores.casual += matches.length * (idx === 0 ? 5 : 2);
+    }
+  });
+  
+  // HEURISTIC BONUSES
+  if (lowerMessage.length < 30 && scores.casual > 0) {
+    scores.casual += 3; // Boost short casual messages
+  }
+  if (lowerMessage.length < 50 && Object.values(scores).every(s => s === 0)) {
+    scores.casual += 2; // Short messages with no keywords → likely casual
   }
   
-  // CASUAL: Questions, greetings, short responses
-  // Heuristic: Short messages (<50 chars) without action keywords
-  if (lowerMessage.length < 50 && !/\b(file|code|function|error|bug)\b/.test(lowerMessage)) {
-    return 'casual';
-  }
+  // Find highest score
+  const intent = Object.entries(scores).reduce((max, [key, val]) => 
+    val > max[1] ? [key, val] : max, ['diagnostic', 0]
+  )[0] as UserIntent;
   
-  // Default to diagnostic for safety (moderate iteration limit)
-  return 'diagnostic';
+  console.log(`[LOMU-INTENT-SCORE] Message: "${message.substring(0, 80)}..." | Scores:`, scores, `| Intent: ${intent}`);
+  
+  return intent;
 }
 
 function getMaxIterationsForIntent(intent: UserIntent): number {
