@@ -39,6 +39,30 @@ interface HealingMessage {
   createdAt: string;
 }
 
+/**
+ * Filter out tool-related JSON from AI responses
+ * Removes raw tool_use and tool_result blocks that leak through from the backend
+ */
+function filterToolJSON(content: string): string {
+  if (!content) return content;
+  
+  // Remove JSON arrays that look like tool calls/results
+  // Pattern: [{"type":"tool_use",...}] or [{"type":"tool_result",...}]
+  let filtered = content.replace(/\[\{"type":"tool_(use|result)"[^\]]*\}\]/g, '');
+  
+  // Remove standalone tool JSON objects
+  filtered = filtered.replace(/\{"type":"tool_(use|result)"[^\}]*\}/g, '');
+  
+  // Remove raw HTML/JSX code snippets that look like implementation details
+  // Pattern: <div className="..." /> with lots of classes
+  filtered = filtered.replace(/<div className="[^"]{50,}"[^>]*\/>/g, '');
+  
+  // Clean up extra newlines left behind
+  filtered = filtered.replace(/\n{3,}/g, '\n\n');
+  
+  return filtered.trim();
+}
+
 function PlatformHealingContent() {
   const { toast } = useToast();
   const [targetId, setTargetId] = useState<string | null>(null);
@@ -633,7 +657,7 @@ function PlatformHealingContent() {
                               : 'bg-muted'
                           )}
                         >
-                          <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                          <p className="text-sm whitespace-pre-wrap">{filterToolJSON(msg.content)}</p>
                         </div>
                         {/* Timestamp */}
                         <p 
@@ -652,7 +676,7 @@ function PlatformHealingContent() {
                   {isStreaming && streamingContent && (
                     <div className="flex gap-3 justify-start">
                       <div className="max-w-[80%] rounded-lg px-4 py-2 bg-muted">
-                        <p className="text-sm whitespace-pre-wrap">{streamingContent}</p>
+                        <p className="text-sm whitespace-pre-wrap">{filterToolJSON(streamingContent)}</p>
                       </div>
                     </div>
                   )}
