@@ -577,6 +577,24 @@ export class PlatformHealingService {
       console.log(`[PLATFORM-WRITE] 📦 BATCH MODE - Will NOT auto-commit (commit manually later)`);
     }
     
+    // 🚫 BLOCK TEMP/HELPER FILES - Prevent lazy AI behavior
+    const tempFilePatterns = [
+      /temp_/i,                    // temp_search.js, temp_anything
+      /remove_/i,                  // remove_brigido.js, remove_anything
+      /process_/i,                 // process_file.js, process_anything
+      /helper[_-]/i,               // helper_script.js, helper-file.js
+      /temp\.(ts|js|tsx|jsx)$/i,   // anything.temp.js, file.temp.tsx
+      /[_-]temp\./i,               // file_temp.tsx, file-temp.js
+      /\.tmp\./i,                  // file.tmp.js
+      /script\d*\.(ts|js)$/i,      // script.js, script1.js, script2.js
+    ];
+    
+    const fileName = path.basename(filePath);
+    if (tempFilePatterns.some(pattern => pattern.test(fileName))) {
+      console.error(`[PLATFORM-WRITE] 🚫 BLOCKED: Temp/helper file rejected: ${filePath}`);
+      throw new Error(`❌ FORBIDDEN: Cannot create temp/helper files like "${fileName}". Edit the ACTUAL target file directly. If you need to edit "platform-healing.tsx", use that exact filename - not "platform-healingtemp.tsx" or "temp_platform-healing.tsx".`);
+    }
+    
     // Validate file path
     if (path.isAbsolute(filePath)) {
       throw new Error('Absolute paths are not allowed');
@@ -781,6 +799,24 @@ export class PlatformHealingService {
     if (typeof content !== 'string') {
       console.error(`[PLATFORM-CREATE] ❌ REJECTED: non-string content (${typeof content}) for ${filePath}`);
       throw new Error(`Content must be a string, got ${typeof content}: ${filePath}`);
+    }
+    
+    // 🚫 BLOCK TEMP/HELPER FILES - Prevent lazy AI behavior
+    const tempFilePatterns = [
+      /temp_/i,                    // temp_search.js, temp_anything
+      /remove_/i,                  // remove_brigido.js, remove_anything
+      /process_/i,                 // process_file.js, process_anything
+      /helper[_-]/i,               // helper_script.js, helper-file.js
+      /temp\.(ts|js|tsx|jsx)$/i,   // anything.temp.js, file.temp.tsx
+      /[_-]temp\./i,               // file_temp.tsx, file-temp.js
+      /\.tmp\./i,                  // file.tmp.js
+      /script\d*\.(ts|js)$/i,      // script.js, script1.js, script2.js
+    ];
+    
+    const fileName = path.basename(filePath);
+    if (tempFilePatterns.some(pattern => pattern.test(fileName))) {
+      console.error(`[PLATFORM-CREATE] 🚫 BLOCKED: Temp/helper file rejected: ${filePath}`);
+      throw new Error(`❌ FORBIDDEN: Cannot create temp/helper files like "${fileName}". Edit the ACTUAL target file directly. If you need to edit "platform-healing.tsx", use that exact filename - not "platform-healingtemp.tsx" or "temp_platform-healing.tsx".`);
     }
     
     // Validate file path
