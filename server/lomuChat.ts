@@ -234,7 +234,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       },
       {
         name: 'architect_consult',
-        description: 'CRITICAL: Consult I AM (The Architect) for expert code review before making changes. ALWAYS use this before committing platform modifications.',
+        description: 'OPTIONAL: Request expert consultation from I AM Architect (premium paid feature). Use ONLY if user explicitly requests architectural review or for critical platform decisions. You work autonomously for normal tasks.',
         input_schema: {
           type: 'object' as const,
           properties: {
