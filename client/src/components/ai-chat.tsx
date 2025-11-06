@@ -1000,20 +1000,20 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
             >
               <div
                 className={cn(
-                  "max-w-[75%] rounded-2xl px-4 py-3 shadow-sm",
+                  "max-w-[75%] rounded-2xl px-4 py-3",
                   message.role === "user"
-                    ? "bg-[hsl(220,70%,60%)] text-[hsl(220,8%,98%)]"
+                    ? "bg-primary text-primary-foreground shadow-md"
                     : message.isSummary 
-                      ? "bg-[hsl(220,18%,16%)] border border-[hsl(220,15%,28%)]" 
-                      : "bg-[hsl(220,70%,60%)]"
+                      ? "bg-muted border border-border" 
+                      : "bg-secondary text-secondary-foreground shadow-sm"
                 )}>
                   {message.isSummary ? (
-                    <div className="text-sm text-[hsl(220,10%,72%)] italic flex items-center gap-2">
+                    <div className="text-sm text-muted-foreground italic flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin" />
                       <span>Earlier messages summarized for efficiency</span>
                     </div>
                   ) : (
-                    <div className="prose prose-invert max-w-none">
+                    <div className="prose prose-invert max-w-none text-sm leading-relaxed">
                       <MarkdownRenderer content={message.content} />
                     </div>
                   )}
@@ -1056,8 +1056,8 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                 </div>
 
               {message.role === "user" && (
-                <div className="flex-shrink-0 w-9 h-9 rounded-full bg-[hsl(220,15%,28%)] flex items-center justify-center">
-                  <User className="w-5 h-5 text-[hsl(220,10%,72%)]" />
+                <div className="flex-shrink-0 w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                  <User className="w-5 h-5 text-primary" />
                 </div>
               )}
             </div>
@@ -1066,8 +1066,8 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
           {/* Streaming Indicator */}
           {chatMutation.isPending && streamState.fullMessage && (
             <div className="flex gap-3 items-start">
-              <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-[hsl(220,70%,60%)] shadow-sm">
-                <div className="prose prose-invert max-w-none">
+              <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-secondary text-secondary-foreground shadow-sm border border-border/50">
+                <div className="prose prose-invert max-w-none text-sm leading-relaxed">
                   <MarkdownRenderer content={streamState.fullMessage} />
                 </div>
               </div>
@@ -1077,8 +1077,8 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
           {/* AI Streaming Indicator - Simple Loader */}
           {chatMutation.isPending && !streamState.fullMessage && (
             <div className="flex gap-3 items-start">
-              <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-[hsl(220,70%,60%)] shadow-sm">
-                <div className="flex items-center gap-2 text-sm text-white/70">
+              <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-muted border border-border">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="w-4 h-4 animate-spin" />
                   <span>Thinking...</span>
                 </div>
@@ -1261,7 +1261,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                 onKeyDown={handleKeyDown}
                 onPaste={handlePaste}
                 placeholder="Message LomuAI..."
-                className="min-h-[60px] max-h-[200px] resize-none text-base bg-[hsl(220,18%,16%)] border-[hsl(220,15%,28%)] text-[hsl(220,8%,98%)] placeholder:text-[hsl(220,12%,55%)] focus-visible:ring-1 focus-visible:ring-[hsl(220,70%,60%)] rounded-2xl px-4 py-3 pr-12"
+                className="min-h-[60px] max-h-[200px] resize-none text-base bg-background border-border focus-visible:ring-2 focus-visible:ring-primary/50 rounded-2xl px-4 py-3 pr-12 transition-all"
                 disabled={chatMutation.isPending}
                 data-testid="input-chat-message"
                 rows={3}
@@ -1277,7 +1277,8 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
               onClick={handleSend}
               disabled={!input.trim() || chatMutation.isPending}
               size="icon"
-              className="flex-shrink-0 h-12 w-12 rounded-full bg-[hsl(220,70%,60%)] hover:bg-[hsl(220,70%,65%)] text-[hsl(220,8%,98%)]"
+              variant="default"
+              className="flex-shrink-0 h-12 w-12 rounded-full shadow-md hover:shadow-lg transition-all"
               data-testid="button-send-chat"
             >
               {chatMutation.isPending ? (
