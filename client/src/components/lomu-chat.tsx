@@ -250,6 +250,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [currentChatMessageId, setCurrentChatMessageId] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastEventTimeRef = useRef<number>(Date.now());
@@ -477,7 +478,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
       const TIMEOUT_THRESHOLD = 30000; // 30 seconds
 
       if (timeSinceLastEvent > TIMEOUT_THRESHOLD) {
-        console.warn('[LOMU-AI] ⚠️ No events received for 30+ seconds - connection may be stalled');
+        console.warn('[LOMU-AI] No events received for 30+ seconds - connection may be stalled');
         toast({
           title: '⚠️ Connection Warning',
           description: 'No updates received for 30 seconds. The connection may have stalled.',
@@ -631,6 +632,8 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                 switch (data.type) {
                   case 'user_message':
                     console.log('[LOMU-AI] User message saved:', data.messageId);
+                    // Store message ID for task persistence
+                    setCurrentChatMessageId(data.messageId);
                     break;
 
                   case 'content':
@@ -664,14 +667,21 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                             status: t.status as AgentTask['status'],
                           }));
                           setTasks(formattedTasks);
-                          console.log('[LOMU-AI] ✅ Task list loaded with', formattedTasks.length, 'tasks');
+                          
+                          // Save tasks to localStorage for persistence
+                          if (currentChatMessageId) {
+                            localStorage.setItem(`tasks-${currentChatMessageId}`, JSON.stringify(formattedTasks));
+                            console.log('[LOMU-AI] Tasks saved to localStorage for message:', currentChatMessageId);
+                          }
+                          
+                          console.log('[LOMU-AI] Task list loaded with', formattedTasks.length, 'tasks');
                         } else {
-                          console.log('[LOMU-AI] ℹ️ Task list empty or unavailable:', taskListData.message || 'No tasks');
+                          console.log('[LOMU-AI] Task list empty or unavailable:', taskListData.message || 'No tasks');
                           setTasks([]); // Clear any stale tasks
                         }
                       })
                       .catch(err => {
-                        console.error('[LOMU-AI] ❌ Failed to fetch task list after retries:', err);
+                        console.error('[LOMU-AI] Failed to fetch task list after retries:', err);
                         setTasks([]); // Clear tasks on error
                         // Don't show error toast - just log it and continue
                         console.log('[LOMU-AI] Continuing without task list display');
@@ -683,14 +693,21 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                     setTasks(prev => {
                       const taskExists = prev.some(t => t.id === data.taskId);
                       if (!taskExists) {
-                        console.warn('[LOMU-AI] ⚠️ Task update received for unknown taskId:', data.taskId);
+                        console.warn('[LOMU-AI] Task update received for unknown taskId:', data.taskId);
                       }
 
-                      return prev.map(t => 
+                      const updatedTasks = prev.map(t => 
                         t.id === data.taskId 
                           ? { ...t, status: data.status as AgentTask['status'] }
                           : t
                       );
+                      
+                      // Save updated tasks to localStorage
+                      if (currentChatMessageId) {
+                        localStorage.setItem(`tasks-${currentChatMessageId}`, JSON.stringify(updatedTasks));
+                      }
+                      
+                      return updatedTasks;
                     });
 
                     if (data.status === 'in_progress') {
@@ -707,7 +724,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                     break;
 
                   case 'done': {
-                    console.log('[LOMU-AI] ✅ Stream complete, messageId:', data.messageId);
+                    console.log('[LOMU-AI] Stream complete, messageId:', data.messageId);
 
                     // Mark the message as no longer streaming
                     setMessages(prev => prev.map(msg => 
@@ -728,7 +745,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                   }
 
                   case 'error':
-                    console.error('[LOMU-AI] ❌ Stream error:', data.message);
+                    console.error('[LOMU-AI] Stream error:', data.message);
 
                     setIsStreaming(false);
                     setStreamingMessageId(null);

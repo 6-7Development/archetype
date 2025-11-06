@@ -204,6 +204,46 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   // WebSocket streaming for AI chat - use actual user ID
   const streamState = useWebSocketStream(sessionId, user?.id || 'anonymous');
 
+  // State to track current message ID for task persistence
+  const [currentMessageId, setCurrentMessageId] = useState<string | null>(null);
+
+  // Load tasks from API for the current project/session
+  const { data: savedTasks } = useQuery<{ taskListId?: string; tasks: AgentTask[] }>({
+    queryKey: ['/api/tasks', currentMessageId],
+    queryFn: async () => {
+      if (!currentMessageId) return { tasks: [] };
+      const response = await fetch(`/api/tasks/${currentMessageId}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        return { tasks: [] };
+      }
+      return response.json();
+    },
+    enabled: !!currentMessageId,
+  });
+
+  // Load tasks from localStorage or API on mount
+  useEffect(() => {
+    if (currentMessageId) {
+      // Try localStorage first
+      const stored = localStorage.getItem(`tasks-${currentMessageId}`);
+      if (stored) {
+        try {
+          const parsedTasks = JSON.parse(stored);
+          setAgentTasks(parsedTasks);
+          setShowTaskList(parsedTasks.length > 0);
+        } catch (e) {
+          console.error('Failed to parse stored tasks:', e);
+        }
+      } else if (savedTasks?.tasks && savedTasks.tasks.length > 0) {
+        // Fallback to API
+        setAgentTasks(savedTasks.tasks);
+        setShowTaskList(true);
+      }
+    }
+  }, [currentMessageId, savedTasks]);
+
   // Update agent UI from WebSocket events
   useEffect(() => {
     // Convert WebSocket tasks to AgentTask format
@@ -215,6 +255,11 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       }));
       setAgentTasks(convertedTasks);
       setShowTaskList(true);
+
+      // Save tasks to localStorage for persistence (keyed by currentMessageId)
+      if (currentMessageId) {
+        localStorage.setItem(`tasks-${currentMessageId}`, JSON.stringify(convertedTasks));
+      }
 
       // Find active task (first in_progress task)
       const activeTask = convertedTasks.find(t => t.status === 'in_progress');

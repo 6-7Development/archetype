@@ -31,6 +31,7 @@ import { registerTerminalRoutes } from "./routes/terminal";
 import webhooksRouter, { setWebhookBroadcaster } from "./routes/webhooks";
 import gitRouter from "./routes/git";
 import { registerDeploymentRoutes } from "./routes/deployments";
+import tasksRouter from "./routes/tasks";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // ==================== HEALTH & DIAGNOSTICS ====================
@@ -225,6 +226,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Mount AI Knowledge Base router (learning and confidence scoring)
   app.use('/api/ai-knowledge', aiKnowledgeRouter);
+  
+  // Mount tasks router (task persistence across chats)
+  app.use('/api/tasks', tasksRouter);
   
   // Mount LomuAI chat router (chat-based platform healing)
   app.use('/api/lomu-ai', lomuAIChatRouter);

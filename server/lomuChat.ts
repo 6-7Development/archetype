@@ -4,6 +4,7 @@ import { chatMessages } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth';
 import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { platformHealing } from '../platformHealing';
 import { platformAudit } from '../platformAudit';
 import { consultArchitect } from '../tools/architect-consult';
@@ -18,6 +19,7 @@ import {
   PROGRESS_MESSAGES, 
   TOOL_DESCRIPTIONS 
 } from './config/prompts';
+import { getAIModelConfig } from './config/ai-model';
 
 const router = Router();
 
@@ -54,9 +56,23 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
+    // Get AI model configuration
+    const aiConfig = getAIModelConfig();
+    console.log(`[LOMU-CHAT] Using ${aiConfig.provider.toUpperCase()}: ${aiConfig.model}`);
+    
+    // Retrieve API keys OUTSIDE conditionals to fix scoping bug
     const anthropicKey = process.env.ANTHROPIC_API_KEY;
-    if (!anthropicKey) {
-      return res.status(503).json({ error: ERROR_MESSAGES.anthropicKeyMissing() });
+    const geminiKey = process.env.GEMINI_API_KEY;
+    
+    // Check for required API keys
+    if (aiConfig.provider === 'claude') {
+      if (!anthropicKey) {
+        return res.status(503).json({ error: ERROR_MESSAGES.anthropicKeyMissing() });
+      }
+    } else if (aiConfig.provider === 'gemini') {
+      if (!geminiKey) {
+        return res.status(503).json({ error: 'Gemini API key not configured. Set GEMINI_API_KEY environment variable.' });
+      }
     }
 
     // Set up Server-Sent Events
@@ -67,6 +83,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     const sendEvent = (type: string, data: any) => {
       res.write(`data: ${JSON.stringify({ type, ...data })}\n\n`);
     };
+    
+    // Send AI model info to frontend (no emoji!)
+    sendEvent('progress', { message: `Using ${aiConfig.provider.toUpperCase()} (${aiConfig.model})` });
 
     // Save user message
     const [userMsg] = await db
@@ -267,7 +286,17 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // TOKEN EFFICIENCY: Use appropriate tool set based on task complexity
     const tools = isSimpleTask ? basicTools : allTools;
 
-    const client = new Anthropic({ apiKey: anthropicKey });
+    // Initialize AI client based on provider
+    let anthropicClient: Anthropic | null = null;
+    let geminiModel: any = null;
+    
+    if (aiConfig.provider === 'claude') {
+      anthropicClient = new Anthropic({ apiKey: anthropicKey! });
+    } else if (aiConfig.provider === 'gemini') {
+      const genAI = new GoogleGenerativeAI(geminiKey!);
+      geminiModel = genAI.getGenerativeModel({ model: aiConfig.model });
+    }
+    
     let fullContent = '';
     const fileChanges: Array<{ path: string; operation: string; contentAfter?: string }> = [];
     let continueLoop = true;
@@ -330,23 +359,82 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
       sendEvent('progress', { message: `Working (${iterationCount}/${MAX_ITERATIONS})...` });
 
-      const response = await client.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: isSimpleTask ? 4000 : 8000, // REDUCED tokens for simple tasks
-        system: systemPrompt,
-        messages: conversationMessages,
-        tools,
-        stream: false, // We'll handle our own streaming
-      });
+      let responseContent: any[] = [];
+      
+      // Provider-specific API calls
+      if (aiConfig.provider === 'claude' && anthropicClient) {
+        const response = await anthropicClient.messages.create({
+          model: aiConfig.model,
+          max_tokens: isSimpleTask ? aiConfig.maxTokens.simple : aiConfig.maxTokens.complex,
+          system: systemPrompt,
+          messages: conversationMessages,
+          tools,
+          stream: false,
+        });
+        
+        responseContent = response.content;
+        
+      } else if (aiConfig.provider === 'gemini' && geminiModel) {
+        // Convert tools to Gemini format
+        const geminiTools = tools.map(tool => ({
+          name: tool.name,
+          description: tool.description,
+          parameters: tool.input_schema,
+        }));
+        
+        // Build Gemini-format chat
+        const geminiChat = geminiModel.startChat({
+          history: conversationMessages.slice(0, -1).map(msg => ({
+            role: msg.role === 'user' ? 'user' : 'model',
+            parts: typeof msg.content === 'string' ? [{ text: msg.content }] : msg.content.map((c: any) => {
+              if (c.type === 'text') return { text: c.text };
+              if (c.type === 'tool_result') return { text: `Tool ${c.tool_use_id}: ${c.content}` };
+              return { text: '' };
+            }),
+          })),
+          generationConfig: {
+            maxOutputTokens: isSimpleTask ? aiConfig.maxTokens.simple : aiConfig.maxTokens.complex,
+          },
+          tools: [{ functionDeclarations: geminiTools }],
+        });
+        
+        const currentMessage = conversationMessages[conversationMessages.length - 1];
+        const prompt = typeof currentMessage.content === 'string' 
+          ? currentMessage.content 
+          : currentMessage.content.map((c: any) => c.text || c.content || '').join('\n');
+        
+        const result = await geminiChat.sendMessage(`${systemPrompt}\n\n${prompt}`);
+        const geminiResponse = result.response;
+        
+        // Convert Gemini response to Claude format for compatibility
+        responseContent = [];
+        
+        if (geminiResponse.text()) {
+          responseContent.push({ type: 'text', text: geminiResponse.text() });
+        }
+        
+        // Handle function calls from Gemini
+        const functionCalls = geminiResponse.functionCalls();
+        if (functionCalls && functionCalls.length > 0) {
+          for (const call of functionCalls) {
+            responseContent.push({
+              type: 'tool_use',
+              id: `gemini-${Date.now()}-${call.name}`,
+              name: call.name,
+              input: call.args,
+            });
+          }
+        }
+      }
 
       conversationMessages.push({
         role: 'assistant',
-        content: response.content,
+        content: responseContent,
       });
 
       const toolResults: any[] = [];
 
-      for (const block of response.content) {
+      for (const block of responseContent) {
         if (block.type === 'text') {
           fullContent += block.text;
           sendEvent('content', { content: block.text });
