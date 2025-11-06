@@ -141,6 +141,27 @@ const path = require('path'); // Import the path module
       }
     }
 
+    // STEP 5: Add missing columns to users table (schema drift repair)
+    console.log('📋 Step 5: Adding missing columns to users table...');
+    
+    try {
+      // Add billing_status column if it doesn't exist
+      await pool.query(`
+        ALTER TABLE users 
+        ADD COLUMN IF NOT EXISTS billing_status TEXT NOT NULL DEFAULT 'trial';
+      `);
+      
+      // Add stripe_customer_id column if it doesn't exist
+      await pool.query(`
+        ALTER TABLE users 
+        ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;
+      `);
+      
+      console.log('✅ Missing user columns added successfully');
+    } catch (err) {
+      console.log(`   ⚠️  User column addition warning: ${err.message}`);
+    }
+
     await pool.end();
     process.exit(0);
 
