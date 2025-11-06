@@ -28,6 +28,8 @@ export const users = pgTable("users", {
   role: varchar("role").notNull().default("user"), // user, admin
   isOwner: boolean("is_owner").notNull().default(false), // Platform owner (can modify platform in production)
   autonomyLevel: varchar("autonomy_level", { length: 20 }).notNull().default("basic"), // 'basic' | 'standard' | 'deep' | 'max' - Controls LomuAI capabilities
+  billingStatus: text("billing_status").notNull().default("trial"), // Enum: 'trial', 'trial_grace', 'active', 'suspended'
+  defaultPaymentMethodId: varchar("default_payment_method_id"), // Stripe payment method ID
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -902,6 +904,7 @@ export const monthlyUsage = pgTable("monthly_usage", {
   totalCost: decimal("total_cost", { precision: 10, scale: 2 }).notNull().default("8.50"),
   planLimit: decimal("plan_limit", { precision: 10, scale: 2 }).notNull().default("0.00"), // Monthly plan cost
   overage: decimal("overage", { precision: 10, scale: 2 }).notNull().default("0.00"), // Amount over plan limit
+  creditsConsumed: integer("credits_consumed").notNull().default(0), // Total credits used this month
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -914,6 +917,87 @@ export const insertMonthlyUsageSchema = createInsertSchema(monthlyUsage).omit({
 
 export type InsertMonthlyUsage = z.infer<typeof insertMonthlyUsageSchema>;
 export type MonthlyUsage = typeof monthlyUsage.$inferSelect;
+
+// Credit Wallets - One wallet per user for credit-based billing
+export const creditWallets = pgTable("credit_wallets", {
+  userId: varchar("user_id").primaryKey(), // One wallet per user
+  availableCredits: integer("available_credits").notNull().default(0), // Credits ready to use
+  reservedCredits: integer("reserved_credits").notNull().default(0), // Credits reserved for active agent runs
+  lastTopUpAt: timestamp("last_top_up_at"), // When user last purchased credits
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertCreditWalletSchema = createInsertSchema(creditWallets).omit({
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertCreditWallet = z.infer<typeof insertCreditWalletSchema>;
+export type CreditWallet = typeof creditWallets.$inferSelect;
+
+// Credit Ledger - Transaction log for all credit movements
+export const creditLedger = pgTable("credit_ledger", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(), // Foreign key to users
+  deltaCredits: integer("delta_credits").notNull(), // +/- credits (positive for additions, negative for consumption)
+  usdAmount: decimal("usd_amount", { precision: 10, scale: 4 }), // Dollar amount (for purchases)
+  source: text("source").notNull(), // Enum: 'monthly_allocation', 'purchase', 'lomu_chat', 'architect_consultation', 'refund', 'adjustment'
+  referenceId: varchar("reference_id"), // Link to related record (usage log, stripe payment, etc.)
+  metadata: jsonb("metadata").$type<{
+    owner_exempt?: boolean; // True for owner free usage
+    package?: string; // Credit package purchased
+    model?: string; // AI model used
+    [key: string]: any;
+  }>(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_credit_ledger_user_id").on(table.userId),
+  index("idx_credit_ledger_source").on(table.source),
+  index("idx_credit_ledger_created_at").on(table.createdAt),
+]);
+
+export const insertCreditLedgerSchema = createInsertSchema(creditLedger).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertCreditLedger = z.infer<typeof insertCreditLedgerSchema>;
+export type CreditLedger = typeof creditLedger.$inferSelect;
+
+// Agent Runs - Track agent execution state for pause/resume functionality
+export const agentRuns = pgTable("agent_runs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  projectId: varchar("project_id"), // Null for platform healing
+  status: text("status").notNull(), // Enum: 'running', 'paused', 'locked', 'completed', 'failed'
+  creditsReserved: integer("credits_reserved").notNull().default(0), // Credits held for this run
+  creditsConsumed: integer("credits_consumed").notNull().default(0), // Actual credits used
+  context: jsonb("context").$type<{
+    messages?: any[]; // Chat history
+    taskState?: any; // Active tasks
+    filesTouched?: string[]; // Files being modified
+    streamPosition?: number; // Where to resume streaming
+    [key: string]: any;
+  }>(),
+  pausedAt: timestamp("paused_at"), // When agent was paused
+  resumedAt: timestamp("resumed_at"), // When agent resumed
+  completedAt: timestamp("completed_at"), // When agent finished
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_agent_runs_user_id").on(table.userId),
+  index("idx_agent_runs_project_id").on(table.projectId),
+  index("idx_agent_runs_status").on(table.status),
+  index("idx_agent_runs_created_at").on(table.createdAt),
+]);
+
+export const insertAgentRunSchema = createInsertSchema(agentRuns).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertAgentRun = z.infer<typeof insertAgentRunSchema>;
+export type AgentRun = typeof agentRuns.$inferSelect;
 
 // Deployments - Track each deployment of a project (Cloudflare Pages integration)
 export const deployments = pgTable("deployments", {
@@ -2583,3 +2667,11 @@ export const insertProjectGitConfigSchema = createInsertSchema(projectGitConfig)
 
 export type InsertProjectGitConfig = z.infer<typeof insertProjectGitConfigSchema>;
 export type ProjectGitConfig = typeof projectGitConfig.$inferSelect;
+
+// Credit Math Constants - Pricing and conversion rates for credit-based billing
+export const CREDIT_CONSTANTS = {
+  TOKENS_PER_CREDIT: 1000, // 1 credit = 1000 tokens
+  CREDIT_DOLLAR_VALUE: 0.05, // $0.05 per credit (retail)
+  PROVIDER_COST_PER_CREDIT: 0.018, // $0.018 provider cost per credit
+  MARGIN_PERCENT: 72, // 72% gross margin
+};
