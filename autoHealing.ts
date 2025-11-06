@@ -6,6 +6,7 @@ import Anthropic from '@anthropic-ai/sdk';
  * Automatic Self-Healing System
  * Like rml CLI tool - detects errors and automatically fixes them
  * OPTIMIZED: CPU-efficient version to prevent high CPU usage
+ * MEMORY SAFETY: Added memory leak prevention and cleanup
  */
 
 interface ErrorLog {
@@ -21,21 +22,66 @@ class AutoHealingService {
   private errorBuffer: ErrorLog[] = [];
   private isHealing = false;
   private readonly ERROR_THRESHOLD = 5; // Increased to reduce false triggers
-  private readonly BUFFER_TIME = 10000; // Increased to 10s to reduce CPU load
-  private readonly MAX_ERRORS_PER_MINUTE = 20; // Rate limiting
+  private readonly BUFFER_TIME = 15000; // Increased to 15s for memory safety
+  private readonly MAX_ERRORS_PER_MINUTE = 15; // Reduced to prevent memory buildup
   private healingTimer: NodeJS.Timeout | null = null;
   private knowledgeBase: Map<string, string> = new Map();
+  private cleanupTimer: NodeJS.Timeout | null = null;
   private cpuMonitor = {
     lastCheck: Date.now(),
     errorCount: 0,
     healingCount: 0
   };
 
+  constructor() {
+    // Start periodic memory cleanup
+    this.startMemoryCleanup();
+  }
+
   /**
-   * Report an error for potential auto-healing (CPU-optimized)
+   * Start periodic memory cleanup to prevent leaks
+   */
+  private startMemoryCleanup(): void {
+    this.cleanupTimer = setInterval(() => {
+      // Clear old error buffer entries (older than 5 minutes)
+      const fiveMinutesAgo = Date.now() - 300000;
+      this.errorBuffer = this.errorBuffer.filter(
+        error => error.timestamp.getTime() > fiveMinutesAgo
+      );
+
+      // Clean up knowledge base if it gets too large
+      if (this.knowledgeBase.size > 50) {
+        const entries = Array.from(this.knowledgeBase.entries());
+        const recentEntries = entries.slice(-25); // Keep only 25 most recent
+        this.knowledgeBase.clear();
+        recentEntries.forEach(([key, value]) => this.knowledgeBase.set(key, value));
+      }
+
+      // Reset CPU monitoring counters periodically
+      if (Date.now() - this.cpuMonitor.lastCheck > 300000) { // 5 minutes
+        this.cpuMonitor.errorCount = 0;
+        this.cpuMonitor.healingCount = 0;
+        this.cpuMonitor.lastCheck = Date.now();
+      }
+
+    }, 60000); // Run cleanup every minute
+  }
+
+  /**
+   * Stop memory cleanup timer
+   */
+  private stopMemoryCleanup(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+      this.cleanupTimer = null;
+    }
+  }
+
+  /**
+   * Report an error for potential auto-healing (Memory-optimized)
    */
   async reportError(error: ErrorLog): Promise<void> {
-    // CPU PROTECTION: Rate limiting to prevent excessive processing
+    // MEMORY PROTECTION: Rate limiting to prevent excessive memory usage
     const now = Date.now();
     if (now - this.cpuMonitor.lastCheck < 60000) {
       this.cpuMonitor.errorCount++;
@@ -56,9 +102,9 @@ class AutoHealingService {
     
     this.errorBuffer.push(error);
     
-    // Limit buffer size to prevent memory issues
-    if (this.errorBuffer.length > 50) {
-      this.errorBuffer = this.errorBuffer.slice(-25); // Keep only recent errors
+    // MEMORY SAFETY: Strict buffer size limit
+    if (this.errorBuffer.length > 25) {
+      this.errorBuffer = this.errorBuffer.slice(-15); // Keep only 15 most recent
     }
     
     // Check for known fixes (quick lookup)
@@ -66,16 +112,16 @@ class AutoHealingService {
     if (knownFix) {
       console.log('[AUTO-HEAL] Known fix found, scheduling application...');
       // Don't apply immediately to prevent CPU spikes
-      setTimeout(() => this.applyKnownFix(error, knownFix), 1000);
+      setTimeout(() => this.applyKnownFix(error, knownFix), 2000);
       return;
     }
 
-    // CPU PROTECTION: Don't restart timer if already set
+    // MEMORY PROTECTION: Don't restart timer if already set
     if (this.healingTimer) {
       return; // Timer already running, don't create new ones
     }
 
-    // Set timer with longer delay to reduce CPU usage
+    // Set timer with longer delay to reduce memory pressure
     this.healingTimer = setTimeout(() => {
       this.healingTimer = null; // Clear reference first
       this.triggerAutoHealing();
@@ -91,13 +137,14 @@ class AutoHealingService {
   }
 
   /**
-   * Create unique signature for error (CPU-optimized)
+   * Create unique signature for error (Memory-optimized)
    */
   private getErrorSignature(error: ErrorLog): string {
-    // Simplified signature generation to reduce CPU
+    // Simplified signature generation to reduce memory
     const messageKey = error.message
       .replace(/\d+/g, 'N')
-      .slice(0, 50); // Reduced from 100 to save CPU
+      .replace(/[^\w\s]/g, '') // Remove special chars
+      .slice(0, 30); // Further reduced to save memory
     
     return `${error.type}:${messageKey}`;
   }
@@ -109,8 +156,8 @@ class AutoHealingService {
     const signature = this.getErrorSignature(error);
     this.knowledgeBase.set(signature, fix);
     
-    // Limit knowledge base size to prevent memory bloat
-    if (this.knowledgeBase.size > 100) {
+    // MEMORY SAFETY: Strict limit on knowledge base size
+    if (this.knowledgeBase.size > 30) {
       const keys = Array.from(this.knowledgeBase.keys());
       const oldestKey = keys[0];
       this.knowledgeBase.delete(oldestKey);
@@ -120,7 +167,7 @@ class AutoHealingService {
   }
 
   /**
-   * Apply a known fix (CPU-optimized)
+   * Apply a known fix (Memory-optimized)
    */
   private async applyKnownFix(error: ErrorLog, fix: string): Promise<void> {
     if (this.isHealing) {
@@ -158,7 +205,7 @@ class AutoHealingService {
   }
 
   /**
-   * Trigger automatic healing (CPU-optimized)
+   * Trigger automatic healing (Memory-optimized)
    */
   private async triggerAutoHealing(): Promise<void> {
     if (this.isHealing) {
@@ -166,12 +213,12 @@ class AutoHealingService {
       return;
     }
 
-    // CPU PROTECTION: Check healing frequency
-    if (this.cpuMonitor.healingCount > 3) {
-      console.warn('[AUTO-HEAL] Too many healing attempts, pausing for 5 minutes');
+    // MEMORY PROTECTION: Check healing frequency
+    if (this.cpuMonitor.healingCount > 2) {
+      console.warn('[AUTO-HEAL] Too many healing attempts, pausing for 10 minutes');
       setTimeout(() => {
         this.cpuMonitor.healingCount = 0;
-      }, 300000); // 5 minutes
+      }, 600000); // 10 minutes instead of 5
       return;
     }
 
@@ -187,13 +234,13 @@ class AutoHealingService {
     console.log('[AUTO-HEAL] Starting healing for', this.errorBuffer.length, 'errors');
 
     try {
-      // Limit error summary to prevent excessive string processing
-      const recentErrors = this.errorBuffer.slice(-5); // Only process last 5 errors
+      // MEMORY SAFETY: Limit error summary to prevent excessive memory usage
+      const recentErrors = this.errorBuffer.slice(-3); // Only process last 3 errors
       const errorSummary = recentErrors
-        .map(e => `[${e.type}] ${e.message.slice(0, 100)}`)
+        .map(e => `[${e.type}] ${e.message.slice(0, 80)}`)
         .join('\n');
 
-      const issue = `CPU-optimized auto-healing for ${recentErrors.length} errors:\n${errorSummary}`;
+      const issue = `Memory-optimized auto-healing for ${recentErrors.length} errors:\n${errorSummary}`;
 
       await this.executeHealing(issue);
       this.errorBuffer = [];
@@ -206,7 +253,7 @@ class AutoHealingService {
   }
 
   /**
-   * Execute healing (performance-optimized)
+   * Execute healing (Memory-optimized)
    */
   private async executeHealing(issue: string): Promise<void> {
     const anthropicKey = process.env.ANTHROPIC_API_KEY;
@@ -216,25 +263,21 @@ class AutoHealingService {
     }
 
     try {
-      const backup = await platformHealing.createBackup(`Auto-heal: ${issue.slice(0, 30)}`);
+      const backup = await platformHealing.createBackup(`Auto-heal: ${issue.slice(0, 20)}`);
       const client = new Anthropic({ apiKey: anthropicKey });
 
-      // Reduced system prompt to save tokens and CPU
-      const systemPrompt = `Auto-healing module. Fix these errors with minimal changes:
-${issue}
+      // MEMORY SAFETY: Reduced system prompt to save memory
+      const systemPrompt = `Auto-healing module. Fix errors with minimal changes:
+${issue.slice(0, 300)}
 
-Use these tools:
-- readPlatformFile(path) 
-- writePlatformFile(path, content)
-- listPlatformFiles(directory)
-
+Tools: readPlatformFile, writePlatformFile, listPlatformFiles
 Be surgical. Fix only what's broken.`;
 
       const response = await client.messages.create({
-        model: 'claude-3-haiku-20240307', // Faster model to reduce CPU load
-        max_tokens: 4000, // Reduced from 8000
+        model: 'claude-3-haiku-20240307', // Faster model to reduce memory load
+        max_tokens: 2000, // Further reduced from 4000
         system: systemPrompt,
-        messages: [{ role: 'user', content: issue.slice(0, 500) }], // Limit input size
+        messages: [{ role: 'user', content: issue.slice(0, 300) }], // Reduced input size
         tools: [
           {
             name: 'readPlatformFile',
@@ -260,15 +303,15 @@ Be surgical. Fix only what's broken.`;
         ],
       });
 
-      // Process only first tool use to reduce CPU load
+      // MEMORY SAFETY: Process only first tool use to reduce memory
       const changes: Array<{ path: string; content: string }> = [];
       
-      for (const block of response.content.slice(0, 3)) { // Limit processing
+      for (const block of response.content.slice(0, 1)) { // Only first block
         if (block.type === 'tool_use' && block.name === 'writePlatformFile') {
           const input = block.input as { path: string; content: string };
           await platformHealing.writePlatformFile(input.path, input.content);
           changes.push(input);
-          break; // Only process first write to reduce CPU
+          break;
         }
       }
 
@@ -276,7 +319,7 @@ Be surgical. Fix only what's broken.`;
         const safety = await platformHealing.validateSafety();
         if (safety.safe) {
           const commitHash = await platformHealing.commitChanges(
-            `Auto-heal: CPU optimized fix`,
+            `Auto-heal: Memory optimized fix`,
             changes.map(c => ({ path: c.path, operation: 'modify' as const }))
           );
           console.log('[AUTO-HEAL] Committed:', commitHash);
@@ -287,7 +330,7 @@ Be surgical. Fix only what's broken.`;
       }
 
     } catch (error: any) {
-      console.error('[AUTO-HEAL] Execution failed:', error.message.slice(0, 100));
+      console.error('[AUTO-HEAL] Execution failed:', error.message.slice(0, 80));
     }
   }
 
@@ -302,12 +345,12 @@ Be surgical. Fix only what's broken.`;
    * Import knowledge base
    */
   importKnowledge(knowledge: Record<string, string>): void {
-    this.knowledgeBase = new Map(Object.entries(knowledge).slice(0, 50)); // Limit size
+    this.knowledgeBase = new Map(Object.entries(knowledge).slice(0, 30)); // Strict limit
     console.log('[AUTO-HEAL] Imported', this.knowledgeBase.size, 'fixes');
   }
 
   /**
-   * Get CPU monitoring stats
+   * Get memory and CPU monitoring stats
    */
   getCpuStats() {
     return {
@@ -315,17 +358,32 @@ Be surgical. Fix only what's broken.`;
       healingCount: this.cpuMonitor.healingCount,
       isHealing: this.isHealing,
       bufferSize: this.errorBuffer.length,
-      knowledgeBaseSize: this.knowledgeBase.size
+      knowledgeBaseSize: this.knowledgeBase.size,
+      memoryUsage: process.memoryUsage(),
     };
+  }
+
+  /**
+   * Cleanup all resources
+   */
+  cleanup(): void {
+    this.stopMemoryCleanup();
+    if (this.healingTimer) {
+      clearTimeout(this.healingTimer);
+      this.healingTimer = null;
+    }
+    this.errorBuffer = [];
+    this.knowledgeBase.clear();
+    console.log('[AUTO-HEAL] Resources cleaned up');
   }
 }
 
 export const autoHealing = new AutoHealingService();
 
-// CPU-OPTIMIZED: Only attach handlers in production and with throttling
+// MEMORY-OPTIMIZED: Only attach handlers in production with strict throttling
 if (process.env.NODE_ENV === 'production') {
   let lastErrorTime = 0;
-  const ERROR_THROTTLE = 5000; // Only report errors every 5 seconds max
+  const ERROR_THROTTLE = 10000; // Only report errors every 10 seconds max
 
   process.on('uncaughtException', (error) => {
     const now = Date.now();
@@ -347,9 +405,18 @@ if (process.env.NODE_ENV === 'production') {
       autoHealing.reportError({
         timestamp: new Date(),
         type: 'runtime',
-        message: reason?.message || String(reason).slice(0, 200),
+        message: reason?.message || String(reason).slice(0, 150),
         stack: reason?.stack,
       });
     }
+  });
+
+  // Clean up on process exit
+  process.on('SIGTERM', () => {
+    autoHealing.cleanup();
+  });
+
+  process.on('SIGINT', () => {
+    autoHealing.cleanup();
   });
 }
