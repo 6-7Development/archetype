@@ -683,7 +683,7 @@ export class PlatformHealingService {
       }
     }
     
-    // DEVELOPMENT MODE: Write directly to filesystem
+    // DEVELOPMENT MODE: Write directly to filesystem + Git commit
     try {
       const dir = path.dirname(fullPath);
       await fs.mkdir(dir, { recursive: true });
@@ -691,6 +691,42 @@ export class PlatformHealingService {
       await fs.writeFile(fullPath, content, 'utf-8');
 
       console.log(`[PLATFORM-HEAL] Wrote platform file: ${filePath}`);
+      
+      // Auto-commit to local Git if not skipped
+      if (!skipAutoCommit) {
+        try {
+          // Git add the modified file
+          await execFileAsync('git', ['add', filePath], { cwd: this.PROJECT_ROOT });
+          
+          // Git commit with descriptive message
+          const commitMessage = `[LomuAI 🤖 DEV] Update ${filePath}`;
+          await execFileAsync('git', [
+            '-c', 'user.name=LomuAI',
+            '-c', 'user.email=lomu-ai@archetype.platform',
+            'commit', '-m', commitMessage
+          ], { cwd: this.PROJECT_ROOT });
+          
+          // Get commit hash
+          const { stdout: commitHash } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: this.PROJECT_ROOT });
+          const hash = commitHash.trim().substring(0, 7);
+          
+          console.log(`[PLATFORM-HEAL] ✅ Committed to local Git: ${hash}`);
+          console.log(`[PLATFORM-HEAL] Commit message: ${commitMessage}`);
+          
+          return {
+            success: true,
+            message: `File written and committed to local Git successfully.`,
+            commitHash: hash,
+          };
+        } catch (gitError: any) {
+          // If git commit fails (e.g., nothing to commit), still return success for file write
+          console.warn(`[PLATFORM-HEAL] ⚠️ Git commit skipped: ${gitError.message}`);
+          return {
+            success: true,
+            message: `File written successfully (Git commit skipped: ${gitError.message}).`,
+          };
+        }
+      }
       
       return {
         success: true,
@@ -798,7 +834,7 @@ export class PlatformHealingService {
       }
     }
     
-    // DEVELOPMENT MODE: Write directly to filesystem
+    // DEVELOPMENT MODE: Write directly to filesystem + Git commit
     try {
       const dir = path.dirname(fullPath);
       await fs.mkdir(dir, { recursive: true });
@@ -807,10 +843,39 @@ export class PlatformHealingService {
 
       console.log(`[PLATFORM-CREATE] Created platform file: ${filePath}`);
       
-      return {
-        success: true,
-        message: `File created successfully in development mode.`,
-      };
+      // Auto-commit to local Git
+      try {
+        // Git add the new file
+        await execFileAsync('git', ['add', filePath], { cwd: this.PROJECT_ROOT });
+        
+        // Git commit with descriptive message
+        const commitMessage = `[LomuAI 🤖 DEV] Create ${filePath}`;
+        await execFileAsync('git', [
+          '-c', 'user.name=LomuAI',
+          '-c', 'user.email=lomu-ai@archetype.platform',
+          'commit', '-m', commitMessage
+        ], { cwd: this.PROJECT_ROOT });
+        
+        // Get commit hash
+        const { stdout: commitHash } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: this.PROJECT_ROOT });
+        const hash = commitHash.trim().substring(0, 7);
+        
+        console.log(`[PLATFORM-CREATE] ✅ Committed to local Git: ${hash}`);
+        console.log(`[PLATFORM-CREATE] Commit message: ${commitMessage}`);
+        
+        return {
+          success: true,
+          message: `File created and committed to local Git successfully.`,
+          commitHash: hash,
+        };
+      } catch (gitError: any) {
+        // If git commit fails, still return success for file creation
+        console.warn(`[PLATFORM-CREATE] ⚠️ Git commit skipped: ${gitError.message}`);
+        return {
+          success: true,
+          message: `File created successfully (Git commit skipped: ${gitError.message}).`,
+        };
+      }
     } catch (error: any) {
       throw new Error(`Failed to create platform file ${filePath}: ${error.message}`);
     }
