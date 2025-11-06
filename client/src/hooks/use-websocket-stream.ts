@@ -9,8 +9,9 @@ export interface Task {
 }
 
 interface StreamMessage {
-  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics' | 'heal:init' | 'heal:thought' | 'heal:tool' | 'heal:write-pending' | 'heal:approved' | 'heal:rejected' | 'heal:completed' | 'heal:error' | 'approval_requested' | 'progress' | 'platform_preview_ready' | 'platform_preview_error';
+  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics' | 'heal:init' | 'heal:thought' | 'heal:tool' | 'heal:write-pending' | 'heal:approved' | 'heal:rejected' | 'heal:completed' | 'heal:error' | 'approval_requested' | 'progress' | 'platform_preview_ready' | 'platform_preview_error' | 'lomu_ai_job_update';
   commandId?: string;
+  updateType?: string;
   status?: string;
   message?: string;
   content?: string;
@@ -352,6 +353,26 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
                 ...prev,
                 tasks: message.tasks || [],
               }));
+              break;
+
+            case 'lomu_ai_job_update':
+              // Handle task management updates from LomuAI
+              console.log(`📋 [TASK-MGMT] ${message.updateType}:`, message);
+              if (message.updateType === 'task_list_created' && message.tasks) {
+                console.log('📋 Task list created with tasks:', message.tasks);
+                setStreamState(prev => ({
+                  ...prev,
+                  tasks: message.tasks || [],
+                }));
+              } else if (message.updateType === 'task_updated' && message.task) {
+                console.log('✏️ Task updated:', message.task);
+                setStreamState(prev => ({
+                  ...prev,
+                  tasks: prev.tasks.map(t =>
+                    t.id === message.task!.id ? message.task! : t
+                  ),
+                }));
+              }
               break;
 
             case 'sub_agent_spawn':
