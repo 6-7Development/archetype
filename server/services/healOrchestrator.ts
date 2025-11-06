@@ -349,12 +349,13 @@ export class HealOrchestrator extends EventEmitter {
           
           console.log('[HEAL-ORCHESTRATOR] ✅ Knowledge base fix applied successfully (0 tokens used)');
         } catch (kbError) {
-          console.error('[HEAL-ORCHESTRATOR] KB fix failed, falling back to AI:', kbError);
-          aiStrategy = failureAnalysis.suggestedStrategy === 'architect' ? 'architect' : 'lomu_ai';
+          console.error('[HEAL-ORCHESTRATOR] KB fix failed, falling back to LomuAI:', kbError);
+          // NOTE: I AM Architect is user-summoned only - not automatic
+          aiStrategy = 'lomu_ai';
           usedKnowledgeBase = false;
           
-          // Fall through to AI healing
-          healingResult = await this.callAIHealing(diagnosticPrompt, incident, aiStrategy as AIStrategy);
+          // Fall through to LomuAI healing (not architect)
+          healingResult = await this.callAIHealing(diagnosticPrompt, incident, 'lomu_ai' as AIStrategy);
         }
       } else {
         // No KB match or low confidence - use AI routing
@@ -364,89 +365,78 @@ export class HealOrchestrator extends EventEmitter {
           console.log('[HEAL-ORCHESTRATOR] ❌ No knowledge base match found');
         }
         
-        // TIER 2 or TIER 3: Route to appropriate AI based on incident classification
-        if (failureAnalysis.isAgentFailure || failureAnalysis.suggestedStrategy === 'architect') {
-          // TIER 3: I AM Architect (Claude Sonnet 4) for agent failures
-          console.log('[HEAL-ORCHESTRATOR] 🧑‍💼 TIER 3: Delegating to I AM Architect (Claude Sonnet 4)...');
-          aiStrategy = 'architect';
+        // TIER 2: Delegate to LomuAI (primary worker agent)
+        // NOTE: I AM Architect is user-summoned only - not automatic
+        console.log('[HEAL-ORCHESTRATOR] 🤖 TIER 2: Delegating to LomuAI agent...');
+        aiStrategy = 'lomu_ai';
+        
+        try {
+          // Get system user ID for LomuAI job creation
+          const systemUserId = await this.getSystemUserId();
           
-          // Update session with AI strategy
+          if (!systemUserId) {
+            throw new Error('No system user available for LomuAI delegation');
+          }
+          
+          // Create LomuAI job to fix the incident
+          const { createJob, startJobWorker } = await import('./lomuJobManager');
+          const diagnosticMessage = `[PLATFORM-HEALING] Fix incident: ${incident.title}\n\n${diagnosticPrompt}\n\nIncident Details:\n- Type: ${incident.type}\n- Severity: ${incident.severity}\n- Description: ${incident.description}`;
+          
+          const job = await createJob(systemUserId, diagnosticMessage);
+          
+          // Update session to track LomuAI delegation
           await db.update(platformHealingSessions).set({
-            aiStrategy: 'architect',
+            aiStrategy: 'lomu_ai',
+            model: 'gemini-2.5-flash',
+            lomuJobId: job.id,
+            diagnosisNotes: 'Delegated to LomuAI agent for autonomous fixing',
             knowledgeBaseMatched: false,
             knowledgeMatchConfidence: kbResult.confidence,
           }).where(eq(platformHealingSessions.id, session.id));
           
-          // Call AI healing with architect strategy
-          healingResult = await this.callAIHealing(diagnosticPrompt, incident, 'architect');
+          console.log(`[HEAL-ORCHESTRATOR] Created LomuAI job ${job.id} to fix incident`);
           
-        } else {
-          // TIER 2: Delegate to LomuAI (tell agent to fix it)
-          console.log('[HEAL-ORCHESTRATOR] 🤖 TIER 2: Delegating to LomuAI agent...');
-          aiStrategy = 'lomu_ai';
+          // Start the LomuAI job worker in the background
+          await startJobWorker(job.id);
           
-          try {
-            // Get system user ID for LomuAI job creation
-            const systemUserId = await this.getSystemUserId();
-            
-            if (!systemUserId) {
-              throw new Error('No system user available for LomuAI delegation');
-            }
-            
-            // Create LomuAI job to fix the incident
-            const { createJob, startJobWorker } = await import('./lomuJobManager');
-            const diagnosticMessage = `[PLATFORM-HEALING] Fix incident: ${incident.title}\n\n${diagnosticPrompt}\n\nIncident Details:\n- Type: ${incident.type}\n- Severity: ${incident.severity}\n- Description: ${incident.description}`;
-            
-            const job = await createJob(systemUserId, diagnosticMessage);
-            
-            // Update session to track LomuAI delegation
-            await db.update(platformHealingSessions).set({
-              aiStrategy: 'lomu_ai',
-              model: 'gemini-2.5-flash',
-              lomuJobId: job.id,
-              diagnosisNotes: 'Delegated to LomuAI agent for autonomous fixing',
-              knowledgeBaseMatched: false,
-              knowledgeMatchConfidence: kbResult.confidence,
-            }).where(eq(platformHealingSessions.id, session.id));
-            
-            console.log(`[HEAL-ORCHESTRATOR] Created LomuAI job ${job.id} to fix incident`);
-            
-            // Start the LomuAI job worker in the background
-            await startJobWorker(job.id);
-            
-            // Return early - LomuAI will handle the fix autonomously
-            // The LomuAI job will have full tool access and can actually fix the issue
-            // TODO: Monitor LomuAI job completion and update incident status
-            console.log('[HEAL-ORCHESTRATOR] LomuAI job started - delegating fix to agent');
-            
-            // Mark session as delegated (not failed, but waiting for LomuAI)
-            await db.update(platformHealingSessions).set({
-              phase: 'repair',
-              status: 'active',
-            }).where(eq(platformHealingSessions.id, session.id));
-            
-            // Release lock and exit - LomuAI will handle it
-            this.isHealing = false;
-            this.currentSessionId = null;
-            return;
-            
-          } catch (lomuError: any) {
-            console.error('[HEAL-ORCHESTRATOR] Failed to create LomuAI job:', lomuError);
-            console.log('[HEAL-ORCHESTRATOR] Falling back to Tier 3 (I AM Architect)...');
-            
-            // Fall back to Tier 3 (Architect)
-            aiStrategy = 'architect';
-            
-            await db.update(platformHealingSessions).set({
-              aiStrategy: 'architect',
-              knowledgeBaseMatched: false,
-              knowledgeMatchConfidence: kbResult.confidence,
-              diagnosisNotes: `LomuAI delegation failed: ${lomuError.message}. Falling back to Architect.`,
-            }).where(eq(platformHealingSessions.id, session.id));
-            
-            // Call AI healing with architect strategy as fallback
-            healingResult = await this.callAIHealing(diagnosticPrompt, incident, 'architect');
-          }
+          // Return early - LomuAI will handle the fix autonomously
+          // The LomuAI job will have full tool access and can actually fix the issue
+          // TODO: Monitor LomuAI job completion and update incident status
+          console.log('[HEAL-ORCHESTRATOR] LomuAI job started - delegating fix to agent');
+          
+          // Mark session as delegated (not failed, but waiting for LomuAI)
+          await db.update(platformHealingSessions).set({
+            phase: 'repair',
+            status: 'active',
+          }).where(eq(platformHealingSessions.id, session.id));
+          
+          // Release lock and exit - LomuAI will handle it
+          this.isHealing = false;
+          this.currentSessionId = null;
+          return;
+          
+        } catch (lomuError: any) {
+          console.error('[HEAL-ORCHESTRATOR] LomuAI delegation failed:', lomuError);
+          console.log('[HEAL-ORCHESTRATOR] ❌ I AM Architect not auto-triggered (user-summoned only)');
+          
+          // Mark session as failed instead of escalating
+          // I AM Architect is reserved for explicit user requests only
+          await db.update(platformHealingSessions).set({
+            phase: 'failed',
+            status: 'failed',
+            diagnosisNotes: `LomuAI failed: ${lomuError.message}. I AM Architect requires manual user request.`,
+          }).where(eq(platformHealingSessions.id, session.id));
+          
+          // Update incident as failed (no auto-escalation)
+          await db.update(platformIncidents).set({
+            status: 'failed',
+            updatedAt: new Date(),
+          }).where(eq(platformIncidents.id, incidentId));
+          
+          // Don't fall back to Tier 3 - exit
+          this.isHealing = false;
+          this.currentSessionId = null;
+          return;
         }
       }
       
@@ -459,7 +449,8 @@ export class HealOrchestrator extends EventEmitter {
         actionsTaken: [{ 
           action: 'diagnosis_started', 
           timestamp: new Date(),
-          tier: usedKnowledgeBase ? 'tier_1_kb' : (aiStrategy === 'lomu_ai' ? 'tier_2_lomu' : 'tier_3_architect'),
+          // TIER 1: Knowledge Base, TIER 2: LomuAI (TIER 3 architect is manual-only)
+          tier: usedKnowledgeBase ? 'tier_1_kb' : 'tier_2_lomu',
         }],
         success: false,
         verificationPassed: false,

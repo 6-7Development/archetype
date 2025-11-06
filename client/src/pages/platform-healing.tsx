@@ -590,7 +590,7 @@ function PlatformHealingContent() {
       {/* Header */}
       <div className="flex items-center gap-2 sm:gap-4 p-3 sm:p-4 border-b border-border">
         <h1 className="text-lg sm:text-xl font-bold">Platform Healing</h1>
-        <Badge variant="secondary" className="text-xs">
+        <Badge variant="secondary" className="text-xs bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border-blue-200">
           Brigido 👨‍💼
         </Badge>
         

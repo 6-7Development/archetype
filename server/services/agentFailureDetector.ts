@@ -49,7 +49,8 @@ export class AgentFailureDetector {
       incidentCategory = 'agent_failure';
       confidence = 90;
       evidence.push('Incident source is agent_monitor - direct agent failure detection');
-      suggestedStrategy = 'architect'; // Agent failures need expert review
+      // NOTE: I AM Architect reserved for explicit user requests
+      suggestedStrategy = 'lomu_ai';
     }
     
     // 2. Check for agent-specific error patterns in description/stackTrace
@@ -73,7 +74,8 @@ export class AgentFailureDetector {
         incidentCategory = 'agent_failure';
         confidence = Math.min(confidence + 20, 95);
         evidence.push(`Matched agent error pattern: ${pattern.source}`);
-        suggestedStrategy = 'architect';
+        // NOTE: I AM Architect reserved for explicit user requests
+        suggestedStrategy = 'lomu_ai';
       }
     }
     
@@ -84,7 +86,8 @@ export class AgentFailureDetector {
       incidentCategory = 'agent_failure';
       confidence = Math.min(confidence + 15, 95);
       evidence.push(`${recentFailures.count} recent LomuAI job failures detected`);
-      suggestedStrategy = 'architect'; // Repeated failures need expert intervention
+      // NOTE: I AM Architect reserved for explicit user requests
+      suggestedStrategy = 'lomu_ai';
     }
     
     // 4. Platform failure patterns (system-level issues)
@@ -261,7 +264,7 @@ export class AgentFailureDetector {
     }
     
     const isPoorQuality = qualityScore < 60;
-    const shouldEscalate = qualityScore < 40; // Critical quality issues need architect
+    const shouldEscalate = qualityScore < 40; // Critical quality issues (user can manually summon architect)
     
     return {
       qualityScore: Math.max(0, qualityScore),
