@@ -87,15 +87,32 @@ app.use(express.urlencoded({ extended: false }));
 // This ensures all API requests (including error responses) are rate limited
 app.use('/api', apiLimiter);
 
-// 🛡️ OPTIMIZED response logging to prevent CPU spikes on large responses
+// 🛡️ HIGH-PERFORMANCE response logging with strict CPU protection
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
+  let responseSizeBytes = 0;
 
   const originalResJson = res.json;
   res.json = function (bodyJson, ...args) {
     capturedJsonResponse = bodyJson;
+    
+    // Estimate response size BEFORE stringification
+    if (bodyJson && typeof bodyJson === 'object') {
+      try {
+        const keys = Object.keys(bodyJson);
+        responseSizeBytes = keys.length * 100; // Very rough estimate to avoid JSON.stringify
+        
+        // Skip capturing if too large (prevents CPU spikes)
+        if (responseSizeBytes > 5000) {
+          capturedJsonResponse = { _large_response: `${keys.length} keys` };
+        }
+      } catch (e) {
+        capturedJsonResponse = { _error: 'Response capture failed' };
+      }
+    }
+    
     return originalResJson.apply(res, [bodyJson, ...args]);
   };
 
@@ -104,32 +121,25 @@ app.use((req, res, next) => {
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
       
-      // 🛡️ OPTIMIZED: Only stringify small responses to prevent CPU spikes
-      if (capturedJsonResponse) {
+      // 🛡️ STRICT CPU PROTECTION: Only log tiny responses
+      if (capturedJsonResponse && responseSizeBytes < 1000) {
         try {
-          // Pre-check response size before stringifying
-          const responseKeys = Object.keys(capturedJsonResponse);
-          const estimatedSize = responseKeys.length * 50; // Rough estimate
-          
-          if (estimatedSize < 1000) { // Only log small responses
-            const jsonString = JSON.stringify(capturedJsonResponse);
-            if (jsonString.length <= 200) {
-              logLine += ` :: ${jsonString}`;
-            } else {
-              logLine += ` :: ${jsonString.substring(0, 200)}...`;
-            }
+          const jsonString = JSON.stringify(capturedJsonResponse);
+          if (jsonString.length <= 100) { // Much stricter limit
+            logLine += ` :: ${jsonString}`;
           } else {
-            logLine += ` :: [Large response: ${responseKeys.length} keys]`;
+            logLine += ` :: [${responseSizeBytes} bytes]`;
           }
-        } catch (stringifyError) {
-          // Prevent JSON.stringify from causing CPU spikes on circular references
-          logLine += ` :: [Response logging error: ${stringifyError.message}]`;
+        } catch (e) {
+          logLine += ` :: [stringify error]`;
         }
+      } else if (responseSizeBytes > 0) {
+        logLine += ` :: [${responseSizeBytes} bytes]`;
       }
 
-      // Truncate final log line to prevent excessive memory usage
-      if (logLine.length > 200) {
-        logLine = logLine.slice(0, 199) + "…";
+      // Final truncation (should rarely be needed now)
+      if (logLine.length > 150) {
+        logLine = logLine.slice(0, 149) + "…";
       }
 
       log(logLine);
@@ -304,29 +314,47 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
   const { setupMemoryMonitoring } = await import('./middleware/memoryMonitor');
   setupMemoryMonitoring();
 
-  // 🛡️ CPU MONITORING: Track and report high CPU usage
+  // 🛡️ OPTIMIZED CPU MONITORING: Fixed calculation and reduced frequency
   console.log('🛡️ Initializing CPU monitoring to detect performance issues...');
-  let lastCpuCheckTime = process.hrtime();
   let lastCpuUsage = process.cpuUsage();
+  let lastTime = Date.now();
   
   const cpuMonitorInterval = setInterval(() => {
-    const currentCpuCheckTime = process.hrtime(lastCpuCheckTime);
-    const currentCpuUsage = process.cpuUsage(lastCpuUsage);
-    
-    // Calculate CPU usage percentage
-    const totalTime = currentCpuCheckTime[0] * 1000000 + currentCpuCheckTime[1] / 1000; // microseconds
-    const cpuPercent = ((currentCpuUsage.user + currentCpuUsage.system) / totalTime) * 100;
-    
-    if (cpuPercent > 85) {
-      console.warn(`🚨 HIGH CPU USAGE DETECTED: ${cpuPercent.toFixed(1)}%`);
-      console.warn('   - Check for infinite loops in auto-test-loop.ts');
-      console.warn('   - Monitor JSON response stringification');
-      console.warn('   - Review WebSocket connection handling');
+    try {
+      const currentTime = Date.now();
+      const currentCpuUsage = process.cpuUsage(lastCpuUsage);
+      
+      // Calculate elapsed time in seconds
+      const elapsedTimeMs = currentTime - lastTime;
+      const elapsedTimeSeconds = elapsedTimeMs / 1000;
+      
+      // Calculate CPU usage percentage (user + system time in microseconds)
+      const totalCpuTime = (currentCpuUsage.user + currentCpuUsage.system) / 1000; // Convert to ms
+      const cpuPercent = (totalCpuTime / elapsedTimeMs) * 100;
+      
+      // Only warn if CPU is consistently high (avoid noise)
+      if (cpuPercent > 85 && elapsedTimeSeconds > 10) {
+        console.warn(`🚨 HIGH CPU USAGE: ${cpuPercent.toFixed(1)}% over ${elapsedTimeSeconds.toFixed(1)}s`);
+        console.warn('   - Check response logging JSON.stringify operations');
+        console.warn('   - Review auto-test-loop circuit breaker');
+        console.warn('   - Monitor WebSocket connection count');
+        
+        // Reset counters to avoid spam
+        lastCpuUsage = process.cpuUsage();
+        lastTime = Date.now();
+      }
+      
+      // Update counters for next iteration
+      if (elapsedTimeMs > 30000) { // Reset every 30s
+        lastCpuUsage = process.cpuUsage();
+        lastTime = currentTime;
+      }
+    } catch (error: any) {
+      // Prevent CPU monitoring from causing its own issues
+      console.warn('⚠️ CPU monitoring error (disabling):', error.message);
+      clearInterval(cpuMonitorInterval);
     }
-    
-    lastCpuCheckTime = process.hrtime();
-    lastCpuUsage = process.cpuUsage();
-  }, 30000); // Check every 30 seconds
+  }, 60000); // Check every 60 seconds (reduced frequency)
   
   // Clean up CPU monitoring on server shutdown
   process.on('SIGTERM', () => {
