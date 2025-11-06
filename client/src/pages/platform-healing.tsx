@@ -15,6 +15,7 @@ import { Send, Upload, Rocket, Plus, Loader2, Database, Activity, AlertCircle, C
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { AgentTaskList, type AgentTask } from '@/components/agent-task-list';
+import { MarkdownRenderer } from '@/components/markdown-renderer';
 
 interface HealingTarget {
   id: string;
@@ -42,45 +43,39 @@ interface HealingMessage {
 }
 
 /**
- * Filter out tool-related JSON and raw code from AI responses
- * Removes raw tool_use, tool_result blocks, and leaked implementation code
+ * Clean up AI responses for display
+ * Removes verbose system messages, tool execution details, and internal commentary
  */
-function filterToolJSON(content: string): string {
+function cleanAIResponse(content: string): string {
   if (!content) return content;
   
-  // Remove JSON arrays that look like tool calls/results
-  // Pattern: [{"type":"tool_use",...}] or [{"type":"tool_result",...}]
-  let filtered = content.replace(/\[\{"type":"tool_(use|result)"[^\]]*\}\]/g, '');
+  // Remove tool execution JSON blocks
+  let cleaned = content.replace(/\[\{"type":"tool_(use|result)"[^\]]*\}\]/g, '');
+  cleaned = cleaned.replace(/\{"type":"tool_(use|result)"[^\}]*\}/g, '');
   
-  // Remove standalone tool JSON objects
-  filtered = filtered.replace(/\{"type":"tool_(use|result)"[^\}]*\}/g, '');
+  // Remove verbose workflow instructions that leaked into responses
+  cleaned = cleaned.replace(/Step \d+:.*?(?=\n|$)/gi, '');
+  cleaned = cleaned.replace(/Example \(.*?\):/gi, '');
   
-  // Remove raw HTML/JSX code blocks (opening and closing tags)
-  // Pattern: <div...>, </div>, <span...>, etc with \n escapes
-  filtered = filtered.replace(/<\/?[a-z]+[^>]*>\\n/gi, '');
-  filtered = filtered.replace(/<\/?[a-z]+[^>]*>/gi, '');
+  // Remove task ID explanations
+  cleaned = cleaned.replace(/→ Returns:.*?\}/gi, '');
+  cleaned = cleaned.replace(/←.*?(?=\n|$)/g, '');
   
-  // Remove escaped JSON fragments at end of responses
-  // Pattern: );\n"}"}] or similar garbage
-  filtered = filtered.replace(/\)[;\s]*\\n["'}]+\]/g, '');
-  filtered = filtered.replace(/[}"']+\]\s*$/g, '');
+  // Remove internal commentary markers
+  cleaned = cleaned.replace(/❌ WRONG:.*?(?=\n|$)/gi, '');
+  cleaned = cleaned.replace(/✅ CORRECT:.*?(?=\n|$)/gi, '');
   
-  // Remove lines that are just JSX/HTML fragments
-  filtered = filtered.split('\n')
-    .filter(line => {
-      const trimmed = line.trim();
-      // Skip lines that are only HTML tags or fragments
-      if (trimmed.match(/^<\/?\w+[^>]*>$/)) return false;
-      // Skip lines with escaped newlines (code fragments)
-      if (trimmed.match(/\\n["'}]*$/)) return false;
-      return true;
-    })
-    .join('\n');
+  // Remove "REMEMBER:" blocks
+  cleaned = cleaned.replace(/REMEMBER:.*?(?=\n\n|$)/gi, '');
   
-  // Clean up extra newlines left behind
-  filtered = filtered.replace(/\n{3,}/g, '\n\n');
+  // Remove excessive task status updates (keep final summaries only)
+  cleaned = cleaned.replace(/○|⏳|✓/g, '');
   
-  return filtered.trim();
+  // Clean up extra whitespace
+  cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
+  cleaned = cleaned.replace(/\s+$/gm, '');
+  
+  return cleaned.trim();
 }
 
 function PlatformHealingContent() {
@@ -697,16 +692,20 @@ function PlatformHealingContent() {
                         msg.role === 'user' ? 'justify-end' : 'justify-start'
                       )}
                     >
-                      <div className="flex flex-col gap-1 max-w-[80%]">
+                      <div className="flex flex-col gap-1 max-w-[85%]">
                         <div
                           className={cn(
-                            'rounded-lg px-4 py-2',
+                            'rounded-lg px-4 py-3',
                             msg.role === 'user'
                               ? 'bg-primary text-primary-foreground'
-                              : 'bg-muted'
+                              : 'bg-card border'
                           )}
                         >
-                          <p className="text-sm whitespace-pre-wrap">{filterToolJSON(msg.content)}</p>
+                          {msg.role === 'user' ? (
+                            <p className="text-sm leading-relaxed">{msg.content}</p>
+                          ) : (
+                            <MarkdownRenderer content={cleanAIResponse(msg.content)} />
+                          )}
                         </div>
                         {/* Timestamp */}
                         <p 
@@ -724,8 +723,8 @@ function PlatformHealingContent() {
                   {/* Streaming message */}
                   {isStreaming && streamingContent && (
                     <div className="flex gap-3 justify-start">
-                      <div className="max-w-[80%] rounded-lg px-4 py-2 bg-muted">
-                        <p className="text-sm whitespace-pre-wrap">{filterToolJSON(streamingContent)}</p>
+                      <div className="max-w-[85%] rounded-lg px-4 py-3 bg-card border">
+                        <MarkdownRenderer content={cleanAIResponse(streamingContent)} />
                       </div>
                     </div>
                   )}
