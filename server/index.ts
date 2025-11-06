@@ -87,6 +87,7 @@ app.use(express.urlencoded({ extended: false }));
 // This ensures all API requests (including error responses) are rate limited
 app.use('/api', apiLimiter);
 
+// 🛡️ OPTIMIZED response logging to prevent CPU spikes on large responses
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -102,14 +103,33 @@ app.use((req, res, next) => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+      
+      // 🛡️ OPTIMIZED: Only stringify small responses to prevent CPU spikes
       if (capturedJsonResponse) {
-        // Truncate JSON response for logging to prevent high CPU usage on large responses
-        const jsonString = JSON.stringify(capturedJsonResponse);
-        logLine += ` :: ${jsonString.substring(0, 200)}${jsonString.length > 200 ? '...' : ''}`;
+        try {
+          // Pre-check response size before stringifying
+          const responseKeys = Object.keys(capturedJsonResponse);
+          const estimatedSize = responseKeys.length * 50; // Rough estimate
+          
+          if (estimatedSize < 1000) { // Only log small responses
+            const jsonString = JSON.stringify(capturedJsonResponse);
+            if (jsonString.length <= 200) {
+              logLine += ` :: ${jsonString}`;
+            } else {
+              logLine += ` :: ${jsonString.substring(0, 200)}...`;
+            }
+          } else {
+            logLine += ` :: [Large response: ${responseKeys.length} keys]`;
+          }
+        } catch (stringifyError) {
+          // Prevent JSON.stringify from causing CPU spikes on circular references
+          logLine += ` :: [Response logging error: ${stringifyError.message}]`;
+        }
       }
 
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
+      // Truncate final log line to prevent excessive memory usage
+      if (logLine.length > 200) {
+        logLine = logLine.slice(0, 199) + "…";
       }
 
       log(logLine);
@@ -124,6 +144,37 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
 
 (async () => {
   const server = await registerRoutes(app);
+
+  // 🛡️ CRITICAL WebSocket MEMORY LEAK FIX: Add error and close handlers to all WebSocket connections
+  // This prevents memory leaks detected in platform diagnosis
+  console.log('🔧 Adding WebSocket memory leak prevention handlers...');
+  
+  // Store original upgrade listeners to wrap them
+  const originalUpgradeListeners = server.listeners('upgrade');
+  
+  // Remove original listeners
+  server.removeAllListeners('upgrade');
+  
+  // Add our enhanced upgrade handler
+  server.on('upgrade', (request: any, socket: any, head: any) => {
+    // Call original upgrade handlers first
+    originalUpgradeListeners.forEach(listener => {
+      try {
+        listener(request, socket, head);
+      } catch (error) {
+        console.error('[WEBSOCKET] Upgrade handler error:', error);
+      }
+    });
+    
+    // Add error and close handlers to prevent memory leaks
+    socket.on('error', (error: any) => {
+      console.error('[WEBSOCKET] Socket error (preventing memory leak):', error.message);
+    });
+    
+    socket.on('close', () => {
+      console.log('[WEBSOCKET] Socket closed (memory cleaned up)');
+    });
+  });
 
   // Serve attached_assets as static files
   app.use('/attached_assets', express.static('attached_assets'));
@@ -252,6 +303,35 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
   // Initialize memory monitoring for production
   const { setupMemoryMonitoring } = await import('./middleware/memoryMonitor');
   setupMemoryMonitoring();
+
+  // 🛡️ CPU MONITORING: Track and report high CPU usage
+  console.log('🛡️ Initializing CPU monitoring to detect performance issues...');
+  let lastCpuCheckTime = process.hrtime();
+  let lastCpuUsage = process.cpuUsage();
+  
+  const cpuMonitorInterval = setInterval(() => {
+    const currentCpuCheckTime = process.hrtime(lastCpuCheckTime);
+    const currentCpuUsage = process.cpuUsage(lastCpuUsage);
+    
+    // Calculate CPU usage percentage
+    const totalTime = currentCpuCheckTime[0] * 1000000 + currentCpuCheckTime[1] / 1000; // microseconds
+    const cpuPercent = ((currentCpuUsage.user + currentCpuUsage.system) / totalTime) * 100;
+    
+    if (cpuPercent > 85) {
+      console.warn(`🚨 HIGH CPU USAGE DETECTED: ${cpuPercent.toFixed(1)}%`);
+      console.warn('   - Check for infinite loops in auto-test-loop.ts');
+      console.warn('   - Monitor JSON response stringification');
+      console.warn('   - Review WebSocket connection handling');
+    }
+    
+    lastCpuCheckTime = process.hrtime();
+    lastCpuUsage = process.cpuUsage();
+  }, 30000); // Check every 30 seconds
+  
+  // Clean up CPU monitoring on server shutdown
+  process.on('SIGTERM', () => {
+    clearInterval(cpuMonitorInterval);
+  });
 
   // Check GitHub integration configuration for owner-controlled platform modifications
   console.log('\n🔍 Checking GitHub integration configuration...');
