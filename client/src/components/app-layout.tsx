@@ -168,6 +168,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         <div className="h-20 border-b flex items-center px-4 gap-4">
           <LomuFullLogo iconSize={32} textHeight={28} />
           {/* Brigido was here */}
+          {/* Brigido was here */}
         </div>
 
         {/* Navigation - Scrollable */}
