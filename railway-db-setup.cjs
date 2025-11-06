@@ -157,6 +157,12 @@ const path = require('path'); // Import the path module
         ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;
       `);
       
+      // Add default_payment_method_id column if it doesn't exist
+      await pool.query(`
+        ALTER TABLE users 
+        ADD COLUMN IF NOT EXISTS default_payment_method_id VARCHAR;
+      `);
+      
       console.log('✅ Missing user columns added successfully');
     } catch (err) {
       console.log(`   ⚠️  User column addition warning: ${err.message}`);
