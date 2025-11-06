@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db';
-import { chatMessages } from '@shared/schema';
+import { chatMessages, architectConsultations, insertArchitectConsultationSchema } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth';
 import Anthropic from '@anthropic-ai/sdk';
@@ -252,21 +252,30 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         },
       },
       {
-        name: 'architect_consult',
-        description: 'OPTIONAL: Request expert consultation from I AM Architect (premium paid feature). Use ONLY if user explicitly requests architectural review or for critical platform decisions. You work autonomously for normal tasks.',
+        name: 'consult_architect',
+        description: 'Consult I AM Architect for high-level guidance on complex architectural decisions, after documenting at least one failed approach. Use sparingly - only when truly stuck or facing platform-wide architectural risk. Requires rationale.',
         input_schema: {
           type: 'object' as const,
           properties: {
-            problem: { type: 'string' as const, description: 'The problem you are trying to solve' },
-            context: { type: 'string' as const, description: 'Relevant context about the platform state' },
-            proposedSolution: { type: 'string' as const, description: 'Your proposed fix or changes' },
-            affectedFiles: { 
+            question: { 
+              type: 'string' as const, 
+              description: 'Specific architectural question or problem statement' 
+            },
+            context: { 
+              type: 'string' as const, 
+              description: 'Detailed context including failed approaches, constraints, and scope' 
+            },
+            relevant_files: { 
               type: 'array' as const, 
               items: { type: 'string' as const },
-              description: 'List of files that will be modified' 
+              description: 'File paths relevant to the question' 
+            },
+            rationale: { 
+              type: 'string' as const, 
+              description: "Why I AM Architect guidance is needed (e.g., 'Tried X and Y, both failed because...')" 
             },
           },
-          required: ['problem', 'context', 'proposedSolution', 'affectedFiles'],
+          required: ['question', 'context', 'rationale'],
         },
       },
       {
@@ -564,42 +573,67 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               sendEvent('progress', { message: `📂 Looking around ${typedInput.directory}...` });
               const files = await platformHealing.listPlatformFiles(typedInput.directory);
               toolResult = files.join('\n');
-            } else if (name === 'architect_consult') {
+            } else if (name === 'consult_architect') {
               const typedInput = input as { 
-                problem: string; 
+                question: string; 
                 context: string; 
-                proposedSolution: string;
-                affectedFiles: string[];
+                relevant_files?: string[];
+                rationale: string;
               };
               sendEvent('progress', { message: PROGRESS_MESSAGES.consultingArchitect() });
               
+              const startTime = Date.now();
+              
+              // Call I AM Architect with mapped parameters
               const architectResult = await consultArchitect({
-                problem: typedInput.problem,
+                problem: typedInput.question,
                 context: typedInput.context,
-                previousAttempts: [],
-                codeSnapshot: `Proposed Solution:\n${typedInput.proposedSolution}\n\nAffected Files:\n${typedInput.affectedFiles.join('\n')}`
+                previousAttempts: [typedInput.rationale], // Rationale explains what failed
+                codeSnapshot: typedInput.relevant_files ? 
+                  `Relevant Files:\n${typedInput.relevant_files.join('\n')}` : undefined
               });
               
+              const responseTime = Date.now() - startTime;
               const timestamp = Date.now();
               
+              // Store consultation telemetry in database
+              try {
+                await db.insert(architectConsultations).values({
+                  userId,
+                  question: typedInput.question,
+                  context: typedInput.context,
+                  relevantFiles: typedInput.relevant_files || [],
+                  rationale: typedInput.rationale,
+                  guidance: architectResult.guidance,
+                  recommendations: architectResult.recommendations || [],
+                  riskAssessment: null, // Not provided by current implementation
+                  alternativeApproach: architectResult.alternativeApproach,
+                  tokensUsed: 0, // TODO: Track tokens from Anthropic API response
+                  responseTime,
+                  filesInspected: architectResult.filesInspected || [],
+                  sessionId: null, // TODO: Track session if available
+                  chatMessageId: userMsg.id,
+                  status: architectResult.success ? 'completed' : 'failed',
+                  error: architectResult.error,
+                  completedAt: new Date(),
+                });
+                console.log(`[ARCHITECT-CONSULT] Telemetry saved for user ${userId}`);
+              } catch (dbError: any) {
+                console.error('[ARCHITECT-CONSULT] Failed to save telemetry:', dbError);
+                // Don't fail the consultation if telemetry fails
+              }
+              
               if (architectResult.success) {
-                // Store per-file approval (normalized paths) - DON'T overwrite existing approvals
-                const normalizedFiles = typedInput.affectedFiles.map(normalizePath);
-                normalizedFiles.forEach(filePath => {
-                  approvedFiles.set(filePath, { approved: true, timestamp });
-                });
-                
                 sendEvent('progress', { message: PROGRESS_MESSAGES.architectApproved() });
-                toolResult = `✅ Great news! I AM approved my approach.\n\n${architectResult.guidance}\n\nThey also suggested:\n${architectResult.recommendations.join('\n')}\n\nI can now modify these files:\n${normalizedFiles.map(f => `- ${f}`).join('\n')}\n\nLet me get to work!`;
+                toolResult = `✅ I AM Architect provided guidance:\n\n${architectResult.guidance}\n\n` +
+                  `${architectResult.recommendations.length > 0 ? `**Recommendations:**\n${architectResult.recommendations.map(r => `- ${r}`).join('\n')}\n\n` : ''}` +
+                  `${architectResult.alternativeApproach ? `**Alternative Approach:**\n${architectResult.alternativeApproach}\n\n` : ''}` +
+                  `${architectResult.filesInspected.length > 0 ? `**Files I AM Inspected:**\n${architectResult.filesInspected.map(f => `- ${f}`).join('\n')}\n\n` : ''}` +
+                  `I'll implement these recommendations now.`;
               } else {
-                // Mark these files as rejected - DON'T overwrite existing approvals
-                const normalizedFiles = typedInput.affectedFiles.map(normalizePath);
-                normalizedFiles.forEach(filePath => {
-                  approvedFiles.set(filePath, { approved: false, timestamp });
-                });
-                
-                sendEvent('error', { message: `I AM had concerns about my approach` });
-                toolResult = ERROR_MESSAGES.architectRejection(architectResult.error || 'Unknown issue') + `\n\nAffected files:\n${normalizedFiles.map(f => `- ${f}`).join('\n')}\n\nNo worries! I'll rethink this and come up with a better solution.`;
+                sendEvent('error', { message: `I AM consultation failed` });
+                toolResult = ERROR_MESSAGES.architectRejection(architectResult.error || 'Unknown issue') + 
+                  `\n\nI'll try a different approach based on what I learned.`;
               }
             } else if (name === 'web_search') {
               const typedInput = input as { query: string; maxResults?: number };

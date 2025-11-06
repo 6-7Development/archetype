@@ -632,6 +632,54 @@ export const insertLomuSessionSchema = createInsertSchema(lomuSessions).omit({
 export type InsertLomuSession = z.infer<typeof insertLomuSessionSchema>;
 export type LomuSession = typeof lomuSessions.$inferSelect;
 
+// Architect Consultations - Track LomuAI → I AM Architect consultations (premium paid feature)
+export const architectConsultations = pgTable('architect_consultations', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar('user_id').notNull(), // User who triggered the consultation (for billing)
+  
+  // Consultation input from LomuAI
+  question: text('question').notNull(), // Specific architectural question
+  context: text('context').notNull(), // Detailed context including failed approaches
+  relevantFiles: text('relevant_files').array().default(sql`ARRAY[]::text[]`), // File paths relevant to question
+  rationale: text('rationale').notNull(), // Why LomuAI needed guidance
+  
+  // I AM Architect's response
+  guidance: text('guidance'), // Strategic guidance provided
+  recommendations: jsonb('recommendations').$type<string[]>().default(sql`'[]'::jsonb`), // Actionable recommendations
+  riskAssessment: text('risk_assessment'), // Risk analysis
+  alternativeApproach: text('alternative_approach'), // Alternative solution if primary approach risky
+  
+  // Telemetry & billing
+  tokensUsed: integer('tokens_used').notNull().default(0), // AI tokens consumed
+  responseTime: integer('response_time'), // Response time in milliseconds
+  filesInspected: text('files_inspected').array().default(sql`ARRAY[]::text[]`), // Files I AM read during analysis
+  
+  // Session tracking
+  sessionId: varchar('session_id'), // Link to LomuAI session
+  chatMessageId: varchar('chat_message_id'), // Link to chat message that triggered consultation
+  
+  // Status
+  status: varchar('status', { length: 20 }).notNull().default('pending'), // 'pending' | 'completed' | 'failed'
+  error: text('error'), // Error message if consultation failed
+  
+  // Timestamps
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  completedAt: timestamp('completed_at'),
+}, (table) => [
+  index('idx_architect_consultations_user_id').on(table.userId),
+  index('idx_architect_consultations_session_id').on(table.sessionId),
+  index('idx_architect_consultations_created_at').on(table.createdAt),
+]);
+
+export const insertArchitectConsultationSchema = createInsertSchema(architectConsultations).omit({
+  id: true,
+  createdAt: true,
+  completedAt: true,
+});
+
+export type InsertArchitectConsultation = z.infer<typeof insertArchitectConsultationSchema>;
+export type ArchitectConsultation = typeof architectConsultations.$inferSelect;
+
 // LomuAI Background Jobs - Long-running jobs with resumption capability
 export const lomuJobs = pgTable('lomu_jobs', {
   id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),

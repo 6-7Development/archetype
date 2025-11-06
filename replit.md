@@ -58,6 +58,15 @@ LomuAI supports parallel subagent orchestration, allowing multiple tasks to exec
 - **AI Architecture**: LomuAI v2.0 follows a strict 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT) with programmatic enforcement. It includes real-time streaming, usage-based billing, self-testing (Playwright), web search (Tavily API), vision analysis (Claude Vision), and an automatic reflection/self-correction loop.
 - **Autonomous AI System (LomuAI v2.0)**: LomuAI is the PRIMARY autonomous worker that diagnoses issues, implements fixes, and automatically commits changes to GitHub, triggering auto-deployment. Works independently without requiring architect approval.
 - **I AM Architect Role**: Optional expert consultant (premium paid feature) that users can explicitly summon for complex architectural decisions. NEVER auto-triggered - user-summoned only. Provides guidance but does not commit code.
+- **LomuAI ↔ I AM Architect Relationship**:
+  - **LomuAI**: Primary autonomous worker, commits code, handles all standard development tasks
+  - **I AM Architect**: Senior overseer, provides strategic guidance when LomuAI consults (premium paid feature)
+  - **Consultation Pattern**: LomuAI decides when to ask (after failed attempts or architectural risk), not automatic
+  - **I AM Deliverables**: Structured guidance with Analysis, Recommendations, Risk Assessment, Acceptance Criteria, and Testing Strategy
+  - **Implementation**: LomuAI implements I AM's recommendations; I AM provides strategy only
+  - **Telemetry**: All consultations logged to `architect_consultations` table with timestamp, question, rationale, guidance, tokens used, and billed to user
+  - **Tool**: `consult_architect` tool available to LomuAI with required fields: question, context, rationale, optional relevant_files
+  - **Rate Limiting**: Soft limit to prevent overuse of premium feature
 - **Developer Tools**: LomuAI includes 56 tools covering core operations, deployment, secrets management, database, design, integrations, and file operations, all with security sandboxing and WebSocket event streaming.
 - **Platform Healing System**: A self-healing infrastructure with **2-tier intelligent routing** for incident resolution: TIER 1 (Knowledge Base) → TIER 2 (LomuAI v2.0). I AM Architect removed from auto-routing - user can manually request architect consultation if needed.
 - **LomuAI v2.0 Workflow Enforcement**: Dual-layer enforcement via enhanced system prompts and a WorkflowValidator State Machine.
