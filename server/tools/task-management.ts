@@ -2,6 +2,35 @@ import { db } from '../db';
 import { taskLists, tasks, insertTaskListSchema, insertTaskSchema } from '@shared/schema';
 import { eq, and } from 'drizzle-orm';
 
+// Import WebSocket for broadcasting task updates
+let wss: any = null;
+export function setWebSocketServer(websocketServer: any) {
+  wss = websocketServer;
+}
+
+/**
+ * Broadcast task updates to the user via WebSocket
+ * Matches the same format as lomu_ai_job_update for consistency
+ */
+function broadcastTaskUpdate(userId: string, updateType: string, data: any) {
+  if (!wss) {
+    console.warn('[TASK-MGMT] WebSocket not initialized, skipping broadcast');
+    return;
+  }
+
+  wss.clients.forEach((client: any) => {
+    if (client.readyState === 1 && client.userId === userId) {
+      client.send(JSON.stringify({
+        type: 'lomu_ai_job_update',  // Match the existing event type
+        updateType,  // This will be 'task_list_created' or 'task_updated'
+        ...data,
+      }));
+    }
+  });
+  
+  console.log(`[TASK-MGMT] 📡 Broadcast ${updateType} to user ${userId}`);
+}
+
 /**
  * Create Task List Tool
  * Breaks down complex user requests into manageable tasks
@@ -86,6 +115,14 @@ export async function createTaskList(params: {
         status: t.status
       })));
     }
+
+    // 📡 Broadcast task list creation to user's UI
+    broadcastTaskUpdate(params.userId, 'task_list_created', {
+      taskListId: taskList.id,
+      title: taskList.title,
+      tasks: createdTasks,
+      chatMessageId: params.chatMessageId,
+    });
 
     return {
       success: true,
@@ -198,10 +235,21 @@ export async function updateTask(params: {
     if (params.completedAt) updateData.completedAt = params.completedAt;
 
     // Update with explicit WHERE clause including ownership check
-    await db
+    const [updatedTask] = await db
       .update(tasks)
       .set(updateData)
-      .where(and(eq(tasks.id, params.taskId), eq(tasks.taskListId, taskList.id)));
+      .where(and(eq(tasks.id, params.taskId), eq(tasks.taskListId, taskList.id)))
+      .returning();
+
+    // 📡 Broadcast task update to user's UI
+    broadcastTaskUpdate(params.userId, 'task_updated', {
+      taskId: updatedTask.id,
+      taskListId: updatedTask.taskListId,
+      title: updatedTask.title,
+      status: updatedTask.status,
+      result: params.result,
+      error: params.error,
+    });
 
     return { success: true };
   } catch (error: any) {

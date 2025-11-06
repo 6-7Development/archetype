@@ -38,7 +38,18 @@
      - ✅ When a problem seems more complex than expected
    - **Files:** `server/lomuSuperCore.ts` (both LomuAI and I AM prompts)
 
-**Result:** Task lists work, commits auto-trigger, LomuAI/I AM share knowledge via notepad, proactive consultation! 🎉
+6. **Task Progression Not Visible to Users (NEW FIX)**
+   - **Problem:** Tasks created/updated but NOT broadcast via WebSocket → UI only showed spinner
+   - **Impact:** Users couldn't see LomuAI working → frustrating "black box" experience
+   - **Root Cause:** `task-management.ts` created tasks but didn't broadcast events to frontend
+   - **Solution:** Added WebSocket broadcasting to `createTaskList()` and `updateTask()`:
+     - ✅ Broadcasts `task_list_created` event when tasks created
+     - ✅ Broadcasts `task_updated` event when task status changes
+     - ✅ Initialized WebSocket server in task management module
+     - ✅ Frontend already listening for these events (lines 652, 681 in lomu-chat.tsx)
+   - **Files:** `server/tools/task-management.ts`, `server/routes.ts`
+
+**Result:** Task lists work, commits auto-trigger, LomuAI/I AM share knowledge via notepad, proactive consultation, AND users can now SEE task progression in real-time! 🎉
 
 ## Overview
 Lomu is an AI-powered platform for rapid web development. It features LomuAI, an AI coding agent for autonomous code generation, and dual-version IDE Workspaces (Lomu for desktop, Lomu5 for mobile). Key capabilities include a console-first interface, real-time preview, and comprehensive workspace features. The platform aims for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. A core capability is LomuAI's autonomous self-healing, bug fixing, and UI/UX improvements to its own source code, complete with rollback and audit logging.

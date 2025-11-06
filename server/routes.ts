@@ -164,6 +164,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   platformHealing.setWebSocketServer(wss);
   console.log('[PLATFORM-HEALING] Platform healing service connected to WebSocket');
   
+  // Wire WebSocket server to task management for task update broadcasts
+  const { setWebSocketServer: setTaskManagementWebSocketServer } = await import('./tools/task-management');
+  setTaskManagementWebSocketServer(wss);
+  console.log('[TASK-MGMT] Task management connected to WebSocket');
+  
   // Initialize platform metrics broadcaster
   const { PlatformMetricsBroadcaster } = await import('./services/platformMetricsBroadcaster');
   const metricsBroadcaster = new PlatformMetricsBroadcaster(wss);
