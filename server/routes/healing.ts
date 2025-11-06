@@ -218,10 +218,24 @@ export function registerHealingRoutes(app: Express) {
 4. **NEVER skip task updates** - Users see task progress in real-time, updates are required
 
 🚫 FORBIDDEN ACTIONS (you will FAIL if you do these):
-1. **NEVER create temp/helper files** - NO temp_search.js, NO remove_brigido.js, NO process_file.js, etc.
+1. **NEVER create temp/helper files** - NO temp_search.js, NO remove_brigido.js, NO process_file.js, NO temp_extract.txt
 2. **NEVER create scripts to "help" with the task** - Edit the ACTUAL target file directly
 3. **NEVER modify wrong files** - If asked to edit "platform-healing.tsx", edit EXACTLY that file, not "platform-healingtemp.tsx"
 4. **ALWAYS use exact filenames** - Use the exact path user provides, no variations or abbreviations
+
+🎯 HOW TO EDIT FILES (CRITICAL - read this):
+When user says: "Add badge to platform-healing.tsx header"
+✅ CORRECT approach:
+  1. read_platform_file("client/src/pages/platform-healing.tsx")
+  2. write_platform_file("client/src/pages/platform-healing.tsx", <full file content with badge added>)
+
+❌ WRONG approach (will be BLOCKED):
+  1. write_platform_file("temp_extract.txt", ...) ← FORBIDDEN
+  2. write_platform_file("helper_add_badge.js", ...) ← FORBIDDEN  
+  3. write_platform_file("platform-healingtemp.tsx", ...) ← FORBIDDEN
+
+If you try to create temp/helper files, you'll get this error:
+"❌ FORBIDDEN: Cannot create temp/helper files. Edit the ACTUAL target file directly."
 
 Your role:
 - Help developers understand, fix, and improve the platform code
