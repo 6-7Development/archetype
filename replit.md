@@ -92,6 +92,19 @@ LomuAI supports parallel subagent orchestration, allowing multiple tasks to exec
 - **Support Ticketing**: Complete system with subject, description, priority, status, and plan-based SLA.
 - **AI Request Management**: Priority processing queue with concurrent limits, real-time cost preview, usage dashboard, token-based pricing, and parallel subagent execution.
 - **Advanced AI Development Features**: Includes Sub-Agent/Task Runner System, Message Queue, Autonomy Controls, AI Image Generation, Dynamic Intelligence, Plan Mode, Design Mode, Workflows, Agents & Automations, and a General Agent Mode.
+- **Credit-Based Billing System**: Production-ready monetization with usage-based credits (implemented Nov 6, 2025):
+  - **Credit Economics**: 1 credit = 1,000 tokens = $0.05 (72% margin covers API costs + infrastructure)
+  - **Credit Packages**: 5K ($2.50), 25K ($11.25), 100K ($40), 500K ($187.50)
+  - **Enforcement**: Card-on-file required for agent usage (402 response if missing), middleware validates payment before agent starts
+  - **Atomic Operations**: Reserve/reconcile credits with SQL guards prevent race conditions and credit leaks
+  - **Pause/Resume Flow**: Agents pause mid-stream when credits depleted, save full context (messages, tasks, files) to database, auto or manual resume after credit purchase
+  - **Owner Privileges**: Platform owner gets FREE I AM Architect for platform healing and owner projects (creditsReserved = 0), usage logged with owner_exempt metadata
+  - **AI Model Selection**: Users choose between Claude Sonnet 4 ($3.00/$15.00 per 1M tokens) and Gemini 2.5 Flash (cheaper alternative when available)
+  - **Frontend Components**: Global credit balance widget in header (all pages), credit purchase modal with Stripe integration, agent paused banner with resume button
+  - **Backend Services**: CreditManager (reserve/reconcile/add/balance), AgentExecutor (startRun/pauseRun/resumeRun/completeRun), credit purchase API
+  - **Database Schema**: creditWallets (availableCredits, reservedCredits), creditLedger (immutable transaction log), agentRuns (pause/resume state with context JSONB)
+  - **Error Recovery**: Credits properly reconciled even on agent crashes or errors (catch/finally blocks in streaming loop)
+  - **Real-Time Updates**: Credit balance refreshes every 10 seconds, low credit warnings (< 1000 credits), SSE events for pause notifications
 
 ### System Design Choices
 - **Database Architecture**: Comprehensive PostgreSQL schema with Drizzle ORM.

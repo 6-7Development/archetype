@@ -31,6 +31,7 @@ import { queryClient } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 import type { User } from "@shared/schema";
 import { LomuFullLogo } from '@/components/lomu-logos-new';
+import { CreditBalanceWidget } from "@/components/credit-balance-widget";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -391,7 +392,25 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       {/* Main Content - Full width on mobile, with margin on desktop */}
       <main className="flex-1 flex flex-col overflow-hidden w-full lg:w-auto">
-        {children}
+        {/* Header Bar - Global across all pages */}
+        <header className="h-16 border-b bg-card/30 backdrop-blur-sm flex items-center justify-between px-4 gap-4">
+          <div className="flex items-center gap-4">
+            {/* Page title or breadcrumb can go here */}
+            <h1 className="text-lg font-semibold truncate" data-testid="page-title">
+              {/* Dynamic based on location */}
+            </h1>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            {isAuthenticated && <CreditBalanceWidget />}
+            <ThemeToggle />
+          </div>
+        </header>
+        
+        {/* Page Content */}
+        <div className="flex-1 overflow-auto">
+          {children}
+        </div>
       </main>
     </div>
   );

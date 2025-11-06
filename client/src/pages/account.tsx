@@ -6,7 +6,6 @@ import { User, CreditCard, BarChart3, Settings, Sparkles, FileText, ExternalLink
 import { useQuery } from "@tanstack/react-query";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlanUpgradeDialog } from "@/components/plan-upgrade-dialog";
 
 interface UsageStats {
   subscription: {
@@ -97,11 +96,9 @@ export default function Account() {
                   <p className="text-2xl font-bold" data-testid="text-plan-price">
                     ${planInfo?.price || 0}/mo
                   </p>
-                  <PlanUpgradeDialog currentPlan={stats?.plan || "free"}>
-                    <Button size="sm" className="w-full mt-2" data-testid="button-upgrade-plan">
-                      Upgrade Plan
-                    </Button>
-                  </PlanUpgradeDialog>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Purchase credits using the Top Up button in the header
+                  </p>
                 </div>
               )}
             </CardContent>
