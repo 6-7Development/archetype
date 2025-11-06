@@ -162,6 +162,51 @@ const path = require('path'); // Import the path module
       console.log(`   ⚠️  User column addition warning: ${err.message}`);
     }
 
+    // STEP 6: Create platform owner account
+    console.log('📋 Step 6: Creating platform owner account...');
+    
+    try {
+      const bcrypt = require('bcrypt');
+      const ROOT_EMAIL = 'root@getdc360.com';
+      const ROOT_PASSWORD = 'admin123@*';
+      const SALT_ROUNDS = 12;
+      
+      // Hash password
+      const hashedPassword = await bcrypt.hash(ROOT_PASSWORD, SALT_ROUNDS);
+      
+      // Check if root account exists
+      const existing = await pool.query(
+        'SELECT id, email, is_owner FROM users WHERE email = $1',
+        [ROOT_EMAIL]
+      );
+      
+      if (existing.rows.length > 0) {
+        // Update existing account
+        await pool.query(`
+          UPDATE users 
+          SET password = $1, role = 'admin', is_owner = true, updated_at = NOW()
+          WHERE email = $2
+        `, [hashedPassword, ROOT_EMAIL]);
+        
+        console.log('   ✅ Root owner account updated');
+      } else {
+        // Create new account
+        await pool.query(`
+          INSERT INTO users (email, password, first_name, last_name, role, is_owner, created_at, updated_at)
+          VALUES ($1, $2, 'Root', 'Admin', 'admin', true, NOW(), NOW())
+        `, [ROOT_EMAIL, hashedPassword]);
+        
+        console.log('   ✅ Root owner account created');
+      }
+      
+      console.log(`   📧 Email: ${ROOT_EMAIL}`);
+      console.log('   🔑 Password: admin123@*');
+      console.log('✅ Platform owner ready!');
+      
+    } catch (err) {
+      console.log(`   ⚠️  Owner account warning: ${err.message}`);
+    }
+
     await pool.end();
     process.exit(0);
 
