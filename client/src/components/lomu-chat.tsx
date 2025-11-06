@@ -634,6 +634,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                     console.log('[LOMU-AI] User message saved:', data.messageId);
                     // Store message ID for task persistence
                     setCurrentChatMessageId(data.messageId);
+                    localStorage.setItem('lomu-current-message-id', data.messageId);
                     break;
 
                   case 'content':
@@ -814,6 +815,25 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
   // This ensures AI gets fresh context without confusion from old conversations
   useEffect(() => {
     setMessages([DEFAULT_GREETING]);
+    
+    // Restore the last chat message ID from localStorage for task persistence
+    const savedMessageId = localStorage.getItem('lomu-current-message-id');
+    if (savedMessageId) {
+      setCurrentChatMessageId(savedMessageId);
+      console.log('[LOMU-AI] Restored message ID from localStorage:', savedMessageId);
+      
+      // Try to load tasks for this message
+      const savedTasks = localStorage.getItem(`tasks-${savedMessageId}`);
+      if (savedTasks) {
+        try {
+          const parsedTasks = JSON.parse(savedTasks);
+          setTasks(parsedTasks);
+          console.log('[LOMU-AI] Restored', parsedTasks.length, 'tasks from localStorage');
+        } catch (err) {
+          console.error('[LOMU-AI] Failed to parse saved tasks:', err);
+        }
+      }
+    }
   }, []); // Only run once on mount
 
   const handleSend = () => {
