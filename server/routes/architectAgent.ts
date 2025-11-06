@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { platformHealing } from '../platformHealing.ts';
-import { knowledge_search, code_search } from '../tools/knowledge.ts';
+import { knowledge_search, knowledge_store, knowledge_recall, code_search } from '../tools/knowledge.ts';
 import { buildArchitectSystemPrompt } from '../lomuSuperCore.ts';
 import { RAILWAY_CONFIG } from '../config/railway.ts';
 
@@ -68,8 +68,8 @@ const ARCHITECT_TOOLS: Anthropic.Tool[] = [
     }
   },
   {
-    name: "knowledge_query",
-    description: "Query the knowledge base for historical information, bug fixes, and architectural decisions. Use this to understand past issues, successful solutions, and accumulated wisdom.",
+    name: "knowledge_search",
+    description: "Search the knowledge base for historical information, bug fixes, and architectural decisions. Use this to understand past issues, successful solutions, and accumulated wisdom.",
     input_schema: {
       type: "object",
       properties: {
@@ -92,6 +92,67 @@ const ARCHITECT_TOOLS: Anthropic.Tool[] = [
         }
       },
       required: ["query"]
+    }
+  },
+  {
+    name: "knowledge_store",
+    description: "Store knowledge for future recall by any AI agent (LomuAI and I AM Architect share this notepad). Save learnings, patterns, solutions, and insights that could be valuable for future tasks.",
+    input_schema: {
+      type: "object",
+      properties: {
+        category: {
+          type: "string",
+          description: "Knowledge category (e.g., 'bug-fixes', 'architecture', 'best-practices', 'user-preferences')"
+        },
+        topic: {
+          type: "string",
+          description: "Specific topic (e.g., 'authentication-patterns', 'deployment-steps', 'common-errors')"
+        },
+        content: {
+          type: "string",
+          description: "The knowledge content to store"
+        },
+        tags: {
+          type: "array",
+          items: { type: "string" },
+          description: "Tags for easier searching (e.g., ['react', 'typescript', 'error-handling'])"
+        },
+        source: {
+          type: "string",
+          description: "Source of knowledge (default: 'i-am-architect')"
+        },
+        confidence: {
+          type: "number",
+          description: "Confidence score 0-1 (default: 0.9 for I AM)"
+        }
+      },
+      required: ["category", "topic", "content"]
+    }
+  },
+  {
+    name: "knowledge_recall",
+    description: "Retrieve specific knowledge entries by category, topic, or ID. Use when you know what information you're looking for.",
+    input_schema: {
+      type: "object",
+      properties: {
+        category: {
+          type: "string",
+          description: "Filter by category"
+        },
+        topic: {
+          type: "string",
+          description: "Filter by topic (partial match)"
+        },
+        id: {
+          type: "string",
+          description: "Retrieve specific entry by ID"
+        },
+        limit: {
+          type: "number",
+          description: "Maximum number of results (default: 20)"
+        }
+      },
+      required: []
     }
   },
   {
@@ -235,7 +296,7 @@ async function executeArchitectTool(toolName: string, toolInput: any): Promise<s
           ).join('\n---\n\n');
       }
       
-      case "knowledge_query": {
+      case "knowledge_search": {
         const results = await knowledge_search({
           query: toolInput.query,
           category: toolInput.category,
@@ -254,6 +315,39 @@ async function executeArchitectTool(toolName: string, toolInput: any): Promise<s
             `   Tags: ${entry.tags.join(', ')}\n` +
             `   Source: ${entry.source} (confidence: ${entry.confidence})\n` +
             `   Date: ${new Date(entry.timestamp).toLocaleDateString()}\n`
+          ).join('\n---\n\n');
+      }
+      
+      case "knowledge_store": {
+        const result = await knowledge_store({
+          category: toolInput.category,
+          topic: toolInput.topic,
+          content: toolInput.content,
+          tags: toolInput.tags,
+          source: toolInput.source || 'i-am-architect',
+          confidence: toolInput.confidence || 0.9
+        });
+        return result;
+      }
+      
+      case "knowledge_recall": {
+        const results = await knowledge_recall({
+          category: toolInput.category,
+          topic: toolInput.topic,
+          id: toolInput.id,
+          limit: toolInput.limit || 20
+        });
+        
+        if (results.length === 0) {
+          return "No knowledge entries found.";
+        }
+        
+        return `Found ${results.length} knowledge entry(s):\n\n` + 
+          results.map((entry, i) => 
+            `${i + 1}. [${entry.category}] ${entry.topic}\n` +
+            `   Content: ${entry.content}\n` +
+            `   Tags: ${entry.tags.join(', ')}\n` +
+            `   ID: ${entry.id}`
           ).join('\n---\n\n');
       }
       

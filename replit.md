@@ -2,8 +2,8 @@
 
 ## Recent Changes
 
-### Critical Task Management Fixes (Nov 6, 2025)
-**TRIPLE BUG FIX - Task System Now Functional:**
+### Critical Task Management & Knowledge Sharing Fixes (Nov 6, 2025)
+**5-BUG FIX - Complete LomuAI/I AM Integration:**
 
 1. **Task ID Format Mismatch (CRITICAL)**
    - **Problem:** AI tried `update_task("1")` but tasks use UUIDs like `"abc123-456-def"`
@@ -22,7 +22,23 @@
    - **Solution:** Unified iteration limits via `chatConfig.ts` (FIX: 30, BUILD: 35)
    - **Impact:** Complex tasks can now complete without hitting artificial limits
 
-**Result:** Task lists work, commits trigger automatically, Railway deploys on commit! 🎉
+4. **I AM Architect Missing Knowledge Tools (NEW FIX)**
+   - **Problem:** I AM had `knowledge_query` but NOT `knowledge_store`/`knowledge_recall`
+   - **Impact:** I AM could READ shared notes but couldn't WRITE → one-way communication
+   - **Solution:** Added all 3 knowledge tools to I AM Architect (`knowledge_search`, `knowledge_store`, `knowledge_recall`)
+   - **Files:** `server/routes/architectAgent.ts`, `server/lomuSuperCore.ts`
+
+5. **LomuAI Not Calling I AM Proactively (NEW FIX)**
+   - **Problem:** LomuAI only called I AM after 3 failures (too late!)
+   - **Impact:** Missed opportunities for early guidance, wasted tokens on failed attempts
+   - **Solution:** Updated system prompts to emphasize WHEN to call `architect_consult`:
+     - ✅ After completing substantial changes (code review)
+     - ✅ Before committing significant changes
+     - ✅ When encountering TypeScript/database errors
+     - ✅ When a problem seems more complex than expected
+   - **Files:** `server/lomuSuperCore.ts` (both LomuAI and I AM prompts)
+
+**Result:** Task lists work, commits auto-trigger, LomuAI/I AM share knowledge via notepad, proactive consultation! 🎉
 
 ## Overview
 Lomu is an AI-powered platform for rapid web development. It features LomuAI, an AI coding agent for autonomous code generation, and dual-version IDE Workspaces (Lomu for desktop, Lomu5 for mobile). Key capabilities include a console-first interface, real-time preview, and comprehensive workspace features. The platform aims for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. A core capability is LomuAI's autonomous self-healing, bug fixing, and UI/UX improvements to its own source code, complete with rollback and audit logging.
