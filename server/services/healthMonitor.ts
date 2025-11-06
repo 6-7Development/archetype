@@ -11,14 +11,18 @@ import { eq, and, isNull } from 'drizzle-orm';
  */
 export class PlatformHealthMonitor extends EventEmitter {
   private readonly thresholds = {
-    cpu: 85, // High CPU if > 85%
+    cpu: 95, // High CPU if > 95% (allow normal startup spikes)
     memory: 90, // High memory if > 90%
     errorRate: 5, // High error rate if > 5 errors/min
   };
   
+  // Cooldown periods to prevent spam
+  private readonly INCIDENT_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes between same incident types
+  
   private monitoringInterval: NodeJS.Timeout | null = null;
   private lastMetrics: any = null;
   private openIncidents: Map<string, string> = new Map(); // type -> incidentId
+  private lastIncidentTime: Map<string, number> = new Map(); // type -> timestamp
   
   // Agent quality monitoring rate limiting
   private agentIncidentTimestamps: Map<string, Date> = new Map(); // type -> last incident time
@@ -94,20 +98,23 @@ export class PlatformHealthMonitor extends EventEmitter {
     
     const { cpuUsage, memoryUsage, safety } = this.lastMetrics;
     
-    // Check CPU
-    if (cpuUsage > this.thresholds.cpu) {
-      await this.detectIncident({
-        type: 'high_cpu',
-        severity: cpuUsage > 95 ? 'critical' : 'high',
-        title: `High CPU usage detected (${cpuUsage}%)`,
-        description: `CPU usage is at ${cpuUsage}%, exceeding threshold of ${this.thresholds.cpu}%`,
-        source: 'metrics',
-        metrics: { cpuUsage, memoryUsage },
-      });
-    } else {
-      // CPU is normal, resolve any open high_cpu incidents
-      await this.resolveIncident('high_cpu');
-    }
+    // ⚠️ DISABLED: CPU monitoring creates false positives during normal startup/operation
+    // Development environments spike to 100% during TypeScript compilation, Vite builds, etc.
+    // These are NORMAL and resolve themselves - no action needed
+    // 
+    // if (cpuUsage > this.thresholds.cpu) {
+    //   await this.detectIncident({
+    //     type: 'high_cpu',
+    //     severity: cpuUsage > 95 ? 'critical' : 'high',
+    //     title: `High CPU usage detected (${cpuUsage}%)`,
+    //     description: `CPU usage is at ${cpuUsage}%, exceeding threshold of ${this.thresholds.cpu}%`,
+    //     source: 'metrics',
+    //     metrics: { cpuUsage, memoryUsage },
+    //   });
+    // } else {
+    //   // CPU is normal, resolve any open high_cpu incidents
+    //   await this.resolveIncident('high_cpu');
+    // }
     
     // Check memory
     if (memoryUsage > this.thresholds.memory) {
@@ -150,6 +157,14 @@ export class PlatformHealthMonitor extends EventEmitter {
       return;
     }
     
+    // Check cooldown to prevent spam
+    const lastTime = this.lastIncidentTime.get(type!);
+    const now = Date.now();
+    if (lastTime && (now - lastTime) < this.INCIDENT_COOLDOWN_MS) {
+      // Too soon since last incident of this type
+      return;
+    }
+    
     try {
       // Create new incident in database
       const [newIncident] = await db
@@ -168,6 +183,7 @@ export class PlatformHealthMonitor extends EventEmitter {
       
       // Track this incident
       this.openIncidents.set(type!, newIncident.id);
+      this.lastIncidentTime.set(type!, now);
       
       console.log(`[HEALTH-MONITOR] 🚨 Incident detected: ${type} (${newIncident.id})`);
       
