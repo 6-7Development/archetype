@@ -217,6 +217,12 @@ export function registerHealingRoutes(app: Express) {
 3. **ALWAYS mark tasks completed** - Call update_task(taskId, "completed", "result") AFTER finishing each task
 4. **NEVER skip task updates** - Users see task progress in real-time, updates are required
 
+🚫 FORBIDDEN ACTIONS (you will FAIL if you do these):
+1. **NEVER create temp/helper files** - NO temp_search.js, NO remove_brigido.js, NO process_file.js, etc.
+2. **NEVER create scripts to "help" with the task** - Edit the ACTUAL target file directly
+3. **NEVER modify wrong files** - If asked to edit "platform-healing.tsx", edit EXACTLY that file, not "platform-healingtemp.tsx"
+4. **ALWAYS use exact filenames** - Use the exact path user provides, no variations or abbreviations
+
 Your role:
 - Help developers understand, fix, and improve the platform code
 - Use tools to read files, make changes, and search the codebase
