@@ -2669,6 +2669,77 @@ export const insertProjectGitConfigSchema = createInsertSchema(projectGitConfig)
 export type InsertProjectGitConfig = z.infer<typeof insertProjectGitConfigSchema>;
 export type ProjectGitConfig = typeof projectGitConfig.$inferSelect;
 
+// File Index - AST-based code intelligence for smarter context retrieval
+export const fileIndex = pgTable("file_index", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id"), // null for platform files
+  filePath: text("file_path").notNull(),
+  language: varchar("language", { length: 50 }).notNull(), // 'typescript', 'javascript', 'python', etc.
+  
+  // AST parsing results
+  imports: jsonb("imports").$type<Array<{
+    path: string;
+    specifiers: string[];
+    line: number;
+  }>>().default(sql`'[]'::jsonb`),
+  
+  exports: jsonb("exports").$type<Array<{
+    name: string;
+    type: 'function' | 'class' | 'const' | 'type' | 'interface';
+    line: number;
+  }>>().default(sql`'[]'::jsonb`),
+  
+  functions: jsonb("functions").$type<Array<{
+    name: string;
+    params: string[];
+    startLine: number;
+    endLine: number;
+    async: boolean;
+  }>>().default(sql`'[]'::jsonb`),
+  
+  classes: jsonb("classes").$type<Array<{
+    name: string;
+    methods: string[];
+    startLine: number;
+    endLine: number;
+  }>>().default(sql`'[]'::jsonb`),
+  
+  types: jsonb("types").$type<Array<{
+    name: string;
+    kind: 'interface' | 'type' | 'enum';
+    line: number;
+  }>>().default(sql`'[]'::jsonb`),
+  
+  // Dependency graph
+  importedBy: jsonb("imported_by").$type<string[]>().default(sql`'[]'::jsonb`), // Files that import this file
+  dependencies: jsonb("dependencies").$type<string[]>().default(sql`'[]'::jsonb`), // Files this imports
+  
+  // Relevance scoring
+  complexity: integer("complexity").notNull().default(0), // Cyclomatic complexity
+  linesOfCode: integer("lines_of_code").notNull().default(0),
+  
+  // Change detection
+  contentHash: varchar("content_hash", { length: 64 }).notNull(), // SHA256 hash of file content
+  
+  // Timestamps
+  indexedAt: timestamp("indexed_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_file_index_project").on(table.projectId),
+  index("idx_file_index_path").on(table.filePath),
+  index("idx_file_index_language").on(table.language),
+  index("idx_file_index_hash").on(table.contentHash),
+]);
+
+export const insertFileIndexSchema = createInsertSchema(fileIndex).omit({
+  id: true,
+  indexedAt: true,
+  updatedAt: true,
+});
+
+export type InsertFileIndex = z.infer<typeof insertFileIndexSchema>;
+export type FileIndex = typeof fileIndex.$inferSelect;
+
 // Credit Math Constants - Pricing and conversion rates for credit-based billing
 export const CREDIT_CONSTANTS = {
   TOKENS_PER_CREDIT: 1000, // 1 credit = 1000 tokens

@@ -11,6 +11,9 @@ export { spawnSubAgent, checkSubAgentStatus } from './sub-agent';
 export { requestArchitectReview } from './architect-review';
 export { knowledge_search, knowledge_store, knowledge_recall, code_search } from './knowledge';
 
+// NEW: Smart Code Intelligence Tools - AST-based file analysis and context detection
+export { indexFile, smartReadFile, getRelatedFiles, extractFunction, getAutoContext, getFileSummary } from './smart-code-tools';
+
 // NEW TOOLS - Replit Agent Feature Parity (18 tools)
 // GROUP 1: Deployment & Rollback
 export { suggestDeploy, suggestRollback } from './deployment';
