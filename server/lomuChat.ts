@@ -359,6 +359,7 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
     // Track token usage across all iterations for billing
     let totalInputTokens = 0;
     let totalOutputTokens = 0;
+    let totalCreditsUsed = 0; // CRITICAL FIX: Track actual credits consumed for billing
     
     // Track architect approval for enforcement (per-file approval map)
     const approvedFiles = new Map<string, { approved: boolean; timestamp: number }>();
@@ -494,6 +495,66 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
             });
           }
         }
+      }
+
+      // CRITICAL FIX: Convert tokens to credits after each iteration
+      totalCreditsUsed = CreditManager.calculateCreditsForTokens(totalInputTokens, totalOutputTokens);
+      
+      // Log current usage for monitoring
+      console.log(`[LOMU-CHAT] Credits used so far: ${totalCreditsUsed} (${totalInputTokens + totalOutputTokens} tokens)`);
+      
+      // CRITICAL FIX: Update database with current consumption BEFORE pause check
+      await db
+        .update(agentRuns)
+        .set({ creditsConsumed: totalCreditsUsed })
+        .where(eq(agentRuns.id, agentRunId));
+      
+      // CRITICAL FIX: Check if we should pause (owner bypass)
+      const [run] = await db.select().from(agentRuns).where(eq(agentRuns.id, agentRunId));
+      
+      // Only check pause for non-owners (creditsReserved > 0)
+      if (run && run.creditsReserved > 0) {
+        const shouldPause = await AgentExecutor.shouldPause(agentRunId);
+        
+        if (shouldPause) {
+          console.log(`[LOMU-CHAT] Pausing run ${agentRunId} - credits depleted (${totalCreditsUsed}/${run.creditsReserved})`);
+          
+          // Save current state
+          await AgentExecutor.pauseRun({
+            runId: agentRunId,
+            context: {
+              messages: conversationMessages,
+              fileChanges: fileChanges.map(f => f.path),
+              streamPosition: conversationMessages.length,
+              iteration: iterationCount,
+            },
+          });
+          
+          // Notify user
+          sendEvent('agent_paused', {
+            message: 'Agent paused due to insufficient credits. Please purchase more credits to continue.',
+            creditsUsed: totalCreditsUsed,
+            creditsNeeded: 50,
+            runId: agentRunId, // Include runId for resume functionality
+          });
+          
+          // Save incomplete assistant message
+          await db
+            .insert(chatMessages)
+            .values({
+              userId,
+              projectId: activeProjectId,
+              fileId: null,
+              role: 'assistant',
+              content: fullContent || 'Agent paused - insufficient credits',
+              isPlatformHealing: true,
+              platformChanges: fileChanges.length > 0 ? { files: fileChanges } : null,
+            });
+          
+          return res.end();
+        }
+      } else if (run && run.creditsReserved === 0) {
+        console.log(`[LOMU-CHAT] Owner run ${agentRunId} - skipping pause check (free credits)`);
       }
 
       conversationMessages.push({
@@ -923,6 +984,15 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
       });
     }
 
+    // CRITICAL FIX: Complete agent run and reconcile credits
+    // This returns unused reserved credits and logs actual consumption
+    console.log(`[LOMU-CHAT] Completing agent run ${agentRunId} - used ${totalCreditsUsed} of ${CREDITS_TO_RESERVE} reserved`);
+    await AgentExecutor.completeRun({
+      runId: agentRunId,
+      actualCreditsUsed: totalCreditsUsed,
+      source: 'lomu_chat',
+    });
+
     // Save assistant message
     const [assistantMsg] = await db
       .insert(chatMessages)
@@ -951,7 +1021,23 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
     sendEvent('done', { messageId: assistantMsg.id, commitHash, filesChanged: fileChanges.length });
     res.end();
   } catch (error: any) {
-    console.error('[LOMUAI-CHAT] Stream error:', error);
+    console.error('[LOMU-AI-CHAT] Stream error:', error);
+    
+    // CRITICAL FIX: Reconcile credits even on error to prevent leak
+    if (agentRunId) {
+      try {
+        await AgentExecutor.completeRun({
+          runId: agentRunId,
+          actualCreditsUsed: totalCreditsUsed || 0,
+          source: 'lomu_chat',
+        });
+        console.log(`[LOMU-CHAT] Credits reconciled after error: ${totalCreditsUsed} credits`);
+      } catch (reconcileError: any) {
+        console.error('[LOMU-CHAT] Failed to reconcile credits after error:', reconcileError);
+        // Don't fail the error handler if reconciliation fails
+      }
+    }
+    
     const errorMessage = JSON.stringify({ type: 'error', message: error.message });
     res.write(`data: ${errorMessage}\n\n`);
     res.end();

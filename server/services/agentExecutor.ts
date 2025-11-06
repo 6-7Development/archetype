@@ -63,6 +63,11 @@ export class AgentExecutor {
 
       if (!run) return true;
 
+      // CRITICAL FIX: Never pause for owners (creditsReserved === 0)
+      if (run.creditsReserved === 0) {
+        return false;
+      }
+
       // Check if consumed credits exceed reserved
       if (run.creditsConsumed >= run.creditsReserved) {
         return true;

@@ -35,6 +35,7 @@ import tasksRouter from "./routes/tasks";
 import { registerArchitectNotesRoutes } from "./routes/architect-notes";
 import { registerUserPreferencesRoutes } from "./routes/user-preferences";
 import creditsRouter from "./routes/credits";
+import agentsRouter from "./routes/agents";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // ==================== HEALTH & DIAGNOSTICS ====================
@@ -244,6 +245,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Mount credits router (credit purchase and balance management)
   app.use('/api/credits', creditsRouter);
   console.log('[CREDITS] Credits router mounted at /api/credits');
+  
+  // Mount agents router (agent run management and resume)
+  app.use('/api/agents', agentsRouter);
+  console.log('[AGENTS] Agents router mounted at /api/agents');
   
   // Mount webhooks router (deployment status from Railway/Render)
   app.use('/api/webhooks', webhooksRouter);

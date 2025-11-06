@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, Component, type ReactNode } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
-import { Send, Square, ChevronDown, ChevronRight, Shield, Zap, Brain, Infinity, Rocket, User, Copy, Check, Loader2, XCircle, FileCode, Terminal, CheckCircle, Clock, Upload, X, File, Image } from "lucide-react";
+import { Send, Square, ChevronDown, ChevronRight, Shield, Zap, Brain, Infinity, Rocket, User, Copy, Check, Loader2, XCircle, FileCode, Terminal, CheckCircle, Clock, Upload, X, File, Image, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -17,6 +17,8 @@ import { ChatArtifact, type Artifact } from "./chat-artifact";
 import { ProjectSelector } from "./project-selector";
 import { AIModelSelector } from "./ai-model-selector";
 import { ArchitectNotesPanel } from "./architect-notes-panel";
+import { CreditBalanceWidget } from "./credit-balance-widget";
+import { CreditPurchaseModal } from "./credit-purchase-modal";
 
 // Error boundary for chat messages
 class ChatErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
@@ -254,6 +256,10 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [currentChatMessageId, setCurrentChatMessageId] = useState<string | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
+  const [pauseMessage, setPauseMessage] = useState('');
+  const [pausedRunId, setPausedRunId] = useState<string | null>(null);
+  const [showCreditPurchase, setShowCreditPurchase] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastEventTimeRef = useRef<number>(Date.now());
@@ -733,6 +739,14 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                     // Ignore - using simple content streaming instead
                     break;
 
+                  case 'agent_paused':
+                    setIsPaused(true);
+                    setPauseMessage(data.message || 'Agent paused due to insufficient credits');
+                    setPausedRunId(data.runId || null); // Store run ID for resume
+                    setIsStreaming(false);
+                    console.log('[LOMU-AI] Agent paused:', data.message, 'runId:', data.runId);
+                    break;
+
                   case 'done': {
                     console.log('[LOMU-AI] Stream complete, messageId:', data.messageId);
 
@@ -914,7 +928,10 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
           {/* Project & AI Model Selection */}
           <div className="flex items-center justify-between p-4 border-b">
             <ProjectSelector />
-            <AIModelSelector />
+            <div className="flex items-center gap-4">
+              <CreditBalanceWidget />
+              <AIModelSelector />
+            </div>
           </div>
 
           {/* Active Task Header */}
@@ -1082,6 +1099,72 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
             ))}
           </div>
         </div>
+
+        {/* Agent Paused Banner */}
+        {isPaused && (
+          <div className="mx-2 md:mx-4 mb-2 md:mb-4 p-3 md:p-4 bg-warning/10 border border-warning rounded-md" data-testid="banner-agent-paused">
+            <div className="flex items-center gap-2 mb-3">
+              <AlertCircle className="h-5 w-5 text-warning shrink-0" />
+              <div className="flex-1">
+                <p className="font-medium text-sm md:text-base">Agent Paused</p>
+                <p className="text-xs md:text-sm text-muted-foreground">{pauseMessage}</p>
+              </div>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              <Button 
+                onClick={() => setShowCreditPurchase(true)} 
+                variant="outline"
+                size="sm"
+                data-testid="button-purchase-credits"
+              >
+                Purchase Credits
+              </Button>
+              {pausedRunId && (
+                <Button 
+                  onClick={async () => {
+                    try {
+                      const response = await fetch(`/api/agents/resume/${pausedRunId}`, {
+                        method: 'POST',
+                        headers: { 
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ additionalCredits: 100 }),
+                      });
+
+                      if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Resume failed');
+                      }
+
+                      const result = await response.json();
+                      
+                      if (result.success) {
+                        toast({
+                          title: "Agent Resumed",
+                          description: result.message,
+                        });
+                        setIsPaused(false);
+                        setPausedRunId(null);
+                        // Refresh page to see continued output
+                        window.location.reload();
+                      }
+                    } catch (error: any) {
+                      toast({
+                        variant: "destructive",
+                        title: "Resume Failed",
+                        description: error.message || "Failed to resume agent. Please try again.",
+                      });
+                    }
+                  }}
+                  size="sm"
+                  data-testid="button-resume-agent"
+                >
+                  Resume Agent
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Input Area - Sticky on mobile */}
         <div className="sticky bottom-0 border-t border-border p-2 md:p-4 bg-background flex-shrink-0">
@@ -1262,6 +1345,20 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
           <ArchitectNotesPanel projectId={activeProjectId} />
         </div>
       </div>
+
+      {/* Credit Purchase Modal */}
+      {showCreditPurchase && (
+        <CreditPurchaseModal 
+          isOpen={showCreditPurchase} 
+          onClose={() => setShowCreditPurchase(false)}
+          pausedRunId={pausedRunId}
+          onResumed={() => {
+            setIsPaused(false);
+            setPausedRunId(null);
+            window.location.reload();
+          }}
+        />
+      )}
     </div>
   );
 }

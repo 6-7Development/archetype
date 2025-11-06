@@ -1,6 +1,6 @@
 import { db } from '../db';
 import { creditWallets, creditLedger, users, CREDIT_CONSTANTS } from '@shared/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 
 export class CreditManager {
   /**
@@ -25,6 +25,7 @@ export class CreditManager {
    * - Checks if user has enough available credits
    * - Moves credits from available to reserved
    * - Returns reservation ID for reconciliation
+   * CRITICAL FIX: Uses atomic UPDATE with balance guard to prevent race conditions
    */
   static async reserveCredits(params: {
     userId: string;
@@ -34,33 +35,41 @@ export class CreditManager {
     const { userId, creditsNeeded, agentRunId } = params;
 
     try {
-      const result = await db.transaction(async (tx) => {
-        const [wallet] = await tx
+      // CRITICAL FIX: Atomic UPDATE with balance guard to prevent race conditions
+      // This ensures the check and update happen atomically
+      const result = await db
+        .update(creditWallets)
+        .set({
+          availableCredits: sql`available_credits - ${creditsNeeded}`,
+          reservedCredits: sql`reserved_credits + ${creditsNeeded}`,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(creditWallets.userId, userId),
+            sql`available_credits >= ${creditsNeeded}` // Guard against negative balance
+          )
+        )
+        .returning();
+
+      if (result.length === 0) {
+        // Either wallet doesn't exist or insufficient credits
+        const [wallet] = await db
           .select()
           .from(creditWallets)
           .where(eq(creditWallets.userId, userId));
 
         if (!wallet) {
-          throw new Error('No credit wallet found');
+          return { success: false, error: 'No credit wallet found' };
         }
 
-        if (wallet.availableCredits < creditsNeeded) {
-          throw new Error(`Insufficient credits. Need ${creditsNeeded}, have ${wallet.availableCredits}`);
-        }
+        return {
+          success: false,
+          error: `Insufficient credits. Need ${creditsNeeded}, have ${wallet.availableCredits}`,
+        };
+      }
 
-        await tx
-          .update(creditWallets)
-          .set({
-            availableCredits: wallet.availableCredits - creditsNeeded,
-            reservedCredits: wallet.reservedCredits + creditsNeeded,
-            updatedAt: new Date(),
-          })
-          .where(eq(creditWallets.userId, userId));
-
-        return { success: true, reservationId: agentRunId };
-      });
-
-      return result;
+      return { success: true, reservationId: agentRunId };
     } catch (error: any) {
       console.error('[CREDIT-MANAGER] Error reserving credits:', error);
       return { success: false, error: error.message };
@@ -72,6 +81,7 @@ export class CreditManager {
    * - Consumes actual credits used
    * - Returns unused reserved credits to available pool
    * - Logs transaction to credit ledger
+   * CRITICAL FIX: Uses atomic operations to prevent race conditions
    */
   static async reconcileCredits(params: {
     userId: string;
@@ -86,25 +96,29 @@ export class CreditManager {
     try {
       const creditsToReturn = creditsReserved - creditsActuallyUsed;
 
+      // CRITICAL FIX: Use transaction with atomic operations
       const result = await db.transaction(async (tx) => {
-        const [wallet] = await tx
-          .select()
-          .from(creditWallets)
-          .where(eq(creditWallets.userId, userId));
-
-        if (!wallet) {
-          throw new Error('No credit wallet found');
-        }
-
-        await tx
+        // Atomic UPDATE with guard to ensure reserved credits are sufficient
+        const updateResult = await tx
           .update(creditWallets)
           .set({
-            availableCredits: wallet.availableCredits + creditsToReturn,
-            reservedCredits: wallet.reservedCredits - creditsReserved,
+            availableCredits: sql`available_credits + ${creditsToReturn}`,
+            reservedCredits: sql`reserved_credits - ${creditsReserved}`,
             updatedAt: new Date(),
           })
-          .where(eq(creditWallets.userId, userId));
+          .where(
+            and(
+              eq(creditWallets.userId, userId),
+              sql`reserved_credits >= ${creditsReserved}` // Guard against negative reserved
+            )
+          )
+          .returning();
 
+        if (updateResult.length === 0) {
+          throw new Error('Insufficient reserved credits to reconcile');
+        }
+
+        // Log consumption to ledger
         await tx.insert(creditLedger).values({
           userId,
           deltaCredits: -creditsActuallyUsed,
