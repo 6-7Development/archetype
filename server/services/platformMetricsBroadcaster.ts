@@ -131,12 +131,14 @@ export class PlatformMetricsBroadcaster {
     
     // Calculate overall health
     let healthScore = 100;
-    if (cpuUsage > 80) healthScore -= 20;
+    // ⚠️ DISABLED: CPU spikes are normal during dev - don't penalize health score
+    // if (cpuUsage > 80) healthScore -= 20;
     if (memoryUsage > 80) healthScore -= 20;
     if (uncommittedChanges) healthScore -= 10;
     
     const issues: string[] = [];
-    if (cpuUsage > 80) issues.push('High CPU usage detected');
+    // ⚠️ DISABLED: CPU spikes are normal during dev (TypeScript, Vite builds)
+    // if (cpuUsage > 80) issues.push('High CPU usage detected');
     if (memoryUsage > 80) issues.push('High memory usage detected');
     if (uncommittedChanges) issues.push('Uncommitted changes present');
     
