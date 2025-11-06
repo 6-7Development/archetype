@@ -845,6 +845,18 @@ function PlatformHealingContent() {
                       </div>
                     </div>
                   )}
+
+                  {/* Task Progress Indicator */}
+                  {isStreaming && tasks.length > 0 && (
+                    <div className="px-4 py-2 flex justify-center">
+                      <Badge variant="secondary" className="text-xs gap-1.5" data-testid="badge-task-progress">
+                        {tasks.filter(t => t.status === 'completed').length === tasks.length ? '✓' : '⏳'}
+                        <span>
+                          {tasks.filter(t => t.status === 'completed').length}/{tasks.length} tasks
+                        </span>
+                      </Badge>
+                    </div>
+                  )}
                 </div>
 
                 {/* Input Box */}
@@ -1015,17 +1027,15 @@ function PlatformHealingContent() {
           data-testid="drawer-tasks"
         >
           <SheetHeader className="p-4 border-b">
-            <SheetTitle className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ListTodo className="w-5 h-5 text-primary" />
-                <span>Agent Tasks</span>
-                {tasks.length > 0 && (
-                  <Badge variant="secondary" className="ml-2">
-                    {tasks.length}
-                  </Badge>
-                )}
-              </div>
-            </SheetTitle>
+            <div className="flex items-center gap-2">
+              <ListTodo className="w-5 h-5 text-primary" />
+              <SheetTitle>Agent Tasks</SheetTitle>
+              {tasks.length > 0 && (
+                <Badge variant="secondary">
+                  {tasks.length}
+                </Badge>
+              )}
+            </div>
           </SheetHeader>
           
           <div className="overflow-y-auto max-h-[calc(80vh-5rem)] p-2">
