@@ -7,6 +7,7 @@ import { db } from "./db";
 import { files } from "@shared/schema";
 import { autoHealing } from "./autoHealing";
 import multer from "multer"; // Import multer
+import { eq } from "drizzle-orm";
 
 // DEPLOYMENT VERIFICATION: October 28, 2025 01:50 UTC - LomuAI execution fix deployed
 // ✅ LomuAI system prompt rewritten to force immediate tool execution
