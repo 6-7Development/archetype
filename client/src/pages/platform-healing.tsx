@@ -17,6 +17,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { AgentTaskList, type AgentTask } from '@/components/agent-task-list';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 interface HealingTarget {
   id: string;
@@ -152,6 +153,7 @@ function PlatformHealingContent() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const [tasks, setTasks] = useState<AgentTask[]>([]);
+  const [showTaskDrawer, setShowTaskDrawer] = useState(false);
   
   // Deployment and healing status tracking
   const [deploymentStatus, setDeploymentStatus] = useState<{
@@ -982,6 +984,63 @@ function PlatformHealingContent() {
           </ResizablePanelGroup>
         )}
       </div>
+
+      {/* Floating Task Button (Mobile Only) */}
+      {tasks.length > 0 && (
+        <div className="md:hidden fixed bottom-20 right-4 z-50 w-14 h-14 flex items-center justify-center">
+          <Button
+            size="icon"
+            onClick={() => setShowTaskDrawer(true)}
+            className="bg-primary text-primary-foreground hover-elevate shadow-lg rounded-full w-full h-full"
+            aria-label="View active tasks"
+            data-testid="button-mobile-tasks"
+          >
+            <div className="relative">
+              <ListTodo className="w-6 h-6" />
+              {tasks.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-accent text-accent-foreground text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {tasks.length}
+                </span>
+              )}
+            </div>
+          </Button>
+        </div>
+      )}
+
+      {/* Slide-Up Task Drawer (Mobile Only) */}
+      <Sheet open={showTaskDrawer} onOpenChange={setShowTaskDrawer}>
+        <SheetContent 
+          side="bottom" 
+          className="md:hidden max-h-[80vh] rounded-t-2xl p-0"
+          data-testid="drawer-tasks"
+        >
+          <SheetHeader className="p-4 border-b">
+            <SheetTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ListTodo className="w-5 h-5 text-primary" />
+                <span>Agent Tasks</span>
+                {tasks.length > 0 && (
+                  <Badge variant="secondary" className="ml-2">
+                    {tasks.length}
+                  </Badge>
+                )}
+              </div>
+            </SheetTitle>
+          </SheetHeader>
+          
+          <div className="overflow-y-auto max-h-[calc(80vh-5rem)] p-2">
+            {tasks.length > 0 ? (
+              <AgentTaskList tasks={tasks} />
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <ListTodo className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                <p className="text-sm">No active tasks</p>
+                <p className="text-xs mt-1">Tasks will appear here when Lomu starts working</p>
+              </div>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
