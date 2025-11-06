@@ -47,7 +47,7 @@ The platform is built with a React frontend, an Express.js backend, and PostgreS
 The platform utilizes a unified codebase to support two distinct user experiences: Lomu (Desktop) with a 4-panel layout, and Lomu5 (Mobile) with bottom tab navigation. Both versions share backend APIs, WebSocket connections, authentication, and database access.
 
 ### UI/UX Decisions
-The user interface features a tab-based workspace providing an IDE-like experience, primarily through a command console and real-time live preview. The design emphasizes a fresh, optimistic aesthetic with a citrus-inspired color palette, card-based layouts, warm shadows, smooth transitions, and ADA/WCAG accessibility. Chat interfaces feature Lumo the Lemon mascot as an AI companion with natural sprite animations and emotional expressions. Loading states use a signature lemonade jar animation.
+The user interface features a tab-based workspace providing an IDE-like experience, primarily through a command console and real-time live preview. The design emphasizes a fresh, optimistic aesthetic with a citrus-inspired color palette, card-based layouts, warm shadows, smooth transitions, and ADA/WCAG accessibility. Chat interfaces use semantic theme tokens for consistent, polished appearance with modern message bubbles, proper contrast, and smooth transitions. The chat UI features clean inline aesthetics matching professional AI assistants. Loading states use a signature lemonade jar animation.
 
 ### System Design Choices
 LomuAI is the sole autonomous worker that commits changes, operating independently with a strict 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). I AM Architect is a user-summoned consultant only (premium feature), providing guidance without committing code. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing.
@@ -76,7 +76,7 @@ Key features include:
 - **Backend**: Express.js, WebSocket
 - **Database**: PostgreSQL (Neon), Drizzle ORM
 - **AI**: Anthropic Claude Sonnet 4, OpenAI (gpt-image-1)
-- **Deployment**: Railway
+- **Deployment**: Railway (auto-migration on deploy via railway-db-setup.cjs)
 - **Payment Processing**: Stripe
 - **Authentication**: Passport.js, bcrypt, `connect-pg-simple`
 - **Charting**: Recharts
