@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db';
-import { chatMessages, architectConsultations, insertArchitectConsultationSchema } from '@shared/schema';
+import { chatMessages, architectConsultations, insertArchitectConsultationSchema, projectSessions } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth';
 import Anthropic from '@anthropic-ai/sdk';
@@ -27,6 +27,12 @@ const router = Router();
 router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
     const userId = req.authenticatedUserId;
+    const projectId = req.query.projectId; // Get active project ID from query
+    
+    // If no projectId, return empty (require project context)
+    if (!projectId) {
+      return res.json({ success: true, messages: [] });
+    }
 
     const messages = await db
       .select()
@@ -34,12 +40,13 @@ router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
       .where(
         and(
           eq(chatMessages.userId, userId),
+          eq(chatMessages.projectId, projectId), // Filter by projectId
           eq(chatMessages.isPlatformHealing, true)
         )
       )
       .orderBy(chatMessages.createdAt);
 
-    res.json({ messages });
+    res.json({ success: true, messages });
   } catch (error: any) {
     console.error('[LOMUAI-CHAT] Error loading history:', error);
     res.status(500).json({ error: error.message });
@@ -55,6 +62,15 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     if (!message || typeof message !== 'string') {
       return res.status(400).json({ error: 'Message is required' });
     }
+    
+    // Get active project ID from session
+    const [activeProject] = await db
+      .select()
+      .from(projectSessions)
+      .where(eq(projectSessions.userId, userId))
+      .limit(1);
+    
+    const activeProjectId = activeProject?.activeProjectId || null;
 
     // Get AI model configuration
     const aiConfig = getAIModelConfig();
@@ -92,7 +108,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       .insert(chatMessages)
       .values({
         userId,
-        projectId: null, // Platform healing has no specific project
+        projectId: activeProjectId, // Use active project ID from session
         fileId: null,
         role: 'user',
         content: message,
@@ -112,13 +128,20 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       sendEvent('progress', { message: 'Working without backup (we\'re in production mode)' });
     }
 
+    // Require active project for chat isolation
+    if (!activeProjectId) {
+      return res.status(400).json({ error: 'No active project selected. Please select a project first.' });
+    }
+    
     // Get conversation history for context - OPTIMIZED: Only 10 messages to save tokens
+    // CRITICAL: Filter by projectId to ensure project isolation
     const history = await db
       .select()
       .from(chatMessages)
       .where(
         and(
           eq(chatMessages.userId, userId),
+          eq(chatMessages.projectId, activeProjectId), // Ensure project isolation
           eq(chatMessages.isPlatformHealing, true)
         )
       )
@@ -802,7 +825,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       .insert(chatMessages)
       .values({
         userId,
-        projectId: null,
+        projectId: activeProjectId, // Use active project ID from session
         fileId: null,
         role: 'assistant',
         content: fullContent || 'Done! I\'ve analyzed and fixed the issues.',

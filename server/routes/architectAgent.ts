@@ -3,6 +3,8 @@ import { platformHealing } from '../platformHealing.ts';
 import { knowledge_search, knowledge_store, knowledge_recall, code_search } from '../tools/knowledge.ts';
 import { buildArchitectSystemPrompt } from '../lomuSuperCore.ts';
 import { RAILWAY_CONFIG } from '../config/railway.ts';
+import { db } from '../db';
+import { architectNotes } from '@shared/schema';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || "dummy-key-for-development",
@@ -264,6 +266,24 @@ const ARCHITECT_TOOLS: Anthropic.Tool[] = [
       properties: {},
       required: []
     }
+  },
+  {
+    name: "create_architect_note",
+    description: "Create a planning note/idea to share with LomuAI. Use this to document architectural decisions, implementation plans, or guidance. You cannot commit code, but you can guide LomuAI with detailed notes.",
+    input_schema: {
+      type: "object",
+      properties: {
+        title: {
+          type: "string",
+          description: "Note title"
+        },
+        content: {
+          type: "string",
+          description: "Markdown-formatted note content with implementation guidance"
+        }
+      },
+      required: ["title", "content"]
+    }
   }
 ];
 
@@ -419,6 +439,24 @@ async function executeArchitectTool(toolName: string, toolInput: any): Promise<s
             .join('\n');
           
           return `${result.summary}\n\n${diagnosticsList}${result.diagnostics.length > 20 ? `\n... and ${result.diagnostics.length - 20} more` : ''}`;
+        }
+      }
+      
+      case "create_architect_note": {
+        try {
+          const [note] = await db
+            .insert(architectNotes)
+            .values({
+              projectId: null, // I AM creates platform-wide notes
+              title: toolInput.title,
+              content: toolInput.content,
+              authorRole: 'architect',
+            })
+            .returning();
+          
+          return `✅ Architect note created: "${toolInput.title}"\nNote ID: ${note.id}\n\nThis guidance has been saved for LomuAI to reference.`;
+        } catch (error: any) {
+          return `❌ Failed to create architect note: ${error.message}`;
         }
       }
       

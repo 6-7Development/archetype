@@ -154,6 +154,14 @@ function PlatformHealingContent() {
   const abortControllerRef = useRef<AbortController | null>(null);
   const [tasks, setTasks] = useState<AgentTask[]>([]);
   const [showTaskDrawer, setShowTaskDrawer] = useState(false);
+  const [attachedFiles, setAttachedFiles] = useState<Array<{
+    name: string;
+    size: number;
+    type: string;
+    content?: string;
+    url?: string;
+  }>>([]);
+  const [isUploadingFiles, setIsUploadingFiles] = useState(false);
   
   // Deployment and healing status tracking
   const [deploymentStatus, setDeploymentStatus] = useState<{
@@ -862,24 +870,55 @@ function PlatformHealingContent() {
                 {/* Input Box */}
                 <div className="p-4 border-t border-border">
                   <div className="flex gap-2">
-                    <Textarea
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendMessage();
+                    <div className="flex-1 relative">
+                      <Textarea
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendMessage();
+                          }
+                        }}
+                        placeholder={
+                          conversationId
+                            ? 'Ask Lomu anything...'
+                            : 'Start a new conversation...'
                         }
-                      }}
-                      placeholder={
-                        conversationId
-                          ? 'Ask Lomu anything...'
-                          : 'Start a new conversation...'
-                      }
-                      className="min-h-[60px] resize-none"
-                      disabled={isStreaming}
-                      data-testid="input-message"
-                    />
+                        className="min-h-[60px] resize-none pr-12"
+                        disabled={isStreaming}
+                        data-testid="input-message"
+                      />
+                      <div className="absolute bottom-2 right-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = "image/*,.pdf,.doc,.docx,.txt,.md,.json,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.rb,.go,.rs,.php,.html,.css,.scss,.sass,.xml,.yaml,.yml,.toml,.ini,.conf,.sh,.bash,.zsh,.fish,.ps1,.bat,.cmd,.zip,.rar,.7z,.tar,.gz,.bz2,.xz";
+                            input.multiple = true;
+                            input.onchange = (e) => {
+                              const target = e.target as HTMLInputElement;
+                              if (target.files && target.files.length > 0) {
+                                // TODO: Handle file upload - for now just show a toast
+                                toast({
+                                  title: "Files Selected",
+                                  description: `${target.files.length} file(s) selected. Upload functionality coming soon!`,
+                                });
+                              }
+                            };
+                            input.click();
+                          }}
+                          disabled={isStreaming}
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                          title="Upload files (documents, code, archives, images)"
+                        >
+                          <Upload className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
                     <div className="flex flex-col gap-2">
                       {isStreaming ? (
                         <Button

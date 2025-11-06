@@ -14,6 +14,9 @@ import { AgentProgressDisplay } from "./agent-progress-display";
 import { MarkdownRenderer } from "./markdown-renderer";
 import { TaskTimeline, type TaskTimelineTask } from "./task-timeline";
 import { ChatArtifact, type Artifact } from "./chat-artifact";
+import { ProjectSelector } from "./project-selector";
+import { AIModelSelector } from "./ai-model-selector";
+import { ArchitectNotesPanel } from "./architect-notes-panel";
 
 // Error boundary for chat messages
 class ChatErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
@@ -256,6 +259,12 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
   const lastEventTimeRef = useRef<number>(Date.now());
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Get active project ID
+  const { data: activeSession } = useQuery({
+    queryKey: ["/api/user/active-project"],
+  });
+  const activeProjectId = activeSession?.activeProjectId || null;
 
   // Notify parent of task changes
   useEffect(() => {
@@ -898,38 +907,46 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
         accept="image/*,text/*,.js,.ts,.tsx,.jsx,.py,.java,.cpp,.c,.cs,.go,.rs,.php,.rb,.swift,.kt,.dart,.vue,.css,.html,.xml,.json,.yaml,.yml,.toml,.ini,.sh,.bash,.ps1,.sql,.log,.txt"
       />
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Active Task Header */}
-        {isStreaming && activeTaskId && (
-          <div className="px-3 py-2 md:px-4 md:py-3 border-b border-border bg-muted/30">
-            <div className="flex items-center justify-between gap-2 md:gap-4">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h2 className="text-xs md:text-sm font-semibold truncate">
-                    {tasks.find(t => t.id === activeTaskId)?.title || 'Working...'}
-                  </h2>
-                  {tasks.length > 0 && (
-                    <span className="text-xs text-muted-foreground shrink-0">
-                      {tasks.filter(t => t.status === 'completed').length}/{tasks.length}
-                    </span>
-                  )}
-                </div>
-                <AgentProgressDisplay status={progressStatus} message={progressMessage} />
-              </div>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleStop}
-                className="shrink-0 h-7 md:h-8"
-                data-testid="button-stop"
-              >
-                <Square className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1 md:mr-1.5 fill-current" />
-                <span className="text-xs">Stop</span>
-              </Button>
-            </div>
+      {/* Main Content with Sidebar */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Chat Section */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Project & AI Model Selection */}
+          <div className="flex items-center justify-between p-4 border-b">
+            <ProjectSelector />
+            <AIModelSelector />
           </div>
-        )}
+
+          {/* Active Task Header */}
+          {isStreaming && activeTaskId && (
+            <div className="px-3 py-2 md:px-4 md:py-3 border-b border-border bg-muted/30">
+              <div className="flex items-center justify-between gap-2 md:gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h2 className="text-xs md:text-sm font-semibold truncate">
+                      {tasks.find(t => t.id === activeTaskId)?.title || 'Working...'}
+                    </h2>
+                    {tasks.length > 0 && (
+                      <span className="text-xs text-muted-foreground shrink-0">
+                        {tasks.filter(t => t.status === 'completed').length}/{tasks.length}
+                      </span>
+                    )}
+                  </div>
+                  <AgentProgressDisplay status={progressStatus} message={progressMessage} />
+                </div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleStop}
+                  className="shrink-0 h-7 md:h-8"
+                  data-testid="button-stop"
+                >
+                  <Square className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1 md:mr-1.5 fill-current" />
+                  <span className="text-xs">Stop</span>
+                </Button>
+              </div>
+            </div>
+          )}
 
         
 
@@ -1238,6 +1255,11 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Architect Notes Sidebar */}
+        <div className="w-80 border-l hidden lg:block">
+          <ArchitectNotesPanel projectId={activeProjectId} />
         </div>
       </div>
     </div>
