@@ -100,10 +100,15 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       res.write(`data: ${JSON.stringify({ type, ...data })}\n\n`);
     };
     
+    // CRITICAL: Require active project BEFORE any database writes
+    if (!activeProjectId) {
+      return res.status(400).json({ error: 'No active project selected. Please select a project first.' });
+    }
+    
     // Send AI model info to frontend (no emoji!)
     sendEvent('progress', { message: `Using ${aiConfig.provider.toUpperCase()} (${aiConfig.model})` });
 
-    // Save user message
+    // Save user message (now guaranteed to have projectId)
     const [userMsg] = await db
       .insert(chatMessages)
       .values({
@@ -126,11 +131,6 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     } catch (backupError: any) {
       console.warn('[LOMUAI-CHAT] Backup creation failed (non-critical):', backupError.message);
       sendEvent('progress', { message: 'Working without backup (we\'re in production mode)' });
-    }
-
-    // Require active project for chat isolation
-    if (!activeProjectId) {
-      return res.status(400).json({ error: 'No active project selected. Please select a project first.' });
     }
     
     // Get conversation history for context - OPTIMIZED: Only 10 messages to save tokens
