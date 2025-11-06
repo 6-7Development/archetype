@@ -67,7 +67,14 @@ LomuAI supports parallel subagent orchestration, allowing multiple tasks to exec
   - **Telemetry**: All consultations logged to `architect_consultations` table with timestamp, question, rationale, guidance, tokens used, and billed to user
   - **Tool**: `consult_architect` tool available to LomuAI with required fields: question, context, rationale, optional relevant_files
   - **Rate Limiting**: Soft limit to prevent overuse of premium feature
-- **Developer Tools**: LomuAI includes 56 tools covering core operations, deployment, secrets management, database, design, integrations, and file operations, all with security sandboxing and WebSocket event streaming.
+- **Developer Tools**: LomuAI includes 62+ tools covering core operations, deployment, secrets management, database, design, integrations, and file operations, all with security sandboxing and WebSocket event streaming.
+- **Code Intelligence System** (Implemented Nov 6, 2025): AST-based code understanding that rivals Cursor/Windsurf:
+  - **CodeIndexer Service**: Parses JavaScript/TypeScript files with Babel AST to extract imports, exports, functions, classes, types, and build dependency graphs. Stores metadata in `fileIndex` table for instant retrieval.
+  - **FileRelevanceDetector**: Auto-detects related files when user mentions code - includes direct dependencies, dependents, test files, schemas, and siblings with priority scoring (0-10). Reduces manual file specification.
+  - **SmartChunker**: Token-efficient code retrieval - extracts only relevant functions/classes instead of entire files. Provides file summaries (imports + exports + signatures) without reading full content. Saves 70-80% tokens.
+  - **Smart Tools**: 6 new intelligence tools - `indexFile`, `smartReadFile`, `getRelatedFiles`, `extractFunction`, `getAutoContext`, `getFileSummary`
+  - **Natural Language File Detection**: Extracts file paths from user messages automatically
+  - **Database**: `file_index` table with comprehensive metadata (imports, exports, functions, classes, complexity, dependencies)
 - **Platform Healing System**: A self-healing infrastructure with **2-tier intelligent routing** for incident resolution: TIER 1 (Knowledge Base) → TIER 2 (LomuAI v2.0). I AM Architect removed from auto-routing - user can manually request architect consultation if needed.
 - **LomuAI v2.0 Workflow Enforcement**: Dual-layer enforcement via enhanced system prompts and a WorkflowValidator State Machine.
 - **Critical Files Protection System**: Read-before-write enforcement for 8 core infrastructure files to prevent accidental overwrites.

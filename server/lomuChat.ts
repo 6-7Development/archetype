@@ -12,6 +12,7 @@ import { consultArchitect } from '../tools/architect-consult';
 import { executeWebSearch } from '../tools/web-search';
 import { GitHubService } from '../githubService';
 import { createTaskList, updateTask, readTaskList } from '../tools/task-management';
+import { indexFile, smartReadFile, getRelatedFiles, extractFunction, getAutoContext, getFileSummary } from '../tools/smart-code-tools';
 import { trackAIUsage } from '../usage-tracking';
 import { AgentExecutor } from './services/agentExecutor';
 import { CreditManager } from './services/creditManager';
@@ -876,6 +877,30 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
                   sendEvent('error', { message: `Commit didn't work: ${error.message}` });
                 }
               }
+            } else if (name === 'index_file') {
+              const typedInput = input as { filePath: string; projectId?: string | null };
+              sendEvent('progress', { message: `📊 Indexing ${typedInput.filePath}...` });
+              toolResult = await indexFile(typedInput);
+            } else if (name === 'smart_read_file') {
+              const typedInput = input as { filePath: string; context?: string; projectId?: string | null };
+              sendEvent('progress', { message: `📖 Reading ${typedInput.filePath}...` });
+              toolResult = await smartReadFile(typedInput);
+            } else if (name === 'get_related_files') {
+              const typedInput = input as { filePath: string; projectId?: string | null };
+              sendEvent('progress', { message: `🔍 Finding files related to ${typedInput.filePath}...` });
+              toolResult = await getRelatedFiles(typedInput);
+            } else if (name === 'extract_function') {
+              const typedInput = input as { filePath: string; functionName: string; includeContext?: boolean; projectId?: string | null };
+              sendEvent('progress', { message: `⚡ Extracting ${typedInput.functionName} from ${typedInput.filePath}...` });
+              toolResult = await extractFunction(typedInput);
+            } else if (name === 'get_auto_context') {
+              const typedInput = input as { message: string; projectId?: string | null };
+              sendEvent('progress', { message: `🤖 Analyzing message for auto-context...` });
+              toolResult = await getAutoContext(typedInput);
+            } else if (name === 'get_file_summary') {
+              const typedInput = input as { filePath: string; projectId?: string | null };
+              sendEvent('progress', { message: `📋 Getting summary of ${typedInput.filePath}...` });
+              toolResult = await getFileSummary(typedInput);
             }
 
             toolResults.push({

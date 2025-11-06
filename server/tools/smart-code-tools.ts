@@ -9,6 +9,20 @@ import { CodeIndexer } from '../services/codeIndexer';
 import { FileRelevanceDetector } from '../services/fileRelevanceDetector';
 import { SmartChunker } from '../services/smartChunker';
 import * as fs from 'fs/promises';
+import * as path from 'path';
+
+const PROJECT_ROOT = process.cwd();
+
+/**
+ * Resolve file path (handles both absolute and relative paths)
+ */
+function resolveFilePath(filePath: string): string {
+  // If path is absolute, use as-is
+  if (path.isAbsolute(filePath)) return filePath;
+  
+  // Otherwise join with PROJECT_ROOT
+  return path.join(PROJECT_ROOT, filePath);
+}
 
 /**
  * Index a file for intelligent search
@@ -21,8 +35,11 @@ export async function indexFile(params: {
   try {
     const { filePath, projectId = null } = params;
     
+    // Resolve path
+    const fullPath = resolveFilePath(filePath);
+    
     // Read file content
-    const content = await fs.readFile(filePath, 'utf-8');
+    const content = await fs.readFile(fullPath, 'utf-8');
     
     // Index the file
     await CodeIndexer.indexFile(filePath, content, projectId);

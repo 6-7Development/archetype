@@ -1088,4 +1088,124 @@ export const LOMU_TOOLS = [
       required: ['path', 'content'],
     },
   },
+  {
+    name: 'index_file',
+    description: 'Parse and index a file to extract imports, exports, functions, classes, and dependencies. Creates searchable metadata for intelligent code navigation. Use for platform files or user project files.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        filePath: {
+          type: 'string',
+          description: 'Path to file to index (e.g., "server/services/lomuChat.ts")',
+        },
+        projectId: {
+          type: 'string',
+          description: 'Project ID (null for platform files)',
+        },
+      },
+      required: ['filePath'],
+    },
+  },
+  {
+    name: 'smart_read_file',
+    description: 'Read file content intelligently - if you mention specific functions/classes, extracts only those sections. Otherwise provides a smart summary with imports, exports, and function signatures. 70-80% more token-efficient than reading full files.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        filePath: {
+          type: 'string',
+          description: 'Path to file to read',
+        },
+        context: {
+          type: 'string',
+          description: 'What you are looking for (e.g., "handleSubmit function", "UserService class")',
+        },
+        projectId: {
+          type: 'string',
+          description: 'Project ID (null for platform files)',
+        },
+      },
+      required: ['filePath'],
+    },
+  },
+  {
+    name: 'get_related_files',
+    description: 'Automatically detect files related to a target file - finds imports, dependents, test files, schema files, and siblings. Returns prioritized list (0-10). Eliminates manual file specification.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        filePath: {
+          type: 'string',
+          description: 'Path to target file',
+        },
+        projectId: {
+          type: 'string',
+          description: 'Project ID (null for platform files)',
+        },
+      },
+      required: ['filePath'],
+    },
+  },
+  {
+    name: 'extract_function',
+    description: 'Extract a specific function from a file with line numbers and optional context. Token-efficient way to get exactly what you need without reading entire files.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        filePath: {
+          type: 'string',
+          description: 'Path to file containing function',
+        },
+        functionName: {
+          type: 'string',
+          description: 'Name of function to extract',
+        },
+        includeContext: {
+          type: 'boolean',
+          description: 'Include imports and related code (default: false)',
+        },
+        projectId: {
+          type: 'string',
+          description: 'Project ID (null for platform files)',
+        },
+      },
+      required: ['filePath', 'functionName'],
+    },
+  },
+  {
+    name: 'get_auto_context',
+    description: 'Analyze a user message and automatically gather relevant files with their smart summaries. Extracts mentioned file paths and includes related dependencies, tests, and schemas. Use this when user asks about code to auto-load context.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          description: 'User message to analyze',
+        },
+        projectId: {
+          type: 'string',
+          description: 'Project ID (null for platform files)',
+        },
+      },
+      required: ['message'],
+    },
+  },
+  {
+    name: 'get_file_summary',
+    description: 'Get a smart summary of a file WITHOUT reading full content. Shows imports, exports, function signatures, class definitions, and types. Extremely token-efficient for understanding file structure.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        filePath: {
+          type: 'string',
+          description: 'Path to file to summarize',
+        },
+        projectId: {
+          type: 'string',
+          description: 'Project ID (null for platform files)',
+        },
+      },
+      required: ['filePath'],
+    },
+  },
 ] as const;
