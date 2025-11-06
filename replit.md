@@ -2,19 +2,27 @@
 
 ## Recent Changes
 
-### Task List Support for Platform Healing Chat (Nov 5, 2025)
-**CRITICAL FIX - Restored Task Management System:**
-- **Issue:** Platform Healing chat was "quiet" - no task lists showing, just silent execution
-- **Root Cause:** Platform Healing had only 4 tools (read/write/search/cancel_job) but **no task management tools**
-- **Solution:** Added 3 task management tools to Platform Healing chat:
-  - `create_task_list()` - Creates visible task breakdown (REQUIRED for all work)
-  - `read_task_list()` - Checks current task status  
-  - `update_task()` - Updates task progress (pending → in_progress → completed)
-- **Impact:** Platform Healing now matches regular LomuAI behavior with visible task lists and progress tracking
-- **Files Modified:**
-  - `server/routes/healing.ts` - Added task tools, handlers, and updated system prompt with workflow example
-  - Uses same task management implementation as regular LomuAI from `../tools/task-management.ts`
-- **User Experience:** Users now see task lists in Platform Healing chat showing what AI is doing step-by-step
+### Critical Task Management Fixes (Nov 6, 2025)
+**TRIPLE BUG FIX - Task System Now Functional:**
+
+1. **Task ID Format Mismatch (CRITICAL)**
+   - **Problem:** AI tried `update_task("1")` but tasks use UUIDs like `"abc123-456-def"`
+   - **Impact:** All task updates failed → AI wasted 5 iterations → no work done
+   - **Solution:** `create_task_list()` now **returns actual task IDs** so AI knows which UUIDs to use
+   - **Files:** `server/tools/task-management.ts`, prompts in `lomuSuperCore.ts` & `healing.ts`
+
+2. **Autonomy Level Blocking Commits**
+   - **Problem:** Owner users had `autonomy_level: 'basic'` → `allowCommit: false`
+   - **Impact:** Auto-commit silently failed → **NO GitHub commits** → no Railway deployments
+   - **Solution:** Upgraded both owners to `autonomy_level: 'max'` → commits now work
+   - **Verification:** GitHub integration confirmed (TOKEN ✅, REPO: 6-7Development/archetype ✅)
+
+3. **Iteration Limits Too Low**
+   - **Problem:** Platform Healing limited to 5 iterations (Replit Agent uses 30+)
+   - **Solution:** Unified iteration limits via `chatConfig.ts` (FIX: 30, BUILD: 35)
+   - **Impact:** Complex tasks can now complete without hitting artificial limits
+
+**Result:** Task lists work, commits trigger automatically, Railway deploys on commit! 🎉
 
 ## Overview
 Lomu is an AI-powered platform for rapid web development. It features LomuAI, an AI coding agent for autonomous code generation, and dual-version IDE Workspaces (Lomu for desktop, Lomu5 for mobile). Key capabilities include a console-first interface, real-time preview, and comprehensive workspace features. The platform aims for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. A core capability is LomuAI's autonomous self-healing, bug fixing, and UI/UX improvements to its own source code, complete with rollback and audit logging.
@@ -72,25 +80,12 @@ LomuAI supports parallel subagent orchestration, allowing multiple tasks to exec
 - **AI Architecture**: LomuAI v2.0 follows a strict 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT) with programmatic enforcement via WorkflowValidator. Features include real-time streaming, usage-based billing, self-testing (Playwright), web search (Tavily API), vision analysis (Claude Vision), architectural guidance (I AM Architect), and an automatic reflection/self-correction loop.
 - **Autonomous AI System (LomuAI v2.0)**: LomuAI diagnoses issues, implements fixes, and automatically commits changes to GitHub, triggering auto-deployment. It prioritizes tool execution and code writing, using a PostgreSQL-backed job queue for asynchronous execution with WebSocket broadcasting and checkpointing.
 - **Developer Tools**: LomuAI includes 56 tools covering core operations, deployment, secrets management, database, design, integrations, and file operations. All tools include security sandboxing, WebSocket event streaming, and integrate with existing platform healing infrastructure.
-<<<<<<< HEAD
-- **Platform Healing System**: Complete self-healing infrastructure with 3-tier intelligent routing for incident resolution: Tier 1 (Knowledge Base Auto-Fix), Tier 2 (LomuAI v2.0/Claude Sonnet 4), and Tier 3 (I AM Architect/Claude Sonnet 4). Automatic response quality monitoring triggers I AM Architect for autonomous diagnosis and fixes when quality is low.
-- **Real-Time Enforcement System**: A 6-layer real-time enforcement system validates LomuAI responses and triggers I AM Architect guidance when violations occur.
-- **Real-Time LomuAI + I AM Teamwork**: I AM Architect intervenes during active LomuAI sessions when workflow rules are violated, injecting corrective guidance. A "3-Strikes Escalation" policy automatically escalates jobs to I AM Architect for complete takeover after three failed guidance attempts.
-- **Critical Files Protection System**: Implemented read-before-write enforcement for 8 core infrastructure files (server/index.ts, server/routes.ts, server/db.ts, server/vite.ts, package.json, drizzle.config.ts, vite.config.ts, shared/schema.ts) with file size change detection to prevent accidental overwrites.
-- **Replit Agent Parity**: LomuAI now matches Replit Agent's complex task handling capability with extended iteration limits for different intents (BUILD, FIX, DIAGNOSTIC, CASUAL) and intelligent token/context management.
-=======
-- **Platform Healing System**: Complete self-healing infrastructure with 3-tier intelligent routing for cost-optimized incident resolution: Tier 1 (Knowledge Base Auto-Fix), Tier 2 (LomuAI v2.0/Gemini 2.5 Flash), and Tier 3 (I AM Architect/Claude Sonnet 4). Automatic response quality monitoring triggers I AM Architect for autonomous diagnosis and fixes when quality is low.
+- **Platform Healing System**: Complete self-healing infrastructure with 3-tier intelligent routing for incident resolution: Tier 1 (Knowledge Base Auto-Fix), Tier 2 (LomuAI v2.0/Claude Sonnet 4), and Tier 3 (I AM Architect/Claude Sonnet 4). Automatic response quality monitoring triggers I AM Architect for autonomous diagnosis and fixes when quality is low. Auto-commits changes to GitHub, triggering Railway auto-deployment.
 - **LomuAI v2.0 Workflow Enforcement**: Achieves Replit Agent behavioral parity through dual-layer enforcement: an enhanced system prompt with strict 7-phase workflow rules and a WorkflowValidator State Machine for programmatic runtime enforcement.
 - **Real-Time Enforcement System**: A 6-layer real-time enforcement system fully integrated into lomuJobManager validates LomuAI responses and triggers I AM Architect guidance when violations occur.
 - **Real-Time LomuAI + I AM Teamwork**: I AM Architect intervenes during active LomuAI sessions when workflow rules are violated, injecting corrective guidance. A "3-Strikes Escalation" policy automatically escalates jobs to I AM Architect for complete takeover after three failed guidance attempts.
 - **Critical Files Protection System**: Implemented read-before-write enforcement for 8 core infrastructure files (server/index.ts, server/routes.ts, server/db.ts, server/vite.ts, package.json, drizzle.config.ts, vite.config.ts, shared/schema.ts) with file size change detection to prevent accidental overwrites.
-- **Critical Bug Chain Resolution (Nov 5, 2025)**: Fixed 3 interconnected bugs preventing LomuAI from functioning:
-  1. **Tool Name Mismatch** ([commit 463990f](https://github.com/6-7Development/archetype/commit/463990f36efcd03de2cf6e01e8c2e7bc0234bab1)): System prompt told LomuAI to call `createTaskList()` (camelCase) but actual tool was `create_task_list()` (snake_case) → silent failures → no task lists created. Fixed in server/lomuSuperCore.ts.
-  2. **Phase Transition Blocking** ([commit 39bc896](https://github.com/6-7Development/archetype/commit/39bc896cebb3aa44aedb927e20bb81cd63a47162)): Two competing WorkflowValidator classes used different case (lowercase 'plan' vs uppercase 'PLAN') → ALL phase transitions failed → tools blocked → zero mutations → token waste. Fixed case mismatch in server/services/lomuJobManager.ts by converting detected phases to uppercase.
-  3. **Raw HTML in Chat UI**: Enhanced frontend filter in client/src/pages/platform-healing.tsx to remove leaked HTML/JSX tags, escaped newlines, and JSON fragments from chat responses.
-  
-  **Combined Impact**: Task lists now work, phase transitions succeed, tools execute properly, and chat UI is clean with no raw code leaking.
->>>>>>> 3e359d75566599a8cac6f578c58f9b7b3c60b12c
+- **Replit Agent Parity**: LomuAI now matches Replit Agent's complex task handling capability with extended iteration limits for different intents (BUILD, FIX, DIAGNOSTIC, CASUAL) and intelligent token/context management. Auto-commits like Replit Agent at job completion.
 - **Command System**: Natural language commands processed by Anthropic Claude 3.5 Sonnet to generate JSON project structures.
 - **File Management**: Generated files are stored in PostgreSQL, editable via Monaco editor, with real-time WebSocket synchronization.
 - **Preview System**: Uses `esbuild` for in-memory React/TypeScript compilation for live application previews in an iframe.
