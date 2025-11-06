@@ -112,12 +112,12 @@ export default function Landing() {
           <div className="grid md:grid-cols-2 gap-8">
             {/* Screenshot 1: Mobile Workspace */}
             <Card className="p-4 bg-slate-800 border-slate-700" data-testid="screenshot-workspace">
-              <div className="aspect-[9/16] md:aspect-video bg-slate-900/50 rounded-lg border border-slate-700 overflow-hidden">
-                <img 
-                  src="/screenshots/mobile-workspace.jpg" 
-                  alt="Lomu mobile workspace interface"
-                  className="w-full h-full object-cover object-top"
-                />
+              <div className="aspect-video bg-slate-900/50 rounded-lg border border-slate-700 flex items-center justify-center">
+                <div className="text-center">
+                  <Code className="w-12 h-12 mx-auto mb-2 text-primary" />
+                  <p className="text-sm text-slate-400">Mobile Workspace</p>
+                  <p className="text-xs text-slate-500 mt-1">Responsive IDE on any device</p>
+                </div>
               </div>
               <h3 className="mt-4 font-semibold text-white">Mobile-First Development</h3>
               <p className="text-sm text-slate-400 mt-2">Build apps on any device - desktop or mobile with our responsive workspace</p>
