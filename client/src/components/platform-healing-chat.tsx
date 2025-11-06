@@ -201,6 +201,19 @@ export function PlatformHealingChat({
 
   return (
     <div className="flex flex-col h-full">
+      {/* BRIGIDO Header - Added to top of healing chat */}
+      <div className="px-4 py-3 border-b bg-muted/50">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+            <Wrench className="w-4 h-4 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-primary">brigido</h2>
+            <p className="text-xs text-muted-foreground">Platform Healing Assistant</p>
+          </div>
+        </div>
+      </div>
+
       <ScrollArea 
         className="flex-1 px-4" 
         onScroll={handleScroll}
