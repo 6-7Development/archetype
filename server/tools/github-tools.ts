@@ -225,7 +225,7 @@ export async function exportProjectToGitHub(params: {
       ...excludePatterns,
     ];
     
-    async function getAllFiles(dir: string, baseDir: string = dir): Promise<string[]> {
+    const getAllFiles = async (dir: string, baseDir: string = dir): Promise<string[]> => {
       const entries = await fs.readdir(dir, { withFileTypes: true });
       const files: string[] = [];
       
@@ -248,7 +248,7 @@ export async function exportProjectToGitHub(params: {
       }
       
       return files;
-    }
+    };
     
     const allFiles = await getAllFiles(PROJECT_ROOT);
     

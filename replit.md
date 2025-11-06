@@ -76,7 +76,7 @@ Key features include:
 - **Backend**: Express.js, WebSocket
 - **Database**: PostgreSQL (Neon), Drizzle ORM
 - **AI**: Anthropic Claude Sonnet 4, OpenAI (gpt-image-1)
-- **Deployment**: Render.com, Railway
+- **Deployment**: Railway
 - **Payment Processing**: Stripe
 - **Authentication**: Passport.js, bcrypt, `connect-pg-simple`
 - **Charting**: Recharts
