@@ -29,6 +29,7 @@ export const users = pgTable("users", {
   isOwner: boolean("is_owner").notNull().default(false), // Platform owner (can modify platform in production)
   autonomyLevel: varchar("autonomy_level", { length: 20 }).notNull().default("basic"), // 'basic' | 'standard' | 'deep' | 'max' - Controls LomuAI capabilities
   billingStatus: text("billing_status").notNull().default("trial"), // Enum: 'trial', 'trial_grace', 'active', 'suspended'
+  stripeCustomerId: text("stripe_customer_id"), // Stripe customer ID
   defaultPaymentMethodId: varchar("default_payment_method_id"), // Stripe payment method ID
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

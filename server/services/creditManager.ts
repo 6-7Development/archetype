@@ -34,34 +34,33 @@ export class CreditManager {
     const { userId, creditsNeeded, agentRunId } = params;
 
     try {
-      // Get current wallet state
-      const [wallet] = await db
-        .select()
-        .from(creditWallets)
-        .where(eq(creditWallets.userId, userId));
+      const result = await db.transaction(async (tx) => {
+        const [wallet] = await tx
+          .select()
+          .from(creditWallets)
+          .where(eq(creditWallets.userId, userId));
 
-      if (!wallet) {
-        return { success: false, error: 'No credit wallet found' };
-      }
+        if (!wallet) {
+          throw new Error('No credit wallet found');
+        }
 
-      if (wallet.availableCredits < creditsNeeded) {
-        return {
-          success: false,
-          error: `Insufficient credits. Need ${creditsNeeded}, have ${wallet.availableCredits}`,
-        };
-      }
+        if (wallet.availableCredits < creditsNeeded) {
+          throw new Error(`Insufficient credits. Need ${creditsNeeded}, have ${wallet.availableCredits}`);
+        }
 
-      // Atomically move credits to reserved
-      await db
-        .update(creditWallets)
-        .set({
-          availableCredits: wallet.availableCredits - creditsNeeded,
-          reservedCredits: wallet.reservedCredits + creditsNeeded,
-          updatedAt: new Date(),
-        })
-        .where(eq(creditWallets.userId, userId));
+        await tx
+          .update(creditWallets)
+          .set({
+            availableCredits: wallet.availableCredits - creditsNeeded,
+            reservedCredits: wallet.reservedCredits + creditsNeeded,
+            updatedAt: new Date(),
+          })
+          .where(eq(creditWallets.userId, userId));
 
-      return { success: true, reservationId: agentRunId };
+        return { success: true, reservationId: agentRunId };
+      });
+
+      return result;
     } catch (error: any) {
       console.error('[CREDIT-MANAGER] Error reserving credits:', error);
       return { success: false, error: error.message };
@@ -87,41 +86,42 @@ export class CreditManager {
     try {
       const creditsToReturn = creditsReserved - creditsActuallyUsed;
 
-      // Get current wallet
-      const [wallet] = await db
-        .select()
-        .from(creditWallets)
-        .where(eq(creditWallets.userId, userId));
+      const result = await db.transaction(async (tx) => {
+        const [wallet] = await tx
+          .select()
+          .from(creditWallets)
+          .where(eq(creditWallets.userId, userId));
 
-      if (!wallet) {
-        return { success: false, error: 'No credit wallet found' };
-      }
+        if (!wallet) {
+          throw new Error('No credit wallet found');
+        }
 
-      // Update wallet: return unused credits, deduct from reserved
-      await db
-        .update(creditWallets)
-        .set({
-          availableCredits: wallet.availableCredits + creditsToReturn,
-          reservedCredits: wallet.reservedCredits - creditsReserved,
-          updatedAt: new Date(),
-        })
-        .where(eq(creditWallets.userId, userId));
+        await tx
+          .update(creditWallets)
+          .set({
+            availableCredits: wallet.availableCredits + creditsToReturn,
+            reservedCredits: wallet.reservedCredits - creditsReserved,
+            updatedAt: new Date(),
+          })
+          .where(eq(creditWallets.userId, userId));
 
-      // Log consumption to ledger (negative delta)
-      await db.insert(creditLedger).values({
-        userId,
-        deltaCredits: -creditsActuallyUsed,
-        usdAmount: null,
-        source,
-        referenceId: agentRunId,
-        metadata: {
-          ...metadata,
-          creditsReserved,
-          creditsReturned: creditsToReturn,
-        },
+        await tx.insert(creditLedger).values({
+          userId,
+          deltaCredits: -creditsActuallyUsed,
+          usdAmount: null,
+          source,
+          referenceId: agentRunId,
+          metadata: {
+            ...metadata,
+            creditsReserved,
+            creditsReturned: creditsToReturn,
+          },
+        });
+
+        return { success: true };
       });
 
-      return { success: true };
+      return result;
     } catch (error: any) {
       console.error('[CREDIT-MANAGER] Error reconciling credits:', error);
       return { success: false, error: error.message };
@@ -225,5 +225,29 @@ export class CreditManager {
     } catch (error) {
       return false;
     }
+  }
+
+  /**
+   * Determine if user should be charged for operation
+   * Owner gets FREE credits for:
+   * - Platform healing (projectId === null)
+   * - Their own uploaded projects (future: check project ownership)
+   */
+  static async shouldChargeUser(userId: string, projectId?: string | null): Promise<boolean> {
+    const isOwner = await this.isOwner(userId);
+    
+    if (!isOwner) {
+      return true; // Regular users always get charged
+    }
+    
+    // Owner gets free credits for platform healing (projectId === null)
+    // and for their own uploaded projects
+    if (!projectId) {
+      return false; // Platform healing = FREE for owner
+    }
+    
+    // Check if project belongs to owner
+    // (You can add additional logic here to check project ownership)
+    return true; // Charge for other users' projects
   }
 }

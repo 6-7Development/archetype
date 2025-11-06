@@ -34,6 +34,7 @@ import { registerDeploymentRoutes } from "./routes/deployments";
 import tasksRouter from "./routes/tasks";
 import { registerArchitectNotesRoutes } from "./routes/architect-notes";
 import { registerUserPreferencesRoutes } from "./routes/user-preferences";
+import creditsRouter from "./routes/credits";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // ==================== HEALTH & DIAGNOSTICS ====================
@@ -239,6 +240,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Mount conversation state router (context tracking for AI chats)
   app.use('/api/conversation', conversationStateRouter);
+  
+  // Mount credits router (credit purchase and balance management)
+  app.use('/api/credits', creditsRouter);
+  console.log('[CREDITS] Credits router mounted at /api/credits');
   
   // Mount webhooks router (deployment status from Railway/Render)
   app.use('/api/webhooks', webhooksRouter);

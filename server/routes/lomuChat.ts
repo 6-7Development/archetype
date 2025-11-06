@@ -640,6 +640,24 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     return res.status(503).json({ error: 'Hmm, my AI brain isn\'t connected yet. The Gemini API key needs to be configured. Could you set it up in your environment variables?' });
   }
 
+  // Start agent run and reserve credits
+  const AgentExecutor = (await import('../services/agentExecutor')).AgentExecutor;
+  const runResult = await AgentExecutor.startRun({
+    userId,
+    projectId: projectId || null,
+    estimatedCredits: 100, // Initial estimate
+  });
+
+  if (!runResult.success) {
+    return res.status(402).json({ 
+      error: runResult.error,
+      requiresCreditPurchase: true,
+    });
+  }
+
+  const agentRunId = runResult.runId!;
+  console.log('[LOMU-AI-CHAT] Agent run started:', agentRunId);
+
   // Prevent concurrent streams per user
   const activeStreamsKey = `lomu-ai-stream-${userId}`;
   if (activeStreams.has(activeStreamsKey)) {
@@ -714,6 +732,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
   console.log('[LOMU-AI-CHAT] Stream timeout set - will force close after 5 minutes');
 
   console.log('[LOMU-AI-CHAT] Entering try block');
+  
+  // Track total credits used for this agent run
+  let totalCreditsUsed = 0;
+  
   try {
 
     // Fetch user's autonomy level and subscription
@@ -3342,6 +3364,19 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       terminateStream('error-' + Date.now(), `Something went sideways, but I'm still here to help!`);
     }
   } finally {
+    // Complete run and reconcile credits
+    try {
+      const AgentExecutor = (await import('../services/agentExecutor')).AgentExecutor;
+      await AgentExecutor.completeRun({
+        runId: agentRunId,
+        actualCreditsUsed: totalCreditsUsed,
+        source: 'lomu_chat',
+      });
+      console.log('[LOMU-AI-CHAT] Agent run completed:', agentRunId, 'Credits used:', totalCreditsUsed);
+    } catch (error: any) {
+      console.error('[LOMU-AI-CHAT] Failed to complete agent run:', error);
+    }
+
     // Remove from active streams
     const activeStreamsKey = `lomu-ai-stream-${userId}`;
     activeStreams.delete(activeStreamsKey);

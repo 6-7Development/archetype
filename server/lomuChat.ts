@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import { db } from '../db';
-import { chatMessages, architectConsultations, insertArchitectConsultationSchema, projectSessions } from '@shared/schema';
+import { chatMessages, architectConsultations, insertArchitectConsultationSchema, projectSessions, agentRuns } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth';
+import { requirePaymentMethod, requireSufficientCredits } from './middleware/creditValidation';
 import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { platformHealing } from '../platformHealing';
@@ -12,6 +13,8 @@ import { executeWebSearch } from '../tools/web-search';
 import { GitHubService } from '../githubService';
 import { createTaskList, updateTask, readTaskList } from '../tools/task-management';
 import { trackAIUsage } from '../usage-tracking';
+import { AgentExecutor } from './services/agentExecutor';
+import { CreditManager } from './services/creditManager';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { 
@@ -55,7 +58,7 @@ router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
 });
 
 // Stream LomuAI chat response
-router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
+router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSufficientCredits(100), async (req: any, res) => {
   try {
     const { message, autoCommit = false, autoPush = false } = req.body;
     const userId = req.authenticatedUserId;
@@ -123,6 +126,23 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       .returning();
 
     sendEvent('user_message', { messageId: userMsg.id });
+
+    // Start agent run and reserve credits (100 credits upfront)
+    const CREDITS_TO_RESERVE = 100;
+    const agentRunResult = await AgentExecutor.startRun({
+      userId,
+      projectId: activeProjectId,
+      estimatedCredits: CREDITS_TO_RESERVE,
+    });
+
+    if (!agentRunResult.success) {
+      sendEvent('error', { message: `Credit reservation failed: ${agentRunResult.error}` });
+      res.end();
+      return;
+    }
+
+    const agentRunId = agentRunResult.runId!;
+    console.log(`[LOMU-CHAT] Agent run started: ${agentRunId}, reserved ${CREDITS_TO_RESERVE} credits`);
 
     // Create backup before any changes (non-blocking - continue even if it fails)
     let backup: any = null;
@@ -622,6 +642,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               };
               sendEvent('progress', { message: PROGRESS_MESSAGES.consultingArchitect() });
               
+              // Check if user is owner for free I AM access
+              const CreditManager = (await import('./services/creditManager')).CreditManager;
+              const isOwner = await CreditManager.isOwner(userId);
+              
               const startTime = Date.now();
               
               // Call I AM Architect with mapped parameters
@@ -636,22 +660,46 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               const responseTime = Date.now() - startTime;
               const timestamp = Date.now();
               
-              // Track I AM Architect premium billing (always overage, never counts against plan limit)
+              // Track I AM Architect billing (FREE for owner, premium for others)
               if (architectResult.inputTokens && architectResult.outputTokens) {
-                await trackAIUsage({
-                  userId,
-                  projectId: activeProjectId,
-                  type: 'architect_consultation',
-                  inputTokens: architectResult.inputTokens,
-                  outputTokens: architectResult.outputTokens,
-                  model: 'claude', // I AM always uses Claude
-                  billingMode: 'premium', // Premium pay-per-use, always overage
-                  metadata: {
-                    question: typedInput.question,
-                    responseTime,
-                    filesInspected: architectResult.filesInspected?.length || 0,
-                  },
-                });
+                if (isOwner) {
+                  // Owner gets FREE I AM access - log with metadata but no charge
+                  await trackAIUsage({
+                    userId,
+                    projectId: activeProjectId,
+                    type: 'architect_consultation',
+                    inputTokens: architectResult.inputTokens,
+                    outputTokens: architectResult.outputTokens,
+                    model: 'claude',
+                    billingMode: 'premium',
+                    metadata: {
+                      owner_exempt: true, // FREE for owner
+                      consultation: 'free',
+                      question: typedInput.question,
+                      responseTime,
+                      filesInspected: architectResult.filesInspected?.length || 0,
+                    },
+                  });
+                  
+                  sendEvent('progress', { message: 'I AM Architect consultation (FREE - owner privilege)' });
+                } else {
+                  // Regular users pay premium rate
+                  await trackAIUsage({
+                    userId,
+                    projectId: activeProjectId,
+                    type: 'architect_consultation',
+                    inputTokens: architectResult.inputTokens,
+                    outputTokens: architectResult.outputTokens,
+                    model: 'claude',
+                    billingMode: 'premium',
+                    metadata: {
+                      consultation: 'premium',
+                      question: typedInput.question,
+                      responseTime,
+                      filesInspected: architectResult.filesInspected?.length || 0,
+                    },
+                  });
+                }
               }
               
               // Store consultation telemetry in database
