@@ -503,10 +503,12 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   
                   if (result.success) {
                     console.log(`[HEALING-CHAT] ✅ Created task list: ${result.taskListId} with ${toolUse.input.tasks.length} tasks`);
+                    console.log(`[HEALING-CHAT] 🔑 Task IDs:`, result.tasks?.map(t => t.id).join(', '));
                     return {
                       success: true,
                       taskListId: result.taskListId,
-                      message: `Task list created with ${toolUse.input.tasks.length} tasks`
+                      tasks: result.tasks, // ← CRITICAL FIX: Return actual task IDs so Claude can update them!
+                      message: `✓ Task list created! Use these task IDs for update_task(): ${result.tasks?.map(t => `"${t.id}"`).join(', ')}`
                     };
                   } else {
                     console.error(`[HEALING-CHAT] ❌ Failed to create task list:`, result.error);

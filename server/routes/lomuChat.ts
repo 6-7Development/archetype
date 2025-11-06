@@ -1626,7 +1626,16 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 // Track the active task list ID for cleanup
                 taskListId = result.taskListId!; // Set taskListId here
                 detectedComplexity = typedInput.tasks.length; // Update complexity based on tasks
-                toolResult = `✅ Task list created successfully!\n\nTask List ID: ${result.taskListId}\n\nTasks are now visible inline in the chat. The user can see your progress in real-time! Update task status as you work using updateTask().`;
+                
+                // ← CRITICAL FIX: Return task IDs so Claude can update them!
+                console.log('[LOMU-AI] 🔑 Task IDs:', result.tasks?.map(t => t.id).join(', '));
+                toolResult = JSON.stringify({
+                  success: true,
+                  taskListId: result.taskListId,
+                  tasks: result.tasks,
+                  message: `✅ Task list created! Use these task IDs for update_task(): ${result.tasks?.map(t => `"${t.id}"`).join(', ')}`
+                });
+                
                 sendEvent('task_list_created', { taskListId: result.taskListId });
                 sendEvent('content', { content: `✅ **Task list created!** Track my progress in the card above.\n\n` });
                 console.log('[LOMU-AI] Task list created:', result.taskListId);
