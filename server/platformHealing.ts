@@ -1674,7 +1674,7 @@ Return the top ${maxResults} most relevant files in JSON format:
       const requiredTables = [
         'users', 'projects', 'files', 'chat_messages',
         'subscriptions', 'api_keys', 'support_tickets',
-        'ai_requests', 'deployments', 'conversation_states'
+        'deployments', 'conversation_states'
       ];
 
       const missingTables: string[] = [];

@@ -75,8 +75,8 @@ try {
     if (import.meta.env.DEV) {
       // Log memory usage periodically in dev mode
       const memoryInterval = setInterval(() => {
-        if (performance && performance.memory) {
-          const mem = performance.memory;
+        if (performance && (performance as any).memory) {
+          const mem = (performance as any).memory;
           const usedMB = Math.round(mem.usedJSHeapSize / 1048576);
           const limitMB = Math.round(mem.jsHeapSizeLimit / 1048576);
           
