@@ -588,6 +588,9 @@ function PlatformHealingContent() {
       {/* Header */}
       <div className="flex items-center gap-2 sm:gap-4 p-3 sm:p-4 border-b border-border">
         <h1 className="text-lg sm:text-xl font-bold">Platform Healing</h1>
+        <Badge variant="secondary" className="text-xs">
+          Brigido 👨‍💼
+        </Badge>
         
         {/* Target Selector */}
         <Select value={targetId || undefined} onValueChange={setTargetId}>
