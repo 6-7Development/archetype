@@ -61,7 +61,14 @@ LomuAI supports parallel subagent orchestration, allowing multiple tasks to exec
 - **Real-Time Enforcement System**: A 6-layer system integrated into `lomuJobManager` validates LomuAI responses and triggers I AM Architect guidance.
 - **Real-Time LomuAI + I AM Teamwork**: I AM Architect intervenes during active LomuAI sessions when workflow rules are violated, with a "3-Strikes Escalation" policy.
 - **Critical Files Protection System**: Read-before-write enforcement for 8 core infrastructure files to prevent accidental overwrites.
-- **Replit Agent Parity**: LomuAI matches Replit Agent's complex task handling with extended iteration limits and intelligent token/context management, including auto-commits.
+- **Replit Agent Parity**: LomuAI matches Replit Agent's complex task handling with production-optimized configuration (as of Nov 6, 2025):
+  - **Token Management**: 8,000 tokens/action (up from 3,500) - utilizes Claude's 200K context for complex reasoning
+  - **Iteration Limits**: 35 iterations for build tasks, 30 for fix/diagnostic, 5 for casual conversations
+  - **Self-Correction**: 3-level reflection depth (up from 2) for robust autonomous fixes
+  - **Concurrency**: 3 concurrent AI requests, 2 parallel subagents/user (with 120MB memory budget)
+  - **Timeouts**: 8min AI requests, 5min streaming, 10min WebSocket - optimized for complex multi-step tasks
+  - **Auto-Commits**: Automatic GitHub integration with Railway deployment triggers
+  - **Note**: Further concurrency increases require runtime memory monitoring and auto-throttling
 - **Command System**: Natural language commands processed by Anthropic Claude 3.5 Sonnet to generate JSON project structures.
 - **File Management**: Generated files are stored in PostgreSQL, editable via Monaco editor, with real-time WebSocket synchronization.
 - **Preview System**: Uses `esbuild` for in-memory React/TypeScript compilation for live application previews.

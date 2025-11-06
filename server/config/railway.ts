@@ -17,7 +17,7 @@ export const RAILWAY_CONFIG = {
   // Memory settings
   MEMORY_LIMIT_MB: 512, // Railway container limit
   MEMORY_WARNING_THRESHOLD: 400, // Start warning at 400MB (78% capacity)
-  MAX_CONCURRENT_AI_REQUESTS: 3, // Limit concurrent AI requests to prevent memory exhaustion
+  MAX_CONCURRENT_AI_REQUESTS: 3, // SAFE: Profiling shows 3 is ceiling for 512MB container (needs monitoring before increasing)
   
   // Health check settings
   HEALTH_CHECK_INTERVAL: 30000, // 30 seconds

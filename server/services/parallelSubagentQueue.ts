@@ -23,8 +23,8 @@ interface SubagentResult {
 
 // Memory safety constants
 const MEMORY_LIMIT_MB = 400; // Leave 112MB buffer on Railway's 512MB limit
-const ESTIMATED_MEMORY_PER_SUBAGENT_MB = 150; // Conservative estimate
-const MAX_CONCURRENT_PER_USER = 2; // Railway safety
+const ESTIMATED_MEMORY_PER_SUBAGENT_MB = 150; // Conservative estimate (needs RSS profiling to optimize)
+const MAX_CONCURRENT_PER_USER = 2; // Railway safety (increase to 3 requires memory instrumentation)
 const SUBAGENT_TIMEOUT_MS = 8 * 60 * 1000; // 8 minutes
 
 class ParallelSubagentQueue {

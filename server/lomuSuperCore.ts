@@ -14,8 +14,8 @@ export interface LomuCoreConfig {
 
 export const LOMU_CORE_CONFIG: LomuCoreConfig = {
   mode: (process.env.LOMU_MODE as 'dev' | 'prod') || 'prod',
-  maxTokensPerAction: parseInt(process.env.MAX_TOKENS_PER_ACTION || '3500'), // Production-ready: Can build complete features
-  maxReflectDepth: parseInt(process.env.MAX_REFLECT_DEPTH || '2'),
+  maxTokensPerAction: parseInt(process.env.MAX_TOKENS_PER_ACTION || '8000'), // REPLIT AGENT PARITY: Utilize Claude's 200K context for complex tasks
+  maxReflectDepth: parseInt(process.env.MAX_REFLECT_DEPTH || '3'), // Deeper self-correction for robust fixes
   chatTone: (process.env.CHAT_TONE as 'calm_minimalist' | 'detailed') || 'calm_minimalist',
   debugResponses: process.env.DEBUG_RESPONSES === 'true',
   autoPlanReview: process.env.AUTO_PLAN_REVIEW !== 'false',
