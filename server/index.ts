@@ -287,7 +287,8 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
   }
 
   // Initialize auto-healing system (DISABLED by default to prevent token usage)
-  // Users trigger healing manually via Platform Healing UI and pay for their own tokens
+  // PLATFORM HEALING: Owner-only access for fixing the platform itself (not user projects)
+  // REGULAR LOMUAI: All users build/fix their own projects (usage-based billing)
   const autoHealingEnabled = process.env.ENABLE_AUTO_HEALING === 'true';
   
   if (autoHealingEnabled) {
@@ -298,8 +299,10 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
     console.log('   🔄 Rollback: Automatic rollback on verification/deployment failure');
     console.log('   💰 WARNING: This uses YOUR Anthropic credits!');
   } else {
-    console.log('💡 Auto-healing system DISABLED (users trigger manually via UI)');
-    console.log('   👥 Users pay for their own AI tokens when using Platform Healing');
+    console.log('💡 Platform Healing: OWNER-ONLY access (manual trigger via UI)');
+    console.log('   👑 Owner uses LomuAI to fix the platform itself - FREE');
+    console.log('   👥 Regular users use LomuAI for their projects - usage-based billing');
+    console.log('   💳 Credits: 1 credit = 1,000 tokens = $0.05 (retail pricing)');
   }
 
   // Start platform health monitor

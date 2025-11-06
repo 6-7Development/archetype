@@ -52,13 +52,26 @@ The user interface features a tab-based workspace providing an IDE-like experien
 ### System Design Choices
 LomuAI is the sole autonomous worker that commits changes, operating independently with a strict 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). I AM Architect is a user-summoned consultant only (premium feature), providing guidance without committing code. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing.
 
+**Access Model:**
+- **Platform Healing**: Owner-only access to fix the platform itself using LomuAI v2.0 (free for owner)
+- **Regular LomuAI**: All users build/fix their own projects (usage-based credit billing)
+- **I AM Architect**: Premium consulting feature available to all users (deducts credits)
+- **Owner Privileges**: Unlimited free usage of all platform features
+
+**Credit System:**
+- 1 credit = 1,000 tokens = $0.05 (retail pricing)
+- Atomic reserve → consume → refund operations
+- Credit wallet with available/reserved tracking
+- Monthly allocations per plan tier with overage billing
+- Stripe integration for purchases and subscriptions
+
 Key features include:
 - **GitHub Integration**: Full version control with 6 tools, supporting branching, pull requests, and project export, triggering auto-deployment.
 - **Environment Variables Management**: Project-level secrets with 4 tools, database storage, validation, and security masking.
 - **Code Intelligence System**: AST-based code understanding via CodeIndexer, FileRelevanceDetector, and SmartChunker for efficient code retrieval and dependency graphing.
-- **Platform Healing System**: Two-tier incident resolution (Knowledge Base → LomuAI v2.0).
+- **Platform Healing System**: Owner-only two-tier incident resolution (Knowledge Base → LomuAI v2.0) for fixing the platform itself.
 - **Replit Agent Parity**: Matches Replit Agent's complex task handling with increased token limits, iterations, self-correction, and concurrency.
-- **Credit-Based Billing System**: Production-ready monetization with usage-based credits, atomic operations, pause/resume flow, and Stripe integration.
+- **Credit-Based Billing System**: Production-ready monetization with usage-based credits (1 credit = 1K tokens = $0.05), atomic operations, pause/resume flow, and Stripe integration.
 - **Monetization Infrastructure**: Lead capture, Stripe subscription system, webhooks, granular usage billing, and template marketplace commission model.
 - **Security & Production Readiness**: Authentication/authorization (Replit Auth, PostgreSQL sessions), protected API routes, rate limiting, bcrypt-hashed API keys, and comprehensive RCE prevention including terminal security and resource caps.
 
