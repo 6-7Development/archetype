@@ -32,6 +32,8 @@ import webhooksRouter, { setWebhookBroadcaster } from "./routes/webhooks";
 import gitRouter from "./routes/git";
 import { registerDeploymentRoutes } from "./routes/deployments";
 import tasksRouter from "./routes/tasks";
+import { registerArchitectNotesRoutes } from "./routes/architect-notes";
+import { registerUserPreferencesRoutes } from "./routes/user-preferences";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // ==================== HEALTH & DIAGNOSTICS ====================
@@ -202,6 +204,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register all route modules with dependencies
   registerAuthRoutes(app);
   registerAdminRoutes(app);
+  registerArchitectNotesRoutes(app);
+  registerUserPreferencesRoutes(app);
   registerOwnerSetupRoutes(app);
   registerSubscriptionRoutes(app);
   registerProjectRoutes(app);

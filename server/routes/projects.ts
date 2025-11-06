@@ -825,4 +825,36 @@ export function registerProjectRoutes(app: Express) {
       `);
     }
   });
+
+  // POST /api/projects/:id/activate - Set as active project
+  app.post("/api/projects/:id/activate", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.authenticatedUserId;
+      const { id } = req.params;
+
+      // Verify project exists and belongs to user
+      const project = await storage.getProject(id, userId);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      // Import project sessions table
+      const { db } = await import("../db");
+      const { projectSessions } = await import("@shared/schema");
+
+      // Upsert project session (set as active)
+      await db
+        .insert(projectSessions)
+        .values({ userId, activeProjectId: id, updatedAt: new Date() })
+        .onConflictDoUpdate({
+          target: projectSessions.userId,
+          set: { activeProjectId: id, updatedAt: new Date() },
+        });
+
+      res.json({ success: true, activeProjectId: id });
+    } catch (error: any) {
+      console.error('Error activating project:', error);
+      res.status(500).json({ error: error.message || "Failed to activate project" });
+    }
+  });
 }

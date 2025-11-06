@@ -387,9 +387,14 @@ export const projects = pgTable("projects", {
   name: text("name").notNull(),
   description: text("description"),
   type: text("type").notNull().default("webapp"),
+  status: varchar("status").notNull().default("active"), // active, archived
+  repoUrl: text("repo_url"), // Optional GitHub repo URL
+  uploadPath: text("upload_path"), // /uploads/{projectId}
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_projects_user_id").on(table.userId),
+]);
 
 export const insertProjectSchema = createInsertSchema(projects).omit({
   id: true,
@@ -400,6 +405,58 @@ export const insertProjectSchema = createInsertSchema(projects).omit({
 
 export type InsertProject = z.infer<typeof insertProjectSchema>;
 export type Project = typeof projects.$inferSelect;
+
+// Project Sessions - Track active project per user (one active project at a time)
+export const projectSessions = pgTable("project_sessions", {
+  userId: varchar("user_id").primaryKey(), // One active project per user
+  activeProjectId: varchar("active_project_id").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertProjectSessionSchema = createInsertSchema(projectSessions).omit({
+  updatedAt: true,
+});
+
+export type InsertProjectSession = z.infer<typeof insertProjectSessionSchema>;
+export type ProjectSession = typeof projectSessions.$inferSelect;
+
+// Architect Notes - I AM → LomuAI collaboration notes
+export const architectNotes = pgTable("architect_notes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull(),
+  authorRole: varchar("author_role").notNull(), // "architect" or "lomu"
+  title: text("title").notNull(),
+  content: text("content").notNull(), // Markdown format
+  visibility: varchar("visibility").notNull().default("project"), // "project", "private"
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("idx_architect_notes_project_id").on(table.projectId),
+]);
+
+export const insertArchitectNoteSchema = createInsertSchema(architectNotes).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertArchitectNote = z.infer<typeof insertArchitectNoteSchema>;
+export type ArchitectNote = typeof architectNotes.$inferSelect;
+
+// User Preferences - AI model selection and theme
+export const userPreferences = pgTable("user_preferences", {
+  userId: varchar("user_id").primaryKey(),
+  aiModel: varchar("ai_model").notNull().default("claude"), // "claude" or "gemini"
+  theme: varchar("theme").default("light"), // "light" or "dark"
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertUserPreferenceSchema = createInsertSchema(userPreferences).omit({
+  updatedAt: true,
+});
+
+export type InsertUserPreference = z.infer<typeof insertUserPreferenceSchema>;
+export type UserPreference = typeof userPreferences.$inferSelect;
 
 export const files = pgTable("files", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -536,7 +593,9 @@ export const chatMessages = pgTable("chat_messages", {
   approvedBy: varchar("approved_by"), // User ID who approved/rejected
   approvedAt: timestamp("approved_at"), // When approval was given
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (table) => [
+  index("idx_chat_messages_project_id").on(table.projectId),
+]);
 
 export const insertChatMessageSchema = createInsertSchema(chatMessages)
   .omit({
