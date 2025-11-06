@@ -3,6 +3,8 @@
 ## Overview
 Lomu is an AI-powered platform designed for rapid web development, featuring LomuAI, an autonomous AI coding agent, and dual-version IDE Workspaces (Lomu for desktop, Lomu5 for mobile). It offers a console-first interface, real-time preview, and comprehensive workspace features. The platform aims for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. A key capability is LomuAI's autonomous self-healing, bug fixing, and UI/UX improvements to its own source code, complete with rollback and audit logging.
 
+**CRITICAL ARCHITECTURE**: LomuAI is the sole autonomous worker that commits changes. I AM Architect is a user-summoned consultant only (paid usage), never automatically invoked.
+
 ## User Preferences
 ### API Configuration
 **Claude Sonnet 4 Unified Strategy**:
@@ -53,13 +55,12 @@ The user interface features a tab-based workspace providing an IDE-like experien
 LomuAI supports parallel subagent orchestration, allowing multiple tasks to execute simultaneously with Railway-safe resource limits. Tasks are queued, and progress is broadcast via WebSockets.
 
 ### Technical Implementations
-- **AI Architecture**: LomuAI v2.0 follows a strict 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT) with programmatic enforcement. It includes real-time streaming, usage-based billing, self-testing (Playwright), web search (Tavily API), vision analysis (Claude Vision), architectural guidance (I AM Architect), and an automatic reflection/self-correction loop.
-- **Autonomous AI System (LomuAI v2.0)**: LomuAI diagnoses issues, implements fixes, and automatically commits changes to GitHub, triggering auto-deployment.
+- **AI Architecture**: LomuAI v2.0 follows a strict 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT) with programmatic enforcement. It includes real-time streaming, usage-based billing, self-testing (Playwright), web search (Tavily API), vision analysis (Claude Vision), and an automatic reflection/self-correction loop.
+- **Autonomous AI System (LomuAI v2.0)**: LomuAI is the PRIMARY autonomous worker that diagnoses issues, implements fixes, and automatically commits changes to GitHub, triggering auto-deployment. Works independently without requiring architect approval.
+- **I AM Architect Role**: Optional expert consultant (premium paid feature) that users can explicitly summon for complex architectural decisions. NEVER auto-triggered - user-summoned only. Provides guidance but does not commit code.
 - **Developer Tools**: LomuAI includes 56 tools covering core operations, deployment, secrets management, database, design, integrations, and file operations, all with security sandboxing and WebSocket event streaming.
-- **Platform Healing System**: A self-healing infrastructure with 3-tier intelligent routing for incident resolution (Knowledge Base, LomuAI v2.0, I AM Architect). Automatic quality monitoring triggers I AM Architect for diagnosis and fixes when quality is low.
+- **Platform Healing System**: A self-healing infrastructure with **2-tier intelligent routing** for incident resolution: TIER 1 (Knowledge Base) → TIER 2 (LomuAI v2.0). I AM Architect removed from auto-routing - user can manually request architect consultation if needed.
 - **LomuAI v2.0 Workflow Enforcement**: Dual-layer enforcement via enhanced system prompts and a WorkflowValidator State Machine.
-- **Real-Time Enforcement System**: A 6-layer system integrated into `lomuJobManager` validates LomuAI responses and triggers I AM Architect guidance.
-- **Real-Time LomuAI + I AM Teamwork**: I AM Architect intervenes during active LomuAI sessions when workflow rules are violated, with a "3-Strikes Escalation" policy.
 - **Critical Files Protection System**: Read-before-write enforcement for 8 core infrastructure files to prevent accidental overwrites.
 - **Replit Agent Parity**: LomuAI matches Replit Agent's complex task handling with production-optimized configuration (as of Nov 6, 2025):
   - **Token Management**: 8,000 tokens/action (up from 3,500) - utilizes Claude's 200K context for complex reasoning
