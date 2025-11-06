@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { AgentTaskList, type AgentTask } from '@/components/agent-task-list';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface HealingTarget {
   id: string;
@@ -76,6 +77,68 @@ function cleanAIResponse(content: string): string {
   cleaned = cleaned.replace(/\s+$/gm, '');
   
   return cleaned.trim();
+}
+
+/**
+ * Format error messages for user-friendly display
+ * Converts technical errors into clear, actionable messages
+ */
+function formatUserError(error: any, context: string): { title: string; description: string } {
+  const errorMessage = error?.message || String(error);
+  
+  // Network/connectivity errors
+  if (errorMessage.includes('fetch') || errorMessage.includes('network') || errorMessage.includes('Failed to load')) {
+    return {
+      title: `Connection Issue`,
+      description: `Could not connect to ${context}. Please check your connection and try again.`
+    };
+  }
+  
+  // Authentication errors
+  if (errorMessage.includes('401') || errorMessage.includes('unauthorized') || errorMessage.includes('authentication')) {
+    return {
+      title: `Authentication Required`,
+      description: `Your session may have expired. Please refresh the page and sign in again.`
+    };
+  }
+  
+  // Permission errors
+  if (errorMessage.includes('403') || errorMessage.includes('forbidden') || errorMessage.includes('permission')) {
+    return {
+      title: `Access Denied`,
+      description: `You don't have permission to ${context}. Contact your administrator if this is unexpected.`
+    };
+  }
+  
+  // Server errors
+  if (errorMessage.includes('500') || errorMessage.includes('Internal Server Error')) {
+    return {
+      title: `Server Error`,
+      description: `Something went wrong on our end. Our team has been notified. Please try again in a few moments.`
+    };
+  }
+  
+  // Timeout errors
+  if (errorMessage.includes('timeout') || errorMessage.includes('timed out')) {
+    return {
+      title: `Request Timeout`,
+      description: `The operation took too long to complete. Please try again with a simpler request.`
+    };
+  }
+  
+  // Default: clean up technical jargon but keep useful info
+  const cleanedError = errorMessage
+    .replace(/Error:/gi, '')
+    .replace(/Failed to /gi, 'Could not ')
+    .trim();
+  
+  // Title-case the context string
+  const titleCasedContext = context.charAt(0).toUpperCase() + context.slice(1);
+  
+  return {
+    title: `${titleCasedContext} Failed`,
+    description: cleanedError || 'An unexpected error occurred. Please try again.'
+  };
 }
 
 function PlatformHealingContent() {
@@ -302,9 +365,10 @@ function PlatformHealingContent() {
       toast({ title: 'New conversation started' });
     },
     onError: (error: any) => {
+      const formatted = formatUserError(error, 'create conversation');
       toast({
-        title: 'Failed to create conversation',
-        description: error.message,
+        title: formatted.title,
+        description: formatted.description,
         variant: 'destructive',
       });
     },
@@ -322,9 +386,10 @@ function PlatformHealingContent() {
       toast({ title: 'Chat cleared', description: 'Conversation history has been cleared' });
     },
     onError: (error: any) => {
+      const formatted = formatUserError(error, 'clear chat');
       toast({
-        title: 'Failed to clear chat',
-        description: error.message,
+        title: formatted.title,
+        description: formatted.description,
         variant: 'destructive',
       });
     },
@@ -452,9 +517,10 @@ function PlatformHealingContent() {
       setStreamingContent('');
     } catch (error: any) {
       if (error.name !== 'AbortError') {
+        const formatted = formatUserError(error, 'get AI response');
         toast({
-          title: 'Failed to get response',
-          description: error.message,
+          title: formatted.title,
+          description: formatted.description,
           variant: 'destructive',
         });
       }
@@ -496,9 +562,10 @@ function PlatformHealingContent() {
       });
     },
     onError: (error: any) => {
+      const formatted = formatUserError(error, 'deploy changes');
       toast({
-        title: '❌ Deploy Failed',
-        description: error.message || 'Failed to deploy changes',
+        title: '❌ ' + formatted.title,
+        description: formatted.description,
         variant: 'destructive',
       });
     },
@@ -662,18 +729,47 @@ function PlatformHealingContent() {
                   className="flex-1 overflow-y-auto p-4 space-y-4"
                   data-testid="chat-messages"
                 >
-                  {/* Loading state */}
+                  {/* Loading state with skeleton */}
                   {messagesLoading && (
-                    <div className="flex items-center justify-center py-8">
-                      <Loader2 className="w-6 h-6 animate-spin text-muted-foreground mr-2" />
-                      <p className="text-sm text-muted-foreground">Loading conversation...</p>
+                    <div className="space-y-4">
+                      {/* Skeleton for user message */}
+                      <div className="flex gap-3 justify-end">
+                        <div className="flex flex-col gap-1 max-w-[85%]">
+                          <Skeleton className="h-16 w-64 rounded-lg" />
+                          <Skeleton className="h-3 w-20 ml-auto" />
+                        </div>
+                      </div>
+                      {/* Skeleton for AI response */}
+                      <div className="flex gap-3 justify-start">
+                        <div className="flex flex-col gap-1 max-w-[85%]">
+                          <Skeleton className="h-32 w-96 rounded-lg" />
+                          <Skeleton className="h-3 w-24" />
+                        </div>
+                      </div>
                     </div>
                   )}
 
                   {/* Empty state */}
                   {!messagesLoading && messages.length === 0 && !isStreaming && (
-                    <div className="text-center text-muted-foreground py-8">
-                      <p>Hi! I'm Lomu. Ask me anything about this target.</p>
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                        <Activity className="w-8 h-8 text-primary" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">Ready to Help</h3>
+                      <p className="text-muted-foreground max-w-sm">
+                        I'm Lomu, your AI platform healing assistant. Ask me to fix bugs, improve code, or analyze issues with {selectedTarget?.name || 'the platform'}.
+                      </p>
+                      <div className="mt-6 flex flex-wrap gap-2 justify-center">
+                        <Badge variant="outline" className="text-xs">
+                          Code Analysis
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          Bug Fixing
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          Auto-Commit
+                        </Badge>
+                      </div>
                     </div>
                   )}
 
@@ -732,8 +828,15 @@ function PlatformHealingContent() {
                   {/* Typing indicator */}
                   {isStreaming && !streamingContent && (
                     <div className="flex gap-3 justify-start">
-                      <div className="max-w-[80%] rounded-lg px-4 py-2 bg-muted">
-                        <p className="text-sm text-muted-foreground">Lomu is working...</p>
+                      <div className="max-w-[80%] rounded-lg px-4 py-3 bg-muted border">
+                        <div className="flex items-center gap-2">
+                          <div className="flex gap-1">
+                            <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                            <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                            <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">Lomu is thinking...</p>
+                        </div>
                       </div>
                     </div>
                   )}

@@ -552,7 +552,12 @@ export class PlatformHealingService {
     }
   }
 
-  async writePlatformFile(filePath: string, content: string, skipAutoCommit: boolean = false): Promise<{ success: boolean; message: string; commitHash?: string; commitUrl?: string }> {
+  async writePlatformFile(
+    filePath: string, 
+    content: string, 
+    skipAutoCommit: boolean = false,
+    context?: { sessionId?: string; taskId?: string; description?: string }
+  ): Promise<{ success: boolean; message: string; commitHash?: string; commitUrl?: string }> {
     // CRITICAL: Validate content before ANY processing
     if (content === undefined || content === null) {
       console.error(`[PLATFORM-WRITE] ❌ REJECTED: undefined/null content for ${filePath}`);
@@ -657,7 +662,20 @@ export class PlatformHealingService {
       // Use GitHub service to commit the file IMMEDIATELY (old behavior)
       try {
         const githubService = getGitHubService();
-        const commitMessage = `[LomuAI 🤖] Update ${filePath}`;
+        
+        // Build enriched commit message with context
+        const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0];
+        let commitMessage = `[LomuAI 🤖] Update ${filePath}`;
+        if (context?.description) {
+          commitMessage += `\n\n${context.description}`;
+        }
+        if (context?.sessionId || context?.taskId) {
+          const metadata: string[] = [];
+          if (context.sessionId) metadata.push(`Session: ${context.sessionId.substring(0, 8)}`);
+          if (context.taskId) metadata.push(`Task: ${context.taskId.substring(0, 8)}`);
+          metadata.push(`Time: ${timestamp}`);
+          commitMessage += `\n\n${metadata.join(' | ')}`;
+        }
         
         console.log(`[PLATFORM-WRITE] 🔧 Committing to GitHub: ${filePath}`);
         console.log(`[PLATFORM-WRITE] Maintenance mode: ENABLED`);
@@ -698,8 +716,20 @@ export class PlatformHealingService {
           // Git add the modified file
           await execFileAsync('git', ['add', filePath], { cwd: this.PROJECT_ROOT });
           
-          // Git commit with descriptive message
-          const commitMessage = `[LomuAI 🤖 DEV] Update ${filePath}`;
+          // Build enriched commit message with context
+          const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0];
+          let commitMessage = `[LomuAI 🤖 DEV] Update ${filePath}`;
+          if (context?.description) {
+            commitMessage += `\n\n${context.description}`;
+          }
+          if (context?.sessionId || context?.taskId) {
+            const metadata: string[] = [];
+            if (context.sessionId) metadata.push(`Session: ${context.sessionId.substring(0, 8)}`);
+            if (context.taskId) metadata.push(`Task: ${context.taskId.substring(0, 8)}`);
+            metadata.push(`Time: ${timestamp}`);
+            commitMessage += `\n\n${metadata.join(' | ')}`;
+          }
+          
           await execFileAsync('git', [
             '-c', 'user.name=LomuAI',
             '-c', 'user.email=lomu-ai@archetype.platform',
@@ -737,7 +767,11 @@ export class PlatformHealingService {
     }
   }
 
-  async createPlatformFile(filePath: string, content: string): Promise<{ success: boolean; message: string; commitHash?: string; commitUrl?: string }> {
+  async createPlatformFile(
+    filePath: string, 
+    content: string,
+    context?: { sessionId?: string; taskId?: string; description?: string }
+  ): Promise<{ success: boolean; message: string; commitHash?: string; commitUrl?: string }> {
     // CRITICAL: Validate content before ANY processing
     if (content === undefined || content === null) {
       console.error(`[PLATFORM-CREATE] ❌ REJECTED: undefined/null content for ${filePath}`);
@@ -813,7 +847,20 @@ export class PlatformHealingService {
 
       try {
         const githubService = getGitHubService();
-        const commitMessage = `Create ${filePath} via Platform-SySop`;
+        
+        // Build enriched commit message with context
+        const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0];
+        let commitMessage = `[LomuAI 🤖] Create ${filePath}`;
+        if (context?.description) {
+          commitMessage += `\n\n${context.description}`;
+        }
+        if (context?.sessionId || context?.taskId) {
+          const metadata: string[] = [];
+          if (context.sessionId) metadata.push(`Session: ${context.sessionId.substring(0, 8)}`);
+          if (context.taskId) metadata.push(`Task: ${context.taskId.substring(0, 8)}`);
+          metadata.push(`Time: ${timestamp}`);
+          commitMessage += `\n\n${metadata.join(' | ')}`;
+        }
         
         console.log(`[PLATFORM-CREATE] 🔧 Committing to GitHub: ${filePath}`);
         console.log(`[PLATFORM-CREATE] Content to commit: ${content.length} bytes`);
@@ -848,8 +895,20 @@ export class PlatformHealingService {
         // Git add the new file
         await execFileAsync('git', ['add', filePath], { cwd: this.PROJECT_ROOT });
         
-        // Git commit with descriptive message
-        const commitMessage = `[LomuAI 🤖 DEV] Create ${filePath}`;
+        // Build enriched commit message with context
+        const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0];
+        let commitMessage = `[LomuAI 🤖 DEV] Create ${filePath}`;
+        if (context?.description) {
+          commitMessage += `\n\n${context.description}`;
+        }
+        if (context?.sessionId || context?.taskId) {
+          const metadata: string[] = [];
+          if (context.sessionId) metadata.push(`Session: ${context.sessionId.substring(0, 8)}`);
+          if (context.taskId) metadata.push(`Task: ${context.taskId.substring(0, 8)}`);
+          metadata.push(`Time: ${timestamp}`);
+          commitMessage += `\n\n${metadata.join(' | ')}`;
+        }
+        
         await execFileAsync('git', [
           '-c', 'user.name=LomuAI',
           '-c', 'user.email=lomu-ai@archetype.platform',
