@@ -2,10 +2,11 @@ import { db } from "./db";
 import { usageLogs, subscriptions, monthlyUsage, users } from "@shared/schema";
 import { eq, and, sql } from "drizzle-orm";
 
-// Anthropic Claude Pricing (per 1M tokens)
+// Anthropic Claude Sonnet 4 Pricing (per 1M tokens)
 const ANTHROPIC_PRICING = {
   INPUT_COST_PER_1M: 3.00,  // $3 per 1M input tokens
   OUTPUT_COST_PER_1M: 15.00, // $15 per 1M output tokens
+  BLENDED_RATE_PER_1K: 0.012, // $0.012 per 1K tokens (25% input, 75% output weighted average)
 };
 
 // Google Gemini 2.5 Flash Pricing (per 1M tokens)
@@ -39,40 +40,41 @@ const DEPLOYMENT_PRICING = {
   COST_PER_1K_VISITS: 0.10, // $0.10 per 1,000 visits (bandwidth)
 };
 
-// Plan limits and costs - V3.0 SUSTAINABLE TOKEN-BASED PRICING
-// 82-90% profit margins with competitive, fair pricing
-// Average project cost: ~$0.63 (10K input + 40K output tokens)
+// Plan limits and costs - V4.0 PROFITABLE TOKEN-BASED PRICING
+// Match industry standard (1:1 credit-to-dollar) while ensuring 50-65% profit margins
+// Customer pays all costs: AI ($0.012/1K) + Infrastructure + Storage + Profit
+// Average LomuAI project: ~83K tokens = $1.00 cost → $1.50-2.00 revenue (50-100% margin)
 export const PLAN_LIMITS = {
   free: {
     aiCredits: -1, // Unlimited projects (limited by tokens)
     monthlyCost: 0,
-    tokenLimit: 50000, // ~5-10 simple projects (trial)
+    tokenLimit: 50000, // 50 credits ($2.50 value) - trial only
     overageRate: 0, // No overages - must upgrade
     trialOnly: true,
   },
   starter: {
     aiCredits: -1, // Unlimited projects (limited by tokens)
     monthlyCost: 49,
-    tokenLimit: 250000, // ~25-50 simple, 8-15 medium, 2-5 complex per month
-    overageRate: 0.10, // $0.10 per 1K tokens (82% margin at 5× provider cost)
+    tokenLimit: 980000, // 980 credits ($49 value) - matches 1:1 ratio like Cursor/Replit
+    overageRate: 0.06, // $0.06 per 1K tokens (5× provider cost, 80% margin)
   },
   pro: {
     aiCredits: -1, // Unlimited projects (limited by tokens)
     monthlyCost: 129,
-    tokenLimit: 750000, // ~75-150 simple, 25-50 medium, 8-20 complex per month
-    overageRate: 0.08, // $0.08 per 1K tokens (85% margin at 4× provider cost)
+    tokenLimit: 2580000, // 2,580 credits ($129 value) - matches 1:1 ratio
+    overageRate: 0.05, // $0.05 per 1K tokens (4× provider cost, 76% margin)
   },
   business: {
     aiCredits: -1, // Unlimited projects (limited by tokens)
     monthlyCost: 299,
-    tokenLimit: 2000000, // ~200-400 simple, 65-130 medium, 20-50 complex per month
-    overageRate: 0.06, // $0.06 per 1K tokens (88% margin at 3× provider cost)
+    tokenLimit: 5980000, // 5,980 credits ($299 value) - matches 1:1 ratio
+    overageRate: 0.04, // $0.04 per 1K tokens (3× provider cost, 70% margin)
   },
   enterprise: {
     aiCredits: -1, // Unlimited projects (limited by tokens)
     monthlyCost: 899,
-    tokenLimit: 6000000, // ~600-1200 simple, 200-400 medium, 60-150 complex per month
-    overageRate: 0.05, // $0.05 per 1K tokens (90% margin at 2.5× provider cost)
+    tokenLimit: 17980000, // 17,980 credits ($899 value) - matches 1:1 ratio
+    overageRate: 0.03, // $0.03 per 1K tokens (2.5× provider cost, 60% margin)
   },
 };
 

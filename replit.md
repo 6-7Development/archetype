@@ -58,11 +58,19 @@ LomuAI is the sole autonomous worker that commits changes, operating independent
 - **I AM Architect**: Premium consulting feature available to all users (deducts credits)
 - **Owner Privileges**: Unlimited free usage of all platform features
 
-**Credit System:**
+**Credit System (V4.0 - Profitable 1:1 Ratio):**
 - 1 credit = 1,000 tokens = $0.05 (retail pricing)
+- Match industry standard: $1 paid = $1 in credits (Cursor/Replit parity)
+- Pricing tiers:
+  - Free: 50 credits ($2.50 value, 50K tokens) - 14-day trial
+  - Starter: 980 credits ($49 value, 980K tokens) - ~12 LomuAI projects/month
+  - Pro: 2,580 credits ($129 value, 2.58M tokens) - ~31 LomuAI projects/month
+  - Business: 5,980 credits ($299 value, 5.98M tokens) - ~72 LomuAI projects/month
+  - Enterprise: 17,980 credits ($899 value, 17.98M tokens) - ~217 LomuAI projects/month
+- Profit margins: 55-66% after all costs (AI + infrastructure + storage)
+- Overage rates: $0.03-0.06/1K tokens (60-80% margin on overages)
 - Atomic reserve → consume → refund operations
 - Credit wallet with available/reserved tracking
-- Monthly allocations per plan tier with overage billing
 - Stripe integration for purchases and subscriptions
 
 Key features include:

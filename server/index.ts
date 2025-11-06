@@ -393,12 +393,26 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
     console.log(`   - Repository: ${process.env.GITHUB_REPO}`);
     console.log(`   - Branch: ${process.env.GITHUB_BRANCH || 'main'}`);
     console.log(`   - Token: ✓ (configured)`);
-    if (process.env.OWNER_USER_ID) {
-      console.log(`   - Owner User ID: ${process.env.OWNER_USER_ID}`);
-    } else {
-      console.log('   - Owner User ID: Not set (owner must be manually marked in database)');
+    
+    // Check for owner in database
+    try {
+      const { users } = await import("@shared/schema");
+      const ownerResult = await db.select()
+        .from(users)
+        .where(eq(users.isOwner, true))
+        .limit(1);
+      
+      if (ownerResult.length > 0) {
+        console.log(`   - Owner: ✅ ${ownerResult[0].email} (ID: ${ownerResult[0].id})`);
+        console.log('   - Maintenance mode: ✅ Available\n');
+      } else {
+        console.log('   - Owner: ⚠️  Not set (create via /api/emergency/create-root)');
+        console.log('   - Maintenance mode: ⚠️  Unavailable (no owner)\n');
+      }
+    } catch (error: any) {
+      console.log(`   - Owner: ⚠️  Check failed: ${error.message}`);
+      console.log('   - Maintenance mode: ⚠️  Status unknown\n');
     }
-    console.log('   - Maintenance mode: Available for owner\n');
   }
 
   // Graceful shutdown handler for Railway deployment
