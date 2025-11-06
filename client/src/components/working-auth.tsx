@@ -43,13 +43,26 @@ export default function WorkingAuth() {
     mutationFn: async (data: LoginUser) => {
       return await apiRequest("POST", "/api/auth/login", data);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-      toast({
-        title: "Welcome back!",
-        description: "Redirecting to your dashboard...",
-      });
-      setTimeout(() => setLocation("/dashboard"), 500);
+      
+      // Check if user is owner/root and redirect to healing chat
+      const meData = await queryClient.fetchQuery({ queryKey: ["/api/auth/me"] }) as any;
+      const isOwner = meData?.user?.isOwner;
+      
+      if (isOwner) {
+        toast({
+          title: "Welcome back, Owner!",
+          description: "Redirecting to Platform Healing...",
+        });
+        setTimeout(() => setLocation("/platform-healing"), 500);
+      } else {
+        toast({
+          title: "Welcome back!",
+          description: "Redirecting to your dashboard...",
+        });
+        setTimeout(() => setLocation("/dashboard"), 500);
+      }
     },
     onError: (error: any) => {
       toast({
@@ -64,13 +77,26 @@ export default function WorkingAuth() {
     mutationFn: async (data: RegisterUser) => {
       return await apiRequest("POST", "/api/auth/register", data);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-      toast({
-        title: "Account created!",
-        description: "Welcome to Lomu. Redirecting...",
-      });
-      setTimeout(() => setLocation("/dashboard"), 500);
+      
+      // Check if user is owner/root and redirect to healing chat
+      const meData = await queryClient.fetchQuery({ queryKey: ["/api/auth/me"] }) as any;
+      const isOwner = meData?.user?.isOwner;
+      
+      if (isOwner) {
+        toast({
+          title: "Account created, Owner!",
+          description: "Welcome to Lomu. Redirecting to Platform Healing...",
+        });
+        setTimeout(() => setLocation("/platform-healing"), 500);
+      } else {
+        toast({
+          title: "Account created!",
+          description: "Welcome to Lomu. Redirecting...",
+        });
+        setTimeout(() => setLocation("/dashboard"), 500);
+      }
     },
     onError: (error: any) => {
       toast({
