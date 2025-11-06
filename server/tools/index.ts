@@ -1208,4 +1208,192 @@ export const LOMU_TOOLS = [
       required: ['filePath'],
     },
   },
+  // ========== GitHub Integration Tools ==========
+  {
+    name: 'commit_to_github',
+    description: 'Commit files to the GitHub repository. Commits changes directly to the configured branch (main by default). Use this to save code changes to version control.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        files: {
+          type: 'array',
+          description: 'Array of files to commit',
+          items: {
+            type: 'object',
+            properties: {
+              path: { type: 'string', description: 'File path relative to project root' },
+              content: { type: 'string', description: 'File content (optional if reading from filesystem)' },
+              operation: { type: 'string', enum: ['create', 'modify', 'delete'], description: 'Operation type' },
+            },
+            required: ['path'],
+          },
+        },
+        message: {
+          type: 'string',
+          description: 'Commit message describing the changes',
+        },
+      },
+      required: ['files', 'message'],
+    },
+  },
+  {
+    name: 'create_github_branch',
+    description: 'Create a new branch from main. Use this to start working on a feature or fix in isolation before merging.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        branchName: {
+          type: 'string',
+          description: 'Name of the branch to create (e.g., "feature/new-api", "fix/bug-123")',
+        },
+      },
+      required: ['branchName'],
+    },
+  },
+  {
+    name: 'push_to_branch',
+    description: 'Push changes to a specific branch (for PR workflow). Use this when working on a feature branch before creating a pull request.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        branchName: {
+          type: 'string',
+          description: 'Target branch name',
+        },
+        files: {
+          type: 'array',
+          description: 'Files to commit',
+          items: {
+            type: 'object',
+            properties: {
+              path: { type: 'string' },
+              content: { type: 'string' },
+              operation: { type: 'string', enum: ['create', 'modify', 'delete'] },
+            },
+            required: ['path'],
+          },
+        },
+        message: {
+          type: 'string',
+          description: 'Commit message',
+        },
+      },
+      required: ['branchName', 'files', 'message'],
+    },
+  },
+  {
+    name: 'create_pull_request',
+    description: 'Create or update a Pull Request for a branch. Use this after pushing changes to a feature branch to request code review.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        branchName: {
+          type: 'string',
+          description: 'Source branch name',
+        },
+        title: {
+          type: 'string',
+          description: 'PR title',
+        },
+        body: {
+          type: 'string',
+          description: 'PR description/body',
+        },
+      },
+      required: ['branchName', 'title', 'body'],
+    },
+  },
+  {
+    name: 'export_project_to_github',
+    description: 'Export entire project to GitHub repository. Use this for initial project setup or full project backup. Excludes node_modules, .git, .env, and other build artifacts.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          description: 'Commit message (default: "Initial commit from LomuAI")',
+        },
+        excludePatterns: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Additional patterns to exclude',
+        },
+      },
+    },
+  },
+  {
+    name: 'get_github_status',
+    description: 'Check GitHub integration status and configuration. Use this to verify GitHub is properly set up.',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  // ========== Environment Variables Tools ==========
+  {
+    name: 'set_env_var',
+    description: 'Set an environment variable for project deployments. These variables will be available in deployed applications via process.env.* Use this to configure API keys, database URLs, and other secrets.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        projectId: {
+          type: 'string',
+          description: 'Project ID',
+        },
+        key: {
+          type: 'string',
+          description: 'Environment variable name (uppercase, e.g., DATABASE_URL, API_KEY)',
+        },
+        value: {
+          type: 'string',
+          description: 'Environment variable value',
+        },
+        description: {
+          type: 'string',
+          description: 'Optional description of this variable',
+        },
+      },
+      required: ['projectId', 'key', 'value'],
+    },
+  },
+  {
+    name: 'get_env_vars',
+    description: 'Get all environment variables for a project. Values are masked for security.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        projectId: {
+          type: 'string',
+          description: 'Project ID',
+        },
+      },
+      required: ['projectId'],
+    },
+  },
+  {
+    name: 'delete_env_var',
+    description: 'Delete an environment variable from a project.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        projectId: {
+          type: 'string',
+          description: 'Project ID',
+        },
+        key: {
+          type: 'string',
+          description: 'Environment variable name to delete',
+        },
+      },
+      required: ['projectId', 'key'],
+    },
+  },
+  {
+    name: 'get_env_var_templates',
+    description: 'Get a list of common environment variable templates and examples for databases, authentication, API keys, etc.',
+    input_schema: {
+      type: 'object',
+      properties: {},
+    },
+  },
 ] as const;

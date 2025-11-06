@@ -13,6 +13,8 @@ import { executeWebSearch } from '../tools/web-search';
 import { GitHubService } from '../githubService';
 import { createTaskList, updateTask, readTaskList } from '../tools/task-management';
 import { indexFile, smartReadFile, getRelatedFiles, extractFunction, getAutoContext, getFileSummary } from '../tools/smart-code-tools';
+import { commitToGitHub, createGitHubBranch, pushToBranch, createPullRequest, exportProjectToGitHub, getGitHubStatus } from '../tools/github-tools';
+import { setEnvVar, getEnvVars, deleteEnvVar, getEnvVarTemplates } from '../tools/env-var-tools';
 import { trackAIUsage } from '../usage-tracking';
 import { AgentExecutor } from './services/agentExecutor';
 import { CreditManager } from './services/creditManager';
@@ -901,6 +903,44 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
               const typedInput = input as { filePath: string; projectId?: string | null };
               sendEvent('progress', { message: `📋 Getting summary of ${typedInput.filePath}...` });
               toolResult = await getFileSummary(typedInput);
+            } else if (name === 'commit_to_github') {
+              const typedInput = input as { files: Array<{ path: string; content?: string; operation?: 'create' | 'modify' | 'delete' }>; message: string };
+              sendEvent('progress', { message: `📤 Committing ${typedInput.files.length} file(s) to GitHub...` });
+              toolResult = await commitToGitHub(typedInput);
+            } else if (name === 'create_github_branch') {
+              const typedInput = input as { branchName: string };
+              sendEvent('progress', { message: `🌿 Creating branch: ${typedInput.branchName}...` });
+              toolResult = await createGitHubBranch(typedInput);
+            } else if (name === 'push_to_branch') {
+              const typedInput = input as { branchName: string; files: Array<{ path: string; content?: string; operation?: 'create' | 'modify' | 'delete' }>; message: string };
+              sendEvent('progress', { message: `📤 Pushing to branch: ${typedInput.branchName}...` });
+              toolResult = await pushToBranch(typedInput);
+            } else if (name === 'create_pull_request') {
+              const typedInput = input as { branchName: string; title: string; body: string };
+              sendEvent('progress', { message: `🔀 Creating Pull Request: ${typedInput.title}...` });
+              toolResult = await createPullRequest(typedInput);
+            } else if (name === 'export_project_to_github') {
+              const typedInput = input as { message?: string; excludePatterns?: string[] };
+              sendEvent('progress', { message: `📦 Exporting entire project to GitHub...` });
+              toolResult = await exportProjectToGitHub(typedInput);
+            } else if (name === 'get_github_status') {
+              sendEvent('progress', { message: `🔍 Checking GitHub status...` });
+              toolResult = await getGitHubStatus();
+            } else if (name === 'set_env_var') {
+              const typedInput = input as { projectId: string; key: string; value: string; description?: string };
+              sendEvent('progress', { message: `🔐 Setting environment variable: ${typedInput.key}...` });
+              toolResult = await setEnvVar(typedInput);
+            } else if (name === 'get_env_vars') {
+              const typedInput = input as { projectId: string };
+              sendEvent('progress', { message: `📋 Fetching environment variables...` });
+              toolResult = await getEnvVars(typedInput);
+            } else if (name === 'delete_env_var') {
+              const typedInput = input as { projectId: string; key: string };
+              sendEvent('progress', { message: `🗑️ Deleting environment variable: ${typedInput.key}...` });
+              toolResult = await deleteEnvVar(typedInput);
+            } else if (name === 'get_env_var_templates') {
+              sendEvent('progress', { message: `📝 Fetching env var templates...` });
+              toolResult = await getEnvVarTemplates();
             }
 
             toolResults.push({

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, integer, decimal, jsonb, index, bigint, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, integer, decimal, jsonb, index, bigint, boolean, serial } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 export { satisfactionSurveys, insertSatisfactionSurveySchema, type InsertSatisfactionSurvey, type SatisfactionSurvey } from "../shared/satisfactionSchema";
@@ -2739,6 +2739,30 @@ export const insertFileIndexSchema = createInsertSchema(fileIndex).omit({
 
 export type InsertFileIndex = z.infer<typeof insertFileIndexSchema>;
 export type FileIndex = typeof fileIndex.$inferSelect;
+
+// Project Environment Variables - Project-level secrets for deployments
+export const projectEnvVars = pgTable("project_env_vars", {
+  id: serial("id").primaryKey(),
+  projectId: varchar("project_id").notNull(),
+  key: varchar("key", { length: 255 }).notNull(), // e.g., DATABASE_URL, API_KEY
+  value: text("value").notNull(), // The actual value
+  description: text("description"), // Optional description
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  projectIndex: index("idx_project_env_vars_project").on(table.projectId),
+  // Unique constraint: one key per project (prevents duplicates under race conditions)
+  uniqueProjectKey: index("idx_project_env_vars_unique").on(table.projectId, table.key).unique(),
+}));
+
+export const insertProjectEnvVarSchema = createInsertSchema(projectEnvVars).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertProjectEnvVar = z.infer<typeof insertProjectEnvVarSchema>;
+export type ProjectEnvVar = typeof projectEnvVars.$inferSelect;
 
 // Credit Math Constants - Pricing and conversion rates for credit-based billing
 export const CREDIT_CONSTANTS = {
