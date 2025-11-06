@@ -132,18 +132,20 @@ export function calculateDataTransferCost(bytes: number): number {
 
 /**
  * Track AI usage and calculate costs (with compute time tracking)
+ * Supports dual-path billing: plan (counts against limit) vs premium (always overage)
  */
 export async function trackAIUsage(params: {
   userId: string;
   projectId: string | null;
-  type: "ai_generation" | "ai_chat";
+  type: "ai_generation" | "ai_chat" | "lomu_chat" | "architect_consultation";
   inputTokens: number;
   outputTokens: number;
   computeTimeMs?: number; // Optional compute time in milliseconds
   model?: 'claude' | 'gemini'; // Model used for pricing
+  billingMode?: 'plan' | 'premium'; // plan = counts against limit, premium = always overage
   metadata?: any;
 }): Promise<{ success: boolean; cost: number; error?: string }> {
-  const { userId, projectId, type, inputTokens, outputTokens, computeTimeMs, model = 'claude', metadata } = params;
+  const { userId, projectId, type, inputTokens, outputTokens, computeTimeMs, model = 'claude', billingMode = 'plan', metadata } = params;
 
   try {
     const totalTokens = inputTokens + outputTokens;
@@ -158,6 +160,7 @@ export async function trackAIUsage(params: {
       computeCost,
       tokenCost,
       totalCost,
+      billingMode,
     };
 
     // Log the usage
@@ -174,7 +177,7 @@ export async function trackAIUsage(params: {
 
     // Update monthly usage
     const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
-    await updateMonthlyUsage(userId, currentMonth, totalCost, totalTokens);
+    await updateMonthlyUsage(userId, currentMonth, totalCost, totalTokens, billingMode);
 
     return { success: true, cost: totalCost };
   } catch (error: any) {
@@ -226,8 +229,9 @@ export async function trackAPIRequest(params: {
 
 /**
  * Update monthly usage aggregates
+ * Supports dual-path billing: plan vs premium
  */
-async function updateMonthlyUsage(userId: string, month: string, aiCost: number, tokens: number) {
+async function updateMonthlyUsage(userId: string, month: string, aiCost: number, tokens: number, billingMode: 'plan' | 'premium' = 'plan') {
   // Get user's current subscription to determine plan limit
   const subscription = await db
     .select()
@@ -236,7 +240,8 @@ async function updateMonthlyUsage(userId: string, month: string, aiCost: number,
     .limit(1);
 
   const userPlan = subscription[0]?.plan || "free";
-  const planMonthlyCost = PLAN_LIMITS[userPlan as keyof typeof PLAN_LIMITS]?.monthlyCost || 0;
+  const planLimits = PLAN_LIMITS[userPlan as keyof typeof PLAN_LIMITS];
+  const planMonthlyCost = planLimits?.monthlyCost || 0;
 
   const existing = await db
     .select()
@@ -247,48 +252,100 @@ async function updateMonthlyUsage(userId: string, month: string, aiCost: number,
   if (existing.length > 0) {
     // Update existing
     const current = existing[0];
-    const newAICost = parseFloat(current.totalAICost) + aiCost;
+    
+    let updateData: any = {
+      updatedAt: new Date(),
+    };
+
+    // BUG FIX 2: Only increment tokensUsed for plan mode, NEVER for premium
+    if (billingMode === 'premium') {
+      // Premium billing: Add to premiumAICost (I AM Architect consultations)
+      // Premium tokens DO NOT count toward plan limit
+      const newPremiumCost = parseFloat(current.premiumAICost || "0") + aiCost;
+      updateData.premiumAICost = newPremiumCost.toFixed(2);
+      updateData.totalTokens = current.totalTokens + tokens;
+      // CRITICAL: Do NOT set updateData.tokensUsed here - premium doesn't count toward limit
+    } else {
+      // Plan billing: Add to regular AI cost and count tokens toward limit
+      const newAICost = parseFloat(current.totalAICost) + aiCost;
+      updateData.aiProjectsCount = current.aiProjectsCount + 1;
+      updateData.totalTokens = current.totalTokens + tokens;
+      updateData.tokensUsed = current.tokensUsed + tokens; // Counts toward plan limit
+      updateData.totalAICost = newAICost.toFixed(2);
+    }
+
+    // BUG FIX 1: Recalculate total cost with ALL components including premium
+    // Formula: totalCost = totalAICost + premiumAICost + infraCost + storageCost + deploymentCost
+    const newAICost = billingMode === 'plan' 
+      ? parseFloat(current.totalAICost) + aiCost 
+      : parseFloat(current.totalAICost);
+    const newPremiumCost = billingMode === 'premium'
+      ? parseFloat(current.premiumAICost || "0") + aiCost
+      : parseFloat(current.premiumAICost || "0");
     const infraCost = parseFloat(current.infraCost);
     const storageCost = parseFloat(current.storageCost || "0");
     const deploymentCost = parseFloat(current.deploymentCost || "0");
-    const newTotalCost = newAICost + infraCost + storageCost + deploymentCost;
+    // CRITICAL: Include BOTH plan AI costs AND premium AI costs in total
+    const newTotalCost = newAICost + newPremiumCost + infraCost + storageCost + deploymentCost;
     
-    // Calculate overage: total cost above the monthly plan fee
-    const overage = Math.max(0, newTotalCost - planMonthlyCost);
+    // Calculate overage based on plan limits
+    const tokensUsedForLimit = billingMode === 'plan' ? current.tokensUsed + tokens : current.tokensUsed;
+    let overage = 0;
+    
+    if (planLimits.tokenLimit !== -1 && tokensUsedForLimit > planLimits.tokenLimit) {
+      // User exceeded plan token limit, calculate overage cost
+      const overageTokens = tokensUsedForLimit - planLimits.tokenLimit;
+      const overageCost = (overageTokens / 1000) * planLimits.overageRate;
+      overage = overageCost + newPremiumCost; // Premium is always overage
+    } else {
+      overage = newPremiumCost; // Only premium if within plan limits
+    }
+
+    updateData.totalCost = newTotalCost.toFixed(2);
+    updateData.planLimit = planMonthlyCost.toFixed(2);
+    updateData.overage = overage.toFixed(2);
 
     await db
       .update(monthlyUsage)
-      .set({
-        aiProjectsCount: current.aiProjectsCount + 1,
-        totalTokens: current.totalTokens + tokens,
-        totalAICost: newAICost.toFixed(2),
-        totalCost: newTotalCost.toFixed(2),
-        planLimit: planMonthlyCost.toFixed(2),
-        overage: overage.toFixed(2),
-        updatedAt: new Date(),
-      })
+      .set(updateData)
       .where(eq(monthlyUsage.id, current.id));
   } else {
     // Create new monthly record
     const infraCost = 8.50; // Base infrastructure cost per month
-    const totalCost = aiCost + infraCost;
+    const aiCostRegular = billingMode === 'plan' ? aiCost : 0;
+    const premiumCost = billingMode === 'premium' ? aiCost : 0;
+    const storageCost = 0; // New records start with 0 storage
+    const deploymentCost = 0; // New records start with 0 deployment
     
-    // Calculate overage: total cost above the monthly plan fee
-    const overage = Math.max(0, totalCost - planMonthlyCost);
+    // BUG FIX 1: Ensure totalCost includes ALL components (plan + premium + infra + storage + deployment)
+    // Formula: totalCost = totalAICost + premiumAICost + infraCost + storageCost + deploymentCost
+    const totalCost = aiCostRegular + premiumCost + infraCost + storageCost + deploymentCost;
+    
+    // Calculate overage for new record
+    let overage = 0;
+    if (billingMode === 'premium') {
+      overage = premiumCost; // Premium is always overage
+    } else if (planLimits.tokenLimit !== -1 && tokens > planLimits.tokenLimit) {
+      const overageTokens = tokens - planLimits.tokenLimit;
+      overage = (overageTokens / 1000) * planLimits.overageRate;
+    }
 
+    // BUG FIX 2: Only set tokensUsed for plan mode (premium tokens don't count toward limit)
     await db.insert(monthlyUsage).values({
       userId,
       month,
-      aiProjectsCount: 1,
+      aiProjectsCount: billingMode === 'plan' ? 1 : 0,
       totalTokens: tokens,
-      totalAICost: aiCost.toFixed(2),
+      tokensUsed: billingMode === 'plan' ? tokens : 0, // CRITICAL: Only plan tokens count toward limit
+      totalAICost: aiCostRegular.toFixed(2),
+      premiumAICost: premiumCost.toFixed(2),
       storageBytesUsed: 0,
-      storageCost: "0.00",
+      storageCost: storageCost.toFixed(2),
       deploymentsCount: 0,
       deploymentVisits: 0,
-      deploymentCost: "0.00",
+      deploymentCost: deploymentCost.toFixed(2),
       infraCost: infraCost.toFixed(2),
-      totalCost: totalCost.toFixed(2),
+      totalCost: totalCost.toFixed(2), // Includes BOTH plan and premium costs
       planLimit: planMonthlyCost.toFixed(2),
       overage: overage.toFixed(2),
     });
@@ -352,9 +409,10 @@ export async function updateStorageUsage(userId: string): Promise<void> {
     if (existing.length > 0) {
       const current = existing[0];
       const aiCost = parseFloat(current.totalAICost);
+      const premiumCost = parseFloat(current.premiumAICost || "0");
       const infraCost = parseFloat(current.infraCost);
       const deploymentCost = parseFloat(current.deploymentCost || "0");
-      const totalCost = aiCost + infraCost + storageCost + deploymentCost;
+      const totalCost = aiCost + premiumCost + infraCost + storageCost + deploymentCost;
       const overage = Math.max(0, totalCost - planMonthlyCost);
       
       await db
@@ -378,7 +436,9 @@ export async function updateStorageUsage(userId: string): Promise<void> {
         month: currentMonth,
         aiProjectsCount: 0,
         totalTokens: 0,
+        tokensUsed: 0,
         totalAICost: "0.00",
+        premiumAICost: "0.00",
         storageBytesUsed: totalBytes,
         storageCost: storageCost.toFixed(2),
         deploymentsCount: 0,
@@ -434,9 +494,10 @@ export async function updateDeploymentUsage(userId: string): Promise<void> {
     if (existing.length > 0) {
       const current = existing[0];
       const aiCost = parseFloat(current.totalAICost);
+      const premiumCost = parseFloat(current.premiumAICost || "0");
       const infraCost = parseFloat(current.infraCost);
       const storageCost = parseFloat(current.storageCost || "0");
-      const totalCost = aiCost + infraCost + storageCost + deploymentCost;
+      const totalCost = aiCost + premiumCost + infraCost + storageCost + deploymentCost;
       const overage = Math.max(0, totalCost - planMonthlyCost);
       
       await db
@@ -461,7 +522,9 @@ export async function updateDeploymentUsage(userId: string): Promise<void> {
         month: currentMonth,
         aiProjectsCount: 0,
         totalTokens: 0,
+        tokensUsed: 0,
         totalAICost: "0.00",
+        premiumAICost: "0.00",
         storageBytesUsed: 0,
         storageCost: "0.00",
         deploymentsCount: deployments.length,

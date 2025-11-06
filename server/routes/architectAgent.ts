@@ -482,6 +482,8 @@ export interface ArchitectAgentResult {
   alternativeApproach?: string;
   evidenceUsed: string[];
   filesInspected: string[];
+  inputTokens?: number;
+  outputTokens?: number;
   error?: string;
 }
 
@@ -494,6 +496,8 @@ export async function runArchitectAgent(params: ArchitectAgentParams): Promise<A
   
   const filesInspected: string[] = [];
   const evidenceUsed: string[] = [];
+  let totalInputTokens = 0;
+  let totalOutputTokens = 0;
 
   try {
     // 🎯 I AM (The Architect) - Uses Architect-specific system prompt with ONLY the 9 tools it actually has
@@ -579,6 +583,12 @@ Start by inspecting relevant files to understand the problem deeply.`;
         timeoutPromise
       ]) as Anthropic.Message;
 
+      // Track token usage from Claude response
+      if (response.usage) {
+        totalInputTokens += response.usage.input_tokens || 0;
+        totalOutputTokens += response.usage.output_tokens || 0;
+      }
+
       // Track tool usage for evidence
       const toolUseCounts = response.content.filter(c => c.type === 'tool_use').length;
       if (toolUseCounts > 0) {
@@ -613,6 +623,8 @@ Start by inspecting relevant files to understand the problem deeply.`;
           alternativeApproach: parsedGuidance.alternativeApproach,
           evidenceUsed,
           filesInspected,
+          inputTokens: totalInputTokens,
+          outputTokens: totalOutputTokens,
         };
       }
 
@@ -663,6 +675,8 @@ Start by inspecting relevant files to understand the problem deeply.`;
       recommendations: ["Break down the problem into smaller pieces", "Provide more specific file paths or error messages"],
       evidenceUsed,
       filesInspected,
+      inputTokens: totalInputTokens,
+      outputTokens: totalOutputTokens,
     };
 
   } catch (error: any) {
@@ -673,6 +687,8 @@ Start by inspecting relevant files to understand the problem deeply.`;
       recommendations: [],
       evidenceUsed,
       filesInspected,
+      inputTokens: totalInputTokens,
+      outputTokens: totalOutputTokens,
       error: error.message || 'Failed to run architect agent',
     };
   }

@@ -844,7 +844,7 @@ export const usageLogs = pgTable("usage_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
   projectId: varchar("project_id"),
-  type: text("type").notNull(), // 'ai_generation' | 'ai_chat' | 'storage'
+  type: text("type").notNull(), // 'ai_generation' | 'ai_chat' | 'lomu_chat' | 'architect_consultation' | 'storage'
   inputTokens: integer("input_tokens").notNull().default(0),
   outputTokens: integer("output_tokens").notNull().default(0),
   totalTokens: integer("total_tokens").notNull().default(0),
@@ -890,7 +890,9 @@ export const monthlyUsage = pgTable("monthly_usage", {
   month: text("month").notNull(), // YYYY-MM format
   aiProjectsCount: integer("ai_projects_count").notNull().default(0),
   totalTokens: integer("total_tokens").notNull().default(0),
+  tokensUsed: integer("tokens_used").notNull().default(0), // Plan-counted tokens (LomuAI chat)
   totalAICost: decimal("total_ai_cost", { precision: 10, scale: 2 }).notNull().default("0.00"),
+  premiumAICost: decimal("premium_ai_cost", { precision: 10, scale: 2 }).notNull().default("0.00"), // I AM Architect premium billing
   storageBytesUsed: bigint("storage_bytes_used", { mode: "number" }).notNull().default(0), // Total file storage in bytes
   storageCost: decimal("storage_cost", { precision: 10, scale: 2 }).notNull().default("0.00"), // $2/GB/month
   deploymentsCount: integer("deployments_count").notNull().default(0), // Active deployments

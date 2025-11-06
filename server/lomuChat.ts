@@ -11,6 +11,7 @@ import { consultArchitect } from '../tools/architect-consult';
 import { executeWebSearch } from '../tools/web-search';
 import { GitHubService } from '../githubService';
 import { createTaskList, updateTask, readTaskList } from '../tools/task-management';
+import { trackAIUsage } from '../usage-tracking';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { 
@@ -335,6 +336,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     let iterationCount = 0;
     const MAX_ITERATIONS = 5;
     
+    // Track token usage across all iterations for billing
+    let totalInputTokens = 0;
+    let totalOutputTokens = 0;
+    
     // Track architect approval for enforcement (per-file approval map)
     const approvedFiles = new Map<string, { approved: boolean; timestamp: number }>();
     
@@ -406,6 +411,12 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         
         responseContent = response.content;
         
+        // Track token usage from Claude response
+        if (response.usage) {
+          totalInputTokens += response.usage.input_tokens || 0;
+          totalOutputTokens += response.usage.output_tokens || 0;
+        }
+        
       } else if (aiConfig.provider === 'gemini' && geminiModel) {
         // Convert tools to Gemini format
         const geminiTools = tools.map(tool => ({
@@ -437,6 +448,12 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         
         const result = await geminiChat.sendMessage(`${systemPrompt}\n\n${prompt}`);
         const geminiResponse = result.response;
+        
+        // Track token usage from Gemini response
+        if (geminiResponse.usageMetadata) {
+          totalInputTokens += geminiResponse.usageMetadata.promptTokenCount || 0;
+          totalOutputTokens += geminiResponse.usageMetadata.candidatesTokenCount || 0;
+        }
         
         // Convert Gemini response to Claude format for compatibility
         responseContent = [];
@@ -619,6 +636,24 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               const responseTime = Date.now() - startTime;
               const timestamp = Date.now();
               
+              // Track I AM Architect premium billing (always overage, never counts against plan limit)
+              if (architectResult.inputTokens && architectResult.outputTokens) {
+                await trackAIUsage({
+                  userId,
+                  projectId: activeProjectId,
+                  type: 'architect_consultation',
+                  inputTokens: architectResult.inputTokens,
+                  outputTokens: architectResult.outputTokens,
+                  model: 'claude', // I AM always uses Claude
+                  billingMode: 'premium', // Premium pay-per-use, always overage
+                  metadata: {
+                    question: typedInput.question,
+                    responseTime,
+                    filesInspected: architectResult.filesInspected?.length || 0,
+                  },
+                });
+              }
+              
               // Store consultation telemetry in database
               try {
                 await db.insert(architectConsultations).values({
@@ -631,7 +666,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                   recommendations: architectResult.recommendations || [],
                   riskAssessment: null, // Not provided by current implementation
                   alternativeApproach: architectResult.alternativeApproach,
-                  tokensUsed: 0, // TODO: Track tokens from Anthropic API response
+                  tokensUsed: (architectResult.inputTokens || 0) + (architectResult.outputTokens || 0),
                   responseTime,
                   filesInspected: architectResult.filesInspected || [],
                   sessionId: null, // TODO: Track session if available
@@ -818,6 +853,26 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         sendEvent('progress', { message: '✅ Pushing to GitHub (deploying to production)...' });
         await platformHealing.pushToRemote();
       }
+    }
+
+    // BUG FIX 3: Track LomuAI token usage for billing (counts against plan limit)
+    // This call happens ONCE per chat session, after the streaming loop completes
+    // billingMode: 'plan' means these tokens count toward monthly token limit
+    if (totalInputTokens > 0 || totalOutputTokens > 0) {
+      await trackAIUsage({
+        userId,
+        projectId: activeProjectId,
+        type: 'lomu_chat',
+        inputTokens: totalInputTokens,
+        outputTokens: totalOutputTokens,
+        model: aiConfig.provider === 'gemini' ? 'gemini' : 'claude',
+        billingMode: 'plan', // CRITICAL: LomuAI counts against plan limit, not premium
+        metadata: {
+          iterations: iterationCount,
+          filesChanged: fileChanges.length,
+          isSimpleTask,
+        },
+      });
     }
 
     // Save assistant message

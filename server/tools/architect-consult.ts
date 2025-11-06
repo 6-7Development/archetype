@@ -14,6 +14,8 @@ export interface ArchitectConsultResult {
   alternativeApproach?: string;
   evidenceUsed?: string[];
   filesInspected?: string[];
+  inputTokens?: number;
+  outputTokens?: number;
   error?: string;
 }
 
@@ -55,6 +57,8 @@ export async function consultArchitect(params: ArchitectConsultParams): Promise<
       alternativeApproach: result.alternativeApproach,
       evidenceUsed: result.evidenceUsed,
       filesInspected: result.filesInspected,
+      inputTokens: result.inputTokens,
+      outputTokens: result.outputTokens,
       error: result.error,
     };
 
