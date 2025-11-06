@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, integer, decimal, jsonb, index, bigint, boolean, serial } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, integer, decimal, jsonb, index, bigint, boolean, serial, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 export { satisfactionSurveys, insertSatisfactionSurveySchema, type InsertSatisfactionSurvey, type SatisfactionSurvey } from "../shared/satisfactionSchema";
@@ -2752,7 +2752,7 @@ export const projectEnvVars = pgTable("project_env_vars", {
 }, (table) => ({
   projectIndex: index("idx_project_env_vars_project").on(table.projectId),
   // Unique constraint: one key per project (prevents duplicates under race conditions)
-  uniqueProjectKey: index("idx_project_env_vars_unique").on(table.projectId, table.key).unique(),
+  uniqueProjectKey: uniqueIndex("idx_project_env_vars_unique").on(table.projectId, table.key),
 }));
 
 export const insertProjectEnvVarSchema = createInsertSchema(projectEnvVars).omit({
