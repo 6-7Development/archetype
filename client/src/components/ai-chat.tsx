@@ -283,9 +283,9 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     },
   });
 
-  const chatMutation = useMutation<{ response: string; shouldGenerate?: boolean; command?: string; checkpoint?: CheckpointData }, Error, { message: string; projectId?: number; images?: string[]; sessionId: string }>({
+  const chatMutation = useMutation<{ response: string; shouldGenerate?: boolean; command?: string; autonomous?: boolean; checkpoint?: CheckpointData }, Error, { message: string; projectId?: number; images?: string[]; sessionId: string }>({
     mutationFn: async (data) => {
-      return await apiRequest<{ response: string; shouldGenerate?: boolean; command?: string; checkpoint?: CheckpointData }>("POST", "/api/ai-chat-conversation", data);
+      return await apiRequest<{ response: string; shouldGenerate?: boolean; command?: string; autonomous?: boolean; checkpoint?: CheckpointData }>("POST", "/api/ai-chat-conversation", data);
     },
     onSuccess: (data) => {
       const assistantMessage = {
@@ -310,10 +310,32 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
         content: data.response,
       });
 
-      // If AI decides to generate code, show cost preview first
+      // If AI decides to generate code
       if (data.shouldGenerate && data.command) {
-        // Analyze complexity before executing
-        complexityMutation.mutate({ command: data.command });
+        // ⚠️ Check if quota exceeded
+        if ((data as any).quotaExceeded) {
+          console.log('[AI-CHAT] Build blocked - quota exceeded');
+          
+          // Show error toast with upgrade prompt
+          toast({
+            variant: "destructive",
+            title: "Usage Limit Reached",
+            description: (data as any).limitReason || "You've reached your usage limit. Please upgrade your plan to continue building.",
+            duration: 10000, // Show for 10 seconds
+          });
+          
+          // Don't proceed with build
+          return;
+        }
+        
+        // 🚀 AUTONOMOUS MODE: Execute immediately without cost preview
+        if (data.autonomous) {
+          console.log('[AI-CHAT] Autonomous build detected - executing immediately');
+          executeCommand(data.command);
+        } else {
+          // Show cost preview first for manual builds
+          complexityMutation.mutate({ command: data.command });
+        }
       }
     },
     onError: (error) => {

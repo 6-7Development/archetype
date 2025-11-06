@@ -1121,8 +1121,8 @@ Remember: **You're a BUILDER first, conversationalist second!**`;
 
       console.log(`📊 [AI-CHAT-CONVERSATION] Usage tracked: ${inputTokens + outputTokens} tokens`);
 
-      // Return response with optional build trigger (frontend handles message saving and build execution)
-      res.json({
+      // Prepare response data
+      let responseData: any = {
         response: parsedResponse.response || responseText,
         shouldGenerate: parsedResponse.shouldGenerate || false,
         command: parsedResponse.command || undefined,
@@ -1130,7 +1130,32 @@ Remember: **You're a BUILDER first, conversationalist second!**`;
           inputTokens,
           outputTokens,
         },
-      });
+      };
+
+      // 🚀 AUTONOMOUS BUILDING: Check if build should auto-execute (with quota enforcement)
+      if (parsedResponse.shouldGenerate && parsedResponse.command) {
+        console.log(`🔨 [AI-CHAT-CONVERSATION] Autonomous build detected: "${parsedResponse.command}"`);
+        
+        // ⚠️ CRITICAL: Check usage limits before allowing autonomous execution
+        // This prevents bypassing billing/quota enforcement
+        const limitCheck = await checkUsageLimits(userId);
+        if (!limitCheck.allowed) {
+          console.log(`❌ [AI-CHAT-CONVERSATION] Autonomous build blocked - usage limit exceeded`);
+          
+          // Block autonomous execution - frontend will show upgrade gate
+          responseData.autonomous = false;
+          responseData.quotaExceeded = true;
+          responseData.limitReason = limitCheck.reason;
+          responseData.requiresUpgrade = limitCheck.requiresUpgrade || false;
+        } else {
+          // Quotas OK - allow autonomous execution
+          console.log(`✅ [AI-CHAT-CONVERSATION] Quotas OK - enabling autonomous execution`);
+          responseData.autonomous = true;
+        }
+      }
+
+      // Return response with autonomous flag (avoids early return to preserve post-processing)
+      res.json(responseData);
     } catch (error: any) {
       console.error('❌ [AI-CHAT-CONVERSATION] Error:', error);
       res.status(500).json({ error: error.message || 'Failed to process message' });
