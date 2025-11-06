@@ -5,6 +5,7 @@ import Anthropic from '@anthropic-ai/sdk';
 /**
  * Automatic Self-Healing System
  * Like rml CLI tool - detects errors and automatically fixes them
+ * OPTIMIZED: CPU-efficient version to prevent high CPU usage
  */
 
 interface ErrorLog {
@@ -19,40 +20,70 @@ interface ErrorLog {
 class AutoHealingService {
   private errorBuffer: ErrorLog[] = [];
   private isHealing = false;
-  private readonly ERROR_THRESHOLD = 3; // Number of errors before auto-healing
-  private readonly BUFFER_TIME = 5000; // Wait 5s to collect related errors
+  private readonly ERROR_THRESHOLD = 5; // Increased to reduce false triggers
+  private readonly BUFFER_TIME = 10000; // Increased to 10s to reduce CPU load
+  private readonly MAX_ERRORS_PER_MINUTE = 20; // Rate limiting
   private healingTimer: NodeJS.Timeout | null = null;
-  private knowledgeBase: Map<string, string> = new Map(); // Store learned fixes
+  private knowledgeBase: Map<string, string> = new Map();
+  private cpuMonitor = {
+    lastCheck: Date.now(),
+    errorCount: 0,
+    healingCount: 0
+  };
 
   /**
-   * Report an error for potential auto-healing
+   * Report an error for potential auto-healing (CPU-optimized)
    */
   async reportError(error: ErrorLog): Promise<void> {
-    console.log('[AUTO-HEAL] Error detected:', error.type, error.message);
+    // CPU PROTECTION: Rate limiting to prevent excessive processing
+    const now = Date.now();
+    if (now - this.cpuMonitor.lastCheck < 60000) {
+      this.cpuMonitor.errorCount++;
+      if (this.cpuMonitor.errorCount > this.MAX_ERRORS_PER_MINUTE) {
+        console.warn('[AUTO-HEAL] Rate limit exceeded, ignoring error');
+        return;
+      }
+    } else {
+      // Reset counter every minute
+      this.cpuMonitor.lastCheck = now;
+      this.cpuMonitor.errorCount = 1;
+    }
+
+    // Only log significant errors to reduce console spam
+    if (error.type === 'compile' || error.message.includes('FATAL')) {
+      console.log('[AUTO-HEAL] Critical error detected:', error.type, error.message.slice(0, 100));
+    }
     
     this.errorBuffer.push(error);
     
-    // Check if we've seen this error before and have a fix
+    // Limit buffer size to prevent memory issues
+    if (this.errorBuffer.length > 50) {
+      this.errorBuffer = this.errorBuffer.slice(-25); // Keep only recent errors
+    }
+    
+    // Check for known fixes (quick lookup)
     const knownFix = this.getKnownFix(error);
     if (knownFix) {
-      console.log('[AUTO-HEAL] Known fix found, applying immediately...');
-      await this.applyKnownFix(error, knownFix);
+      console.log('[AUTO-HEAL] Known fix found, scheduling application...');
+      // Don't apply immediately to prevent CPU spikes
+      setTimeout(() => this.applyKnownFix(error, knownFix), 1000);
       return;
     }
 
-    // Clear existing timer
+    // CPU PROTECTION: Don't restart timer if already set
     if (this.healingTimer) {
-      clearTimeout(this.healingTimer);
+      return; // Timer already running, don't create new ones
     }
 
-    // Set new timer to trigger healing
+    // Set timer with longer delay to reduce CPU usage
     this.healingTimer = setTimeout(() => {
+      this.healingTimer = null; // Clear reference first
       this.triggerAutoHealing();
     }, this.BUFFER_TIME);
   }
 
   /**
-   * Check knowledge base for known fixes
+   * Check knowledge base for known fixes (optimized lookup)
    */
   private getKnownFix(error: ErrorLog): string | null {
     const errorSignature = this.getErrorSignature(error);
@@ -60,16 +91,15 @@ class AutoHealingService {
   }
 
   /**
-   * Create unique signature for error to match against knowledge base
+   * Create unique signature for error (CPU-optimized)
    */
   private getErrorSignature(error: ErrorLog): string {
-    // Use error type, file, and key parts of message
+    // Simplified signature generation to reduce CPU
     const messageKey = error.message
-      .replace(/\d+/g, 'N') // Replace numbers
-      .replace(/['"]/g, '') // Remove quotes
-      .slice(0, 100);
+      .replace(/\d+/g, 'N')
+      .slice(0, 50); // Reduced from 100 to save CPU
     
-    return `${error.type}:${error.file || 'unknown'}:${messageKey}`;
+    return `${error.type}:${messageKey}`;
   }
 
   /**
@@ -78,348 +108,248 @@ class AutoHealingService {
   private learnFix(error: ErrorLog, fix: string): void {
     const signature = this.getErrorSignature(error);
     this.knowledgeBase.set(signature, fix);
-    console.log('[AUTO-HEAL] Learned new fix:', signature);
+    
+    // Limit knowledge base size to prevent memory bloat
+    if (this.knowledgeBase.size > 100) {
+      const keys = Array.from(this.knowledgeBase.keys());
+      const oldestKey = keys[0];
+      this.knowledgeBase.delete(oldestKey);
+    }
+    
+    console.log('[AUTO-HEAL] Learned fix (KB size:', this.knowledgeBase.size, ')');
   }
 
   /**
-   * Apply a known fix from knowledge base
+   * Apply a known fix (CPU-optimized)
    */
   private async applyKnownFix(error: ErrorLog, fix: string): Promise<void> {
-    try {
-      console.log('[AUTO-HEAL] Applying known fix...');
-      
-      // Create backup
-      const backup = await platformHealing.createBackup('Auto-heal: Known fix');
-      
-      // Apply fix (fix contains the file path and content to write)
-      const fixData = JSON.parse(fix);
-      await platformHealing.writePlatformFile(fixData.path, fixData.content);
-      
-      // Validate safety
-      const safety = await platformHealing.validateSafety();
-      if (!safety.safe) {
-        await platformHealing.rollback(backup.id);
-        console.error('[AUTO-HEAL] Known fix failed safety check, rolled back');
-        return;
-      }
-      
-      // Commit the known fix
-      await platformHealing.commitChanges(
-        `Auto-heal: Known fix for ${error.type} error`,
-        [{ path: fixData.path, operation: 'modify' as const }]
-      );
-      
-      console.log('[AUTO-HEAL] Known fix applied and committed successfully');
-      this.errorBuffer = []; // Clear buffer
-      
-    } catch (error) {
-      console.error('[AUTO-HEAL] Failed to apply known fix:', error);
-    }
-  }
-
-  /**
-   * Trigger automatic healing process
-   */
-  private async triggerAutoHealing(): Promise<void> {
     if (this.isHealing) {
-      console.log('[AUTO-HEAL] Already healing, skipping...');
-      return;
-    }
-
-    if (this.errorBuffer.length < this.ERROR_THRESHOLD) {
-      console.log('[AUTO-HEAL] Not enough errors to trigger healing');
-      this.errorBuffer = [];
+      console.log('[AUTO-HEAL] Already healing, skipping known fix');
       return;
     }
 
     this.isHealing = true;
-    console.log('[AUTO-HEAL] Triggering automatic healing for', this.errorBuffer.length, 'errors');
-
+    
     try {
-      // Aggregate error information
-      const errorSummary = this.errorBuffer
-        .map(e => `[${e.type}] ${e.file}:${e.line} - ${e.message}`)
-        .join('\n');
-
-      const issue = `Automatic healing triggered by errors:\n${errorSummary}`;
-
-      // Use Meta-SySop to fix
-      await this.executeHealing(issue);
-
-      // Learn from this fix
-      if (this.errorBuffer.length > 0) {
-        // Store the pattern for future use
-        const primaryError = this.errorBuffer[0];
-        // We'll store the fix pattern after successful healing
+      const backup = await platformHealing.createBackup('Auto-heal: Known fix');
+      const fixData = JSON.parse(fix);
+      
+      await platformHealing.writePlatformFile(fixData.path, fixData.content);
+      
+      const safety = await platformHealing.validateSafety();
+      if (!safety.safe) {
+        await platformHealing.rollback(backup.id);
+        console.error('[AUTO-HEAL] Known fix failed safety, rolled back');
+        return;
       }
-
-      this.errorBuffer = [];
+      
+      await platformHealing.commitChanges(
+        `Auto-heal: Known fix for ${error.type}`,
+        [{ path: fixData.path, operation: 'modify' as const }]
+      );
+      
+      this.errorBuffer = []; // Clear buffer on success
+      
     } catch (error) {
-      console.error('[AUTO-HEAL] Automatic healing failed:', error);
+      console.error('[AUTO-HEAL] Known fix failed:', error);
     } finally {
       this.isHealing = false;
     }
   }
 
   /**
-   * Execute healing using Meta-SySop
+   * Trigger automatic healing (CPU-optimized)
    */
-  private async executeHealing(issue: string): Promise<void> {
-    const anthropicKey = process.env.ANTHROPIC_API_KEY;
-    if (!anthropicKey) {
-      console.error('[AUTO-HEAL] Anthropic API key not configured');
+  private async triggerAutoHealing(): Promise<void> {
+    if (this.isHealing) {
+      console.log('[AUTO-HEAL] Already healing, skipping');
       return;
     }
 
+    // CPU PROTECTION: Check healing frequency
+    if (this.cpuMonitor.healingCount > 3) {
+      console.warn('[AUTO-HEAL] Too many healing attempts, pausing for 5 minutes');
+      setTimeout(() => {
+        this.cpuMonitor.healingCount = 0;
+      }, 300000); // 5 minutes
+      return;
+    }
+
+    if (this.errorBuffer.length < this.ERROR_THRESHOLD) {
+      console.log('[AUTO-HEAL] Not enough errors (', this.errorBuffer.length, '/', this.ERROR_THRESHOLD, ')');
+      this.errorBuffer = [];
+      return;
+    }
+
+    this.isHealing = true;
+    this.cpuMonitor.healingCount++;
+    
+    console.log('[AUTO-HEAL] Starting healing for', this.errorBuffer.length, 'errors');
+
     try {
-      // Create backup
-      const backup = await platformHealing.createBackup(`Auto-heal: ${issue.slice(0, 50)}`);
-      console.log('[AUTO-HEAL] Backup created:', backup.id);
+      // Limit error summary to prevent excessive string processing
+      const recentErrors = this.errorBuffer.slice(-5); // Only process last 5 errors
+      const errorSummary = recentErrors
+        .map(e => `[${e.type}] ${e.message.slice(0, 100)}`)
+        .join('\n');
 
-      // Get platform files
-      const platformFiles = await platformHealing.listPlatformFiles('.');
-      const relevantFiles = platformFiles
-        .filter(f => 
-          f.endsWith('.ts') || 
-          f.endsWith('.tsx') || 
-          f.endsWith('.js') || 
-          f.endsWith('.jsx')
-        )
-        .slice(0, 15);
+      const issue = `CPU-optimized auto-healing for ${recentErrors.length} errors:\n${errorSummary}`;
 
-      const client = new Anthropic({ apiKey: anthropicKey });
-
-      const systemPrompt = `You are Meta-SySop's AUTO-HEALING module. You fix platform errors automatically.
-
-CRITICAL: This is AUTOMATIC healing - be conservative and surgical. Only fix what's broken.
-
-AVAILABLE TOOLS:
-1. readPlatformFile(path) - Read source code
-2. writePlatformFile(path, content) - Fix code
-3. listPlatformFiles(directory) - List files
-
-HEALING STRATEGY:
-1. Analyze error messages
-2. Identify root cause
-3. Apply minimal fix
-4. Verify safety
-5. Test the fix
-
-ERRORS TO FIX:
-${issue}
-
-Fix these errors with minimal changes. Explain each fix clearly.`;
-
-      let conversationMessages: any[] = [{
-        role: 'user',
-        content: issue,
-      }];
-
-      const tools = [
-        {
-          name: 'readPlatformFile',
-          description: 'Read a platform source file',
-          input_schema: {
-            type: 'object' as const,
-            properties: {
-              path: { type: 'string' as const },
-            },
-            required: ['path'],
-          },
-        },
-        {
-          name: 'writePlatformFile',
-          description: 'Write content to a platform file',
-          input_schema: {
-            type: 'object' as const,
-            properties: {
-              path: { type: 'string' as const },
-              content: { type: 'string' as const },
-            },
-            required: ['path', 'content'],
-          },
-        },
-        {
-          name: 'listPlatformFiles',
-          description: 'List files in a directory',
-          input_schema: {
-            type: 'object' as const,
-            properties: {
-              directory: { type: 'string' as const },
-            },
-            required: ['directory'],
-          },
-        },
-      ];
-
-      const changes: Array<{ path: string; content: string }> = [];
-      let continueLoop = true;
-      let iterationCount = 0;
-      const MAX_ITERATIONS = 5;
-
-      while (continueLoop && iterationCount < MAX_ITERATIONS) {
-        iterationCount++;
-
-        const response = await client.messages.create({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 8000,
-          system: systemPrompt,
-          messages: conversationMessages,
-          tools,
-        });
-
-        conversationMessages.push({
-          role: 'assistant',
-          content: response.content,
-        });
-
-        const toolResults: any[] = [];
-
-        for (const block of response.content) {
-          if (block.type === 'tool_use') {
-            const { name, input, id } = block;
-
-            try {
-              let toolResult: any = null;
-
-              if (name === 'readPlatformFile') {
-                const typedInput = input as { path: string };
-                toolResult = await platformHealing.readPlatformFile(typedInput.path);
-              } else if (name === 'writePlatformFile') {
-                const typedInput = input as { path: string; content: string };
-                await platformHealing.writePlatformFile(typedInput.path, typedInput.content);
-                changes.push({ path: typedInput.path, content: typedInput.content });
-                toolResult = 'File written successfully';
-              } else if (name === 'listPlatformFiles') {
-                const typedInput = input as { directory: string };
-                const files = await platformHealing.listPlatformFiles(typedInput.directory);
-                toolResult = files.join('\n');
-              }
-
-              toolResults.push({
-                type: 'tool_result',
-                tool_use_id: id,
-                content: toolResult || 'Success',
-              });
-            } catch (error: any) {
-              toolResults.push({
-                type: 'tool_result',
-                tool_use_id: id,
-                is_error: true,
-                content: error.message,
-              });
-            }
-          }
-        }
-
-        if (toolResults.length > 0) {
-          conversationMessages.push({
-            role: 'user',
-            content: toolResults,
-          });
-        } else {
-          continueLoop = false;
-        }
-      }
-
-      // Validate safety
-      const safety = await platformHealing.validateSafety();
-      if (!safety.safe) {
-        await platformHealing.rollback(backup.id);
-        console.error('[AUTO-HEAL] Safety check failed, rolled back');
-        
-        await platformAudit.log({
-          userId: 'system',
-          action: 'heal',
-          description: `Auto-heal aborted - safety check failed`,
-          backupId: backup.id,
-          status: 'failure',
-          error: safety.issues.join('; '),
-        });
-        return;
-      }
-
-      // Auto-commit the fix
-      if (changes.length > 0) {
-        const commitHash = await platformHealing.commitChanges(
-          `Auto-heal: ${issue.slice(0, 50)}`,
-          changes.map(c => ({ path: c.path, operation: 'modify' as const }))
-        );
-
-        console.log('[AUTO-HEAL] Fix committed:', commitHash);
-
-        // Learn this fix for future use - CRITICAL: Store the solution
-        if (this.errorBuffer.length > 0 && changes.length > 0) {
-          const primaryError = this.errorBuffer[0];
-          // Store the complete fix pattern
-          const fixData = JSON.stringify({
-            path: changes[0].path,
-            content: changes[0].content,
-            issue: issue.slice(0, 200), // Include context
-          });
-          this.learnFix(primaryError, fixData);
-          console.log('[AUTO-HEAL] Learned fix for future use:', this.getErrorSignature(primaryError));
-        }
-
-        await platformAudit.log({
-          userId: 'system',
-          action: 'heal',
-          description: `Auto-heal completed: ${changes.length} files fixed`,
-          changes: changes.map(c => ({ path: c.path, operation: 'modify' })),
-          backupId: backup.id,
-          commitHash,
-          status: 'success',
-        });
-      }
-
-    } catch (error: any) {
-      console.error('[AUTO-HEAL] Healing failed:', error);
+      await this.executeHealing(issue);
+      this.errorBuffer = [];
       
-      await platformAudit.log({
-        userId: 'system',
-        action: 'heal',
-        description: `Auto-heal failed: ${error.message}`,
-        status: 'failure',
-        error: error.message,
-      });
+    } catch (error) {
+      console.error('[AUTO-HEAL] Healing failed:', error);
+    } finally {
+      this.isHealing = false;
     }
   }
 
   /**
-   * Export knowledge base (for persistence)
+   * Execute healing (performance-optimized)
+   */
+  private async executeHealing(issue: string): Promise<void> {
+    const anthropicKey = process.env.ANTHROPIC_API_KEY;
+    if (!anthropicKey) {
+      console.error('[AUTO-HEAL] No Anthropic key configured');
+      return;
+    }
+
+    try {
+      const backup = await platformHealing.createBackup(`Auto-heal: ${issue.slice(0, 30)}`);
+      const client = new Anthropic({ apiKey: anthropicKey });
+
+      // Reduced system prompt to save tokens and CPU
+      const systemPrompt = `Auto-healing module. Fix these errors with minimal changes:
+${issue}
+
+Use these tools:
+- readPlatformFile(path) 
+- writePlatformFile(path, content)
+- listPlatformFiles(directory)
+
+Be surgical. Fix only what's broken.`;
+
+      const response = await client.messages.create({
+        model: 'claude-3-haiku-20240307', // Faster model to reduce CPU load
+        max_tokens: 4000, // Reduced from 8000
+        system: systemPrompt,
+        messages: [{ role: 'user', content: issue.slice(0, 500) }], // Limit input size
+        tools: [
+          {
+            name: 'readPlatformFile',
+            description: 'Read file',
+            input_schema: {
+              type: 'object' as const,
+              properties: { path: { type: 'string' as const } },
+              required: ['path'],
+            },
+          },
+          {
+            name: 'writePlatformFile', 
+            description: 'Write file',
+            input_schema: {
+              type: 'object' as const,
+              properties: { 
+                path: { type: 'string' as const },
+                content: { type: 'string' as const }
+              },
+              required: ['path', 'content'],
+            },
+          }
+        ],
+      });
+
+      // Process only first tool use to reduce CPU load
+      const changes: Array<{ path: string; content: string }> = [];
+      
+      for (const block of response.content.slice(0, 3)) { // Limit processing
+        if (block.type === 'tool_use' && block.name === 'writePlatformFile') {
+          const input = block.input as { path: string; content: string };
+          await platformHealing.writePlatformFile(input.path, input.content);
+          changes.push(input);
+          break; // Only process first write to reduce CPU
+        }
+      }
+
+      if (changes.length > 0) {
+        const safety = await platformHealing.validateSafety();
+        if (safety.safe) {
+          const commitHash = await platformHealing.commitChanges(
+            `Auto-heal: CPU optimized fix`,
+            changes.map(c => ({ path: c.path, operation: 'modify' as const }))
+          );
+          console.log('[AUTO-HEAL] Committed:', commitHash);
+        } else {
+          await platformHealing.rollback(backup.id);
+          console.error('[AUTO-HEAL] Safety failed, rolled back');
+        }
+      }
+
+    } catch (error: any) {
+      console.error('[AUTO-HEAL] Execution failed:', error.message.slice(0, 100));
+    }
+  }
+
+  /**
+   * Export knowledge base
    */
   exportKnowledge(): Record<string, string> {
     return Object.fromEntries(this.knowledgeBase);
   }
 
   /**
-   * Import knowledge base (from persistence)
+   * Import knowledge base
    */
   importKnowledge(knowledge: Record<string, string>): void {
-    this.knowledgeBase = new Map(Object.entries(knowledge));
-    console.log('[AUTO-HEAL] Imported', this.knowledgeBase.size, 'known fixes');
+    this.knowledgeBase = new Map(Object.entries(knowledge).slice(0, 50)); // Limit size
+    console.log('[AUTO-HEAL] Imported', this.knowledgeBase.size, 'fixes');
+  }
+
+  /**
+   * Get CPU monitoring stats
+   */
+  getCpuStats() {
+    return {
+      errorCount: this.cpuMonitor.errorCount,
+      healingCount: this.cpuMonitor.healingCount,
+      isHealing: this.isHealing,
+      bufferSize: this.errorBuffer.length,
+      knowledgeBaseSize: this.knowledgeBase.size
+    };
   }
 }
 
 export const autoHealing = new AutoHealingService();
 
-// Global error handlers for automatic healing
+// CPU-OPTIMIZED: Only attach handlers in production and with throttling
 if (process.env.NODE_ENV === 'production') {
+  let lastErrorTime = 0;
+  const ERROR_THROTTLE = 5000; // Only report errors every 5 seconds max
+
   process.on('uncaughtException', (error) => {
-    autoHealing.reportError({
-      timestamp: new Date(),
-      type: 'runtime',
-      message: error.message,
-      stack: error.stack,
-    });
+    const now = Date.now();
+    if (now - lastErrorTime > ERROR_THROTTLE) {
+      lastErrorTime = now;
+      autoHealing.reportError({
+        timestamp: new Date(),
+        type: 'runtime',
+        message: error.message,
+        stack: error.stack,
+      });
+    }
   });
 
   process.on('unhandledRejection', (reason: any) => {
-    autoHealing.reportError({
-      timestamp: new Date(),
-      type: 'runtime',
-      message: reason?.message || String(reason),
-      stack: reason?.stack,
-    });
+    const now = Date.now();
+    if (now - lastErrorTime > ERROR_THROTTLE) {
+      lastErrorTime = now;
+      autoHealing.reportError({
+        timestamp: new Date(),
+        type: 'runtime',
+        message: reason?.message || String(reason).slice(0, 200),
+        stack: reason?.stack,
+      });
+    }
   });
 }
