@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import lumoImageSrc from "@assets/image_1761786985510.png";
 import { backgroundThemes, getAutoTheme, type BackgroundTheme } from "./lumo-background-themes";
+
+// Use public path for reliable deployment on Railway and other platforms
+const lumoImageSrc = "/lumo-avatar.png";
 
 export type EmotionState = "happy" | "sad" | "worried" | "excited" | "thinking" | "working" | "success" | "error" | "idle";
 

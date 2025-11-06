@@ -24,6 +24,7 @@ import { TaskBoard } from "@/components/task-board";
 import { AgentTaskList, type AgentTask } from "@/components/agent-task-list";
 import { AgentProgressDisplay } from "@/components/agent-progress-display";
 import { ChatInputToolbar } from "@/components/ui/chat-input-toolbar";
+import { AIModelSelector } from "@/components/ai-model-selector";
 
 interface CheckpointData {
   complexity: string;
@@ -925,13 +926,16 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
           </div>
         )}
 
-        {/* Connection Status */}
-        <ConnectionStatus
-          isConnected={streamState.isConnected}
-          isReconnecting={streamState.isReconnecting}
-          reconnectAttempt={streamState.reconnectAttempt}
-          onReconnect={streamState.forceReconnect}
-        />
+        {/* Header with Connection Status and Model Selector */}
+        <div className="px-4 py-2 border-b border-[hsl(220,15%,28%)] bg-[hsl(220,18%,16%)] flex items-center justify-between gap-4">
+          <ConnectionStatus
+            isConnected={streamState.isConnected}
+            isReconnecting={streamState.isReconnecting}
+            reconnectAttempt={streamState.reconnectAttempt}
+            onReconnect={streamState.forceReconnect}
+          />
+          <AIModelSelector />
+        </div>
 
         {/* AI Progress */}
         {(currentProgress.length > 0 || isGenerating) && (
