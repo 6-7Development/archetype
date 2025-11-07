@@ -4,6 +4,12 @@
 Lomu is an AI-powered platform for rapid web development, featuring LomuAI, an autonomous AI coding agent, and dual-version IDE Workspaces (Lomu for desktop, Lomu5 for mobile). It offers a console-first interface, real-time preview, and comprehensive workspace features. The platform aims for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. A key capability is LomuAI's autonomous self-healing, bug fixing, and UI/UX improvements to its own source code, complete with rollback and audit logging.
 
 ## Recent Updates (Nov 7, 2025)
+- ✅ **PRODUCTION UX FIXES - Real Progress & Systematic Tasks** (Nov 7, 2025): Fixed THREE critical issues preventing LomuAI from working like Replit Agent:
+  - **Real Progress Bars**: Replaced fake CSS animations with actual task completion tracking using 3-tier priority (backend metrics → substeps → status)
+  - **Systematic Task Execution**: Forces AI to work through tasks 1→2→3→4→5 in order (no jumping around) - blocks non-task tools during in_progress tasks
+  - **API Retry Logic**: Exponential backoff (1s, 2s, 4s) for Anthropic overload errors - prevents complete chat failures
+  - **Inline Progress Messages**: Fixed WebSocket handler LSP error - progress messages now appear in chat as muted inline bubbles
+  - **Architect Approved**: All fixes reviewed and approved for production deployment
 - ✅ **CRITICAL FIX - Platform Healing Tool Parity Achieved** (Nov 7, 2025): Platform Healing was severely crippled with only 9 tools vs Regular LomuAI's 38 tools. Added ALL 29 missing tools to achieve 100% parity:
   - **Tool Count**: 9 → 38 tools (subagent, bash, edit, grep, search_codebase, LSP diagnostics, packager_tool, restart_workflow, read_logs, execute_sql, architect_consult, web_search, run_test, verify_fix, perform_diagnosis, knowledge_store/search/recall, code_search, list/create/delete platform files)
   - **Implementation**: Added 366 lines of tool handlers to server/routes/healing.ts (copied from lomuChat.ts)
