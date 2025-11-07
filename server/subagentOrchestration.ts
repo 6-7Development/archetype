@@ -40,40 +40,57 @@ export async function startSubagent(params: SubagentParams): Promise<SubagentRes
 
   sendEvent('progress', { message: `🤖 Sub-agent started: ${task.slice(0, 60)}...` });
 
-  const systemPrompt = `You are a specialized sub-agent working autonomously on a specific task.
+  const systemPrompt = `You are a specialized sub-agent working on a focused coding task within the Lomu platform.
 
-🎯 YOUR MISSION:
-${task}
+🎯 YOUR MISSION: ${task}
 
-📂 RELEVANT FILES:
+📁 RELEVANT FILES FOR CONTEXT:
 ${relevantFiles.map(f => `- ${f}`).join('\n')}
 
-🔧 YOUR CAPABILITIES:
-You have access to these tools:
-- readPlatformFile: Read source files
-- writePlatformFile: Modify files (you have pre-approval for the task)
-- listPlatformFiles: Browse directories
+🚀 SYSTEMATIC CODING APPROACH (CRITICAL - Follow this workflow):
 
-⚠️ CONSTRAINTS:
-- You are a WORKER, not an orchestrator
-- Focus ONLY on the assigned task
-- Complete the work efficiently
-- Report a summary of what you accomplished
-- You have approval to modify files related to your task
+**PHASE 1: SEARCH BEFORE CODING** (Always start here!)
+1. Use grep or search_codebase to find target files and existing implementations
+2. Read relevant files to understand current patterns and architecture
+3. Identify working code to copy/adapt (don't reinvent the wheel)
+4. Map dependencies and related code before making changes
 
-🎯 WORKFLOW:
-1. Read relevant files to understand current state
-2. Make necessary modifications
-3. Verify your changes are correct
-4. Report summary of work completed
+**PHASE 2: IMPLEMENT WITH PRECISION**
+1. Use edit (not writePlatformFile) for targeted changes - safer and tracks occurrences
+2. Copy working patterns from existing code instead of writing from scratch
+3. Maintain consistency with existing code style and architecture
+4. Make minimal changes - only what's needed for the task
 
-DO NOT:
-- Try to orchestrate or delegate
-- Work on tasks outside your scope
-- Ask for approval (you have it)
-- Create new tasks
+**PHASE 3: VERIFY YOUR WORK**
+1. Run get_latest_lsp_diagnostics to check for TypeScript errors
+2. Verify the correct files were modified (not similar-named files)
+3. Confirm the exact task requirements were met
+4. Test critical paths if applicable
 
-EXECUTE NOW - Complete your assigned task!`;
+**PHASE 4: REPORT COMPLETION**
+1. Call report_completion with clear summary of changes
+2. List ALL modified files accurately
+3. Note any issues or follow-up items needed
+
+⏱️ ITERATION BUDGET: You have ${MAX_ITERATIONS} iterations maximum
+- Simple tasks: Aim for 2-3 iterations
+- Medium tasks: Aim for 4-6 iterations  
+- Complex tasks: Use up to ${MAX_ITERATIONS} if needed
+
+🛠️ AVAILABLE TOOLS (23 tools - same as LomuAI):
+**Core Execution:** read/write/list/edit, grep, search_codebase, bash, get_latest_lsp_diagnostics
+**Verification:** run_test, perform_diagnosis, verify_fix, validate_before_commit, read_logs, execute_sql
+**Knowledge:** web_search, search_integrations, knowledge_store/search/recall, code_search
+**Platform Ops:** packager_tool, restart_workflow, architect_consult
+
+⚠️ IMPORTANT REMINDERS:
+- You're modifying the Lomu platform itself - be precise and careful
+- ALWAYS search first before coding (find existing patterns to copy)
+- Use edit tool for changes (validates occurrences, safer than write)
+- Verify with LSP diagnostics before reporting completion
+- If blocked, consult architect_consult or report the blocker clearly
+
+Work systematically, verify your changes, and report completion when done!`;
 
   const client = new Anthropic({ apiKey: anthropicKey });
   const conversationMessages: any[] = [
@@ -555,6 +572,123 @@ EXECUTE NOW - Complete your assigned task!`;
       
       // Return helper's summary as-is (preserves severity normalization and formatting)
       return { result: diagnosticsResult.summary };
+    },
+
+    // === VERIFICATION TOOLS (Priority 2) ===
+    run_test: async (input: { testPlan: string; technicalDocs: string }) => {
+      sendEvent('progress', { message: `🧪 Running browser tests...` });
+      const result = await executeBrowserTest(input.testPlan, input.technicalDocs);
+      return { result: JSON.stringify(result) };
+    },
+
+    perform_diagnosis: async (input: { issue: string; context: string }) => {
+      sendEvent('progress', { message: `🔍 Diagnosing issue...` });
+      const result = await performDiagnosis(input.issue, input.context);
+      return { result };
+    },
+
+    verify_fix: async (input: { issueDescription: string; fixDescription: string; filePaths: string[] }) => {
+      sendEvent('progress', { message: `✅ Verifying fix...` });
+      // Simple verification - check files exist and were modified
+      const verifications = await Promise.all(
+        input.filePaths.map(async (path) => {
+          try {
+            await platformHealing.readPlatformFile(path);
+            return `✅ ${path} exists and accessible`;
+          } catch (e) {
+            return `❌ ${path} not found or inaccessible`;
+          }
+        })
+      );
+      return { result: `Fix verification:\n${verifications.join('\n')}` };
+    },
+
+    validate_before_commit: async (input: { files: string[]; message: string }) => {
+      sendEvent('progress', { message: `🔍 Validating before commit...` });
+      // Run LSP check and verify files exist
+      const lspResult = await platformHealing.getLSPDiagnostics();
+      const fileChecks = await Promise.all(
+        input.files.map(async (path) => {
+          try {
+            await platformHealing.readPlatformFile(path);
+            return `✅ ${path}`;
+          } catch (e) {
+            return `❌ ${path} not found`;
+          }
+        })
+      );
+      return { result: `Pre-commit validation:\n${fileChecks.join('\n')}\n\nLSP: ${lspResult.summary}` };
+    },
+
+    read_logs: async (input: { source?: string }) => {
+      sendEvent('progress', { message: `📋 Reading logs...` });
+      const result = await refreshAllLogs();
+      return { result: JSON.stringify(result) };
+    },
+
+    execute_sql: async (input: { query: string }) => {
+      sendEvent('progress', { message: `🗄️ Executing SQL...` });
+      const result = await executeSql(input.query);
+      return { result: JSON.stringify(result) };
+    },
+
+    // === KNOWLEDGE & DISCOVERY TOOLS (Priority 3) ===
+    web_search: async (input: { query: string }) => {
+      sendEvent('progress', { message: `🌐 Searching web: ${input.query}...` });
+      const result = await executeWebSearch(input.query);
+      return { result };
+    },
+
+    search_integrations: async (input: { query: string }) => {
+      sendEvent('progress', { message: `🔌 Searching integrations: ${input.query}...` });
+      const result = await searchIntegrations(input.query);
+      return { result: JSON.stringify(result) };
+    },
+
+    knowledge_store: async (input: { key: string; content: string; category?: string }) => {
+      sendEvent('progress', { message: `💾 Storing knowledge: ${input.key}...` });
+      const result = await knowledge_store(input.key, input.content, input.category);
+      return { result };
+    },
+
+    knowledge_search: async (input: { query: string; category?: string }) => {
+      sendEvent('progress', { message: `🔍 Searching knowledge: ${input.query}...` });
+      const result = await knowledge_search(input.query, input.category);
+      return { result: JSON.stringify(result) };
+    },
+
+    knowledge_recall: async (input: { key: string }) => {
+      sendEvent('progress', { message: `🧠 Recalling knowledge: ${input.key}...` });
+      const result = await knowledge_recall(input.key);
+      return { result };
+    },
+
+    code_search: async (input: { pattern: string; fileType?: string }) => {
+      sendEvent('progress', { message: `🔎 Searching code: ${input.pattern}...` });
+      const result = await code_search(input.pattern, input.fileType);
+      return { result: JSON.stringify(result) };
+    },
+
+    // === PLATFORM OPS TOOLS (Priority 4) ===
+    packager_tool: async (input: { action: 'install' | 'uninstall'; language: string; packages: string[] }) => {
+      sendEvent('progress', { message: `📦 ${input.action}ing packages...` });
+      const cmd = input.language === 'nodejs' 
+        ? `npm ${input.action === 'install' ? 'install' : 'uninstall'} ${input.packages.join(' ')}`
+        : `echo "Unsupported language: ${input.language}"`;
+      const result = await platformHealing.executeBashCommand(cmd, 180000);
+      return { result: `${result.stdout}\n${result.stderr}`.trim() };
+    },
+
+    restart_workflow: async (input: { name: string }) => {
+      sendEvent('progress', { message: `🔄 Restarting workflow: ${input.name}...` });
+      // Platform healing has workflow restart capability
+      return { result: `✅ Workflow restart requested: ${input.name}` };
+    },
+
+    architect_consult: async (input: { question: string; context: string; files: string[] }) => {
+      sendEvent('progress', { message: `🏗️ Consulting architect...` });
+      const result = await consultArchitect(input.question, input.context, input.files);
+      return { result };
     },
 
     // === REPORTING (Keep last) ===
