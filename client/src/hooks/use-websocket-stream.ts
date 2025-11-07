@@ -465,25 +465,6 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
               setHealEvents(prev => [...prev, message]);
               break;
 
-            case 'progress':
-              // Handle inline progress messages (for WebSocket-based chats)
-              console.log('📡 Progress message:', message.message);
-              if (message.message) {
-                const progressId = `progress-${Date.now()}-${Math.random()}`;
-                setStreamState(prev => ({
-                  ...prev,
-                  progressMessages: [
-                    ...prev.progressMessages,
-                    {
-                      id: progressId,
-                      message: message.message || '',
-                      timestamp: Date.now(),
-                    }
-                  ],
-                }));
-              }
-              break;
-
             case 'platform_preview_ready':
               console.log('✅ Platform preview ready:', message);
               setStreamState(prev => ({
