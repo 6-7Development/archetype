@@ -967,8 +967,8 @@ export const insertArchitectReviewSchema = createInsertSchema(architectReviews).
 export type InsertArchitectReview = z.infer<typeof insertArchitectReviewSchema>;
 export type ArchitectReview = typeof architectReviews.$inferSelect;
 
-// Meta-SySop Knowledge Base - Stores learned patterns, decisions, and fixes
-export const metaSysopKnowledge = pgTable("meta_sysop_knowledge", {
+// Platform Healing Knowledge Base - Stores learned patterns, decisions, and fixes
+export const platformHealingKnowledge = pgTable("platform_healing_knowledge", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   category: text("category").notNull(), // 'pattern' | 'fix' | 'decision' | 'rule' | 'preference'
   title: text("title").notNull(), // Brief description of the knowledge
@@ -981,18 +981,18 @@ export const metaSysopKnowledge = pgTable("meta_sysop_knowledge", {
   active: boolean("active").notNull().default(true), // Can be deactivated without deletion
   usageCount: integer("usage_count").notNull().default(0), // How many times this was referenced
   lastUsedAt: timestamp("last_used_at"),
-  createdBy: varchar("created_by"), // User ID or 'system' or 'meta-sysop'
+  createdBy: varchar("created_by"), // User ID or 'system' or 'platform-healing'
   approvedBy: varchar("approved_by"), // User ID who approved this knowledge (I AM architect)
   metadata: jsonb("metadata"), // Additional structured data
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (table) => [
-  index("idx_meta_knowledge_category").on(table.category),
-  index("idx_meta_knowledge_active").on(table.active),
-  index("idx_meta_knowledge_priority").on(table.priority),
+  index("idx_platform_knowledge_category").on(table.category),
+  index("idx_platform_knowledge_active").on(table.active),
+  index("idx_platform_knowledge_priority").on(table.priority),
 ]);
 
-export const insertMetaSysopKnowledgeSchema = createInsertSchema(metaSysopKnowledge).omit({
+export const insertPlatformHealingKnowledgeSchema = createInsertSchema(platformHealingKnowledge).omit({
   id: true,
   usageCount: true,
   lastUsedAt: true,
@@ -1000,11 +1000,11 @@ export const insertMetaSysopKnowledgeSchema = createInsertSchema(metaSysopKnowle
   updatedAt: true,
 });
 
-export type InsertMetaSysopKnowledge = z.infer<typeof insertMetaSysopKnowledgeSchema>;
-export type MetaSysopKnowledge = typeof metaSysopKnowledge.$inferSelect;
+export type InsertPlatformHealingKnowledge = z.infer<typeof insertPlatformHealingKnowledgeSchema>;
+export type PlatformHealingKnowledge = typeof platformHealingKnowledge.$inferSelect;
 
-// Meta-SySop Instructions - User-given permanent instructions and preferences
-export const metaSysopInstructions = pgTable("meta_sysop_instructions", {
+// Platform Healing Instructions - User-given permanent instructions and preferences
+export const platformHealingInstructions = pgTable("platform_healing_instructions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   type: text("type").notNull(), // 'permanent' | 'conditional' | 'project-specific'
   instruction: text("instruction").notNull(), // The actual instruction text
@@ -1019,22 +1019,22 @@ export const metaSysopInstructions = pgTable("meta_sysop_instructions", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (table) => [
-  index("idx_meta_instructions_type").on(table.type),
-  index("idx_meta_instructions_scope").on(table.scope),
-  index("idx_meta_instructions_active").on(table.active),
+  index("idx_platform_instructions_type").on(table.type),
+  index("idx_platform_instructions_scope").on(table.scope),
+  index("idx_platform_instructions_active").on(table.active),
 ]);
 
-export const insertMetaSysopInstructionSchema = createInsertSchema(metaSysopInstructions).omit({
+export const insertPlatformHealingInstructionSchema = createInsertSchema(platformHealingInstructions).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
 });
 
-export type InsertMetaSysopInstruction = z.infer<typeof insertMetaSysopInstructionSchema>;
-export type MetaSysopInstruction = typeof metaSysopInstructions.$inferSelect;
+export type InsertPlatformHealingInstruction = z.infer<typeof insertPlatformHealingInstructionSchema>;
+export type PlatformHealingInstruction = typeof platformHealingInstructions.$inferSelect;
 
-// Meta-SySop Automation Rules - Automated workflows and triggers
-export const metaSysopAutomation = pgTable("meta_sysop_automation", {
+// Platform Healing Automation Rules - Automated workflows and triggers
+export const platformHealingAutomation = pgTable("platform_healing_automation", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(), // Human-readable name for this automation
   description: text("description").notNull(),
@@ -1054,11 +1054,11 @@ export const metaSysopAutomation = pgTable("meta_sysop_automation", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (table) => [
-  index("idx_meta_automation_trigger").on(table.trigger),
-  index("idx_meta_automation_active").on(table.active),
+  index("idx_platform_automation_trigger").on(table.trigger),
+  index("idx_platform_automation_active").on(table.active),
 ]);
 
-export const insertMetaSysopAutomationSchema = createInsertSchema(metaSysopAutomation).omit({
+export const insertPlatformHealingAutomationSchema = createInsertSchema(platformHealingAutomation).omit({
   id: true,
   executionCount: true,
   lastExecutedAt: true,
@@ -1068,11 +1068,11 @@ export const insertMetaSysopAutomationSchema = createInsertSchema(metaSysopAutom
   updatedAt: true,
 });
 
-export type InsertMetaSysopAutomation = z.infer<typeof insertMetaSysopAutomationSchema>;
-export type MetaSysopAutomation = typeof metaSysopAutomation.$inferSelect;
+export type InsertPlatformHealingAutomation = z.infer<typeof insertPlatformHealingAutomationSchema>;
+export type PlatformHealingAutomation = typeof platformHealingAutomation.$inferSelect;
 
-// Meta-SySop Memory Log - Conversation memory and context retention
-export const metaSysopMemory = pgTable("meta_sysop_memory", {
+// Platform Healing Memory Log - Conversation memory and context retention
+export const platformHealingMemory = pgTable("platform_healing_memory", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   sessionId: varchar("session_id"), // Groups related memories together
   memoryType: text("memory_type").notNull(), // 'conversation' | 'decision' | 'learning' | 'feedback'
@@ -1083,15 +1083,15 @@ export const metaSysopMemory = pgTable("meta_sysop_memory", {
   expiresAt: timestamp("expires_at"), // Optional expiry for temporary memories
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => [
-  index("idx_meta_memory_session").on(table.sessionId),
-  index("idx_meta_memory_type").on(table.memoryType),
-  index("idx_meta_memory_importance").on(table.importance),
+  index("idx_platform_memory_session").on(table.sessionId),
+  index("idx_platform_memory_type").on(table.memoryType),
+  index("idx_platform_memory_importance").on(table.importance),
 ]);
 
-export const insertMetaSysopMemorySchema = createInsertSchema(metaSysopMemory).omit({
+export const insertPlatformHealingMemorySchema = createInsertSchema(platformHealingMemory).omit({
   id: true,
   createdAt: true,
 });
 
-export type InsertMetaSysopMemory = z.infer<typeof insertMetaSysopMemorySchema>;
-export type MetaSysopMemory = typeof metaSysopMemory.$inferSelect;
+export type InsertPlatformHealingMemory = z.infer<typeof insertPlatformHealingMemorySchema>;
+export type PlatformHealingMemory = typeof platformHealingMemory.$inferSelect;
