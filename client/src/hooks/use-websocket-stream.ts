@@ -9,7 +9,7 @@ export interface Task {
 }
 
 interface StreamMessage {
-  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics' | 'heal:init' | 'heal:thought' | 'heal:tool' | 'heal:write-pending' | 'heal:approved' | 'heal:rejected' | 'heal:completed' | 'heal:error' | 'approval_requested' | 'progress' | 'platform_preview_ready' | 'platform_preview_error' | 'lomu_ai_job_update';
+  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'chat-error' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics' | 'heal:init' | 'heal:thought' | 'heal:tool' | 'heal:write-pending' | 'heal:approved' | 'heal:rejected' | 'heal:completed' | 'heal:error' | 'approval_requested' | 'progress' | 'platform_preview_ready' | 'platform_preview_error' | 'lomu_ai_job_update';
   commandId?: string;
   updateType?: string;
   status?: string;
@@ -122,6 +122,11 @@ interface StreamState {
     };
     lastUpdate: string;
   } | null;
+  progressMessages: Array<{
+    id: string;
+    message: string;
+    timestamp: number;
+  }>;
   previewReady: {
     sessionId: string;
     manifest: any;
@@ -160,6 +165,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
     tasks: [],
     subAgentActive: null,
     platformMetrics: null,
+    progressMessages: [],
     previewReady: null,
     previewError: null,
   });
@@ -265,6 +271,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
                 ...prev,
                 usage: message.usage || null,
                 currentStatus: 'completed',
+                progressMessages: [], // Clear progress messages when AI completes
               }));
               break;
 
@@ -273,6 +280,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
                 ...prev,
                 error: message.error || 'Unknown error',
                 currentStatus: 'failed',
+                progressMessages: [],
               }));
               break;
 
@@ -324,6 +332,21 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
                 },
                 usage: message.usage || null,
                 currentStatus: 'completed',
+                progressMessages: [], // Clear progress messages when chat completes
+              }));
+              break;
+
+            case 'chat-error':
+              console.log('❌ Chat error:', message.error);
+              setStreamState(prev => ({
+                ...prev,
+                error: message.error || 'Chat processing failed',
+                currentStatus: 'failed',
+                progressMessages: [],
+                chatProgress: {
+                  status: 'error',
+                  message: message.error || 'Error occurred',
+                },
               }));
               break;
 
@@ -372,6 +395,21 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
                     t.id === message.task!.id ? message.task! : t
                   ),
                 }));
+              } else if (message.updateType === 'job_progress' && message.message) {
+                // Handle inline progress messages from Regular LomuAI
+                console.log('📡 Job progress:', message.message);
+                const progressId = `progress-${Date.now()}-${Math.random()}`;
+                setStreamState(prev => ({
+                  ...prev,
+                  progressMessages: [
+                    ...prev.progressMessages,
+                    {
+                      id: progressId,
+                      message: message.message || '',
+                      timestamp: Date.now(),
+                    }
+                  ],
+                }));
               }
               break;
 
@@ -402,10 +440,28 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
             case 'heal:completed':
             case 'heal:error':
             case 'approval_requested':
-            case 'progress':
               // NEW: Expose heal events to consumers
               console.log(`🔧 [HEAL] ${message.type}:`, message);
               setHealEvents(prev => [...prev, message]);
+              break;
+
+            case 'progress':
+              // Handle inline progress messages (for WebSocket-based chats)
+              console.log('📡 Progress message:', message.message);
+              if (message.message) {
+                const progressId = `progress-${Date.now()}-${Math.random()}`;
+                setStreamState(prev => ({
+                  ...prev,
+                  progressMessages: [
+                    ...prev.progressMessages,
+                    {
+                      id: progressId,
+                      message: message.message,
+                      timestamp: Date.now(),
+                    }
+                  ],
+                }));
+              }
               break;
 
             case 'platform_preview_ready':
