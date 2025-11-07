@@ -235,6 +235,12 @@ export async function streamGeminiResponse(options: StreamOptions) {
       const toolCount = geminiTools[0]?.functionDeclarations?.length || 0;
       const toolNames = geminiTools[0]?.functionDeclarations?.map((t: any) => t.name).slice(0, 3).join(', ') || 'none';
       console.log(`[GEMINI-TOOLS] ✅ Converted ${toolCount} tools for Gemini (first 3: ${toolNames}...)`);
+      
+      // ⚠️ Google recommends 10-20 tools max for optimal performance
+      if (toolCount > 20) {
+        console.log(`[GEMINI-TOOLS] ⚠️ WARNING: ${toolCount} tools provided, Google recommends ≤20 for best results`);
+      }
+      
       console.log(`[GEMINI-TOOLS] Structure check:`, JSON.stringify(geminiTools[0]?.functionDeclarations?.[0], null, 2).substring(0, 200));
     } else {
       console.log('[GEMINI-TOOLS] ⚠️ No tools provided to Gemini');
@@ -259,10 +265,11 @@ export async function streamGeminiResponse(options: StreamOptions) {
     // Prepare request parameters with systemInstruction and tools at top level
     const requestParams: any = {
       contents: geminiMessages,
-      systemInstruction: system,
+      // ✅ ADD SYSTEM INSTRUCTION: Only use declared tools (prevents hallucinating print())
+      systemInstruction: `${system}\n\nCRITICAL: You can ONLY use the explicitly declared function tools provided. Never invent functions like print(), default_api, or any other undeclared tools.`,
       generationConfig: {
         maxOutputTokens: maxTokens,
-        temperature: 0.2, // LOW = deterministic, rule-following behavior (vs default 1.0)
+        temperature: 0.1, // ULTRA-LOW = maximum determinism for function calling (Google recommends 0-0.2)
         topP: 0.8,        // Slightly reduced randomness for consistency
         // ❌ DON'T set responseMimeType - it breaks function calling!
       },
