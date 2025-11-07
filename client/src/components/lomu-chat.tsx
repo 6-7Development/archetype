@@ -664,8 +664,21 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
                     break;
 
                   case 'progress':
-                    setProgressMessage(data.message || '');
-                    setProgressStatus('working');
+                    const progressMsg = data.message || '';
+                    setProgressMessage(progressMsg);
+                    
+                    // Smart status detection based on progress message emoji (with trimming for formatting variations)
+                    const trimmedMsg = progressMsg.trim();
+                    if (trimmedMsg.startsWith('✅')) {
+                      setProgressStatus('vibing'); // Creative work: file edits, code generation
+                    } else if (trimmedMsg.startsWith('🔧')) {
+                      setProgressStatus('working'); // Tool execution, bash commands
+                    } else if (trimmedMsg.startsWith('📋') || trimmedMsg.startsWith('🔍')) {
+                      setProgressStatus('thinking'); // Planning, analysis, search
+                    } else {
+                      // Fallback: use server status if available, otherwise default to 'working'
+                      setProgressStatus(data.status || 'working');
+                    }
                     break;
 
                   case 'task_list_created':
