@@ -307,6 +307,26 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
               }));
               break;
 
+            case 'progress':
+              // Handle inline progress thoughts (like Replit Agent: "🧠 Found X", "🔧 Executed Y")
+              const progressMsg = message.message || '';
+              console.log('📡 Progress:', progressMsg);
+              if (progressMsg) {
+                setStreamState(prev => ({
+                  ...prev,
+                  progressMessages: [
+                    ...prev.progressMessages,
+                    {
+                      id: `progress-${Date.now()}-${Math.random()}`,
+                      message: progressMsg,
+                      timestamp: Date.now(),
+                    },
+                  ],
+                  currentAction: progressMsg, // Also show in status bar
+                }));
+              }
+              break;
+
             case 'chat-progress':
               console.log('📡 Chat progress:', message.message);
               setStreamState(prev => ({
