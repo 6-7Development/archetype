@@ -4,6 +4,11 @@
 Lomu is an AI-powered platform for rapid web development, featuring LomuAI, an autonomous AI coding agent, and dual-version IDE Workspaces (Lomu for desktop, Lomu5 for mobile). It offers a console-first interface, real-time preview, and comprehensive workspace features. The platform aims for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. A key capability is LomuAI's autonomous self-healing, bug fixing, and UI/UX improvements to its own source code, complete with rollback and audit logging.
 
 ## Recent Updates (Nov 7, 2025)
+- ✅ **CRITICAL FIX - Platform Healing Tool Parity Achieved** (Nov 7, 2025): Platform Healing was severely crippled with only 9 tools vs Regular LomuAI's 38 tools. Added ALL 29 missing tools to achieve 100% parity:
+  - **Tool Count**: 9 → 38 tools (subagent, bash, edit, grep, search_codebase, LSP diagnostics, packager_tool, restart_workflow, read_logs, execute_sql, architect_consult, web_search, run_test, verify_fix, perform_diagnosis, knowledge_store/search/recall, code_search, list/create/delete platform files)
+  - **Implementation**: Added 366 lines of tool handlers to server/routes/healing.ts (copied from lomuChat.ts)
+  - **Parity Requirement**: Both chats now have IDENTICAL tools/logic - updates to one require updates to both (like desktop/mobile parity)
+  - **Deployed**: Successfully deployed to Railway with zero TypeScript errors
 - ✅ **Frontend Rebuild Completed**: Removed Lumo avatar from Platform Healing, added upload button to chat input (deployed to Railway)
 - ✅ **LomuAI Efficiency Phase 1**: Added 4 efficiency rules to system prompt (deployed to Railway)
 - ✅ **LomuAI Conversational Updates**: Added conversational progress updates - LomuAI now shares work status naturally without wasting tokens
@@ -20,7 +25,7 @@ Lomu is an AI-powered platform for rapid web development, featuring LomuAI, an a
   - Model: claude-sonnet-4-20250514
   - Cost: $3.00 input / $15.00 output per 1M tokens
   - 200K token context window
-  - Used for: LomuAI Chat (37 tools), Platform Healing (3 tools), I AM Architect
+  - Used for: LomuAI Chat (38 tools), Platform Healing (38 tools - IDENTICAL), I AM Architect
   
 **Why Claude-Only?**
 - ✅ Reliable tool execution (no hallucinated Python syntax like Gemini)
@@ -99,7 +104,7 @@ Key features include:
 - **GitHub Integration**: Full version control with 6 tools, supporting branching, pull requests, and project export, triggering auto-deployment.
 - **Environment Variables Management**: Project-level secrets with 4 tools, database storage, validation, and security masking.
 - **Code Intelligence System**: AST-based code understanding via CodeIndexer, FileRelevanceDetector, and SmartChunker for efficient code retrieval and dependency graphing.
-- **Platform Healing System**: Owner-only two-tier incident resolution (Knowledge Base → LomuAI v2.0) for fixing the platform itself.
+- **Platform Healing System**: Owner-only two-tier incident resolution (Knowledge Base → LomuAI v2.0) for fixing the platform itself. Platform Healing has IDENTICAL 38 tools to regular LomuAI (100% parity requirement - updates to one must be mirrored to both).
 - **Replit Agent Parity**: Matches Replit Agent's complex task handling with increased token limits, iterations, self-correction, and concurrency.
 - **Credit-Based Billing System**: Production-ready monetization with usage-based credits (1 credit = 1K tokens = $0.05), atomic operations, pause/resume flow, and Stripe integration.
 - **Monetization Infrastructure**: Lead capture, Stripe subscription system, webhooks, granular usage billing, and template marketplace commission model.
