@@ -99,19 +99,22 @@ function TaskItem({
         <div className="flex-1 min-w-0">
           <span className="block text-sm truncate">{task.title}</span>
           
-          {/* Progress bar showing REAL progress */}
+          {/* Progress bar showing REAL progress with percentage */}
           {(task.status === 'in_progress' || task.status === 'completed') && (
-            <div className="mt-1">
+            <div className="mt-1 flex items-center gap-2">
               <Progress 
                 value={progressPercent} 
-                className="h-1" 
+                className="h-1 flex-1" 
                 data-testid={`progress-${task.id}`}
               />
+              <span className="text-xs font-medium text-muted-foreground shrink-0 min-w-[35px] text-right">
+                {Math.round(progressPercent)}%
+              </span>
             </div>
           )}
         </div>
         
-        {task.progress && (
+        {task.progress && task.progress.total > 0 && (
           <span className="text-xs text-muted-foreground shrink-0">
             {task.progress.current}/{task.progress.total}
           </span>

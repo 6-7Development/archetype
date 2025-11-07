@@ -268,6 +268,20 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       if (activeTask) {
         setActiveTaskId(activeTask.id);
       }
+
+      // Auto-close task box when all tasks complete (like Replit Agent)
+      const allCompleted = convertedTasks.every(t => t.status === 'completed');
+      const hasInProgress = convertedTasks.some(t => t.status === 'in_progress');
+      
+      if (allCompleted && !hasInProgress) {
+        // Wait 2 seconds to show completion state, then close
+        const closeTimer = setTimeout(() => {
+          console.log('✅ All tasks completed - auto-closing task box');
+          setShowTaskList(false);
+        }, 2000);
+        
+        return () => clearTimeout(closeTimer);
+      }
     }
 
     // Update progress status from chat progress
