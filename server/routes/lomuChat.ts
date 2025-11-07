@@ -4,6 +4,7 @@ import { chatMessages, taskLists, tasks, lomuAttachments, lomuJobs, users, subsc
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth.ts';
 import { streamAnthropicResponse } from '../anthropic.ts';
+import { streamGeminiResponse } from '../gemini.ts'; // ✅ Re-enabled: Gemini function calling now works
 import { RAILWAY_CONFIG } from '../config/railway.ts';
 import { platformHealing } from '../platformHealing.ts';
 import { platformAudit } from '../platformAudit.ts';
@@ -20,6 +21,7 @@ import * as path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { createSafeAnthropicRequest } from '../lib/anthropic-wrapper.ts';
+import { createSafeGeminiRequest } from '../lib/gemini-wrapper.ts'; // ✅ Add Gemini context wrapper
 import { sanitizeDiagnosisForAI } from '../lib/diagnosis-sanitizer.ts';
 import { filterToolCallsFromMessages } from '../lib/message-filter.ts';
 import type { WebSocketServer } from 'ws';
@@ -29,7 +31,7 @@ import { classifyUserIntent, getMaxIterationsForIntent, type UserIntent } from '
 
 const execAsync = promisify(exec);
 
-// 🔄 EXPONENTIAL BACKOFF RETRY LOGIC for Anthropic API overload errors
+// 🔄 EXPONENTIAL BACKOFF RETRY LOGIC for AI API overload errors
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
   maxRetries: number = 3,
@@ -39,14 +41,18 @@ async function retryWithBackoff<T>(
     try {
       return await fn();
     } catch (error: any) {
-      // Check if it's an Anthropic overload error
+      // Check if it's an API overload error (Anthropic or Google)
       const isOverloadError = error.error?.type === 'overloaded_error' || 
                               error.message?.includes('overloaded') ||
-                              error.type === 'overloaded_error';
+                              error.type === 'overloaded_error' ||
+                              error.message?.includes('429') || // Rate limit
+                              error.message?.includes('quota') || // Quota exceeded
+                              error.status === 429 || // HTTP 429
+                              error.code === 429;
       
       if (isOverloadError && i < maxRetries - 1) {
         const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s exponential backoff
-        console.log(`[RETRY] ${context} - Anthropic API overloaded, retry ${i + 1}/${maxRetries} after ${delay}ms...`);
+        console.log(`[RETRY] ${context} - API overloaded, retry ${i + 1}/${maxRetries} after ${delay}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
         continue;
       }
@@ -1509,14 +1515,16 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       // ⚡ Use ultra-compressed prompt (no extra platform knowledge - read files when needed)
       const finalSystemPrompt = systemPrompt;
 
-      // TEMPORARY: Claude context-limit protection (200K token limit)
+      // ✅ GEMINI CONTEXT-LIMIT PROTECTION (1M token limit with 50K safety margin)
       // This wrapper truncates context if needed while preserving recent messages
       const { messages: safeMessages, systemPrompt: safeSystemPrompt, estimatedTokens, truncated, originalTokens, removedMessages } = 
-        createSafeAnthropicRequest(conversationMessages, finalSystemPrompt);
+        createSafeGeminiRequest(conversationMessages, finalSystemPrompt);
 
       // Log truncation results for monitoring (only on first iteration)
       if (iterationCount === 1 && truncated) {
-        console.log(`[CLAUDE-WRAPPER] Truncated context: ${originalTokens} → ${estimatedTokens} tokens (removed ${removedMessages} messages)`);
+        console.log(`[GEMINI-WRAPPER] Truncated context: ${originalTokens} → ${estimatedTokens} tokens (removed ${removedMessages} messages)`);
+      } else if (iterationCount === 1) {
+        console.log(`[GEMINI-WRAPPER] Context within limits: ${estimatedTokens} tokens`);
       }
 
       // ✅ REAL-TIME STREAMING: Stream text to user AS IT ARRIVES while building content blocks
@@ -1526,11 +1534,11 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       let taskListId: string | null = null; // Track if a task list exists
       let detectedComplexity = 1; // Track task complexity for workflow validation
 
-      // TEMPORARY: Use Claude due to Gemini MALFORMED_FUNCTION_CALL with 37 tools
-      // 🔄 WRAPPED WITH RETRY LOGIC to handle Anthropic API overload errors
+      // ✅ FIXED: Use Gemini with proper function calling (responseMimeType conflict resolved)
+      // 🔄 WRAPPED WITH RETRY LOGIC to handle API overload errors
       await retryWithBackoff(async () => {
-        return await streamAnthropicResponse({
-          model: 'claude-sonnet-4-20250514',
+        return await streamGeminiResponse({
+          model: 'gemini-2.5-flash',
           maxTokens: config.maxTokens,
           system: safeSystemPrompt,
           messages: safeMessages,
@@ -1593,7 +1601,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         }
         // onError handler already defined above (line 1508) to prevent duplicate property
         });
-      }, 3, `Claude API call (iteration ${iterationCount})`); // Retry up to 3 times with exponential backoff
+      }, 3, `Gemini API call (iteration ${iterationCount})`); // Retry up to 3 times with exponential backoff
 
       // Skip "Analysis complete" spam - the response speaks for itself
 
