@@ -459,15 +459,70 @@ EXECUTE NOW - Complete your assigned task!`;
 
     grep: async (input: { pattern: string; pathFilter?: string; outputMode?: 'content' | 'files' | 'count' }) => {
       sendEvent('progress', { message: `🔍 Searching: ${input.pattern}...` });
-      const results = await platformHealing.searchPlatformFiles(input.pattern);
-      return { result: results.join('\n') };
+      let results = await platformHealing.searchPlatformFiles(input.pattern);
+      
+      // Honor pathFilter if provided (glob pattern filtering)
+      if (input.pathFilter) {
+        const globPattern = input.pathFilter;
+        results = results.filter(path => {
+          const regex = globPattern
+            .replace(/\./g, '\\.')
+            .replace(/\*\*/g, '.*')
+            .replace(/\*/g, '[^/]*')
+            .replace(/\?/g, '.');
+          return new RegExp(`^${regex}$`).test(path);
+        });
+      }
+      
+      // Honor outputMode
+      if (input.outputMode === 'count') {
+        return { result: `Found ${results.length} matches` };
+      } else if (input.outputMode === 'content') {
+        // Read each file and show matched lines with regex matching
+        const contentResults: string[] = [];
+        const regex = new RegExp(input.pattern, 'gm'); // Multiline, global regex
+        
+        for (const filePath of results.slice(0, 10)) { // Limit to 10 files
+          try {
+            const fileContent = await platformHealing.readPlatformFile(filePath);
+            const lines = fileContent.split('\n');
+            const matchedLines: string[] = [];
+            
+            lines.forEach((line, idx) => {
+              if (regex.test(line)) {
+                matchedLines.push(`${filePath}:${idx + 1}: ${line.trim()}`);
+              }
+            });
+            
+            if (matchedLines.length > 0) {
+              contentResults.push(matchedLines.join('\n'));
+            }
+          } catch (e) {
+            // Skip files that can't be read
+          }
+        }
+        return { result: contentResults.join('\n\n') || 'No content matches found' };
+      } else {
+        // 'files' mode - return file paths only
+        return { result: results.join('\n') };
+      }
     },
 
     search_codebase: async (input: { query: string; maxResults?: number }) => {
       sendEvent('progress', { message: `🔎 Searching codebase: ${input.query}...` });
-      // Use platform healing's search for now (can be enhanced with semantic search later)
-      const results = await platformHealing.searchPlatformFiles(input.query);
-      return { result: `Found ${results.length} matches:\n` + results.slice(0, input.maxResults || 10).join('\n') };
+      // Use semantic search via getRelatedFiles for intelligent code understanding
+      try {
+        const relatedFiles = await getRelatedFiles({
+          baseFile: '', // Empty base for general search
+          context: input.query,
+          maxResults: input.maxResults || 10,
+        });
+        return { result: JSON.stringify(relatedFiles, null, 2) };
+      } catch (e) {
+        // Fallback to plain search if semantic search fails
+        const results = await platformHealing.searchPlatformFiles(input.query);
+        return { result: `Found ${results.length} matches:\n` + results.slice(0, input.maxResults || 10).join('\n') };
+      }
     },
 
     bash: async (input: { command: string; timeout?: number }) => {
@@ -476,10 +531,29 @@ EXECUTE NOW - Complete your assigned task!`;
       return { result: `${result.stdout}\n${result.stderr}`.trim() };
     },
 
-    get_latest_lsp_diagnostics: async () => {
+    get_latest_lsp_diagnostics: async (input: { filePath?: string }) => {
       sendEvent('progress', { message: `🔍 Checking TypeScript errors...` });
-      // Note: LSP diagnostics would need proper implementation
-      return { result: 'LSP diagnostics check complete' };
+      const diagnosticsResult = await platformHealing.getLSPDiagnostics();
+      
+      // Return the helper's summary directly - it's already formatted correctly
+      if (!diagnosticsResult.success) {
+        return { result: diagnosticsResult.summary };
+      }
+      
+      // If filePath specified, filter and format those specific diagnostics
+      if (input.filePath) {
+        const filtered = diagnosticsResult.diagnostics.filter(d => d.file === input.filePath);
+        if (filtered.length === 0) {
+          return { result: `✅ No TypeScript errors in ${input.filePath}` };
+        }
+        const formatted = filtered.map(d => 
+          `${d.file}:${d.line}:${d.column} - ${d.severity}: ${d.message}`
+        ).join('\n');
+        return { result: `${filtered.length} error(s) in ${input.filePath}:\n${formatted}` };
+      }
+      
+      // Return helper's summary as-is (preserves severity normalization and formatting)
+      return { result: diagnosticsResult.summary };
     },
 
     // === REPORTING (Keep last) ===
