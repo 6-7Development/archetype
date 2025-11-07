@@ -250,8 +250,11 @@ export async function updateTask(params: {
       .from(tasks)
       .where(eq(tasks.taskListId, taskList.id));
     
+    // ✅ Count BOTH completed and completed_pending_review as done
+    const completedStatuses = ['completed', 'completed_pending_review'];
     const completedTasks = allTasks.filter(t => 
-      t.status === 'completed' || t.id === updatedTask.id && params.status === 'completed'
+      completedStatuses.includes(t.status) || 
+      (t.id === updatedTask.id && params.status && completedStatuses.includes(params.status))
     ).length;
     const totalTasks = allTasks.length;
     const progressPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
