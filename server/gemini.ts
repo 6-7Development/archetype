@@ -257,13 +257,16 @@ export async function streamGeminiResponse(options: StreamOptions) {
         maxOutputTokens: maxTokens,
         temperature: 0.2, // LOW = deterministic, rule-following behavior (vs default 1.0)
         topP: 0.8,        // Slightly reduced randomness for consistency
-        responseMimeType: "text/plain", // Force plain text to avoid Python hallucination
+        // ✅ FIX: Remove responseMimeType when using function calling
+        // responseMimeType forces plain text, breaking function call responses
+        // When tools are provided, Gemini needs to output structured JSON for function calls
       },
     };
 
     // Add tools at top level if provided
-    if (geminiTools) {
+    if (geminiTools && geminiTools.length > 0) {
       requestParams.tools = geminiTools;
+      console.log(`[GEMINI-FIX] ✅ Added ${geminiTools[0]?.functionDeclarations?.length || 0} function declarations to request`);
     }
 
     // 🔍 DEBUG: Log what we're sending to Gemini
@@ -271,7 +274,15 @@ export async function streamGeminiResponse(options: StreamOptions) {
     console.log('  - Messages:', geminiMessages.length);
     console.log('  - System prompt length:', typeof system === 'string' ? system.length : 'unknown');
     console.log('  - Tools provided:', geminiTools ? geminiTools.length : 0);
+    console.log('  - Function declarations:', geminiTools?.[0]?.functionDeclarations?.length || 0);
     console.log('  - Max tokens:', maxTokens);
+    console.log('  - Temperature:', requestParams.generationConfig.temperature);
+    
+    // 🔍 DEBUG: Log first 3 function names for verification
+    if (geminiTools && geminiTools[0]?.functionDeclarations) {
+      const firstThree = geminiTools[0].functionDeclarations.slice(0, 3).map((f: any) => f.name);
+      console.log('  - First 3 functions:', firstThree.join(', '));
+    }
     
     // Start streaming
     const result = await generativeModel.generateContentStream(requestParams);
@@ -470,8 +481,18 @@ export async function streamGeminiResponse(options: StreamOptions) {
 
     return { fullText, usage: usage || { inputTokens: 0, outputTokens: 0 } };
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Fatal error in Gemini streaming:', error);
+    
+    // 🔍 DEBUG: Check for MALFORMED_FUNCTION_CALL error
+    if (error.message && error.message.includes('MALFORMED_FUNCTION_CALL')) {
+      console.error('🚨 [GEMINI-ERROR] MALFORMED_FUNCTION_CALL detected!');
+      console.error('   This usually means:');
+      console.error('   1. Function declaration schema is invalid');
+      console.error('   2. responseMimeType conflicts with function calling');
+      console.error('   3. Tool parameters don\'t match JSON Schema spec');
+      console.error('   Error details:', JSON.stringify(error, null, 2).substring(0, 500));
+    }
 
     if (onError) {
       try {
