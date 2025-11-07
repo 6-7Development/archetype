@@ -1212,9 +1212,9 @@ Let's build! 🚀`;
       let taskListId: string | null = null;
       let detectedComplexity = 1;
 
-      // Stream with Claude Sonnet 4 (reliable tools!)
-      await streamAnthropicResponse({
-        model: 'claude-sonnet-4-20250514',
+      // Stream with Gemini 2.5 Flash (40x cheaper with fixed functionResponse!)
+      await streamGeminiResponse({
+        model: 'gemini-2.5-flash',
         maxTokens: config.maxTokens,
         system: safeSystemPrompt,
         messages: safeMessages,
@@ -2212,9 +2212,9 @@ Let's build! 🚀`;
         inputTokens: cumulativeInputTokens,
         outputTokens: cumulativeOutputTokens,
         computeTimeMs,
-        model: 'claude', // Updated model name
+        model: 'gemini', // Updated model name
         metadata: {
-          model: 'claude-sonnet-4-20250514', // Specific Claude model
+          model: 'gemini-2.5-flash', // Specific Gemini model
           jobId: jobId,
           autonomyLevel: autonomyLevel || 'standard',
           iterationCount,

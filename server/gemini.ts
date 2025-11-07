@@ -150,10 +150,17 @@ function convertMessagesToGemini(messages: any[]): any[] {
               
               const responseData = extractContent(c.content);
               
+              // ✅ FIX: Gemini requires response in { name, content: [{ text }] } format
               return {
                 functionResponse: {
                   name: functionName,
-                  response: responseData
+                  response: {
+                    name: functionName,
+                    content: [{
+                      text: JSON.stringify(responseData),
+                      mimeType: 'application/json'
+                    }]
+                  }
                 }
               };
             }

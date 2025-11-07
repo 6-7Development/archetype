@@ -3,7 +3,7 @@ import { db } from '../db.ts';
 import { chatMessages, taskLists, tasks, lomuAttachments, lomuJobs, users, subscriptions, projects, conversationStates, platformIncidents } from '@shared/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth.ts';
-import { streamAnthropicResponse } from '../anthropic.ts';
+import { streamGeminiResponse } from '../gemini.ts';
 import { RAILWAY_CONFIG } from '../config/railway.ts';
 import { platformHealing } from '../platformHealing.ts';
 import { platformAudit } from '../platformAudit.ts';
@@ -1442,7 +1442,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     
     console.log(`[INTENT-CLASSIFICATION] User intent: ${userIntent}, max iterations: ${MAX_ITERATIONS}`);
 
-    // Claude client is handled by streamAnthropicResponse
+    // Gemini client is handled by streamGeminiResponse
     let fullContent = '';
     const fileChanges: Array<{ path: string; operation: string; contentAfter?: string }> = [];
     let continueLoop = true;
@@ -1526,11 +1526,11 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       let taskListId: string | null = null; // Track if a task list exists
       let detectedComplexity = 1; // Track task complexity for workflow validation
 
-      // ✅ RELIABLE TOOL EXECUTION: Claude Sonnet 4 for production use
-      // Gemini has tool reliability issues (hallucinates Python syntax)
+      // ✅ FIXED GEMINI: 40x cheaper with proper functionResponse format
+      // Fixed the tool response structure to match Gemini's expected format
       await retryWithBackoff(async () => {
-        return await streamAnthropicResponse({
-          model: 'claude-sonnet-4-20250514',
+        return await streamGeminiResponse({
+          model: 'gemini-2.5-flash',
           maxTokens: config.maxTokens,
           system: safeSystemPrompt,
           messages: safeMessages,
