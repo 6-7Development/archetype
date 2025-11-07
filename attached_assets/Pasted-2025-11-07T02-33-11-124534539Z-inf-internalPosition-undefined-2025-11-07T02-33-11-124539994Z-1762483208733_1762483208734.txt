@@ -1,0 +1,1001 @@
+2025-11-07T02:33:11.124534539Z [inf]    internalPosition: undefined,
+2025-11-07T02:33:11.124539994Z [inf]    internalQuery: undefined,
+2025-11-07T02:33:11.128880169Z [inf]  2:33:11 AM [express] GET /api/credits/balance 404 in 15ms :: {"error":"Credit wallet not found"}
+2025-11-07T02:33:12.163045923Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:12.174336295Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:12.174343069Z [inf]  2:33:12 AM [express] GET /api/task-lists/active 304 in 99ms :: [200 bytes]
+2025-11-07T02:33:14.237877995Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:14.237890205Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:14.241949745Z [inf]  2:33:14 AM [express] GET /api/task-lists/active 304 in 14ms :: [200 bytes]
+2025-11-07T02:33:16.307467961Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:16.307478443Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:16.312514341Z [inf]  2:33:16 AM [express] GET /api/task-lists/active 304 in 13ms :: [200 bytes]
+2025-11-07T02:33:18.403895364Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:18.403901663Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:18.403905355Z [inf]  2:33:18 AM [express] GET /api/task-lists/active 304 in 14ms :: [200 bytes]
+2025-11-07T02:33:20.567360796Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:20.567368281Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:20.567375428Z [inf]  2:33:20 AM [express] GET /api/task-lists/active 304 in 11ms :: [200 bytes]
+2025-11-07T02:33:21.189289143Z [inf]  [CREDIT-MANAGER] Error getting balance: error: relation "credit_wallets" does not exist
+2025-11-07T02:33:21.189293640Z [inf]    routine: 'parserOpenTable'
+2025-11-07T02:33:21.189299542Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T02:33:21.189303308Z [inf]  }
+2025-11-07T02:33:21.189309347Z [inf]    hint: undefined,
+2025-11-07T02:33:21.189309486Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T02:33:21.189317843Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T02:33:21.189324060Z [inf]    position: '110',
+2025-11-07T02:33:21.189326082Z [inf]      at async Function.getBalance (/app/server/services/creditManager.ts:208:24)
+2025-11-07T02:33:21.189331831Z [inf]    internalPosition: undefined,
+2025-11-07T02:33:21.189334520Z [inf]      at async <anonymous> (/app/server/routes/credits.ts:27:21) {
+2025-11-07T02:33:21.189338059Z [inf]    internalQuery: undefined,
+2025-11-07T02:33:21.189341421Z [inf]    length: 114,
+2025-11-07T02:33:21.189345052Z [inf]    where: undefined,
+2025-11-07T02:33:21.189347235Z [inf]    severity: 'ERROR',
+2025-11-07T02:33:21.189350849Z [inf]    schema: undefined,
+2025-11-07T02:33:21.189352470Z [inf]    code: '42P01',
+2025-11-07T02:33:21.189356117Z [inf]    table: undefined,
+2025-11-07T02:33:21.189358031Z [inf]    detail: undefined,
+2025-11-07T02:33:21.189360933Z [inf]    column: undefined,
+2025-11-07T02:33:21.189365620Z [inf]    dataType: undefined,
+2025-11-07T02:33:21.189369780Z [inf]    constraint: undefined,
+2025-11-07T02:33:21.189373360Z [inf]    file: 'parse_relation.c',
+2025-11-07T02:33:21.189378240Z [inf]    line: '1449',
+2025-11-07T02:33:21.193487918Z [inf]  2:33:21 AM [express] GET /api/credits/balance 404 in 10ms :: {"error":"Credit wallet not found"}
+2025-11-07T02:33:22.627480698Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:22.627486068Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:22.627489757Z [inf]  2:33:22 AM [express] GET /api/task-lists/active 304 in 94ms :: [200 bytes]
+2025-11-07T02:33:24.684080894Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:24.693904246Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:24.693913573Z [inf]  2:33:24 AM [express] GET /api/task-lists/active 304 in 12ms :: [200 bytes]
+2025-11-07T02:33:26.507701081Z [inf]  [HEALING-CHAT] User message received: {
+2025-11-07T02:33:26.507705151Z [inf]    conversationId: '30f5fe32-b655-45d7-a8e8-31da5b299a94',
+2025-11-07T02:33:26.507709052Z [inf]    contentLength: 97
+2025-11-07T02:33:26.507713066Z [inf]  }
+2025-11-07T02:33:26.507716890Z [inf]  [HEALING-CHAT] User message saved to database
+2025-11-07T02:33:26.507721196Z [inf]  [HEALING-CHAT] Loaded 10 messages from history (last 10)
+2025-11-07T02:33:26.507725533Z [inf]  🤖 [HEALING-CHAT] Starting Claude conversation with 10 messages...
+2025-11-07T02:33:26.507729363Z [inf]  [INTENT-SCORE] Message: "dont forget you have regular user chat and healing platform chat fix both when y..." | Scores: { build: 0, fix: 1, diagnostic: 0, casual: 0 } | Intent: fix
+2025-11-07T02:33:26.507732822Z [inf]  [HEALING-CHAT] User intent: fix, max iterations: 30
+2025-11-07T02:33:26.507736554Z [inf]  [HEALING-CHAT] 🔄 Iteration 1/30
+2025-11-07T02:33:26.785883773Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:26.785892340Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:26.785900784Z [inf]  2:33:26 AM [express] GET /api/task-lists/active 304 in 16ms :: [200 bytes]
+2025-11-07T02:33:28.845033488Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:28.845043497Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:28.849535426Z [inf]  2:33:28 AM [express] GET /api/task-lists/active 304 in 13ms :: [200 bytes]
+2025-11-07T02:33:30.636437329Z [inf]  [HEALING-CHAT] ✅ Search found 0 files for pattern: **/chat*.tsx
+2025-11-07T02:33:30.636446114Z [inf]  [TOOL-OUTPUT] search_platform_files: 20 tokens (no truncation needed)
+2025-11-07T02:33:30.636453108Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 1)
+2025-11-07T02:33:30.636459614Z [inf]  [HEALING-CHAT] 🔄 Iteration 2/30
+2025-11-07T02:33:30.920612485Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:30.929904702Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:30.929912714Z [inf]  2:33:30 AM [express] GET /api/task-lists/active 304 in 15ms :: [200 bytes]
+2025-11-07T02:33:31.314402711Z [inf]    line: '1449',
+2025-11-07T02:33:31.314414055Z [inf]    routine: 'parserOpenTable'
+2025-11-07T02:33:31.314421722Z [inf]  }
+2025-11-07T02:33:31.314429265Z [inf]  [CREDIT-MANAGER] Error getting balance: error: relation "credit_wallets" does not exist
+2025-11-07T02:33:31.314430052Z [inf]  2:33:31 AM [express] GET /api/credits/balance 404 in 10ms :: {"error":"Credit wallet not found"}
+2025-11-07T02:33:31.314441805Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T02:33:31.314451778Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T02:33:31.314459346Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T02:33:31.314466595Z [inf]      at async Function.getBalance (/app/server/services/creditManager.ts:208:24)
+2025-11-07T02:33:31.314474259Z [inf]      at async <anonymous> (/app/server/routes/credits.ts:27:21) {
+2025-11-07T02:33:31.314481728Z [inf]    length: 114,
+2025-11-07T02:33:31.314489562Z [inf]    severity: 'ERROR',
+2025-11-07T02:33:31.314495671Z [inf]    code: '42P01',
+2025-11-07T02:33:31.314502896Z [inf]    detail: undefined,
+2025-11-07T02:33:31.314509837Z [inf]    hint: undefined,
+2025-11-07T02:33:31.314516528Z [inf]    position: '110',
+2025-11-07T02:33:31.314523103Z [inf]    internalPosition: undefined,
+2025-11-07T02:33:31.314530391Z [inf]    internalQuery: undefined,
+2025-11-07T02:33:31.314536905Z [inf]    where: undefined,
+2025-11-07T02:33:31.314544333Z [inf]    schema: undefined,
+2025-11-07T02:33:31.314551089Z [inf]    table: undefined,
+2025-11-07T02:33:31.314558284Z [inf]    column: undefined,
+2025-11-07T02:33:31.314564184Z [inf]    dataType: undefined,
+2025-11-07T02:33:31.314570107Z [inf]    constraint: undefined,
+2025-11-07T02:33:31.314576239Z [inf]    file: 'parse_relation.c',
+2025-11-07T02:33:32.189830108Z [inf]  [CACHE] Stats: {
+2025-11-07T02:33:32.189841917Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-11-07T02:33:32.189850244Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-11-07T02:33:32.189856911Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-11-07T02:33:32.189865221Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-11-07T02:33:32.189878663Z [inf]  }
+2025-11-07T02:33:33.097890143Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:33.097896032Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:33.097900194Z [inf]  2:33:33 AM [express] GET /api/task-lists/active 304 in 98ms :: [200 bytes]
+2025-11-07T02:33:33.852876565Z [inf]  [MEMORY] Heap: 108MB | RSS: 203MB | Usage: 40%
+2025-11-07T02:33:34.453261468Z [inf]  [HEALING-CHAT] ✅ Search found 0 files for pattern: **/Chat*.tsx
+2025-11-07T02:33:34.453265556Z [inf]  [TOOL-OUTPUT] search_platform_files: 20 tokens (no truncation needed)
+2025-11-07T02:33:34.458144020Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 2)
+2025-11-07T02:33:34.458151181Z [inf]  [HEALING-CHAT] 🔄 Iteration 3/30
+2025-11-07T02:33:35.197905660Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:35.197911240Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:35.197917821Z [inf]  2:33:35 AM [express] GET /api/task-lists/active 304 in 13ms :: [200 bytes]
+2025-11-07T02:33:37.048564173Z [inf]  [HEALING-CHAT] ✅ Search found 56 files for pattern: **/*chat*
+2025-11-07T02:33:37.048569621Z [inf]  [TOOL-OUTPUT] search_platform_files: 817 tokens (no truncation needed)
+2025-11-07T02:33:37.048575646Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 3)
+2025-11-07T02:33:37.048579910Z [inf]  [HEALING-CHAT] 🔄 Iteration 4/30
+2025-11-07T02:33:37.250086632Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:37.260970459Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:37.260975894Z [inf]  2:33:37 AM [express] GET /api/task-lists/active 304 in 19ms :: [200 bytes]
+2025-11-07T02:33:39.328269289Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:39.332500098Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:39.336838338Z [inf]  2:33:39 AM [express] GET /api/task-lists/active 304 in 12ms :: [200 bytes]
+2025-11-07T02:33:39.902352629Z [inf]  [HEALING-CHAT] ✅ Search found 0 files for pattern: client/**/*.tsx
+2025-11-07T02:33:39.902362425Z [inf]  [TOOL-OUTPUT] search_platform_files: 20 tokens (no truncation needed)
+2025-11-07T02:33:39.902370737Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 4)
+2025-11-07T02:33:39.902379911Z [inf]  [HEALING-CHAT] 🔄 Iteration 5/30
+2025-11-07T02:33:41.350736444Z [inf]    schema: undefined,
+2025-11-07T02:33:41.350746044Z [inf]    table: undefined,
+2025-11-07T02:33:41.350751796Z [inf]    column: undefined,
+2025-11-07T02:33:41.350755983Z [inf]  [CREDIT-MANAGER] Error getting balance: error: relation "credit_wallets" does not exist
+2025-11-07T02:33:41.350757888Z [inf]    dataType: undefined,
+2025-11-07T02:33:41.350762645Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T02:33:41.350765140Z [inf]    constraint: undefined,
+2025-11-07T02:33:41.350768268Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T02:33:41.350771188Z [inf]    file: 'parse_relation.c',
+2025-11-07T02:33:41.350774746Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T02:33:41.350777181Z [inf]    line: '1449',
+2025-11-07T02:33:41.350780997Z [inf]      at async Function.getBalance (/app/server/services/creditManager.ts:208:24)
+2025-11-07T02:33:41.350783027Z [inf]    routine: 'parserOpenTable'
+2025-11-07T02:33:41.350786910Z [inf]      at async <anonymous> (/app/server/routes/credits.ts:27:21) {
+2025-11-07T02:33:41.350788521Z [inf]  }
+2025-11-07T02:33:41.350792772Z [inf]    length: 114,
+2025-11-07T02:33:41.350795626Z [inf]  2:33:41 AM [express] GET /api/credits/balance 404 in 11ms :: {"error":"Credit wallet not found"}
+2025-11-07T02:33:41.350800524Z [inf]    severity: 'ERROR',
+2025-11-07T02:33:41.350804745Z [inf]    code: '42P01',
+2025-11-07T02:33:41.350809113Z [inf]    detail: undefined,
+2025-11-07T02:33:41.350813306Z [inf]    hint: undefined,
+2025-11-07T02:33:41.350819662Z [inf]    position: '110',
+2025-11-07T02:33:41.350823479Z [inf]    internalPosition: undefined,
+2025-11-07T02:33:41.350827264Z [inf]    internalQuery: undefined,
+2025-11-07T02:33:41.350831056Z [inf]    where: undefined,
+2025-11-07T02:33:41.498729114Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:41.498734970Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:41.498741027Z [inf]  2:33:41 AM [express] GET /api/task-lists/active 304 in 96ms :: [200 bytes]
+2025-11-07T02:33:42.793763406Z [inf]  [HEALING-CHAT] ✅ Search found 100/123 files for pattern: **/*.tsx
+2025-11-07T02:33:42.793769431Z [inf]  [TOOL-OUTPUT] search_platform_files: TRUNCATED 2004 → 1504 tokens (saved 500 tokens)
+2025-11-07T02:33:42.804050762Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 5)
+2025-11-07T02:33:42.804057401Z [inf]  [HEALING-CHAT] 🔄 Iteration 6/30
+2025-11-07T02:33:43.548403165Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:43.552840848Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:43.563424987Z [inf]  2:33:43 AM [express] GET /api/task-lists/active 304 in 16ms :: [200 bytes]
+2025-11-07T02:33:45.669862982Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:45.669867375Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:45.669871535Z [inf]  2:33:45 AM [express] GET /api/task-lists/active 304 in 12ms :: [200 bytes]
+2025-11-07T02:33:46.012824503Z [inf]  [HEALING-CHAT] ✅ Search found 100/123 files for pattern: **/src/**/*.tsx
+2025-11-07T02:33:46.012831916Z [inf]  [TOOL-OUTPUT] search_platform_files: TRUNCATED 2004 → 1504 tokens (saved 500 tokens)
+2025-11-07T02:33:46.018017985Z [inf]  [HEALING-CHAT] 🔄 Iteration 7/30
+2025-11-07T02:33:46.018065325Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 6)
+2025-11-07T02:33:47.804369365Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:47.804375143Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:47.804379316Z [inf]  2:33:47 AM [express] GET /api/task-lists/active 304 in 13ms :: [200 bytes]
+2025-11-07T02:33:48.848912013Z [inf]  [HEALING-CHAT] ✅ Search found 5 files for pattern: **/index.html
+2025-11-07T02:33:48.848917587Z [inf]  [TOOL-OUTPUT] search_platform_files: 94 tokens (no truncation needed)
+2025-11-07T02:33:48.848921955Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 7)
+2025-11-07T02:33:48.848926325Z [inf]  [HEALING-CHAT] 🔄 Iteration 8/30
+2025-11-07T02:33:49.773453739Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:49.773458540Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:49.773463037Z [inf]  2:33:49 AM [express] GET /api/task-lists/active 304 in 12ms :: [200 bytes]
+2025-11-07T02:33:51.424697067Z [inf]    internalPosition: undefined,
+2025-11-07T02:33:51.424697229Z [inf]  [CREDIT-MANAGER] Error getting balance: error: relation "credit_wallets" does not exist
+2025-11-07T02:33:51.424701994Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T02:33:51.424706493Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T02:33:51.424707333Z [inf]    internalQuery: undefined,
+2025-11-07T02:33:51.424710803Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T02:33:51.424714511Z [inf]    where: undefined,
+2025-11-07T02:33:51.424715991Z [inf]      at async Function.getBalance (/app/server/services/creditManager.ts:208:24)
+2025-11-07T02:33:51.424720723Z [inf]    schema: undefined,
+2025-11-07T02:33:51.424722634Z [inf]      at async <anonymous> (/app/server/routes/credits.ts:27:21) {
+2025-11-07T02:33:51.424726395Z [inf]    table: undefined,
+2025-11-07T02:33:51.424727912Z [inf]    length: 114,
+2025-11-07T02:33:51.424732330Z [inf]    column: undefined,
+2025-11-07T02:33:51.424733538Z [inf]    severity: 'ERROR',
+2025-11-07T02:33:51.424738306Z [inf]    dataType: undefined,
+2025-11-07T02:33:51.424739400Z [inf]    code: '42P01',
+2025-11-07T02:33:51.424744393Z [inf]    constraint: undefined,
+2025-11-07T02:33:51.424744589Z [inf]    detail: undefined,
+2025-11-07T02:33:51.424750131Z [inf]    hint: undefined,
+2025-11-07T02:33:51.424750858Z [inf]    file: 'parse_relation.c',
+2025-11-07T02:33:51.424756564Z [inf]    position: '110',
+2025-11-07T02:33:51.424756994Z [inf]    line: '1449',
+2025-11-07T02:33:51.424761925Z [inf]    routine: 'parserOpenTable'
+2025-11-07T02:33:51.424766288Z [inf]  }
+2025-11-07T02:33:51.424770449Z [inf]  2:33:51 AM [express] GET /api/credits/balance 404 in 11ms :: {"error":"Credit wallet not found"}
+2025-11-07T02:33:51.906561558Z [inf]  [TOOL-OUTPUT] read_platform_file: 398 tokens (no truncation needed)
+2025-11-07T02:33:51.907041952Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:51.917981831Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:51.918513410Z [inf]  2:33:51 AM [express] GET /api/task-lists/active 304 in 99ms :: [200 bytes]
+2025-11-07T02:33:51.942468259Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 8)
+2025-11-07T02:33:51.942475570Z [inf]  [HEALING-CHAT] 🔄 Iteration 9/30
+2025-11-07T02:33:53.985964896Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:53.990319741Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:54.000882916Z [inf]  2:33:53 AM [express] GET /api/task-lists/active 304 in 24ms :: [200 bytes]
+2025-11-07T02:33:55.740660528Z [inf]  [HEALING-CHAT] ✅ Search found 0 files for pattern: **/main.tsx
+2025-11-07T02:33:55.740666495Z [inf]  [TOOL-OUTPUT] search_platform_files: 20 tokens (no truncation needed)
+2025-11-07T02:33:55.745079747Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 9)
+2025-11-07T02:33:55.745085642Z [inf]  [HEALING-CHAT] 🔄 Iteration 10/30
+2025-11-07T02:33:56.064419991Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:56.068946836Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:56.073474694Z [inf]  2:33:56 AM [express] GET /api/task-lists/active 304 in 18ms :: [200 bytes]
+2025-11-07T02:33:58.133915542Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:33:58.144322080Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:33:58.144330240Z [inf]  2:33:58 AM [express] GET /api/task-lists/active 304 in 18ms :: [200 bytes]
+2025-11-07T02:33:58.907578162Z [inf]  [HEALING-CHAT] ✅ Search found 100/123 files for pattern: **/*.tsx
+2025-11-07T02:33:58.907583742Z [inf]  [TOOL-OUTPUT] search_platform_files: TRUNCATED 2004 → 1504 tokens (saved 500 tokens)
+2025-11-07T02:33:58.907589198Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 10)
+2025-11-07T02:33:58.907594541Z [inf]  [HEALING-CHAT] 🔄 Iteration 11/30
+2025-11-07T02:34:00.213389913Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:00.213395392Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:34:00.217517257Z [inf]  2:34:00 AM [express] GET /api/task-lists/active 304 in 12ms :: [200 bytes]
+2025-11-07T02:34:01.467315927Z [inf]    line: '1449',
+2025-11-07T02:34:01.467327178Z [inf]    routine: 'parserOpenTable'
+2025-11-07T02:34:01.467330564Z [inf]  [CREDIT-MANAGER] Error getting balance: error: relation "credit_wallets" does not exist
+2025-11-07T02:34:01.467335618Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T02:34:01.467337174Z [inf]  }
+2025-11-07T02:34:01.467341128Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T02:34:01.467346391Z [inf]  2:34:01 AM [express] GET /api/credits/balance 404 in 10ms :: {"error":"Credit wallet not found"}
+2025-11-07T02:34:01.467346869Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T02:34:01.467351225Z [inf]      at async Function.getBalance (/app/server/services/creditManager.ts:208:24)
+2025-11-07T02:34:01.467354772Z [inf]      at async <anonymous> (/app/server/routes/credits.ts:27:21) {
+2025-11-07T02:34:01.467358927Z [inf]    length: 114,
+2025-11-07T02:34:01.467364021Z [inf]    severity: 'ERROR',
+2025-11-07T02:34:01.467368043Z [inf]    code: '42P01',
+2025-11-07T02:34:01.467371910Z [inf]    detail: undefined,
+2025-11-07T02:34:01.467375557Z [inf]    hint: undefined,
+2025-11-07T02:34:01.467379235Z [inf]    position: '110',
+2025-11-07T02:34:01.467382993Z [inf]    internalPosition: undefined,
+2025-11-07T02:34:01.467387408Z [inf]    internalQuery: undefined,
+2025-11-07T02:34:01.467390875Z [inf]    where: undefined,
+2025-11-07T02:34:01.467394622Z [inf]    schema: undefined,
+2025-11-07T02:34:01.467398424Z [inf]    table: undefined,
+2025-11-07T02:34:01.467402787Z [inf]    column: undefined,
+2025-11-07T02:34:01.467406202Z [inf]    dataType: undefined,
+2025-11-07T02:34:01.467410418Z [inf]    constraint: undefined,
+2025-11-07T02:34:01.467414007Z [inf]    file: 'parse_relation.c',
+2025-11-07T02:34:01.814601666Z [inf]  [HEALING-CHAT] ✅ Search found 13 files for pattern: *
+2025-11-07T02:34:01.814613226Z [inf]  [TOOL-OUTPUT] search_platform_files: 86 tokens (no truncation needed)
+2025-11-07T02:34:01.814621832Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 11)
+2025-11-07T02:34:01.814629828Z [inf]  [HEALING-CHAT] 🔄 Iteration 12/30
+2025-11-07T02:34:02.295860694Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:02.295864731Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:34:02.295869176Z [inf]  2:34:02 AM [express] GET /api/task-lists/active 304 in 15ms :: [200 bytes]
+2025-11-07T02:34:03.849914226Z [inf]  [MEMORY] Heap: 104MB | RSS: 219MB | Usage: 43%
+2025-11-07T02:34:04.355579242Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:04.355584690Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:34:04.355588575Z [inf]  2:34:04 AM [express] GET /api/task-lists/active 304 in 14ms :: [200 bytes]
+2025-11-07T02:34:04.933781328Z [inf]  [HEALING-CHAT] ✅ Search found 0 files for pattern: */src
+2025-11-07T02:34:04.933787584Z [inf]  [TOOL-OUTPUT] search_platform_files: 20 tokens (no truncation needed)
+2025-11-07T02:34:04.933792760Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 12)
+2025-11-07T02:34:04.933797215Z [inf]  [HEALING-CHAT] 🔄 Iteration 13/30
+2025-11-07T02:34:06.430462286Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:06.435123152Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:34:06.435131819Z [inf]  2:34:06 AM [express] GET /api/task-lists/active 304 in 13ms :: [200 bytes]
+2025-11-07T02:34:07.939657032Z [inf]  [HEALING-CHAT] ✅ Search found 1 files for pattern: *.ts
+2025-11-07T02:34:07.939661037Z [inf]  [TOOL-OUTPUT] search_platform_files: 26 tokens (no truncation needed)
+2025-11-07T02:34:07.939664677Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 13)
+2025-11-07T02:34:07.939668540Z [inf]  [HEALING-CHAT] 🔄 Iteration 14/30
+2025-11-07T02:34:08.498492107Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:08.499159487Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:34:08.503678684Z [inf]  2:34:08 AM [express] GET /api/task-lists/active 304 in 14ms :: [200 bytes]
+2025-11-07T02:34:10.577728456Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:10.577734881Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:34:10.577740484Z [inf]  2:34:10 AM [express] GET /api/task-lists/active 304 in 12ms :: [200 bytes]
+2025-11-07T02:34:10.891338960Z [inf]  [HEALING-CHAT] ✅ Search found 0 files for pattern: client/**/*
+2025-11-07T02:34:10.891344090Z [inf]  [TOOL-OUTPUT] search_platform_files: 20 tokens (no truncation needed)
+2025-11-07T02:34:10.891348732Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 14)
+2025-11-07T02:34:10.891353398Z [inf]  [HEALING-CHAT] 🔄 Iteration 15/30
+2025-11-07T02:34:11.540854539Z [inf]    column: undefined,
+2025-11-07T02:34:11.540868368Z [inf]    dataType: undefined,
+2025-11-07T02:34:11.540873751Z [inf]    constraint: undefined,
+2025-11-07T02:34:11.540878791Z [inf]    file: 'parse_relation.c',
+2025-11-07T02:34:11.540883901Z [inf]    line: '1449',
+2025-11-07T02:34:11.540884573Z [inf]  [CREDIT-MANAGER] Error getting balance: error: relation "credit_wallets" does not exist
+2025-11-07T02:34:11.540890646Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T02:34:11.540890874Z [inf]    routine: 'parserOpenTable'
+2025-11-07T02:34:11.540896673Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T02:34:11.540896721Z [inf]  }
+2025-11-07T02:34:11.540902668Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T02:34:11.540902715Z [inf]  2:34:11 AM [express] GET /api/credits/balance 404 in 12ms :: {"error":"Credit wallet not found"}
+2025-11-07T02:34:11.540907443Z [inf]      at async Function.getBalance (/app/server/services/creditManager.ts:208:24)
+2025-11-07T02:34:11.540911375Z [inf]      at async <anonymous> (/app/server/routes/credits.ts:27:21) {
+2025-11-07T02:34:11.540915732Z [inf]    length: 114,
+2025-11-07T02:34:11.540919232Z [inf]    severity: 'ERROR',
+2025-11-07T02:34:11.540922934Z [inf]    code: '42P01',
+2025-11-07T02:34:11.540926635Z [inf]    detail: undefined,
+2025-11-07T02:34:11.540930512Z [inf]    hint: undefined,
+2025-11-07T02:34:11.540936269Z [inf]    position: '110',
+2025-11-07T02:34:11.540940171Z [inf]    internalPosition: undefined,
+2025-11-07T02:34:11.540943938Z [inf]    internalQuery: undefined,
+2025-11-07T02:34:11.540947778Z [inf]    where: undefined,
+2025-11-07T02:34:11.540951516Z [inf]    schema: undefined,
+2025-11-07T02:34:11.540955979Z [inf]    table: undefined,
+2025-11-07T02:34:12.820374263Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:12.820380778Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:34:12.820387665Z [inf]  2:34:12 AM [express] GET /api/task-lists/active 304 in 97ms :: [200 bytes]
+2025-11-07T02:34:13.490905153Z [inf]  [HEALING-CHAT] ✅ Search found 2 files for pattern: shared/**/*
+2025-11-07T02:34:13.490913637Z [inf]  [TOOL-OUTPUT] search_platform_files: 35 tokens (no truncation needed)
+2025-11-07T02:34:13.490918367Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 15)
+2025-11-07T02:34:13.490922683Z [inf]  [HEALING-CHAT] 🔄 Iteration 16/30
+2025-11-07T02:34:16.952552268Z [inf]  [TOOL-OUTPUT] read_platform_file: 363 tokens (no truncation needed)
+2025-11-07T02:34:16.952556268Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 16)
+2025-11-07T02:34:16.952560215Z [inf]  [HEALING-CHAT] 🔄 Iteration 17/30
+2025-11-07T02:34:20.467951745Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 17)
+2025-11-07T02:34:20.467963577Z [inf]  [HEALING-CHAT] 🔄 Iteration 18/30
+2025-11-07T02:34:20.467972272Z [inf]  [HEALING-CHAT] ❌ Tool execution error (read_platform_file): ENOENT: no such file or directory, open '/app/vite.config.ts'
+2025-11-07T02:34:20.467979148Z [inf]  [TOOL-OUTPUT] read_platform_file: 0 tokens (no truncation needed)
+2025-11-07T02:34:23.010890526Z [inf]  [HEALING-CHAT] ✅ Search found 0 files for pattern: vite.config*
+2025-11-07T02:34:23.010898357Z [inf]  [TOOL-OUTPUT] search_platform_files: 20 tokens (no truncation needed)
+2025-11-07T02:34:23.010904039Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 18)
+2025-11-07T02:34:23.010909475Z [inf]  [HEALING-CHAT] 🔄 Iteration 19/30
+2025-11-07T02:34:25.677187545Z [inf]  [HEALING-CHAT] ✅ Search found 100/196 files for pattern: server/**/*
+2025-11-07T02:34:25.677191928Z [inf]  [TOOL-OUTPUT] search_platform_files: 853 tokens (no truncation needed)
+2025-11-07T02:34:25.681846454Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 19)
+2025-11-07T02:34:25.681851919Z [inf]  [HEALING-CHAT] 🔄 Iteration 20/30
+2025-11-07T02:34:30.463439401Z [inf]  [HEALING-CHAT] ✅ Search found 10 files for pattern: server/public/**/*
+2025-11-07T02:34:30.463443682Z [inf]  [TOOL-OUTPUT] search_platform_files: 152 tokens (no truncation needed)
+2025-11-07T02:34:30.463447351Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 20)
+2025-11-07T02:34:30.463451344Z [inf]  [HEALING-CHAT] 🔄 Iteration 21/30
+2025-11-07T02:34:33.899485944Z [inf]  [MEMORY] Heap: 83MB | RSS: 171MB | Usage: 33%
+2025-11-07T02:34:35.173323857Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:35.173328886Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:34:35.173332969Z [inf]  2:34:35 AM [express] GET /api/task-lists/active 304 in 95ms :: [200 bytes]
+2025-11-07T02:34:35.888466593Z [inf]  [TASK-MGMT] 📡 Broadcast task_updated to user 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:35.888473482Z [inf]  [HEALING-CHAT] ✅ Updated task: bcc274f4-5000-4299-8c99-8d7c788f01ec → completed
+2025-11-07T02:34:35.888479890Z [inf]  [TOOL-OUTPUT] update_task: 0 tokens (no truncation needed)
+2025-11-07T02:34:35.888486486Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 21)
+2025-11-07T02:34:35.888500223Z [inf]  [HEALING-CHAT] 🔄 Iteration 22/30
+2025-11-07T02:34:37.248984746Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:37.248990716Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:34:37.248994914Z [inf]  2:34:37 AM [express] GET /api/task-lists/active 200 in 16ms :: [200 bytes]
+2025-11-07T02:34:39.248699551Z [inf]  [HEALING-CHAT] ❌ Failed to update task: Task ID "d7f8e9a1-2b3c-4d5e-6f7a-8b9c0d1e2f34" not found. Call read_task_list() to see your current task IDs and use one of those instead.
+2025-11-07T02:34:39.248705335Z [inf]  [TOOL-OUTPUT] update_task: 0 tokens (no truncation needed)
+2025-11-07T02:34:39.248711101Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 22)
+2025-11-07T02:34:39.248716973Z [inf]  [HEALING-CHAT] 🔄 Iteration 23/30
+2025-11-07T02:34:39.269442909Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:39.274028564Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:34:39.274767672Z [inf]  2:34:39 AM [express] GET /api/task-lists/active 304 in 14ms :: [200 bytes]
+2025-11-07T02:34:41.368090374Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:41.368097102Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:34:41.368103509Z [inf]  2:34:41 AM [express] GET /api/task-lists/active 304 in 13ms :: [200 bytes]
+2025-11-07T02:34:41.608175178Z [inf]    file: 'parse_relation.c',
+2025-11-07T02:34:41.608179513Z [inf]  [CREDIT-MANAGER] Error getting balance: error: relation "credit_wallets" does not exist
+2025-11-07T02:34:41.608184417Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T02:34:41.608190527Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T02:34:41.608190622Z [inf]    line: '1449',
+2025-11-07T02:34:41.608195884Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T02:34:41.608201481Z [inf]    routine: 'parserOpenTable'
+2025-11-07T02:34:41.608201490Z [inf]      at async Function.getBalance (/app/server/services/creditManager.ts:208:24)
+2025-11-07T02:34:41.608207062Z [inf]      at async <anonymous> (/app/server/routes/credits.ts:27:21) {
+2025-11-07T02:34:41.608210750Z [inf]  }
+2025-11-07T02:34:41.608212023Z [inf]    length: 114,
+2025-11-07T02:34:41.608217632Z [inf]    severity: 'ERROR',
+2025-11-07T02:34:41.608219935Z [inf]  2:34:41 AM [express] GET /api/credits/balance 404 in 13ms :: {"error":"Credit wallet not found"}
+2025-11-07T02:34:41.608223314Z [inf]    code: '42P01',
+2025-11-07T02:34:41.608227449Z [inf]    detail: undefined,
+2025-11-07T02:34:41.608231494Z [inf]    hint: undefined,
+2025-11-07T02:34:41.608235244Z [inf]    position: '110',
+2025-11-07T02:34:41.608239366Z [inf]    internalPosition: undefined,
+2025-11-07T02:34:41.608243056Z [inf]    internalQuery: undefined,
+2025-11-07T02:34:41.608248063Z [inf]    where: undefined,
+2025-11-07T02:34:41.608251886Z [inf]    schema: undefined,
+2025-11-07T02:34:41.608256106Z [inf]    table: undefined,
+2025-11-07T02:34:41.608260084Z [inf]    column: undefined,
+2025-11-07T02:34:41.608263954Z [inf]    dataType: undefined,
+2025-11-07T02:34:41.608267934Z [inf]    constraint: undefined,
+2025-11-07T02:34:42.270204460Z [inf]  [TOOL-OUTPUT] read_task_list: 0 tokens (no truncation needed)
+2025-11-07T02:34:42.270209038Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 23)
+2025-11-07T02:34:42.270214238Z [inf]  [HEALING-CHAT] 🔄 Iteration 24/30
+2025-11-07T02:34:43.408879066Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:43.419692345Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:34:43.424273224Z [inf]  2:34:43 AM [express] GET /api/task-lists/active 304 in 19ms :: [200 bytes]
+2025-11-07T02:34:45.485750435Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:45.485756609Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:34:45.486318813Z [inf]  2:34:45 AM [express] GET /api/task-lists/active 304 in 13ms :: [200 bytes]
+2025-11-07T02:34:47.561059090Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:47.561068936Z [inf]  [GET /api/task-lists/active] Found task list 5372b115-7dd7-4d05-86c3-396deb0092ea with 4 tasks
+2025-11-07T02:34:47.561075892Z [inf]  2:34:47 AM [express] GET /api/task-lists/active 304 in 18ms :: [200 bytes]
+2025-11-07T02:34:49.230509641Z [inf]  [TASK-MGMT] 📡 Broadcast task_list_created to user 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:49.230516032Z [inf]  [HEALING-CHAT] ✅ Created task list: df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:34:49.230520261Z [inf]  [HEALING-CHAT] 🔑 Task IDs: e0e8e686-48d0-47b2-960b-208134f51f5a, aa83d2b9-8028-4e58-9ae4-6da6716d0cf4, 523a18f7-78ac-48c4-b78d-dcd33d595970, 85208f26-5739-461a-8ab0-22b8cbee3d93
+2025-11-07T02:34:49.230525158Z [inf]  [TOOL-OUTPUT] create_task_list: 0 tokens (no truncation needed)
+2025-11-07T02:34:49.230530106Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 24)
+2025-11-07T02:34:49.230533949Z [inf]  [HEALING-CHAT] 🔄 Iteration 25/30
+2025-11-07T02:34:49.637954410Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:49.637960475Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:34:49.637964610Z [inf]  2:34:49 AM [express] GET /api/task-lists/active 200 in 13ms :: [200 bytes]
+2025-11-07T02:34:51.705218177Z [inf]  [CREDIT-MANAGER] Error getting balance: error: relation "credit_wallets" does not exist
+2025-11-07T02:34:51.705242654Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T02:34:51.705250836Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T02:34:51.705258326Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T02:34:51.705265087Z [inf]      at async Function.getBalance (/app/server/services/creditManager.ts:208:24)
+2025-11-07T02:34:51.705272203Z [inf]      at async <anonymous> (/app/server/routes/credits.ts:27:21) {
+2025-11-07T02:34:51.705279014Z [inf]    length: 114,
+2025-11-07T02:34:51.705286306Z [inf]    severity: 'ERROR',
+2025-11-07T02:34:51.705293533Z [inf]    code: '42P01',
+2025-11-07T02:34:51.705298227Z [inf]    detail: undefined,
+2025-11-07T02:34:51.705302516Z [inf]    hint: undefined,
+2025-11-07T02:34:51.705306424Z [inf]    position: '110',
+2025-11-07T02:34:51.705310960Z [inf]    internalPosition: undefined,
+2025-11-07T02:34:51.705315096Z [inf]    internalQuery: undefined,
+2025-11-07T02:34:51.705320310Z [inf]    where: undefined,
+2025-11-07T02:34:51.705324403Z [inf]    schema: undefined,
+2025-11-07T02:34:51.705328580Z [inf]    table: undefined,
+2025-11-07T02:34:51.705333836Z [inf]    column: undefined,
+2025-11-07T02:34:51.705337830Z [inf]    dataType: undefined,
+2025-11-07T02:34:51.705341811Z [inf]    constraint: undefined,
+2025-11-07T02:34:51.705345627Z [inf]    file: 'parse_relation.c',
+2025-11-07T02:34:51.705349389Z [inf]    line: '1449',
+2025-11-07T02:34:51.705354065Z [inf]    routine: 'parserOpenTable'
+2025-11-07T02:34:51.705355900Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:34:51.705359581Z [inf]  }
+2025-11-07T02:34:51.705361495Z [inf]  2:34:51 AM [express] GET /api/task-lists/active 304 in 12ms :: [200 bytes]
+2025-11-07T02:34:51.705364206Z [inf]  2:34:51 AM [express] GET /api/credits/balance 404 in 11ms :: {"error":"Credit wallet not found"}
+2025-11-07T02:34:51.705368545Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:52.491247236Z [inf]  [TASK-MGMT] 📡 Broadcast task_updated to user 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:52.491254198Z [inf]  [HEALING-CHAT] ✅ Updated task: e0e8e686-48d0-47b2-960b-208134f51f5a → in_progress
+2025-11-07T02:34:52.491259400Z [inf]  [TOOL-OUTPUT] update_task: 0 tokens (no truncation needed)
+2025-11-07T02:34:52.491263699Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 25)
+2025-11-07T02:34:52.491268317Z [inf]  [HEALING-CHAT] 🔄 Iteration 26/30
+2025-11-07T02:34:53.854823304Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:53.854826971Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:34:53.854830568Z [inf]  2:34:53 AM [express] GET /api/task-lists/active 200 in 15ms :: [200 bytes]
+2025-11-07T02:34:55.851354624Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:55.851364022Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:34:55.851370749Z [inf]  2:34:55 AM [express] GET /api/task-lists/active 304 in 12ms :: [200 bytes]
+2025-11-07T02:34:57.402269319Z [inf]  [HEALING-CHAT] ✅ Search found 1 files for pattern: **/*healing*
+2025-11-07T02:34:57.402278926Z [inf]  [TOOL-OUTPUT] search_platform_files: 28 tokens (no truncation needed)
+2025-11-07T02:34:57.412629244Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 26)
+2025-11-07T02:34:57.412635994Z [inf]  [HEALING-CHAT] 🔄 Iteration 27/30
+2025-11-07T02:34:57.896074277Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:57.900190780Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:34:57.904410757Z [inf]  2:34:57 AM [express] GET /api/task-lists/active 304 in 14ms :: [200 bytes]
+2025-11-07T02:34:59.969130309Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:34:59.973501246Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:34:59.973509026Z [inf]  2:34:59 AM [express] GET /api/task-lists/active 304 in 13ms :: [200 bytes]
+2025-11-07T02:35:00.188072750Z [inf]  [TOOL-OUTPUT] read_platform_file: TRUNCATED 9907 → 3022 tokens (saved 6885 tokens)
+2025-11-07T02:35:00.188077104Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 27)
+2025-11-07T02:35:00.188080794Z [inf]  [HEALING-CHAT] 🔄 Iteration 28/30
+2025-11-07T02:35:01.741734972Z [inf]    constraint: undefined,
+2025-11-07T02:35:01.741736654Z [inf]  [CREDIT-MANAGER] Error getting balance: error: relation "credit_wallets" does not exist
+2025-11-07T02:35:01.741747322Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T02:35:01.741747769Z [inf]    file: 'parse_relation.c',
+2025-11-07T02:35:01.741757723Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T02:35:01.741759474Z [inf]    line: '1449',
+2025-11-07T02:35:01.741768647Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T02:35:01.741770188Z [inf]    routine: 'parserOpenTable'
+2025-11-07T02:35:01.741780376Z [inf]  }
+2025-11-07T02:35:01.741780799Z [inf]      at async Function.getBalance (/app/server/services/creditManager.ts:208:24)
+2025-11-07T02:35:01.741790531Z [inf]  2:35:01 AM [express] GET /api/credits/balance 404 in 10ms :: {"error":"Credit wallet not found"}
+2025-11-07T02:35:01.741790903Z [inf]      at async <anonymous> (/app/server/routes/credits.ts:27:21) {
+2025-11-07T02:35:01.741798787Z [inf]    length: 114,
+2025-11-07T02:35:01.741806526Z [inf]    severity: 'ERROR',
+2025-11-07T02:35:01.741823367Z [inf]    code: '42P01',
+2025-11-07T02:35:01.741832060Z [inf]    detail: undefined,
+2025-11-07T02:35:01.741840255Z [inf]    hint: undefined,
+2025-11-07T02:35:01.741848564Z [inf]    position: '110',
+2025-11-07T02:35:01.741855655Z [inf]    internalPosition: undefined,
+2025-11-07T02:35:01.741861155Z [inf]    internalQuery: undefined,
+2025-11-07T02:35:01.741866902Z [inf]    where: undefined,
+2025-11-07T02:35:01.741872065Z [inf]    schema: undefined,
+2025-11-07T02:35:01.741877379Z [inf]    table: undefined,
+2025-11-07T02:35:01.741883259Z [inf]    column: undefined,
+2025-11-07T02:35:01.741888613Z [inf]    dataType: undefined,
+2025-11-07T02:35:02.046273463Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:35:02.050564909Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:35:02.050572663Z [inf]  2:35:02 AM [express] GET /api/task-lists/active 304 in 13ms :: [200 bytes]
+2025-11-07T02:35:03.849326788Z [inf]  [MEMORY] Heap: 108MB | RSS: 205MB | Usage: 40%
+2025-11-07T02:35:04.118428830Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:35:04.118433870Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:35:04.118778454Z [inf]  2:35:04 AM [express] GET /api/task-lists/active 304 in 13ms :: [200 bytes]
+2025-11-07T02:35:06.925071638Z [inf]  [TASK-MGMT] 📡 Broadcast task_updated to user 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:35:06.925080614Z [inf]  [HEALING-CHAT] ✅ Updated task: e0e8e686-48d0-47b2-960b-208134f51f5a → completed
+2025-11-07T02:35:06.925089672Z [inf]  [TOOL-OUTPUT] update_task: 0 tokens (no truncation needed)
+2025-11-07T02:35:06.930481137Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 28)
+2025-11-07T02:35:06.930490404Z [inf]  [HEALING-CHAT] 🔄 Iteration 29/30
+2025-11-07T02:35:10.686673171Z [inf]  [TASK-MGMT] 📡 Broadcast task_updated to user 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:35:10.686680999Z [inf]  [HEALING-CHAT] ✅ Updated task: aa83d2b9-8028-4e58-9ae4-6da6716d0cf4 → in_progress
+2025-11-07T02:35:10.686687684Z [inf]  [TOOL-OUTPUT] update_task: 0 tokens (no truncation needed)
+2025-11-07T02:35:10.686694541Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 29)
+2025-11-07T02:35:10.686701071Z [inf]  [HEALING-CHAT] 🔄 Iteration 30/30
+2025-11-07T02:35:14.763132724Z [inf]  [TOOL-OUTPUT] read_platform_file: TRUNCATED 11913 → 3022 tokens (saved 8891 tokens)
+2025-11-07T02:35:14.763140501Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 30)
+2025-11-07T02:35:14.763145487Z [inf]  ✅ [HEALING-CHAT] Total: 108264ms, 2372 chars, 506813 input tokens, 2724 output tokens
+2025-11-07T02:35:14.763151509Z [inf]  [HEALING-CHAT] 💾 Final assistant message saved to database
+2025-11-07T02:35:14.768724010Z [inf]  Error tracking AI usage: error: column "tokens_used" does not exist
+2025-11-07T02:35:14.768729643Z [inf]    position: '71',
+2025-11-07T02:35:14.768731994Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T02:35:14.768738872Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T02:35:14.768743772Z [inf]    internalPosition: undefined,
+2025-11-07T02:35:14.768745968Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T02:35:14.768752195Z [inf]      at async updateMonthlyUsage (/app/server/usage-tracking.ts:248:20)
+2025-11-07T02:35:14.768753984Z [inf]    internalQuery: undefined,
+2025-11-07T02:35:14.768758710Z [inf]      at async trackAIUsage (/app/server/usage-tracking.ts:182:5)
+2025-11-07T02:35:14.768763877Z [inf]    where: undefined,
+2025-11-07T02:35:14.768765495Z [inf]      at async <anonymous> (/app/server/routes/healing.ts:789:9) {
+2025-11-07T02:35:14.768771892Z [inf]    length: 111,
+2025-11-07T02:35:14.768773700Z [inf]    schema: undefined,
+2025-11-07T02:35:14.768778879Z [inf]    severity: 'ERROR',
+2025-11-07T02:35:14.768783112Z [inf]    table: undefined,
+2025-11-07T02:35:14.768785657Z [inf]    code: '42703',
+2025-11-07T02:35:14.768790957Z [inf]    column: undefined,
+2025-11-07T02:35:14.768792176Z [inf]    detail: undefined,
+2025-11-07T02:35:14.768797519Z [inf]    dataType: undefined,
+2025-11-07T02:35:14.768798266Z [inf]    hint: undefined,
+2025-11-07T02:35:14.768802437Z [inf]    constraint: undefined,
+2025-11-07T02:35:14.768807970Z [inf]    file: 'parse_relation.c',
+2025-11-07T02:35:14.768811963Z [inf]    line: '3716',
+2025-11-07T02:35:14.768815684Z [inf]    routine: 'errorMissingColumn'
+2025-11-07T02:35:14.768819080Z [inf]  }
+2025-11-07T02:35:14.768823141Z [inf]  [HEALING-CHAT] 📈 Usage tracked successfully
+2025-11-07T02:35:14.773403690Z [inf]  2:35:14 AM [express] POST /api/healing/messages 200 in 108308ms :: [400 bytes]
+2025-11-07T02:35:14.946280958Z [inf]  2:35:14 AM [express] GET /api/healing/messages/30f5fe32-b655-45d7-a8e8-31da5b299a94 200 in 119ms :: [16600 bytes]
+2025-11-07T02:35:14.951082514Z [inf]  [LOMU-AI-CHAT] Stream request received
+2025-11-07T02:35:14.951088382Z [inf]  [LOMU-AI-CHAT] Message: dont forget you have regular user chat and healing Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-11-07T02:35:14.962552652Z [inf]  [AGENT-EXECUTOR] Error starting run: error: relation "agent_runs" does not exist
+2025-11-07T02:35:14.962559095Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T02:35:14.962563401Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T02:35:14.962567495Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T02:35:14.962572385Z [inf]    table: undefined,
+2025-11-07T02:35:14.962573202Z [inf]      at async Function.startRun (/app/server/services/agentExecutor.ts:23:21)
+2025-11-07T02:35:14.962578063Z [inf]      at async <anonymous> (/app/server/routes/lomuChat.ts:645:21) {
+2025-11-07T02:35:14.962581424Z [inf]    column: undefined,
+2025-11-07T02:35:14.962583637Z [inf]    length: 109,
+2025-11-07T02:35:14.962588041Z [inf]    dataType: undefined,
+2025-11-07T02:35:14.962588840Z [inf]    severity: 'ERROR',
+2025-11-07T02:35:14.962594257Z [inf]    constraint: undefined,
+2025-11-07T02:35:14.962594415Z [inf]    code: '42P01',
+2025-11-07T02:35:14.962599718Z [inf]    detail: undefined,
+2025-11-07T02:35:14.962600484Z [inf]    file: 'parse_relation.c',
+2025-11-07T02:35:14.962605064Z [inf]    hint: undefined,
+2025-11-07T02:35:14.962605720Z [inf]    line: '1449',
+2025-11-07T02:35:14.962610727Z [inf]    position: '13',
+2025-11-07T02:35:14.962612595Z [inf]    routine: 'parserOpenTable'
+2025-11-07T02:35:14.962616616Z [inf]    internalPosition: undefined,
+2025-11-07T02:35:14.962618667Z [inf]  }
+2025-11-07T02:35:14.962622536Z [inf]    internalQuery: undefined,
+2025-11-07T02:35:14.962624323Z [inf]  2:35:14 AM [express] POST /api/lomu-ai/stream 402 in 132ms :: {"error":"relation \"agent_runs\" does not exist","requiresCreditPurchase":true}
+2025-11-07T02:35:14.962628863Z [inf]    where: undefined,
+2025-11-07T02:35:14.962634295Z [inf]    schema: undefined,
+2025-11-07T02:35:34.987308906Z [inf]  [MEMORY] Heap: 84MB | RSS: 174MB | Usage: 34%
+2025-11-07T02:35:34.987316831Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:35:34.987328027Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:35:34.987332779Z [inf]  2:35:34 AM [express] GET /api/task-lists/active 200 in 98ms :: [200 bytes]
+2025-11-07T02:36:05.114892533Z [inf]  [MEMORY] Heap: 84MB | RSS: 173MB | Usage: 34%
+2025-11-07T02:36:35.144934759Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:36:35.144943274Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:36:35.144949470Z [inf]  2:36:26 AM [express] GET /api/task-lists/active 304 in 92ms :: [200 bytes]
+2025-11-07T02:36:35.144954056Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:36:35.144957971Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:36:35.144962408Z [inf]  2:36:28 AM [express] GET /api/task-lists/active 304 in 16ms :: [200 bytes]
+2025-11-07T02:36:35.144967390Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:36:35.144971748Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:36:35.144975932Z [inf]  2:36:30 AM [express] GET /api/task-lists/active 304 in 14ms :: [200 bytes]
+2025-11-07T02:36:35.144979755Z [inf]  [CREDIT-MANAGER] Error getting balance: error: relation "credit_wallets" does not exist
+2025-11-07T02:36:35.144983599Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T02:36:35.144987360Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T02:36:35.144995606Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T02:36:35.144999582Z [inf]      at async Function.getBalance (/app/server/services/creditManager.ts:208:24)
+2025-11-07T02:36:35.145003419Z [inf]      at async <anonymous> (/app/server/routes/credits.ts:27:21) {
+2025-11-07T02:36:35.145007088Z [inf]    length: 114,
+2025-11-07T02:36:35.145010905Z [inf]    severity: 'ERROR',
+2025-11-07T02:36:35.145015145Z [inf]    code: '42P01',
+2025-11-07T02:36:35.145019447Z [inf]    detail: undefined,
+2025-11-07T02:36:35.145023584Z [inf]    hint: undefined,
+2025-11-07T02:36:35.145027394Z [inf]    position: '110',
+2025-11-07T02:36:35.145031239Z [inf]    internalPosition: undefined,
+2025-11-07T02:36:35.145330464Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:36:35.145338984Z [inf]    file: 'parse_relation.c',
+2025-11-07T02:36:35.145345271Z [inf]    line: '1449',
+2025-11-07T02:36:35.145351374Z [inf]    routine: 'parserOpenTable'
+2025-11-07T02:36:35.145355794Z [inf]    dataType: undefined,
+2025-11-07T02:36:35.145357694Z [inf]  }
+2025-11-07T02:36:35.145368716Z [inf]  2:36:31 AM [express] GET /api/credits/balance 404 in 10ms :: {"error":"Credit wallet not found"}
+2025-11-07T02:36:35.145370710Z [inf]    constraint: undefined,
+2025-11-07T02:36:35.145374241Z [inf]    internalQuery: undefined,
+2025-11-07T02:36:35.145377631Z [inf]    column: undefined,
+2025-11-07T02:36:35.145386440Z [inf]    where: undefined,
+2025-11-07T02:36:35.145394688Z [inf]    schema: undefined,
+2025-11-07T02:36:35.145402108Z [inf]    table: undefined,
+2025-11-07T02:36:35.145418415Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:36:35.145425606Z [inf]  2:36:32 AM [express] GET /api/task-lists/active 304 in 96ms :: [200 bytes]
+2025-11-07T02:36:35.145430841Z [inf]  [MEMORY] Heap: 84MB | RSS: 173MB | Usage: 34%
+2025-11-07T02:36:35.145435108Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:36:35.145440099Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:36:35.145444756Z [inf]  2:36:34 AM [express] GET /api/task-lists/active 304 in 14ms :: [200 bytes]
+2025-11-07T02:36:36.862464471Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:36:36.862474602Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:36:36.862482478Z [inf]  2:36:36 AM [express] GET /api/task-lists/active 304 in 13ms :: [200 bytes]
+2025-11-07T02:36:39.070648729Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:36:39.070653032Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:36:39.070656572Z [inf]  2:36:38 AM [express] GET /api/task-lists/active 304 in 13ms :: [200 bytes]
+2025-11-07T02:36:41.231783755Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:36:41.231789177Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:36:41.231798663Z [inf]  2:36:40 AM [express] GET /api/task-lists/active 304 in 12ms :: [200 bytes]
+2025-11-07T02:36:41.873330567Z [inf]  [CREDIT-MANAGER] Error getting balance: error: relation "credit_wallets" does not exist
+2025-11-07T02:36:41.873338071Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T02:36:41.873343229Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T02:36:41.873347757Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T02:36:41.873352467Z [inf]      at async Function.getBalance (/app/server/services/creditManager.ts:208:24)
+2025-11-07T02:36:41.873358089Z [inf]      at async <anonymous> (/app/server/routes/credits.ts:27:21) {
+2025-11-07T02:36:41.873362229Z [inf]    length: 114,
+2025-11-07T02:36:41.873366590Z [inf]    severity: 'ERROR',
+2025-11-07T02:36:41.873370793Z [inf]    code: '42P01',
+2025-11-07T02:36:41.873375816Z [inf]    detail: undefined,
+2025-11-07T02:36:41.873379756Z [inf]    hint: undefined,
+2025-11-07T02:36:41.873383787Z [inf]    position: '110',
+2025-11-07T02:36:41.873387885Z [inf]    internalPosition: undefined,
+2025-11-07T02:36:41.873392556Z [inf]    internalQuery: undefined,
+2025-11-07T02:36:41.873396688Z [inf]    where: undefined,
+2025-11-07T02:36:41.873400590Z [inf]    schema: undefined,
+2025-11-07T02:36:41.873404430Z [inf]    table: undefined,
+2025-11-07T02:36:41.873409025Z [inf]    column: undefined,
+2025-11-07T02:36:41.873412611Z [inf]    dataType: undefined,
+2025-11-07T02:36:41.873417524Z [inf]    constraint: undefined,
+2025-11-07T02:36:41.873421625Z [inf]    file: 'parse_relation.c',
+2025-11-07T02:36:41.873425652Z [inf]    line: '1449',
+2025-11-07T02:36:41.873430138Z [inf]    routine: 'parserOpenTable'
+2025-11-07T02:36:41.873434347Z [inf]  }
+2025-11-07T02:36:41.873438050Z [inf]  2:36:41 AM [express] GET /api/credits/balance 404 in 11ms :: {"error":"Credit wallet not found"}
+2025-11-07T02:36:43.249540349Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:36:43.249545225Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:36:43.249550166Z [inf]  2:36:43 AM [express] GET /api/task-lists/active 304 in 97ms :: [200 bytes]
+2025-11-07T02:36:45.271870771Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:36:45.271878983Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:36:45.271885940Z [inf]  2:36:45 AM [express] GET /api/task-lists/active 304 in 13ms :: [200 bytes]
+2025-11-07T02:36:47.284285967Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:36:47.284289910Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:36:47.288440097Z [inf]  2:36:47 AM [express] GET /api/task-lists/active 304 in 14ms :: [200 bytes]
+2025-11-07T02:36:49.350844266Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:36:49.355282950Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:36:49.359701693Z [inf]  2:36:49 AM [express] GET /api/task-lists/active 304 in 14ms :: [200 bytes]
+2025-11-07T02:36:51.458784633Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:36:51.458795583Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:36:51.458802878Z [inf]  2:36:51 AM [express] GET /api/task-lists/active 304 in 18ms :: [200 bytes]
+2025-11-07T02:36:51.933434518Z [inf]  [CREDIT-MANAGER] Error getting balance: error: relation "credit_wallets" does not exist
+2025-11-07T02:36:51.933440053Z [inf]    schema: undefined,
+2025-11-07T02:36:51.933441279Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T02:36:51.933446630Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T02:36:51.933450626Z [inf]    table: undefined,
+2025-11-07T02:36:51.933452341Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T02:36:51.933457168Z [inf]    column: undefined,
+2025-11-07T02:36:51.933458053Z [inf]      at async Function.getBalance (/app/server/services/creditManager.ts:208:24)
+2025-11-07T02:36:51.933462650Z [inf]    dataType: undefined,
+2025-11-07T02:36:51.933466801Z [inf]      at async <anonymous> (/app/server/routes/credits.ts:27:21) {
+2025-11-07T02:36:51.933468638Z [inf]    constraint: undefined,
+2025-11-07T02:36:51.933472303Z [inf]    length: 114,
+2025-11-07T02:36:51.933474496Z [inf]    file: 'parse_relation.c',
+2025-11-07T02:36:51.933477655Z [inf]    severity: 'ERROR',
+2025-11-07T02:36:51.933480304Z [inf]    line: '1449',
+2025-11-07T02:36:51.933483381Z [inf]    code: '42P01',
+2025-11-07T02:36:51.933486337Z [inf]    routine: 'parserOpenTable'
+2025-11-07T02:36:51.933491493Z [inf]  }
+2025-11-07T02:36:51.933491845Z [inf]    detail: undefined,
+2025-11-07T02:36:51.933496520Z [inf]    hint: undefined,
+2025-11-07T02:36:51.933500720Z [inf]    position: '110',
+2025-11-07T02:36:51.933504543Z [inf]    internalPosition: undefined,
+2025-11-07T02:36:51.933508300Z [inf]    internalQuery: undefined,
+2025-11-07T02:36:51.933512745Z [inf]    where: undefined,
+2025-11-07T02:36:51.933766160Z [inf]  2:36:51 AM [express] GET /api/credits/balance 404 in 11ms :: {"error":"Credit wallet not found"}
+2025-11-07T02:36:53.589505395Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:36:53.593905923Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:36:53.603935889Z [inf]  2:36:53 AM [express] GET /api/task-lists/active 304 in 106ms :: [200 bytes]
+2025-11-07T02:36:55.662698027Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:36:55.666964887Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:36:55.671336790Z [inf]  2:36:55 AM [express] GET /api/task-lists/active 304 in 12ms :: [200 bytes]
+2025-11-07T02:36:57.731412821Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:36:57.732995087Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:36:57.737470022Z [inf]  2:36:57 AM [express] GET /api/task-lists/active 304 in 13ms :: [200 bytes]
+2025-11-07T02:36:59.807661040Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:36:59.807667019Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:36:59.807671493Z [inf]  2:36:59 AM [express] GET /api/task-lists/active 304 in 12ms :: [200 bytes]
+2025-11-07T02:37:03.892779221Z [inf]  [MEMORY] Heap: 85MB | RSS: 175MB | Usage: 34%
+2025-11-07T02:37:43.842465438Z [inf]  [MEMORY] Heap: 85MB | RSS: 174MB | Usage: 34%
+2025-11-07T02:38:03.864950227Z [inf]  [MEMORY] Heap: 86MB | RSS: 175MB | Usage: 34%
+2025-11-07T02:38:33.875317209Z [inf]    line: '1449',
+2025-11-07T02:38:33.875325382Z [inf]    routine: 'parserOpenTable'
+2025-11-07T02:38:33.875331527Z [inf]  }
+2025-11-07T02:38:33.875336799Z [inf]  2:38:32 AM [express] GET /api/credits/balance 404 in 100ms :: {"error":"Credit wallet not found"}
+2025-11-07T02:38:33.875338314Z [inf]  [CREDIT-MANAGER] Error getting balance: error: relation "credit_wallets" does not exist
+2025-11-07T02:38:33.875341843Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:38:33.875349059Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T02:38:33.875355007Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T02:38:33.875360352Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T02:38:33.875366750Z [inf]      at async Function.getBalance (/app/server/services/creditManager.ts:208:24)
+2025-11-07T02:38:33.875373229Z [inf]      at async <anonymous> (/app/server/routes/credits.ts:27:21) {
+2025-11-07T02:38:33.875379243Z [inf]    length: 114,
+2025-11-07T02:38:33.875385247Z [inf]    severity: 'ERROR',
+2025-11-07T02:38:33.875389594Z [inf]    code: '42P01',
+2025-11-07T02:38:33.875394734Z [inf]    detail: undefined,
+2025-11-07T02:38:33.875399264Z [inf]    hint: undefined,
+2025-11-07T02:38:33.875403891Z [inf]    position: '110',
+2025-11-07T02:38:33.875408797Z [inf]    internalPosition: undefined,
+2025-11-07T02:38:33.875413877Z [inf]    internalQuery: undefined,
+2025-11-07T02:38:33.875418306Z [inf]    where: undefined,
+2025-11-07T02:38:33.875422471Z [inf]    schema: undefined,
+2025-11-07T02:38:33.875426764Z [inf]    table: undefined,
+2025-11-07T02:38:33.875432602Z [inf]    column: undefined,
+2025-11-07T02:38:33.875433337Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:38:33.875439139Z [inf]    dataType: undefined,
+2025-11-07T02:38:33.875440251Z [inf]  2:38:32 AM [express] GET /api/task-lists/active 304 in 134ms :: [200 bytes]
+2025-11-07T02:38:33.875445262Z [inf]    constraint: undefined,
+2025-11-07T02:38:33.875446184Z [inf]  [MEMORY] Heap: 86MB | RSS: 174MB | Usage: 34%
+2025-11-07T02:38:33.875450321Z [inf]    file: 'parse_relation.c',
+2025-11-07T02:38:34.970772946Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:38:34.970780392Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:38:34.970784408Z [inf]  2:38:34 AM [express] GET /api/task-lists/active 304 in 16ms :: [200 bytes]
+2025-11-07T02:38:36.966804551Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:38:36.966808733Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:38:36.966812450Z [inf]  2:38:36 AM [express] GET /api/task-lists/active 304 in 16ms :: [200 bytes]
+2025-11-07T02:38:39.020414400Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:38:39.031790795Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:38:39.031799087Z [inf]  2:38:39 AM [express] GET /api/task-lists/active 304 in 15ms :: [200 bytes]
+2025-11-07T02:38:41.107525800Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:38:41.107531370Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:38:41.107535554Z [inf]  2:38:41 AM [express] GET /api/task-lists/active 304 in 13ms :: [200 bytes]
+2025-11-07T02:38:42.863707765Z [inf]  [CREDIT-MANAGER] Error getting balance: error: relation "credit_wallets" does not exist
+2025-11-07T02:38:42.863716454Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T02:38:42.863723313Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T02:38:42.863727832Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T02:38:42.863732743Z [inf]      at async Function.getBalance (/app/server/services/creditManager.ts:208:24)
+2025-11-07T02:38:42.863737478Z [inf]      at async <anonymous> (/app/server/routes/credits.ts:27:21) {
+2025-11-07T02:38:42.863741818Z [inf]    length: 114,
+2025-11-07T02:38:42.863746487Z [inf]    severity: 'ERROR',
+2025-11-07T02:38:42.863750919Z [inf]    code: '42P01',
+2025-11-07T02:38:42.863755765Z [inf]    detail: undefined,
+2025-11-07T02:38:42.863759841Z [inf]    hint: undefined,
+2025-11-07T02:38:42.863763630Z [inf]    position: '110',
+2025-11-07T02:38:42.863767340Z [inf]    internalPosition: undefined,
+2025-11-07T02:38:42.863771225Z [inf]    internalQuery: undefined,
+2025-11-07T02:38:42.863775089Z [inf]    where: undefined,
+2025-11-07T02:38:42.863778842Z [inf]    schema: undefined,
+2025-11-07T02:38:42.863782992Z [inf]    table: undefined,
+2025-11-07T02:38:42.863787505Z [inf]    column: undefined,
+2025-11-07T02:38:42.863791517Z [inf]    dataType: undefined,
+2025-11-07T02:38:42.863795860Z [inf]    constraint: undefined,
+2025-11-07T02:38:42.863800020Z [inf]    file: 'parse_relation.c',
+2025-11-07T02:38:42.863803632Z [inf]    line: '1449',
+2025-11-07T02:38:42.863807438Z [inf]    routine: 'parserOpenTable'
+2025-11-07T02:38:42.863811092Z [inf]  }
+2025-11-07T02:38:42.863815695Z [inf]  2:38:42 AM [express] GET /api/credits/balance 404 in 11ms :: {"error":"Credit wallet not found"}
+2025-11-07T02:38:43.254700216Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:38:43.264922449Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:38:43.264927642Z [inf]  2:38:43 AM [express] GET /api/task-lists/active 304 in 96ms :: [200 bytes]
+2025-11-07T02:38:45.339457080Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:38:45.339462661Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:38:45.339467928Z [inf]  2:38:45 AM [express] GET /api/task-lists/active 304 in 12ms :: [200 bytes]
+2025-11-07T02:38:46.472673296Z [inf]  [HEALING-CHAT] User message received: {
+2025-11-07T02:38:46.472684745Z [inf]    conversationId: '30f5fe32-b655-45d7-a8e8-31da5b299a94',
+2025-11-07T02:38:46.472692057Z [inf]    contentLength: 50
+2025-11-07T02:38:46.472698043Z [inf]  }
+2025-11-07T02:38:46.477362419Z [inf]  [HEALING-CHAT] User message saved to database
+2025-11-07T02:38:46.498067637Z [inf]  [HEALING-CHAT] Loaded 10 messages from history (last 10)
+2025-11-07T02:38:46.498075944Z [inf]  🤖 [HEALING-CHAT] Starting Claude conversation with 10 messages...
+2025-11-07T02:38:46.498081123Z [inf]  [INTENT-SCORE] Message: "update on all tasks have you commited the changes?..." | Scores: { build: 0, fix: 1, diagnostic: 0, casual: 0 } | Intent: fix
+2025-11-07T02:38:46.498087745Z [inf]  [HEALING-CHAT] User intent: fix, max iterations: 30
+2025-11-07T02:38:46.498092095Z [inf]  [HEALING-CHAT] 🔄 Iteration 1/30
+2025-11-07T02:38:47.399117831Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:38:47.404429202Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:38:47.409169525Z [inf]  2:38:47 AM [express] GET /api/task-lists/active 304 in 14ms :: [200 bytes]
+2025-11-07T02:38:49.637068970Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:38:49.647630655Z [inf]  [GET /api/task-lists/active] Found task list df25ef7d-ecda-4983-aad5-66f41189cafc with 4 tasks
+2025-11-07T02:38:49.652393670Z [inf]  2:38:49 AM [express] GET /api/task-lists/active 304 in 188ms :: [200 bytes]
+2025-11-07T02:38:49.663149721Z [inf]  [TOOL-OUTPUT] read_task_list: 0 tokens (no truncation needed)
+2025-11-07T02:38:49.667702522Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 1)
+2025-11-07T02:38:49.667711588Z [inf]  [HEALING-CHAT] 🔄 Iteration 2/30
+2025-11-07T02:38:56.521600509Z [inf]  [TASK-MGMT] 📡 Broadcast task_list_created to user 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:38:56.521611356Z [inf]  [HEALING-CHAT] ✅ Created task list: d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:38:56.521620746Z [inf]  [HEALING-CHAT] 🔑 Task IDs: ebb2347c-b698-42ae-893a-b8987fd140bb, 711c26b2-e380-41f0-8ea9-20beefc2f815, 53b31385-1f40-48a0-b117-9b149ce71701, 34b62ddf-5385-4e08-a5fe-48d74018c23f
+2025-11-07T02:38:56.521629597Z [inf]  [TOOL-OUTPUT] create_task_list: 0 tokens (no truncation needed)
+2025-11-07T02:38:56.526070264Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 2)
+2025-11-07T02:38:56.526078812Z [inf]  [HEALING-CHAT] 🔄 Iteration 3/30
+2025-11-07T02:39:00.610583074Z [inf]  [TASK-MGMT] 📡 Broadcast task_updated to user 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:00.610588843Z [inf]  [HEALING-CHAT] ✅ Updated task: ebb2347c-b698-42ae-893a-b8987fd140bb → completed
+2025-11-07T02:39:00.610593429Z [inf]  [TOOL-OUTPUT] update_task: 0 tokens (no truncation needed)
+2025-11-07T02:39:00.610597495Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 3)
+2025-11-07T02:39:00.610601094Z [inf]  [HEALING-CHAT] 🔄 Iteration 4/30
+2025-11-07T02:39:03.267046621Z [inf]  [TASK-MGMT] 📡 Broadcast task_updated to user 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:03.267053803Z [inf]  [HEALING-CHAT] ✅ Updated task: 711c26b2-e380-41f0-8ea9-20beefc2f815 → in_progress
+2025-11-07T02:39:03.267060876Z [inf]  [TOOL-OUTPUT] update_task: 0 tokens (no truncation needed)
+2025-11-07T02:39:03.267068311Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 4)
+2025-11-07T02:39:03.267075135Z [inf]  [HEALING-CHAT] 🔄 Iteration 5/30
+2025-11-07T02:39:03.474207771Z [inf]  [CREDIT-MANAGER] Error getting balance: error: relation "credit_wallets" does not exist
+2025-11-07T02:39:03.474215534Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T02:39:03.474220632Z [inf]    schema: undefined,
+2025-11-07T02:39:03.474220702Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T02:39:03.474226680Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T02:39:03.474231090Z [inf]    table: undefined,
+2025-11-07T02:39:03.474232538Z [inf]      at async Function.getBalance (/app/server/services/creditManager.ts:208:24)
+2025-11-07T02:39:03.474238039Z [inf]    column: undefined,
+2025-11-07T02:39:03.474238746Z [inf]      at async <anonymous> (/app/server/routes/credits.ts:27:21) {
+2025-11-07T02:39:03.474244059Z [inf]    dataType: undefined,
+2025-11-07T02:39:03.474244310Z [inf]    length: 114,
+2025-11-07T02:39:03.474249633Z [inf]    constraint: undefined,
+2025-11-07T02:39:03.474250867Z [inf]    severity: 'ERROR',
+2025-11-07T02:39:03.474256026Z [inf]    file: 'parse_relation.c',
+2025-11-07T02:39:03.474256400Z [inf]    code: '42P01',
+2025-11-07T02:39:03.474262221Z [inf]    detail: undefined,
+2025-11-07T02:39:03.474262410Z [inf]    line: '1449',
+2025-11-07T02:39:03.474268420Z [inf]    hint: undefined,
+2025-11-07T02:39:03.474268608Z [inf]    routine: 'parserOpenTable'
+2025-11-07T02:39:03.474274619Z [inf]    position: '110',
+2025-11-07T02:39:03.474274977Z [inf]  }
+2025-11-07T02:39:03.474281100Z [inf]  2:39:03 AM [express] GET /api/credits/balance 404 in 91ms :: {"error":"Credit wallet not found"}
+2025-11-07T02:39:03.474281267Z [inf]    internalPosition: undefined,
+2025-11-07T02:39:03.474286161Z [inf]    internalQuery: undefined,
+2025-11-07T02:39:03.474289959Z [inf]    where: undefined,
+2025-11-07T02:39:03.722092768Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:03.722098648Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:03.722102521Z [inf]  2:39:03 AM [express] GET /api/task-lists/active 200 in 14ms :: [200 bytes]
+2025-11-07T02:39:03.865688459Z [inf]  [MEMORY] Heap: 84MB | RSS: 177MB | Usage: 35%
+2025-11-07T02:39:05.779873414Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:05.780608390Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:05.785193468Z [inf]  2:39:05 AM [express] GET /api/task-lists/active 304 in 12ms :: [200 bytes]
+2025-11-07T02:39:07.841677617Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:07.846200116Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:07.850492305Z [inf]  2:39:07 AM [express] GET /api/task-lists/active 304 in 13ms :: [200 bytes]
+2025-11-07T02:39:09.910515206Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:09.915393675Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:09.916820279Z [inf]  2:39:09 AM [express] GET /api/task-lists/active 304 in 12ms :: [200 bytes]
+2025-11-07T02:39:12.104705801Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:12.104711530Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:12.104716236Z [inf]  2:39:11 AM [express] GET /api/task-lists/active 304 in 15ms :: [200 bytes]
+2025-11-07T02:39:13.523594429Z [inf]  [CREDIT-MANAGER] Error getting balance: error: relation "credit_wallets" does not exist
+2025-11-07T02:39:13.523606039Z [inf]    routine: 'parserOpenTable'
+2025-11-07T02:39:13.523606249Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T02:39:13.523609458Z [inf]    hint: undefined,
+2025-11-07T02:39:13.523615216Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T02:39:13.523622363Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T02:39:13.523625091Z [inf]    position: '110',
+2025-11-07T02:39:13.523630379Z [inf]      at async Function.getBalance (/app/server/services/creditManager.ts:208:24)
+2025-11-07T02:39:13.523635552Z [inf]    internalPosition: undefined,
+2025-11-07T02:39:13.523640148Z [inf]      at async <anonymous> (/app/server/routes/credits.ts:27:21) {
+2025-11-07T02:39:13.523641771Z [inf]  }
+2025-11-07T02:39:13.523646049Z [inf]    internalQuery: undefined,
+2025-11-07T02:39:13.523649696Z [inf]    length: 114,
+2025-11-07T02:39:13.523652115Z [inf]  2:39:13 AM [express] GET /api/credits/balance 404 in 11ms :: {"error":"Credit wallet not found"}
+2025-11-07T02:39:13.523656630Z [inf]    where: undefined,
+2025-11-07T02:39:13.523658701Z [inf]    severity: 'ERROR',
+2025-11-07T02:39:13.523666586Z [inf]    schema: undefined,
+2025-11-07T02:39:13.523669141Z [inf]    code: '42P01',
+2025-11-07T02:39:13.523676373Z [inf]    table: undefined,
+2025-11-07T02:39:13.523678599Z [inf]    detail: undefined,
+2025-11-07T02:39:13.523685460Z [inf]    column: undefined,
+2025-11-07T02:39:13.523691917Z [inf]    dataType: undefined,
+2025-11-07T02:39:13.523699341Z [inf]    constraint: undefined,
+2025-11-07T02:39:13.523706805Z [inf]    file: 'parse_relation.c',
+2025-11-07T02:39:13.523715066Z [inf]    line: '1449',
+2025-11-07T02:39:14.149449025Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:14.149455719Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:14.149462921Z [inf]  2:39:14 AM [express] GET /api/task-lists/active 304 in 15ms :: [200 bytes]
+2025-11-07T02:39:16.365554388Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:16.365558241Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:16.365561985Z [inf]  2:39:16 AM [express] GET /api/task-lists/active 304 in 12ms :: [200 bytes]
+2025-11-07T02:39:18.192012632Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:18.196674861Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:18.201421173Z [inf]  2:39:18 AM [express] GET /api/task-lists/active 304 in 15ms :: [200 bytes]
+2025-11-07T02:39:20.261375429Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:20.266071716Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:20.270526268Z [inf]  2:39:20 AM [express] GET /api/task-lists/active 304 in 14ms :: [200 bytes]
+2025-11-07T02:39:22.329652456Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:22.334449418Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:22.339160306Z [inf]  2:39:22 AM [express] GET /api/task-lists/active 304 in 14ms :: [200 bytes]
+2025-11-07T02:39:23.590699480Z [inf]    position: '110',
+2025-11-07T02:39:23.590703173Z [inf]  [CREDIT-MANAGER] Error getting balance: error: relation "credit_wallets" does not exist
+2025-11-07T02:39:23.590709169Z [inf]    internalPosition: undefined,
+2025-11-07T02:39:23.590709523Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T02:39:23.590714503Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T02:39:23.590717941Z [inf]    internalQuery: undefined,
+2025-11-07T02:39:23.590720294Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T02:39:23.590724431Z [inf]    where: undefined,
+2025-11-07T02:39:23.590725640Z [inf]      at async Function.getBalance (/app/server/services/creditManager.ts:208:24)
+2025-11-07T02:39:23.590731096Z [inf]      at async <anonymous> (/app/server/routes/credits.ts:27:21) {
+2025-11-07T02:39:23.590731301Z [inf]    schema: undefined,
+2025-11-07T02:39:23.590737073Z [inf]    table: undefined,
+2025-11-07T02:39:23.590738668Z [inf]    length: 114,
+2025-11-07T02:39:23.590742719Z [inf]    column: undefined,
+2025-11-07T02:39:23.590746909Z [inf]    severity: 'ERROR',
+2025-11-07T02:39:23.590748463Z [inf]    dataType: undefined,
+2025-11-07T02:39:23.590754273Z [inf]    constraint: undefined,
+2025-11-07T02:39:23.590755848Z [inf]    code: '42P01',
+2025-11-07T02:39:23.590760538Z [inf]    file: 'parse_relation.c',
+2025-11-07T02:39:23.590764860Z [inf]    detail: undefined,
+2025-11-07T02:39:23.590767742Z [inf]    line: '1449',
+2025-11-07T02:39:23.590773091Z [inf]    hint: undefined,
+2025-11-07T02:39:23.590773510Z [inf]    routine: 'parserOpenTable'
+2025-11-07T02:39:23.590778640Z [inf]  }
+2025-11-07T02:39:23.590783144Z [inf]  2:39:23 AM [express] GET /api/credits/balance 404 in 10ms :: {"error":"Credit wallet not found"}
+2025-11-07T02:39:24.399782119Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:24.404625062Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:24.404630878Z [inf]  2:39:24 AM [express] GET /api/task-lists/active 304 in 14ms :: [200 bytes]
+2025-11-07T02:39:26.469755462Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:26.469761752Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:26.474185667Z [inf]  2:39:26 AM [express] GET /api/task-lists/active 304 in 12ms :: [200 bytes]
+2025-11-07T02:39:28.549138169Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:28.553792408Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:28.558155369Z [inf]  2:39:28 AM [express] GET /api/task-lists/active 304 in 12ms :: [200 bytes]
+2025-11-07T02:39:30.616145380Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:30.620129430Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:30.624339670Z [inf]  2:39:30 AM [express] GET /api/task-lists/active 304 in 12ms :: [200 bytes]
+2025-11-07T02:39:32.680044836Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:32.684435192Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:32.687892705Z [inf]  2:39:32 AM [express] GET /api/task-lists/active 304 in 13ms :: [200 bytes]
+2025-11-07T02:39:33.673088026Z [inf]  }
+2025-11-07T02:39:33.673088028Z [inf]  [CREDIT-MANAGER] Error getting balance: error: relation "credit_wallets" does not exist
+2025-11-07T02:39:33.673099321Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T02:39:33.673099902Z [inf]  2:39:33 AM [express] GET /api/credits/balance 404 in 12ms :: {"error":"Credit wallet not found"}
+2025-11-07T02:39:33.673106470Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T02:39:33.673113645Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T02:39:33.673120983Z [inf]      at async Function.getBalance (/app/server/services/creditManager.ts:208:24)
+2025-11-07T02:39:33.673128084Z [inf]      at async <anonymous> (/app/server/routes/credits.ts:27:21) {
+2025-11-07T02:39:33.673135005Z [inf]    length: 114,
+2025-11-07T02:39:33.673142045Z [inf]    severity: 'ERROR',
+2025-11-07T02:39:33.673148606Z [inf]    code: '42P01',
+2025-11-07T02:39:33.673155842Z [inf]    detail: undefined,
+2025-11-07T02:39:33.673162507Z [inf]    hint: undefined,
+2025-11-07T02:39:33.673170173Z [inf]    position: '110',
+2025-11-07T02:39:33.673176439Z [inf]    internalPosition: undefined,
+2025-11-07T02:39:33.673180605Z [inf]    internalQuery: undefined,
+2025-11-07T02:39:33.673184802Z [inf]    where: undefined,
+2025-11-07T02:39:33.673189261Z [inf]    schema: undefined,
+2025-11-07T02:39:33.673193806Z [inf]    table: undefined,
+2025-11-07T02:39:33.673198552Z [inf]    column: undefined,
+2025-11-07T02:39:33.673202296Z [inf]    dataType: undefined,
+2025-11-07T02:39:33.673206055Z [inf]    constraint: undefined,
+2025-11-07T02:39:33.673209472Z [inf]    file: 'parse_relation.c',
+2025-11-07T02:39:33.673213725Z [inf]    line: '1449',
+2025-11-07T02:39:33.673217939Z [inf]    routine: 'parserOpenTable'
+2025-11-07T02:39:33.901194174Z [inf]  [MEMORY] Heap: 85MB | RSS: 177MB | Usage: 35%
+2025-11-07T02:39:34.847710296Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:34.847719287Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:34.847726892Z [inf]  2:39:34 AM [express] GET /api/task-lists/active 304 in 14ms :: [200 bytes]
+2025-11-07T02:39:36.826027051Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:36.826032996Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:36.826036738Z [inf]  2:39:36 AM [express] GET /api/task-lists/active 304 in 13ms :: [200 bytes]
+2025-11-07T02:39:38.894393284Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:38.894406434Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:38.894414336Z [inf]  2:39:38 AM [express] GET /api/task-lists/active 304 in 12ms :: [200 bytes]
+2025-11-07T02:39:40.958320823Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:40.963022995Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:40.963034358Z [inf]  2:39:40 AM [express] GET /api/task-lists/active 304 in 14ms :: [200 bytes]
+2025-11-07T02:39:43.069855833Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:43.069863832Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:43.069869735Z [inf]  2:39:43 AM [express] GET /api/task-lists/active 304 in 14ms :: [200 bytes]
+2025-11-07T02:39:43.763136215Z [inf]    line: '1449',
+2025-11-07T02:39:43.763136918Z [inf]    position: '110',
+2025-11-07T02:39:43.763137783Z [inf]  [CREDIT-MANAGER] Error getting balance: error: relation "credit_wallets" does not exist
+2025-11-07T02:39:43.763145010Z [inf]    routine: 'parserOpenTable'
+2025-11-07T02:39:43.763148140Z [inf]    internalPosition: undefined,
+2025-11-07T02:39:43.763148272Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T02:39:43.763152085Z [inf]  }
+2025-11-07T02:39:43.763156598Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T02:39:43.763158616Z [inf]  2:39:43 AM [express] GET /api/credits/balance 404 in 10ms :: {"error":"Credit wallet not found"}
+2025-11-07T02:39:43.763159387Z [inf]    internalQuery: undefined,
+2025-11-07T02:39:43.763162512Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T02:39:43.763168591Z [inf]    where: undefined,
+2025-11-07T02:39:43.763168636Z [inf]      at async Function.getBalance (/app/server/services/creditManager.ts:208:24)
+2025-11-07T02:39:43.763174883Z [inf]      at async <anonymous> (/app/server/routes/credits.ts:27:21) {
+2025-11-07T02:39:43.763177136Z [inf]    schema: undefined,
+2025-11-07T02:39:43.763181987Z [inf]    length: 114,
+2025-11-07T02:39:43.763187165Z [inf]    severity: 'ERROR',
+2025-11-07T02:39:43.763187248Z [inf]    table: undefined,
+2025-11-07T02:39:43.763192323Z [inf]    code: '42P01',
+2025-11-07T02:39:43.763195910Z [inf]    column: undefined,
+2025-11-07T02:39:43.763199088Z [inf]    detail: undefined,
+2025-11-07T02:39:43.763204502Z [inf]    hint: undefined,
+2025-11-07T02:39:43.763205672Z [inf]    dataType: undefined,
+2025-11-07T02:39:43.763212952Z [inf]    constraint: undefined,
+2025-11-07T02:39:43.763220772Z [inf]    file: 'parse_relation.c',
+2025-11-07T02:39:45.205819996Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:45.205828731Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:45.205835618Z [inf]  2:39:45 AM [express] GET /api/task-lists/active 304 in 92ms :: [200 bytes]
+2025-11-07T02:39:47.259915945Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:47.259921831Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:47.259926224Z [inf]  2:39:47 AM [express] GET /api/task-lists/active 304 in 12ms :: [200 bytes]
+2025-11-07T02:39:49.315778805Z [inf]  2:39:49 AM [express] GET /api/task-lists/active 304 in 13ms :: [200 bytes]
+2025-11-07T02:39:49.315818278Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:49.315826417Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:51.375535625Z [inf]  [GET /api/task-lists/active] Fetching active task list for userId: 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T02:39:51.380033641Z [inf]  [GET /api/task-lists/active] Found task list d156b3c9-3587-48f1-97b4-0ff885298b29 with 4 tasks
+2025-11-07T02:39:51.384699796Z [inf]  2:39:51 AM [express] GET /api/task-lists/active 304 in 12ms :: [200 bytes]
