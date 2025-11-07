@@ -4,6 +4,13 @@
 Lomu is an AI-powered platform for rapid web development, featuring LomuAI, an autonomous AI coding agent, and dual-version IDE Workspaces (Lomu for desktop, Lomu5 for mobile). It offers a console-first interface, real-time preview, and comprehensive workspace features. The platform aims for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. A key capability is LomuAI's autonomous self-healing, bug fixing, and UI/UX improvements to its own source code, complete with rollback and audit logging.
 
 ## Recent Updates (Nov 7, 2025)
+- ✅ **SUB-AGENT TOOL PARITY ACHIEVED - Systematic Delegation Like Replit Agent** (Nov 7, 2025): Transformed sub-agents from limited 4-tool workers to full 23-tool autonomous agents matching LomuAI capabilities:
+  - **Tool Count**: 4 → 23 tools (575% increase) - Core execution (9), Verification (6), Knowledge (6), Platform ops (3)
+  - **Map-Based Dispatcher**: Clean, maintainable tool routing pattern replacing if-else chains
+  - **Systematic Prompts**: Both sub-agents and LomuAI taught 4-phase workflow (Search → Implement → Verify → Report)
+  - **Delegation Guidelines**: LomuAI prompts enhanced with comprehensive when/how to delegate sub-agents (with cost savings examples)
+  - **100% Parity**: Platform Healing and Regular LomuAI both updated with identical delegation capabilities
+  - **Expected Impact**: Enable Replit Agent-style orchestration - delegate copy-paste/repetitive work for 10x efficiency gains (3 iterations vs 30)
 - ✅ **PRODUCTION UX FIXES - Real Progress & Systematic Tasks** (Nov 7, 2025): Fixed THREE critical issues preventing LomuAI from working like Replit Agent:
   - **Real Progress Bars**: Replaced fake CSS animations with actual task completion tracking using 3-tier priority (backend metrics → substeps → status)
   - **Systematic Task Execution**: Forces AI to work through tasks 1→2→3→4→5 in order (no jumping around) - blocks non-task tools during in_progress tasks
