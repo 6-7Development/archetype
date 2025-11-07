@@ -3,7 +3,7 @@ import { db } from '../db.ts';
 import { chatMessages, taskLists, tasks, lomuAttachments, lomuJobs, users, subscriptions, projects, conversationStates, platformIncidents } from '@shared/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth.ts';
-import { streamAnthropicResponse } from '../anthropic.ts';
+import { streamGeminiResponse } from '../gemini.ts';
 import { RAILWAY_CONFIG } from '../config/railway.ts';
 import { platformHealing } from '../platformHealing.ts';
 import { platformAudit } from '../platformAudit.ts';
@@ -1526,11 +1526,11 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       let taskListId: string | null = null; // Track if a task list exists
       let detectedComplexity = 1; // Track task complexity for workflow validation
 
-      // TEMPORARY: Use Claude due to Gemini MALFORMED_FUNCTION_CALL with 37 tools
-      // 🔄 WRAPPED WITH RETRY LOGIC to handle Anthropic API overload errors
+      // ✅ SWITCHED TO GEMINI: 40x cheaper ($0.075/$0.30 vs $3/$15 per 1M tokens)
+      // With improved workflow logic, Gemini should handle tools reliably now
       await retryWithBackoff(async () => {
-        return await streamAnthropicResponse({
-          model: 'claude-sonnet-4-20250514',
+        return await streamGeminiResponse({
+          model: 'gemini-2.5-flash',
           maxTokens: config.maxTokens,
           system: safeSystemPrompt,
           messages: safeMessages,
