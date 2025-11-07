@@ -7,9 +7,12 @@ import { isAuthenticated } from '../universalAuth';
 const router = Router();
 
 /**
- * GET /api/tasks/:sessionId
- * Fetch task list for a specific chat session
+ * GET /api/tasks/:chatMessageId
+ * Fetch task list for a specific chat message
  * This ensures tasks persist when navigating between chats
+ * 
+ * Note: Real-time task updates come via WebSocket events (task_created, task_updated)
+ * This endpoint is for initial load and persistence only
  */
 router.get('/:chatMessageId', isAuthenticated, async (req: any, res) => {
   try {

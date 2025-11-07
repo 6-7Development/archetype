@@ -25,6 +25,7 @@ import { AgentTaskList, type AgentTask } from "@/components/agent-task-list";
 import { AgentProgressDisplay } from "@/components/agent-progress-display";
 import { ChatInputToolbar } from "@/components/ui/chat-input-toolbar";
 import { AIModelSelector } from "@/components/ai-model-selector";
+import { parseMessageContent, cleanAIResponse } from "@/lib/message-parser";
 
 interface CheckpointData {
   complexity: string;
@@ -1018,7 +1019,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                     </div>
                   ) : (
                     <div className="prose prose-invert max-w-none text-sm leading-relaxed">
-                      <MarkdownRenderer content={message.content} />
+                      <MarkdownRenderer content={cleanAIResponse(parseMessageContent(message.content))} />
                     </div>
                   )}
 
@@ -1072,7 +1073,7 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
             <div className="flex gap-3 items-start">
               <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-secondary text-secondary-foreground shadow-sm border border-border/50">
                 <div className="prose prose-invert max-w-none text-sm leading-relaxed">
-                  <MarkdownRenderer content={streamState.fullMessage} />
+                  <MarkdownRenderer content={cleanAIResponse(parseMessageContent(streamState.fullMessage))} />
                 </div>
               </div>
             </div>

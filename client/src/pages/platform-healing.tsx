@@ -18,6 +18,7 @@ import { AgentTaskList, type AgentTask } from '@/components/agent-task-list';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { parseMessageContent, cleanAIResponse } from '@/lib/message-parser';
 
 interface HealingTarget {
   id: string;
@@ -44,41 +45,6 @@ interface HealingMessage {
   createdAt: string;
 }
 
-/**
- * Clean up AI responses for display
- * Removes verbose system messages, tool execution details, and internal commentary
- */
-function cleanAIResponse(content: string): string {
-  if (!content) return content;
-  
-  // Remove tool execution JSON blocks
-  let cleaned = content.replace(/\[\{"type":"tool_(use|result)"[^\]]*\}\]/g, '');
-  cleaned = cleaned.replace(/\{"type":"tool_(use|result)"[^\}]*\}/g, '');
-  
-  // Remove verbose workflow instructions that leaked into responses
-  cleaned = cleaned.replace(/Step \d+:.*?(?=\n|$)/gi, '');
-  cleaned = cleaned.replace(/Example \(.*?\):/gi, '');
-  
-  // Remove task ID explanations
-  cleaned = cleaned.replace(/→ Returns:.*?\}/gi, '');
-  cleaned = cleaned.replace(/←.*?(?=\n|$)/g, '');
-  
-  // Remove internal commentary markers
-  cleaned = cleaned.replace(/❌ WRONG:.*?(?=\n|$)/gi, '');
-  cleaned = cleaned.replace(/✅ CORRECT:.*?(?=\n|$)/gi, '');
-  
-  // Remove "REMEMBER:" blocks
-  cleaned = cleaned.replace(/REMEMBER:.*?(?=\n\n|$)/gi, '');
-  
-  // Remove excessive task status updates (keep final summaries only)
-  cleaned = cleaned.replace(/○|⏳|✓/g, '');
-  
-  // Clean up extra whitespace
-  cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
-  cleaned = cleaned.replace(/\s+$/gm, '');
-  
-  return cleaned.trim();
-}
 
 /**
  * Format error messages for user-friendly display
@@ -813,7 +779,7 @@ function PlatformHealingContent() {
                           {msg.role === 'user' ? (
                             <p className="text-sm leading-relaxed">{msg.content}</p>
                           ) : (
-                            <MarkdownRenderer content={cleanAIResponse(msg.content)} />
+                            <MarkdownRenderer content={cleanAIResponse(parseMessageContent(msg.content))} />
                           )}
                         </div>
                         {/* Timestamp */}

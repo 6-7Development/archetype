@@ -1,0 +1,508 @@
+2025-11-07T00:37:19.000000000Z [inf]  Starting Container
+2025-11-07T00:37:19.947082863Z [inf]  -rw-rw-r--    1 root     root           325 Nov  7 00:15 drizzle.config.ts
+2025-11-07T00:37:19.947091987Z [inf]  drwxr-xr-x    3 root     root          4096 Nov  7 00:15 migrations
+2025-11-07T00:37:19.947098862Z [inf]  📂 Listing root files:
+2025-11-07T00:37:19.947100959Z [inf]  drwxr-xr-x    1 root     root          4096 Nov  6 23:17 node_modules
+2025-11-07T00:37:19.947105117Z [inf]  -rw-rw-r--    1 root     root          7974 Nov  7 00:15 railway-db-setup.cjs
+2025-11-07T00:37:19.947110576Z [inf]  -rw-rw-r--    1 root     root        361322 Nov  6 23:17 package-lock.json
+2025-11-07T00:37:19.947114515Z [inf]  total 420
+2025-11-07T00:37:19.947115669Z [inf]  ======================================
+2025-11-07T00:37:19.947121322Z [inf]  -rwxrwxr-x    1 root     root          2334 Nov  7 00:15 railway-start.sh
+2025-11-07T00:37:19.947121963Z [inf]  -rw-rw-r--    1 root     root          4728 Nov  6 23:15 package.json
+2025-11-07T00:37:19.947125738Z [inf]  drwxr-xr-x    1 root     root          4096 Nov  7 00:16 .
+2025-11-07T00:37:19.947129239Z [inf]  -rw-rw-r--    1 root     root          7778 Nov  7 00:15 replit.md
+2025-11-07T00:37:19.947136310Z [inf]  dr-xr-xr-x    1 root     root          4096 Nov  7 00:37 ..
+2025-11-07T00:37:19.947138203Z [inf]  drwxr-xr-x    1 root     root          4096 Nov  7 00:15 server
+2025-11-07T00:37:19.947143719Z [inf]  Time: Fri Nov  7 00:37:19 UTC 2025
+2025-11-07T00:37:19.947147843Z [inf]  -rwxr-xr-x    1 root     root          1990 Nov  7 00:15 debug-start.sh
+2025-11-07T00:37:19.947154921Z [inf]  Node version: v20.19.5
+2025-11-07T00:37:19.947163259Z [inf]  NPM version: 10.8.2
+2025-11-07T00:37:19.947171250Z [inf]  
+2025-11-07T00:37:19.947182576Z [inf]  📁 Current directory: /app
+2025-11-07T00:37:19.947196014Z [inf]  ======================================
+2025-11-07T00:37:19.947203071Z [inf]  🚂 RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-07T00:37:19.948301055Z [inf]  drwxr-xr-x    2 root     root          4096 Nov  7 00:15 shared
+2025-11-07T00:37:19.948307164Z [inf]  -rw-rw-r--    1 root     root           960 Nov  7 00:15 tsconfig.json
+2025-11-07T00:37:19.948315502Z [inf]  
+2025-11-07T00:37:19.948322591Z [inf]  🔍 Checking for server/public directory (frontend)...
+2025-11-07T00:37:19.948328671Z [inf]  ✅ server/public directory exists (frontend build)
+2025-11-07T00:37:19.948336198Z [inf]  
+2025-11-07T00:37:19.948342264Z [inf]  🔧 Running database migration and drift repair...
+2025-11-07T00:37:19.948348517Z [inf]  📋 Step 1: Running migration statements individually...
+2025-11-07T00:37:19.948354138Z [inf]     Found 148 SQL statements to execute
+2025-11-07T00:37:23.121257330Z [inf]     ✅ Migration complete: 0 created, 148 skipped, 0 failed
+2025-11-07T00:37:23.121267272Z [inf]  📋 Step 2: Repairing schema drift (adding missing columns)...
+2025-11-07T00:37:23.121274375Z [inf]  ⚠️  add-missing-columns.sql not found - skipping drift repair (optional)
+2025-11-07T00:37:23.121281675Z [inf]  📋 Step 3: Adding incident category columns...
+2025-11-07T00:37:23.156685680Z [inf]  ✅ Incident category columns added
+2025-11-07T00:37:23.156695094Z [inf]  📋 Step 4: Creating v2.0 feature tables (project_env_vars, file_index)...
+2025-11-07T00:37:23.163131472Z [inf]     ✅ project_env_vars table created
+2025-11-07T00:37:23.170152101Z [inf]     ✅ file_index table created
+2025-11-07T00:37:23.170159188Z [inf]  ✅ All v2.0 feature tables ready!
+2025-11-07T00:37:23.170168201Z [inf]  📋 Step 5: Adding missing columns to users table...
+2025-11-07T00:37:23.174236589Z [inf]  ✅ Missing user columns added successfully
+2025-11-07T00:37:23.174243095Z [inf]  📋 Step 6: Creating platform owner account...
+2025-11-07T00:37:23.956070697Z [inf]  ==========================================
+2025-11-07T00:37:23.956081406Z [inf]  🔍 DEBUG MODE - VERBOSE ERROR CAPTURE
+2025-11-07T00:37:23.956087497Z [inf]  ==========================================
+2025-11-07T00:37:23.956143653Z [inf]     ✅ Root owner account updated
+2025-11-07T00:37:23.956154673Z [inf]     📧 Email: root@getdc360.com
+2025-11-07T00:37:23.956165263Z [inf]     🔑 Password: admin123@*
+2025-11-07T00:37:23.956176214Z [inf]  ✅ Platform owner ready!
+2025-11-07T00:37:23.956191532Z [inf]  
+2025-11-07T00:37:23.956199468Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-11-07T00:37:23.956205953Z [inf]  ✅ Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-07T00:37:23.956212712Z [inf]  ⚠️ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)
+2025-11-07T00:37:23.956219249Z [inf]  ✅ Database schema ready!
+2025-11-07T00:37:23.956225562Z [inf]  
+2025-11-07T00:37:23.956233323Z [inf]  🔍 Environment Check:
+2025-11-07T00:37:23.956240196Z [inf]  NODE_ENV: production
+2025-11-07T00:37:23.956249652Z [inf]  PORT: 8080
+2025-11-07T00:37:23.956256556Z [inf]  DATABASE_URL: ✓ SET (hidden for security)
+2025-11-07T00:37:23.956280267Z [inf]  GITHUB_TOKEN: ✓ SET
+2025-11-07T00:37:23.956288903Z [inf]  GITHUB_REPO: 6-7Development/archetype
+2025-11-07T00:37:23.956297438Z [inf]  GITHUB_BRANCH: main
+2025-11-07T00:37:23.956303841Z [inf]  ANTHROPIC_API_KEY: ✓ SET
+2025-11-07T00:37:23.956310157Z [inf]  
+2025-11-07T00:37:23.956316912Z [inf]  📄 Ensuring replit.md is available...
+2025-11-07T00:37:23.956324031Z [inf]  ✅ replit.md already present
+2025-11-07T00:37:23.956331482Z [inf]  
+2025-11-07T00:37:23.956339839Z [inf]  🚀 Starting Node.js application with debug wrapper...
+2025-11-07T00:37:23.956346257Z [inf]  Command: sh debug-start.sh
+2025-11-07T00:37:23.956356319Z [inf]  
+2025-11-07T00:37:23.958156137Z [inf]  
+2025-11-07T00:37:23.958160462Z [inf]  📋 Step 1: Verify server directory exists...
+2025-11-07T00:37:23.958164736Z [inf]  ✅ server/ directory exists
+2025-11-07T00:37:23.958169269Z [inf]  
+2025-11-07T00:37:23.958173497Z [inf]  📋 Step 2: Verify server/index.ts exists...
+2025-11-07T00:37:23.958178428Z [inf]  ✅ server/index.ts exists
+2025-11-07T00:37:23.958184366Z [inf]  
+2025-11-07T00:37:23.958190840Z [inf]  📋 Step 3: Check Node.js and tsx availability...
+2025-11-07T00:37:23.958196455Z [inf]  Node version: v20.19.5
+2025-11-07T00:37:23.958202204Z [inf]  NPM version: 10.8.2
+2025-11-07T00:37:23.958208098Z [inf]  tsx location: /usr/local/bin/npx
+2025-11-07T00:37:23.958214440Z [inf]  
+2025-11-07T00:37:23.958220579Z [inf]  📋 Step 4: Verify environment variables...
+2025-11-07T00:37:23.958226791Z [inf]  NODE_ENV: production
+2025-11-07T00:37:23.958235692Z [inf]  PORT: 8080
+2025-11-07T00:37:23.958242526Z [inf]  DATABASE_URL: ✓ SET
+2025-11-07T00:37:23.958248274Z [inf]  
+2025-11-07T00:37:23.958253409Z [inf]  📋 Step 5: Test tsx can load...
+2025-11-07T00:37:24.972921191Z [inf]  tsx v4.20.5
+2025-11-07T00:37:24.972926725Z [inf]  node v20.19.5
+2025-11-07T00:37:24.972932691Z [inf]  ✅ tsx is available
+2025-11-07T00:37:24.972939780Z [inf]  
+2025-11-07T00:37:24.972948239Z [inf]  📋 Step 6: Starting server with tsx...
+2025-11-07T00:37:24.972954090Z [inf]  Command: npx tsx server/index.ts
+2025-11-07T00:37:24.972959732Z [inf]  ==========================================
+2025-11-07T00:37:24.972964936Z [inf]  
+2025-11-07T00:37:28.359917113Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-11-07T00:37:28.359922573Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-11-07T00:37:28.359928878Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-11-07T00:37:28.359935336Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-11-07T00:37:28.359943899Z [inf]  [db] Connection string includes SSL params: true
+2025-11-07T00:37:28.403184467Z [inf]  [PERFORMANCE] System prompt base cached (1544 chars) - saves ~4KB per request
+2025-11-07T00:37:29.167422876Z [inf]  [AI-HEALING] Anthropic Claude initialized for Tier 3 (I AM Architect)
+2025-11-07T00:37:29.167434860Z [inf]  [LOMU-AI-JOB-MANAGER] Job manager connected to WebSocket
+2025-11-07T00:37:29.167435944Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller (SSE streams excluded)
+2025-11-07T00:37:29.167445625Z [inf]  📡 WebSocket server initialized at /ws
+2025-11-07T00:37:29.167454420Z [inf]  [LOMU-AI] WebSocket server initialized for live preview broadcasts
+2025-11-07T00:37:29.167464452Z [inf]  [LOMU-AI-CHAT] Live preview WebSocket initialized
+2025-11-07T00:37:29.167473458Z [inf]  [TERMINAL-ROUTES] Registering WebSocket terminal handler
+2025-11-07T00:37:29.167554709Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-11-07T00:37:29.167557281Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-11-07T00:37:29.167563174Z [inf]  [PLATFORM-HEALING] WebSocket server attached for preview broadcasts
+2025-11-07T00:37:29.167567272Z [inf]  [RAILWAY-CONFIG] Production hardening active
+2025-11-07T00:37:29.167574849Z [inf]  [RAILWAY-CONFIG] AI timeout: 480s
+2025-11-07T00:37:29.167581480Z [inf]  [RAILWAY-CONFIG] Memory limit: 512MB
+2025-11-07T00:37:29.167587508Z [inf]  [RAILWAY-CONFIG] Max concurrent AI: 3
+2025-11-07T00:37:29.167628296Z [inf]  [PLATFORM-HEALING] Platform healing service connected to WebSocket
+2025-11-07T00:37:29.167635543Z [inf]  [TASK-MGMT] Task management connected to WebSocket
+2025-11-07T00:37:29.167641794Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-11-07T00:37:29.167647032Z [inf]  [HEAL-ORCHESTRATOR] Metrics broadcaster connected
+2025-11-07T00:37:29.167652497Z [inf]  [WEBHOOKS] Webhooks router connected to metrics broadcaster
+2025-11-07T00:37:29.167658155Z [inf]  [ARCHITECT-GUIDANCE] I AM Architect initialized for real-time guidance
+2025-11-07T00:37:29.167663286Z [inf]  [LOMU-AI-JOB-MANAGER] Initialized with WebSocket support
+2025-11-07T00:37:29.171733001Z [inf]  [TERMINAL] Terminal WebSocket routes registered
+2025-11-07T00:37:29.171741590Z [inf]  [CREDITS] Credits router mounted at /api/credits
+2025-11-07T00:37:29.171747359Z [inf]  [AGENTS] Agents router mounted at /api/agents
+2025-11-07T00:37:29.171753306Z [inf]  [WEBHOOKS] Webhooks router mounted at /api/webhooks
+2025-11-07T00:37:29.171759131Z [inf]  [GIT] Git router mounted
+2025-11-07T00:37:30.089117553Z [inf]  ✅ GitHub integration configured successfully
+2025-11-07T00:37:30.089128338Z [inf]     - Repository: 6-7Development/archetype
+2025-11-07T00:37:30.089135186Z [inf]     - Branch: main
+2025-11-07T00:37:30.089141796Z [inf]     - Token: ✓ (configured)
+2025-11-07T00:37:30.089148201Z [inf]     - Owner: ✅ root@getdc360.com (ID: 723e1301-c729-48fc-810a-39ddef954ae2)
+2025-11-07T00:37:30.089154528Z [inf]     - Maintenance mode: ✅ Available
+2025-11-07T00:37:30.089162150Z [inf]  
+2025-11-07T00:37:30.089168339Z [inf]  [RAILWAY] Graceful shutdown handler registered (SIGTERM)
+2025-11-07T00:37:30.089488990Z [inf]  [DEPLOYMENTS] Routes registered successfully
+2025-11-07T00:37:30.089493151Z [inf]  ✅ All routes registered successfully
+2025-11-07T00:37:30.089497264Z [inf]  🔧 Adding WebSocket memory leak prevention handlers...
+2025-11-07T00:37:30.089502300Z [inf]  🔍 Testing database connection...
+2025-11-07T00:37:30.089510675Z [inf]  12:37:29 AM [express] serving on port 8080
+2025-11-07T00:37:30.089515058Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-11-07T00:37:30.089519119Z [inf]  ✅ Database connected successfully
+2025-11-07T00:37:30.089523916Z [inf]  🧹 Running startup cleanup for chat history...
+2025-11-07T00:37:30.089529127Z [inf]  ✅ Chat history cleanup complete
+2025-11-07T00:37:30.089533543Z [inf]  🧹 Cleaning up stuck LomuAI jobs from previous server session...
+2025-11-07T00:37:30.089537892Z [inf]  ✅ No interrupted LomuAI jobs found
+2025-11-07T00:37:30.089547717Z [inf]  💡 Platform Healing: OWNER-ONLY access (manual trigger via UI)
+2025-11-07T00:37:30.089552441Z [inf]     👑 Owner uses LomuAI to fix the platform itself - FREE
+2025-11-07T00:37:30.089556517Z [inf]     👥 Regular users use LomuAI for their projects - usage-based billing
+2025-11-07T00:37:30.089560884Z [inf]     💳 Credits: 1 credit = 1,000 tokens = $0.05 (retail pricing)
+2025-11-07T00:37:30.089567718Z [inf]  [HEALTH-MONITOR] Starting platform health monitoring...
+2025-11-07T00:37:30.089572641Z [inf]  [HEALTH-MONITOR] Loaded 8 open incidents
+2025-11-07T00:37:30.089576862Z [inf]  [HEALTH-MONITOR] Monitoring started
+2025-11-07T00:37:30.089581661Z [inf]  [HEAL-ORCHESTRATOR] Starting autonomous healing orchestrator...
+2025-11-07T00:37:30.089585694Z [inf]  [HEAL-ORCHESTRATOR] Orchestrator started
+2025-11-07T00:37:30.089590162Z [inf]  [MEMORY-MONITOR] Starting memory monitoring
+2025-11-07T00:37:30.089594813Z [inf]  [MEMORY-MONITOR] Warning threshold: 400MB
+2025-11-07T00:37:30.089598705Z [inf]  [MEMORY-MONITOR] Container limit: 512MB
+2025-11-07T00:37:30.089684142Z [inf]  [MEMORY-MONITOR] Active - checking every 30s
+2025-11-07T00:37:30.089689172Z [inf]  🛡️ Initializing CPU monitoring to detect performance issues...
+2025-11-07T00:37:30.089694050Z [inf]  
+2025-11-07T00:37:30.089698435Z [inf]  🔍 Checking GitHub integration configuration...
+2025-11-07T00:37:59.767791574Z [inf]  [MEMORY] Heap: 72MB | RSS: 152MB | Usage: 30%
+2025-11-07T00:38:29.841924224Z [inf]  [MEMORY] Heap: 72MB | RSS: 153MB | Usage: 30%
+2025-11-07T00:39:09.318537862Z [inf]  [MEMORY] Heap: 72MB | RSS: 152MB | Usage: 30%
+2025-11-07T00:39:39.320499937Z [inf]  [MEMORY] Heap: 73MB | RSS: 152MB | Usage: 30%
+2025-11-07T00:40:08.825179233Z [inf]  [MEMORY] Heap: 72MB | RSS: 151MB | Usage: 29%
+2025-11-07T00:40:38.974471382Z [inf]  [MEMORY] Heap: 72MB | RSS: 152MB | Usage: 30%
+2025-11-07T00:41:08.531976530Z [inf]  [MEMORY] Heap: 72MB | RSS: 152MB | Usage: 30%
+2025-11-07T00:41:38.991723003Z [inf]  [MEMORY] Heap: 72MB | RSS: 153MB | Usage: 30%
+2025-11-07T00:42:08.502142636Z [inf]  [MEMORY] Heap: 72MB | RSS: 152MB | Usage: 30%
+2025-11-07T00:42:28.594942346Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T00:42:28.594944071Z [inf]    detail: undefined,
+2025-11-07T00:42:28.594947924Z [inf]    position: '71',
+2025-11-07T00:42:28.594955922Z [inf]    hint: undefined,
+2025-11-07T00:42:28.594961033Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T00:42:28.594961149Z [inf]    internalPosition: undefined,
+2025-11-07T00:42:28.594972539Z [inf]    severity: 'ERROR',
+2025-11-07T00:42:28.594977260Z [inf]      at async DatabaseStorage.getProjects (/app/server/storage.ts:582:26)
+2025-11-07T00:42:28.594988029Z [inf]    code: '42703',
+2025-11-07T00:42:28.594990706Z [inf]      at async <anonymous> (/app/server/routes/projects.ts:21:24) {
+2025-11-07T00:42:28.595000770Z [inf]    length: 106,
+2025-11-07T00:42:28.595097829Z [inf]  [DEPLOYMENT-INFO] Using Railway environment variables
+2025-11-07T00:42:28.595102679Z [inf]  12:42:23 AM [express] GET /api/deployment-info 200 in 3ms :: [700 bytes]
+2025-11-07T00:42:28.595107651Z [inf]  12:42:23 AM [express] GET /api/auth/me 200 in 12ms :: [100 bytes]
+2025-11-07T00:42:28.595113811Z [inf]  [AUTH] Login attempt for email: root@getdc360.com
+2025-11-07T00:42:28.595118641Z [inf]  [AUTH] Found users: 1
+2025-11-07T00:42:28.595124724Z [inf]  [AUTH] User found: root@getdc360.com has password: true
+2025-11-07T00:42:28.595130461Z [inf]  [AUTH] Verifying password...
+2025-11-07T00:42:28.595135526Z [inf]  [AUTH] Password valid: true
+2025-11-07T00:42:28.595141017Z [inf]  [AUTH] Authentication successful for: root@getdc360.com
+2025-11-07T00:42:28.595145953Z [inf]  12:42:26 AM [express] POST /api/auth/login 200 in 287ms :: [200 bytes]
+2025-11-07T00:42:28.595154002Z [inf]  Error fetching projects: error: column "status" does not exist
+2025-11-07T00:42:28.595158964Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T00:42:28.598973094Z [inf]    internalQuery: undefined,
+2025-11-07T00:42:28.598977655Z [inf]    where: undefined,
+2025-11-07T00:42:28.598982265Z [inf]    schema: undefined,
+2025-11-07T00:42:28.598987808Z [inf]    table: undefined,
+2025-11-07T00:42:28.598993767Z [inf]    column: undefined,
+2025-11-07T00:42:28.599000221Z [inf]    dataType: undefined,
+2025-11-07T00:42:28.599006110Z [inf]    constraint: undefined,
+2025-11-07T00:42:28.599013742Z [inf]    file: 'parse_relation.c',
+2025-11-07T00:42:28.599019891Z [inf]    line: '3716',
+2025-11-07T00:42:28.599026292Z [inf]    routine: 'errorMissingColumn'
+2025-11-07T00:42:28.599032407Z [inf]  }
+2025-11-07T00:42:28.599039574Z [inf]  12:42:27 AM [express] GET /api/projects 500 in 44ms :: {"error":"Failed to fetch projects"}
+2025-11-07T00:42:28.599048004Z [inf]  12:42:27 AM [express] GET /api/auth/me 304 in 127ms :: [100 bytes]
+2025-11-07T00:42:29.572436698Z [inf]  12:42:29 AM [express] GET /api/healing/targets 304 in 12ms :: [100 bytes]
+2025-11-07T00:42:29.673965674Z [inf]  [WEBSOCKET] Socket closed (memory cleaned up)
+2025-11-07T00:42:29.712209615Z [inf]  [MEMORY] Heap: 76MB | RSS: 157MB | Usage: 31%
+2025-11-07T00:42:34.678007591Z [inf]  12:42:34 AM [express] GET /api/healing/conversations/093abb1c-2699-45b4-acd7-fecf87731238 304 in 11ms :: [200 bytes]
+2025-11-07T00:42:34.678016991Z [inf]  12:42:34 AM [express] GET /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 304 in 8ms :: []
+2025-11-07T00:43:04.046659612Z [inf]  [MEMORY] Heap: 76MB | RSS: 157MB | Usage: 31%
+2025-11-07T00:43:11.092196005Z [inf]  [HEALING-CHAT] User message received: {
+2025-11-07T00:43:11.092201598Z [inf]    conversationId: '227c165d-7f9f-46fc-b6e6-325d2b77fc60',
+2025-11-07T00:43:11.092208166Z [inf]    contentLength: 163
+2025-11-07T00:43:11.092215427Z [inf]  }
+2025-11-07T00:43:11.095597864Z [inf]  [HEALING-CHAT] User message saved to database
+2025-11-07T00:43:11.097888498Z [inf]  [HEALING-CHAT] Loaded 1 messages from history (last 10)
+2025-11-07T00:43:11.097897879Z [inf]  🤖 [HEALING-CHAT] Starting Claude conversation with 1 messages...
+2025-11-07T00:43:11.100610195Z [inf]  [INTENT-SCORE] Message: "What was your last update about? and are you self aware of who you are I aM and ..." | Scores: { build: 0, fix: 1, diagnostic: 0, casual: 0 } | Intent: fix
+2025-11-07T00:43:11.100620454Z [inf]  [HEALING-CHAT] User intent: fix, max iterations: 30
+2025-11-07T00:43:11.100737292Z [inf]  [HEALING-CHAT] 🔄 Iteration 1/30
+2025-11-07T00:43:30.495788424Z [inf]  [HEALING-CHAT] ✅ Claude completed in 1 iterations
+2025-11-07T00:43:30.495801769Z [inf]  ✅ [HEALING-CHAT] Total: 11648ms, 1861 chars, 2362 input tokens, 505 output tokens
+2025-11-07T00:43:30.495808218Z [inf]  [HEALING-CHAT] 💾 Final assistant message saved to database
+2025-11-07T00:43:30.495815612Z [inf]  Error tracking AI usage: error: column "tokens_used" does not exist
+2025-11-07T00:43:30.495821928Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T00:43:30.495828798Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T00:43:30.495834546Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T00:43:30.495840240Z [inf]      at async updateMonthlyUsage (/app/server/usage-tracking.ts:248:20)
+2025-11-07T00:43:30.495846310Z [inf]      at async trackAIUsage (/app/server/usage-tracking.ts:182:5)
+2025-11-07T00:43:30.495853316Z [inf]      at async <anonymous> (/app/server/routes/healing.ts:769:9) {
+2025-11-07T00:43:30.495859151Z [inf]    length: 111,
+2025-11-07T00:43:30.495864952Z [inf]    severity: 'ERROR',
+2025-11-07T00:43:30.495870705Z [inf]    code: '42703',
+2025-11-07T00:43:30.495875986Z [inf]    detail: undefined,
+2025-11-07T00:43:30.495881455Z [inf]    hint: undefined,
+2025-11-07T00:43:30.495887269Z [inf]    position: '71',
+2025-11-07T00:43:30.495892975Z [inf]    internalPosition: undefined,
+2025-11-07T00:43:30.495900636Z [inf]    internalQuery: undefined,
+2025-11-07T00:43:30.495909729Z [inf]    where: undefined,
+2025-11-07T00:43:30.495916613Z [inf]    schema: undefined,
+2025-11-07T00:43:30.495923198Z [inf]    table: undefined,
+2025-11-07T00:43:30.495929308Z [inf]    column: undefined,
+2025-11-07T00:43:30.495935384Z [inf]    dataType: undefined,
+2025-11-07T00:43:30.495941670Z [inf]    constraint: undefined,
+2025-11-07T00:43:30.495947371Z [inf]    file: 'parse_relation.c',
+2025-11-07T00:43:30.499844280Z [inf]    line: '3716',
+2025-11-07T00:43:30.499877141Z [inf]    routine: 'errorMissingColumn'
+2025-11-07T00:43:30.499886805Z [inf]  }
+2025-11-07T00:43:30.499895452Z [inf]  [HEALING-CHAT] 📈 Usage tracked successfully
+2025-11-07T00:43:30.499903021Z [inf]  12:43:22 AM [express] POST /api/healing/messages 200 in 11843ms :: [400 bytes]
+2025-11-07T00:43:30.499911622Z [inf]  [LOMU-AI-CHAT] Stream request received
+2025-11-07T00:43:30.499918898Z [inf]  [LOMU-AI-CHAT] Message: What was your last update about? and are you self  Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-11-07T00:43:30.499925170Z [inf]  [AGENT-EXECUTOR] Error starting run: error: relation "agent_runs" does not exist
+2025-11-07T00:43:30.499931002Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T00:43:30.499937729Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T00:43:30.499944113Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T00:43:30.499952066Z [inf]      at async Function.startRun (/app/server/services/agentExecutor.ts:23:21)
+2025-11-07T00:43:30.499962934Z [inf]      at async <anonymous> (/app/server/routes/lomuChat.ts:645:21) {
+2025-11-07T00:43:30.499971372Z [inf]    length: 109,
+2025-11-07T00:43:30.499979307Z [inf]    severity: 'ERROR',
+2025-11-07T00:43:30.499986890Z [inf]    code: '42P01',
+2025-11-07T00:43:30.499993086Z [inf]    detail: undefined,
+2025-11-07T00:43:30.500001019Z [inf]    hint: undefined,
+2025-11-07T00:43:30.500009596Z [inf]    position: '13',
+2025-11-07T00:43:30.500017089Z [inf]    internalPosition: undefined,
+2025-11-07T00:43:30.500025024Z [inf]    internalQuery: undefined,
+2025-11-07T00:43:30.500031762Z [inf]    where: undefined,
+2025-11-07T00:43:30.500039765Z [inf]    schema: undefined,
+2025-11-07T00:43:30.500047086Z [inf]    table: undefined,
+2025-11-07T00:43:30.502532670Z [inf]    column: undefined,
+2025-11-07T00:43:30.502545472Z [inf]    dataType: undefined,
+2025-11-07T00:43:30.502557983Z [inf]    constraint: undefined,
+2025-11-07T00:43:30.502563771Z [inf]    file: 'parse_relation.c',
+2025-11-07T00:43:30.502570220Z [inf]    line: '1449',
+2025-11-07T00:43:30.502577404Z [inf]    routine: 'parserOpenTable'
+2025-11-07T00:43:30.502583712Z [inf]  }
+2025-11-07T00:43:30.502589723Z [inf]  12:43:22 AM [express] POST /api/lomu-ai/stream 402 in 71ms :: {"error":"relation \"agent_runs\" does not exist","requiresCreditPurchase":true}
+2025-11-07T00:43:30.502594802Z [inf]  12:43:23 AM [express] GET /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 200 in 104ms :: [200 bytes]
+2025-11-07T00:43:30.502600597Z [inf]  [MEMORY] Heap: 80MB | RSS: 160MB | Usage: 31%
+2025-11-07T00:44:00.546379751Z [inf]  [MEMORY] Heap: 80MB | RSS: 160MB | Usage: 31%
+2025-11-07T00:44:30.185227541Z [inf]  [MEMORY] Heap: 80MB | RSS: 160MB | Usage: 31%
+2025-11-07T00:45:00.332489915Z [inf]  [MEMORY] Heap: 80MB | RSS: 160MB | Usage: 31%
+2025-11-07T00:45:30.110454691Z [inf]  [HEALING-CHAT] User message received: {
+2025-11-07T00:45:30.110464287Z [inf]    conversationId: '227c165d-7f9f-46fc-b6e6-325d2b77fc60',
+2025-11-07T00:45:30.110469452Z [inf]    contentLength: 394
+2025-11-07T00:45:30.110474966Z [inf]  }
+2025-11-07T00:45:30.110480780Z [inf]  [HEALING-CHAT] User message saved to database
+2025-11-07T00:45:30.110486810Z [inf]  [HEALING-CHAT] Loaded 3 messages from history (last 10)
+2025-11-07T00:45:30.110495681Z [inf]  🤖 [HEALING-CHAT] Starting Claude conversation with 3 messages...
+2025-11-07T00:45:30.110504251Z [inf]  [INTENT-SCORE] Message: "Add a feature a upload button to this chat and the normal user chat allow upload..." | Scores: { build: 1, fix: 1, diagnostic: 0, casual: 0 } | Intent: fix
+2025-11-07T00:45:30.110510103Z [inf]  [HEALING-CHAT] User intent: fix, max iterations: 30
+2025-11-07T00:45:30.110515291Z [inf]  [HEALING-CHAT] 🔄 Iteration 1/30
+2025-11-07T00:45:30.110520657Z [inf]  [MEMORY] Heap: 81MB | RSS: 160MB | Usage: 31%
+2025-11-07T00:45:31.796441338Z [inf]  [TASK-MGMT] 📡 Broadcast task_list_created to user 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T00:45:31.796450020Z [inf]  [HEALING-CHAT] ✅ Created task list: 1914bd32-5c03-49fd-8e86-25ce21772fa8 with 7 tasks
+2025-11-07T00:45:31.796456562Z [inf]  [HEALING-CHAT] 🔑 Task IDs: 7bfb310c-e39e-4beb-8839-f2824ba29857, 57bb673c-2d5f-44ab-b0e8-360bda645845, 6c8e58bc-5844-46e8-a286-03f5d92d7718, 6c8401c6-fa91-4453-a313-ef591e8b0b70, 9467a48a-0b2a-46ae-b943-1786affddd26, c50cb02a-9c2d-4ecb-b0fa-c04f2c79c03d, 9797ea83-760d-413f-a654-a4ef8c452dc9
+2025-11-07T00:45:31.796462233Z [inf]  [TOOL-OUTPUT] create_task_list: 0 tokens (no truncation needed)
+2025-11-07T00:45:31.796467754Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 1)
+2025-11-07T00:45:31.796473407Z [inf]  [HEALING-CHAT] 🔄 Iteration 2/30
+2025-11-07T00:45:34.857256666Z [inf]  [TASK-MGMT] 📡 Broadcast task_updated to user 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T00:45:34.857263077Z [inf]  [HEALING-CHAT] ✅ Updated task: 7bfb310c-e39e-4beb-8839-f2824ba29857 → in_progress
+2025-11-07T00:45:34.857268579Z [inf]  [TOOL-OUTPUT] update_task: 0 tokens (no truncation needed)
+2025-11-07T00:45:34.857275940Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 2)
+2025-11-07T00:45:34.857281746Z [inf]  [HEALING-CHAT] 🔄 Iteration 3/30
+2025-11-07T00:45:37.397005667Z [inf]  [HEALING-CHAT] ✅ Search found 0 files for pattern: *chat*
+2025-11-07T00:45:37.397020716Z [inf]  [TOOL-OUTPUT] search_platform_files: 20 tokens (no truncation needed)
+2025-11-07T00:45:37.397028099Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 3)
+2025-11-07T00:45:37.397034582Z [inf]  [HEALING-CHAT] 🔄 Iteration 4/30
+2025-11-07T00:45:40.204372037Z [inf]  [HEALING-CHAT] ✅ Search found 0 files for pattern: client/src/**
+2025-11-07T00:45:40.204377356Z [inf]  [TOOL-OUTPUT] search_platform_files: 20 tokens (no truncation needed)
+2025-11-07T00:45:40.204382688Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 4)
+2025-11-07T00:45:40.204388013Z [inf]  [HEALING-CHAT] 🔄 Iteration 5/30
+2025-11-07T00:45:42.471872923Z [inf]  [HEALING-CHAT] ✅ Search found 13 files for pattern: *
+2025-11-07T00:45:42.471878076Z [inf]  [TOOL-OUTPUT] search_platform_files: 86 tokens (no truncation needed)
+2025-11-07T00:45:42.473445039Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 5)
+2025-11-07T00:45:42.473461340Z [inf]  [HEALING-CHAT] 🔄 Iteration 6/30
+2025-11-07T00:45:46.197929056Z [inf]  [TOOL-OUTPUT] search_platform_files: 847 tokens (no truncation needed)
+2025-11-07T00:45:46.197938864Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 6)
+2025-11-07T00:45:46.197944823Z [inf]  [HEALING-CHAT] 🔄 Iteration 7/30
+2025-11-07T00:45:46.197998020Z [inf]  [HEALING-CHAT] ✅ Search found 100/200 files for pattern: server/**
+2025-11-07T00:45:48.532972699Z [inf]  [HEALING-CHAT] ✅ Search found 3 files for pattern: shared/**
+2025-11-07T00:45:48.532979076Z [inf]  [TOOL-OUTPUT] search_platform_files: 39 tokens (no truncation needed)
+2025-11-07T00:45:48.532985053Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 7)
+2025-11-07T00:45:48.532991375Z [inf]  [HEALING-CHAT] 🔄 Iteration 8/30
+2025-11-07T00:45:51.348309977Z [inf]  [TOOL-OUTPUT] read_platform_file: TRUNCATED 12623 → 3022 tokens (saved 9601 tokens)
+2025-11-07T00:45:51.355939317Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 8)
+2025-11-07T00:45:51.355945486Z [inf]  [HEALING-CHAT] 🔄 Iteration 9/30
+2025-11-07T00:45:56.487379627Z [inf]  [TASK-MGMT] 📡 Broadcast task_updated to user 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T00:45:56.487386353Z [inf]  [HEALING-CHAT] ✅ Updated task: 7bfb310c-e39e-4beb-8839-f2824ba29857 → completed
+2025-11-07T00:45:56.487392106Z [inf]  [TOOL-OUTPUT] update_task: 0 tokens (no truncation needed)
+2025-11-07T00:45:56.489736901Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 9)
+2025-11-07T00:45:56.489746811Z [inf]  [HEALING-CHAT] 🔄 Iteration 10/30
+2025-11-07T00:46:00.094436884Z [inf]  [MEMORY] Heap: 81MB | RSS: 160MB | Usage: 31%
+2025-11-07T00:46:00.200479288Z [inf]  [TASK-MGMT] 📡 Broadcast task_updated to user 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T00:46:00.200484774Z [inf]  [HEALING-CHAT] ✅ Updated task: 57bb673c-2d5f-44ab-b0e8-360bda645845 → in_progress
+2025-11-07T00:46:00.200489343Z [inf]  [TOOL-OUTPUT] update_task: 0 tokens (no truncation needed)
+2025-11-07T00:46:00.200493181Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 10)
+2025-11-07T00:46:00.200496976Z [inf]  [HEALING-CHAT] 🔄 Iteration 11/30
+2025-11-07T00:46:03.679009533Z [inf]  [TOOL-OUTPUT] read_platform_file: 1182 tokens (no truncation needed)
+2025-11-07T00:46:03.681470630Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 11)
+2025-11-07T00:46:03.681477167Z [inf]  [HEALING-CHAT] 🔄 Iteration 12/30
+2025-11-07T00:46:06.694810310Z [inf]  [HEALING-CHAT] ✅ Search found 1 files for pattern: uploads/**
+2025-11-07T00:46:06.694814732Z [inf]  [TOOL-OUTPUT] search_platform_files: 24 tokens (no truncation needed)
+2025-11-07T00:46:06.699725287Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 12)
+2025-11-07T00:46:06.699733479Z [inf]  [HEALING-CHAT] 🔄 Iteration 13/30
+2025-11-07T00:46:09.529202901Z [inf]  [TOOL-OUTPUT] read_platform_file: TRUNCATED 8848 → 3022 tokens (saved 5826 tokens)
+2025-11-07T00:46:09.533377985Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 13)
+2025-11-07T00:46:09.533387746Z [inf]  [HEALING-CHAT] 🔄 Iteration 14/30
+2025-11-07T00:46:13.576033043Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 14)
+2025-11-07T00:46:13.576048335Z [inf]  [HEALING-CHAT] 🔄 Iteration 15/30
+2025-11-07T00:46:13.576145127Z [inf]  [TOOL-OUTPUT] read_platform_file: 1181 tokens (no truncation needed)
+2025-11-07T00:46:16.446699105Z [inf]  [TOOL-OUTPUT] read_platform_file: TRUNCATED 31098 → 3022 tokens (saved 28076 tokens)
+2025-11-07T00:46:16.446710537Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 15)
+2025-11-07T00:46:16.446718129Z [inf]  [HEALING-CHAT] 🔄 Iteration 16/30
+2025-11-07T00:46:22.536149241Z [inf]  [TASK-MGMT] 📡 Broadcast task_updated to user 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T00:46:22.536167804Z [inf]  [HEALING-CHAT] ✅ Updated task: 57bb673c-2d5f-44ab-b0e8-360bda645845 → completed
+2025-11-07T00:46:22.536176000Z [inf]  [TOOL-OUTPUT] update_task: 0 tokens (no truncation needed)
+2025-11-07T00:46:22.536183566Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 16)
+2025-11-07T00:46:22.536191539Z [inf]  [HEALING-CHAT] 🔄 Iteration 17/30
+2025-11-07T00:46:26.550499347Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 17)
+2025-11-07T00:46:26.550508780Z [inf]  [HEALING-CHAT] 🔄 Iteration 18/30
+2025-11-07T00:46:26.550557968Z [inf]  [TASK-MGMT] 📡 Broadcast task_updated to user 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T00:46:26.550573801Z [inf]  [HEALING-CHAT] ✅ Updated task: 6c8e58bc-5844-46e8-a286-03f5d92d7718 → in_progress
+2025-11-07T00:46:26.550586164Z [inf]  [TOOL-OUTPUT] update_task: 0 tokens (no truncation needed)
+2025-11-07T00:46:29.724684132Z [inf]  [MEMORY] Heap: 83MB | RSS: 162MB | Usage: 32%
+2025-11-07T00:46:30.754918294Z [inf]  [HEALING-CHAT] 🔄 Iteration 19/30
+2025-11-07T00:46:30.754981134Z [inf]  [TASK-MGMT] 📡 Broadcast task_updated to user 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T00:46:30.754986502Z [inf]  [HEALING-CHAT] ✅ Updated task: 6c8e58bc-5844-46e8-a286-03f5d92d7718 → completed
+2025-11-07T00:46:30.754992257Z [inf]  [TOOL-OUTPUT] update_task: 0 tokens (no truncation needed)
+2025-11-07T00:46:30.754997444Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 18)
+2025-11-07T00:46:34.890532568Z [inf]  [TASK-MGMT] 📡 Broadcast task_updated to user 723e1301-c729-48fc-810a-39ddef954ae2
+2025-11-07T00:46:34.890541936Z [inf]  [HEALING-CHAT] ✅ Updated task: 6c8401c6-fa91-4453-a313-ef591e8b0b70 → in_progress
+2025-11-07T00:46:34.890548500Z [inf]  [TOOL-OUTPUT] update_task: 0 tokens (no truncation needed)
+2025-11-07T00:46:34.898365679Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 19)
+2025-11-07T00:46:34.898370365Z [inf]  [HEALING-CHAT] 🔄 Iteration 20/30
+2025-11-07T00:47:04.147179262Z [inf]  [MEMORY] Heap: 84MB | RSS: 161MB | Usage: 31%
+2025-11-07T00:47:13.121918162Z [inf]  [PLATFORM-WRITE] ✅ Content validated for server/routes/upload.ts
+2025-11-07T00:47:13.124055860Z [inf]  [PLATFORM-WRITE] Content length: 8833 bytes
+2025-11-07T00:47:13.124061860Z [inf]  [PLATFORM-WRITE] Content type: string
+2025-11-07T00:47:13.132497428Z [inf]  [GITHUB-SERVICE] Initialized for 6-7Development/archetype on branch main
+2025-11-07T00:47:13.132504627Z [inf]  [PLATFORM-WRITE] 🔧 Committing to GitHub: server/routes/upload.ts
+2025-11-07T00:47:13.132508970Z [inf]  [PLATFORM-WRITE] Maintenance mode: ENABLED
+2025-11-07T00:47:13.132513049Z [inf]  [PLATFORM-WRITE] Reason: fixing
+2025-11-07T00:47:13.132517448Z [inf]  [PLATFORM-WRITE] Content to commit: 8833 bytes
+2025-11-07T00:47:13.132522955Z [inf]  [GITHUB-SERVICE] commitFile called with path: server/routes/upload.ts
+2025-11-07T00:47:13.132526969Z [inf]  [GITHUB-SERVICE] Content type: string
+2025-11-07T00:47:13.132531119Z [inf]  [GITHUB-SERVICE] Content defined: true
+2025-11-07T00:47:13.132535298Z [inf]  [GITHUB-SERVICE] Content length: 8833 bytes
+2025-11-07T00:47:13.132538878Z [inf]  [GITHUB-SERVICE] Committing 1 file(s) (attempt 1/3)
+2025-11-07T00:47:13.259432619Z [inf]  [GITHUB-SERVICE] Latest commit: 9c0657141afaeaba616aadd01823bed454428649
+2025-11-07T00:47:13.329529409Z [inf]  [GITHUB-SERVICE] Creating blobs in batches (25 per batch)...
+2025-11-07T00:47:13.329537164Z [inf]  [GITHUB-SERVICE] Processing blob batch 1/1 (1 files)
+2025-11-07T00:47:13.329543548Z [inf]  [GITHUB-SERVICE] Processing file 1/1: server/routes/upload.ts
+2025-11-07T00:47:14.275223265Z [inf]  [GITHUB-SERVICE] ✅ Successfully committed 1 file(s)
+2025-11-07T00:47:14.275233101Z [inf]  [GITHUB-SERVICE] Commit: d2efdfa4b21a21ee04a397832b98fb566505300d
+2025-11-07T00:47:14.275240489Z [inf]  [GITHUB-SERVICE] URL: https://github.com/6-7Development/archetype/commit/d2efdfa4b21a21ee04a397832b98fb566505300d
+2025-11-07T00:47:14.275247899Z [inf]  [PLATFORM-WRITE] ✅ Committed to GitHub successfully
+2025-11-07T00:47:14.275253245Z [inf]  [PLATFORM-WRITE] Commit: d2efdfa4b21a21ee04a397832b98fb566505300d
+2025-11-07T00:47:14.275259395Z [inf]  [PLATFORM-WRITE] URL: https://github.com/6-7Development/archetype/commit/d2efdfa4b21a21ee04a397832b98fb566505300d
+2025-11-07T00:47:14.275265309Z [inf]  [PLATFORM-WRITE] ⏳ Railway will auto-deploy from GitHub...
+2025-11-07T00:47:14.275271056Z [inf]  [HEALING-CHAT] ✅ Wrote file: server/routes/upload.ts
+2025-11-07T00:47:14.275281032Z [inf]  [TOOL-OUTPUT] write_platform_file: 0 tokens (no truncation needed)
+2025-11-07T00:47:14.275286600Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 20)
+2025-11-07T00:47:14.275291879Z [inf]  [HEALING-CHAT] 🔄 Iteration 21/30
+2025-11-07T00:47:17.330649571Z [inf]  [TOOL-OUTPUT] read_platform_file: TRUNCATED 8848 → 3022 tokens (saved 5826 tokens)
+2025-11-07T00:47:17.330661585Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 21)
+2025-11-07T00:47:17.330666532Z [inf]  [HEALING-CHAT] 🔄 Iteration 22/30
+2025-11-07T00:47:21.013695347Z [inf]  [HEALING-CHAT] ✅ Search found 1 files for pattern: *upload*
+2025-11-07T00:47:21.013699250Z [inf]  [TOOL-OUTPUT] search_platform_files: 24 tokens (no truncation needed)
+2025-11-07T00:47:21.013703030Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 22)
+2025-11-07T00:47:21.013706686Z [inf]  [HEALING-CHAT] 🔄 Iteration 23/30
+2025-11-07T00:47:24.297839435Z [inf]  [TOOL-OUTPUT] read_platform_file: TRUNCATED 8848 → 3022 tokens (saved 5826 tokens)
+2025-11-07T00:47:24.312521618Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 23)
+2025-11-07T00:47:24.312531142Z [inf]  [HEALING-CHAT] 🔄 Iteration 24/30
+2025-11-07T00:47:28.142190877Z [inf]  [HEALING-CHAT] ✅ Search found 100/166 files for pattern: server/**/*.ts
+2025-11-07T00:47:28.142197854Z [inf]  [TOOL-OUTPUT] search_platform_files: 929 tokens (no truncation needed)
+2025-11-07T00:47:28.142203908Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 24)
+2025-11-07T00:47:28.142211630Z [inf]  [HEALING-CHAT] 🔄 Iteration 25/30
+2025-11-07T00:47:28.407874624Z [inf]  [CACHE] Stats: {
+2025-11-07T00:47:28.407883996Z [inf]    user: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-11-07T00:47:28.407890453Z [inf]    project: { size: 0, maxSize: 1000, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-11-07T00:47:28.407896816Z [inf]    subscription: { size: 0, maxSize: 500, hits: 0, misses: 0, hitRate: '0.00%' },
+2025-11-07T00:47:28.407903134Z [inf]    response: { size: 0, maxSize: 200, hits: 0, misses: 0, hitRate: '0.00%' }
+2025-11-07T00:47:28.407909347Z [inf]  }
+2025-11-07T00:47:30.266340338Z [inf]  [MEMORY] Heap: 80MB | RSS: 162MB | Usage: 32%
+2025-11-07T00:47:31.298827882Z [inf]  [HEALING-CHAT] 🔄 Iteration 26/30
+2025-11-07T00:47:31.298963499Z [inf]  [TOOL-OUTPUT] read_platform_file: TRUNCATED 4347 → 3022 tokens (saved 1325 tokens)
+2025-11-07T00:47:31.298968907Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 25)
+2025-11-07T00:47:35.239009510Z [inf]  [HEALING-CHAT] ✅ Search found 41 files for pattern: server/routes/**
+2025-11-07T00:47:35.239017714Z [inf]  [TOOL-OUTPUT] search_platform_files: 372 tokens (no truncation needed)
+2025-11-07T00:47:35.241871446Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 26)
+2025-11-07T00:47:35.241890155Z [inf]  [HEALING-CHAT] 🔄 Iteration 27/30
+2025-11-07T00:47:39.352953022Z [inf]  [HEALING-CHAT] ✅ Search found 0 files for pattern: app.use*upload*
+2025-11-07T00:47:39.352959583Z [inf]  [TOOL-OUTPUT] search_platform_files: 20 tokens (no truncation needed)
+2025-11-07T00:47:39.352965177Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 27)
+2025-11-07T00:47:39.352971655Z [inf]  [HEALING-CHAT] 🔄 Iteration 28/30
+2025-11-07T00:47:42.508053040Z [inf]  [TOOL-OUTPUT] read_platform_file: TRUNCATED 8848 → 3022 tokens (saved 5826 tokens)
+2025-11-07T00:47:42.508060567Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 28)
+2025-11-07T00:47:42.508173101Z [inf]  [HEALING-CHAT] 🔄 Iteration 29/30
+2025-11-07T00:47:46.478394247Z [inf]  [TOOL-OUTPUT] search_platform_files: 20 tokens (no truncation needed)
+2025-11-07T00:47:46.478408338Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 29)
+2025-11-07T00:47:46.478415557Z [inf]  [HEALING-CHAT] 🔄 Iteration 30/30
+2025-11-07T00:47:46.478537405Z [inf]  [HEALING-CHAT] ✅ Search found 0 files for pattern: */app.use*
+2025-11-07T00:47:49.508386546Z [inf]    severity: 'ERROR',
+2025-11-07T00:47:49.508396817Z [inf]    code: '42703',
+2025-11-07T00:47:49.508397689Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T00:47:49.508403958Z [inf]    dataType: undefined,
+2025-11-07T00:47:49.508405145Z [inf]    detail: undefined,
+2025-11-07T00:47:49.508411354Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T00:47:49.508413852Z [inf]    hint: undefined,
+2025-11-07T00:47:49.508421101Z [inf]      at async updateMonthlyUsage (/app/server/usage-tracking.ts:248:20)
+2025-11-07T00:47:49.508432380Z [inf]      at async trackAIUsage (/app/server/usage-tracking.ts:182:5)
+2025-11-07T00:47:49.508440839Z [inf]      at async <anonymous> (/app/server/routes/healing.ts:769:9) {
+2025-11-07T00:47:49.508447901Z [inf]    length: 111,
+2025-11-07T00:47:49.508459070Z [inf]    where: undefined,
+2025-11-07T00:47:49.508461035Z [inf]  ✅ [HEALING-CHAT] Total: 145767ms, 1895 chars, 600453 input tokens, 5510 output tokens
+2025-11-07T00:47:49.508463684Z [inf]    position: '71',
+2025-11-07T00:47:49.508465135Z [inf]  [TOOL-OUTPUT] read_platform_file: TRUNCATED 8848 → 3022 tokens (saved 5826 tokens)
+2025-11-07T00:47:49.508469607Z [inf]  [HEALING-CHAT] 💾 Final assistant message saved to database
+2025-11-07T00:47:49.508473952Z [inf]    internalPosition: undefined,
+2025-11-07T00:47:49.508475841Z [inf]  [HEALING-CHAT] 💾 Saved tool results (iteration 30)
+2025-11-07T00:47:49.508478994Z [inf]  Error tracking AI usage: error: column "tokens_used" does not exist
+2025-11-07T00:47:49.508484695Z [inf]    internalQuery: undefined,
+2025-11-07T00:47:49.508486810Z [inf]    schema: undefined,
+2025-11-07T00:47:49.508489463Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T00:47:49.508499625Z [inf]    table: undefined,
+2025-11-07T00:47:49.508507679Z [inf]    column: undefined,
+2025-11-07T00:47:49.511700885Z [inf]    constraint: undefined,
+2025-11-07T00:47:49.511706923Z [inf]    file: 'parse_relation.c',
+2025-11-07T00:47:49.511712257Z [inf]    line: '3716',
+2025-11-07T00:47:49.511716796Z [inf]    routine: 'errorMissingColumn'
+2025-11-07T00:47:49.511720834Z [inf]  }
+2025-11-07T00:47:49.511726480Z [inf]  [HEALING-CHAT] 📈 Usage tracked successfully
+2025-11-07T00:47:49.511733412Z [inf]  12:47:49 AM [express] POST /api/healing/messages 200 in 145951ms :: [400 bytes]
+2025-11-07T00:47:49.595857162Z [inf]  [LOMU-AI-CHAT] Stream request received
+2025-11-07T00:47:49.595867967Z [inf]  [LOMU-AI-CHAT] Message: Add a feature a upload button to this chat and the Attachments: 0 UserId: 723e1301-c729-48fc-810a-39ddef954ae2 ProjectId: platform code
+2025-11-07T00:47:49.603631076Z [inf]  [AGENT-EXECUTOR] Error starting run: error: relation "agent_runs" does not exist
+2025-11-07T00:47:49.603634628Z [inf]    internalPosition: undefined,
+2025-11-07T00:47:49.603644770Z [inf]      at /app/node_modules/pg-pool/index.js:45:11
+2025-11-07T00:47:49.603648751Z [inf]    internalQuery: undefined,
+2025-11-07T00:47:49.603657812Z [inf]    where: undefined,
+2025-11-07T00:47:49.603664952Z [inf]    schema: undefined,
+2025-11-07T00:47:49.603669836Z [inf]      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-11-07T00:47:49.603673345Z [inf]    table: undefined,
+2025-11-07T00:47:49.603678648Z [inf]      at async <anonymous> (/app/node_modules/src/node-postgres/session.ts:104:19)
+2025-11-07T00:47:49.603686128Z [inf]      at async Function.startRun (/app/server/services/agentExecutor.ts:23:21)
+2025-11-07T00:47:49.603687904Z [inf]    column: undefined,
+2025-11-07T00:47:49.603693726Z [inf]      at async <anonymous> (/app/server/routes/lomuChat.ts:645:21) {
+2025-11-07T00:47:49.603696545Z [inf]    dataType: undefined,
+2025-11-07T00:47:49.603701344Z [inf]    length: 109,
+2025-11-07T00:47:49.603704623Z [inf]    constraint: undefined,
+2025-11-07T00:47:49.603709092Z [inf]    severity: 'ERROR',
+2025-11-07T00:47:49.603712889Z [inf]    file: 'parse_relation.c',
+2025-11-07T00:47:49.603716605Z [inf]    code: '42P01',
+2025-11-07T00:47:49.603721515Z [inf]    line: '1449',
+2025-11-07T00:47:49.603724422Z [inf]    detail: undefined,
+2025-11-07T00:47:49.603731052Z [inf]    routine: 'parserOpenTable'
+2025-11-07T00:47:49.603738063Z [inf]  }
+2025-11-07T00:47:49.603745229Z [inf]  12:47:49 AM [express] POST /api/lomu-ai/stream 402 in 54ms :: {"error":"relation \"agent_runs\" does not exist","requiresCreditPurchase":true}
+2025-11-07T00:47:49.603748513Z [inf]    hint: undefined,
+2025-11-07T00:47:49.603755585Z [inf]    position: '13',
+2025-11-07T00:47:49.630018876Z [inf]  12:47:49 AM [express] GET /api/healing/messages/227c165d-7f9f-46fc-b6e6-325d2b77fc60 200 in 73ms :: [6400 bytes]
