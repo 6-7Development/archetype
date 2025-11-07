@@ -214,7 +214,7 @@ export function registerHealingRoutes(app: Express, deps?: { wss?: WebSocketServ
       });
       
       // Import required services
-      const { streamGeminiResponse } = await import("../gemini");
+      const { streamAnthropicResponse } = await import("../anthropic");
       const { checkUsageLimits, trackAIUsage } = await import("../usage-tracking");
       const { platformHealing } = await import("../platformHealing");
       const fs = await import("fs/promises");
@@ -457,11 +457,11 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
         
         let response: any;
         try {
-          // Call Gemini with tools (40x cheaper than Claude!)
+          // Call Claude with tools (reliable tool execution!)
           // 🔄 WRAPPED WITH RETRY LOGIC to handle API overload errors
           response = await retryWithBackoff(async () => {
-            return await streamGeminiResponse({
-              model: "gemini-2.5-flash",
+            return await streamAnthropicResponse({
+              model: "claude-sonnet-4-20250514",
               maxTokens: 4000,
               system: systemPrompt,
               messages: conversationMessages,
@@ -1570,8 +1570,8 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
           // Make ONE recovery call (no tools, just get the answer)
           // 🔄 WRAPPED WITH RETRY LOGIC to handle API overload errors
           const recoveryResponse = await retryWithBackoff(async () => {
-            return await streamGeminiResponse({
-              model: "gemini-2.5-flash",
+            return await streamAnthropicResponse({
+              model: "claude-sonnet-4-20250514",
               maxTokens: 2000, // Shorter response for summary
               system: systemPrompt,
               messages: conversationMessages,

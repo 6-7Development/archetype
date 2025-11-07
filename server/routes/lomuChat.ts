@@ -3,7 +3,7 @@ import { db } from '../db.ts';
 import { chatMessages, taskLists, tasks, lomuAttachments, lomuJobs, users, subscriptions, projects, conversationStates, platformIncidents } from '@shared/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth.ts';
-import { streamGeminiResponse } from '../gemini.ts';
+import { streamAnthropicResponse } from '../anthropic.ts';
 import { RAILWAY_CONFIG } from '../config/railway.ts';
 import { platformHealing } from '../platformHealing.ts';
 import { platformAudit } from '../platformAudit.ts';
@@ -1442,7 +1442,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     
     console.log(`[INTENT-CLASSIFICATION] User intent: ${userIntent}, max iterations: ${MAX_ITERATIONS}`);
 
-    // Gemini client is handled by streamGeminiResponse
+    // Claude client is handled by streamAnthropicResponse
     let fullContent = '';
     const fileChanges: Array<{ path: string; operation: string; contentAfter?: string }> = [];
     let continueLoop = true;
@@ -1526,11 +1526,11 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       let taskListId: string | null = null; // Track if a task list exists
       let detectedComplexity = 1; // Track task complexity for workflow validation
 
-      // ✅ SWITCHED TO GEMINI: 40x cheaper ($0.075/$0.30 vs $3/$15 per 1M tokens)
-      // With improved workflow logic, Gemini should handle tools reliably now
+      // ✅ RELIABLE TOOL EXECUTION: Claude Sonnet 4 for production use
+      // Gemini has tool reliability issues (hallucinates Python syntax)
       await retryWithBackoff(async () => {
-        return await streamGeminiResponse({
-          model: 'gemini-2.5-flash',
+        return await streamAnthropicResponse({
+          model: 'claude-sonnet-4-20250514',
           maxTokens: config.maxTokens,
           system: safeSystemPrompt,
           messages: safeMessages,
