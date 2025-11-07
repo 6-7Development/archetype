@@ -480,7 +480,6 @@ EXECUTE NOW - Complete your assigned task!`;
       } else if (input.outputMode === 'content') {
         // Read each file and show matched lines with regex matching
         const contentResults: string[] = [];
-        const regex = new RegExp(input.pattern, 'gm'); // Multiline, global regex
         
         for (const filePath of results.slice(0, 10)) { // Limit to 10 files
           try {
@@ -489,7 +488,9 @@ EXECUTE NOW - Complete your assigned task!`;
             const matchedLines: string[] = [];
             
             lines.forEach((line, idx) => {
-              if (regex.test(line)) {
+              // Create fresh RegExp for each line to avoid lastIndex issues
+              const lineRegex = new RegExp(input.pattern);
+              if (lineRegex.test(line)) {
                 matchedLines.push(`${filePath}:${idx + 1}: ${line.trim()}`);
               }
             });
