@@ -365,7 +365,7 @@ export class PlatformHealingService {
       try {
         await execFileAsync('git', [
           '-c', 'user.name=LomuAI',
-          '-c', 'user.email=lomu-ai@archetype.platform',
+          '-c', 'user.email=lomu-ai@lomu.platform',
           'commit', '-m', message
         ], { cwd: this.PROJECT_ROOT });
         
@@ -947,7 +947,7 @@ export class PlatformHealingService {
         
         await execFileAsync('git', [
           '-c', 'user.name=LomuAI',
-          '-c', 'user.email=lomu-ai@archetype.platform',
+          '-c', 'user.email=lomu-ai@lomu.platform',
           'commit', '-m', commitMessage
         ], { cwd: this.PROJECT_ROOT });
         
@@ -1224,7 +1224,7 @@ export class PlatformHealingService {
 
       await execFileAsync('git', [
         '-c', 'user.name=LomuAI',
-        '-c', 'user.email=lomu-ai@archetype.platform',
+        '-c', 'user.email=lomu-ai@lomu.platform',
         'commit', '-m', commitMessage
       ], { cwd: this.PROJECT_ROOT });
 
