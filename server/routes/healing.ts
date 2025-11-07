@@ -1,10 +1,12 @@
 import type { Express } from "express";
+import type { WebSocketServer } from "ws";
 import { insertHealingTargetSchema, insertHealingConversationSchema, insertHealingMessageSchema } from "@shared/schema";
 import { storage } from "../storage";
 import { isAuthenticated } from "../universalAuth";
 import { aiHealingService } from "../services/aiHealingService";
 import { createTaskList, updateTask, readTaskList } from "../tools/task-management";
 import { classifyUserIntent, getMaxIterationsForIntent } from "../shared/chatConfig";
+import { broadcastToUser } from "./websocket";
 
 // 🔄 EXPONENTIAL BACKOFF RETRY LOGIC for Anthropic API overload errors
 async function retryWithBackoff<T>(
@@ -43,7 +45,7 @@ const isOwner = async (req: any, res: any, next: any) => {
   next();
 };
 
-export function registerHealingRoutes(app: Express) {
+export function registerHealingRoutes(app: Express, deps?: { wss?: WebSocketServer }) {
   
   // GET /api/healing/targets - List user's healing targets
   app.get("/api/healing/targets", isAuthenticated, isOwner, async (req, res) => {
@@ -217,6 +219,13 @@ export function registerHealingRoutes(app: Express) {
       const { platformHealing } = await import("../platformHealing");
       const fs = await import("fs/promises");
       const path = await import("path");
+      
+      // 📡 PROGRESS EVENT HELPER: Broadcast progress events to user via WebSocket
+      const sendEvent = (message: string) => {
+        if (deps?.wss) {
+          broadcastToUser(deps.wss, userId, { type: 'progress', message });
+        }
+      };
       
       // Check usage limits
       const limitCheck = await checkUsageLimits(userId);
@@ -854,6 +863,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
               
               try {
                 if (toolUse.name === 'read_platform_file') {
+                  sendEvent(`🔧 Reading ${toolUse.input.path}...`);
                   const filePath = path.join(process.cwd(), toolUse.input.path);
                   const content = await fs.readFile(filePath, 'utf-8');
                   if (isDev) {
@@ -862,6 +872,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   return { success: true, content };
                   
                 } else if (toolUse.name === 'write_platform_file') {
+                  sendEvent(`✅ Modifying ${toolUse.input.path}...`);
                   await platformHealing.writePlatformFile(
                     toolUse.input.path,
                     toolUse.input.content,
@@ -874,12 +885,14 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   
                 } else if (toolUse.name === 'list_platform_files') {
                   const { directory } = toolUse.input;
+                  sendEvent(`🔧 Listing ${directory}...`);
                   const entries = await platformHealing.listPlatformDirectory(directory);
                   const result = entries.map(e => `${e.name} (${e.type})`).join('\n');
                   console.log(`[HEALING-CHAT] ✅ Listed directory: ${directory}`);
                   return result;
                   
                 } else if (toolUse.name === 'search_platform_files') {
+                  sendEvent(`🔍 Searching platform files: ${toolUse.input.pattern}...`);
                   const { glob } = await import('glob');
                   const allMatches = await glob(toolUse.input.pattern, { cwd: process.cwd() });
                   
@@ -919,6 +932,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   };
                   
                 } else if (toolUse.name === 'create_task_list') {
+                  sendEvent(`📋 Creating task list with ${toolUse.input.tasks.length} tasks...`);
                   const result = await createTaskList({
                     userId,
                     title: toolUse.input.title,
@@ -973,6 +987,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   }
                   
                 } else if (toolUse.name === 'update_task') {
+                  sendEvent(`🔄 Updating task to ${toolUse.input.status}...`);
                   const result = await updateTask({
                     userId,
                     taskId: toolUse.input.taskId,
@@ -1002,6 +1017,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                     };
                   }
                   
+                  sendEvent(`📦 Committing ${filesModified.length} files to GitHub...`);
                   console.log(`[HEALING-CHAT] 📦 Committing ${filesModified.length} files to GitHub...`);
                   
                   try {
@@ -1029,6 +1045,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   }
                 } else if (toolUse.name === 'bash') {
                   const typedInput = toolUse.input as { command: string; timeout?: number };
+                  sendEvent(`🔧 Executing bash command...`);
                   const result = await platformHealing.executeBashCommand(
                     typedInput.command, 
                     typedInput.timeout || 120000
@@ -1041,6 +1058,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   
                 } else if (toolUse.name === 'edit') {
                   const typedInput = toolUse.input as { filePath: string; oldString: string; newString: string; replaceAll?: boolean };
+                  sendEvent(`✅ Editing ${typedInput.filePath}...`);
                   const result = await platformHealing.editPlatformFile(
                     typedInput.filePath,
                     typedInput.oldString,
@@ -1056,6 +1074,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   
                 } else if (toolUse.name === 'grep') {
                   const typedInput = toolUse.input as { pattern: string; pathFilter?: string; outputMode?: 'content' | 'files' | 'count' };
+                  sendEvent(`🔍 Searching for pattern: ${typedInput.pattern}...`);
                   const result = await platformHealing.grepPlatformFiles(
                     typedInput.pattern,
                     typedInput.pathFilter,
@@ -1065,6 +1084,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   
                 } else if (toolUse.name === 'search_codebase') {
                   const typedInput = toolUse.input as { query: string; maxResults?: number };
+                  sendEvent(`🔍 Searching codebase: ${typedInput.query}...`);
                   const result = await platformHealing.searchCodebase(
                     typedInput.query,
                     typedInput.maxResults || 10
@@ -1079,6 +1099,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   }
                   
                 } else if (toolUse.name === 'get_latest_lsp_diagnostics') {
+                  sendEvent(`🔍 Checking TypeScript diagnostics...`);
                   const result = await platformHealing.getLSPDiagnostics();
                   if (result.diagnostics.length === 0) {
                     return `✅ ${result.summary}`;
@@ -1092,6 +1113,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   
                 } else if (toolUse.name === 'packager_tool') {
                   const typedInput = toolUse.input as { operation: 'install' | 'uninstall'; packages: string[] };
+                  sendEvent(`📦 ${typedInput.operation === 'install' ? 'Installing' : 'Uninstalling'} packages...`);
                   const result = await platformHealing.installPackages(
                     typedInput.packages,
                     typedInput.operation
@@ -1101,10 +1123,12 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                 } else if (toolUse.name === 'restart_workflow') {
                   const typedInput = toolUse.input as { workflowName?: string };
                   const workflowName = typedInput.workflowName || 'Start application';
+                  sendEvent(`🔄 Restarting workflow: ${workflowName}...`);
                   console.log(`[HEALING-CHAT] 🔄 Workflow "${workflowName}" restart requested`);
                   return `✅ Workflow "${workflowName}" restart requested. The server will restart automatically.`;
                   
                 } else if (toolUse.name === 'read_logs') {
+                  sendEvent(`📜 Reading server logs...`);
                   const typedInput = toolUse.input as { lines?: number; filter?: string };
                   const maxLines = Math.min(typedInput.lines || 100, 1000);
                   const logsDir = '/tmp/logs';
@@ -1145,6 +1169,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   return `Recent logs (${mostRecentLog.file}):\n${recentLines.join('\n')}`;
                   
                 } else if (toolUse.name === 'execute_sql') {
+                  sendEvent(`🔧 Executing SQL query...`);
                   const typedInput = toolUse.input as { query: string; purpose: string };
                   const { db: database } = await import('../db');
                   try {
@@ -1163,6 +1188,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   }
                   
                 } else if (toolUse.name === 'architect_consult') {
+                  sendEvent(`🔧 Consulting I AM Architect...`);
                   const { consultArchitect } = await import('../tools/architect-consult');
                   const typedInput = toolUse.input as { 
                     problem: string; 
@@ -1183,6 +1209,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   }
                   
                 } else if (toolUse.name === 'web_search') {
+                  sendEvent(`🔍 Searching web: ${toolUse.input.query}...`);
                   const { executeWebSearch } = await import('../tools/web-search');
                   const typedInput = toolUse.input as { query: string; maxResults?: number };
                   const searchResult = await executeWebSearch({
@@ -1194,11 +1221,13 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   ).join('\n')}`;
                   
                 } else if (toolUse.name === 'run_test') {
+                  sendEvent(`🧪 Running Playwright e2e tests...`);
                   const typedInput = toolUse.input as { testPlan: string; technicalDocs: string };
                   return `✅ E2E test queued with plan:\n${typedInput.testPlan}\n\nTechnical docs: ${typedInput.technicalDocs}\n\n` +
                     `Note: Full Playwright integration coming soon. For now, manually verify UI/UX changes.`;
                   
                 } else if (toolUse.name === 'verify_fix') {
+                  sendEvent(`🔍 Verifying fix...`);
                   const typedInput = toolUse.input as { 
                     description: string; 
                     checkType: 'logs' | 'endpoint' | 'file_exists'; 
@@ -1239,6 +1268,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                     : `❌ Verification failed: ${verificationDetails}\n\nYou should fix the issue and verify again.`;
                   
                 } else if (toolUse.name === 'perform_diagnosis') {
+                  sendEvent(`🔍 Performing diagnostic analysis...`);
                   const { performDiagnosis } = await import('../tools/diagnosis');
                   const { sanitizeDiagnosisForAI } = await import('../lib/diagnosis-sanitizer');
                   const typedInput = toolUse.input as { target: string; focus?: string[] };
@@ -1340,6 +1370,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   
                 } else if (toolUse.name === 'create_platform_file') {
                   const typedInput = toolUse.input as { path: string; content: string };
+                  sendEvent(`✅ Creating ${typedInput.path}...`);
                   await platformHealing.createPlatformFile(typedInput.path, typedInput.content);
                   filesModified.push(typedInput.path);
                   console.log(`[HEALING-CHAT] ✅ Created file: ${typedInput.path}`);
@@ -1347,12 +1378,14 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   
                 } else if (toolUse.name === 'delete_platform_file') {
                   const typedInput = toolUse.input as { path: string };
+                  sendEvent(`🗑️ Deleting ${typedInput.path}...`);
                   await platformHealing.deletePlatformFile(typedInput.path);
                   filesModified.push(typedInput.path);
                   console.log(`[HEALING-CHAT] ✅ Deleted file: ${typedInput.path}`);
                   return { success: true, message: `File deleted: ${typedInput.path}` };
                   
                 } else if (toolUse.name === 'start_subagent') {
+                  sendEvent(`🔧 Starting sub-agent...`);
                   const { startSubagent } = await import('../subagentOrchestration');
                   const { parallelSubagentQueue } = await import('../services/parallelSubagentQueue');
                   const typedInput = toolUse.input as { task: string; relevantFiles: string[]; parallel?: boolean };

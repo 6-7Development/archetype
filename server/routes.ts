@@ -217,7 +217,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerFileUploadRoutes(app);
   registerMigrationRoutes(app);
   registerChatRoutes(app, { wss });
-  registerHealingRoutes(app);
+  registerHealingRoutes(app, { wss });
 
   // ==================== MOUNT EXISTING ROUTERS ====================
   
