@@ -284,10 +284,21 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       }
     }
 
-    // Update progress status from chat progress
+    // Update progress status from chat progress with smart emoji-based detection
     if (streamState.chatProgress) {
-      setProgressMessage(streamState.chatProgress.message);
-      setProgressStatus(streamState.chatProgress.status === 'working' ? 'working' : 'thinking');
+      const message = streamState.chatProgress.message;
+      setProgressMessage(message);
+      
+      // Smart status detection based on progress message emoji
+      if (message.startsWith('✅')) {
+        setProgressStatus('vibing'); // Creative work: file edits, code generation
+      } else if (message.startsWith('🔧')) {
+        setProgressStatus('working'); // Tool execution, bash commands
+      } else if (message.startsWith('📋') || message.startsWith('🔍')) {
+        setProgressStatus('thinking'); // Planning, analysis, search
+      } else {
+        setProgressStatus(streamState.chatProgress.status === 'working' ? 'working' : 'thinking');
+      }
     } else if (streamState.currentAction) {
       setProgressMessage(streamState.currentAction);
       setProgressStatus('working');
