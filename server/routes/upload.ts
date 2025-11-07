@@ -4,6 +4,8 @@ import AdmZip from "adm-zip";
 import { storage } from "../storage";
 import { isAuthenticated } from "../universalAuth";
 import path from "path";
+import * as fs from "fs/promises";
+import * as crypto from "crypto";
 
 const router = express.Router();
 const upload = multer({ 
@@ -138,6 +140,128 @@ router.post('/upload', isAuthenticated, upload.single('project'), async (req: an
       error: 'Failed to import project', 
       message: error.message 
     });
+  }
+});
+
+// NEW: Upload images/files for chat (screenshots, documents, etc.)
+router.post('/chat-file', isAuthenticated, upload.single('file'), async (req: any, res) => {
+  try {
+    console.log('📁 Chat file upload endpoint hit!');
+    console.log('  User:', req.authenticatedUserId);
+    console.log('  File:', req.file ? req.file.originalname : 'NO FILE');
+    console.log('  MimeType:', req.file?.mimetype);
+    
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const userId = req.authenticatedUserId;
+    const projectId = req.body.projectId; // Optional - can be null for general uploads
+    
+    // Create uploads directory if it doesn't exist
+    const uploadsDir = path.join(process.cwd(), 'uploads', 'chat');
+    await fs.mkdir(uploadsDir, { recursive: true });
+    
+    // Generate unique filename with timestamp and random hash
+    const fileExtension = path.extname(req.file.originalname);
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const hash = crypto.randomBytes(8).toString('hex');
+    const filename = `${timestamp}-${hash}${fileExtension}`;
+    const filePath = path.join(uploadsDir, filename);
+    
+    // Save file to disk
+    await fs.writeFile(filePath, req.file.buffer);
+    
+    // Determine file type and create metadata
+    const isImage = req.file.mimetype.startsWith('image/');
+    const metadata = {
+      originalName: req.file.originalname,
+      mimeType: req.file.mimetype,
+      size: req.file.size,
+      uploadedBy: userId,
+      projectId: projectId || null,
+      uploadedAt: new Date().toISOString(),
+      isImage,
+    };
+    
+    // For images, we could add additional processing here (resize, thumbnails, etc.)
+    let processedData = null;
+    if (isImage) {
+      // Basic image metadata
+      processedData = {
+        type: 'image',
+        supportedFormats: ['png', 'jpg', 'jpeg', 'gif', 'webp'],
+      };
+    }
+    
+    console.log(`✅ Chat file uploaded: ${filename} (${req.file.size} bytes)`);
+    
+    res.json({
+      success: true,
+      fileId: hash, // Use hash as file ID for retrieval
+      filename,
+      originalName: req.file.originalname,
+      mimeType: req.file.mimetype,
+      size: req.file.size,
+      isImage,
+      url: `/api/uploads/chat/${filename}`, // URL for accessing the file
+      metadata,
+      processedData,
+    });
+
+  } catch (error: any) {
+    console.error('Chat file upload error:', error);
+    res.status(500).json({ 
+      error: 'Failed to upload file for chat', 
+      message: error.message 
+    });
+  }
+});
+
+// NEW: Serve uploaded chat files
+router.get('/chat/:filename', async (req, res) => {
+  try {
+    const { filename } = req.params;
+    
+    // Security: Validate filename (prevent path traversal)
+    if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+      return res.status(400).json({ error: 'Invalid filename' });
+    }
+    
+    const filePath = path.join(process.cwd(), 'uploads', 'chat', filename);
+    
+    // Check if file exists
+    try {
+      await fs.access(filePath);
+    } catch {
+      return res.status(404).json({ error: 'File not found' });
+    }
+    
+    // Read and serve file
+    const fileBuffer = await fs.readFile(filePath);
+    
+    // Set appropriate content type based on file extension
+    const ext = path.extname(filename).toLowerCase();
+    const mimeTypes: Record<string, string> = {
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.gif': 'image/gif',
+      '.webp': 'image/webp',
+      '.pdf': 'application/pdf',
+      '.txt': 'text/plain',
+      '.json': 'application/json',
+    };
+    
+    const mimeType = mimeTypes[ext] || 'application/octet-stream';
+    res.setHeader('Content-Type', mimeType);
+    res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
+    
+    res.send(fileBuffer);
+    
+  } catch (error: any) {
+    console.error('Error serving chat file:', error);
+    res.status(500).json({ error: 'Failed to serve file' });
   }
 });
 
