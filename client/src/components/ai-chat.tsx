@@ -995,6 +995,19 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
           className="flex-1 overflow-y-auto px-6 py-4 space-y-4 scroll-smooth"
           data-testid="messages-container"
         >
+          {/* Progress Messages - Inline step-by-step updates */}
+          {streamState.progressMessages.length > 0 && (
+            <div className="flex flex-col gap-2">
+              {streamState.progressMessages.map((progress) => (
+                <div key={progress.id} className="flex gap-3 justify-start">
+                  <div className="max-w-[75%] rounded-2xl px-3 py-2 bg-secondary/30 border border-border/30">
+                    <p className="text-xs text-muted-foreground leading-relaxed">{progress.message}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           {messages.map((message, index) => (
             <div
               key={index}

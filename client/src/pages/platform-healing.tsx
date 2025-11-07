@@ -132,6 +132,7 @@ function PlatformHealingContent() {
   const [isUploadingFiles, setIsUploadingFiles] = useState(false);
   const [pendingImages, setPendingImages] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState<Map<string, boolean>>(new Map());
+  const [progressMessages, setProgressMessages] = useState<Array<{id: string, message: string, timestamp: number}>>([]);
   
   // Deployment and healing status tracking
   const [deploymentStatus, setDeploymentStatus] = useState<{
@@ -623,6 +624,17 @@ function PlatformHealingContent() {
               if (data.type === 'content') {
                 fullResponse += data.content || '';
                 setStreamingContent(fullResponse);
+              } else if (data.type === 'progress') {
+                // Handle inline progress messages
+                const progressId = `progress-${Date.now()}-${Math.random()}`;
+                setProgressMessages(prev => [
+                  ...prev,
+                  {
+                    id: progressId,
+                    message: data.message || '',
+                    timestamp: Date.now(),
+                  }
+                ]);
               } else if (data.type === 'error') {
                 throw new Error(data.error || 'Stream error');
               }
@@ -650,6 +662,7 @@ function PlatformHealingContent() {
       }
 
       setStreamingContent('');
+      setProgressMessages([]); // Clear progress messages when streaming completes
     } catch (error: any) {
       if (error.name !== 'AbortError') {
         const formatted = formatUserError(error, 'get AI response');
@@ -672,6 +685,7 @@ function PlatformHealingContent() {
       abortControllerRef.current = null;
       setIsStreaming(false);
       setStreamingContent('');
+      setProgressMessages([]); // Clear progress messages when stopping
     }
   };
 
@@ -953,6 +967,19 @@ function PlatformHealingContent() {
                       </div>
                     </div>
                   ))}
+
+                  {/* Progress Messages - Inline step-by-step updates */}
+                  {progressMessages.length > 0 && (
+                    <div className="flex flex-col gap-2">
+                      {progressMessages.map((progress) => (
+                        <div key={progress.id} className="flex gap-3 justify-start">
+                          <div className="max-w-[75%] rounded-lg px-3 py-2 bg-muted/50 border border-muted-foreground/20">
+                            <p className="text-xs text-muted-foreground leading-relaxed">{progress.message}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Streaming message */}
                   {isStreaming && streamingContent && (
