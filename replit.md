@@ -52,6 +52,18 @@ The user interface features a tab-based workspace providing an IDE-like experien
 ### System Design Choices
 LomuAI is the sole autonomous worker that commits changes, operating independently with a strict 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). I AM Architect is a user-summoned consultant only (premium feature), providing guidance without committing code. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing.
 
+**LomuAI Efficiency Improvements (Phase 1 - Nov 2025):**
+- **Problem**: LomuAI was completing simple tasks in 30+ iterations (60K tokens, $2.70 cost) vs Replit Agent's 2-5 iterations (6K tokens, $0.27 cost)
+- **Root Cause**: No pre-flight file search, reinventing features instead of copying, no task verification
+- **Solution**: Enhanced system prompt with 4 efficiency rules:
+  1. **SEARCH BEFORE CODING** - Forces codebase search to find target files and existing implementations before coding
+  2. **COPY, DON'T REINVENT** - Instructs to copy working code instead of reimplementing from scratch
+  3. **VERIFY THE TASK** - Post-change checklist to ensure correct file was modified and exact request was completed
+  4. **ITERATION BUDGET AWARENESS** - Clear limits: 5 iterations (simple), 10 (medium), 20 (complex)
+- **Expected Impact**: 90% token savings (30 iterations → 3 iterations), 87% faster completion (15 min → 2 min)
+- **Status**: Phase 1 (system prompt updates) deployed; Phase 2-4 pending (job manager verification, iteration tracking, smart copy-paste detection)
+- **Implementation**: server/config/prompts.ts - Added efficiency rules to both simple and complex task prompts
+
 **Access Model:**
 - **Platform Healing**: Owner-only access to fix the platform itself using LomuAI v2.0 (free for owner)
 - **Regular LomuAI**: All users build/fix their own projects (usage-based credit billing)
