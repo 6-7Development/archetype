@@ -456,7 +456,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
                     ...prev.progressMessages,
                     {
                       id: progressId,
-                      message: message.message,
+                      message: message.message || '',
                       timestamp: Date.now(),
                     }
                   ],

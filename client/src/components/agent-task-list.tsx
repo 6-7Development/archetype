@@ -41,25 +41,25 @@ function TaskItem({
   onClick?: () => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
-  const [animatedProgress, setAnimatedProgress] = useState(0);
   const hasSubsteps = task.substeps && task.substeps.length > 0;
 
-  // Animate progress for in_progress tasks (indeterminate animation)
-  useEffect(() => {
-    if (task.status === 'in_progress') {
-      const interval = setInterval(() => {
-        setAnimatedProgress((prev) => {
-          // Create a pulsing effect between 20% and 80%
-          const next = prev + 2;
-          if (next > 80) return 20;
-          return next;
-        });
-      }, 50);
-      return () => clearInterval(interval);
-    } else {
-      setAnimatedProgress(0);
+  // Calculate REAL progress based on task status and substeps
+  const calculateProgress = (): number => {
+    if (task.status === 'completed') return 100;
+    if (task.status === 'pending') return 0;
+    if (task.status === 'failed') return 100; // Show full bar in red for failed tasks
+    
+    // For in_progress tasks, calculate based on substeps if available
+    if (hasSubsteps && task.substeps!.length > 0) {
+      const completedSubsteps = task.substeps!.filter(s => s.status === 'completed').length;
+      return (completedSubsteps / task.substeps!.length) * 100;
     }
-  }, [task.status]);
+    
+    // If no substeps, show 50% for in_progress (indeterminate but not fake animation)
+    return 50;
+  };
+
+  const progressPercent = calculateProgress();
 
   return (
     <div className="space-y-0.5">
@@ -94,11 +94,11 @@ function TaskItem({
         <div className="flex-1 min-w-0">
           <span className="block text-sm truncate">{task.title}</span>
           
-          {/* Progress bar for in_progress tasks */}
-          {task.status === 'in_progress' && (
+          {/* Progress bar showing REAL progress */}
+          {(task.status === 'in_progress' || task.status === 'completed') && (
             <div className="mt-1">
               <Progress 
-                value={animatedProgress} 
+                value={progressPercent} 
                 className="h-1" 
                 data-testid={`progress-${task.id}`}
               />

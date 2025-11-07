@@ -29,6 +29,35 @@ import { classifyUserIntent, getMaxIterationsForIntent, type UserIntent } from '
 
 const execAsync = promisify(exec);
 
+// 🔄 EXPONENTIAL BACKOFF RETRY LOGIC for Anthropic API overload errors
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  context: string = 'API call'
+): Promise<T> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      // Check if it's an Anthropic overload error
+      const isOverloadError = error.error?.type === 'overloaded_error' || 
+                              error.message?.includes('overloaded') ||
+                              error.type === 'overloaded_error';
+      
+      if (isOverloadError && i < maxRetries - 1) {
+        const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s exponential backoff
+        console.log(`[RETRY] ${context} - Anthropic API overloaded, retry ${i + 1}/${maxRetries} after ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      
+      // If not an overload error, or we've exhausted retries, throw the error
+      throw error;
+    }
+  }
+  throw new Error('Retry logic error - should not reach here');
+}
+
 // 🎯 INTENT CLASSIFICATION (like Replit Agent)
 // Now using shared configuration from chatConfig.ts
 // Both regular LomuAI and Platform Healing use the same logic
@@ -1498,12 +1527,14 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       let detectedComplexity = 1; // Track task complexity for workflow validation
 
       // TEMPORARY: Use Claude due to Gemini MALFORMED_FUNCTION_CALL with 37 tools
-      await streamAnthropicResponse({
-        model: 'claude-sonnet-4-20250514',
-        maxTokens: config.maxTokens,
-        system: safeSystemPrompt,
-        messages: safeMessages,
-        tools: availableTools,
+      // 🔄 WRAPPED WITH RETRY LOGIC to handle Anthropic API overload errors
+      await retryWithBackoff(async () => {
+        return await streamAnthropicResponse({
+          model: 'claude-sonnet-4-20250514',
+          maxTokens: config.maxTokens,
+          system: safeSystemPrompt,
+          messages: safeMessages,
+          tools: availableTools,
         onChunk: (chunk: any) => {
           if (chunk.type === 'chunk' && chunk.content) {
             // 🔥 DUPLICATE CHUNK SUPPRESSION: Prevent duplicate text from SSE retries
@@ -1561,7 +1592,8 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           }
         }
         // onError handler already defined above (line 1508) to prevent duplicate property
-      });
+        });
+      }, 3, `Claude API call (iteration ${iterationCount})`); // Retry up to 3 times with exponential backoff
 
       // Skip "Analysis complete" spam - the response speaks for itself
 
@@ -1608,6 +1640,62 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       for (const block of contentBlocks) {
         if (block.type === 'tool_use') {
           const { name, input, id } = block;
+
+          // 🎯 SYSTEMATIC TASK ENFORCEMENT: Ensure AI works through tasks in order
+          // This prevents jumping between tasks and enforces sequential execution
+          if (taskListId && name !== 'create_task_list' && name !== 'read_task_list') {
+            // Check for active in_progress task
+            const taskStatus = await readTaskList({ userId });
+            
+            if (taskStatus.success && taskStatus.taskLists) {
+              const activeList = taskStatus.taskLists.find((list: any) => list.status === 'active');
+              
+              if (activeList && activeList.tasks) {
+                const inProgressTask = activeList.tasks.find((t: any) => t.status === 'in_progress');
+                
+                if (inProgressTask && name !== 'update_task') {
+                  // There's an active task in progress
+                  // ONLY allow tools that help complete the current task
+                  const taskCompletionTools = [
+                    // File reading/searching tools (for understanding the task)
+                    'read_platform_file', 'read_project_file', 'list_platform_files', 
+                    'list_project_files', 'search_platform_files', 'search_codebase', 'grep',
+                    // File modification tools (for completing the task)
+                    'write_platform_file', 'write_project_file', 'create_platform_file', 
+                    'create_project_file', 'delete_platform_file', 'delete_project_file', 'edit',
+                    // Execution tools (for testing the fix)
+                    'bash', 'restart_workflow', 'get_latest_lsp_diagnostics',
+                    // Diagnosis tools (for understanding errors)
+                    'perform_diagnosis', 'read_logs', 'execute_sql',
+                    // Knowledge tools (for finding solutions)
+                    'knowledge_search', 'knowledge_recall', 'code_search', 'web_search',
+                    // Support tools
+                    'packager_tool', 'architect_consult', 'verify_fix'
+                  ];
+                  
+                  if (!taskCompletionTools.includes(name)) {
+                    // Block tools that don't help complete the current task
+                    const errorMsg = `❌ TASK ENFORCEMENT: Cannot call "${name}" while task "${inProgressTask.title}" is in progress.\n\n` +
+                      `You must complete the current task first by calling:\n` +
+                      `update_task("${inProgressTask.id}", "completed", "brief description of what you did")\n\n` +
+                      `Then you can proceed to the next task.\n\n` +
+                      `This ensures systematic execution: Task 1 → Task 2 → Task 3 (no jumping around!)`;
+                    
+                    console.log(`[TASK-ENFORCEMENT] ❌ Blocked ${name} - must complete task ${inProgressTask.id} first`);
+                    
+                    toolResults.push({
+                      type: 'tool_result',
+                      tool_use_id: id,
+                      content: errorMsg
+                    });
+                    
+                    sendEvent('content', { content: `\n\n${errorMsg}\n\n` });
+                    continue; // Skip this tool execution
+                  }
+                }
+              }
+            }
+          }
 
           // 🛡️ WORKFLOW VALIDATION: Validate tool call against workflow rules
           // This prevents out-of-order execution and enforces the 7-phase workflow

@@ -6,6 +6,35 @@ import { aiHealingService } from "../services/aiHealingService";
 import { createTaskList, updateTask, readTaskList } from "../tools/task-management";
 import { classifyUserIntent, getMaxIterationsForIntent } from "../shared/chatConfig";
 
+// 🔄 EXPONENTIAL BACKOFF RETRY LOGIC for Anthropic API overload errors
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  context: string = 'API call'
+): Promise<T> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      // Check if it's an Anthropic overload error
+      const isOverloadError = error.error?.type === 'overloaded_error' || 
+                              error.message?.includes('overloaded') ||
+                              error.type === 'overloaded_error';
+      
+      if (isOverloadError && i < maxRetries - 1) {
+        const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s exponential backoff
+        console.log(`[HEALING-RETRY] ${context} - Anthropic API overloaded, retry ${i + 1}/${maxRetries} after ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      
+      // If not an overload error, or we've exhausted retries, throw the error
+      throw error;
+    }
+  }
+  throw new Error('Retry logic error - should not reach here');
+}
+
 // Owner-only middleware for Platform Healing
 const isOwner = async (req: any, res: any, next: any) => {
   if (!req.user || !req.user.isOwner) {
@@ -414,12 +443,14 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
         let response: any;
         try {
           // Call Claude with tools
-          response = await streamAnthropicResponse({
-            model: "claude-sonnet-4-20250514",
-            maxTokens: 4000,
-            system: systemPrompt,
-            messages: conversationMessages,
-            tools: [
+          // 🔄 WRAPPED WITH RETRY LOGIC to handle Anthropic API overload errors
+          response = await retryWithBackoff(async () => {
+            return await streamAnthropicResponse({
+              model: "claude-sonnet-4-20250514",
+              maxTokens: 4000,
+              system: systemPrompt,
+              messages: conversationMessages,
+              tools: [
               {
                 name: 'start_subagent',
                 description: 'Delegate complex multi-file work to sub-agents. Supports parallel execution (max 2 concurrent)',
@@ -1387,6 +1418,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
               }
             }
           });
+          }, 3, `Healing API call (iteration ${iterationCount})`); // Close retry wrapper
         } catch (claudeError: any) {
           console.error(`[HEALING-CHAT] ❌ Claude API error on iteration ${iterationCount}:`, claudeError);
           
@@ -1497,14 +1529,17 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
           });
           
           // Make ONE recovery call (no tools, just get the answer)
-          const recoveryResponse = await streamAnthropicResponse({
-            model: "claude-sonnet-4-20250514",
-            maxTokens: 2000, // Shorter response for summary
-            system: systemPrompt,
-            messages: conversationMessages,
-            // NO TOOLS - we just want the final answer
-            tools: undefined,
-          });
+          // 🔄 WRAPPED WITH RETRY LOGIC to handle Anthropic API overload errors
+          const recoveryResponse = await retryWithBackoff(async () => {
+            return await streamAnthropicResponse({
+              model: "claude-sonnet-4-20250514",
+              maxTokens: 2000, // Shorter response for summary
+              system: systemPrompt,
+              messages: conversationMessages,
+              // NO TOOLS - we just want the final answer
+              tools: undefined,
+            });
+          }, 3, `Healing recovery API call`); // Close retry wrapper
           
           if (recoveryResponse.fullText && recoveryResponse.fullText.trim().length > 0) {
             fullResponse = recoveryResponse.fullText;
