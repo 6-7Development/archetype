@@ -43,19 +43,24 @@ function TaskItem({
   const [isExpanded, setIsExpanded] = useState(true);
   const hasSubsteps = task.substeps && task.substeps.length > 0;
 
-  // Calculate REAL progress based on task status and substeps
+  // Calculate REAL progress based on backend-provided metrics, then substeps, then status
   const calculateProgress = (): number => {
     if (task.status === 'completed') return 100;
     if (task.status === 'pending') return 0;
     if (task.status === 'failed') return 100; // Show full bar in red for failed tasks
     
-    // For in_progress tasks, calculate based on substeps if available
+    // PRIORITY 1: Use backend-provided progress if available (most accurate)
+    if (task.progress && task.progress.total > 0) {
+      return Math.min(100, (task.progress.current / task.progress.total) * 100);
+    }
+    
+    // PRIORITY 2: Calculate based on substeps if available
     if (hasSubsteps && task.substeps!.length > 0) {
       const completedSubsteps = task.substeps!.filter(s => s.status === 'completed').length;
       return (completedSubsteps / task.substeps!.length) * 100;
     }
     
-    // If no substeps, show 50% for in_progress (indeterminate but not fake animation)
+    // PRIORITY 3: Fallback to 50% for in_progress (indeterminate but not fake animation)
     return 50;
   };
 
