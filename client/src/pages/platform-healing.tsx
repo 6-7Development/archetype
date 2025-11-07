@@ -19,6 +19,8 @@ import { MarkdownRenderer } from '@/components/markdown-renderer';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { parseMessageContent, cleanAIResponse } from '@/lib/message-parser';
+import { ChatInputToolbar } from '@/components/ui/chat-input-toolbar';
+import { nanoid } from 'nanoid';
 
 interface HealingTarget {
   id: string;
@@ -128,6 +130,8 @@ function PlatformHealingContent() {
     url?: string;
   }>>([]);
   const [isUploadingFiles, setIsUploadingFiles] = useState(false);
+  const [pendingImages, setPendingImages] = useState<string[]>([]);
+  const [uploadingImages, setUploadingImages] = useState<Map<string, boolean>>(new Map());
   
   // Deployment and healing status tracking
   const [deploymentStatus, setDeploymentStatus] = useState<{
@@ -370,6 +374,161 @@ function PlatformHealingContent() {
       });
     },
   });
+
+  // Mutation to upload chat images
+  const uploadImageMutation = useMutation<{ imageUrl: string }, Error, File>({
+    mutationFn: async (file) => {
+      const formData = new FormData();
+      formData.append('image', file);
+      const response = await fetch('/api/chat/upload-image', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to upload image');
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Add uploaded image URL to pending images
+      setPendingImages((prev) => [...prev, data.imageUrl]);
+      toast({ description: "Image uploaded successfully!" });
+    },
+    onError: (error) => {
+      toast({ 
+        variant: "destructive",
+        description: error.message || "Failed to upload image" 
+      });
+    },
+  });
+
+  // Handle image paste from clipboard
+  const handlePaste = async (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    const ALLOWED_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+
+      // Check if item is an image
+      if (item.type.indexOf('image') !== -1) {
+        e.preventDefault(); // Prevent default paste behavior for images
+
+        const file = item.getAsFile();
+        if (!file) continue;
+
+        // Validate file format
+        if (!ALLOWED_FORMATS.includes(file.type)) {
+          toast({
+            variant: "destructive",
+            description: `Unsupported image format. Please use: JPG, PNG, GIF, or WebP`
+          });
+          continue;
+        }
+
+        // Validate file size (5MB max)
+        if (file.size > MAX_FILE_SIZE) {
+          const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+          toast({
+            variant: "destructive",
+            description: `Image too large (${sizeMB}MB). Maximum size is 5MB`
+          });
+          continue;
+        }
+
+        // Generate temporary ID for tracking upload progress
+        const tempId = nanoid();
+
+        // Add to uploading state
+        setUploadingImages(prev => new Map(prev).set(tempId, true));
+
+        // Upload image with temp ID for progress tracking
+        uploadImageMutation.mutate(file, {
+          onSuccess: () => {
+            // Remove from uploading state
+            setUploadingImages(prev => {
+              const next = new Map(prev);
+              next.delete(tempId);
+              return next;
+            });
+          },
+          onError: () => {
+            // Remove from uploading state on error
+            setUploadingImages(prev => {
+              const next = new Map(prev);
+              next.delete(tempId);
+              return next;
+            });
+          },
+        });
+      }
+    }
+  };
+
+  // Remove an image from pending images
+  const removeImage = (imageUrl: string) => {
+    setPendingImages((prev) => prev.filter((url) => url !== imageUrl));
+  };
+
+  // Handle image selection from file input
+  const handleImageSelect = async (files: FileList) => {
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    const ALLOWED_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+
+      // Validate file format
+      if (!ALLOWED_FORMATS.includes(file.type)) {
+        toast({
+          variant: "destructive",
+          description: `Unsupported image format. Please use: JPG, PNG, GIF, or WebP`
+        });
+        continue;
+      }
+
+      // Validate file size (5MB max)
+      if (file.size > MAX_FILE_SIZE) {
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        toast({
+          variant: "destructive",
+          description: `Image too large (${sizeMB}MB). Maximum size is 5MB`
+        });
+        continue;
+      }
+
+      // Generate temporary ID for tracking upload progress
+      const tempId = nanoid();
+
+      // Add to uploading state
+      setUploadingImages(prev => new Map(prev).set(tempId, true));
+
+      // Upload image with temp ID for progress tracking
+      uploadImageMutation.mutate(file, {
+        onSuccess: () => {
+          // Remove from uploading state
+          setUploadingImages(prev => {
+            const next = new Map(prev);
+            next.delete(tempId);
+            return next;
+          });
+        },
+        onError: () => {
+          // Remove from uploading state on error
+          setUploadingImages(prev => {
+            const next = new Map(prev);
+            next.delete(tempId);
+            return next;
+          });
+        },
+      });
+    }
+  };
 
   // Send message with AI streaming
   const handleSendMessage = async () => {
@@ -835,6 +994,46 @@ function PlatformHealingContent() {
 
                 {/* Input Box */}
                 <div className="p-4 border-t border-border">
+                  {/* Image Preview Section */}
+                  {(pendingImages.length > 0 || uploadingImages.size > 0) && (
+                    <div className="mb-3 flex flex-wrap gap-2">
+                      {/* Show uploading images with loading spinner */}
+                      {Array.from(uploadingImages.keys()).map((tempId) => (
+                        <div key={tempId} className="relative">
+                          <div className="h-20 w-20 rounded border border-border bg-muted flex items-center justify-center">
+                            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                          </div>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
+                              Uploading...
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Show uploaded images with remove button */}
+                      {pendingImages.map((imageUrl, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={imageUrl}
+                            alt={`Preview ${index + 1}`}
+                            className="h-20 w-20 object-cover rounded border border-border"
+                            data-testid={`image-preview-${index}`}
+                          />
+                          <button
+                            onClick={() => removeImage(imageUrl)}
+                            className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            data-testid={`button-remove-image-${index}`}
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   <div className="flex gap-2">
                     <div className="flex-1 relative">
                       <Textarea
@@ -846,6 +1045,7 @@ function PlatformHealingContent() {
                             handleSendMessage();
                           }
                         }}
+                        onPaste={handlePaste}
                         placeholder={
                           conversationId
                             ? 'Ask Lomu anything...'
@@ -856,33 +1056,10 @@ function PlatformHealingContent() {
                         data-testid="input-message"
                       />
                       <div className="absolute bottom-2 right-2">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            const input = document.createElement('input');
-                            input.type = 'file';
-                            input.accept = "image/*,.pdf,.doc,.docx,.txt,.md,.json,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.rb,.go,.rs,.php,.html,.css,.scss,.sass,.xml,.yaml,.yml,.toml,.ini,.conf,.sh,.bash,.zsh,.fish,.ps1,.bat,.cmd,.zip,.rar,.7z,.tar,.gz,.bz2,.xz";
-                            input.multiple = true;
-                            input.onchange = (e) => {
-                              const target = e.target as HTMLInputElement;
-                              if (target.files && target.files.length > 0) {
-                                // TODO: Handle file upload - for now just show a toast
-                                toast({
-                                  title: "Files Selected",
-                                  description: `${target.files.length} file(s) selected. Upload functionality coming soon!`,
-                                });
-                              }
-                            };
-                            input.click();
-                          }}
+                        <ChatInputToolbar
+                          onImageSelect={handleImageSelect}
                           disabled={isStreaming}
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                          title="Upload files (documents, code, archives, images)"
-                        >
-                          <Upload className="h-4 w-4" />
-                        </Button>
+                        />
                       </div>
                     </div>
                     <div className="flex flex-col gap-2">
