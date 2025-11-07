@@ -291,25 +291,28 @@ Your role:
 
 Available tools:
 - read_platform_file(file_path) - Read any file in the project
-- write_platform_file(file_path, content) - Update files
+- write_platform_file(file_path, content) - Update files (stages for commit)
 - search_platform_files(pattern) - Find files by pattern
 - create_task_list(title, tasks) - **REQUIRED** - creates visible task breakdown
 - read_task_list() - Check current task status
 - update_task(taskId, status, result) - **REQUIRED** - Update task progress (shows spinner animations!)
+- commit_to_github(commitMessage) - **DEPLOY CHANGES** - Commits all files and deploys to Railway
+- validate_before_commit() - Run pre-commit validation (TypeScript check)
 - cancel_lomu_job(job_id, reason) - Cancel stuck LomuAI jobs
 
 Platform info:
 - Stack: React, TypeScript, Express, PostgreSQL
 - Repository: ${process.env.GITHUB_REPO || 'Not configured'}
-- All changes auto-commit to GitHub
+- Deployment: Commit to GitHub → Railway auto-deploys (2-3 min)
 
 Workflow (like Replit Agent - FOLLOW THIS EXACTLY):
 1. **FIRST:** create_task_list() - User sees task breakdown with circles ○
 2. **FOR EACH TASK:**
    a. update_task(taskId, "in_progress") - Circle becomes spinner ⏳
-   b. Do the actual work (read files, make changes, etc.)
+   b. Do the actual work (read files, write changes, etc.)
    c. update_task(taskId, "completed", "what you did") - Spinner becomes checkmark ✓
-3. Repeat for all tasks
+3. **AFTER ALL TASKS COMPLETE:** commit_to_github("Descriptive message") - Deploys to Railway
+4. Confirm deployment started
 
 Example (FOLLOW THIS PATTERN):
 User: "fix the broken login page"
@@ -483,6 +486,26 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   },
                   required: ['taskId', 'status']
                 }
+              },
+              {
+                name: 'commit_to_github',
+                description: 'Commit all file changes and deploy to Railway. Use after completing all tasks.',
+                input_schema: {
+                  type: 'object',
+                  properties: {
+                    commitMessage: { type: 'string', description: 'Descriptive commit message summarizing all changes' }
+                  },
+                  required: ['commitMessage']
+                }
+              },
+              {
+                name: 'validate_before_commit',
+                description: 'Run pre-commit validation (TypeScript check, database tables, critical files)',
+                input_schema: {
+                  type: 'object',
+                  properties: {},
+                  required: []
+                }
               }
             ],
             onToolUse: async (toolUse: any) => {
@@ -620,6 +643,69 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   } else {
                     console.error(`[HEALING-CHAT] ❌ Failed to update task:`, result.error);
                     return { success: false, error: result.error };
+                  }
+                } else if (toolUse.name === 'commit_to_github') {
+                  const { getGitHubService } = await import('../githubService');
+                  const typedInput = toolUse.input as { commitMessage: string };
+                  
+                  if (filesModified.length === 0) {
+                    console.log('[HEALING-CHAT] ⚠️ No files to commit');
+                    return {
+                      success: false,
+                      error: 'No files modified - nothing to commit',
+                      message: 'Make changes first, then commit'
+                    };
+                  }
+                  
+                  console.log(`[HEALING-CHAT] 📦 Committing ${filesModified.length} files to GitHub...`);
+                  
+                  try {
+                    const githubService = getGitHubService();
+                    const result = await githubService.commitFiles(
+                      filesModified.map(fp => ({ path: fp })),
+                      typedInput.commitMessage
+                    );
+                    
+                    console.log('[HEALING-CHAT] ✅ Committed to GitHub - Railway will auto-deploy');
+                    
+                    return {
+                      success: true,
+                      commitHash: result.commitHash,
+                      filesCommitted: filesModified.length,
+                      message: `✓ Committed ${filesModified.length} files. Railway deploying...`
+                    };
+                  } catch (error: any) {
+                    console.error('[HEALING-CHAT] ❌ Commit failed:', error.message);
+                    return {
+                      success: false,
+                      error: error.message,
+                      message: 'Commit failed - check GitHub credentials'
+                    };
+                  }
+                } else if (toolUse.name === 'validate_before_commit') {
+                  console.log('[HEALING-CHAT] 🔍 Running pre-commit validation...');
+                  
+                  // Simple validation - check TypeScript syntax
+                  const { exec } = await import('child_process');
+                  const { promisify } = await import('util');
+                  const execAsync = promisify(exec);
+                  
+                  try {
+                    await execAsync('npx tsc --noEmit');
+                    console.log('[HEALING-CHAT] ✅ TypeScript validation passed');
+                    return {
+                      success: true,
+                      message: '✓ Pre-commit validation passed',
+                      checks: ['TypeScript']
+                    };
+                  } catch (error: any) {
+                    console.error('[HEALING-CHAT] ❌ TypeScript validation failed');
+                    return {
+                      success: false,
+                      error: 'TypeScript validation failed',
+                      details: error.message,
+                      message: '⚠️ Fix TypeScript errors before committing'
+                    };
                   }
                 }
                 

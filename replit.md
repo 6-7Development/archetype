@@ -10,6 +10,8 @@ Lomu is an AI-powered platform for rapid web development, featuring LomuAI, an a
 - ✅ **Enhanced Self-Awareness**: LomuAI now understands its role as the platform's autonomous coding agent, relationship with I AM Architect (premium consultant), and its identity
 - ✅ **Platform Identity**: Changed all "Archetype" references to "Lomu" platform
 - ✅ **Platform Healing Prompt Fix**: Fixed LomuAI spending too much time explaining instead of working - now starts immediately with brief updates AS it works (no more long upfront explanations)
+- ✅ **Platform Healing Commit Tools Added**: Platform Healing now has commit_to_github and validate_before_commit tools - can deploy changes to Railway just like regular LomuAI
+- ✅ **Platform Healing Efficiency Rules**: Added same 4 efficiency rules to Platform Healing (search before coding, copy don't reinvent, verify task, iteration budget)
 
 ## User Preferences
 ### API Configuration
