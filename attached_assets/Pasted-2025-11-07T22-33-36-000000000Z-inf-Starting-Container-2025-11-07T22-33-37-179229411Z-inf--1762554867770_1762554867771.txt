@@ -1,0 +1,166 @@
+2025-11-07T22:33:36.000000000Z [inf]  Starting Container
+2025-11-07T22:33:37.179229411Z [inf]  ======================================
+2025-11-07T22:33:37.179236049Z [inf]  🚂 RAILWAY STARTUP SCRIPT - DEBUG MODE
+2025-11-07T22:33:37.179239574Z [inf]  -rw-rw-r--    1 root     root          7105 Nov  7 20:26 replit.md
+2025-11-07T22:33:37.179250724Z [inf]  drwxr-xr-x    1 root     root          4096 Nov  7 20:26 server
+2025-11-07T22:33:37.179267622Z [inf]  ======================================
+2025-11-07T22:33:37.179271116Z [inf]  -rw-rw-r--    1 root     root           325 Nov  7 20:26 drizzle.config.ts
+2025-11-07T22:33:37.179275722Z [inf]  -rw-rw-r--    1 root     root          4728 Nov  7 20:26 package.json
+2025-11-07T22:33:37.179276525Z [inf]  Time: Fri Nov  7 22:33:36 UTC 2025
+2025-11-07T22:33:37.179278325Z [inf]  drwxr-xr-x    1 root     root          4096 Nov  7 20:29 node_modules
+2025-11-07T22:33:37.179285001Z [inf]  Node version: v20.19.5
+2025-11-07T22:33:37.179285691Z [inf]  -rw-rw-r--    1 root     root          7974 Nov  7 20:26 railway-db-setup.cjs
+2025-11-07T22:33:37.179286302Z [inf]  total 420
+2025-11-07T22:33:37.179287573Z [inf]  -rw-rw-r--    1 root     root        361322 Nov  7 20:29 package-lock.json
+2025-11-07T22:33:37.179288161Z [inf]  drwxr-xr-x    3 root     root          4096 Nov  7 20:26 migrations
+2025-11-07T22:33:37.179293670Z [inf]  NPM version: 10.8.2
+2025-11-07T22:33:37.179295939Z [inf]  drwxr-xr-x    1 root     root          4096 Nov  7 20:30 .
+2025-11-07T22:33:37.179299560Z [inf]  -rwxrwxr-x    1 root     root          2334 Nov  7 20:26 railway-start.sh
+2025-11-07T22:33:37.179301504Z [inf]  dr-xr-xr-x    1 root     root          4096 Nov  7 22:33 ..
+2025-11-07T22:33:37.179311358Z [inf]  -rwxr-xr-x    1 root     root          1990 Nov  7 20:26 debug-start.sh
+2025-11-07T22:33:37.179313051Z [inf]  
+2025-11-07T22:33:37.179319211Z [inf]  📁 Current directory: /app
+2025-11-07T22:33:37.179324431Z [inf]  📂 Listing root files:
+2025-11-07T22:33:37.180759878Z [inf]  -rw-rw-r--    1 root     root           960 Nov  7 20:26 tsconfig.json
+2025-11-07T22:33:37.180769942Z [inf]  
+2025-11-07T22:33:37.180781367Z [inf]  🔍 Checking for server/public directory (frontend)...
+2025-11-07T22:33:37.180790850Z [inf]  ✅ server/public directory exists (frontend build)
+2025-11-07T22:33:37.180804124Z [inf]  
+2025-11-07T22:33:37.180809276Z [inf]  🔧 Running database migration and drift repair...
+2025-11-07T22:33:37.180814004Z [inf]  📋 Step 1: Running migration statements individually...
+2025-11-07T22:33:37.180819060Z [inf]     Found 148 SQL statements to execute
+2025-11-07T22:33:37.180864805Z [inf]  drwxr-xr-x    2 root     root          4096 Nov  7 20:26 shared
+2025-11-07T22:33:40.327624001Z [inf]     ✅ Migration complete: 0 created, 148 skipped, 0 failed
+2025-11-07T22:33:40.327631530Z [inf]  📋 Step 2: Repairing schema drift (adding missing columns)...
+2025-11-07T22:33:40.327637214Z [inf]  ⚠️  add-missing-columns.sql not found - skipping drift repair (optional)
+2025-11-07T22:33:40.327641556Z [inf]  📋 Step 3: Adding incident category columns...
+2025-11-07T22:33:40.343293427Z [inf]  ✅ Incident category columns added
+2025-11-07T22:33:40.343297749Z [inf]  📋 Step 4: Creating v2.0 feature tables (project_env_vars, file_index)...
+2025-11-07T22:33:40.345655727Z [inf]     ✅ project_env_vars table created
+2025-11-07T22:33:40.353653213Z [inf]     ✅ file_index table created
+2025-11-07T22:33:40.353666246Z [inf]  ✅ All v2.0 feature tables ready!
+2025-11-07T22:33:40.353675646Z [inf]  📋 Step 5: Adding missing columns to users table...
+2025-11-07T22:33:40.353682724Z [inf]  ✅ Missing user columns added successfully
+2025-11-07T22:33:40.353689591Z [inf]  📋 Step 6: Creating platform owner account...
+2025-11-07T22:33:40.631635949Z [inf]     ✅ Root owner account updated
+2025-11-07T22:33:40.631640307Z [inf]     📧 Email: root@getdc360.com
+2025-11-07T22:33:40.631645768Z [inf]     🔑 Password: admin123@*
+2025-11-07T22:33:40.631651935Z [inf]  ✅ Platform owner ready!
+2025-11-07T22:33:40.639813730Z [inf]  📋 Step 2: Verify server/index.ts exists...
+2025-11-07T22:33:40.639842928Z [inf]  DATABASE_URL: ✓ SET (hidden for security)
+2025-11-07T22:33:40.639853229Z [inf]  
+2025-11-07T22:33:40.639861305Z [inf]  🔄 Running database migrations with drizzle-kit...
+2025-11-07T22:33:40.639862389Z [inf]  GITHUB_TOKEN: ✓ SET
+2025-11-07T22:33:40.639870484Z [inf]  ✅ Added sslmode=no-verify to DATABASE_URL for drizzle-kit
+2025-11-07T22:33:40.639878139Z [inf]  ⚠️ Skipping drizzle-kit push (Railway deployment - avoiding interactive prompts)
+2025-11-07T22:33:40.639882722Z [inf]  ✅ Database schema ready!
+2025-11-07T22:33:40.639884636Z [inf]  GITHUB_REPO: 6-7Development/archetype
+2025-11-07T22:33:40.639893004Z [inf]  GITHUB_BRANCH: main
+2025-11-07T22:33:40.639902389Z [inf]  ANTHROPIC_API_KEY: ✓ SET
+2025-11-07T22:33:40.639903022Z [inf]  
+2025-11-07T22:33:40.639917824Z [inf]  🔍 Environment Check:
+2025-11-07T22:33:40.639919381Z [inf]  
+2025-11-07T22:33:40.639931896Z [inf]  NODE_ENV: production
+2025-11-07T22:33:40.639935135Z [inf]  📄 Ensuring replit.md is available...
+2025-11-07T22:33:40.639940024Z [inf]  PORT: 8080
+2025-11-07T22:33:40.639947679Z [inf]  ✅ replit.md already present
+2025-11-07T22:33:40.639954382Z [inf]  
+2025-11-07T22:33:40.639962275Z [inf]  🚀 Starting Node.js application with debug wrapper...
+2025-11-07T22:33:40.639969178Z [inf]  Command: sh debug-start.sh
+2025-11-07T22:33:40.639980845Z [inf]  
+2025-11-07T22:33:40.639987462Z [inf]  ==========================================
+2025-11-07T22:33:40.639995802Z [inf]  🔍 DEBUG MODE - VERBOSE ERROR CAPTURE
+2025-11-07T22:33:40.640006934Z [inf]  ==========================================
+2025-11-07T22:33:40.640019483Z [inf]  
+2025-11-07T22:33:40.640030485Z [inf]  📋 Step 1: Verify server directory exists...
+2025-11-07T22:33:40.640041540Z [inf]  ✅ server/ directory exists
+2025-11-07T22:33:40.640048110Z [inf]  
+2025-11-07T22:33:40.640892687Z [inf]  ✅ server/index.ts exists
+2025-11-07T22:33:40.640901205Z [inf]  
+2025-11-07T22:33:40.640907217Z [inf]  📋 Step 3: Check Node.js and tsx availability...
+2025-11-07T22:33:40.648030232Z [inf]  Node version: v20.19.5
+2025-11-07T22:33:41.134466672Z [inf]  NPM version: 10.8.2
+2025-11-07T22:33:41.134472928Z [inf]  tsx location: /usr/local/bin/npx
+2025-11-07T22:33:41.134480725Z [inf]  
+2025-11-07T22:33:41.134487641Z [inf]  📋 Step 4: Verify environment variables...
+2025-11-07T22:33:41.134492847Z [inf]  NODE_ENV: production
+2025-11-07T22:33:41.134499190Z [inf]  PORT: 8080
+2025-11-07T22:33:41.134504797Z [inf]  DATABASE_URL: ✓ SET
+2025-11-07T22:33:41.134510080Z [inf]  
+2025-11-07T22:33:41.134516082Z [inf]  📋 Step 5: Test tsx can load...
+2025-11-07T22:33:41.511368144Z [inf]  tsx v4.20.5
+2025-11-07T22:33:41.522730950Z [inf]  node v20.19.5
+2025-11-07T22:33:41.541415823Z [inf]  ✅ tsx is available
+2025-11-07T22:33:41.541421538Z [inf]  
+2025-11-07T22:33:41.541427001Z [inf]  📋 Step 6: Starting server with tsx...
+2025-11-07T22:33:41.541432092Z [inf]  Command: npx tsx server/index.ts
+2025-11-07T22:33:41.541439007Z [inf]  ==========================================
+2025-11-07T22:33:41.541444413Z [inf]  
+2025-11-07T22:33:45.313511122Z [inf]  [db] Environment: NODE_ENV=production, PORT=8080
+2025-11-07T22:33:45.313519732Z [inf]  [db] Using DATABASE_URL: postgresql://***@postgres.railway.internal:5432/railway
+2025-11-07T22:33:45.313539064Z [inf]  [db] Pool config: connectionTimeoutMillis=30000, max=20, ssl=enabled (rejectUnauthorized: false)
+2025-11-07T22:33:45.313546377Z [inf]  [db] SSL Configuration: {"rejectUnauthorized":false}
+2025-11-07T22:33:45.313553121Z [inf]  [db] Connection string includes SSL params: true
+2025-11-07T22:33:45.350947451Z [inf]  [PERFORMANCE] System prompt base cached (1544 chars) - saves ~4KB per request
+2025-11-07T22:33:46.187926436Z [inf]  [PLATFORM-HEALING] PROJECT_ROOT: /app
+2025-11-07T22:33:46.187933529Z [inf]  [RAILWAY-CONFIG] Production hardening active
+2025-11-07T22:33:46.187939220Z [inf]  [RAILWAY-CONFIG] AI timeout: 480s
+2025-11-07T22:33:46.187945485Z [inf]  [RAILWAY-CONFIG] Memory limit: 512MB
+2025-11-07T22:33:46.187952964Z [inf]  [RAILWAY-CONFIG] Max concurrent AI: 3
+2025-11-07T22:33:46.187958384Z [inf]  [AI-HEALING] Anthropic Claude initialized for Tier 3 (I AM Architect)
+2025-11-07T22:33:46.187964366Z [inf]  [PERFORMANCE] Compression middleware enabled - responses will be 70-80% smaller (SSE streams excluded)
+2025-11-07T22:33:46.187970363Z [inf]  📡 WebSocket server initialized at /ws
+2025-11-07T22:33:46.187976004Z [inf]  [PLATFORM-HEALING] Session manager connected to WebSocket
+2025-11-07T22:33:46.187981322Z [inf]  [PLATFORM-HEALING] WebSocket server attached for preview broadcasts
+2025-11-07T22:33:46.187988360Z [inf]  [PLATFORM-HEALING] Platform healing service connected to WebSocket
+2025-11-07T22:33:46.187994853Z [inf]  [TASK-MGMT] Task management connected to WebSocket
+2025-11-07T22:33:46.187999850Z [inf]  [PLATFORM-METRICS] Starting WebSocket broadcaster (5s intervals)
+2025-11-07T22:33:46.188004491Z [inf]  [HEAL-ORCHESTRATOR] Metrics broadcaster connected
+2025-11-07T22:33:46.188009602Z [inf]  [WEBHOOKS] Webhooks router connected to metrics broadcaster
+2025-11-07T22:33:46.188014575Z [inf]  [ARCHITECT-GUIDANCE] I AM Architect initialized for real-time guidance
+2025-11-07T22:33:46.188020994Z [inf]  [LOMU-AI-JOB-MANAGER] Initialized with WebSocket support
+2025-11-07T22:33:46.188027751Z [inf]  [LOMU-AI-JOB-MANAGER] Job manager connected to WebSocket
+2025-11-07T22:33:46.188033483Z [inf]  [LOMU-AI] WebSocket server initialized for live preview broadcasts
+2025-11-07T22:33:46.188038175Z [inf]  [LOMU-AI-CHAT] Live preview WebSocket initialized
+2025-11-07T22:33:46.188043039Z [inf]  [TERMINAL-ROUTES] Registering WebSocket terminal handler
+2025-11-07T22:33:46.188175181Z [inf]  [TERMINAL] Terminal WebSocket routes registered
+2025-11-07T22:33:46.188181566Z [inf]  [CREDITS] Credits router mounted at /api/credits
+2025-11-07T22:33:46.188188067Z [inf]  [AGENTS] Agents router mounted at /api/agents
+2025-11-07T22:33:46.188194191Z [inf]  [WEBHOOKS] Webhooks router mounted at /api/webhooks
+2025-11-07T22:33:46.188200200Z [inf]  [GIT] Git router mounted
+2025-11-07T22:33:46.455432919Z [inf]  [DEPLOYMENTS] Routes registered successfully
+2025-11-07T22:33:46.455440839Z [inf]  ✅ All routes registered successfully
+2025-11-07T22:33:46.455447616Z [inf]  🔧 Adding WebSocket memory leak prevention handlers...
+2025-11-07T22:33:46.455454302Z [inf]  🔍 Testing database connection...
+2025-11-07T22:33:46.493070573Z [inf]  10:33:46 PM [express] serving on port 8080
+2025-11-07T22:33:46.493078989Z [inf]  🌐 Server accessible at http://0.0.0.0:8080
+2025-11-07T22:33:46.596234282Z [inf]  ✅ Database connected successfully
+2025-11-07T22:33:46.596240034Z [inf]  🧹 Running startup cleanup for chat history...
+2025-11-07T22:33:46.621310043Z [inf]  ✅ Chat history cleanup complete
+2025-11-07T22:33:46.621314120Z [inf]  🧹 Cleaning up stuck LomuAI jobs from previous server session...
+2025-11-07T22:33:46.629508975Z [inf]  ✅ No interrupted LomuAI jobs found
+2025-11-07T22:33:46.629517195Z [inf]  💡 Platform Healing: OWNER-ONLY access (manual trigger via UI)
+2025-11-07T22:33:46.629525257Z [inf]     👑 Owner uses LomuAI to fix the platform itself - FREE
+2025-11-07T22:33:46.629534087Z [inf]     👥 Regular users use LomuAI for their projects - usage-based billing
+2025-11-07T22:33:46.629542986Z [inf]     💳 Credits: 1 credit = 1,000 tokens = $0.05 (retail pricing)
+2025-11-07T22:33:46.629556924Z [inf]  [HEALTH-MONITOR] Starting platform health monitoring...
+2025-11-07T22:33:46.634038581Z [inf]  [HEALTH-MONITOR] Loaded 8 open incidents
+2025-11-07T22:33:46.634045379Z [inf]  [HEALTH-MONITOR] Monitoring started
+2025-11-07T22:33:46.634052284Z [inf]  [HEAL-ORCHESTRATOR] Starting autonomous healing orchestrator...
+2025-11-07T22:33:46.634057810Z [inf]  [HEAL-ORCHESTRATOR] Orchestrator started
+2025-11-07T22:33:46.640388072Z [inf]  ✅ GitHub integration configured successfully
+2025-11-07T22:33:46.640399729Z [inf]     - Repository: 6-7Development/archetype
+2025-11-07T22:33:46.640409050Z [inf]     - Branch: main
+2025-11-07T22:33:46.640417345Z [inf]     - Token: ✓ (configured)
+2025-11-07T22:33:46.640438503Z [inf]  [MEMORY-MONITOR] Starting memory monitoring
+2025-11-07T22:33:46.640444193Z [inf]  [MEMORY-MONITOR] Warning threshold: 400MB
+2025-11-07T22:33:46.640450500Z [inf]  [MEMORY-MONITOR] Container limit: 512MB
+2025-11-07T22:33:46.640456927Z [inf]  [MEMORY-MONITOR] Active - checking every 30s
+2025-11-07T22:33:46.640462818Z [inf]  🛡️ Initializing CPU monitoring to detect performance issues...
+2025-11-07T22:33:46.640469458Z [inf]  
+2025-11-07T22:33:46.640477602Z [inf]  🔍 Checking GitHub integration configuration...
+2025-11-07T22:33:46.644741729Z [inf]     - Owner: ✅ root@getdc360.com (ID: 723e1301-c729-48fc-810a-39ddef954ae2)
+2025-11-07T22:33:46.644748101Z [inf]     - Maintenance mode: ✅ Available
+2025-11-07T22:33:46.644754797Z [inf]  
+2025-11-07T22:33:46.644760958Z [inf]  [RAILWAY] Graceful shutdown handler registered (SIGTERM)
+2025-11-07T22:34:16.644936725Z [inf]  [MEMORY] Heap: 84MB | RSS: 164MB | Usage: 32%

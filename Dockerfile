@@ -17,6 +17,9 @@ COPY tsconfig.json ./
 COPY postcss.config.js ./
 COPY tailwind.config.ts ./
 
+# Force rebuild by adding build timestamp
+ARG CACHEBUST=1
+
 # Build frontend ONLY (not server)
 RUN npx vite build
 
