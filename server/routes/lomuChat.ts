@@ -810,7 +810,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     // LomuAI creates task lists for work requests (diagnose, fix, improve)
     // This makes progress visible in the inline task card
-    sendEvent('progress', { message: '🧠 Analyzing your request...' });
+    // ✅ CLEAN FLOW: Removed "Analyzing" spam - let AI response speak for itself
 
     // Track task list ID if created during conversation
     let activeTaskListId: string | undefined;
@@ -1468,7 +1468,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     while (continueLoop && iterationCount < MAX_ITERATIONS) {
       iterationCount++;
 
-      sendEvent('progress', { message: `Analyzing (iteration ${iterationCount}/${MAX_ITERATIONS})...` });
+      // ✅ CLEAN FLOW: Only show iteration count for long-running tasks (5+ iterations)
+      if (iterationCount % 5 === 0) {
+        sendEvent('progress', { message: `Working (step ${iterationCount})...` });
+      }
 
       // Simple status update instead of verbose section
       const thinkingSectionId = `thinking-${iterationCount}-${Date.now()}`;
@@ -1622,9 +1625,11 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           const toolSectionId = `tool-${name}-${id}`;
           // Tools execute silently - user sees results in conversational response
 
-          // 🔥 RAILWAY FIX: Send progress event BEFORE each tool execution
-          // This keeps the connection alive during long tool operations
-          sendEvent('progress', { message: `🔧 Executing tool: ${name}...` });
+          // ✅ CLEAN FLOW: Only show progress for slow tools (task management, architect, subagent)
+          const slowTools = ['architect_consult', 'start_subagent', 'run_test', 'create_task_list'];
+          if (slowTools.includes(name)) {
+            sendEvent('progress', { message: `🔧 ${name.replace('_', ' ')}...` });
+          }
 
           try {
             let toolResult: any = null;

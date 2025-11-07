@@ -120,7 +120,10 @@ export async function createTaskList(params: {
     broadcastTaskUpdate(params.userId, 'task_list_created', {
       taskListId: taskList.id,
       title: taskList.title,
-      tasks: createdTasks,
+      tasks: createdTasks.map(t => ({ 
+        ...t, 
+        progress: 0 // All tasks start at 0% progress
+      })),
       chatMessageId: params.chatMessageId,
     });
 
@@ -241,7 +244,19 @@ export async function updateTask(params: {
       .where(and(eq(tasks.id, params.taskId), eq(tasks.taskListId, taskList.id)))
       .returning();
 
-    // 📡 Broadcast task update to user's UI
+    // Calculate real progress based on task completion
+    const allTasks = await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.taskListId, taskList.id));
+    
+    const completedTasks = allTasks.filter(t => 
+      t.status === 'completed' || t.id === updatedTask.id && params.status === 'completed'
+    ).length;
+    const totalTasks = allTasks.length;
+    const progressPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+    // 📡 Broadcast task update to user's UI with REAL progress
     broadcastTaskUpdate(params.userId, 'task_updated', {
       taskId: updatedTask.id,
       taskListId: updatedTask.taskListId,
@@ -249,6 +264,7 @@ export async function updateTask(params: {
       status: updatedTask.status,
       result: params.result,
       error: params.error,
+      progress: progressPercentage, // ✅ Real progress based on completed/total
     });
 
     return { success: true };
