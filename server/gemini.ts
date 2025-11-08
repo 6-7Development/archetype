@@ -157,17 +157,12 @@ function convertMessagesToGemini(messages: any[]): any[] {
               
               const responseData = extractContent(c.content);
               
-              // ✅ FIX: Gemini requires response in { name, content: [{ text }] } format
+              // ✅ FIX: Google's official format - response MUST be direct object, not wrapped in content array
+              // See: https://ai.google.dev/gemini-api/docs/function-calling
               return {
                 functionResponse: {
                   name: functionName,
-                  response: {
-                    name: functionName,
-                    content: [{
-                      text: JSON.stringify(responseData),
-                      mimeType: 'application/json'
-                    }]
-                  }
+                  response: responseData // Direct object - Google's official format
                 }
               };
             }
