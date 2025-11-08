@@ -1,10 +1,10 @@
-# Lomu Marketing Website - Design Guidelines
+# Lomu Platform - Design Guidelines
 
 ## Design Approach
 
-**Reference Strategy**: Modern SaaS marketing (Linear + Vercel + Stripe aesthetic) infused with citrus playfulness. Balance professional credibility with optimistic brand personality through strategic lemon motif placement and vibrant accent colors.
+**Reference Strategy**: Modern SaaS aesthetic with swarm/hive intelligence theme. Professional credibility with collaborative energy through honey-inspired warmth and mint freshness.
 
-**Core Principle**: Professional-first with citrus delight—enterprise trust wrapped in refreshing optimism.
+**Core Principle**: Professional-first with swarm intelligence—enterprise trust powered by collaborative AI agents.
 
 ---
 

@@ -167,12 +167,13 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  /* Lomu Brand Colors - Light Mode */
-  --sparkling-lemon: 50 98% 58%;  /* Primary bright yellow */
-  --fresh-mint: 145 60% 45%;       /* Success green */
-  --citrus-bloom: 32 94% 62%;      /* Warning orange */
-  --slate-professional: 210 14% 24%; /* Professional text */
-  --cream-base: 48 46% 96%;        /* Soft background */
+  /* Lomu Hive/Swarm Brand Colors - Light Mode */
+  --honey: 40 97% 50%;             /* Primary honey #F7B500 */
+  --nectar: 48 100% 65%;           /* Accent nectar #FFD34D */
+  --mint: 171 100% 42%;            /* Success mint #00D4B3 */
+  --charcoal: 216 9% 7%;           /* Deep charcoal #101113 */
+  --graphite: 216 11% 12%;         /* Professional text #1B1D21 */
+  --cream: 47 100% 95%;            /* Soft cream #FFF8E6 */
 
   --background: 48 40% 98%;        /* Very light cream */
 
@@ -192,27 +193,27 @@
 
   --sidebar-border: 48 30% 88%;
 
-  --sidebar-primary: 50 98% 58%;   /* Sparkling lemon */
+  --sidebar-primary: 40 97% 50%;   /* Honey primary */
 
-  --sidebar-primary-foreground: 210 14% 24%; /* Dark text on yellow */
+  --sidebar-primary-foreground: 216 11% 12%; /* Graphite text on honey */
 
-  --sidebar-accent: 50 95% 95%;    /* Very light lemon tint */
+  --sidebar-accent: 48 100% 95%;   /* Very light nectar tint */
 
-  --sidebar-accent-foreground: 210 14% 24%;
+  --sidebar-accent-foreground: 216 11% 12%;
 
-  --sidebar-ring: 50 98% 58%;
+  --sidebar-ring: 40 97% 50%;
 
   --popover: 0 0% 100%;
 
-  --popover-foreground: 210 14% 24%;
+  --popover-foreground: 216 11% 12%;
 
   --popover-border: 48 30% 88%;
 
-  --primary: 50 98% 58%;           /* Sparkling lemon */
+  --primary: 40 97% 50%;           /* Honey primary */
 
-  --primary-foreground: 210 14% 24%; /* Dark text for contrast */
+  --primary-foreground: 216 11% 12%; /* Graphite text for contrast */
 
-  --secondary: 145 60% 45%;        /* Fresh mint */
+  --secondary: 171 100% 42%;       /* Mint secondary */
 
   --secondary-foreground: 0 0% 100%;
 
@@ -220,9 +221,9 @@
 
   --muted-foreground: 210 12% 55%;
 
-  --accent: 50 95% 95%;            /* Light lemon tint */
+  --accent: 48 100% 95%;           /* Light nectar tint */
 
-  --accent-foreground: 210 14% 24%;
+  --accent-foreground: 216 11% 12%;
 
   --destructive: 0 85% 60%;
 
@@ -292,10 +293,10 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  /* Lomu Brand Colors - Dark Mode (deeper citrus tones) */
-  --sparkling-lemon: 50 90% 52%;   /* Deeper lemon for dark mode */
-  --fresh-mint: 145 52% 38%;       /* Deeper mint */
-  --citrus-bloom: 32 88% 58%;      /* Deeper orange */
+  /* Lomu Hive/Swarm Brand Colors - Dark Mode */
+  --honey: 40 95% 48%;             /* Deeper honey for dark mode */
+  --nectar: 48 98% 62%;            /* Deeper nectar */
+  --mint: 171 95% 40%;             /* Deeper mint */
 
   --background: 220 20% 12%;       /* Deep slate */
 
@@ -315,7 +316,7 @@
 
   --sidebar-border: 220 15% 28%;
 
-  --sidebar-primary: 50 90% 52%;   /* Deeper sparkling lemon */
+  --sidebar-primary: 40 95% 48%;   /* Deeper honey */
 
   --sidebar-primary-foreground: 220 20% 12%;
 
@@ -323,7 +324,7 @@
 
   --sidebar-accent-foreground: 220 8% 98%;
 
-  --sidebar-ring: 50 90% 52%;
+  --sidebar-ring: 40 95% 48%;
 
   --popover: 220 18% 16%;
 
@@ -331,11 +332,11 @@
 
   --popover-border: 220 15% 28%;
 
-  --primary: 50 90% 52%;           /* Deeper lemon */
+  --primary: 40 95% 48%;           /* Deeper honey */
 
-  --primary-foreground: 220 20% 12%; /* Dark text on yellow */
+  --primary-foreground: 220 20% 12%; /* Dark text on honey */
 
-  --secondary: 145 52% 38%;        /* Deeper mint */
+  --secondary: 171 95% 40%;        /* Deeper mint */
 
   --secondary-foreground: 0 0% 100%;
 
