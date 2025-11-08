@@ -1,0 +1,431 @@
+Agent Chatroom UX + Orchestration Spec
+
+Stack assumptions: Railway-hosted Node/TS service, Gemini 2.5 (tool calling), GitHub CI/CD, Express for health, WebSocket/SSE for live updates. Uses the functionDeclarations/tooling from your current agent.
+
+
+---
+
+0) Objectives
+
+Make the agent feel operational: plan → do → verify → mark done.
+
+Keep humans in the loop with clear, structured progress.
+
+Support subagents and delegation while preserving a single unified timeline.
+
+Zero confusion: every tool call, result, and file change is visible and linkable.
+
+
+
+---
+
+1) Core UX Primitives (What the chatroom must show)
+
+1. Conversation Thread (messages & events)
+
+User messages, Agent system thoughts (summarized), Tool call cards, Verification results, Errors.
+
+Collapsible details for tool I/O (stdout/stderr, JSON args, timing, exit codes).
+
+
+
+2. Task Pane (inline task management)
+
+Columns: Backlog, In Progress, Verifying, Done (Kanban) — or a simple checklist with statuses.
+
+Each task shows: title, owner (agent/subagent), dependencies, timestamps, verification badge.
+
+
+
+3. Live Status Strip (presence + phase)
+
+Emoji/state chips: 🤔 Thinking, 📝 Planning, 🛠️ Working, 🧪 Verifying, ✅ Complete, 🧵 Waiting Input.
+
+Spinner only during tool execution; otherwise deterministic state badges.
+
+
+
+4. Artifacts Drawer
+
+Files written/modified, build logs, URLs to running services, test reports.
+
+
+
+5. Agents & Subagents Panel
+
+Roster with capabilities; delegation history per task; escalation/override button.
+
+
+
+6. Run Controls
+
+Approve step, Retry with context, Skip, Rollback file, Stop run.
+
+
+
+
+
+---
+
+2) Event Model (SSE/WebSocket) — the API your UI consumes
+
+Emit small, typed events. Keep a single stream per conversation.
+
+// Envelope
+interface EventEnvelope<T = unknown> {
+  id: string;              // ULID
+  ts: string;              // ISO
+  type: EventType;         // see union below
+  actor: "user" | "agent" | "subagent" | "system";
+  data: T;
+}
+
+type EventType =
+  | "message.user"
+  | "message.agent"
+  | "plan.created"
+  | "task.created"
+  | "task.updated"
+  | "tool.called"
+  | "tool.succeeded"
+  | "tool.failed"
+  | "verify.requested"
+  | "verify.result"
+  | "artifact.created"
+  | "artifact.updated"
+  | "run.phase"        // thinking/planning/working/verifying/complete
+  | "agent.delegated"  // to subagent
+  | "agent.guidance";  // agent asked a question
+
+Examples
+
+{
+  "id":"01J9...",
+  "ts":"2025-11-08T15:21:34Z",
+  "type":"run.phase",
+  "actor":"agent",
+  "data":{"phase":"planning"}
+}
+
+{
+  "id":"01J9...",
+  "ts":"2025-11-08T15:21:40Z",
+  "type":"tool.called",
+  "actor":"agent",
+  "data":{
+    "name":"write_file",
+    "args":{"path":"app.ts","bytes":328},
+    "correlationId":"tool-01J9..."
+  }
+}
+
+{
+  "id":"01J9...",
+  "ts":"2025-11-08T15:21:41Z",
+  "type":"tool.succeeded",
+  "actor":"system",
+  "data":{
+    "name":"write_file",
+    "correlationId":"tool-01J9...",
+    "durationMs":420,
+    "result":{"path":"app.ts","bytes":328}
+  }
+}
+
+
+---
+
+3) Task Data Model
+
+interface Task {
+  id: string;                 // ULID
+  title: string;
+  status: "backlog"|"in_progress"|"verifying"|"done"|"blocked";
+  owner: "agent"|"subagent:<name>"|"user";
+  dependsOn?: string[];
+  createdAt: string;
+  updatedAt: string;
+  verification?: {
+    checks: Array<{
+      id: string;
+      kind: "assert_file_exists"|"assert_file_contains"|"run_tests"|"fetch_url";
+      status: "pending"|"passed"|"failed";
+      details?: any;
+    }>;
+    summary?: string;     // short human summary for the UI badge
+  };
+  artifacts?: string[];   // paths/urls from tool results
+}
+
+
+---
+
+4) Status/Phase State Machine
+
+Phases are orthogonal to task status (UI shows both):
+
+thinking → planning → working → verifying → (working for fixes) → complete Transitions are driven by your controller, not the model.
+
+
+
+---
+
+5) Tool Call Cards (UI)
+
+Header: tool name + status chip (running/success/fail) + duration.
+
+Body tabs: Arguments, Result, Stdout, Stderr.
+
+Footer: Retry with edited args, Copy as cURL/JSON.
+
+
+
+---
+
+6) Subagent Orchestration
+
+Delegation event: agent.delegated with subagentName, taskId, reason.
+
+Subagents have their own function sets (e.g., test-runner, doc-writer). The UI shows a color band by subagent.
+
+Parent agent owns the plan; subagents own execution of assigned tasks. Results stream back into the same timeline.
+
+
+
+---
+
+7) Human Guidance & Checkpoints
+
+The agent emits agent.guidance when uncertain (provide a multiple-choice or free text prompt). UI shows a sticky decision bar.
+
+Decisions are persisted and replayable.
+
+
+
+---
+
+8) Verification & Done Criteria
+
+Every write or run must be followed by at least one verification event:
+
+assert_file_exists, assert_file_contains, run_tests, fetch_url (200).
+
+
+Task status flips to done only when all required checks passed.
+
+
+
+---
+
+9) Error Handling
+
+On tool.failed, controller posts a compact diagnostic (exit code, stderr summary, common fixes) and moves task → blocked or re-queues with backoff.
+
+Provide a Retry button with last-known-good args.
+
+
+
+---
+
+10) Observability
+
+Per-run: total tool calls, success rate, average durations, top failing tools.
+
+Per-task: time-in-state, number of retries, verification pass rate.
+
+Downloadable JSON log of the full event stream.
+
+
+
+---
+
+11) Security & Safety
+
+Redact secrets in UI; show presence only (e.g., GEMINI_API_KEY ✓).
+
+Sandboxed executors only; disallow network egress by default except fetch_url to whitelisted hosts.
+
+Size guards: cap write_file bytes; chunk large writes.
+
+
+
+---
+
+12) Minimal UI Layout (React)
+
+┌─────────────────── Chat (center) ───────────────────┐
+│ [User] Build a Flask app...                         │
+│ [Agent 🤔] Planning 3 tasks...                      │
+│ [plan.created] Tasks: init, write app, verify       │
+│ [tool.called] write_file app.py                     │
+│ [tool.succeeded] 328 bytes                          │
+│ [verify.requested] assert_file_contains '/health'   │
+│ [verify.result ✅] passed                            │
+│ [task.updated ✅] “write app” done                   │
+└─────────────────────────────────────────────────────┘
+┌ Tasks (right) ┐   ┌ Artifacts (bottom) ┐
+│ Backlog        │   │ Modified files, URLs│
+│ In Progress    │   └─────────────────────┘
+│ Verifying      │
+│ Done ✅         │
+└────────────────┘
+
+
+---
+
+13) Frontend Event Contracts (for your coder)
+
+SSE endpoint
+
+GET /api/rooms/:roomId/stream → text/event-stream
+
+Sends EventEnvelope lines serialized as JSON.
+
+
+Post message
+
+POST /api/rooms/:roomId/message
+
+{ "text": "Create an Express app with /health" }
+
+Manual controls
+
+POST /api/tasks/:id/retry
+
+POST /api/tasks/:id/skip
+
+POST /api/run/stop
+
+
+
+---
+
+14) Controller Hooks (Server-side)
+
+beforeModelCall: push run.phase: thinking|planning|working.
+
+afterModelCall: emit tool.called with correlation id.
+
+afterTool: emit tool.succeeded|tool.failed + artifact.* as needed.
+
+afterVerify: emit verify.result and flip task status.
+
+
+
+---
+
+15) UX Copy (short, consistent)
+
+Thinking → “scanning context”
+
+Planning → “drafting checklist (N steps)”
+
+Working → “executing step N of M: <title>”
+
+Verifying → “running checks (K)”
+
+Complete → “all steps passed”
+
+
+
+---
+
+16) Gemini Integration Notes (fit to this UI)
+
+Force one tool call per action turn; use controller to sequence.
+
+Always re-send functionDeclarations, responseMimeType:"application/json", temperature:0, and allowedFunctionNames.
+
+For subagents, instantiate separate model sessions with narrower tool sets.
+
+
+
+---
+
+17) Example: Delegation Flow
+
+1. Main agent moves task → delegated via agent.delegated to subagent:test-runner.
+
+
+2. Subagent issues run_command { command:"npm", args:["test"] }.
+
+
+3. Emits tool.succeeded with junit path in result.
+
+
+4. Controller posts artifact.created with /reports/junit.xml.
+
+
+5. Subagent issues verify.requested run_tests → result passed: 12, failed: 0.
+
+
+6. Task flips to done; main agent continues next task.
+
+
+
+
+---
+
+18) Ready-to-Use JSON Schemas (UI validation)
+
+const RunPhase = z.enum(["thinking","planning","working","verifying","complete"]);
+const TaskStatus = z.enum(["backlog","in_progress","verifying","done","blocked"]);
+const EventType = z.enum([
+  "message.user","message.agent","plan.created","task.created","task.updated",
+  "tool.called","tool.succeeded","tool.failed","verify.requested","verify.result",
+  "artifact.created","artifact.updated","run.phase","agent.delegated","agent.guidance"
+]);
+
+
+---
+
+19) “Day 1” Deliverables Checklist
+
+[ ] SSE/WebSocket stream emitting EventEnvelope.
+
+[ ] Chat UI rendering message.* + tool call cards.
+
+[ ] Task Pane with Kanban statuses.
+
+[ ] Status Strip with phase chips.
+
+[ ] Verification badges & artifact drawer.
+
+[ ] Subagent roster & delegation events.
+
+[ ] Manual controls (retry/skip/stop).
+
+
+
+---
+
+20) Nice-to-haves (Phase 2)
+
+Diff viewer for file writes.
+
+Timeline scrubber and run replay.
+
+Prompt/response size gauges; truncation warnings.
+
+Per-agent capability tags and auto-routing.
+
+Slack/Email notifications on human guidance requests.
+
+
+
+---
+
+Outcome: This spec ensures your Gemini agent on Railway feels like a competent coder: visibly plans, executes tools, verifies work, marks tasks done, and cleanly delegates—without confusing the user.
+
+Awesome—I've dropped a full, ready-to-build spec into a canvas titled “Agent Chatroom UX + Orchestration Spec (Railway + Gemini 2.5)”. It lays out:
+
+the exact UI your chatroom should have (chat thread, task pane, status strip, artifacts, subagents panel),
+
+the live event schema for progress (SSE/WebSocket),
+
+task/state models, verification rules, delegation flows,
+
+and the minimal routes + copy your coder can ship first.
+
+
+Want me to turn that into a React starter (components + SSE client) next, or wire it into your existing repo structure?
