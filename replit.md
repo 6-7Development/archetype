@@ -28,25 +28,26 @@ Lomu is an AI-powered platform for rapid web development, featuring LomuAI, an a
 - ✅ **System instruction added** - "Only use declared tools" prevents function hallucination
 
 ### Design Preferences
-- **Brand Identity**: Fresh, optimistic, citrus-inspired theme
-- **Color Palette**:
-  - Sparkling Lemon (50 98% 58%) - Primary vibrant yellow
-  - Fresh Mint (145 60% 45%) - Success green
-  - Citrus Bloom (32 94% 62%) - Warning orange
-  - Slate Professional (210 14% 24%) - Text and contrast
-  - Cream Base (48 46% 96%) - Soft backgrounds
+- **Brand Identity**: Professional swarm/hive intelligence theme with collaborative AI energy
+- **Color Palette (Hive Theme)**:
+  - Honey (40 97% 50% / #F7B500) - Primary warm golden
+  - Nectar (48 100% 65% / #FFD34D) - Accent light golden
+  - Mint (171 100% 42% / #00D4B3) - Success fresh teal
+  - Charcoal (216 9% 7% / #101113) - Deep backgrounds
+  - Graphite (216 11% 12% / #1B1D21) - Professional text
+  - Cream (47 100% 95% / #FFF8E6) - Soft warm backgrounds
 - **Visual Language**:
-  - Bright, welcoming interfaces with playful professionalism
+  - Professional, collaborative interfaces with hive intelligence
   - Card-based layouts with warm shadows
-  - Clean, approachable design with generous spacing
+  - Clean, modern design with generous spacing
   - Inter font family for UI text, JetBrains Mono for code
   - Light mode primary with dark mode support
-  - Organic animations (Lumo breathing, lemonade filling)
-- **Illustration Elements**:
-  - Lemonade jar loading animations (SVG with animated fill and bubbles)
-  - Lumo mascot with natural sprite animations
-  - Subtle lemon motifs and citrus accents
-  - Ice cubes, bubbles, and fresh visual flourishes
+  - Smooth animations for loading and transitions
+- **Swarm/Hive Elements**:
+  - Honeycomb patterns for organizational structures
+  - Warm golden accents throughout the UI
+  - Collaborative AI agent indicators
+  - Interconnected network visualizations
 
 ## System Architecture
 The platform is built with a React frontend, an Express.js backend, and PostgreSQL for data persistence.
@@ -55,7 +56,7 @@ The platform is built with a React frontend, an Express.js backend, and PostgreS
 The platform uses a unified codebase for Lomu (Desktop, 4-panel layout) and Lomu5 (Mobile, bottom tab navigation), sharing backend APIs, WebSockets, authentication, and database access.
 
 ### UI/UX Decisions
-The user interface features a tab-based workspace with a command console and real-time live preview. The design is fresh, optimistic, and citrus-inspired, utilizing card-based layouts, warm shadows, smooth transitions, and ADA/WCAG accessibility. Chat interfaces use semantic theme tokens for consistent, polished appearance with modern message bubbles and smooth transitions. Loading states feature a signature lemonade jar animation.
+The user interface features a tab-based workspace with a command console and real-time live preview. The design uses a professional swarm/hive theme with honey-gold and mint-teal accents, utilizing card-based layouts, warm shadows, smooth transitions, and ADA/WCAG accessibility. Chat interfaces use semantic theme tokens for consistent, polished appearance with modern message bubbles and smooth transitions. Loading states feature smooth animations.
 
 **Agent Chatroom UX (100% Replit Agent Parity):**
 The platform implements a comprehensive Agent Chatroom interface with real-time progress tracking:
