@@ -11,7 +11,8 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/componen
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Send, Upload, Rocket, Plus, Loader2, Database, Activity, AlertCircle, CheckCircle, RefreshCw, Trash2, BarChart3, ListTodo } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Send, Upload, Rocket, Plus, Loader2, Database, Activity, AlertCircle, CheckCircle, RefreshCw, Trash2, BarChart3, ListTodo, ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { AgentTaskList, type AgentTask } from '@/components/agent-task-list';
@@ -22,6 +23,11 @@ import { parseMessageContent, cleanAIResponse } from '@/lib/message-parser';
 import { ChatInputToolbar } from '@/components/ui/chat-input-toolbar';
 import { nanoid } from 'nanoid';
 import { LivePreview } from '@/components/live-preview';
+// ✅ NEW: Agent Chatroom UX Components
+import { StatusStrip } from '@/components/agent/StatusStrip';
+import { TaskPane } from '@/components/agent/TaskPane';
+import { ArtifactsDrawer, type Artifact as ArtifactItem } from '@/components/agent/ArtifactsDrawer';
+import type { RunPhase } from '@shared/agentEvents';
 
 interface HealingTarget {
   id: string;
@@ -123,6 +129,12 @@ function PlatformHealingContent() {
   const abortControllerRef = useRef<AbortController | null>(null);
   const [tasks, setTasks] = useState<AgentTask[]>([]);
   const [showTaskDrawer, setShowTaskDrawer] = useState(false);
+  // ✅ NEW: Agent Chatroom UX State
+  const [currentPhase, setCurrentPhase] = useState<RunPhase>('complete');
+  const [phaseMessage, setPhaseMessage] = useState<string>('');
+  const [artifacts, setArtifacts] = useState<ArtifactItem[]>([]);
+  const [showTaskPane, setShowTaskPane] = useState(false);
+  const [showArtifactsDrawer, setShowArtifactsDrawer] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<Array<{
     name: string;
     size: number;
@@ -755,6 +767,17 @@ function PlatformHealingContent() {
 
   const selectedTarget = targets?.find(t => t.id === targetId);
 
+  // ✅ NEW: Phase sync logic - Update currentPhase based on streaming state
+  useEffect(() => {
+    if (isStreaming) {
+      setCurrentPhase('working');
+      setPhaseMessage('Processing your request...');
+    } else {
+      setCurrentPhase('complete');
+      setPhaseMessage('');
+    }
+  }, [isStreaming]);
+
   return (
     <div className="flex flex-col h-screen bg-background">
       {/* Header */}
@@ -898,6 +921,15 @@ function PlatformHealingContent() {
             {/* Left Panel: Chat */}
             <ResizablePanel defaultSize={40} minSize={25}>
               <div className="h-full flex flex-col">
+                {/* ✅ NEW: Agent Status Strip - Shows current phase */}
+                {isStreaming && (
+                  <StatusStrip 
+                    phase={currentPhase}
+                    message={phaseMessage}
+                    isExecuting={isStreaming}
+                  />
+                )}
+                
                 {/* Chat Messages */}
                 <div
                   ref={scrollRef}
@@ -1153,11 +1185,16 @@ function PlatformHealingContent() {
                     <ListTodo className="w-4 h-4 mr-1.5" />
                     Tasks {tasks.length > 0 && `(${tasks.length})`}
                   </TabsTrigger>
+                  {artifacts.length > 0 && (
+                    <TabsTrigger value="artifacts" data-testid="tab-artifacts">
+                      Artifacts ({artifacts.length})
+                    </TabsTrigger>
+                  )}
                   <TabsTrigger value="info" data-testid="tab-info">Info</TabsTrigger>
                   <TabsTrigger value="log" data-testid="tab-log">Log</TabsTrigger>
                 </TabsList>
 
-                {/* Tasks Tab */}
+                {/* ✅ NEW: Tasks Tab with TaskPane */}
                 <TabsContent value="tasks" className="flex-1 overflow-y-auto mt-0">
                   <div className="p-4">
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -1165,7 +1202,19 @@ function PlatformHealingContent() {
                       Agent Tasks
                     </h3>
                     {tasks.length > 0 ? (
-                      <AgentTaskList tasks={tasks} />
+                      <TaskPane 
+                        tasks={tasks.map(t => ({
+                          id: t.id,
+                          title: t.title,
+                          status: t.status === 'completed' ? 'done' : 
+                                  t.status === 'in_progress' ? 'in_progress' : 
+                                  t.status === 'failed' ? 'blocked' : 'backlog',
+                          owner: 'agent' as const,
+                          createdAt: new Date().toISOString(),
+                          updatedAt: new Date().toISOString(),
+                          artifactCount: 0
+                        }))}
+                      />
                     ) : (
                       <div className="text-center py-8 text-muted-foreground">
                         <ListTodo className="w-12 h-12 mx-auto mb-3 opacity-20" />
@@ -1175,6 +1224,15 @@ function PlatformHealingContent() {
                     )}
                   </div>
                 </TabsContent>
+
+                {/* ✅ NEW: Artifacts Tab with ArtifactsDrawer */}
+                {artifacts.length > 0 && (
+                  <TabsContent value="artifacts" className="flex-1 overflow-y-auto mt-0">
+                    <div className="p-4">
+                      <ArtifactsDrawer artifacts={artifacts} />
+                    </div>
+                  </TabsContent>
+                )}
 
                 {/* Info Tab */}
                 <TabsContent value="info" className="flex-1 overflow-y-auto p-4 mt-0">
