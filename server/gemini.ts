@@ -354,17 +354,18 @@ Only use declared tools with proper JSON format.`,
     if (geminiTools && geminiTools.length > 0 && geminiTools[0]?.functionDeclarations) {
       requestParams.tools = geminiTools;
       
-      // ✅ CRITICAL FIX: Force JSON-only function calling (mode: ANY eliminates Python syntax)
-      // AUTO mode still allows Python SDK wrappers - ANY mode forces strict JSON function calls only
-      const functionNames = geminiTools[0].functionDeclarations.map((fn: any) => fn.name);
+      // ✅ CRITICAL FIX: Use AUTO mode for natural function calling
+      // AUTO = Let Gemini decide when to use functions (prevents Python syntax errors)
+      // ANY = Force function calls (causes MALFORMED_FUNCTION_CALL errors with Python syntax)
+      // NONE = Disable function calling
       requestParams.toolConfig = {
         functionCallingConfig: {
-          mode: 'ANY', // Force ALL responses to be function calls (no Python syntax allowed)
-          allowedFunctionNames: functionNames // Explicitly enumerate allowed functions from functionDeclarations
+          mode: 'AUTO', // Let Gemini naturally decide when to call functions
         }
       };
       
-      console.log(`[GEMINI-TOOLCONFIG] mode: ANY, ${functionNames.length} functions allowed:`, functionNames.slice(0, 5).join(', '));
+      const functionNames = geminiTools[0].functionDeclarations.map((fn: any) => fn.name);
+      console.log(`[GEMINI-TOOLCONFIG] mode: AUTO, ${functionNames.length} functions available:`, functionNames.slice(0, 5).join(', '));
     }
 
     // 🔍 DEBUG: Log what we're sending to Gemini
