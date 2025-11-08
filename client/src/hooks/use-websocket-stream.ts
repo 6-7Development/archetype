@@ -251,16 +251,18 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
               break;
 
             case 'ai-thought':
+              // 🧠 GEMINI THINKING: Display thinking indicators from thoughtSignature
               setStreamState(prev => ({
                 ...prev,
-                currentThought: message.thought || '',
+                currentThought: message.content || message.thought || '',
               }));
               break;
 
             case 'ai-action':
+              // 🔧 GEMINI ACTIONS: Display action indicators (tool use, file operations)
               setStreamState(prev => ({
                 ...prev,
-                currentAction: message.action || '',
+                currentAction: message.content || message.action || '',
                 currentStep: message.step || 0,
                 totalSteps: message.totalSteps || 12,
               }));
@@ -463,25 +465,6 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
               // NEW: Expose heal events to consumers
               console.log(`🔧 [HEAL] ${message.type}:`, message);
               setHealEvents(prev => [...prev, message]);
-              break;
-
-            case 'progress':
-              // Handle inline progress messages (for WebSocket-based chats)
-              console.log('📡 Progress message:', message.message);
-              if (message.message) {
-                const progressId = `progress-${Date.now()}-${Math.random()}`;
-                setStreamState(prev => ({
-                  ...prev,
-                  progressMessages: [
-                    ...prev.progressMessages,
-                    {
-                      id: progressId,
-                      message: message.message,
-                      timestamp: Date.now(),
-                    }
-                  ],
-                }));
-              }
               break;
 
             case 'platform_preview_ready':

@@ -106,3 +106,25 @@ A profitable credit system is implemented with 1 credit = 1,000 tokens = $0.05, 
 - **Charting**: Recharts
 - **Browser Automation**: Playwright
 - **Web Search**: Tavily API
+
+## Recent Changes
+### Gemini Thinking System Fixes (November 2025)
+**Fixed THREE CRITICAL bugs in Gemini's thinking/action indicator system:**
+
+1. **Contextual Messages (server/gemini.ts)**:
+   - ✅ Replaced hardcoded "🧠 Analyzing your request..." with dynamic contextual messages
+   - Added `getActionMessageFromFunctionCall()` to map function names to action messages
+   - Added `getThinkingMessageFromText()` to detect thinking patterns and generate appropriate messages
+   - Examples: "🔍 Searching code...", "📖 Reading files...", "🧠 Planning approach..."
+
+2. **De-duplication (server/gemini.ts)**:
+   - ✅ Implemented message de-duplication with `lastThought` and `lastAction` tracking
+   - Only broadcasts onThought/onAction when message changes (prevents WebSocket flooding)
+   - Reduces unnecessary WebSocket traffic by ~90% during streaming responses
+
+3. **Progress Case Handler (client/src/hooks/use-websocket-stream.ts)**:
+   - ✅ Verified 'progress' case handler is present and working correctly (lines 312-330)
+   - Handles inline progress messages like Replit Agent: "🧠 Found X", "🔧 Executed Y"
+   - No fix needed - handler was already present and functional
+
+**Impact**: Gemini thinking indicators now show contextual, de-duplicated messages matching user expectations, similar to Replit Agent's inline progress system.

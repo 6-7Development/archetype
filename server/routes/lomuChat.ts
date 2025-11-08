@@ -23,6 +23,7 @@ import { createSafeAnthropicRequest } from '../lib/anthropic-wrapper.ts';
 import { sanitizeDiagnosisForAI } from '../lib/diagnosis-sanitizer.ts';
 import { filterToolCallsFromMessages } from '../lib/message-filter.ts';
 import type { WebSocketServer } from 'ws';
+import { broadcastToUser } from './websocket.ts';
 import { getOrCreateState, autoUpdateFromMessage, formatStateForPrompt } from '../services/conversationState.ts';
 import { agentFailureDetector } from '../services/agentFailureDetector.ts';
 import { classifyUserIntent, getMaxIterationsForIntent, type UserIntent } from '../shared/chatConfig.ts';
@@ -1314,6 +1315,26 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               fullContent = fullContent.substring(0, 197) + '...';
               sendEvent('content', { content: '...' });
             }
+          }
+        },
+        onThought: (thought: string) => {
+          // 🧠 GEMINI THINKING: Broadcast thinking indicators to frontend
+          if (wss && userId) {
+            broadcastToUser(wss, userId, {
+              type: 'ai-thought',
+              content: thought,
+              timestamp: new Date().toISOString()
+            });
+          }
+        },
+        onAction: (action: string) => {
+          // 🔧 GEMINI ACTIONS: Broadcast action indicators to frontend
+          if (wss && userId) {
+            broadcastToUser(wss, userId, {
+              type: 'ai-action',
+              content: action,
+              timestamp: new Date().toISOString()
+            });
           }
         },
         onError: (error: Error) => {

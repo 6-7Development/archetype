@@ -192,6 +192,60 @@ function convertToolsToGemini(tools: any[]): any[] {
 }
 
 /**
+ * Get contextual action message based on function call name
+ */
+function getActionMessageFromFunctionCall(functionName: string): string {
+  const actionMessages: Record<string, string> = {
+    'browser_test': '🧪 Testing in browser...',
+    'web_search': '🔍 Searching for solutions...',
+    'vision_analyze': '👁️ Analyzing visuals...',
+    'architect_consult': '🧑‍💼 Consulting architect...',
+    'read_platform_file': '📖 Reading platform code...',
+    'write_platform_file': '✏️ Fixing platform code...',
+    'read': '📖 Reading files...',
+    'write': '✏️ Writing files...',
+    'edit': '✏️ Editing files...',
+    'bash': '⚙️ Running commands...',
+    'grep': '🔎 Searching code...',
+    'ls': '📂 Listing files...',
+    'glob': '🔍 Finding files...',
+    'execute_sql_tool': '🗄️ Querying database...',
+    'packager_tool': '📦 Installing packages...',
+    'get_latest_lsp_diagnostics': '🔍 Checking for errors...',
+    'search_codebase': '🔍 Searching codebase...',
+    'web_fetch': '🌐 Fetching web content...',
+    'stock_image_tool': '🖼️ Finding images...',
+    'ask_secrets': '🔐 Requesting API keys...',
+  };
+  return actionMessages[functionName] || `🔨 Executing ${functionName}...`;
+}
+
+/**
+ * Get contextual thinking message based on text patterns
+ */
+function getThinkingMessageFromText(text: string): string {
+  const lowerText = text.toLowerCase();
+  
+  if (lowerText.includes('planning') || lowerText.includes('plan')) {
+    return '🧠 Planning approach...';
+  }
+  if (lowerText.includes('considering') || lowerText.includes('evaluating')) {
+    return '💭 Considering options...';
+  }
+  if (lowerText.includes('analyzing') || lowerText.includes('analysis')) {
+    return '🔍 Analyzing situation...';
+  }
+  if (lowerText.includes('thinking') || lowerText.includes('thought')) {
+    return '🤔 Thinking through this...';
+  }
+  if (lowerText.includes('reviewing') || lowerText.includes('checking')) {
+    return '👀 Reviewing code...';
+  }
+  
+  return '🧠 Analyzing...';
+}
+
+/**
  * Stream Gemini AI responses with real-time thought/action detection
  * Compatible with Anthropic streaming interface
  */
@@ -218,6 +272,10 @@ export async function streamGeminiResponse(options: StreamOptions) {
   let functionCalls: any[] = [];
   let abortHandler: (() => void) | null = null;
   let abortController: AbortController | null = null;
+  
+  // 🎯 DE-DUPLICATION: Track last broadcast messages to prevent flooding
+  let lastThought = '';
+  let lastAction = '';
 
   try {
     if (signal?.aborted) {
@@ -338,6 +396,36 @@ Only use declared tools with proper JSON format.`,
 
         // Process each part
         for (const part of content.parts) {
+          // 🧠 CRITICAL FIX: Handle thoughtSignature with contextual messages
+          // thoughtSignature + functionCall = action message
+          // thoughtSignature alone = thinking message
+          if (part.thoughtSignature && part.functionCall) {
+            // Thinking + function call = action message
+            try {
+              const action = getActionMessageFromFunctionCall(part.functionCall.name);
+              if (action !== lastAction && onAction) {
+                lastAction = action;
+                console.log('[GEMINI-ACTION] 🔧', action);
+                onAction(action);
+              }
+            } catch (thoughtError) {
+              console.error('❌ Error processing thoughtSignature + functionCall:', thoughtError);
+            }
+          } else if (part.thoughtSignature) {
+            // Thinking alone = contextual thinking message based on nearby text
+            try {
+              // Use the text content to determine context, or default to generic
+              const thought = part.text ? getThinkingMessageFromText(part.text) : '🧠 Analyzing...';
+              if (thought !== lastThought && onThought) {
+                lastThought = thought;
+                console.log('[GEMINI-THOUGHT] 🧠', thought);
+                onThought(thought);
+              }
+            } catch (thoughtError) {
+              console.error('❌ Error processing thoughtSignature:', thoughtError);
+            }
+          }
+
           // Handle text content
           if (part.text) {
             const text = part.text;
@@ -352,30 +440,17 @@ Only use declared tools with proper JSON format.`,
               }
             }
 
-            // Detect thoughts
+            // Detect thinking patterns in text (FALLBACK: when no thoughtSignature)
             try {
-              if (text.toLowerCase().includes('thinking:') || 
-                  text.includes('🤔') || 
-                  /\b(analyzing|considering|evaluating)\b/i.test(text)) {
-                currentThought += text;
-                if (onThought && currentThought.trim().length > 0) {
-                  onThought(currentThought.trim());
+              if (/\b(planning|considering|evaluating|analyzing|thinking|reviewing)\b/i.test(text)) {
+                const thought = getThinkingMessageFromText(text);
+                if (thought !== lastThought && onThought) {
+                  lastThought = thought;
+                  onThought(thought);
                 }
               }
             } catch (thoughtError) {
-              console.error('❌ Error detecting thoughts:', thoughtError);
-            }
-
-            // Detect actions
-            try {
-              if (/step \d+|action:|analyzing|generating|building|creating|optimizing|validating|testing/i.test(text)) {
-                currentAction += text;
-                if (onAction && currentAction.trim().length > 0) {
-                  onAction(currentAction.trim());
-                }
-              }
-            } catch (actionError) {
-              console.error('❌ Error detecting actions:', actionError);
+              console.error('❌ Error detecting thoughts in text:', thoughtError);
             }
           }
 
@@ -394,18 +469,13 @@ Only use declared tools with proper JSON format.`,
               input: functionCall.args || {}
             });
 
-            // Notify about tool use
+            // Notify about tool use (DE-DUPLICATED)
             if (onAction && functionCall.name) {
-              const toolMessages: Record<string, string> = {
-                'browser_test': '🧪 Testing in browser...',
-                'web_search': '🔍 Searching for solutions...',
-                'vision_analyze': '👁️ Analyzing visuals...',
-                'architect_consult': '🧑‍💼 Consulting architect...',
-                'read_platform_file': '📖 Reading platform code...',
-                'write_platform_file': '✏️ Fixing platform code...',
-              };
-              const message = toolMessages[functionCall.name] || `🔨 Working on ${functionCall.name}...`;
-              onAction(message);
+              const action = getActionMessageFromFunctionCall(functionCall.name);
+              if (action !== lastAction) {
+                lastAction = action;
+                onAction(action);
+              }
             }
           }
         }

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, Component, type ReactNode } from "react";
+import { useState, useRef, useEffect, Component, type ReactNode, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { Send, Square, ChevronDown, ChevronRight, Shield, Zap, Brain, Infinity, Rocket, User, Copy, Check, Loader2, XCircle, FileCode, Terminal, CheckCircle, Clock, Upload, X, File, Image, AlertCircle } from "lucide-react";
@@ -19,6 +19,8 @@ import { AIModelSelector } from "./ai-model-selector";
 import { ArchitectNotesPanel } from "./architect-notes-panel";
 import { CreditBalanceWidget } from "./credit-balance-widget";
 import { CreditPurchaseModal } from "./credit-purchase-modal";
+import { useWebSocketStream } from "@/hooks/use-websocket-stream";
+import { nanoid } from "nanoid";
 
 // Error boundary for chat messages
 class ChatErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
@@ -272,6 +274,20 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
   });
   const activeProjectId = activeSession?.activeProjectId || null;
 
+  // WebSocket session ID for real-time thinking indicators
+  const sessionId = useMemo(() => {
+    const storageKey = `lomu-chat-session-${activeProjectId || 'default'}`;
+    let id = localStorage.getItem(storageKey);
+    if (!id) {
+      id = nanoid();
+      localStorage.setItem(storageKey, id);
+    }
+    return id;
+  }, [activeProjectId]);
+
+  // WebSocket stream for Gemini thinking indicators
+  const streamState = useWebSocketStream(sessionId, user?.id || 'anonymous');
+
   // Notify parent of task changes
   useEffect(() => {
     if (onTasksChange) {
@@ -291,6 +307,23 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
       }
     }
   }, [messages, isStreaming]);
+
+  // 🧠 GEMINI THINKING INDICATORS: Sync WebSocket stream state to progress display
+  useEffect(() => {
+    if (streamState.currentThought) {
+      setProgressStatus('thinking');
+      setProgressMessage(streamState.currentThought);
+    } else if (streamState.currentAction) {
+      setProgressStatus('working');
+      setProgressMessage(streamState.currentAction);
+    } else if (isStreaming) {
+      setProgressStatus('working');
+      setProgressMessage('Generating response...');
+    } else {
+      setProgressStatus('idle');
+      setProgressMessage('');
+    }
+  }, [streamState.currentThought, streamState.currentAction, isStreaming]);
 
   // Cleanup stream on unmount
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2, Sparkles, Brain, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface AgentProgressDisplayProps {
@@ -9,28 +9,35 @@ interface AgentProgressDisplayProps {
 export function AgentProgressDisplay({ status, message }: AgentProgressDisplayProps) {
   const statusConfig = {
     thinking: {
-      icon: Loader2,
+      icon: Brain,
       text: 'Thinking...',
-      className: 'text-blue-500',
-      iconClassName: 'animate-spin',
+      // Citrus-themed: Sparkling Lemon with pulse animation
+      className: 'text-[hsl(50,98%,58%)] animate-pulse',
+      iconClassName: 'animate-pulse',
+      containerClassName: 'bg-[hsl(50,98%,58%)]/10 border border-[hsl(50,98%,58%)]/20 rounded-md px-3 py-1.5',
     },
     working: {
-      icon: Loader2,
+      icon: Zap,
       text: 'Working...',
-      className: 'text-emerald-500',
+      // Citrus-themed: Fresh Mint with gentle spin
+      className: 'text-[hsl(145,60%,45%)]',
       iconClassName: 'animate-spin',
+      containerClassName: 'bg-[hsl(145,60%,45%)]/10 border border-[hsl(145,60%,45%)]/20 rounded-md px-3 py-1.5',
     },
     vibing: {
       icon: Sparkles,
       text: 'Vibing..',
-      className: 'text-purple-500',
+      // Citrus-themed: Citrus Bloom with sparkle
+      className: 'text-[hsl(32,94%,62%)] animate-pulse',
       iconClassName: 'animate-pulse',
+      containerClassName: 'bg-[hsl(32,94%,62%)]/10 border border-[hsl(32,94%,62%)]/20 rounded-md px-3 py-1.5',
     },
     idle: {
       icon: Sparkles,
       text: '',
       className: 'text-muted-foreground',
       iconClassName: '',
+      containerClassName: '',
     },
   };
 
@@ -43,11 +50,11 @@ export function AgentProgressDisplay({ status, message }: AgentProgressDisplayPr
 
   return (
     <div 
-      className={cn('flex items-center gap-2 text-sm', config.className)}
+      className={cn('flex items-center gap-2 text-sm font-medium transition-all duration-300', config.containerClassName)}
       data-testid="agent-progress-display"
     >
-      <Icon className={cn('w-4 h-4', config.iconClassName)} />
-      <span>{message || config.text}</span>
+      <Icon className={cn('w-4 h-4 shrink-0', config.iconClassName, config.className)} />
+      <span className={cn('truncate', config.className)}>{message || config.text}</span>
     </div>
   );
 }

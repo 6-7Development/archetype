@@ -434,6 +434,26 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
               maxTokens: 4000,
               system: systemPrompt,
               messages: conversationMessages,
+              onThought: (thought: string) => {
+                // 🧠 GEMINI THINKING: Broadcast thinking indicators to frontend
+                if (deps?.wss && userId) {
+                  broadcastToUser(deps.wss, userId, {
+                    type: 'ai-thought',
+                    content: thought,
+                    timestamp: new Date().toISOString()
+                  });
+                }
+              },
+              onAction: (action: string) => {
+                // 🔧 GEMINI ACTIONS: Broadcast action indicators to frontend
+                if (deps?.wss && userId) {
+                  broadcastToUser(deps.wss, userId, {
+                    type: 'ai-action',
+                    content: action,
+                    timestamp: new Date().toISOString()
+                  });
+                }
+              },
               tools: [
               // ⚡ GOOGLE GEMINI OPTIMIZED: 13 CORE TOOLS (Google recommends 10-20 max)
               // All other tools delegated to sub-agents or I AM Architect for optimal performance

@@ -246,6 +246,26 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     }
   }, [currentMessageId, savedTasks]);
 
+  // 🧠 GEMINI THINKING INDICATORS: Sync WebSocket stream state to progress display
+  useEffect(() => {
+    if (streamState.currentThought) {
+      setProgressStatus('thinking');
+      setProgressMessage(streamState.currentThought);
+    } else if (streamState.currentAction) {
+      setProgressStatus('working');
+      setProgressMessage(streamState.currentAction);
+    } else if (streamState.chatProgress) {
+      setProgressStatus('working');
+      setProgressMessage(streamState.chatProgress.message || 'Working...');
+    } else if (isGenerating) {
+      setProgressStatus('working');
+      setProgressMessage('Generating response...');
+    } else {
+      setProgressStatus('idle');
+      setProgressMessage('');
+    }
+  }, [streamState.currentThought, streamState.currentAction, streamState.chatProgress, isGenerating]);
+
   // Update agent UI from WebSocket events
   useEffect(() => {
     // Convert WebSocket tasks to AgentTask format
