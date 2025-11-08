@@ -2,21 +2,21 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MotionToggle } from "@/components/motion-toggle";
-import { Sparkles, Zap, Shield, Code, Check, ArrowRight, Menu, Play, Rocket } from "lucide-react";
-import { LomuTextLogo } from '@/components/final-logos';
+import { Sparkles, Zap, Shield, Code, Check, ArrowRight, Menu, Play, Rocket, Hexagon } from "lucide-react";
 import { useState } from "react";
 
 export default function LandingMobile() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-charcoal-950">
       {/* Mobile Navigation */}
-      <nav className="fixed top-0 w-full z-50 border-b border-white/10 bg-slate-950/95 backdrop-blur-xl">
+      <nav className="fixed top-0 w-full z-50 border-b border-honey/10 bg-charcoal-950/95 backdrop-blur-xl">
         <div className="px-3 sm:px-4 py-3">
           <div className="flex items-center justify-between gap-2 sm:gap-3">
             <Link href="/" className="flex items-center gap-2 min-h-[44px] py-1 flex-1 min-w-0 max-w-[60%]" data-testid="link-brand">
-              <LomuTextLogo size="sm" />
+              <Hexagon className="w-6 h-6 text-honey fill-honey/20 flex-shrink-0" />
+              <span className="text-lg font-bold text-white truncate">BeehiveAI</span>
             </Link>
             
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -46,7 +46,7 @@ export default function LandingMobile() {
               <Button variant="outline" className="w-full min-h-[44px]" asChild data-testid="menu-link-login">
                 <Link href="/auth" onClick={() => setMenuOpen(false)}>Login</Link>
               </Button>
-              <Button variant="default" className="w-full min-h-[44px]" asChild data-testid="menu-link-builder">
+              <Button className="w-full min-h-[44px] bg-honey text-charcoal-950 hover:bg-honey/90 font-semibold" asChild data-testid="menu-link-builder">
                 <Link href="/builder" onClick={() => setMenuOpen(false)}>Get Started</Link>
               </Button>
             </div>
@@ -57,34 +57,36 @@ export default function LandingMobile() {
       {/* Hero Section - Mobile Optimized */}
       <section className="pt-24 pb-12 px-4">
         <div className="text-center space-y-6">
-          <div className="inline-block">
-            <LomuTextLogo size="default" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-honey/30 bg-honey/10">
+            <Sparkles className="w-4 h-4 text-honey" />
+            <span className="text-xs text-honey font-medium">Powered by Claude Sonnet 4</span>
           </div>
 
           <div className="space-y-3">
-            <h1 className="text-4xl font-bold leading-tight break-words">
-              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent break-words">
+            <h1 className="text-3xl sm:text-4xl font-bold leading-tight break-words">
+              <span className="bg-gradient-to-r from-honey via-nectar to-mint bg-clip-text text-transparent break-words">
                 Build Full-Stack Apps
               </span>
               <br />
               <span className="text-white break-words">With AI in Seconds</span>
             </h1>
             
-            <p className="text-slate-300 text-base max-w-sm mx-auto break-words whitespace-normal">
+            <p className="text-slate-400 text-base max-w-sm mx-auto break-words whitespace-normal">
               Claude Sonnet 4 powered. Zero coding required. Production-ready in minutes.
             </p>
           </div>
 
           <div className="flex flex-col gap-3 max-w-xs mx-auto">
-            <Button size="lg" className="w-full min-h-[44px] py-3" asChild data-testid="button-cta-mobile">
+            <Button size="lg" className="w-full min-h-[44px] py-3 bg-honey text-charcoal-950 hover:bg-honey/90 font-semibold" asChild data-testid="button-cta-mobile">
               <Link href="/builder">
+                <Zap className="w-4 h-4 mr-2" />
                 Start Building Free
-                <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             </Button>
-            <Button size="lg" variant="outline" className="w-full min-h-[44px] py-3 text-white border-slate-600" asChild data-testid="button-cta-pricing-mobile">
+            <Button size="lg" variant="outline" className="w-full min-h-[44px] py-3 text-white border-white/20 hover:bg-white/5" asChild data-testid="button-cta-pricing-mobile">
               <Link href="/pricing">
                 View Pricing
+                <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             </Button>
           </div>
@@ -100,11 +102,11 @@ export default function LandingMobile() {
             { value: "Full Stack", label: "Web Expertise" },
             { value: "2D/3D", label: "Game Support" }
           ].map((stat, i) => (
-            <div key={i} className="text-center p-4 bg-slate-900/50 rounded-lg border border-slate-800">
-              <div className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <div key={i} className="text-center p-4 bg-white/5 rounded-lg border border-white/10">
+              <div className="text-xl font-bold text-honey">
                 {stat.value}
               </div>
-              <div className="text-xs text-slate-500 mt-1">{stat.label}</div>
+              <div className="text-xs text-slate-400 mt-1">{stat.label}</div>
             </div>
           ))}
         </div>
@@ -139,7 +141,7 @@ export default function LandingMobile() {
                 </div>
               </div>
               <h3 className="mt-3 font-semibold text-white text-sm">Watch AI Code in Real-Time</h3>
-              <p className="text-xs text-slate-400 mt-1">See LomuAI generate and test automatically</p>
+              <p className="text-xs text-slate-400 mt-1">See swarm intelligence generate and test automatically</p>
             </Card>
 
             {/* Screenshot 3: Live Preview */}
@@ -173,14 +175,14 @@ export default function LandingMobile() {
       <section className="py-12 px-4">
         <div className="max-w-md mx-auto space-y-4">
           <h2 className="text-2xl font-bold text-center mb-6 break-words leading-snug">
-            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent break-words">
-              Why Choose Lomu
+            <span className="bg-gradient-to-r from-honey to-mint bg-clip-text text-transparent break-words">
+              Why Choose BeehiveAI
             </span>
           </h2>
 
           <Card className="p-4 space-y-3">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-              <Zap className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-honey to-nectar flex items-center justify-center">
+              <Zap className="w-6 h-6 text-charcoal-950" />
             </div>
             <h3 className="text-lg font-semibold text-white break-words">Lightning Fast</h3>
             <p className="text-slate-300 text-sm break-words whitespace-normal">
@@ -189,8 +191,8 @@ export default function LandingMobile() {
           </Card>
 
           <Card className="p-4 space-y-3">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-secondary to-accent flex items-center justify-center">
-              <Shield className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-mint to-honey flex items-center justify-center">
+              <Shield className="w-6 h-6 text-charcoal-950" />
             </div>
             <h3 className="text-lg font-semibold text-white break-words">Enterprise Quality</h3>
             <p className="text-slate-300 text-sm break-words whitespace-normal">
@@ -199,8 +201,8 @@ export default function LandingMobile() {
           </Card>
 
           <Card className="p-4 space-y-3">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-secondary to-primary flex items-center justify-center">
-              <Code className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-nectar to-mint flex items-center justify-center">
+              <Code className="w-6 h-6 text-charcoal-950" />
             </div>
             <h3 className="text-lg font-semibold text-white break-words">100% Transparent</h3>
             <p className="text-slate-300 text-sm break-words whitespace-normal">
@@ -239,7 +241,7 @@ export default function LandingMobile() {
               </li>
             </ul>
 
-            <Button size="lg" className="w-full min-h-[44px] py-3" asChild data-testid="button-footer-cta">
+            <Button size="lg" className="w-full min-h-[44px] py-3 bg-honey text-charcoal-950 hover:bg-honey/90 font-semibold" asChild data-testid="button-footer-cta">
               <Link href="/builder">Get Started Free</Link>
             </Button>
           </Card>
@@ -250,10 +252,11 @@ export default function LandingMobile() {
       <footer className="border-t border-white/10 py-8 px-4">
         <div className="max-w-md mx-auto text-center space-y-4">
           <div className="flex items-center justify-center gap-2">
-            <LomuTextLogo size="sm" />
+            <Hexagon className="w-6 h-6 text-honey fill-honey/20" />
+            <span className="text-lg font-bold text-white">BeehiveAI</span>
           </div>
           <p className="text-sm text-slate-400 break-words whitespace-normal">
-            When code throws you lemons, you get Lomu
+            Swarm intelligence for modern development
           </p>
           <div className="flex justify-center gap-4">
             <Link href="/pricing" className="text-slate-400 hover:text-primary transition-colors min-h-[44px] flex items-center px-2" data-testid="footer-link-pricing">
@@ -268,7 +271,7 @@ export default function LandingMobile() {
           <div className="max-w-sm mx-auto pt-4">
             <p className="text-xs text-slate-500 break-words whitespace-normal">
               AI-generated code requires human review and testing. Results may vary based on project complexity. 
-              Lomu is an AI-assisted development tool - not a replacement for skilled developers.
+              BeehiveAI is an AI-assisted development tool - not a replacement for skilled developers.
             </p>
           </div>
           

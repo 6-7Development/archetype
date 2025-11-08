@@ -4,7 +4,6 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Sparkles, Zap, Shield, Code, Rocket, Check, Play, ArrowRight, Hexagon } from "lucide-react";
-import { LomuFullLogo } from '@/components/lomu-logos-new';
 
 export default function Landing() {
   return (
@@ -24,7 +23,7 @@ export default function Landing() {
             <Link href="/" data-testid="link-home" className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <Hexagon className="w-8 h-8 text-honey fill-honey/20" />
-                <span className="text-2xl font-bold text-white">Lomu</span>
+                <span className="text-2xl font-bold text-white">BeehiveAI</span>
               </div>
             </Link>
             
@@ -68,9 +67,8 @@ export default function Landing() {
           
           {/* Main Headline */}
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-            <span className="text-honey">Build </span>
-            <span className="bg-gradient-to-r from-mint to-honey bg-clip-text text-transparent">
-              Full-Stack Apps
+            <span className="bg-gradient-to-r from-honey via-nectar to-mint bg-clip-text text-transparent">
+              Build Full-Stack Apps
             </span>
             <br />
             <span className="text-white">With AI in Seconds</span>
@@ -143,9 +141,9 @@ export default function Landing() {
                   <p className="text-xs text-slate-500 mt-1">Real-time code generation</p>
                 </div>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Chat with LomuAI</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Chat with BeehiveAI</h3>
               <p className="text-sm text-slate-400">
-                Describe what you want to build and watch AI generate production-ready code in real-time
+                Describe what you want to build and watch swarm intelligence generate production-ready code
               </p>
             </Card>
 

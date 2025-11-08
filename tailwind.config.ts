@@ -81,6 +81,47 @@ export default {
           busy: "rgb(239 68 68)",
           offline: "rgb(156 163 175)",
         },
+        // BeehiveAI hive colors
+        honey: {
+          DEFAULT: "hsl(var(--honey) / <alpha-value>)",
+          50: "hsl(40 100% 95%)",
+          100: "hsl(40 100% 85%)",
+          200: "hsl(40 98% 75%)",
+          300: "hsl(40 98% 65%)",
+          400: "hsl(40 98% 55%)",
+          500: "hsl(var(--honey) / <alpha-value>)", // #F7B500
+          600: "hsl(40 95% 45%)",
+          700: "hsl(40 92% 35%)",
+          800: "hsl(40 88% 25%)",
+          900: "hsl(40 85% 15%)",
+          950: "hsl(40 80% 8%)",
+        },
+        nectar: {
+          DEFAULT: "hsl(var(--nectar) / <alpha-value>)",
+        },
+        mint: {
+          DEFAULT: "hsl(var(--mint) / <alpha-value>)",
+        },
+        charcoal: {
+          DEFAULT: "hsl(var(--charcoal) / <alpha-value>)",
+          50: "hsl(216 11% 95%)",
+          100: "hsl(216 11% 85%)",
+          200: "hsl(216 11% 75%)",
+          300: "hsl(216 11% 65%)",
+          400: "hsl(216 11% 55%)",
+          500: "hsl(216 11% 45%)",
+          600: "hsl(216 11% 35%)",
+          700: "hsl(216 11% 25%)",
+          800: "hsl(216 11% 15%)",
+          900: "hsl(216 11% 10%)",
+          950: "hsl(216 9% 7%)", // #101113
+        },
+        graphite: {
+          DEFAULT: "hsl(var(--graphite) / <alpha-value>)",
+        },
+        cream: {
+          DEFAULT: "hsl(var(--cream) / <alpha-value>)",
+        },
       },
       fontFamily: {
         sans: ["var(--font-sans)"],
