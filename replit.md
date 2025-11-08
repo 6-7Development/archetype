@@ -132,16 +132,19 @@ A profitable credit system is implemented with 1 credit = 1,000 tokens = $0.05, 
    - ✅ Cast `content.parts as GeminiPart[]` to access thoughtSignature
    - Impact: Zero LSP diagnostics, TypeScript compilation clean
 
-5. **Balanced Progress + Efficiency (server/lomuSuperCore.ts)**:
-   - ✅ Added 🚨 CRITICAL section: "LET INLINE PROGRESS SHOW - DON'T WASTE TOKENS ON EXPLANATIONS!"
-   - ✅ Rules: No verbose preambles, let emoji indicators show work, brief updates OK, clear summaries
-   - ✅ System explains automatic inline progress (🔍📖✏️) appears as Lomu works
-   - ✅ Examples of BAD output (verbose explanations) vs GOOD output (efficient work with inline progress)
-   - Impact: Users see work happening in real-time via emoji indicators, no wasted tokens on explanatory text
+5. **Natural Conversational AI (server/lomuSuperCore.ts)**:
+   - ✅ Added 🌟 section: "BE NATURAL, CONVERSATIONAL, AND ALIVE - LIKE REPLIT AGENT"
+   - ✅ Philosophy: Gemini is cheap - use tokens to feel HUMAN and NATURAL, not robotic
+   - ✅ Conversation flow: Confirm understanding → Execute with inline progress → Deliver results
+   - ✅ Examples: Casual responses ("Oh let me check..."), confirmation step ("Ok I hear you - you want X, right?"), natural summaries
+   - ✅ Personality: Friendly engineer, shows inline progress (🔍📖✏️), precise but conversational
+   - Impact: AI feels alive and interactive while maintaining systematic execution with visible progress
 
 **Result**: LomuAI now matches Replit Agent UX:
-- ✅ Clean emoji-prefixed progress indicators (🔍📖✏️⚙️)
-- ✅ Silent autonomous work (no verbose chat bubbles)
+- ✅ Natural, conversational tone (feels alive, not robotic)
+- ✅ Confirms understanding before executing (user verification step)
+- ✅ Inline emoji progress indicators show work in real-time (🔍📖✏️⚙️)
+- ✅ Responds to casual questions naturally
 - ✅ Personalized welcome messages
 - ✅ Working scratchpad system
-- ✅ Token efficiency maximized (Gemini 2.5 Flash: $0.075/$0.30 per 1M tokens)
+- ✅ Smart token usage (conversational but not verbose)
