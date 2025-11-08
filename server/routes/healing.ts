@@ -434,7 +434,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
               maxTokens: 4000,
               system: systemPrompt,
               messages: conversationMessages,
-              onThought: (thought: string) => {
+              onThought: async (thought: string) => {
                 // 🧠 GEMINI THINKING: Broadcast thinking indicators to frontend
                 if (deps?.wss && userId) {
                   broadcastToUser(deps.wss, userId, {
@@ -442,9 +442,30 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                     content: thought,
                     timestamp: new Date().toISOString()
                   });
+
+                  // 📝 SCRATCHPAD: Write thought to scratchpad for persistent progress tracking
+                  try {
+                    const entry = await storage.createScratchpadEntry({
+                      sessionId: validated.conversationId,
+                      author: 'LomuAI',
+                      role: 'agent',
+                      content: thought,
+                      entryType: 'thought',
+                      metadata: null
+                    });
+
+                    // Broadcast scratchpad entry to frontend
+                    broadcastToUser(deps.wss, userId, {
+                      type: 'scratchpad_entry',
+                      entry,
+                      timestamp: new Date().toISOString()
+                    });
+                  } catch (error) {
+                    console.error('[HEALING] Failed to write thought to scratchpad:', error);
+                  }
                 }
               },
-              onAction: (action: string) => {
+              onAction: async (action: string) => {
                 // 🔧 GEMINI ACTIONS: Broadcast action indicators to frontend
                 if (deps?.wss && userId) {
                   broadcastToUser(deps.wss, userId, {
@@ -452,6 +473,27 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                     content: action,
                     timestamp: new Date().toISOString()
                   });
+
+                  // 📝 SCRATCHPAD: Write action to scratchpad for persistent progress tracking
+                  try {
+                    const entry = await storage.createScratchpadEntry({
+                      sessionId: validated.conversationId,
+                      author: 'LomuAI',
+                      role: 'agent',
+                      content: action,
+                      entryType: 'action',
+                      metadata: null
+                    });
+
+                    // Broadcast scratchpad entry to frontend
+                    broadcastToUser(deps.wss, userId, {
+                      type: 'scratchpad_entry',
+                      entry,
+                      timestamp: new Date().toISOString()
+                    });
+                  } catch (error) {
+                    console.error('[HEALING] Failed to write action to scratchpad:', error);
+                  }
                 }
               },
               tools: [
