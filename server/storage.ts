@@ -112,7 +112,8 @@ import {
   healingMessages,
   conversationStates,
   terminalHistory,
-  projectMigrations
+  projectMigrations,
+  scratchpadEntries
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, isNull, sql } from "drizzle-orm";
