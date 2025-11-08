@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { LogoEnhancedBadge, LomuTextLogo } from '@/components/final-logos';
+import { BeehiveIcon } from '@/components/beehive-logos';
 import { Github, Twitter, Linkedin, Mail } from "lucide-react";
 
 export function AppFooter() {
@@ -11,9 +11,12 @@ export function AppFooter() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Column */}
           <div className="space-y-4">
-            <LomuTextLogo size="sm" />
+            <div className="flex items-center gap-2">
+              <BeehiveIcon size={32} />
+              <span className="text-xl font-bold">BeehiveAI</span>
+            </div>
             <p className="text-sm text-muted-foreground">
-              Enterprise-grade AI-powered platform for rapid web development.
+              Where AI agents swarm together to build your code. Enterprise-grade platform for rapid development.
             </p>
             <div className="flex gap-3">
               <a
