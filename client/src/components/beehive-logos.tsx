@@ -1,5 +1,5 @@
-import beehiveLogo from "@assets/image_1762635565078.png";
-import beehiveWordLogo from "@assets/image_1762635590698.png";
+import beehiveLogo from "@assets/beehive-icon-cropped.png";
+import beehiveWordLogo from "@assets/beehive-wordlogo-cropped.png";
 
 // BeehiveAI Icon Logo (honeycomb with bees and honey)
 export function BeehiveIcon({ size = 40, className = "" }: { size?: number; className?: string }) {
