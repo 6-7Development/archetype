@@ -1,6 +1,6 @@
-// BeehiveAI Custom SVG Logos - Circuit Board Tech Design
+// BeehiveAI Custom SVG Logos - Clean Circuit Board Tech Design
 
-// BeehiveIcon - Tech/Circuit Board Style (matches reference)
+// BeehiveIcon - Pure Tech/Circuit Board Style
 export function BeehiveIcon({ size = 80, className = "" }: { size?: number; className?: string }) {
   return (
     <svg 
@@ -11,98 +11,87 @@ export function BeehiveIcon({ size = 80, className = "" }: { size?: number; clas
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Main hive body - layered orange/golden gradient */}
-      <g>
-        {/* Bottom layer */}
-        <path 
-          d="M60 85 L85 72 L85 52 L60 39 L35 52 L35 72 Z" 
-          fill="#E5943C"
-          stroke="#1A2332"
-          strokeWidth="4"
-          strokeLinejoin="round"
-        />
-        
-        {/* Middle-bottom layer */}
-        <path 
-          d="M60 75 L82 64 L82 48 L60 37 L38 48 L38 64 Z" 
-          fill="#F5A847"
-          stroke="#1A2332"
-          strokeWidth="4"
-          strokeLinejoin="round"
-        />
-        
-        {/* Middle-top layer */}
-        <path 
-          d="M60 65 L79 56 L79 44 L60 35 L41 44 L41 56 Z" 
-          fill="#FDB853"
-          stroke="#1A2332"
-          strokeWidth="4"
-          strokeLinejoin="round"
-        />
-        
-        {/* Top layer */}
-        <ellipse 
-          cx="60" 
-          cy="38" 
-          rx="18" 
-          ry="12" 
-          fill="#FFC864"
-          stroke="#1A2332"
-          strokeWidth="4"
-        />
-        
-        {/* Entrance dark opening */}
-        <ellipse 
-          cx="60" 
-          cy="58" 
-          rx="10" 
-          ry="14" 
-          fill="#1A2332"
-        />
-      </g>
+      {/* Main hexagon hive - clean geometric */}
+      <path 
+        d="M60 20 L85 35 L85 65 L60 80 L35 65 L35 35 Z" 
+        fill="#F5A847"
+        stroke="#1A2332"
+        strokeWidth="4"
+        strokeLinejoin="round"
+      />
       
-      {/* Circuit board connections - extending from hive */}
+      {/* Inner hexagon for depth */}
+      <path 
+        d="M60 30 L78 42 L78 58 L60 70 L42 58 L42 42 Z" 
+        fill="#FDB853"
+        stroke="#1A2332"
+        strokeWidth="3"
+        strokeLinejoin="round"
+      />
+      
+      {/* Center opening/core */}
+      <circle 
+        cx="60" 
+        cy="50" 
+        r="8" 
+        fill="#1A2332"
+      />
+      
+      {/* Circuit board traces radiating outward */}
       <g stroke="#1A2332" strokeWidth="3" fill="none" strokeLinecap="round">
-        {/* Left connections */}
-        <path d="M35 52 L20 45" />
-        <path d="M35 62 L18 62" />
-        <path d="M38 70 L22 78" />
+        {/* Top traces */}
+        <path d="M60 20 L60 8" />
         
-        {/* Right connections */}
-        <path d="M85 52 L100 45" />
-        <path d="M85 62 L102 62" />
-        <path d="M82 70 L98 78" />
+        {/* Top-right traces */}
+        <path d="M85 35 L95 28" />
+        <path d="M85 50 L100 50" />
+        
+        {/* Bottom-right traces */}
+        <path d="M85 65 L95 72" />
+        <path d="M70 80 L75 92" />
+        
+        {/* Bottom traces */}
+        <path d="M60 80 L60 92" />
+        
+        {/* Bottom-left traces */}
+        <path d="M35 65 L25 72" />
+        <path d="M45 80 L40 92" />
+        
+        {/* Top-left traces */}
+        <path d="M35 35 L25 28" />
+        <path d="M35 50 L20 50" />
       </g>
       
-      {/* Circuit nodes (circles at connection endpoints) */}
-      <g fill="#F5A847" stroke="#1A2332" strokeWidth="2.5">
-        <circle cx="20" cy="45" r="4" />
-        <circle cx="18" cy="62" r="4" />
-        <circle cx="22" cy="78" r="4" />
-        <circle cx="100" cy="45" r="4" />
-        <circle cx="102" cy="62" r="4" />
-        <circle cx="98" cy="78" r="4" />
+      {/* Circuit nodes (connection points) */}
+      <g fill="#F5A847" stroke="#1A2332" strokeWidth="2">
+        <circle cx="60" cy="8" r="3.5" />
+        <circle cx="95" cy="28" r="3.5" />
+        <circle cx="100" cy="50" r="3.5" />
+        <circle cx="95" cy="72" r="3.5" />
+        <circle cx="75" cy="92" r="3.5" />
+        <circle cx="60" cy="92" r="3.5" />
+        <circle cx="40" cy="92" r="3.5" />
+        <circle cx="25" cy="72" r="3.5" />
+        <circle cx="20" cy="50" r="3.5" />
+        <circle cx="25" cy="28" r="3.5" />
       </g>
       
-      {/* Simple flying bees - clean design */}
-      <g>
-        {/* Bee 1 - top left */}
-        <ellipse cx="25" cy="20" rx="5" ry="7" fill="#1A2332"/>
-        <ellipse cx="25" cy="17" rx="3.5" ry="4" fill="#F5A847"/>
-        <path d="M20 18 L18 15 M20 21 L18 24" stroke="#1A2332" strokeWidth="2" fill="none"/>
-        <path d="M30 18 L32 15 M30 21 L32 24" stroke="#1A2332" strokeWidth="2" fill="none"/>
+      {/* Minimal signal indicators (replacing bees with tech elements) */}
+      <g fill="#00D4B3">
+        {/* Top signal */}
+        <circle cx="60" cy="12" r="2" opacity="0.8">
+          <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite" />
+        </circle>
         
-        {/* Bee 2 - top right */}
-        <ellipse cx="95" cy="18" rx="5" ry="7" fill="#1A2332"/>
-        <ellipse cx="95" cy="15" rx="3.5" ry="4" fill="#F5A847"/>
-        <path d="M90 16 L88 13 M90 19 L88 22" stroke="#1A2332" strokeWidth="2" fill="none"/>
-        <path d="M100 16 L102 13 M100 19 L102 22" stroke="#1A2332" strokeWidth="2" fill="none"/>
+        {/* Right signal */}
+        <circle cx="98" cy="50" r="2" opacity="0.8">
+          <animate attributeName="opacity" values="0.3;1;0.3" dur="2.5s" repeatCount="indefinite" />
+        </circle>
         
-        {/* Bee 3 - right side */}
-        <ellipse cx="108" cy="35" rx="5" ry="7" fill="#1A2332"/>
-        <ellipse cx="108" cy="32" rx="3.5" ry="4" fill="#F5A847"/>
-        <path d="M103 33 L101 30 M103 36 L101 39" stroke="#1A2332" strokeWidth="2" fill="none"/>
-        <path d="M113 33 L115 30 M113 36 L115 39" stroke="#1A2332" strokeWidth="2" fill="none"/>
+        {/* Bottom-left signal */}
+        <circle cx="42" cy="90" r="2" opacity="0.8">
+          <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" repeatCount="indefinite" />
+        </circle>
       </g>
     </svg>
   );
@@ -119,61 +108,47 @@ export function BeehiveLogo({ className = "" }: { className?: string }) {
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Icon */}
+      {/* Icon - compact version */}
       <g transform="translate(10, 10)">
-        {/* Main hive body - compact version */}
+        {/* Main hexagon */}
         <path 
-          d="M30 42 L42 36 L42 26 L30 20 L18 26 L18 36 Z" 
-          fill="#E5943C"
-          stroke="#1A2332"
-          strokeWidth="2.5"
-          strokeLinejoin="round"
-        />
-        <path 
-          d="M30 38 L40 33 L40 24 L30 19 L20 24 L20 33 Z" 
+          d="M30 10 L45 18 L45 38 L30 46 L15 38 L15 18 Z" 
           fill="#F5A847"
           stroke="#1A2332"
           strokeWidth="2.5"
           strokeLinejoin="round"
         />
+        
+        {/* Inner hexagon */}
         <path 
-          d="M30 34 L38 30 L38 22 L30 18 L22 22 L22 30 Z" 
+          d="M30 16 L40 22 L40 34 L30 40 L20 34 L20 22 Z" 
           fill="#FDB853"
           stroke="#1A2332"
-          strokeWidth="2.5"
+          strokeWidth="2"
           strokeLinejoin="round"
         />
-        <ellipse 
-          cx="30" 
-          cy="20" 
-          rx="9" 
-          ry="6" 
-          fill="#FFC864"
-          stroke="#1A2332"
-          strokeWidth="2.5"
-        />
-        <ellipse 
-          cx="30" 
-          cy="29" 
-          rx="5" 
-          ry="7" 
-          fill="#1A2332"
-        />
         
-        {/* Circuit connections */}
+        {/* Center core */}
+        <circle cx="30" cy="28" r="5" fill="#1A2332" />
+        
+        {/* Circuit traces */}
         <g stroke="#1A2332" strokeWidth="2" fill="none">
-          <path d="M18 26 L10 23" />
-          <path d="M18 31 L9 31" />
-          <path d="M42 26 L50 23" />
-          <path d="M42 31 L51 31" />
+          <path d="M30 10 L30 2" />
+          <path d="M45 18 L52 14" />
+          <path d="M45 38 L52 42" />
+          <path d="M30 46 L30 54" />
+          <path d="M15 38 L8 42" />
+          <path d="M15 18 L8 14" />
         </g>
         
-        {/* Nodes */}
+        {/* Circuit nodes */}
         <g fill="#F5A847" stroke="#1A2332" strokeWidth="1.5">
-          <circle cx="10" cy="23" r="2" />
-          <circle cx="9" cy="31" r="2" />
-          <circle cx="50" cy="23" r="2" />
-          <circle cx="51" cy="31" r="2" />
+          <circle cx="30" cy="2" r="2.5" />
+          <circle cx="52" cy="14" r="2.5" />
+          <circle cx="52" cy="42" r="2.5" />
+          <circle cx="30" cy="54" r="2.5" />
+          <circle cx="8" cy="42" r="2.5" />
+          <circle cx="8" cy="14" r="2.5" />
         </g>
       </g>
       
@@ -228,35 +203,36 @@ export function BeehiveLogoMobile({ className = "" }: { className?: string }) {
       {/* Icon - small version */}
       <g transform="translate(5, 5)">
         <path 
-          d="M20 28 L28 24 L28 17 L20 13 L12 17 L12 24 Z" 
-          fill="#E5943C"
+          d="M20 8 L30 14 L30 26 L20 32 L10 26 L10 14 Z" 
+          fill="#F5A847"
           stroke="#1A2332"
-          strokeWidth="1.8"
+          strokeWidth="2"
           strokeLinejoin="round"
         />
         <path 
-          d="M20 25 L26 22 L26 16 L20 13 L14 16 L14 22 Z" 
-          fill="#F5A847"
+          d="M20 12 L26 16 L26 24 L20 28 L14 24 L14 16 Z" 
+          fill="#FDB853"
           stroke="#1A2332"
-          strokeWidth="1.8"
+          strokeWidth="1.5"
           strokeLinejoin="round"
         />
-        <ellipse 
-          cx="20" 
-          cy="14" 
-          rx="6" 
-          ry="4" 
-          fill="#FFC864"
-          stroke="#1A2332"
-          strokeWidth="1.8"
-        />
-        <ellipse 
-          cx="20" 
-          cy="19" 
-          rx="3.5" 
-          ry="5" 
-          fill="#1A2332"
-        />
+        <circle cx="20" cy="20" r="3.5" fill="#1A2332" />
+        
+        {/* Minimal circuit traces */}
+        <g stroke="#1A2332" strokeWidth="1.5" fill="none">
+          <path d="M20 8 L20 2" />
+          <path d="M30 14 L36 10" />
+          <path d="M20 32 L20 38" />
+          <path d="M10 14 L4 10" />
+        </g>
+        
+        {/* Nodes */}
+        <g fill="#F5A847" stroke="#1A2332" strokeWidth="1">
+          <circle cx="20" cy="2" r="1.5" />
+          <circle cx="36" cy="10" r="1.5" />
+          <circle cx="20" cy="38" r="1.5" />
+          <circle cx="4" cy="10" r="1.5" />
+        </g>
       </g>
       
       {/* Text - compact */}
