@@ -3066,7 +3066,7 @@ export class DatabaseStorage implements IStorage {
   async createScratchpadEntry(entry: InsertScratchpadEntry): Promise<ScratchpadEntry> {
     const [created] = await db
       .insert(scratchpadEntries)
-      .values(entry)
+      .values([entry])
       .returning();
     return created;
   }

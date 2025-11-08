@@ -353,6 +353,14 @@ Only use declared tools with proper JSON format.`,
     // Add tools at top level if provided
     if (geminiTools) {
       requestParams.tools = geminiTools;
+      
+      // ✅ CRITICAL FIX: Add toolConfig to enforce proper function calling mode
+      // This prevents Gemini from generating Python code like print(default_api.function_name())
+      requestParams.toolConfig = {
+        functionCallingConfig: {
+          mode: 'AUTO' // Let model decide when to call functions (prevents forced Python syntax)
+        }
+      };
     }
 
     // 🔍 DEBUG: Log what we're sending to Gemini
@@ -360,6 +368,7 @@ Only use declared tools with proper JSON format.`,
     console.log('  - Messages:', geminiMessages.length);
     console.log('  - System prompt length:', typeof system === 'string' ? system.length : 'unknown');
     console.log('  - Tools provided:', geminiTools ? geminiTools.length : 0);
+    console.log('  - Tool config:', requestParams.toolConfig ? 'enabled' : 'none');
     console.log('  - Max tokens:', maxTokens);
     
     // Start streaming
