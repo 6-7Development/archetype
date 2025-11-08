@@ -290,6 +290,12 @@ const ARCHITECT_TOOLS: Anthropic.Tool[] = [
 // Tool execution handlers - now includes full developer capabilities
 async function executeArchitectTool(toolName: string, toolInput: any): Promise<string> {
   try {
+    // 🛡️ RECURSION GUARD: Prevent architect from calling itself
+    if (toolName === 'architect_consult') {
+      console.warn('[ARCHITECT] ⚠️ Prevented recursive architect_consult call - I AM cannot consult itself!');
+      return 'ERROR: I AM Architect cannot consult itself. You are the architect - provide guidance directly based on your analysis.';
+    }
+    
     switch (toolName) {
       case "readPlatformFile": {
         const content = await platformHealing.readPlatformFile(toolInput.path);
