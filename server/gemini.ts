@@ -5,6 +5,13 @@ const DEFAULT_MODEL = "gemini-2.5-flash";
 
 const genai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "dummy-key-for-development");
 
+// Extended Part type to include Gemini's thoughtSignature
+interface GeminiPart {
+  text?: string;
+  functionCall?: any;
+  thoughtSignature?: string;
+}
+
 interface StreamOptions {
   model?: string;
   maxTokens?: number;
@@ -394,8 +401,8 @@ Only use declared tools with proper JSON format.`,
           continue;
         }
 
-        // Process each part
-        for (const part of content.parts) {
+        // Process each part (cast to GeminiPart to include thoughtSignature)
+        for (const part of (content.parts as GeminiPart[])) {
           // 🧠 CRITICAL FIX: Handle thoughtSignature with contextual messages
           // thoughtSignature + functionCall = action message
           // thoughtSignature alone = thinking message
