@@ -1317,7 +1317,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
             }
           }
         },
-        onThought: (thought: string) => {
+        onThought: async (thought: string) => {
           // 🧠 GEMINI THINKING: Broadcast thinking indicators to frontend
           if (wss && userId) {
             broadcastToUser(wss, userId, {
@@ -1325,9 +1325,29 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               content: thought,
               timestamp: new Date().toISOString()
             });
+
+            // 📝 SCRATCHPAD: Write thought to scratchpad for persistent progress tracking
+            try {
+              const entry = await storage.createScratchpadEntry({
+                sessionId: commandId,
+                author: 'LomuAI',
+                role: 'agent',
+                content: thought,
+                entryType: 'thought',
+                metadata: { projectId }
+              });
+
+              // Broadcast scratchpad entry to clients
+              broadcastToUser(wss, userId, {
+                type: 'scratchpad_entry',
+                entry
+              });
+            } catch (error) {
+              console.error('[SCRATCHPAD] Error writing thought:', error);
+            }
           }
         },
-        onAction: (action: string) => {
+        onAction: async (action: string) => {
           // 🔧 GEMINI ACTIONS: Broadcast action indicators to frontend
           if (wss && userId) {
             broadcastToUser(wss, userId, {
@@ -1335,6 +1355,26 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               content: action,
               timestamp: new Date().toISOString()
             });
+
+            // 📝 SCRATCHPAD: Write action to scratchpad for persistent progress tracking
+            try {
+              const entry = await storage.createScratchpadEntry({
+                sessionId: commandId,
+                author: 'LomuAI',
+                role: 'agent',
+                content: action,
+                entryType: 'action',
+                metadata: { projectId }
+              });
+
+              // Broadcast scratchpad entry to clients
+              broadcastToUser(wss, userId, {
+                type: 'scratchpad_entry',
+                entry
+              });
+            } catch (error) {
+              console.error('[SCRATCHPAD] Error writing action:', error);
+            }
           }
         },
         onError: (error: Error) => {

@@ -8,8 +8,19 @@ export interface Task {
   subAgentId?: string | null;
 }
 
+export interface ScratchpadEntry {
+  id: number;
+  sessionId: string;
+  author: string;
+  role: string;
+  content: string;
+  entryType: string;
+  metadata?: any;
+  createdAt: Date;
+}
+
 interface StreamMessage {
-  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'chat-error' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics' | 'heal:init' | 'heal:thought' | 'heal:tool' | 'heal:write-pending' | 'heal:approved' | 'heal:rejected' | 'heal:completed' | 'heal:error' | 'approval_requested' | 'progress' | 'platform_preview_ready' | 'platform_preview_error' | 'lomu_ai_job_update';
+  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'chat-error' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics' | 'heal:init' | 'heal:thought' | 'heal:tool' | 'heal:write-pending' | 'heal:approved' | 'heal:rejected' | 'heal:completed' | 'heal:error' | 'approval_requested' | 'progress' | 'platform_preview_ready' | 'platform_preview_error' | 'lomu_ai_job_update' | 'scratchpad_entry' | 'scratchpad_cleared';
   commandId?: string;
   updateType?: string;
   status?: string;
@@ -71,6 +82,8 @@ interface StreamMessage {
     timestamp: string;
   };
   errors?: string[];
+  // Scratchpad-specific fields
+  entry?: ScratchpadEntry;
 }
 
 interface StreamState {
@@ -135,6 +148,7 @@ interface StreamState {
     sessionId: string;
     errors: string[];
   } | null;
+  scratchpadEntries: ScratchpadEntry[];
 }
 
 const MAX_RECONNECT_ATTEMPTS = 5;
@@ -168,6 +182,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
     progressMessages: [],
     previewReady: null,
     previewError: null,
+    scratchpadEntries: [],
   });
 
   // NEW: State to track heal:* events
@@ -465,6 +480,24 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
               // NEW: Expose heal events to consumers
               console.log(`🔧 [HEAL] ${message.type}:`, message);
               setHealEvents(prev => [...prev, message]);
+              break;
+
+            case 'scratchpad_entry':
+              console.log('📝 Scratchpad entry:', message.entry);
+              if (message.entry) {
+                setStreamState(prev => ({
+                  ...prev,
+                  scratchpadEntries: [...prev.scratchpadEntries, message.entry!],
+                }));
+              }
+              break;
+
+            case 'scratchpad_cleared':
+              console.log('🗑️ Scratchpad cleared');
+              setStreamState(prev => ({
+                ...prev,
+                scratchpadEntries: [],
+              }));
               break;
 
             case 'platform_preview_ready':

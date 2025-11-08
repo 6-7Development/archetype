@@ -19,6 +19,7 @@ import { AIModelSelector } from "./ai-model-selector";
 import { ArchitectNotesPanel } from "./architect-notes-panel";
 import { CreditBalanceWidget } from "./credit-balance-widget";
 import { CreditPurchaseModal } from "./credit-purchase-modal";
+import { ScratchpadDisplay } from "./scratchpad-display";
 import { useWebSocketStream } from "@/hooks/use-websocket-stream";
 import { nanoid } from "nanoid";
 
@@ -269,7 +270,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Get active project ID
-  const { data: activeSession } = useQuery({
+  const { data: activeSession } = useQuery<{ activeProjectId: string | null }>({
     queryKey: ["/api/user/active-project"],
   });
   const activeProjectId = activeSession?.activeProjectId || null;
@@ -911,6 +912,30 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
     sendMutation.mutate(trimmedInput);
   };
 
+  const handleClearScratchpad = async () => {
+    try {
+      const response = await fetch(`/api/scratchpad/${sessionId}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to clear scratchpad');
+      }
+      
+      toast({
+        title: "Scratchpad cleared",
+        description: "Progress log has been cleared",
+      });
+    } catch (error) {
+      console.error('[SCRATCHPAD] Error clearing:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to clear scratchpad",
+      });
+    }
+  };
+
   const handleStop = () => {
     if (abortControllerRef.current) {
       console.log('[LOMU-AI] Stopping stream...');
@@ -1386,9 +1411,16 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
           </div>
         </div>
 
-        {/* Architect Notes Sidebar */}
-        <div className="w-80 border-l hidden lg:block">
-          <ArchitectNotesPanel projectId={activeProjectId} />
+        {/* Architect Notes & Scratchpad Sidebar */}
+        <div className="w-80 border-l hidden lg:block overflow-hidden flex flex-col">
+          <div className="p-4 space-y-4 overflow-y-auto flex-1">
+            <ScratchpadDisplay 
+              entries={streamState.scratchpadEntries}
+              onClear={handleClearScratchpad}
+              sessionId={sessionId}
+            />
+            <ArchitectNotesPanel projectId={activeProjectId} />
+          </div>
         </div>
       </div>
 

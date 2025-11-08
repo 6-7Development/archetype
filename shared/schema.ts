@@ -2784,13 +2784,22 @@ export const CREDIT_CONSTANTS = {
 export const scratchpadEntries = pgTable('scratchpad_entries', {
   id: serial('id').primaryKey(),
   sessionId: varchar('session_id', { length: 255 }).notNull(), // Ties to chat session
-  author: varchar('author', { length: 50 }).notNull(), // 'lomu_ai' | 'subagent' | 'architect' | 'user'
-  role: varchar('role', { length: 50 }).notNull(), // 'thinking' | 'action' | 'note' | 'result'
-  content: text('content').notNull(),
+  author: varchar('author', { length: 100 }).notNull(), // 'LomuAI' | 'Sub-Agent-1' | 'I AM Architect' | 'user'
+  role: varchar('role', { length: 50 }).notNull(), // 'agent' | 'subagent' | 'architect' | 'user'
+  content: text('content').notNull(), // The thought/note
+  entryType: varchar('entry_type', { length: 50 }).notNull(), // 'thought' | 'action' | 'note' | 'result'
+  metadata: jsonb('metadata').$type<{
+    toolName?: string;
+    filePath?: string;
+    subAgentId?: string;
+    taskId?: string;
+    [key: string]: any;
+  }>(), // Optional metadata (tool name, file path, etc.)
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => [
   index('idx_scratchpad_session').on(table.sessionId),
   index('idx_scratchpad_created').on(table.createdAt),
+  index('idx_scratchpad_entry_type').on(table.entryType),
 ]);
 
 export const insertScratchpadEntrySchema = createInsertSchema(scratchpadEntries).omit({

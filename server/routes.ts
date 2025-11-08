@@ -34,6 +34,7 @@ import { registerDeploymentRoutes } from "./routes/deployments";
 import tasksRouter from "./routes/tasks";
 import { registerArchitectNotesRoutes } from "./routes/architect-notes";
 import { registerUserPreferencesRoutes } from "./routes/user-preferences";
+import { registerScratchpadRoutes } from "./routes/scratchpad";
 import creditsRouter from "./routes/credits";
 import agentsRouter from "./routes/agents";
 
@@ -208,6 +209,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerAdminRoutes(app);
   registerArchitectNotesRoutes(app);
   registerUserPreferencesRoutes(app);
+  registerScratchpadRoutes(app, { wss });
   registerOwnerSetupRoutes(app);
   registerSubscriptionRoutes(app);
   registerProjectRoutes(app);

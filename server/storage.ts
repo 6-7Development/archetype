@@ -3060,6 +3060,29 @@ export class DatabaseStorage implements IStorage {
       )
       .orderBy(desc(projectMigrations.appliedAt));
   }
+
+  // Scratchpad operations
+  async createScratchpadEntry(entry: InsertScratchpadEntry): Promise<ScratchpadEntry> {
+    const [created] = await db
+      .insert(scratchpadEntries)
+      .values(entry)
+      .returning();
+    return created;
+  }
+
+  async getScratchpadEntries(sessionId: string): Promise<ScratchpadEntry[]> {
+    return await db
+      .select()
+      .from(scratchpadEntries)
+      .where(eq(scratchpadEntries.sessionId, sessionId))
+      .orderBy(scratchpadEntries.createdAt);
+  }
+
+  async clearScratchpadEntries(sessionId: string): Promise<void> {
+    await db
+      .delete(scratchpadEntries)
+      .where(eq(scratchpadEntries.sessionId, sessionId));
+  }
 }
 
 export const storage = new DatabaseStorage();
