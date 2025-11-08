@@ -1410,6 +1410,7 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
             </div>
           </div>
         </div>
+        </div>
 
         {/* Architect Notes & Scratchpad Sidebar */}
         <div className="w-80 border-l hidden lg:block overflow-hidden flex flex-col">
