@@ -1,0 +1,227 @@
+Awesome—here’s a tight, final integration plan so the website + portal mesh perfectly with your Railway orchestrator and Gemini 2.5 tool-calling rules you asked us to follow.
+
+1) Single repo layout (Next.js App Router)
+
+/app
+  /(marketing)        -> landing, pricing, templates, docs
+  /(auth)             -> Clerk sign-in / sign-up
+  /(app)
+    dashboard/
+    projects/new/
+    project/[id]/{page,code,agent,runs,logs,db,domains,settings}/
+    billing/
+    settings/{general,members,security}/
+  /api                 -> server routes (SSE proxy, billing, projects)
+  layout.tsx, globals.css
+/components           -> AppShell, TaskBoard, ToolFeed, SSEProvider, etc.
+/lib                   -> api-client.ts, auth.ts, env.ts
+
+2) Env vars (set in Railway → Variables)
+
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+CLERK_SECRET_KEY
+ORCHESTRATOR_BASE_URL                 # e.g., https://orchestrator.up.railway.app
+NEXT_PUBLIC_ORCHESTRATOR_WS_BASE      # optional for WS (if you add WS later)
+STRIPE_SECRET
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+
+3) SSE proxy (Next.js → Orchestrator)
+
+Why: Users see real plan → do → verify → done in the portal Agent tab.
+
+// app/api/runs/[id]/events/route.ts
+import { NextRequest } from "next/server";
+
+export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+  const target = `${process.env.ORCHESTRATOR_BASE_URL}/api/runs/${params.id}/events`;
+
+  const upstream = await fetch(target, {
+    headers: { Accept: "text/event-stream" },
+    cache: "no-store",
+  });
+
+  if (!upstream.ok || !upstream.body)
+    return new Response("Failed to connect SSE", { status: 502 });
+
+  // Pass-through stream
+  const stream = new ReadableStream({
+    start(controller) {
+      const reader = upstream.body!.getReader();
+      const pump = () =>
+        reader.read().then(({ done, value }) => {
+          if (done) return controller.close();
+          controller.enqueue(value);
+          return pump();
+        });
+      pump();
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    },
+  });
+}
+
+4) Start a run (Portal → Orchestrator)
+
+// app/api/projects/[id]/runs/route.ts
+import { NextRequest } from "next/server";
+
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+  const body = await req.json().catch(() => ({}));
+  const r = await fetch(`${process.env.ORCHESTRATOR_BASE_URL}/api/projects/${params.id}/runs`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    cache: "no-store",
+  });
+  const data = await r.json();
+  return new Response(JSON.stringify(data), { status: r.status });
+}
+
+In the Project → Agent tab, your “Run” button POSTs here, then opens GET /api/runs/:runId/events (the SSE proxy above).
+
+5) Clerk + route guards
+
+Wrap /(app) routes with Clerk’s <SignedIn> guard.
+
+Add middleware to redirect unauthenticated users to /sign-in for portal routes.
+
+
+// middleware.ts
+import { authMiddleware } from "@clerk/nextjs";
+export default authMiddleware({
+  publicRoutes: ["/", "/pricing", "/templates", "/docs", "/api/runs/(.*)/events"], // SSE can remain public or gated
+});
+export const config = { matcher: ["/((?!.+\\.[\\w]+$|_next).*)"] };
+
+6) Billing hooks (Stripe, user-facing)
+
+Buttons on /billing call:
+
+POST /api/billing/checkout → returns url → redirect to Stripe Checkout
+
+POST /api/billing/portal → returns url → redirect to Stripe Portal
+(We already scaffolded the page; just connect your secrets and Stripe products.)
+
+
+
+7) Project pages & tabs (already scaffolded)
+
+Overview shows preview URL, last run, health.
+
+Agent streams events (ToolFeed + TaskBoard).
+
+Code uses Monaco editor (your coder can drop in; the file APIs are stubbed).
+
+Runs, Logs, DB, Domains, Settings hook into your REST endpoints (listed in the spec canvas).
+
+
+8) Orchestrator (Gemini 2.5) — required config (do this on your Railway service)
+
+These are the “proper Google API rules” you asked us to keep consistent:
+
+In every action turn:
+
+responseMimeType: "application/json"
+
+temperature: 0
+
+Always re-send tools.functionDeclarations (don’t rely on context window)
+
+toolConfig.functionCallingConfig = { mode: "ANY", allowedFunctionNames: [exact tool names] }
+
+One tool call per turn (controller sequences steps)
+
+
+System instruction (short + strict):
+“Return exactly ONE JSON function call that matches a declared tool. No prose, no backticks, no comments. Complete one task. After writes/commands, propose a verification function.”
+
+Repair loop (router): If model output is not a single valid function call, re-ask:
+“Re-emit the last function call only as JSON, no prose.”
+
+Sanitize any text authored in Google Docs before sending to the model:
+
+Replace smart quotes with ASCII
+
+Strip zero-width chars \u200B\u200C\uFEFF
+
+
+
+9) Tool contract (unchanged, but reiterating the minimum set)
+
+plan_tasks, update_task_status,
+write_file, read_file, list_dir,
+run_command, run_python,
+fetch_url, run_tests,
+assert_file_exists, assert_file_contains
+
+10) Event model (unchanged, the UI already expects this)
+
+message.user|agent
+
+plan.created
+
+task.created|task.updated
+
+tool.called|tool.succeeded|tool.failed
+
+verify.requested|verify.result
+
+artifact.created|artifact.updated
+
+run.phase
+
+agent.delegated|agent.guidance
+
+
+11) Railway services (final wiring)
+
+frontend (Next.js site+portal)
+
+Build: next build, Start: next start
+
+Env: Clerk, Stripe, ORCHESTRATOR_* vars
+
+
+orchestrator (your Node/TS service w/ Gemini 2.5)
+
+Exposes: POST /api/projects/:id/runs, GET /api/runs/:id/events
+
+Emits EventEnvelope as SSE
+
+Uses Gemini strict tool-calling config ABOVE
+
+
+(Optional) executor workers, Redis, Postgres (as per earlier blueprints)
+
+
+12) Acceptance test (what the user experiences)
+
+1. Visit / → click Start free, complete Clerk sign-up.
+
+
+2. Land in /dashboard → New Project (pick template) → redirect to /project/[id].
+
+
+3. Go to Agent tab → click Run:
+
+Within seconds the ToolFeed shows run.phase: planning, task.created, tool.called/tool.succeeded, verify.*, and finally run.phase: complete.
+
+
+
+4. Go to Domains → attach domain; see DNS records and Verify.
+
+
+5. Go to Billing → click Upgrade → Stripe Checkout opens.
+
+
+
+
+---
+
+If you want, I can merge the two canvases into a single zipped repo structure (with the proxy routes already wired) so your coder can push it to Railway immediately.
