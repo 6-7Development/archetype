@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign Up — Lomu</title>
+  <link rel="stylesheet" href="styles-landing.css" />
+  <link rel="icon" href="favicon.svg" />
+  <script>
+    const saved = localStorage.getItem('theme');
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
+  </script>
+  <style>
+    .auth-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .auth-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-2);
+      padding: 48px;
+      max-width: 420px;
+      width: 100%;
+    }
+    .auth-card h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+    }
+    .auth-card .subtitle {
+      color: var(--sub);
+      margin: 0 0 32px;
+    }
+    .divider {
+      text-align: center;
+      margin: 24px 0;
+      color: var(--sub);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-card">
+      <div style="text-align:center;margin-bottom:24px">
+        <img src="logo-horizontal.svg" alt="Lomu" style="height:40px" />
+      </div>
+      
+      <h1>Get started free</h1>
+      <p class="subtitle">Start building in seconds</p>
+
+      <a href="/" class="btn outline" style="width:100%;justify-content:center;margin-bottom:12px">
+        🔐 Continue with Replit
+      </a>
+
+      <div class="divider">or sign up with email</div>
+
+      <form class="form" action="/" method="post">
+        <div>
+          <label class="label" for="name">Full name</label>
+          <input class="input" type="text" id="name" name="name" placeholder="John Doe" required />
+        </div>
+
+        <div>
+          <label class="label" for="email">Email</label>
+          <input class="input" type="email" id="email" name="email" placeholder="you@example.com" required />
+        </div>
+        
+        <div>
+          <label class="label" for="password">Password</label>
+          <input class="input" type="password" id="password" name="password" placeholder="••••••••" required />
+        </div>
+
+        <label style="display:flex;align-items:start;gap:8px;font-size:14px;color:var(--sub)">
+          <input type="checkbox" name="terms" required style="margin-top:2px" />
+          <span>I agree to the <a href="/" style="color:var(--mint)">Terms of Service</a> and <a href="/" style="color:var(--mint)">Privacy Policy</a></span>
+        </label>
+
+        <button type="submit" class="btn primary" style="width:100%">Create account</button>
+      </form>
+
+      <p style="text-align:center;color:var(--sub);font-size:14px;margin-top:24px">
+        Already have an account? <a href="/sign-in.html" style="color:var(--mint);font-weight:600">Sign in</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const themeBtn = document.querySelector('.theme-toggle');
+    if (themeBtn) {
+      themeBtn.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+      });
+    }
+  </script>
+</body>
+</html>

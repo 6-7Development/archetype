@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lomu — When Code Throws You Lemons</title>
+  <meta name="description" content="Lomu is your swarm of AI coding agents. Plan → build → verify → publish. Turn those lemons into lemonade." />
+  <link rel="stylesheet" href="styles-landing.css" />
+  <link rel="icon" href="favicon.svg" />
+  <script>
+    // Persisted theme
+    const saved = localStorage.getItem('theme');
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
+  </script>
+</head>
+<body>
+  <header class="nav">
+    <a class="brand" href="/">
+      <img class="logo" src="logo-horizontal.svg" alt="Lomu" />
+    </a>
+    <nav class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <button class="theme-toggle" id="themeBtn" title="Toggle theme">🌓</button>
+      <a class="btn ghost" href="/">Sign in</a>
+      <a class="btn primary" href="/">Start free</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Build with a <span class="highlight">swarm</span> — meet <strong>Lomu</strong></h1>
+      <p class="subtitle">Your AI coding agents that plan, build, verify, and publish. When code throws you lemons, we make lemonade.</p>
+      <div class="cta">
+        <a class="btn primary" href="/">Start free</a>
+        <button class="btn dark" onclick="document.getElementById('demoModal').showModal()">Watch demo</button>
+      </div>
+      <ul class="badges">
+        <li>🔍 Live progress tracking</li>
+        <li>🧪 Automated testing</li>
+        <li>🚀 One-click deploy</li>
+      </ul>
+    </div>
+    <div class="hero-card">
+      <div class="chip">Phase: <b>executing</b></div>
+      <pre class="terminal">> Build a contact form with validation
+🧠 Planning approach...
+✓ task.created: Create form component
+✓ task.created: Add validation logic
+✓ tool.succeeded: write src/ContactForm.tsx
+🧪 Testing in browser...
+✓ verify.result: All tests passed
+✅ Complete</pre>
+      <div class="mini-stats">
+        <span>⚡ Tokens: 3.2k</span>
+        <span>⏱️ Runtime: 24s</span>
+        <span>Status: <b>complete</b></span>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="section">
+    <h2>Why Lomu</h2>
+    <p class="intro">AI-powered development that actually works. From idea to deployment in minutes.</p>
+    <div class="grid three">
+      <article class="card hover">
+        <h3>🤖 Swarm Intelligence</h3>
+        <p>Multiple AI agents work together - planning, building, and verifying your code in parallel.</p>
+      </article>
+      <article class="card hover">
+        <h3>👁️ Vision Analysis</h3>
+        <p>Upload screenshots and get instant UI/UX feedback. AI analyzes designs and suggests improvements.</p>
+      </article>
+      <article class="card hover">
+        <h3>🧪 Auto-Testing</h3>
+        <p>Playwright-powered e2e tests verify every feature. Catch bugs before your users do.</p>
+      </article>
+      <article class="card hover">
+        <h3>🔄 Self-Healing</h3>
+        <p>Platform detects and fixes its own bugs. Production-grade reliability with zero downtime.</p>
+      </article>
+      <article class="card hover">
+        <h3>💰 Cost Optimized</h3>
+        <p>Hybrid AI strategy using Gemini Flash (40x cheaper) + Claude Sonnet for complex tasks.</p>
+      </article>
+      <article class="card hover">
+        <h3>🚀 Instant Deploy</h3>
+        <p>One-click publish to production with custom domains, SSL, and global CDN.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section alt">
+    <h2>How It Works</h2>
+    <p class="intro">Seven-phase autonomous workflow ensures production-ready code every time</p>
+    <div class="card" style="max-width:800px;margin:20px auto">
+      <pre class="terminal" style="max-height:300px">Phase 1: ASSESS → Understand requirements
+🧠 Analyzing your request...
+✓ Requirements captured
+
+Phase 2: PLAN → Break down into tasks
+📝 Creating task list...
+✓ Task 1: Create database schema
+✓ Task 2: Build API endpoints
+✓ Task 3: Add authentication
+
+Phase 3: EXECUTE → Build features
+🛠️ Working on tasks...
+✓ All tasks completed
+
+Phase 4: TEST → Verify functionality
+🧪 Running Playwright tests...
+✓ 24/24 tests passed
+
+Phase 5: VERIFY → Quality check
+👀 Reviewing code quality...
+✓ No issues found
+
+Phase 6: CONFIRM → Final review
+✅ Ready for deployment
+
+Phase 7: COMMIT → Deploy to production
+🚀 Publishing...
+✓ Live at https://your-app.lomu.app</pre>
+    </div>
+  </section>
+
+  <section id="pricing" class="section">
+    <h2>Simple, Transparent Pricing</h2>
+    <p class="intro">Pay only for what you use. No hidden fees.</p>
+    <div class="pricing">
+      <div class="price">
+        <h3>Free</h3>
+        <div class="amount">$0</div>
+        <p style="color:var(--sub)">For trying it out</p>
+        <ul>
+          <li>✓ 1,000 credits/month</li>
+          <li>✓ Basic AI features</li>
+          <li>✓ Community support</li>
+          <li>✓ Public projects</li>
+        </ul>
+        <a href="/" class="btn outline" style="margin-top:auto">Get started</a>
+      </div>
+
+      <div class="price featured">
+        <h3>Pro</h3>
+        <div class="amount">$20<span style="font-size:18px;font-weight:normal">/mo</span></div>
+        <p style="color:var(--sub)">For serious developers</p>
+        <ul>
+          <li>✓ 50,000 credits/month</li>
+          <li>✓ All AI features</li>
+          <li>✓ Vision analysis</li>
+          <li>✓ Priority support</li>
+          <li>✓ Private projects</li>
+          <li>✓ Custom domains</li>
+        </ul>
+        <a href="/" class="btn primary" style="margin-top:auto">Start free trial</a>
+      </div>
+
+      <div class="price">
+        <h3>Enterprise</h3>
+        <div class="amount">Custom</div>
+        <p style="color:var(--sub)">For teams & orgs</p>
+        <ul>
+          <li>✓ Unlimited credits</li>
+          <li>✓ Dedicated support</li>
+          <li>✓ SSO & SAML</li>
+          <li>✓ SLA guarantee</li>
+          <li>✓ Custom integrations</li>
+          <li>✓ On-premise option</li>
+        </ul>
+        <a href="/" class="btn dark" style="margin-top:auto">Contact sales</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="section">
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq">
+      <details>
+        <summary>What are credits and how do they work?</summary>
+        <p>1 credit = 1,000 AI tokens. Most tasks cost 2-5 credits. You only pay for what you use.</p>
+      </details>
+      <details>
+        <summary>Can I use my own AI API keys?</summary>
+        <p>Yes! Pro users can bring their own OpenAI, Anthropic, or Google AI keys for maximum control.</p>
+      </details>
+      <details>
+        <summary>How does the 40x cost reduction work?</summary>
+        <p>We use Google Gemini 2.5 Flash ($0.075/1M tokens) for regular tasks and Claude Sonnet 4 ($3/1M tokens) only for complex architecture work.</p>
+      </details>
+      <details>
+        <summary>What kind of apps can I build?</summary>
+        <p>Full-stack web apps (React + Node.js), APIs, dashboards, SaaS products, and more. If it runs in a browser, Lomu can build it.</p>
+      </details>
+      <details>
+        <summary>Do you offer refunds?</summary>
+        <p>Yes! 30-day money-back guarantee on all paid plans, no questions asked.</p>
+      </details>
+      <details>
+        <summary>Is my code and data secure?</summary>
+        <p>Yes. Enterprise-grade encryption, SOC 2 compliance, and optional on-premise deployment for maximum security.</p>
+      </details>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="card" style="text-align:center;padding:48px 24px">
+      <h2 style="margin:0 0 16px">Ready to make lemonade?</h2>
+      <p style="color:var(--sub);font-size:18px;margin:0 0 24px">Join thousands of developers turning lemons into production-ready apps</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <a href="/" class="btn primary" style="padding:14px 32px;font-size:18px">Start building free</a>
+        <a href="/" class="btn outline" style="padding:14px 32px;font-size:18px">Book a demo</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="f-grid">
+      <div>
+        <div class="footer-brand">
+          <img class="logo" src="logo-horizontal.svg" alt="Lomu" />
+        </div>
+        <p class="muted">When code throws you lemons,<br />we make lemonade.</p>
+      </div>
+      <nav>
+        <h4>Product</h4>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="/">Documentation</a>
+        <a href="/">API Reference</a>
+      </nav>
+      <nav>
+        <h4>Company</h4>
+        <a href="/">About</a>
+        <a href="/">Blog</a>
+        <a href="/">Careers</a>
+        <a href="/">Contact</a>
+      </nav>
+    </div>
+    <div class="legal">
+      © 2025 Lomu. All rights reserved. <a href="/">Privacy</a> · <a href="/">Terms</a>
+    </div>
+  </footer>
+
+  <!-- Demo Modal -->
+  <dialog id="demoModal" class="modal">
+    <div class="modal-card">
+      <button class="modal-close" onclick="this.closest('dialog').close()">✕</button>
+      <h2 style="margin:0 0 16px">See Lomu in Action</h2>
+      <video class="video" controls poster="">
+        <source src="" type="video/mp4" />
+        Your browser doesn't support video.
+      </video>
+      <p style="color:var(--sub);margin:16px 0 0">Watch how Lomu builds a full-stack app from a simple prompt in under 2 minutes.</p>
+    </div>
+  </dialog>
+
+  <script>
+    // Theme toggle
+    const themeBtn = document.getElementById('themeBtn');
+    themeBtn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    });
+  </script>
+</body>
+</html>

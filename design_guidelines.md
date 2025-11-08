@@ -1,235 +1,196 @@
-# Design Guidelines: Lomu - "When Code Throws You Lemons"
+# Lomu Marketing Website - Design Guidelines
 
-## Brand Identity
+## Design Approach
 
-**Platform Name**: Lomu  
-**Tagline**: "When code throws you lemons, you get Lomu"  
-**Mission**: The SaaS platform made to make life sweet  
-**Mascot**: Lumo the Lemon - Your AI coding buddy
+**Reference Strategy**: Modern SaaS marketing (Linear + Vercel + Stripe aesthetic) infused with citrus playfulness. Balance professional credibility with optimistic brand personality through strategic lemon motif placement and vibrant accent colors.
 
-**Brand Story**: Lomu transforms coding challenges (lemons) into delightful solutions. Fresh, optimistic, and energizing - we make development sweet with AI-powered assistance that feels like having a cheerful coding companion by your side.
-
-## Design Philosophy
-
-**Core Principles**:
-- **Refreshingly Bright**: Citrus-inspired palette that energizes and uplifts
-- **Playfully Professional**: Optimistic and friendly while maintaining credibility
-- **Sweet Simplicity**: Clean, approachable interfaces without overwhelming users
-- **Natural Motion**: Organic animations that feel alive (like Lumo breathing)
-- **Developer-Focused**: IDE features wrapped in a delightful experience
-
-## Color Palette
-
-### Light Mode (Primary Theme)
-**Foundation Colors**:
-- `--sparkling-lemon`: 50 98% 58% (Primary - vibrant yellow, main actions)
-- `--fresh-mint`: 145 60% 45% (Accent - success, positive actions)
-- `--citrus-bloom`: 32 94% 62% (Supporting - warnings, highlights)
-- `--slate-professional`: 210 14% 24% (Text, professional contrast)
-- `--cream-base`: 48 46% 96% (Backgrounds, soft surfaces)
-
-**Semantic Colors**:
-- Primary: Sparkling Lemon (buttons, links, active states)
-- Success: Fresh Mint (completed tasks, success messages)
-- Warning: Citrus Bloom (alerts, important notices)
-- Error: 0 85% 60% (errors, destructive actions)
-- Muted: 210 12% 65% (secondary text, borders)
-
-**Background System**:
-- Background Base: 48 40% 98% (main page background)
-- Surface: 0 0% 100% (white cards, panels)
-- Elevated: 50 95% 95% (subtle lemon tint for hover states)
-
-### Dark Mode (Optional)
-**Foundation Colors**:
-- `--lemon-dark`: 50 90% 52% (Primary - deeper yellow)
-- `--mint-dark`: 145 52% 38% (Accent - deeper green)
-- `--bloom-dark`: 32 88% 58% (Supporting - deeper orange)
-- Background: 220 20% 12% (deep slate)
-- Surface: 220 18% 16%
-
-## Typography
-
-**Font Family**:
-- UI Text: Inter (400, 500, 600, 700) - Clean, modern, readable
-- Code/Console: 'JetBrains Mono', monospace - Developer-friendly
-
-**Type Scale**:
-- Hero: text-4xl font-bold (48px) - Landing headlines
-- Heading: text-2xl font-semibold (24px) - Section headers
-- Subheading: text-lg font-medium (18px) - Card titles
-- Body: text-base font-normal (16px) - Main content
-- Small: text-sm (14px) - Secondary info
-- Tiny: text-xs (12px) - Timestamps, metadata
-
-## Layout & Spacing
-
-**Spacing Scale**: Based on Tailwind's 4px unit system
-- Tight: 2 (8px) - Between related items
-- Normal: 4 (16px) - Standard component spacing
-- Relaxed: 6 (24px) - Between sections
-- Generous: 8 (32px) - Major layout divisions
-
-**Container Widths**:
-- Max content: 1280px (main workspace)
-- Max reading: 720px (documentation, forms)
-- Sidebar: 280px (navigation, file tree)
-
-## Illustration & Visual Language
-
-**Lemon Motifs**:
-- Lemon slices as decorative accents (low opacity backgrounds)
-- Ice cubes for loading states
-- Bubbles for activity/processing indicators
-- Seed patterns for subtle textures
-
-**Usage Guidelines**:
-- Use sparingly - illustration as background flourishes, not primary UI
-- Keep opacity low (10-20%) for background elements
-- Maintain professional credibility with restrained application
-- Reserve playful elements for loading screens and empty states
-
-## Components
-
-### Lemonade Jar Loading Indicator
-**Purpose**: Primary loading animation showing progress  
-**Design**: SVG jar with:
-- Clear glass jar outline
-- Yellow gradient liquid fill (animated from bottom to top)
-- Floating bubble particles
-- Ice cube elements
-- Lemon slice garnish
-
-**States**:
-- 0-25%: Light yellow, small bubbles
-- 25-75%: Medium yellow, active bubbles
-- 75-100%: Rich lemon color, celebratory sparkles
-
-### Lumo Avatar (Mascot)
-**Character**: Animated lemon with red goggles, tech aesthetic  
-**Emotions**: 9 states (happy, excited, thinking, working, success, error, worried, sad, idle)  
-**Usage**:
-- AI chat companion (appears during conversations)
-- Loading screens (Lumo animates while loading)
-- Success celebrations (Lumo celebrates with user)
-- Error states (Lumo shows empathy)
-
-**Animation Principles**:
-- Natural breathing motion (subtle sine wave)
-- Varied frame timing for organic feel
-- Smooth emotion transitions
-- Background effects (pulsing glow, orbiting particles)
-
-### Buttons & Controls
-
-**Primary Button** (Sparkling Lemon):
-- Background: Sparkling Lemon
-- Text: Slate Professional
-- Hover: Slight scale (1.02) + glow
-- Active: Deeper yellow shade
-
-**Secondary Button** (Fresh Mint):
-- Border: Fresh Mint
-- Text: Slate Professional
-- Hover: Mint background (10% opacity)
-
-**Ghost Button**:
-- Transparent background
-- Text: Slate Professional
-- Hover: Cream Base background
-
-### Cards & Surfaces
-
-**Card Elevation**:
-- Base: bg-white dark:bg-surface
-- Hover: subtle lemon tint (elevated)
-- Shadow: soft, warm shadows (not harsh gray)
-
-**Borders**:
-- Default: 1px solid muted (very subtle)
-- Accent: 2px solid Sparkling Lemon (active states)
-- Radius: rounded-lg (8px standard)
-
-## Animation & Motion
-
-**Timing Functions**:
-- Standard: cubic-bezier(0.4, 0, 0.2, 1) - smooth ease
-- Bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55) - playful
-- Breathing: sine wave for organic motion
-
-**Duration Guidelines**:
-- Micro: 150ms (hover, focus states)
-- Normal: 200-300ms (transitions, slides)
-- Emphasis: 400-500ms (modals, major changes)
-- Breathing: 2-4s (ambient animations)
-
-**Background Animations**:
-- Gradient shifts: <8s duration
-- Particle movement: slow, subtle orbits
-- Lemon slice rotation: 20-30s lazy spin
-- Keep opacity low to avoid distraction
-
-## Voice & Tone
-
-**Communication Style**:
-- Friendly and encouraging (not cutesy)
-- Clear and helpful (not condescending)
-- Optimistic and energizing (not overwhelming)
-- Professional when needed (serious errors, billing)
-
-**Example Messages**:
-- [SUCCESS] "Your code is looking sweet!"
-- [LOADING] "Hang tight! Squeezing fresh code..."
-- [ERROR] "Oops! That's a sour lemon. Let's fix it."
-- [TIP] "Here's a fresh idea..."
-
-## Responsive Design
-
-**Breakpoints**:
-- Mobile: < 640px (single column, drawer navigation)
-- Tablet: 640-1024px (adapted layout, collapsible panels)
-- Desktop: > 1024px (full workspace experience)
-
-**Mobile Priorities**:
-- Command console full-width
-- Lumo avatar smaller (64px)
-- Touch-friendly targets (44px minimum)
-- Bottom sheet for secondary panels
-
-## Accessibility
-
-**Contrast Requirements**:
-- Text on white: >= 4.5:1 ratio
-- Sparkling Lemon buttons: use Slate text for contrast
-- Maintain readability in both light and dark modes
-
-**Motion**:
-- Respect prefers-reduced-motion
-- Disable ambient animations for users who request it
-- Keep essential functionality working without animations
-
-## Dark Mode Adaptation
-
-**Philosophy**: Deeper citrus tones, maintain warmth  
-**Adjustments**:
-- Background: Deep slate (not pure black)
-- Lemon: Muted but still vibrant (50 90% 52%)
-- Mint: Deeper green with good contrast
-- Maintain lemon jar loading animation with adjusted colors
-
-## Implementation Notes
-
-**CSS Variables**: Define in `:root` and `.dark` for theme switching  
-**Tailwind Config**: Map custom colors to Tailwind utilities  
-**Component Library**: Shadcn UI components styled with Lomu palette  
-**Icon System**: Lucide React for UI icons, custom lemon illustrations  
-
-**File Structure**:
-- `/components/ui/*` - Shadcn base components (restyled)
-- `/components/lumo-pixel-avatar.tsx` - Mascot component
-- `/components/lemonade-loader.tsx` - Loading animation
-- `index.css` - Color system, animations, utilities
+**Core Principle**: Professional-first with citrus delight—enterprise trust wrapped in refreshing optimism.
 
 ---
 
-**Remember**: When code throws you lemons, Lomu makes it sweet!
+## Typography System
+
+**Fonts**: 
+- Primary: Inter (400, 500, 600, 700) for UI/marketing copy
+- Code: JetBrains Mono for technical examples
+
+**Hierarchy**:
+- Hero Headline: text-6xl font-bold leading-tight (72px)
+- Section Headers: text-4xl font-bold (48px)
+- Subheadings: text-2xl font-semibold (30px)
+- Body Large: text-xl font-normal (20px) - feature descriptions
+- Body: text-base (16px) - standard content
+- Small: text-sm (14px) - metadata, captions
+
+---
+
+## Layout System
+
+**Spacing Primitives**: Tailwind units of 4, 6, 8, 12, 16, 20, 24
+- Component internal: p-6, gap-4
+- Section padding: py-20 desktop, py-12 mobile
+- Between major sections: space-y-24
+
+**Container Strategy**:
+- Full-width hero: w-full with max-w-7xl inner
+- Content sections: max-w-6xl
+- Text-heavy areas: max-w-4xl
+
+**Responsive Grid**:
+- Features: grid-cols-1 md:grid-cols-2 lg:grid-cols-3
+- Testimonials: grid-cols-1 lg:grid-cols-2
+- Stats: grid-cols-2 lg:grid-cols-4
+- Mobile: Always single column stacks
+
+---
+
+## Page Structure (7 Core Sections)
+
+### 1. Hero Section (80vh)
+**Layout**: Split layout with commanding headline + hero image
+- Left: Headline, tagline, dual-CTA (primary + secondary), trust indicator ("Trusted by 500+ dev teams")
+- Right: Hero image showing platform UI in action
+- Background: Subtle animated gradient (lemon to mint, 12s duration)
+- Floating lemon slice decorations (15% opacity) in corners
+
+### 2. Social Proof Bar
+**Layout**: Single row, centered
+- Company logos (6-8) in grayscale, hover to brand color
+- Testimonial highlight: "Lomu cut our debugging time by 60%" - CTO quote
+
+### 3. Features Showcase (3-column grid)
+**Layout**: Card-based, icon + title + description
+- Each card: rounded-xl, bg-white, subtle shadow, hover lift effect
+- Icons: Lucide React, tinted with lemon/mint gradient
+- 6-9 feature cards total
+- Examples: "AI Pair Programming", "Instant Bug Detection", "Smart Code Completion"
+
+### 4. Platform Preview (Full-width)
+**Layout**: Large centered image/video with context
+- Heading: "Your AI Coding Companion in Action"
+- Platform screenshot/demo video
+- Surrounding UI: Floating annotation cards pointing to key features
+- Background: Cream base with subtle lemon slice watermarks
+
+### 5. Benefits Grid (2-column alternating)
+**Layout**: Image-text alternating rows
+- 3 rows total, each with image + benefit explanation
+- Row 1: Image left, "Write Code Faster"
+- Row 2: Image right, "Debug with Confidence"  
+- Row 3: Image left, "Ship with Peace of Mind"
+- Images show real platform usage scenarios
+
+### 6. Testimonials (2-column grid)
+**Layout**: Quote cards with avatars
+- 4-6 testimonial cards
+- Each: Customer photo, quote, name, title, company
+- Card styling: White background, left border accent (lemon)
+- Background: Very light mint tint (5% opacity)
+
+### 7. Final CTA Section
+**Layout**: Centered, generous padding
+- Headline: "Ready to Make Your Code Sweet?"
+- Subtext: "Join thousands of developers who turned lemons into lemonade"
+- Dual CTAs: "Start Free Trial" + "Book a Demo"
+- Background: Gradient bloom (lemon to citrus bloom)
+- Lumo mascot illustration (subtle, corner placement)
+
+---
+
+## Component Library
+
+### Buttons
+**Primary** (Sparkling Lemon bg):
+- px-8 py-4, rounded-full, text-slate-professional
+- Font: font-semibold text-lg
+- Shadow: warm glow on hover
+- If on image: backdrop-blur-md bg-sparkling-lemon/90
+
+**Secondary** (Outline):
+- border-2 border-fresh-mint, bg-transparent
+- Hover: bg-fresh-mint/10
+
+### Cards
+**Standard Card**:
+- rounded-xl, bg-white, p-8
+- border border-slate-100
+- Hover: shadow-lg, translateY(-2px)
+
+**Feature Card** (specific):
+- Icon container: w-14 h-14, rounded-lg, gradient bg
+- Title: text-xl font-semibold mb-3
+- Description: text-muted leading-relaxed
+
+### Navigation
+**Header**: Sticky, backdrop-blur-xl, border-b
+- Logo left, nav center, CTA right
+- Links: font-medium, hover:text-lemon transition
+
+**Footer**: Multi-column (4 columns desktop, stack mobile)
+- Product, Company, Resources, Legal columns
+- Social icons with mint hover states
+- Newsletter signup with lemon CTA button
+
+---
+
+## Images
+
+**Required Images**:
+1. **Hero Image** (Right side): Platform dashboard screenshot showing AI suggestions panel, code editor, Lumo avatar - bright, clean UI with lemon accent colors visible
+2. **Platform Preview**: Full IDE view with multiple panels, active AI chat, syntax highlighting
+3. **Benefit Images** (3 total): 
+   - Developer at desk with laptop showing Lomu
+   - Close-up of AI debugging in action
+   - Team celebrating shipping code
+4. **Testimonial Avatars**: 4-6 professional headshots (developers/CTOs)
+5. **Company Logos**: 6-8 recognizable tech companies (grayscale treatment)
+
+**Image Treatment**:
+- All screenshots: Subtle shadow, slight rotation (2deg) for dynamism
+- Photos: Warm color grade matching lemon palette
+- Rounded corners: rounded-2xl for images
+
+---
+
+## Visual Enhancements
+
+**Lemon Motifs** (Strategic placement):
+- Hero corners: Floating lemon slice SVGs (opacity 15%)
+- Section dividers: Subtle seed pattern texture (opacity 8%)
+- Loading states: Lemonade jar animation
+- Empty states: Lumo mascot illustrations
+
+**Animations** (Minimal, purposeful):
+- Hero gradient: 12s slow shift
+- Cards: Hover lift (transform translateY -4px, 200ms)
+- Lumo breathing: Subtle scale pulse on load completion
+- NO scroll-triggered animations (keep it fast)
+
+---
+
+## Dark Mode Adjustments
+
+**Background System**:
+- Base: hsl(220 20% 12%)
+- Surface cards: hsl(220 18% 16%)
+- Borders: hsl(220 15% 25%)
+
+**Color Adaptations**:
+- Sparkling Lemon: 50 90% 52% (muted but vibrant)
+- Fresh Mint: 145 52% 38%
+- Text: Cream base for primary text
+
+**Maintain**: Lemon jar animation with adjusted colors, Lumo mascot unchanged
+
+---
+
+## Accessibility
+
+- Contrast ratios: Minimum 4.5:1 for all text
+- Focus indicators: 3px lemon ring on interactive elements
+- Reduced motion: Disable gradient animations, keep functional transitions
+- Semantic HTML: Proper heading hierarchy, landmark regions
+
+---
+
+**Brand Voice in Copy**: Friendly encouragement ("Turn those bugs into features!"), clear value ("Ship 3x faster with AI"), professional credibility ("Enterprise-grade security")
