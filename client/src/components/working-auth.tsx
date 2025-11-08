@@ -49,17 +49,17 @@ export default function WorkingAuth() {
       // Check if user is owner/root and redirect to healing chat
       const meData = await queryClient.fetchQuery({ queryKey: ["/api/auth/me"] }) as any;
       const isOwner = meData?.user?.isOwner;
-      const firstName = meData?.user?.firstName || "there";
+      const userName = meData?.user?.name || meData?.user?.firstName || "there";
       
       if (isOwner) {
         toast({
-          title: `Welcome back, ${firstName}!`,
+          title: `Welcome back, ${userName}!`,
           description: "Redirecting to Platform Healing...",
         });
         setTimeout(() => setLocation("/platform-healing"), 500);
       } else {
         toast({
-          title: `Welcome back, ${firstName}!`,
+          title: `Welcome back, ${userName}!`,
           description: "Redirecting to your dashboard...",
         });
         setTimeout(() => setLocation("/dashboard"), 500);
@@ -84,17 +84,17 @@ export default function WorkingAuth() {
       // Check if user is owner/root and redirect to healing chat
       const meData = await queryClient.fetchQuery({ queryKey: ["/api/auth/me"] }) as any;
       const isOwner = meData?.user?.isOwner;
-      const firstName = meData?.user?.firstName || "there";
+      const userName = meData?.user?.name || meData?.user?.firstName || "there";
       
       if (isOwner) {
         toast({
-          title: `Account created, ${firstName}!`,
+          title: `Account created, ${userName}!`,
           description: "Welcome to Lomu. Redirecting to Platform Healing...",
         });
         setTimeout(() => setLocation("/platform-healing"), 500);
       } else {
         toast({
-          title: `Account created, ${firstName}!`,
+          title: `Account created, ${userName}!`,
           description: "Welcome to Lomu. Redirecting...",
         });
         setTimeout(() => setLocation("/dashboard"), 500);
