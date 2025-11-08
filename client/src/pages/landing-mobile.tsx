@@ -72,7 +72,7 @@ export default function LandingMobile() {
             </h1>
             
             <p className="text-slate-400 text-base max-w-sm mx-auto break-words whitespace-normal">
-              Claude Sonnet 4 powered. Zero coding required. Production-ready in minutes.
+              Your hive of AI workers, buzzing with precision. Zero coding required—just sweet results.
             </p>
           </div>
 
@@ -128,8 +128,8 @@ export default function LandingMobile() {
                   <p className="text-sm text-slate-400">4-Panel IDE</p>
                 </div>
               </div>
-              <h3 className="mt-3 font-semibold text-white text-sm">Professional IDE Experience</h3>
-              <p className="text-xs text-slate-400 mt-1">Split-pane editor, live preview, AI chat, terminal</p>
+              <h3 className="mt-3 font-semibold text-white text-sm">Your Honeycomb Workspace</h3>
+              <p className="text-xs text-slate-400 mt-1">Perfectly structured like hexagonal cells—editor, preview, chat, terminal</p>
             </Card>
 
             {/* Screenshot 2: AI Building */}
@@ -140,8 +140,8 @@ export default function LandingMobile() {
                   <p className="text-sm text-slate-400">AI in Action</p>
                 </div>
               </div>
-              <h3 className="mt-3 font-semibold text-white text-sm">Watch AI Code in Real-Time</h3>
-              <p className="text-xs text-slate-400 mt-1">See swarm intelligence generate and test automatically</p>
+              <h3 className="mt-3 font-semibold text-white text-sm">Watch the Swarm Build</h3>
+              <p className="text-xs text-slate-400 mt-1">Thousands of AI bees coding in perfect harmony—real-time magic</p>
             </Card>
 
             {/* Screenshot 3: Live Preview */}
@@ -152,8 +152,8 @@ export default function LandingMobile() {
                   <p className="text-sm text-slate-400">Live Preview</p>
                 </div>
               </div>
-              <h3 className="mt-3 font-semibold text-white text-sm">Instant Visual Feedback</h3>
-              <p className="text-xs text-slate-400 mt-1">Changes reflected immediately as AI codes</p>
+              <h3 className="mt-3 font-semibold text-white text-sm">Honey Crystallizing</h3>
+              <p className="text-xs text-slate-400 mt-1">Watch your app form like golden honey—instant live preview</p>
             </Card>
 
             {/* Screenshot 4: Deployment */}
@@ -164,8 +164,8 @@ export default function LandingMobile() {
                   <p className="text-sm text-slate-400">Deployment</p>
                 </div>
               </div>
-              <h3 className="mt-3 font-semibold text-white text-sm">One-Click Deployment</h3>
-              <p className="text-xs text-slate-400 mt-1">Deploy with custom domains and SSL automatically</p>
+              <h3 className="mt-3 font-semibold text-white text-sm">Harvest the Honey</h3>
+              <p className="text-xs text-slate-400 mt-1">Take your sweet creation live—one click to production</p>
             </Card>
           </div>
         </div>
@@ -184,9 +184,9 @@ export default function LandingMobile() {
             <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-honey to-nectar flex items-center justify-center">
               <Zap className="w-6 h-6 text-charcoal-950" />
             </div>
-            <h3 className="text-lg font-semibold text-white break-words">Lightning Fast</h3>
+            <h3 className="text-lg font-semibold text-white break-words">Bee-Line Fast</h3>
             <p className="text-slate-300 text-sm break-words whitespace-normal">
-              12-step AI workflow delivers production-ready code in minutes
+              Our swarm takes the shortest path—honey-sweet code delivered in minutes
             </p>
           </Card>
 
@@ -194,9 +194,9 @@ export default function LandingMobile() {
             <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-mint to-honey flex items-center justify-center">
               <Shield className="w-6 h-6 text-charcoal-950" />
             </div>
-            <h3 className="text-lg font-semibold text-white break-words">Enterprise Quality</h3>
+            <h3 className="text-lg font-semibold text-white break-words">Queen Bee Quality</h3>
             <p className="text-slate-300 text-sm break-words whitespace-normal">
-              Self-testing, validation, and security audits built-in
+              Royal guard inspection—every line tested, validated, and golden-perfect
             </p>
           </Card>
 
@@ -204,9 +204,9 @@ export default function LandingMobile() {
             <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-nectar to-mint flex items-center justify-center">
               <Code className="w-6 h-6 text-charcoal-950" />
             </div>
-            <h3 className="text-lg font-semibold text-white break-words">100% Transparent</h3>
+            <h3 className="text-lg font-semibold text-white break-words">Clear as Honey</h3>
             <p className="text-slate-300 text-sm break-words whitespace-normal">
-              See exact cost before building. Fair pricing at $1.50 per 1,000 overage tokens
+              See exactly what you're getting—transparent pricing, no sticky surprises
             </p>
           </Card>
         </div>
@@ -256,7 +256,7 @@ export default function LandingMobile() {
             <span className="text-lg font-bold text-white">BeehiveAI</span>
           </div>
           <p className="text-sm text-slate-400 break-words whitespace-normal">
-            Swarm intelligence for modern development
+            Where code gets sweeter by the hive
           </p>
           <div className="flex justify-center gap-4">
             <Link href="/pricing" className="text-slate-400 hover:text-primary transition-colors min-h-[44px] flex items-center px-2" data-testid="footer-link-pricing">

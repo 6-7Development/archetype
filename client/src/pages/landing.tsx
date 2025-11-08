@@ -75,7 +75,7 @@ export default function Landing() {
           </h1>
           
           <p className="text-xl text-slate-400 mb-10 max-w-3xl mx-auto">
-            Claude Sonnet 4 powered. Zero coding required. Production-ready in minutes.
+            Like a hive of expert developers working in perfect harmony. Zero coding required—just pure honey-sweet results.
           </p>
 
           {/* CTAs */}
@@ -141,9 +141,9 @@ export default function Landing() {
                   <p className="text-xs text-slate-500 mt-1">Real-time code generation</p>
                 </div>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Chat with BeehiveAI</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Chat with the Hive</h3>
               <p className="text-sm text-slate-400">
-                Describe what you want to build and watch swarm intelligence generate production-ready code
+                Tell the swarm what you need—watch thousands of AI workers build your app with hive-mind precision
               </p>
             </Card>
 
@@ -156,9 +156,9 @@ export default function Landing() {
                   <p className="text-xs text-slate-500 mt-1">Instant visual feedback</p>
                 </div>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">See Changes Instantly</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Watch the Hive Work</h3>
               <p className="text-sm text-slate-400">
-                Watch your app come to life as AI writes code with instant browser preview updates
+                See your app crystallize like honey as our worker bees code in real-time
               </p>
             </Card>
 
@@ -171,9 +171,9 @@ export default function Landing() {
                   <p className="text-xs text-slate-500 mt-1">Full IDE in browser</p>
                 </div>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Professional Code Editor</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Your Personal Honeycomb</h3>
               <p className="text-sm text-slate-400">
-                Full-featured IDE with syntax highlighting, autocomplete, and file management
+                Every file perfectly organized in hexagonal precision—full IDE power at your fingertips
               </p>
             </Card>
 
@@ -186,9 +186,9 @@ export default function Landing() {
                   <p className="text-xs text-slate-500 mt-1">Production hosting</p>
                 </div>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Deploy to Production</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Harvest Your Creation</h3>
               <p className="text-sm text-slate-400">
-                Publish your app with custom domains, SSL certificates, and global CDN instantly
+                One-click deploy to production—take your sweet success live with custom domains and SSL
               </p>
             </Card>
           </div>
@@ -213,9 +213,9 @@ export default function Landing() {
               <div className="w-14 h-14 rounded-xl bg-honey/20 flex items-center justify-center text-honey mb-6">
                 <Zap className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-white">Lightning Fast</h3>
+              <h3 className="text-xl font-semibold mb-3 text-white">Bee-Line to Production</h3>
               <p className="text-slate-400 leading-relaxed">
-                12-step AI workflow delivers production-ready code in minutes. Complete full-stack apps built instantly.
+                Our swarm takes the most efficient path—12-step workflow delivers honey-sweet code faster than you can say "buzz"
               </p>
             </Card>
 
@@ -224,9 +224,9 @@ export default function Landing() {
               <div className="w-14 h-14 rounded-xl bg-mint/20 flex items-center justify-center text-mint mb-6">
                 <Shield className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-white">Enterprise Quality</h3>
+              <h3 className="text-xl font-semibold mb-3 text-white">Queen Bee Quality</h3>
               <p className="text-slate-400 leading-relaxed">
-                Self-testing, validation, and security audits built-in. Claude Sonnet 4 ensures production-grade code.
+                Every line inspected by our royal guard—self-testing, validation, and security audits ensure golden-standard code
               </p>
             </Card>
 
@@ -235,9 +235,9 @@ export default function Landing() {
               <div className="w-14 h-14 rounded-xl bg-honey/20 flex items-center justify-center text-honey mb-6">
                 <Hexagon className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-white">Swarm Intelligence</h3>
+              <h3 className="text-xl font-semibold mb-3 text-white">Hive Mind Power</h3>
               <p className="text-slate-400 leading-relaxed">
-                Multiple AI agents collaborate - planning, building, testing, and deploying your apps together.
+                Thousands of AI workers buzzing in perfect sync—planning, building, testing, deploying. The ultimate collaboration.
               </p>
             </Card>
           </div>
@@ -249,10 +249,10 @@ export default function Landing() {
         <div className="container mx-auto max-w-4xl text-center">
           <div className="p-12 rounded-2xl bg-gradient-to-br from-honey/10 to-mint/10 border border-honey/20 backdrop-blur-sm">
             <h2 className="text-4xl font-bold mb-4 text-white">
-              Ready to Build with BeehiveAI?
+              Ready to Taste the Honey?
             </h2>
             <p className="text-xl text-slate-300 mb-8">
-              Join developers building production apps in minutes, not months
+              Join the swarm—thousands of developers creating sweet success in minutes, not months
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
@@ -287,7 +287,7 @@ export default function Landing() {
               <span className="text-white font-semibold">BeehiveAI</span>
             </div>
             <p className="text-slate-500 text-sm">
-              © 2024 BeehiveAI. Built with swarm intelligence.
+              © 2024 BeehiveAI. Where code gets sweeter by the hive.
             </p>
             <div className="flex gap-4">
               <Link href="/pricing" className="text-slate-400 hover:text-white text-sm">
