@@ -106,3 +106,48 @@ A profitable credit system is implemented with 1 credit = 1,000 tokens = $0.05, 
 - **Charting**: Recharts
 - **Browser Automation**: Playwright
 - **Web Search**: Tavily API
+
+## Recent Changes
+### Vision Analysis & Image Understanding (November 8, 2025 - Latest)
+**Added powerful vision analysis capabilities - LomuAI can now scan, understand, and fix visual issues:**
+
+**New Capability: vision_analyze Tool**
+- ✅ Added to LOMU_CORE_TOOLS distribution (18 tools total - within Google's 10-20 recommendation)
+- ✅ Powered by Claude Sonnet 4 Vision API for high-quality image analysis
+- ✅ Systematic workflow: CAPTURE → ANALYZE → FIX → VERIFY
+- ✅ Comprehensive system prompt documentation with examples
+
+**What LomuAI Can Now Do:**
+1. **Scan Websites**: Use web_fetch + browser_test screenshot + vision_analyze to understand any website's design
+2. **Analyze Screenshots**: Upload UI mockups and LomuAI extracts layout, colors, typography, spacing
+3. **Find Visual Bugs**: Take screenshot of broken UI, analyze for accessibility, contrast, layout issues
+4. **Match Designs**: Compare mockup vs implementation, get specific list of differences to fix
+5. **Accessibility Audits**: Analyze for WCAG compliance, contrast ratios, text sizes, keyboard navigation
+
+**Tool Distribution (18 total):**
+- File Operations (3): read, write, ls
+- Smart Code Intelligence (3): smart_read_file, get_auto_context, extract_function
+- Task Management (3): create_task_list, update_task, read_task_list
+- Web & Research (2): web_search, web_fetch
+- Testing & Diagnosis (2): browser_test, perform_diagnosis
+- **Vision Analysis (1)**: vision_analyze ← NEW!
+- Escalation (1): architect_consult
+- System Operations (3): bash, refresh_all_logs, glob
+
+**Systematic Vision Workflow:**
+1. **CAPTURE**: User uploads image OR LomuAI takes screenshot with browser_test
+2. **ANALYZE**: Call vision_analyze with specific prompt (extract colors, find bugs, check accessibility)
+3. **SYSTEMATICALLY FIX**: Create task list from findings, implement fixes using 7-phase workflow
+4. **VERIFY**: Take new screenshot, optionally re-analyze to confirm improvements
+
+**Example Use Cases:**
+- "Here's a mockup, build this" → Extracts exact specs, builds systematically
+- "Make my site look like example.com" → Fetches site, analyzes design, replicates
+- "The login button looks broken" → Screenshots page, finds visual issues, fixes them
+- "Is my UI accessible?" → Analyzes contrast, text sizes, WCAG compliance
+
+**Status:**
+- ✅ Zero LSP diagnostics
+- ✅ 18 tools (within Google's optimal 10-20 range)
+- ✅ Production-ready vision analysis integration
+- ✅ Comprehensive workflow documentation in system prompt
