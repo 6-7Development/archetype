@@ -1,6 +1,6 @@
 // BeehiveAI Custom SVG Logos - Scalable & Editable
 
-// BeehiveAI Icon Logo (detailed honeycomb with animated flying bees)
+// BeehiveAI Icon Logo (realistic professional honeycomb)
 export function BeehiveIcon({ size = 80, className = "" }: { size?: number; className?: string }) {
   return (
     <svg 
@@ -11,279 +11,239 @@ export function BeehiveIcon({ size = 80, className = "" }: { size?: number; clas
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Outer glow effect */}
-      <circle cx="60" cy="60" r="55" fill="url(#outerGlow)" opacity="0.3"/>
+      {/* Drop shadow for depth */}
+      <ellipse cx="60" cy="92" rx="40" ry="8" fill="rgba(47,27,11,0.35)" filter="url(#dropShadow)"/>
       
-      {/* Main honeycomb structure with shadow depth */}
+      {/* Main honeycomb outer shell - realistic beeswax */}
       <path 
-        d="M60 10 L95 30 L95 70 L60 90 L25 70 L25 30 Z" 
-        fill="url(#honeyGradient)"
-        stroke="#8B6914"
-        strokeWidth="3.5"
+        d="M60 15 L90 32 L90 66 L60 83 L30 66 L30 32 Z" 
+        fill="url(#waxGradient)"
+        stroke="url(#waxStroke)"
+        strokeWidth="2.5"
         strokeLinejoin="round"
+        filter="url(#bevelEffect)"
       />
       
-      {/* Inner shadow for depth */}
+      {/* Inner shadow along edges for depth */}
       <path 
-        d="M60 10 L95 30 L95 70 L60 90 L25 70 L25 30 Z" 
+        d="M60 15 L90 32 L90 66 L60 83 L30 66 L30 32 Z" 
         fill="none"
-        stroke="#3D2F0F"
-        strokeWidth="1.5"
+        stroke="url(#innerShadow)"
+        strokeWidth="1.2"
         strokeLinejoin="round"
-        opacity="0.4"
+        opacity="0.6"
       />
       
-      {/* Inner honeycomb cells with depth and shadows */}
+      {/* Inner honeycomb cells - recessed depth with natural wax */}
       <g>
-        {/* Center cell - darkest borders for depth */}
-        <path d="M60 40 L70 46 L70 58 L60 64 L50 58 L50 46 Z" 
-          fill="url(#cellGradient)" 
-          stroke="#8B6914" 
-          strokeWidth="2.5"/>
-        <path d="M60 40 L70 46 L70 58 L60 64 L50 58 L50 46 Z" 
-          fill="none" 
-          stroke="#3D2F0F" 
-          strokeWidth="0.8"
-          opacity="0.5"/>
+        {/* Center cell - deepest with radial shading */}
+        <path d="M60 42 L68 47 L68 57 L60 62 L52 57 L52 47 Z" 
+          fill="url(#recessedCell)" 
+          stroke="url(#cellEdge)" 
+          strokeWidth="1.8"
+          filter="url(#cellDepth)"/>
         
-        {/* Top row cells with shadows */}
-        <path d="M42 28 L52 34 L52 46 L42 52 L32 46 L32 34 Z" 
-          fill="url(#cellLightGradient)" stroke="#8B6914" strokeWidth="2"/>
-        <path d="M42 28 L52 34 L52 46 L42 52 L32 46 L32 34 Z" 
-          fill="none" stroke="#3D2F0F" strokeWidth="0.6" opacity="0.4"/>
+        {/* Top row cells - angled lighting */}
+        <path d="M44 32 L52 37 L52 47 L44 52 L36 47 L36 37 Z" 
+          fill="url(#lightCell)" 
+          stroke="url(#cellEdge)" 
+          strokeWidth="1.5"
+          filter="url(#cellDepth)"/>
           
-        <path d="M60 22 L70 28 L70 40 L60 46 L50 40 L50 28 Z" 
-          fill="url(#cellLightGradient)" stroke="#8B6914" strokeWidth="2"/>
-        <path d="M60 22 L70 28 L70 40 L60 46 L50 40 L50 28 Z" 
-          fill="none" stroke="#3D2F0F" strokeWidth="0.6" opacity="0.4"/>
+        <path d="M60 26 L68 31 L68 41 L60 46 L52 41 L52 31 Z" 
+          fill="url(#lightCell)" 
+          stroke="url(#cellEdge)" 
+          strokeWidth="1.5"
+          filter="url(#cellDepth)"/>
           
-        <path d="M78 28 L88 34 L88 46 L78 52 L68 46 L68 34 Z" 
-          fill="url(#cellLightGradient)" stroke="#8B6914" strokeWidth="2"/>
-        <path d="M78 28 L88 34 L88 46 L78 52 L68 46 L68 34 Z" 
-          fill="none" stroke="#3D2F0F" strokeWidth="0.6" opacity="0.4"/>
+        <path d="M76 32 L84 37 L84 47 L76 52 L68 47 L68 37 Z" 
+          fill="url(#lightCell)" 
+          stroke="url(#cellEdge)" 
+          strokeWidth="1.5"
+          filter="url(#cellDepth)"/>
         
         {/* Middle row cells */}
-        <path d="M42 52 L52 58 L52 70 L42 76 L32 70 L32 58 Z" 
-          fill="url(#cellLightGradient)" stroke="#8B6914" strokeWidth="2"/>
-        <path d="M42 52 L52 58 L52 70 L42 76 L32 70 L32 58 Z" 
-          fill="none" stroke="#3D2F0F" strokeWidth="0.6" opacity="0.4"/>
+        <path d="M44 52 L52 57 L52 67 L44 72 L36 67 L36 57 Z" 
+          fill="url(#lightCell)" 
+          stroke="url(#cellEdge)" 
+          strokeWidth="1.5"
+          filter="url(#cellDepth)"/>
           
-        <path d="M78 52 L88 58 L88 70 L78 76 L68 70 L68 58 Z" 
-          fill="url(#cellLightGradient)" stroke="#8B6914" strokeWidth="2"/>
-        <path d="M78 52 L88 58 L88 70 L78 76 L68 70 L68 58 Z" 
-          fill="none" stroke="#3D2F0F" strokeWidth="0.6" opacity="0.4"/>
+        <path d="M76 52 L84 57 L84 67 L76 72 L68 67 L68 57 Z" 
+          fill="url(#lightCell)" 
+          stroke="url(#cellEdge)" 
+          strokeWidth="1.5"
+          filter="url(#cellDepth)"/>
         
-        {/* Bottom row cells */}
-        <path d="M60 64 L70 70 L70 82 L60 88 L50 82 L50 70 Z" 
-          fill="url(#cellLightGradient)" stroke="#8B6914" strokeWidth="2"/>
-        <path d="M60 64 L70 70 L70 82 L60 88 L50 82 L50 70 Z" 
-          fill="none" stroke="#3D2F0F" strokeWidth="0.6" opacity="0.4"/>
+        {/* Bottom cell */}
+        <path d="M60 62 L68 67 L68 77 L60 82 L52 77 L52 67 Z" 
+          fill="url(#lightCell)" 
+          stroke="url(#cellEdge)" 
+          strokeWidth="1.5"
+          filter="url(#cellDepth)"/>
       </g>
       
-      {/* Realistic oozing honey with layered detail */}
-      <g className="honey-drips">
-        {/* Honey pooling at the edge - darker base */}
-        <ellipse cx="58" cy="84" rx="4" ry="2" fill="#D4940F" opacity="0.6"/>
+      {/* Realistic translucent honey drip - viscous flow */}
+      <g className="honey-drip">
+        {/* Pooling honey at hive edge - darker viscous base */}
+        <ellipse cx="60" cy="80" rx="5" ry="2.5" fill="url(#honeyPool)" opacity="0.85"/>
         
-        {/* Main drip flow - realistic stream */}
-        <path d="M60 84 Q60 87, 60 90 Q60 95, 59 98 Q58.5 100, 57.5 100.5 Q56.5 100, 56 98 Q55 95, 55 90 Q55 87, 56 84" 
-          fill="url(#honeyFlowGradient)" 
-          stroke="#8B6914" 
-          strokeWidth="0.6"
-          opacity="0.95"/>
+        {/* Main drip stream - tapered bezier for viscosity */}
+        <path d="M62 80 Q62 85, 61.5 90 Q61 95, 60.5 100 Q60.2 104, 60 106 Q59.8 104, 59.5 100 Q59 95, 58.5 90 Q58 85, 58 80" 
+          fill="url(#honeyBase)" 
+          opacity="0.85"
+          filter="url(#honeyGlow)"/>
         
-        {/* Inner lighter honey flow */}
-        <path d="M59 85 Q59 88, 59 91 Q59 95, 58.5 97.5 Q58 99, 57.5 99.5 Q57 99, 56.5 97.5 Q56 95, 56 91 Q56 88, 57 85" 
-          fill="url(#honeyInnerGradient)" 
-          opacity="0.7"/>
+        {/* Inner translucent core - lighter */}
+        <path d="M61 82 Q61 86, 60.7 91 Q60.4 96, 60.2 101 Q60.1 103, 60 104.5 Q59.9 103, 59.8 101 Q59.6 96, 59.3 91 Q59 86, 59 82" 
+          fill="url(#honeyCore)" 
+          opacity="0.55"/>
         
-        {/* Glossy drop at bottom with multiple layers */}
-        <ellipse cx="57.5" cy="101" rx="4.5" ry="5.5" fill="url(#dropShadowGradient)"/>
-        <ellipse cx="57.5" cy="101" rx="4" ry="5" fill="url(#dropMainGradient)"/>
-        <ellipse cx="57.5" cy="101" rx="3.5" ry="4.5" fill="url(#dropHighlightGradient)"/>
+        {/* Refractive edge highlight */}
+        <path d="M61.5 81 Q61.5 85, 61.2 90 Q61 95, 60.8 100" 
+          stroke="url(#honeyRefract)" 
+          strokeWidth="0.8"
+          opacity="0.25"
+          fill="none"/>
         
-        {/* Multiple shine highlights for realism */}
-        <ellipse cx="56" cy="98" rx="1.5" ry="2" fill="white" opacity="0.7"/>
-        <ellipse cx="58.5" cy="100" rx="0.8" ry="1.2" fill="white" opacity="0.5"/>
+        {/* Glossy drop - multi-layer translucency */}
+        <ellipse cx="60" cy="107" rx="5" ry="6" fill="url(#dropShadow)" filter="url(#honeyGlow)"/>
+        <ellipse cx="60" cy="107" rx="4.5" ry="5.5" fill="url(#dropBase)" opacity="0.85"/>
+        <ellipse cx="60" cy="107" rx="4" ry="5" fill="url(#dropCore)" opacity="0.55"/>
         
-        {/* Dark bottom shadow */}
-        <ellipse cx="57.5" cy="105" rx="3" ry="1.5" fill="#3D2F0F" opacity="0.3"/>
+        {/* Specular highlights - light scattering */}
+        <ellipse cx="58.5" cy="104" rx="1.8" ry="2.5" fill="url(#honeyShine)" opacity="0.7"/>
+        <ellipse cx="61" cy="106.5" rx="1" ry="1.5" fill="url(#honeyShine)" opacity="0.4"/>
+        
+        {/* Underside shadow blur */}
+        <ellipse cx="60" cy="112" rx="4" ry="2" fill="rgba(47,27,11,0.25)" filter="url(#dropShadow)"/>
       </g>
       
-      {/* Animated Robotic AI Drone Bee #1 */}
-      <g className="drone-bee-1" style={{ transformOrigin: '60px 60px' }}>
-        <g transform="translate(85, 25)">
-          {/* Metallic body with gradient */}
-          <ellipse cx="0" cy="0" rx="4" ry="6" fill="url(#metallicBody)"/>
-          <rect x="-3.5" y="-3" width="7" height="1.5" fill="#F7B500"/>
-          <rect x="-3.5" y="0" width="7" height="1.5" fill="#F7B500"/>
-          <rect x="-3.5" y="3" width="7" height="1.5" fill="#F7B500"/>
-          {/* Robotic head with shine */}
-          <circle cx="0" cy="-7" r="2.5" fill="url(#roboticHead)"/>
-          <circle cx="-0.5" cy="-7.5" r="0.8" fill="white" opacity="0.8"/>
-          {/* Robotic wings with motion blur */}
-          <ellipse cx="-3" cy="-2" rx="4" ry="2" fill="url(#wingGradient)" opacity="0.8" className="wing-left"/>
-          <ellipse cx="3" cy="-2" rx="4" ry="2" fill="url(#wingGradient)" opacity="0.8" className="wing-right"/>
-          {/* Digital antennae */}
-          <line x1="-1" y1="-8" x2="-2" y2="-11" stroke="#00D4B3" strokeWidth="1.2" opacity="0.8"/>
-          <line x1="1" y1="-8" x2="2" y2="-11" stroke="#00D4B3" strokeWidth="1.2" opacity="0.8"/>
-          <circle cx="-2" cy="-11" r="0.8" fill="#00D4B3" opacity="0.9"/>
-          <circle cx="2" cy="-11" r="0.8" fill="#00D4B3" opacity="0.9"/>
-        </g>
-      </g>
       
-      {/* Animated Robotic AI Drone Bee #2 */}
-      <g className="drone-bee-2" style={{ transformOrigin: '60px 60px' }}>
-        <g transform="translate(18, 50) rotate(-20)">
-          {/* Metallic body */}
-          <ellipse cx="0" cy="0" rx="3.5" ry="5.5" fill="url(#metallicBody)"/>
-          <rect x="-3" y="-2.5" width="6" height="1.2" fill="#F7B500"/>
-          <rect x="-3" y="0" width="6" height="1.2" fill="#F7B500"/>
-          <rect x="-3" y="2.5" width="6" height="1.2" fill="#F7B500"/>
-          {/* Robotic head */}
-          <circle cx="0" cy="-6.5" r="2.2" fill="url(#roboticHead)"/>
-          <circle cx="-0.4" cy="-7" r="0.6" fill="white" opacity="0.8"/>
-          {/* Wings */}
-          <ellipse cx="-2.5" cy="-1.5" rx="3.5" ry="1.8" fill="url(#wingGradient)" opacity="0.8"/>
-          <ellipse cx="2.5" cy="-1.5" rx="3.5" ry="1.8" fill="url(#wingGradient)" opacity="0.8"/>
-          {/* Digital antennae */}
-          <line x1="-0.8" y1="-7.5" x2="-1.8" y2="-10" stroke="#00D4B3" strokeWidth="1" opacity="0.8"/>
-          <line x1="0.8" y1="-7.5" x2="1.8" y2="-10" stroke="#00D4B3" strokeWidth="1" opacity="0.8"/>
-          <circle cx="-1.8" cy="-10" r="0.7" fill="#00D4B3" opacity="0.9"/>
-          <circle cx="1.8" cy="-10" r="0.7" fill="#00D4B3" opacity="0.9"/>
-        </g>
-      </g>
-      
-      {/* Animated Robotic AI Drone Bee #3 */}
-      <g className="drone-bee-3" style={{ transformOrigin: '60px 60px' }}>
-        <g transform="translate(100, 75) rotate(30)">
-          {/* Metallic body */}
-          <ellipse cx="0" cy="0" rx="3.5" ry="5.5" fill="url(#metallicBody)"/>
-          <rect x="-3" y="-2.5" width="6" height="1.2" fill="#F7B500"/>
-          <rect x="-3" y="0" width="6" height="1.2" fill="#F7B500"/>
-          <rect x="-3" y="2.5" width="6" height="1.2" fill="#F7B500"/>
-          {/* Robotic head */}
-          <circle cx="0" cy="-6.5" r="2.2" fill="url(#roboticHead)"/>
-          <circle cx="-0.4" cy="-7" r="0.6" fill="white" opacity="0.8"/>
-          {/* Wings */}
-          <ellipse cx="-2.5" cy="-1.5" rx="3.5" ry="1.8" fill="url(#wingGradient)" opacity="0.8"/>
-          <ellipse cx="2.5" cy="-1.5" rx="3.5" ry="1.8" fill="url(#wingGradient)" opacity="0.8"/>
-          {/* Digital antennae */}
-          <line x1="-0.8" y1="-7.5" x2="-1.8" y2="-10" stroke="#00D4B3" strokeWidth="1" opacity="0.8"/>
-          <line x1="0.8" y1="-7.5" x2="1.8" y2="-10" stroke="#00D4B3" strokeWidth="1" opacity="0.8"/>
-          <circle cx="-1.8" cy="-10" r="0.7" fill="#00D4B3" opacity="0.9"/>
-          <circle cx="1.8" cy="-10" r="0.7" fill="#00D4B3" opacity="0.9"/>
-        </g>
-      </g>
-      
-      {/* Motion trails for bees */}
-      <g opacity="0.3" stroke="#FFD34D" strokeWidth="1" fill="none" strokeDasharray="2,2">
-        <path d="M 75 20 Q 80 22, 85 25"/>
-        <path d="M 12 45 Q 15 47, 18 50"/>
-        <path d="M 95 70 Q 97 72, 100 75"/>
-      </g>
-      
-      {/* Gradient definitions */}
+      {/* Professional gradients - natural beeswax and honey colors */}
       <defs>
-        <linearGradient id="honeyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#FFD34D" stopOpacity="0.4"/>
-          <stop offset="50%" stopColor="#F7B500" stopOpacity="0.5"/>
-          <stop offset="100%" stopColor="#F7B500" stopOpacity="0.6"/>
+        {/* SVG Filters for depth */}
+        <filter id="dropShadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+          <feOffset dx="0" dy="2" result="offsetblur"/>
+          <feComponentTransfer>
+            <feFuncA type="linear" slope="0.4"/>
+          </feComponentTransfer>
+          <feMerge>
+            <feMergeNode/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+        
+        <filter id="bevelEffect">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="1" result="blur"/>
+          <feSpecularLighting in="blur" surfaceScale="3" specularConstant="0.5" specularExponent="20" lighting-color="white" result="specular">
+            <fePointLight x="-5000" y="-10000" z="20000"/>
+          </feSpecularLighting>
+          <feComposite in="specular" in2="SourceAlpha" operator="in" result="specular"/>
+          <feComposite in="SourceGraphic" in2="specular" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
+        </filter>
+        
+        <filter id="cellDepth">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="0.5"/>
+        </filter>
+        
+        <filter id="honeyGlow">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur"/>
+          <feColorMatrix in="blur" type="saturate" values="1.5" result="saturated"/>
+          <feComponentTransfer in="saturated" result="glowEffect">
+            <feFuncA type="discrete" tableValues="0 0.5 1"/>
+          </feComponentTransfer>
+          <feMerge>
+            <feMergeNode in="glowEffect"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+        
+        {/* Realistic beeswax gradients */}
+        <linearGradient id="waxGradient" x1="30%" y1="0%" x2="70%" y2="100%">
+          <stop offset="0%" stopColor="#FFE7B8"/>
+          <stop offset="25%" stopColor="#F2B347"/>
+          <stop offset="60%" stopColor="#D6A656"/>
+          <stop offset="100%" stopColor="#9A6B2F"/>
         </linearGradient>
         
-        <radialGradient id="cellGradient" cx="50%" cy="50%">
-          <stop offset="0%" stopColor="#FFD34D" stopOpacity="0.9"/>
-          <stop offset="100%" stopColor="#F7B500" stopOpacity="0.7"/>
-        </radialGradient>
-        
-        <linearGradient id="cellLightGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#FFD34D" stopOpacity="0.8"/>
-          <stop offset="100%" stopColor="#F7B500" stopOpacity="0.6"/>
+        <linearGradient id="waxStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#9A6B2F"/>
+          <stop offset="100%" stopColor="#5B3A1A"/>
         </linearGradient>
         
-        <radialGradient id="outerGlow" cx="50%" cy="50%">
-          <stop offset="0%" stopColor="#F7B500" stopOpacity="0.2"/>
-          <stop offset="100%" stopColor="#F7B500" stopOpacity="0"/>
-        </radialGradient>
-        
-        {/* Realistic honey flow gradients */}
-        <linearGradient id="honeyFlowGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#D4940F"/>
-          <stop offset="30%" stopColor="#F7B500"/>
-          <stop offset="70%" stopColor="#F7B500"/>
-          <stop offset="100%" stopColor="#B8860B"/>
+        <linearGradient id="innerShadow" x1="30%" y1="30%" x2="70%" y2="70%">
+          <stop offset="0%" stopColor="#5B3A1A"/>
+          <stop offset="100%" stopColor="transparent"/>
         </linearGradient>
         
-        <linearGradient id="honeyInnerGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#FFD34D"/>
-          <stop offset="50%" stopColor="#F7B500"/>
-          <stop offset="100%" stopColor="#E6A615"/>
+        {/* Cell depth gradients */}
+        <radialGradient id="recessedCell" cx="50%" cy="45%">
+          <stop offset="0%" stopColor="#C9821F"/>
+          <stop offset="50%" stopColor="#A36112"/>
+          <stop offset="100%" stopColor="#5B3A1A"/>
+        </radialGradient>
+        
+        <radialGradient id="lightCell" cx="40%" cy="35%">
+          <stop offset="0%" stopColor="#FFE7B8"/>
+          <stop offset="40%" stopColor="#F2B347"/>
+          <stop offset="100%" stopColor="#C9821F"/>
+        </radialGradient>
+        
+        <linearGradient id="cellEdge" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#9A6B2F"/>
+          <stop offset="100%" stopColor="#5B3A1A"/>
         </linearGradient>
         
-        {/* Drop shadow layer */}
-        <radialGradient id="dropShadowGradient" cx="50%" cy="50%">
-          <stop offset="0%" stopColor="#8B6914" stopOpacity="0.3"/>
-          <stop offset="100%" stopColor="#3D2F0F" stopOpacity="0.5"/>
-        </radialGradient>
+        {/* Realistic translucent honey */}
+        <linearGradient id="honeyPool" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#A36112"/>
+          <stop offset="100%" stopColor="#C9821F"/>
+        </linearGradient>
         
-        {/* Main drop body */}
-        <radialGradient id="dropMainGradient" cx="40%" cy="35%">
-          <stop offset="0%" stopColor="#FFD34D"/>
-          <stop offset="40%" stopColor="#F7B500"/>
-          <stop offset="100%" stopColor="#D4940F"/>
-        </radialGradient>
+        <linearGradient id="honeyBase" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#A36112"/>
+          <stop offset="30%" stopColor="#C9821F"/>
+          <stop offset="70%" stopColor="#F2B347"/>
+          <stop offset="100%" stopColor="#C9821F"/>
+        </linearGradient>
         
-        {/* Drop highlight layer */}
-        <radialGradient id="dropHighlightGradient" cx="35%" cy="30%">
-          <stop offset="0%" stopColor="#FFD34D" stopOpacity="0.9"/>
-          <stop offset="60%" stopColor="#F7B500" stopOpacity="0.6"/>
+        <linearGradient id="honeyCore" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#F2B347"/>
+          <stop offset="50%" stopColor="#FFE7B8"/>
+          <stop offset="100%" stopColor="#F2B347"/>
+        </linearGradient>
+        
+        <linearGradient id="honeyRefract" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#FFE7B8"/>
+          <stop offset="100%" stopColor="transparent"/>
+        </linearGradient>
+        
+        {/* Drop gradients */}
+        <radialGradient id="dropShadow" cx="50%" cy="50%">
+          <stop offset="0%" stopColor="rgba(91,58,26,0.5)"/>
           <stop offset="100%" stopColor="transparent"/>
         </radialGradient>
         
-        {/* Metallic body gradient for robotic bees */}
-        <linearGradient id="metallicBody" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#FFD34D"/>
-          <stop offset="50%" stopColor="#F7B500"/>
-          <stop offset="100%" stopColor="#E6A615"/>
-        </linearGradient>
-        
-        {/* Robotic head gradient */}
-        <radialGradient id="roboticHead" cx="40%" cy="40%">
-          <stop offset="0%" stopColor="#FFD34D"/>
-          <stop offset="100%" stopColor="#F7B500"/>
+        <radialGradient id="dropBase" cx="40%" cy="35%">
+          <stop offset="0%" stopColor="#F2B347"/>
+          <stop offset="50%" stopColor="#C9821F"/>
+          <stop offset="100%" stopColor="#A36112"/>
         </radialGradient>
         
-        {/* Wing gradient with cyan tint for robotic look */}
-        <linearGradient id="wingGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="white" stopOpacity="0.9"/>
-          <stop offset="50%" stopColor="#E0FFFF" stopOpacity="0.7"/>
-          <stop offset="100%" stopColor="white" stopOpacity="0.9"/>
-        </linearGradient>
+        <radialGradient id="dropCore" cx="35%" cy="30%">
+          <stop offset="0%" stopColor="#FFE7B8"/>
+          <stop offset="60%" stopColor="#F2B347"/>
+          <stop offset="100%" stopColor="transparent"/>
+        </radialGradient>
+        
+        <radialGradient id="honeyShine" cx="50%" cy="50%">
+          <stop offset="0%" stopColor="white"/>
+          <stop offset="100%" stopColor="transparent"/>
+        </radialGradient>
+        
       </defs>
-      
-      {/* CSS Animation styles */}
-      <style>{`
-        @keyframes orbit1 {
-          0% { transform: rotate(0deg) translateX(35px) rotate(0deg); }
-          100% { transform: rotate(360deg) translateX(35px) rotate(-360deg); }
-        }
-        @keyframes orbit2 {
-          0% { transform: rotate(120deg) translateX(40px) rotate(-120deg); }
-          100% { transform: rotate(480deg) translateX(40px) rotate(-480deg); }
-        }
-        @keyframes orbit3 {
-          0% { transform: rotate(240deg) translateX(38px) rotate(-240deg); }
-          100% { transform: rotate(600deg) translateX(38px) rotate(-600deg); }
-        }
-        @keyframes wingFlap {
-          0%, 100% { transform: scaleX(1); }
-          50% { transform: scaleX(1.3); }
-        }
-        .drone-bee-1 { animation: orbit1 8s linear infinite; }
-        .drone-bee-2 { animation: orbit2 10s linear infinite; }
-        .drone-bee-3 { animation: orbit3 9s linear infinite; }
-        .wing-left, .wing-right { animation: wingFlap 0.2s ease-in-out infinite; }
-      `}</style>
     </svg>
   );
 }
@@ -308,20 +268,20 @@ export function BeehiveWordLogo({ size = "default", className = "" }: { size?: "
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Beehive Text - Clean and Bold */}
+      {/* Beehive Text - Natural amber/wax tones */}
       <text 
         x="10" 
         y="55" 
         fontFamily="Inter, system-ui, -apple-system, sans-serif" 
         fontSize="48" 
         fontWeight="800" 
-        fill="#F7B500"
+        fill="url(#textGradient)"
         letterSpacing="-1"
       >
         Beehive
       </text>
       
-      {/* AI Text - Accent Color */}
+      {/* AI Text - Mint Accent */}
       <text 
         x="230" 
         y="55" 
@@ -334,26 +294,32 @@ export function BeehiveWordLogo({ size = "default", className = "" }: { size?: "
         AI
       </text>
       
-      {/* Subtle single honey drip accent - clean and minimal */}
-      <g opacity="0.8">
-        <path d="M155 55 Q155 62, 155 66 Q155 70, 153 70 Q151 70, 151 66 Q151 62, 151 55" 
-          fill="url(#cleanHoneyGradient)" 
-          stroke="#D4940F" 
+      {/* Professional honey drip - subtle accent */}
+      <g opacity="0.85">
+        <path d="M155 55 Q155 60, 155 64 Q155 68, 153.5 69 Q152 68, 152 64 Q152 60, 152 55" 
+          fill="url(#textHoneyFlow)" 
+          stroke="#9A6B2F" 
           strokeWidth="0.5"/>
-        <ellipse cx="153" cy="70" rx="3" ry="4" fill="url(#cleanDropGradient)"/>
-        <ellipse cx="152" cy="68" rx="1.2" ry="1.5" fill="white" opacity="0.5"/>
+        <ellipse cx="153.5" cy="69" rx="2.5" ry="3.5" fill="url(#textHoneyDrop)"/>
+        <ellipse cx="152.8" cy="67.5" rx="1" ry="1.3" fill="white" opacity="0.5"/>
       </g>
       
-      {/* Gradients */}
+      {/* Text gradients */}
       <defs>
-        <linearGradient id="cleanHoneyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#F7B500"/>
-          <stop offset="100%" stopColor="#D4940F"/>
+        <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#D6A656"/>
+          <stop offset="50%" stopColor="#F2B347"/>
+          <stop offset="100%" stopColor="#C9821F"/>
         </linearGradient>
         
-        <radialGradient id="cleanDropGradient" cx="35%" cy="35%">
-          <stop offset="0%" stopColor="#FFD34D"/>
-          <stop offset="100%" stopColor="#D4940F"/>
+        <linearGradient id="textHoneyFlow" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#A36112"/>
+          <stop offset="100%" stopColor="#C9821F"/>
+        </linearGradient>
+        
+        <radialGradient id="textHoneyDrop" cx="35%" cy="30%">
+          <stop offset="0%" stopColor="#F2B347"/>
+          <stop offset="100%" stopColor="#A36112"/>
         </radialGradient>
       </defs>
     </svg>
