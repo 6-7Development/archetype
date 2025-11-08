@@ -1015,6 +1015,59 @@ Let's build! 🚀`;
           required: ['query'],
         },
       },
+      {
+        name: 'search_codebase',
+        description: 'Semantic code search - find code by meaning',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            query: { type: 'string' as const, description: 'Search query' }
+          },
+          required: ['query']
+        }
+      },
+      {
+        name: 'grep',
+        description: 'Search file patterns',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            pattern: { type: 'string' as const, description: 'Search pattern' },
+            pathFilter: { type: 'string' as const, description: 'File filter (*.ts)' }
+          },
+          required: ['pattern']
+        }
+      },
+      {
+        name: 'bash',
+        description: 'Execute terminal commands',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            command: { type: 'string' as const, description: 'Command to run' }
+          },
+          required: ['command']
+        }
+      },
+      {
+        name: 'read_logs',
+        description: 'Read application logs',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            lines: { type: 'number' as const, description: 'Number of lines (default: 100)' }
+          }
+        }
+      },
+      {
+        name: 'list_project_files',
+        description: 'List user project files',
+        input_schema: {
+          type: 'object' as const,
+          properties: {},
+          required: []
+        }
+      },
     ];
 
     // 📊 TOOL COUNT VALIDATION: Log on startup to verify we're within Google's recommended limit

@@ -605,6 +605,59 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   },
                   required: ['query']
                 }
+              },
+              {
+                name: 'search_codebase',
+                description: 'Semantic code search - find code by meaning',
+                input_schema: {
+                  type: 'object',
+                  properties: {
+                    query: { type: 'string', description: 'Search query' }
+                  },
+                  required: ['query']
+                }
+              },
+              {
+                name: 'grep',
+                description: 'Search file patterns',
+                input_schema: {
+                  type: 'object',
+                  properties: {
+                    pattern: { type: 'string', description: 'Search pattern' },
+                    pathFilter: { type: 'string', description: 'File filter (*.ts)' }
+                  },
+                  required: ['pattern']
+                }
+              },
+              {
+                name: 'bash',
+                description: 'Execute terminal commands',
+                input_schema: {
+                  type: 'object',
+                  properties: {
+                    command: { type: 'string', description: 'Command to run' }
+                  },
+                  required: ['command']
+                }
+              },
+              {
+                name: 'read_logs',
+                description: 'Read application logs',
+                input_schema: {
+                  type: 'object',
+                  properties: {
+                    lines: { type: 'number', description: 'Number of lines (default: 100)' }
+                  }
+                }
+              },
+              {
+                name: 'list_project_files',
+                description: 'List user project files',
+                input_schema: {
+                  type: 'object',
+                  properties: {},
+                  required: []
+                }
               }
             ],
             onToolUse: async (toolUse: any) => {

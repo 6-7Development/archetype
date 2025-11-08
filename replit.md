@@ -5,19 +5,27 @@ Lomu is an AI-powered platform for rapid web development, featuring LomuAI, an a
 
 ## User Preferences
 ### API Configuration
-**Claude Sonnet 4 Unified Strategy**:
-- **ALL AI Operations Use Claude Sonnet 4** via ANTHROPIC_API_KEY
+**Gemini 2.5 Flash + Claude Sonnet 4 Hybrid Strategy**:
+- **LomuAI & Platform Healing**: Gemini 2.5 Flash via GEMINI_API_KEY
+  - Model: gemini-2.5-flash
+  - Cost: $0.075 input / $0.30 output per 1M tokens (**40x cheaper** than Claude)
+  - 1M token context window
+  - **18 core tools** (Google recommends 10-20 for optimal performance)
+  - Used for: Regular development, platform healing, job management
+  
+- **I AM Architect & Sub-Agents**: Claude Sonnet 4 via ANTHROPIC_API_KEY  
   - Model: claude-sonnet-4-20250514
   - Cost: $3.00 input / $15.00 output per 1M tokens
   - 200K token context window
-  - Used for: LomuAI Chat (38 tools), Platform Healing (38 tools - IDENTICAL), I AM Architect
-  
-**Why Claude-Only?**
-- ✅ Reliable tool execution (no hallucinated Python syntax like Gemini)
-- ✅ Better token control (prevents token waste)
-- ✅ Consistent behavior across all AI operations
-- ✅ Costs more but provides full internal control
-- ⚠️ Gemini temporarily disabled until tool reliability issues are resolved
+  - **12-23 tools** (complex reasoning requires more tools)
+  - Used for: Architectural guidance, complex refactoring, code review
+
+**Why Hybrid?**
+- ✅ **40x cost reduction** for regular work (Gemini Flash: $0.075/$0.30 vs Claude: $3/$15)
+- ✅ **Fixed function calling** - Removed `responseMimeType` constraint, proper `functionResponse` format
+- ✅ **Optimized tool count** - 13 tools for Gemini (Google's 10-20 sweet spot)
+- ✅ **Strategic distribution** - Simple tasks on Gemini, complex reasoning on Claude
+- ✅ **System instruction added** - "Only use declared tools" prevents function hallucination
 
 ### Design Preferences
 - **Brand Identity**: Fresh, optimistic, citrus-inspired theme
@@ -64,10 +72,15 @@ The system incorporates efficiency rules within the LomuAI's system prompt to op
 A profitable credit system is implemented with 1 credit = 1,000 tokens = $0.05, matching industry standards. Various pricing tiers are available (Free, Starter, Pro, Business, Enterprise) with significant profit margins.
 
 **Key Features:**
+- **Tool Distribution Architecture** (Google Gemini Optimization):
+  - **LomuAI (18 tools)**: file operations (read/write/list), task management (create/read/update), code intelligence (search_codebase/grep), execution (bash), diagnostics (perform_diagnosis/read_logs), testing (run_test), web search, integrations, sub-agent delegation
+  - **Sub-Agents (12 tools)**: file operations, smart code intelligence, bash, testing, secrets, integrations, deployment
+  - **I AM Architect (23+ tools)**: platform file operations, architect services, knowledge management, logs, database, design assets, GitHub, environment variables
+  - **Validation**: Startup checks ensure Gemini agents stay within Google's 10-20 tool recommendation
 - **GitHub Integration**: Full version control with 6 tools, supporting branching, pull requests, project export, and auto-deployment.
 - **Environment Variables Management**: Project-level secrets with 4 tools, database storage, validation, and security masking.
 - **Code Intelligence System**: AST-based code understanding via CodeIndexer, FileRelevanceDetector, and SmartChunker.
-- **Platform Healing System**: Owner-only two-tier incident resolution for self-correction of the platform, with identical tools to regular LomuAI.
+- **Platform Healing System**: Owner-only two-tier incident resolution for self-correction of the platform, using identical 13 core tools as regular LomuAI.
 - **Replit Agent Parity**: Matches Replit Agent's complex task handling with increased token limits, iterations, self-correction, and concurrency.
 - **Credit-Based Billing System**: Production-ready monetization with Stripe integration, usage tracking, and atomic operations.
 - **Monetization Infrastructure**: Lead capture, subscription system, webhooks, and a template marketplace.
@@ -86,7 +99,7 @@ A profitable credit system is implemented with 1 credit = 1,000 tokens = $0.05, 
 - **Frontend**: React, TypeScript, Monaco Editor, Tailwind CSS, Shadcn UI, next-themes
 - **Backend**: Express.js, WebSocket
 - **Database**: PostgreSQL (Neon), Drizzle ORM
-- **AI**: Anthropic Claude Sonnet 4, OpenAI (gpt-image-1)
+- **AI**: Google Gemini 2.5 Flash (primary), Anthropic Claude Sonnet 4 (architect), OpenAI (gpt-image-1)
 - **Deployment**: Railway
 - **Payment Processing**: Stripe
 - **Authentication**: Passport.js, bcrypt, `connect-pg-simple`
