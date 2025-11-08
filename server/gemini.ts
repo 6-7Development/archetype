@@ -354,11 +354,12 @@ Only use declared tools with proper JSON format.`,
     if (geminiTools) {
       requestParams.tools = geminiTools;
       
-      // ✅ CRITICAL FIX: Add toolConfig to enforce proper function calling mode
-      // This prevents Gemini from generating Python code like print(default_api.function_name())
+      // ✅ CRITICAL FIX: Force JSON-only function calling (mode: ANY eliminates Python syntax)
+      // AUTO mode still allows Python SDK wrappers - ANY mode forces strict JSON function calls only
       requestParams.toolConfig = {
         functionCallingConfig: {
-          mode: 'AUTO' // Let model decide when to call functions (prevents forced Python syntax)
+          mode: 'ANY', // Force ALL responses to be function calls (no Python syntax allowed)
+          allowedFunctionNames: geminiTools.map((t: any) => t.name) // Explicitly enumerate allowed functions
         }
       };
     }
