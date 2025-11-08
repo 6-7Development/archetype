@@ -141,7 +141,7 @@ export default function LandingMobile() {
                 </div>
               </div>
               <h3 className="mt-3 font-semibold text-white text-sm">Watch the Swarm Build</h3>
-              <p className="text-xs text-slate-400 mt-1">Thousands of AI bees coding in perfect harmony—real-time magic</p>
+              <p className="text-xs text-slate-400 mt-1">AI agents coding in perfect harmony—ship production apps faster</p>
             </Card>
 
             {/* Screenshot 3: Live Preview */}
@@ -186,7 +186,7 @@ export default function LandingMobile() {
             </div>
             <h3 className="text-lg font-semibold text-white break-words">Bee-Line Fast</h3>
             <p className="text-slate-300 text-sm break-words whitespace-normal">
-              Our swarm takes the shortest path—honey-sweet code delivered in minutes
+              Swarm takes the shortest path—production code delivered in minutes, fully tested
             </p>
           </Card>
 

@@ -143,7 +143,7 @@ export default function Landing() {
               </div>
               <h3 className="text-lg font-semibold text-white mb-2">Chat with the Hive</h3>
               <p className="text-sm text-slate-400">
-                Tell the swarm what you need—watch thousands of AI workers build your app with hive-mind precision
+                Tell the swarm what you need—watch specialized AI workers build your app with hive-mind precision
               </p>
             </Card>
 
@@ -215,7 +215,7 @@ export default function Landing() {
               </div>
               <h3 className="text-xl font-semibold mb-3 text-white">Bee-Line to Production</h3>
               <p className="text-slate-400 leading-relaxed">
-                Our swarm takes the most efficient path—12-step workflow delivers honey-sweet code faster than you can say "buzz"
+                Our swarm takes the most efficient path. 12-step workflow delivers production-ready code in minutes—tested and deployed.
               </p>
             </Card>
 
@@ -237,7 +237,7 @@ export default function Landing() {
               </div>
               <h3 className="text-xl font-semibold mb-3 text-white">Hive Mind Power</h3>
               <p className="text-slate-400 leading-relaxed">
-                Thousands of AI workers buzzing in perfect sync—planning, building, testing, deploying. The ultimate collaboration.
+                Specialized AI workers buzzing in perfect sync—planning, building, testing, deploying. Ship faster with true collaboration.
               </p>
             </Card>
           </div>
@@ -252,7 +252,7 @@ export default function Landing() {
               Ready to Taste the Honey?
             </h2>
             <p className="text-xl text-slate-300 mb-8">
-              Join the swarm—thousands of developers creating sweet success in minutes, not months
+              Join developers worldwide shipping production apps in minutes, not months
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
