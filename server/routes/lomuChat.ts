@@ -1330,7 +1330,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
             // 📝 SCRATCHPAD: Write thought to scratchpad for persistent progress tracking
             try {
               const entry = await storage.createScratchpadEntry({
-                sessionId: commandId,
+                sessionId: conversationState.id,
                 author: 'LomuAI',
                 role: 'agent',
                 content: thought,
@@ -1360,7 +1360,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
             // 📝 SCRATCHPAD: Write action to scratchpad for persistent progress tracking
             try {
               const entry = await storage.createScratchpadEntry({
-                sessionId: commandId,
+                sessionId: conversationState.id,
                 author: 'LomuAI',
                 role: 'agent',
                 content: action,
