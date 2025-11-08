@@ -5,6 +5,26 @@ const DEFAULT_MODEL = "gemini-2.5-flash";
 
 const genai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "dummy-key-for-development");
 
+/**
+ * Sanitize text to remove invisible characters that could corrupt JSON
+ * (External advice: Google Docs can inject smart quotes, en-dashes, zero-width spaces)
+ */
+function sanitizeText(text: string): string {
+  if (!text) return text;
+  
+  return text
+    // Replace smart quotes with ASCII quotes
+    .replace(/[\u201C\u201D]/g, '"')  // Smart double quotes → "
+    .replace(/[\u2018\u2019]/g, "'")  // Smart single quotes → '
+    // Replace en-dashes and em-dashes with regular dash
+    .replace(/[\u2013\u2014]/g, '-')
+    // Remove zero-width characters
+    .replace(/[\u200B\u200C\u200D\uFEFF]/g, '')
+    // Normalize newlines to \n
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n');
+}
+
 // Extended Part type to include Gemini's thoughtSignature
 interface GeminiPart {
   text?: string;
@@ -326,7 +346,8 @@ export async function streamGeminiResponse(options: StreamOptions) {
     const requestParams: any = {
       contents: geminiMessages,
       // ✅ CRITICAL: Hard "no-prose" contract at the top (from external advice)
-      systemInstruction: `CRITICAL: Return exactly one JSON object that conforms to the schema. Do not include any text before or after the JSON. Do not include backticks, comments, or explanations.
+      // ✅ SANITIZE: Remove invisible characters that could corrupt JSON (external advice)
+      systemInstruction: sanitizeText(`CRITICAL: Return exactly one JSON object that conforms to the schema. Do not include any text before or after the JSON. Do not include backticks, comments, or explanations.
 
 ${system}
 
@@ -340,7 +361,7 @@ FORBIDDEN:
 - Do NOT add explanations or prose around the JSON
 - Do NOT include markdown fences or backticks
 
-If you need to call a function, emit ONLY the JSON object.`,
+If you need to call a function, emit ONLY the JSON object.`),
       generationConfig: {
         maxOutputTokens: Math.max(maxTokens, 16000), // ⚠️ CRITICAL: Prevent truncated JSON (external advice: "silent killer")
         temperature: 0.0, // ZERO randomness for function calling (external advice: 0.0-0.3)
@@ -402,6 +423,37 @@ If you need to call a function, emit ONLY the JSON object.`,
         // 🔍 DEBUG: Check for safety blocks or finish reasons
         if (candidate.finishReason) {
           console.log('[GEMINI-DEBUG] Finish reason:', candidate.finishReason);
+          
+          // 🚨 CRITICAL: Handle MALFORMED_FUNCTION_CALL with auto-repair (external advice)
+          if (candidate.finishReason === 'MALFORMED_FUNCTION_CALL') {
+            console.error('🚨 [GEMINI-MALFORMED] Detected malformed function call!');
+            
+            // Log the malformed content for debugging
+            const finishMessage = (candidate as any).finishMessage;
+            if (finishMessage) {
+              console.error('[GEMINI-MALFORMED] Error details:', finishMessage);
+              
+              // Extract function name if present in error message
+              const functionNameMatch = finishMessage.match(/function call:\s*([a-zA-Z_]+)/i);
+              if (functionNameMatch) {
+                const attemptedFunction = functionNameMatch[1];
+                console.error(`[GEMINI-MALFORMED] Attempted to call: ${attemptedFunction}`);
+                console.error('[GEMINI-MALFORMED] This means Gemini used Python-like syntax instead of JSON');
+              }
+            }
+            
+            // 🔧 DEFENSIVE: Provide helpful error instead of silent failure
+            const errorText = `⚠️ Internal error: AI tried to use invalid function syntax. This has been logged and will be fixed. Please try rephrasing your request.`;
+            
+            if (onChunk) {
+              onChunk(errorText);
+            }
+            fullText += errorText;
+            
+            // Stop processing this malformed response
+            break;
+          }
+          
           if (candidate.finishReason === 'SAFETY') {
             console.error('🚨 [GEMINI-SAFETY] Response blocked by safety filters!');
             console.error('[GEMINI-SAFETY] Safety ratings:', JSON.stringify(candidate.safetyRatings, null, 2));
@@ -479,14 +531,38 @@ If you need to call a function, emit ONLY the JSON object.`,
             const functionCall = part.functionCall;
             const toolCallId = `call_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
             
+            // ✅ VALIDATION: Ensure args is a valid object (external advice: schema validation)
+            let validatedArgs = functionCall.args || {};
+            
+            try {
+              // Defensive parsing: Ensure args is an object, not a string or array
+              if (typeof validatedArgs === 'string') {
+                console.warn(`[GEMINI-VALIDATION] ⚠️ Args is string, parsing as JSON...`);
+                validatedArgs = JSON.parse(validatedArgs);
+              }
+              
+              if (Array.isArray(validatedArgs)) {
+                console.warn(`[GEMINI-VALIDATION] ⚠️ Args is array, converting to object...`);
+                validatedArgs = { items: validatedArgs };
+              }
+              
+              if (typeof validatedArgs !== 'object' || validatedArgs === null) {
+                console.error(`[GEMINI-VALIDATION] ❌ Invalid args type: ${typeof validatedArgs}`);
+                validatedArgs = {};
+              }
+            } catch (parseError) {
+              console.error(`[GEMINI-VALIDATION] ❌ Failed to parse args:`, parseError);
+              validatedArgs = {};
+            }
+            
             // 🔍 DEBUG: Log when Gemini requests a tool
             console.log(`[GEMINI-TOOLS] 🔧 Gemini requested tool: ${functionCall.name}`);
-            console.log(`[GEMINI-TOOLS] Tool args:`, JSON.stringify(functionCall.args || {}).substring(0, 100));
+            console.log(`[GEMINI-TOOLS] Tool args:`, JSON.stringify(validatedArgs).substring(0, 100));
             
             functionCalls.push({
               id: toolCallId,
               name: functionCall.name,
-              input: functionCall.args || {}
+              input: validatedArgs
             });
 
             // Notify about tool use (DE-DUPLICATED)
