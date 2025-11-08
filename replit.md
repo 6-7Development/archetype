@@ -57,6 +57,22 @@ The platform uses a unified codebase for Lomu (Desktop, 4-panel layout) and Lomu
 ### UI/UX Decisions
 The user interface features a tab-based workspace with a command console and real-time live preview. The design is fresh, optimistic, and citrus-inspired, utilizing card-based layouts, warm shadows, smooth transitions, and ADA/WCAG accessibility. Chat interfaces use semantic theme tokens for consistent, polished appearance with modern message bubbles and smooth transitions. Loading states feature a signature lemonade jar animation.
 
+**Agent Chatroom UX (100% Replit Agent Parity):**
+The platform implements a comprehensive Agent Chatroom interface with real-time progress tracking:
+- **StatusStrip**: Live phase indicator showing current agent state (🤔 thinking → 📝 planning → 🛠️ working → 🧪 verifying → ✅ complete)
+- **TaskPane**: Kanban-style task board with columns (Backlog → In Progress → Verifying → Done → Blocked)
+- **ToolCallCard**: Transparent tool execution display showing function calls, parameters, and results
+- **ArtifactsDrawer**: File changes tracker showing modified files, generated URLs, and test reports with copy-to-clipboard
+- **Event System**: 16 structured event types (thinking, planning, task_update, tool_call, artifact_created, etc.) streamed via Server-Sent Events (SSE)
+- **Mobile + Desktop**: Fully responsive across both Lomu (desktop) and Lomu5 (mobile) interfaces
+
+**Clean 2-Chat Architecture:**
+The platform uses exactly **2 active chat components** for clean separation of concerns:
+1. **`client/src/components/ai-chat.tsx`** - Regular user project builds (all authenticated users, usage-based billing)
+2. **`client/src/pages/platform-healing.tsx`** - Platform healing (root/owner only, FREE for platform self-correction)
+
+Both chats share identical Agent Chatroom UX components and event streaming infrastructure, ensuring consistent user experience across regular development and platform maintenance workflows. The dual-chat architecture enables clear access control while maintaining code reusability through shared components.
+
 ### System Design Choices
 LomuAI acts as the autonomous worker, committing changes through a strict 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). I AM Architect is a user-summoned premium consultant that provides guidance without committing code. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing.
 
