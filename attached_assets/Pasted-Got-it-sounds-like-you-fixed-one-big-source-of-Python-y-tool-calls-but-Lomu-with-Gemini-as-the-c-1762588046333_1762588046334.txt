@@ -1,0 +1,162 @@
+Got it—sounds like you fixed one big source of “Python-y” tool calls, but Lomu (with Gemini as the coding agent) still sometimes returns malformed JSON / MALFORMED_FUNCTION_CALL. That usually means one (or more) constraints aren’t actually enforced at runtime, even if your prompt is clear.
+
+Here’s a tight checklist that reliably stops this with Gemini tools/function calls:
+
+1) Force JSON at the transport layer (not just in prose)
+
+Use response_mime_type: "application/json" in the generationConfig (Gemini API).
+
+If you’re using function calling, declare the function(s) in tools.functionDeclarations and set toolConfig.functionCallingConfig.mode to:
+
+"ANY" if you allow text or function calls, or
+
+"AUTO" if you want Gemini to decide, or
+
+Force a specific function by setting allowedFunctionNames to your function name (prevents non-JSON prose).
+
+
+Raise maxOutputTokens; truncated JSON is a silent killer.
+
+
+2) Provide a strict schema Gemini must satisfy
+
+Prefer function declarations (tools) with parameter schemas for every field (types, enums, required).
+
+If you’re not calling a tool and just want structured output, use Structured Output with a JSON Schema and response_mime_type: "application/json".
+
+
+3) Make examples schema-only (no prose, no code fences)
+
+Gemini will imitate your examples. Keep them single JSON objects, no comments, no trailing commas, no ``` fences, no “Here’s the JSON:”.
+
+Bad:
+
+Here’s what to return:
+{
+  "op": write(…)
+}
+
+Good:
+
+{"operation":"write","path":"/foo","content":"bar"}
+
+(And in your actual system prompt, don’t include fences—just the object.)
+
+4) Add a hard “no-prose” contract in the system prompt
+
+Include two short rules at the top of the system prompt Lomu passes to Gemini:
+
+“Return exactly one JSON object that conforms to the schema. Do not include any text before or after the JSON.”
+
+“Do not include backticks, comments, or explanations.”
+
+
+5) Defensive parsing & auto-repair on your side
+
+Even with the above, keep a robust wrapper:
+
+1. Try JSON.parse / json.loads.
+
+
+2. If it fails, send a single-shot repair prompt back to Gemini with the invalid text and the same schema, e.g.:
+
+“You responded with invalid JSON. Output only a corrected JSON object matching this schema: …”
+
+
+
+3. If you’re using tool calls, ensure your router rejects any response that isn’t a tool call and immediately asks for a corrected one (don’t proceed with partials).
+
+
+
+6) Eliminate invisible characters from Google Docs
+
+If you’re composing prompts/specs in Google Docs, it can inject:
+
+Smart quotes, en-dashes, non-breaking spaces, zero-width spaces.
+
+These can corrupt JSON or your examples. Action: author system prompts and examples in a plain-text editor; or sanitize at runtime:
+
+Replace smart quotes with ASCII quotes.
+
+Strip zero-width chars (\u200B, \u200C, \uFEFF).
+
+Normalize newlines.
+
+
+7) Lower randomness when emitting structure
+
+Set temperature low (0.0–0.3), and if exposed, lower topP/topK for tool-calling turns.
+
+
+8) Avoid mixed intents in one turn
+
+If the turn could result in either explanatory prose or a function call, Gemini may choose prose. Split the flow:
+
+Turn A (analysis/brainstorm): allow text.
+
+Turn B (act): force the tool/function.
+
+
+9) Always include the tool spec in-context
+
+On long threads, the function/tool declaration can fall out of the window. Re-attach the tools block (and schema) on every tool-capable request.
+
+
+---
+
+Minimal working pattern (Gemini function call)
+
+System (top of prompt)
+
+Return exactly one JSON object that complies with the function schema.
+
+No text before or after the JSON. No backticks. No comments.
+
+
+API call
+
+generationConfig: { response_mime_type: "application/json", temperature: 0 }
+
+tools.functionDeclarations: [{ name: "write_file", description: "...", parameters: { type: "OBJECT", properties: { path: {type:"STRING"}, content:{type:"STRING"} }, required:["path","content"] }}]
+
+toolConfig.functionCallingConfig: { mode: "ANY", allowedFunctionNames: ["write_file"] }
+
+
+User message (or your agent’s instruction to act)
+
+Provide only the required inputs and constraints, plus one schema-only example if you must (but better: rely on the declared schema, not examples).
+
+
+
+---
+
+Common gotchas that still cause MALFORMED_FUNCTION_CALL
+
+Truncation due to low maxOutputTokens.
+
+Hidden Google Docs characters in the system prompt/examples.
+
+A previous assistant turn includes an inline Python example; Gemini copies it.
+
+The router accepts non-tool text and tries to parse it anyway.
+
+The tool is optional and Gemini chooses text; you didn’t force allowedFunctionNames.
+
+JSON fields marked required in your executor, but not marked required in Gemini’s schema → model omits them.
+
+
+
+---
+
+If you share a small snippet of:
+
+1. your tools.functionDeclarations,
+
+
+2. the exact generationConfig and toolConfig, and
+
+
+3. the system prompt Lomu sends for the “write” action,
+I’ll pinpoint which setting is letting prose or malformed JSON sneak through and rewrite it for you.
+
+

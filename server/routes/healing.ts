@@ -430,7 +430,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
           response = await retryWithBackoff(async () => {
             return await streamGeminiResponse({
               model: "gemini-2.5-flash",
-              maxTokens: 4000,
+              maxTokens: 16000, // ⚠️ CRITICAL: High limit prevents truncated JSON/code (external advice)
               system: systemPrompt,
               messages: conversationMessages,
               onThought: async (thought: string) => {
@@ -1425,7 +1425,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
           const recoveryResponse = await retryWithBackoff(async () => {
             return await streamGeminiResponse({
               model: "gemini-2.5-flash",
-              maxTokens: 2000, // Shorter response for summary
+              maxTokens: 8000, // Enough room for comprehensive summaries without truncation
               system: systemPrompt,
               messages: conversationMessages,
               // NO TOOLS - we just want the final answer

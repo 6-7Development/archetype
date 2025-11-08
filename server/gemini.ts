@@ -325,34 +325,27 @@ export async function streamGeminiResponse(options: StreamOptions) {
     // Prepare request parameters with systemInstruction and tools at top level
     const requestParams: any = {
       contents: geminiMessages,
-      // ✅ CRITICAL: Show ONLY the correct JSON format (no forbidden examples that Gemini might copy)
-      systemInstruction: `${system}
+      // ✅ CRITICAL: Hard "no-prose" contract at the top (from external advice)
+      systemInstruction: `CRITICAL: Return exactly one JSON object that conforms to the schema. Do not include any text before or after the JSON. Do not include backticks, comments, or explanations.
 
-CRITICAL FUNCTION CALLING RULES:
-Functions MUST be called using pure JSON format ONLY.
+${system}
 
-**CORRECT FORMAT:**
-{
-  "name": "function_name_here",
-  "args": {
-    "param1": "value1",
-    "param2": "value2"
-  }
-}
+FUNCTION CALLING FORMAT (REQUIRED):
+When calling a function, emit a pure JSON object with exactly this structure:
+{"name":"function_name","args":{"param1":"value1","param2":"value2"}}
 
-**STRICT REQUIREMENTS:**
-- Use ONLY JSON objects with "name" and "args" fields
-- NO programming language syntax (no Python, JavaScript, etc)
-- NO SDK wrappers or print statements
-- NO direct function calls without JSON wrapper
-- If unsure whether to call a function, respond with text instead
+FORBIDDEN:
+- Do NOT wrap in code: print(api.function_name(...))
+- Do NOT use programming syntax
+- Do NOT add explanations or prose around the JSON
+- Do NOT include markdown fences or backticks
 
-This is the ONLY valid function calling format.`,
+If you need to call a function, emit ONLY the JSON object.`,
       generationConfig: {
-        maxOutputTokens: maxTokens,
-        temperature: 0.1, // ULTRA-LOW = maximum determinism for function calling (Google recommends 0-0.2)
+        maxOutputTokens: Math.max(maxTokens, 16000), // ⚠️ CRITICAL: Prevent truncated JSON (external advice: "silent killer")
+        temperature: 0.0, // ZERO randomness for function calling (external advice: 0.0-0.3)
         topP: 0.8,        // Slightly reduced randomness for consistency
-        // ❌ DON'T set responseMimeType - it breaks function calling!
+        // ❌ DON'T set responseMimeType - it breaks function calling per Google docs!
       },
     };
 
