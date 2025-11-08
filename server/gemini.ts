@@ -369,18 +369,18 @@ Remember: Pure JSON function calls ONLY.`,
     if (geminiTools && geminiTools.length > 0 && geminiTools[0]?.functionDeclarations) {
       requestParams.tools = geminiTools;
       
-      // ✅ CRITICAL FIX: Use AUTO mode for natural function calling
-      // AUTO = Let Gemini decide when to use functions (prevents Python syntax errors)
-      // ANY = Force function calls (causes MALFORMED_FUNCTION_CALL errors with Python syntax)
-      // NONE = Disable function calling
+      // ✅ FIX: Use AUTO mode WITHOUT allowedFunctionNames (matches Replit Agent)
+      // AUTO mode + no filter = Gemini emits native JSON function calls
+      // ANY mode + allowedFunctionNames = Gemini falls back to Python SDK syntax (MALFORMED_FUNCTION_CALL)
       requestParams.toolConfig = {
         functionCallingConfig: {
           mode: 'AUTO', // Let Gemini naturally decide when to call functions
+          // ❌ DO NOT add allowedFunctionNames - causes Python syntax fallback
         }
       };
       
       const functionNames = geminiTools[0].functionDeclarations.map((fn: any) => fn.name);
-      console.log(`[GEMINI-TOOLCONFIG] mode: AUTO, ${functionNames.length} functions available:`, functionNames.slice(0, 5).join(', '));
+      console.log(`[GEMINI-TOOLCONFIG] mode: AUTO (no filter), ${functionNames.length} functions available:`, functionNames.slice(0, 5).join(', '));
     }
 
     // 🔍 DEBUG: Log what we're sending to Gemini
