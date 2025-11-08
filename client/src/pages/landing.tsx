@@ -21,9 +21,9 @@ export default function Landing() {
       <nav className="fixed top-0 w-full z-50 border-b border-honey/10 bg-charcoal-950/90 backdrop-blur-xl">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" data-testid="link-home" className="flex items-center gap-2">
-              <BeehiveIcon size={40} />
-              <BeehiveWordLogo size="sm" />
+            <Link href="/" data-testid="link-home" className="flex items-center gap-3">
+              <BeehiveIcon size={56} />
+              <BeehiveWordLogo size="default" />
             </Link>
             
             <div className="flex items-center gap-3">
@@ -281,9 +281,9 @@ export default function Landing() {
       <footer className="border-t border-white/10 py-8 px-6">
         <div className="container mx-auto max-w-6xl">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <BeehiveIcon size={32} />
-              <span className="text-white font-semibold">BeehiveAI</span>
+            <div className="flex items-center gap-3">
+              <BeehiveIcon size={48} />
+              <BeehiveWordLogo size="sm" />
             </div>
             <p className="text-slate-500 text-sm">
               © 2024 BeehiveAI. Where code gets sweeter by the hive.

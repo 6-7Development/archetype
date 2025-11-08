@@ -15,9 +15,9 @@ export default function LandingMobile() {
       <nav className="fixed top-0 w-full z-50 border-b border-honey/10 bg-charcoal-950/95 backdrop-blur-xl">
         <div className="px-3 sm:px-4 py-3">
           <div className="flex items-center justify-between gap-2 sm:gap-3">
-            <Link href="/" className="flex items-center gap-1.5 min-h-[44px] py-1 flex-1 min-w-0" data-testid="link-brand">
-              <BeehiveIcon size={32} className="flex-shrink-0" />
-              <div className="min-w-0 flex-shrink overflow-hidden" style={{ maxWidth: '140px' }}>
+            <Link href="/" className="flex items-center gap-2 min-h-[44px] py-1 flex-1 min-w-0" data-testid="link-brand">
+              <BeehiveIcon size={40} className="flex-shrink-0" />
+              <div className="min-w-0 flex-shrink overflow-hidden" style={{ maxWidth: '160px' }}>
                 <BeehiveWordLogo size="sm" />
               </div>
             </Link>
@@ -255,8 +255,8 @@ export default function LandingMobile() {
       <footer className="border-t border-white/10 py-8 px-4">
         <div className="max-w-md mx-auto text-center space-y-4">
           <div className="flex items-center justify-center gap-2">
-            <BeehiveIcon size={32} />
-            <span className="text-lg font-bold text-white">BeehiveAI</span>
+            <BeehiveIcon size={40} />
+            <BeehiveWordLogo size="sm" />
           </div>
           <p className="text-sm text-slate-400 break-words whitespace-normal">
             Where code gets sweeter by the hive
