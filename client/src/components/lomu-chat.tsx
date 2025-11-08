@@ -1044,6 +1044,19 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
           className="flex-1 overflow-y-auto p-2 md:p-4 space-y-3 md:space-y-4 scroll-smooth"
         >
           <div className="max-w-4xl mx-auto space-y-3 md:space-y-4">
+            {/* Inline Progress Messages - Like Replit Agent */}
+            {streamState.progressMessages.length > 0 && (
+              <div className="flex flex-col gap-2">
+                {streamState.progressMessages.map((progress) => (
+                  <div key={progress.id} className="flex gap-3 justify-start animate-in fade-in-up">
+                    <div className="max-w-[75%] rounded-xl px-3 py-2 bg-secondary/30 border border-border/30">
+                      <p className="text-xs text-muted-foreground leading-relaxed">{progress.message}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Welcome screen */}
             {messages.length === 0 && !isStreaming && (
               <div className="text-center py-6 md:py-8 animate-in fade-in-up duration-700">
