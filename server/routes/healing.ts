@@ -385,7 +385,8 @@ Step 2: Use the ACTUAL task IDs from the response:
 
 REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`;
 
-      // Convert messages to API format - properly structure tool_use/tool_result blocks
+      // Convert messages to API format - match lomuChat.ts pattern for correct Gemini formatting
+      // The convertMessagesToGemini function in gemini.ts will handle proper structuring
       const conversationMessages: any[] = messages
         .filter((m: any) => {
           // Skip empty messages
@@ -394,24 +395,10 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
           }
           return true;
         })
-        .map((m: any) => {
-          const role = m.role === 'assistant' ? 'assistant' : 'user';
-          
-          // If content is a string, use it directly
-          if (typeof m.content === 'string') {
-            try {
-              // Try to parse as JSON (tool_use/tool_result blocks)
-              const parsed = JSON.parse(m.content);
-              return { role, content: parsed };
-            } catch {
-              // Not JSON, use as text
-              return { role, content: m.content };
-            }
-          }
-          
-          // Already an object/array, use directly
-          return { role, content: m.content };
-        });
+        .map((m: any) => ({
+          role: m.role === 'assistant' ? 'assistant' : 'user',
+          content: m.content,  // Let convertMessagesToGemini handle formatting
+        }));
 
       console.log(`🤖 [HEALING-CHAT] Starting Claude conversation with ${conversationMessages.length} messages...`);
       
