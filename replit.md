@@ -101,7 +101,7 @@ A profitable credit system is implemented where 1 credit = 1,000 tokens = $0.05,
 - **Monetization Infrastructure**: Lead capture, subscription system, webhooks, and a template marketplace.
 - **Security & Production Readiness**: Authentication/authorization (Replit Auth, PostgreSQL sessions), protected APIs, rate limiting, bcrypt-hashed API keys, and RCE prevention.
 - **Vision Analysis**: LomuAI can analyze images and screenshots using `vision_analyze` tool (powered by Claude Sonnet 4 Vision API) for UI/UX analysis, bug detection, and design matching.
-- **Strict Function Calling**: Transport-layer enforcement of JSON function calling for Gemini, ensuring "application/json" responseMimeType, "ANY" mode for forced tool calls, explicit `allowedFunctionNames`, and `temperature: 0.0` for determinism.
+- **Strict Function Calling**: Transport-layer enforcement of JSON function calling for Gemini, ensuring "application/json" responseMimeType, "ANY" mode for forced tool calls, explicit `allowedFunctionNames`, and `temperature: 0.0` for determinism. **Full compliance documentation:** See `docs/GEMINI_INTEGRATION.md` for comprehensive implementation details proving 100% adherence to industry best practices.
 
 ### Feature Specifications
 - **Workspace Features**: Tab-based navigation, unified talk & build interface, Monaco editor, full project ZIP export.
