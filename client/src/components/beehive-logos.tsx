@@ -216,116 +216,92 @@ export function BeehiveIcon({ size = 80, className = "" }: { size?: number; clas
   );
 }
 
-// BeehiveAI Word Logo with honey dripping effect
+// Clean Professional Combined Logo (Icon + Text)
 export function BeehiveWordLogo({ size = "default", className = "" }: { size?: "sm" | "default" | "lg"; className?: string }) {
   const sizeMap = {
-    sm: { width: 180, height: 50 },
-    default: { width: 240, height: 65 },
-    lg: { width: 320, height: 85 }
+    sm: { width: 200, height: 60 },
+    default: { width: 280, height: 80 },
+    lg: { width: 360, height: 100 }
   };
   
   const { width, height } = sizeMap[size];
+  const scale = size === "sm" ? 0.75 : size === "lg" ? 1.25 : 1;
   
   return (
     <svg 
       width={width} 
       height={height} 
-      viewBox="0 0 240 65" 
+      viewBox="0 0 400 100" 
       fill="none" 
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* BeehiveAI Text */}
+      {/* Beehive Text - Clean and Bold */}
       <text 
-        x="5" 
-        y="35" 
-        fontFamily="Inter, system-ui, sans-serif" 
-        fontSize="32" 
-        fontWeight="700" 
-        fill="url(#textGradient)"
-        letterSpacing="-0.5"
+        x="10" 
+        y="55" 
+        fontFamily="Inter, system-ui, -apple-system, sans-serif" 
+        fontSize="48" 
+        fontWeight="800" 
+        fill="#F7B500"
+        letterSpacing="-1"
       >
-        BeehiveAI
+        Beehive
       </text>
       
-      {/* Realistic glossy honey drips from letters */}
-      <g>
-        {/* Drip from 'B' - glossy */}
-        <g>
-          <path d="M18 35 Q18 39, 18 41 Q18 43, 16.5 43 Q15 43, 15 41 Q15 39, 15 35" 
-            fill="url(#honeyDripGradient)" stroke="#D4940F" strokeWidth="0.3"/>
-          <ellipse cx="16.5" cy="43" rx="2" ry="2.5" fill="url(#dropGradient)"/>
-          <ellipse cx="16" cy="42" rx="0.8" ry="1" fill="white" opacity="0.7"/>
-        </g>
-        
-        {/* Drip from first 'e' */}
-        <g>
-          <path d="M40 35 Q40 37, 40 39 Q40 40, 38.5 40 Q37 40, 37 39 Q37 37, 37 35" 
-            fill="url(#honeyDripGradient)" stroke="#D4940F" strokeWidth="0.3"/>
-          <ellipse cx="38.5" cy="40" rx="1.8" ry="2.2" fill="url(#dropGradient)"/>
-          <ellipse cx="38" cy="39" rx="0.7" ry="0.9" fill="white" opacity="0.7"/>
-        </g>
-        
-        {/* Drip from 'h' */}
-        <g>
-          <path d="M70 35 Q70 39, 70 42 Q70 44, 68.5 44 Q67 44, 67 42 Q67 39, 67 35" 
-            fill="url(#honeyDripGradient)" stroke="#D4940F" strokeWidth="0.3"/>
-          <ellipse cx="68.5" cy="44" rx="2" ry="2.5" fill="url(#dropGradient)"/>
-          <ellipse cx="68" cy="43" rx="0.8" ry="1" fill="white" opacity="0.7"/>
-        </g>
-        
-        {/* Drip from 'v' */}
-        <g>
-          <path d="M105 35 Q105 36, 105 37.5 Q105 39, 103.5 39 Q102 39, 102 37.5 Q102 36, 102 35" 
-            fill="url(#honeyDripGradient)" stroke="#D4940F" strokeWidth="0.3"/>
-          <ellipse cx="103.5" cy="39" rx="1.7" ry="2" fill="url(#dropGradient)"/>
-          <ellipse cx="103" cy="38" rx="0.6" ry="0.8" fill="white" opacity="0.7"/>
-        </g>
-        
-        {/* Drip from 'A' */}
-        <g>
-          <path d="M150 35 Q150 40, 150 42 Q150 45, 148.5 45 Q147 45, 147 42 Q147 40, 147 35" 
-            fill="url(#honeyDripGradient)" stroke="#D4940F" strokeWidth="0.3"/>
-          <ellipse cx="148.5" cy="45" rx="2" ry="2.8" fill="url(#dropGradient)"/>
-          <ellipse cx="148" cy="43.5" rx="0.8" ry="1.1" fill="white" opacity="0.7"/>
-        </g>
-        
-        {/* Drip from 'I' */}
-        <g>
-          <path d="M200 35 Q200 37, 200 39 Q200 41, 198.5 41 Q197 41, 197 39 Q197 37, 197 35" 
-            fill="url(#honeyDripGradient)" stroke="#D4940F" strokeWidth="0.3"/>
-          <ellipse cx="198.5" cy="41" rx="1.8" ry="2.3" fill="url(#dropGradient)"/>
-          <ellipse cx="198" cy="40" rx="0.7" ry="0.9" fill="white" opacity="0.7"/>
-        </g>
+      {/* AI Text - Accent Color */}
+      <text 
+        x="230" 
+        y="55" 
+        fontFamily="Inter, system-ui, -apple-system, sans-serif" 
+        fontSize="48" 
+        fontWeight="800" 
+        fill="#00D4B3"
+        letterSpacing="-1"
+      >
+        AI
+      </text>
+      
+      {/* Subtle single honey drip accent - clean and minimal */}
+      <g opacity="0.8">
+        <path d="M155 55 Q155 62, 155 66 Q155 70, 153 70 Q151 70, 151 66 Q151 62, 151 55" 
+          fill="url(#cleanHoneyGradient)" 
+          stroke="#D4940F" 
+          strokeWidth="0.5"/>
+        <ellipse cx="153" cy="70" rx="3" ry="4" fill="url(#cleanDropGradient)"/>
+        <ellipse cx="152" cy="68" rx="1.2" ry="1.5" fill="white" opacity="0.5"/>
       </g>
       
-      {/* Subtle glow effect */}
-      <rect x="0" y="0" width="240" height="65" fill="url(#glow)" opacity="0.1"/>
-      
-      {/* Gradient definitions */}
+      {/* Gradients */}
       <defs>
-        <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <linearGradient id="cleanHoneyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor="#F7B500"/>
-          <stop offset="40%" stopColor="#FFD34D"/>
-          <stop offset="70%" stopColor="#00D4B3"/>
-          <stop offset="100%" stopColor="#FFD34D"/>
+          <stop offset="100%" stopColor="#D4940F"/>
         </linearGradient>
         
-        <radialGradient id="glow" cx="50%" cy="50%">
-          <stop offset="0%" stopColor="#F7B500" stopOpacity="0.3"/>
-          <stop offset="100%" stopColor="#F7B500" stopOpacity="0"/>
+        <radialGradient id="cleanDropGradient" cx="35%" cy="35%">
+          <stop offset="0%" stopColor="#FFD34D"/>
+          <stop offset="100%" stopColor="#D4940F"/>
         </radialGradient>
       </defs>
     </svg>
   );
 }
 
-// Combined logo (icon + text) - useful for some contexts
-export function BeehiveLogo({ iconSize = 40, textSize = "default" }: { iconSize?: number; textSize?: "sm" | "default" | "lg" }) {
+// Combined logo with integrated design
+export function BeehiveLogo({ size = "default" }: { size?: "sm" | "default" | "lg" }) {
+  const sizeMap = {
+    sm: { iconSize: 60, textSize: "sm" as const, gap: 3 },
+    default: { iconSize: 80, textSize: "default" as const, gap: 4 },
+    lg: { iconSize: 100, textSize: "lg" as const, gap: 5 }
+  };
+  
+  const config = sizeMap[size];
+  
   return (
-    <div className="flex items-center gap-3">
-      <BeehiveIcon size={iconSize} />
-      <BeehiveWordLogo size={textSize} />
+    <div className={`flex items-center gap-${config.gap}`}>
+      <BeehiveIcon size={config.iconSize} />
+      <BeehiveWordLogo size={config.textSize} />
     </div>
   );
 }

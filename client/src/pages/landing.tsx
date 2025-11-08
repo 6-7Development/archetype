@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Sparkles, Zap, Shield, Code, Rocket, Check, Play, ArrowRight, Hexagon } from "lucide-react";
-import { BeehiveIcon, BeehiveWordLogo } from "@/components/beehive-logos";
+import { BeehiveLogo } from "@/components/beehive-logos";
 
 export default function Landing() {
   return (
@@ -21,9 +21,8 @@ export default function Landing() {
       <nav className="fixed top-0 w-full z-50 border-b border-honey/10 bg-charcoal-950/90 backdrop-blur-xl">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" data-testid="link-home" className="flex items-center gap-3">
-              <BeehiveIcon size={100} />
-              <BeehiveWordLogo size="default" />
+            <Link href="/" data-testid="link-home">
+              <BeehiveLogo size="default" />
             </Link>
             
             <div className="flex items-center gap-3">
@@ -281,10 +280,7 @@ export default function Landing() {
       <footer className="border-t border-white/10 py-8 px-6">
         <div className="container mx-auto max-w-6xl">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <BeehiveIcon size={80} />
-              <BeehiveWordLogo size="sm" />
-            </div>
+            <BeehiveLogo size="sm" />
             <p className="text-slate-500 text-sm">
               © 2024 BeehiveAI. Where code gets sweeter by the hive.
             </p>
