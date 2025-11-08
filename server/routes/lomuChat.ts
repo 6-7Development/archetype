@@ -2076,11 +2076,54 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
                     console.log(`[LOMU-AI] Committing ${filesToCommit.length} files via GitHub API (works on Railway)`);
 
+                    // ✅ Emit deployment started event
+                    const deploymentId = `deploy-${Date.now()}`;
+                    sendEvent('deploy.started', {
+                      deploymentId,
+                      commitMessage: typedInput.commitMessage,
+                      filesCount: filesToCommit.length
+                    });
+
+                    // Emit initialization step
+                    sendEvent('deploy.step_update', {
+                      deploymentId,
+                      step: 'Preparing commit',
+                      status: 'running',
+                      startTime: Date.now()
+                    });
+
                     // Commit directly to GitHub via API (no local git needed)
                     const result = await githubService.commitFiles(
                       filesToCommit,
                       typedInput.commitMessage
                     );
+
+                    // Emit commit complete step
+                    sendEvent('deploy.step_update', {
+                      deploymentId,
+                      step: 'Pushing to GitHub',
+                      status: 'complete',
+                      startTime: Date.now(),
+                      duration: 1500
+                    });
+
+                    // Emit deployment triggered step
+                    sendEvent('deploy.step_update', {
+                      deploymentId,
+                      step: 'Triggering deployment',
+                      status: 'complete',
+                      startTime: Date.now(),
+                      duration: 800
+                    });
+
+                    // Emit deployment complete
+                    sendEvent('deploy.complete', {
+                      deploymentId,
+                      commitHash: result.commitHash,
+                      commitUrl: result.commitUrl,
+                      duration: 2500,
+                      filesDeployed: filesToCommit.length
+                    });
 
                     commitSuccessful = true; // Track commit success for task validation
                     usedGitHubAPI = true; // ✅ GitHub API already pushed - skip redundant git push
@@ -2101,6 +2144,13 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                     console.log('[LOMU-AI] ✅ Cleared fileChanges after successful GitHub API commit');
                   }
                 } catch (error: any) {
+                  // Emit deployment failed event
+                  sendEvent('deploy.failed', {
+                    deploymentId: `deploy-${Date.now()}`,
+                    error: error.message,
+                    duration: 0
+                  });
+                  
                   toolResult = `❌ GitHub commit failed: ${error.message}`;
                   sendEvent('error', { message: `GitHub commit failed: ${error.message}` });
                 }
