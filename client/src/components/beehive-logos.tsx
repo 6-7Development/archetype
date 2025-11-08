@@ -14,53 +14,100 @@ export function BeehiveIcon({ size = 80, className = "" }: { size?: number; clas
       {/* Outer glow effect */}
       <circle cx="60" cy="60" r="55" fill="url(#outerGlow)" opacity="0.3"/>
       
-      {/* Main honeycomb structure - large hexagon */}
+      {/* Main honeycomb structure with shadow depth */}
       <path 
         d="M60 10 L95 30 L95 70 L60 90 L25 70 L25 30 Z" 
         fill="url(#honeyGradient)"
-        stroke="#F7B500"
-        strokeWidth="3"
+        stroke="#8B6914"
+        strokeWidth="3.5"
         strokeLinejoin="round"
       />
       
-      {/* Inner honeycomb cells - more detailed pattern */}
-      <g opacity="0.8">
-        {/* Center cell - highlighted */}
+      {/* Inner shadow for depth */}
+      <path 
+        d="M60 10 L95 30 L95 70 L60 90 L25 70 L25 30 Z" 
+        fill="none"
+        stroke="#3D2F0F"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+        opacity="0.4"
+      />
+      
+      {/* Inner honeycomb cells with depth and shadows */}
+      <g>
+        {/* Center cell - darkest borders for depth */}
         <path d="M60 40 L70 46 L70 58 L60 64 L50 58 L50 46 Z" 
           fill="url(#cellGradient)" 
-          stroke="#F7B500" 
-          strokeWidth="2"/>
+          stroke="#8B6914" 
+          strokeWidth="2.5"/>
+        <path d="M60 40 L70 46 L70 58 L60 64 L50 58 L50 46 Z" 
+          fill="none" 
+          stroke="#3D2F0F" 
+          strokeWidth="0.8"
+          opacity="0.5"/>
         
-        {/* Top row cells */}
+        {/* Top row cells with shadows */}
         <path d="M42 28 L52 34 L52 46 L42 52 L32 46 L32 34 Z" 
-          fill="#FFD34D" stroke="#F7B500" strokeWidth="1.5" opacity="0.7"/>
+          fill="url(#cellLightGradient)" stroke="#8B6914" strokeWidth="2"/>
+        <path d="M42 28 L52 34 L52 46 L42 52 L32 46 L32 34 Z" 
+          fill="none" stroke="#3D2F0F" strokeWidth="0.6" opacity="0.4"/>
+          
         <path d="M60 22 L70 28 L70 40 L60 46 L50 40 L50 28 Z" 
-          fill="#FFD34D" stroke="#F7B500" strokeWidth="1.5" opacity="0.7"/>
+          fill="url(#cellLightGradient)" stroke="#8B6914" strokeWidth="2"/>
+        <path d="M60 22 L70 28 L70 40 L60 46 L50 40 L50 28 Z" 
+          fill="none" stroke="#3D2F0F" strokeWidth="0.6" opacity="0.4"/>
+          
         <path d="M78 28 L88 34 L88 46 L78 52 L68 46 L68 34 Z" 
-          fill="#FFD34D" stroke="#F7B500" strokeWidth="1.5" opacity="0.7"/>
+          fill="url(#cellLightGradient)" stroke="#8B6914" strokeWidth="2"/>
+        <path d="M78 28 L88 34 L88 46 L78 52 L68 46 L68 34 Z" 
+          fill="none" stroke="#3D2F0F" strokeWidth="0.6" opacity="0.4"/>
         
         {/* Middle row cells */}
         <path d="M42 52 L52 58 L52 70 L42 76 L32 70 L32 58 Z" 
-          fill="#FFD34D" stroke="#F7B500" strokeWidth="1.5" opacity="0.7"/>
+          fill="url(#cellLightGradient)" stroke="#8B6914" strokeWidth="2"/>
+        <path d="M42 52 L52 58 L52 70 L42 76 L32 70 L32 58 Z" 
+          fill="none" stroke="#3D2F0F" strokeWidth="0.6" opacity="0.4"/>
+          
         <path d="M78 52 L88 58 L88 70 L78 76 L68 70 L68 58 Z" 
-          fill="#FFD34D" stroke="#F7B500" strokeWidth="1.5" opacity="0.7"/>
+          fill="url(#cellLightGradient)" stroke="#8B6914" strokeWidth="2"/>
+        <path d="M78 52 L88 58 L88 70 L78 76 L68 70 L68 58 Z" 
+          fill="none" stroke="#3D2F0F" strokeWidth="0.6" opacity="0.4"/>
         
         {/* Bottom row cells */}
         <path d="M60 64 L70 70 L70 82 L60 88 L50 82 L50 70 Z" 
-          fill="#FFD34D" stroke="#F7B500" strokeWidth="1.5" opacity="0.7"/>
+          fill="url(#cellLightGradient)" stroke="#8B6914" strokeWidth="2"/>
+        <path d="M60 64 L70 70 L70 82 L60 88 L50 82 L50 70 Z" 
+          fill="none" stroke="#3D2F0F" strokeWidth="0.6" opacity="0.4"/>
       </g>
       
-      {/* Realistic honey drips with glossy effect */}
+      {/* Realistic oozing honey with layered detail */}
       <g className="honey-drips">
-        {/* Main honey drip */}
-        <path d="M60 82 Q60 86, 60 90 Q60 94, 58 95 Q56 94, 56 90 Q56 86, 56 82" 
-          fill="url(#honeyDripGradient)" 
-          stroke="#D4940F" 
-          strokeWidth="0.5"/>
-        {/* Glossy drop at bottom */}
-        <ellipse cx="58" cy="95" rx="3.5" ry="4.5" fill="url(#dropGradient)"/>
-        {/* Shine highlight */}
-        <ellipse cx="57" cy="93" rx="1.2" ry="1.8" fill="white" opacity="0.6"/>
+        {/* Honey pooling at the edge - darker base */}
+        <ellipse cx="58" cy="84" rx="4" ry="2" fill="#D4940F" opacity="0.6"/>
+        
+        {/* Main drip flow - realistic stream */}
+        <path d="M60 84 Q60 87, 60 90 Q60 95, 59 98 Q58.5 100, 57.5 100.5 Q56.5 100, 56 98 Q55 95, 55 90 Q55 87, 56 84" 
+          fill="url(#honeyFlowGradient)" 
+          stroke="#8B6914" 
+          strokeWidth="0.6"
+          opacity="0.95"/>
+        
+        {/* Inner lighter honey flow */}
+        <path d="M59 85 Q59 88, 59 91 Q59 95, 58.5 97.5 Q58 99, 57.5 99.5 Q57 99, 56.5 97.5 Q56 95, 56 91 Q56 88, 57 85" 
+          fill="url(#honeyInnerGradient)" 
+          opacity="0.7"/>
+        
+        {/* Glossy drop at bottom with multiple layers */}
+        <ellipse cx="57.5" cy="101" rx="4.5" ry="5.5" fill="url(#dropShadowGradient)"/>
+        <ellipse cx="57.5" cy="101" rx="4" ry="5" fill="url(#dropMainGradient)"/>
+        <ellipse cx="57.5" cy="101" rx="3.5" ry="4.5" fill="url(#dropHighlightGradient)"/>
+        
+        {/* Multiple shine highlights for realism */}
+        <ellipse cx="56" cy="98" rx="1.5" ry="2" fill="white" opacity="0.7"/>
+        <ellipse cx="58.5" cy="100" rx="0.8" ry="1.2" fill="white" opacity="0.5"/>
+        
+        {/* Dark bottom shadow */}
+        <ellipse cx="57.5" cy="105" rx="3" ry="1.5" fill="#3D2F0F" opacity="0.3"/>
       </g>
       
       {/* Animated Robotic AI Drone Bee #1 */}
@@ -149,23 +196,48 @@ export function BeehiveIcon({ size = 80, className = "" }: { size?: number; clas
           <stop offset="100%" stopColor="#F7B500" stopOpacity="0.7"/>
         </radialGradient>
         
+        <linearGradient id="cellLightGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#FFD34D" stopOpacity="0.8"/>
+          <stop offset="100%" stopColor="#F7B500" stopOpacity="0.6"/>
+        </linearGradient>
+        
         <radialGradient id="outerGlow" cx="50%" cy="50%">
           <stop offset="0%" stopColor="#F7B500" stopOpacity="0.2"/>
           <stop offset="100%" stopColor="#F7B500" stopOpacity="0"/>
         </radialGradient>
         
-        {/* Glossy honey drip gradient */}
-        <linearGradient id="honeyDripGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        {/* Realistic honey flow gradients */}
+        <linearGradient id="honeyFlowGradient" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor="#D4940F"/>
-          <stop offset="50%" stopColor="#F7B500"/>
-          <stop offset="100%" stopColor="#FFD34D"/>
+          <stop offset="30%" stopColor="#F7B500"/>
+          <stop offset="70%" stopColor="#F7B500"/>
+          <stop offset="100%" stopColor="#B8860B"/>
         </linearGradient>
         
-        {/* Glossy drop gradient */}
-        <radialGradient id="dropGradient" cx="30%" cy="30%">
+        <linearGradient id="honeyInnerGradient" x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor="#FFD34D"/>
           <stop offset="50%" stopColor="#F7B500"/>
+          <stop offset="100%" stopColor="#E6A615"/>
+        </linearGradient>
+        
+        {/* Drop shadow layer */}
+        <radialGradient id="dropShadowGradient" cx="50%" cy="50%">
+          <stop offset="0%" stopColor="#8B6914" stopOpacity="0.3"/>
+          <stop offset="100%" stopColor="#3D2F0F" stopOpacity="0.5"/>
+        </radialGradient>
+        
+        {/* Main drop body */}
+        <radialGradient id="dropMainGradient" cx="40%" cy="35%">
+          <stop offset="0%" stopColor="#FFD34D"/>
+          <stop offset="40%" stopColor="#F7B500"/>
           <stop offset="100%" stopColor="#D4940F"/>
+        </radialGradient>
+        
+        {/* Drop highlight layer */}
+        <radialGradient id="dropHighlightGradient" cx="35%" cy="30%">
+          <stop offset="0%" stopColor="#FFD34D" stopOpacity="0.9"/>
+          <stop offset="60%" stopColor="#F7B500" stopOpacity="0.6"/>
+          <stop offset="100%" stopColor="transparent"/>
         </radialGradient>
         
         {/* Metallic body gradient for robotic bees */}
