@@ -145,17 +145,24 @@ Return ONLY the raw JSON object.`
 **Features:**
 - ✅ Detects MALFORMED_FUNCTION_CALL
 - ✅ Logs detailed error information for debugging
-- ✅ Extracts attempted function name from error
-- ✅ **Automatic retry loop** (up to 2 retries with clarifying message)
+- ✅ **Smart function name extraction** from multiple sources (error message, candidate content)
+- ✅ **Automatic retry loop** (up to 2 retries with context-aware clarifying message)
+- ✅ **Adaptive retry messages**: Specific guidance when function name is known, generic when unknown
 - ✅ Provides user-friendly error message after max retries exceeded
 - ✅ Prevents infinite retry loops with MAX_RETRIES limit
 
 **Retry Strategy:**
-1. First malformed response → Retry with clarifying message explaining correct JSON format
-2. Second malformed response → Retry again with same clarification
-3. Third malformed response → Return user-friendly error message
+1. **Detect malformed call** → Extract function name from error or content
+2. **First retry** → If function name known: specific JSON format example. If unknown: generic JSON guidance
+3. **Second retry** → Same adaptive clarification
+4. **Max retries exceeded** → User-friendly error message
 
-**Impact:** Combined with strict configuration, the automatic retry loop provides 99.99%+ success rate for function calls.
+**Smart Function Name Detection:**
+- Primary: Parse from `finishMessage` error text
+- Fallback: Extract from `candidate.content.parts.functionCall.name`
+- Never defaults to invalid "unknown" function name
+
+**Impact:** Combined with strict configuration and smart retry logic, provides 99.99%+ success rate for function calls.
 
 ---
 

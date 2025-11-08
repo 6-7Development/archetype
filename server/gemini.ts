@@ -449,7 +449,7 @@ If you need to call a function, emit ONLY the JSON object.`),
             
             // Log the malformed content for debugging
             const finishMessage = (candidate as any).finishMessage;
-            let attemptedFunction = 'unknown';
+            let attemptedFunction: string | null = null;
             
             if (finishMessage) {
               console.error('[GEMINI-MALFORMED] Error details:', finishMessage);
@@ -463,20 +463,45 @@ If you need to call a function, emit ONLY the JSON object.`),
               }
             }
             
+            // Try to find the intended function from candidate content
+            if (!attemptedFunction && content?.parts) {
+              for (const part of content.parts) {
+                if ((part as any).functionCall?.name) {
+                  attemptedFunction = (part as any).functionCall.name;
+                  console.log('[GEMINI-MALFORMED] Found function name from content:', attemptedFunction);
+                  break;
+                }
+              }
+            }
+            
             // 🔄 RETRY LOGIC: Attempt to recover by retrying with clarifying message
             if (retryCount < MAX_RETRIES) {
               retryCount++;
               console.log(`[GEMINI-RETRY] Retrying with clarifying message (${retryCount}/${MAX_RETRIES})...`);
               
-              // Add a clarifying message to help Gemini understand the correct format
-              const clarifyingMessage: any = {
-                role: 'user',
-                content: `Your last response used invalid function syntax. Please respond with ONLY a pure JSON object in this exact format:
+              // Build clarifying message based on whether we know the function name
+              let clarifyingContent: string;
+              if (attemptedFunction) {
+                // We know the function - provide specific guidance
+                clarifyingContent = `Your last response used invalid function syntax. Please respond with ONLY a pure JSON object in this exact format:
 {"name":"${attemptedFunction}","args":{"param1":"value1"}}
 
 Do NOT use Python syntax like: ${attemptedFunction}(param1="value1")
 Do NOT wrap in code blocks or backticks.
-Return ONLY the raw JSON object.`
+Return ONLY the raw JSON object.`;
+              } else {
+                // We don't know the function - provide generic guidance
+                clarifyingContent = `Your last response used invalid function syntax. Please respond with ONLY a pure JSON function call object in this exact format:
+{"name":"function_name","args":{"param":"value"}}
+
+Do NOT use Python-like syntax.
+Do NOT wrap in code blocks or backticks.
+Return ONLY the raw JSON object.`;
+              }
+              
+              const clarifyingMessage: any = {
+                role: 'user',
+                content: clarifyingContent
               };
               
               // Recursive retry with updated messages
