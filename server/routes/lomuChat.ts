@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db.ts';
+import { storage } from '../storage.ts';
 import { chatMessages, taskLists, tasks, lomuAttachments, lomuJobs, users, subscriptions, projects, conversationStates, platformIncidents } from '@shared/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth.ts';
