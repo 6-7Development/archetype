@@ -1,0 +1,161 @@
+Totally get it. When an agent “should” work but still won’t on Replit (or similar sandboxes), it’s almost always one of these wiring/infra gotchas—not the model.
+
+Here’s a tight, no-fluff failure checklist you can run through today.
+
+0) Show-stoppers (fix these first)
+
+No real tools wired: Your agent “plans” but has no executor (no run_command, write_file, read_file, HTTP fetch, test runner). If those functions aren’t actually implemented, the agent can only chat.
+
+Router accepts prose: You didn’t force tool calls. Set response_mime_type: "application/json", temperature: 0, and allowedFunctionNames: [...]. Reject anything that isn’t a single valid tool call and re-ask.
+
+Tool schema doesn’t match executor: Field names/types don’t line up (e.g., tool expects filepath but executor needs path). Mark required fields in the schema.
+
+Token truncation: max_output_tokens too low → JSON cut off → MALFORMED_FUNCTION_CALL. Raise it (≥2048) for tool turns.
+
+
+1) Replit / sandbox pitfalls
+
+Port binding: Web servers must bind host=0.0.0.0 and port = os.environ["PORT"]. Binding to 8000/3000 directly will hang/kill.
+
+Process lifecycle: Replit kills apps that don’t listen on HTTP. Long scripts with no server exit silently.
+
+Run command: .replit or replit.nix misconfigured → wrong entrypoint. Confirm the run command matches your app (no stale proc).
+
+File writes: Writing outside the project dir or without createDirs logic fails silently. Stay within the workspace, check permissions.
+
+Background tasks: Cron/daemons are unreliable. Keep work in request/response or a persistent server process.
+
+Secrets: Replit “Secrets” must be set for API keys; env var names must match your code exactly. Log the presence (not the value) at boot.
+
+
+Minimal Flask server example (Python):
+
+from flask import Flask, jsonify
+import os
+app = Flask(__name__)
+
+@app.get("/health")
+def health(): return jsonify(ok=True)
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", "8000"))
+    app.run(host="0.0.0.0", port=port)
+
+.replit example:
+
+run = ["bash", "-lc", "python3 app.py"]
+
+2) Keys, auth, and quotas
+
+Gemini API key not loaded or wrong project/region. Verify at runtime: print the first 6 chars of the key prefix & model name.
+
+Billing/quota: Hard quota exceeded or rate-limited → model returns empty/blocked. Handle 429/400 and backoff.
+
+Safety filters can block code/tool calls if your prompt triggers a policy bucket. Keep action prompts neutral, avoid disallowed content.
+
+
+3) Model/tool config mismatches
+
+Wrong model: Use a tool-capable Gemini model (e.g., 1.5 Pro/Flash with tools). Some variants don’t support function calling.
+
+Missing tools.functionDeclarations in that turn: They can fall out of context on long threads; re-attach every tool turn.
+
+Mode: functionCallingConfig.mode must be "ANY" (or "AUTO"). Also set allowedFunctionNames to your actual tool names.
+
+Mixed intents: Asking for “explain + do” in one call → model picks prose. Split: planning turns (text ok) vs action turns (tools only).
+
+
+4) State & task completion logic
+
+No persisted checklist: Agent forgets the plan → can’t mark complete. Store tasks[] with id,title,done,dependsOn.
+
+No verification tools: Without run_tests, assert_file_exists, fetch_url, “done” is guesswork. Gate done=true on passing checks.
+
+Race conditions: Parallel tool calls updating the same file/dir break state. Execute sequentially or lock per task.
+
+
+5) Prompt hygiene (especially if authored in Google Docs)
+
+Smart quotes / zero-width chars corrupt JSON/tool names. Sanitize: replace curly quotes; strip \u200B/\u200C/\uFEFF.
+
+Inline code examples: Don’t include Python-like pseudo-calls in the system prompt; Gemini copies them. Use schema-only examples or none.
+
+No backticks: Don’t wrap JSON in fences. The model imitates.
+
+
+6) Observability
+
+No structured logs: Log every request/response:
+
+model name, tokens, temperature
+
+raw model output (pre-parse)
+
+parse errors
+
+tool call name/args
+
+executor stdout/stderr/exit code
+
+
+No redaction: Log presence of secrets; never values.
+
+
+7) Common executor bugs
+
+Shell vs. program args: If your run_command passes a single string to a subprocess that expects an argv array, quoting breaks.
+
+CWD confusion: Running npm/pip in the wrong folder → “works on my machine”. Always allow cwd param and log it.
+
+Version drift: No lockfiles (package-lock.json, poetry.lock, requirements.txt). Pin versions or the same prompt produces different outcomes.
+
+
+8) Size & rate limits
+
+Overlong prompts/artifacts: Replit + API limits. Stream or chunk large files; avoid dumping entire repos into context.
+
+Batching tool calls: If a single response asks to write_file 20 times, you risk truncation. Prefer one tool call per step.
+
+
+9) Content/safety tripwires
+
+Security keywords in prompts (e.g., “exploit”, “bypass”) can trigger refusals. Rephrase to neutral engineering language.
+
+
+10) Quick “10-minute” health test
+
+1. Boot logs show: model, response_mime_type, temperature, allowedFunctionNames ✅
+
+
+2. Send a trivial “write_file” task; confirm one tool call is returned and parsed ✅
+
+
+3. Execute tool; verify file exists ✅
+
+
+4. Ask for assert_file_contains ✅
+
+
+5. Mark task done in your store ✅
+
+
+6. Start a server and hit /health using fetch_url (port from env) ✅
+
+
+7. Confirm the agent can plan→do→verify→mark done across two tasks ✅
+
+
+
+If any of those steps fail, the log at that point will tell you which layer is broken (model → router → schema → executor → env).
+
+
+---
+
+If you want, paste:
+
+your .replit (or run command),
+
+the exact generationConfig / toolConfig you send on action turns, and
+
+one failing model reply (raw, before parsing),
+and I’ll pinpoint the exact break and give you a drop-in fix.

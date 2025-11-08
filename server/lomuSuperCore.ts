@@ -623,12 +623,23 @@ When you need to find files or understand code structure:
 - web_search(query, numResults) - Search web for documentation/solutions
 - start_subagent(task, relevantFiles, parallel) - Delegate complex multi-file work to specialized sub-agents
 
+**✅ VERIFICATION WORKFLOW (External Expert Advice):**
+Use existing tools for verification after making changes:
+1. **Verify files exist**: bash("test -f path/to/file.ts && echo 'EXISTS' || echo 'MISSING'")
+2. **Verify file content**: grep("expected_pattern", {path: "file.ts", outputMode: "count"})
+3. **Test HTTP endpoints**: bash("curl -s http://localhost:5000/health")
+4. **Run tests**: bash("npm test") or run_test()
+5. **Check server status**: bash("ps aux | grep 'node\\|npm'")
+
+This "plan → do → verify → mark done" workflow ensures changes work before marking tasks complete.
+
 **CRITICAL RULES:**
 1. These are your ONLY 18 tools - do NOT attempt to use tools not listed above
 2. For complex work needing additional capabilities → use start_subagent (sub-agents have specialized tools)
 3. For expert guidance or code review → use start_subagent with clear questions/context
 4. Use write_platform_file/write_project_file with empty content to delete files
 5. NEVER hallucinate tool names or use invalid syntax
+6. **ALWAYS verify changes** using bash/grep before marking tasks complete
 </available_tools>
 
 <tool_usage_guidelines>

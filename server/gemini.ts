@@ -3,7 +3,16 @@ import { WebSocket } from 'ws';
 
 const DEFAULT_MODEL = "gemini-2.5-flash";
 
-const genai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "dummy-key-for-development");
+// ✅ CRITICAL: Verify API key is loaded (external advice - log first 6 chars)
+const apiKey = process.env.GEMINI_API_KEY || "dummy-key-for-development";
+if (apiKey === "dummy-key-for-development") {
+  console.warn('[GEMINI-INIT] ⚠️ WARNING: Using dummy API key - Gemini will not work!');
+} else {
+  console.log('[GEMINI-INIT] ✅ API key loaded:', apiKey.substring(0, 6) + '...');
+  console.log('[GEMINI-INIT] ✅ Default model:', DEFAULT_MODEL);
+}
+
+const genai = new GoogleGenerativeAI(apiKey);
 
 /**
  * Sanitize text to remove invisible characters that could corrupt JSON
@@ -665,6 +674,18 @@ If you need to call a function, emit ONLY the JSON object.`),
     return { fullText, usage: usage || { inputTokens: 0, outputTokens: 0 } };
 
   } catch (error) {
+    // ✅ CRITICAL: Handle rate limits and quota errors (external advice)
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorString = JSON.stringify(error);
+    
+    // Detect rate limit (429) or quota exceeded (400)
+    if (errorString.includes('429') || errorMessage.includes('rate limit') || errorMessage.includes('quota')) {
+      console.error('🚨 [GEMINI-RATE-LIMIT] Rate limit or quota exceeded!');
+      console.error('[GEMINI-RATE-LIMIT] Suggestion: Implement exponential backoff or reduce request frequency');
+    } else if (errorString.includes('400') || errorMessage.includes('invalid')) {
+      console.error('🚨 [GEMINI-INVALID] Invalid request - check API key, model name, or request format');
+    }
+    
     console.error('❌ Fatal error in Gemini streaming:', error);
 
     if (onError) {
