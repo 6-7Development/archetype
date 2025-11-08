@@ -32,6 +32,31 @@ export function BeehiveIcon({ size = 80, className = "" }: { size?: number; clas
         opacity="0.6"
       />
       
+      {/* Subtle honeycomb pattern background */}
+      <g opacity="0.15" stroke="#FFD34D" strokeWidth="0.8" fill="none">
+        {/* Center row */}
+        <path d="M60 35 L68 40 L68 50 L60 55 L52 50 L52 40 Z"/>
+        
+        {/* Top left */}
+        <path d="M44 25 L52 30 L52 40 L44 45 L36 40 L36 30 Z"/>
+        {/* Top */}
+        <path d="M60 15 L68 20 L68 30 L60 35 L52 30 L52 20 Z"/>
+        {/* Top right */}
+        <path d="M76 25 L84 30 L84 40 L76 45 L68 40 L68 30 Z"/>
+        
+        {/* Middle left */}
+        <path d="M36 45 L44 50 L44 60 L36 65 L28 60 L28 50 Z"/>
+        {/* Middle right */}
+        <path d="M84 45 L92 50 L92 60 L84 65 L76 60 L76 50 Z"/>
+        
+        {/* Bottom left */}
+        <path d="M44 65 L52 70 L52 80 L44 85 L36 80 L36 70 Z"/>
+        {/* Bottom */}
+        <path d="M60 75 L68 80 L68 90 L60 95 L52 90 L52 80 Z"/>
+        {/* Bottom right */}
+        <path d="M76 65 L84 70 L84 80 L76 85 L68 80 L68 70 Z"/>
+      </g>
+      
       {/* Central tech hive - metallic dome with circuit patterns */}
       <defs>
         <linearGradient id="hiveGradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -135,6 +160,24 @@ export function BeehiveLogo({ className = "" }: { className?: string }) {
         <circle cx="30" cy="30" r="28" stroke="#101113" strokeWidth="2" fill="none"/>
         <circle cx="30" cy="30" r="26" stroke="#00D4B3" strokeWidth="1.5" fill="none" opacity="0.6"/>
         
+        {/* Subtle honeycomb pattern background */}
+        <g opacity="0.15" stroke="#FFD34D" strokeWidth="0.6" fill="none">
+          {/* Center */}
+          <path d="M30 20 L34 23 L34 29 L30 32 L26 29 L26 23 Z"/>
+          {/* Top left */}
+          <path d="M22 15 L26 18 L26 24 L22 27 L18 24 L18 18 Z"/>
+          {/* Top right */}
+          <path d="M38 15 L42 18 L42 24 L38 27 L34 24 L34 18 Z"/>
+          {/* Middle left */}
+          <path d="M18 27 L22 30 L22 36 L18 39 L14 36 L14 30 Z"/>
+          {/* Middle right */}
+          <path d="M42 27 L46 30 L46 36 L42 39 L38 36 L38 30 Z"/>
+          {/* Bottom left */}
+          <path d="M22 39 L26 42 L26 48 L22 51 L18 48 L18 42 Z"/>
+          {/* Bottom right */}
+          <path d="M38 39 L42 42 L42 48 L38 51 L34 48 L34 42 Z"/>
+        </g>
+        
         {/* Central hive */}
         <defs>
           <linearGradient id="hiveGradientLogo" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -230,6 +273,24 @@ export function BeehiveLogoMobile({ className = "" }: { className?: string }) {
         {/* Border circles */}
         <circle cx="20" cy="20" r="19" stroke="#101113" strokeWidth="1.5" fill="none"/>
         <circle cx="20" cy="20" r="17.5" stroke="#00D4B3" strokeWidth="1" fill="none" opacity="0.6"/>
+        
+        {/* Subtle honeycomb pattern background */}
+        <g opacity="0.15" stroke="#FFD34D" strokeWidth="0.5" fill="none">
+          {/* Center */}
+          <path d="M20 13 L23 15 L23 19 L20 21 L17 19 L17 15 Z"/>
+          {/* Top left */}
+          <path d="M14 10 L17 12 L17 16 L14 18 L11 16 L11 12 Z"/>
+          {/* Top right */}
+          <path d="M26 10 L29 12 L29 16 L26 18 L23 16 L23 12 Z"/>
+          {/* Middle left */}
+          <path d="M11 18 L14 20 L14 24 L11 26 L8 24 L8 20 Z"/>
+          {/* Middle right */}
+          <path d="M29 18 L32 20 L32 24 L29 26 L26 24 L26 20 Z"/>
+          {/* Bottom left */}
+          <path d="M14 26 L17 28 L17 32 L14 34 L11 32 L11 28 Z"/>
+          {/* Bottom right */}
+          <path d="M26 26 L29 28 L29 32 L26 34 L23 32 L23 28 Z"/>
+        </g>
         
         {/* Central hive */}
         <defs>
