@@ -12,7 +12,7 @@
 import { LOMU_TOOLS } from './index';
 
 /**
- * LOMU CORE TOOLS (14 tools)
+ * LOMU CORE TOOLS (18 tools)
  * For regular LomuAI development work - fast execution primitives
  * Used by: LomuAI Chat, Platform Healing
  */
@@ -22,13 +22,15 @@ export const LOMU_CORE_TOOLS = LOMU_TOOLS.filter(tool => [
   'write',
   'ls',
   
-  // Smart Code Intelligence (2)
+  // Smart Code Intelligence (3)
   'smart_read_file',
   'get_auto_context',
+  'extract_function',
   
-  // Task Management (2)
+  // Task Management (3) - Added read_task_list for task inspection
   'create_task_list',
   'update_task',
+  'read_task_list',
   
   // Web & Research (2)
   'web_search',
@@ -38,12 +40,16 @@ export const LOMU_CORE_TOOLS = LOMU_TOOLS.filter(tool => [
   'browser_test',
   'perform_diagnosis',
   
-  // Escalation (1) - NEW! Consult architect when stuck
+  // Vision Analysis (1) - NEW! Scan websites/images and systematically fix issues
+  'vision_analyze',
+  
+  // Escalation (1) - Consult architect when stuck
   'architect_consult',
   
-  // System Operations (2)
+  // System Operations (3) - Added glob for pattern matching
   'bash',
   'refresh_all_logs',
+  'glob',
 ].includes(tool.name));
 
 /**
