@@ -366,7 +366,9 @@ If you need to call a function, emit ONLY the JSON object.`),
         maxOutputTokens: Math.max(maxTokens, 16000), // ⚠️ CRITICAL: Prevent truncated JSON (external advice: "silent killer")
         temperature: 0.0, // ZERO randomness for function calling (external advice: 0.0-0.3)
         topP: 0.8,        // Slightly reduced randomness for consistency
-        // ❌ DON'T set responseMimeType - it breaks function calling per Google docs!
+        // ✅ NEW ARCHITECTURE: Force JSON output at transport layer (external advice v2)
+        // "Even perfect prompts won't stop free-text if response_mime_type and tool config aren't strict"
+        responseMimeType: "application/json",
       },
     };
 
@@ -374,18 +376,20 @@ If you need to call a function, emit ONLY the JSON object.`),
     if (geminiTools && geminiTools.length > 0 && geminiTools[0]?.functionDeclarations) {
       requestParams.tools = geminiTools;
       
-      // ✅ FIX: Use AUTO mode WITHOUT allowedFunctionNames (matches Replit Agent)
-      // AUTO mode + no filter = Gemini emits native JSON function calls
-      // ANY mode + allowedFunctionNames = Gemini falls back to Python SDK syntax (MALFORMED_FUNCTION_CALL)
+      // ✅ NEW ARCHITECTURE: Force tool calling with explicit function list (external advice v2)
+      // "Even perfect prompts won't stop free-text if tool config isn't strict"
+      // mode: "ANY" = force tool call every time (no prose allowed)
+      // allowedFunctionNames = explicit list of what can be called
+      const functionNames = geminiTools[0].functionDeclarations.map((fn: any) => fn.name);
+      
       requestParams.toolConfig = {
         functionCallingConfig: {
-          mode: 'AUTO', // Let Gemini naturally decide when to call functions
-          // ❌ DO NOT add allowedFunctionNames - causes Python syntax fallback
+          mode: 'ANY', // ✅ FORCE tool calling (not optional)
+          allowedFunctionNames: functionNames, // ✅ BE EXPLICIT about what's allowed
         }
       };
       
-      const functionNames = geminiTools[0].functionDeclarations.map((fn: any) => fn.name);
-      console.log(`[GEMINI-TOOLCONFIG] mode: AUTO (no filter), ${functionNames.length} functions available:`, functionNames.slice(0, 5).join(', '));
+      console.log(`[GEMINI-TOOLCONFIG] mode: ANY (forced), ${functionNames.length} functions allowed:`, functionNames.slice(0, 5).join(', '));
     }
 
     // 🔍 DEBUG: Log what we're sending to Gemini

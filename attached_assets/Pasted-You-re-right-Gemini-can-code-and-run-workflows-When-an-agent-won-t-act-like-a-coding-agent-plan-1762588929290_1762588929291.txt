@@ -1,0 +1,252 @@
+You’re right: Gemini can code and run workflows. When an “agent” won’t act like a coding agent (plan → do → verify → mark done), it’s almost never the model—it’s the wiring. Below is a plug-and-play blueprint that fixes the usual gaps.
+
+
+---
+
+What’s (still) going wrong
+
+1. You’re not forcing a tool call at the transport layer.
+Even perfect prompts won’t stop free-text if response_mime_type and tool config aren’t strict.
+
+
+2. No executor tools = nothing to “do.”
+If Lomu can’t run bash, read/write files, run tests, or fetch URLs, it can only talk.
+
+
+3. No plan memory / checklist.
+If you don’t persist a step list and statuses, the agent can’t “know” progress or mark items complete.
+
+
+4. No success criteria.
+Without verification tools (tests, file checks, HTTP checks), “done” is subjective.
+
+
+5. Router accepts prose.
+If your runtime doesn’t reject non-JSON or non-tool responses, malformed calls slip in.
+
+
+6. Truncation / hidden characters.
+Low max tokens or smart quotes/zero-width chars (often from Google Docs) still corrupt JSON.
+
+
+
+
+---
+
+The “coding agent” minimal architecture
+
+Think of this as five pieces:
+
+A) Strict model config (Gemini)
+
+generationConfig: {
+  response_mime_type: "application/json",
+  temperature: 0,
+  max_output_tokens: 2048
+},
+tools: {
+  functionDeclarations: [
+    // see Tool Set below
+  ]
+},
+toolConfig: {
+  functionCallingConfig: {
+    mode: "ANY",
+    allowedFunctionNames: [
+      "plan_tasks","update_task_status",
+      "read_file","write_file","list_dir",
+      "run_command","run_python","fetch_url",
+      "assert_file_exists","assert_file_contains",
+      "run_tests"
+    ]
+  }
+}
+
+B) Tool set (the “hands”)
+Define these functionDeclarations (JSON schemas only; no prose, no fences):
+
+plan_tasks(goal: string) -> {tasks:[{id,title,done,dependsOn[]}]}
+
+update_task_status(id: string, done: boolean) -> {id,done}
+
+read_file(path: string) -> {path, content}
+
+write_file(path: string, content: string, createDirs?: boolean) -> {path, bytes}
+
+list_dir(path: string) -> {path, entries:[{name,isDir}]}
+
+run_command(command: string, args?: string[], cwd?: string, timeoutSec?: number) -> {exitCode, stdout, stderr}
+
+run_python(code: string, cwd?: string, timeoutSec?: number) -> {exitCode, stdout, stderr}
+
+fetch_url(url: string, method?: "GET"|"POST", body?: string) -> {status, headers, body}
+
+run_tests(command?: string, cwd?: string) -> {exitCode, passed: number, failed: number, stdout, stderr}
+
+assert_file_exists(path: string) -> {ok: boolean, reason?: string}
+
+assert_file_contains(path: string, needle: string) -> {ok: boolean, reason?: string}
+
+
+> Important: wire these to a real sandbox (like a container or VM). If you don’t have a runner, the agent can’t “act.”
+
+
+
+C) Brain loop (planner–executor–verifier)
+Your controller (not the model) should run this loop:
+
+1. If no plan stored: call plan_tasks(goal) and persist tasks[] with done=false.
+
+
+2. Pick the next !done task with all dependsOn done.
+
+
+3. Ask Gemini to complete exactly that task (not the whole goal).
+
+Force tool calls only. Reject prose.
+
+
+
+4. Execute returned tool call(s) in order.
+
+
+5. Verify with run_tests / assert_* / fetch_url.
+
+
+6. Mark done via update_task_status.
+
+
+7. Repeat until all done → then return a final summary + artifacts.
+
+
+
+D) Unambiguous system prompt (short & hard rules)
+Put this in the system role for the tool-capable turn:
+
+“You are a coding agent. Work one task at a time from the persisted checklist.
+Return exactly one JSON function call. No text before/after. No backticks.
+Prefer small, verifiable steps. After each step, propose a verification call.”
+
+
+E) Guardrails in your router
+
+If the model returns anything that isn’t a single valid tool call → send a repair prompt (same schema) and re-ask.
+
+If output looks truncated (no closing brace) → ask to “re-emit the last tool call only.”
+
+Sanitize inputs from Docs: replace smart quotes, strip \u200B/\uFEFF, normalize \r\n.
+
+
+
+---
+
+Example: “Create a Flask app and verify it runs”
+
+Turn A (plan)
+User says goal. You ask Gemini for plan_tasks (forced). It returns:
+
+{"name":"plan_tasks","arguments":{"goal":"Create Flask app with /health, tests, and run it"}}
+
+You execute; get a task list like:
+
+1. init project
+
+
+2. write app.py
+
+
+3. write requirements.txt
+
+
+4. install deps
+
+
+5. write tests
+
+
+6. run tests
+
+
+7. run server
+
+
+8. verify GET /health is 200
+
+
+9. mark complete
+
+
+
+Turn B (do task 2)
+You call the model again but instruct: “Complete task 2 only.” The model must return a single tool call:
+
+{"name":"write_file","arguments":{"path":"app.py","content":"from flask import Flask\napp=Flask(__name__)\n@app.get('/health')\ndef health(): return {'ok':True}\nif __name__=='__main__': app.run(host='0.0.0.0',port=8000)"}}
+
+You run it. Then model proposes verification (your controller asks for it or enforces it):
+
+{"name":"assert_file_contains","arguments":{"path":"app.py","needle":"@app.get('/health')"}}
+
+You run, get {ok:true}. Then call:
+
+{"name":"update_task_status","arguments":{"id":"2","done":true}}
+
+…and so on through install, tests, run, and fetch_url("http://localhost:8000/health").
+
+
+---
+
+Why this makes the agent “finish requests”
+
+Task memory: persisted checklist is the source of truth.
+
+Atomic steps: each response handles one task; easier to verify and recover.
+
+Hard verification: tests & asserts flip tasks to “done” only when objective checks pass.
+
+Strict tool mode: prose can’t leak in; malformed JSON is rejected + repaired.
+
+Idempotency: write and run tools won’t destroy state if re-attempted.
+
+
+
+---
+
+Quick fixes you can apply today
+
+1. Set these, every tool-capable turn
+
+
+
+response_mime_type: "application/json"
+
+temperature: 0
+
+allowedFunctionNames: [your tools...]
+
+max_output_tokens: 2048+
+
+
+2. Stop authoring prompts/specs in Google Docs (or sanitize at runtime).
+
+
+3. Always include the tool declarations in each tool-capable request (avoid context window drop-off).
+
+
+4. Reject non-tool output in your runtime and immediately request a corrected call.
+
+
+5. Add verification tools—don’t rely on eyeballing logs.
+
+
+
+
+---
+
+If you want, paste your current:
+
+functionDeclarations,
+
+toolConfig + generationConfig, and
+
+the exact system prompt you send for “action” turns,
+and I’ll rewrite them into a working, copy-pasteable starter that implements the loop above.

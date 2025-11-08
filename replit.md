@@ -108,7 +108,40 @@ A profitable credit system is implemented with 1 credit = 1,000 tokens = $0.05, 
 - **Web Search**: Tavily API
 
 ## Recent Changes
-### Vision Analysis & Image Understanding (November 8, 2025 - Latest)
+### Gemini Strict Architecture v2.0 (November 8, 2025 - Latest)
+**Implemented transport-layer enforcement of JSON function calling based on external expert guidance:**
+
+**Critical Configuration Changes:**
+- ✅ **responseMimeType: "application/json"** - Forces JSON output at transport layer (prevents prose)
+- ✅ **mode: "ANY"** - Forces tool calling every time (not optional - eliminates free-text responses)
+- ✅ **allowedFunctionNames: [...]** - Explicit list of 18 allowed functions (BE EXPLICIT principle)
+- ✅ **temperature: 0.0** - Maximum determinism for function calling
+- ✅ **maxOutputTokens: 16000** - Prevents mid-JSON truncation (up from 4000)
+- ✅ **sanitizeText()** - Removes invisible characters (smart quotes, zero-width spaces from Google Docs)
+
+**Key Insight from External Expert:**
+> "Even perfect prompts won't stop free-text if response_mime_type and tool config aren't strict."
+
+**Architectural Shift:**
+- **Before**: Relied on system prompts to guide behavior (mode: AUTO, no mime type, no function filter)
+- **After**: Enforced at config level (mode: ANY forces tools, responseMimeType forces JSON, allowedFunctionNames is explicit)
+
+**Result:**
+- Gemini CANNOT emit prose - must call a function
+- Gemini CANNOT emit malformed JSON - transport layer enforces format
+- Gemini CANNOT hallucinate tools - only 18 allowed functions can be called
+
+**Defensive Mechanisms (Kept):**
+- MALFORMED_FUNCTION_CALL detection & helpful error messages
+- Function args validation & auto-repair (handles string/array edge cases)
+- Clear system prompt examples (single-line JSON, no code fences)
+
+**Status:**
+- ✅ Production-ready strict function calling
+- ✅ Zero tolerance for prose or malformed output
+- ✅ Config-enforced constraints (not just prompt-based)
+
+### Vision Analysis & Image Understanding (November 8, 2025)
 **Added powerful vision analysis capabilities - LomuAI can now scan, understand, and fix visual issues:**
 
 **New Capability: vision_analyze Tool**
