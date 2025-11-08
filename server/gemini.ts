@@ -330,33 +330,29 @@ export async function streamGeminiResponse(options: StreamOptions) {
     // Prepare request parameters with systemInstruction and tools at top level
     const requestParams: any = {
       contents: geminiMessages,
-      // ✅ CRITICAL: Show canonical JSON function call example to prevent Python syntax
+      // ✅ CRITICAL: Show ONLY the correct JSON format (no forbidden examples that Gemini might copy)
       systemInstruction: `${system}
 
 CRITICAL FUNCTION CALLING RULES:
-You MUST call functions using ONLY this exact JSON format:
+Functions MUST be called using pure JSON format ONLY.
 
-**CORRECT FORMAT (JSON):**
+**CORRECT FORMAT:**
 {
-  "name": "write_platform_file",
+  "name": "function_name_here",
   "args": {
-    "path": "server/routes.ts",
-    "content": "import express from 'express';"
+    "param1": "value1",
+    "param2": "value2"
   }
 }
 
-**NEVER USE THESE FORMATS:**
-❌ print(default_api.write_platform_file(...))  ← Python SDK syntax - FORBIDDEN
-❌ default_api.write_platform_file(...)  ← Python syntax - FORBIDDEN
-❌ write_platform_file(...)  ← Function call syntax - FORBIDDEN
-
-**Rules:**
+**STRICT REQUIREMENTS:**
 - Use ONLY JSON objects with "name" and "args" fields
-- Never use Python, JavaScript, or any programming language syntax
-- Never use print(), default_api, or any SDK wrapper patterns
-- If unsure, respond with text instead of calling a function
+- NO programming language syntax (no Python, JavaScript, etc)
+- NO SDK wrappers or print statements
+- NO direct function calls without JSON wrapper
+- If unsure whether to call a function, respond with text instead
 
-Remember: Pure JSON function calls ONLY.`,
+This is the ONLY valid function calling format.`,
       generationConfig: {
         maxOutputTokens: maxTokens,
         temperature: 0.1, // ULTRA-LOW = maximum determinism for function calling (Google recommends 0-0.2)
