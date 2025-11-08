@@ -122,7 +122,7 @@ export function AiChatPanel({ messages, onSendMessage, isLoading, onClose }: AiC
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Describe what you want to build..."
-              className="resize-none text-sm min-h-[80px] pr-12"
+              className="resize-none text-sm min-h-[60px] pr-12"
               disabled={isLoading}
               data-testid="input-chat-message"
               onKeyDown={(e) => {
