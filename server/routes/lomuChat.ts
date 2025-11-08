@@ -970,6 +970,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       contextPrompt,
       userMessage: message,
       autonomyLevel: user.autonomyLevel || 'standard',
+      extendedThinking: req.body.extendedThinking || false, // ✅ PARITY: Extended thinking mode for complex tasks
     });
 
     // ⚡ GOOGLE GEMINI OPTIMIZED: 13 CORE TOOLS (Google recommends 10-20 max)

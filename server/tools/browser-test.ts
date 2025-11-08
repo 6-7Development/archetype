@@ -1,7 +1,10 @@
 import { chromium, Browser, Page } from 'playwright';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 interface BrowserTestParams {
   url: string;
+  recordVideo?: boolean; // NEW: Enable video recording of the test session
   actions?: Array<{
     type: 'click' | 'type' | 'navigate' | 'screenshot' | 'evaluate';
     selector?: string;
@@ -20,6 +23,7 @@ interface BrowserTestResult {
   screenshots: string[];
   logs: string[];
   assertions: Array<{ passed: boolean; message: string }>;
+  videoPath?: string; // NEW: Path to recorded video (for replay)
   error?: string;
 }
 
@@ -44,8 +48,19 @@ export async function executeBrowserTest(params: BrowserTestParams): Promise<Bro
       headless: true,
       timeout: 30000, // 30 second timeout for browser launch
     });
+    
+    // Setup video recording directory if enabled
+    const videoDir = params.recordVideo ? path.join(process.cwd(), 'attached_assets', 'test_videos') : null;
+    if (videoDir) {
+      await fs.mkdir(videoDir, { recursive: true });
+    }
+    
     page = await browser.newPage({
       viewport: { width: 1280, height: 720 },
+      recordVideo: params.recordVideo ? {
+        dir: videoDir!,
+        size: { width: 1280, height: 720 },
+      } : undefined,
     });
     
     // Set default navigation timeout
@@ -162,7 +177,24 @@ export async function executeBrowserTest(params: BrowserTestParams): Promise<Bro
     result.error = error instanceof Error ? error.message : 'Unknown error';
     result.logs.push(`Error: ${result.error}`);
   } finally {
-    if (page) await page.close();
+    // Close page first to finalize video recording
+    if (page) {
+      const videoPath = await page.video()?.path();
+      await page.close();
+      
+      // Copy video to accessible location and provide path
+      if (videoPath && params.recordVideo) {
+        try {
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+          const finalVideoPath = path.join('attached_assets', 'test_videos', `test_${timestamp}.webm`);
+          await fs.rename(videoPath, finalVideoPath);
+          result.videoPath = finalVideoPath;
+          result.logs.push(`📹 Video replay saved: ${finalVideoPath}`);
+        } catch (videoError) {
+          result.logs.push(`⚠️ Could not save video: ${videoError instanceof Error ? videoError.message : 'Unknown error'}`);
+        }
+      }
+    }
     if (browser) await browser.close();
   }
   
