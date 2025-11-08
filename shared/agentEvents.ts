@@ -29,7 +29,11 @@ export type EventType =
   | "artifact.updated"
   | "run.phase"
   | "agent.delegated"
-  | "agent.guidance";
+  | "agent.guidance"
+  | "deploy.started"
+  | "deploy.step_update"
+  | "deploy.complete"
+  | "deploy.failed";
 
 export type Actor = "user" | "agent" | "subagent" | "system";
 
@@ -274,4 +278,51 @@ export interface TaskMetrics {
   timeInStateMs: Record<TaskStatus, number>;
   retryCount: number;
   verificationPassRate: number;
+}
+
+// ============================================================================
+// DEPLOYMENT EVENTS
+// ============================================================================
+
+export type DeploymentStepStatus = "pending" | "in_progress" | "complete" | "failed";
+
+export interface DeploymentStep {
+  name: string;
+  status: DeploymentStepStatus;
+  durationMs?: number;
+  startTime?: string;
+  endTime?: string;
+}
+
+export interface DeploymentStartedData {
+  deploymentId: string;
+  commitHash: string;
+  commitMessage: string;
+  commitUrl: string;
+  timestamp: string;
+  platform: "github" | "railway" | "replit";
+}
+
+export interface DeploymentStepUpdateData {
+  deploymentId: string;
+  stepName: string;
+  status: DeploymentStepStatus;
+  durationMs?: number;
+  message?: string;
+}
+
+export interface DeploymentCompleteData {
+  deploymentId: string;
+  status: "successful" | "failed";
+  totalDurationMs: number;
+  steps: DeploymentStep[];
+  deploymentUrl?: string;
+  errorMessage?: string;
+}
+
+export interface DeploymentFailedData {
+  deploymentId: string;
+  stepName: string;
+  errorMessage: string;
+  timestamp: string;
 }

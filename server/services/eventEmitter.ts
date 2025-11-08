@@ -24,6 +24,10 @@ import {
   MessageUserData,
   MessageAgentData,
   PlanCreatedData,
+  DeploymentStartedData,
+  DeploymentStepUpdateData,
+  DeploymentCompleteData,
+  DeploymentFailedData,
   PHASE_EMOJIS,
   PHASE_MESSAGES
 } from '@shared/agentEvents';
@@ -131,6 +135,26 @@ export class AgentEventEmitter {
 
   emitAgentGuidance(data: AgentGuidanceData): void {
     this.sendEvent(createEvent('agent.guidance', this.actor, data));
+  }
+
+  // ========================================================================
+  // DEPLOYMENT EVENTS
+  // ========================================================================
+
+  emitDeploymentStarted(data: DeploymentStartedData): void {
+    this.sendEvent(createEvent('deploy.started', 'system', data));
+  }
+
+  emitDeploymentStepUpdate(data: DeploymentStepUpdateData): void {
+    this.sendEvent(createEvent('deploy.step_update', 'system', data));
+  }
+
+  emitDeploymentComplete(data: DeploymentCompleteData): void {
+    this.sendEvent(createEvent('deploy.complete', 'system', data));
+  }
+
+  emitDeploymentFailed(data: DeploymentFailedData): void {
+    this.sendEvent(createEvent('deploy.failed', 'system', data));
   }
 
   // ========================================================================
