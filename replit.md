@@ -132,11 +132,12 @@ A profitable credit system is implemented with 1 credit = 1,000 tokens = $0.05, 
    - ✅ Cast `content.parts as GeminiPart[]` to access thoughtSignature
    - Impact: Zero LSP diagnostics, TypeScript compilation clean
 
-5. **Silent Work Enforcement (server/lomuSuperCore.ts)**:
-   - ✅ Added 🚨 CRITICAL section to system prompt: "WORK 100% SILENTLY - SAVE TOKENS!"
-   - ✅ Rules: Zero text during tool calls, only emoji progress, text only for final results
-   - ✅ Examples of BAD output (verbose explanations) vs GOOD output (silent work)
-   - Impact: **40x cost reduction maintained** - no wasted tokens on verbose thinking text
+5. **Balanced Progress + Efficiency (server/lomuSuperCore.ts)**:
+   - ✅ Added 🚨 CRITICAL section: "LET INLINE PROGRESS SHOW - DON'T WASTE TOKENS ON EXPLANATIONS!"
+   - ✅ Rules: No verbose preambles, let emoji indicators show work, brief updates OK, clear summaries
+   - ✅ System explains automatic inline progress (🔍📖✏️) appears as Lomu works
+   - ✅ Examples of BAD output (verbose explanations) vs GOOD output (efficient work with inline progress)
+   - Impact: Users see work happening in real-time via emoji indicators, no wasted tokens on explanatory text
 
 **Result**: LomuAI now matches Replit Agent UX:
 - ✅ Clean emoji-prefixed progress indicators (🔍📖✏️⚙️)
