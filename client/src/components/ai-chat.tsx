@@ -26,6 +26,8 @@ import { AgentProgressDisplay } from "@/components/agent-progress-display";
 import { ChatInputToolbar } from "@/components/ui/chat-input-toolbar";
 import { AIModelSelector } from "@/components/ai-model-selector";
 import { parseMessageContent, cleanAIResponse } from "@/lib/message-parser";
+import { ScratchpadDisplay } from "@/components/scratchpad-display";
+import { ArchitectNotesPanel } from "@/components/architect-notes-panel";
 
 interface CheckpointData {
   complexity: string;
@@ -896,6 +898,28 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     }
   };
 
+  // Clear scratchpad handler
+  const handleClearScratchpad = async () => {
+    try {
+      const response = await fetch(`/api/scratchpad/${sessionId}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to clear scratchpad');
+      }
+      
+      toast({
+        description: "Scratchpad cleared successfully!",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        description: "Failed to clear scratchpad",
+      });
+    }
+  };
+
   // Smooth auto-scroll to bottom to show newest messages with delay for animation
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -1355,18 +1379,30 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
         </div>
       </div>
 
+      {/* Scratchpad Sidebar */}
+      <div className="w-80 border-l border-[hsl(220,15%,28%)] hidden lg:block overflow-hidden flex flex-col" data-testid="scratchpad-panel">
+        <div className="p-4 space-y-4 overflow-y-auto flex-1">
+          <ScratchpadDisplay 
+            entries={streamState.scratchpadEntries}
+            onClear={handleClearScratchpad}
+            sessionId={sessionId}
+          />
+          <ArchitectNotesPanel projectId={currentProjectId || null} />
+        </div>
+      </div>
+      
       {/* Cost Preview Dialog - Mobile Responsive */}
       <Dialog open={showCostPreview} onOpenChange={setShowCostPreview}>
         <DialogContent className="max-w-[95vw] sm:max-w-2xl">
           {costData && (
             <CostPreview
-              complexity={costData.complexity}
-              estimatedTokens={costData.estimatedTokens}
-              tokensRemaining={costData.tokensRemaining}
-              tokenLimit={costData.tokenLimit}
-              overageTokens={costData.overageTokens}
-              overageCost={costData.overageCost}
-              reasons={costData.reasons}
+              complexity={costData?.complexity}
+              estimatedTokens={costData?.estimatedTokens}
+              tokensRemaining={costData?.tokensRemaining}
+              tokenLimit={costData?.tokenLimit}
+              overageTokens={costData?.overageTokens}
+              overageCost={costData?.overageCost}
+              reasons={costData?.reasons}
               onConfirm={handleCostPreviewConfirm}
               onCancel={handleCostPreviewCancel}
               isLoading={commandMutation.isPending}
