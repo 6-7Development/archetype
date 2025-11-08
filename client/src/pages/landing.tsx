@@ -22,7 +22,7 @@ export default function Landing() {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" data-testid="link-home" className="flex items-center gap-3">
-              <BeehiveIcon size={64} />
+              <BeehiveIcon size={100} />
               <BeehiveWordLogo size="default" />
             </Link>
             
@@ -282,7 +282,7 @@ export default function Landing() {
         <div className="container mx-auto max-w-6xl">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <BeehiveIcon size={56} />
+              <BeehiveIcon size={80} />
               <BeehiveWordLogo size="sm" />
             </div>
             <p className="text-slate-500 text-sm">

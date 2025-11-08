@@ -1,7 +1,7 @@
 // BeehiveAI Custom SVG Logos - Scalable & Editable
 
-// BeehiveAI Icon Logo (detailed honeycomb with flying bees)
-export function BeehiveIcon({ size = 56, className = "" }: { size?: number; className?: string }) {
+// BeehiveAI Icon Logo (detailed honeycomb with animated flying bees)
+export function BeehiveIcon({ size = 80, className = "" }: { size?: number; className?: string }) {
   return (
     <svg 
       width={size} 
@@ -50,61 +50,83 @@ export function BeehiveIcon({ size = 56, className = "" }: { size?: number; clas
           fill="#FFD34D" stroke="#F7B500" strokeWidth="1.5" opacity="0.7"/>
       </g>
       
-      {/* Honey drips and details */}
-      <g opacity="0.9">
-        <path d="M60 82 Q60 87, 60 90 Q60 93, 58 93 Q56 93, 56 90 Q56 87, 56 82" fill="#F7B500"/>
-        <ellipse cx="58" cy="93" rx="2.5" ry="3" fill="#F7B500" opacity="0.8"/>
+      {/* Realistic honey drips with glossy effect */}
+      <g className="honey-drips">
+        {/* Main honey drip */}
+        <path d="M60 82 Q60 86, 60 90 Q60 94, 58 95 Q56 94, 56 90 Q56 86, 56 82" 
+          fill="url(#honeyDripGradient)" 
+          stroke="#D4940F" 
+          strokeWidth="0.5"/>
+        {/* Glossy drop at bottom */}
+        <ellipse cx="58" cy="95" rx="3.5" ry="4.5" fill="url(#dropGradient)"/>
+        {/* Shine highlight */}
+        <ellipse cx="57" cy="93" rx="1.2" ry="1.8" fill="white" opacity="0.6"/>
       </g>
       
-      {/* Drone Bee #1 - Top Right */}
-      <g transform="translate(85, 25)">
-        {/* Body */}
-        <ellipse cx="0" cy="0" rx="4" ry="6" fill="#FFD34D"/>
-        <rect x="-3.5" y="-3" width="7" height="1.5" fill="#F7B500"/>
-        <rect x="-3.5" y="0" width="7" height="1.5" fill="#F7B500"/>
-        <rect x="-3.5" y="3" width="7" height="1.5" fill="#F7B500"/>
-        {/* Head */}
-        <circle cx="0" cy="-7" r="2.5" fill="#F7B500"/>
-        {/* Wings - animated look */}
-        <ellipse cx="-3" cy="-2" rx="4" ry="2" fill="white" opacity="0.7" transform="rotate(-15 -3 -2)"/>
-        <ellipse cx="3" cy="-2" rx="4" ry="2" fill="white" opacity="0.7" transform="rotate(15 3 -2)"/>
-        {/* Antennae */}
-        <line x1="-1" y1="-8" x2="-2" y2="-11" stroke="#F7B500" strokeWidth="0.8"/>
-        <line x1="1" y1="-8" x2="2" y2="-11" stroke="#F7B500" strokeWidth="0.8"/>
+      {/* Animated Robotic AI Drone Bee #1 */}
+      <g className="drone-bee-1" style={{ transformOrigin: '60px 60px' }}>
+        <g transform="translate(85, 25)">
+          {/* Metallic body with gradient */}
+          <ellipse cx="0" cy="0" rx="4" ry="6" fill="url(#metallicBody)"/>
+          <rect x="-3.5" y="-3" width="7" height="1.5" fill="#F7B500"/>
+          <rect x="-3.5" y="0" width="7" height="1.5" fill="#F7B500"/>
+          <rect x="-3.5" y="3" width="7" height="1.5" fill="#F7B500"/>
+          {/* Robotic head with shine */}
+          <circle cx="0" cy="-7" r="2.5" fill="url(#roboticHead)"/>
+          <circle cx="-0.5" cy="-7.5" r="0.8" fill="white" opacity="0.8"/>
+          {/* Robotic wings with motion blur */}
+          <ellipse cx="-3" cy="-2" rx="4" ry="2" fill="url(#wingGradient)" opacity="0.8" className="wing-left"/>
+          <ellipse cx="3" cy="-2" rx="4" ry="2" fill="url(#wingGradient)" opacity="0.8" className="wing-right"/>
+          {/* Digital antennae */}
+          <line x1="-1" y1="-8" x2="-2" y2="-11" stroke="#00D4B3" strokeWidth="1.2" opacity="0.8"/>
+          <line x1="1" y1="-8" x2="2" y2="-11" stroke="#00D4B3" strokeWidth="1.2" opacity="0.8"/>
+          <circle cx="-2" cy="-11" r="0.8" fill="#00D4B3" opacity="0.9"/>
+          <circle cx="2" cy="-11" r="0.8" fill="#00D4B3" opacity="0.9"/>
+        </g>
       </g>
       
-      {/* Drone Bee #2 - Left Side */}
-      <g transform="translate(18, 50) rotate(-20)">
-        {/* Body */}
-        <ellipse cx="0" cy="0" rx="3.5" ry="5.5" fill="#FFD34D"/>
-        <rect x="-3" y="-2.5" width="6" height="1.2" fill="#F7B500"/>
-        <rect x="-3" y="0" width="6" height="1.2" fill="#F7B500"/>
-        <rect x="-3" y="2.5" width="6" height="1.2" fill="#F7B500"/>
-        {/* Head */}
-        <circle cx="0" cy="-6.5" r="2.2" fill="#F7B500"/>
-        {/* Wings */}
-        <ellipse cx="-2.5" cy="-1.5" rx="3.5" ry="1.8" fill="white" opacity="0.7" transform="rotate(-20 -2.5 -1.5)"/>
-        <ellipse cx="2.5" cy="-1.5" rx="3.5" ry="1.8" fill="white" opacity="0.7" transform="rotate(20 2.5 -1.5)"/>
-        {/* Antennae */}
-        <line x1="-0.8" y1="-7.5" x2="-1.8" y2="-10" stroke="#F7B500" strokeWidth="0.7"/>
-        <line x1="0.8" y1="-7.5" x2="1.8" y2="-10" stroke="#F7B500" strokeWidth="0.7"/>
+      {/* Animated Robotic AI Drone Bee #2 */}
+      <g className="drone-bee-2" style={{ transformOrigin: '60px 60px' }}>
+        <g transform="translate(18, 50) rotate(-20)">
+          {/* Metallic body */}
+          <ellipse cx="0" cy="0" rx="3.5" ry="5.5" fill="url(#metallicBody)"/>
+          <rect x="-3" y="-2.5" width="6" height="1.2" fill="#F7B500"/>
+          <rect x="-3" y="0" width="6" height="1.2" fill="#F7B500"/>
+          <rect x="-3" y="2.5" width="6" height="1.2" fill="#F7B500"/>
+          {/* Robotic head */}
+          <circle cx="0" cy="-6.5" r="2.2" fill="url(#roboticHead)"/>
+          <circle cx="-0.4" cy="-7" r="0.6" fill="white" opacity="0.8"/>
+          {/* Wings */}
+          <ellipse cx="-2.5" cy="-1.5" rx="3.5" ry="1.8" fill="url(#wingGradient)" opacity="0.8"/>
+          <ellipse cx="2.5" cy="-1.5" rx="3.5" ry="1.8" fill="url(#wingGradient)" opacity="0.8"/>
+          {/* Digital antennae */}
+          <line x1="-0.8" y1="-7.5" x2="-1.8" y2="-10" stroke="#00D4B3" strokeWidth="1" opacity="0.8"/>
+          <line x1="0.8" y1="-7.5" x2="1.8" y2="-10" stroke="#00D4B3" strokeWidth="1" opacity="0.8"/>
+          <circle cx="-1.8" cy="-10" r="0.7" fill="#00D4B3" opacity="0.9"/>
+          <circle cx="1.8" cy="-10" r="0.7" fill="#00D4B3" opacity="0.9"/>
+        </g>
       </g>
       
-      {/* Drone Bee #3 - Bottom Right */}
-      <g transform="translate(100, 75) rotate(30)">
-        {/* Body */}
-        <ellipse cx="0" cy="0" rx="3.5" ry="5.5" fill="#FFD34D"/>
-        <rect x="-3" y="-2.5" width="6" height="1.2" fill="#F7B500"/>
-        <rect x="-3" y="0" width="6" height="1.2" fill="#F7B500"/>
-        <rect x="-3" y="2.5" width="6" height="1.2" fill="#F7B500"/>
-        {/* Head */}
-        <circle cx="0" cy="-6.5" r="2.2" fill="#F7B500"/>
-        {/* Wings */}
-        <ellipse cx="-2.5" cy="-1.5" rx="3.5" ry="1.8" fill="white" opacity="0.7" transform="rotate(-25 -2.5 -1.5)"/>
-        <ellipse cx="2.5" cy="-1.5" rx="3.5" ry="1.8" fill="white" opacity="0.7" transform="rotate(25 2.5 -1.5)"/>
-        {/* Antennae */}
-        <line x1="-0.8" y1="-7.5" x2="-1.8" y2="-10" stroke="#F7B500" strokeWidth="0.7"/>
-        <line x1="0.8" y1="-7.5" x2="1.8" y2="-10" stroke="#F7B500" strokeWidth="0.7"/>
+      {/* Animated Robotic AI Drone Bee #3 */}
+      <g className="drone-bee-3" style={{ transformOrigin: '60px 60px' }}>
+        <g transform="translate(100, 75) rotate(30)">
+          {/* Metallic body */}
+          <ellipse cx="0" cy="0" rx="3.5" ry="5.5" fill="url(#metallicBody)"/>
+          <rect x="-3" y="-2.5" width="6" height="1.2" fill="#F7B500"/>
+          <rect x="-3" y="0" width="6" height="1.2" fill="#F7B500"/>
+          <rect x="-3" y="2.5" width="6" height="1.2" fill="#F7B500"/>
+          {/* Robotic head */}
+          <circle cx="0" cy="-6.5" r="2.2" fill="url(#roboticHead)"/>
+          <circle cx="-0.4" cy="-7" r="0.6" fill="white" opacity="0.8"/>
+          {/* Wings */}
+          <ellipse cx="-2.5" cy="-1.5" rx="3.5" ry="1.8" fill="url(#wingGradient)" opacity="0.8"/>
+          <ellipse cx="2.5" cy="-1.5" rx="3.5" ry="1.8" fill="url(#wingGradient)" opacity="0.8"/>
+          {/* Digital antennae */}
+          <line x1="-0.8" y1="-7.5" x2="-1.8" y2="-10" stroke="#00D4B3" strokeWidth="1" opacity="0.8"/>
+          <line x1="0.8" y1="-7.5" x2="1.8" y2="-10" stroke="#00D4B3" strokeWidth="1" opacity="0.8"/>
+          <circle cx="-1.8" cy="-10" r="0.7" fill="#00D4B3" opacity="0.9"/>
+          <circle cx="1.8" cy="-10" r="0.7" fill="#00D4B3" opacity="0.9"/>
+        </g>
       </g>
       
       {/* Motion trails for bees */}
@@ -131,7 +153,65 @@ export function BeehiveIcon({ size = 56, className = "" }: { size?: number; clas
           <stop offset="0%" stopColor="#F7B500" stopOpacity="0.2"/>
           <stop offset="100%" stopColor="#F7B500" stopOpacity="0"/>
         </radialGradient>
+        
+        {/* Glossy honey drip gradient */}
+        <linearGradient id="honeyDripGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#D4940F"/>
+          <stop offset="50%" stopColor="#F7B500"/>
+          <stop offset="100%" stopColor="#FFD34D"/>
+        </linearGradient>
+        
+        {/* Glossy drop gradient */}
+        <radialGradient id="dropGradient" cx="30%" cy="30%">
+          <stop offset="0%" stopColor="#FFD34D"/>
+          <stop offset="50%" stopColor="#F7B500"/>
+          <stop offset="100%" stopColor="#D4940F"/>
+        </radialGradient>
+        
+        {/* Metallic body gradient for robotic bees */}
+        <linearGradient id="metallicBody" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FFD34D"/>
+          <stop offset="50%" stopColor="#F7B500"/>
+          <stop offset="100%" stopColor="#E6A615"/>
+        </linearGradient>
+        
+        {/* Robotic head gradient */}
+        <radialGradient id="roboticHead" cx="40%" cy="40%">
+          <stop offset="0%" stopColor="#FFD34D"/>
+          <stop offset="100%" stopColor="#F7B500"/>
+        </radialGradient>
+        
+        {/* Wing gradient with cyan tint for robotic look */}
+        <linearGradient id="wingGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="white" stopOpacity="0.9"/>
+          <stop offset="50%" stopColor="#E0FFFF" stopOpacity="0.7"/>
+          <stop offset="100%" stopColor="white" stopOpacity="0.9"/>
+        </linearGradient>
       </defs>
+      
+      {/* CSS Animation styles */}
+      <style>{`
+        @keyframes orbit1 {
+          0% { transform: rotate(0deg) translateX(35px) rotate(0deg); }
+          100% { transform: rotate(360deg) translateX(35px) rotate(-360deg); }
+        }
+        @keyframes orbit2 {
+          0% { transform: rotate(120deg) translateX(40px) rotate(-120deg); }
+          100% { transform: rotate(480deg) translateX(40px) rotate(-480deg); }
+        }
+        @keyframes orbit3 {
+          0% { transform: rotate(240deg) translateX(38px) rotate(-240deg); }
+          100% { transform: rotate(600deg) translateX(38px) rotate(-600deg); }
+        }
+        @keyframes wingFlap {
+          0%, 100% { transform: scaleX(1); }
+          50% { transform: scaleX(1.3); }
+        }
+        .drone-bee-1 { animation: orbit1 8s linear infinite; }
+        .drone-bee-2 { animation: orbit2 10s linear infinite; }
+        .drone-bee-3 { animation: orbit3 9s linear infinite; }
+        .wing-left, .wing-right { animation: wingFlap 0.2s ease-in-out infinite; }
+      `}</style>
     </svg>
   );
 }
@@ -168,25 +248,55 @@ export function BeehiveWordLogo({ size = "default", className = "" }: { size?: "
         BeehiveAI
       </text>
       
-      {/* Honey drips from letters */}
-      <g opacity="0.9">
-        {/* Drip from 'B' */}
-        <path d="M18 35 Q18 40, 18 42 Q18 45, 16 45 Q14 45, 14 42 Q14 40, 14 35" fill="#F7B500"/>
+      {/* Realistic glossy honey drips from letters */}
+      <g>
+        {/* Drip from 'B' - glossy */}
+        <g>
+          <path d="M18 35 Q18 39, 18 41 Q18 43, 16.5 43 Q15 43, 15 41 Q15 39, 15 35" 
+            fill="url(#honeyDripGradient)" stroke="#D4940F" strokeWidth="0.3"/>
+          <ellipse cx="16.5" cy="43" rx="2" ry="2.5" fill="url(#dropGradient)"/>
+          <ellipse cx="16" cy="42" rx="0.8" ry="1" fill="white" opacity="0.7"/>
+        </g>
         
         {/* Drip from first 'e' */}
-        <path d="M40 35 Q40 38, 40 40 Q40 42, 38 42 Q36 42, 36 40 Q36 38, 36 35" fill="#FFD34D"/>
+        <g>
+          <path d="M40 35 Q40 37, 40 39 Q40 40, 38.5 40 Q37 40, 37 39 Q37 37, 37 35" 
+            fill="url(#honeyDripGradient)" stroke="#D4940F" strokeWidth="0.3"/>
+          <ellipse cx="38.5" cy="40" rx="1.8" ry="2.2" fill="url(#dropGradient)"/>
+          <ellipse cx="38" cy="39" rx="0.7" ry="0.9" fill="white" opacity="0.7"/>
+        </g>
         
         {/* Drip from 'h' */}
-        <path d="M70 35 Q70 40, 70 43 Q70 46, 68 46 Q66 46, 66 43 Q66 40, 66 35" fill="#F7B500"/>
+        <g>
+          <path d="M70 35 Q70 39, 70 42 Q70 44, 68.5 44 Q67 44, 67 42 Q67 39, 67 35" 
+            fill="url(#honeyDripGradient)" stroke="#D4940F" strokeWidth="0.3"/>
+          <ellipse cx="68.5" cy="44" rx="2" ry="2.5" fill="url(#dropGradient)"/>
+          <ellipse cx="68" cy="43" rx="0.8" ry="1" fill="white" opacity="0.7"/>
+        </g>
         
         {/* Drip from 'v' */}
-        <path d="M105 35 Q105 37, 105 39 Q105 41, 103 41 Q101 41, 101 39 Q101 37, 101 35" fill="#FFD34D"/>
+        <g>
+          <path d="M105 35 Q105 36, 105 37.5 Q105 39, 103.5 39 Q102 39, 102 37.5 Q102 36, 102 35" 
+            fill="url(#honeyDripGradient)" stroke="#D4940F" strokeWidth="0.3"/>
+          <ellipse cx="103.5" cy="39" rx="1.7" ry="2" fill="url(#dropGradient)"/>
+          <ellipse cx="103" cy="38" rx="0.6" ry="0.8" fill="white" opacity="0.7"/>
+        </g>
         
         {/* Drip from 'A' */}
-        <path d="M150 35 Q150 41, 150 44 Q150 47, 148 47 Q146 47, 146 44 Q146 41, 146 35" fill="#F7B500"/>
+        <g>
+          <path d="M150 35 Q150 40, 150 42 Q150 45, 148.5 45 Q147 45, 147 42 Q147 40, 147 35" 
+            fill="url(#honeyDripGradient)" stroke="#D4940F" strokeWidth="0.3"/>
+          <ellipse cx="148.5" cy="45" rx="2" ry="2.8" fill="url(#dropGradient)"/>
+          <ellipse cx="148" cy="43.5" rx="0.8" ry="1.1" fill="white" opacity="0.7"/>
+        </g>
         
         {/* Drip from 'I' */}
-        <path d="M200 35 Q200 38, 200 40 Q200 43, 198 43 Q196 43, 196 40 Q196 38, 196 35" fill="#FFD34D"/>
+        <g>
+          <path d="M200 35 Q200 37, 200 39 Q200 41, 198.5 41 Q197 41, 197 39 Q197 37, 197 35" 
+            fill="url(#honeyDripGradient)" stroke="#D4940F" strokeWidth="0.3"/>
+          <ellipse cx="198.5" cy="41" rx="1.8" ry="2.3" fill="url(#dropGradient)"/>
+          <ellipse cx="198" cy="40" rx="0.7" ry="0.9" fill="white" opacity="0.7"/>
+        </g>
       </g>
       
       {/* Subtle glow effect */}
