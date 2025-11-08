@@ -1,0 +1,224 @@
+Absolutely! Here’s a single, clean bundle for the new HiveAI website layout—now with:
+
+dark theme toggle,
+
+static Sign in / Sign up pages,
+
+a newsletter/promo modal,
+
+extra SVG brand illustrations for popups & empty states,
+
+and a concise site map.
+
+
+You can paste these straight into Replit and go.
+
+
+---
+
+🌐 Site Map (one list)
+
+/index.html – Landing (hero, features, templates, pricing, FAQ) + dark-mode toggle + newsletter modal
+
+/404.html – Friendly 404 with hive art
+
+/sign-in.html – Sign-in screen (static)
+
+/sign-up.html – Sign-up screen (static)
+
+/styles.css – Theme (light/dark), layout, components
+
+/svg/ assets
+
+logo-mark.svg (hive icon)
+
+wordmark.svg (HiveAI logo type)
+
+empty-runs.svg, empty-logs.svg, empty-domains.svg, popup-bee.svg
+
+
+
+
+---
+
+styles.css (updated with dark theme & small UX tweaks)
+
+:root{
+  --honey:#F7B500; --nectar:#FFD34D; --mint:#00D4B3;
+  --charcoal:#101113; --graphite:#1B1D21; --cream:#FFF8E6; --ink:#0A0B0D;
+  --muted:#6E727A; --radius:14px;
+  --ring:0 0 0 3px rgba(0,212,179,.25);
+  --shadow:0 10px 30px rgba(16,17,19,.08);
+  --shadow-2:0 16px 40px rgba(16,17,19,.12);
+  --bg: linear-gradient(180deg,#FFF 0%, #FFF9EC 100%);
+  --panel:#fff; --border:#eee; --text:#1B1D21; --sub:#6E727A;
+}
+
+html[data-theme="dark"]{
+  --bg: linear-gradient(180deg,#0B0C0E 0%, #0B0C0E 100%);
+  --panel:#111317; --border:#20242b; --text:#EEF2F6; --sub:#9AA2AE;
+  --shadow: 0 10px 30px rgba(0,0,0,.35);
+  --shadow-2: 0 16px 40px rgba(0,0,0,.45);
+}
+
+*{box-sizing:border-box} html,body{margin:0}
+body{font-family:-apple-system,BlinkMacSystemFont,Inter,Segoe UI,Roboto,system-ui,Arial,sans-serif;
+  color:var(--text); background:var(--bg);}
+
+a{color:inherit;text-decoration:none} code,pre{font-family:ui-monospace,Menlo,Consolas,monospace}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:50;display:flex;gap:24px;align-items:center;justify-content:space-between;
+  padding:14px 24px;border-bottom:1px solid var(--border);background:var(--panel)}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{height:40px}
+.nav-links{display:flex;gap:12px;align-items:center}
+.nav-links a{padding:8px 10px;border-radius:10px}
+.nav-links a:hover{background:rgba(0,0,0,.04)}
+.theme-toggle{border:1px solid var(--border);background:transparent;border-radius:10px;padding:8px 10px;cursor:pointer}
+
+/* HERO */
+.hero{display:grid;grid-template-columns:1.2fr .9fr;gap:32px;padding:64px 24px;align-items:center}
+.hero-content h1{font-size:48px;line-height:1.05;margin:0}
+.highlight{background:linear-gradient(90deg,var(--nectar),var(--honey));padding:0 .25em;border-radius:10px}
+.subtitle{margin:.75rem 0 1.25rem;color:var(--sub);font-size:18px}
+.cta{display:flex;gap:12px;align-items:center}
+.badges{display:flex;gap:14px;margin-top:14px;padding:0;list-style:none;color:var(--sub);font-size:14px}
+.badges li{background:var(--panel);border:1px solid var(--border);border-radius:999px;padding:6px 12px}
+
+.hero-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+.chip{display:inline-flex;gap:6px;align-items:center;background:#FFF3C2;border:1px solid #FBE38D;border-radius:999px;padding:6px 10px;font-size:12px}
+html[data-theme="dark"] .chip{background:#2a2011;border-color:#3a2c13;color:#FFD34D}
+.terminal{background:#0b0d10;color:#d9fff6;border-radius:12px;padding:14px;margin:12px 0;box-shadow:inset 0 0 0 1px #1b1f24;max-height:200px;overflow:auto}
+.mini-stats{display:flex;gap:14px;color:#cfece7;font-size:12px}
+
+/* SECTIONS */
+.section{padding:64px 24px}
+.section h2{font-size:32px;margin:0 0 18px}
+.alt{background:var(--cream);border-top:1px solid #f1ead3;border-bottom:1px solid #f1ead3}
+html[data-theme="dark"] .alt{background:#14161B;border-color:#20242b}
+.grid{display:grid;gap:18px}
+.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.card.hover:hover{box-shadow:var(--shadow-2);transform:translateY(-2px);transition:all .15s ease}
+
+/* PRICING */
+.pricing .price{padding:22px;border-radius:16px;background:var(--panel);border:1px solid var(--border);box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}
+.pricing .price .amount{font-size:42px;font-weight:800}
+.pricing .featured{outline:2px solid var(--mint)}
+
+/* FAQ */
+.faq details{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.faq details+details{margin-top:10px}
+.faq summary{cursor:pointer}
+
+/* FOOTER */
+.footer{padding:40px 24px;background:var(--panel);border-top:1px solid var(--border);margin-top:40px}
+.f-grid{display:grid;gap:24px;grid-template-columns:2fr 1fr 1fr;align-items:start}
+.footer-brand{display:flex;align-items:center;gap:10px}
+.muted{color:var(--sub);margin-top:6px}
+.footer nav{display:grid;gap:8px}
+.footer nav a{color:var(--sub)}
+.footer nav a:hover{text-decoration:underline}
+.legal{margin-top:22px;color:var(--sub);font-size:12px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;border-radius:12px;padding:10px 14px;font-weight:600;border:1px solid transparent;cursor:pointer}
+.btn.primary{background:var(--charcoal);color:#fff}
+.btn.dark{background:var(--graphite);color:#fff}
+.btn.ghost{border:1px solid var(--border);background:transparent}
+.btn.outline{border:1px solid var(--border);background:transparent}
+.btn:focus-visible{outline:none;box-shadow:var(--ring)}
+.btn:hover{filter:brightness(1.04)}
+
+/* FORMS */
+.form{display:grid;gap:12px}
+.input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--panel);color:var(--text)}
+.label{font-size:12px;color:var(--sub)}
+
+/* MODAL */
+.modal{border:0;border-radius:16px;padding:0;background:transparent}
+.modal::backdrop{background:rgba(16,17,19,.45)}
+.modal-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;min-width:min(720px,90vw);box-shadow:var(--shadow-2);padding:18px}
+.modal-close{float:right;border:0;background:transparent;border-radius:10px;padding:8px;cursor:pointer;color:var(--sub)}
+.video{width:100%;height:auto;border-radius:12px}
+
+/* RESPONSIVE */
+@media (max-width: 960px){
+  .hero{grid-template-columns:1fr}
+  .grid.three{grid-template-columns:1fr}
+}
+
+
+---
+
+index.html (updated: dark toggle + newsletter modal + brand SVGs)
+
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HiveAI — Swarm-powered building</title>
+  <meta name="description" content="HiveAI is your swarm of coding agents. Plan → build → verify → publish." />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="svg/logo-mark.svg" />
+  <script>
+    // Persisted theme
+    const saved = localStorage.getItem('theme');
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
+  </script>
+</head>
+<body>
+  <header class="nav">
+    <a class="brand" href="/">
+      <img class="logo" src="svg/wordmark.svg" alt="HiveAI" />
+    </a>
+    <nav class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#templates">Templates</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <button class="theme-toggle" id="themeBtn" title="Toggle theme">🌓</button>
+      <a class="btn ghost" href="sign-in.html">Sign in</a>
+      <a class="btn primary" href="sign-up.html">Start free</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Build with a <span class="highlight">swarm</span> — meet <strong>HiveAI</strong></h1>
+      <p class="subtitle">Your beehive of coding agents that plan, build, verify, and publish. Turn ideas into production in minutes.</p>
+      <div class="cta">
+        <a class="btn primary" href="sign-up.html">Start free</a>
+        <button class="btn dark" data-open-modal="#demoModal">Watch demo</button>
+        <button class="btn outline" data-open-modal="#newsletterModal">Get updates</button>
+      </div>
+      <ul class="badges">
+        <li>Live progress feed</li>
+        <li>One-click publish</li>
+        <li>Custom domains</li>
+      </ul>
+    </div>
+    <div class="hero-card">
+      <div class="chip">Phase: <b>planning</b></div>
+      <pre class="terminal">
+> plan_tasks "Create API with /health"
+✓ task.created: write app
+✓ tool.succeeded: write_file app.ts
+… verify.requested: assert_file_contains
+✓ verify.result: passed
+      </pre>
+      <div class="mini-stats">
+        <span>Tokens: 2.1k</span>
+        <span>Runtime: 18s</span>
+        <span>Status: <b>complete</b></span>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="section">
+    <h2>Why HiveAI</h2>
+    <div class="grid three">
+      <article class="card">
+        <h3>Swarm Orchestration</h3>
