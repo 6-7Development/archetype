@@ -4,9 +4,9 @@
  * Based on Google's recommendation: Keep tool count between 10-20 for optimal performance
  * 
  * Architecture:
- * - LomuAI (Gemini Flash): 13 core development tools
+ * - LomuAI (Gemini Flash): 18 core development tools
  * - Sub-Agents (Gemini Flash): 12 specialized execution tools  
- * - I AM Architect (Claude Sonnet 4): 12+ governance/analysis tools
+ * - I AM Architect (Claude Sonnet 4): 23+ governance/analysis tools
  */
 
 import { LOMU_TOOLS } from './index';

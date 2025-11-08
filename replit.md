@@ -23,7 +23,7 @@ Lomu is an AI-powered platform for rapid web development, featuring LomuAI, an a
 **Why Hybrid?**
 - ✅ **40x cost reduction** for regular work (Gemini Flash: $0.075/$0.30 vs Claude: $3/$15)
 - ✅ **Fixed function calling** - Removed `responseMimeType` constraint, proper `functionResponse` format
-- ✅ **Optimized tool count** - 13 tools for Gemini (Google's 10-20 sweet spot)
+- ✅ **Optimized tool count** - 18 tools for Gemini (Google's 10-20 sweet spot)
 - ✅ **Strategic distribution** - Simple tasks on Gemini, complex reasoning on Claude
 - ✅ **System instruction added** - "Only use declared tools" prevents function hallucination
 
@@ -73,14 +73,14 @@ A profitable credit system is implemented with 1 credit = 1,000 tokens = $0.05, 
 
 **Key Features:**
 - **Tool Distribution Architecture** (Google Gemini Optimization):
-  - **LomuAI (18 tools)**: file operations (read/write/list), task management (create/read/update), code intelligence (search_codebase/grep), execution (bash), diagnostics (perform_diagnosis/read_logs), testing (run_test), web search, integrations, sub-agent delegation
-  - **Sub-Agents (12 tools)**: file operations, smart code intelligence, bash, testing, secrets, integrations, deployment
+  - **LomuAI (18 tools)**: File Operations (read/write/ls), Smart Code Intelligence (smart_read_file/get_auto_context/extract_function), Task Management (create/read/update tasks), Web & Research (web_search/web_fetch), Testing & Diagnosis (browser_test/perform_diagnosis), Vision Analysis (vision_analyze), Escalation (architect_consult), System Operations (bash/refresh_all_logs/glob)
+  - **Sub-Agents (12 tools)**: file operations (read/write), smart code intelligence, execution (bash/browser_test), secrets, integrations, deployment
   - **I AM Architect (23+ tools)**: platform file operations, architect services, knowledge management, logs, database, design assets, GitHub, environment variables
   - **Validation**: Startup checks ensure Gemini agents stay within Google's 10-20 tool recommendation
 - **GitHub Integration**: Full version control with 6 tools, supporting branching, pull requests, project export, and auto-deployment.
 - **Environment Variables Management**: Project-level secrets with 4 tools, database storage, validation, and security masking.
 - **Code Intelligence System**: AST-based code understanding via CodeIndexer, FileRelevanceDetector, and SmartChunker.
-- **Platform Healing System**: Owner-only two-tier incident resolution for self-correction of the platform, using identical 13 core tools as regular LomuAI.
+- **Platform Healing System**: Owner-only two-tier incident resolution for self-correction of the platform, using identical 18 core tools as regular LomuAI.
 - **Replit Agent Parity**: Matches Replit Agent's complex task handling with increased token limits, iterations, self-correction, and concurrency.
 - **Credit-Based Billing System**: Production-ready monetization with Stripe integration, usage tracking, and atomic operations.
 - **Monetization Infrastructure**: Lead capture, subscription system, webhooks, and a template marketplace.
@@ -124,15 +124,17 @@ A profitable credit system is implemented with 1 credit = 1,000 tokens = $0.05, 
 4. **Match Designs**: Compare mockup vs implementation, get specific list of differences to fix
 5. **Accessibility Audits**: Analyze for WCAG compliance, contrast ratios, text sizes, keyboard navigation
 
-**Tool Distribution (18 total):**
-- File Operations (3): read, write, ls
-- Smart Code Intelligence (3): smart_read_file, get_auto_context, extract_function
-- Task Management (3): create_task_list, update_task, read_task_list
-- Web & Research (2): web_search, web_fetch
-- Testing & Diagnosis (2): browser_test, perform_diagnosis
-- **Vision Analysis (1)**: vision_analyze ← NEW!
-- Escalation (1): architect_consult
-- System Operations (3): bash, refresh_all_logs, glob
+**Complete Tool Distribution (18 total):**
+1. **File Operations (3)**: read, write, ls
+2. **Smart Code Intelligence (3)**: smart_read_file, get_auto_context, extract_function
+3. **Task Management (3)**: create_task_list, update_task, read_task_list
+4. **Web & Research (2)**: web_search, web_fetch
+5. **Testing & Diagnosis (2)**: browser_test, perform_diagnosis
+6. **Vision Analysis (1)**: vision_analyze ← NEW!
+7. **Escalation (1)**: architect_consult
+8. **System Operations (3)**: bash, refresh_all_logs, glob
+
+**Note:** These are LomuAI's ACTUAL tools. Sub-agents and I AM Architect have different tool sets (12 and 23+ respectively).
 
 **Systematic Vision Workflow:**
 1. **CAPTURE**: User uploads image OR LomuAI takes screenshot with browser_test
