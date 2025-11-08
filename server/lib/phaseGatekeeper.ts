@@ -6,9 +6,9 @@
  * 
  * ENFORCEMENT RULES:
  * - Phase 1 (ASSESS): Must use tools, no excessive commentary
- * - Phase 2 (PLAN): MANDATORY createTaskList - no exceptions
+ * - Phase 2 (PLAN): OPTIONAL createTaskList - only for complex work (5+ steps)
  * - Phase 3 (EXECUTE): Max 5 words before tools, no rambling
- * - Phase 4 (TEST): MANDATORY testing with re-test loops
+ * - Phase 4 (TEST): OPTIONAL testing (use for UI/UX features)
  * - Phase 5 (VERIFY): Must run verification checks
  * - Phase 6 (CONFIRM): Max 15 words summary
  * - Phase 7 (COMMIT): Conditional on auto-commit mode
@@ -63,18 +63,15 @@ export class PhaseGatekeeper {
       }
     }
     
-    // PHASE 2: PLAN - MANDATORY create_task_list
+    // PHASE 2: PLAN - OPTIONAL create_task_list (only for complex work)
     if (expectedPhase === 'PLAN') {
-      if (!analysis.hasTaskList) {
-        violations.push('⛔ PHASE 2 VIOLATION: Missing create_task_list - ALWAYS MANDATORY (no exceptions)');
-        qualityScore -= 50;
-        suggestions.push('Call create_task_list() with 3-7 specific, actionable tasks');
-      }
+      // Task lists are now OPTIONAL - no longer enforced
+      // LomuAI should use judgment: create for complex work (5+ steps), skip for simple fixes
       
       if (analysis.wordCountBeforeTools > 10) {
         violations.push(`⛔ PHASE 2 VIOLATION: ${analysis.wordCountBeforeTools} words (max 5 allowed)`);
         qualityScore -= 15;
-        suggestions.push('Say "📋 Planning..." then create task list');
+        suggestions.push('Say "📋 Planning..." then proceed to execution (task list optional)');
       }
     }
     
@@ -93,12 +90,13 @@ export class PhaseGatekeeper {
       }
     }
     
-    // PHASE 4: TEST - MANDATORY testing
+    // PHASE 4: TEST - OPTIONAL testing (recommended for UI/UX features)
     if (expectedPhase === 'TEST') {
+      // Testing is now OPTIONAL - encouraged for UI/UX features
+      // LomuAI should use judgment: test for UI changes, skip for backend-only fixes
       if (!analysis.hasTestExecution) {
-        violations.push('⛔ PHASE 4 VIOLATION: Testing skipped - ALWAYS MANDATORY');
-        qualityScore -= 45;
-        suggestions.push('Call run_test() to verify changes work correctly');
+        // Don't penalize for skipping tests - it's optional
+        suggestions.push('💡 Consider calling run_test() to verify UI/UX changes work correctly');
       }
     }
     
@@ -230,10 +228,10 @@ export class PhaseGatekeeper {
       return true;
     }
     
-    // Escalate if critical violations (missing task list or test)
+    // Escalate if critical violations (NOTE: task lists and tests are now optional)
     const hasCriticalViolation = validation.violations.some(v =>
-      v.includes('PHASE 2 VIOLATION: Missing create_task_list') ||
-      v.includes('PHASE 4 VIOLATION: Testing skipped')
+      v.includes('PHASE 1 VIOLATION: No tools used') ||
+      v.includes('PHASE 3 VIOLATION: No code changes made')
     );
     
     return hasCriticalViolation;

@@ -241,7 +241,7 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
     const allTools = [
       {
         name: 'createTaskList',
-        description: '**MANDATORY FIRST STEP** - Create a task list to show users live progress. ALWAYS call this before starting work.',
+        description: '**OPTIONAL** - Create a task list for complex work (5+ steps). Skip for quick fixes and simple requests.',
         input_schema: {
           type: 'object' as const,
           properties: {

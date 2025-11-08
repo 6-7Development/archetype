@@ -54,8 +54,8 @@ export class WorkflowValidator {
       }],
       ['PLAN', {
         maxTokens: 1500,
-        minToolCalls: 1,
-        mandatoryTools: ['write_task_list'],
+        minToolCalls: 0, // Task lists optional - can skip directly to EXECUTE
+        mandatoryTools: [], // No mandatory tools - just planning phase
         allowedTransitions: ['EXECUTE'],
       }],
       ['EXECUTE', {
@@ -66,8 +66,8 @@ export class WorkflowValidator {
       }],
       ['TEST', {
         maxTokens: 2000,
-        minToolCalls: 1,
-        mandatoryTools: ['run_test', 'bash'],
+        minToolCalls: 0, // Testing optional - use judgment
+        mandatoryTools: [], // No mandatory tools - testing is optional
         allowedTransitions: ['VERIFY', 'EXECUTE'], // Can go back to EXECUTE if tests fail
       }],
       ['VERIFY', {

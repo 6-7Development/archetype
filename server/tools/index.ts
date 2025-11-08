@@ -370,7 +370,7 @@ export const LOMU_TOOLS = [
   },
   {
     name: 'update_task',
-    description: 'Update task status and progress. Mark tasks as in_progress, completed_pending_review, or completed. ALWAYS mark tasks completed immediately after finishing work.',
+    description: 'Update task status and progress (IF you created a task list). Mark tasks as in_progress, completed_pending_review, or completed.',
     input_schema: {
       type: 'object',
       properties: {

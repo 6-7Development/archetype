@@ -206,7 +206,7 @@ EXECUTE NOW - Create tasks, read files, get approval, write files, deploy. 3 tur
     const tools = [
       {
         name: 'createTaskList',
-        description: '**MANDATORY FIRST STEP** - Create a task list to show users live progress. ALWAYS call this before starting work.',
+        description: '**OPTIONAL** - Create a task list for complex work (5+ steps). Skip for quick fixes and simple requests.',
         input_schema: {
           type: 'object' as const,
           properties: {
