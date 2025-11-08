@@ -69,6 +69,8 @@ import {
   type InsertTerminalHistory,
   type ProjectMigration,
   type InsertProjectMigration,
+  type ScratchpadEntry,
+  type InsertScratchpadEntry,
   users,
   files,
   chatMessages,
@@ -451,6 +453,11 @@ export interface IStorage {
   createProjectMigration(migration: InsertProjectMigration & { userId: string }): Promise<ProjectMigration>;
   updateMigrationStatus(id: string, status: string, appliedAt?: Date): Promise<ProjectMigration>;
   getAppliedMigrations(projectId: string, userId: string): Promise<ProjectMigration[]>;
+  
+  // Scratchpad operations
+  createScratchpadEntry(entry: InsertScratchpadEntry): Promise<ScratchpadEntry>;
+  getScratchpadEntries(sessionId: string): Promise<ScratchpadEntry[]>;
+  clearScratchpadEntries(sessionId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {

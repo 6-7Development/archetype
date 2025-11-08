@@ -2779,3 +2779,24 @@ export const CREDIT_CONSTANTS = {
   I_AM_BUSINESS_PRICE: 1.00, // $1.00 per consultation (Business tier - team discount)
   I_AM_ENTERPRISE_PRICE: 0, // Free for Enterprise (unlimited included)
 };
+
+// Scratchpad Entries - Shared notepad for LomuAI, sub-agents, and I AM Architect thoughts
+export const scratchpadEntries = pgTable('scratchpad_entries', {
+  id: serial('id').primaryKey(),
+  sessionId: varchar('session_id', { length: 255 }).notNull(), // Ties to chat session
+  author: varchar('author', { length: 50 }).notNull(), // 'lomu_ai' | 'subagent' | 'architect' | 'user'
+  role: varchar('role', { length: 50 }).notNull(), // 'thinking' | 'action' | 'note' | 'result'
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => [
+  index('idx_scratchpad_session').on(table.sessionId),
+  index('idx_scratchpad_created').on(table.createdAt),
+]);
+
+export const insertScratchpadEntrySchema = createInsertSchema(scratchpadEntries).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertScratchpadEntry = z.infer<typeof insertScratchpadEntrySchema>;
+export type ScratchpadEntry = typeof scratchpadEntries.$inferSelect;
