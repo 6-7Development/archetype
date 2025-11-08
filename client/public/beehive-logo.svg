@@ -1,39 +1,111 @@
-<svg width="512" height="512" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Outer honeycomb hexagon -->
+<svg width="512" height="512" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer glow effect -->
+  <circle cx="60" cy="60" r="55" fill="url(#outerGlow)" opacity="0.3"/>
+  
+  <!-- Main honeycomb structure - large hexagon -->
   <path 
-    d="M50 5 L85 27.5 L85 72.5 L50 95 L15 72.5 L15 27.5 Z" 
+    d="M60 10 L95 30 L95 70 L60 90 L25 70 L25 30 Z" 
     fill="url(#honeyGradient)"
     stroke="#F7B500"
-    stroke-width="2"
+    stroke-width="3"
+    stroke-linejoin="round"
   />
   
   <!-- Inner honeycomb cells -->
-  <g opacity="0.6">
-    <path d="M50 35 L60 41 L60 53 L50 59 L40 53 L40 41 Z" fill="#FFD34D" stroke="#F7B500" stroke-width="1.5"/>
-    <path d="M35 23 L45 29 L45 41 L35 47 L25 41 L25 29 Z" fill="#FFD34D" stroke="#F7B500" stroke-width="1"/>
-    <path d="M65 23 L75 29 L75 41 L65 47 L55 41 L55 29 Z" fill="#FFD34D" stroke="#F7B500" stroke-width="1"/>
-    <path d="M35 53 L45 59 L45 71 L35 77 L25 71 L25 59 Z" fill="#FFD34D" stroke="#F7B500" stroke-width="1"/>
-    <path d="M65 53 L75 59 L75 71 L65 77 L55 71 L55 59 Z" fill="#FFD34D" stroke="#F7B500" stroke-width="1"/>
+  <g opacity="0.8">
+    <!-- Center cell -->
+    <path d="M60 40 L70 46 L70 58 L60 64 L50 58 L50 46 Z" 
+      fill="url(#cellGradient)" 
+      stroke="#F7B500" 
+      stroke-width="2"/>
+    
+    <!-- Top row -->
+    <path d="M42 28 L52 34 L52 46 L42 52 L32 46 L32 34 Z" 
+      fill="#FFD34D" stroke="#F7B500" stroke-width="1.5" opacity="0.7"/>
+    <path d="M60 22 L70 28 L70 40 L60 46 L50 40 L50 28 Z" 
+      fill="#FFD34D" stroke="#F7B500" stroke-width="1.5" opacity="0.7"/>
+    <path d="M78 28 L88 34 L88 46 L78 52 L68 46 L68 34 Z" 
+      fill="#FFD34D" stroke="#F7B500" stroke-width="1.5" opacity="0.7"/>
+    
+    <!-- Middle row -->
+    <path d="M42 52 L52 58 L52 70 L42 76 L32 70 L32 58 Z" 
+      fill="#FFD34D" stroke="#F7B500" stroke-width="1.5" opacity="0.7"/>
+    <path d="M78 52 L88 58 L88 70 L78 76 L68 70 L68 58 Z" 
+      fill="#FFD34D" stroke="#F7B500" stroke-width="1.5" opacity="0.7"/>
+    
+    <!-- Bottom row -->
+    <path d="M60 64 L70 70 L70 82 L60 88 L50 82 L50 70 Z" 
+      fill="#FFD34D" stroke="#F7B500" stroke-width="1.5" opacity="0.7"/>
   </g>
   
-  <!-- Honey drop accent -->
-  <ellipse cx="50" cy="75" rx="4" ry="6" fill="#F7B500" opacity="0.8"/>
-  
-  <!-- Bee body -->
-  <g transform="translate(62, 30)">
-    <ellipse cx="0" cy="0" rx="3.5" ry="5" fill="#FFD34D"/>
-    <rect x="-3" y="-2" width="6" height="1" fill="#F7B500"/>
-    <rect x="-3" y="1" width="6" height="1" fill="#F7B500"/>
-    <!-- Wings -->
-    <ellipse cx="-2" cy="-1" rx="2.5" ry="1.5" fill="white" opacity="0.6"/>
-    <ellipse cx="2" cy="-1" rx="2.5" ry="1.5" fill="white" opacity="0.6"/>
+  <!-- Honey drips -->
+  <g opacity="0.9">
+    <path d="M60 82 Q60 87, 60 90 Q60 93, 58 93 Q56 93, 56 90 Q56 87, 56 82" fill="#F7B500"/>
+    <ellipse cx="58" cy="93" rx="2.5" ry="3" fill="#F7B500" opacity="0.8"/>
   </g>
   
-  <!-- Gradient definition -->
+  <!-- Drone Bee #1 - Top Right -->
+  <g transform="translate(85, 25)">
+    <ellipse cx="0" cy="0" rx="4" ry="6" fill="#FFD34D"/>
+    <rect x="-3.5" y="-3" width="7" height="1.5" fill="#F7B500"/>
+    <rect x="-3.5" y="0" width="7" height="1.5" fill="#F7B500"/>
+    <rect x="-3.5" y="3" width="7" height="1.5" fill="#F7B500"/>
+    <circle cx="0" cy="-7" r="2.5" fill="#F7B500"/>
+    <ellipse cx="-3" cy="-2" rx="4" ry="2" fill="white" opacity="0.7" transform="rotate(-15 -3 -2)"/>
+    <ellipse cx="3" cy="-2" rx="4" ry="2" fill="white" opacity="0.7" transform="rotate(15 3 -2)"/>
+    <line x1="-1" y1="-8" x2="-2" y2="-11" stroke="#F7B500" stroke-width="0.8"/>
+    <line x1="1" y1="-8" x2="2" y2="-11" stroke="#F7B500" stroke-width="0.8"/>
+  </g>
+  
+  <!-- Drone Bee #2 - Left Side -->
+  <g transform="translate(18, 50) rotate(-20)">
+    <ellipse cx="0" cy="0" rx="3.5" ry="5.5" fill="#FFD34D"/>
+    <rect x="-3" y="-2.5" width="6" height="1.2" fill="#F7B500"/>
+    <rect x="-3" y="0" width="6" height="1.2" fill="#F7B500"/>
+    <rect x="-3" y="2.5" width="6" height="1.2" fill="#F7B500"/>
+    <circle cx="0" cy="-6.5" r="2.2" fill="#F7B500"/>
+    <ellipse cx="-2.5" cy="-1.5" rx="3.5" ry="1.8" fill="white" opacity="0.7" transform="rotate(-20 -2.5 -1.5)"/>
+    <ellipse cx="2.5" cy="-1.5" rx="3.5" ry="1.8" fill="white" opacity="0.7" transform="rotate(20 2.5 -1.5)"/>
+    <line x1="-0.8" y1="-7.5" x2="-1.8" y2="-10" stroke="#F7B500" stroke-width="0.7"/>
+    <line x1="0.8" y1="-7.5" x2="1.8" y2="-10" stroke="#F7B500" stroke-width="0.7"/>
+  </g>
+  
+  <!-- Drone Bee #3 - Bottom Right -->
+  <g transform="translate(100, 75) rotate(30)">
+    <ellipse cx="0" cy="0" rx="3.5" ry="5.5" fill="#FFD34D"/>
+    <rect x="-3" y="-2.5" width="6" height="1.2" fill="#F7B500"/>
+    <rect x="-3" y="0" width="6" height="1.2" fill="#F7B500"/>
+    <rect x="-3" y="2.5" width="6" height="1.2" fill="#F7B500"/>
+    <circle cx="0" cy="-6.5" r="2.2" fill="#F7B500"/>
+    <ellipse cx="-2.5" cy="-1.5" rx="3.5" ry="1.8" fill="white" opacity="0.7" transform="rotate(-25 -2.5 -1.5)"/>
+    <ellipse cx="2.5" cy="-1.5" rx="3.5" ry="1.8" fill="white" opacity="0.7" transform="rotate(25 2.5 -1.5)"/>
+    <line x1="-0.8" y1="-7.5" x2="-1.8" y2="-10" stroke="#F7B500" stroke-width="0.7"/>
+    <line x1="0.8" y1="-7.5" x2="1.8" y2="-10" stroke="#F7B500" stroke-width="0.7"/>
+  </g>
+  
+  <!-- Motion trails -->
+  <g opacity="0.3" stroke="#FFD34D" stroke-width="1" fill="none" stroke-dasharray="2,2">
+    <path d="M 75 20 Q 80 22, 85 25"/>
+    <path d="M 12 45 Q 15 47, 18 50"/>
+    <path d="M 95 70 Q 97 72, 100 75"/>
+  </g>
+  
+  <!-- Gradients -->
   <defs>
     <linearGradient id="honeyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#FFD34D" stop-opacity="0.2"/>
-      <stop offset="100%" stop-color="#F7B500" stop-opacity="0.3"/>
+      <stop offset="0%" stop-color="#FFD34D" stop-opacity="0.4"/>
+      <stop offset="50%" stop-color="#F7B500" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#F7B500" stop-opacity="0.6"/>
     </linearGradient>
+    
+    <radialGradient id="cellGradient" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="#FFD34D" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#F7B500" stop-opacity="0.7"/>
+    </radialGradient>
+    
+    <radialGradient id="outerGlow" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="#F7B500" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#F7B500" stop-opacity="0"/>
+    </radialGradient>
   </defs>
 </svg>
