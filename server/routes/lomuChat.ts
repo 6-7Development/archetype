@@ -970,7 +970,8 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       autonomyLevel: user.autonomyLevel || 'standard',
     });
 
-    // ⚡ COMPRESSED TOOL DESCRIPTIONS: 1-line summaries (saves ~2K tokens)
+    // ⚡ GOOGLE GEMINI OPTIMIZED: 13 CORE TOOLS (Google recommends 10-20 max)
+    // All other tools delegated to sub-agents or I AM Architect for optimal performance
     const tools = [
       {
         name: 'start_subagent',
@@ -1026,19 +1027,19 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       },
       {
         name: 'write_platform_file',
-        description: 'Write platform file',
+        description: 'Write platform file (also handles create/delete operations)',
         input_schema: {
           type: 'object' as const,
           properties: {
             path: { type: 'string' as const, description: 'File path' },
-            content: { type: 'string' as const, description: 'File content' },
+            content: { type: 'string' as const, description: 'File content (empty to delete)' },
           },
           required: ['path', 'content'],
         },
       },
       {
         name: 'list_platform_files',
-        description: 'List directory contents',
+        description: 'List directory contents (replaces search_platform_files - use with glob patterns)',
         input_schema: {
           type: 'object' as const,
           properties: { directory: { type: 'string' as const, description: 'Directory path' } },
@@ -1046,14 +1047,36 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         },
       },
       {
-        name: 'search_platform_files',
-        description: 'Search platform files by pattern',
+        name: 'read_project_file',
+        description: 'Read user project file',
         input_schema: {
           type: 'object' as const,
-          properties: { 
-            pattern: { type: 'string' as const, description: 'Search pattern (glob: *.ts or regex)' }
+          properties: { path: { type: 'string' as const, description: 'File path' } },
+          required: ['path'],
+        },
+      },
+      {
+        name: 'write_project_file',
+        description: 'Write user project file (also handles create/delete/list operations)',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            path: { type: 'string' as const, description: 'File path' },
+            content: { type: 'string' as const, description: 'File content (empty to delete)' },
           },
-          required: ['pattern'],
+          required: ['path', 'content'],
+        },
+      },
+      {
+        name: 'perform_diagnosis',
+        description: 'Analyze platform for issues',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            target: { type: 'string' as const, description: 'Diagnostic target' },
+            focus: { type: 'array' as const, items: { type: 'string' as const }, description: 'Files to analyze' },
+          },
+          required: ['target'],
         },
       },
       {
@@ -1080,135 +1103,6 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         },
       },
       {
-        name: 'generate_design_guidelines',
-        description: 'Generate design system',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            projectDescription: { type: 'string' as const, description: 'Project description' }
-          },
-          required: ['projectDescription'],
-        },
-      },
-      {
-        name: 'read_project_file',
-        description: 'Read user project file',
-        input_schema: {
-          type: 'object' as const,
-          properties: { path: { type: 'string' as const, description: 'File path' } },
-          required: ['path'],
-        },
-      },
-      {
-        name: 'write_project_file',
-        description: 'Write user project file',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            path: { type: 'string' as const, description: 'File path' },
-            content: { type: 'string' as const, description: 'File content' },
-          },
-          required: ['path', 'content'],
-        },
-      },
-      {
-        name: 'list_project_files',
-        description: 'List user project files',
-        input_schema: { type: 'object' as const, properties: {}, required: [] },
-      },
-      {
-        name: 'create_project_file',
-        description: 'Create user project file',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            path: { type: 'string' as const, description: 'File path' },
-            content: { type: 'string' as const, description: 'File content' },
-          },
-          required: ['path', 'content'],
-        },
-      },
-      {
-        name: 'delete_project_file',
-        description: 'Delete user project file',
-        input_schema: {
-          type: 'object' as const,
-          properties: { path: { type: 'string' as const, description: 'File path' } },
-          required: ['path'],
-        },
-      },
-      {
-        name: 'perform_diagnosis',
-        description: 'Analyze platform for issues',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            target: { type: 'string' as const, description: 'Diagnostic target' },
-            focus: { type: 'array' as const, items: { type: 'string' as const }, description: 'Files to analyze' },
-          },
-          required: ['target'],
-        },
-      },
-      {
-        name: 'create_platform_file',
-        description: 'Create platform file',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            path: { type: 'string' as const, description: 'File path' },
-            content: { type: 'string' as const, description: 'File content' },
-          },
-          required: ['path', 'content'],
-        },
-      },
-      {
-        name: 'delete_platform_file',
-        description: 'Delete platform file',
-        input_schema: {
-          type: 'object' as const,
-          properties: { path: { type: 'string' as const, description: 'File path' } },
-          required: ['path'],
-        },
-      },
-      {
-        name: 'read_logs',
-        description: 'Read server logs',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            lines: { type: 'number' as const, description: 'Number of lines' },
-            filter: { type: 'string' as const, description: 'Filter keyword' },
-          },
-          required: [],
-        },
-      },
-      {
-        name: 'execute_sql',
-        description: 'Execute SQL query',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            query: { type: 'string' as const, description: 'SQL query' },
-            purpose: { type: 'string' as const, description: 'Query purpose' },
-          },
-          required: ['query', 'purpose'],
-        },
-      },
-      {
-        name: 'architect_consult',
-        description: 'Consult I AM for expert guidance',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            problem: { type: 'string' as const, description: 'Problem to solve' },
-            context: { type: 'string' as const, description: 'Platform context' },
-            proposedSolution: { type: 'string' as const, description: 'Proposed fix' },
-            affectedFiles: { type: 'array' as const, items: { type: 'string' as const }, description: 'Files to modify' },
-          },
-          required: ['problem', 'context', 'proposedSolution', 'affectedFiles'],
-        },
-      },
-      {
         name: 'web_search',
         description: 'Search web for documentation',
         input_schema: {
@@ -1220,202 +1114,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           required: ['query'],
         },
       },
-      {
-        name: 'commit_to_github',
-        description: 'Commit changes and deploy',
-        input_schema: {
-          type: 'object' as const,
-          properties: { commitMessage: { type: 'string' as const, description: 'Commit message' } },
-          required: ['commitMessage'],
-        },
-      },
-      {
-        name: 'request_user_approval',
-        description: 'Request approval before changes',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            summary: { type: 'string' as const, description: 'Summary of changes' },
-            filesChanged: { type: 'array' as const, items: { type: 'string' as const }, description: 'Files to modify' },
-            estimatedImpact: { type: 'string' as const, description: 'Impact level' },
-          },
-          required: ['summary', 'filesChanged', 'estimatedImpact'],
-        },
-      },
-      {
-        name: 'verify_fix',
-        description: 'Verify fix worked',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            description: { type: 'string' as const, description: 'What to verify' },
-            checkType: { type: 'string' as const, enum: ['logs', 'endpoint', 'file_exists'], description: 'Verification method' },
-            target: { type: 'string' as const, description: 'Target to check' },
-          },
-          required: ['description', 'checkType'],
-        },
-      },
-      {
-        name: 'bash',
-        description: 'Execute shell commands with security sandboxing',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            command: { type: 'string' as const, description: 'Command to execute (no && or ; chaining)' },
-            timeout: { type: 'number' as const, description: 'Timeout in milliseconds (default 120000)' },
-          },
-          required: ['command'],
-        },
-      },
-      {
-        name: 'edit',
-        description: 'Find and replace text in files precisely',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            filePath: { type: 'string' as const, description: 'File to edit' },
-            oldString: { type: 'string' as const, description: 'Exact text to find' },
-            newString: { type: 'string' as const, description: 'Replacement text' },
-            replaceAll: { type: 'boolean' as const, description: 'Replace all occurrences (default false)' },
-          },
-          required: ['filePath', 'oldString', 'newString'],
-        },
-      },
-      {
-        name: 'grep',
-        description: 'Search file content by pattern or regex',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            pattern: { type: 'string' as const, description: 'Regex pattern to search' },
-            pathFilter: { type: 'string' as const, description: 'File pattern filter (e.g., *.ts)' },
-            outputMode: { type: 'string' as const, enum: ['content', 'files', 'count'], description: 'Output format (default: files)' },
-          },
-          required: ['pattern'],
-        },
-      },
-      {
-        name: 'packager_tool',
-        description: 'Install or uninstall npm packages',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            operation: { type: 'string' as const, enum: ['install', 'uninstall'], description: 'Operation type' },
-            packages: { type: 'array' as const, items: { type: 'string' as const }, description: 'Package names' },
-          },
-          required: ['operation', 'packages'],
-        },
-      },
-      {
-        name: 'restart_workflow',
-        description: 'Restart server workflow after code changes',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            workflowName: { type: 'string' as const, description: 'Workflow name (default: "Start application")' },
-          },
-          required: [],
-        },
-      },
-      {
-        name: 'get_latest_lsp_diagnostics',
-        description: 'Check TypeScript errors and warnings',
-        input_schema: {
-          type: 'object' as const,
-          properties: {},
-          required: [],
-        },
-      },
-      {
-        name: 'validate_before_commit',
-        description: 'Comprehensive pre-commit validation (TypeScript, database tables, critical files)',
-        input_schema: {
-          type: 'object' as const,
-          properties: {},
-          required: [],
-        },
-      },
-      {
-        name: 'search_codebase',
-        description: 'Semantic code search - find code by meaning, not just text (like "where do we handle authentication?")',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            query: { type: 'string' as const, description: 'Natural language search query' },
-            maxResults: { type: 'number' as const, description: 'Max results (default: 10)' },
-          },
-          required: ['query'],
-        },
-      },
-      {
-        name: 'knowledge_store',
-        description: 'Store knowledge for future recall. Save learned patterns, fixes, decisions, and insights for platform evolution tracking',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            category: { type: 'string' as const, description: 'Category (e.g., "bug-fixes", "architecture", "best-practices", "user-preferences")' },
-            topic: { type: 'string' as const, description: 'Specific topic (e.g., "authentication-patterns", "deployment-steps")' },
-            content: { type: 'string' as const, description: 'Knowledge content to store' },
-            tags: { type: 'array' as const, items: { type: 'string' as const }, description: 'Tags for searching (e.g., ["react", "typescript"])' },
-            source: { type: 'string' as const, description: 'Source of knowledge (default: "lomuai")' },
-            confidence: { type: 'number' as const, description: 'Confidence score 0-1 (default: 0.8)' },
-          },
-          required: ['category', 'topic', 'content'],
-        },
-      },
-      {
-        name: 'knowledge_search',
-        description: 'Search the shared knowledge base for relevant information. Find solutions, patterns, or insights saved from previous tasks',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            query: { type: 'string' as const, description: 'Search query (searches in topic and content)' },
-            category: { type: 'string' as const, description: 'Filter by category (optional)' },
-            tags: { type: 'array' as const, items: { type: 'string' as const }, description: 'Filter by tags (optional)' },
-            limit: { type: 'number' as const, description: 'Maximum results (default: 10)' },
-          },
-          required: ['query'],
-        },
-      },
-      {
-        name: 'knowledge_recall',
-        description: 'Recall specific knowledge by category, topic, or ID. Retrieve saved information when you know what you are looking for',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            category: { type: 'string' as const, description: 'Recall by category (e.g., "bug-fixes")' },
-            topic: { type: 'string' as const, description: 'Recall by topic (partial match)' },
-            id: { type: 'string' as const, description: 'Recall specific entry by ID' },
-            limit: { type: 'number' as const, description: 'Maximum results (default: 20)' },
-          },
-          required: [],
-        },
-      },
-      {
-        name: 'code_search',
-        description: 'Search or store reusable code snippets. Save proven code patterns or find existing snippets to reuse',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            query: { type: 'string' as const, description: 'Search query for finding code snippets' },
-            language: { type: 'string' as const, description: 'Programming language filter (e.g., "typescript", "python")' },
-            tags: { type: 'array' as const, items: { type: 'string' as const }, description: 'Filter by tags' },
-            store: { 
-              type: 'object' as const, 
-              description: 'Store a new code snippet instead of searching',
-              properties: {
-                language: { type: 'string' as const, description: 'Programming language' },
-                description: { type: 'string' as const, description: 'What the code does' },
-                code: { type: 'string' as const, description: 'The actual code snippet' },
-                tags: { type: 'array' as const, items: { type: 'string' as const }, description: 'Tags for categorization' },
-              },
-            },
-            limit: { type: 'number' as const, description: 'Maximum results (default: 10)' },
-          },
-          required: [],
-        },
-      },
     ];
+
+    // 📊 TOOL COUNT VALIDATION: Log on startup to verify we're within Google's recommended limit
+    console.log(`✅ LomuAI using ${tools.length} tools (Google recommends 10-20 for optimal Gemini performance)`);
 
     // 🎯 AUTONOMY LEVEL FILTERING: Filter tools based on user's autonomy level
     let availableTools = tools;

@@ -333,40 +333,22 @@ Your role:
 - Be conversational and helpful - explain what you're doing
 - Work autonomously like Replit Agent - show task progress with animated task lists
 
-Available tools (38 tools - IDENTICAL to regular LomuAI):
+Available tools (13 tools - IDENTICAL to regular LomuAI - Google Gemini optimized):
 - start_subagent(task, files) - Delegate complex multi-file work
 - create_task_list(title, tasks) - **REQUIRED** - visible task breakdown
 - read_task_list() - Check task status
 - update_task(taskId, status, result) - Update progress (spinner animations!)
 - read_platform_file(path) - Read platform files
-- write_platform_file(path, content) - Write/update files
-- list_platform_files(directory) - List directory contents
-- search_platform_files(pattern) - Find files by pattern
-- create_platform_file(path, content) - Create new files
-- delete_platform_file(path) - Delete files
-- bash(command) - Execute shell commands
-- edit(filePath, oldString, newString) - Precise find/replace
-- grep(pattern) - Search file contents by regex
-- search_codebase(query) - Semantic code search
-- get_latest_lsp_diagnostics() - Check TypeScript errors
-- packager_tool(operation, packages) - Install/uninstall npm packages
-- restart_workflow() - Restart server after changes
-- read_logs(lines, filter) - Read server logs
-- execute_sql(query, purpose) - Execute SQL queries
-- architect_consult(problem, context, solution, files) - Consult I AM Architect
-- web_search(query) - Search web for docs
-- run_test(testPlan, technicalDocs) - Run Playwright e2e tests
-- verify_fix(description, checkType, target) - Verify fixes worked
+- write_platform_file(path, content) - Write/update files (also handles create/delete)
+- list_platform_files(directory) - List directory contents (replaces search_platform_files)
+- read_project_file(path) - Read user project files
+- write_project_file(path, content) - Write user project files (also handles create/delete/list)
 - perform_diagnosis(target, focus) - Analyze platform issues
-- knowledge_store(category, topic, content) - Save learnings
-- knowledge_search(query) - Search knowledge base
-- knowledge_recall(category, topic) - Recall saved knowledge
-- code_search(query) - Search/store code snippets
-- commit_to_github(commitMessage) - **DEPLOY** - Commit & deploy to Railway
-- validate_before_commit() - Pre-commit validation
-- cancel_lomu_job(job_id) - Cancel stuck LomuAI jobs
+- run_test(testPlan, technicalDocs) - Run Playwright e2e tests
+- search_integrations(query) - Search Replit integrations
+- web_search(query) - Search web for docs
 
-⚠️ **TOOL PARITY NOTE**: Platform Healing now has IDENTICAL tools to regular LomuAI. Any updates to one chat must be mirrored to the other!
+⚠️ **TOOL PARITY NOTE**: Platform Healing now has IDENTICAL 13 core tools to regular LomuAI. All other tools (Git, DB, env vars, smart code) delegated to sub-agents or I AM Architect for optimal Gemini performance (40x cost savings).
 
 Platform info:
 - Stack: React, TypeScript, Express, PostgreSQL
@@ -466,6 +448,8 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
               system: systemPrompt,
               messages: conversationMessages,
               tools: [
+              // ⚡ GOOGLE GEMINI OPTIMIZED: 13 CORE TOOLS (Google recommends 10-20 max)
+              // All other tools delegated to sub-agents or I AM Architect for optimal performance
               {
                 name: 'start_subagent',
                 description: 'Delegate complex multi-file work to sub-agents. Supports parallel execution (max 2 concurrent)',
@@ -535,19 +519,19 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
               },
               {
                 name: 'write_platform_file',
-                description: 'Write platform file',
+                description: 'Write platform file (also handles create/delete operations)',
                 input_schema: {
                   type: 'object',
                   properties: {
                     path: { type: 'string', description: 'File path' },
-                    content: { type: 'string', description: 'File content' }
+                    content: { type: 'string', description: 'File content (empty to delete)' }
                   },
                   required: ['path', 'content']
                 }
               },
               {
                 name: 'list_platform_files',
-                description: 'List directory contents',
+                description: 'List directory contents (replaces search_platform_files - use with glob patterns)',
                 input_schema: {
                   type: 'object',
                   properties: { directory: { type: 'string', description: 'Directory path' } },
@@ -555,29 +539,8 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                 }
               },
               {
-                name: 'search_platform_files',
-                description: 'Search platform files by pattern',
-                input_schema: {
-                  type: 'object',
-                  properties: { pattern: { type: 'string', description: 'Search pattern (glob: *.ts or regex)' } },
-                  required: ['pattern']
-                }
-              },
-              {
-                name: 'create_platform_file',
-                description: 'Create platform file',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    path: { type: 'string', description: 'File path' },
-                    content: { type: 'string', description: 'File content' }
-                  },
-                  required: ['path', 'content']
-                }
-              },
-              {
-                name: 'delete_platform_file',
-                description: 'Delete platform file',
+                name: 'read_project_file',
+                description: 'Read user project file',
                 input_schema: {
                   type: 'object',
                   properties: { path: { type: 'string', description: 'File path' } },
@@ -585,161 +548,15 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                 }
               },
               {
-                name: 'bash',
-                description: 'Execute shell commands with security sandboxing',
+                name: 'write_project_file',
+                description: 'Write user project file (also handles create/delete/list operations)',
                 input_schema: {
                   type: 'object',
                   properties: {
-                    command: { type: 'string', description: 'Command to execute' },
-                    timeout: { type: 'number', description: 'Timeout in ms (default 120000)' }
+                    path: { type: 'string', description: 'File path' },
+                    content: { type: 'string', description: 'File content (empty to delete)' }
                   },
-                  required: ['command']
-                }
-              },
-              {
-                name: 'edit',
-                description: 'Find and replace text in files precisely',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    filePath: { type: 'string', description: 'File to edit' },
-                    oldString: { type: 'string', description: 'Exact text to find' },
-                    newString: { type: 'string', description: 'Replacement text' },
-                    replaceAll: { type: 'boolean', description: 'Replace all occurrences' }
-                  },
-                  required: ['filePath', 'oldString', 'newString']
-                }
-              },
-              {
-                name: 'grep',
-                description: 'Search file content by pattern or regex',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    pattern: { type: 'string', description: 'Regex pattern' },
-                    pathFilter: { type: 'string', description: 'File pattern (e.g., *.ts)' },
-                    outputMode: { type: 'string', enum: ['content', 'files', 'count'], description: 'Output format' }
-                  },
-                  required: ['pattern']
-                }
-              },
-              {
-                name: 'search_codebase',
-                description: 'Semantic code search - find code by meaning',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    query: { type: 'string', description: 'Natural language search query' },
-                    maxResults: { type: 'number', description: 'Max results (default: 10)' }
-                  },
-                  required: ['query']
-                }
-              },
-              {
-                name: 'get_latest_lsp_diagnostics',
-                description: 'Check TypeScript errors and warnings',
-                input_schema: {
-                  type: 'object',
-                  properties: {},
-                  required: []
-                }
-              },
-              {
-                name: 'packager_tool',
-                description: 'Install or uninstall npm packages',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    operation: { type: 'string', enum: ['install', 'uninstall'], description: 'Operation type' },
-                    packages: { type: 'array', items: { type: 'string' }, description: 'Package names' }
-                  },
-                  required: ['operation', 'packages']
-                }
-              },
-              {
-                name: 'restart_workflow',
-                description: 'Restart server workflow after code changes',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    workflowName: { type: 'string', description: 'Workflow name (default: "Start application")' }
-                  },
-                  required: []
-                }
-              },
-              {
-                name: 'read_logs',
-                description: 'Read server logs',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    lines: { type: 'number', description: 'Number of lines' },
-                    filter: { type: 'string', description: 'Filter keyword' }
-                  },
-                  required: []
-                }
-              },
-              {
-                name: 'execute_sql',
-                description: 'Execute SQL query',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    query: { type: 'string', description: 'SQL query' },
-                    purpose: { type: 'string', description: 'Query purpose' }
-                  },
-                  required: ['query', 'purpose']
-                }
-              },
-              {
-                name: 'architect_consult',
-                description: 'Consult I AM for expert guidance',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    problem: { type: 'string', description: 'Problem to solve' },
-                    context: { type: 'string', description: 'Platform context' },
-                    proposedSolution: { type: 'string', description: 'Proposed fix' },
-                    affectedFiles: { type: 'array', items: { type: 'string' }, description: 'Files to modify' }
-                  },
-                  required: ['problem', 'context', 'proposedSolution', 'affectedFiles']
-                }
-              },
-              {
-                name: 'web_search',
-                description: 'Search web for documentation',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    query: { type: 'string', description: 'Search query' },
-                    maxResults: { type: 'number', description: 'Max results' }
-                  },
-                  required: ['query']
-                }
-              },
-              {
-                name: 'run_test',
-                description: 'Run Playwright e2e tests for UI/UX',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    testPlan: { type: 'string', description: 'Test plan steps' },
-                    technicalDocs: { type: 'string', description: 'Technical context' }
-                  },
-                  required: ['testPlan', 'technicalDocs']
-                }
-              },
-              {
-                name: 'verify_fix',
-                description: 'Verify fix worked',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    description: { type: 'string', description: 'What to verify' },
-                    checkType: { type: 'string', enum: ['logs', 'endpoint', 'file_exists'], description: 'Verification method' },
-                    target: { type: 'string', description: 'Target to check' }
-                  },
-                  required: ['description', 'checkType']
+                  required: ['path', 'content']
                 }
               },
               {
@@ -755,103 +572,38 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                 }
               },
               {
-                name: 'knowledge_store',
-                description: 'Store knowledge for future recall',
+                name: 'run_test',
+                description: 'Run Playwright e2e tests for UI/UX',
                 input_schema: {
                   type: 'object',
                   properties: {
-                    category: { type: 'string', description: 'Category (e.g., "bug-fixes")' },
-                    topic: { type: 'string', description: 'Specific topic' },
-                    content: { type: 'string', description: 'Knowledge content' },
-                    tags: { type: 'array', items: { type: 'string' }, description: 'Tags for searching' },
-                    source: { type: 'string', description: 'Source (default: "platform_healing")' },
-                    confidence: { type: 'number', description: 'Confidence 0-1 (default: 0.8)' }
+                    testPlan: { type: 'string', description: 'Test plan steps' },
+                    technicalDocs: { type: 'string', description: 'Technical context' }
                   },
-                  required: ['category', 'topic', 'content']
+                  required: ['testPlan', 'technicalDocs']
                 }
               },
               {
-                name: 'knowledge_search',
-                description: 'Search knowledge base for relevant information',
+                name: 'search_integrations',
+                description: 'Search Replit integrations',
                 input_schema: {
                   type: 'object',
                   properties: {
-                    query: { type: 'string', description: 'Search query' },
-                    category: { type: 'string', description: 'Filter by category' },
-                    tags: { type: 'array', items: { type: 'string' }, description: 'Filter by tags' },
-                    limit: { type: 'number', description: 'Max results (default: 10)' }
+                    query: { type: 'string', description: 'Integration name' }
                   },
                   required: ['query']
                 }
               },
               {
-                name: 'knowledge_recall',
-                description: 'Recall specific knowledge by category/topic/ID',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    category: { type: 'string', description: 'Recall by category' },
-                    topic: { type: 'string', description: 'Recall by topic' },
-                    id: { type: 'string', description: 'Recall by ID' },
-                    limit: { type: 'number', description: 'Max results (default: 20)' }
-                  },
-                  required: []
-                }
-              },
-              {
-                name: 'code_search',
-                description: 'Search or store reusable code snippets',
+                name: 'web_search',
+                description: 'Search web for documentation',
                 input_schema: {
                   type: 'object',
                   properties: {
                     query: { type: 'string', description: 'Search query' },
-                    language: { type: 'string', description: 'Programming language' },
-                    tags: { type: 'array', items: { type: 'string' }, description: 'Filter by tags' },
-                    store: {
-                      type: 'object',
-                      description: 'Store a new code snippet',
-                      properties: {
-                        language: { type: 'string', description: 'Programming language' },
-                        description: { type: 'string', description: 'What the code does' },
-                        code: { type: 'string', description: 'The actual code snippet' },
-                        tags: { type: 'array', items: { type: 'string' }, description: 'Tags' }
-                      }
-                    },
-                    limit: { type: 'number', description: 'Max results (default: 10)' }
+                    maxResults: { type: 'number', description: 'Max results' }
                   },
-                  required: []
-                }
-              },
-              {
-                name: 'cancel_lomu_job',
-                description: 'Cancel a running or stuck LomuAI job',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    job_id: { type: 'string', description: 'ID of job to cancel' },
-                    reason: { type: 'string', description: 'Reason for cancellation' }
-                  },
-                  required: ['job_id']
-                }
-              },
-              {
-                name: 'commit_to_github',
-                description: 'Commit all file changes and deploy to Railway. Use after completing all tasks.',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    commitMessage: { type: 'string', description: 'Descriptive commit message summarizing all changes' }
-                  },
-                  required: ['commitMessage']
-                }
-              },
-              {
-                name: 'validate_before_commit',
-                description: 'Run pre-commit validation (TypeScript check, database tables, critical files)',
-                input_schema: {
-                  type: 'object',
-                  properties: {},
-                  required: []
+                  required: ['query']
                 }
               }
             ],

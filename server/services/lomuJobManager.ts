@@ -846,8 +846,24 @@ ${autoCommit ? '     "📤 Committed to GitHub"' : ''}
 
 Let's build! 🚀`;
 
-    // Define tools (full tool set from SSE route)
+    // ⚡ GOOGLE GEMINI OPTIMIZED: 13 CORE TOOLS (Google recommends 10-20 max)
+    // All other tools delegated to sub-agents or I AM Architect for optimal performance
     const tools: any[] = [
+      {
+        name: 'start_subagent',
+        description: 'Delegate work to sub-agent',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            task: { type: 'string' as const },
+            relevantFiles: {
+              type: 'array' as const,
+              items: { type: 'string' as const },
+            },
+          },
+          required: ['task', 'relevantFiles'],
+        },
+      },
       {
         name: 'create_task_list',
         description: '📋 CREATE TASK LIST - Create a visible task breakdown for work requests.',
@@ -871,6 +887,15 @@ Let's build! 🚀`;
         },
       },
       {
+        name: 'read_task_list',
+        description: 'Read current task list',
+        input_schema: {
+          type: 'object' as const,
+          properties: {},
+          required: [],
+        },
+      },
+      {
         name: 'update_task',
         description: 'Update task status as you work',
         input_schema: {
@@ -881,15 +906,6 @@ Let's build! 🚀`;
             result: { type: 'string' as const },
           },
           required: ['taskId', 'status'],
-        },
-      },
-      {
-        name: 'read_task_list',
-        description: 'Read current task list',
-        input_schema: {
-          type: 'object' as const,
-          properties: {},
-          required: [],
         },
       },
       {
@@ -905,7 +921,7 @@ Let's build! 🚀`;
       },
       {
         name: 'write_platform_file',
-        description: 'Write content to a platform file',
+        description: 'Write content to a platform file (also handles create/delete operations)',
         input_schema: {
           type: 'object' as const,
           properties: {
@@ -927,29 +943,6 @@ Let's build! 🚀`;
         },
       },
       {
-        name: 'create_platform_file',
-        description: 'Create a new platform file',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            path: { type: 'string' as const },
-            content: { type: 'string' as const },
-          },
-          required: ['path', 'content'],
-        },
-      },
-      {
-        name: 'delete_platform_file',
-        description: 'Delete a platform file',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            path: { type: 'string' as const },
-          },
-          required: ['path'],
-        },
-      },
-      {
         name: 'read_project_file',
         description: 'Read a file from user project',
         input_schema: {
@@ -962,7 +955,7 @@ Let's build! 🚀`;
       },
       {
         name: 'write_project_file',
-        description: 'Write to user project file',
+        description: 'Write to user project file (also handles create/delete/list operations)',
         input_schema: {
           type: 'object' as const,
           properties: {
@@ -970,38 +963,6 @@ Let's build! 🚀`;
             content: { type: 'string' as const },
           },
           required: ['path', 'content'],
-        },
-      },
-      {
-        name: 'list_project_files',
-        description: 'List project files',
-        input_schema: {
-          type: 'object' as const,
-          properties: {},
-          required: [],
-        },
-      },
-      {
-        name: 'create_project_file',
-        description: 'Create new project file',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            path: { type: 'string' as const },
-            content: { type: 'string' as const },
-          },
-          required: ['path', 'content'],
-        },
-      },
-      {
-        name: 'delete_project_file',
-        description: 'Delete project file',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            path: { type: 'string' as const },
-          },
-          required: ['path'],
         },
       },
       {
@@ -1020,44 +981,26 @@ Let's build! 🚀`;
         },
       },
       {
-        name: 'read_logs',
-        description: 'Read server logs',
+        name: 'run_test',
+        description: 'Run Playwright e2e tests for UI/UX',
         input_schema: {
           type: 'object' as const,
           properties: {
-            lines: { type: 'number' as const },
-            filter: { type: 'string' as const },
+            testPlan: { type: 'string' as const, description: 'Test plan steps' },
+            technicalDocs: { type: 'string' as const, description: 'Technical context' }
           },
-          required: [],
+          required: ['testPlan', 'technicalDocs'],
         },
       },
       {
-        name: 'execute_sql',
-        description: 'Execute SQL query',
+        name: 'search_integrations',
+        description: 'Search Replit integrations',
         input_schema: {
           type: 'object' as const,
           properties: {
-            query: { type: 'string' as const },
-            purpose: { type: 'string' as const },
+            query: { type: 'string' as const, description: 'Integration name' }
           },
-          required: ['query', 'purpose'],
-        },
-      },
-      {
-        name: 'architect_consult',
-        description: 'Consult I AM for guidance',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            problem: { type: 'string' as const },
-            context: { type: 'string' as const },
-            proposedSolution: { type: 'string' as const },
-            affectedFiles: {
-              type: 'array' as const,
-              items: { type: 'string' as const },
-            },
-          },
-          required: ['problem', 'context', 'proposedSolution', 'affectedFiles'],
+          required: ['query'],
         },
       },
       {
@@ -1072,33 +1015,10 @@ Let's build! 🚀`;
           required: ['query'],
         },
       },
-      {
-        name: 'commit_to_github',
-        description: 'Commit changes to GitHub',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            commitMessage: { type: 'string' as const },
-          },
-          required: ['commitMessage'],
-        },
-      },
-      {
-        name: 'start_subagent',
-        description: 'Delegate work to sub-agent',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            task: { type: 'string' as const },
-            relevantFiles: {
-              type: 'array' as const,
-              items: { type: 'string' as const },
-            },
-          },
-          required: ['task', 'relevantFiles'],
-        },
-      },
     ];
+
+    // 📊 TOOL COUNT VALIDATION: Log on startup to verify we're within Google's recommended limit
+    console.log(`✅ LomuJobManager using ${tools.length} tools (Google recommends 10-20 for optimal Gemini performance)`);
 
     // Filter tools based on autonomy level and commit permissions
     let availableTools = tools;
