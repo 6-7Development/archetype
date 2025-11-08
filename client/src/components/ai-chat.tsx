@@ -1435,11 +1435,10 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
                             t.status === 'in_progress' ? 'in_progress' : 
                             t.status === 'failed' ? 'blocked' : 'backlog',
                     owner: 'agent' as const,
-                    verification: t.verification ? {
-                      checks: [],
-                      summary: '✅ Verified'
-                    } : undefined,
-                    artifactCount: 0
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    verification: undefined,
+                    artifacts: []
                   }))}
                 />
               </CollapsibleContent>
