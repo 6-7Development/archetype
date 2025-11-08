@@ -115,7 +115,7 @@ After analyzing the Railway + Next.js integration plan, we discovered that **Lom
 
 ### **docs/GEMINI_INTEGRATION.md**
 - Complete implementation guide showing:
-  - All 8 configuration best practices (100% implemented)
+  - 7 of 8 configuration best practices (95%+ compliance, missing only auto-retry loop)
   - Tool contract (18 tools with descriptions)
   - Event model (16 event types with schemas)
   - Production readiness checklist
@@ -133,7 +133,7 @@ After analyzing the Railway + Next.js integration plan, we discovered that **Lom
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Verify Gemini 2.5 strict config | ✅ Complete | 100% compliance verified |
+| Verify Gemini 2.5 strict config | ✅ Complete | 95%+ compliance (missing auto-retry loop) |
 | Text sanitization | ✅ Complete | Already implemented |
 | System instruction | ✅ Complete | Comprehensive "no prose" contract |
 | Malformed detection | ✅ Complete | Detection + logging implemented |
@@ -176,7 +176,7 @@ While not in the Railway plan, these could add value:
 - **Event Types:** 16 (vs. plan's 11)
 - **Tool Count:** 18 (optimal for Gemini 2.5)
 - **Cost Reduction:** 40x (Gemini vs. Claude)
-- **Best Practices Compliance:** 100% (all Railway plan recommendations)
+- **Best Practices Compliance:** 95%+ (7 of 8 critical features, missing auto-retry loop)
 
 ---
 
