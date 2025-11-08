@@ -145,7 +145,7 @@ function PlatformHealingContent() {
   // WebSocket connection for real-time deployment and healing updates
   useEffect(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}`;
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
     const ws = new WebSocket(wsUrl);
     
     ws.onopen = () => {
@@ -183,6 +183,28 @@ function PlatformHealingContent() {
               variant: 'destructive',
             });
           }
+        }
+        
+        // Handle inline progress updates (Replit Agent style)
+        if (data.type === 'ai-thought' || data.type === 'ai-action') {
+          const message = data.content || data.thought || data.action || '';
+          if (message) {
+            console.log(`[PLATFORM-HEALING] ${data.type}:`, message);
+            setProgressMessages(prev => [
+              ...prev,
+              {
+                id: `${data.type}-${Date.now()}-${Math.random()}`,
+                message,
+                timestamp: Date.now(),
+              }
+            ]);
+          }
+        }
+        
+        // Clear progress messages when AI completes
+        if (data.type === 'ai-complete' || data.type === 'chat-complete') {
+          console.log('[PLATFORM-HEALING] AI completed, clearing progress messages');
+          setProgressMessages([]);
         }
         
         // Handle healing event updates
