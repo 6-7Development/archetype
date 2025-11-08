@@ -397,7 +397,9 @@ export function AppLayout({ children }: AppLayoutProps) {
           <div className="flex items-center gap-4">
             {/* Page title or breadcrumb can go here */}
             <h1 className="text-lg font-semibold truncate" data-testid="page-title">
-              {/* Dynamic based on location */}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-200 to-yellow-400 animate-pulse">
+                Jesus is King
+              </span>
             </h1>
           </div>
           
