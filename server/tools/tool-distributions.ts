@@ -12,7 +12,7 @@
 import { LOMU_TOOLS } from './index';
 
 /**
- * LOMU CORE TOOLS (13 tools)
+ * LOMU CORE TOOLS (14 tools)
  * For regular LomuAI development work - fast execution primitives
  * Used by: LomuAI Chat, Platform Healing
  */
@@ -37,6 +37,9 @@ export const LOMU_CORE_TOOLS = LOMU_TOOLS.filter(tool => [
   // Testing & Diagnosis (2)
   'browser_test',
   'perform_diagnosis',
+  
+  // Escalation (1) - NEW! Consult architect when stuck
+  'architect_consult',
   
   // System Operations (2)
   'bash',
