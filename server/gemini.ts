@@ -279,6 +279,8 @@ function getThinkingMessageFromText(text: string): string {
 /**
  * Stream Gemini AI responses with real-time thought/action detection
  * Compatible with Anthropic streaming interface
+ * 
+ * ✨ INCLUDES: Automatic retry loop for malformed function calls
  */
 export async function streamGeminiResponse(options: StreamOptions) {
   const {
@@ -307,6 +309,10 @@ export async function streamGeminiResponse(options: StreamOptions) {
   // 🎯 DE-DUPLICATION: Track last broadcast messages to prevent flooding
   let lastThought = '';
   let lastAction = '';
+  
+  // 🔄 RETRY LOGIC: Track malformed response attempts
+  let retryCount = 0;
+  const MAX_RETRIES = 2;
 
   try {
     if (signal?.aborted) {
@@ -437,26 +443,53 @@ If you need to call a function, emit ONLY the JSON object.`),
         if (candidate.finishReason) {
           console.log('[GEMINI-DEBUG] Finish reason:', candidate.finishReason);
           
-          // 🚨 CRITICAL: Handle MALFORMED_FUNCTION_CALL with auto-repair (external advice)
+          // 🚨 CRITICAL: Handle MALFORMED_FUNCTION_CALL with auto-retry
           if (candidate.finishReason === 'MALFORMED_FUNCTION_CALL') {
-            console.error('🚨 [GEMINI-MALFORMED] Detected malformed function call!');
+            console.error(`🚨 [GEMINI-MALFORMED] Detected malformed function call! (Attempt ${retryCount + 1}/${MAX_RETRIES + 1})`);
             
             // Log the malformed content for debugging
             const finishMessage = (candidate as any).finishMessage;
+            let attemptedFunction = 'unknown';
+            
             if (finishMessage) {
               console.error('[GEMINI-MALFORMED] Error details:', finishMessage);
               
               // Extract function name if present in error message
               const functionNameMatch = finishMessage.match(/function call:\s*([a-zA-Z_]+)/i);
               if (functionNameMatch) {
-                const attemptedFunction = functionNameMatch[1];
+                attemptedFunction = functionNameMatch[1];
                 console.error(`[GEMINI-MALFORMED] Attempted to call: ${attemptedFunction}`);
                 console.error('[GEMINI-MALFORMED] This means Gemini used Python-like syntax instead of JSON');
               }
             }
             
-            // 🔧 DEFENSIVE: Provide helpful error instead of silent failure
-            const errorText = `⚠️ Internal error: AI tried to use invalid function syntax. This has been logged and will be fixed. Please try rephrasing your request.`;
+            // 🔄 RETRY LOGIC: Attempt to recover by retrying with clarifying message
+            if (retryCount < MAX_RETRIES) {
+              retryCount++;
+              console.log(`[GEMINI-RETRY] Retrying with clarifying message (${retryCount}/${MAX_RETRIES})...`);
+              
+              // Add a clarifying message to help Gemini understand the correct format
+              const clarifyingMessage: any = {
+                role: 'user',
+                content: `Your last response used invalid function syntax. Please respond with ONLY a pure JSON object in this exact format:
+{"name":"${attemptedFunction}","args":{"param1":"value1"}}
+
+Do NOT use Python syntax like: ${attemptedFunction}(param1="value1")
+Do NOT wrap in code blocks or backticks.
+Return ONLY the raw JSON object.`
+              };
+              
+              // Recursive retry with updated messages
+              const retryMessages = [...messages, clarifyingMessage];
+              
+              return streamGeminiResponse({
+                ...options,
+                messages: retryMessages,
+              });
+            }
+            
+            // 🚫 MAX RETRIES EXCEEDED: Provide helpful error
+            const errorText = `⚠️ Internal error: AI used invalid function syntax after ${MAX_RETRIES} retry attempts. This has been logged. Please try rephrasing your request differently.`;
             
             if (onChunk) {
               onChunk(errorText);
