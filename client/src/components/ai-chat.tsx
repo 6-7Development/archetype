@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Send, Loader2, User, Key, AlertCircle, Square, ChevronDown, Copy, Check } from "lucide-react";
+import { Send, Loader2, User, Key, AlertCircle, Square, ChevronDown, Copy, Check, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -28,6 +29,11 @@ import { AIModelSelector } from "@/components/ai-model-selector";
 import { parseMessageContent, cleanAIResponse } from "@/lib/message-parser";
 import { ScratchpadDisplay } from "@/components/scratchpad-display";
 import { ArchitectNotesPanel } from "@/components/architect-notes-panel";
+// ✅ NEW: Agent Chatroom UX Components
+import { StatusStrip } from "@/components/agent/StatusStrip";
+import { TaskPane } from "@/components/agent/TaskPane";
+import { ArtifactsDrawer, type Artifact as ArtifactItem } from "@/components/agent/ArtifactsDrawer";
+import type { RunPhase } from "@shared/agentEvents";
 
 interface CheckpointData {
   complexity: string;
@@ -93,6 +99,12 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   const [progressStatus, setProgressStatus] = useState<'thinking' | 'working' | 'vibing' | 'idle'>('idle');
   const [progressMessage, setProgressMessage] = useState("");
   const [showTaskList, setShowTaskList] = useState(true); // Default true to show UI when tasks arrive
+  // ✅ NEW: Agent Chatroom UX State
+  const [currentPhase, setCurrentPhase] = useState<RunPhase>('complete');
+  const [phaseMessage, setPhaseMessage] = useState<string>('');
+  const [artifacts, setArtifacts] = useState<ArtifactItem[]>([]);
+  const [showTaskPane, setShowTaskPane] = useState(false);
+  const [showArtifactsDrawer, setShowArtifactsDrawer] = useState(false);
 
   // Fix sessionId persistence - scoped to project, recomputes when project changes
   const sessionId = useMemo(() => {
@@ -253,18 +265,28 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
     if (streamState.currentThought) {
       setProgressStatus('thinking');
       setProgressMessage(streamState.currentThought);
+      setCurrentPhase('thinking');
+      setPhaseMessage(streamState.currentThought);
     } else if (streamState.currentAction) {
       setProgressStatus('working');
       setProgressMessage(streamState.currentAction);
+      setCurrentPhase('working');
+      setPhaseMessage(streamState.currentAction);
     } else if (streamState.chatProgress) {
       setProgressStatus('working');
       setProgressMessage(streamState.chatProgress.message || 'Working...');
+      setCurrentPhase('working');
+      setPhaseMessage(streamState.chatProgress.message || 'Working...');
     } else if (isGenerating) {
       setProgressStatus('working');
       setProgressMessage('Generating response...');
+      setCurrentPhase('working');
+      setPhaseMessage('Generating response...');
     } else {
       setProgressStatus('idle');
       setProgressMessage('');
+      setCurrentPhase('complete');
+      setPhaseMessage('');
     }
   }, [streamState.currentThought, streamState.currentAction, streamState.chatProgress, isGenerating]);
 
@@ -1008,6 +1030,15 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
           <AIModelSelector />
         </div>
 
+        {/* ✅ NEW: Agent Status Strip - Shows current phase */}
+        {isGenerating && (
+          <StatusStrip 
+            phase={currentPhase}
+            message={phaseMessage}
+            isExecuting={isGenerating}
+          />
+        )}
+
         {/* AI Progress */}
         {(currentProgress.length > 0 || isGenerating) && (
           <div className="px-6 pt-4 pb-2 bg-[hsl(220,18%,16%)] border-b border-[hsl(220,15%,28%)]">
@@ -1382,6 +1413,58 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       {/* Scratchpad Sidebar */}
       <div className="w-80 border-l border-[hsl(220,15%,28%)] hidden lg:block overflow-hidden flex flex-col" data-testid="scratchpad-panel">
         <div className="p-4 space-y-4 overflow-y-auto flex-1">
+          {/* ✅ NEW: Task Pane - Kanban-style task board */}
+          {agentTasks.length > 0 && (
+            <Collapsible open={showTaskPane} onOpenChange={setShowTaskPane}>
+              <CollapsibleTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-between p-2 h-auto"
+                  data-testid="button-toggle-task-pane"
+                >
+                  <span className="text-sm font-medium">Tasks ({agentTasks.length})</span>
+                  {showTaskPane ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <TaskPane 
+                  tasks={agentTasks.map(t => ({
+                    id: t.id,
+                    title: t.title,
+                    status: t.status === 'completed' ? 'done' : 
+                            t.status === 'in_progress' ? 'in_progress' : 
+                            t.status === 'failed' ? 'blocked' : 'backlog',
+                    owner: 'agent' as const,
+                    verification: t.verification ? {
+                      checks: [],
+                      summary: '✅ Verified'
+                    } : undefined,
+                    artifactCount: 0
+                  }))}
+                />
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+
+          {/* ✅ NEW: Artifacts Drawer - File changes and URLs */}
+          {artifacts.length > 0 && (
+            <Collapsible open={showArtifactsDrawer} onOpenChange={setShowArtifactsDrawer}>
+              <CollapsibleTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-between p-2 h-auto"
+                  data-testid="button-toggle-artifacts"
+                >
+                  <span className="text-sm font-medium">Artifacts ({artifacts.length})</span>
+                  {showArtifactsDrawer ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <ArtifactsDrawer artifacts={artifacts} />
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+
           <ScratchpadDisplay 
             entries={streamState.scratchpadEntries}
             onClear={handleClearScratchpad}

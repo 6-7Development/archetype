@@ -22,6 +22,11 @@ import { CreditPurchaseModal } from "./credit-purchase-modal";
 import { ScratchpadDisplay } from "./scratchpad-display";
 import { useWebSocketStream } from "@/hooks/use-websocket-stream";
 import { nanoid } from "nanoid";
+// ✅ NEW: Agent Chatroom UX Components
+import { StatusStrip } from "@/components/agent/StatusStrip";
+import { TaskPane } from "@/components/agent/TaskPane";
+import { ArtifactsDrawer, type Artifact as ArtifactItem } from "@/components/agent/ArtifactsDrawer";
+import type { RunPhase } from "@shared/agentEvents";
 
 // Error boundary for chat messages
 class ChatErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
@@ -263,6 +268,12 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
   const [pauseMessage, setPauseMessage] = useState('');
   const [pausedRunId, setPausedRunId] = useState<string | null>(null);
   const [showCreditPurchase, setShowCreditPurchase] = useState(false);
+  // ✅ NEW: Agent Chatroom UX State
+  const [currentPhase, setCurrentPhase] = useState<RunPhase>('idle');
+  const [phaseMessage, setPhaseMessage] = useState<string>('');
+  const [artifacts, setArtifacts] = useState<ArtifactItem[]>([]);
+  const [showTaskPane, setShowTaskPane] = useState(false);
+  const [showArtifactsDrawer, setShowArtifactsDrawer] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastEventTimeRef = useRef<number>(Date.now());
@@ -314,15 +325,23 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
     if (streamState.currentThought) {
       setProgressStatus('thinking');
       setProgressMessage(streamState.currentThought);
+      setCurrentPhase('thinking');
+      setPhaseMessage(streamState.currentThought);
     } else if (streamState.currentAction) {
       setProgressStatus('working');
       setProgressMessage(streamState.currentAction);
+      setCurrentPhase('working');
+      setPhaseMessage(streamState.currentAction);
     } else if (isStreaming) {
       setProgressStatus('working');
       setProgressMessage('Generating response...');
+      setCurrentPhase('working');
+      setPhaseMessage('Generating response...');
     } else {
       setProgressStatus('idle');
       setProgressMessage('');
+      setCurrentPhase('idle');
+      setPhaseMessage('');
     }
   }, [streamState.currentThought, streamState.currentAction, isStreaming]);
 
@@ -1005,6 +1024,15 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
             </div>
           </div>
 
+          {/* ✅ NEW: Agent Status Strip - Shows current phase */}
+          {isStreaming && (
+            <StatusStrip 
+              phase={currentPhase}
+              message={phaseMessage}
+              isExecuting={isStreaming}
+            />
+          )}
+
           {/* Active Task Header */}
           {isStreaming && activeTaskId && (
             <div className="px-3 py-2 md:px-4 md:py-3 border-b border-border bg-muted/30">
@@ -1428,6 +1456,58 @@ export function LomuAIChat({ autoCommit = true, autoPush = true, onTasksChange }
         {/* Architect Notes & Scratchpad Sidebar */}
         <div className="w-80 border-l hidden lg:block overflow-hidden flex flex-col">
           <div className="p-4 space-y-4 overflow-y-auto flex-1">
+            {/* ✅ NEW: Task Pane - Kanban-style task board */}
+            {tasks.length > 0 && (
+              <Collapsible open={showTaskPane} onOpenChange={setShowTaskPane}>
+                <CollapsibleTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-between p-2 h-auto"
+                    data-testid="button-toggle-task-pane"
+                  >
+                    <span className="text-sm font-medium">Tasks ({tasks.length})</span>
+                    {showTaskPane ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <TaskPane 
+                    tasks={tasks.map(t => ({
+                      id: t.id,
+                      title: t.title,
+                      status: t.status === 'completed' ? 'done' : 
+                              t.status === 'in_progress' ? 'in_progress' : 
+                              t.status === 'failed' ? 'blocked' : 'backlog',
+                      owner: 'agent' as const,
+                      verification: t.verification ? {
+                        checks: [],
+                        summary: '✅ Verified'
+                      } : undefined,
+                      artifactCount: 0
+                    }))}
+                  />
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+
+            {/* ✅ NEW: Artifacts Drawer - File changes and URLs */}
+            {artifacts.length > 0 && (
+              <Collapsible open={showArtifactsDrawer} onOpenChange={setShowArtifactsDrawer}>
+                <CollapsibleTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-between p-2 h-auto"
+                    data-testid="button-toggle-artifacts"
+                  >
+                    <span className="text-sm font-medium">Artifacts ({artifacts.length})</span>
+                    {showArtifactsDrawer ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <ArtifactsDrawer artifacts={artifacts} />
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+
             <ScratchpadDisplay 
               entries={streamState.scratchpadEntries}
               onClear={handleClearScratchpad}
