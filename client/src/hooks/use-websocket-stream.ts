@@ -267,20 +267,42 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
 
             case 'ai-thought':
               // 🧠 GEMINI THINKING: Display thinking indicators from thoughtSignature
-              setStreamState(prev => ({
-                ...prev,
-                currentThought: message.content || message.thought || '',
-              }));
+              const thoughtMsg = message.content || message.thought || '';
+              if (thoughtMsg) {
+                setStreamState(prev => ({
+                  ...prev,
+                  currentThought: thoughtMsg,
+                  progressMessages: [
+                    ...prev.progressMessages,
+                    {
+                      id: `thought-${Date.now()}-${Math.random()}`,
+                      message: thoughtMsg,
+                      timestamp: Date.now(),
+                    },
+                  ],
+                }));
+              }
               break;
 
             case 'ai-action':
               // 🔧 GEMINI ACTIONS: Display action indicators (tool use, file operations)
-              setStreamState(prev => ({
-                ...prev,
-                currentAction: message.content || message.action || '',
-                currentStep: message.step || 0,
-                totalSteps: message.totalSteps || 12,
-              }));
+              const actionMsg = message.content || message.action || '';
+              if (actionMsg) {
+                setStreamState(prev => ({
+                  ...prev,
+                  currentAction: actionMsg,
+                  currentStep: message.step || 0,
+                  totalSteps: message.totalSteps || 12,
+                  progressMessages: [
+                    ...prev.progressMessages,
+                    {
+                      id: `action-${Date.now()}-${Math.random()}`,
+                      message: actionMsg,
+                      timestamp: Date.now(),
+                    },
+                  ],
+                }));
+              }
               break;
 
             case 'ai-complete':
