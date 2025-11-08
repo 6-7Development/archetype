@@ -29,6 +29,7 @@ import { AIModelSelector } from "@/components/ai-model-selector";
 import { parseMessageContent, cleanAIResponse } from "@/lib/message-parser";
 import { ScratchpadDisplay } from "@/components/scratchpad-display";
 import { ArchitectNotesPanel } from "@/components/architect-notes-panel";
+import { DeploymentStatusModal } from "@/components/deployment-status-modal";
 // ✅ NEW: Agent Chatroom UX Components
 import { StatusStrip } from "@/components/agent/StatusStrip";
 import { TaskPane } from "@/components/agent/TaskPane";
@@ -105,6 +106,9 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
   const [artifacts, setArtifacts] = useState<ArtifactItem[]>([]);
   const [showTaskPane, setShowTaskPane] = useState(false);
   const [showArtifactsDrawer, setShowArtifactsDrawer] = useState(false);
+
+  // Deployment modal state
+  const [showDeploymentModal, setShowDeploymentModal] = useState(false);
 
   // Fix sessionId persistence - scoped to project, recomputes when project changes
   const sessionId = useMemo(() => {
@@ -381,6 +385,23 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
       return () => clearTimeout(timer);
     }
   }, [streamState.fileSummary, streamState.currentFile, streamState]);
+
+  // Show deployment modal when deployment starts
+  useEffect(() => {
+    if (streamState.deployment && streamState.deployment.status === 'in_progress') {
+      setShowDeploymentModal(true);
+    }
+  }, [streamState.deployment?.deploymentId]);
+
+  // Auto-close deployment modal after 4 seconds on success
+  useEffect(() => {
+    if (streamState.deployment?.status === 'successful') {
+      const timer = setTimeout(() => {
+        setShowDeploymentModal(false);
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [streamState.deployment?.status]);
 
   // Complexity detection mutation
   const complexityMutation = useMutation<any, Error, { command: string }>({
@@ -1569,6 +1590,24 @@ export function AIChat({ onProjectGenerated, currentProjectId }: AIChatProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Deployment Status Modal */}
+      {streamState.deployment && (
+        <DeploymentStatusModal
+          open={showDeploymentModal}
+          onOpenChange={setShowDeploymentModal}
+          deploymentId={streamState.deployment.deploymentId}
+          commitHash={streamState.deployment.commitHash}
+          commitMessage={streamState.deployment.commitMessage}
+          commitUrl={streamState.deployment.commitUrl}
+          timestamp={streamState.deployment.timestamp}
+          platform={streamState.deployment.platform}
+          steps={streamState.deployment.steps}
+          status={streamState.deployment.status}
+          deploymentUrl={streamState.deployment.deploymentUrl}
+          errorMessage={streamState.deployment.errorMessage}
+        />
+      )}
     </div>
   );
 }

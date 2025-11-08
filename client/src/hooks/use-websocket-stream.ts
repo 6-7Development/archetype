@@ -19,8 +19,16 @@ export interface ScratchpadEntry {
   createdAt: Date;
 }
 
+export interface DeploymentStep {
+  name: string;
+  status: 'pending' | 'in_progress' | 'complete' | 'failed';
+  durationMs?: number;
+  startTime?: string;
+  endTime?: string;
+}
+
 interface StreamMessage {
-  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'chat-error' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics' | 'heal:init' | 'heal:thought' | 'heal:tool' | 'heal:write-pending' | 'heal:approved' | 'heal:rejected' | 'heal:completed' | 'heal:error' | 'approval_requested' | 'progress' | 'platform_preview_ready' | 'platform_preview_error' | 'lomu_ai_job_update' | 'scratchpad_entry' | 'scratchpad_cleared';
+  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'chat-error' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics' | 'heal:init' | 'heal:thought' | 'heal:tool' | 'heal:write-pending' | 'heal:approved' | 'heal:rejected' | 'heal:completed' | 'heal:error' | 'approval_requested' | 'progress' | 'platform_preview_ready' | 'platform_preview_error' | 'lomu_ai_job_update' | 'scratchpad_entry' | 'scratchpad_cleared' | 'deploy.started' | 'deploy.step_update' | 'deploy.complete' | 'deploy.failed';
   commandId?: string;
   updateType?: string;
   status?: string;
@@ -84,6 +92,18 @@ interface StreamMessage {
   errors?: string[];
   // Scratchpad-specific fields
   entry?: ScratchpadEntry;
+  // Deployment-specific fields
+  deploymentId?: string;
+  commitHash?: string;
+  commitMessage?: string;
+  commitUrl?: string;
+  platform?: 'github' | 'railway' | 'replit';
+  stepName?: string;
+  deploymentStatus?: 'in_progress' | 'successful' | 'failed';
+  totalDurationMs?: number;
+  steps?: DeploymentStep[];
+  deploymentUrl?: string;
+  errorMessage?: string;
 }
 
 interface StreamState {
@@ -149,6 +169,18 @@ interface StreamState {
     errors: string[];
   } | null;
   scratchpadEntries: ScratchpadEntry[];
+  deployment: {
+    deploymentId: string;
+    commitHash: string;
+    commitMessage: string;
+    commitUrl: string;
+    timestamp: string;
+    platform: 'github' | 'railway' | 'replit';
+    steps: DeploymentStep[];
+    status: 'in_progress' | 'successful' | 'failed';
+    deploymentUrl?: string;
+    errorMessage?: string;
+  } | null;
 }
 
 const MAX_RECONNECT_ATTEMPTS = 5;
@@ -183,6 +215,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
     previewReady: null,
     previewError: null,
     scratchpadEntries: [],
+    deployment: null,
   });
 
   // NEW: State to track heal:* events
@@ -545,6 +578,84 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
                 previewReady: null, // Clear any previous ready state
               }));
               break;
+
+            case 'deploy.started':
+              console.log('🚀 Deployment started:', message.deploymentId);
+              setStreamState(prev => ({
+                ...prev,
+                deployment: {
+                  deploymentId: message.deploymentId || '',
+                  commitHash: message.commitHash || '',
+                  commitMessage: message.commitMessage || '',
+                  commitUrl: message.commitUrl || '',
+                  timestamp: message.timestamp || new Date().toISOString(),
+                  platform: message.platform || 'github',
+                  steps: message.steps || [],
+                  status: 'in_progress',
+                },
+              }));
+              break;
+
+            case 'deploy.step_update':
+              console.log('📝 Deployment step update:', message.stepName);
+              setStreamState(prev => {
+                if (!prev.deployment) return prev;
+                
+                const updatedSteps = prev.deployment.steps.map(step => {
+                  if (step.name === message.stepName) {
+                    return {
+                      ...step,
+                      status: message.deploymentStatus === 'in_progress' ? 'in_progress' as const : 
+                              message.deploymentStatus === 'successful' ? 'complete' as const :
+                              message.deploymentStatus === 'failed' ? 'failed' as const : step.status,
+                      durationMs: message.durationMs,
+                    };
+                  }
+                  return step;
+                });
+                
+                return {
+                  ...prev,
+                  deployment: {
+                    ...prev.deployment,
+                    steps: updatedSteps,
+                  },
+                };
+              });
+              break;
+
+            case 'deploy.complete':
+              console.log('✅ Deployment complete:', message.deploymentStatus);
+              setStreamState(prev => {
+                if (!prev.deployment) return prev;
+                
+                return {
+                  ...prev,
+                  deployment: {
+                    ...prev.deployment,
+                    status: message.deploymentStatus || 'successful',
+                    steps: message.steps || prev.deployment.steps,
+                    deploymentUrl: message.deploymentUrl,
+                  },
+                };
+              });
+              break;
+
+            case 'deploy.failed':
+              console.error('❌ Deployment failed:', message.errorMessage);
+              setStreamState(prev => {
+                if (!prev.deployment) return prev;
+                
+                return {
+                  ...prev,
+                  deployment: {
+                    ...prev.deployment,
+                    status: 'failed',
+                    errorMessage: message.errorMessage,
+                  },
+                };
+              });
+              break;
           }
         } catch (error) {
           console.error('❌ WebSocket message parse error:', error);
@@ -641,6 +752,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
       platformMetrics: null,
       previewReady: null,
       previewError: null,
+      deployment: null,
     }));
   }, []);
 

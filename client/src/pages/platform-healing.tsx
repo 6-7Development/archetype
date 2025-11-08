@@ -23,6 +23,8 @@ import { parseMessageContent, cleanAIResponse } from '@/lib/message-parser';
 import { ChatInputToolbar } from '@/components/ui/chat-input-toolbar';
 import { nanoid } from 'nanoid';
 import { LivePreview } from '@/components/live-preview';
+import { DeploymentStatusModal } from '@/components/deployment-status-modal';
+import type { DeploymentStep } from '@/hooks/use-websocket-stream';
 // ✅ NEW: Agent Chatroom UX Components
 import { StatusStrip } from '@/components/agent/StatusStrip';
 import { TaskPane } from '@/components/agent/TaskPane';
@@ -154,6 +156,21 @@ function PlatformHealingContent() {
     url?: string;
   }>({});
   const [healingSessions, setHealingSessions] = useState<any[]>([]);
+
+  // Deployment modal state
+  const [showDeploymentModal, setShowDeploymentModal] = useState(false);
+  const [deployment, setDeployment] = useState<{
+    deploymentId: string;
+    commitHash: string;
+    commitMessage: string;
+    commitUrl: string;
+    timestamp: string;
+    platform: 'github' | 'railway' | 'replit';
+    steps: DeploymentStep[];
+    status: 'in_progress' | 'successful' | 'failed';
+    deploymentUrl?: string;
+    errorMessage?: string;
+  } | null>(null);
   
   // WebSocket connection for real-time deployment and healing updates
   useEffect(() => {
@@ -242,6 +259,74 @@ function PlatformHealingContent() {
             });
           }
         }
+
+        // Handle deployment events (deploy.started, deploy.step_update, deploy.complete, deploy.failed)
+        if (data.type === 'deploy.started') {
+          console.log('[PLATFORM-HEALING] 🚀 Deployment started:', data.deploymentId);
+          setDeployment({
+            deploymentId: data.deploymentId || '',
+            commitHash: data.commitHash || '',
+            commitMessage: data.commitMessage || '',
+            commitUrl: data.commitUrl || '',
+            timestamp: data.timestamp || new Date().toISOString(),
+            platform: data.platform || 'github',
+            steps: data.steps || [],
+            status: 'in_progress',
+          });
+          setShowDeploymentModal(true);
+        }
+
+        if (data.type === 'deploy.step_update') {
+          console.log('[PLATFORM-HEALING] 📝 Deployment step update:', data.stepName);
+          setDeployment(prev => {
+            if (!prev) return null;
+            
+            const updatedSteps = prev.steps.map(step => {
+              if (step.name === data.stepName) {
+                return {
+                  ...step,
+                  status: data.deploymentStatus === 'in_progress' ? 'in_progress' as const : 
+                          data.deploymentStatus === 'successful' ? 'complete' as const :
+                          data.deploymentStatus === 'failed' ? 'failed' as const : step.status,
+                  durationMs: data.durationMs,
+                };
+              }
+              return step;
+            });
+            
+            return {
+              ...prev,
+              steps: updatedSteps,
+            };
+          });
+        }
+
+        if (data.type === 'deploy.complete') {
+          console.log('[PLATFORM-HEALING] ✅ Deployment complete:', data.deploymentStatus);
+          setDeployment(prev => {
+            if (!prev) return null;
+            
+            return {
+              ...prev,
+              status: data.deploymentStatus || 'successful',
+              steps: data.steps || prev.steps,
+              deploymentUrl: data.deploymentUrl,
+            };
+          });
+        }
+
+        if (data.type === 'deploy.failed') {
+          console.error('[PLATFORM-HEALING] ❌ Deployment failed:', data.errorMessage);
+          setDeployment(prev => {
+            if (!prev) return null;
+            
+            return {
+              ...prev,
+              status: 'failed',
+              errorMessage: data.errorMessage,
+            };
+          });
+        }
       } catch (error) {
         console.error('[PLATFORM-HEALING] WebSocket message parse error:', error);
       }
@@ -259,6 +344,16 @@ function PlatformHealingContent() {
       ws.close();
     };
   }, [toast]);
+
+  // Auto-close deployment modal after 4 seconds on success
+  useEffect(() => {
+    if (deployment?.status === 'successful') {
+      const timer = setTimeout(() => {
+        setShowDeploymentModal(false);
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [deployment?.status]);
 
   // Load healing targets
   const { data: targets, isLoading: targetsLoading, error: targetsError } = useQuery<HealingTarget[]>({
@@ -1346,6 +1441,24 @@ function PlatformHealingContent() {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Deployment Status Modal */}
+      {deployment && (
+        <DeploymentStatusModal
+          open={showDeploymentModal}
+          onOpenChange={setShowDeploymentModal}
+          deploymentId={deployment.deploymentId}
+          commitHash={deployment.commitHash}
+          commitMessage={deployment.commitMessage}
+          commitUrl={deployment.commitUrl}
+          timestamp={deployment.timestamp}
+          platform={deployment.platform}
+          steps={deployment.steps}
+          status={deployment.status}
+          deploymentUrl={deployment.deploymentUrl}
+          errorMessage={deployment.errorMessage}
+        />
+      )}
     </div>
   );
 }
