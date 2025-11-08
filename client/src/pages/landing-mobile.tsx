@@ -4,8 +4,7 @@ import { Card } from "@/components/ui/card";
 import { MotionToggle } from "@/components/motion-toggle";
 import { Sparkles, Zap, Shield, Code, Check, ArrowRight, Menu, Play, Rocket, Hexagon } from "lucide-react";
 import { useState } from "react";
-import beehiveLogo from "@assets/image_1762635565078.png";
-import beehiveWordLogo from "@assets/image_1762635590698.png";
+import { BeehiveIcon, BeehiveWordLogo } from "@/components/beehive-logos";
 
 export default function LandingMobile() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -16,13 +15,11 @@ export default function LandingMobile() {
       <nav className="fixed top-0 w-full z-50 border-b border-honey/10 bg-charcoal-950/95 backdrop-blur-xl">
         <div className="px-3 sm:px-4 py-3">
           <div className="flex items-center justify-between gap-2 sm:gap-3">
-            <Link href="/" className="flex items-center gap-2 min-h-[44px] py-1 flex-1 min-w-0 max-w-[60%]" data-testid="link-brand">
-              <img 
-                src={beehiveLogo} 
-                alt="BeehiveAI" 
-                className="h-8 w-8 object-contain flex-shrink-0"
-              />
-              <span className="text-lg font-bold text-white truncate">BeehiveAI</span>
+            <Link href="/" className="flex items-center gap-1.5 min-h-[44px] py-1 flex-1 min-w-0" data-testid="link-brand">
+              <BeehiveIcon size={32} className="flex-shrink-0" />
+              <div className="min-w-0 flex-shrink overflow-hidden" style={{ maxWidth: '140px' }}>
+                <BeehiveWordLogo size="sm" />
+              </div>
             </Link>
             
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -258,11 +255,7 @@ export default function LandingMobile() {
       <footer className="border-t border-white/10 py-8 px-4">
         <div className="max-w-md mx-auto text-center space-y-4">
           <div className="flex items-center justify-center gap-2">
-            <img 
-              src={beehiveLogo} 
-              alt="BeehiveAI" 
-              className="h-8 w-8 object-contain"
-            />
+            <BeehiveIcon size={32} />
             <span className="text-lg font-bold text-white">BeehiveAI</span>
           </div>
           <p className="text-sm text-slate-400 break-words whitespace-normal">

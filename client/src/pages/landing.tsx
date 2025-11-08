@@ -3,9 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Sparkles, Zap, Shield, Code, Rocket, Check, Play, ArrowRight } from "lucide-react";
-import beehiveLogo from "@assets/image_1762635565078.png";
-import beehiveWordLogo from "@assets/image_1762635590698.png";
+import { Sparkles, Zap, Shield, Code, Rocket, Check, Play, ArrowRight, Hexagon } from "lucide-react";
+import { BeehiveIcon, BeehiveWordLogo } from "@/components/beehive-logos";
 
 export default function Landing() {
   return (
@@ -22,13 +21,9 @@ export default function Landing() {
       <nav className="fixed top-0 w-full z-50 border-b border-honey/10 bg-charcoal-950/90 backdrop-blur-xl">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" data-testid="link-home" className="flex items-center gap-3">
-              <img 
-                src={beehiveLogo} 
-                alt="BeehiveAI" 
-                className="h-10 w-10 object-contain"
-              />
-              <span className="text-2xl font-bold text-white">BeehiveAI</span>
+            <Link href="/" data-testid="link-home" className="flex items-center gap-2">
+              <BeehiveIcon size={40} />
+              <BeehiveWordLogo size="sm" />
             </Link>
             
             <div className="flex items-center gap-3">
@@ -287,11 +282,7 @@ export default function Landing() {
         <div className="container mx-auto max-w-6xl">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <img 
-                src={beehiveLogo} 
-                alt="BeehiveAI" 
-                className="h-8 w-8 object-contain"
-              />
+              <BeehiveIcon size={32} />
               <span className="text-white font-semibold">BeehiveAI</span>
             </div>
             <p className="text-slate-500 text-sm">
