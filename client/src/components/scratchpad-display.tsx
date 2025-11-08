@@ -44,12 +44,9 @@ export function ScratchpadDisplay({ entries, onClear, sessionId }: ScratchpadDis
     return 'text-muted-foreground';
   };
 
-  const groupedEntries = entries.reduce((acc, entry) => {
-    const type = entry.entryType;
-    if (!acc[type]) acc[type] = [];
-    acc[type].push(entry);
-    return acc;
-  }, {} as Record<string, ScratchpadEntry[]>);
+  const sortedEntries = [...entries].sort((a, b) => 
+    new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
 
   return (
     <Collapsible
@@ -96,56 +93,47 @@ export function ScratchpadDisplay({ entries, onClear, sessionId }: ScratchpadDis
           className="h-[400px]"
           data-testid="scratchpad-scroll-area"
         >
-          <div ref={scrollRef} className="p-3 space-y-3">
+          <div ref={scrollRef} className="p-3 space-y-2">
             {entries.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground" data-testid="text-empty-state">
                 <Brain className="w-8 h-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">No progress entries yet</p>
               </div>
             ) : (
-              <>
-                {Object.entries(groupedEntries).map(([type, typeEntries]) => (
-                  <div key={type} className="space-y-2" data-testid={`group-${type}`}>
-                    <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                      {type}s
-                    </h4>
-                    {typeEntries.map((entry, idx) => (
-                      <div
-                        key={`${entry.id}-${idx}`}
-                        className="flex gap-2 p-2 rounded-md bg-muted/30 hover-elevate"
-                        data-testid={`entry-${entry.id}`}
-                      >
-                        <div className="flex-shrink-0 mt-0.5">
-                          {getEntryIcon(entry.entryType)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span
-                              className={`text-xs font-medium ${getAuthorColor(entry.author)}`}
-                              data-testid={`text-author-${entry.id}`}
-                            >
-                              {entry.author}
-                            </span>
-                            <span className="text-xs text-muted-foreground" data-testid={`text-timestamp-${entry.id}`}>
-                              {formatDistanceToNow(new Date(entry.createdAt), { addSuffix: true })}
-                            </span>
-                          </div>
-                          <p className="text-sm text-foreground break-words" data-testid={`text-content-${entry.id}`}>
-                            {entry.content}
-                          </p>
-                          {entry.metadata && Object.keys(entry.metadata).length > 0 && (
-                            <div className="mt-1 text-xs text-muted-foreground" data-testid={`text-metadata-${entry.id}`}>
-                              {entry.metadata.projectId && (
-                                <span>Project: {entry.metadata.projectId}</span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+              sortedEntries.map((entry, idx) => (
+                <div
+                  key={`${entry.id}-${idx}`}
+                  className="flex gap-2 p-2 rounded-md bg-muted/30 hover-elevate"
+                  data-testid={`entry-${entry.id}`}
+                >
+                  <div className="flex-shrink-0 mt-0.5">
+                    {getEntryIcon(entry.entryType)}
                   </div>
-                ))}
-              </>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span
+                        className={`text-xs font-medium ${getAuthorColor(entry.author)}`}
+                        data-testid={`text-author-${entry.id}`}
+                      >
+                        {entry.author}
+                      </span>
+                      <span className="text-xs text-muted-foreground" data-testid={`text-timestamp-${entry.id}`}>
+                        {formatDistanceToNow(new Date(entry.createdAt), { addSuffix: true })}
+                      </span>
+                    </div>
+                    <p className="text-sm text-foreground break-words" data-testid={`text-content-${entry.id}`}>
+                      {entry.content}
+                    </p>
+                    {entry.metadata && Object.keys(entry.metadata).length > 0 && (
+                      <div className="mt-1 text-xs text-muted-foreground" data-testid={`text-metadata-${entry.id}`}>
+                        {entry.metadata.projectId && (
+                          <span>Project: {entry.metadata.projectId}</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
             )}
           </div>
         </ScrollArea>
