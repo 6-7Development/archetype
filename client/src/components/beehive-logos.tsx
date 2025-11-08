@@ -84,13 +84,9 @@ export function BeehiveIcon({ size = 80, className = "" }: { size?: number; clas
         <ellipse cx="0" cy="-1.5" rx="3.5" ry="1" fill="#F7B500"/>
         <ellipse cx="0" cy="1.5" rx="3.5" ry="1" fill="#FFD34D"/>
         
-        {/* Glowing mint eyes */}
-        <circle cx="-1.2" cy="-1" r="1" fill="#00D4B3" opacity="0.9">
-          <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
-        </circle>
-        <circle cx="1.2" cy="-1" r="1" fill="#00D4B3" opacity="0.9">
-          <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
-        </circle>
+        {/* Glowing mint eyes - bright and visible */}
+        <circle cx="-1.2" cy="-1" r="1" fill="#00D4B3" opacity="1"/>
+        <circle cx="1.2" cy="-1" r="1" fill="#00D4B3" opacity="1"/>
         
         {/* Tech wings - simplified */}
         <ellipse cx="-3" cy="-2" rx="3" ry="4" fill="#00D4B3" opacity="0.3" stroke="#00D4B3" strokeWidth="0.5"/>
