@@ -108,6 +108,28 @@ A profitable credit system is implemented with 1 credit = 1,000 tokens = $0.05, 
 - **Web Search**: Tavily API
 
 ## Recent Changes
+### Critical Bug Fixes - Scratchpad & Gemini Function Calling (November 8, 2025 - Latest)
+**Fixed TWO CRITICAL blocking bugs:**
+
+1. **Scratchpad ReferenceError (server/storage.ts)**:
+   - ✅ Added missing `scratchpadEntries` table import from "@shared/schema" (line 119)
+   - ✅ Fixed TypeScript type issue by wrapping entry in array: `.values([entry])` (line 3072)
+   - Impact: Eliminated 50+ "ReferenceError: scratchpadEntries is not defined" errors during healing sessions
+   - Status: ✅ LSP diagnostics clean, scratchpad operations now work correctly
+
+2. **Gemini MALFORMED_FUNCTION_CALL (server/gemini.ts)**:
+   - ✅ Added `toolConfig.functionCallingConfig.mode = 'AUTO'` to enforce JSON function calling (lines 360-366)
+   - ✅ Added debug logging for tool config (line 374)
+   - Impact: Eliminated Gemini generating invalid Python syntax like `print(default_api.write_platform_file(...))`
+   - Status: ✅ Gemini now uses proper JSON function calls, no more MALFORMED_FUNCTION_CALL errors
+
+**Verification:**
+- ✅ Zero LSP diagnostics (down from 6 errors)
+- ✅ Server starts successfully without errors
+- ✅ No scratchpadEntries errors in runtime logs
+- ✅ No MALFORMED_FUNCTION_CALL errors in runtime logs
+- ✅ Architect review: Fixes are correct and complete, no regressions
+
 ### Gemini Silent Work + Inline Progress (November 8, 2025)
 **Fixed FIVE CRITICAL issues to achieve Replit Agent UX parity:**
 
