@@ -438,6 +438,7 @@ If you need to call a function, emit ONLY the JSON object.`),
         }
 
         const candidate = candidates[0];
+        const content = candidate.content;
         
         // 🔍 DEBUG: Check for safety blocks or finish reasons
         if (candidate.finishReason) {
@@ -531,7 +532,6 @@ Return ONLY the raw JSON object.`;
           }
         }
         
-        const content = candidate.content;
         if (!content || !content.parts) {
           console.log('[GEMINI-DEBUG] Candidate with no content/parts:', JSON.stringify(candidate).substring(0, 200));
           continue;

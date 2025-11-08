@@ -137,7 +137,7 @@ export function BeehiveIcon({ size = 80, className = "" }: { size?: number; clas
         
         <filter id="bevelEffect">
           <feGaussianBlur in="SourceAlpha" stdDeviation="1" result="blur"/>
-          <feSpecularLighting in="blur" surfaceScale="3" specularConstant="0.5" specularExponent="20" lighting-color="white" result="specular">
+          <feSpecularLighting in="blur" surfaceScale="3" specularConstant="0.5" specularExponent="20" lightingColor="white" result="specular">
             <fePointLight x="-5000" y="-10000" z="20000"/>
           </feSpecularLighting>
           <feComposite in="specular" in2="SourceAlpha" operator="in" result="specular"/>
