@@ -104,7 +104,7 @@ export function getMaxIterationsForIntent(intent: UserIntent): number {
     case 'diagnostic':
       return 30; // Deep investigation and comprehensive analysis
     case 'casual':
-      return 5; // Don't waste tokens on small talk
+      return 15; // Allow demos and explorations to complete properly (increased from 5)
     default:
       return 30; // Safe default - favor completing work over conserving tokens
   }

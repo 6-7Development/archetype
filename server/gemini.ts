@@ -265,8 +265,18 @@ export async function streamGeminiResponse(options: StreamOptions) {
     // Prepare request parameters with systemInstruction and tools at top level
     const requestParams: any = {
       contents: geminiMessages,
-      // ✅ ADD SYSTEM INSTRUCTION: Only use declared tools (prevents hallucinating print())
-      systemInstruction: `${system}\n\nCRITICAL: You can ONLY use the explicitly declared function tools provided. Never invent functions like print(), default_api, or any other undeclared tools.`,
+      // ✅ STRENGTHENED SYSTEM INSTRUCTION: Explicitly forbid Python SDK syntax
+      systemInstruction: `${system}
+
+CRITICAL FUNCTION CALLING RULES:
+- NEVER use Python syntax like print() or default_api.method_name()
+- NEVER use Python SDK patterns like default_api.CreateTaskListTasks()
+- ALWAYS use JSON function calls ONLY
+- Tool calls must be pure JSON objects, not Python code
+- You can ONLY use the explicitly declared function tools provided
+- If you're unsure, DO NOT call functions - just respond with text
+
+Only use declared tools with proper JSON format.`,
       generationConfig: {
         maxOutputTokens: maxTokens,
         temperature: 0.1, // ULTRA-LOW = maximum determinism for function calling (Google recommends 0-0.2)
