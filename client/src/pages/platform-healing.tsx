@@ -21,6 +21,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { parseMessageContent, cleanAIResponse } from '@/lib/message-parser';
 import { ChatInputToolbar } from '@/components/ui/chat-input-toolbar';
 import { nanoid } from 'nanoid';
+import { LivePreview } from '@/components/live-preview';
 
 interface HealingTarget {
   id: string;
@@ -895,7 +896,7 @@ function PlatformHealingContent() {
         ) : (
           <ResizablePanelGroup direction="horizontal" className="h-full">
             {/* Left Panel: Chat */}
-            <ResizablePanel defaultSize={60} minSize={30}>
+            <ResizablePanel defaultSize={40} minSize={25}>
               <div className="h-full flex flex-col">
                 {/* Chat Messages */}
                 <div
@@ -1137,8 +1138,15 @@ function PlatformHealingContent() {
 
             <ResizableHandle className="hidden md:flex" />
 
+            {/* Middle Panel: Live Preview (Desktop only) */}
+            <ResizablePanel defaultSize={35} minSize={25} className="hidden md:block">
+              <LivePreview projectId="platform" />
+            </ResizablePanel>
+
+            <ResizableHandle className="hidden md:flex" />
+
             {/* Right Panel: Tasks, Info & Log Tabs (Desktop only) */}
-            <ResizablePanel defaultSize={40} minSize={30} className="hidden md:block">
+            <ResizablePanel defaultSize={25} minSize={20} className="hidden md:block">
               <Tabs defaultValue={tasks.length > 0 ? "tasks" : "info"} className="h-full flex flex-col">
                 <TabsList className="mx-4 mt-4">
                   <TabsTrigger value="tasks" data-testid="tab-tasks">
