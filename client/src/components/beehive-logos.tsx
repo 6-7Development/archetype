@@ -174,11 +174,11 @@ export function BeehiveLogo({
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Large Cyber Bee Icon */}
+      {/* Large Robot Bee Icon */}
       <g transform="translate(15, 15)">
-        {/* Border circles */}
-        <circle cx="35" cy="35" r="33" stroke="#101113" strokeWidth="2.5" fill="none"/>
-        <circle cx="35" cy="35" r="30" stroke="#00D4B3" strokeWidth="2" fill="none" opacity="0.9"/>
+        {/* Hexagonal border - robotic frame */}
+        <path d="M35 2 L58 16 L58 54 L35 68 L12 54 L12 16 Z" stroke="#101113" strokeWidth="2.5" fill="none"/>
+        <path d="M35 5 L56 18 L56 52 L35 65 L14 52 L14 18 Z" stroke="#00D4B3" strokeWidth="1.8" fill="none" opacity="0.9"/>
         
         {/* Digital grid background */}
         <g opacity="0.08" stroke="#00D4B3" strokeWidth="0.4">
@@ -194,55 +194,74 @@ export function BeehiveLogo({
           <line x1="55" y1="10" x2="55" y2="60"/>
         </g>
         
-        {/* Cyber Bee - rendered directly */}
+        {/* Animatronic Robot Bee - rendered directly */}
         <g transform="translate(35, 35)">
-          {/* Body - robotic */}
-          <ellipse cx="0" cy="0" rx="7" ry="9" fill="#FFD34D" stroke="#101113" strokeWidth="1.2"/>
-          <rect x="-6" y="-3.5" width="12" height="1.8" fill="#101113" opacity="0.9"/>
-          <rect x="-6" y="1.7" width="12" height="1.8" fill="#101113" opacity="0.9"/>
+          {/* Body - segmented hexagonal armor plates */}
+          <path d="M-5 -4 L5 -4 L7 0 L5 4 L-5 4 L-7 0 Z" fill="#1a1a1a" stroke="#101113" strokeWidth="1.2"/>
+          <path d="M-4.5 -3.5 L4.5 -3.5 L6.5 0 L4.5 3.5 L-4.5 3.5 L-6.5 0 Z" fill="#F7B500" stroke="#00D4B3" strokeWidth="0.8"/>
           
-          {/* Circuit lines on body */}
-          <g stroke="#00D4B3" strokeWidth="0.5" opacity="0.7">
-            <line x1="-4.5" y1="-1.5" x2="4.5" y2="-1.5"/>
-            <line x1="-4.5" y1="0.8" x2="4.5" y2="0.8"/>
-            <circle cx="-3" cy="-1.5" r="0.4" fill="#00D4B3"/>
-            <circle cx="3" cy="-1.5" r="0.4" fill="#00D4B3"/>
-            <circle cx="-3" cy="0.8" r="0.4" fill="#00D4B3"/>
-            <circle cx="3" cy="0.8" r="0.4" fill="#00D4B3"/>
+          {/* Metal segmentation lines */}
+          <line x1="-6" y1="-1" x2="6" y2="-1" stroke="#101113" strokeWidth="1.2"/>
+          <line x1="-6" y1="1" x2="6" y2="1" stroke="#101113" strokeWidth="1.2"/>
+          
+          {/* Circuit board pattern */}
+          <g stroke="#00D4B3" strokeWidth="0.4" fill="none">
+            <rect x="-4" y="-2.5" width="2" height="1.5" rx="0.2"/>
+            <rect x="2" y="-2.5" width="2" height="1.5" rx="0.2"/>
+            <rect x="-4" y="1" width="2" height="1.5" rx="0.2"/>
+            <rect x="2" y="1" width="2" height="1.5" rx="0.2"/>
+            <line x1="-3" y1="-1.8" x2="3" y2="-1.8"/>
+            <line x1="-3" y1="1.8" x2="3" y2="1.8"/>
+            <circle cx="-1" cy="-1.8" r="0.3" fill="#00D4B3"/>
+            <circle cx="1" cy="-1.8" r="0.3" fill="#00D4B3"/>
+            <circle cx="-1" cy="1.8" r="0.3" fill="#00D4B3"/>
+            <circle cx="1" cy="1.8" r="0.3" fill="#00D4B3"/>
           </g>
           
-          {/* Hexagonal head with visor */}
-          <path d="M-1 -9 L2 -10.5 L5 -9 L5 -6 L2 -4.5 L-1 -6 Z" fill="#F7B500" stroke="#101113" strokeWidth="0.9"/>
-          <rect x="-1.5" y="-9" width="5" height="1.5" rx="0.7" fill="#00D4B3" opacity="0.95"/>
+          {/* Hexagonal robotic head */}
+          <path d="M-2 -7 L2 -9 L6 -7 L6 -3 L2 -1 L-2 -3 Z" fill="#2a2a2a" stroke="#101113" strokeWidth="1"/>
+          <path d="M-1.5 -6.5 L2 -8.5 L5.5 -6.5 L5.5 -3.5 L2 -1.5 L-1.5 -3.5 Z" fill="#101113" stroke="#00D4B3" strokeWidth="0.6"/>
           
-          {/* Glowing visor effect */}
-          <rect x="-1" y="-8.5" width="4" height="0.8" rx="0.4" fill="#FFD34D" opacity="0.6"/>
+          {/* LED visor strip */}
+          <rect x="-1" y="-6.5" width="5.5" height="1" rx="0.3" fill="#00D4B3"/>
+          <rect x="-0.5" y="-6.2" width="5" height="0.4" rx="0.2" fill="#FFD34D" opacity="0.8"/>
           
-          {/* Antenna with sensors */}
-          <line x1="-0.5" y1="-10.5" x2="-1.5" y2="-13" stroke="#101113" strokeWidth="0.6"/>
-          <line x1="2.5" y1="-10.5" x2="3.5" y2="-13" stroke="#101113" strokeWidth="0.6"/>
-          <circle cx="-1.5" cy="-13" r="0.8" fill="#00D4B3" stroke="#101113" strokeWidth="0.5"/>
-          <circle cx="3.5" cy="-13" r="0.8" fill="#00D4B3" stroke="#101113" strokeWidth="0.5"/>
-          <circle cx="-1.5" cy="-13" r="0.3" fill="#FFD34D" opacity="0.9"/>
-          <circle cx="3.5" cy="-13" r="0.3" fill="#FFD34D" opacity="0.9"/>
+          {/* Metal panel details */}
+          <line x1="0" y1="-5" x2="0" y2="-4" stroke="#00D4B3" strokeWidth="0.3"/>
+          <line x1="4" y1="-5" x2="4" y2="-4" stroke="#00D4B3" strokeWidth="0.3"/>
           
-          {/* Tech wings with circuit pattern */}
-          <path d="M-7 -2 L-10 -4 L-11.5 -1.5 L-10.5 1 L-7 -0.5 Z" fill="#00D4B3" opacity="0.8" stroke="#101113" strokeWidth="0.6"/>
-          <path d="M7 -2 L10 -4 L11.5 -1.5 L10.5 1 L7 -0.5 Z" fill="#00D4B3" opacity="0.8" stroke="#101113" strokeWidth="0.6"/>
-          
-          {/* Circuit details on wings */}
-          <g stroke="#FFD34D" strokeWidth="0.3" opacity="0.6">
-            <line x1="-9" y1="-3" x2="-8" y2="-1"/>
-            <line x1="9" y1="-3" x2="8" y2="-1"/>
+          {/* Antenna sensors - mechanical */}
+          <g>
+            <rect x="-2.5" y="-9.5" width="0.8" height="2.5" rx="0.2" fill="#1a1a1a" stroke="#101113" strokeWidth="0.5"/>
+            <rect x="4.7" y="-9.5" width="0.8" height="2.5" rx="0.2" fill="#1a1a1a" stroke="#101113" strokeWidth="0.5"/>
+            <rect x="-2.5" y="-11" width="0.8" height="1.5" fill="#00D4B3" stroke="#101113" strokeWidth="0.4"/>
+            <rect x="4.7" y="-11" width="0.8" height="1.5" fill="#00D4B3" stroke="#101113" strokeWidth="0.4"/>
+            <circle cx="-2.1" cy="-10.3" r="0.25" fill="#FFD34D"/>
+            <circle cx="5.1" cy="-10.3" r="0.25" fill="#FFD34D"/>
           </g>
           
-          {/* Robotic arms */}
-          <path d="M-6 3 L-8.5 6 L-7.5 7.5" stroke="#101113" strokeWidth="0.9" strokeLinecap="round" fill="none"/>
-          <path d="M6 3 L8.5 6 L7.5 7.5" stroke="#101113" strokeWidth="0.9" strokeLinecap="round" fill="none"/>
-          <circle cx="-7.5" cy="7.5" r="1.2" fill="#F7B500" stroke="#101113" strokeWidth="0.6"/>
-          <circle cx="7.5" cy="7.5" r="1.2" fill="#F7B500" stroke="#101113" strokeWidth="0.6"/>
-          <circle cx="-7.5" cy="7.5" r="0.5" fill="#00D4B3" opacity="0.8"/>
-          <circle cx="7.5" cy="7.5" r="0.5" fill="#00D4B3" opacity="0.8"/>
+          {/* Mechanical wings - angular tech panels */}
+          <g>
+            <path d="M-7 -2 L-11 -4.5 L-12 -2 L-11 0.5 L-7 -0.5 Z" fill="#1a1a1a" stroke="#101113" strokeWidth="0.8"/>
+            <path d="M-7.5 -2 L-10.5 -4 L-11.5 -2 L-10.5 0.2 L-7.5 -0.5 Z" fill="#00D4B3" opacity="0.6" stroke="#00D4B3" strokeWidth="0.4"/>
+            <line x1="-9" y1="-3" x2="-9" y2="-1" stroke="#FFD34D" strokeWidth="0.3"/>
+            
+            <path d="M7 -2 L11 -4.5 L12 -2 L11 0.5 L7 -0.5 Z" fill="#1a1a1a" stroke="#101113" strokeWidth="0.8"/>
+            <path d="M7.5 -2 L10.5 -4 L11.5 -2 L10.5 0.2 L7.5 -0.5 Z" fill="#00D4B3" opacity="0.6" stroke="#00D4B3" strokeWidth="0.4"/>
+            <line x1="9" y1="-3" x2="9" y2="-1" stroke="#FFD34D" strokeWidth="0.3"/>
+          </g>
+          
+          {/* Mechanical arms with joints */}
+          <g>
+            <rect x="-6.5" y="3" width="1.2" height="3" rx="0.3" fill="#1a1a1a" stroke="#101113" strokeWidth="0.7"/>
+            <rect x="5.3" y="3" width="1.2" height="3" rx="0.3" fill="#1a1a1a" stroke="#101113" strokeWidth="0.7"/>
+            <circle cx="-5.9" cy="4.2" r="0.4" fill="#00D4B3" stroke="#101113" strokeWidth="0.3"/>
+            <circle cx="5.9" cy="4.2" r="0.4" fill="#00D4B3" stroke="#101113" strokeWidth="0.3"/>
+            <rect x="-7" y="6" width="2" height="1.5" rx="0.3" fill="#F7B500" stroke="#101113" strokeWidth="0.6"/>
+            <rect x="5" y="6" width="2" height="1.5" rx="0.3" fill="#F7B500" stroke="#101113" strokeWidth="0.6"/>
+            <circle cx="-6" cy="6.7" r="0.35" fill="#00D4B3"/>
+            <circle cx="6" cy="6.7" r="0.35" fill="#00D4B3"/>
+          </g>
         </g>
         
         {/* Floating code symbols around bee */}
@@ -368,11 +387,11 @@ export function BeehiveLogoMobile({
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Large Cyber Bee Icon Mobile */}
+      {/* Large Robot Bee Icon Mobile */}
       <g transform="translate(8, 8)">
-        {/* Border circles */}
-        <circle cx="22" cy="22" r="21" stroke="#101113" strokeWidth="1.8" fill="none"/>
-        <circle cx="22" cy="22" r="19" stroke="#00D4B3" strokeWidth="1.3" fill="none" opacity="0.9"/>
+        {/* Hexagonal border - robotic frame */}
+        <path d="M22 1 L37 10 L37 34 L22 43 L7 34 L7 10 Z" stroke="#101113" strokeWidth="1.6" fill="none"/>
+        <path d="M22 3 L35 11 L35 33 L22 41 L9 33 L9 11 Z" stroke="#00D4B3" strokeWidth="1.1" fill="none" opacity="0.9"/>
         
         {/* Digital grid background */}
         <g opacity="0.06" stroke="#00D4B3" strokeWidth="0.25">
@@ -388,55 +407,74 @@ export function BeehiveLogoMobile({
           <line x1="34" y1="7" x2="34" y2="37"/>
         </g>
         
-        {/* Cyber Bee Mobile - rendered directly */}
+        {/* Animatronic Robot Bee Mobile - rendered directly */}
         <g transform="translate(22, 22)">
-          {/* Body - robotic */}
-          <ellipse cx="0" cy="0" rx="4.5" ry="5.5" fill="#FFD34D" stroke="#101113" strokeWidth="0.8"/>
-          <rect x="-4" y="-2.2" width="8" height="1.2" fill="#101113" opacity="0.9"/>
-          <rect x="-4" y="1" width="8" height="1.2" fill="#101113" opacity="0.9"/>
+          {/* Body - segmented hexagonal armor plates */}
+          <path d="M-3.2 -2.5 L3.2 -2.5 L4.5 0 L3.2 2.5 L-3.2 2.5 L-4.5 0 Z" fill="#1a1a1a" stroke="#101113" strokeWidth="0.8"/>
+          <path d="M-2.9 -2.2 L2.9 -2.2 L4.2 0 L2.9 2.2 L-2.9 2.2 L-4.2 0 Z" fill="#F7B500" stroke="#00D4B3" strokeWidth="0.5"/>
           
-          {/* Circuit lines on body */}
-          <g stroke="#00D4B3" strokeWidth="0.3" opacity="0.7">
-            <line x1="-3" y1="-1" x2="3" y2="-1"/>
-            <line x1="-3" y1="0.5" x2="3" y2="0.5"/>
-            <circle cx="-2" cy="-1" r="0.25" fill="#00D4B3"/>
-            <circle cx="2" cy="-1" r="0.25" fill="#00D4B3"/>
-            <circle cx="-2" cy="0.5" r="0.25" fill="#00D4B3"/>
-            <circle cx="2" cy="0.5" r="0.25" fill="#00D4B3"/>
+          {/* Metal segmentation lines */}
+          <line x1="-4" y1="-0.6" x2="4" y2="-0.6" stroke="#101113" strokeWidth="0.8"/>
+          <line x1="-4" y1="0.6" x2="4" y2="0.6" stroke="#101113" strokeWidth="0.8"/>
+          
+          {/* Circuit board pattern */}
+          <g stroke="#00D4B3" strokeWidth="0.25" fill="none">
+            <rect x="-2.5" y="-1.5" width="1.2" height="0.9" rx="0.1"/>
+            <rect x="1.3" y="-1.5" width="1.2" height="0.9" rx="0.1"/>
+            <rect x="-2.5" y="0.6" width="1.2" height="0.9" rx="0.1"/>
+            <rect x="1.3" y="0.6" width="1.2" height="0.9" rx="0.1"/>
+            <line x1="-2" y1="-1.1" x2="2" y2="-1.1"/>
+            <line x1="-2" y1="1.1" x2="2" y2="1.1"/>
+            <circle cx="-0.6" cy="-1.1" r="0.2" fill="#00D4B3"/>
+            <circle cx="0.6" cy="-1.1" r="0.2" fill="#00D4B3"/>
+            <circle cx="-0.6" cy="1.1" r="0.2" fill="#00D4B3"/>
+            <circle cx="0.6" cy="1.1" r="0.2" fill="#00D4B3"/>
           </g>
           
-          {/* Hexagonal head with visor */}
-          <path d="M-0.6 -5.5 L1.2 -6.5 L3 -5.5 L3 -3.5 L1.2 -2.5 L-0.6 -3.5 Z" fill="#F7B500" stroke="#101113" strokeWidth="0.6"/>
-          <rect x="-1" y="-5.5" width="3.2" height="1" rx="0.5" fill="#00D4B3" opacity="0.95"/>
+          {/* Hexagonal robotic head */}
+          <path d="M-1.3 -4.5 L1.3 -5.8 L4 -4.5 L4 -2 L1.3 -0.6 L-1.3 -2 Z" fill="#2a2a2a" stroke="#101113" strokeWidth="0.6"/>
+          <path d="M-1 -4.2 L1.3 -5.3 L3.7 -4.2 L3.7 -2.3 L1.3 -1 L-1 -2.3 Z" fill="#101113" stroke="#00D4B3" strokeWidth="0.4"/>
           
-          {/* Glowing visor effect */}
-          <rect x="-0.6" y="-5.2" width="2.6" height="0.5" rx="0.25" fill="#FFD34D" opacity="0.6"/>
+          {/* LED visor strip */}
+          <rect x="-0.6" y="-4.2" width="3.5" height="0.6" rx="0.2" fill="#00D4B3"/>
+          <rect x="-0.3" y="-4" width="3.2" height="0.25" rx="0.1" fill="#FFD34D" opacity="0.8"/>
           
-          {/* Antenna with sensors */}
-          <line x1="-0.3" y1="-6.5" x2="-1" y2="-8.2" stroke="#101113" strokeWidth="0.4"/>
-          <line x1="1.5" y1="-6.5" x2="2.2" y2="-8.2" stroke="#101113" strokeWidth="0.4"/>
-          <circle cx="-1" cy="-8.2" r="0.5" fill="#00D4B3" stroke="#101113" strokeWidth="0.3"/>
-          <circle cx="2.2" cy="-8.2" r="0.5" fill="#00D4B3" stroke="#101113" strokeWidth="0.3"/>
-          <circle cx="-1" cy="-8.2" r="0.2" fill="#FFD34D" opacity="0.9"/>
-          <circle cx="2.2" cy="-8.2" r="0.2" fill="#FFD34D" opacity="0.9"/>
+          {/* Metal panel details */}
+          <line x1="0.2" y1="-3.2" x2="0.2" y2="-2.6" stroke="#00D4B3" strokeWidth="0.2"/>
+          <line x1="2.6" y1="-3.2" x2="2.6" y2="-2.6" stroke="#00D4B3" strokeWidth="0.2"/>
           
-          {/* Tech wings with circuit pattern */}
-          <path d="M-4.5 -1.2 L-6.5 -2.5 L-7.5 -0.8 L-6.8 0.6 L-4.5 -0.3 Z" fill="#00D4B3" opacity="0.8" stroke="#101113" strokeWidth="0.4"/>
-          <path d="M4.5 -1.2 L6.5 -2.5 L7.5 -0.8 L6.8 0.6 L4.5 -0.3 Z" fill="#00D4B3" opacity="0.8" stroke="#101113" strokeWidth="0.4"/>
-          
-          {/* Circuit details on wings */}
-          <g stroke="#FFD34D" strokeWidth="0.2" opacity="0.6">
-            <line x1="-5.8" y1="-1.8" x2="-5.2" y2="-0.6"/>
-            <line x1="5.8" y1="-1.8" x2="5.2" y2="-0.6"/>
+          {/* Antenna sensors - mechanical */}
+          <g>
+            <rect x="-1.6" y="-6.1" width="0.5" height="1.6" rx="0.1" fill="#1a1a1a" stroke="#101113" strokeWidth="0.3"/>
+            <rect x="3.1" y="-6.1" width="0.5" height="1.6" rx="0.1" fill="#1a1a1a" stroke="#101113" strokeWidth="0.3"/>
+            <rect x="-1.6" y="-7.1" width="0.5" height="1" fill="#00D4B3" stroke="#101113" strokeWidth="0.25"/>
+            <rect x="3.1" y="-7.1" width="0.5" height="1" fill="#00D4B3" stroke="#101113" strokeWidth="0.25"/>
+            <circle cx="-1.35" cy="-6.6" r="0.15" fill="#FFD34D"/>
+            <circle cx="3.35" cy="-6.6" r="0.15" fill="#FFD34D"/>
           </g>
           
-          {/* Robotic arms */}
-          <path d="M-4 1.8 L-5.5 3.8 L-5 4.8" stroke="#101113" strokeWidth="0.6" strokeLinecap="round" fill="none"/>
-          <path d="M4 1.8 L5.5 3.8 L5 4.8" stroke="#101113" strokeWidth="0.6" strokeLinecap="round" fill="none"/>
-          <circle cx="-5" cy="4.8" r="0.8" fill="#F7B500" stroke="#101113" strokeWidth="0.4"/>
-          <circle cx="5" cy="4.8" r="0.8" fill="#F7B500" stroke="#101113" strokeWidth="0.4"/>
-          <circle cx="-5" cy="4.8" r="0.3" fill="#00D4B3" opacity="0.8"/>
-          <circle cx="5" cy="4.8" r="0.3" fill="#00D4B3" opacity="0.8"/>
+          {/* Mechanical wings - angular tech panels */}
+          <g>
+            <path d="M-4.5 -1.3 L-7.1 -2.9 L-7.7 -1.3 L-7.1 0.3 L-4.5 -0.3 Z" fill="#1a1a1a" stroke="#101113" strokeWidth="0.5"/>
+            <path d="M-4.8 -1.3 L-6.8 -2.6 L-7.4 -1.3 L-6.8 0.1 L-4.8 -0.3 Z" fill="#00D4B3" opacity="0.6" stroke="#00D4B3" strokeWidth="0.25"/>
+            <line x1="-5.8" y1="-1.9" x2="-5.8" y2="-0.6" stroke="#FFD34D" strokeWidth="0.2"/>
+            
+            <path d="M4.5 -1.3 L7.1 -2.9 L7.7 -1.3 L7.1 0.3 L4.5 -0.3 Z" fill="#1a1a1a" stroke="#101113" strokeWidth="0.5"/>
+            <path d="M4.8 -1.3 L6.8 -2.6 L7.4 -1.3 L6.8 0.1 L4.8 -0.3 Z" fill="#00D4B3" opacity="0.6" stroke="#00D4B3" strokeWidth="0.25"/>
+            <line x1="5.8" y1="-1.9" x2="5.8" y2="-0.6" stroke="#FFD34D" strokeWidth="0.2"/>
+          </g>
+          
+          {/* Mechanical arms with joints */}
+          <g>
+            <rect x="-4.2" y="1.9" width="0.8" height="1.9" rx="0.2" fill="#1a1a1a" stroke="#101113" strokeWidth="0.45"/>
+            <rect x="3.4" y="1.9" width="0.8" height="1.9" rx="0.2" fill="#1a1a1a" stroke="#101113" strokeWidth="0.45"/>
+            <circle cx="-3.8" cy="2.7" r="0.25" fill="#00D4B3" stroke="#101113" strokeWidth="0.2"/>
+            <circle cx="3.8" cy="2.7" r="0.25" fill="#00D4B3" stroke="#101113" strokeWidth="0.2"/>
+            <rect x="-4.5" y="3.8" width="1.3" height="1" rx="0.2" fill="#F7B500" stroke="#101113" strokeWidth="0.4"/>
+            <rect x="3.2" y="3.8" width="1.3" height="1" rx="0.2" fill="#F7B500" stroke="#101113" strokeWidth="0.4"/>
+            <circle cx="-3.9" cy="4.3" r="0.22" fill="#00D4B3"/>
+            <circle cx="3.9" cy="4.3" r="0.22" fill="#00D4B3"/>
+          </g>
         </g>
         
         {/* Floating code symbols around bee */}
