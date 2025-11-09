@@ -100,22 +100,38 @@ export function BeehiveIcon({ size = 80, className = "" }: { size?: number; clas
         <line x1="60" y1="70" x2="60" y2="70"/>
       </g>
       
-      {/* Robot Bee Component - reusable */}
+      {/* Cute Bee Component - emoji-style */}
       <g id="robotBee">
-        {/* Bee body - metallic gray */}
-        <ellipse cx="0" cy="0" rx="4" ry="5" fill="#606060" stroke="#101113" strokeWidth="0.8"/>
+        {/* Main body - round golden yellow */}
+        <ellipse cx="0" cy="0.5" rx="3.5" ry="4.5" fill="#FFD34D" stroke="#101113" strokeWidth="0.8"/>
         
-        {/* Golden stripes */}
-        <ellipse cx="0" cy="-1.5" rx="3.5" ry="1" fill="#F7B500"/>
-        <ellipse cx="0" cy="1.5" rx="3.5" ry="1" fill="#FFD34D"/>
+        {/* Black stripes - bee-like */}
+        <ellipse cx="0" cy="-1" rx="3.2" ry="1.2" fill="#101113"/>
+        <ellipse cx="0" cy="1.5" rx="3.2" ry="1.2" fill="#101113"/>
         
-        {/* Glowing mint eyes - bright and visible */}
-        <circle cx="-1.2" cy="-1" r="1" fill="#00D4B3" opacity="1"/>
-        <circle cx="1.2" cy="-1" r="1" fill="#00D4B3" opacity="1"/>
+        {/* Head - round */}
+        <circle cx="0" cy="-3" r="2.2" fill="#F7B500" stroke="#101113" strokeWidth="0.7"/>
         
-        {/* Tech wings - simplified */}
-        <ellipse cx="-3" cy="-2" rx="3" ry="4" fill="#00D4B3" opacity="0.3" stroke="#00D4B3" strokeWidth="0.5"/>
-        <ellipse cx="3" cy="-2" rx="3" ry="4" fill="#00D4B3" opacity="0.3" stroke="#00D4B3" strokeWidth="0.5"/>
+        {/* Cute eyes */}
+        <circle cx="-0.8" cy="-3" r="0.6" fill="#101113"/>
+        <circle cx="0.8" cy="-3" r="0.6" fill="#101113"/>
+        <circle cx="-0.6" cy="-3.2" r="0.3" fill="#FFFFFF"/>
+        <circle cx="0.6" cy="-3.2" r="0.3" fill="#FFFFFF"/>
+        
+        {/* Cute smile */}
+        <path d="M-0.8 -2.2 Q0 -1.8 0.8 -2.2" stroke="#101113" strokeWidth="0.4" fill="none" strokeLinecap="round"/>
+        
+        {/* Antennae */}
+        <path d="M-0.8 -5 L-1.5 -6.5" stroke="#101113" strokeWidth="0.5" strokeLinecap="round"/>
+        <path d="M0.8 -5 L1.5 -6.5" stroke="#101113" strokeWidth="0.5" strokeLinecap="round"/>
+        <circle cx="-1.5" cy="-6.5" r="0.5" fill="#F7B500" stroke="#101113" strokeWidth="0.4"/>
+        <circle cx="1.5" cy="-6.5" r="0.5" fill="#F7B500" stroke="#101113" strokeWidth="0.4"/>
+        
+        {/* Wings - vibrant with gradient effect */}
+        <ellipse cx="-2.5" cy="-1" rx="2.8" ry="3.5" fill="#00D4B3" opacity="0.5" stroke="#00D4B3" strokeWidth="0.6"/>
+        <ellipse cx="2.5" cy="-1" rx="2.8" ry="3.5" fill="#00D4B3" opacity="0.5" stroke="#00D4B3" strokeWidth="0.6"/>
+        <ellipse cx="-2.3" cy="-0.5" rx="1.5" ry="2" fill="#FFFFFF" opacity="0.6"/>
+        <ellipse cx="2.3" cy="-0.5" rx="1.5" ry="2" fill="#FFFFFF" opacity="0.6"/>
       </g>
       
       {/* Position robot bees around the hive - 8 positions */}
@@ -198,15 +214,24 @@ export function BeehiveLogo({ className = "" }: { className?: string }) {
         {/* Central hexagon */}
         <path d="M30 27 L33 29 L33 33 L30 35 L27 33 L27 29 Z" fill="#00D4B3" stroke="#101113" strokeWidth="0.8"/>
         
-        {/* Robot bee mini */}
+        {/* Cute bee mini */}
         <g id="miniBee">
-          <ellipse cx="0" cy="0" rx="2" ry="2.5" fill="#606060" stroke="#101113" strokeWidth="0.5"/>
-          <ellipse cx="0" cy="-0.7" rx="1.8" ry="0.5" fill="#F7B500"/>
-          <ellipse cx="0" cy="0.7" rx="1.8" ry="0.5" fill="#FFD34D"/>
-          <circle cx="-0.6" cy="-0.5" r="0.5" fill="#00D4B3" opacity="0.9"/>
-          <circle cx="0.6" cy="-0.5" r="0.5" fill="#00D4B3" opacity="0.9"/>
-          <ellipse cx="-1.5" cy="-1" rx="1.5" ry="2" fill="#00D4B3" opacity="0.3" stroke="#00D4B3" strokeWidth="0.3"/>
-          <ellipse cx="1.5" cy="-1" rx="1.5" ry="2" fill="#00D4B3" opacity="0.3" stroke="#00D4B3" strokeWidth="0.3"/>
+          <ellipse cx="0" cy="0.3" rx="1.8" ry="2.3" fill="#FFD34D" stroke="#101113" strokeWidth="0.4"/>
+          <ellipse cx="0" cy="-0.5" rx="1.6" ry="0.6" fill="#101113"/>
+          <ellipse cx="0" cy="0.8" rx="1.6" ry="0.6" fill="#101113"/>
+          <circle cx="0" cy="-1.5" r="1.1" fill="#F7B500" stroke="#101113" strokeWidth="0.35"/>
+          <circle cx="-0.4" cy="-1.5" r="0.3" fill="#101113"/>
+          <circle cx="0.4" cy="-1.5" r="0.3" fill="#101113"/>
+          <circle cx="-0.3" cy="-1.6" r="0.15" fill="#FFFFFF"/>
+          <circle cx="0.3" cy="-1.6" r="0.15" fill="#FFFFFF"/>
+          <path d="M-0.7 -2.5 L-1 -3.3" stroke="#101113" strokeWidth="0.25" strokeLinecap="round"/>
+          <path d="M0.7 -2.5 L1 -3.3" stroke="#101113" strokeWidth="0.25" strokeLinecap="round"/>
+          <circle cx="-1" cy="-3.3" r="0.25" fill="#F7B500" stroke="#101113" strokeWidth="0.2"/>
+          <circle cx="1" cy="-3.3" r="0.25" fill="#F7B500" stroke="#101113" strokeWidth="0.2"/>
+          <ellipse cx="-1.3" cy="-0.5" rx="1.4" ry="1.8" fill="#00D4B3" opacity="0.5" stroke="#00D4B3" strokeWidth="0.3"/>
+          <ellipse cx="1.3" cy="-0.5" rx="1.4" ry="1.8" fill="#00D4B3" opacity="0.5" stroke="#00D4B3" strokeWidth="0.3"/>
+          <ellipse cx="-1.2" cy="-0.3" rx="0.7" ry="1" fill="#FFFFFF" opacity="0.6"/>
+          <ellipse cx="1.2" cy="-0.3" rx="0.7" ry="1" fill="#FFFFFF" opacity="0.6"/>
         </g>
         
         {/* Position mini bees */}
@@ -220,38 +245,83 @@ export function BeehiveLogo({ className = "" }: { className?: string }) {
         <use href="#miniBee" transform="translate(16, 16)"/>
       </g>
       
-      {/* Text - Natural amber/golden gradient */}
+      {/* Decorative elements and enhancements */}
+      
+      {/* Subtle glow capsule behind text */}
+      <ellipse cx="160" cy="42" rx="150" ry="30" fill="url(#glowGradient)" opacity="0.15"/>
+      
+      {/* Decorative hexagons flanking the text */}
+      <path d="M60 38 L64 41 L64 47 L60 50 L56 47 L56 41 Z" fill="#FFD34D" opacity="0.3" stroke="#F7B500" strokeWidth="1"/>
+      <path d="M260 38 L264 41 L264 47 L260 50 L256 47 L256 41 Z" fill="#00D4B3" opacity="0.3" stroke="#00D4B3" strokeWidth="1"/>
+      
+      {/* Sparkles for energy */}
+      <g fill="#FFD34D" opacity="0.6">
+        <polygon points="70,32 71,34 73,35 71,36 70,38 69,36 67,35 69,34"/>
+        <polygon points="252,32 253,34 255,35 253,36 252,38 251,36 249,35 251,34"/>
+      </g>
+      <g fill="#00D4B3" opacity="0.6">
+        <polygon points="215,28 216,30 218,31 216,32 215,34 214,32 212,31 214,30"/>
+      </g>
+      
+      {/* Main text - Beehive */}
       <text 
         x="75" 
         y="50" 
         fontFamily="Inter, system-ui, -apple-system, sans-serif" 
         fontSize="36" 
-        fontWeight="800" 
+        fontWeight="900" 
         fill="url(#textGradient)"
-        letterSpacing="-1"
+        letterSpacing="-1.5"
       >
         Beehive
       </text>
       
+      {/* Honey trail underline beneath Beehive */}
+      <path d="M75 55 Q145 52 215 55" stroke="#F7B500" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.5"/>
+      <circle cx="80" cy="55" r="2" fill="#FFD34D" opacity="0.7"/>
+      <circle cx="140" cy="53" r="1.5" fill="#FFD34D" opacity="0.6"/>
+      <circle cx="200" cy="55" r="2" fill="#FFD34D" opacity="0.7"/>
+      
+      {/* AI text with mint accent */}
       <text 
         x="220" 
         y="50" 
         fontFamily="Inter, system-ui, -apple-system, sans-serif" 
         fontSize="36" 
-        fontWeight="800" 
+        fontWeight="900" 
         fill="#00D4B3"
-        letterSpacing="-1"
+        letterSpacing="-1.5"
       >
         AI
       </text>
       
-      {/* Text gradient */}
+      {/* Mint accent stroke on AI */}
+      <text 
+        x="220" 
+        y="50" 
+        fontFamily="Inter, system-ui, -apple-system, sans-serif" 
+        fontSize="36" 
+        fontWeight="900" 
+        fill="none"
+        stroke="#00D4B3"
+        strokeWidth="0.5"
+        letterSpacing="-1.5"
+        opacity="0.5"
+      >
+        AI
+      </text>
+      
+      {/* Gradients */}
       <defs>
         <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="#E5943C"/>
-          <stop offset="50%" stopColor="#F5A847"/>
-          <stop offset="100%" stopColor="#FDB853"/>
+          <stop offset="50%" stopColor="#F7B500"/>
+          <stop offset="100%" stopColor="#FFD34D"/>
         </linearGradient>
+        <radialGradient id="glowGradient" cx="50%" cy="50%">
+          <stop offset="0%" stopColor="#FFD34D"/>
+          <stop offset="100%" stopColor="#F7B500"/>
+        </radialGradient>
       </defs>
     </svg>
   );
@@ -312,15 +382,24 @@ export function BeehiveLogoMobile({ className = "" }: { className?: string }) {
         {/* Central hexagon */}
         <path d="M20 18 L22 19.5 L22 22.5 L20 24 L18 22.5 L18 19.5 Z" fill="#00D4B3" stroke="#101113" strokeWidth="0.5"/>
         
-        {/* Tiny robot bee */}
+        {/* Tiny cute bee */}
         <g id="tinyBee">
-          <ellipse cx="0" cy="0" rx="1.5" ry="1.8" fill="#606060" stroke="#101113" strokeWidth="0.4"/>
-          <ellipse cx="0" cy="-0.5" rx="1.2" ry="0.4" fill="#F7B500"/>
-          <ellipse cx="0" cy="0.5" rx="1.2" ry="0.4" fill="#FFD34D"/>
-          <circle cx="-0.4" cy="-0.4" r="0.3" fill="#00D4B3" opacity="0.9"/>
-          <circle cx="0.4" cy="-0.4" r="0.3" fill="#00D4B3" opacity="0.9"/>
-          <ellipse cx="-1" cy="-0.7" rx="1" ry="1.5" fill="#00D4B3" opacity="0.3" stroke="#00D4B3" strokeWidth="0.2"/>
-          <ellipse cx="1" cy="-0.7" rx="1" ry="1.5" fill="#00D4B3" opacity="0.3" stroke="#00D4B3" strokeWidth="0.2"/>
+          <ellipse cx="0" cy="0.2" rx="1.2" ry="1.5" fill="#FFD34D" stroke="#101113" strokeWidth="0.3"/>
+          <ellipse cx="0" cy="-0.3" rx="1.1" ry="0.4" fill="#101113"/>
+          <ellipse cx="0" cy="0.5" rx="1.1" ry="0.4" fill="#101113"/>
+          <circle cx="0" cy="-1" r="0.7" fill="#F7B500" stroke="#101113" strokeWidth="0.25"/>
+          <circle cx="-0.3" cy="-1" r="0.2" fill="#101113"/>
+          <circle cx="0.3" cy="-1" r="0.2" fill="#101113"/>
+          <circle cx="-0.2" cy="-1.1" r="0.1" fill="#FFFFFF"/>
+          <circle cx="0.2" cy="-1.1" r="0.1" fill="#FFFFFF"/>
+          <path d="M-0.5 -1.6 L-0.7 -2.2" stroke="#101113" strokeWidth="0.2" strokeLinecap="round"/>
+          <path d="M0.5 -1.6 L0.7 -2.2" stroke="#101113" strokeWidth="0.2" strokeLinecap="round"/>
+          <circle cx="-0.7" cy="-2.2" r="0.15" fill="#F7B500" stroke="#101113" strokeWidth="0.15"/>
+          <circle cx="0.7" cy="-2.2" r="0.15" fill="#F7B500" stroke="#101113" strokeWidth="0.15"/>
+          <ellipse cx="-0.9" cy="-0.3" rx="0.9" ry="1.2" fill="#00D4B3" opacity="0.5" stroke="#00D4B3" strokeWidth="0.2"/>
+          <ellipse cx="0.9" cy="-0.3" rx="0.9" ry="1.2" fill="#00D4B3" opacity="0.5" stroke="#00D4B3" strokeWidth="0.2"/>
+          <ellipse cx="-0.8" cy="-0.2" rx="0.5" ry="0.7" fill="#FFFFFF" opacity="0.6"/>
+          <ellipse cx="0.8" cy="-0.2" rx="0.5" ry="0.7" fill="#FFFFFF" opacity="0.6"/>
         </g>
         
         {/* Position tiny bees - fewer for mobile */}
@@ -334,27 +413,68 @@ export function BeehiveLogoMobile({ className = "" }: { className?: string }) {
         <use href="#tinyBee" transform="translate(10, 12)"/>
       </g>
       
-      {/* Text - compact */}
+      {/* Decorative elements - mobile */}
+      
+      {/* Subtle glow behind text */}
+      <ellipse cx="105" cy="28" rx="85" ry="18" fill="url(#glowGradientMobile)" opacity="0.12"/>
+      
+      {/* Decorative hexagons */}
+      <path d="M42 24 L44 26 L44 30 L42 32 L40 30 L40 26 Z" fill="#FFD34D" opacity="0.3" stroke="#F7B500" strokeWidth="0.7"/>
+      <path d="M168 24 L170 26 L170 30 L168 32 L166 30 L166 26 Z" fill="#00D4B3" opacity="0.3" stroke="#00D4B3" strokeWidth="0.7"/>
+      
+      {/* Sparkles */}
+      <g fill="#FFD34D" opacity="0.6">
+        <polygon points="46,20 47,21 48,22 47,23 46,24 45,23 44,22 45,21"/>
+        <polygon points="164,20 165,21 166,22 165,23 164,24 163,23 162,22 163,21"/>
+      </g>
+      <g fill="#00D4B3" opacity="0.6">
+        <polygon points="136,18 137,19 138,20 137,21 136,22 135,21 134,20 135,19"/>
+      </g>
+      
+      {/* Text - Beehive */}
       <text 
         x="50" 
         y="32" 
         fontFamily="Inter, system-ui, -apple-system, sans-serif" 
         fontSize="24" 
-        fontWeight="800" 
+        fontWeight="900" 
         fill="url(#textGradientMobile)"
-        letterSpacing="-0.5"
+        letterSpacing="-1"
       >
         Beehive
       </text>
       
+      {/* Honey trail underline */}
+      <path d="M50 36 Q90 34 130 36" stroke="#F7B500" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.5"/>
+      <circle cx="54" cy="36" r="1.2" fill="#FFD34D" opacity="0.7"/>
+      <circle cx="90" cy="35" r="0.8" fill="#FFD34D" opacity="0.6"/>
+      <circle cx="124" cy="36" r="1.2" fill="#FFD34D" opacity="0.7"/>
+      
+      {/* Text - AI */}
       <text 
         x="140" 
         y="32" 
         fontFamily="Inter, system-ui, -apple-system, sans-serif" 
         fontSize="24" 
-        fontWeight="800" 
+        fontWeight="900" 
         fill="#00D4B3"
-        letterSpacing="-0.5"
+        letterSpacing="-1"
+      >
+        AI
+      </text>
+      
+      {/* Mint accent stroke */}
+      <text 
+        x="140" 
+        y="32" 
+        fontFamily="Inter, system-ui, -apple-system, sans-serif" 
+        fontSize="24" 
+        fontWeight="900" 
+        fill="none"
+        stroke="#00D4B3"
+        strokeWidth="0.4"
+        letterSpacing="-1"
+        opacity="0.5"
       >
         AI
       </text>
@@ -362,9 +482,13 @@ export function BeehiveLogoMobile({ className = "" }: { className?: string }) {
       <defs>
         <linearGradient id="textGradientMobile" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="#E5943C"/>
-          <stop offset="50%" stopColor="#F5A847"/>
-          <stop offset="100%" stopColor="#FDB853"/>
+          <stop offset="50%" stopColor="#F7B500"/>
+          <stop offset="100%" stopColor="#FFD34D"/>
         </linearGradient>
+        <radialGradient id="glowGradientMobile" cx="50%" cy="50%">
+          <stop offset="0%" stopColor="#FFD34D"/>
+          <stop offset="100%" stopColor="#F7B500"/>
+        </radialGradient>
       </defs>
     </svg>
   );
