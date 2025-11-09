@@ -1,6 +1,6 @@
-// BeehiveAI Custom SVG Logos - Robot Bees + Tech Hive Design
+// BeehiveAI Custom SVG Logos - Cyber Bee That Codes
 
-// BeehiveIcon - Robot Bees Around Tech Hive
+// BeehiveIcon - Cyber Bee Coding at Terminal
 export function BeehiveIcon({ size = 80, className = "" }: { size?: number; className?: string }) {
   return (
     <svg 
@@ -21,7 +21,7 @@ export function BeehiveIcon({ size = 80, className = "" }: { size?: number; clas
         fill="none"
       />
       
-      {/* Inner border ring - mint teal */}
+      {/* Inner border ring - mint teal with glow */}
       <circle 
         cx="60" 
         cy="60" 
@@ -29,131 +29,120 @@ export function BeehiveIcon({ size = 80, className = "" }: { size?: number; clas
         stroke="#00D4B3" 
         strokeWidth="2" 
         fill="none"
-        opacity="0.6"
+        opacity="0.8"
       />
       
-      {/* Subtle honeycomb pattern background */}
-      <g opacity="0.15" stroke="#FFD34D" strokeWidth="0.8" fill="none">
-        {/* Center row */}
-        <path d="M60 35 L68 40 L68 50 L60 55 L52 50 L52 40 Z"/>
-        
-        {/* Top left */}
-        <path d="M44 25 L52 30 L52 40 L44 45 L36 40 L36 30 Z"/>
-        {/* Top */}
-        <path d="M60 15 L68 20 L68 30 L60 35 L52 30 L52 20 Z"/>
-        {/* Top right */}
-        <path d="M76 25 L84 30 L84 40 L76 45 L68 40 L68 30 Z"/>
-        
-        {/* Middle left */}
-        <path d="M36 45 L44 50 L44 60 L36 65 L28 60 L28 50 Z"/>
-        {/* Middle right */}
-        <path d="M84 45 L92 50 L92 60 L84 65 L76 60 L76 50 Z"/>
-        
-        {/* Bottom left */}
-        <path d="M44 65 L52 70 L52 80 L44 85 L36 80 L36 70 Z"/>
-        {/* Bottom */}
-        <path d="M60 75 L68 80 L68 90 L60 95 L52 90 L52 80 Z"/>
-        {/* Bottom right */}
-        <path d="M76 65 L84 70 L84 80 L76 85 L68 80 L68 70 Z"/>
+      {/* Digital grid background */}
+      <g opacity="0.1" stroke="#00D4B3" strokeWidth="0.5">
+        <line x1="20" y1="30" x2="100" y2="30"/>
+        <line x1="20" y1="45" x2="100" y2="45"/>
+        <line x1="20" y1="60" x2="100" y2="60"/>
+        <line x1="20" y1="75" x2="100" y2="75"/>
+        <line x1="20" y1="90" x2="100" y2="90"/>
+        <line x1="30" y1="20" x2="30" y2="100"/>
+        <line x1="45" y1="20" x2="45" y2="100"/>
+        <line x1="60" y1="20" x2="60" y2="100"/>
+        <line x1="75" y1="20" x2="75" y2="100"/>
+        <line x1="90" y1="20" x2="90" y2="100"/>
       </g>
       
-      {/* Central tech hive - metallic dome with circuit patterns */}
-      <defs>
-        <linearGradient id="hiveGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#E8E8E8"/>
-          <stop offset="40%" stopColor="#C0C0C0"/>
-          <stop offset="80%" stopColor="#A0A0A0"/>
-          <stop offset="100%" stopColor="#808080"/>
-        </linearGradient>
-      </defs>
-      
-      {/* Hive body - dome shape with layers */}
-      <ellipse cx="60" cy="60" rx="22" ry="26" fill="url(#hiveGradient)" stroke="#101113" strokeWidth="2"/>
-      
-      {/* Hive horizontal bands */}
-      <ellipse cx="60" cy="48" rx="22" ry="3" fill="#C0C0C0" opacity="0.5"/>
-      <ellipse cx="60" cy="56" rx="22" ry="3" fill="#A0A0A0" opacity="0.5"/>
-      <ellipse cx="60" cy="64" rx="22" ry="3" fill="#909090" opacity="0.5"/>
-      <ellipse cx="60" cy="72" rx="22" ry="3" fill="#808080" opacity="0.5"/>
-      
-      {/* Central hexagon circuit element */}
-      <path 
-        d="M60 54 L66 58 L66 66 L60 70 L54 66 L54 58 Z" 
-        fill="#00D4B3" 
-        stroke="#101113" 
-        strokeWidth="1.5"
-      />
-      
-      {/* Circuit nodes on hive */}
-      <g fill="#00D4B3" stroke="#101113" strokeWidth="1">
-        <circle cx="50" cy="60" r="2"/>
-        <circle cx="70" cy="60" r="2"/>
-        <circle cx="60" cy="50" r="2"/>
-        <circle cx="60" cy="70" r="2"/>
+      {/* Binary code decoration */}
+      <g fill="#FFD34D" opacity="0.15" fontFamily="monospace" fontSize="6">
+        <text x="25" y="25">01</text>
+        <text x="85" y="25">10</text>
+        <text x="25" y="95">11</text>
+        <text x="85" y="95">00</text>
       </g>
       
-      {/* Circuit traces on hive */}
-      <g stroke="#00D4B3" strokeWidth="1.5" opacity="0.8">
-        <line x1="54" y1="58" x2="50" y2="60"/>
-        <line x1="66" y1="58" x2="70" y2="60"/>
-        <line x1="60" y1="54" x2="60" y2="50"/>
-        <line x1="60" y1="70" x2="60" y2="70"/>
+      {/* Laptop/Terminal base */}
+      <rect x="35" y="75" width="50" height="20" rx="2" fill="#101113" stroke="#00D4B3" strokeWidth="1.5"/>
+      <rect x="37" y="77" width="46" height="16" fill="#1a1a1a"/>
+      
+      {/* Terminal screen with code */}
+      <g fontFamily="monospace" fontSize="3.5" fill="#00D4B3">
+        <text x="39" y="83">&lt;bee&gt;</text>
+        <text x="39" y="87">code()</text>
+        <text x="39" y="91">&lt;/bee&gt;</text>
       </g>
       
-      {/* Cute Bee Component - emoji-style */}
-      <g id="robotBee">
-        {/* Main body - round golden yellow */}
-        <ellipse cx="0" cy="0.5" rx="3.5" ry="4.5" fill="#FFD34D" stroke="#101113" strokeWidth="0.8"/>
+      {/* Cursor blink */}
+      <rect x="65" y="88" width="1" height="3" fill="#00D4B3" opacity="0.8"/>
+      
+      {/* Cyber Bee - coding position */}
+      <g id="cyberBee">
+        {/* Main body - robotic with tech panels */}
+        <ellipse cx="0" cy="0" rx="8" ry="10" fill="#FFD34D" stroke="#101113" strokeWidth="1.5"/>
         
-        {/* Black stripes - bee-like */}
-        <ellipse cx="0" cy="-1" rx="3.2" ry="1.2" fill="#101113"/>
-        <ellipse cx="0" cy="1.5" rx="3.2" ry="1.2" fill="#101113"/>
+        {/* Tech panels/stripes */}
+        <rect x="-7" y="-4" width="14" height="2" fill="#101113" opacity="0.9"/>
+        <rect x="-7" y="2" width="14" height="2" fill="#101113" opacity="0.9"/>
         
-        {/* Head - round */}
-        <circle cx="0" cy="-3" r="2.2" fill="#F7B500" stroke="#101113" strokeWidth="0.7"/>
+        {/* Circuit lines on body */}
+        <g stroke="#00D4B3" strokeWidth="0.5" opacity="0.6">
+          <line x1="-5" y1="-2" x2="5" y2="-2"/>
+          <line x1="-5" y1="1" x2="5" y2="1"/>
+          <circle cx="-4" cy="-2" r="0.5" fill="#00D4B3"/>
+          <circle cx="4" cy="1" r="0.5" fill="#00D4B3"/>
+        </g>
         
-        {/* Cute eyes */}
-        <circle cx="-0.8" cy="-3" r="0.6" fill="#101113"/>
-        <circle cx="0.8" cy="-3" r="0.6" fill="#101113"/>
-        <circle cx="-0.6" cy="-3.2" r="0.3" fill="#FFFFFF"/>
-        <circle cx="0.6" cy="-3.2" r="0.3" fill="#FFFFFF"/>
+        {/* Hexagonal head with visor */}
+        <path d="M0 -10 L4 -12 L8 -10 L8 -6 L4 -4 L0 -6 Z" fill="#F7B500" stroke="#101113" strokeWidth="1.2" transform="translate(-4, 0)"/>
         
-        {/* Cute smile */}
-        <path d="M-0.8 -2.2 Q0 -1.8 0.8 -2.2" stroke="#101113" strokeWidth="0.4" fill="none" strokeLinecap="round"/>
+        {/* Glowing visor - tech eyes */}
+        <rect x="-5" y="-10" width="6" height="2" rx="1" fill="#00D4B3" opacity="0.9"/>
+        <rect x="-4.5" y="-9.5" width="5" height="1" fill="#FFFFFF" opacity="0.5"/>
         
-        {/* Antennae */}
-        <path d="M-0.8 -5 L-1.5 -6.5" stroke="#101113" strokeWidth="0.5" strokeLinecap="round"/>
-        <path d="M0.8 -5 L1.5 -6.5" stroke="#101113" strokeWidth="0.5" strokeLinecap="round"/>
-        <circle cx="-1.5" cy="-6.5" r="0.5" fill="#F7B500" stroke="#101113" strokeWidth="0.4"/>
-        <circle cx="1.5" cy="-6.5" r="0.5" fill="#F7B500" stroke="#101113" strokeWidth="0.4"/>
+        {/* Antenna with sensor */}
+        <line x1="-2" y1="-12" x2="-3" y2="-16" stroke="#101113" strokeWidth="0.8"/>
+        <line x1="2" y1="-12" x2="3" y2="-16" stroke="#101113" strokeWidth="0.8"/>
+        <circle cx="-3" cy="-16" r="1" fill="#00D4B3" stroke="#101113" strokeWidth="0.6"/>
+        <circle cx="3" cy="-16" r="1" fill="#00D4B3" stroke="#101113" strokeWidth="0.6"/>
         
-        {/* Wings - vibrant with gradient effect */}
-        <ellipse cx="-2.5" cy="-1" rx="2.8" ry="3.5" fill="#00D4B3" opacity="0.5" stroke="#00D4B3" strokeWidth="0.6"/>
-        <ellipse cx="2.5" cy="-1" rx="2.8" ry="3.5" fill="#00D4B3" opacity="0.5" stroke="#00D4B3" strokeWidth="0.6"/>
-        <ellipse cx="-2.3" cy="-0.5" rx="1.5" ry="2" fill="#FFFFFF" opacity="0.6"/>
-        <ellipse cx="2.3" cy="-0.5" rx="1.5" ry="2" fill="#FFFFFF" opacity="0.6"/>
+        {/* Tech wings - circuit board style */}
+        <g opacity="0.7">
+          <path d="M-8 -3 L-12 -5 L-14 -2 L-12 1 L-8 -1 Z" fill="#00D4B3" stroke="#101113" strokeWidth="0.8"/>
+          <path d="M8 -3 L12 -5 L14 -2 L12 1 L8 -1 Z" fill="#00D4B3" stroke="#101113" strokeWidth="0.8"/>
+          {/* Wing circuit traces */}
+          <line x1="-10" y1="-4" x2="-12" y2="-2" stroke="#FFD34D" strokeWidth="0.4"/>
+          <line x1="10" y1="-4" x2="12" y2="-2" stroke="#FFD34D" strokeWidth="0.4"/>
+        </g>
+        
+        {/* Arms typing on keyboard */}
+        <g stroke="#101113" strokeWidth="1.2" strokeLinecap="round" fill="none">
+          <path d="M-7 4 L-10 8 L-8 10" />
+          <path d="M7 4 L10 8 L8 10" />
+        </g>
+        
+        {/* Robotic hands */}
+        <circle cx="-8" cy="10" r="1.5" fill="#F7B500" stroke="#101113" strokeWidth="0.8"/>
+        <circle cx="8" cy="10" r="1.5" fill="#F7B500" stroke="#101113" strokeWidth="0.8"/>
       </g>
       
-      {/* Position robot bees around the hive - 8 positions */}
-      <use href="#robotBee" transform="translate(60, 20)"/>
-      <use href="#robotBee" transform="translate(88, 32)"/>
-      <use href="#robotBee" transform="translate(98, 60)"/>
-      <use href="#robotBee" transform="translate(88, 88)"/>
-      <use href="#robotBee" transform="translate(60, 100)"/>
-      <use href="#robotBee" transform="translate(32, 88)"/>
-      <use href="#robotBee" transform="translate(22, 60)"/>
-      <use href="#robotBee" transform="translate(32, 32)"/>
+      {/* Position cyber bee at laptop */}
+      <use href="#cyberBee" transform="translate(60, 48)"/>
       
-      {/* Motion trails - subtle mint teal lines */}
-      <g stroke="#00D4B3" strokeWidth="1" opacity="0.2" strokeLinecap="round">
-        <path d="M60 20 Q55 15 50 12"/>
-        <path d="M88 32 Q92 28 96 24"/>
-        <path d="M98 60 Q102 60 106 60"/>
-        <path d="M88 88 Q92 92 96 96"/>
-        <path d="M60 100 Q60 104 60 108"/>
-        <path d="M32 88 Q28 92 24 96"/>
-        <path d="M22 60 Q18 60 14 60"/>
-        <path d="M32 32 Q28 28 24 24"/>
+      {/* Code symbols floating around */}
+      <g fill="#00D4B3" opacity="0.4" fontFamily="monospace" fontSize="8" fontWeight="bold">
+        <text x="20" y="50">&lt;/&gt;</text>
+        <text x="90" y="50">{'{}'}</text>
+        <text x="20" y="70">[ ]</text>
+        <text x="90" y="70">( )</text>
+      </g>
+      
+      {/* Energy particles/data flow */}
+      <g fill="#FFD34D" opacity="0.6">
+        <circle cx="25" cy="35" r="1"/>
+        <circle cx="95" cy="35" r="1"/>
+        <circle cx="30" cy="65" r="1.5"/>
+        <circle cx="90" cy="65" r="1.5"/>
+      </g>
+      
+      {/* Glowing circuit traces connecting everything */}
+      <g stroke="#00D4B3" strokeWidth="1" opacity="0.3" strokeLinecap="round">
+        <path d="M30 30 L40 35"/>
+        <path d="M90 30 L80 35"/>
+        <path d="M30 70 L40 65"/>
+        <path d="M90 70 L80 65"/>
       </g>
     </svg>
   );
