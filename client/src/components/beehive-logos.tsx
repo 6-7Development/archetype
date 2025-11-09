@@ -194,8 +194,8 @@ export function BeehiveLogo({
           <line x1="55" y1="10" x2="55" y2="60"/>
         </g>
         
-        {/* Large Cyber Bee */}
-        <g id="cyberBeeLogoLarge">
+        {/* Cyber Bee - rendered directly */}
+        <g transform="translate(35, 35)">
           {/* Body - robotic */}
           <ellipse cx="0" cy="0" rx="7" ry="9" fill="#FFD34D" stroke="#101113" strokeWidth="1.2"/>
           <rect x="-6" y="-3.5" width="12" height="1.8" fill="#101113" opacity="0.9"/>
@@ -244,8 +244,6 @@ export function BeehiveLogo({
           <circle cx="-7.5" cy="7.5" r="0.5" fill="#00D4B3" opacity="0.8"/>
           <circle cx="7.5" cy="7.5" r="0.5" fill="#00D4B3" opacity="0.8"/>
         </g>
-        
-        <use href="#cyberBeeLogoLarge" transform="translate(35, 35)"/>
         
         {/* Floating code symbols around bee */}
         <g fill="#00D4B3" opacity="0.35" fontFamily="monospace" fontSize="6" fontWeight="bold">
@@ -390,8 +388,8 @@ export function BeehiveLogoMobile({
           <line x1="34" y1="7" x2="34" y2="37"/>
         </g>
         
-        {/* Cyber Bee Mobile */}
-        <g id="cyberBeeMobileLarge">
+        {/* Cyber Bee Mobile - rendered directly */}
+        <g transform="translate(22, 22)">
           {/* Body - robotic */}
           <ellipse cx="0" cy="0" rx="4.5" ry="5.5" fill="#FFD34D" stroke="#101113" strokeWidth="0.8"/>
           <rect x="-4" y="-2.2" width="8" height="1.2" fill="#101113" opacity="0.9"/>
@@ -440,8 +438,6 @@ export function BeehiveLogoMobile({
           <circle cx="-5" cy="4.8" r="0.3" fill="#00D4B3" opacity="0.8"/>
           <circle cx="5" cy="4.8" r="0.3" fill="#00D4B3" opacity="0.8"/>
         </g>
-        
-        <use href="#cyberBeeMobileLarge" transform="translate(22, 22)"/>
         
         {/* Floating code symbols around bee */}
         <g fill="#00D4B3" opacity="0.3" fontFamily="monospace" fontSize="3.8" fontWeight="bold">
