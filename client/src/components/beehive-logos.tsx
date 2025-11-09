@@ -159,79 +159,77 @@ export function BeehiveLogo({ className = "" }: { className?: string }) {
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Icon - compact version with robot bees */}
+      {/* Icon - compact cyber bee */}
       <g transform="translate(10, 10)">
         {/* Border circles */}
         <circle cx="30" cy="30" r="28" stroke="#101113" strokeWidth="2" fill="none"/>
-        <circle cx="30" cy="30" r="26" stroke="#00D4B3" strokeWidth="1.5" fill="none" opacity="0.6"/>
+        <circle cx="30" cy="30" r="26" stroke="#00D4B3" strokeWidth="1.5" fill="none" opacity="0.8"/>
         
-        {/* Subtle honeycomb pattern background */}
-        <g opacity="0.15" stroke="#FFD34D" strokeWidth="0.6" fill="none">
-          {/* Center */}
-          <path d="M30 20 L34 23 L34 29 L30 32 L26 29 L26 23 Z"/>
-          {/* Top left */}
-          <path d="M22 15 L26 18 L26 24 L22 27 L18 24 L18 18 Z"/>
-          {/* Top right */}
-          <path d="M38 15 L42 18 L42 24 L38 27 L34 24 L34 18 Z"/>
-          {/* Middle left */}
-          <path d="M18 27 L22 30 L22 36 L18 39 L14 36 L14 30 Z"/>
-          {/* Middle right */}
-          <path d="M42 27 L46 30 L46 36 L42 39 L38 36 L38 30 Z"/>
-          {/* Bottom left */}
-          <path d="M22 39 L26 42 L26 48 L22 51 L18 48 L18 42 Z"/>
-          {/* Bottom right */}
-          <path d="M38 39 L42 42 L42 48 L38 51 L34 48 L34 42 Z"/>
+        {/* Digital grid background */}
+        <g opacity="0.08" stroke="#00D4B3" strokeWidth="0.3">
+          <line x1="10" y1="15" x2="50" y2="15"/>
+          <line x1="10" y1="22" x2="50" y2="22"/>
+          <line x1="10" y1="30" x2="50" y2="30"/>
+          <line x1="10" y1="38" x2="50" y2="38"/>
+          <line x1="10" y1="45" x2="50" y2="45"/>
+          <line x1="15" y1="10" x2="15" y2="50"/>
+          <line x1="22" y1="10" x2="22" y2="50"/>
+          <line x1="30" y1="10" x2="30" y2="50"/>
+          <line x1="38" y1="10" x2="38" y2="50"/>
+          <line x1="45" y1="10" x2="45" y2="50"/>
         </g>
         
-        {/* Central hive */}
-        <defs>
-          <linearGradient id="hiveGradientLogo" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#E8E8E8"/>
-            <stop offset="50%" stopColor="#B0B0B0"/>
-            <stop offset="100%" stopColor="#808080"/>
-          </linearGradient>
-        </defs>
+        {/* Laptop/Terminal */}
+        <rect x="18" y="38" width="24" height="10" rx="1" fill="#101113" stroke="#00D4B3" strokeWidth="0.8"/>
+        <rect x="19" y="39" width="22" height="8" fill="#1a1a1a"/>
         
-        <ellipse cx="30" cy="30" rx="11" ry="13" fill="url(#hiveGradientLogo)" stroke="#101113" strokeWidth="1.5"/>
-        
-        {/* Hive bands */}
-        <ellipse cx="30" cy="24" rx="11" ry="1.5" fill="#C0C0C0" opacity="0.5"/>
-        <ellipse cx="30" cy="28" rx="11" ry="1.5" fill="#A0A0A0" opacity="0.5"/>
-        <ellipse cx="30" cy="32" rx="11" ry="1.5" fill="#909090" opacity="0.5"/>
-        <ellipse cx="30" cy="36" rx="11" ry="1.5" fill="#808080" opacity="0.5"/>
-        
-        {/* Central hexagon */}
-        <path d="M30 27 L33 29 L33 33 L30 35 L27 33 L27 29 Z" fill="#00D4B3" stroke="#101113" strokeWidth="0.8"/>
-        
-        {/* Cute bee mini */}
-        <g id="miniBee">
-          <ellipse cx="0" cy="0.3" rx="1.8" ry="2.3" fill="#FFD34D" stroke="#101113" strokeWidth="0.4"/>
-          <ellipse cx="0" cy="-0.5" rx="1.6" ry="0.6" fill="#101113"/>
-          <ellipse cx="0" cy="0.8" rx="1.6" ry="0.6" fill="#101113"/>
-          <circle cx="0" cy="-1.5" r="1.1" fill="#F7B500" stroke="#101113" strokeWidth="0.35"/>
-          <circle cx="-0.4" cy="-1.5" r="0.3" fill="#101113"/>
-          <circle cx="0.4" cy="-1.5" r="0.3" fill="#101113"/>
-          <circle cx="-0.3" cy="-1.6" r="0.15" fill="#FFFFFF"/>
-          <circle cx="0.3" cy="-1.6" r="0.15" fill="#FFFFFF"/>
-          <path d="M-0.7 -2.5 L-1 -3.3" stroke="#101113" strokeWidth="0.25" strokeLinecap="round"/>
-          <path d="M0.7 -2.5 L1 -3.3" stroke="#101113" strokeWidth="0.25" strokeLinecap="round"/>
-          <circle cx="-1" cy="-3.3" r="0.25" fill="#F7B500" stroke="#101113" strokeWidth="0.2"/>
-          <circle cx="1" cy="-3.3" r="0.25" fill="#F7B500" stroke="#101113" strokeWidth="0.2"/>
-          <ellipse cx="-1.3" cy="-0.5" rx="1.4" ry="1.8" fill="#00D4B3" opacity="0.5" stroke="#00D4B3" strokeWidth="0.3"/>
-          <ellipse cx="1.3" cy="-0.5" rx="1.4" ry="1.8" fill="#00D4B3" opacity="0.5" stroke="#00D4B3" strokeWidth="0.3"/>
-          <ellipse cx="-1.2" cy="-0.3" rx="0.7" ry="1" fill="#FFFFFF" opacity="0.6"/>
-          <ellipse cx="1.2" cy="-0.3" rx="0.7" ry="1" fill="#FFFFFF" opacity="0.6"/>
+        {/* Terminal code */}
+        <g fontFamily="monospace" fontSize="1.8" fill="#00D4B3">
+          <text x="20" y="42">&lt;bee&gt;</text>
+          <text x="20" y="44.5">code()</text>
         </g>
         
-        {/* Position mini bees */}
-        <use href="#miniBee" transform="translate(30, 10)"/>
-        <use href="#miniBee" transform="translate(44, 16)"/>
-        <use href="#miniBee" transform="translate(49, 30)"/>
-        <use href="#miniBee" transform="translate(44, 44)"/>
-        <use href="#miniBee" transform="translate(30, 50)"/>
-        <use href="#miniBee" transform="translate(16, 44)"/>
-        <use href="#miniBee" transform="translate(11, 30)"/>
-        <use href="#miniBee" transform="translate(16, 16)"/>
+        {/* Cyber Bee - compact */}
+        <g id="cyberBeeLogo">
+          {/* Body */}
+          <ellipse cx="0" cy="0" rx="4" ry="5" fill="#FFD34D" stroke="#101113" strokeWidth="0.8"/>
+          <rect x="-3.5" y="-2" width="7" height="1" fill="#101113" opacity="0.9"/>
+          <rect x="-3.5" y="1" width="7" height="1" fill="#101113" opacity="0.9"/>
+          
+          {/* Circuit lines */}
+          <g stroke="#00D4B3" strokeWidth="0.3" opacity="0.6">
+            <line x1="-2.5" y1="-1" x2="2.5" y2="-1"/>
+            <line x1="-2.5" y1="0.5" x2="2.5" y2="0.5"/>
+          </g>
+          
+          {/* Head with visor */}
+          <path d="M0 -5 L2 -6 L4 -5 L4 -3 L2 -2 L0 -3 Z" fill="#F7B500" stroke="#101113" strokeWidth="0.6" transform="translate(-2, 0)"/>
+          <rect x="-2.5" y="-5" width="3" height="1" rx="0.5" fill="#00D4B3" opacity="0.9"/>
+          
+          {/* Antenna */}
+          <line x1="-1" y1="-6" x2="-1.5" y2="-8" stroke="#101113" strokeWidth="0.4"/>
+          <line x1="1" y1="-6" x2="1.5" y2="-8" stroke="#101113" strokeWidth="0.4"/>
+          <circle cx="-1.5" cy="-8" r="0.5" fill="#00D4B3" stroke="#101113" strokeWidth="0.3"/>
+          <circle cx="1.5" cy="-8" r="0.5" fill="#00D4B3" stroke="#101113" strokeWidth="0.3"/>
+          
+          {/* Wings */}
+          <path d="M-4 -1.5 L-6 -2.5 L-7 -1 L-6 0.5 L-4 -0.5 Z" fill="#00D4B3" opacity="0.7" stroke="#101113" strokeWidth="0.4"/>
+          <path d="M4 -1.5 L6 -2.5 L7 -1 L6 0.5 L4 -0.5 Z" fill="#00D4B3" opacity="0.7" stroke="#101113" strokeWidth="0.4"/>
+          
+          {/* Arms */}
+          <path d="M-3.5 2 L-5 4 L-4 5" stroke="#101113" strokeWidth="0.6" strokeLinecap="round" fill="none"/>
+          <path d="M3.5 2 L5 4 L4 5" stroke="#101113" strokeWidth="0.6" strokeLinecap="round" fill="none"/>
+          <circle cx="-4" cy="5" r="0.8" fill="#F7B500" stroke="#101113" strokeWidth="0.4"/>
+          <circle cx="4" cy="5" r="0.8" fill="#F7B500" stroke="#101113" strokeWidth="0.4"/>
+        </g>
+        
+        <use href="#cyberBeeLogo" transform="translate(30, 24)"/>
+        
+        {/* Code symbols */}
+        <g fill="#00D4B3" opacity="0.3" fontFamily="monospace" fontSize="4" fontWeight="bold">
+          <text x="10" y="25">&lt;/&gt;</text>
+          <text x="45" y="25">{'{}'}</text>
+        </g>
       </g>
       
       {/* Decorative elements and enhancements */}
@@ -327,79 +325,77 @@ export function BeehiveLogoMobile({ className = "" }: { className?: string }) {
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Icon - small version with robot bees */}
+      {/* Icon - compact cyber bee mobile */}
       <g transform="translate(5, 5)">
         {/* Border circles */}
         <circle cx="20" cy="20" r="19" stroke="#101113" strokeWidth="1.5" fill="none"/>
-        <circle cx="20" cy="20" r="17.5" stroke="#00D4B3" strokeWidth="1" fill="none" opacity="0.6"/>
+        <circle cx="20" cy="20" r="17.5" stroke="#00D4B3" strokeWidth="1" fill="none" opacity="0.8"/>
         
-        {/* Subtle honeycomb pattern background */}
-        <g opacity="0.15" stroke="#FFD34D" strokeWidth="0.5" fill="none">
-          {/* Center */}
-          <path d="M20 13 L23 15 L23 19 L20 21 L17 19 L17 15 Z"/>
-          {/* Top left */}
-          <path d="M14 10 L17 12 L17 16 L14 18 L11 16 L11 12 Z"/>
-          {/* Top right */}
-          <path d="M26 10 L29 12 L29 16 L26 18 L23 16 L23 12 Z"/>
-          {/* Middle left */}
-          <path d="M11 18 L14 20 L14 24 L11 26 L8 24 L8 20 Z"/>
-          {/* Middle right */}
-          <path d="M29 18 L32 20 L32 24 L29 26 L26 24 L26 20 Z"/>
-          {/* Bottom left */}
-          <path d="M14 26 L17 28 L17 32 L14 34 L11 32 L11 28 Z"/>
-          {/* Bottom right */}
-          <path d="M26 26 L29 28 L29 32 L26 34 L23 32 L23 28 Z"/>
+        {/* Digital grid background */}
+        <g opacity="0.06" stroke="#00D4B3" strokeWidth="0.2">
+          <line x1="7" y1="10" x2="33" y2="10"/>
+          <line x1="7" y1="15" x2="33" y2="15"/>
+          <line x1="7" y1="20" x2="33" y2="20"/>
+          <line x1="7" y1="25" x2="33" y2="25"/>
+          <line x1="7" y1="30" x2="33" y2="30"/>
+          <line x1="10" y1="7" x2="10" y2="33"/>
+          <line x1="15" y1="7" x2="15" y2="33"/>
+          <line x1="20" y1="7" x2="20" y2="33"/>
+          <line x1="25" y1="7" x2="25" y2="33"/>
+          <line x1="30" y1="7" x2="30" y2="33"/>
         </g>
         
-        {/* Central hive */}
-        <defs>
-          <linearGradient id="hiveGradientMobile" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#E8E8E8"/>
-            <stop offset="50%" stopColor="#B0B0B0"/>
-            <stop offset="100%" stopColor="#808080"/>
-          </linearGradient>
-        </defs>
+        {/* Laptop/Terminal */}
+        <rect x="12" y="25" width="16" height="7" rx="0.7" fill="#101113" stroke="#00D4B3" strokeWidth="0.5"/>
+        <rect x="13" y="26" width="14" height="5" fill="#1a1a1a"/>
         
-        <ellipse cx="20" cy="20" rx="7.5" ry="9" fill="url(#hiveGradientMobile)" stroke="#101113" strokeWidth="1"/>
-        
-        {/* Hive bands */}
-        <ellipse cx="20" cy="16" rx="7.5" ry="1" fill="#C0C0C0" opacity="0.5"/>
-        <ellipse cx="20" cy="19" rx="7.5" ry="1" fill="#A0A0A0" opacity="0.5"/>
-        <ellipse cx="20" cy="22" rx="7.5" ry="1" fill="#909090" opacity="0.5"/>
-        <ellipse cx="20" cy="25" rx="7.5" ry="1" fill="#808080" opacity="0.5"/>
-        
-        {/* Central hexagon */}
-        <path d="M20 18 L22 19.5 L22 22.5 L20 24 L18 22.5 L18 19.5 Z" fill="#00D4B3" stroke="#101113" strokeWidth="0.5"/>
-        
-        {/* Tiny cute bee */}
-        <g id="tinyBee">
-          <ellipse cx="0" cy="0.2" rx="1.2" ry="1.5" fill="#FFD34D" stroke="#101113" strokeWidth="0.3"/>
-          <ellipse cx="0" cy="-0.3" rx="1.1" ry="0.4" fill="#101113"/>
-          <ellipse cx="0" cy="0.5" rx="1.1" ry="0.4" fill="#101113"/>
-          <circle cx="0" cy="-1" r="0.7" fill="#F7B500" stroke="#101113" strokeWidth="0.25"/>
-          <circle cx="-0.3" cy="-1" r="0.2" fill="#101113"/>
-          <circle cx="0.3" cy="-1" r="0.2" fill="#101113"/>
-          <circle cx="-0.2" cy="-1.1" r="0.1" fill="#FFFFFF"/>
-          <circle cx="0.2" cy="-1.1" r="0.1" fill="#FFFFFF"/>
-          <path d="M-0.5 -1.6 L-0.7 -2.2" stroke="#101113" strokeWidth="0.2" strokeLinecap="round"/>
-          <path d="M0.5 -1.6 L0.7 -2.2" stroke="#101113" strokeWidth="0.2" strokeLinecap="round"/>
-          <circle cx="-0.7" cy="-2.2" r="0.15" fill="#F7B500" stroke="#101113" strokeWidth="0.15"/>
-          <circle cx="0.7" cy="-2.2" r="0.15" fill="#F7B500" stroke="#101113" strokeWidth="0.15"/>
-          <ellipse cx="-0.9" cy="-0.3" rx="0.9" ry="1.2" fill="#00D4B3" opacity="0.5" stroke="#00D4B3" strokeWidth="0.2"/>
-          <ellipse cx="0.9" cy="-0.3" rx="0.9" ry="1.2" fill="#00D4B3" opacity="0.5" stroke="#00D4B3" strokeWidth="0.2"/>
-          <ellipse cx="-0.8" cy="-0.2" rx="0.5" ry="0.7" fill="#FFFFFF" opacity="0.6"/>
-          <ellipse cx="0.8" cy="-0.2" rx="0.5" ry="0.7" fill="#FFFFFF" opacity="0.6"/>
+        {/* Terminal code */}
+        <g fontFamily="monospace" fontSize="1.2" fill="#00D4B3">
+          <text x="13.5" y="28">&lt;bee&gt;</text>
+          <text x="13.5" y="30">code()</text>
         </g>
         
-        {/* Position tiny bees - fewer for mobile */}
-        <use href="#tinyBee" transform="translate(20, 7)"/>
-        <use href="#tinyBee" transform="translate(30, 12)"/>
-        <use href="#tinyBee" transform="translate(33, 20)"/>
-        <use href="#tinyBee" transform="translate(30, 28)"/>
-        <use href="#tinyBee" transform="translate(20, 33)"/>
-        <use href="#tinyBee" transform="translate(10, 28)"/>
-        <use href="#tinyBee" transform="translate(7, 20)"/>
-        <use href="#tinyBee" transform="translate(10, 12)"/>
+        {/* Cyber Bee - tiny */}
+        <g id="cyberBeeMobile">
+          {/* Body */}
+          <ellipse cx="0" cy="0" rx="2.5" ry="3" fill="#FFD34D" stroke="#101113" strokeWidth="0.5"/>
+          <rect x="-2" y="-1.2" width="4" height="0.6" fill="#101113" opacity="0.9"/>
+          <rect x="-2" y="0.6" width="4" height="0.6" fill="#101113" opacity="0.9"/>
+          
+          {/* Circuit lines */}
+          <g stroke="#00D4B3" strokeWidth="0.2" opacity="0.6">
+            <line x1="-1.5" y1="-0.6" x2="1.5" y2="-0.6"/>
+            <line x1="-1.5" y1="0.3" x2="1.5" y2="0.3"/>
+          </g>
+          
+          {/* Head with visor */}
+          <path d="M0 -3 L1.2 -3.8 L2.4 -3 L2.4 -1.8 L1.2 -1 L0 -1.8 Z" fill="#F7B500" stroke="#101113" strokeWidth="0.4" transform="translate(-1.2, 0)"/>
+          <rect x="-1.5" y="-3" width="2" height="0.6" rx="0.3" fill="#00D4B3" opacity="0.9"/>
+          
+          {/* Antenna */}
+          <line x1="-0.6" y1="-3.8" x2="-1" y2="-5" stroke="#101113" strokeWidth="0.3"/>
+          <line x1="0.6" y1="-3.8" x2="1" y2="-5" stroke="#101113" strokeWidth="0.3"/>
+          <circle cx="-1" cy="-5" r="0.3" fill="#00D4B3" stroke="#101113" strokeWidth="0.2"/>
+          <circle cx="1" cy="-5" r="0.3" fill="#00D4B3" stroke="#101113" strokeWidth="0.2"/>
+          
+          {/* Wings */}
+          <path d="M-2.5 -1 L-3.5 -1.5 L-4 -0.5 L-3.5 0.3 L-2.5 -0.3 Z" fill="#00D4B3" opacity="0.7" stroke="#101113" strokeWidth="0.3"/>
+          <path d="M2.5 -1 L3.5 -1.5 L4 -0.5 L3.5 0.3 L2.5 -0.3 Z" fill="#00D4B3" opacity="0.7" stroke="#101113" strokeWidth="0.3"/>
+          
+          {/* Arms */}
+          <path d="M-2 1.2 L-3 2.5 L-2.5 3" stroke="#101113" strokeWidth="0.4" strokeLinecap="round" fill="none"/>
+          <path d="M2 1.2 L3 2.5 L2.5 3" stroke="#101113" strokeWidth="0.4" strokeLinecap="round" fill="none"/>
+          <circle cx="-2.5" cy="3" r="0.5" fill="#F7B500" stroke="#101113" strokeWidth="0.3"/>
+          <circle cx="2.5" cy="3" r="0.5" fill="#F7B500" stroke="#101113" strokeWidth="0.3"/>
+        </g>
+        
+        <use href="#cyberBeeMobile" transform="translate(20, 16)"/>
+        
+        {/* Code symbols */}
+        <g fill="#00D4B3" opacity="0.25" fontFamily="monospace" fontSize="2.5" fontWeight="bold">
+          <text x="7" y="17">&lt;/&gt;</text>
+          <text x="30" y="17">{'{}'}</text>
+        </g>
       </g>
       
       {/* Decorative elements - mobile */}
