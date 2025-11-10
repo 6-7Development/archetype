@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileCode, Eye, Bot, Plus, Trash } from "lucide-react";
 
 interface FileData {
-  id: number;
+  id: string;
   filename: string;
   content: string;
   language: string;
@@ -20,8 +20,8 @@ interface MobileWorkspaceProps {
   activeFile: FileData | null;
   onFileSelect: (file: FileData) => void;
   onFileCreate: () => void;
-  onFileUpdate: (fileId: number, content: string) => Promise<void>;
-  onFileDelete: (fileId: number) => void;
+  onFileUpdate: (fileId: string, content: string) => Promise<void>;
+  onFileDelete: (fileId: string) => void;
 }
 
 export function MobileWorkspace({
