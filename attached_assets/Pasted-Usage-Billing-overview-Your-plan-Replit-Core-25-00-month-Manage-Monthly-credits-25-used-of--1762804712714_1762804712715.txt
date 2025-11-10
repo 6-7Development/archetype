@@ -1,0 +1,297 @@
+Usage
+Billing overview
+Your plan
+Replit Core
+$25.00 month
+Manage
+Monthly credits
+$25 used of $25
+Resets
+in 16 days
+Additional usage
+$2011.35 spent
+Usage alert: $2,000
+Usage budget: $3,600
+Manage
+Payment method
+1423
+Expires 3/2030
+Manage
+Resource usage
+Updates take up to 1 hour and may not reflect the latest usage data. See previous invoices.
+AI
+Usage Total
+Unit Price
+Cost Accrued
+
+Agent Usage
+$2,017.08
+Variable	
+$2017.08
+Dollars
+App
+
+Archetype
+Archetype
+$1,261.87
+
+WorkForceOS
+WorkForceOS
+$740.43
+
+DC360 Platform
+DC360 Platform
+$13.61
+
+Replit AI Integrations
+$0.00
+Variable	
+$0.00
+Dollars
+App
+
+WorkForceOS
+WorkForceOS
+$0.00
+
+Assistant
+(Edit requests)
+37
+$0.05 / edit request	
+$1.85
+Edit requests
+App
+
+Archetype
+Archetype
+26
+
+WorkForceOS
+WorkForceOS
+11
+Workspace Development
+Quota Used
+Core Quota
+Usage Total
+Unit Price
+Cost Accrued
+Apps
+Unlimited
+4
+-	-
+Collaborators
+3
+0
+-	-
+Development Time
+(Minutes)
+0%
+-
+0
+-	-
+Published Apps
+Quota Used
+Core Quota
+Usage Total
+Unit Price
+Cost Accrued
+
+Outbound Data Transfer
+(GiB)
+0%
+100
+0.13 GiB
+$0.1 / GiB	
+$0.00
+Size
+App
+
+DC360 Platform
+DC360 Platform
+0.11 GiB
+
+Archetype
+Archetype
+0.02 GiB
+
+WorkForceOS
+WorkForceOS
+5.20 MiB
+Reserved VM Deployment
+(Compute hours)
+-
+0
+-	
+$0.00
+
+Autoscale Deployment
+(Deployments)
+-
+45
+$0.033 / day	
+$1.48
+Deployments
+App
+
+Archetype
+Archetype
+15
+
+WorkForceOS
+WorkForceOS
+15
+
+DC360 Platform
+DC360 Platform
+15
+
+Autoscale Deployment
+(Compute units)
+-
+773,610
+$3.20 / 1 million	
+$2.48
+Compute Units
+App
+
+DC360 Platform
+DC360 Platform
+577,946
+
+WorkForceOS
+WorkForceOS
+104,900
+
+Archetype
+Archetype
+90,764
+
+Autoscale Deployment
+(Requests)
+-
+4,006
+$1.20 / 1 million	
+$0.00
+Requests
+App
+
+DC360 Platform
+DC360 Platform
+2,194
+
+Archetype
+Archetype
+1,812
+Scheduled Deployment
+(Deployments)
+-
+0
+$0.033 / day	
+$0.00
+Scheduled Deployment
+(Compute units)
+-
+0
+$3.20 / 1 million	
+$0.00
+Static Deployment
+(Count)
+0%
+200
+0
+-	
+$0.00
+
+PostgreSQL Storage
+(GiB)
+-
+0.17 GiB
+$1.5 / GiB	
+$0.26
+Size
+App
+
+DC360 Platform
+DC360 Platform
+0.07 GiB
+
+WorkForceOS
+WorkForceOS
+0.06 GiB
+
+Archetype
+Archetype
+0.05 GiB
+
+PostgreSQL Compute
+(Hours)
+-
+84.14
+$0.16 / hour	
+$13.46
+Hours
+App
+
+DC360 Platform
+DC360 Platform
+78.46
+
+Archetype
+Archetype
+4.28
+
+WorkForceOS
+WorkForceOS
+1.4
+
+App Storage
+(GiB-months)
+-
+0.00
+$0.03 / GiB / month	
+$0.00
+Volume
+App
+
+WorkForceOS
+WorkForceOS
+0.00
+
+App Storage Data Transfer
+(GiB)
+-
+0.00 GiB
+$0.1 / GiB	
+$0.00
+Size
+App
+
+WorkForceOS
+WorkForceOS
+0.00 GiB
+
+App Storage Basic Operations
+(Requests)
+-
+0
+$0.0006 / 1K	
+$0.00
+Requests
+App
+
+WorkForceOS
+WorkForceOS
+0
+
+App Storage Advanced Operations
+(Requests)
+-
+0
+$0.0075 / 1K	
+$0.00
+Requests
+App
+
+WorkForceOS
+WorkForceOS
+0
