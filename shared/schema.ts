@@ -2765,18 +2765,18 @@ export type InsertProjectEnvVar = z.infer<typeof insertProjectEnvVarSchema>;
 export type ProjectEnvVar = typeof projectEnvVars.$inferSelect;
 
 // Credit Math Constants - Pricing and conversion rates for credit-based billing
-// Updated 2025: Match industry standard (Cursor/Replit) - $1 credit for $1 paid
+// Updated 2025: Competitive pricing with Gemini 2.5 Flash (40x cheaper than Claude)
 export const CREDIT_CONSTANTS = {
   TOKENS_PER_CREDIT: 1000, // 1 credit = 1000 tokens
-  CREDIT_DOLLAR_VALUE: 0.05, // $0.05 per credit (retail)
-  PROVIDER_COST_PER_CREDIT: 0.012, // $0.012 blended cost (Claude Sonnet 4)
-  MARGIN_PERCENT: 76, // 76% gross margin on credits
+  CREDIT_DOLLAR_VALUE: 0.50, // $0.50 per 1K tokens (retail) - 50% cheaper than Replit
+  PROVIDER_COST_PER_CREDIT: 0.0001875, // $0.0001875 blended cost (Gemini 2.5 Flash: $0.075 input / $0.30 output per 1M)
+  MARGIN_PERCENT: 99.96, // 99.96% gross margin on credits (Gemini advantage!)
   
-  // I AM Architect Premium Pricing
-  I_AM_BASE_COST: 0.39, // $0.39 provider cost per consultation
-  I_AM_STARTER_PRICE: 2.00, // $2.00 per consultation (Starter tier)
-  I_AM_PRO_PRICE: 1.50, // $1.50 per consultation (Pro tier - discounted)
-  I_AM_BUSINESS_PRICE: 1.00, // $1.00 per consultation (Business tier - team discount)
+  // I AM Architect Premium Pricing (Claude Sonnet 4 for premium consulting)
+  I_AM_BASE_COST: 0.39, // $0.39 provider cost per consultation (Claude Sonnet 4)
+  I_AM_STARTER_PRICE: 1.50, // $1.50 per consultation (Starter tier)
+  I_AM_PRO_PRICE: 1.00, // $1.00 per consultation (Pro tier - discounted)
+  I_AM_BUSINESS_PRICE: 0.75, // $0.75 per consultation (Business tier - team discount)
   I_AM_ENTERPRISE_PRICE: 0, // Free for Enterprise (unlimited included)
 };
 
