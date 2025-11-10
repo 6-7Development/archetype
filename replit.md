@@ -85,14 +85,35 @@ Efficiency rules within LomuAI's system prompt optimize token usage and task com
 - **Regular LomuAI**: All users for project development/fixes (usage-based credit billing).
 - **I AM Architect**: Premium consulting feature for all users.
 
-**Credit System (V4.0):**
-A profitable credit system is implemented where 1 credit = 1,000 tokens = $0.05, with various pricing tiers (Free, Starter, Pro, Business, Enterprise) designed for significant profit margins.
+**Competitive Credit System (V5.0 - Gemini Advantage):**
+A highly competitive credit system leveraging Gemini 2.5 Flash's 40x cost advantage:
+- **Pricing**: 1 credit = 1,000 tokens = $0.50 (50% cheaper than Replit's agent usage)
+- **Provider Cost**: $0.0001875 per 1K tokens (Gemini 2.5 Flash blended: $0.075 input / $0.30 output per 1M)
+- **Profit Margin**: 99.96% (industry-leading while still undercutting competitors!)
+- **Subscription Tiers**:
+  - **Free**: $0 (50K tokens lifetime) - Perfect for evaluation
+  - **Starter**: $19/month (100K tokens) - 50% cheaper than Replit Core ($25)
+  - **Pro**: $69/month (250K tokens) - Premium features at competitive price
+  - **Business**: $179/month (600K tokens) - Team collaboration
+  - **Enterprise**: $499/month (2M tokens) - White-label + SSO
+- **Overage Rate**: $0.50 per 1K tokens (vs competitors charging $1-2+)
 
 **Key Features:**
-- **Tool Distribution Architecture**:
-  - **LomuAI (18 tools)**: File Operations, Smart Code Intelligence, Task Management, Web & Research, Testing & Diagnosis, Vision Analysis, Escalation, System Operations. Validation ensures Gemini agents stay within Google's 10-20 tool recommendation.
-  - **Sub-Agents (12 tools)**: file operations, smart code intelligence, execution, secrets, integrations, deployment.
-  - **I AM Architect (23+ tools)**: platform file operations, architect services, knowledge management, logs, database, design assets, GitHub, environment variables.
+- **Optimized Tool Distribution Architecture** (Google Gemini Best Practices):
+  - **LomuAI (18 tools)**: Core development capabilities optimized for Gemini 2.5 Flash
+    - File Operations (3): read, write, ls
+    - Smart Code Intelligence (3): smart_read_file, get_auto_context, extract_function
+    - Task Management (3): create_task_list, update_task, read_task_list
+    - Web & Research (2): web_search, web_fetch
+    - Testing & Diagnosis (2): browser_test, perform_diagnosis
+    - Vision Analysis (1): vision_analyze (Claude Sonnet 4 Vision API)
+    - Escalation (1): architect_consult
+    - System Operations (3): bash, refresh_all_logs, glob
+  - **Sub-Agents (12 tools)**: Specialized execution-focused toolset for delegated work
+    - File Operations (2), Smart Code (2), Execution (2), Secrets (2), Integrations (2), Deployment (2)
+  - **I AM Architect (23 tools)**: Complex reasoning and governance (Claude Sonnet 4)
+    - Platform Files (3), Architect Services (2), Knowledge (4), Logs (2), Database (2), Design (2), GitHub (4), Env Vars (4)
+  - **Validation**: Automatic tool count verification ensures Gemini agents stay within Google's 10-20 tool sweet spot
 - **GitHub Integration**: Full version control (6 tools) supporting branching, pull requests, project export, and auto-deployment.
 - **Environment Variables Management**: Project-level secrets (4 tools) with database storage, validation, and security masking.
 - **Code Intelligence System**: AST-based code understanding via CodeIndexer, FileRelevanceDetector, and SmartChunker.
