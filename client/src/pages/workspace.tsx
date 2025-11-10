@@ -9,6 +9,7 @@ import { AIChat } from "@/components/ai-chat";
 import { MobileWorkspace } from "@/components/mobile-workspace";
 import { TaskProgressWidget } from "@/components/task-progress-widget";
 import { AgentTaskList, type AgentTask } from "@/components/agent-task-list";
+import { LivePreview } from "@/components/live-preview";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -71,6 +72,12 @@ export default function Workspace() {
 
   const { data: files = [] } = useQuery<File[]>({
     queryKey: ["/api/files"],
+  });
+
+  // Get active project session for preview
+  const { data: activeSession } = useQuery<{ activeProjectId: string | null; project: any | null }>({
+    queryKey: ["/api/projects/active-session"],
+    enabled: !!user,
   });
 
   // Split editor hook for desktop
@@ -617,33 +624,11 @@ export default function Workspace() {
 
         {/* RIGHT: Live Preview - Collapsible */}
         {showPreview && (
-          <div className="w-96 border-l flex flex-col bg-card">
-            <div className="h-9 flex items-center justify-between px-3 border-b">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500" />
-                <span className="text-xs font-semibold">Live Preview</span>
-              </div>
-            </div>
-            <div className="flex-1 p-2">
-              {activeFile && activeFile.language === 'html' ? (
-                <div className="h-full bg-white dark:bg-zinc-900 rounded border overflow-hidden">
-                  <iframe
-                    title="Preview"
-                    className="w-full h-full"
-                    srcDoc={editorContent}
-                    sandbox="allow-scripts"
-                  />
-                </div>
-              ) : (
-                <div className="h-full flex items-center justify-center border rounded bg-muted/20">
-                  <div className="text-center px-4">
-                    <Code2 className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground">Preview available for HTML files</p>
-                    <p className="text-xs text-muted-foreground mt-1">Select an HTML file to see live preview</p>
-                  </div>
-                </div>
-              )}
-            </div>
+          <div className="w-96 border-l flex flex-col bg-card overflow-hidden">
+            <LivePreview 
+              projectId={activeSession?.activeProjectId || null}
+              fileCount={files.length}
+            />
           </div>
         )}
 

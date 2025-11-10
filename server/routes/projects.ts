@@ -857,4 +857,38 @@ export function registerProjectRoutes(app: Express) {
       res.status(500).json({ error: error.message || "Failed to activate project" });
     }
   });
+
+  // GET /api/projects/active-session - Get user's active project session
+  app.get("/api/projects/active-session", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.authenticatedUserId;
+
+      // Import project sessions table
+      const { db } = await import("../db");
+      const { projectSessions, projects } = await import("@shared/schema");
+      const { eq } = await import("drizzle-orm");
+
+      // Get user's active project session
+      const [session] = await db
+        .select()
+        .from(projectSessions)
+        .where(eq(projectSessions.userId, userId))
+        .limit(1);
+
+      if (!session || !session.activeProjectId) {
+        return res.json({ activeProjectId: null, project: null });
+      }
+
+      // Get the project details
+      const project = await storage.getProject(session.activeProjectId, userId);
+
+      res.json({ 
+        activeProjectId: session.activeProjectId, 
+        project: project || null 
+      });
+    } catch (error: any) {
+      console.error('Error getting active project session:', error);
+      res.status(500).json({ error: error.message || "Failed to get active project session" });
+    }
+  });
 }
