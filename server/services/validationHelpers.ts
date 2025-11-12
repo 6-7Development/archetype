@@ -399,20 +399,20 @@ export class DuplicateSuppressionTracker {
  */
 export function formatValidationErrors(result: ValidationResult): string {
   if (result.success) {
-    return '✅ Validation passed';
+    return 'Validation passed';
   }
 
   const parts: string[] = [];
 
   if (result.errors.length > 0) {
-    parts.push('❌ Errors:');
+    parts.push('ERROR:');
     result.errors.forEach(err => {
       parts.push(`  - ${err}`);
     });
   }
 
   if (result.warnings.length > 0) {
-    parts.push('⚠️ Warnings:');
+    parts.push('WARNING:');
     result.warnings.forEach(warn => {
       parts.push(`  - ${warn}`);
     });

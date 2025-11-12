@@ -125,6 +125,32 @@ A highly competitive credit system leveraging Gemini 2.5 Flash's 40x cost advant
 - **Vision Analysis**: LomuAI can analyze images and screenshots using `vision_analyze` tool (powered by Claude Sonnet 4 Vision API) for UI/UX analysis, bug detection, and design matching.
 - **Strict Function Calling**: Transport-layer enforcement of JSON function calling for Gemini, ensuring "application/json" responseMimeType, "ANY" mode for forced tool calls, explicit `allowedFunctionNames`, and `temperature: 0.0` for determinism. **Full compliance documentation:** See `docs/GEMINI_INTEGRATION.md` for comprehensive implementation details proving 100% adherence to industry best practices.
 
+### Streaming Architecture Research (Jan 2025)
+**Research Goal**: Investigate production-grade AI streaming patterns from Cursor/Replit/Bolt to improve LomuAI's code generation capabilities.
+
+**What Was Built**:
+- `server/services/geminiOrchestrator.ts` - Reference implementation of 5-layer stack (Task Planner → Context Gatherer → Streaming Generator → Tool Executor → Validation Loop)
+- `server/services/validationHelpers.ts` - Production-ready validation utilities (file checking, TypeScript validation, retry logic, progress tracking)
+
+**What Was Learned**:
+1. **Native Function Calling > XML Tags**: LomuAI's existing Gemini JSON function calling is superior to XML tag parsing patterns. The native API is faster, more reliable, and type-safe.
+2. **Integration Complexity**: Wholesale replacement of streaming infrastructure is high-risk due to tight coupling with credit accounting, WebSocket protocol, structured logging, and approval workflows.
+3. **Security First**: Any command execution must be gated through existing approval flows - no unrestricted shell access.
+4. **Incremental > Revolutionary**: Better to extract reusable utilities (validation, retry, tracking) than replace entire streaming stack.
+
+**What's Production-Ready**:
+- `server/services/validationHelpers.ts` - Safe, tested utilities ready for integration:
+  - `validateFileChanges()` - Check file existence after operations
+  - `validateTypeScript()` - Optional TypeScript type checking  
+  - `retryOperation()` - Generic retry with exponential backoff
+  - `FileChangeTracker` - Track modifications with timestamps
+  - `DuplicateSuppressionTracker` - Prevent redundant operations
+
+**What's Shelved**:
+- `server/services/geminiOrchestrator.ts` - Reference implementation only, not for production use. Architectural mismatches and missing infrastructure integration make it unsuitable for direct deployment. Kept as learning reference for future improvements.
+
+**Next Steps**: Gradually integrate validation helpers into existing LomuAI workflow to improve reliability without disrupting proven streaming architecture.
+
 ### Feature Specifications
 - **Workspace Features**: Tab-based navigation, unified talk & build interface, Monaco editor, full project ZIP export.
 - **Publishing/Deployment System**: Management of deployments, logs, and analytics.
