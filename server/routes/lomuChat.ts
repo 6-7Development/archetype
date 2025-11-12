@@ -25,7 +25,7 @@ import { sanitizeDiagnosisForAI } from '../lib/diagnosis-sanitizer.ts';
 import { filterToolCallsFromMessages } from '../lib/message-filter.ts';
 import type { WebSocketServer } from 'ws';
 import { broadcastToUser } from './websocket.ts';
-import { getOrCreateState, autoUpdateFromMessage, formatStateForPrompt } from '../services/conversationState.ts';
+import { getOrCreateState, autoUpdateFromMessage, formatStateForPrompt, updateCodeScratchpad, getCodeScratchpad, clearCodeScratchpad, clearState, estimateConversationTokens, summarizeOldMessages } from '../services/conversationState.ts';
 import { agentFailureDetector } from '../services/agentFailureDetector.ts';
 import { classifyUserIntent, getMaxIterationsForIntent, type UserIntent } from '../shared/chatConfig.ts';
 import { validateFileChanges, FileChangeTracker } from '../services/validationHelpers.ts';
@@ -832,6 +832,47 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // 🎯 CONVERSATION STATE: Get or create state for context tracking
     const conversationState = await getOrCreateState(userId, null);
 
+    // 🔄 GAP 5: RESET/NEWPROJECT COMMAND DETECTION
+    // Detect @RESET or @NEWPROJECT commands and clear state
+    const lowerMessage = message.toLowerCase().trim();
+    if (lowerMessage.startsWith('@reset') || lowerMessage.startsWith('@newproject')) {
+      console.log('[RESET-COMMAND] Detected reset command, clearing conversation state and scratchpad');
+      
+      // Clear conversation state
+      await clearState(conversationState.id);
+      
+      // Clear code scratchpad
+      await clearCodeScratchpad(conversationState.id);
+      
+      // Clear scratchpad entries
+      await storage.clearScratchpadEntries(conversationState.id);
+      
+      // Send confirmation message
+      const resetMessage = lowerMessage.startsWith('@reset') 
+        ? 'Conversation reset! Starting fresh. How can I help you?'
+        : 'New project started! Previous context cleared. What would you like to build?';
+      
+      const [resetMsg] = await db
+        .insert(chatMessages)
+        .values({
+          userId,
+          projectId: null,
+          fileId: null,
+          role: 'assistant',
+          content: resetMessage,
+          isPlatformHealing: true,
+        })
+        .returning();
+      
+      sendEvent('content', { content: resetMessage });
+      sendEvent('complete', {});
+      
+      res.write(`data: ${JSON.stringify({ type: 'complete', messageId: resetMsg.id })}\n\n`);
+      res.end();
+      
+      return;
+    }
+
     // Auto-update state from user message (extract goals and files)
     await autoUpdateFromMessage(conversationState.id, message);
     console.log('[CONVERSATION-STATE] Updated from user message:', conversationState.id);
@@ -975,6 +1016,15 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // Format conversation context for AI injection (with replit.md)
     const contextPrompt = await formatStateForPrompt(freshState);
 
+    // 🔄 GAP 2: GET CODE SCRATCHPAD (Reference previous working code)
+    // Retrieve last verified code to provide continuity for modifications
+    const lastVerifiedCode = await getCodeScratchpad(conversationState.id);
+    const scratchpadContext = lastVerifiedCode 
+      ? `\n\n📋 LAST VERIFIED CODE (from scratchpad):\n\`\`\`\n${lastVerifiedCode}\n\`\`\`\n\nThis is code that previously worked. Reference this when making modifications to maintain continuity.`
+      : '';
+    
+    const enhancedContextPrompt = contextPrompt + scratchpadContext;
+
     // ============================================================================
     // T1: RUN-CONFIG GOVERNANCE - INITIAL HEURISTICS (NOT FINAL)
     // ============================================================================
@@ -1027,7 +1077,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       platform: 'LomuAI - React+Express+PostgreSQL on Railway',
       autoCommit: finalAutoCommit,
       intent,
-      contextPrompt,
+      contextPrompt: enhancedContextPrompt,
       userMessage: message,
       autonomyLevel: finalAutonomyLevel,
       extendedThinking: finalExtendedThinking, // ✅ Using mutable variable (pre-runConfig)
@@ -1375,6 +1425,22 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       let taskListId: string | null = null; // Track if a task list exists
       let detectedComplexity = 1; // Track task complexity for workflow validation
 
+      // ✅ GAP 4: Token Checking and Context Summarization
+      // Check token count and summarize if approaching limits (Gemini 2.5 Flash has 1M context)
+      const MAX_GEMINI_TOKENS = 200000; // Conservative limit (200K tokens)
+      const currentTokens = estimateConversationTokens(safeMessages);
+      
+      let finalMessages = safeMessages;
+      if (currentTokens > 0.75 * MAX_GEMINI_TOKENS) {
+        console.log(`[GAP-4] ⚠️ Token limit approaching (${currentTokens}/${MAX_GEMINI_TOKENS}), applying summarization...`);
+        finalMessages = await summarizeOldMessages(safeMessages, conversationState.id, MAX_GEMINI_TOKENS);
+        
+        // Notify user that context was summarized
+        sendEvent('content', { content: '\n\n*[Context summarized to manage memory efficiently]*\n\n' });
+      } else {
+        console.log(`[GAP-4] ✅ Token count healthy (${currentTokens}/${MAX_GEMINI_TOKENS}), no summarization needed`);
+      }
+
       // ✅ FIXED GEMINI: 40x cheaper with proper functionResponse format
       // Fixed the tool response structure to match Gemini's expected format
       await retryWithBackoff(async () => {
@@ -1382,7 +1448,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           model: 'gemini-2.5-flash',
           maxTokens: config.maxTokens,
           system: safeSystemPrompt,
-          messages: safeMessages,
+          messages: finalMessages, // ✅ GAP 4: Use summarized messages if needed
           tools: availableTools,
         onChunk: (chunk: any) => {
           if (chunk.type === 'chunk' && chunk.content) {
@@ -2577,11 +2643,12 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                     relevantFiles: typedInput.relevantFiles,
                     userId,
                     sendEvent,
+                    fileChangeTracker, // T5: Pass tracker to sub-agent for change tracking
                   });
 
                   toolResult = `✅ Sub-agent completed work:\n\n${result.summary}\n\nFiles modified:\n${result.filesModified.map(f => `- ${f}`).join('\n')}`;
 
-                  // Track file changes
+                  // Track file changes from sub-agent
                   result.filesModified.forEach((filePath: string) => {
                     fileChanges.push({ path: filePath, operation: 'modify' });
                   });
@@ -3147,6 +3214,19 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           
           // Emit success in verifying phase
           phaseOrchestrator.emitComplete(`Validation passed: ${modifiedFiles.length} files verified`);
+          
+          // 🔄 GAP 2: UPDATE CODE SCRATCHPAD after successful validation
+          // Store the working code for future reference
+          if (fullContent.includes('```')) {
+            // Extract code blocks from the response
+            const codeBlockRegex = /```[\s\S]*?```/g;
+            const codeBlocks = fullContent.match(codeBlockRegex);
+            if (codeBlocks && codeBlocks.length > 0) {
+              const latestCode = codeBlocks[codeBlocks.length - 1]; // Get the most recent code block
+              await updateCodeScratchpad(conversationState.id, latestCode);
+              console.log('[SCRATCHPAD] ✅ Updated code scratchpad with latest verified code');
+            }
+          }
         } else {
           // ✅ T3 FIX: BLOCKING validation failure - HARD FAIL and STOP execution
           console.error('[LOMU-AI-VALIDATION] ❌ VALIDATION FAILED - BLOCKING EXECUTION:');
@@ -3224,7 +3304,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     // Detect if this was a fix/build request but no code modifications occurred
     // CRITICAL: Comprehensive keyword matching for fix requests (case-insensitive)
-    const lowerMessage = message.toLowerCase();
+    // Note: lowerMessage already declared at line 837 for reset detection, reusing it here
     const FIX_REQUEST_KEYWORDS = [
       'fix', 'repair', 'resolve', 'patch', 'correct', 'address',
       'diagnose', 'debug', 'troubleshoot',
@@ -3387,6 +3467,57 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     // Use LomuAI's response as-is (like Replit Agent)
     let finalMessage = fullContent || '✅ Done!';
+
+    // 🔄 GAP 3: THREE-STEP FORMAT VALIDATION
+    // Validate response follows Planning → Code → Testing structure
+    const validateThreeStepFormat = (response: string): { valid: boolean; score: number; missing: string[] } => {
+      const lowerResponse = response.toLowerCase();
+      const missing: string[] = [];
+      let score = 0;
+      
+      // Check for Planning section (thinking/analysis phase)
+      const hasPlan = lowerResponse.includes('plan') || 
+                      lowerResponse.includes('approach') || 
+                      lowerResponse.includes('strategy') ||
+                      lowerResponse.includes('will') ||
+                      lowerResponse.includes('going to');
+      if (hasPlan) score += 33; else missing.push('Planning');
+      
+      // Check for Code/Implementation section (actual work)
+      const hasCode = response.includes('```') || 
+                      lowerResponse.includes('implement') || 
+                      lowerResponse.includes('creat') ||
+                      lowerResponse.includes('modif') ||
+                      lowerResponse.includes('fix');
+      if (hasCode) score += 34; else missing.push('Code/Implementation');
+      
+      // Check for Testing/Verification section (validation)
+      const hasTest = lowerResponse.includes('test') || 
+                      lowerResponse.includes('verif') || 
+                      lowerResponse.includes('check') ||
+                      lowerResponse.includes('validat') ||
+                      lowerResponse.includes('✅');
+      if (hasTest) score += 33; else missing.push('Testing/Verification');
+      
+      return { valid: score === 100, score, missing };
+    };
+    
+    const formatValidation = validateThreeStepFormat(finalMessage);
+    if (!formatValidation.valid && intent === 'task') {
+      console.warn(`[OUTPUT-VALIDATION] ⚠️ Response missing THREE-STEP format (${formatValidation.score}%):`);
+      console.warn(`[OUTPUT-VALIDATION] Missing sections: ${formatValidation.missing.join(', ')}`);
+      
+      // Log quality metric (non-blocking warning)
+      await updateContext(conversationState.id, {
+        lastResponseQuality: {
+          formatScore: formatValidation.score,
+          missingSections: formatValidation.missing,
+          timestamp: new Date().toISOString()
+        }
+      });
+    } else if (formatValidation.valid) {
+      console.log(`[OUTPUT-VALIDATION] ✅ Response follows THREE-STEP format (${formatValidation.score}%)`);
+    }
 
     // Save assistant message
     const [assistantMsg] = await db

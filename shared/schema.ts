@@ -621,6 +621,7 @@ export const conversationStates = pgTable("conversation_states", {
   currentGoal: text("current_goal"), // What user is trying to accomplish
   mentionedFiles: text("mentioned_files").array().default(sql`ARRAY[]::text[]`), // Files discussed
   sessionSummary: text("session_summary"), // Running summary of conversation
+  lastVerifiedCode: text("last_verified_code"), // Code scratchpad - latest working code block
   context: jsonb("context").$type<{
     recentTopics?: string[];
     completedTasks?: string[];

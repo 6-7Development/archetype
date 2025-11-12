@@ -15,12 +15,14 @@ import {
   executeSql,
   refreshAllLogs,
 } from './tools';
+import { FileChangeTracker } from './services/validationHelpers';
 
 interface SubagentParams {
   task: string;
   relevantFiles: string[];
   userId: string;
   sendEvent: (type: string, data: any) => void;
+  fileChangeTracker?: FileChangeTracker; // T5: Optional tracker for file changes
 }
 
 interface SubagentResult {
@@ -31,7 +33,7 @@ interface SubagentResult {
 }
 
 export async function startSubagent(params: SubagentParams): Promise<SubagentResult> {
-  const { task, relevantFiles, userId, sendEvent } = params;
+  const { task, relevantFiles, userId, sendEvent, fileChangeTracker } = params;
 
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   if (!anthropicKey) {
@@ -743,6 +745,12 @@ Work systematically, verify your changes, and report completion when done!`;
           // Track modified files
           if (trackFile && !filesModified.includes(trackFile)) {
             filesModified.push(trackFile);
+            
+            // T5: Record change in FileChangeTracker if provided
+            if (fileChangeTracker) {
+              fileChangeTracker.recordChange(trackFile, 'modify');
+              console.log(`[SUBAGENT] Tracked file change: ${trackFile}`);
+            }
           }
 
           toolResults.push({

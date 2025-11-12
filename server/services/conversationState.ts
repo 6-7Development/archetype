@@ -421,3 +421,220 @@ export async function autoUpdateFromMessage(
 
   return state;
 }
+
+/**
+ * Update the code scratchpad with latest verified code
+ * Stores working code block after successful execution
+ */
+export async function updateCodeScratchpad(
+  stateId: string,
+  code: string
+): Promise<ConversationState> {
+  const [updated] = await db
+    .update(conversationStates)
+    .set({
+      lastVerifiedCode: code,
+      lastUpdated: new Date(),
+    })
+    .where(eq(conversationStates.id, stateId))
+    .returning();
+
+  console.log(`[CONVERSATION-STATE] 💾 Updated code scratchpad for state ${stateId} (${code.length} chars)`);
+  return updated;
+}
+
+/**
+ * Get the code scratchpad (latest verified code)
+ */
+export async function getCodeScratchpad(stateId: string): Promise<string | null> {
+  const [state] = await db
+    .select()
+    .from(conversationStates)
+    .where(eq(conversationStates.id, stateId))
+    .limit(1);
+
+  return state?.lastVerifiedCode || null;
+}
+
+/**
+ * Clear the code scratchpad
+ */
+export async function clearCodeScratchpad(stateId: string): Promise<ConversationState> {
+  const [updated] = await db
+    .update(conversationStates)
+    .set({
+      lastVerifiedCode: null,
+      lastUpdated: new Date(),
+    })
+    .where(eq(conversationStates.id, stateId))
+    .returning();
+
+  console.log(`[CONVERSATION-STATE] 🧹 Cleared code scratchpad for state ${stateId}`);
+  return updated;
+}
+
+/**
+ * ✅ GAP 4: Token Counting
+ * Estimate token count for text using rough approximation
+ * (1 token ≈ 4 characters for most models)
+ */
+export function estimateTokens(text: string): number {
+  if (!text) return 0;
+  return Math.ceil(text.length / 4);
+}
+
+/**
+ * ✅ GAP 4: Conversation Token Counting
+ * Estimate total tokens in a conversation message array
+ */
+export function estimateConversationTokens(messages: any[]): number {
+  let total = 0;
+  
+  for (const msg of messages) {
+    // Count role field
+    total += estimateTokens(msg.role || '');
+    
+    // Count content (handle both string and array format)
+    if (typeof msg.content === 'string') {
+      total += estimateTokens(msg.content);
+    } else if (Array.isArray(msg.content)) {
+      for (const block of msg.content) {
+        if (block.type === 'text' && block.text) {
+          total += estimateTokens(block.text);
+        } else if (block.type === 'tool_use' && block.input) {
+          total += estimateTokens(JSON.stringify(block.input));
+        } else if (block.type === 'tool_result' && block.content) {
+          // Handle both string and array tool results
+          if (typeof block.content === 'string') {
+            total += estimateTokens(block.content);
+          } else if (Array.isArray(block.content)) {
+            for (const item of block.content) {
+              if (typeof item === 'string') {
+                total += estimateTokens(item);
+              } else if (item.text) {
+                total += estimateTokens(item.text);
+              } else if (item.json) {
+                total += estimateTokens(JSON.stringify(item.json));
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  console.log(`[TOKEN-COUNT] Estimated ${total} tokens across ${messages.length} messages`);
+  return total;
+}
+
+/**
+ * ✅ GAP 4: Context Summarization
+ * Summarize old messages when approaching token limits
+ * Strategy: Keep last 5 messages + critical code blocks, summarize the rest
+ */
+export async function summarizeOldMessages(
+  messages: any[],
+  stateId?: string,
+  maxTokens: number = 100000 // Gemini 2.5 Flash has 1M context, use 100K as soft limit
+): Promise<any[]> {
+  const currentTokens = estimateConversationTokens(messages);
+  
+  // If we're under 80% of max tokens, no summarization needed
+  if (currentTokens < 0.8 * maxTokens) {
+    console.log(`[SUMMARIZATION] ✅ No summarization needed (${currentTokens}/${maxTokens} tokens)`);
+    return messages;
+  }
+  
+  console.log(`[SUMMARIZATION] ⚠️ Token limit approaching (${currentTokens}/${maxTokens}), summarizing old messages...`);
+  
+  // Keep the last 5 messages intact (most recent context)
+  const recentMessages = messages.slice(-5);
+  const oldMessages = messages.slice(0, -5);
+  
+  if (oldMessages.length === 0) {
+    console.log(`[SUMMARIZATION] ⚠️ All messages are recent, cannot summarize further`);
+    return messages;
+  }
+  
+  // Extract key information from old messages
+  const summary = {
+    messageCount: oldMessages.length,
+    userRequests: [] as string[],
+    toolsUsed: [] as string[],
+    codeBlocks: [] as string[],
+    errors: [] as string[],
+  };
+  
+  for (const msg of oldMessages) {
+    // Extract user requests
+    if (msg.role === 'user' && typeof msg.content === 'string') {
+      summary.userRequests.push(msg.content.substring(0, 200)); // First 200 chars
+    }
+    
+    // Extract tool uses
+    if (msg.role === 'assistant' && Array.isArray(msg.content)) {
+      for (const block of msg.content) {
+        if (block.type === 'tool_use') {
+          summary.toolsUsed.push(block.name);
+        }
+        
+        // Keep critical code blocks (file writes)
+        if (block.type === 'tool_use' && 
+            (block.name === 'write_platform_file' || block.name === 'write_project_file') &&
+            block.input?.content) {
+          summary.codeBlocks.push(`${block.input.path}: ${block.input.content.substring(0, 300)}`);
+        }
+        
+        // Keep error messages
+        if (block.type === 'tool_result' && 
+            typeof block.content === 'string' && 
+            (block.content.includes('Error') || block.content.includes('Failed'))) {
+          summary.errors.push(block.content.substring(0, 200));
+        }
+      }
+    }
+  }
+  
+  // Create summary message
+  const summaryText = `
+[CONTEXT SUMMARY]
+This conversation has ${summary.messageCount} older messages that have been summarized:
+
+**User Requests:**
+${summary.userRequests.slice(0, 3).map((req, i) => `${i + 1}. ${req}...`).join('\n')}
+
+**Tools Used:** ${[...new Set(summary.toolsUsed)].join(', ')}
+
+**Code Changes:**
+${summary.codeBlocks.slice(0, 3).join('\n')}
+
+**Errors Encountered:**
+${summary.errors.slice(0, 2).join('\n')}
+
+Note: This is a compressed summary. Recent context (last 5 messages) is preserved below.
+  `.trim();
+  
+  // Store summary in conversation state if stateId provided
+  if (stateId) {
+    try {
+      await updateSummary(stateId, summaryText);
+      console.log(`[SUMMARIZATION] ✅ Summary stored in conversation state ${stateId}`);
+    } catch (error) {
+      console.warn('[SUMMARIZATION] Failed to store summary:', error);
+    }
+  }
+  
+  // Create summarized message array
+  const summarizedMessages = [
+    {
+      role: 'user',
+      content: summaryText
+    },
+    ...recentMessages
+  ];
+  
+  const newTokenCount = estimateConversationTokens(summarizedMessages);
+  console.log(`[SUMMARIZATION] ✅ Reduced from ${currentTokens} to ${newTokenCount} tokens (${Math.round((1 - newTokenCount/currentTokens) * 100)}% reduction)`);
+  
+  return summarizedMessages;
+}

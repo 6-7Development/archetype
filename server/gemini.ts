@@ -384,6 +384,12 @@ If you need to call a function, emit ONLY the JSON object.`),
         // ✅ NEW ARCHITECTURE: Force JSON output at transport layer (external advice v2)
         // "Even perfect prompts won't stop free-text if response_mime_type and tool config aren't strict"
         responseMimeType: "application/json",
+        // ✅ GEMINI BEST PRACTICE: Enable dynamic thinking for optimal performance
+        // ✅ GAP 1 FIX: Enable thought visibility (Gemini's recommendation)
+        thinkingConfig: {
+          thinkingBudget: -1,  // -1 = dynamic thinking budget (adapts to complexity)
+          includeThoughts: true  // ✅ Return thought summaries for frontend display
+        },
       },
     };
 

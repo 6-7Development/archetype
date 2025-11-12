@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Send, Upload, Rocket, Plus, Loader2, Database, Activity, AlertCircle, CheckCircle, RefreshCw, Trash2, BarChart3, ListTodo, ChevronDown, ChevronRight } from 'lucide-react';
+import { Send, Upload, Rocket, Plus, Loader2, Database, Activity, AlertCircle, CheckCircle, RefreshCw, Trash2, BarChart3, ListTodo, ChevronDown, ChevronRight, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { AgentTaskList, type AgentTask } from '@/components/agent-task-list';
@@ -148,6 +148,8 @@ function PlatformHealingContent() {
   const [pendingImages, setPendingImages] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState<Map<string, boolean>>(new Map());
   const [progressMessages, setProgressMessages] = useState<Array<{id: string, message: string, timestamp: number}>>([]);
+  const [thoughts, setThoughts] = useState<Array<{id: string, content: string, timestamp: number}>>([]);
+  const [isThoughtPanelOpen, setIsThoughtPanelOpen] = useState(false);
   
   // Deployment and healing status tracking
   const [deploymentStatus, setDeploymentStatus] = useState<{
@@ -220,6 +222,21 @@ function PlatformHealingContent() {
           const message = data.content || data.thought || data.action || '';
           if (message) {
             console.log(`[PLATFORM-HEALING] ${data.type}:`, message);
+            
+            // ✅ GAP 1: Separate thoughts from actions for dedicated display
+            if (data.type === 'ai-thought') {
+              setThoughts(prev => [
+                ...prev,
+                {
+                  id: `thought-${Date.now()}-${Math.random()}`,
+                  content: message,
+                  timestamp: Date.now(),
+                }
+              ]);
+              setIsThoughtPanelOpen(true); // Auto-open when thoughts arrive
+            }
+            
+            // Keep progress messages for actions
             setProgressMessages(prev => [
               ...prev,
               {
@@ -233,8 +250,10 @@ function PlatformHealingContent() {
         
         // Clear progress messages when AI completes
         if (data.type === 'ai-complete' || data.type === 'chat-complete') {
-          console.log('[PLATFORM-HEALING] AI completed, clearing progress messages');
+          console.log('[PLATFORM-HEALING] AI completed, clearing progress messages and thoughts');
           setProgressMessages([]);
+          setThoughts([]);
+          setIsThoughtPanelOpen(false);
         }
         
         // Handle healing event updates
@@ -1126,6 +1145,44 @@ function PlatformHealingContent() {
                           <p className="text-sm text-muted-foreground/80 leading-tight font-mono">{progress.message}</p>
                         </div>
                       ))}
+                    </div>
+                  )}
+
+                  {/* ✅ GAP 1: Thought Display Panel - Collapsible thinking visualization */}
+                  {thoughts.length > 0 && (
+                    <div className="px-4 mb-2">
+                      <Collapsible open={isThoughtPanelOpen} onOpenChange={setIsThoughtPanelOpen}>
+                        <CollapsibleTrigger asChild>
+                          <button 
+                            className="flex items-center gap-2 w-full px-3 py-2 rounded-md border bg-card hover-elevate active-elevate-2 text-left"
+                            data-testid="button-toggle-thoughts"
+                          >
+                            <div className="flex items-center gap-2 flex-1">
+                              <Brain className="w-4 h-4 text-primary" />
+                              <span className="text-sm font-medium">Thinking...</span>
+                              <Badge variant="secondary" className="text-xs">
+                                {thoughts.length} {thoughts.length === 1 ? 'thought' : 'thoughts'}
+                              </Badge>
+                            </div>
+                            {isThoughtPanelOpen ? (
+                              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            ) : (
+                              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                            )}
+                          </button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="mt-2 space-y-2">
+                          {thoughts.map((thought) => (
+                            <div 
+                              key={thought.id} 
+                              className="px-3 py-2 rounded-md bg-muted/50 border border-border/50"
+                              data-testid={`thought-${thought.id}`}
+                            >
+                              <MarkdownRenderer content={thought.content} />
+                            </div>
+                          ))}
+                        </CollapsibleContent>
+                      </Collapsible>
                     </div>
                   )}
 
