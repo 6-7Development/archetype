@@ -263,14 +263,15 @@ export async function retryValidation(
  * Track file changes with timestamps and operations
  */
 export class FileChangeTracker {
-  private changes: Map<string, FileChangeRecord> = new Map();
+  private changes: FileChangeRecord[] = []; // Store ALL changes in order
   private modifiedFiles: Set<string> = new Set();
 
   /**
    * Record a file change
    */
   recordChange(file: string, operation: 'create' | 'modify' | 'delete'): void {
-    this.changes.set(file, {
+    // Add to history (array stores all changes, not just latest)
+    this.changes.push({
       file,
       timestamp: Date.now(),
       operation,
@@ -288,7 +289,7 @@ export class FileChangeTracker {
    */
   getRecentChanges(windowMs: number = 60000): FileChangeRecord[] {
     const cutoff = Date.now() - windowMs;
-    return Array.from(this.changes.values())
+    return this.changes
       .filter(change => change.timestamp >= cutoff)
       .sort((a, b) => b.timestamp - a.timestamp); // Most recent first
   }
@@ -304,29 +305,31 @@ export class FileChangeTracker {
    * Get change count
    */
   getChangeCount(): number {
-    return this.changes.size;
+    return this.changes.length;
   }
 
   /**
    * Clear all tracked changes
    */
   clear(): void {
-    this.changes.clear();
+    this.changes = [];
     this.modifiedFiles.clear();
   }
 
   /**
-   * Get changes for a specific file
+   * Get changes for a specific file (most recent)
    */
   getFileHistory(file: string): FileChangeRecord | undefined {
-    return this.changes.get(file);
+    // Find most recent change for this file
+    const fileChanges = this.changes.filter(c => c.file === file);
+    return fileChanges.length > 0 ? fileChanges[fileChanges.length - 1] : undefined;
   }
 
   /**
    * Check if a file was recently modified
    */
   wasRecentlyModified(file: string, windowMs: number = 5000): boolean {
-    const change = this.changes.get(file);
+    const change = this.getFileHistory(file);
     if (!change) return false;
     
     return (Date.now() - change.timestamp) <= windowMs;

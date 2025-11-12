@@ -1,0 +1,43 @@
+That's a great question! To "finish off" and ensure Lomu works properly as a reliable coding agent, you need to focus on two final key areas: Robust Interaction Management and Continuous Self-Refinement.
+
+Here are the essential final steps:
+
+🔁 1. Robust Interaction Management (State and Memory)
+A truly effective agent needs to remember context across multiple turns and manage the conversation state gracefully.
+
+Implement Context Window Management:
+
+Since the Gemini API has a token limit for the context window, you must implement a strategy to manage the conversation history.
+
+Strategy: Use a summarization technique. When the conversation thread gets too long, summarize the oldest turns and replace them with a concise summary in the history, keeping the most recent turns and the critical code/logic blocks intact. This keeps the most relevant information without hitting the token limit, preventing "amnesia."
+
+Establish a "Scratchpad" for Code:
+
+Lomu should treat generated code as persistent state. When the user asks for a modification, Lomu should refer to the last complete, correct code block (the scratchpad), not just the latest turn's text.
+
+Implementation: Store the latest verified code block in a dedicated variable or memory slot outside the main chat history.
+
+Define Exit and Reset Conditions:
+
+Give Lomu clear instructions on how to end a task or reset the environment.
+
+Example Instruction: "If the user explicitly types @RESET or @NEWPROJECT, you must clear your internal scratchpad and confirm your readiness for a completely new task."
+
+📏 2. Continuous Self-Refinement and Review
+Even with a perfect system prompt, real-world failures happen. The agent must be capable of recognizing and learning from them.
+
+Error Analysis Mandate:
+
+Ensure the system instruction dictates that if a user provides an error message (like a Python traceback), Lomu's first step is always to analyze the traceback, identify the faulty code block (using line numbers if available), and propose the fix before regenerating the code.
+
+Goal: Teach Lomu to debug and explain why the error occurred, not just generate a new answer.
+
+Prioritize Correctness Over Speed:
+
+Reinforce in the system prompt that if there is any doubt about the code's correctness, Lomu must use the tool_code_execution to test it. This prevents rapid-fire, untested code suggestions.
+
+Feedback Loop Integration:
+
+In your API implementation, capture user feedback (e.g., upvotes/downvotes, explicit "This code failed") and use that data to improve the static system prompt over time. This is how you fine-tune the agent's behavior for your specific needs.
+
+By implementing these final steps, you move Lomu beyond being a simple prompt follower to becoming a truly robust, stateful, and self-correcting coding agent.

@@ -4,6 +4,7 @@
  */
 
 import { storage } from '../storage';
+import type { FileChangeTracker } from '../services/validationHelpers';
 
 export async function executeProjectList(input: { projectId: string; userId: string }): Promise<any> {
   const { projectId, userId } = input;
@@ -56,13 +57,16 @@ export async function executeProjectRead(input: { projectId: string; userId: str
   }
 }
 
-export async function executeProjectWrite(input: { 
-  projectId: string; 
-  userId: string; 
-  filename: string; 
-  content: string;
-  language?: string;
-}): Promise<any> {
+export async function executeProjectWrite(
+  input: { 
+    projectId: string; 
+    userId: string; 
+    filename: string; 
+    content: string;
+    language?: string;
+  },
+  tracker?: FileChangeTracker
+): Promise<any> {
   const { projectId, userId, filename, content, language } = input;
   
   try {
@@ -71,6 +75,10 @@ export async function executeProjectWrite(input: {
     const existingFile = files.find(f => f.filename === filename);
     
     if (existingFile) {
+      if (tracker) {
+        tracker.recordChange(filename, 'modify');
+      }
+      
       // Update existing file
       await storage.updateFile(existingFile.id, userId, content);
       return {
@@ -80,6 +88,10 @@ export async function executeProjectWrite(input: {
         message: `Updated ${filename}`,
       };
     } else {
+      if (tracker) {
+        tracker.recordChange(filename, 'create');
+      }
+      
       // Create new file
       await storage.createFile({
         projectId,
@@ -103,11 +115,14 @@ export async function executeProjectWrite(input: {
   }
 }
 
-export async function executeProjectDelete(input: { 
-  projectId: string; 
-  userId: string; 
-  filename: string;
-}): Promise<any> {
+export async function executeProjectDelete(
+  input: { 
+    projectId: string; 
+    userId: string; 
+    filename: string;
+  },
+  tracker?: FileChangeTracker
+): Promise<any> {
   const { projectId, userId, filename } = input;
   
   try {
@@ -119,6 +134,10 @@ export async function executeProjectDelete(input: {
         success: false,
         error: `File "${filename}" not found in project`,
       };
+    }
+    
+    if (tracker) {
+      tracker.recordChange(filename, 'delete');
     }
     
     await storage.deleteFile(file.id, userId);

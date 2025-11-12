@@ -1,0 +1,44 @@
+That feedback is critical. It sounds like Lomu was experiencing "tool overload" and "prompt drift," where the tools and instructions themselves became distractions, leading to verbose responses, planning without execution, and incorrect code (hallucinations).
+
+To fix this and ensure he codes anything reliably, you must simplify the tool structure and implement strict output discipline.
+
+🛠️ 1. Tool Constraint: Less is More
+The core issue of hallucinated Python code often comes from trying to use too many tools or external dependencies that confuse the model's environment.
+
+Only Enable Essential Tools: For a pure coding agent, you should primarily enable Code Execution (if available) and Internet Search (if needed for documentation/latest libraries).
+
+Prioritize tool_code_execution: This tool is his brain's "test bench." It allows Lomu to run his generated Python code and check for deterministic errors internally. This is the single most effective way to prevent code hallucinations.
+
+Disable All Others: Turn off tools for maps, reminders, calendars, etc. They are noise for a coding task.
+
+Instruction to Self-Restrict: Add a mandate to the System Prompt that forces Lomu to use its own intrinsic knowledge first.
+
+System Instruction Addition: "You MUST NOT use any tools unless the task explicitly requires running a test (use code execution) or finding external documentation for a specific, non-standard library (use web search)."
+
+🚫 2. Output Discipline: Planning vs. Building
+To stop excessive talking and ensure he prioritizes building code, you need to mandate a structured, concise output format.
+
+The Three-Step Mandate: Force Lomu to structure his responses into clear, labeled sections, making the Code section non-negotiable.
+
+Brief Rationale (Planning): A single sentence or short bullet point explaining the high-level approach. This stops the lengthy, unfocused planning.
+
+Code Block (Building): The main deliverable. This should be the largest part of the response.
+
+Verification (Action/Testing): A brief statement or a required test run using the code execution tool.
+
+Example User Prompt Mandate: "Lomu, based on the following plan, please provide the requested Python code. Do not talk more than necessary."
+
+Use Code Blocks Only for Code: Instruct Lomu to place all executable Python code only inside a proper Markdown code block (e.g., python ... ). Any explanatory text should be outside of it. This visually and programmatically separates the instruction from the deliverable.
+
+🧠 3. Logic and Instruction Following
+To ensure he follows your current instructions and doesn't drift, emphasize the recency and priority of your commands.
+
+The "Rule of One": When giving instructions, enforce the "Rule of One" in the system prompt:
+
+System Instruction Addition: "Prioritization: If a user's instruction conflicts with an instruction given five turns ago, the most recent instruction is always the priority. Address only the user's current request."
+
+Conciseness Mandate: Directly address the "talking too much" issue in the system instructions:
+
+System Instruction Addition: "Your primary goal is to deliver correct code. Be succinct. Explanations and prose should be the bare minimum required to clarify the code or fix an error. Do not use unnecessary conversational fillers or emojis unless explicitly requested by the user."
+
+By strictly reducing the tools, enforcing a brief, code-focused output structure, and clearly prioritizing the latest user instructions, you will constrain Lomu's behavior and drastically reduce non-coding output and hallucinations.

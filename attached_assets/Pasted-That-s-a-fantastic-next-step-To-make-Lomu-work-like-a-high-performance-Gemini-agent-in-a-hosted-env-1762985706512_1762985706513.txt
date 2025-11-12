@@ -1,0 +1,91 @@
+That's a fantastic next step. To make Lomu work like a high-performance Gemini agent in a hosted environment like Replit, you need to translate the abstract concepts of "thinking" and "tool use" into concrete API configurations.
+
+Here's a breakdown of the critical Python API configuration needed for Lomu, focusing on reasoning, code execution, and structured output.
+
+💻 Python Configuration for Lomu (Replit Ready)
+You will primarily use the GenerateContentConfig object to instruct the Gemini API on how Lomu should behave and think.
+
+1. Imports and Client Setup
+First, ensure you have the correct imports and securely retrieve your API key from Replit Secrets (stored as GEMINI_API_KEY).
+
+Python
+
+import os
+from google import genai
+from google.genai import types
+
+# 1. API Key Setup
+# Assumes you have set your GEMINI_API_KEY in Replit Secrets
+try:
+    client = genai.Client()
+except Exception as e:
+    print(f"Error initializing client. Check API key: {e}")
+    # Handle error or exit
+2. Reasoning & Logic Control (thinkingBudget)
+This is the most direct way to make Lomu "think" like a sophisticated agent, allowing him to perform multi-step planning and self-correction.
+
+Model: Use gemini-2.5-flash (or gemini-2.5-pro for highest complexity).
+
+Dynamic Thinking: Set the thinking_budget to -1 to tell the model to use the optimal amount of internal reasoning for the complexity of the current prompt.
+
+Python
+
+# Configuration for the model's internal reasoning
+thinking_config = types.ThinkingConfig(
+    # Set to -1 for Dynamic Thinking: Model decides how much to think based on complexity.
+    # This prevents rushing through complex coding tasks.
+    thinking_budget=-1
+)
+3. Code Execution Tool (tool_code_execution)
+This is the non-negotiable tool for a coding agent. It allows Lomu to run and test Python code to verify logic and eliminate hallucinations.
+
+Python
+
+# Configuration for enabling the internal Python sandbox (Lomu's test bench)
+code_execution_tool = types.Tool(
+    code_execution=types.ToolCodeExecution()
+)
+4. Combining All Configurations
+You combine the thinking configuration, the tools, the system instructions (the rules you created earlier), and low temperature (for deterministic, factual code) into a single configuration object.
+
+Python
+
+# The final GenerateContentConfig object
+generation_config = types.GenerateContentConfig(
+    # Use the Thinking Configuration
+    thinking_config=thinking_config,
+    
+    # Enable the Code Execution tool
+    tools=[code_execution_tool],
+    
+    # Set the model temperature low for stable, logical output (0.0 - 0.2 is best for code)
+    temperature=0.1, 
+    
+    # The System Prompt is essential for defining Lomu's role, rules, and self-awareness
+    system_instruction="""
+    You are Lomu, an advanced Python coding agent powered by Gemini 2.5.
+    Your sole focus is generating, refining, and explaining CORRECT and IDIOMATIC Python code.
+    RULES:
+    1. Be CONCISE. Only use a single sentence for planning/explanation before the code block.
+    2. All code MUST be run through Code Execution if the result is deterministic (e.g., math, function testing).
+    3. Output executable Python code ONLY in markdown code blocks (```python...```).
+    4. If the code execution fails, you MUST analyze the error and self-correct.
+    """
+)
+5. Final Agent Call Example
+Now you can call the model using all the configured settings:
+
+Python
+
+MODEL_NAME = "gemini-2.5-flash"
+
+response = client.models.generate_content(
+    model=MODEL_NAME,
+    contents="Generate a function 'calculate_median(data)' and test it with the list [1, 5, 2, 8, 4].",
+    config=generation_config,
+)
+
+# Printing the response will now include the model's text, 
+# its generated code, and the output from the code execution tool!
+print(response.text)
+By using this setup in your Replit project, you are instructing the underlying Gemini 2.5 model (Lomu) to be deliberate (via thinking_budget=-1), verifiable (via code_execution), and disciplined (via system_instruction and temperature=0.1).

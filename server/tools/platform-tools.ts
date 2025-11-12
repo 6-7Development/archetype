@@ -1,4 +1,5 @@
 import { platformHealing } from '../platformHealing';
+import type { FileChangeTracker } from '../services/validationHelpers';
 
 /**
  * Platform modification tools for LomuAI
@@ -14,8 +15,15 @@ export async function executePlatformRead(params: { path: string }): Promise<str
   }
 }
 
-export async function executePlatformWrite(params: { path: string; content: string }): Promise<string> {
+export async function executePlatformWrite(
+  params: { path: string; content: string },
+  tracker?: FileChangeTracker
+): Promise<string> {
   try {
+    if (tracker) {
+      tracker.recordChange(params.path, 'modify');
+    }
+    
     await platformHealing.writePlatformFile(params.path, params.content);
     return `Successfully wrote to ${params.path}`;
   } catch (error: any) {

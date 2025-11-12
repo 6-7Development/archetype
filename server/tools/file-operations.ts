@@ -6,6 +6,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { platformHealing } from '../platformHealing';
+import type { FileChangeTracker } from '../services/validationHelpers';
 
 export interface GlobResult {
   success: boolean;
@@ -202,13 +203,20 @@ export async function read(params: {
  * Write - Generic file write
  * Write content to a file
  */
-export async function write(params: {
-  file_path: string;
-  content: string;
-}): Promise<WriteResult> {
+export async function write(
+  params: {
+    file_path: string;
+    content: string;
+  },
+  tracker?: FileChangeTracker
+): Promise<WriteResult> {
   const { file_path, content } = params;
   
   try {
+    if (tracker) {
+      tracker.recordChange(file_path, 'modify');
+    }
+    
     // Try to write as platform file first
     try {
       await platformHealing.writePlatformFile(file_path, content);

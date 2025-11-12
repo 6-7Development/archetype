@@ -28,6 +28,8 @@ import { broadcastToUser } from './websocket.ts';
 import { getOrCreateState, autoUpdateFromMessage, formatStateForPrompt } from '../services/conversationState.ts';
 import { agentFailureDetector } from '../services/agentFailureDetector.ts';
 import { classifyUserIntent, getMaxIterationsForIntent, type UserIntent } from '../shared/chatConfig.ts';
+import { validateFileChanges, FileChangeTracker } from '../services/validationHelpers.ts';
+import { PhaseOrchestrator } from '../services/PhaseOrchestrator.ts';
 
 const execAsync = promisify(exec);
 
@@ -712,6 +714,19 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     res.write(`data: ${JSON.stringify({ type, ...data })}\n\n`);
   };
 
+  // ============================================================================
+  // T2: PHASE ORCHESTRATION - CREATE STATE MACHINE INSTANCE
+  // ============================================================================
+  const phaseOrchestrator = new PhaseOrchestrator((phase, message) => {
+    sendEvent('run_phase', { phase, message });
+  });
+
+  // ============================================================================
+  // T3: VALIDATION PLUMBING - CREATE FILE CHANGE TRACKER
+  // ============================================================================
+  const fileChangeTracker = new FileChangeTracker();
+  console.log('[LOMU-AI-VALIDATION] FileChangeTracker initialized');
+
   // Helper function to emit structured section events for collapsible UI
   const emitSection = (sectionId: string, sectionType: 'thinking' | 'tool' | 'text', phase: 'start' | 'update' | 'finish', content: string, metadata?: any) => {
     const event = {
@@ -960,17 +975,62 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // Format conversation context for AI injection (with replit.md)
     const contextPrompt = await formatStateForPrompt(freshState);
 
+    // ============================================================================
+    // T1: RUN-CONFIG GOVERNANCE - INITIAL HEURISTICS (NOT FINAL)
+    // ============================================================================
+    // ⚠️ CRITICAL: Do NOT create runConfig yet! Store values in variables first.
+    // This allows architect guidance and autoplan logic to override heuristics.
+    
+    // 🧠 COMPLEXITY DETECTION: Determine if extended thinking is needed (heuristic)
+    const { detectComplexity } = await import('../complexity-detection');
+    const complexityResult = detectComplexity(message);
+    
+    // Map complexity level to numeric score
+    const complexityScoreMap: Record<string, number> = { 
+      simple: 0.25, medium: 0.5, complex: 0.75, enterprise: 1.0 
+    };
+    const complexityScore = complexityScoreMap[complexityResult.level] || 0.5;
+    
+    // Heuristic: Enable extended thinking for complex tasks (can be overridden later)
+    let shouldEnableThinking = ['build', 'fix'].includes(intent) && (
+      message.length >= 200 || complexityScore >= 0.6
+    );
+    
+    // ✅ T1 FIX: Store config values in mutable variables (finalized later)
+    let finalExtendedThinking = req.body.extendedThinking ?? shouldEnableThinking;
+    let finalAutoCommit = autoCommit;
+    let finalAutoPush = autoPush;
+    let finalAutonomyLevel = user.autonomyLevel || 'standard';
+    
+    // 🏗️ FUTURE: Architect consultation or autoplan logic can modify these variables here
+    // Example: if (shouldConsultArchitect) { finalExtendedThinking = await architect.recommend(); }
+    // Example: if (autoplanDisabled) { finalAutoplan = false; }
+    
+    console.log(`[LOMU-AI][RUN-CONFIG] Initial heuristics computed:`, {
+      extendedThinking: finalExtendedThinking,
+      autoCommit: finalAutoCommit,
+      autoPush: finalAutoPush,
+      autonomyLevel: finalAutonomyLevel,
+      userIntent: intent,
+      complexity: complexityResult.level,
+      complexityScore,
+      messageLength: message.length,
+      manualOverride: req.body.extendedThinking !== undefined,
+      heuristicSuggestion: shouldEnableThinking,
+      note: 'runConfig will be created later after all overrides are applied',
+    });
+
     // 🧠 LOMU SUPER LOGIC CORE: Combined intelligence with cost awareness
     const { buildLomuSuperCorePrompt } = await import('../lomuSuperCore');
 
     const systemPrompt = buildLomuSuperCorePrompt({
       platform: 'LomuAI - React+Express+PostgreSQL on Railway',
-      autoCommit,
+      autoCommit: finalAutoCommit,
       intent,
       contextPrompt,
       userMessage: message,
-      autonomyLevel: user.autonomyLevel || 'standard',
-      extendedThinking: req.body.extendedThinking || false, // ✅ PARITY: Extended thinking mode for complex tasks
+      autonomyLevel: finalAutonomyLevel,
+      extendedThinking: finalExtendedThinking, // ✅ Using mutable variable (pre-runConfig)
     });
 
     // ⚡ GOOGLE GEMINI OPTIMIZED: 13 CORE TOOLS (Google recommends 10-20 max)
@@ -1211,6 +1271,13 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     const MAX_EMPTY_ITERATIONS = 3; // Stop if 3 consecutive iterations without tool calls
     let totalToolCallCount = 0; // Track total tool calls for quality analysis
 
+    // ============================================================================
+    // T2: PHASE ORCHESTRATION - EMIT THINKING PHASE (PRE-LOOP MILESTONE)
+    // ============================================================================
+    // ✅ Decouple from extended thinking - always emit thinking phase
+    // The orchestrator handles idempotency - safe to call even if already emitted
+    phaseOrchestrator.emitThinking('Analyzing your request and considering approaches...');
+
     // 📊 WORKFLOW TELEMETRY: Track read vs write operations
     // 🎯 REPLIT AGENT PARITY: High ceiling for diagnostics while preserving stall detection
     const workflowTelemetry = {
@@ -1251,6 +1318,30 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     // ✅ REMOVED: Casual greeting bypass - LomuAI should ALWAYS be conversational like Replit Agent
     // Every message goes to Claude for proper conversational awareness and context
+
+    // ============================================================================
+    // T1: RUN-CONFIG GOVERNANCE - FINALIZE CONFIGURATION (AFTER ALL OVERRIDES)
+    // ============================================================================
+    // ✅ NOW create immutable runConfig from finalized variables
+    // This ensures all toggles/overrides have been applied (architect, autoplan, etc.)
+    const { createRunConfig } = await import('@shared/agentEvents');
+    const runConfig = createRunConfig({
+      message,
+      extendedThinkingOverride: finalExtendedThinking,
+      autoCommit: finalAutoCommit,
+      autoPush: finalAutoPush,
+      autonomyLevel: finalAutonomyLevel,
+      userIntent: intent,
+    });
+    
+    console.log(`[LOMU-AI][RUN-CONFIG] ✅ Final configuration locked:`, {
+      extendedThinking: runConfig.extendedThinking,
+      autoCommit: runConfig.autoCommit,
+      autoPush: runConfig.autoPush,
+      autonomyLevel: runConfig.autonomyLevel,
+      userIntent: runConfig.userIntent,
+      note: 'All overrides applied - config is now immutable',
+    });
 
     while (continueLoop && iterationCount < MAX_ITERATIONS) {
       iterationCount++;
@@ -1453,7 +1544,14 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         return ''; // Silent tools = smooth conversation
       };
 
-      // 🔧 TOOL EXECUTION: Process all tool calls from the response FIRST
+      // ============================================================================
+      // T2: PHASE ORCHESTRATION - EMIT WORKING PHASE (FIRST TOOL CALL MILESTONE)
+      // ============================================================================
+      // Emit working phase on first tool use (orchestrator prevents double emission)
+      if (contentBlocks.some(b => b.type === 'tool_use')) {
+        phaseOrchestrator.emitWorking('Executing actions and making changes...');
+      }
+
       // This ensures every tool_use has a tool_result before we add forcing messages
       for (const block of contentBlocks) {
         if (block.type === 'tool_use') {
@@ -1723,6 +1821,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               if (!toolResult || !toolResult.includes('❌ PROTECTION')) {
                 console.log(`[LOMU-AI] Writing file: ${typedInput.path} (${typedInput.content.length} bytes)`);
 
+              // ✅ T3: VALIDATION PLUMBING - Track file change
+              fileChangeTracker.recordChange(typedInput.path, 'modify');
+
               // ✅ AUTONOMOUS MODE: No approval required - LomuAI works like Replit Agent
               sendEvent('progress', { message: `✅ Modifying ${typedInput.path}...` });
 
@@ -1734,6 +1835,17 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 true  // skipAutoCommit: true - stage for batch commit
               );
               toolResult = JSON.stringify(writeResult);
+
+              // ✅ VALIDATION HELPERS: Validate file was written successfully (Phase 1 - Non-blocking)
+              try {
+                const validation = await validateFileChanges([typedInput.path], process.cwd());
+                if (!validation.success) {
+                  console.warn('[FILE-VALIDATION] File write validation failed (non-blocking):', validation.errors);
+                  // Non-blocking - just log for now, don't fail the operation
+                }
+              } catch (validationError) {
+                console.error('[FILE-VALIDATION] Validation error (non-blocking):', validationError);
+              }
 
               // Track file changes with content for batch commits
               fileChanges.push({ 
@@ -1884,6 +1996,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                   );
 
                   if (targetFile) {
+                    // ✅ T3: VALIDATION PLUMBING - Track file change
+                    fileChangeTracker.recordChange(validatedPath, 'modify');
+                    
                     // Update existing file
                     await storage.updateFile(targetFile.id, targetFile.userId, typedInput.content);
                     toolResult = `✅ File updated: ${validatedPath}`;
@@ -1948,6 +2063,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                     };
                     const language = langMap[ext] || 'text';
 
+                    // ✅ T3: VALIDATION PLUMBING - Track file change
+                    fileChangeTracker.recordChange(validatedPath, 'create');
+                    
                     await storage.createFile({
                       userId: projectOwnerId,
                       projectId,
@@ -1984,6 +2102,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                   );
 
                   if (targetFile) {
+                    // ✅ T3: VALIDATION PLUMBING - Track file change
+                    fileChangeTracker.recordChange(validatedPath, 'delete');
+                    
                     await storage.deleteFile(targetFile.id, targetFile.userId);
                     toolResult = `✅ File deleted: ${validatedPath}`;
                     sendEvent('file_change', { file: { path: validatedPath, operation: 'delete' } });
@@ -2272,6 +2393,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
               console.log(`[LOMU-AI] Creating file: ${typedInput.path} (${typedInput.content.length} bytes)`);
 
+              // ✅ T3: VALIDATION PLUMBING - Track file change
+              fileChangeTracker.recordChange(typedInput.path, 'create');
+
               // ✅ AUTONOMOUS MODE: No approval required - LomuAI works like Replit Agent
               sendEvent('progress', { message: `✅ Creating ${typedInput.path}...` });
               const createResult = await platformHealing.createPlatformFile(
@@ -2298,6 +2422,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               const typedInput = input as { path: string };
 
               console.log(`[LOMU-AI] Deleting file: ${typedInput.path}`);
+
+              // ✅ T3: VALIDATION PLUMBING - Track file change
+              fileChangeTracker.recordChange(typedInput.path, 'delete');
 
               // ✅ AUTONOMOUS MODE: No approval required - LomuAI works like Replit Agent
               sendEvent('progress', { message: `✅ Deleting ${typedInput.path}...` });
@@ -2550,6 +2677,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               sendEvent('progress', { message: `✏️ Editing ${typedInput.filePath}...` });
 
               try {
+                // ✅ T3: VALIDATION PLUMBING - Track file change
+                fileChangeTracker.recordChange(typedInput.filePath, 'modify');
+
                 const result = await platformHealing.editPlatformFile(
                   typedInput.filePath,
                   typedInput.oldString,
@@ -2990,6 +3120,85 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       console.warn(`[LOMU-AI] ⚠️ Hit MAX_ITERATIONS (${MAX_ITERATIONS}) - possible infinite loop`);
     }
 
+    // ============================================================================
+    // T3: POST-ITERATION VALIDATION - Validate all file changes
+    // ============================================================================
+    const modifiedFiles = fileChangeTracker.getModifiedFiles();
+    const changeCount = fileChangeTracker.getChangeCount();
+    
+    // ✅ T3 FIX: Skip validation if tracker is empty (no mutations)
+    if (changeCount === 0 && modifiedFiles.length === 0) {
+      console.log('[LOMU-AI-VALIDATION] ✅ No file changes to validate - skipping validation');
+      // No validation needed - proceed normally
+    } else if (modifiedFiles.length > 0) {
+      console.log(`[LOMU-AI-VALIDATION] Running post-iteration validation on ${modifiedFiles.length} files...`);
+      console.log(`[LOMU-AI-VALIDATION] Total file operations: ${changeCount}`);
+      
+      // Emit verifying phase
+      phaseOrchestrator.emitVerifying(`Validating ${modifiedFiles.length} file changes...`);
+      
+      try {
+        // ✅ T3 FIX: Make validation BLOCKING - surface errors prominently
+        const validationResult = await validateFileChanges(modifiedFiles, process.cwd());
+        
+        if (validationResult.success) {
+          console.log(`[LOMU-AI-VALIDATION] ✅ All ${modifiedFiles.length} files validated successfully`);
+          sendEvent('progress', { message: `✅ Validated ${modifiedFiles.length} file changes` });
+          
+          // Emit success in verifying phase
+          phaseOrchestrator.emitComplete(`Validation passed: ${modifiedFiles.length} files verified`);
+        } else {
+          // ✅ T3 FIX: BLOCKING validation failure - HARD FAIL and STOP execution
+          console.error('[LOMU-AI-VALIDATION] ❌ VALIDATION FAILED - BLOCKING EXECUTION:');
+          validationResult.errors.forEach(error => console.error(`  - ${error}`));
+          
+          // Emit error in verifying phase (make it prominent)
+          const errorSummary = validationResult.errors.length > 3 
+            ? `${validationResult.errors.slice(0, 3).join('; ')} ... and ${validationResult.errors.length - 3} more`
+            : validationResult.errors.join('; ');
+          
+          phaseOrchestrator.emitVerifying(`❌ Validation failed: ${errorSummary}`);
+          
+          // Surface errors prominently to user
+          const errorMsg = `\n\n❌ **VALIDATION FAILED** - File changes did not pass verification:\n\n${validationResult.errors.slice(0, 5).map(e => `  • ${e}`).join('\n')}${validationResult.errors.length > 5 ? `\n  • ... and ${validationResult.errors.length - 5} more errors` : ''}\n\n**Execution stopped. Please review the changes and fix the issues.**\n`;
+          sendEvent('content', { content: errorMsg });
+          sendEvent('error', { message: `Validation failed: ${validationResult.errors.length} errors - execution blocked` });
+          fullContent += errorMsg;
+          
+          // Log error prominently
+          console.error(`[LOMU-AI-VALIDATION] ❌ ${validationResult.errors.length} validation errors - BLOCKING COMPLETION`);
+          
+          // Show validation summary in logs
+          const recentChanges = fileChangeTracker.getRecentChanges(60000);
+          console.log('[LOMU-AI-VALIDATION] Recent file changes:');
+          recentChanges.forEach(change => {
+            console.log(`  ${change.operation.toUpperCase()}: ${change.file}`);
+          });
+          
+          // ✅ T3 FIX: THROW ERROR TO BLOCK COMPLETION - Don't proceed to safety checks or cleanup
+          throw new Error(`Validation failed: ${validationResult.errors.length} files failed verification`);
+        }
+        
+        // Show validation summary in logs (only if success)
+        const recentChanges = fileChangeTracker.getRecentChanges(60000);
+        console.log('[LOMU-AI-VALIDATION] Recent file changes:');
+        recentChanges.forEach(change => {
+          console.log(`  ${change.operation.toUpperCase()}: ${change.file}`);
+        });
+        
+      } catch (validationError: any) {
+        // ✅ T3 FIX: Surface validation errors prominently and RE-THROW to block execution
+        console.error('[LOMU-AI-VALIDATION] ❌ Validation error - BLOCKING:', validationError.message);
+        phaseOrchestrator.emitVerifying(`❌ Validation error: ${validationError.message}`);
+        sendEvent('error', { message: `Validation error: ${validationError.message}` });
+        
+        // Re-throw to ensure execution is blocked
+        throw validationError;
+      }
+    } else {
+      console.log('[LOMU-AI-VALIDATION] ⚠️ Warning: Tracker has changes but no modified files - validation skipped');
+    }
+
     // 🎯 GIT-BASED FILE CHANGE DETECTION: Check if any files were actually modified
     try {
       const { stdout: gitStatus } = await execAsync('git status --porcelain');
@@ -3159,14 +3368,15 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     }
 
     // Commit and push if enabled (autonomous - no approval required)
+    // ✅ T1: Use runConfig as single source of truth
     let commitHash = '';
-    if (autoCommit && fileChanges.length > 0 && !usedGitHubAPI) {
+    if (runConfig.autoCommit && fileChanges.length > 0 && !usedGitHubAPI) {
       // Only use fallback commit if commit_to_github tool wasn't used
       sendEvent('progress', { message: `✅ Committing ${fileChanges.length} file changes...` });
       commitHash = await platformHealing.commitChanges(`Fix: ${message.slice(0, 100)}`, fileChanges as any);
       console.log(`[LOMU-AI] ✅ Committed autonomously: ${fileChanges.length} files`);
 
-      if (autoPush) {
+      if (runConfig.autoPush) {
         sendEvent('progress', { message: '✅ Pushing to GitHub (deploying to production)...' });
         await platformHealing.pushToRemote();
         console.log(`[LOMU-AI] ✅ Pushed to GitHub autonomously`);
@@ -3202,6 +3412,11 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       commitHash,
       status: 'success',
     });
+
+    // ============================================================================
+    // T2: PHASE ORCHESTRATION - EMIT COMPLETE PHASE (COMPLETION MILESTONE)
+    // ============================================================================
+    phaseOrchestrator.emitComplete('Finished! All changes complete.');
 
     // ✅ Send completion event immediately - don't wait for quality analysis
     sendEvent('done', { messageId: assistantMsg.id, commitHash, filesChanged: fileChanges.length });

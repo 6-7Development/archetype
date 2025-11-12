@@ -326,3 +326,47 @@ export interface DeploymentFailedData {
   errorMessage: string;
   timestamp: string;
 }
+
+// ============================================================================
+// RUN CONFIGURATION (T1: Run-Config Governance)
+// ============================================================================
+
+export interface RunConfig {
+  extendedThinking: boolean;
+  autoCommit: boolean;
+  autoPush: boolean;
+  autonomyLevel: string;
+  userIntent: string;
+  maxIterations: number;
+  message: string;
+}
+
+export interface RunConfigInput {
+  message: string;
+  extendedThinkingOverride?: boolean;
+  autoCommit?: boolean;
+  autoPush?: boolean;
+  autonomyLevel?: string;
+  userIntent?: string;
+}
+
+export function createRunConfig(input: RunConfigInput): RunConfig {
+  const {
+    message,
+    extendedThinkingOverride,
+    autoCommit = false,
+    autoPush = false,
+    autonomyLevel = 'standard',
+    userIntent = 'build',
+  } = input;
+
+  return {
+    extendedThinking: extendedThinkingOverride ?? false,
+    autoCommit,
+    autoPush,
+    autonomyLevel,
+    userIntent,
+    maxIterations: 30,
+    message,
+  };
+}
