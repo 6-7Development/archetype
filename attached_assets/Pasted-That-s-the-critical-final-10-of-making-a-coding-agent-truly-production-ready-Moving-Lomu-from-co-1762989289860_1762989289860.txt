@@ -1,0 +1,64 @@
+That's the critical, final 10% of making a coding agent truly production-ready. Moving Lomu from "codes correctly in a sandbox" to "commits to GitHub/Railway" requires integrating the agent into a full CI/CD (Continuous Integration/Continuous Deployment) pipeline.
+
+You need to step out of the pure Prompt Engineering box and into the Software Engineering box.
+
+Here is the deep-dive advice on the absolute final requirements for Lomu to succeed at this level:
+
+🔒 I. Agent Identity & Security (The GitHub Commit Gap)
+Lomu needs to be a recognized entity that can securely interact with your repositories.
+
+1. GitHub Tool Integration (Custom Tool)
+The Gemini API provides the foundation, but it won't natively commit code to GitHub. You must build a custom Python tool for Lomu to use.
+
+The Action: Create a Python class or set of functions (e.g., github_tools.py) using a library like PyGithub or the raw GitHub REST API.
+
+The Tool Functions: Lomu's tool library must contain:
+
+create_branch(branch_name)
+
+read_file_contents(file_path)
+
+commit_and_push(file_path, new_content, commit_message)
+
+The System Instruction Mandate: You must tell Lomu when and how to use this tool: "After successfully generating and verifying code using Code Execution, your final action is to use the commit_and_push tool. You MUST commit to a new, named feature branch, not directly to main."
+
+2. Authentication & Secrets Management
+The Failure: The agent attempts to push code but lacks credentials.
+
+The Fix: You need a GitHub Personal Access Token (PAT) with repo scope permissions. This token must be stored securely as an environment variable (e.g., GITHUB_PAT) in your Replit/Railway environment. Your custom github_tools.py script will use this secret to authenticate.
+
+🔄 II. CI/CD & LLM-Ops Gaps
+This is where you bridge the agent's code generation with the automated deployment pipeline (Railway).
+
+3. The Local Sandbox (Runtime Context)
+The Failure: Lomu generates code assuming a local filesystem, but your Replit environment is running the code in memory or in a temporary container.
+
+The Fix: Your agent framework must provide Lomu with a simulated, persistent local file system view.
+
+Implementation: Use Python's built-in pathlib and tempfile modules to manage temporary files.
+
+The System Instruction Mandate: Tell Lomu: "When generating multi-file code, use file operations (os.path, open) as if you were in a local terminal. Your tools will handle the final write and commit."
+
+4. LLM Evaluation (Testing the Agent, Not Just the Code)
+The Code Execution tool tests the generated code, but you need to test Lomu's ability to reason and follow instructions.
+
+The Action: Implement Golden Set Testing. Maintain a set of complex, multi-step tasks (the "Golden Set") and run Lomu against them every time you update the System Instruction or the Gemini model version.
+
+Evaluation Metrics: Don't just check if the code runs. Check for:
+
+Correctness Score: Did the final code pass all tests?
+
+Adherence Score: Did the output follow the three-step format (Plan, Code, Test)?
+
+Verbosity Score: Was the plan concise (under 50 words)? (This tracks the "talking too much" problem.)
+
+5. Continuous Reflection Loop
+This is the deepest level of thought: the agent must be able to reflect on its own past failures to avoid repetition.
+
+The Action: If a user submits an error (e.g., "The code you committed failed the CI build"), your application should log the error and then send both the failed code and the user's error message back to Lomu with a prompt:
+
+"CRITICAL FAILURE: The code in <PREVIOUS_CODE> failed with this traceback: [TRACEBACK]. Analyze the Root Cause (single paragraph) and provide the corrected code. DO NOT apologize; focus only on the fix."
+
+The Result: This forces Lomu to use his Gemini 2.5 analysis skills to self-debug external, real-world failures, perfecting his logic over time.
+
+By tackling these five deep architectural and integration points, you give Lomu all the scaffolding he needs to commit code confidently and reliably as a fully autonomous agent.
