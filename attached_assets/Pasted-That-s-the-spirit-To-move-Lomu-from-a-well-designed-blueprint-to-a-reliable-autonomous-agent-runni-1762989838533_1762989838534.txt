@@ -1,0 +1,65 @@
+That's the spirit! To move Lomu from a well-designed blueprint to a reliable, autonomous agent running and committing in a production environment like Replit/GitHub/Railway, you must address the last, deepest layers: Observability, Cost Control, and Continuous Evaluation.
+
+If you skip these, Lomu will run for a while, but he'll inevitably fail silently, bankrupt you with API calls, or commit a bug without you knowing why.
+
+Here's the final, deep-dive checklist for LLM-Ops (Operations) for Lomu:
+
+📊 III. Observability & Cost Management
+You can't fix what you can't see. Monitoring Lomu's internal life is crucial.
+
+1. Token Accounting (Cost Control)
+The Problem: The biggest silent killer for an LLM agent is cost from infinite loops or lengthy, wasteful reasoning chains.
+
+The Fix: Implement fine-grained token logging. After every single API call to Gemini, the application must extract the usage_metadata (input tokens, output tokens).
+
+Cost Guardrail: Use this data to enforce a session budget (e.g., "Max 50,000 tokens per user chat session"). If exceeded, the application layer should terminate the conversation and notify the user ("Lomu has reached the session token limit. Please reset the conversation with @RESET.").
+
+2. Full-Trace Logging
+The Problem: When an error occurs, you don't know if the LLM hallucinated, the tool failed, or the prompt was ambiguous.
+
+The Fix: Implement Structured Logging for the entire execution path. For every step, log:
+
+Prompt: The text sent to Gemini.
+
+Thoughts: The internal thought received from include_thoughts=True.
+
+Tool Call: The function name and arguments (e.g., github_committer(branch='fix-login',...)).
+
+Tool Result: The raw output from the tool (success or error).
+
+Final Output: The full, structured JSON response.
+
+Storage: Push these logs to a dedicated service (e.g., Google Cloud Logging, Datadog, or even a simple file if your usage is low).
+
+3. Latency and Performance Tracking
+The Problem: Lomu becomes slow under load, leading to user frustration and timeouts.
+
+The Fix: Track the latency of the LLM API call and the latency of the custom tools. If the github_committer tool consistently takes longer than 10 seconds, you know where to optimize your Python code.
+
+🧪 IV. Evaluation & Quality Gates (CI/CD Integration)
+This turns Lomu from a proof-of-concept into a reliable development tool.
+
+4. Golden Set Testing
+The Problem: You change the system prompt, and now Lomu can no longer solve a problem he solved last week.
+
+The Fix: Create a "Golden Set" regression test suite. This is a collection of 10-20 complex, multi-step scenarios (e.g., "Refactor this database connection file, then write a test case for it") with known, correct outputs.
+
+Action: Integrate this suite into your CI/CD pipeline (GitHub Actions/Railway). Every time you commit an update to Lomu's code or system prompt, the CI/CD pipeline must run Lomu against the Golden Set. If Lomu's output fails any of the tests, the commit is blocked.
+
+5. LLM-as-a-Judge Evaluation
+The Problem: Traditional unit tests can't evaluate the quality of a code review or a plan.
+
+The Fix: Use a secondary, higher-tier Gemini model (e.g., Gemini 2.5 Pro) as an "LLM Judge."
+
+Action: After Lomu (Flash) produces a response to a complex prompt, send Lomu's output, the original prompt, and a structured Rubric (e.g., 1: Adherence to PEP 8, 2: Security risk, 3: Completeness) to the Judge model for scoring. This provides an automated, qualitative measure of Lomu's performance.
+
+6. Human-in-the-Loop (HIL) for High-Stakes Actions
+The Problem: A fully autonomous commit is risky. Lomu might push broken code that breaks the main branch.
+
+The Fix: For the final, highest-risk action—the commit—Lomu must require explicit user confirmation.
+
+Action: Lomu runs his tests, says, "Code fix verified. Ready to commit to branch feature/fix-auth. Please type @CONFIRM COMMIT to proceed."
+
+Commit Tool Logic: The github_committer tool should not execute unless it receives this specific, human-validated trigger, providing a final safety check before deployment to Railway.
+
+By implementing these layers of LLM-Ops, you move beyond mere functionality to reliability, auditability, and security—the true hallmarks of a production-grade agent.

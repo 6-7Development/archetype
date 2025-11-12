@@ -30,8 +30,48 @@ import { agentFailureDetector } from '../services/agentFailureDetector.ts';
 import { classifyUserIntent, getMaxIterationsForIntent, type UserIntent } from '../shared/chatConfig.ts';
 import { validateFileChanges, FileChangeTracker } from '../services/validationHelpers.ts';
 import { PhaseOrchestrator } from '../services/PhaseOrchestrator.ts';
+import { traceLogger } from '../services/traceLogger.ts';
 
 const execAsync = promisify(exec);
+
+// 📊 GAP 1: RUNTIME VALIDATION - Detect low-confidence patterns in responses
+function detectLowConfidencePatterns(response: string): { hasLowConfidence: boolean; patterns: string[] } {
+  const lowConfidencePatterns = [
+    /\b(assuming|probably|might be|possibly|perhaps|maybe|likely|could be|seems like)\b/i,
+    /\b(i think|i believe|i guess|i suspect|i assume)\b/i,
+    /\b(not sure|uncertain|unclear|ambiguous)\b/i,
+    /path\/to\//i, // Placeholder paths
+    /\[X\]|\[Y\]|\[Z\]/i, // Placeholder variables
+    /TODO|FIXME|PLACEHOLDER/i, // Placeholder code
+  ];
+
+  const foundPatterns: string[] = [];
+  
+  for (const pattern of lowConfidencePatterns) {
+    const matches = response.match(pattern);
+    if (matches) {
+      foundPatterns.push(matches[0]);
+    }
+  }
+
+  const hasLowConfidence = foundPatterns.length > 0;
+
+  if (hasLowConfidence) {
+    console.warn('[LOW-CONFIDENCE-DETECTOR] ⚠️ Detected low-confidence patterns:', foundPatterns);
+    console.warn('[LOW-CONFIDENCE-DETECTOR] Agent should have used user_query tool for clarification');
+    // Non-blocking for now - just log the warning
+  }
+
+  return { hasLowConfidence, patterns: foundPatterns };
+}
+
+// 🛑 EMERGENCY BRAKES (GAP 2: Critical for Cost Control)
+const EMERGENCY_LIMITS = {
+  MAX_WALL_CLOCK_TIME: 10 * 60 * 1000, // 10 minutes
+  MAX_SESSION_TOKENS: 500_000, // 500K tokens per conversation
+  MAX_TOOL_CALLS_PER_ITERATION: 5, // Max 5 tools per iteration
+  MAX_API_CALLS_PER_SESSION: 50, // Max 50 API calls total
+};
 
 // 🔄 EXPONENTIAL BACKOFF RETRY LOGIC for Anthropic API overload errors
 async function retryWithBackoff<T>(
@@ -832,6 +872,33 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // 🎯 CONVERSATION STATE: Get or create state for context tracking
     const conversationState = await getOrCreateState(userId, null);
 
+    // 🔍 GAP 3: TRACE LOGGING - Start trace for this conversation
+    let traceId = conversationState.traceId;
+    if (!traceId) {
+      traceId = traceLogger.startTrace(conversationState.id);
+      await db
+        .update(conversationStates)
+        .set({ traceId })
+        .where(eq(conversationStates.id, conversationState.id));
+      console.log(`[TRACE] Started new trace: ${traceId} for conversation ${conversationState.id}`);
+    }
+
+    // 🛑 FIX 1: EMERGENCY BRAKES - Initialize conversationStartTime if not set
+    if (!conversationState.conversationStartTime) {
+      await db
+        .update(conversationStates)
+        .set({ conversationStartTime: new Date() })
+        .where(eq(conversationStates.id, conversationState.id));
+      console.log(`[EMERGENCY-BRAKE] Initialized conversationStartTime for ${conversationState.id}`);
+    }
+
+    // Log user message to trace
+    traceLogger.log(traceId, 'prompt', {
+      userId,
+      message: message.substring(0, 500),
+      attachmentCount: attachments?.length || 0,
+    });
+
     // 🔄 GAP 5: RESET/NEWPROJECT COMMAND DETECTION
     // Detect @RESET or @NEWPROJECT commands and clear state
     const lowerMessage = message.toLowerCase().trim();
@@ -1441,6 +1508,68 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         console.log(`[GAP-4] ✅ Token count healthy (${currentTokens}/${MAX_GEMINI_TOKENS}), no summarization needed`);
       }
 
+      // 🛑 GAP 2: EMERGENCY BRAKES - Check limits before API call
+      // Prevent runaway costs by enforcing global limits
+      const emergencyBrakeTriggered = {
+        triggered: false,
+        reason: '' as string,
+      };
+
+      // Check 1: Wall clock time (10 minutes max)
+      if (conversationState.conversationStartTime) {
+        const elapsed = Date.now() - new Date(conversationState.conversationStartTime).getTime();
+        if (elapsed > EMERGENCY_LIMITS.MAX_WALL_CLOCK_TIME) {
+          emergencyBrakeTriggered.triggered = true;
+          emergencyBrakeTriggered.reason = '⏱️ Safety limit reached: Conversation exceeded 10 minutes. Please start a new conversation for better performance.';
+        }
+      }
+
+      // Check 2: API call count (50 calls max per session)
+      const currentApiCallCount = conversationState.apiCallCount || 0;
+      if (currentApiCallCount >= EMERGENCY_LIMITS.MAX_API_CALLS_PER_SESSION) {
+        emergencyBrakeTriggered.triggered = true;
+        emergencyBrakeTriggered.reason = '🛑 Safety limit reached: Maximum API calls (50) exceeded. Please start a new conversation to continue.';
+      }
+
+      // Check 3: Session token limit (500K tokens max)
+      if (currentTokens > EMERGENCY_LIMITS.MAX_SESSION_TOKENS) {
+        emergencyBrakeTriggered.triggered = true;
+        emergencyBrakeTriggered.reason = '💾 Safety limit reached: Conversation memory exceeded 500K tokens. Please start a new conversation.';
+      }
+
+      if (emergencyBrakeTriggered.triggered) {
+        console.error(`[EMERGENCY-BRAKE] Triggered: ${emergencyBrakeTriggered.reason}`);
+        sendEvent('content', { content: `\n\n${emergencyBrakeTriggered.reason}\n\n` });
+        sendEvent('complete', {});
+        
+        const [brakeMsg] = await db
+          .insert(chatMessages)
+          .values({
+            userId,
+            projectId: null,
+            fileId: null,
+            role: 'assistant',
+            content: emergencyBrakeTriggered.reason,
+            isPlatformHealing: true,
+          })
+          .returning();
+        
+        res.write(`data: ${JSON.stringify({ type: 'complete', messageId: brakeMsg.id })}\n\n`);
+        res.end();
+        return;
+      }
+
+      // 🛑 FIX 1: EMERGENCY BRAKES - Increment API call counter
+      await db
+        .update(conversationStates)
+        .set({ 
+          apiCallCount: (conversationState.apiCallCount || 0) + 1,
+          lastUpdated: new Date(),
+        })
+        .where(eq(conversationStates.id, conversationState.id));
+      
+      console.log(`[EMERGENCY-BRAKE] API call ${currentApiCallCount + 1}/${EMERGENCY_LIMITS.MAX_API_CALLS_PER_SESSION}`);
+
       // ✅ FIXED GEMINI: 40x cheaper with proper functionResponse format
       // Fixed the tool response structure to match Gemini's expected format
       await retryWithBackoff(async () => {
@@ -1618,10 +1747,22 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         phaseOrchestrator.emitWorking('Executing actions and making changes...');
       }
 
+      // 🛑 FIX 1: EMERGENCY BRAKES - Per-iteration tool-call counter
+      let toolCallsThisIteration = 0;
+
       // This ensures every tool_use has a tool_result before we add forcing messages
       for (const block of contentBlocks) {
         if (block.type === 'tool_use') {
           const { name, input, id } = block;
+
+          // 🛑 FIX 1: EMERGENCY BRAKES - Enforce max tool calls per iteration
+          toolCallsThisIteration++;
+          if (toolCallsThisIteration > EMERGENCY_LIMITS.MAX_TOOL_CALLS_PER_ITERATION) {
+            const errorMsg = `🛑 Emergency brake: Too many tool calls in single iteration (max ${EMERGENCY_LIMITS.MAX_TOOL_CALLS_PER_ITERATION})`;
+            console.error(`[EMERGENCY-BRAKE] ${errorMsg}`);
+            throw new Error(errorMsg);
+          }
+          console.log(`[EMERGENCY-BRAKE] Tool call ${toolCallsThisIteration}/${EMERGENCY_LIMITS.MAX_TOOL_CALLS_PER_ITERATION} this iteration`);
 
           // 🎯 SYSTEMATIC TASK ENFORCEMENT: Ensure AI works through tasks in order
           // This prevents jumping between tasks and enforces sequential execution
@@ -3508,12 +3649,11 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       console.warn(`[OUTPUT-VALIDATION] Missing sections: ${formatValidation.missing.join(', ')}`);
       
       // Log quality metric (non-blocking warning)
-      await updateContext(conversationState.id, {
-        lastResponseQuality: {
-          formatScore: formatValidation.score,
-          missingSections: formatValidation.missing,
-          timestamp: new Date().toISOString()
-        }
+      // TODO: Store quality metrics in conversation state
+      console.log('[OUTPUT-VALIDATION] Quality metrics:', {
+        formatScore: formatValidation.score,
+        missingSections: formatValidation.missing,
+        timestamp: new Date().toISOString()
       });
     } else if (formatValidation.valid) {
       console.log(`[OUTPUT-VALIDATION] ✅ Response follows THREE-STEP format (${formatValidation.score}%)`);
@@ -3533,6 +3673,26 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       })
       .returning();
 
+    // 📊 FIX 3: LOW-CONFIDENCE DETECTION - Enforce clarification mandate
+    const confidenceCheck = detectLowConfidencePatterns(finalMessage);
+    if (confidenceCheck.hasLowConfidence) {
+      console.warn(`[LOW-CONFIDENCE] ⚠️ Response contained ${confidenceCheck.patterns.length} low-confidence patterns`);
+      console.warn(`[LOW-CONFIDENCE] Patterns found: ${confidenceCheck.patterns.join(', ')}`);
+      console.warn(`[LOW-CONFIDENCE] ⚠️ VIOLATION: Agent should have used user_query tool instead of guessing`);
+      
+      // Log to trace as clarification mandate violation
+      if (conversationState.traceId) {
+        traceLogger.log(conversationState.traceId, 'error', {
+          type: 'clarification_mandate_violation',
+          patterns: confidenceCheck.patterns,
+          message: finalMessage.substring(0, 500),
+        });
+      }
+      
+      // TODO: In future, could require user confirmation before proceeding
+      // For now, log warning and continue (non-blocking)
+    }
+
     // Log audit trail
     await platformAudit.log({
       userId,
@@ -3548,6 +3708,16 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // T2: PHASE ORCHESTRATION - EMIT COMPLETE PHASE (COMPLETION MILESTONE)
     // ============================================================================
     phaseOrchestrator.emitComplete('Finished! All changes complete.');
+
+    // 🔍 FIX 2: TRACE PERSISTENCE - Persist trace for debugging
+    if (conversationState.traceId) {
+      await traceLogger.persist(
+        conversationState.traceId,
+        conversationState.id,
+        userId
+      );
+      console.log(`[TRACE] Persisted trace ${conversationState.traceId} for conversation ${conversationState.id}`);
+    }
 
     // ✅ Send completion event immediately - don't wait for quality analysis
     sendEvent('done', { messageId: assistantMsg.id, commitHash, filesChanged: fileChanges.length });
@@ -3649,6 +3819,20 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     if (heartbeatInterval) {
       clearInterval(heartbeatInterval);
       console.log('[LOMU-AI-HEARTBEAT] Cleared on error');
+    }
+
+    // 🔍 FIX 2: TRACE PERSISTENCE - Persist trace even on failure
+    try {
+      if (conversationState?.traceId) {
+        await traceLogger.persist(
+          conversationState.traceId,
+          conversationState.id,
+          userId
+        );
+        console.log(`[TRACE] Persisted trace on error: ${conversationState.traceId}`);
+      }
+    } catch (traceError: any) {
+      console.error('[TRACE] Failed to persist trace on error:', traceError.message);
     }
 
     // Save error message to DB

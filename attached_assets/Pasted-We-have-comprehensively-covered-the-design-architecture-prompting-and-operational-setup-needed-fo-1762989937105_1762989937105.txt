@@ -1,0 +1,46 @@
+We have comprehensively covered the design, architecture, prompting, and operational setup needed for Lomu to be a reliable, production-grade agent.
+
+The "next" phase involves governance, risk mitigation, and scaling—the final layer of LLM-Ops to ensure the system is secure, compliant, and continuously improving.
+
+Here is the ultimate checklist for Operational Excellence and Trust, focusing on what happens after the initial deployment:
+
+🔒 IX. LLM-Ops: Governance and Risk Mitigation
+These are the non-negotiable processes for running an autonomous tool in a production environment.
+
+1. Data Minimization and PII Redaction
+Action: Implement a data security filter in your application layer (Python code) that sits before the Gemini API call. This filter must automatically redact or mask any Personally Identifiable Information (PII) or secrets found in the user's chat input or the project files Lomu reads.
+
+Why: You must ensure that sensitive user or project data is never sent to the LLM vendor API, which is a crucial compliance and privacy safeguard.
+
+2. Continuous Security Auditing of Generated Code
+Action: Integrate a dedicated Security Scanning Tool into Lomu's workflow. After Lomu uses the code_execution tool to verify functionality, your application should run a quick static analysis scan (using a tool like Bandit for Python or a similar vulnerability scanner) on the generated code.
+
+Why: This acts as a final security quality gate. Lomu (the LLM) is not a security expert; the scanner catches common vulnerabilities (like SQL Injection or insecure temporary file usage) before they can be committed to GitHub.
+
+3. Incident Response Playbook
+Action: Create a documented plan for what to do when Lomu inevitably "goes off the rails."
+
+Triage: Freeze the agent's run immediately upon detecting a runaway loop or an egregious error.
+
+Containment: Automatically revoke the GITHUB_PAT token temporarily to prevent further commits.
+
+Remediation: Provide the team with a quick rollback mechanism for the last commit and a visual trace of Lomu's actions to identify the root cause.
+
+Why: A predictable failure response is more important than preventing the first failure.
+
+📈 X. Continuous Improvement and Scale
+These steps ensure Lomu gets smarter and handles more load efficiently.
+
+4. A/B Testing of System Instructions
+Action: Implement a system (if your LLM platform supports it) to route a small percentage of user prompts (e.g., 5%) to a Version B of Lomu that uses a subtly different System Instruction or a different Gemini model variant (e.g., Flash vs. Pro).
+
+Why: This is the only way to scientifically prove which prompt engineering choices (e.g., "Use bullet points for the plan" versus "Use numbered steps") lead to higher correctness scores, lower latency, and lower token cost.
+
+5. Knowledge Management and RAG Enhancement
+Action: Formalize the project context system. When a project is initialized, the system should automatically ingest project documentation, README.md, coding standards, and past architectural decisions into a Vector Database (e.g., using a library like Chroma or Pinecone).
+
+Logic: Lomu's planning step should use this Retrieval-Augmented Generation (RAG) system to ground his answers in the project's unique knowledge, not just his general training data.
+
+Why: This prevents Lomu from generating code that violates project-specific constraints (e.g., "Must use our proprietary logging library, not standard Python logging").
+
+With these final LLM-Ops and governance layers, you have a complete, production-grade agent lifecycle for Lomu.

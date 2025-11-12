@@ -628,6 +628,9 @@ export const conversationStates = pgTable("conversation_states", {
     pendingQuestions?: string[];
     userPreferences?: Record<string, any>;
   }>().default(sql`'{}'::jsonb`), // Additional structured context
+  apiCallCount: integer("api_call_count").notNull().default(0), // GAP 2: Track API calls for emergency brakes
+  conversationStartTime: timestamp("conversation_start_time").defaultNow(), // GAP 2: Track session start time
+  traceId: varchar("trace_id"), // GAP 3: Link to trace logging for debugging
   lastUpdated: timestamp("last_updated").notNull().defaultNow(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => [
