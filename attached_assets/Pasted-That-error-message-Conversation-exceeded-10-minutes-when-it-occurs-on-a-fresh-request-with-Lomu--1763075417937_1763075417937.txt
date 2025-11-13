@@ -1,0 +1,41 @@
+That error message, "Conversation exceeded 10 minutes," when it occurs on a fresh request with Lomu is not due to a bug in his Gemini logic, but almost certainly a hard-coded timeout in the application layer or the API configuration.
+
+Here is why this is happening and how it relates to Gemini and agent design:
+
+🛑 Why the Emergency Brake is Triggering
+The "10 minutes" timeout is a very common default limit found in several places within the Gemini ecosystem and application hosting environments.
+
+1. Application/Hosting Timeout (Most Likely)
+The Issue: Your application framework (e.g., a simple API server in Replit, Flask, or FastAPI) or the gateway (like a load balancer or proxy) has a default timeout setting that is applied per request.
+
+How the Bug Happens: The "Conversation exceeded 10 minutes" message is likely being used generically by your frontend or middleware to signal any time-based API failure.
+
+The Root Cause: When Lomu receives a fresh request, the application layer may be failing to correctly reset the conversation timer or, more commonly, the timer starts running when the user's session is initiated, not when the specific API call is made.
+
+2. Gemini API Deadline Exceeded (Possible)
+The Issue: The Gemini API itself has request limits. Errors like 504 DEADLINE_EXCEEDED mean the service couldn't finish processing the prompt within the deadline.
+
+Why for a Fresh Request: This usually happens if your System Instruction or the initial RAG data (the context the agent loads) is extremely large. Even a fresh request has a massive payload of instructions, which can cause the processing time to exceed the API's internal limit.
+
+Solution: As recommended in the Gemini API documentation, you can set a larger timeout parameter in your client request to avoid premature termination for complex reasoning tasks.
+
+3. The Thinking Budget and Recursion
+The Issue: Your system is designed for deep logic using the Chain-of-Thought and Multi-Agent structures. Complex tasks (like analyzing a schedule PDF or optimizing a complex shift pool) require the Gemini model to perform multiple reasoning steps.
+
+The Failure: If the Gemini model enters a recursive loop (e.g., calling a tool, getting an error, failing to update the context, calling the same tool again), the total execution time quickly exceeds the 10-minute threshold. Even a fresh, complex task can hit this if the initial reasoning chain is too long.
+
+✅ How to Fix Lomu's Logic (The Emergency Brake)
+You need to fix the error in your application code and then fortify Lomu's logic to handle long execution times gracefully.
+
+1. Code Fix: Resetting the Timer
+Action: Review the Python code that controls the "emergency brake" timer. Ensure that the timer starts only when the user submits a new prompt and is cleared completely when the response is sent. The 10-minute window should be for request processing time, not session duration.
+
+2. API Configuration Fix (The Safety Margin)
+Action: Increase the global timeout setting in your Python code that makes the API call. Give Lomu a larger window to complete his complex optimization tasks.
+
+3. Lomu's Logic Fix: The Hard Stop and Reporting
+Action: If a request takes more than a set time (e.g., 5 minutes), Lomu should not just hit an emergency brake; he should report the partial progress to the user.
+
+System Instruction Addition: "If a complex task requires more than 5 minutes of processing (indicated by a custom tool time-out), you MUST stop, save the current state to the scratchpad, and communicate: 'Processing is complex; I have saved the current plan and will continue on the next user command to avoid a system timeout.'"
+
+Why: This prevents a total loss of the expensive token usage and provides the user with an explanation instead of a generic error.

@@ -630,6 +630,7 @@ export const conversationStates = pgTable("conversation_states", {
   }>().default(sql`'{}'::jsonb`), // Additional structured context
   apiCallCount: integer("api_call_count").notNull().default(0), // GAP 2: Track API calls for emergency brakes
   conversationStartTime: timestamp("conversation_start_time").defaultNow(), // GAP 2: Track session start time
+  lastInteractionAt: timestamp("last_interaction_at").defaultNow(), // Track last user/agent interaction for idle timeout
   traceId: varchar("trace_id"), // GAP 3: Link to trace logging for debugging
   lastUpdated: timestamp("last_updated").notNull().defaultNow(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
