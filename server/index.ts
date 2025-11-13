@@ -1,3 +1,8 @@
+import { enforceRequiredEnvVars } from "./config/validateEnv";
+
+// CRITICAL: Validate environment before loading any services
+enforceRequiredEnvVars();
+
 import express, { type Request, Response, NextFunction } from "express";
 import compression from "compression";
 import { registerRoutes } from "./routes";
