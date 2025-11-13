@@ -24,16 +24,18 @@ export default function Landing() {
 
       {/* Responsive Navigation */}
       <nav className="fixed top-0 w-full z-50 border-b border-honey/10 bg-charcoal-950/90 backdrop-blur-xl">
-        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
+        <div className="container mx-auto px-3 sm:px-6 py-2 sm:py-4">
           <div className="flex items-center justify-between gap-2">
             {/* Logo - Responsive sizing */}
             <Link 
               href="/" 
               data-testid="link-home"
-              className="inline-flex items-center hover-elevate rounded-md px-2 py-1"
+              className="inline-flex items-center hover-elevate rounded-md px-1 py-0.5 sm:px-2 sm:py-1"
             >
               <BeehiveLogo size="default" className="hidden md:block" />
-              <BeehiveLogo size="sm" className="md:hidden" />
+              <div className="md:hidden max-w-[140px]">
+                <BeehiveLogo size="sm" className="w-full h-auto" />
+              </div>
             </Link>
             
             {/* Desktop Navigation - Hidden on mobile */}
@@ -64,12 +66,11 @@ export default function Landing() {
             </div>
 
             {/* Mobile Menu Button - Shown on mobile only */}
-            <div className="flex md:hidden items-center gap-2">
-              <MotionToggle />
+            <div className="flex md:hidden items-center gap-1">
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="min-h-[44px] min-w-[44px]"
+                className="min-h-[40px] min-w-[40px]"
                 onClick={() => setMenuOpen(!menuOpen)}
                 data-testid="button-mobile-menu"
                 aria-label="Toggle menu"
@@ -126,7 +127,7 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section - Responsive */}
-      <section className="pt-16 sm:pt-28 md:pt-32 pb-8 sm:pb-16 md:pb-20 px-4 sm:px-6 relative z-10">
+      <section className="pt-20 sm:pt-28 md:pt-32 pb-8 sm:pb-16 md:pb-20 px-3 sm:px-6 relative z-10">
         <div className="container mx-auto max-w-6xl text-center">
           {/* Powered by Badge */}
           <div className="mb-4 sm:mb-8 inline-flex items-center gap-2 px-3 py-1.5 sm:gap-3 sm:px-6 sm:py-3 rounded-full bg-honey/10 backdrop-blur-sm shadow-[inset_0_0_0_1px_rgba(247,181,0,0.2)]">
