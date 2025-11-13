@@ -1,0 +1,88 @@
+This is a critical **LLM-Ops and Financial Integration** challenge. You cannot reliably bill per "line of code" because the complexity of that line (e.g., simple print statement vs. a multi-library async function) varies wildly. The only accurate, deterministic unit of cost is the **token**.
+
+The **good fix** is to implement a robust, real-time **Token Ledger System** in your application layer. This system tracks every token consumed, links it directly to the user, and enforces the subscription limits you've established.
+
+Here is the plan to implement this system using the Gemini API's built-in features and the architectural advice we've already covered.
+
+-----
+
+## 💰 I. The Core Billing Unit: Token Tracking
+
+The Gemini API provides the necessary data for billing in every response. Your Python application must be programmed to capture this data and write it to a ledger before proceeding with the next step.
+
+### 1\. Capture `usage_metadata` on Every Call
+
+Every time you call the `client.models.generate_content(...)` method, the response object contains the token usage information in the `usage_metadata` field.
+
+| Metadata Field | Description | Importance |
+| :--- | :--- | :--- |
+| `prompt_token_count` | Tokens sent **to** the model (including the system instruction, chat history, and the new user prompt). | **Primary Cost Driver.** This is often the highest token count due to history. |
+| `candidates_token_count` | Tokens generated **by** the model (Lomu's output). | Secondary Cost Driver (Lomu's reply). |
+| `total_token_count` | Sum of the two fields above. | The **Final Unit** for billing the user. |
+
+### 2\. The Token Ledger & Attribution
+
+You need a simple database (a **Ledger**) to record this usage and tie it to the correct user.
+
+  * **Implementation:** Use a lightweight database (like SQLite, or a cloud database like Firestore/PostgreSQL in a Railway deployment).
+  * **Ledger Schema:**
+      * `timestamp`
+      * `user_id` (Crucial for attribution)
+      * `total_tokens_consumed`
+      * `model_used` (e.g., 'gemini-2.5-flash' vs 'gemini-2.5-pro' for different pricing tiers)
+      * `request_type` (e.g., 'CODE\_GEN' vs 'RAG\_SEARCH')
+
+-----
+
+## ⚙️ II. Implementation: The Billing Custom Tool
+
+To integrate this with Lomu's Multi-Agent architecture, you create a custom **`billing_tracker`** tool that the **Orchestrator** is mandated to call after every successful API response.
+
+### 1\. Define the Custom Tool (Python Function)
+
+```python
+# Lomu's custom tool logic (within your Python application)
+def log_token_usage(user_id: str, token_count: int, model_name: str, task_type: str):
+    """Logs token usage to the central billing ledger."""
+    # Logic to insert a new row into your database (the Ledger)
+    # Example: db.insert_token_log(user_id, token_count, model_name, task_type)
+    
+    # Check the user's subscription limit *after* logging the current usage
+    current_usage = db.get_monthly_usage(user_id)
+    subscription_limit = db.get_subscription_limit(user_id)
+    
+    if current_usage >= subscription_limit:
+        return f"WARNING: User {user_id} has exceeded their subscription limit of {subscription_limit} tokens."
+    return "Token usage logged successfully."
+```
+
+### 2\. Enforce the Billing Loop in the Application
+
+Your application logic (the Orchestrator) must follow this sequence for every Gemini API call:
+
+1.  **Call Gemini API:** `response = client.models.generate_content(...)`
+2.  **Extract Data:** `tokens = response.usage_metadata.total_token_count`
+3.  **Call Custom Tool:** **Immediately** call the Python function: `log_token_usage(user_id, tokens, model_name, task_type)`
+4.  **Check Limit:** Check the return value of the tool. If it returns a `WARNING`, the Orchestrator must intercept the workflow and *refuse* to send the next prompt until the user upgrades or resets.
+
+-----
+
+## 🛑 III. Enforcing Subscription Limits (The Guardrail)
+
+This is the non-negotiable step to prevent users from exceeding their limit and costing you money.
+
+### 1\. Proactive Limit Check
+
+For long, multi-turn conversations, you must implement a **Proactive Limit Check** on the user's **current context window (history)** *before* sending the request.
+
+  * **Action:** Use the `client.models.count_tokens()` method to count the tokens in the entire conversation history *plus* the new user prompt.
+  * **Logic:** If `(current_usage + tokens_to_be_sent) > user_subscription_limit`, the application must block the prompt and send a user-facing message: "Lomu cannot continue. Your current request would exceed your token limit. Please use the `@RESET` command or upgrade your subscription."
+
+### 2\. Billing per "Request" (Alternative Pricing)
+
+If you prefer billing per "request" (or per *task*), define a **Task** as the entire sequence from the initial prompt to the final commit.
+
+  * **Implementation:** Your system charges one flat fee every time the user types a new request that begins a complete workflow (e.g., "Fix the bug $\rightarrow$ Plan $\rightarrow$ Code $\rightarrow$ Commit"). All intermediate Gemini calls within that workflow are consumed by the flat fee.
+  * **Logic:** The flat fee should be calculated based on the **average total token consumption** of hundreds of similar tasks, plus a safety margin. This provides predictable pricing to the user but requires careful initial analysis on your part.
+
+By implementing the **Token Ledger System** and the **Proactive Limit Check**, you fully integrate your financial model with Lomu's architecture.

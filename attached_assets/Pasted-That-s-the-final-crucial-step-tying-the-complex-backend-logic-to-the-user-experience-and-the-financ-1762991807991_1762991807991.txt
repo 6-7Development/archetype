@@ -1,0 +1,52 @@
+That's the final, crucial step—tying the complex backend logic to the user experience and the financial model. To get this right, you need to think about **transparency** and **real-time communication** in your chatroom UI, making the billing process understandable to the user.
+
+Here is the final advice, focusing on the communication and UI elements your chatroom needs to bill correctly and manage user expectations.
+
+---
+
+## 💬 I. Chatroom UI for Billing Transparency
+
+The chatroom UI must actively communicate cost and subscription status to the user *before* they consume expensive tokens.
+
+### 1. **The Real-Time Token/Cost Meter (Always Visible)**
+* **Action:** Implement a small, persistent meter in the chatroom UI (e.g., in the footer or sidebar) that updates after every response from Lomu.
+* **Data Displayed:**
+    * **Tier:** User's Current Subscription Plan (e.g., "Pro Tier").
+    * **Usage:** Tokens Used This Month (e.g., "4,520,100 / 5,000,000 Tokens").
+    * **Cost Estimate:** Total $ Amount Billed This Month (e.g., "$90.40 / $100.00").
+* **Why:** This eliminates sticker shock. Users self-regulate their use of expensive tools (like RAG or multi-step reasoning) when they see the cost meter moving.
+
+### 2. **Proactive Warning System (The Soft Cap)**
+* **Action:** The application layer must trigger a clear UI alert and a message from Lomu when the user hits a pre-defined usage threshold (e.g., **80% or 90%** of their monthly allotment).
+* **Lomu's Message Example:**
+    > "⚠️ **Token Alert:** Your account is at **90%** of its monthly token limit. I can finish this task, but the next request may be blocked. Please consider the `@RESET` command to clear unnecessary history."
+* **Why:** Gives the user control. They can choose to proceed or stop, preventing accidental overages.
+
+### 3. **The "Cost-of-Action" Indicator**
+* **Action:** When a user types a prompt that Lomu identifies as triggering a high-cost workflow (e.g., "Analyze the entire codebase for security flaws"), a small, non-intrusive modal should pop up *before* the API call.
+* **Display:** "This request requires Lomu-Auditor and RAG, consuming an estimated 45,000-80,000 tokens. Proceed?"
+* **Why:** Enforces the platform's **Value-Based Pricing**. It clearly ties a high cost to a high value action (a security audit).
+
+---
+
+## 🐍 II. Agent Logic for Communication and Billing
+
+Lomu must be instructed to be transparent about the cost drivers of his work.
+
+### 1. **System Prompt Mandate: The Cost Rationale**
+* **Action:** Add a high-priority rule to Lomu's System Instruction: "When executing a plan that involves a **Tier 2 (Pro) Model** or a **high-cost tool** (e.g., RAG, Security Scanner), your initial response **MUST** mention the tool/model used and briefly explain why."
+* **Lomu's Output Example:**
+    > "Understood. This architectural review requires **Gemini 2.5 Pro** and the **RAG tool** to analyze the full codebase. Status: Planning."
+* **Why:** Justifies the platform markup and the eventual bill. The user understands they are paying for the most complex brain, not just tokens.
+
+### 2. **Integrating the Final Bill Summary**
+* **Action:** When a task is complete (especially a commit), Lomu should be configured to present a final, itemized summary *after* the `github_committer` tool succeeds.
+* **Lomu's Final Output Example:**
+    > "✅ **Task Complete.** Code committed to branch `fix/auth-bug` (PR #123).
+    > **Usage Summary:**
+    > * Total Tokens Consumed: 15,200
+    > * Model Tier Used: Flash
+    > * Platform Charge: **$0.45** (Logged to your account ledger)."
+* **Why:** Finalizes the transaction in the user's mind, making the billing process transparent and predictable.
+
+Implementing these final communication and transparency steps ensures that the sophisticated backend billing system you designed translates into a trustworthy, professional front-end experience for your users.

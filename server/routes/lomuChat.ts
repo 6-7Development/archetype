@@ -210,22 +210,42 @@ export function initializeLomuAIWebSocket(websocketServer: WebSocketServer) {
   console.log('[LOMU-AI] WebSocket server initialized for live preview broadcasts');
 }
 
-// Broadcast file update to all connected clients for live preview refresh
-function broadcastFileUpdate(path: string, operation: 'create' | 'modify' | 'delete', projectId: string | null = null) {
+// STEP 5: Broadcast file update with context-specific room isolation
+// Updated to support targetContext for proper room-based broadcasting
+function broadcastFileUpdate(
+  path: string, 
+  operation: 'create' | 'modify' | 'delete', 
+  targetContext: 'platform' | 'project' = 'platform',
+  projectId: string | null = null,
+  userId: string | null = null
+) {
   if (!wss) {
     console.warn('[LOMU-AI] WebSocket not initialized, skipping file update broadcast');
     return;
   }
 
+  // Construct room ID for context isolation
+  // Platform context: room = `platform_${userId}` (owner-specific)
+  // Project context: room = `project_${projectId}` (project-specific)
+  const roomId = targetContext === 'platform' 
+    ? `platform_${userId || 'owner'}` 
+    : `project_${projectId || 'unknown'}`;
+
   const updateMessage = JSON.stringify({
     type: 'platform_file_updated',
     path,
     operation,
-    projectId: projectId || 'platform', // 'platform' for main Archetype code
+    targetContext,
+    projectId: projectId || null,
+    roomId, // Include roomId so clients can filter by their active context
     timestamp: Date.now(),
   });
 
   let broadcastCount = 0;
+  
+  // NOTE: Current WebSocketServer doesn't have native room support
+  // Clients should filter messages by roomId to achieve room isolation
+  // Future: Upgrade to socket.io for server-side room filtering
   wss.clients.forEach((client: any) => {
     if (client.readyState === 1) { // WebSocket.OPEN = 1
       try {
@@ -247,7 +267,7 @@ function broadcastFileUpdate(path: string, operation: 'create' | 'modify' | 'del
     }
   });
 
-  console.log(`[LOMU-AI] 📡 Broadcasted file update (${operation}: ${path}, project: ${projectId || 'platform'}) to ${broadcastCount} clients`);
+  console.log(`[LOMU-AI] 📡 Broadcasted file update (${operation}: ${path}) to room: ${roomId} (${broadcastCount} clients)`);
 }
 
 // Track active streams to prevent concurrent requests per user
@@ -281,6 +301,85 @@ function validateProjectPath(filePath: string): string {
   return normalized;
 }
 
+// ============================================================================
+// PHASE 1 - TASK 3: TARGET CONTEXT ACCESS CONTROL & BILLING
+// ============================================================================
+
+// STEP 2: Centralized Access Control - Validate targetContext access
+async function validateContextAccess(
+  userId: string,
+  targetContext: 'platform' | 'project',
+  projectId?: string | null
+): Promise<{ allowed: boolean; reason?: string }> {
+  // Platform context: owner-only access
+  if (targetContext === 'platform') {
+    const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    
+    // Check if user is the platform owner
+    if (!user || !user.isOwner) {
+      console.log(`[TARGET-CONTEXT] ❌ Access denied - platform healing requires owner access (userId: ${userId})`);
+      return { 
+        allowed: false, 
+        reason: 'Platform healing requires owner access. Only the platform owner can modify platform code.' 
+      };
+    }
+    
+    console.log(`[TARGET-CONTEXT] ✅ Platform access granted for owner (userId: ${userId})`);
+    return { allowed: true };
+  }
+  
+  // Project context: verify projectId is provided and user owns project
+  if (targetContext === 'project') {
+    if (!projectId) {
+      console.log(`[TARGET-CONTEXT] ❌ Access denied - projectId required for project context`);
+      return { 
+        allowed: false, 
+        reason: 'Project context requires a valid projectId' 
+      };
+    }
+    
+    // TODO: Add project ownership check when project ownership system is implemented
+    // For now, allow access if projectId is provided
+    console.log(`[TARGET-CONTEXT] ✅ Project access granted (userId: ${userId}, projectId: ${projectId})`);
+    return { allowed: true };
+  }
+  
+  return { 
+    allowed: false, 
+    reason: 'Invalid context. Must be "platform" or "project"' 
+  };
+}
+
+// STEP 3: Centralized Billing Logic - Handle FREE vs credit billing
+async function handleBilling(
+  userId: string,
+  targetContext: 'platform' | 'project',
+  creditsUsed: number,
+  agentRunId: string
+): Promise<void> {
+  // Platform healing = FREE (skip billing entirely)
+  if (targetContext === 'platform') {
+    console.log(`[BILLING] 🆓 Platform healing - FREE access, no charges applied (runId: ${agentRunId})`);
+    
+    // Complete the agent run with zero cost
+    const AgentExecutor = (await import('../services/agentExecutor')).AgentExecutor;
+    await AgentExecutor.completeRun(agentRunId, 0); // 0 credits charged
+    
+    return;
+  }
+  
+  // Project context = credit billing (existing logic)
+  if (targetContext === 'project') {
+    console.log(`[BILLING] 💳 User project - charging ${creditsUsed} credits (userId: ${userId}, runId: ${agentRunId})`);
+    
+    // Complete the agent run with actual credit charges
+    const AgentExecutor = (await import('../services/agentExecutor')).AgentExecutor;
+    await AgentExecutor.completeRun(agentRunId, creditsUsed);
+    
+    return;
+  }
+}
+
 // Session management for approval workflow
 const approvalPromises = new Map<string, { resolve: (value: boolean) => void; reject: (error: any) => void }>();
 
@@ -307,6 +406,36 @@ function resolveApproval(messageId: string, approved: boolean) {
   }
   return false;
 }
+
+// ============================================================================
+// PHASE 1 - TASK 3: ACCESS TIER ENDPOINT (Security Fix)
+// ============================================================================
+
+// NEW ENDPOINT: Determine access tier server-side
+router.post('/access-tier', isAuthenticated, async (req: any, res) => {
+  try {
+    const { targetContext, projectId } = req.body;
+    const userId = req.authenticatedUserId;
+
+    // Only platform healing is FREE, and only for owner
+    if (targetContext === 'platform') {
+      const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+      const isFreeAccess = user?.isOwner === true;
+      
+      console.log(`[ACCESS-TIER] Platform context - userId: ${userId}, isOwner: ${user?.isOwner}, isFreeAccess: ${isFreeAccess}`);
+      
+      return res.json({ isFreeAccess });
+    }
+
+    // All project work is paid (credit billing)
+    console.log(`[ACCESS-TIER] Project context - userId: ${userId}, projectId: ${projectId}, isFreeAccess: false`);
+    return res.json({ isFreeAccess: false });
+  } catch (error: any) {
+    console.error('[ACCESS-TIER] Failed to determine access tier:', error);
+    // Default to paid on error (safer)
+    return res.json({ isFreeAccess: false });
+  }
+});
 
 // Get a message by ID (for fetching final message when job completes)
 router.get('/message/:messageId', isAuthenticated, async (req: any, res) => {
@@ -698,9 +827,33 @@ router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
 // Stream LomuAI chat response
 router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
   console.log('[LOMU-AI-CHAT] Stream request received');
-  const { message, attachments = [], autoCommit = false, autoPush = false, projectId = null } = req.body;
+  
+  // STEP 1: Extract targetContext from request body (with backward compatibility)
+  // Default to 'platform' if not provided (existing behavior)
+  const { 
+    message, 
+    attachments = [], 
+    autoCommit = false, 
+    autoPush = false, 
+    projectId = null,
+    targetContext = (projectId ? 'project' : 'platform') // Auto-detect from projectId if not provided
+  } = req.body;
+  
   const userId = req.authenticatedUserId;
-  console.log('[LOMU-AI-CHAT] Message:', message?.substring(0, 50), 'Attachments:', attachments?.length || 0, 'UserId:', userId, 'ProjectId:', projectId || 'platform code');
+  
+  console.log('[LOMU-AI-CHAT] Message:', message?.substring(0, 50), 
+    'Context:', targetContext, 
+    'Attachments:', attachments?.length || 0, 
+    'UserId:', userId, 
+    'ProjectId:', projectId || 'none');
+
+  // Validate targetContext
+  if (targetContext !== 'platform' && targetContext !== 'project') {
+    console.log('[LOMU-AI-CHAT] ERROR: Invalid targetContext');
+    return res.status(400).json({ 
+      error: 'Invalid targetContext. Must be "platform" or "project".' 
+    });
+  }
 
   if (!message || typeof message !== 'string') {
     console.log('[LOMU-AI-CHAT] ERROR: Message validation failed');
@@ -711,6 +864,17 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
   if (!geminiKey) {
     console.log('[LOMU-AI-CHAT] ERROR: No Gemini API key');
     return res.status(503).json({ error: 'Hmm, my AI brain isn\'t connected yet. The Gemini API key needs to be configured. Could you set it up in your environment variables?' });
+  }
+  
+  // STEP 2: Validate context access (owner-only for platform, ownership check for projects)
+  const accessCheck = await validateContextAccess(userId, targetContext, projectId);
+  if (!accessCheck.allowed) {
+    console.log('[LOMU-AI-CHAT] ERROR: Access denied -', accessCheck.reason);
+    return res.status(403).json({ 
+      error: accessCheck.reason,
+      targetContext,
+      requiresOwnership: targetContext === 'platform'
+    });
   }
 
   // Start agent run and reserve credits
@@ -2063,8 +2227,8 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
               sendEvent('file_change', { file: { path: typedInput.path, operation: 'modify' } });
 
-              // 📡 LIVE PREVIEW: Broadcast file update to connected clients
-              broadcastFileUpdate(typedInput.path, 'modify', projectId || 'platform');
+              // 📡 LIVE PREVIEW: Broadcast file update to connected clients with context
+              broadcastFileUpdate(typedInput.path, 'modify', targetContext, projectId, userId);
 
               toolResult = `✅ File staged for commit (use commit_to_github to batch all changes)`;
               console.log(`[LOMU-AI] ✅ File staged for batch commit: ${typedInput.path}`);
@@ -2620,8 +2784,8 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
               sendEvent('file_change', { file: { path: typedInput.path, operation: 'create' } });
 
-              // 📡 LIVE PREVIEW: Broadcast file update to connected clients
-              broadcastFileUpdate(typedInput.path, 'create', projectId || 'platform');
+              // 📡 LIVE PREVIEW: Broadcast file update to connected clients with context
+              broadcastFileUpdate(typedInput.path, 'create', targetContext, projectId, userId);
 
               toolResult = `✅ File created successfully`;
               console.log(`[LOMU-AI] ✅ File created autonomously: ${typedInput.path}`);
@@ -2645,8 +2809,8 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
               sendEvent('file_change', { file: { path: typedInput.path, operation: 'delete' } });
 
-              // 📡 LIVE PREVIEW: Broadcast file update to connected clients
-              broadcastFileUpdate(typedInput.path, 'delete', projectId || 'platform');
+              // 📡 LIVE PREVIEW: Broadcast file update to connected clients with context
+              broadcastFileUpdate(typedInput.path, 'delete', targetContext, projectId, userId);
 
               toolResult = `✅ File deleted successfully`;
               console.log(`[LOMU-AI] ✅ File deleted autonomously: ${typedInput.path}`);
@@ -2904,7 +3068,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                   });
 
                   sendEvent('file_change', { file: { path: typedInput.filePath, operation: 'modify' } });
-                  broadcastFileUpdate(typedInput.filePath, 'modify', projectId || 'platform');
+                  broadcastFileUpdate(typedInput.filePath, 'modify', targetContext, projectId, userId);
                 } else {
                   toolResult = `❌ ${result.message}`;
                 }
@@ -3855,17 +4019,16 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       terminateStream('error-' + Date.now(), `Something went sideways, but I'm still here to help!`);
     }
   } finally {
-    // Complete run and reconcile credits
+    // STEP 3: Complete run and reconcile credits using centralized billing
     try {
-      const AgentExecutor = (await import('../services/agentExecutor')).AgentExecutor;
-      await AgentExecutor.completeRun({
-        runId: agentRunId,
-        actualCreditsUsed: totalCreditsUsed,
-        source: 'lomu_chat',
-      });
-      console.log('[LOMU-AI-CHAT] Agent run completed:', agentRunId, 'Credits used:', totalCreditsUsed);
+      // Use centralized billing helper (handles FREE for platform, credits for projects)
+      await handleBilling(userId, targetContext, totalCreditsUsed, agentRunId);
+      console.log('[LOMU-AI-CHAT] Agent run completed:', agentRunId, 
+        'Context:', targetContext, 
+        'Credits used:', totalCreditsUsed,
+        'Billing:', targetContext === 'platform' ? 'FREE' : 'CHARGED');
     } catch (error: any) {
-      console.error('[LOMU-AI-CHAT] Failed to complete agent run:', error);
+      console.error('[LOMU-AI-CHAT] Failed to complete agent run billing:', error);
     }
 
     // Remove from active streams

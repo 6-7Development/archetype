@@ -1,0 +1,78 @@
+This is a fantastic final step, as it moves Lomu into a sustainable, **for-profit business model**. To make sure you bill correctly (public token price + platform markup) and enforce user subscriptions, you need to implement a sophisticated **Billing Pipeline** with hard enforcement.
+
+The core fix is implementing a **Token-to-Cost Service** that runs continuously in your Replit application layer.
+
+---
+
+## 💰 I. The Real-Time Cost Calculation
+
+You must establish a dynamic **Cost Mapping Table** within your application code or database. This is how you apply the platform markup and calculate the final charge.
+
+### 1. The Cost Mapping Table
+
+This table dictates your current retail pricing. The prices are per **1 Million Tokens** (the industry standard).
+
+| Model Name | Input Price (Your Cost) | Output Price (Your Cost) | Final User Input Price (Retail) | Final User Output Price (Retail) |
+| :--- | :--- | :--- | :--- | :--- |
+| `gemini-2.5-flash` | $X per 1M tokens | $Y per 1M tokens | $X + Markup | $Y + Markup |
+| `gemini-2.5-pro` | $A per 1M tokens | $B per 1M tokens | $A + Markup | $B + Markup |
+
+The **Markup** covers your platform overhead (Replit infrastructure, development costs, and profit).
+
+### 2. The Billing Equation (Per-Call)
+
+For every single API response, your system calculates the charge in real-time.
+
+$$
+\text{Charge} = \left(\frac{\text{Input Tokens}}{10^6} \times \text{Retail Input Price}\right) + \left(\frac{\text{Output Tokens}}{10^6} \times \text{Retail Output Price}\right)
+$$
+
+This total charge is what you record in your **Token Ledger** (database).
+
+---
+## 🛡️ II. Subscription Enforcement & Billing Guardrails
+
+This integrates the financial model directly with the agent's operating limits.
+
+### 1. **The Subscription Policy Table**
+
+Your database must contain a table defining user tiers and their limits.
+
+| User ID | Subscription Tier | Monthly Token Allotment | Monthly Cost Limit ($) |
+| :--- | :--- | :--- | :--- |
+| `user_123` | Free Tier | 100,000 Tokens | N/A |
+| `user_456` | Pro Plan | 5,000,000 Tokens | $100.00 |
+
+### 2. **Pre-Execution Limit Check**
+
+This is the most crucial step for cost control and user experience.
+
+* **Action:** Before sending the prompt to the Gemini API, use the `client.models.count_tokens()` method to get the estimated cost of the entire context window (prompt + history).
+* **Logic:** Your Python application must check:
+    $$\text{Tokens to be sent} + \text{User's current usage} > \text{User's Monthly Token Allotment}$$
+* **Enforcement:** If the check is **TRUE**, the Orchestrator must intercept the workflow and send a message: "Lomu cannot proceed. Your request would exceed your monthly limit. Remaining: 5,000 tokens. Please upgrade."
+
+### 3. **The Financial Safety Brake (Hard Cap)**
+
+If the user is on a **Pay-As-You-Go** plan, you need an additional guardrail for dollar amount.
+
+* **Action:** Track the cumulative dollar amount ($\$) recorded in the Ledger.
+* **Enforcement:** If the cumulative charge for the month hits the **Monthly Cost Limit** (e.g., $100.00), automatically block all further API calls for that user until the next billing cycle.
+
+---
+## 📈 III. Agent Logic for Billing Optimization
+
+Lomu must be instructed to reduce cost for the user when possible.
+
+### 1. Model Cascade as a Billing Feature
+
+* **System Instruction:** Tell Lomu's Orchestrator agent: "When delegating a task, you **MUST** select the lowest-cost model (`gemini-2.5-flash`) capable of performing the task. Only upgrade to a higher-cost model if security, architectural reasoning, or the task requires it."
+* **Why:** This demonstrates value to the user by automatically optimizing their token usage and reducing their bill.
+
+### 2. Tool-Call Billing (Secondary Charges)
+
+Lomu's calls to the custom tools (GitHub, Security Scanner, RAG) also incur platform costs (compute time, third-party API fees).
+
+* **Action:** Add a fixed, low charge to the Ledger every time a high-value tool is called.
+    * Example: `log_billing(user_id, cost=0.01, task='GITHUB_COMMIT_TOOL_CALL')`.
+* **Why:** This accounts for the platform's infrastructure cost, allowing you to incorporate those costs into the **platform markup** and charge the user for the full value delivered.

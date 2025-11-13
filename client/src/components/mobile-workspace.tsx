@@ -156,11 +156,13 @@ export function MobileWorkspace({
           </TabsContent>
 
           <TabsContent value="preview" className="flex-1 m-0 overflow-hidden">
-            <LivePreview />
+            <LivePreview projectId={projectId} />
           </TabsContent>
 
           <TabsContent value="chat" className="flex-1 m-0 overflow-hidden">
-            <AIChat projectId={projectId} />
+            <AIChat currentProjectId={projectId} onProjectGenerated={(result) => {
+              console.log('[MOBILE] Project generated:', result);
+            }} />
           </TabsContent>
         </Tabs>
       </div>

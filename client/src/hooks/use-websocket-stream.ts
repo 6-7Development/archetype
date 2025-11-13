@@ -29,6 +29,7 @@ export interface DeploymentStep {
 
 interface StreamMessage {
   type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'chat-error' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics' | 'heal:init' | 'heal:thought' | 'heal:tool' | 'heal:write-pending' | 'heal:approved' | 'heal:rejected' | 'heal:completed' | 'heal:error' | 'approval_requested' | 'progress' | 'platform_preview_ready' | 'platform_preview_error' | 'lomu_ai_job_update' | 'scratchpad_entry' | 'scratchpad_cleared' | 'deploy.started' | 'deploy.step_update' | 'deploy.complete' | 'deploy.failed';
+  roomId?: string;
   commandId?: string;
   updateType?: string;
   status?: string;
@@ -187,7 +188,7 @@ const MAX_RECONNECT_ATTEMPTS = 5;
 const BASE_RECONNECT_DELAY = 1000; // 1 second
 const MAX_RECONNECT_DELAY = 30000; // 30 seconds
 
-export function useWebSocketStream(sessionId: string, userId: string = 'anonymous') {
+export function useWebSocketStream(sessionId: string, userId: string = 'anonymous', expectedRoomId?: string) {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef<number>(0);
@@ -278,6 +279,13 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
       ws.onmessage = (event) => {
         try {
           const message: StreamMessage = JSON.parse(event.data);
+
+          // 🔒 ROOM FILTERING: Only process messages for the expected room
+          // Skip messages that have a roomId but don't match our expected room
+          if (expectedRoomId && message.roomId && message.roomId !== expectedRoomId) {
+            console.log(`[WS-FILTER] ⏭️ Skipping message for different room: ${message.roomId} (expected: ${expectedRoomId})`);
+            return; // Silently ignore messages from other rooms
+          }
 
           switch (message.type) {
             case 'session-registered':
