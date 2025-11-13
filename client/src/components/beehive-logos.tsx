@@ -8,6 +8,63 @@ interface UniversalLogoProps {
   className?: string;
 }
 
+// CSS Animations for Worker Bees - Swarming Effect
+const workerBeeAnimationStyles = `
+  @keyframes beeOrbit1 {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(4px, -4px) rotate(10deg); }
+    50% { transform: translate(0, -6px) rotate(0deg); }
+    75% { transform: translate(-4px, -4px) rotate(-10deg); }
+  }
+  
+  @keyframes beeOrbit2 {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(-3px, -5px) rotate(-15deg); }
+    50% { transform: translate(-6px, 0) rotate(0deg); }
+    75% { transform: translate(-3px, 5px) rotate(15deg); }
+  }
+  
+  @keyframes beeOrbit3 {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(5px, 3px) rotate(8deg); }
+    50% { transform: translate(0, 6px) rotate(0deg); }
+    75% { transform: translate(-5px, 3px) rotate(-8deg); }
+  }
+  
+  @keyframes wingFlap {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.9; }
+  }
+  
+  .worker-bee-1 {
+    animation: beeOrbit1 3.5s ease-in-out infinite;
+    transform-box: fill-box;
+    transform-origin: center center;
+  }
+  
+  .worker-bee-2 {
+    animation: beeOrbit2 4s ease-in-out infinite 0.5s;
+    transform-box: fill-box;
+    transform-origin: center center;
+  }
+  
+  .worker-bee-3 {
+    animation: beeOrbit3 3.2s ease-in-out infinite 1s;
+    transform-box: fill-box;
+    transform-origin: center center;
+  }
+  
+  .worker-wings {
+    animation: wingFlap 0.3s ease-in-out infinite;
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .worker-bee-1, .worker-bee-2, .worker-bee-3, .worker-wings {
+      animation: none;
+    }
+  }
+`;
+
 export function UniversalLogo({ variant = "full", size = "md", className = "" }: UniversalLogoProps) {
   const dimensions = {
     sm: { width: 120, height: 120, beeScale: 1.2, wordmarkSize: 0 },     // Footer - MUCH bigger
@@ -28,6 +85,7 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
       className={className}
       aria-label="BeehiveAI"
     >
+      <style>{workerBeeAnimationStyles}</style>
       <defs>
         {/* Shared Gradients */}
         <linearGradient id={`${idPrefix}-wing`} x1="0%" y1="0%" x2="100%" y2="100%">
@@ -90,18 +148,24 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
           {/* MAIN TECH BEE - Center Stage */}
           <TechBee x={0} y={0} scale={beeScale} idPrefix={idPrefix} />
 
-          {/* BUZZING WORKER BEES - Smaller helpers around the hive */}
+          {/* BUZZING WORKER BEES - Animated helpers swarming around the hive */}
           {size !== "sm" && (
             <g opacity="0.7">
-              {/* Top Left Worker Bee */}
-              <WorkerBee x={-18} y={-15} scale={0.35} rotation={-25} idPrefix={`${idPrefix}-w1`} />
+              {/* Top Left Worker Bee - Animated */}
+              <g className="worker-bee-1">
+                <WorkerBee x={-18} y={-15} scale={0.35} rotation={-25} idPrefix={`${idPrefix}-w1`} />
+              </g>
               
-              {/* Top Right Worker Bee */}
-              <WorkerBee x={18} y={-15} scale={0.35} rotation={25} idPrefix={`${idPrefix}-w2`} />
+              {/* Top Right Worker Bee - Animated */}
+              <g className="worker-bee-2">
+                <WorkerBee x={18} y={-15} scale={0.35} rotation={25} idPrefix={`${idPrefix}-w2`} />
+              </g>
               
-              {/* Bottom Worker Bee (only on large) */}
+              {/* Bottom Worker Bee - Animated (only on large) */}
               {size === "lg" && (
-                <WorkerBee x={0} y={22} scale={0.35} rotation={0} idPrefix={`${idPrefix}-w3`} />
+                <g className="worker-bee-3">
+                  <WorkerBee x={0} y={22} scale={0.35} rotation={0} idPrefix={`${idPrefix}-w3`} />
+                </g>
               )}
             </g>
           )}
@@ -244,9 +308,11 @@ function TechBee({ x, y, scale, idPrefix }: { x: number; y: number; scale: numbe
 function WorkerBee({ x, y, scale, rotation, idPrefix }: { x: number; y: number; scale: number; rotation: number; idPrefix: string }) {
   return (
     <g transform={`translate(${x}, ${y}) rotate(${rotation}) scale(${scale})`}>
-      {/* Mini Wings */}
-      <ellipse cx="-3" cy="-1" rx="2.5" ry="1.5" fill="#00D4B3" opacity="0.6" transform="rotate(-20 -3 -1)"/>
-      <ellipse cx="3" cy="-1" rx="2.5" ry="1.5" fill="#00D4B3" opacity="0.6" transform="rotate(20 3 -1)"/>
+      {/* Mini Wings - Animated Flapping */}
+      <g className="worker-wings">
+        <ellipse cx="-3" cy="-1" rx="2.5" ry="1.5" fill="#00D4B3" opacity="0.6" transform="rotate(-20 -3 -1)"/>
+        <ellipse cx="3" cy="-1" rx="2.5" ry="1.5" fill="#00D4B3" opacity="0.6" transform="rotate(20 3 -1)"/>
+      </g>
       
       {/* Mini Body */}
       <ellipse cx="0" cy="0" rx="2" ry="3" fill={`url(#${idPrefix}-body)`}/>
