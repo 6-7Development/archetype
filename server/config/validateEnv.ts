@@ -44,9 +44,9 @@ export function validateRequiredEnvVars(): EnvValidationResult {
 }
 
 export function enforceRequiredEnvVars() {
-  // Skip validation in development (allow dummy values)
-  if (process.env.NODE_ENV === 'development') {
-    console.log('⚠️  DEV MODE: Skipping strict env validation');
+  // Only enforce in production - skip in dev/test/undefined
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('⚠️  Non-production mode: Skipping strict env validation');
     return;
   }
   
@@ -70,13 +70,13 @@ export function enforceRequiredEnvVars() {
     console.warn('Some features may not work correctly.\n');
   }
   
-  // Log masked values for verification
+  // Log boolean indicators for verification
   console.log('✅ Environment variables validated:');
-  console.log(`   DATABASE_URL: ${process.env.DATABASE_URL?.substring(0, 20)}...`);
-  console.log(`   SESSION_SECRET: ${process.env.SESSION_SECRET?.substring(0, 8)}...`);
-  console.log(`   GEMINI_API_KEY: ${process.env.GEMINI_API_KEY?.substring(0, 12)}...`);
-  console.log(`   ANTHROPIC_API_KEY: ${process.env.ANTHROPIC_API_KEY?.substring(0, 12)}...`);
+  console.log(`   DATABASE_URL: ${process.env.DATABASE_URL ? '✓ SET' : '✗ MISSING'}`);
+  console.log(`   SESSION_SECRET: ${process.env.SESSION_SECRET ? '✓ SET' : '✗ MISSING'}`);
+  console.log(`   GEMINI_API_KEY: ${process.env.GEMINI_API_KEY ? '✓ SET' : '✗ MISSING'}`);
+  console.log(`   ANTHROPIC_API_KEY: ${process.env.ANTHROPIC_API_KEY ? '✓ SET' : '✗ MISSING'}`);
   console.log(`   GITHUB_TOKEN: ${process.env.GITHUB_TOKEN ? '✓ SET' : '✗ MISSING'}`);
-  console.log(`   GITHUB_REPO: ${process.env.GITHUB_REPO || '✗ MISSING'}`);
+  console.log(`   GITHUB_REPO: ${process.env.GITHUB_REPO || '✗ NOT SET'}`);
   console.log('');
 }
