@@ -22,22 +22,22 @@ export default function Landing() {
         }} />
       </div>
 
-      {/* Responsive Navigation - Reduced height */}
+      {/* Responsive Navigation - Accommodates larger logo */}
       <nav className="fixed top-0 w-full z-50 border-b border-honey/10 bg-charcoal-950/90 backdrop-blur-xl">
-        <div className="container mx-auto px-3 sm:px-6 py-1.5 sm:py-3">
-          <div className="flex items-center justify-between gap-2">
-            {/* Logo - Responsive sizing */}
+        <div className="container mx-auto px-3 sm:px-6 py-2 sm:py-3 md:py-4 min-h-[60px] sm:min-h-[70px] md:min-h-[140px]">
+          <div className="flex flex-wrap items-center justify-between gap-4 md:gap-6">
+            {/* Logo - Responsive sizing with flex-shrink-0 */}
             <Link 
               href="/" 
               data-testid="link-home"
-              className="inline-flex items-center hover-elevate rounded-md px-1 py-0.5 sm:px-2 sm:py-1"
+              className="inline-flex items-center hover-elevate rounded-md px-1 py-0.5 sm:px-2 sm:py-1 flex-shrink-0"
             >
-              <BeehiveLogo size="default" className="hidden md:block" />
-              <SimplifiedMobileLogo className="md:hidden" />
+              <BeehiveLogo size="default" className="hidden lg:block max-w-[360px] xl:max-w-[480px]" />
+              <SimplifiedMobileLogo className="lg:hidden" />
             </Link>
             
             {/* Desktop Navigation - Hidden on mobile */}
-            <div className="hidden md:flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-3 flex-shrink-0">
               <Button 
                 variant="ghost" 
                 className="text-white/80 hover:text-white" 
@@ -125,7 +125,7 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section - Responsive with proper spacing to clear fixed header */}
-      <section className="pt-24 sm:pt-28 md:pt-32 pb-8 sm:pb-16 md:pb-20 px-3 sm:px-6 relative z-10">
+      <section className="pt-32 sm:pt-36 md:pt-44 pb-8 sm:pb-16 md:pb-20 px-3 sm:px-6 relative z-10">
         <div className="container mx-auto max-w-6xl text-center">
           {/* Powered by Badge - Visible below header */}
           <div className="mb-4 sm:mb-8 inline-flex items-center gap-2 px-3 py-1.5 sm:gap-3 sm:px-6 sm:py-3 rounded-full bg-honey/10 backdrop-blur-sm shadow-[inset_0_0_0_1px_rgba(247,181,0,0.2)]">
