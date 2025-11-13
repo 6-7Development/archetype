@@ -126,29 +126,27 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section - Responsive */}
-      <section className="pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-16 md:pb-20 px-4 sm:px-6 relative z-10">
+      <section className="pt-16 sm:pt-28 md:pt-32 pb-8 sm:pb-16 md:pb-20 px-4 sm:px-6 relative z-10">
         <div className="container mx-auto max-w-6xl text-center">
           {/* Powered by Badge */}
-          <div className="mb-6 sm:mb-8 inline-flex items-center gap-3 px-5 sm:px-6 py-3 rounded-full bg-honey/10 backdrop-blur-sm shadow-[inset_0_0_0_1px_rgba(247,181,0,0.2)]">
-            <Sparkles className="w-4 h-4 text-honey flex-shrink-0" />
-            <span className="text-xs sm:text-sm text-honey font-medium">Gemini 2.5 Flash + Claude Sonnet 4</span>
+          <div className="mb-4 sm:mb-8 inline-flex items-center gap-2 px-3 py-1.5 sm:gap-3 sm:px-6 sm:py-3 rounded-full bg-honey/10 backdrop-blur-sm shadow-[inset_0_0_0_1px_rgba(247,181,0,0.2)]">
+            <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-honey flex-shrink-0" />
+            <span className="text-[11px] sm:text-sm text-honey font-medium">Gemini 2.5 Flash + Claude Sonnet 4</span>
           </div>
           
-          {/* Main Headline - Responsive text sizes */}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-tight">
-            <span className="bg-gradient-to-r from-honey via-nectar to-mint bg-clip-text text-transparent break-words">
-              Build Full-Stack Apps
+          {/* Main Headline - Fluid responsive sizing */}
+          <h1 className="font-bold mb-3 sm:mb-6 leading-tight tracking-tight" style={{ fontSize: 'clamp(2rem, 6vw, 4.5rem)' }}>
+            <span className="bg-gradient-to-r from-honey via-nectar to-mint bg-clip-text text-transparent text-balance">
+              Build Full-Stack Apps With AI in Minutes
             </span>
-            <br />
-            <span className="text-white break-words">With AI in Minutes</span>
           </h1>
           
-          <p className="text-base sm:text-lg md:text-xl text-slate-400 mb-8 sm:mb-10 max-w-3xl mx-auto break-words">
+          <p className="text-sm sm:text-lg md:text-xl text-slate-400 mb-6 sm:mb-10 max-w-3xl mx-auto">
             Like a hive of expert developers working in perfect harmony. Zero coding required—just pure honey-sweet results.
           </p>
 
           {/* CTAs - Stack on mobile, row on desktop */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center mb-12 sm:mb-16 md:mb-20 max-w-xs sm:max-w-none mx-auto">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center items-stretch sm:items-center mb-8 sm:mb-16 md:mb-20 max-w-xs sm:max-w-none mx-auto">
             <Button 
               size="lg" 
               className="w-full sm:w-auto min-h-[44px] bg-honey text-charcoal-950 hover:bg-honey/90 font-semibold text-base px-8" 
