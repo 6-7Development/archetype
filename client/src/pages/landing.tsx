@@ -5,7 +5,7 @@ import { MotionToggle } from "@/components/motion-toggle";
 import { BeehiveLogo } from "@/components/beehive-logos";
 import { 
   Sparkles, Zap, Shield, Code, Rocket, Check, 
-  Play, ArrowRight, Hexagon, Menu 
+  Play, ArrowRight, Hexagon, Menu, DollarSign, LogIn 
 } from "lucide-react";
 import { useState } from "react";
 
@@ -27,7 +27,11 @@ export default function Landing() {
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between gap-2">
             {/* Logo - Responsive sizing */}
-            <Link href="/" data-testid="link-home">
+            <Link 
+              href="/" 
+              data-testid="link-home"
+              className="inline-flex items-center hover-elevate rounded-md px-2 py-1"
+            >
               <BeehiveLogo size="default" className="hidden md:block" />
               <BeehiveLogo size="sm" className="md:hidden" />
             </Link>
@@ -80,11 +84,16 @@ export default function Landing() {
             <div className="md:hidden mt-4 pb-2 space-y-2">
               <Button 
                 variant="ghost" 
-                className="w-full justify-start min-h-[44px]" 
+                className="w-full min-h-[44px]" 
                 asChild 
                 data-testid="menu-link-pricing"
               >
-                <Link href="/pricing" onClick={() => setMenuOpen(false)}>Pricing</Link>
+                <Link href="/pricing" onClick={() => setMenuOpen(false)}>
+                  <span className="flex items-center gap-2 w-full">
+                    <DollarSign className="w-4 h-4" />
+                    Pricing
+                  </span>
+                </Link>
               </Button>
               <Button 
                 variant="outline" 
@@ -92,14 +101,24 @@ export default function Landing() {
                 asChild 
                 data-testid="menu-link-login"
               >
-                <Link href="/auth" onClick={() => setMenuOpen(false)}>Login</Link>
+                <Link href="/auth" onClick={() => setMenuOpen(false)}>
+                  <span className="flex items-center gap-2 w-full">
+                    <LogIn className="w-4 h-4" />
+                    Login
+                  </span>
+                </Link>
               </Button>
               <Button 
                 className="w-full min-h-[44px] bg-honey text-charcoal-950 hover:bg-honey/90 font-semibold" 
                 asChild 
                 data-testid="menu-link-builder"
               >
-                <Link href="/builder" onClick={() => setMenuOpen(false)}>Get Started</Link>
+                <Link href="/builder" onClick={() => setMenuOpen(false)}>
+                  <span className="flex items-center gap-2 w-full">
+                    <Rocket className="w-4 h-4" />
+                    Get Started
+                  </span>
+                </Link>
               </Button>
             </div>
           )}
@@ -137,8 +156,10 @@ export default function Landing() {
               asChild
             >
               <Link href="/builder">
-                <Zap className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
-                Start Building Free
+                <span className="flex items-center gap-2">
+                  <Zap className="w-4 sm:w-5 h-4 sm:h-5" />
+                  Start Building Free
+                </span>
               </Link>
             </Button>
             <Button 
@@ -149,8 +170,10 @@ export default function Landing() {
               asChild
             >
               <Link href="/pricing">
-                View Pricing
-                <ArrowRight className="w-4 sm:w-5 h-4 sm:h-5 ml-2" />
+                <span className="flex items-center gap-2">
+                  View Pricing
+                  <ArrowRight className="w-4 sm:w-5 h-4 sm:h-5" />
+                </span>
               </Link>
             </Button>
           </div>
@@ -312,8 +335,10 @@ export default function Landing() {
                 asChild
               >
                 <Link href="/builder">
-                  <Rocket className="w-4 sm:w-5 h-4 sm:h-5 mr-2" />
-                  Start Building Free
+                  <span className="flex items-center gap-2">
+                    <Rocket className="w-4 sm:w-5 h-4 sm:h-5" />
+                    Start Building Free
+                  </span>
                 </Link>
               </Button>
               <Button 
