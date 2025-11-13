@@ -1,6 +1,6 @@
 // BeehiveAI Custom SVG Logos - Cyber Bee That Codes
 
-// SimplifiedMobileLogo - Clean, bold logo for mobile marketing
+// SimplifiedMobileLogo - Professional combined word+icon logo for mobile
 export function SimplifiedMobileLogo({ 
   className = "" 
 }: { 
@@ -8,75 +8,171 @@ export function SimplifiedMobileLogo({
 }) {
   return (
     <svg 
-      viewBox="0 0 140 40" 
+      viewBox="0 0 160 40" 
       fill="none" 
       xmlns="http://www.w3.org/2000/svg"
-      className={`w-[140px] h-[40px] ${className}`}
-      style={{ maxWidth: '140px', maxHeight: '40px' }}
+      className={`w-[160px] h-[40px] ${className}`}
+      style={{ maxWidth: '160px', maxHeight: '40px' }}
     >
-      {/* Hexagon Container - Bold & Simple */}
-      <path 
-        d="M20 4 L32 11 L32 25 L20 32 L8 25 L8 11 Z" 
-        fill="#F7B500" 
-        stroke="#FFD34D" 
-        strokeWidth="2"
-        opacity="0.95"
-      />
-      
-      {/* Stylized Bee Icon - Bold & Minimal */}
-      <g transform="translate(20, 18)">
-        {/* Body - Simple golden ellipse */}
-        <ellipse cx="0" cy="0" rx="4" ry="5" fill="#1a1a1a"/>
-        <ellipse cx="0" cy="0" rx="3.5" ry="4.5" fill="#FFD34D"/>
-        
-        {/* Stripes - Bold & Visible */}
-        <rect x="-3.5" y="-1.5" width="7" height="1.2" rx="0.3" fill="#1a1a1a"/>
-        <rect x="-3.5" y="0.5" width="7" height="1.2" rx="0.3" fill="#1a1a1a"/>
-        
-        {/* Wings - Simple teal shapes */}
-        <ellipse cx="-5" cy="-1" rx="3" ry="2" fill="#00D4B3" opacity="0.9"/>
-        <ellipse cx="5" cy="-1" rx="3" ry="2" fill="#00D4B3" opacity="0.9"/>
-        
-        {/* Head - Simple circle */}
-        <circle cx="0" cy="-6" r="2.5" fill="#1a1a1a"/>
-        <circle cx="0" cy="-6" r="2" fill="#FFD34D"/>
-        
-        {/* Antennae - Bold lines */}
-        <line x1="-1" y1="-8" x2="-1.5" y2="-10" stroke="#1a1a1a" strokeWidth="1" strokeLinecap="round"/>
-        <line x1="1" y1="-8" x2="1.5" y2="-10" stroke="#1a1a1a" strokeWidth="1" strokeLinecap="round"/>
-        <circle cx="-1.5" cy="-10" r="0.8" fill="#00D4B3"/>
-        <circle cx="1.5" cy="-10" r="0.8" fill="#00D4B3"/>
-      </g>
-      
-      {/* Text - Bold & Readable */}
-      <text 
-        x="42" 
-        y="26" 
-        fontFamily="Inter, system-ui, -apple-system, sans-serif" 
-        fontSize="16" 
-        fontWeight="800" 
-        fill="#FFD34D"
-        letterSpacing="-0.5"
-      >
-        BeehiveAI
-      </text>
-      
-      {/* Underline accent */}
-      <path 
-        d="M42 29 L125 29" 
-        stroke="#00D4B3" 
-        strokeWidth="1.5" 
-        strokeLinecap="round"
-        opacity="0.6"
-      />
-      
-      {/* Gradients for depth */}
+      {/* Gradients */}
       <defs>
-        <linearGradient id="honeyGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="hexGradient" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#FFD34D"/>
           <stop offset="100%" stopColor="#F7B500"/>
         </linearGradient>
+        <linearGradient id="beeBodyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#FFD34D"/>
+          <stop offset="50%" stopColor="#F7B500"/>
+          <stop offset="100%" stopColor="#E5943C"/>
+        </linearGradient>
+        <linearGradient id="wingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#00D4B3" stopOpacity="0.8"/>
+          <stop offset="100%" stopColor="#00B89E" stopOpacity="0.6"/>
+        </linearGradient>
+        <radialGradient id="glowEffect" cx="50%" cy="50%">
+          <stop offset="0%" stopColor="#FFD34D" stopOpacity="0.3"/>
+          <stop offset="100%" stopColor="#F7B500" stopOpacity="0"/>
+        </radialGradient>
+        <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#FFD34D"/>
+          <stop offset="60%" stopColor="#F7B500"/>
+        </linearGradient>
+        <linearGradient id="aiGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#00D4B3"/>
+          <stop offset="100%" stopColor="#00B89E"/>
+        </linearGradient>
       </defs>
+      
+      {/* Icon Container - Professional Hexagon */}
+      <g>
+        {/* Glow effect behind hexagon */}
+        <ellipse cx="20" cy="20" rx="18" ry="18" fill="url(#glowEffect)" opacity="0.6"/>
+        
+        {/* Hexagon with gradient fill */}
+        <path 
+          d="M20 2 L33 10 L33 26 L20 34 L7 26 L7 10 Z" 
+          fill="url(#hexGradient)" 
+          opacity="0.95"
+        />
+        
+        {/* Hexagon border - dual stroke */}
+        <path 
+          d="M20 2 L33 10 L33 26 L20 34 L7 26 L7 10 Z" 
+          stroke="#00D4B3" 
+          strokeWidth="1.5"
+          fill="none"
+          opacity="0.8"
+        />
+        <path 
+          d="M20 3 L32 10.5 L32 25.5 L20 33 L8 25.5 L8 10.5 Z" 
+          stroke="#101113" 
+          strokeWidth="0.5"
+          fill="none"
+          opacity="0.4"
+        />
+        
+        {/* Detailed Bee Icon */}
+        <g transform="translate(20, 20)">
+          {/* Wings - Layered for depth */}
+          <g opacity="0.9">
+            {/* Left wing */}
+            <ellipse cx="-6" cy="-2" rx="4.5" ry="3" fill="url(#wingGradient)" transform="rotate(-15 -6 -2)"/>
+            <ellipse cx="-5.5" cy="-1.5" rx="3.5" ry="2.2" fill="#00D4B3" opacity="0.4" transform="rotate(-15 -5.5 -1.5)"/>
+            <path d="M-8 -3 Q-6 -1 -4 -2" stroke="#00B89E" strokeWidth="0.4" fill="none" opacity="0.6"/>
+            
+            {/* Right wing */}
+            <ellipse cx="6" cy="-2" rx="4.5" ry="3" fill="url(#wingGradient)" transform="rotate(15 6 -2)"/>
+            <ellipse cx="5.5" cy="-1.5" rx="3.5" ry="2.2" fill="#00D4B3" opacity="0.4" transform="rotate(15 5.5 -1.5)"/>
+            <path d="M8 -3 Q6 -1 4 -2" stroke="#00B89E" strokeWidth="0.4" fill="none" opacity="0.6"/>
+          </g>
+          
+          {/* Body - Gradient with depth */}
+          <ellipse cx="0" cy="1" rx="4.5" ry="6" fill="#1a1a1a"/>
+          <ellipse cx="0" cy="1" rx="4" ry="5.5" fill="url(#beeBodyGradient)"/>
+          
+          {/* Body highlight */}
+          <ellipse cx="-1" cy="-1" rx="2" ry="3" fill="#FFD34D" opacity="0.3"/>
+          
+          {/* Stripes - Bold with subtle gradient */}
+          <rect x="-4" y="-1" width="8" height="1.5" rx="0.4" fill="#1a1a1a"/>
+          <rect x="-4" y="1.2" width="8" height="1.5" rx="0.4" fill="#1a1a1a"/>
+          <rect x="-4" y="3.4" width="8" height="1.5" rx="0.4" fill="#1a1a1a"/>
+          
+          {/* Stripe highlights */}
+          <rect x="-3.5" y="-0.7" width="7" height="0.4" rx="0.2" fill="#00D4B3" opacity="0.2"/>
+          <rect x="-3.5" y="1.5" width="7" height="0.4" rx="0.2" fill="#00D4B3" opacity="0.2"/>
+          
+          {/* Head - Detailed with gradient */}
+          <circle cx="0" cy="-6" r="3" fill="#1a1a1a"/>
+          <circle cx="0" cy="-6" r="2.5" fill="url(#beeBodyGradient)"/>
+          
+          {/* Face details */}
+          <circle cx="-0.8" cy="-6.2" r="0.6" fill="#1a1a1a"/>
+          <circle cx="0.8" cy="-6.2" r="0.6" fill="#1a1a1a"/>
+          <circle cx="-0.8" cy="-6.2" r="0.3" fill="#00D4B3" opacity="0.8"/>
+          <circle cx="0.8" cy="-6.2" r="0.3" fill="#00D4B3" opacity="0.8"/>
+          
+          {/* Smile */}
+          <path d="M-1 -5.5 Q0 -5 1 -5.5" stroke="#1a1a1a" strokeWidth="0.4" fill="none" strokeLinecap="round"/>
+          
+          {/* Antennae - Professional with glow */}
+          <g>
+            <line x1="-1.2" y1="-8.5" x2="-2" y2="-11" stroke="#1a1a1a" strokeWidth="1" strokeLinecap="round"/>
+            <line x1="1.2" y1="-8.5" x2="2" y2="-11" stroke="#1a1a1a" strokeWidth="1" strokeLinecap="round"/>
+            
+            {/* Antenna bulbs with gradient */}
+            <circle cx="-2" cy="-11" r="1" fill="#00D4B3"/>
+            <circle cx="2" cy="-11" r="1" fill="#00D4B3"/>
+            <circle cx="-2" cy="-11" r="0.5" fill="#FFD34D" opacity="0.6"/>
+            <circle cx="2" cy="-11" r="0.5" fill="#FFD34D" opacity="0.6"/>
+          </g>
+          
+          {/* Tech sparkle accents */}
+          <circle cx="-5" cy="-5" r="0.4" fill="#00D4B3" opacity="0.6"/>
+          <circle cx="5" cy="-5" r="0.4" fill="#00D4B3" opacity="0.6"/>
+        </g>
+      </g>
+      
+      {/* Text - Professional Combined Word Logo */}
+      <g>
+        {/* "Beehive" text with gradient */}
+        <text 
+          x="45" 
+          y="25" 
+          fontFamily="Inter, system-ui, -apple-system, sans-serif" 
+          fontSize="18" 
+          fontWeight="800" 
+          fill="url(#textGradient)"
+          letterSpacing="-0.8"
+        >
+          Beehive
+        </text>
+        
+        {/* "AI" text with teal gradient */}
+        <text 
+          x="115" 
+          y="25" 
+          fontFamily="Inter, system-ui, -apple-system, sans-serif" 
+          fontSize="18" 
+          fontWeight="800" 
+          fill="url(#aiGradient)"
+          letterSpacing="-0.8"
+        >
+          AI
+        </text>
+        
+        {/* Subtle underline accent */}
+        <path 
+          d="M45 28 L145 28" 
+          stroke="#00D4B3" 
+          strokeWidth="1"
+          strokeLinecap="round"
+          opacity="0.3"
+        />
+        
+        {/* Small accent dots */}
+        <circle cx="113" cy="25" r="0.8" fill="#FFD34D" opacity="0.5"/>
+      </g>
     </svg>
   );
 }
