@@ -11,10 +11,10 @@ export function AppFooter() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Column */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <BeehiveIcon size={48} />
+            <div className="flex items-center gap-3">
+              <BeehiveIcon size={100} className="flex-shrink-0" />
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground max-w-xs">
               Where AI agents swarm together to build your code. Enterprise-grade platform for rapid development.
             </p>
             <div className="flex gap-3">

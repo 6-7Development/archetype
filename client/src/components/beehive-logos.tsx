@@ -10,9 +10,9 @@ interface UniversalLogoProps {
 
 export function UniversalLogo({ variant = "full", size = "md", className = "" }: UniversalLogoProps) {
   const dimensions = {
-    sm: { width: 48, height: 48, beeScale: 0.6, wordmarkSize: 0 },
-    md: { width: 160, height: 40, beeScale: 1, wordmarkSize: 18 },
-    lg: { width: 400, height: 100, beeScale: 1.8, wordmarkSize: 36 }
+    sm: { width: 120, height: 120, beeScale: 1.2, wordmarkSize: 0 },     // Footer - MUCH bigger
+    md: { width: 200, height: 50, beeScale: 1.3, wordmarkSize: 22 },     // Mobile header - bigger
+    lg: { width: 480, height: 120, beeScale: 2.2, wordmarkSize: 42 }     // Desktop header - BIGGER
   };
 
   const { width, height, beeScale, wordmarkSize } = dimensions[size];
