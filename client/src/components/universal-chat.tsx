@@ -177,6 +177,21 @@ export function UniversalChat({
     timestamp: new Date(),
   };
 
+  // Query user's credit wallet on component mount
+  const { data: creditWallet } = useQuery<{ credits: number; initialMonthlyCredits: number }>({
+    queryKey: ['/api/credits/wallet'],
+    queryFn: async () => {
+      const response = await fetch('/api/credits/wallet', {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to load credit wallet');
+      }
+      return response.json();
+    },
+    enabled: !!user,
+  });
+
   // Load chat history
   const effectiveProjectId = targetContext === 'platform' ? 'platform' : (projectId || 'general');
   const { data: chatHistory, isLoading: isLoadingHistory } = useQuery<{ messages: Message[] }>({
@@ -294,6 +309,17 @@ export function UniversalChat({
       fetchCreditBalance();
     }
   }, [isFreeAccess]);
+
+  // Update billing metrics when wallet data loads
+  useEffect(() => {
+    if (creditWallet) {
+      setBillingMetrics(prev => ({
+        ...prev,
+        creditBalance: creditWallet.credits,
+        initialMonthlyCredits: creditWallet.initialMonthlyCredits || 5000
+      }));
+    }
+  }, [creditWallet]);
 
   // WebSocket streaming with room-based filtering
   const roomId = targetContext === 'platform'

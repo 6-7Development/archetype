@@ -20,6 +20,26 @@ const CREDIT_PACKAGES = {
   xlarge: { credits: 500000, usd: 187.50, name: '500K Credits' },
 };
 
+// Get user credit wallet (simplified for billing meter)
+router.get('/wallet', isAuthenticated, async (req: any, res) => {
+  try {
+    const userId = req.authenticatedUserId;
+    const balance = await CreditManager.getBalance(userId);
+
+    if (!balance) {
+      return res.status(404).json({ error: 'Credit wallet not found' });
+    }
+
+    res.json({
+      credits: balance.availableCredits,
+      initialMonthlyCredits: balance.initialMonthlyCredits,
+    });
+  } catch (error: any) {
+    console.error('[CREDITS] Error getting wallet:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get user credit balance
 // CRITICAL FIX: Now includes initialMonthlyCredits for accurate color coding on first render
 router.get('/balance', isAuthenticated, async (req: any, res) => {
@@ -86,7 +106,7 @@ router.post('/purchase', isAuthenticated, async (req: any, res) => {
       amount: Math.round(pkg.usd * 100), // Convert to cents
       currency: 'usd',
       customer: user.stripeCustomerId,
-      payment_method: user.defaultPaymentMethodId,
+      payment_method: user.defaultPaymentMethodId || undefined,
       confirm: true,
       automatic_payment_methods: {
         enabled: true,
