@@ -41,11 +41,14 @@ import agentsRouter from "./routes/agents";
 export async function registerRoutes(app: Express): Promise<Server> {
   // ==================== HEALTH & DIAGNOSTICS ====================
   
-  // Health check endpoint (no auth required - for monitoring)
-  // Ultra-simple for Railway - just return 200 OK immediately
-  app.get('/health', (_req, res) => {
+  // Health check endpoints (no auth required - for monitoring)
+  // Railway expects /api/health
+  const healthHandler = (_req: any, res: any) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
-  });
+  };
+  
+  app.get('/health', healthHandler);
+  app.get('/api/health', healthHandler);
 
   // Admin emergency endpoint (requires ADMIN_SECRET_KEY)
   app.get('/admin/emergency', async (req, res) => {
