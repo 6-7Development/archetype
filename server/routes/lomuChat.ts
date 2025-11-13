@@ -73,6 +73,7 @@ const EMERGENCY_LIMITS = {
   MAX_SESSION_TOKENS: 500_000, // 500K tokens per conversation
   MAX_TOOL_CALLS_PER_ITERATION: 5, // Max 5 tools per iteration
   MAX_API_CALLS_PER_SESSION: 50, // Max 50 API calls total
+  SESSION_IDLE_TIMEOUT: 30 * 60 * 1000, // 30 minutes idle = new session
 };
 
 // 🔄 EXPONENTIAL BACKOFF RETRY LOGIC for Anthropic API overload errors
@@ -102,6 +103,44 @@ async function retryWithBackoff<T>(
     }
   }
   throw new Error('Retry logic error - should not reach here');
+}
+
+// 🔄 SESSION LIFECYCLE MANAGEMENT - Auto-renew stale conversations
+async function ensureActiveSession(conversationStateId: string): Promise<void> {
+  const [state] = await db
+    .select()
+    .from(conversationStates)
+    .where(eq(conversationStates.id, conversationStateId));
+  
+  if (!state) return;
+  
+  // Check if session is stale (last interaction > 30 min ago)
+  const now = Date.now();
+  const lastInteraction = state.lastInteractionAt ? new Date(state.lastInteractionAt).getTime() : now;
+  const idleTime = now - lastInteraction;
+  
+  if (idleTime > EMERGENCY_LIMITS.SESSION_IDLE_TIMEOUT) {
+    const idleMinutes = Math.round(idleTime / 60000);
+    console.log(`[SESSION-LIFECYCLE] Conversation idle for ${idleMinutes} minutes - renewing session (threshold: 30 min)`);
+    
+    // Reset session counters and timestamps
+    await db
+      .update(conversationStates)
+      .set({
+        conversationStartTime: new Date(),
+        lastInteractionAt: new Date(),
+        apiCallCount: 0,
+      })
+      .where(eq(conversationStates.id, conversationStateId));
+    
+    console.log(`[SESSION-LIFECYCLE] ✅ Session renewed - fresh 10-minute active window started`);
+  } else {
+    // Session is still active, just update lastInteractionAt
+    await db
+      .update(conversationStates)
+      .set({ lastInteractionAt: new Date() })
+      .where(eq(conversationStates.id, conversationStateId));
+  }
 }
 
 // 🎯 INTENT CLASSIFICATION (like Replit Agent)
@@ -1741,6 +1780,19 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         sendEvent('content', { content: '\n\n*[Context summarized to manage memory efficiently]*\n\n' });
       } else {
         console.log(`[GAP-4] ✅ Token count healthy (${currentTokens}/${MAX_GEMINI_TOKENS}), no summarization needed`);
+      }
+
+      // 🔄 SESSION LIFECYCLE - Ensure conversation is active (renew if idle > 30min)
+      await ensureActiveSession(conversationState.id);
+      
+      // Re-fetch conversation state after potential renewal
+      const [refreshedState] = await db
+        .select()
+        .from(conversationStates)
+        .where(eq(conversationStates.id, conversationState.id));
+      
+      if (refreshedState) {
+        conversationState = refreshedState;
       }
 
       // 🛑 GAP 2: EMERGENCY BRAKES - Check limits before API call
