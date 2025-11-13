@@ -194,8 +194,8 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Platform Screenshots Section - Responsive */}
-      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 relative">
+      {/* Platform Screenshots Section - Responsive with extra top spacing */}
+      <section className="pt-16 sm:pt-20 md:pt-24 pb-12 sm:pb-16 md:pb-20 px-4 sm:px-6 relative">
         <div className="container mx-auto max-w-6xl">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 sm:mb-12 text-white break-words">
             See the Platform in Action
