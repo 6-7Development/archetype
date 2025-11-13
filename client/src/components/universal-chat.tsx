@@ -1639,6 +1639,11 @@ export function UniversalChat({
                 overageCost={costData?.overageCost}
                 reasons={costData?.reasons}
                 onConfirm={handleCostPreviewProceed}
+                onCancel={() => {
+                  setShowCostPreview(false);
+                  setPendingCommand("");
+                  setCostData(null);
+                }}
               />
             )}
           </DialogContent>
