@@ -242,7 +242,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/tasks', tasksRouter);
   
   // Mount LomuAI chat router (chat-based platform healing)
-  app.use('/api/lomu-ai', lomuAIChatRouter);
+  app.use('/api/lomu-chat', lomuAIChatRouter);
+  console.log('[LOMU-CHAT] LomuAI chat router mounted at /api/lomu-chat');
   
   // Mount conversation state router (context tracking for AI chats)
   app.use('/api/conversation', conversationStateRouter);
