@@ -12,7 +12,6 @@ import { AdminGuard } from "@/components/admin-guard";
 import { OwnerGuard } from "@/components/owner-guard";
 import { initGA4, trackPageView } from "@/lib/ga4";
 import Landing from "@/pages/landing";
-import LandingMobile from "@/pages/landing-mobile";
 import Pricing from "@/pages/pricing";
 import PricingSuccess from "@/pages/pricing-success";
 import AuthPage from "@/pages/auth-page";
@@ -95,7 +94,6 @@ function Router() {
     <Switch>
       {/* Public routes (no layout) */}
       <Route path="/" component={Landing} />
-      <Route path="/mobile" component={LandingMobile} />
       <Route path="/pricing" component={Pricing} />
       <Route path="/pricing/success" component={PricingSuccess} />
       <Route path="/auth" component={AuthPage} />
