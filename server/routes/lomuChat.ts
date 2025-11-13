@@ -6,6 +6,7 @@ import { eq, and, desc, sql } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth.ts';
 import { streamGeminiResponse } from '../gemini.ts';
 import { TokenTracker } from '../services/tokenTracker.ts';
+import { CreditManager } from '../services/creditManager.ts';
 import { RAILWAY_CONFIG } from '../config/railway.ts';
 import { platformHealing } from '../platformHealing.ts';
 import { platformAudit } from '../platformAudit.ts';
@@ -352,6 +353,8 @@ async function validateContextAccess(
 }
 
 // STEP 3: Centralized Billing Logic - Handle FREE vs credit billing
+// NOTE: This function is deprecated - billing is now handled in onComplete callback
+// Keeping it for backwards compatibility with older code paths
 async function handleBilling(
   userId: string,
   targetContext: 'platform' | 'project',
@@ -364,7 +367,11 @@ async function handleBilling(
     
     // Complete the agent run with zero cost
     const AgentExecutor = (await import('../services/agentExecutor')).AgentExecutor;
-    await AgentExecutor.completeRun(agentRunId, 0); // 0 credits charged
+    await AgentExecutor.completeRun({
+      runId: agentRunId,
+      actualCreditsUsed: 0,
+      source: 'lomu_chat',
+    });
     
     return;
   }
@@ -375,7 +382,11 @@ async function handleBilling(
     
     // Complete the agent run with actual credit charges
     const AgentExecutor = (await import('../services/agentExecutor')).AgentExecutor;
-    await AgentExecutor.completeRun(agentRunId, creditsUsed);
+    await AgentExecutor.completeRun({
+      runId: agentRunId,
+      actualCreditsUsed: creditsUsed,
+      source: 'lomu_chat',
+    });
     
     return;
   }
@@ -894,23 +905,59 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     });
   }
 
-  // Start agent run and reserve credits
+  // ============================================================================
+  // TIER 1 BILLING: Estimate tokens BEFORE streaming to reserve credits
+  // ============================================================================
+  
+  // Estimate input tokens from user message (rough: 1 char ≈ 4 tokens)
+  const promptTokens = message.length * 4;
+  
+  // Estimate conversation history tokens (last 5 messages)
+  const historyForEstimate = await db
+    .select()
+    .from(chatMessages)
+    .where(
+      and(
+        eq(chatMessages.userId, userId),
+        eq(chatMessages.isPlatformHealing, true)
+      )
+    )
+    .orderBy(desc(chatMessages.createdAt))
+    .limit(5);
+  
+  const conversationTokens = estimateConversationTokens(
+    historyForEstimate.map(msg => ({
+      role: msg.role,
+      content: msg.content,
+    }))
+  );
+  
+  const estimatedInputTokens = conversationTokens + promptTokens;
+  const estimatedOutputTokens = Math.max(1000, estimatedInputTokens * 0.5); // Conservative estimate
+  
+  console.log(`[BILLING] Token estimates - Input: ${estimatedInputTokens}, Output: ${estimatedOutputTokens}`);
+
+  // Start agent run and reserve credits based on token estimates
   const AgentExecutor = (await import('../services/agentExecutor')).AgentExecutor;
   const runResult = await AgentExecutor.startRun({
     userId,
     projectId: projectId || null,
-    estimatedCredits: 100, // Initial estimate
+    estimatedInputTokens,
+    estimatedOutputTokens,
+    targetContext, // Platform = FREE, Project = PAID
   });
 
   if (!runResult.success) {
     return res.status(402).json({ 
       error: runResult.error,
+      creditsNeeded: runResult.creditsReserved,
       requiresCreditPurchase: true,
     });
   }
 
   const agentRunId = runResult.runId!;
-  console.log('[LOMU-AI-CHAT] Agent run started:', agentRunId);
+  const creditsReserved = runResult.creditsReserved!;
+  console.log(`[LOMU-AI-CHAT] Agent run started: ${agentRunId}, credits reserved: ${creditsReserved}`);
 
   // Prevent concurrent streams per user
   const activeStreamsKey = `lomu-ai-stream-${userId}`;
@@ -1003,6 +1050,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
   // Track total credits used for this agent run
   let totalCreditsUsed = 0;
   
+  // Declare variables before try block so they're accessible in catch
+  let conversationState: any = null;
+  let traceId: string | null = null;
+  
   try {
 
     // Fetch user's autonomy level and subscription
@@ -1051,10 +1102,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     sendEvent('user_message', { messageId: userMsg.id });
 
     // 🎯 CONVERSATION STATE: Get or create state for context tracking
-    const conversationState = await getOrCreateState(userId, null);
+    conversationState = await getOrCreateState(userId, null);
 
     // 🔍 GAP 3: TRACE LOGGING - Start trace for this conversation
-    let traceId = conversationState.traceId;
+    traceId = conversationState.traceId;
     if (!traceId) {
       traceId = traceLogger.startTrace(conversationState.id);
       await db
@@ -1877,11 +1928,29 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           }
 
           // ============================================================================
-          // TIER 1 BILLING: Token Tracking & Credit Deduction
+          // TIER 1 BILLING: Reconcile Credits & Log Analytics
           // ============================================================================
-          if (usage && usage.inputTokens && usage.outputTokens) {
-            try {
-              await TokenTracker.logAndDeduct(
+          let creditsActuallyUsed = 0;
+          
+          try {
+            if (usage && usage.inputTokens && usage.outputTokens) {
+              // 1. Calculate actual credits from Gemini usage
+              creditsActuallyUsed = CreditManager.calculateCreditsForTokens(
+                usage.inputTokens,
+                usage.outputTokens
+              );
+              
+              console.log(`[BILLING] Actual usage - Input: ${usage.inputTokens} tokens, Output: ${usage.outputTokens} tokens, Credits: ${creditsActuallyUsed}`);
+              
+              // 2. Reconcile with AgentExecutor (returns unused credits to wallet)
+              await AgentExecutor.completeRun({
+                runId: agentRunId,
+                actualCreditsUsed: creditsActuallyUsed,
+                source: 'lomu_chat',
+              });
+              
+              // 3. Log to analytics (TokenTracker - analytics only, no wallet mutations)
+              await TokenTracker.logUsage(
                 {
                   promptTokens: usage.inputTokens,
                   candidatesTokens: usage.outputTokens,
@@ -1894,12 +1963,36 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                   targetContext,
                   projectId: projectId || undefined,
                   agentRunId,
-                }
+                },
+                creditsActuallyUsed // Credits from reconciliation
               );
-            } catch (tokenError: any) {
-              console.error('[TOKEN-TRACKER] Failed to track tokens:', tokenError.message);
-              // Non-blocking - log error but continue execution
-              // Future: Could add retry logic or fallback to estimated billing
+              
+              console.log(`[BILLING] ✅ Reconciliation complete - ${creditsActuallyUsed} credits charged`);
+            } else {
+              // FALLBACK: Missing usage metadata - reconcile with 0 credits to avoid stuck reservations
+              console.warn('[BILLING] ⚠️ Missing usage metadata - reconciling with 0 credits to avoid stuck reservations');
+              
+              await AgentExecutor.completeRun({
+                runId: agentRunId,
+                actualCreditsUsed: 0,
+                source: 'lomu_chat',
+              });
+              
+              console.log('[BILLING] ⚠️ Reconciled with 0 credits due to missing usage data');
+            }
+          } catch (billingError: any) {
+            console.error('[BILLING] ❌ Reconciliation failed:', billingError.message);
+            // Critical: Try to reconcile with 0 to avoid stuck reservations
+            try {
+              await AgentExecutor.completeRun({
+                runId: agentRunId,
+                actualCreditsUsed: 0,
+                source: 'lomu_chat',
+              });
+              console.log('[BILLING] ⚠️ Emergency reconciliation with 0 credits after error');
+            } catch (emergencyError: any) {
+              console.error('[BILLING] 🚨 Emergency reconciliation also failed:', emergencyError.message);
+              // At this point, manual intervention may be needed to clear stuck reservations
             }
           }
         }

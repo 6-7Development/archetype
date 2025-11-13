@@ -6,18 +6,42 @@ import { CreditManager } from './creditManager';
 export class AgentExecutor {
   /**
    * Create new agent run and reserve credits
+   * 
+   * NEW: Accepts token estimates for accurate credit calculation
+   * - Platform healing (targetContext='platform'): FREE (0 credits)
+   * - Project work (targetContext='project'): Calculate from tokens or use estimatedCredits fallback
    */
   static async startRun(params: {
     userId: string;
     projectId: string | null;
-    estimatedCredits: number;
-  }): Promise<{ success: boolean; runId?: string; error?: string }> {
-    const { userId, projectId, estimatedCredits } = params;
+    estimatedInputTokens?: number;   // NEW: Token estimate for input
+    estimatedOutputTokens?: number;  // NEW: Token estimate for output
+    estimatedCredits?: number;       // OLD: Fallback if tokens not provided
+    targetContext: 'platform' | 'project'; // NEW: Determine FREE vs PAID
+  }): Promise<{ success: boolean; runId?: string; error?: string; creditsReserved?: number }> {
+    const { userId, projectId, estimatedInputTokens, estimatedOutputTokens, estimatedCredits, targetContext } = params;
 
     try {
-      // Check if owner should get free credits
-      const shouldCharge = await CreditManager.shouldChargeUser(userId, projectId);
-      const creditsToReserve = shouldCharge ? estimatedCredits : 0;
+      // Calculate credits needed based on targetContext
+      let creditsNeeded: number;
+
+      if (targetContext === 'platform') {
+        // Platform healing = FREE for owners
+        creditsNeeded = 0;
+        console.log('[AGENT-EXECUTOR] Platform healing - FREE access (0 credits)');
+      } else if (estimatedInputTokens !== undefined && estimatedOutputTokens !== undefined) {
+        // Calculate from token estimates (preferred method)
+        creditsNeeded = CreditManager.calculateCreditsForTokens(estimatedInputTokens, estimatedOutputTokens);
+        console.log(`[AGENT-EXECUTOR] Calculated ${creditsNeeded} credits from tokens (input: ${estimatedInputTokens}, output: ${estimatedOutputTokens})`);
+      } else if (estimatedCredits !== undefined) {
+        // Fallback to estimated credits
+        creditsNeeded = estimatedCredits;
+        console.log(`[AGENT-EXECUTOR] Using fallback estimated credits: ${creditsNeeded}`);
+      } else {
+        // No estimates provided - use conservative default
+        creditsNeeded = 100;
+        console.warn('[AGENT-EXECUTOR] No token or credit estimates provided - using default 100 credits');
+      }
 
       // Create agent run record
       const [run] = await db
@@ -26,17 +50,17 @@ export class AgentExecutor {
           userId,
           projectId,
           status: 'running',
-          creditsReserved: creditsToReserve,
+          creditsReserved: creditsNeeded,
           creditsConsumed: 0,
           context: {},
         })
         .returning();
 
-      // Reserve credits if not owner
-      if (creditsToReserve > 0) {
+      // Reserve credits if needed (skip for FREE platform access)
+      if (creditsNeeded > 0) {
         const reservation = await CreditManager.reserveCredits({
           userId,
-          creditsNeeded: creditsToReserve,
+          creditsNeeded,
           agentRunId: run.id,
         });
 
@@ -47,7 +71,7 @@ export class AgentExecutor {
         }
       }
 
-      return { success: true, runId: run.id };
+      return { success: true, runId: run.id, creditsReserved: creditsNeeded };
     } catch (error: any) {
       console.error('[AGENT-EXECUTOR] Error starting run:', error);
       return { success: false, error: error.message };
@@ -155,13 +179,31 @@ export class AgentExecutor {
 
   /**
    * Complete agent run and reconcile credits
+   * 
+   * OVERLOADED: Supports both legacy and new signatures for backward compatibility
+   * - NEW: completeRun({ runId, actualCreditsUsed, source })
+   * - LEGACY: completeRun(runId, creditsUsed) - defaults source to 'lomu_chat'
    */
-  static async completeRun(params: {
-    runId: string;
-    actualCreditsUsed: number;
-    source: 'lomu_chat' | 'architect_consultation';
-  }): Promise<{ success: boolean; error?: string }> {
-    const { runId, actualCreditsUsed, source } = params;
+  static async completeRun(
+    paramsOrRunId: { runId: string; actualCreditsUsed: number; source: 'lomu_chat' | 'architect_consultation' } | string,
+    creditsUsed?: number
+  ): Promise<{ success: boolean; error?: string }> {
+    // Backward compatibility: Handle both old (positional) and new (object) signatures
+    let runId: string;
+    let actualCreditsUsed: number;
+    let source: 'lomu_chat' | 'architect_consultation';
+
+    if (typeof paramsOrRunId === 'string') {
+      // LEGACY SIGNATURE: completeRun(runId, creditsUsed)
+      runId = paramsOrRunId;
+      actualCreditsUsed = creditsUsed ?? 0;
+      source = 'lomu_chat'; // Default source for legacy callers
+      console.log('[AGENT-EXECUTOR] Using LEGACY completeRun signature');
+    } else {
+      // NEW SIGNATURE: completeRun({ runId, actualCreditsUsed, source })
+      ({ runId, actualCreditsUsed, source } = paramsOrRunId);
+      console.log('[AGENT-EXECUTOR] Using NEW completeRun signature');
+    }
 
     try {
       const [run] = await db.select().from(agentRuns).where(eq(agentRuns.id, runId));

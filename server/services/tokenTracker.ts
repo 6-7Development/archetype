@@ -1,6 +1,6 @@
 import { db } from '../db';
-import { tokenLedger, users, creditWallets } from '@shared/schema';
-import { eq, sql } from 'drizzle-orm';
+import { tokenLedger, CREDIT_CONSTANTS } from '@shared/schema';
+import { CreditManager } from './creditManager';
 
 interface TokenUsage {
   promptTokens: number;
@@ -17,20 +17,29 @@ interface BillingContext {
   agentRunId?: string;
 }
 
+/**
+ * TokenTracker - Thin adapter for Gemini API usage tracking
+ * 
+ * Architecture (per Architect guidance):
+ * - Captures Gemini usage_metadata (tokens consumed)
+ * - Delegates ALL wallet operations to CreditManager (authoritative billing engine)
+ * - Logs analytics to tokenLedger
+ * - Uses CREDIT_CONSTANTS for all conversions (1 credit = 1000 tokens = $0.50)
+ */
 export class TokenTracker {
-  // Pricing (per 1M tokens)
+  // Gemini API pricing (per 1M tokens) - for cost analytics only
   private static readonly PRICING: Record<string, { input: number; output: number }> = {
     'gemini-2.5-flash': { input: 0.075, output: 0.30 },
     'gemini-2.5-pro': { input: 3.00, output: 15.00 }
   };
 
   /**
-   * Calculate cost based on token usage and model
+   * Calculate provider cost (for analytics/profit tracking)
+   * NOTE: This is NOT used for billing! Billing is token-based via CreditManager.
    */
-  private static calculateCost(usage: TokenUsage, modelUsed: string): number {
+  private static calculateProviderCost(usage: TokenUsage, modelUsed: string): number {
     const pricing = this.PRICING[modelUsed] || this.PRICING['gemini-2.5-flash'];
     
-    // Calculate actual costs based on prompt and candidates tokens
     const inputCost = (usage.promptTokens / 1_000_000) * pricing.input;
     const outputCost = (usage.candidatesTokens / 1_000_000) * pricing.output;
     
@@ -38,133 +47,95 @@ export class TokenTracker {
   }
 
   /**
-   * Convert USD cost to credits
-   * NOTE: In our system, 1 credit = $1.00 (not $0.0005)
-   * This aligns with the creditWallets table which stores dollar-equivalent credits
+   * Log token usage to ledger (analytics only - no wallet mutations)
+   * 
+   * Platform healing: Logs with 0 credits charged
+   * Project work: creditsCharged must be provided by caller (from CreditManager)
    */
-  private static costToCredits(costUsd: number): number {
-    // Simply return the USD amount as credits (1:1 ratio)
-    return Math.ceil(costUsd * 100) / 100; // Round to 2 decimal places
-  }
+  static async logUsage(
+    usage: TokenUsage, 
+    context: BillingContext,
+    creditsCharged: number = 0
+  ): Promise<void> {
+    const providerCost = this.calculateProviderCost(usage, context.modelUsed);
+    
+    console.log(
+      `[TOKEN-TRACKER] Logging: ${usage.totalTokens} tokens, ` +
+      `${creditsCharged} credits, provider cost $${providerCost.toFixed(6)}, ` +
+      `context=${context.targetContext}`
+    );
 
-  /**
-   * Log token usage and deduct credits
-   */
-  static async logAndDeduct(usage: TokenUsage, context: BillingContext): Promise<void> {
-    // Platform healing = FREE (skip billing)
-    if (context.targetContext === 'platform') {
-      console.log('[TOKEN-TRACKER] Platform healing - FREE access, no charges');
-      
-      // Still log for analytics (with 0 cost)
-      await db.insert(tokenLedger).values({
-        userId: context.userId,
-        totalTokens: usage.totalTokens,
-        promptTokens: usage.promptTokens,
-        candidatesTokens: usage.candidatesTokens,
-        modelUsed: context.modelUsed,
-        requestType: context.requestType,
-        costUsd: '0.00',
-        creditsCharged: 0,
-        agentRunId: context.agentRunId,
-        targetContext: context.targetContext,
-        projectId: context.projectId,
-      });
-      
-      return;
-    }
-
-    // Calculate cost
-    const costUsd = this.calculateCost(usage, context.modelUsed);
-    const creditsToCharge = this.costToCredits(costUsd);
-
-    console.log(`[TOKEN-TRACKER] Billing: ${usage.totalTokens} tokens = ${creditsToCharge} credits ($${costUsd.toFixed(6)})`);
-
-    // Deduct credits atomically
-    await db.transaction(async (tx) => {
-      // 1. Get or create credit wallet
-      let [userCredits] = await tx
-        .select()
-        .from(creditWallets)
-        .where(eq(creditWallets.userId, context.userId))
-        .limit(1);
-
-      // Create wallet if missing (with 0 balance)
-      if (!userCredits) {
-        console.log(`[TOKEN-TRACKER] Creating credit wallet for user ${context.userId}`);
-        [userCredits] = await tx
-          .insert(creditWallets)
-          .values({
-            userId: context.userId,
-            availableCredits: 0,
-            reservedCredits: 0,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          })
-          .returning();
-      }
-
-      // 2. Check balance
-      if (userCredits.availableCredits < creditsToCharge) {
-        throw new Error(`Insufficient credits. Required: ${creditsToCharge}, Available: ${userCredits.availableCredits}`);
-      }
-
-      // 3. Deduct credits
-      await tx
-        .update(creditWallets)
-        .set({
-          availableCredits: sql`${creditWallets.availableCredits} - ${creditsToCharge}`,
-          updatedAt: new Date(),
-        })
-        .where(eq(creditWallets.userId, context.userId));
-
-      // 4. Log to ledger
-      await tx.insert(tokenLedger).values({
-        userId: context.userId,
-        totalTokens: usage.totalTokens,
-        promptTokens: usage.promptTokens,
-        candidatesTokens: usage.candidatesTokens,
-        modelUsed: context.modelUsed,
-        requestType: context.requestType,
-        costUsd: costUsd.toFixed(6),
-        creditsCharged: creditsToCharge,
-        agentRunId: context.agentRunId,
-        targetContext: context.targetContext,
-        projectId: context.projectId,
-      });
+    // Log to analytics ledger (no wallet mutations here!)
+    await db.insert(tokenLedger).values({
+      userId: context.userId,
+      totalTokens: usage.totalTokens,
+      promptTokens: usage.promptTokens,
+      candidatesTokens: usage.candidatesTokens,
+      modelUsed: context.modelUsed,
+      requestType: context.requestType,
+      costUsd: providerCost.toFixed(6),
+      creditsCharged,
+      agentRunId: context.agentRunId,
+      targetContext: context.targetContext,
+      projectId: context.projectId,
     });
-
-    console.log(`[TOKEN-TRACKER] ✅ Charged ${creditsToCharge} credits to user ${context.userId}`);
   }
 
   /**
-   * Pre-execution limit check
+   * Calculate credits for token usage
+   * Delegates to CreditManager for consistency
    */
-  static async checkLimit(userId: string, estimatedTokens: number, targetContext: 'platform' | 'project'): Promise<{ allowed: boolean; reason?: string; currentBalance?: number }> {
+  static calculateCredits(promptTokens: number, candidatesTokens: number): number {
+    return CreditManager.calculateCreditsForTokens(promptTokens, candidatesTokens);
+  }
+
+  /**
+   * Pre-execution credit check
+   * Delegates to CreditManager for wallet balance checks
+   */
+  static async checkLimit(
+    userId: string, 
+    estimatedInputTokens: number,
+    estimatedOutputTokens: number,
+    targetContext: 'platform' | 'project'
+  ): Promise<{ allowed: boolean; reason?: string; creditsNeeded?: number; currentBalance?: number }> {
     // Platform healing = FREE (always allowed)
     if (targetContext === 'platform') {
       return { allowed: true };
     }
 
-    // Estimate credits needed
-    const creditsNeeded = Math.ceil(estimatedTokens / 1000);
+    // Calculate credits needed using authoritative formula
+    const creditsNeeded = CreditManager.calculateCreditsForTokens(
+      estimatedInputTokens,
+      estimatedOutputTokens
+    );
 
-    // Check balance
-    const [userCredits] = await db
-      .select()
-      .from(creditWallets)
-      .where(eq(creditWallets.userId, userId))
-      .limit(1);
+    // Check balance via CreditManager
+    const balance = await CreditManager.getBalance(userId);
 
-    const currentBalance = userCredits?.availableCredits || 0;
-
-    if (currentBalance < creditsNeeded) {
+    // No wallet = 0 credits
+    if (!balance) {
       return {
         allowed: false,
-        reason: `Insufficient credits. Required: ${creditsNeeded}, Available: ${currentBalance}`,
-        currentBalance
+        reason: `No credit wallet found. Required: ${creditsNeeded}, Available: 0`,
+        creditsNeeded,
+        currentBalance: 0
       };
     }
 
-    return { allowed: true, currentBalance };
+    if (balance.availableCredits < creditsNeeded) {
+      return {
+        allowed: false,
+        reason: `Insufficient credits. Required: ${creditsNeeded}, Available: ${balance.availableCredits}`,
+        creditsNeeded,
+        currentBalance: balance.availableCredits
+      };
+    }
+
+    return { 
+      allowed: true, 
+      creditsNeeded,
+      currentBalance: balance.availableCredits 
+    };
   }
 }

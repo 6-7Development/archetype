@@ -603,7 +603,7 @@ This conversation has ${summary.messageCount} older messages that have been summ
 **User Requests:**
 ${summary.userRequests.slice(0, 3).map((req, i) => `${i + 1}. ${req}...`).join('\n')}
 
-**Tools Used:** ${[...new Set(summary.toolsUsed)].join(', ')}
+**Tools Used:** ${Array.from(new Set(summary.toolsUsed)).join(', ')}
 
 **Code Changes:**
 ${summary.codeBlocks.slice(0, 3).join('\n')}
