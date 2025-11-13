@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MotionToggle } from "@/components/motion-toggle";
-import { BeehiveLogo, SimplifiedMobileLogo } from "@/components/beehive-logos";
+import { BeehiveLogo, SimplifiedMobileLogo, BeehiveIcon } from "@/components/beehive-logos";
 import { 
   Sparkles, Zap, Shield, Code, Rocket, Check, 
   Play, ArrowRight, Hexagon, Menu, DollarSign, LogIn 
@@ -22,9 +22,9 @@ export default function Landing() {
         }} />
       </div>
 
-      {/* Responsive Navigation */}
+      {/* Responsive Navigation - Reduced height */}
       <nav className="fixed top-0 w-full z-50 border-b border-honey/10 bg-charcoal-950/90 backdrop-blur-xl">
-        <div className="container mx-auto px-3 sm:px-6 py-2 sm:py-4">
+        <div className="container mx-auto px-3 sm:px-6 py-1.5 sm:py-3">
           <div className="flex items-center justify-between gap-2">
             {/* Logo - Responsive sizing */}
             <Link 
@@ -68,7 +68,7 @@ export default function Landing() {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="min-h-[40px] min-w-[40px]"
+                className="min-h-[44px] min-w-[44px]"
                 onClick={() => setMenuOpen(!menuOpen)}
                 data-testid="button-mobile-menu"
                 aria-label="Toggle menu"
@@ -124,10 +124,10 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* Hero Section - Responsive */}
-      <section className="pt-20 sm:pt-28 md:pt-32 pb-8 sm:pb-16 md:pb-20 px-3 sm:px-6 relative z-10">
+      {/* Hero Section - Responsive with proper spacing to clear fixed header */}
+      <section className="pt-24 sm:pt-28 md:pt-32 pb-8 sm:pb-16 md:pb-20 px-3 sm:px-6 relative z-10">
         <div className="container mx-auto max-w-6xl text-center">
-          {/* Powered by Badge */}
+          {/* Powered by Badge - Visible below header */}
           <div className="mb-4 sm:mb-8 inline-flex items-center gap-2 px-3 py-1.5 sm:gap-3 sm:px-6 sm:py-3 rounded-full bg-honey/10 backdrop-blur-sm shadow-[inset_0_0_0_1px_rgba(247,181,0,0.2)]">
             <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-honey flex-shrink-0" />
             <span className="text-[11px] sm:text-sm text-honey font-medium">Gemini 2.5 Flash + Claude Sonnet 4</span>
@@ -356,7 +356,7 @@ export default function Landing() {
       <footer className="border-t border-white/10 py-6 sm:py-8 px-4 sm:px-6">
         <div className="container mx-auto max-w-6xl">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-            <BeehiveLogo size="sm" />
+            <BeehiveIcon size={48} />
             <p className="text-slate-500 text-sm">
               © 2024 BeehiveAI. Where code gets sweeter by the hive.
             </p>

@@ -12,8 +12,7 @@ export function AppFooter() {
           {/* Brand Column */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <BeehiveIcon size={32} />
-              <span className="text-xl font-bold">BeehiveAI</span>
+              <BeehiveIcon size={48} />
             </div>
             <p className="text-sm text-muted-foreground">
               Where AI agents swarm together to build your code. Enterprise-grade platform for rapid development.

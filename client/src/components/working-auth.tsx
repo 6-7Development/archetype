@@ -11,8 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, Github, Chrome, Building2 } from "lucide-react";
-import { LogoEnhancedBadge, LogoAnimatedWordmark } from '@/components/final-logos';
+import { Loader2, Sparkles, Github, Chrome, Building2, Hexagon } from "lucide-react";
+import { BeehiveIcon } from '@/components/beehive-logos';
 
 export default function WorkingAuth() {
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -125,26 +125,21 @@ export default function WorkingAuth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative dark">
-      {/* Brand Layer - Decorative Background (no pointer events) */}
-      <div className="fixed inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 pointer-events-none" style={{ zIndex: 0 }} />
-      
-      {/* Subtle Grid Pattern */}
-      <div 
-        className="fixed inset-0 opacity-[0.02] pointer-events-none" 
-        style={{ 
-          zIndex: 0,
-          backgroundImage: 'radial-gradient(circle, rgba(148, 163, 184, 0.5) 1px, transparent 1px)',
-          backgroundSize: '32px 32px'
-        }} 
-      />
+    <div className="min-h-screen flex items-center justify-center p-4 relative dark bg-charcoal-950">
+      {/* Honeycomb Pattern Background - Matches Landing Page */}
+      <div className="fixed inset-0 opacity-5 pointer-events-none" style={{ zIndex: 0 }}>
+        <div className="absolute inset-0" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l25.98 15v30L30 60 4.02 45V15z' fill='none' stroke='%23F7B500' stroke-width='1'/%3E%3C/svg%3E")`,
+          backgroundSize: '60px 60px'
+        }} />
+      </div>
 
-      {/* Brand Glow */}
+      {/* Warm Honey/Mint Glow - Matches Brand */}
       <div 
-        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] opacity-20 blur-3xl pointer-events-none"
+        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] opacity-15 blur-3xl pointer-events-none"
         style={{ 
           zIndex: 0,
-          background: 'radial-gradient(circle, rgba(6, 182, 212, 0.4), rgba(139, 92, 246, 0.3), transparent 70%)'
+          background: 'radial-gradient(circle, rgba(247, 181, 0, 0.3), rgba(0, 212, 179, 0.2), transparent 70%)'
         }}
       />
 
@@ -152,26 +147,26 @@ export default function WorkingAuth() {
       <div className="w-full max-w-md relative" style={{ zIndex: 10 }}>
         <Card className="border-2 backdrop-blur-sm bg-card/95 shadow-2xl">
           <CardHeader className="space-y-4 text-center pb-6">
-            {/* Logo */}
+            {/* Tech-Enhanced Bee Logo */}
             <div className="flex justify-center">
-              <LogoEnhancedBadge size={64} />
+              <BeehiveIcon size={72} />
             </div>
 
             <div>
-              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent mb-2">
+              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-honey via-nectar to-mint bg-clip-text text-transparent mb-2">
                 {mode === "login" ? "Welcome Back" : "Get Started"}
               </CardTitle>
-              <CardDescription className="text-base">
+              <CardDescription className="text-base text-slate-300">
                 {mode === "login" 
                   ? "Sign in to continue building amazing projects" 
                   : "Create your account and start building with AI"}
               </CardDescription>
             </div>
 
-            {/* Professional Badge */}
+            {/* Professional Badge - Honey/Mint Theme */}
             <div className="flex items-center justify-center gap-2 text-xs text-slate-400 pt-2">
-              <Building2 className="w-3.5 h-3.5" />
-              <span className="font-medium">Enterprise-Grade Development Platform</span>
+              <Hexagon className="w-3.5 h-3.5 text-honey fill-honey/20" />
+              <span className="font-medium">AI-Powered Development Platform</span>
             </div>
           </CardHeader>
 
@@ -180,7 +175,7 @@ export default function WorkingAuth() {
             <div className="space-y-2.5">
               <Button 
                 variant="outline" 
-                className="w-full h-11 text-white border-slate-600 hover:bg-slate-700" 
+                className="w-full h-11 text-white border-honey/20 hover:bg-honey/10" 
                 onClick={() => handleSocialLogin("Google")}
                 data-testid="button-google-login"
                 type="button"
@@ -190,7 +185,7 @@ export default function WorkingAuth() {
               </Button>
               <Button 
                 variant="outline" 
-                className="w-full h-11 text-white border-slate-600 hover:bg-slate-700"
+                className="w-full h-11 text-white border-honey/20 hover:bg-honey/10"
                 onClick={() => handleSocialLogin("GitHub")}
                 data-testid="button-github-login"
                 type="button"
@@ -206,7 +201,7 @@ export default function WorkingAuth() {
                 <Separator />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-slate-800 px-3 text-slate-400 font-medium">Or continue with email</span>
+                <span className="bg-card px-3 text-slate-400 font-medium">Or continue with email</span>
               </div>
             </div>
 
@@ -249,7 +244,7 @@ export default function WorkingAuth() {
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full h-11 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold" 
+                  className="w-full h-11 bg-honey text-charcoal-950 hover:bg-honey/90 font-semibold" 
                   disabled={loginMutation.isPending}
                   data-testid="button-login"
                 >
@@ -329,7 +324,7 @@ export default function WorkingAuth() {
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full h-11 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold" 
+                  className="w-full h-11 bg-honey text-charcoal-950 hover:bg-honey/90 font-semibold" 
                   disabled={registerMutation.isPending}
                   data-testid="button-register"
                 >
@@ -347,7 +342,7 @@ export default function WorkingAuth() {
               {" "}
               <button
                 type="button"
-                className="font-semibold text-cyan-400 hover:text-cyan-300 hover:underline focus:outline-none focus:underline"
+                className="font-semibold text-honey hover:text-honey/80 hover:underline focus:outline-none focus:underline"
                 onClick={() => {
                   setMode(mode === "login" ? "register" : "login");
                   loginForm.reset();
@@ -359,11 +354,11 @@ export default function WorkingAuth() {
               </button>
             </div>
 
-            {/* Trust Badge */}
-            <div className="pt-4 border-t border-slate-700">
+            {/* Trust Badge - Matches Landing */}
+            <div className="pt-4 border-t border-honey/10">
               <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
-                <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Powered by Claude 4.5 Sonnet</span>
+                <Sparkles className="w-3.5 h-3.5 text-honey" />
+                <span>Gemini 2.5 Flash + Claude Sonnet 4</span>
               </div>
             </div>
           </CardContent>
