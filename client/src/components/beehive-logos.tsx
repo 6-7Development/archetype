@@ -171,7 +171,7 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
           )}
         </g>
 
-        {/* Wordmark (Beehive AI) - Using dominantBaseline to prevent overflow */}
+        {/* Wordmark (Beehive AI) - AI as superscript to prevent overlap */}
         {showWordmark && (
           <g transform={size === "lg" ? "translate(95, 35)" : "translate(45, 15)"}>
             {/* "Beehive" */}
@@ -188,11 +188,11 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
               Beehive
             </text>
             
-            {/* "AI" */}
+            {/* "AI" - Superscript style (smaller, positioned above) */}
             <text 
-              x={size === "lg" ? 140 : 70} 
-              y="0" 
-              fontSize={wordmarkSize} 
+              x={size === "lg" ? 118 : 59} 
+              y={size === "lg" ? -10 : -5} 
+              fontSize={size === "lg" ? 28 : 15} 
               fontFamily="Inter, system-ui, sans-serif" 
               fontWeight="700"
               fill={`url(#${idPrefix}-mint)`}
