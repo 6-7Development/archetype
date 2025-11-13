@@ -129,8 +129,8 @@ export default function Landing() {
       <section className="pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-16 md:pb-20 px-4 sm:px-6 relative z-10">
         <div className="container mx-auto max-w-6xl text-center">
           {/* Powered by Badge */}
-          <div className="mb-6 sm:mb-8 inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full border border-honey/30 bg-honey/10 backdrop-blur-sm">
-            <Sparkles className="w-4 h-4 text-honey" />
+          <div className="mb-6 sm:mb-8 inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-full border border-honey/30 bg-honey/10 backdrop-blur-sm">
+            <Sparkles className="w-4 h-4 text-honey flex-shrink-0" />
             <span className="text-xs sm:text-sm text-honey font-medium">Gemini 2.5 Flash + Claude Sonnet 4</span>
           </div>
           
