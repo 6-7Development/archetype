@@ -18,7 +18,7 @@ test.describe('Billing Enforcement', () => {
     });
     
     // Mock access tier to return paid (non-free)
-    await page.route('**/api/lomu-chat/access-tier', route => {
+    await page.route('**/api/lomu-ai/access-tier', route => {
       route.fulfill({
         status: 200,
         headers: { 'Content-Type': 'application/json' },
@@ -57,7 +57,7 @@ test.describe('Billing Enforcement', () => {
     });
     
     // Mock access tier to return paid (non-free)
-    await page.route('**/api/lomu-chat/access-tier', route => {
+    await page.route('**/api/lomu-ai/access-tier', route => {
       route.fulfill({
         status: 200,
         headers: { 'Content-Type': 'application/json' },

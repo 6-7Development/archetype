@@ -195,9 +195,9 @@ export function UniversalChat({
   // Load chat history
   const effectiveProjectId = targetContext === 'platform' ? 'platform' : (projectId || 'general');
   const { data: chatHistory, isLoading: isLoadingHistory } = useQuery<{ messages: Message[] }>({
-    queryKey: ['/api/lomu-chat/history', effectiveProjectId],
+    queryKey: ['/api/lomu-ai/history', effectiveProjectId],
     queryFn: async () => {
-      const response = await fetch(`/api/lomu-chat/history/${effectiveProjectId}`, {
+      const response = await fetch(`/api/lomu-ai/history/${effectiveProjectId}`, {
         credentials: 'include',
       });
       if (!response.ok) {
@@ -222,10 +222,10 @@ export function UniversalChat({
   // Save message mutation
   const saveMessageMutation = useMutation<void, Error, { projectId: string | null; role: string; content: string }>({
     mutationFn: async (data) => {
-      await apiRequest("POST", "/api/lomu-chat/messages", data);
+      await apiRequest("POST", "/api/lomu-ai/messages", data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/lomu-chat/history', effectiveProjectId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/lomu-ai/history', effectiveProjectId] });
     },
   });
 
@@ -234,7 +234,7 @@ export function UniversalChat({
     mutationFn: async (file) => {
       const formData = new FormData();
       formData.append('image', file);
-      const response = await fetch('/api/lomu-chat/upload-image', {
+      const response = await fetch('/api/lomu-ai/upload-image', {
         method: 'POST',
         body: formData,
         credentials: 'include',
@@ -280,7 +280,7 @@ export function UniversalChat({
   useEffect(() => {
     async function fetchAccessTier() {
       try {
-        const response = await fetch('/api/lomu-chat/access-tier', {
+        const response = await fetch('/api/lomu-ai/access-tier', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ targetContext, projectId }),
@@ -661,7 +661,7 @@ export function UniversalChat({
   // Chat mutation - endpoint changes based on target context
   const chatMutation = useMutation<{ response: string; shouldGenerate?: boolean; command?: string; autonomous?: boolean; checkpoint?: CheckpointData }, Error, { message: string; projectId?: number | string | null; images?: string[]; sessionId: string; targetContext: string }>({
     mutationFn: async (data) => {
-      const endpoint = targetContext === 'platform' ? '/api/lomu-chat' : '/api/ai-chat-conversation';
+      const endpoint = targetContext === 'platform' ? '/api/lomu-ai' : '/api/ai-chat-conversation';
       return await apiRequest<{ response: string; shouldGenerate?: boolean; command?: string; autonomous?: boolean; checkpoint?: CheckpointData }>("POST", endpoint, data);
     },
     onSuccess: (data) => {
@@ -1638,12 +1638,7 @@ export function UniversalChat({
                 overageTokens={costData?.overageTokens}
                 overageCost={costData?.overageCost}
                 reasons={costData?.reasons}
-                onProceed={handleCostPreviewProceed}
-                onCancel={() => {
-                  setShowCostPreview(false);
-                  setPendingCommand("");
-                  setCostData(null);
-                }}
+                onConfirm={handleCostPreviewProceed}
               />
             )}
           </DialogContent>
@@ -1680,8 +1675,17 @@ export function UniversalChat({
       {streamState.deployment && (
         <DeploymentStatusModal
           open={showDeploymentModal}
-          onClose={() => setShowDeploymentModal(false)}
-          deployment={streamState.deployment}
+          onOpenChange={setShowDeploymentModal}
+          deploymentId={streamState.deployment.deploymentId}
+          commitHash={streamState.deployment.commitHash}
+          commitMessage={streamState.deployment.commitMessage}
+          commitUrl={streamState.deployment.commitUrl}
+          timestamp={streamState.deployment.timestamp}
+          platform={streamState.deployment.platform}
+          steps={streamState.deployment.steps}
+          status={streamState.deployment.status}
+          deploymentUrl={streamState.deployment.deploymentUrl}
+          errorMessage={streamState.deployment.errorMessage}
         />
       )}
 
