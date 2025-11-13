@@ -59,7 +59,7 @@ export default function LandingMobile() {
         <div className="text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-honey/30 bg-honey/10">
             <Sparkles className="w-4 h-4 text-honey" />
-            <span className="text-xs text-honey font-medium">Powered by Claude Sonnet 4</span>
+            <span className="text-xs text-honey font-medium">Gemini 2.5 Flash + Claude Sonnet 4</span>
           </div>
 
           <div className="space-y-3">
@@ -68,7 +68,7 @@ export default function LandingMobile() {
                 Build Full-Stack Apps
               </span>
               <br />
-              <span className="text-white break-words">With AI in Seconds</span>
+              <span className="text-white break-words">With AI in Minutes</span>
             </h1>
             
             <p className="text-slate-400 text-base max-w-sm mx-auto break-words whitespace-normal">
@@ -98,7 +98,7 @@ export default function LandingMobile() {
         <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
           {[
             { value: "Sonnet 4", label: "Claude AI" },
-            { value: "12-Step", label: "AI Workflow" },
+            { value: "7-Phase", label: "AI Workflow" },
             { value: "Full Stack", label: "Web Expertise" },
             { value: "2D/3D", label: "Game Support" }
           ].map((stat, i) => (
@@ -165,7 +165,7 @@ export default function LandingMobile() {
                 </div>
               </div>
               <h3 className="mt-3 font-semibold text-white text-sm">Harvest the Honey</h3>
-              <p className="text-xs text-slate-400 mt-1">Take your sweet creation live—one click to production</p>
+              <p className="text-xs text-slate-400 mt-1">Deploy your creation to production with Cloudflare Pages</p>
             </Card>
           </div>
         </div>

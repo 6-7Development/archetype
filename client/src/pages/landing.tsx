@@ -60,7 +60,7 @@ export default function Landing() {
           {/* Powered by Badge */}
           <div className="mb-8 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-honey/30 bg-honey/10 backdrop-blur-sm">
             <Sparkles className="w-4 h-4 text-honey" />
-            <span className="text-sm text-honey font-medium">Powered by Claude Sonnet 4</span>
+            <span className="text-sm text-honey font-medium">Gemini 2.5 Flash + Claude Sonnet 4</span>
           </div>
           
           {/* Main Headline */}
@@ -69,7 +69,7 @@ export default function Landing() {
               Build Full-Stack Apps
             </span>
             <br />
-            <span className="text-white">With AI in Seconds</span>
+            <span className="text-white">With AI in Minutes</span>
           </h1>
           
           <p className="text-xl text-slate-400 mb-10 max-w-3xl mx-auto">
@@ -107,7 +107,7 @@ export default function Landing() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-4xl mx-auto">
             {[
               { value: "Sonnet 4", label: "Claude AI" },
-              { value: "12-Step", label: "AI Workflow" },
+              { value: "7-Phase", label: "AI Workflow" },
               { value: "Full Stack", label: "Web Expertise" },
               { value: "2D/3D", label: "Game Support" }
             ].map((stat, i) => (
@@ -180,13 +180,13 @@ export default function Landing() {
               <div className="aspect-video bg-slate-950/50 rounded-lg border border-slate-700/50 flex items-center justify-center mb-4">
                 <div className="text-center">
                   <Rocket className="w-12 h-12 mx-auto mb-3 text-mint" />
-                  <p className="text-sm text-slate-300 font-medium">One-Click Deploy</p>
+                  <p className="text-sm text-slate-300 font-medium">Production Deployment</p>
                   <p className="text-xs text-slate-500 mt-1">Production hosting</p>
                 </div>
               </div>
               <h3 className="text-lg font-semibold text-white mb-2">Harvest Your Creation</h3>
               <p className="text-sm text-slate-400">
-                One-click deploy to production—take your sweet success live with custom domains and SSL
+                Deploy to production with Cloudflare Pages—custom domains and SSL included
               </p>
             </Card>
           </div>
@@ -295,6 +295,14 @@ export default function Landing() {
                 Login
               </Link>
             </div>
+          </div>
+          
+          {/* AI Disclaimer */}
+          <div className="max-w-3xl mx-auto pt-8 mt-8 border-t border-white/10">
+            <p className="text-xs text-slate-500 text-center break-words whitespace-normal">
+              AI-generated code requires human review and testing. Results may vary based on project complexity. 
+              BeehiveAI is an AI-assisted development tool - not a replacement for skilled developers.
+            </p>
           </div>
         </div>
       </footer>
