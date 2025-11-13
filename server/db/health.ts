@@ -38,13 +38,14 @@ export async function checkDatabaseHealth(): Promise<HealthCheckResult> {
     result.database.responseTime = Date.now() - startTime;
 
     // Count records in main tables
-    const [users] = await db.execute(sql`SELECT COUNT(*) as count FROM users`);
-    const [sessions] = await db.execute(sql`SELECT COUNT(*) as count FROM sessions`);
-    const [projects] = await db.execute(sql`SELECT COUNT(*) as count FROM projects`);
+    const usersResult = await db.execute(sql`SELECT COUNT(*)::int as count FROM users`);
+    result.tables.users = Number(usersResult.rows[0]?.count ?? 0);
 
-    result.tables.users = Number(users.count);
-    result.tables.sessions = Number(sessions.count);
-    result.tables.projects = Number(projects.count);
+    const sessionsResult = await db.execute(sql`SELECT COUNT(*)::int as count FROM sessions`);
+    result.tables.sessions = Number(sessionsResult.rows[0]?.count ?? 0);
+
+    const projectsResult = await db.execute(sql`SELECT COUNT(*)::int as count FROM projects`);
+    result.tables.projects = Number(projectsResult.rows[0]?.count ?? 0);
 
     logger.info('Database health check passed', result);
   } catch (error) {
