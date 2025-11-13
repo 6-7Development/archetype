@@ -171,9 +171,9 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
           )}
         </g>
 
-        {/* Wordmark (Beehive AI) - Positioned to not overflow top */}
+        {/* Wordmark (Beehive AI) - Using dominantBaseline to prevent overflow */}
         {showWordmark && (
-          <g transform={size === "lg" ? "translate(95, 75)" : "translate(45, 35)"}>
+          <g transform={size === "lg" ? "translate(95, 35)" : "translate(45, 15)"}>
             {/* "Beehive" */}
             <text 
               x="0" 
@@ -183,6 +183,7 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
               fontWeight="700"
               fill={`url(#${idPrefix}-honey)`}
               letterSpacing="-0.02em"
+              dominantBaseline="hanging"
             >
               Beehive
             </text>
@@ -196,6 +197,7 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
               fontWeight="700"
               fill={`url(#${idPrefix}-mint)`}
               letterSpacing="-0.02em"
+              dominantBaseline="hanging"
             >
               AI
             </text>
