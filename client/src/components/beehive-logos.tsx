@@ -171,9 +171,9 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
           )}
         </g>
 
-        {/* Wordmark (Beehive AI) */}
+        {/* Wordmark (Beehive AI) - Positioned to not overflow top */}
         {showWordmark && (
-          <g transform={size === "lg" ? "translate(95, 58)" : "translate(45, 25)"}>
+          <g transform={size === "lg" ? "translate(95, 75)" : "translate(45, 35)"}>
             {/* "Beehive" */}
             <text 
               x="0" 
