@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { db } from '../db.ts';
 import { storage } from '../storage.ts';
-import { chatMessages, taskLists, tasks, lomuAttachments, lomuJobs, users, subscriptions, projects, conversationStates, platformIncidents } from '@shared/schema';
+import { chatMessages, taskLists, tasks, lomuAttachments, lomuJobs, users, subscriptions, projects, conversationStates, platformIncidents, tokenLedger } from '@shared/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth.ts';
 import { streamGeminiResponse } from '../gemini.ts';
+import { TokenTracker } from '../services/tokenTracker.ts';
 import { RAILWAY_CONFIG } from '../config/railway.ts';
 import { platformHealing } from '../platformHealing.ts';
 import { platformAudit } from '../platformAudit.ts';
@@ -408,32 +409,48 @@ function resolveApproval(messageId: string, approved: boolean) {
 }
 
 // ============================================================================
-// PHASE 1 - TASK 3: ACCESS TIER ENDPOINT (Security Fix)
+// PHASE 1 - TASK 4: SECURE ACCESS TIER ENDPOINT (Prevent Client Spoofing)
 // ============================================================================
 
-// NEW ENDPOINT: Determine access tier server-side
+// SECURE ENDPOINT: Determine access tier server-side based on projectId only
+// CRITICAL: Client CANNOT pass targetContext - server determines it from projectId
 router.post('/access-tier', isAuthenticated, async (req: any, res) => {
   try {
-    const { targetContext, projectId } = req.body;
+    const { projectId } = req.body; // ONLY accept projectId from client
     const userId = req.authenticatedUserId;
 
-    // Only platform healing is FREE, and only for owner
+    // SECURITY: Determine context server-side based on projectId
+    let targetContext: 'platform' | 'project';
+    
+    if (!projectId) {
+      // No projectId = platform context
+      targetContext = 'platform';
+    } else {
+      // Has projectId = project context
+      targetContext = 'project';
+    }
+
+    // Platform healing is FREE only for owners
     if (targetContext === 'platform') {
       const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
       const isFreeAccess = user?.isOwner === true;
       
-      console.log(`[ACCESS-TIER] Platform context - userId: ${userId}, isOwner: ${user?.isOwner}, isFreeAccess: ${isFreeAccess}`);
+      if (!isFreeAccess) {
+        console.log(`[ACCESS-TIER] ❌ Platform healing denied - user is not owner (userId: ${userId})`);
+        return res.status(403).json({ error: 'Platform healing requires owner access' });
+      }
       
-      return res.json({ isFreeAccess });
+      console.log(`[ACCESS-TIER] ✅ Platform healing granted - FREE access (userId: ${userId})`);
+      return res.json({ isFreeAccess: true, targetContext: 'platform' });
     }
 
     // All project work is paid (credit billing)
-    console.log(`[ACCESS-TIER] Project context - userId: ${userId}, projectId: ${projectId}, isFreeAccess: false`);
-    return res.json({ isFreeAccess: false });
+    console.log(`[ACCESS-TIER] Project context - PAID billing (userId: ${userId}, projectId: ${projectId})`);
+    return res.json({ isFreeAccess: false, targetContext: 'project' });
   } catch (error: any) {
     console.error('[ACCESS-TIER] Failed to determine access tier:', error);
-    // Default to paid on error (safer)
-    return res.json({ isFreeAccess: false });
+    // Default to paid on error (safer - prevents free access on errors)
+    return res.status(500).json({ error: 'Failed to determine access tier', isFreeAccess: false });
   }
 });
 
@@ -1853,10 +1870,37 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           });
           return null; // Tool execution happens later
         },
-        onComplete: (text: string, usage: any) => {
+        onComplete: async (text: string, usage: any) => {
           // Add any final text block
           if (currentTextBlock && contentBlocks[contentBlocks.length - 1]?.text !== currentTextBlock) {
             contentBlocks.push({ type: 'text', text: currentTextBlock });
+          }
+
+          // ============================================================================
+          // TIER 1 BILLING: Token Tracking & Credit Deduction
+          // ============================================================================
+          if (usage && usage.inputTokens && usage.outputTokens) {
+            try {
+              await TokenTracker.logAndDeduct(
+                {
+                  promptTokens: usage.inputTokens,
+                  candidatesTokens: usage.outputTokens,
+                  totalTokens: usage.inputTokens + usage.outputTokens,
+                },
+                {
+                  userId,
+                  modelUsed: 'gemini-2.5-flash',
+                  requestType: 'CODE_GEN',
+                  targetContext,
+                  projectId: projectId || undefined,
+                  agentRunId,
+                }
+              );
+            } catch (tokenError: any) {
+              console.error('[TOKEN-TRACKER] Failed to track tokens:', tokenError.message);
+              // Non-blocking - log error but continue execution
+              // Future: Could add retry logic or fallback to estimated billing
+            }
           }
         }
         // onError handler already defined above (line 1508) to prevent duplicate property

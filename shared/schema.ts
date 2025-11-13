@@ -970,6 +970,35 @@ export const insertCreditLedgerSchema = createInsertSchema(creditLedger).omit({
 export type InsertCreditLedger = z.infer<typeof insertCreditLedgerSchema>;
 export type CreditLedger = typeof creditLedger.$inferSelect;
 
+// Token Ledger - Production-grade token tracking for Gemini API usage
+export const tokenLedger = pgTable("token_ledger", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  userId: varchar("user_id").notNull(), // Foreign key to users
+  totalTokens: integer("total_tokens").notNull(),
+  promptTokens: integer("prompt_tokens").notNull(),
+  candidatesTokens: integer("candidates_tokens").notNull(),
+  modelUsed: varchar("model_used").notNull(), // 'gemini-2.5-flash' or 'gemini-2.5-pro'
+  requestType: varchar("request_type").notNull(), // 'CODE_GEN', 'RAG_SEARCH', 'SECURITY_SCAN', etc.
+  costUsd: decimal("cost_usd", { precision: 10, scale: 6 }).notNull(),
+  creditsCharged: integer("credits_charged").notNull(),
+  agentRunId: varchar("agent_run_id"), // Optional link to agent session
+  targetContext: varchar("target_context").notNull(), // 'platform' or 'project'
+  projectId: varchar("project_id"), // Nullable for platform healing
+}, (table) => [
+  index("idx_token_ledger_user_id").on(table.userId),
+  index("idx_token_ledger_target_context").on(table.targetContext),
+  index("idx_token_ledger_timestamp").on(table.timestamp),
+]);
+
+export const insertTokenLedgerSchema = createInsertSchema(tokenLedger).omit({
+  id: true,
+  timestamp: true,
+});
+
+export type InsertTokenLedger = z.infer<typeof insertTokenLedgerSchema>;
+export type TokenLedgerEntry = typeof tokenLedger.$inferSelect;
+
 // Agent Runs - Track agent execution state for pause/resume functionality
 export const agentRuns = pgTable("agent_runs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
