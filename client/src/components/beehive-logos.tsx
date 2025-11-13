@@ -1,5 +1,86 @@
 // BeehiveAI Custom SVG Logos - Cyber Bee That Codes
 
+// SimplifiedMobileLogo - Clean, bold logo for mobile marketing
+export function SimplifiedMobileLogo({ 
+  className = "" 
+}: { 
+  className?: string;
+}) {
+  return (
+    <svg 
+      viewBox="0 0 140 40" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg"
+      className={`w-[140px] h-[40px] ${className}`}
+      style={{ maxWidth: '140px', maxHeight: '40px' }}
+    >
+      {/* Hexagon Container - Bold & Simple */}
+      <path 
+        d="M20 4 L32 11 L32 25 L20 32 L8 25 L8 11 Z" 
+        fill="#F7B500" 
+        stroke="#FFD34D" 
+        strokeWidth="2"
+        opacity="0.95"
+      />
+      
+      {/* Stylized Bee Icon - Bold & Minimal */}
+      <g transform="translate(20, 18)">
+        {/* Body - Simple golden ellipse */}
+        <ellipse cx="0" cy="0" rx="4" ry="5" fill="#1a1a1a"/>
+        <ellipse cx="0" cy="0" rx="3.5" ry="4.5" fill="#FFD34D"/>
+        
+        {/* Stripes - Bold & Visible */}
+        <rect x="-3.5" y="-1.5" width="7" height="1.2" rx="0.3" fill="#1a1a1a"/>
+        <rect x="-3.5" y="0.5" width="7" height="1.2" rx="0.3" fill="#1a1a1a"/>
+        
+        {/* Wings - Simple teal shapes */}
+        <ellipse cx="-5" cy="-1" rx="3" ry="2" fill="#00D4B3" opacity="0.9"/>
+        <ellipse cx="5" cy="-1" rx="3" ry="2" fill="#00D4B3" opacity="0.9"/>
+        
+        {/* Head - Simple circle */}
+        <circle cx="0" cy="-6" r="2.5" fill="#1a1a1a"/>
+        <circle cx="0" cy="-6" r="2" fill="#FFD34D"/>
+        
+        {/* Antennae - Bold lines */}
+        <line x1="-1" y1="-8" x2="-1.5" y2="-10" stroke="#1a1a1a" strokeWidth="1" strokeLinecap="round"/>
+        <line x1="1" y1="-8" x2="1.5" y2="-10" stroke="#1a1a1a" strokeWidth="1" strokeLinecap="round"/>
+        <circle cx="-1.5" cy="-10" r="0.8" fill="#00D4B3"/>
+        <circle cx="1.5" cy="-10" r="0.8" fill="#00D4B3"/>
+      </g>
+      
+      {/* Text - Bold & Readable */}
+      <text 
+        x="42" 
+        y="26" 
+        fontFamily="Inter, system-ui, -apple-system, sans-serif" 
+        fontSize="16" 
+        fontWeight="800" 
+        fill="#FFD34D"
+        letterSpacing="-0.5"
+      >
+        BeehiveAI
+      </text>
+      
+      {/* Underline accent */}
+      <path 
+        d="M42 29 L125 29" 
+        stroke="#00D4B3" 
+        strokeWidth="1.5" 
+        strokeLinecap="round"
+        opacity="0.6"
+      />
+      
+      {/* Gradients for depth */}
+      <defs>
+        <linearGradient id="honeyGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FFD34D"/>
+          <stop offset="100%" stopColor="#F7B500"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
 // BeehiveIcon - Cyber Bee Coding at Terminal
 export function BeehiveIcon({ size = 80, className = "" }: { size?: number; className?: string }) {
   return (

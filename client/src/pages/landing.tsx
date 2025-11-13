@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MotionToggle } from "@/components/motion-toggle";
-import { BeehiveLogo } from "@/components/beehive-logos";
+import { BeehiveLogo, SimplifiedMobileLogo } from "@/components/beehive-logos";
 import { 
   Sparkles, Zap, Shield, Code, Rocket, Check, 
   Play, ArrowRight, Hexagon, Menu, DollarSign, LogIn 
@@ -33,9 +33,7 @@ export default function Landing() {
               className="inline-flex items-center hover-elevate rounded-md px-1 py-0.5 sm:px-2 sm:py-1"
             >
               <BeehiveLogo size="default" className="hidden md:block" />
-              <div className="md:hidden max-w-[140px]">
-                <BeehiveLogo size="sm" className="w-full h-auto" />
-              </div>
+              <SimplifiedMobileLogo className="md:hidden" />
             </Link>
             
             {/* Desktop Navigation - Hidden on mobile */}
