@@ -219,16 +219,6 @@ export function UniversalChat({
     }
   }, [chatHistory, isLoadingHistory]);
 
-  // Save message mutation
-  const saveMessageMutation = useMutation<void, Error, { projectId: string | null; role: string; content: string }>({
-    mutationFn: async (data) => {
-      await apiRequest("POST", "/api/lomu-ai/messages", data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/lomu-ai/history', effectiveProjectId] });
-    },
-  });
-
   // Upload image mutation
   const uploadImageMutation = useMutation<{ imageUrl: string }, Error, File>({
     mutationFn: async (file) => {
@@ -658,65 +648,6 @@ export function UniversalChat({
     },
   });
 
-  // Chat mutation - endpoint changes based on target context
-  const chatMutation = useMutation<{ response: string; shouldGenerate?: boolean; command?: string; autonomous?: boolean; checkpoint?: CheckpointData }, Error, { message: string; projectId?: number | string | null; images?: string[]; sessionId: string; targetContext: string }>({
-    mutationFn: async (data) => {
-      const endpoint = targetContext === 'platform' ? '/api/lomu-ai' : '/api/ai-chat-conversation';
-      return await apiRequest<{ response: string; shouldGenerate?: boolean; command?: string; autonomous?: boolean; checkpoint?: CheckpointData }>("POST", endpoint, data);
-    },
-    onSuccess: (data) => {
-      const assistantMessage = {
-        role: "assistant" as const,
-        content: data.response,
-        timestamp: new Date(),
-        checkpoint: data.checkpoint,
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
-
-      streamState.resetState();
-      setProgressStatus('idle');
-      setProgressMessage("");
-      setIsGenerating(false);
-
-      saveMessageMutation.mutate({
-        projectId: targetContext === 'platform' ? null : (projectId || null),
-        role: 'assistant',
-        content: data.response,
-      });
-
-      if (data.shouldGenerate && data.command) {
-        if ((data as any).quotaExceeded) {
-          toast({
-            variant: "destructive",
-            title: "Usage Limit Reached",
-            description: (data as any).limitReason || "You've reached your usage limit. Please upgrade your plan to continue building.",
-            duration: 10000,
-          });
-          return;
-        }
-        
-        if (data.autonomous || isFreeAccess) {
-          executeCommand(data.command);
-        } else {
-          complexityMutation.mutate({ command: data.command });
-        }
-      }
-    },
-    onError: (error) => {
-      streamState.resetState();
-      setProgressStatus('idle');
-      setProgressMessage("");
-      setIsGenerating(false);
-
-      toast({
-        variant: "destructive",
-        title: "Chat Error",
-        description: error.message || "Failed to send message. Please try again.",
-      });
-    },
-  });
-
   const commandMutation = useMutation<
     { commandId: string; result?: any; needsSecrets?: boolean; message?: string; requiredSecrets?: RequiredSecret[]; changes?: { created: string[]; modified: string[]; deleted: string[]; summary: string; } }, 
     Error, 
@@ -895,22 +826,176 @@ export function UniversalChat({
     setCurrentMessageId(messageId);
     localStorage.setItem(`current-message-id`, messageId);
 
-    saveMessageMutation.mutate({
-      projectId: targetContext === 'platform' ? null : (projectId || null),
-      role: 'user',
-      content: input,
-    });
-
-    chatMutation.mutate({
-      message: input,
-      projectId: targetContext === 'platform' ? null : (projectId || null),
-      images: pendingImages.length > 0 ? pendingImages : undefined,
-      sessionId,
-      targetContext,
-    });
-
+    // Clear input immediately for better UX
+    const userMessage = input;
+    const userImages = [...pendingImages];
     setInput("");
     setPendingImages([]);
+
+    // Start SSE streaming
+    setIsGenerating(true);
+    setProgressStatus('thinking');
+    setProgressMessage('Connecting to LomuAI...');
+
+    try {
+      const response = await fetch('/api/lomu-ai/stream', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          message: userMessage,
+          attachments: userImages.length > 0 ? userImages.map(url => ({ url })) : [],
+          sessionId,
+          targetContext,
+          projectId: targetContext === 'platform' ? null : (projectId || null),
+          autoCommit: false,
+          autoPush: false,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      if (!response.body) {
+        throw new Error('No response body received');
+      }
+
+      // Parse SSE stream
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let assistantMessageContent = '';
+      let assistantMessageId = '';
+
+      // Create temporary assistant message for streaming
+      const tempAssistantMessage: Message = {
+        id: nanoid(),
+        role: 'assistant',
+        content: '',
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, tempAssistantMessage]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) {
+          console.log('[SSE] Stream complete');
+          break;
+        }
+
+        // Decode chunk and add to buffer
+        buffer += decoder.decode(value, { stream: true });
+
+        // Process complete SSE messages (end with \n\n)
+        const lines = buffer.split('\n\n');
+        buffer = lines.pop() || ''; // Keep incomplete message in buffer
+
+        for (const line of lines) {
+          if (!line.trim() || line.startsWith(':')) {
+            // Skip empty lines and comments (heartbeat)
+            continue;
+          }
+
+          if (line.startsWith('data: ')) {
+            try {
+              const eventData = JSON.parse(line.substring(6));
+              console.log('[SSE] Event:', eventData.type, eventData);
+
+              switch (eventData.type) {
+                case 'user_message':
+                  assistantMessageId = eventData.messageId;
+                  setProgressMessage('Processing your request...');
+                  break;
+
+                case 'content':
+                  assistantMessageContent += eventData.content || '';
+                  setMessages((prev) => {
+                    const updated = [...prev];
+                    const lastMsg = updated[updated.length - 1];
+                    if (lastMsg && lastMsg.role === 'assistant') {
+                      lastMsg.content = assistantMessageContent;
+                    }
+                    return updated;
+                  });
+                  setProgressStatus('working');
+                  setProgressMessage('Generating response...');
+                  break;
+
+                case 'thinking':
+                  setProgressStatus('thinking');
+                  setProgressMessage(eventData.message || 'Thinking...');
+                  break;
+
+                case 'tool_call':
+                  setProgressStatus('working');
+                  setProgressMessage(`Using tool: ${eventData.tool || 'unknown'}...`);
+                  break;
+
+                case 'run_phase':
+                  setCurrentPhase(eventData.phase || 'working');
+                  setPhaseMessage(eventData.message || '');
+                  break;
+
+                case 'complete':
+                case 'done':
+                  console.log('[SSE] Stream complete event');
+                  setIsGenerating(false);
+                  setProgressStatus('idle');
+                  setProgressMessage('');
+                  
+                  // Refresh chat history to get server-saved messages
+                  queryClient.invalidateQueries({ queryKey: ['/api/lomu-ai/history', effectiveProjectId] });
+                  break;
+
+                case 'error':
+                  console.error('[SSE] Error event:', eventData);
+                  toast({
+                    variant: 'destructive',
+                    title: 'Error',
+                    description: eventData.message || 'An error occurred while processing your request',
+                  });
+                  setIsGenerating(false);
+                  setProgressStatus('idle');
+                  setProgressMessage('');
+                  break;
+
+                default:
+                  // Handle other event types (task_list_created, task_updated, file_change, etc.)
+                  console.log('[SSE] Unhandled event type:', eventData.type);
+              }
+            } catch (parseError) {
+              console.error('[SSE] Failed to parse event:', parseError, line);
+            }
+          }
+        }
+      }
+
+      // Final cleanup
+      setIsGenerating(false);
+      setProgressStatus('idle');
+      setProgressMessage('');
+
+    } catch (error: any) {
+      console.error('[SSE] Stream error:', error);
+      
+      setIsGenerating(false);
+      setProgressStatus('idle');
+      setProgressMessage('');
+
+      toast({
+        variant: 'destructive',
+        title: 'Connection Error',
+        description: error.message || 'Failed to connect to LomuAI. Please try again.',
+      });
+
+      // Remove the temporary assistant message on error
+      setMessages((prev) => prev.filter(msg => msg.content !== ''));
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -1129,7 +1214,7 @@ export function UniversalChat({
         )}
 
         {/* Progress Display Header */}
-        {(isGenerating || chatMutation.isPending) && progressStatus !== 'idle' && (
+        {isGenerating && progressStatus !== 'idle' && (
           <div className="px-4 py-3 border-b border-[hsl(220,15%,28%)] bg-[hsl(220,18%,16%)]">
             <div className="flex items-center justify-between gap-4">
               <div className="flex-1 min-w-0">
@@ -1195,7 +1280,7 @@ export function UniversalChat({
         {/* Task Board */}
         <TaskBoard 
           tasks={streamState.tasks || []}
-          isGenerating={isGenerating || chatMutation.isPending}
+          isGenerating={isGenerating}
           subAgentActive={streamState.subAgentActive}
           className="border-b border-[hsl(220,15%,28%)]" 
         />
@@ -1362,7 +1447,7 @@ export function UniversalChat({
           ))}
 
           {/* Streaming Indicator */}
-          {chatMutation.isPending && streamState.fullMessage && (
+          {isGenerating && streamState.fullMessage && (
             <div className="flex gap-3 items-start">
               <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-secondary text-secondary-foreground shadow-sm border border-border/50">
                 <div className="prose prose-invert max-w-none text-sm leading-relaxed">
@@ -1373,7 +1458,7 @@ export function UniversalChat({
           )}
 
           {/* AI Streaming Indicator */}
-          {chatMutation.isPending && !streamState.fullMessage && (
+          {isGenerating && !streamState.fullMessage && (
             <div className="flex gap-3 items-start">
               <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-muted border border-border">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -1533,26 +1618,26 @@ export function UniversalChat({
                 onPaste={handlePaste}
                 placeholder="Message LomuAI..."
                 className="min-h-[60px] max-h-[200px] resize-none text-base bg-background border-border focus-visible:ring-2 focus-visible:ring-primary/50 rounded-2xl px-4 py-3 pr-12 transition-all"
-                disabled={chatMutation.isPending}
+                disabled={isGenerating}
                 data-testid="input-chat-message"
                 rows={3}
               />
               <div className="absolute bottom-2 right-2">
                 <ChatInputToolbar
                   onImageSelect={handleImageSelect}
-                  disabled={chatMutation.isPending}
+                  disabled={isGenerating}
                 />
               </div>
             </div>
             <Button
               onClick={handleSend}
-              disabled={!input.trim() || chatMutation.isPending}
+              disabled={!input.trim() || isGenerating}
               size="icon"
               variant="default"
               className="flex-shrink-0 h-12 w-12 rounded-full shadow-md hover:shadow-lg transition-all"
               data-testid="button-send-chat"
             >
-              {chatMutation.isPending ? (
+              {isGenerating ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <Send className="w-5 h-5" />
