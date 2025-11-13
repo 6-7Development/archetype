@@ -928,6 +928,7 @@ export const creditWallets = pgTable("credit_wallets", {
   userId: varchar("user_id").primaryKey(), // One wallet per user
   availableCredits: integer("available_credits").notNull().default(0), // Credits ready to use
   reservedCredits: integer("reserved_credits").notNull().default(0), // Credits reserved for active agent runs
+  initialMonthlyCredits: integer("initial_monthly_credits").notNull().default(5000), // User's monthly credit allowance based on subscription tier
   lastTopUpAt: timestamp("last_top_up_at"), // When user last purchased credits
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

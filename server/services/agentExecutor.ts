@@ -2,6 +2,8 @@ import { db } from '../db';
 import { agentRuns, creditWallets } from '@shared/schema';
 import { eq, and } from 'drizzle-orm';
 import { CreditManager } from './creditManager';
+import { createEvent, BillingEstimateData, BillingReconciledData } from '@shared/agentEvents';
+import type { WebSocketServer } from 'ws';
 
 export class AgentExecutor {
   /**
@@ -18,8 +20,10 @@ export class AgentExecutor {
     estimatedOutputTokens?: number;  // NEW: Token estimate for output
     estimatedCredits?: number;       // OLD: Fallback if tokens not provided
     targetContext: 'platform' | 'project'; // NEW: Determine FREE vs PAID
+    wss?: WebSocketServer;           // NEW: For billing event emission
+    sessionId?: string;              // NEW: For billing event correlation
   }): Promise<{ success: boolean; runId?: string; error?: string; creditsReserved?: number }> {
-    const { userId, projectId, estimatedInputTokens, estimatedOutputTokens, estimatedCredits, targetContext } = params;
+    const { userId, projectId, estimatedInputTokens, estimatedOutputTokens, estimatedCredits, targetContext, wss, sessionId } = params;
 
     try {
       // Calculate credits needed based on targetContext
@@ -62,6 +66,8 @@ export class AgentExecutor {
           userId,
           creditsNeeded,
           agentRunId: run.id,
+          wss,
+          sessionId,
         });
 
         if (!reservation.success) {
@@ -69,6 +75,36 @@ export class AgentExecutor {
           await db.delete(agentRuns).where(eq(agentRuns.id, run.id));
           return { success: false, error: reservation.error };
         }
+      }
+
+      // Get current credit balance for billing event
+      const [wallet] = await db
+        .select()
+        .from(creditWallets)
+        .where(eq(creditWallets.userId, userId));
+
+      const currentBalance = wallet ? wallet.availableCredits : 0;
+
+      // Emit billing.estimate event if WebSocket is available
+      if (wss && sessionId) {
+        const { broadcastToUser } = await import('../routes/websocket');
+        const estimateEvent = createEvent<BillingEstimateData>(
+          'billing.estimate',
+          'system',
+          {
+            runId: run.id,
+            sessionId,
+            estimatedInputTokens: estimatedInputTokens || 0,
+            estimatedOutputTokens: estimatedOutputTokens || 0,
+            estimatedCredits: creditsNeeded,
+            estimatedCostUsd: CreditManager.calculateUSDForCredits(creditsNeeded),
+            creditBalance: currentBalance,
+            isFreeAccess: creditsNeeded === 0,
+            initialMonthlyCredits: wallet ? wallet.initialMonthlyCredits : 5000,
+          }
+        );
+        broadcastToUser(wss, userId, estimateEvent);
+        console.log('[AGENT-EXECUTOR] Emitted billing.estimate event');
       }
 
       return { success: true, runId: run.id, creditsReserved: creditsNeeded };
@@ -181,17 +217,29 @@ export class AgentExecutor {
    * Complete agent run and reconcile credits
    * 
    * OVERLOADED: Supports both legacy and new signatures for backward compatibility
-   * - NEW: completeRun({ runId, actualCreditsUsed, source })
+   * - NEW: completeRun({ runId, actualCreditsUsed, source, wss, sessionId, finalInputTokens, finalOutputTokens })
    * - LEGACY: completeRun(runId, creditsUsed) - defaults source to 'lomu_chat'
    */
   static async completeRun(
-    paramsOrRunId: { runId: string; actualCreditsUsed: number; source: 'lomu_chat' | 'architect_consultation' } | string,
+    paramsOrRunId: { 
+      runId: string; 
+      actualCreditsUsed: number; 
+      source: 'lomu_chat' | 'architect_consultation';
+      wss?: WebSocketServer;
+      sessionId?: string;
+      finalInputTokens?: number;
+      finalOutputTokens?: number;
+    } | string,
     creditsUsed?: number
   ): Promise<{ success: boolean; error?: string }> {
     // Backward compatibility: Handle both old (positional) and new (object) signatures
     let runId: string;
     let actualCreditsUsed: number;
     let source: 'lomu_chat' | 'architect_consultation';
+    let wss: WebSocketServer | undefined;
+    let sessionId: string | undefined;
+    let finalInputTokens = 0;
+    let finalOutputTokens = 0;
 
     if (typeof paramsOrRunId === 'string') {
       // LEGACY SIGNATURE: completeRun(runId, creditsUsed)
@@ -200,8 +248,8 @@ export class AgentExecutor {
       source = 'lomu_chat'; // Default source for legacy callers
       console.log('[AGENT-EXECUTOR] Using LEGACY completeRun signature');
     } else {
-      // NEW SIGNATURE: completeRun({ runId, actualCreditsUsed, source })
-      ({ runId, actualCreditsUsed, source } = paramsOrRunId);
+      // NEW SIGNATURE: completeRun({ runId, actualCreditsUsed, source, ... })
+      ({ runId, actualCreditsUsed, source, wss, sessionId, finalInputTokens = 0, finalOutputTokens = 0 } = paramsOrRunId);
       console.log('[AGENT-EXECUTOR] Using NEW completeRun signature');
     }
 
@@ -233,6 +281,37 @@ export class AgentExecutor {
           completedAt: new Date(),
         })
         .where(eq(agentRuns.id, runId));
+
+      // Get updated credit balance for billing event
+      const [wallet] = await db
+        .select()
+        .from(creditWallets)
+        .where(eq(creditWallets.userId, run.userId));
+
+      const newBalance = wallet ? wallet.availableCredits : 0;
+      const creditsRefunded = run.creditsReserved - actualCreditsUsed;
+
+      // Emit billing.reconciled event if WebSocket is available
+      if (wss && sessionId) {
+        const { broadcastToUser } = await import('../routes/websocket');
+        const reconciledEvent = createEvent<BillingReconciledData>(
+          'billing.reconciled',
+          'system',
+          {
+            runId,
+            sessionId,
+            finalInputTokens,
+            finalOutputTokens,
+            creditsReserved: run.creditsReserved,
+            creditsActuallyUsed: actualCreditsUsed,
+            creditsRefunded,
+            finalCostUsd: CreditManager.calculateUSDForCredits(actualCreditsUsed),
+            newCreditBalance: newBalance,
+          }
+        );
+        broadcastToUser(wss, run.userId, reconciledEvent);
+        console.log('[AGENT-EXECUTOR] Emitted billing.reconciled event');
+      }
 
       return { success: true };
     } catch (error: any) {

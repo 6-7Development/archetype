@@ -28,9 +28,10 @@ export interface DeploymentStep {
 }
 
 interface StreamMessage {
-  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'chat-error' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics' | 'heal:init' | 'heal:thought' | 'heal:tool' | 'heal:write-pending' | 'heal:approved' | 'heal:rejected' | 'heal:completed' | 'heal:error' | 'approval_requested' | 'progress' | 'platform_preview_ready' | 'platform_preview_error' | 'lomu_ai_job_update' | 'scratchpad_entry' | 'scratchpad_cleared' | 'deploy.started' | 'deploy.step_update' | 'deploy.complete' | 'deploy.failed';
+  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'chat-error' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics' | 'heal:init' | 'heal:thought' | 'heal:tool' | 'heal:write-pending' | 'heal:approved' | 'heal:rejected' | 'heal:completed' | 'heal:error' | 'approval_requested' | 'progress' | 'platform_preview_ready' | 'platform_preview_error' | 'lomu_ai_job_update' | 'scratchpad_entry' | 'scratchpad_cleared' | 'deploy.started' | 'deploy.step_update' | 'deploy.complete' | 'deploy.failed' | 'billing.estimate' | 'billing.update' | 'billing.reconciled' | 'billing.warning';
   roomId?: string;
   commandId?: string;
+  data?: any;  // Generic data field for billing events
   updateType?: string;
   status?: string;
   message?: string;
@@ -182,6 +183,12 @@ interface StreamState {
     deploymentUrl?: string;
     errorMessage?: string;
   } | null;
+  billing: {
+    estimate?: any;
+    update?: any;
+    reconciled?: any;
+    warnings: any[];
+  };
 }
 
 const MAX_RECONNECT_ATTEMPTS = 5;
@@ -217,6 +224,9 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
     previewError: null,
     scratchpadEntries: [],
     deployment: null,
+    billing: {
+      warnings: [],
+    },
   });
 
   // NEW: State to track heal:* events
@@ -663,6 +673,52 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
                   },
                 };
               });
+              break;
+
+            case 'billing.estimate':
+              console.log('💰 Billing estimate:', message.data);
+              setStreamState(prev => ({
+                ...prev,
+                billing: {
+                  ...prev.billing,
+                  estimate: message.data,
+                  warnings: [], // RESET warnings on new run start
+                },
+              }));
+              break;
+
+            case 'billing.update':
+              console.log('💰 Billing update:', message.data);
+              setStreamState(prev => ({
+                ...prev,
+                billing: {
+                  ...prev.billing,
+                  update: message.data,
+                },
+              }));
+              break;
+
+            case 'billing.reconciled':
+              console.log('💰 Billing reconciled:', message.data);
+              setStreamState(prev => ({
+                ...prev,
+                billing: {
+                  ...prev.billing,
+                  reconciled: message.data,
+                  warnings: [], // CLEAR warnings after run completes
+                },
+              }));
+              break;
+
+            case 'billing.warning':
+              console.log('⚠️ Billing warning:', message.data);
+              setStreamState(prev => ({
+                ...prev,
+                billing: {
+                  ...prev.billing,
+                  warnings: [...prev.billing.warnings, message.data],
+                },
+              }));
               break;
           }
         } catch (error) {

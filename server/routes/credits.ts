@@ -21,6 +21,7 @@ const CREDIT_PACKAGES = {
 };
 
 // Get user credit balance
+// CRITICAL FIX: Now includes initialMonthlyCredits for accurate color coding on first render
 router.get('/balance', isAuthenticated, async (req: any, res) => {
   try {
     const userId = req.authenticatedUserId;
@@ -36,6 +37,7 @@ router.get('/balance', isAuthenticated, async (req: any, res) => {
         available: balance.availableCredits,
         reserved: balance.reservedCredits,
         total: balance.totalCredits,
+        initialMonthlyCredits: balance.initialMonthlyCredits, // ✅ Added for accurate color coding
       },
       usdValue: CreditManager.calculateUSDForCredits(balance.totalCredits),
     });

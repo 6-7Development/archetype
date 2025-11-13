@@ -5,12 +5,24 @@
 
 import { RunPhase, PHASE_EMOJIS, PHASE_MESSAGES } from '@shared/agentEvents';
 import { Badge } from '@/components/ui/badge';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Coins } from 'lucide-react';
+
+export interface BillingMetrics {
+  inputTokens: number;
+  outputTokens: number;
+  creditsUsed: number;
+  creditsReserved: number;
+  creditBalance: number;
+  costUsd: number;
+  isFreeAccess: boolean;
+  initialMonthlyCredits?: number;
+}
 
 interface StatusStripProps {
   phase: RunPhase;
   message?: string;
   isExecuting?: boolean;
+  billingMetrics?: BillingMetrics;
 }
 
 const PHASE_COLORS: Record<RunPhase, string> = {
@@ -21,10 +33,21 @@ const PHASE_COLORS: Record<RunPhase, string> = {
   complete: 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800'
 };
 
-export function StatusStrip({ phase, message, isExecuting = false }: StatusStripProps) {
+export function StatusStrip({ phase, message, isExecuting = false, billingMetrics }: StatusStripProps) {
   const emoji = PHASE_EMOJIS[phase];
   const defaultMessage = PHASE_MESSAGES[phase];
   const displayMessage = message || defaultMessage;
+
+  // Calculate balance percentage for color coding
+  const getBalanceColor = (balance: number, monthlyAllowance: number = 5000) => {
+    // Guard against zero or invalid allowance
+    const safeAllowance = monthlyAllowance > 0 ? monthlyAllowance : 5000;
+    const percentageRemaining = (balance / safeAllowance) * 100;
+    
+    if (percentageRemaining > 50) return 'text-green-600 dark:text-green-400'; // >50% = green
+    if (percentageRemaining > 20) return 'text-yellow-600 dark:text-yellow-400'; // 20-50% = yellow
+    return 'text-red-600 dark:text-red-400'; // <20% = red
+  };
 
   return (
     <div className="flex items-center gap-2 px-3 py-2 bg-card/50 border-b border-border" data-testid="agent-status-strip">
@@ -41,9 +64,59 @@ export function StatusStrip({ phase, message, isExecuting = false }: StatusStrip
         <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" data-testid="status-spinner" />
       )}
       
-      <span className="text-sm text-muted-foreground" data-testid="status-message">
+      <span className="text-sm text-muted-foreground flex-1" data-testid="status-message">
         {displayMessage}
       </span>
+
+      {/* Billing Cost Meter */}
+      {billingMetrics && (
+        <div className="flex items-center gap-3 text-xs" data-testid="billing-cost-meter">
+          {billingMetrics.isFreeAccess ? (
+            <Badge variant="outline" className="bg-green-500/10 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800" data-testid="badge-free-access">
+              <Coins className="h-3 w-3 mr-1" />
+              FREE ACCESS
+            </Badge>
+          ) : (
+            <>
+              {/* Token usage */}
+              {(billingMetrics.inputTokens > 0 || billingMetrics.outputTokens > 0) && (
+                <span className="text-muted-foreground" data-testid="text-token-usage">
+                  <span className="font-mono">{billingMetrics.inputTokens.toLocaleString()}</span>in / 
+                  <span className="font-mono ml-1">{billingMetrics.outputTokens.toLocaleString()}</span>out
+                </span>
+              )}
+
+              {/* Credits used/reserved */}
+              {(billingMetrics.creditsUsed > 0 || billingMetrics.creditsReserved > 0) && (
+                <span className="text-muted-foreground" data-testid="text-credits-used">
+                  <Coins className="h-3 w-3 inline mr-1" />
+                  <span className="font-mono">{billingMetrics.creditsUsed.toLocaleString()}</span>
+                  {billingMetrics.creditsReserved > 0 && (
+                    <>
+                      {' '}/{' '}
+                      <span className="font-mono">{billingMetrics.creditsReserved.toLocaleString()}</span>
+                    </>
+                  )}
+                </span>
+              )}
+
+              {/* Credit balance */}
+              {billingMetrics.creditBalance > 0 && (
+                <span 
+                  className={`font-medium ${getBalanceColor(billingMetrics.creditBalance, billingMetrics.initialMonthlyCredits || 5000)}`}
+                  data-testid="text-credit-balance"
+                >
+                  <span className="font-mono">{billingMetrics.creditBalance.toLocaleString()}</span> credits
+                  {' '}
+                  <span className="text-muted-foreground">
+                    (${billingMetrics.costUsd.toFixed(4)})
+                  </span>
+                </span>
+              )}
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

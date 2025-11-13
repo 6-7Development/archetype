@@ -33,7 +33,11 @@ export type EventType =
   | "deploy.started"
   | "deploy.step_update"
   | "deploy.complete"
-  | "deploy.failed";
+  | "deploy.failed"
+  | "billing.estimate"
+  | "billing.update"
+  | "billing.reconciled"
+  | "billing.warning";
 
 export type Actor = "user" | "agent" | "subagent" | "system";
 
@@ -325,6 +329,54 @@ export interface DeploymentFailedData {
   stepName: string;
   errorMessage: string;
   timestamp: string;
+}
+
+// ============================================================================
+// BILLING EVENTS (T2: Billing Transparency)
+// ============================================================================
+
+export interface BillingEstimateData {
+  runId: string;
+  sessionId: string;
+  estimatedInputTokens: number;
+  estimatedOutputTokens: number;
+  estimatedCredits: number;
+  estimatedCostUsd: number;
+  creditBalance: number;
+  isFreeAccess: boolean;
+  initialMonthlyCredits?: number;
+}
+
+export interface BillingUpdateData {
+  runId: string;
+  sessionId: string;
+  inputTokensDelta: number;  // Tokens since last update
+  outputTokensDelta: number;
+  cumulativeInputTokens: number;
+  cumulativeOutputTokens: number;
+  cumulativeCredits: number;
+  cumulativeCostUsd: number;
+  creditBalance: number;
+}
+
+export interface BillingReconciledData {
+  runId: string;
+  sessionId: string;
+  finalInputTokens: number;
+  finalOutputTokens: number;
+  creditsReserved: number;
+  creditsActuallyUsed: number;
+  creditsRefunded: number;
+  finalCostUsd: number;
+  newCreditBalance: number;
+}
+
+export interface BillingWarningData {
+  level: 'info' | 'warning' | 'critical';
+  threshold: 80 | 90 | 100;
+  percentageUsed: number;
+  creditsRemaining: number;
+  message: string;
 }
 
 // ============================================================================

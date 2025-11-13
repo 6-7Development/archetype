@@ -864,6 +864,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     autoCommit = false, 
     autoPush = false, 
     projectId = null,
+    sessionId,  // Extract sessionId for billing event correlation
     targetContext = (projectId ? 'project' : 'platform') // Auto-detect from projectId if not provided
   } = req.body;
   
@@ -945,6 +946,8 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     estimatedInputTokens,
     estimatedOutputTokens,
     targetContext, // Platform = FREE, Project = PAID
+    wss,  // WebSocket server for billing event emission
+    sessionId,  // Session ID for event correlation
   });
 
   if (!runResult.success) {

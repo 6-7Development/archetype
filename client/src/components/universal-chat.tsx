@@ -46,6 +46,9 @@ interface Message {
   role: "user" | "assistant" | "system";
   content: string;
   timestamp?: Date;
+  id?: string;              // REQUIRED for rendering - prevents crashes
+  messageId?: string;       // REQUIRED for rendering - prevents crashes
+  source?: string;          // Optional - identifies message origin
   progressSteps?: ProgressStep[];
   checkpoint?: CheckpointData;
   isSummary?: boolean;
@@ -119,6 +122,22 @@ export function UniversalChat({
   const [creditBalance, setCreditBalance] = useState<number>(0);
   const [showInsufficientCredits, setShowInsufficientCredits] = useState(false);
   const [isFreeAccess, setIsFreeAccess] = useState<boolean>(false);
+
+  // Billing metrics for real-time cost tracking
+  const [billingMetrics, setBillingMetrics] = useState({
+    inputTokens: 0,
+    outputTokens: 0,
+    creditsUsed: 0,
+    creditsReserved: 0,
+    creditBalance: 0,
+    costUsd: 0,
+    isFreeAccess: false,
+    initialMonthlyCredits: 5000,
+  });
+  const [billingWarnings, setBillingWarnings] = useState<import('@shared/agentEvents').BillingWarningData[]>([]);
+  
+  // ISSUE 2 FIX: Track runId to detect new runs and prevent stale billing data
+  const [currentRunId, setCurrentRunId] = useState<string | null>(null);
 
   // Session ID scoped to project context
   const sessionId = useMemo(() => {
@@ -436,6 +455,165 @@ export function UniversalChat({
       }
     }
   }, [streamState.currentStatus, isFreeAccess]);
+
+  // ISSUE 2 FIX: Reset billing metrics when new run starts (detected by phase change to 'thinking')
+  useEffect(() => {
+    if (currentPhase === 'thinking') {
+      // Only reset if not already at zero (prevents unnecessary resets)
+      setBillingMetrics(prev => {
+        if (prev.creditsUsed > 0 || prev.creditsReserved > 0) {
+          console.log('[BILLING RESET] New run detected via phase change, resetting metrics and warnings');
+          // ISSUE 2 FIX: Also reset warnings on new run
+          setBillingWarnings([]);
+          return {
+            inputTokens: 0,
+            outputTokens: 0,
+            creditsUsed: 0,
+            creditsReserved: 0,
+            creditBalance: prev.creditBalance, // Keep current balance
+            costUsd: 0,
+            isFreeAccess: prev.isFreeAccess, // Keep access tier
+            initialMonthlyCredits: prev.initialMonthlyCredits || 5000, // Keep monthly allowance
+          };
+        }
+        return prev;
+      });
+    }
+  }, [currentPhase]);
+
+  // Handle billing events from existing WebSocket stream
+  // CRITICAL FIX: Track individual fields instead of object reference to ensure ALL updates are processed
+  useEffect(() => {
+    // Handle billing.estimate event
+    if (streamState.billing?.estimate) {
+      const estimateData = streamState.billing.estimate as import('@shared/agentEvents').BillingEstimateData;
+      
+      // ISSUE 1 FIX: Expect runId from backend, log warning if missing
+      const newRunId = (estimateData as any).runId;
+      if (!newRunId) {
+        console.warn('[BILLING] Missing runId in billing.estimate event!', estimateData);
+        return; // Don't process incomplete event
+      }
+      
+      // ISSUE 1 FIX: Detect new run by checking runId change
+      if (newRunId !== currentRunId) {
+        console.log('[BILLING RESET] New run detected via runId change, resetting metrics and warnings');
+        setCurrentRunId(newRunId);
+        
+        // Reset metrics for new run
+        setBillingMetrics({
+          inputTokens: 0,
+          outputTokens: 0,
+          creditsUsed: 0,
+          creditsReserved: estimateData.estimatedCredits,
+          creditBalance: estimateData.creditBalance,
+          costUsd: estimateData.estimatedCostUsd,
+          isFreeAccess: estimateData.isFreeAccess,
+          initialMonthlyCredits: estimateData.initialMonthlyCredits || 5000,
+        });
+        
+        // Reset warnings on new run
+        setBillingWarnings([]);
+      } else {
+        // Same run, just update
+        setBillingMetrics(prev => ({
+          ...prev,
+          creditsReserved: estimateData.estimatedCredits,
+          creditBalance: estimateData.creditBalance,
+          costUsd: estimateData.estimatedCostUsd,
+          isFreeAccess: estimateData.isFreeAccess,
+          initialMonthlyCredits: estimateData.initialMonthlyCredits || prev.initialMonthlyCredits || 5000,
+        }));
+      }
+    }
+    
+    // Handle billing.update event
+    if (streamState.billing?.update) {
+      const updateData = streamState.billing.update as import('@shared/agentEvents').BillingUpdateData;
+      setBillingMetrics(prev => ({
+        ...prev,
+        inputTokens: updateData.cumulativeInputTokens,
+        outputTokens: updateData.cumulativeOutputTokens,
+        creditsUsed: updateData.cumulativeCredits,
+        creditBalance: updateData.creditBalance,
+        costUsd: updateData.cumulativeCostUsd
+      }));
+    }
+    
+    // Handle billing.reconciled event
+    if (streamState.billing?.reconciled) {
+      const reconciledData = streamState.billing.reconciled as import('@shared/agentEvents').BillingReconciledData;
+      
+      // ISSUE 2 FIX: Preserve creditsReserved for post-run cost transparency
+      setBillingMetrics(prev => ({
+        ...prev,
+        inputTokens: reconciledData.finalInputTokens,
+        outputTokens: reconciledData.finalOutputTokens,
+        creditsUsed: reconciledData.creditsActuallyUsed,
+        creditsReserved: reconciledData.creditsReserved, // ✅ PRESERVE reserved credits
+        creditBalance: reconciledData.newCreditBalance,
+        costUsd: reconciledData.finalCostUsd
+      }));
+      
+      console.log('[BILLING RECONCILED] Reserved:', reconciledData.creditsReserved, 
+                  'Used:', reconciledData.creditsActuallyUsed, 
+                  'Refunded:', reconciledData.creditsRefunded);
+    }
+    
+    // Handle billing.warning events
+    if (streamState.billing?.warnings && streamState.billing.warnings.length > billingWarnings.length) {
+      const newWarnings = streamState.billing.warnings.slice(billingWarnings.length);
+      setBillingWarnings(streamState.billing.warnings);
+      
+      newWarnings.forEach((warningData: import('@shared/agentEvents').BillingWarningData) => {
+        // ISSUE 1 FIX: Add system message for warning with ALL required fields
+        const systemMessage = {
+          id: nanoid(),                      // REQUIRED field
+          messageId: nanoid(),               // REQUIRED field
+          role: "system" as const,
+          content: `Warning: ${warningData.message}`,
+          timestamp: new Date(),
+          source: 'billing_warning'          // Optional but recommended
+        };
+        setMessages(prev => [...prev, systemMessage]);
+        
+        // Show modal for critical threshold
+        if (warningData.threshold === 100) {
+          setShowInsufficientCredits(true);
+        }
+        
+        // Toast notification for other thresholds
+        if (warningData.threshold === 80 || warningData.threshold === 90) {
+          toast({
+            variant: warningData.level === 'critical' ? 'destructive' : 'default',
+            title: 'Credit Warning',
+            description: warningData.message,
+            duration: 7000,
+          });
+        }
+      });
+    }
+  }, [
+    // CRITICAL FIX: Track individual billing fields to detect ALL changes, not just object reference
+    streamState.billing?.estimate?.estimatedCredits,
+    streamState.billing?.estimate?.creditBalance,
+    streamState.billing?.estimate?.estimatedCostUsd,
+    streamState.billing?.estimate?.isFreeAccess,
+    streamState.billing?.update?.cumulativeInputTokens,
+    streamState.billing?.update?.cumulativeOutputTokens,
+    streamState.billing?.update?.cumulativeCredits,
+    streamState.billing?.update?.creditBalance,
+    streamState.billing?.update?.cumulativeCostUsd,
+    streamState.billing?.reconciled?.finalInputTokens,
+    streamState.billing?.reconciled?.finalOutputTokens,
+    streamState.billing?.reconciled?.creditsActuallyUsed,
+    streamState.billing?.reconciled?.newCreditBalance,
+    streamState.billing?.reconciled?.finalCostUsd,
+    streamState.billing?.warnings?.length,
+    toast,
+    billingWarnings.length,
+    currentRunId
+  ]);
 
   // Complexity detection mutation (only for non-free access)
   const complexityMutation = useMutation<any, Error, { command: string }>({
@@ -974,6 +1152,7 @@ export function UniversalChat({
             phase={currentPhase}
             message={phaseMessage}
             isExecuting={isGenerating}
+            billingMetrics={billingMetrics}
           />
         )}
 

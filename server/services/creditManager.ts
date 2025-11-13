@@ -1,6 +1,8 @@
 import { db } from '../db';
 import { creditWallets, creditLedger, users, CREDIT_CONSTANTS } from '@shared/schema';
 import { eq, and, sql } from 'drizzle-orm';
+import { createEvent, BillingWarningData } from '@shared/agentEvents';
+import type { WebSocketServer } from 'ws';
 
 export class CreditManager {
   /**
@@ -31,8 +33,10 @@ export class CreditManager {
     userId: string;
     creditsNeeded: number;
     agentRunId: string;
+    wss?: WebSocketServer;
+    sessionId?: string;
   }): Promise<{ success: boolean; error?: string; reservationId?: string }> {
-    const { userId, creditsNeeded, agentRunId } = params;
+    const { userId, creditsNeeded, agentRunId, wss, sessionId } = params;
 
     try {
       // CRITICAL FIX: Atomic UPDATE with balance guard to prevent race conditions
@@ -67,6 +71,67 @@ export class CreditManager {
           success: false,
           error: `Insufficient credits. Need ${creditsNeeded}, have ${wallet.availableCredits}`,
         };
+      }
+
+      // Check balance and emit billing warnings if WebSocket is available
+      if (wss && sessionId) {
+        const updatedWallet = result[0];
+        const remainingCredits = updatedWallet.availableCredits;
+
+        // CRITICAL FIX: Calculate percentage based on user's ACTUAL monthly allowance
+        // This ensures warnings fire at correct thresholds for all subscription tiers
+        const userMonthlyAllowance = updatedWallet.initialMonthlyCredits || 5000; // Fallback to 5000
+        const percentageUsed = ((userMonthlyAllowance - remainingCredits) / userMonthlyAllowance) * 100;
+
+        const { broadcastToUser } = await import('../routes/websocket');
+
+        // Emit appropriate warning based on percentage thresholds
+        if (percentageUsed >= 100) {
+          // 100% threshold - critical (out of credits)
+          const warningEvent = createEvent<BillingWarningData>(
+            'billing.warning',
+            'system',
+            {
+              level: 'critical',
+              threshold: 100,
+              percentageUsed: Math.round(percentageUsed * 10) / 10, // Round to 1 decimal
+              creditsRemaining: remainingCredits,
+              message: 'Critical: You have run out of credits! Please add more credits to continue.',
+            }
+          );
+          broadcastToUser(wss, userId, warningEvent);
+          console.log('[CREDIT-MANAGER] Emitted 100% critical warning');
+        } else if (percentageUsed >= 90) {
+          // 90% threshold - warning
+          const warningEvent = createEvent<BillingWarningData>(
+            'billing.warning',
+            'system',
+            {
+              level: 'warning',
+              threshold: 90,
+              percentageUsed: Math.round(percentageUsed * 10) / 10, // Round to 1 decimal
+              creditsRemaining: remainingCredits,
+              message: `Warning: You have ${remainingCredits} credits remaining (${percentageUsed.toFixed(1)}% used). Consider adding more credits soon.`,
+            }
+          );
+          broadcastToUser(wss, userId, warningEvent);
+          console.log('[CREDIT-MANAGER] Emitted 90% warning');
+        } else if (percentageUsed >= 80) {
+          // 80% threshold - info
+          const warningEvent = createEvent<BillingWarningData>(
+            'billing.warning',
+            'system',
+            {
+              level: 'info',
+              threshold: 80,
+              percentageUsed: Math.round(percentageUsed * 10) / 10, // Round to 1 decimal
+              creditsRemaining: remainingCredits,
+              message: `Info: You have ${remainingCredits} credits remaining (${percentageUsed.toFixed(1)}% used).`,
+            }
+          );
+          broadcastToUser(wss, userId, warningEvent);
+          console.log('[CREDIT-MANAGER] Emitted 80% info warning');
+        }
       }
 
       return { success: true, reservationId: agentRunId };
@@ -165,18 +230,32 @@ export class CreditManager {
       if (!wallet) {
         [wallet] = await db
           .insert(creditWallets)
-          .values({ userId, availableCredits: 0, reservedCredits: 0 })
+          .values({ 
+            userId, 
+            availableCredits: 0, 
+            reservedCredits: 0,
+            initialMonthlyCredits: source === 'monthly_allocation' ? credits : 5000
+          })
           .returning();
       }
 
       // Add credits to available pool
+      // CRITICAL FIX: Set initialMonthlyCredits when doing monthly_allocation
+      // This records the user's subscription tier allowance for accurate percentage calculations
+      const updateData: any = {
+        availableCredits: wallet.availableCredits + credits,
+        lastTopUpAt: source === 'purchase' ? new Date() : wallet.lastTopUpAt,
+        updatedAt: new Date(),
+      };
+      
+      // Update initialMonthlyCredits only for monthly allocations
+      if (source === 'monthly_allocation') {
+        updateData.initialMonthlyCredits = credits;
+      }
+
       await db
         .update(creditWallets)
-        .set({
-          availableCredits: wallet.availableCredits + credits,
-          lastTopUpAt: source === 'purchase' ? new Date() : wallet.lastTopUpAt,
-          updatedAt: new Date(),
-        })
+        .set(updateData)
         .where(eq(creditWallets.userId, userId));
 
       // Log to ledger (positive delta)
@@ -198,11 +277,13 @@ export class CreditManager {
 
   /**
    * Get user's current credit balance
+   * CRITICAL FIX: Now includes initialMonthlyCredits for accurate color coding
    */
   static async getBalance(userId: string): Promise<{
     availableCredits: number;
     reservedCredits: number;
     totalCredits: number;
+    initialMonthlyCredits: number;
   } | null> {
     try {
       const [wallet] = await db
@@ -218,6 +299,7 @@ export class CreditManager {
         availableCredits: wallet.availableCredits,
         reservedCredits: wallet.reservedCredits,
         totalCredits: wallet.availableCredits + wallet.reservedCredits,
+        initialMonthlyCredits: wallet.initialMonthlyCredits || 5000, // Fallback to 5000
       };
     } catch (error: any) {
       console.error('[CREDIT-MANAGER] Error getting balance:', error);
