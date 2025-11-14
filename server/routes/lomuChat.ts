@@ -1167,7 +1167,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       userId,
       sessionId: req.body.sessionId || nanoid(),
       targetContext: 'platform', // Platform healing context
-      projectId: null,
+      projectId: undefined,
     });
     
     // Update session activity
