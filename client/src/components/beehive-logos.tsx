@@ -191,82 +191,120 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
           )}
         </g>
 
-        {/* Wordmark (Beehive AI) - Enhanced with tech details */}
+        {/* Wordmark (Beehive AI) - DRAMATIC HONEYCOMB REDESIGN */}
         {showWordmark && (
-          <g transform={size === "lg" ? "translate(95, 35)" : "translate(45, 15)"}>
-            {/* Decorative Hexagon Elements - Tech accent */}
-            <g opacity="0.3">
-              <path 
-                d={size === "lg" ? "M-8 18 L-6 15 L-4 15 L-2 18 L-4 21 L-6 21 Z" : "M-4 9 L-3 7.5 L-2 7.5 L-1 9 L-2 10.5 L-3 10.5 Z"}
-                stroke="#00D4B3" 
-                strokeWidth="0.8" 
-                fill="none"
-              />
-              <path 
-                d={size === "lg" ? "M186 18 L188 15 L190 15 L192 18 L190 21 L188 21 Z" : "M93 9 L94 7.5 L95 7.5 L96 9 L95 10.5 L94 10.5 Z"}
-                stroke="#FFD34D" 
-                strokeWidth="0.8" 
-                fill="none"
-              />
+          <g transform={size === "lg" ? "translate(75, 35)" : "translate(38, 15)"}>
+            {/* HONEYCOMB PATTERN OVERLAY on letters */}
+            <g opacity="0.25">
+              {/* Hexagons in "B" */}
+              <path d={size === "lg" ? "M8 18 L10 15 L12 15 L14 18 L12 21 L10 21 Z" : "M4 9 L5 7.5 L6 7.5 L7 9 L6 10.5 L5 10.5 Z"} stroke="#00D4B3" strokeWidth={size === "lg" ? "1.5" : "0.8"} fill="none"/>
+              {/* Hexagons in "e" */}
+              <path d={size === "lg" ? "M40 18 L42 15 L44 15 L46 18 L44 21 L42 21 Z" : "M20 9 L21 7.5 L22 7.5 L23 9 L22 10.5 L21 10.5 Z"} stroke="#FFD34D" strokeWidth={size === "lg" ? "1.5" : "0.8"} fill="none"/>
+              {/* Hexagons in "h" */}
+              <path d={size === "lg" ? "M60 18 L62 15 L64 15 L66 18 L64 21 L62 21 Z" : "M30 9 L31 7.5 L32 7.5 L33 9 L32 10.5 L31 10.5 Z"} stroke="#00D4B3" strokeWidth={size === "lg" ? "1.5" : "0.8"} fill="none"/>
+              {/* Hexagons in "v" */}
+              <path d={size === "lg" ? "M100 18 L102 15 L104 15 L106 18 L104 21 L102 21 Z" : "M50 9 L51 7.5 L52 7.5 L53 9 L52 10.5 L51 10.5 Z"} stroke="#FFD34D" strokeWidth={size === "lg" ? "1.5" : "0.8"} fill="none"/>
             </g>
 
-            {/* "Beehive" - Stroke outline for depth */}
+            {/* HONEY DRIP effects on bottom */}
+            <g opacity="0.6">
+              <ellipse cx={size === "lg" ? "15" : "7.5"} cy={size === "lg" ? "48" : "24"} rx={size === "lg" ? "3" : "1.5"} ry={size === "lg" ? "5" : "2.5"} fill="#F7B500"/>
+              <ellipse cx={size === "lg" ? "85" : "42.5"} cy={size === "lg" ? "48" : "24"} rx={size === "lg" ? "3" : "1.5"} ry={size === "lg" ? "5" : "2.5"} fill="#FFD34D"/>
+              <ellipse cx={size === "lg" ? "155" : "77.5"} cy={size === "lg" ? "48" : "24"} rx={size === "lg" ? "3" : "1.5"} ry={size === "lg" ? "5" : "2.5"} fill="#F7B500"/>
+            </g>
+
+            {/* "Beehive" - BOLD stroke outline */}
             <text 
               x="0" 
               y="0" 
               fontSize={wordmarkSize} 
               fontFamily="Inter, system-ui, sans-serif" 
-              fontWeight="800"
-              stroke={`url(#${idPrefix}-honey-stroke)`}
-              strokeWidth={size === "lg" ? "2" : "1"}
+              fontWeight="900"
+              stroke="#1B1D21"
+              strokeWidth={size === "lg" ? "4" : "2"}
               fill="none"
-              letterSpacing="-0.01em"
+              letterSpacing="-0.03em"
+              dominantBaseline="hanging"
+              strokeLinejoin="round"
+            >
+              Beehive
+            </text>
+            
+            {/* "Beehive" - Secondary honey stroke */}
+            <text 
+              x="0" 
+              y="0" 
+              fontSize={wordmarkSize} 
+              fontFamily="Inter, system-ui, sans-serif" 
+              fontWeight="900"
+              stroke={`url(#${idPrefix}-honey-stroke)`}
+              strokeWidth={size === "lg" ? "2.5" : "1.5"}
+              fill="none"
+              letterSpacing="-0.03em"
               dominantBaseline="hanging"
             >
               Beehive
             </text>
             
-            {/* "Beehive" - Main fill with gradient & glow */}
+            {/* "Beehive" - Main fill with RICH gradient */}
             <text 
               x="0" 
               y="0" 
               fontSize={wordmarkSize} 
               fontFamily="Inter, system-ui, sans-serif" 
-              fontWeight="800"
+              fontWeight="900"
               fill={`url(#${idPrefix}-honey)`}
-              letterSpacing="-0.01em"
+              letterSpacing="-0.03em"
               dominantBaseline="hanging"
               filter={`url(#${idPrefix}-text-glow)`}
             >
               Beehive
             </text>
             
-            {/* "Beehive" - Highlight overlay for shine */}
+            {/* "Beehive" - TOP highlight for 3D shine */}
             <text 
               x="0" 
-              y="0" 
+              y={size === "lg" ? "-2" : "-1"} 
               fontSize={wordmarkSize} 
               fontFamily="Inter, system-ui, sans-serif" 
-              fontWeight="800"
-              fill="#FFE17D"
-              fillOpacity="0.4"
-              letterSpacing="-0.01em"
+              fontWeight="900"
+              fill="#FFFFFF"
+              fillOpacity="0.5"
+              letterSpacing="-0.03em"
               dominantBaseline="hanging"
               style={{ mixBlendMode: 'overlay' }}
             >
               Beehive
             </text>
             
-            {/* "AI" - TM-style superscript (50% size, right next to E) */}
+            {/* MINT EDGE ACCENTS on select letters */}
+            <g opacity="0.7">
+              <text 
+                x={size === "lg" ? "48" : "24"} 
+                y="0" 
+                fontSize={wordmarkSize} 
+                fontFamily="Inter, system-ui, sans-serif" 
+                fontWeight="900"
+                stroke="#00D4B3"
+                strokeWidth={size === "lg" ? "1" : "0.5"}
+                fill="none"
+                letterSpacing="-0.03em"
+                dominantBaseline="hanging"
+              >
+                e
+              </text>
+            </g>
+            
+            {/* "AI" - TIGHT superscript right next to E */}
             <text 
-              x={size === "lg" ? 178 : 89} 
-              y={size === "lg" ? -6 : -3} 
-              fontSize={size === "lg" ? 21 : 11} 
+              x={size === "lg" ? "168" : "84"} 
+              y={size === "lg" ? "-8" : "-4"} 
+              fontSize={size === "lg" ? 20 : 10} 
               fontFamily="Inter, system-ui, sans-serif" 
-              fontWeight="700"
+              fontWeight="900"
               fill={`url(#${idPrefix}-mint)`}
               letterSpacing="-0.02em"
-              filter={`url(#${idPrefix}-glow)`}
+              filter={`url(#${idPrefix}-text-glow)`}
             >
               AI
             </text>
