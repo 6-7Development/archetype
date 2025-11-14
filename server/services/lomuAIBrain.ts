@@ -389,6 +389,16 @@ class LomuAIBrain {
       return;
     }
     
+    // Close old WebSocket if exists (prevent duplicate connections)
+    if (session.wsConnection) {
+      console.log(`[BRAIN] 🔄 Closing duplicate WebSocket for session: ${userId}:${sessionId}`);
+      try {
+        session.wsConnection.close(1000, 'Replaced by new connection');
+      } catch (err) {
+        console.error('[BRAIN] Error closing old WebSocket:', err);
+      }
+    }
+    
     session.wsConnection = ws;
     session.wsRoomId = roomId;
     
@@ -396,14 +406,19 @@ class LomuAIBrain {
   }
   
   /**
-   * Unregister WebSocket connection
+   * Unregister WebSocket connection (only if it matches the current connection)
    */
-  unregisterWebSocket(userId: string, sessionId: string): void {
+  unregisterWebSocket(userId: string, sessionId: string, ws?: WebSocket): void {
     const session = this.registry.get(userId, sessionId);
     if (session) {
-      session.wsConnection = undefined;
-      session.wsRoomId = undefined;
-      console.log(`[BRAIN] WebSocket unregistered for session: ${userId}:${sessionId}`);
+      // Only unregister if the WebSocket matches (prevents stale close handlers from wiping active connections)
+      if (!ws || session.wsConnection === ws) {
+        session.wsConnection = undefined;
+        session.wsRoomId = undefined;
+        console.log(`[BRAIN] WebSocket unregistered for session: ${userId}:${sessionId}`);
+      } else {
+        console.log(`[BRAIN] Ignoring unregister for stale WebSocket: ${userId}:${sessionId}`);
+      }
     }
   }
   

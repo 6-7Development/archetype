@@ -18,6 +18,7 @@ import { createTaskList, updateTask, readTaskList } from '../tools/task-manageme
 import { performDiagnosis } from '../tools/diagnosis.ts';
 import { startSubagent } from '../subagentOrchestration.ts';
 import { parallelSubagentQueue } from '../services/parallelSubagentQueue.ts';
+import { lomuAIBrain } from '../services/lomuAIBrain.ts';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { exec } from 'child_process';
@@ -27,7 +28,7 @@ import { sanitizeDiagnosisForAI } from '../lib/diagnosis-sanitizer.ts';
 import { filterToolCallsFromMessages } from '../lib/message-filter.ts';
 import type { WebSocketServer } from 'ws';
 import { broadcastToUser } from './websocket.ts';
-import { getOrCreateState, autoUpdateFromMessage, formatStateForPrompt, updateCodeScratchpad, getCodeScratchpad, clearCodeScratchpad, clearState, estimateConversationTokens, summarizeOldMessages } from '../services/conversationState.ts';
+import { getOrCreateState, formatStateForPrompt, updateCodeScratchpad, getCodeScratchpad, clearCodeScratchpad, clearState, estimateConversationTokens, summarizeOldMessages } from '../services/conversationState.ts';
 import { agentFailureDetector } from '../services/agentFailureDetector.ts';
 import { classifyUserIntent, getMaxIterationsForIntent, type UserIntent } from '../shared/chatConfig.ts';
 import { validateFileChanges, FileChangeTracker } from '../services/validationHelpers.ts';
@@ -1161,7 +1162,19 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     sendEvent('user_message', { messageId: userMsg.id });
 
-    // 🎯 CONVERSATION STATE: Get or create state for context tracking
+    // 🎯 LOMU BRAIN: Get or create session for unified session management
+    const session = await lomuAIBrain.getOrCreateSession({
+      userId,
+      sessionId: req.body.sessionId || nanoid(),
+      targetContext: 'platform', // Platform healing context
+      projectId: null,
+    });
+    
+    // Update session activity
+    lomuAIBrain.touchSession(userId, session.sessionId);
+    
+    // Get conversation state for backward compatibility with existing code
+    // Brain tracks session, but we still use conversationState for some DB operations
     conversationState = await getOrCreateState(userId, null);
 
     // 🔍 GAP 3: TRACE LOGGING - Start trace for this conversation
@@ -1232,9 +1245,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       return;
     }
 
-    // Auto-update state from user message (extract goals and files)
-    await autoUpdateFromMessage(conversationState.id, message);
-    console.log('[CONVERSATION-STATE] Updated from user message:', conversationState.id);
+    // Brain automatically tracks mentioned files when you call trackFileModified
+    // No need for autoUpdateFromMessage - brain handles this internally
+    console.log('[LOMU-BRAIN] Session active:', session.sessionId);
 
     // Intent classifier: Detect if user wants brief answer or work
     const classifyIntent = (message: string): 'question' | 'task' | 'status' => {
@@ -2163,6 +2176,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 creditsActuallyUsed // Credits from reconciliation
               );
               
+              // 4. Track tokens in LomuAI Brain for session management
+              await lomuAIBrain.recordTokens(userId, session.sessionId, usage.inputTokens, usage.outputTokens);
+              
               console.log(`[BILLING] ✅ Reconciliation complete - ${creditsActuallyUsed} credits charged`);
             } else {
               // FALLBACK: Missing usage metadata - reconcile with 0 credits to avoid stuck reservations
@@ -2260,6 +2276,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
             throw new Error(errorMsg);
           }
           console.log(`[EMERGENCY-BRAKE] Tool call ${toolCallsThisIteration}/${EMERGENCY_LIMITS.MAX_TOOL_CALLS_PER_ITERATION} this iteration`);
+          
+          // 🧠 BRAIN TRACKING: Record tool call start
+          const toolCallId = lomuAIBrain.recordToolCall(userId, session.sessionId, name, input);
 
           // 🎯 SYSTEMATIC TASK ENFORCEMENT: Ensure AI works through tasks in order
           // This prevents jumping between tasks and enforces sequential execution
@@ -2594,6 +2613,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
               // 📡 LIVE PREVIEW: Broadcast file update to connected clients with context
               broadcastFileUpdate(typedInput.path, 'modify', targetContext, projectId, userId);
+              
+              // 🧠 BRAIN TRACKING: Track file modification
+              lomuAIBrain.trackFileModified(userId, session.sessionId, typedInput.path);
 
               toolResult = `✅ File staged for commit (use commit_to_github to batch all changes)`;
               console.log(`[LOMU-AI] ✅ File staged for batch commit: ${typedInput.path}`);
@@ -2737,6 +2759,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                     
                     // Update existing file
                     await storage.updateFile(targetFile.id, targetFile.userId, typedInput.content);
+                    
+                    // 🧠 BRAIN TRACKING: Track file modification
+                    lomuAIBrain.trackFileModified(userId, session.sessionId, validatedPath);
+                    
                     toolResult = `✅ File updated: ${validatedPath}`;
                     sendEvent('file_change', { file: { path: validatedPath, operation: 'modify' } });
                   } else {
@@ -2810,6 +2836,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                       content: typedInput.content,
                       language,
                     });
+                    
+                    // 🧠 BRAIN TRACKING: Track file modification
+                    lomuAIBrain.trackFileModified(userId, session.sessionId, validatedPath);
 
                     toolResult = `✅ File created: ${validatedPath}`;
                     sendEvent('file_change', { file: { path: validatedPath, operation: 'create' } });
@@ -3151,6 +3180,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
               // 📡 LIVE PREVIEW: Broadcast file update to connected clients with context
               broadcastFileUpdate(typedInput.path, 'create', targetContext, projectId, userId);
+              
+              // 🧠 BRAIN TRACKING: Track file modification
+              lomuAIBrain.trackFileModified(userId, session.sessionId, typedInput.path);
 
               toolResult = `✅ File created successfully`;
               console.log(`[LOMU-AI] ✅ File created autonomously: ${typedInput.path}`);
@@ -3684,6 +3716,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               tool_use_id: id,
               content: toolResult || 'Success',
             });
+            
+            // 🧠 BRAIN TRACKING: Record tool call completion
+            lomuAIBrain.completeToolCall(userId, session.sessionId, toolCallId, toolResult);
 
             // 💬 CONVERSATIONAL: Stream friendly text AFTER tool execution
             const postMessage = getPostToolMessage(name, toolResult || '');
@@ -3707,6 +3742,14 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 is_error: true,
                 content: errorMessage,
               });
+              
+              // 🧠 BRAIN TRACKING: Record tool call failure (mark toolCall as failed but don't track session yet)
+              // Note: toolCallId may not be defined if error occurred before recordToolCall
+              try {
+                lomuAIBrain.completeToolCall(userId, session.sessionId, toolCallId, { error: errorMessage });
+              } catch (brainError: any) {
+                console.warn('[BRAIN] Failed to complete tool call tracking:', brainError.message);
+              }
 
               // 💬 CONVERSATIONAL: Stream friendly text AFTER tool error
               const errorPostMessage = getPostToolMessage(name, errorMessage);

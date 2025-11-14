@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "../storage";
+import { lomuAIBrain } from "../services/lomuAIBrain";
 
 export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSocketServer } {
   // Create HTTP server
@@ -9,9 +10,6 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
 
   // Setup WebSocket server
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
-
-  // Track active sessions to prevent duplicates
-  const activeSessions = new Map<string, any>();
 
   console.log('📡 WebSocket server initialized at /ws');
 
@@ -48,19 +46,17 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
           ws.userId = data.userId || 'anonymous';
           ws.sessionId = data.sessionId;
           
-          // Prevent duplicate sessions - close old connection if exists
-          const existingSession = activeSessions.get(ws.sessionId);
-          if (existingSession) {
-            console.log(`[WS] 🔄 Closing duplicate session: ${ws.sessionId}`);
-            try {
-              existingSession.close(1000, 'Replaced by new connection');
-            } catch (err) {
-              console.error('[WS] Error closing old session:', err);
-            }
-          }
+          // Get or create session in brain (must create to register WebSocket)
+          const session = await lomuAIBrain.getOrCreateSession({
+            userId: ws.userId,
+            sessionId: ws.sessionId,
+            targetContext: data.targetContext || 'project',
+            projectId: data.projectId,
+          });
           
-          // Now register the new session
-          activeSessions.set(ws.sessionId, ws);
+          // Register WebSocket connection with brain
+          lomuAIBrain.registerWebSocket(ws.userId, ws.sessionId, ws, `project_${ws.sessionId}`);
+          
           console.log(`📡 [WS] Session registered: userId=${ws.userId}, sessionId=${ws.sessionId}`);
           
           // Send confirmation
@@ -87,13 +83,12 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
     });
 
     ws.on('close', () => {
-      console.log(`❌ WebSocket client disconnected${ws.userId ? ` (user: ${ws.userId})` : ''}`);
-      
-      // Clean up session from activeSessions Map
-      if (ws.sessionId && activeSessions.get(ws.sessionId) === ws) {
-        activeSessions.delete(ws.sessionId);
-        console.log(`[WS] 🧹 Cleaned up session: ${ws.sessionId}`);
+      // Unregister WebSocket from brain (pass ws instance to prevent stale unregister)
+      if (ws.userId && ws.sessionId) {
+        lomuAIBrain.unregisterWebSocket(ws.userId, ws.sessionId, ws);
       }
+      
+      console.log(`❌ WebSocket client disconnected${ws.userId ? ` (user: ${ws.userId})` : ''}`);
     });
 
     ws.on('error', (error: Error) => {
