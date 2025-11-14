@@ -381,6 +381,8 @@ If you need to call a function, emit ONLY the JSON object.`),
         maxOutputTokens: Math.max(maxTokens, 16000), // ⚠️ CRITICAL: Prevent truncated JSON (external advice: "silent killer")
         temperature: 0.0, // ZERO randomness for function calling (external advice: 0.0-0.3)
         topP: 0.8,        // Slightly reduced randomness for consistency
+        // ✅ ARCHITECT FIX: Force JSON-only channel to prevent Python-style hallucinations
+        responseMimeType: "application/json", // Prevents Gemini from using print(api.fn()) syntax
         // ✅ GEMINI BEST PRACTICE: Enable dynamic thinking for optimal performance
         // ✅ GAP 1 FIX: Enable thought visibility (Gemini's recommendation)
         thinkingConfig: {
@@ -402,7 +404,8 @@ If you need to call a function, emit ONLY the JSON object.`),
       
       requestParams.toolConfig = {
         functionCallingConfig: {
-          mode: 'ANY', // ✅ FORCE tool calling (not optional)
+          // ✅ ARCHITECT FIX: Removed mode: 'ANY' - clashes with responseMimeType
+          // Default behavior already allows tool calls, responseMimeType enforces JSON
           allowedFunctionNames: functionNames, // ✅ BE EXPLICIT about what's allowed
         }
       };

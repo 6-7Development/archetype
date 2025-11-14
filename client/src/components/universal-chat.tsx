@@ -21,7 +21,6 @@ import { nanoid } from "nanoid";
 import CostPreview from "@/components/cost-preview";
 import { ChangesPanel } from "@/components/changes-panel";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
-import { TaskBoard } from "@/components/task-board";
 import { AgentTaskList, type AgentTask } from "@/components/agent-task-list";
 import { AgentProgressDisplay } from "@/components/agent-progress-display";
 import { ChatInputToolbar } from "@/components/ui/chat-input-toolbar";
@@ -31,7 +30,6 @@ import { ScratchpadDisplay } from "@/components/scratchpad-display";
 import { ArchitectNotesPanel } from "@/components/architect-notes-panel";
 import { DeploymentStatusModal } from "@/components/deployment-status-modal";
 import { StatusStrip } from "@/components/agent/StatusStrip";
-import { TaskPane } from "@/components/agent/TaskPane";
 import { ArtifactsDrawer, type Artifact as ArtifactItem } from "@/components/agent/ArtifactsDrawer";
 import type { RunPhase } from "@shared/agentEvents";
 
@@ -110,7 +108,6 @@ export function UniversalChat({
   const [currentPhase, setCurrentPhase] = useState<RunPhase>('complete');
   const [phaseMessage, setPhaseMessage] = useState<string>('');
   const [artifacts, setArtifacts] = useState<ArtifactItem[]>([]);
-  const [showTaskPane, setShowTaskPane] = useState(false);
   const [showArtifactsDrawer, setShowArtifactsDrawer] = useState(false);
   const [thoughts, setThoughts] = useState<Array<{id: string, content: string, timestamp: number}>>([]);
   const [isThoughtPanelOpen, setIsThoughtPanelOpen] = useState(false);
@@ -1213,20 +1210,15 @@ export function UniversalChat({
           </div>
         )}
 
-        {/* Progress Display Header */}
-        {isGenerating && progressStatus !== 'idle' && (
+        {/* Progress Display Header - Only show when no task list exists */}
+        {isGenerating && progressStatus !== 'idle' && agentTasks.length === 0 && (
           <div className="px-4 py-3 border-b border-[hsl(220,15%,28%)] bg-[hsl(220,18%,16%)]">
             <div className="flex items-center justify-between gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <h2 className="text-sm font-semibold text-[hsl(220,8%,98%)] truncate">
-                    {agentTasks.find(t => t.id === activeTaskId)?.title || 'Working...'}
+                    Working...
                   </h2>
-                  {agentTasks.length > 0 && (
-                    <span className="text-xs text-[hsl(220,10%,72%)] shrink-0">
-                      {agentTasks.filter(t => t.status === 'completed').length}/{agentTasks.length}
-                    </span>
-                  )}
                 </div>
                 <AgentProgressDisplay status={progressStatus} message={progressMessage} />
               </div>
@@ -1267,8 +1259,8 @@ export function UniversalChat({
           />
         )}
 
-        {/* AI Progress */}
-        {(currentProgress.length > 0 || isGenerating) && (
+        {/* AI Progress - Only show when no task list exists */}
+        {(currentProgress.length > 0 || isGenerating) && agentTasks.length === 0 && (
           <div className="px-6 pt-4 pb-2 bg-[hsl(220,18%,16%)] border-b border-[hsl(220,15%,28%)]">
             <AgentProgress
               steps={currentProgress}
@@ -1276,14 +1268,6 @@ export function UniversalChat({
             />
           </div>
         )}
-
-        {/* Task Board */}
-        <TaskBoard 
-          tasks={streamState.tasks || []}
-          isGenerating={isGenerating}
-          subAgentActive={streamState.subAgentActive}
-          className="border-b border-[hsl(220,15%,28%)]" 
-        />
 
         {/* Copy Chat History Button */}
         {messages.length > 1 && (
@@ -1650,38 +1634,6 @@ export function UniversalChat({
       {/* Scratchpad Sidebar */}
       <div className="w-80 border-l border-[hsl(220,15%,28%)] hidden lg:block overflow-hidden flex flex-col" data-testid="scratchpad-panel">
         <div className="p-4 space-y-4 overflow-y-auto flex-1">
-          {/* Task Pane */}
-          {agentTasks.length > 0 && (
-            <Collapsible open={showTaskPane} onOpenChange={setShowTaskPane}>
-              <CollapsibleTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-between p-2 h-auto"
-                  data-testid="button-toggle-task-pane"
-                >
-                  <span className="text-sm font-medium">Tasks ({agentTasks.length})</span>
-                  {showTaskPane ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <TaskPane 
-                  tasks={agentTasks.map(t => ({
-                    id: t.id,
-                    title: t.title,
-                    status: t.status === 'completed' ? 'done' : 
-                            t.status === 'in_progress' ? 'in_progress' : 
-                            t.status === 'failed' ? 'blocked' : 'backlog',
-                    owner: 'agent' as const,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                    verification: undefined,
-                    artifacts: []
-                  }))}
-                />
-              </CollapsibleContent>
-            </Collapsible>
-          )}
-
           {/* Artifacts Drawer */}
           {artifacts.length > 0 && (
             <Collapsible open={showArtifactsDrawer} onOpenChange={setShowArtifactsDrawer}>

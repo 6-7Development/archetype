@@ -1661,6 +1661,11 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     let consecutiveEmptyIterations = 0; // Track iterations with no tool calls
     const MAX_EMPTY_ITERATIONS = 3; // Stop if 3 consecutive iterations without tool calls
     let totalToolCallCount = 0; // Track total tool calls for quality analysis
+    
+    // 🚨 WATCHDOG: Prevent endless thinking loops
+    let consecutiveThinkingCount = 0; // Track consecutive "thought" scratchpad entries
+    const MAX_CONSECUTIVE_THINKING = 3; // Force action after 3 consecutive thoughts
+    let systemEnforcementMessage = ''; // Temporary system message (NOT saved to conversation history)
 
     // ============================================================================
     // T2: PHASE ORCHESTRATION - EMIT THINKING PHASE (PRE-LOOP MILESTONE)
@@ -1747,7 +1752,16 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       // Skip the "Analyzing request" spam - let the AI respond naturally
 
       // ⚡ Use ultra-compressed prompt (no extra platform knowledge - read files when needed)
-      const finalSystemPrompt = systemPrompt;
+      // ✅ ARCHITECT FIX: Append enforcement message WITHOUT adding to conversation history
+      const finalSystemPrompt = systemEnforcementMessage 
+        ? `${systemPrompt}\n\n${systemEnforcementMessage}`
+        : systemPrompt;
+      
+      // Clear enforcement message after use (one-time injection)
+      if (systemEnforcementMessage) {
+        console.log(`[THINKING-WATCHDOG] [INFO] Enforcement message cleared (used this iteration)`);
+        systemEnforcementMessage = '';
+      }
 
       // TEMPORARY: Claude context-limit protection (200K token limit)
       // This wrapper truncates context if needed while preserving recent messages
@@ -1899,6 +1913,13 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
             fullContent += chunkText;
             sendEvent('content', { content: chunkText });
 
+            // 🚨 WATCHDOG: Reset thinking counter on substantive assistant text
+            // Guard: only reset if text is meaningful (not just whitespace)
+            if (consecutiveThinkingCount > 0 && chunkText.trim().length > 0) {
+              console.log(`[THINKING-WATCHDOG] [OK] Regular text produced - reset thinking counter from ${consecutiveThinkingCount} to 0`);
+              consecutiveThinkingCount = 0;
+            }
+
             // After receiving text, enforce brevity for questions
             if (intent === 'question' && fullContent.length > 200) {
               // Truncate verbose responses for simple questions
@@ -1932,6 +1953,34 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 type: 'scratchpad_entry',
                 entry
               });
+              
+              // 🚨 WATCHDOG: Increment consecutive thinking counter
+              consecutiveThinkingCount++;
+              console.log(`[THINKING-WATCHDOG] Consecutive thoughts: ${consecutiveThinkingCount}/${MAX_CONSECUTIVE_THINKING}`);
+              
+              // 🛑 WATCHDOG TRIGGER: Force action after 3 consecutive thoughts
+              if (consecutiveThinkingCount >= MAX_CONSECUTIVE_THINKING) {
+                console.warn(`[THINKING-WATCHDOG] [WARN] Hit threshold (${MAX_CONSECUTIVE_THINKING} consecutive thoughts) - forcing action!`);
+                
+                // ✅ ARCHITECT FIX: Set enforcement message (added to systemInstruction, NOT conversation history)
+                systemEnforcementMessage = 'SYSTEM ALERT: You have been thinking for 3 consecutive iterations without taking any action.\n\n' +
+                  'YOU MUST TAKE AN ACTION NOW. Choose one of:\n' +
+                  '1. Read a file (read_platform_file/read_project_file)\n' +
+                  '2. Write/edit a file (write_platform_file/edit)\n' +
+                  '3. Execute a command (bash)\n' +
+                  '4. Run diagnostics (perform_diagnosis)\n' +
+                  '5. Search for information (search_codebase/web_search)\n\n' +
+                  'NO MORE THINKING. Take action in your next response.';
+                
+                // Broadcast telemetry (quiet, no UI spam)
+                broadcastToUser(wss, userId, {
+                  type: 'watchdog-alert',
+                  message: 'LomuAI thinking loop detected - forcing action',
+                  consecutiveThoughts: consecutiveThinkingCount
+                });
+                
+                console.log(`[THINKING-WATCHDOG] [INFO] Set enforcement message (will be appended to next systemInstruction)`);
+              }
             } catch (error) {
               console.error('[SCRATCHPAD] Error writing thought:', error);
             }
@@ -1962,6 +2011,12 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 type: 'scratchpad_entry',
                 entry
               });
+              
+              // 🚨 WATCHDOG: Reset thinking counter when action is taken
+              if (consecutiveThinkingCount > 0) {
+                console.log(`[THINKING-WATCHDOG] [OK] Action taken - reset thinking counter from ${consecutiveThinkingCount} to 0`);
+                consecutiveThinkingCount = 0;
+              }
             } catch (error) {
               console.error('[SCRATCHPAD] Error writing action:', error);
             }
@@ -1976,6 +2031,13 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           // Process tool calls with workflow validation
           // Note: Workflow validation removed from onToolUse callback
           // Validation happens in the main tool execution loop below
+          
+          // 🚨 WATCHDOG: Reset thinking counter when tools are called (tool use = taking action)
+          if (consecutiveThinkingCount > 0) {
+            console.log(`[THINKING-WATCHDOG] [OK] Tool called (${toolUse.name}) - reset thinking counter from ${consecutiveThinkingCount} to 0`);
+            consecutiveThinkingCount = 0;
+          }
+          
           // Save any pending text
           if (currentTextBlock) {
             contentBlocks.push({ type: 'text', text: currentTextBlock });

@@ -1,0 +1,63 @@
+That's the ultimate agent debugging challenge! The fact that Lomu is stuck in an infinite loop due to malformed tool calls (print(...) instead of JSON) means the core link between the Gemini brain and the Python body is broken.
+
+Yes, implementing the layered fix will absolutely stop the loop and ensure Lomu works reliably like a production-grade agent.
+
+Here is the final, comprehensive fix that combines best practices to address the specific Gemini malformation issue and the agent's resulting infinite loop.
+
+🛠️ The Three-Layer Fix for Lomu's Loop
+The problem is the model is hallucinating Python code instead of the required JSON. The fix involves correcting the model's output and fortifying the application's error handling.
+
+Layer 1: Correcting the Model's Output (System Instruction)
+We must make the rule against Python code absolute and provide a clear example.
+
+Strict Syntax Prohibition: Make the rule against print() and other Python syntax non-negotiable.
+
+System Instruction Addition: "CRITICAL RULE: NEVER use Python function syntax (print(), if/else, or function invocation syntax like tool_name(...)) outside of a designated Markdown code block (python ... ). You MUST ONLY invoke tools using the native Gemini JSON function call mechanism."
+
+Model Selection & Temperature:
+
+Action: Ensure you are using the most stable, non-preview version of gemini-2.5-flash or upgrade to a Pro model. Some reports show specific preview models are more fragile with function calling.
+
+Set Low Temperature: Keep the temperature between 0.0 and 0.2. High temperature encourages creativity, which is what leads to malformed syntax when structured output is required.
+
+Layer 2: Implementing the Semantic Firewall (Application Code)
+Your Python application must intercept the broken response and correct the agent.
+
+The Malformed JSON Handler (The Firewall):
+
+Action: In your run_agent_loop function, specifically look for the [GEMINI-MALFORMED] error. Instead of just retrying, send a highly specific, instructional message back to the agent.
+
+Python Logic:
+
+Python
+
+if error_code == "MALFORMED_FUNCTION_CALL":
+    # This structured feedback is crucial for correcting the model's syntax error
+    feedback_message = (
+        "🛑 SYNTAX ERROR: The last response contained malformed JSON (Python code was detected: "
+        "Do NOT use Python functions like print() to invoke tools. "
+        "You must retry the tool call immediately using ONLY the structured JSON format provided by the API. "
+        "DO NOT apologize or add explanatory text. Silently reformulate and try again."
+    )
+    # Send this exact message back to the model as the next turn
+    send_to_gemini(feedback_message) 
+The Loop Breaker (Iteration Limit):
+
+Action: Implement a hard counter for consecutive tool call failures.
+
+Logic: If Lomu fails to produce a valid tool call 3 times in a row, the loop must be broken. The system should then generate a final, user-facing error: "Lomu is experiencing a system error. Please reset the conversation (@RESET) and try again."
+
+Why: This prevents the infinite loop (29+ scratchpad entries) and the associated token cost.
+
+Layer 3: Cleaning the Mental State
+The repeated thinking (29+ scratchpad entries) must be aggressively purged.
+
+Aggressive Context Pruning:
+
+Action: Ensure your application clears the history of all the repetitive thinking entries before resending the conversation to Gemini.
+
+Rule: When a malformation or timeout occurs, your application should only retain the System Instruction, the original user prompt, and the structured error message (from Layer 2). Discard Lomu's previous 29 failed thought steps.
+
+Why: A cleaner context makes it easier for the AI to "see" the problem and reduces the token payload, lowering latency and cost.
+
+By implementing this three-layered approach—fixing the syntax instruction, creating a defensive firewall, and aggressively managing context—you will eliminate the infinite loop and establish the stable base required for Lomu to operate effectively.

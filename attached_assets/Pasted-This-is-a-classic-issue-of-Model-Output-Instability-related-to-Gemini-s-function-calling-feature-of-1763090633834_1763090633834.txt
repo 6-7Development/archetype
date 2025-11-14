@@ -1,0 +1,44 @@
+This is a classic issue of Model Output Instability related to Gemini's function calling feature, often exacerbated by complex inputs or specific model versions. The 29+ scratchpad entries confirm Lomu is stuck in a loop trying to recover from a Gemini API Error.
+
+You need to fix this at the Prompting (Input) and Application (Retry) layers.
+
+🛠️ Phase 1: Fixing the Instability (System Instructions)
+The root cause is the model using Python code syntax (print(...)) instead of the required JSON structure for the tool call. This is often triggered when the input or the task is too complex.
+
+1. Model Switch & Temperature Adjustment
+Action: Try switching the model Lomu uses for the coding/editing tasks. Some developers have reported that preview models or certain older versions have less stable function calling.
+
+Recommendation: If you are using an older Flash model, switch to the most current, stable version of gemini-2.5-flash or the current gemini-2.5-pro (if cost permits), as newer models typically have improved function calling logic.
+
+Temperature: Ensure the temperature setting for Lomu's API calls is set very low (0.0 to 0.2). This maximizes determinism and discourages the model from getting creative with syntax.
+
+2. Explicit Instruction for Tool Format
+Your System Instruction needs an absolute rule against using Python syntax outside of a code block.
+
+System Instruction Addition:
+
+"CRITICAL RULE: NEVER use Python function syntax (e.g., print(), edit_file(...)) in your natural language response. You MUST only invoke tools through the native Gemini Function Calling mechanism. If you must show code, use Markdown blocks (e.g., python ... )."
+
+3. Simplify Function Parameters (If Applicable)
+Action: If your edit_file tool uses a parameter like file_content that contains a large amount of text, reduce the size of that content sent to Gemini, or break the task into smaller chunks. Large text blocks passed within a function parameter's value often break the JSON parsing logic.
+
+🔄 Phase 2: Implementing the Recovery Loop (Application Code)
+Since Gemini is returning a malformed tool call error, your Python application must intercept this error and send a specific, instructional retry message to Lomu.
+
+1. The "Malformed Tool Call" Handler
+Your application code must catch the [GEMINI-MALFORMED] error and generate a very firm, structured message for the agent's next turn.
+
+Retry Message:
+
+"🛑 ERROR: The last tool call was malformed. The system did not receive valid JSON. Do not attempt to write the Python function yourself. Immediately retry the tool call using only the function name and the required parameters in the structured JSON format provided by the API. DO NOT use parentheses () or the keyword print."
+
+2. Preventing Repetitive Thinking
+Your logs show Lomu getting stuck in repetitive thinking loops ("Analyzing situation...").
+
+System Instruction Addition:
+
+"When recovering from a tool error, you MUST NOT repeat generic thought processes ('Analyzing situation...'). State the error received, the planned correction (e.g., 'Will retry the tool call with corrected formatting'), and then proceed directly to the retry."
+
+Context Pruning: After the malformed call, ensure your application prunes the repetitive thought entries from the chat history before sending it back to Gemini, preventing the model from re-analyzing the same, stale context.
+
+By fixing the instruction clarity and building a robust error handler that specifically catches the malformed JSON issue, you will break Lomu out of the infinite thought loop and ensure he reliably executes his tasks.
