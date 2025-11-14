@@ -79,6 +79,22 @@ The platform uses a **single UniversalChat component** (`client/src/components/u
 - **Backward Compatible**: Auto-detects context from projectId when not explicitly provided.
 This architecture maintains identical Agent Chatroom UX across both contexts while providing clean separation of access, billing, and codebase targeting.
 
+**Unified LomuAI Brain:**
+The platform features a **centralized session management system** (`server/services/lomuAIBrain.ts`) that consolidates all scattered session logic:
+- **Hybrid Architecture**: In-memory `ActiveSessionRegistry` for hot paths + `PersistenceAdapter` for database durability
+- **Session Isolation**: Composite key pattern `${userId}:${sessionId}` ensures complete separation between users and sessions
+- **Single Source of Truth**: Consolidates conversation state, tool execution, billing/tokens, file tracking, and WebSocket connections
+- **Comprehensive Tracking**:
+  - Conversation: currentGoal, mentionedFiles, messageCount
+  - Execution: activeToolCalls Map, filesModified Set, taskListId, subagentTaskIds
+  - Billing: tokensUsed, creditsReserved, creditsConsumed
+  - Transport: wsConnection, wsRoomId for real-time streaming
+- **Auto-Cleanup**: Idle sessions removed after 30 minutes (cleanup runs every 10 minutes)
+- **Duplicate Prevention**: registerWebSocket() closes old connections before registering new ones; unregisterWebSocket() validates socket instances to prevent stale handlers from wiping active connections
+- **Clean API**: createSession, getSession, touchSession, closeSession, recordToolCall, recordTokens, trackFileModified, setGoal, registerWebSocket
+- **Integration**: WebSocket handler and lomuChat routes use brain instead of direct database access or scattered Maps
+This eliminates 6+ scattered session management patterns and provides ONE unified brain for all LomuAI operations.
+
 ### System Design Choices
 LomuAI acts as the autonomous worker, committing changes through a strict 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). I AM Architect is a user-summoned premium consultant that provides guidance without committing code. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing.
 
