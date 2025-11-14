@@ -1813,16 +1813,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         }
       }
       
-      // Check 2: Total conversation duration (60 minutes max, even if active)
-      // Prevents indefinite runaway sessions while allowing complex tasks
-      if (conversationState.conversationStartTime) {
-        const totalDuration = Date.now() - new Date(conversationState.conversationStartTime).getTime();
-        const MAX_TOTAL_DURATION = 60 * 60 * 1000; // 60 minutes
-        if (totalDuration > MAX_TOTAL_DURATION) {
-          emergencyBrakeTriggered.triggered = true;
-          emergencyBrakeTriggered.reason = '⏱️ Safety limit reached: Conversation exceeded 60 minutes total duration. Please start a new conversation for better performance.';
-        }
-      }
+      // ✅ REMOVED: Total duration check - only check IDLE time (Check 1 above)
+      // Reasoning: If user is actively sending messages, don't stop them.
+      // The 30-minute idle timeout (Check 1) is sufficient to catch abandoned sessions.
 
       // If no emergency brake triggered, proceed with session renewal
       if (!emergencyBrakeTriggered.triggered) {
