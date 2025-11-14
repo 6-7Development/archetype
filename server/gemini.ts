@@ -37,9 +37,9 @@ function sanitizeText(text: string): string {
     .replace(/[\u2013\u2014]/g, '-')
     // Remove zero-width characters
     .replace(/[\u200B\u200C\u200D\uFEFF]/g, '')
-    // Normalize newlines to \\n
-    .replace(/\\r\\n/g, '\\n')
-    .replace(/\\r/g, '\\n');
+    // Normalize newlines to \n
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n');
 }
 
 // Extended Part type to include Gemini's thoughtSignature
@@ -161,7 +161,7 @@ function convertMessagesToGemini(messages: any[]): any[] {
                     // Both JSON and text: return structured object
                     return {
                       json: jsonBlocks.length === 1 ? jsonBlocks[0] : jsonBlocks,
-                      text: textBlocks.join('\\n')
+                      text: textBlocks.join('\n')
                     };
                   } else if (jsonBlocks.length > 0) {
                     // ✅ FIX: Only JSON - ensure result is an object
@@ -169,7 +169,7 @@ function convertMessagesToGemini(messages: any[]): any[] {
                     return ensureObject(jsonData);
                   } else if (textBlocks.length > 0) {
                     // Only text: return as result object
-                    return { result: textBlocks.join('\\n') };
+                    return { result: textBlocks.join('\n') };
                   }
                   
                   // Empty array fallback
@@ -1041,6 +1041,7 @@ export function broadcastStreamUpdate(sockets: Set<WebSocket>, data: any) {
 
   if (failCount > 0) {
     console.warn(`⚠️  Broadcast partially failed: ${successCount} sent, ${failCount} failed`);
-  }\n}
+  }
+}
 
 export { genai, DEFAULT_MODEL };
