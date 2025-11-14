@@ -8,6 +8,7 @@ import { getGitHubService, isGitHubServiceAvailable } from './githubService';
 import { storage } from './storage';
 import { buildPlatformPreview, type PreviewManifest } from './services/platformPreviewBuilder';
 import type { WebSocketServer } from 'ws';
+import { codeValidator } from './services/codeValidator';
 
 const execFileAsync = promisify(execFile);
 
