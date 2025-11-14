@@ -1,0 +1,26 @@
+That is an excellent diagnosis! You've correctly identified that the remaining issues are in the Application Logic Layer surrounding the Gemini API, specifically dealing with parsing complex AI output and handling real-time connections.Here is the final, definitive fix for Lomu, addressing both the broken Fallback Parser (Issue 1) and the Duplicate WebSocket Connections (Issue 2).🛠️ I. Fixing the Fallback Parser (Issue 1)The function call is embedded in the text, but your parser is failing to extract it because the Gemini model is often wrapping the JSON in Markdown fences (```json ... ```) and possibly including surrounding conversational text.1. Robust JSON Extraction LogicYour Python fallback logic must be hardened to aggressively find and clean the JSON string before parsing it.ProblemFix (Action in Python)Why it WorksMarkdown FencesUse regular expressions or string methods to strip ```json and ``` from the text.Removes the markdown syntax the model often uses when embedding JSON.Surrounding TextUse a regular expression to find the content starting at {"name": and ending at the last closing brace }.Isolates the pure JSON structure from any conversational preamble Lomu might add.API Response StructureEnsure you are checking the full response text, not just the first chunk (Chunk #2 suggests a streaming issue).Guarantees the entire payload is processed before declaring "NONE."Pythonimport re
+import json
+
+def extract_tool_call_from_text(response_text: str):
+    # Pattern to find the embedded JSON object, accounting for markdown fences
+    # This regex is robust: finds content between the first '{' and the last '}'
+    # It also handles the optional '```json' wrapper
+    match = re.search(r'\{.*\}', response_text.replace('```json', '').replace('```', ''), re.DOTALL)
+    
+    if match:
+        raw_json_string = match.group(0).strip()
+        try:
+            # Attempt to parse the cleaned string
+            tool_call_data = json.loads(raw_json_string)
+            if 'name' in tool_call_data and 'args' in tool_call_data:
+                print("LOMU FIX: Successfully extracted and parsed function call from text.")
+                return tool_call_data
+        except json.JSONDecodeError as e:
+            # The structure was flawed; log for debugging and return None
+            print(f"JSON Decode Error in Fallback: {e}")
+    
+    return None
+
+# Your application must call this function if response.function_calls is None.
+# If it returns data, proceed to execute the tool.
+📡 II. Fixing Duplicate WebSocket Sessions (Issue 2)Duplicate WebSocket sessions create redundant overhead and confuse the system about the true state of the user. This is an application-layer bug in how you handle connection events.1. Implement Session Uniqueness CheckYour server needs a strong policy for recognizing and immediately closing stale or duplicate connections.Action: When a new WebSocket connection registers, your application must check if the sessionId is already active.Logic: Use a fast, in-memory store (like Redis—already in your plan!) to track active sessionIds.EventLogic Flow[WS] Session registered:CHECK: Is sessionId already in Redis?If YES (Duplicate):Log the error, and immediately close the new connection (ws.close()). Do not re-register the session.If NO (New):Register the new session, store the sessionId in Redis, and link it to the user.2. Implement a Disconnection CleanupThe primary cause of duplicate logs is usually a failure to delete the old session when a disconnect occurs.Action: Ensure your WebSocket server has a robust on_close handler.Logic: When the client disconnects (network interruption, tab close), the server must execute a cleanup function that removes the sessionId from Redis. If you fail to delete the old session, the subsequent new connection will look like a duplicate registration (as you are seeing in the logs) when it is technically just a user reconnecting.By implementing the Robust JSON Extraction Fallback and the Redis-backed Session Uniqueness Check, you address the final layers of instability, allowing Lomu to reliably execute his complex workflows.

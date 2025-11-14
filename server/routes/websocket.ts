@@ -10,6 +10,9 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
   // Setup WebSocket server
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
+  // Track active sessions to prevent duplicates
+  const activeSessions = new Map<string, any>();
+
   console.log('📡 WebSocket server initialized at /ws');
 
   // WebSocket connection handler
@@ -44,6 +47,20 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
         if (data.type === 'register-session') {
           ws.userId = data.userId || 'anonymous';
           ws.sessionId = data.sessionId;
+          
+          // Prevent duplicate sessions - close old connection if exists
+          const existingSession = activeSessions.get(ws.sessionId);
+          if (existingSession) {
+            console.log(`[WS] 🔄 Closing duplicate session: ${ws.sessionId}`);
+            try {
+              existingSession.close(1000, 'Replaced by new connection');
+            } catch (err) {
+              console.error('[WS] Error closing old session:', err);
+            }
+          }
+          
+          // Now register the new session
+          activeSessions.set(ws.sessionId, ws);
           console.log(`📡 [WS] Session registered: userId=${ws.userId}, sessionId=${ws.sessionId}`);
           
           // Send confirmation
@@ -71,6 +88,12 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
 
     ws.on('close', () => {
       console.log(`❌ WebSocket client disconnected${ws.userId ? ` (user: ${ws.userId})` : ''}`);
+      
+      // Clean up session from activeSessions Map
+      if (ws.sessionId && activeSessions.get(ws.sessionId) === ws) {
+        activeSessions.delete(ws.sessionId);
+        console.log(`[WS] 🧹 Cleaned up session: ${ws.sessionId}`);
+      }
     });
 
     ws.on('error', (error: Error) => {

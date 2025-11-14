@@ -244,8 +244,12 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
   }, []);
 
   const connect = useCallback(() => {
-    // Don't connect if we're already connected or exceeding max attempts
-    if (wsRef.current?.readyState === WebSocket.OPEN) return;
+    // Don't connect if we're already connected/connecting or exceeding max attempts
+    // CRITICAL FIX: Also check for CONNECTING state to prevent React StrictMode double-render duplicates
+    if (wsRef.current?.readyState === WebSocket.OPEN || wsRef.current?.readyState === WebSocket.CONNECTING) {
+      console.log('[WS] 🔒 Preventing duplicate connection (already connected/connecting)');
+      return;
+    }
     if (reconnectAttemptsRef.current >= MAX_RECONNECT_ATTEMPTS) {
       setStreamState(prev => ({
         ...prev,
@@ -626,7 +630,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
                       status: message.deploymentStatus === 'in_progress' ? 'in_progress' as const : 
                               message.deploymentStatus === 'successful' ? 'complete' as const :
                               message.deploymentStatus === 'failed' ? 'failed' as const : step.status,
-                      durationMs: message.durationMs,
+                      durationMs: (message as any).durationMs,
                     };
                   }
                   return step;

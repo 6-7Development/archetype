@@ -605,61 +605,145 @@ Please try:
           }
           
           // CHECK 2: Fallback - Parse JSON from text field (Gemini bug workaround)
-          else if (part.text && part.text.includes('{"name":')) {
-            console.log('[GEMINI-PARSER] ⚠️ Function call detected in TEXT field - parsing...');
+          else if (part.text && part.text.includes('{')) {
+            console.log('[GEMINI-PARSER] ⚠️ Checking text for function call...');
             
             try {
-              // Step A: Extract and clean the JSON string
-              let rawJsonString = part.text.trim();
+              // Step A: Clean the raw text
+              let cleanedText = part.text.trim();
               
               // Remove markdown code blocks if present
-              rawJsonString = rawJsonString.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+              cleanedText = cleanedText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
               
-              // Find the JSON object (might be embedded in conversational text)
-              const jsonMatch = rawJsonString.match(/\{[\s\S]*?"name"[\s\S]*?"args"[\s\S]*?\}/);
-              if (jsonMatch) {
-                rawJsonString = jsonMatch[0];
+              // Step B: INCREMENTAL SCANNER with offset tracking
+              let remainingText = cleanedText;
+              let offset = 0; // Tracks position in original part.text
+              let foundFunctionCall = false;
+              let functionCallPosition = { start: -1, end: -1 };
+              let scannedNonFunctionJson = false; // Track if we consumed other JSON
+              
+              while (remainingText.length > 0 && !foundFunctionCall) {
+                // Find next opening brace in remaining text
+                const braceIndex = remainingText.indexOf('{');
+                if (braceIndex === -1) break; // No more JSON objects
+                
+                // STRING-AWARE BALANCED BRACE PARSER
+                let braceCount = 0;
+                let inString = false;
+                let prevChar = '';
+                let endIndex = -1;
+                
+                for (let i = braceIndex; i < remainingText.length; i++) {
+                  const char = remainingText[i];
+                  
+                  // Track string boundaries (ignore escaped quotes)
+                  if (char === '"' && prevChar !== '\\') {
+                    inString = !inString;
+                  }
+                  
+                  // Only count braces OUTSIDE of strings
+                  if (!inString) {
+                    if (char === '{') {
+                      braceCount++;
+                    } else if (char === '}') {
+                      braceCount--;
+                      
+                      // Found matching closing brace
+                      if (braceCount === 0) {
+                        endIndex = i;
+                        break;
+                      }
+                    }
+                  }
+                  
+                  prevChar = char;
+                }
+                
+                if (endIndex !== -1) {
+                  const jsonStr = remainingText.substring(braceIndex, endIndex + 1);
+                  console.log('[GEMINI-PARSER] 🔍 Found JSON object:', jsonStr.substring(0, 100));
+                  
+                  try {
+                    // Parse the JSON
+                    const parsedObj = JSON.parse(jsonStr);
+                    
+                    // Check if it's a function call (has 'name' and 'args')
+                    if (parsedObj.name && parsedObj.args) {
+                      console.log('[GEMINI-PARSER] ✅ Found function call:', parsedObj.name);
+                      extractedFunctionCall = {
+                        name: parsedObj.name,
+                        args: parsedObj.args
+                      };
+                      
+                      // Record absolute position in original part.text for removal
+                      functionCallPosition.start = offset + braceIndex;
+                      functionCallPosition.end = offset + endIndex + 1;
+                      foundFunctionCall = true;
+                      
+                      // Track that we scanned non-function JSON before this
+                      if (offset > 0 || braceIndex > 0) {
+                        scannedNonFunctionJson = true;
+                      }
+                    } else {
+                      console.log('[GEMINI-PARSER] ⚠️ JSON object is not a function call, continuing search...');
+                      scannedNonFunctionJson = true;
+                      
+                      // Slice off scanned portion (including this JSON object)
+                      const slicePoint = endIndex + 1;
+                      offset += slicePoint;
+                      remainingText = remainingText.slice(slicePoint);
+                    }
+                  } catch (parseError: any) {
+                    console.log('[GEMINI-PARSER] ⚠️ JSON parsing failed, continuing search:', parseError.message);
+                    // Slice off the failed portion
+                    const slicePoint = braceIndex + 1;
+                    offset += slicePoint;
+                    remainingText = remainingText.slice(slicePoint);
+                  }
+                } else {
+                  console.log('[GEMINI-PARSER] ⚠️ No matching closing brace, trying next position');
+                  // Slice off the opening brace and continue
+                  const slicePoint = braceIndex + 1;
+                  offset += slicePoint;
+                  remainingText = remainingText.slice(slicePoint);
+                }
               }
               
-              // Step B: Parse the JSON string
-              const parsedCall = JSON.parse(rawJsonString);
-              
-              // Step C: Verify structure
-              if (parsedCall.name && parsedCall.args) {
-                extractedFunctionCall = {
-                  name: parsedCall.name,
-                  args: parsedCall.args
-                };
-                console.log('[GEMINI-PARSER] ✅ Successfully extracted function call from text:', parsedCall.name);
+              // If we found a function call, process it
+              if (foundFunctionCall && extractedFunctionCall) {
+                console.log('[GEMINI-PARSER] ✅ Successfully extracted function call from text:', extractedFunctionCall.name);
                 
-                // FIX 1: Signal that fallback was used (triggers force mode in next iteration)
+                // FIX 1: Signal that fallback was used (triggers force mode)
+                // Fire event if we scanned non-function JSON OR found function call
                 if (onChunk) {
                   try {
                     onChunk({
                       type: 'fallback_used',
-                      message: 'Function call extracted from text - will enforce strict mode next iteration'
+                      message: scannedNonFunctionJson 
+                        ? 'Function call extracted from text after scanning non-function JSON - will enforce strict mode'
+                        : 'Function call extracted from text - will enforce strict mode next iteration'
                     });
                   } catch (fallbackEventError) {
                     console.error('❌ Error sending fallback_used event:', fallbackEventError);
                   }
                 }
                 
-                // FIX 2: Preserve legitimate text - only remove JSON part
-                if (jsonMatch) {
-                  const jsonStr = jsonMatch[0];
-                  part.text = part.text.replace(jsonStr, '').trim();
-                  
-                  // If only whitespace remains, clear it
-                  if (!part.text || part.text.length === 0) {
-                    part.text = '';
-                  } else {
-                    console.log('[GEMINI-PARSER] Preserved non-JSON text:', part.text.substring(0, 50));
-                  }
+                // FIX 2: Remove ONLY the function call JSON from part.text (preserve other content)
+                const beforeCall = part.text.substring(0, functionCallPosition.start);
+                const afterCall = part.text.substring(functionCallPosition.end);
+                part.text = (beforeCall + afterCall).trim();
+                
+                // If only whitespace remains, clear it
+                if (!part.text || part.text.length === 0) {
+                  part.text = '';
+                } else {
+                  console.log('[GEMINI-PARSER] Preserved non-JSON text:', part.text.substring(0, 50));
                 }
+              } else {
+                console.log('[GEMINI-PARSER] ⚠️ No function call found in text');
               }
             } catch (error) {
               console.error('[GEMINI-PARSER] ❌ Failed to parse function call from text:', error);
-              // Don't fail completely - just log and continue
             }
           }
 
