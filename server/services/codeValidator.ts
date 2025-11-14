@@ -120,19 +120,29 @@ export class CodeValidator {
 
   /**
    * Check for double-escaped characters (LomuAI's specific bug)
+   * SMART DETECTION: Only flag literal strings in source output, not regex/JSON encoding
    */
   private async checkEscapeCharacters(filePaths: string[], result: ValidationResult): Promise<void> {
     try {
-      console.log('[CODE-VALIDATOR] 🔍 Checking for double-escaped characters...');
+      console.log('[CODE-VALIDATOR] 🔍 Checking for malformed escape sequences...');
       
+      // SCOPED PATTERNS: Only catch LomuAI's specific bug (literal \\n in string operations)
       const suspiciousPatterns = [
-        /\\\\n/g,           // Double-escaped newlines: \\n (should be \n)
-        /\\\\t/g,           // Double-escaped tabs: \\t (should be \t)
-        /\\\\r/g,           // Double-escaped carriage return: \\r (should be \r)
-        /'\\\\n'/g,         // In single quotes: '\\n' (should be '\n')
-        /"\\\\n"/g,         // In double quotes: "\\n" (should be "\n")
-        /join\('\\\\n'\)/g, // Array join with escaped newline
-        /replace\(.*?, '\\\\n'\)/g, // Regex replace with escaped newline
+        {
+          pattern: /\.join\(['"]\\\\n['"]\)/,  // .join('\\n') - should be .join('\n')
+          name: "Array join with double-escaped newline",
+          severity: 'error'
+        },
+        {
+          pattern: /\.replace\([^,]+,\s*['"]\\\\n['"]\)/,  // .replace(x, '\\n') - should be '\n'
+          name: "String replace with double-escaped newline",
+          severity: 'error'
+        },
+        {
+          pattern: /}\s*\\n\s*}/,  // Literal \n} at end of block (LomuAI's exact bug)
+          name: "Literal backslash-n at closing brace",
+          severity: 'error'
+        },
       ];
 
       const issues: string[] = [];
@@ -146,23 +156,21 @@ export class CodeValidator {
         try {
           const fullPath = path.resolve(this.PROJECT_ROOT, filePath);
           const content = await fs.readFile(fullPath, 'utf-8');
+          const lines = content.split('\n');
           
-          for (const pattern of suspiciousPatterns) {
-            const matches = content.match(pattern);
-            if (matches) {
-              const lines = content.split('\n');
-              const lineNumbers: number[] = [];
-              
-              lines.forEach((line, index) => {
-                if (pattern.test(line)) {
-                  lineNumbers.push(index + 1);
-                }
-              });
-              
-              issues.push(
-                `${filePath}:${lineNumbers.join(',')} - Found double-escaped characters: ${matches[0]}`
-              );
-            }
+          for (const { pattern, name, severity } of suspiciousPatterns) {
+            // Use non-global regex to avoid lastIndex issues
+            const regex = new RegExp(pattern.source);  // Create fresh regex without /g flag
+            
+            lines.forEach((line, index) => {
+              if (regex.test(line)) {
+                const lineNum = index + 1;
+                const snippet = line.trim().substring(0, 80);
+                issues.push(
+                  `${filePath}:${lineNum} - ${name}\n  ${snippet}`
+                );
+              }
+            });
           }
         } catch (readError: any) {
           console.warn(`[CODE-VALIDATOR] ⚠️  Could not read ${filePath}: ${readError.message}`);
@@ -172,13 +180,14 @@ export class CodeValidator {
       if (issues.length > 0) {
         result.checks.escapeChars = false;
         result.errors.push(
-          `Double-escaped characters detected (LomuAI bug):\n${issues.join('\n')}\n\n` +
-          `HINT: Replace \\\\n with \\n, \\\\t with \\t, etc.`
+          `Malformed escape sequences detected (LomuAI bug pattern):\n${issues.join('\n')}\n\n` +
+          `HINT: These patterns indicate double-escaped newlines that will cause syntax errors.\n` +
+          `Example fix: .join('\\\\n') should be .join('\\n')`
         );
-        console.error('[CODE-VALIDATOR] ❌ Double-escaped characters found');
+        console.error('[CODE-VALIDATOR] ❌ Malformed escape sequences found');
       } else {
         result.checks.escapeChars = true;
-        console.log('[CODE-VALIDATOR] ✅ No double-escaped characters found');
+        console.log('[CODE-VALIDATOR] ✅ No malformed escape sequences found');
       }
     } catch (error: any) {
       console.error('[CODE-VALIDATOR] ⚠️  Escape character check failed:', error.message);
@@ -268,6 +277,7 @@ export class CodeValidator {
 
   /**
    * Quick validation for single file (used by write_platform_file)
+   * SMART DETECTION: Only flag literal strings in source output, not regex/JSON encoding
    */
   async validateSingleFile(filePath: string, content: string): Promise<ValidationResult> {
     console.log(`[CODE-VALIDATOR] 🔍 Quick validation for: ${filePath}`);
@@ -279,34 +289,62 @@ export class CodeValidator {
       checks: {
         typescript: false,
         eslint: false,
-        escapeChars: false,
-        gitDiff: false,
+        escapeChars: true,
+        gitDiff: true,
       },
     };
 
-    // Check for double-escaped characters in content before writing
-    const suspiciousPatterns = [
-      { pattern: /\\\\n/g, name: '\\\\n (should be \\n)' },
-      { pattern: /\\\\t/g, name: '\\\\t (should be \\t)' },
-      { pattern: /\\\\r/g, name: '\\\\r (should be \\r)' },
-      { pattern: /}\s*\\n\s*}/g, name: '}\\n} (malformed closing braces)' },
-    ];
-
-    for (const { pattern, name } of suspiciousPatterns) {
-      if (pattern.test(content)) {
-        result.errors.push(
-          `Content contains double-escaped characters: ${name}\n` +
-          `This will cause syntax errors. Fix the content before writing.`
-        );
-      }
+    // Only validate code files
+    if (!filePath.match(/\.(ts|tsx|js|jsx)$/)) {
+      console.log('[CODE-VALIDATOR] ⏭️  Skipping non-code file');
+      return result;
     }
 
-    result.checks.escapeChars = result.errors.length === 0;
-    result.valid = result.errors.length === 0;
+    // SCOPED PATTERNS: Only catch LomuAI's specific bug (literal \\n in string operations)
+    const suspiciousPatterns = [
+      {
+        pattern: /\.join\(['"]\\\\n['"]\)/,
+        name: "Array join with double-escaped newline (.join('\\\\n'))",
+        hint: "Should be .join('\\n')"
+      },
+      {
+        pattern: /\.replace\([^,]+,\s*['"]\\\\n['"]\)/,
+        name: "String replace with double-escaped newline (.replace(x, '\\\\n'))",
+        hint: "Should be .replace(x, '\\n')"
+      },
+      {
+        pattern: /}\s*\\n\s*}/,
+        name: "Literal backslash-n at closing brace (}\\n})",
+        hint: "Should be two separate lines with closing braces"
+      },
+    ];
 
-    if (!result.valid) {
+    const lines = content.split('\n');
+    const issues: string[] = [];
+
+    for (const { pattern, name, hint } of suspiciousPatterns) {
+      // Use non-global regex to avoid lastIndex issues
+      const regex = new RegExp(pattern.source);
+      
+      lines.forEach((line, index) => {
+        if (regex.test(line)) {
+          const lineNum = index + 1;
+          const snippet = line.trim().substring(0, 80);
+          issues.push(
+            `Line ${lineNum}: ${name}\n  ${snippet}\n  HINT: ${hint}`
+          );
+        }
+      });
+    }
+
+    if (issues.length > 0) {
+      result.checks.escapeChars = false;
+      result.valid = false;
+      result.errors.push(
+        `Malformed escape sequences detected in ${filePath}:\n${issues.join('\n\n')}\n\n` +
+        `These patterns will cause syntax errors when the file is loaded.`
+      );
       console.error('[CODE-VALIDATOR] ❌ Quick validation FAILED');
-      console.error('[CODE-VALIDATOR] Errors:', result.errors);
     } else {
       console.log('[CODE-VALIDATOR] ✅ Quick validation passed');
     }

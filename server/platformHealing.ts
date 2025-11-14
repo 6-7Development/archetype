@@ -570,6 +570,18 @@ export class PlatformHealingService {
       throw new Error(`Content must be a string, got ${typeof content}: ${filePath}`);
     }
     
+    // ✅ PRE-WRITE VALIDATION: Check for double-escaped characters BEFORE writing
+    console.log(`[PLATFORM-WRITE] 🔍 Running pre-write validation...`);
+    const quickValidation = await codeValidator.validateSingleFile(filePath, content);
+    if (!quickValidation.valid) {
+      console.error(`[PLATFORM-WRITE] ❌ Pre-write validation FAILED for ${filePath}`);
+      throw new Error(
+        `Cannot write file - validation failed:\n${quickValidation.errors.join('\n')}\n\n` +
+        `HINT: This prevents LomuAI from committing broken code with syntax errors.`
+      );
+    }
+    console.log(`[PLATFORM-WRITE] ✅ Pre-write validation passed`);
+    
     // Log validated content
     console.log(`[PLATFORM-WRITE] ✅ Content validated for ${filePath}`);
     console.log(`[PLATFORM-WRITE] Content length: ${content.length} bytes`);
@@ -732,6 +744,28 @@ export class PlatformHealingService {
       // Auto-commit to local Git if not skipped
       if (!skipAutoCommit) {
         try {
+          // ✅ PRE-COMMIT VALIDATION: Run comprehensive checks BEFORE git commit
+          console.log(`[PLATFORM-HEAL] 🔍 Running pre-commit validation...`);
+          const validation = await codeValidator.validateBeforeCommit([filePath]);
+          
+          if (!validation.valid) {
+            console.error(`[PLATFORM-HEAL] ❌ Pre-commit validation FAILED`);
+            console.error(`[PLATFORM-HEAL] Errors:`, validation.errors);
+            
+            // CRITICAL: Don't commit broken code - throw error with details
+            throw new Error(
+              `Cannot commit - code validation failed:\n\n${validation.errors.join('\n\n')}\n\n` +
+              `This prevents LomuAI from committing broken code with syntax errors.\n` +
+              `Fix the issues above and try again.`
+            );
+          }
+          
+          if (validation.warnings.length > 0) {
+            console.warn(`[PLATFORM-HEAL] ⚠️  Warnings (non-blocking):`, validation.warnings);
+          }
+          
+          console.log(`[PLATFORM-HEAL] ✅ Pre-commit validation passed - proceeding with commit`);
+          
           // Git add the modified file
           await execFileAsync('git', ['add', filePath], { cwd: this.PROJECT_ROOT });
           
