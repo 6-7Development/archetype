@@ -1796,42 +1796,31 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         console.log(`[GAP-4] ✅ Token count healthy (${currentTokens}/${MAX_GEMINI_TOKENS}), no summarization needed`);
       }
 
-      // 🛑 GAP 2: EMERGENCY BRAKES - Check limits BEFORE session renewal
+      // 🔄 SESSION LIFECYCLE - Update timestamp and renew session if needed
+      // ✅ CRITICAL: Do this FIRST before checking emergency brakes
+      // Reasoning: User just sent a message NOW, so update timestamp to NOW first
+      // The ensureActiveSession() function already handles idle renewal (resets counters if idle > 30min)
+      await ensureActiveSession(conversationState.id);
+      
+      // Re-fetch conversation state after potential renewal
+      const [refreshedState] = await db
+        .select()
+        .from(conversationStates)
+        .where(eq(conversationStates.id, conversationState.id));
+      
+      if (refreshedState) {
+        conversationState = refreshedState;
+      }
+      
+      // 🛑 GAP 2: EMERGENCY BRAKES - Check limits AFTER session renewal
       // Prevent runaway costs by enforcing global limits
       const emergencyBrakeTriggered = {
         triggered: false,
         reason: '' as string,
       };
-
-      // Check 1: Idle time (30 minutes max since last interaction)
-      // ✅ CRITICAL: Check BEFORE ensureActiveSession() updates lastInteractionAt!
-      if (conversationState.lastInteractionAt) {
-        const idleTime = Date.now() - new Date(conversationState.lastInteractionAt).getTime();
-        if (idleTime > EMERGENCY_LIMITS.SESSION_IDLE_TIMEOUT) {
-          emergencyBrakeTriggered.triggered = true;
-          emergencyBrakeTriggered.reason = '⏱️ Safety limit reached: Conversation idle for 30+ minutes. Please start a new conversation for better performance.';
-        }
-      }
       
-      // ✅ REMOVED: Total duration check - only check IDLE time (Check 1 above)
-      // Reasoning: If user is actively sending messages, don't stop them.
-      // The 30-minute idle timeout (Check 1) is sufficient to catch abandoned sessions.
-
-      // If no emergency brake triggered, proceed with session renewal
-      if (!emergencyBrakeTriggered.triggered) {
-        // 🔄 SESSION LIFECYCLE - Ensure conversation is active (renew if idle > 30min)
-        await ensureActiveSession(conversationState.id);
-        
-        // Re-fetch conversation state after potential renewal
-        const [refreshedState] = await db
-          .select()
-          .from(conversationStates)
-          .where(eq(conversationStates.id, conversationState.id));
-        
-        if (refreshedState) {
-          conversationState = refreshedState;
-        }
-      }
+      // ✅ REMOVED: Idle timeout check - handled by ensureActiveSession() above
+      // ✅ REMOVED: Total duration check - if user is active, let them work
 
       // Check 3: API call count (50 calls max per session)
       const currentApiCallCount = conversationState.apiCallCount || 0;
