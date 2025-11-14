@@ -98,10 +98,21 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
           <stop offset="50%" stopColor="#F7B500"/>
           <stop offset="100%" stopColor="#E5943C"/>
         </linearGradient>
-        <linearGradient id={`${idPrefix}-honey`} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#FFD34D"/>
-          <stop offset="100%" stopColor="#F7B500"/>
+        
+        {/* Enhanced Honey Gradient - Rich 3D effect */}
+        <linearGradient id={`${idPrefix}-honey`} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#FFE17D"/>
+          <stop offset="30%" stopColor="#FFD34D"/>
+          <stop offset="60%" stopColor="#F7B500"/>
+          <stop offset="100%" stopColor="#D4940A"/>
         </linearGradient>
+        
+        {/* Honey Stroke Gradient - Dark outline */}
+        <linearGradient id={`${idPrefix}-honey-stroke`} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#B8860B"/>
+          <stop offset="100%" stopColor="#8B6508"/>
+        </linearGradient>
+        
         <linearGradient id={`${idPrefix}-mint`} x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="#00D4B3"/>
           <stop offset="100%" stopColor="#00B89E"/>
@@ -110,6 +121,15 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
         {/* Tech Glow Filter */}
         <filter id={`${idPrefix}-glow`}>
           <feGaussianBlur stdDeviation="1" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+        
+        {/* Text Glow Filter - Stronger for wordmark */}
+        <filter id={`${idPrefix}-text-glow`}>
+          <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
           <feMerge>
             <feMergeNode in="coloredBlur"/>
             <feMergeNode in="SourceGraphic"/>
@@ -171,19 +191,68 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
           )}
         </g>
 
-        {/* Wordmark (Beehive AI) - AI as superscript like TM symbol */}
+        {/* Wordmark (Beehive AI) - Enhanced with tech details */}
         {showWordmark && (
           <g transform={size === "lg" ? "translate(95, 35)" : "translate(45, 15)"}>
-            {/* "Beehive" */}
+            {/* Decorative Hexagon Elements - Tech accent */}
+            <g opacity="0.3">
+              <path 
+                d={size === "lg" ? "M-8 18 L-6 15 L-4 15 L-2 18 L-4 21 L-6 21 Z" : "M-4 9 L-3 7.5 L-2 7.5 L-1 9 L-2 10.5 L-3 10.5 Z"}
+                stroke="#00D4B3" 
+                strokeWidth="0.8" 
+                fill="none"
+              />
+              <path 
+                d={size === "lg" ? "M186 18 L188 15 L190 15 L192 18 L190 21 L188 21 Z" : "M93 9 L94 7.5 L95 7.5 L96 9 L95 10.5 L94 10.5 Z"}
+                stroke="#FFD34D" 
+                strokeWidth="0.8" 
+                fill="none"
+              />
+            </g>
+
+            {/* "Beehive" - Stroke outline for depth */}
             <text 
               x="0" 
               y="0" 
               fontSize={wordmarkSize} 
               fontFamily="Inter, system-ui, sans-serif" 
-              fontWeight="700"
-              fill={`url(#${idPrefix}-honey)`}
-              letterSpacing="-0.02em"
+              fontWeight="800"
+              stroke={`url(#${idPrefix}-honey-stroke)`}
+              strokeWidth={size === "lg" ? "2" : "1"}
+              fill="none"
+              letterSpacing="-0.01em"
               dominantBaseline="hanging"
+            >
+              Beehive
+            </text>
+            
+            {/* "Beehive" - Main fill with gradient & glow */}
+            <text 
+              x="0" 
+              y="0" 
+              fontSize={wordmarkSize} 
+              fontFamily="Inter, system-ui, sans-serif" 
+              fontWeight="800"
+              fill={`url(#${idPrefix}-honey)`}
+              letterSpacing="-0.01em"
+              dominantBaseline="hanging"
+              filter={`url(#${idPrefix}-text-glow)`}
+            >
+              Beehive
+            </text>
+            
+            {/* "Beehive" - Highlight overlay for shine */}
+            <text 
+              x="0" 
+              y="0" 
+              fontSize={wordmarkSize} 
+              fontFamily="Inter, system-ui, sans-serif" 
+              fontWeight="800"
+              fill="#FFE17D"
+              fillOpacity="0.4"
+              letterSpacing="-0.01em"
+              dominantBaseline="hanging"
+              style={{ mixBlendMode: 'overlay' }}
             >
               Beehive
             </text>
@@ -197,6 +266,7 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
               fontWeight="700"
               fill={`url(#${idPrefix}-mint)`}
               letterSpacing="-0.02em"
+              filter={`url(#${idPrefix}-glow)`}
             >
               AI
             </text>
