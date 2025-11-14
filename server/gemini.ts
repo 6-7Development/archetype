@@ -381,8 +381,8 @@ If you need to call a function, emit ONLY the JSON object.`),
         maxOutputTokens: Math.max(maxTokens, 16000), // ⚠️ CRITICAL: Prevent truncated JSON (external advice: "silent killer")
         temperature: 0.0, // ZERO randomness for function calling (external advice: 0.0-0.3)
         topP: 0.8,        // Slightly reduced randomness for consistency
-        // ✅ ARCHITECT FIX: Force JSON-only channel to prevent Python-style hallucinations
-        responseMimeType: "application/json", // Prevents Gemini from using print(api.fn()) syntax
+        // ✅ REMOVED: responseMimeType - INCOMPATIBLE with function calling per Gemini API error
+        // Error: "Function calling with a response mime type: 'application/json' is unsupported"
         // ✅ GEMINI BEST PRACTICE: Enable dynamic thinking for optimal performance
         // ✅ GAP 1 FIX: Enable thought visibility (Gemini's recommendation)
         thinkingConfig: {
