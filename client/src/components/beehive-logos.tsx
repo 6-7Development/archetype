@@ -188,10 +188,10 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
               Beehive
             </text>
             
-            {/* "AI" - TM-style superscript (50% size, top right of E) */}
+            {/* "AI" - TM-style superscript (50% size, right next to E) */}
             <text 
-              x={size === "lg" ? 200 : 100} 
-              y={size === "lg" ? -8 : -4} 
+              x={size === "lg" ? 178 : 89} 
+              y={size === "lg" ? -6 : -3} 
               fontSize={size === "lg" ? 21 : 11} 
               fontFamily="Inter, system-ui, sans-serif" 
               fontWeight="700"
