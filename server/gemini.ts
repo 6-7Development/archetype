@@ -381,9 +381,6 @@ If you need to call a function, emit ONLY the JSON object.`),
         maxOutputTokens: Math.max(maxTokens, 16000), // ⚠️ CRITICAL: Prevent truncated JSON (external advice: "silent killer")
         temperature: 0.0, // ZERO randomness for function calling (external advice: 0.0-0.3)
         topP: 0.8,        // Slightly reduced randomness for consistency
-        // ✅ NEW ARCHITECTURE: Force JSON output at transport layer (external advice v2)
-        // "Even perfect prompts won't stop free-text if response_mime_type and tool config aren't strict"
-        responseMimeType: "application/json",
         // ✅ GEMINI BEST PRACTICE: Enable dynamic thinking for optimal performance
         // ✅ GAP 1 FIX: Enable thought visibility (Gemini's recommendation)
         thinkingConfig: {
