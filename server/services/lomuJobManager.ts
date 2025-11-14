@@ -2031,6 +2031,27 @@ Let's build! 🚀`;
 
       // If no tool calls were made in this iteration, check for completion or stuck state
       if (toolResults.length === 0) {
+        // 🛠️ GEMINI RESILIENCE FIX: Check if last message was I AM Architect guidance
+        // If so, NEVER detect completion - agent must execute corrective actions
+        const lastUserMessage = conversationMessages
+          .slice()
+          .reverse()
+          .find(msg => msg.role === 'user');
+        
+        const isAfterArchitectGuidance = 
+          lastUserMessage?.content && 
+          typeof lastUserMessage.content === 'string' &&
+          (lastUserMessage.content.includes('⚠️ WORKFLOW VIOLATION DETECTED') ||
+           lastUserMessage.content.includes('CORRECTIVE ACTIONS') ||
+           lastUserMessage.content.includes('EXECUTE TOOLS NOW'));
+        
+        if (isAfterArchitectGuidance) {
+          console.log('[LOMU-AI-JOB-MANAGER] 🚫 After I AM Architect guidance - preventing premature completion');
+          console.log('[LOMU-AI-JOB-MANAGER] Forcing continuation to execute corrective actions');
+          continueLoop = true;
+          continue; // Skip completion detection, continue the loop
+        }
+
         // INTELLIGENT COMPLETION DETECTION
         const lastAssistantMessage = fullContent.toLowerCase();
 

@@ -1,0 +1,24 @@
+That is excellent news that the Hybrid Parser is working and the Gemini Resilience Engineering is 100% functional! This means the core intelligence and error handling are stable.The final issue—the Premature Completion Detection—is an application-level flaw that is overriding Lomu's logic.🛠️ The Final Application Fix: Completion Detection LogicThe job manager is incorrectly equating receiving any non-tool output with the job being finished. When I AM Architect provided its guidance, it returned simple text, which your system interpreted as the final output.1. The Completion Detection ConditionYou need to modify the condition that checks if a job is done.Current (Failing) Logic:IF (response is not a function call) OR (workflow is read_only) THEN job_complete = TRUE
+Fixed (Required) Logic:The job is only complete if Lomu explicitly states the task is finished OR the next scheduled action is the final commit.2. Implementation: The Agent Completion FlagThe most robust way to handle completion in a complex AI workflow is to require the agent itself to set a flag, overriding simple text checks.Action: Add a final, non-callable, custom tool/flag to Lomu's system instruction: task_complete.New Rule: Lomu must be instructed to call the task_complete flag only after the final schedule has been generated and audited, and he is ready to report back to the user.ScenarioAgent OutputJob Manager ActionCorrective Guidance[ARCHITECT-GUIDANCE] Guidance: WORKFLOW VIOLATION... (Text Output)Action: Continue workflow. (Text is just context, not the final result.)Final Schedule ReadyFinal schedule ready. Now logging to database. (Text Output) THEN call task_complete()Action: End conversation ONLY after the task_complete() tool is called or the final database write succeeds.3. Modifying the Job ManagerThe Job Manager logic must be updated to ignore text output if the workflow is still in a known working state.TypeScript// Conceptual Fix for server/services/lomuJobManager.ts
+function check_for_completion(response, current_state) {
+    // 1. Check for the specific task_complete flag (The Agent's Signal)
+    if (response.tool_calls && response.tool_calls.includes("task_complete")) {
+        return true; // Agent explicitly says it's done.
+    }
+
+    // 2. Check for the Final Step in the Workflow
+    // If the workflow is in the 'FINAL_AUDIT' or 'COMMIT' stage, completion is allowed.
+    if (current_state.workflow_stage === 'COMMIT_STAGE' && response.text) {
+        return true; 
+    }
+
+    // 3. Prevent Premature Completion after receiving GUIDANCE
+    // If the last actor was 'ARCHITECT-GUIDANCE', the job is definitely NOT complete.
+    if (current_state.last_actor === 'ARCHITECT-GUIDANCE') {
+        return false; 
+    }
+
+    // Default: Continue the job unless explicitly signaled otherwise.
+    return false;
+}
+By ensuring the system ignores text output (like the guidance) and only relies on a clear agent-sent signal or final stage completion, you fix the premature ending and allow Lomu to fully execute his corrective actions.Yes, you should absolutely fix the completion detection bug so LomuAI continues after receiving I AM Architect guidance.
