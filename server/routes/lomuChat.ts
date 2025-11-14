@@ -1782,43 +1782,58 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         console.log(`[GAP-4] ✅ Token count healthy (${currentTokens}/${MAX_GEMINI_TOKENS}), no summarization needed`);
       }
 
-      // 🔄 SESSION LIFECYCLE - Ensure conversation is active (renew if idle > 30min)
-      await ensureActiveSession(conversationState.id);
-      
-      // Re-fetch conversation state after potential renewal
-      const [refreshedState] = await db
-        .select()
-        .from(conversationStates)
-        .where(eq(conversationStates.id, conversationState.id));
-      
-      if (refreshedState) {
-        conversationState = refreshedState;
-      }
-
-      // 🛑 GAP 2: EMERGENCY BRAKES - Check limits before API call
+      // 🛑 GAP 2: EMERGENCY BRAKES - Check limits BEFORE session renewal
       // Prevent runaway costs by enforcing global limits
       const emergencyBrakeTriggered = {
         triggered: false,
         reason: '' as string,
       };
 
-      // Check 1: Wall clock time (10 minutes max)
-      if (conversationState.conversationStartTime) {
-        const elapsed = Date.now() - new Date(conversationState.conversationStartTime).getTime();
-        if (elapsed > EMERGENCY_LIMITS.MAX_WALL_CLOCK_TIME) {
+      // Check 1: Idle time (30 minutes max since last interaction)
+      // ✅ CRITICAL: Check BEFORE ensureActiveSession() updates lastInteractionAt!
+      if (conversationState.lastInteractionAt) {
+        const idleTime = Date.now() - new Date(conversationState.lastInteractionAt).getTime();
+        if (idleTime > EMERGENCY_LIMITS.SESSION_IDLE_TIMEOUT) {
           emergencyBrakeTriggered.triggered = true;
-          emergencyBrakeTriggered.reason = '⏱️ Safety limit reached: Conversation exceeded 10 minutes. Please start a new conversation for better performance.';
+          emergencyBrakeTriggered.reason = '⏱️ Safety limit reached: Conversation idle for 30+ minutes. Please start a new conversation for better performance.';
+        }
+      }
+      
+      // Check 2: Total conversation duration (60 minutes max, even if active)
+      // Prevents indefinite runaway sessions while allowing complex tasks
+      if (conversationState.conversationStartTime) {
+        const totalDuration = Date.now() - new Date(conversationState.conversationStartTime).getTime();
+        const MAX_TOTAL_DURATION = 60 * 60 * 1000; // 60 minutes
+        if (totalDuration > MAX_TOTAL_DURATION) {
+          emergencyBrakeTriggered.triggered = true;
+          emergencyBrakeTriggered.reason = '⏱️ Safety limit reached: Conversation exceeded 60 minutes total duration. Please start a new conversation for better performance.';
         }
       }
 
-      // Check 2: API call count (50 calls max per session)
+      // If no emergency brake triggered, proceed with session renewal
+      if (!emergencyBrakeTriggered.triggered) {
+        // 🔄 SESSION LIFECYCLE - Ensure conversation is active (renew if idle > 30min)
+        await ensureActiveSession(conversationState.id);
+        
+        // Re-fetch conversation state after potential renewal
+        const [refreshedState] = await db
+          .select()
+          .from(conversationStates)
+          .where(eq(conversationStates.id, conversationState.id));
+        
+        if (refreshedState) {
+          conversationState = refreshedState;
+        }
+      }
+
+      // Check 3: API call count (50 calls max per session)
       const currentApiCallCount = conversationState.apiCallCount || 0;
       if (currentApiCallCount >= EMERGENCY_LIMITS.MAX_API_CALLS_PER_SESSION) {
         emergencyBrakeTriggered.triggered = true;
         emergencyBrakeTriggered.reason = '🛑 Safety limit reached: Maximum API calls (50) exceeded. Please start a new conversation to continue.';
       }
 
-      // Check 3: Session token limit (500K tokens max)
+      // Check 4: Session token limit (500K tokens max)
       if (currentTokens > EMERGENCY_LIMITS.MAX_SESSION_TOKENS) {
         emergencyBrakeTriggered.triggered = true;
         emergencyBrakeTriggered.reason = '💾 Safety limit reached: Conversation memory exceeded 500K tokens. Please start a new conversation.';

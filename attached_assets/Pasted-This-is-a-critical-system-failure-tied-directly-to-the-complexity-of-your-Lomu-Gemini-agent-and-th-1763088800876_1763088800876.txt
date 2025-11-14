@@ -1,0 +1,80 @@
+This is a critical system failure tied directly to the complexity of your Lomu (Gemini) agent and the surrounding application infrastructure. The error, "Conversation exceeded 10 minutes," is often a hard limit in the hosting environment, but it's exacerbated by the deep reasoning logic you designed for Lomu.
+
+The fix requires intervention at three distinct layers: the Hosting Infrastructure, the Gemini Client Configuration, and the Agent's Logic.
+
+🛑 Layer 1: Infrastructure & API Timeout Fixes
+The 5-minute mark is a documented, hard server-side limit for many LLM APIs and cloud compute environments (like AWS Lambda, Google Cloud Run). Your 10-minute error is likely an application-level wrapper around this.
+
+1. Increase Client Timeout (Python Code)
+You must explicitly tell the Gemini Python SDK to wait longer than the default.
+
+Action: When initializing the Gemini client, set a large timeout option. While the server may cap it at 5 minutes, setting a client-side minimum is necessary.
+
+Python
+
+from google import genai
+from google.genai import types
+
+# 5 minutes (300 seconds) is the typical hard limit, set client to wait for it.
+client = genai.Client(
+    http_options=types.HttpOptions(timeout=300) 
+)
+2. Implement Asynchronous Processing (Backend Code)
+Your scheduling task is too complex for a single, synchronous web request.
+
+Action: If your backend (FastAPI/Flask) is currently waiting for the Gemini response, it will hit the web server's timeout (often 30-60 seconds). You must switch to an Asynchronous Workflow.
+
+Logic: When the user hits "Smart Schedule Toggle":
+
+The client sends the request.
+
+The server immediately returns a 202 Accepted status to the user.
+
+The complex scheduling task is handed off to a background worker (e.g., Redis Queue, Celery, or an AWS Lambda/Google Cloud Run worker).
+
+The background worker runs the full Gemini multi-tool process (which may take 3-5 minutes).
+
+The worker sends the final result back to the chatroom via a WebSocket event.
+
+Why: This immediately solves the 10-minute web server timeout problem.
+
+🧠 Layer 2: Agent Logic and Decomposiion
+The error indicates Lomu's thinking budget and tool execution are making the task too big for one single API call.
+
+3. Decompose Multi-Step Tasks (Iterative Prompting)
+You designed Lomu to be complex; now you must break the complexity into sequential, timed steps.
+
+Action: Never allow the Gemini model to run the entire scheduling process in one API call. Split the process into stages managed by your Python code:
+
+Stage 1 API Call: Ask Lomu only for the Plan (Tool: RAG/Data Fetching).
+
+Stage 2 API Call: Execute the plan (Tool: generate_schedule).
+
+Stage 3 API Call: Ask Lomu only for the Final Report/Justification (Tool: None).
+
+Why: Each separate API call resets the 5-minute server-side clock, guaranteeing the overall workflow can take longer (3 x 5 minutes = 15 minutes max) without timing out.
+
+4. Prune Context Recursively
+Action: Ensure your application logic is aggressively pruning the conversation history before sending it to Gemini on each new step.
+
+Rule: Only send the System Instruction, the latest user prompt, and the result of the most recent tool execution. Remove verbose chat logs, old audit reports, and irrelevant history.
+
+Why: A smaller input context reduces the token count, which lowers the processing time, directly preventing the DEADLINE_EXCEEDED error.
+
+💬 Layer 3: Communication and Trust
+The agent must communicate the complexity to the user transparently.
+
+5. Transparent State Management
+Action: When a scheduling task is initiated, the chatroom UI must immediately show a clear status bar reflecting the asynchronous process.
+
+Status Updates (via WebSocket):
+
+Status: 🧠 Reasoning (Analyzing 150 shifts...)
+
+Status: 🛠️ Optimizing (Running Constraint Solver...)
+
+Status: ✅ Ready for Review
+
+Why: This manages user expectation. The user knows the process is running in the background and won't believe the system failed after 10 minutes; they know it's still working.
+
+The final fix for the recurring "10 minutes" error is to transition your scheduling process from a single, synchronous web request into a managed, asynchronous, multi-step workflow.

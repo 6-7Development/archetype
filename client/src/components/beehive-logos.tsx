@@ -168,23 +168,40 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
           {/* MAIN TECH BEE - Center Stage */}
           <TechBee x={0} y={0} scale={beeScale} idPrefix={idPrefix} />
 
-          {/* BUZZING WORKER BEES - Animated helpers swarming around the hive */}
+          {/* BUZZING WORKER BEES - MUCH LARGER & VISIBLE swarming around the Queen */}
           {size !== "sm" && (
-            <g opacity="0.7">
-              {/* Top Left Worker Bee - Animated */}
+            <g opacity="0.95">
+              {/* Top Left Worker Bee - Flying patrol */}
               <g className="worker-bee-1">
-                <WorkerBee x={-18} y={-15} scale={0.35} rotation={-25} idPrefix={`${idPrefix}-w1`} />
+                <WorkerBee x={-32} y={-28} scale={0.85} rotation={-20} idPrefix={`${idPrefix}-w1`} />
               </g>
               
-              {/* Top Right Worker Bee - Animated */}
+              {/* Top Right Worker Bee - Flying patrol */}
               <g className="worker-bee-2">
-                <WorkerBee x={18} y={-15} scale={0.35} rotation={25} idPrefix={`${idPrefix}-w2`} />
+                <WorkerBee x={32} y={-28} scale={0.85} rotation={20} idPrefix={`${idPrefix}-w2`} />
               </g>
               
-              {/* Bottom Worker Bee - Animated (only on large) */}
+              {/* Left Worker Bee - Side patrol */}
+              <g className="worker-bee-4">
+                <WorkerBee x={-38} y={0} scale={0.8} rotation={-45} idPrefix={`${idPrefix}-w4`} />
+              </g>
+              
+              {/* Right Worker Bee - Side patrol */}
+              <g className="worker-bee-5">
+                <WorkerBee x={38} y={0} scale={0.8} rotation={45} idPrefix={`${idPrefix}-w5`} />
+              </g>
+              
+              {/* Bottom Left Worker Bee - Lower patrol */}
               {size === "lg" && (
-                <g className="worker-bee-3">
-                  <WorkerBee x={0} y={22} scale={0.35} rotation={0} idPrefix={`${idPrefix}-w3`} />
+                <g className="worker-bee-6">
+                  <WorkerBee x={-28} y={32} scale={0.75} rotation={-10} idPrefix={`${idPrefix}-w6`} />
+                </g>
+              )}
+              
+              {/* Bottom Right Worker Bee - Lower patrol */}
+              {size === "lg" && (
+                <g className="worker-bee-7">
+                  <WorkerBee x={28} y={32} scale={0.75} rotation={10} idPrefix={`${idPrefix}-w7`} />
                 </g>
               )}
             </g>
