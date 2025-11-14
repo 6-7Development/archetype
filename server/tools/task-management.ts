@@ -49,6 +49,8 @@ export async function createTaskList(params: {
   }>;
 }): Promise<{ success: boolean; taskListId?: string; tasks?: Array<{ id: string; title: string; status: string }>; error?: string }> {
   try {
+    console.log('[TASK-MGMT] createTaskList called with userId:', params.userId, 'title:', params.title);
+
     // Verify project ownership if projectId provided
     if (params.projectId) {
       const { projects } = await import('@shared/schema');
@@ -59,6 +61,7 @@ export async function createTaskList(params: {
         .limit(1);
 
       if (!project) {
+        console.error('[TASK-MGMT] Unauthorized: Project does not belong to user', params.userId);
         return {
           success: false,
           error: 'Unauthorized: Project does not belong to user',
@@ -70,6 +73,7 @@ export async function createTaskList(params: {
     const validStatuses = ['pending', 'in_progress'];
     for (const task of params.tasks) {
       if (task.status && !validStatuses.includes(task.status)) {
+        console.error('[TASK-MGMT] Invalid task status:', task.status);
         return {
           success: false,
           error: `Invalid task status: ${task.status}. Must be 'pending' or 'in_progress'`,
@@ -93,6 +97,8 @@ export async function createTaskList(params: {
       .values(taskListData)
       .returning();
 
+    console.log('[TASK-MGMT] Task list created:', taskList);
+
     // Create individual tasks with validation and return their IDs
     const createdTasks: Array<{ id: string; title: string; status: string }> = [];
     if (params.tasks && params.tasks.length > 0) {
@@ -114,6 +120,7 @@ export async function createTaskList(params: {
         title: t.title,
         status: t.status
       })));
+      console.log('[TASK-MGMT] Created tasks:', createdTasks);
     }
 
     // 📡 Broadcast task list creation to user's UI
@@ -158,6 +165,8 @@ export async function updateTask(params: {
   completedAt?: Date;
 }): Promise<{ success: boolean; error?: string }> {
   try {
+    console.log('[TASK-MGMT] updateTask called with userId:', params.userId, 'taskId:', params.taskId, 'status:', params.status);
+
     // First, check if user has any task lists at all
     const userTaskLists = await db
       .select()
@@ -166,6 +175,7 @@ export async function updateTask(params: {
       .limit(1);
 
     if (userTaskLists.length === 0) {
+      console.error('[TASK-MGMT] No task list found for userId:', params.userId);
       return {
         success: false,
         error: 'No task list found. You need to read your task list with read_task_list() first to see available task IDs. Tasks are created automatically when conversations start.',
@@ -189,11 +199,13 @@ export async function updateTask(params: {
         .limit(1);
 
       if (taskExists.length === 0) {
+        console.error('[TASK-MGMT] Task ID not found:', params.taskId);
         return {
           success: false,
           error: `Task ID "${params.taskId}" not found. Call read_task_list() to see your current task IDs and use one of those instead.`,
         };
       } else {
+        console.error('[TASK-MGMT] Task found but does not belong to user:', params.userId, 'taskId:', params.taskId);
         return {
           success: false,
           error: 'Task found but does not belong to you (unauthorized)',
@@ -206,6 +218,7 @@ export async function updateTask(params: {
     // Validate status enum if provided
     const validStatuses = ['pending', 'in_progress', 'completed_pending_review', 'completed', 'cancelled'];
     if (params.status && !validStatuses.includes(params.status)) {
+      console.error('[TASK-MGMT] Invalid status:', params.status);
       return {
         success: false,
         error: `Invalid status: ${params.status}`,
@@ -215,6 +228,7 @@ export async function updateTask(params: {
     // Validate architectReviewed enum if provided
     const validReviewStatuses = ['yes', 'no', 'not_applicable'];
     if (params.architectReviewed && !validReviewStatuses.includes(params.architectReviewed)) {
+      console.error('[TASK-MGMT] Invalid architectReviewed status:', params.architectReviewed);
       return {
         success: false,
         error: `Invalid architectReviewed status: ${params.architectReviewed}`,
@@ -243,6 +257,8 @@ export async function updateTask(params: {
       .set(updateData)
       .where(and(eq(tasks.id, params.taskId), eq(tasks.taskListId, taskList.id)))
       .returning();
+
+    console.log('[TASK-MGMT] Task updated:', updatedTask);
 
     // Calculate real progress based on task completion
     const allTasks = await db
@@ -295,6 +311,8 @@ export async function readTaskList(params: {
   error?: string;
 }> {
   try {
+    console.log('[TASK-MGMT] readTaskList called with userId:', params.userId, 'taskListId:', params.taskListId, 'projectId:', params.projectId);
+
     // Build WHERE conditions properly using and()
     const conditions = [eq(taskLists.userId, params.userId)];
 
@@ -324,6 +342,8 @@ export async function readTaskList(params: {
         };
       })
     );
+
+    console.log('[TASK-MGMT] readTaskList returning:', listsWithTasks);
 
     return {
       success: true,
