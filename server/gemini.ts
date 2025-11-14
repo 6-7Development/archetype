@@ -47,6 +47,7 @@ interface StreamOptions {
   system: string;
   messages: any[];
   tools?: any[];
+  toolConfig?: any;  // Optional tool config for forced function calls
   signal?: AbortSignal;
   onChunk?: (chunk: any) => void;
   onThought?: (thought: string) => void;
@@ -290,6 +291,7 @@ export async function streamGeminiResponse(options: StreamOptions) {
     system,
     messages,
     tools,
+    toolConfig,
     signal,
     onChunk,
     onThought,
@@ -397,20 +399,28 @@ If you need to call a function, emit ONLY the JSON object.`),
     if (geminiTools && geminiTools.length > 0 && geminiTools[0]?.functionDeclarations) {
       requestParams.tools = geminiTools;
       
-      // ✅ FORCE MODE: Use mode: ANY when forceFunctionCall is true to prevent text-based malformed calls
-      // mode: 'AUTO' (default) = Gemini decides when to use tools vs return text
-      // mode: 'ANY' (forced) = Gemini MUST call a tool (prevents outputting function calls as text)
-      const functionNames = geminiTools[0].functionDeclarations.map((fn: any) => fn.name);
-      
-      const callingMode = options.forceFunctionCall ? 'ANY' : 'AUTO';
-      
-      requestParams.toolConfig = {
-        functionCallingConfig: {
-          mode: callingMode,
-        }
-      };
-      
-      console.log(`[GEMINI-TOOLCONFIG] mode: ${callingMode}, forceFunctionCall: ${options.forceFunctionCall || false}, ${functionNames.length} functions available:`, functionNames.slice(0, 5).join(', '));
+      // Use custom toolConfig if provided (for forced retries), otherwise use default
+      if (toolConfig) {
+        requestParams.toolConfig = {
+          functionCallingConfig: toolConfig.function_calling_config
+        };
+        console.log('[GEMINI-TOOLCONFIG] Using custom tool config:', JSON.stringify(toolConfig));
+      } else {
+        // ✅ FORCE MODE: Use mode: ANY when forceFunctionCall is true to prevent text-based malformed calls
+        // mode: 'AUTO' (default) = Gemini decides when to use tools vs return text
+        // mode: 'ANY' (forced) = Gemini MUST call a tool (prevents outputting function calls as text)
+        const functionNames = geminiTools[0].functionDeclarations.map((fn: any) => fn.name);
+        
+        const callingMode = options.forceFunctionCall ? 'ANY' : 'AUTO';
+        
+        requestParams.toolConfig = {
+          functionCallingConfig: {
+            mode: callingMode,
+          }
+        };
+        
+        console.log(`[GEMINI-TOOLCONFIG] mode: ${callingMode}, forceFunctionCall: ${options.forceFunctionCall || false}, ${functionNames.length} functions available:`, functionNames.slice(0, 5).join(', '));
+      }
     }
 
     // 🔍 DEBUG: Log what we're sending to Gemini
@@ -481,30 +491,43 @@ If you need to call a function, emit ONLY the JSON object.`),
               }
             }
             
-            // 🔄 RETRY LOGIC: Attempt to recover by retrying with clarifying message
-            if (retryCount < MAX_RETRIES) {
+            // 🔄 RETRY LOGIC: Force function call with mode: ANY (per Gemini resilience guidance)
+            if (retryCount < MAX_RETRIES && attemptedFunction) {
+              retryCount++;
+              console.log(`[GEMINI-RETRY] Forcing function call with mode: ANY (${retryCount}/${MAX_RETRIES})...`);
+              console.log(`[GEMINI-RETRY] Forcing function: ${attemptedFunction}`);
+              
+              // Build DISCIPLINED corrective instruction (per Gemini resilience engineering)
+              const clarifyingContent = `🛑 SYSTEM ERROR: The last output was malformed. You must not use Python syntax. You must IMMEDIATELY RETRY the tool call using ONLY the JSON structure. Do not add any explanatory text or commentary.`;
+              
+              const clarifyingMessage: any = {
+                role: 'user',
+                content: clarifyingContent
+              };
+              
+              // Recursive retry with FORCED function call
+              const retryMessages = [...messages, clarifyingMessage];
+              
+              // Force the specific function call using mode: ANY
+              const forcedToolConfig = {
+                function_calling_config: {
+                  mode: 'ANY' as const,
+                  allowed_function_names: [attemptedFunction]
+                }
+              };
+              
+              console.log('[GEMINI-RETRY] Using forced tool config:', JSON.stringify(forcedToolConfig));
+              
+              return streamGeminiResponse({
+                ...options,
+                messages: retryMessages,
+                toolConfig: forcedToolConfig,
+              });
+            } else if (retryCount < MAX_RETRIES && !attemptedFunction) {
               retryCount++;
               console.log(`[GEMINI-RETRY] Retrying with clarifying message (${retryCount}/${MAX_RETRIES})...`);
               
-              // Build clarifying message based on whether we know the function name
-              let clarifyingContent: string;
-              if (attemptedFunction) {
-                // We know the function - provide specific guidance
-                clarifyingContent = `Your last response used invalid function syntax. Please respond with ONLY a pure JSON object in this exact format:
-{"name":"${attemptedFunction}","args":{"param1":"value1"}}
-
-Do NOT use Python syntax like: ${attemptedFunction}(param1="value1")
-Do NOT wrap in code blocks or backticks.
-Return ONLY the raw JSON object.`;
-              } else {
-                // We don't know the function - provide generic guidance
-                clarifyingContent = `Your last response used invalid function syntax. Please respond with ONLY a pure JSON function call object in this exact format:
-{"name":"function_name","args":{"param":"value"}}
-
-Do NOT use Python-like syntax.
-Do NOT wrap in code blocks or backticks.
-Return ONLY the raw JSON object.`;
-              }
+              const clarifyingContent = `🛑 SYSTEM ERROR: The last output was malformed. You must not use Python syntax. You must IMMEDIATELY RETRY the tool call using ONLY the JSON structure. Do not add any explanatory text or commentary.`;
               
               const clarifyingMessage: any = {
                 role: 'user',

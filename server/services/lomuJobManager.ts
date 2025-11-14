@@ -2069,7 +2069,7 @@ Let's build! 🚀`;
           .filter(msg => msg.role === 'assistant' && !msg.content?.some?.((c: any) => c.type === 'tool_use'))
           .length;
 
-        const isStuck = noProgressCount >= 2;
+        const isStuck = noProgressCount >= 4; // Increased from 2 to 4 per architect guidance
 
         // DECISION LOGIC
         if (hasCompletionKeyword && !hasIncompleteTasks) {

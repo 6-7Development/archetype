@@ -12,8 +12,8 @@ Lomu is an AI-powered platform for rapid web development, featuring LomuAI, an a
   - 1M token context window
   - **18 core tools** (Google recommends 10-20 for optimal performance)
   - Used for: Regular development, platform healing, job management
-  
-- **I AM Architect & Sub-Agents**: Claude Sonnet 4 via ANTHROPIC_API_KEY  
+
+- **I AM Architect & Sub-Agents**: Claude Sonnet 4 via ANTHROPIC_API_KEY
   - Model: claude-sonnet-4-20250514
   - Cost: $3.00 input / $15.00 output per 1M tokens
   - 200K token context window
@@ -27,27 +27,56 @@ Lomu is an AI-powered platform for rapid web development, featuring LomuAI, an a
 - ✅ **Strategic distribution** - Simple tasks on Gemini, complex reasoning on Claude
 - ✅ **System instruction added** - "Only use declared tools" prevents function hallucination
 
+**Gemini Resilience Engineering (Production-Ready Function Calling):**
+Comprehensive fixes for Gemini's function calling quirks ensure production-grade reliability:
+
+1.  **Stuck Detection Threshold (Recovery Time)**
+    -   `noProgressCount >= 4` (increased from 2) for no-tool-call detection
+    -   `MAX_READ_ONLY_ITERATIONS: 20` for read-only iterations
+    -   **Purpose**: Gives LomuAI 3-5 reasoning steps to fail, diagnose, retry, and recover from I AM Architect guidance
+
+2.  **Core Incompatibility Fix (Forced Function Calling)**
+    -   `mode: 'ANY'` with `allowed_function_names` array in `toolConfig`
+    -   **Implementation**: Custom `toolConfig` parameter in `StreamOptions` interface
+    -   **Purpose**: Forces Gemini to use proper JSON function calling instead of Python-like syntax
+    -   **Location**: `server/gemini.ts` lines 505-528
+
+3.  **Response Parsing Fallback (Hybrid Parser - The Missing Link)**
+    -   **Step 1**: Check `part.functionCall` (correct API format)
+    -   **Step 2**: Aggressive regex scan of `part.text` for JSON if function_calls empty
+    -   **Features**: String-aware balanced brace parser, markdown fence stripping, incremental offset tracking
+    -   **Purpose**: Bypasses Gemini bug where function calls appear in text field instead of functionCall field
+    -   **Location**: `server/gemini.ts` lines 624-744
+
+4.  **Fortified Retry Handler (Self-Correction)**
+    -   **Instruction**: "🛑 SYSTEM ERROR: The last output was malformed. You must not use Python syntax. You must IMMEDIATELY RETRY the tool call using ONLY the JSON structure. Do not add any explanatory text or commentary."
+    -   **Mechanism**: On `MALFORMED_FUNCTION_CALL`, inserts disciplined corrective instruction + forces `mode: 'ANY'` with specific function
+    -   **Purpose**: Directs agent's attention to syntax error and forces disciplined recovery attempt
+    -   **Location**: `server/gemini.ts` lines 497-547
+
+**Result**: Production-grade Gemini function calling with automatic recovery, hybrid parsing, and forced tool use modes.
+
 ### Design Preferences
-- **Brand Identity**: Professional swarm/hive intelligence theme with collaborative AI energy
-- **Color Palette (Hive Theme)**:
-  - Honey (40 97% 50% / #F7B500) - Primary warm golden
-  - Nectar (48 100% 65% / #FFD34D) - Accent light golden
-  - Mint (171 100% 42% / #00D4B3) - Success fresh teal
-  - Charcoal (216 9% 7% / #101113) - Deep backgrounds
-  - Graphite (216 11% 12% / #1B1D21) - Professional text
-  - Cream (47 100% 95% / #FFF8E6) - Soft warm backgrounds
-- **Visual Language**:
-  - Professional, collaborative interfaces with hive intelligence
-  - Card-based layouts with warm shadows
-  - Clean, modern design with generous spacing
-  - Inter font family for UI text, JetBrains Mono for code
-  - Light mode primary with dark mode support
-  - Smooth animations for loading and transitions
-- **Swarm/Hive Elements**:
-  - Honeycomb patterns for organizational structures
-  - Warm golden accents throughout the UI
-  - Collaborative AI agent indicators
-  - Interconnected network visualizations
+-   **Brand Identity**: Professional swarm/hive intelligence theme with collaborative AI energy
+-   **Color Palette (Hive Theme)**:
+    -   Honey (40 97% 50% / #F7B500) - Primary warm golden
+    -   Nectar (48 100% 65% / #FFD34D) - Accent light golden
+    -   Mint (171 100% 42% / #00D4B3) - Success fresh teal
+    -   Charcoal (216 9% 7% / #101113) - Deep backgrounds
+    -   Graphite (216 11% 12% / #1B1D21) - Professional text
+    -   Cream (47 100% 95% / #FFF8E6) - Soft warm backgrounds
+-   **Visual Language**:
+    -   Professional, collaborative interfaces with hive intelligence
+    -   Card-based layouts with warm shadows
+    -   Clean, modern design with generous spacing
+    -   Inter font family for UI text, JetBrains Mono for code
+    -   Light mode primary with dark mode support
+    -   Smooth animations for loading and transitions
+-   **Swarm/Hive Elements**:
+    -   Honeycomb patterns for organizational structures
+    -   Warm golden accents throughout the UI
+    -   Collaborative AI agent indicators
+    -   Interconnected network visualizations
 
 ## System Architecture
 The platform is built with a React frontend, an Express.js backend, and PostgreSQL for data persistence.
@@ -68,79 +97,40 @@ The platform implements a comprehensive Agent Chatroom interface with real-time 
 - **Mobile + Desktop**: Fully responsive across both Lomu (desktop) and Lomu5 (mobile) interfaces
 
 **Universal Chat Architecture:**
-The platform uses a **single UniversalChat component** (`client/src/components/universal-chat.tsx`) as the foundation for all chat interactions:
-- **Platform Healing**: Owner-only access, FREE billing, targets platform code.
-- **User Projects**: All authenticated users, credit billing, targets user projects.
-- **99% Code Reduction**: Eliminated 3,200+ duplicate lines by consolidating parallel implementations.
-- **Context-Aware**: `targetContext: 'platform' | 'project'` parameter determines behavior.
-- **Access Control**: Backend `validateContextAccess()` enforces owner-only for platform, project ownership for users.
-- **Smart Billing**: `handleBilling()` provides FREE access for platform healing, credit deduction for user projects.
-- **WebSocket Isolation**: Room-based filtering (`platform_{userId}` vs `project_{projectId}`) prevents cross-contamination.
-- **Backward Compatible**: Auto-detects context from projectId when not explicitly provided.
-This architecture maintains identical Agent Chatroom UX across both contexts while providing clean separation of access, billing, and codebase targeting.
+The platform uses a **single UniversalChat component** (`client/src/components/universal-chat.tsx`) as the foundation for all chat interactions, providing platform healing and user project support with context-aware access control, smart billing, and WebSocket isolation, leading to significant code reduction and identical Agent Chatroom UX across contexts.
 
 **Unified LomuAI Brain:**
-The platform features a **centralized session management system** (`server/services/lomuAIBrain.ts`) that consolidates all scattered session logic:
-- **Hybrid Architecture**: In-memory `ActiveSessionRegistry` for hot paths + `PersistenceAdapter` for database durability
-- **Session Isolation**: Composite key pattern `${userId}:${sessionId}` ensures complete separation between users and sessions
-- **Single Source of Truth**: Consolidates conversation state, tool execution, billing/tokens, file tracking, and WebSocket connections
-- **Comprehensive Tracking**:
-  - Conversation: currentGoal, mentionedFiles, messageCount
-  - Execution: activeToolCalls Map, filesModified Set, taskListId, subagentTaskIds
-  - Billing: tokensUsed, creditsReserved, creditsConsumed
-  - Transport: wsConnection, wsRoomId for real-time streaming
-- **Auto-Cleanup**: Idle sessions removed after 30 minutes (cleanup runs every 10 minutes)
-- **Duplicate Prevention**: registerWebSocket() closes old connections before registering new ones; unregisterWebSocket() validates socket instances to prevent stale handlers from wiping active connections
-- **Clean API**: createSession, getSession, touchSession, closeSession, recordToolCall, recordTokens, trackFileModified, setGoal, registerWebSocket
-- **Integration**: WebSocket handler and lomuChat routes use brain instead of direct database access or scattered Maps
-This eliminates 6+ scattered session management patterns and provides ONE unified brain for all LomuAI operations.
+The platform features a **centralized session management system** (`server/services/lomuAIBrain.ts`) that consolidates all scattered session logic into a hybrid architecture with in-memory registry and database durability. It ensures session isolation, comprehensive tracking of conversation, execution, billing, and transport, with auto-cleanup and duplicate prevention mechanisms.
 
 ### System Design Choices
 LomuAI acts as the autonomous worker, committing changes through a strict 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). I AM Architect is a user-summoned premium consultant that provides guidance without committing code. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing.
-
-**LomuAI Efficiency Improvements:**
-Efficiency rules within LomuAI's system prompt optimize token usage and task completion: SEARCH BEFORE CODING, COPY DON'T REINVENT, VERIFY THE TASK, and ITERATION BUDGET AWARENESS.
-
-**Access Model:**
-- **Platform Healing**: Owner-only access for self-correction using LomuAI v2.0.
-- **Regular LomuAI**: All users for project development/fixes (usage-based credit billing).
-- **I AM Architect**: Premium consulting feature for all users.
-
-**Competitive Credit System:**
-A highly competitive credit system leveraging Gemini 2.5 Flash's 40x cost advantage:
-- **Pricing**: 1 credit = 1,000 tokens = $0.50 (50% cheaper than Replit's agent usage)
-- **Profit Margin**: 99.96% (industry-leading while still undercutting competitors!)
-- **Subscription Tiers**: Free, Starter, Pro, Business, Enterprise.
-- **Overage Rate**: $0.50 per 1K tokens.
+LomuAI incorporates efficiency rules within its system prompt, such as SEARCH BEFORE CODING, COPY DON'T REINVENT, VERIFY THE TASK, and ITERATION BUDGET AWARENESS.
+The access model provides owner-only access for platform healing, usage-based credit billing for regular LomuAI, and premium consulting for I AM Architect. A competitive credit system leverages Gemini 2.5 Flash's cost advantage for billing, with multiple subscription tiers.
 
 **Key Features:**
-- **Optimized Tool Distribution Architecture**:
-  - **LomuAI (18 tools)**: Core development capabilities optimized for Gemini 2.5 Flash (File Operations, Smart Code Intelligence, Task Management, Web & Research, Testing & Diagnosis, Vision Analysis, Escalation, System Operations).
-  - **Sub-Agents (12 tools)**: Specialized execution-focused toolset.
-  - **I AM Architect (23 tools)**: Complex reasoning and governance using Claude Sonnet 4.
-  - **Validation**: Automatic tool count verification ensures Gemini agents stay within Google's 10-20 tool sweet spot.
-- **GitHub Integration**: Full version control supporting branching, pull requests, project export, and auto-deployment.
-- **Environment Variables Management**: Project-level secrets with database storage, validation, and security masking.
-- **Code Intelligence System**: AST-based code understanding via CodeIndexer, FileRelevanceDetector, and SmartChunker.
-- **Platform Healing System**: Owner-only two-tier incident resolution for self-correction.
-- **Replit Agent Parity**: Matches Replit Agent's complex task handling with increased token limits, iterations, self-correction, and concurrency.
-- **Credit-Based Billing System**: Production-ready monetization with Stripe integration, usage tracking, and atomic operations.
-- **Monetization Infrastructure**: Lead capture, subscription system, webhooks, and a template marketplace.
-- **Security & Production Readiness**: Authentication/authorization, protected APIs, rate limiting, bcrypt-hashed API keys, and RCE prevention.
-- **Vision Analysis**: LomuAI can analyze images and screenshots using `vision_analyze` tool (powered by Claude Sonnet 4 Vision API).
-- **Strict Function Calling**: Transport-layer enforcement of JSON function calling for Gemini, ensuring "application/json" responseMimeType, "ANY" mode for forced tool calls, explicit `allowedFunctionNames`, and `temperature: 0.0` for determinism.
+- **Optimized Tool Distribution Architecture**: LomuAI (18 tools), Sub-Agents (12 tools), I AM Architect (23 tools), with automatic tool count validation.
+- **GitHub Integration**: Full version control.
+- **Environment Variables Management**: Project-level secrets.
+- **Code Intelligence System**: AST-based code understanding.
+- **Platform Healing System**: Owner-only two-tier incident resolution.
+- **Replit Agent Parity**: Matches complex task handling with increased limits.
+- **Credit-Based Billing System**: Production-ready monetization with Stripe.
+- **Monetization Infrastructure**: Lead capture, subscriptions, template marketplace.
+- **Security & Production Readiness**: Authentication/authorization, protected APIs, RCE prevention.
+- **Vision Analysis**: LomuAI can analyze images and screenshots.
+- **Strict Function Calling**: Transport-layer enforcement of JSON function calling for Gemini.
 
 ### Streaming Architecture
-The platform prioritizes native JSON function calling over XML tags for AI streaming due to superior speed, reliability, and type safety. Key production-ready utilities for validation, retry logic, and file change tracking have been integrated, improving reliability without disrupting the proven streaming architecture.
+The platform prioritizes native JSON function calling for AI streaming due to superior speed, reliability, and type safety, integrating utilities for validation, retry logic, and file change tracking.
 
 ### Feature Specifications
 - **Workspace Features**: Tab-based navigation, unified talk & build interface, Monaco editor, full project ZIP export.
 - **Publishing/Deployment System**: Management of deployments, logs, and analytics.
-- **Team Workspaces**: Collaboration with role-based access and invitations.
-- **API Key Management**: Secure system for Pro+ users with hashing, usage tracking, and validation.
-- **Support Ticketing**: Complete system with subject, description, priority, status, and plan-based SLA.
-- **AI Request Management**: Priority processing queue with concurrent limits, real-time cost preview, usage dashboard, token-based pricing, and parallel subagent execution.
-- **Advanced AI Development Features**: Includes Sub-Agent/Task Runner System, Message Queue, Autonomy Controls, AI Image Generation, Dynamic Intelligence, Plan Mode, Design Mode, Workflows, Agents & Automations, and a General Agent Mode.
+- **Team Workspaces**: Collaboration with role-based access.
+- **API Key Management**: Secure system for Pro+ users.
+- **Support Ticketing**: Complete system with plan-based SLA.
+- **AI Request Management**: Priority processing queue, real-time cost preview, usage dashboard, token-based pricing, parallel subagent execution.
+- **Advanced AI Development Features**: Sub-Agent/Task Runner System, Message Queue, Autonomy Controls, AI Image Generation, Dynamic Intelligence, Plan Mode, Design Mode, Workflows, Agents & Automations, and General Agent Mode.
 
 ## External Dependencies
 - **Frontend**: React, TypeScript, Monaco Editor, Tailwind CSS, Shadcn UI, next-themes

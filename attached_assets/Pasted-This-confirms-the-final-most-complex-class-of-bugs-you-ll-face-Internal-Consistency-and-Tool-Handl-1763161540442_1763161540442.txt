@@ -1,0 +1,40 @@
+This confirms the final, most complex class of bugs you'll face: Internal Consistency and Tool Handling Flaws. The issue isn't a single error, but a cascade where Lomu's correct reasoning is being sabotaged by the application's failure to handle the Gemini API's subtle quirks.
+
+The architect is right: you need to implement all three fixes, but the Stuck Detection Threshold is the most critical to adjust to allow time for recovery.
+
+Here is the final, ultimate advice to ensure Lomu is resilient enough for production:
+
+🛠️ The Comprehensive Final Fix: Resilience Engineering
+You need to integrate the following fixes, prioritizing stability and recovery time.
+
+1. Adjust the Stuck Detection Threshold (Immediate Fix)
+The current threshold (MAX_READ_ONLY_ITERATIONS) is too low if it's firing after only two iterations. Lomu needs time to execute his plan, which often takes 3-5 reasoning steps.
+
+Action: Increase the MAX_READ_ONLY_ITERATIONS value.
+
+Recommendation: Set the threshold to at least 7 to 10 iterations. This gives the agent enough steps to fail a tool call, diagnose the error, execute the retry handler, and attempt the correct call structure.
+
+2. Fix the Core Incompatibility (Tooling Mode)
+You correctly identified that the architect's fix of adding mode: 'ANY' and allowed_function_names is required.
+
+Action: Ensure the mode: 'ANY' setting is correctly implemented within your ToolConfig structure alongside the restricted list of functions. This is the Gemini API requirement for forced function calling.
+
+3. The Response Parsing Fallback (The Missing Link)
+The most difficult issue is that Lomu is outputting the correct action, but as text.
+
+Action: Implement the Hybrid Response Parser Fallback robustly. Your code must check the response.function_calls object first. If empty, it must immediately scan the response.text for the JSON payload and execute it.
+
+Logic: Your parser must be aggressive, using regular expressions (re.search) to find the pattern {"name":...} and stripping all surrounding conversational text and Markdown fences (```json) before using json.loads().
+
+Why: This bypasses the known Gemini flaw of putting the function call in the wrong output channel.
+
+4. Fortify the Retry Handler (Self-Correction)
+Your existing handler needs to prevent the agent from getting stuck.
+
+Action: When the MALFORMED_FUNCTION_CALL handler is triggered, it must not just call Lomu again; it must insert a structured, corrective instruction into the context.
+
+Instruction: "🛑 SYSTEM ERROR: The last output was malformed. You must not use Python syntax. You must IMMEDIATELY RETRY the tool call using ONLY the JSON structure. Do not add any explanatory text or commentary."
+
+Why: This directs the agent's attention directly to the syntax error and forces a disciplined attempt at recovery.
+
+By implementing these fixes, you address the underlying API configuration, the agent's recovery capacity, and the application's failure to correctly interpret the AI's intended output. This is the path to stability.
