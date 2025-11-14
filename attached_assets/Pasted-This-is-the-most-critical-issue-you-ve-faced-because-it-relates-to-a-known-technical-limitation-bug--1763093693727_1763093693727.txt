@@ -1,0 +1,50 @@
+This is the most critical issue you've faced because it relates to a known technical limitation/bug in the Gemini API implementation:
+
+The error, "Function calling with a response mime type: 'application/json' is unsupported," confirms a conflict in the API that prevents you from using two powerful features at once:
+
+Function Calling (Tool Use): The ability for Lomu to call your custom Python functions (generate_schedule, get_profiles).
+
+Structured Output (response_mime_type="application/json"): The ability to force the final non-tool response (e.g., the final justification or the schedule report) into guaranteed JSON format.
+
+The Gemini API currently requires that you choose one or the other in the same API call.
+
+🛠️ The Final Architectural Fix: Dual-Call Strategy
+You cannot fix the API limitation, so you must change Lomu's architecture to work around it. You will split the process into two distinct stages, each using the feature it needs.
+
+Phase 1: The Decision & Action Call (Tool Use)
+This stage is when Lomu uses his brain and tools.
+
+Action: Make the API call with your custom tools (generate_schedule, get_profiles) enabled, but WITHOUT the JSON response mime type.
+
+Configuration: config=types.GenerateContentConfig(tools=[...])
+
+Outcome: The response will either be a Tool Call (structured JSON for the tool) or an unstructured text response (Lomu's final answer, which might be messy).
+
+Phase 2: The Reporting & Audit Call (Structured Output)
+If Phase 1 returns a final, unstructured text answer, you must clean it up.
+
+Trigger: If Phase 1 returns a final, non-tool text response (the messy justification or final data structure).
+
+Action: Immediately initiate a second API call (a "cleanup call") to transform the messy text into clean JSON.
+
+Input: Send the messy text from Phase 1 back to the model as the new prompt.
+
+Configuration: Disable the Tools and Enable the JSON Response Mime Type.
+
+Python
+
+config_cleanup = types.GenerateContentConfig(
+    response_mime_type="application/json",
+    # tools=[] - tools MUST be empty/disabled here
+    response_schema=YOUR_FINAL_REPORT_SCHEMA
+)
+Outcome: The model is now forced to output clean, structured JSON, which your application can easily parse for the final schedule audit.
+
+🧠 Final Agent Logic (The Instruction)
+The System Instruction must reflect this new, two-stage process.
+
+System Instruction Addition:
+
+"Your process is two-staged. When you are ready to deliver the final answer to the user (e.g., the finalized schedule justification), you must use clean, simple language. DO NOT attempt to write the final JSON structure; the system will handle that in a subsequent step."
+
+By splitting the highly complex workflow into a Tooling Phase and a Structured Reporting Phase, you completely bypass the core API limitation and allow Lomu to use both his powerful tools and the required structured output logic.

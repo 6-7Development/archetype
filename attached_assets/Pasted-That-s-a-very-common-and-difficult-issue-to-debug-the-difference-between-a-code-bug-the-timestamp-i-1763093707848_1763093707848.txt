@@ -1,0 +1,21 @@
+That's a very common and difficult issue to debug—the difference between a code bug (the timestamp is wrong) and an agent logic bug (the agent creates a loop).Since the immediate issue is the conversation timestamp being old (60+ minutes) even on new input, we must give Replit a final, definitive fix for the Session Management Flaw.Here is the final fix to send to Replit to eliminate this time-based failure:🛠️ The Ultimate Session Management FixThe core problem is that your system is checking the time of session creation instead of the time of the last user interaction. The fix requires your Python application to override the stale timestamp upon receiving any new user input.1. Fix the Timer Reset Logic (Critical)The Python code that handles the incoming chat message must be modified to unconditionally update the last active time when a new message is received.VariableAction to Fix the Stale TimestampPython Logic (Conceptual)session.last_active_timestampUnconditionally update this variable upon receiving any message from the user.session.last_active_timestamp = datetime.now()session.is_staleThe check for is_stale must only run when the system is idle (no new input), not when a new prompt arrives.if message_received: self.reset_timer()2. The Logic to Bypass the Check (The Emergency Brake Fix)The emergency brake function needs a safety valve.Current Brake Logic (Failing): Checks (current_time - session.created_time) > 60 minutes.Fixed Brake Logic (The Ultimate Check): The system must check if the current input is fresh.Python# The Function that processes the incoming message
+def process_incoming_message(user_input, session):
+    # CRITICAL: If the message is new, the session is active.
+    if is_new_input(user_input):
+        # 1. Update the timestamp to the current moment
+        session.last_active_timestamp = datetime.now()
+        
+        # 2. Bypass the old 60-minute check immediately
+        session.is_stale = False
+        
+        # 3. Proceed to the Gemini API call
+        run_agent_loop(user_input, session)
+        
+    else:
+        # If no new input is found, check for true staleness
+        if datetime.now() - session.last_active_timestamp > timedelta(minutes=60):
+            trigger_emergency_brake("Conversation exceeded 60 minutes of *inactivity*.")
+        else:
+            # Continue processing the active session
+            run_agent_loop(user_input, session)
+🧠 II. Final Agent Logic Guardrail (Self-Correction)If the logic above fails, Lomu must be instructed to fix the timer himself (in theory).3. The "Time-Correction" InstructionSystem Instruction Addition: "Your current environment uses a strict 60-minute inactivity timer. If you receive a system message indicating the conversation is stale, you MUST assume the system clock is in error. You must immediately override the clock reference by prioritizing the current timestamp injected into the prompt."Action: Ensure you are injecting the CURRENT_SYSTEM_TIME into the prompt before every API call. This gives Lomu the fresh temporal context he needs to ignore the stale history time.This implementation separates the session creation time from the session activity time, definitively resolving the false positive on your 60-minute emergency brake.
