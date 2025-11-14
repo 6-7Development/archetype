@@ -21,6 +21,7 @@ export interface BillingMetrics {
 interface StatusStripProps {
   phase: RunPhase;
   message?: string;
+  currentThought?: string;
   isExecuting?: boolean;
   billingMetrics?: BillingMetrics;
 }
@@ -33,10 +34,10 @@ const PHASE_COLORS: Record<RunPhase, string> = {
   complete: 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800'
 };
 
-export function StatusStrip({ phase, message, isExecuting = false, billingMetrics }: StatusStripProps) {
+export function StatusStrip({ phase, message, currentThought, isExecuting = false, billingMetrics }: StatusStripProps) {
   const emoji = PHASE_EMOJIS[phase];
   const defaultMessage = PHASE_MESSAGES[phase];
-  const displayMessage = message || defaultMessage;
+  const displayMessage = currentThought || message || defaultMessage;
 
   // Calculate balance percentage for color coding
   const getBalanceColor = (balance: number, monthlyAllowance: number = 5000) => {

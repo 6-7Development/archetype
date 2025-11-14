@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo, useReducer } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Send, Loader2, User, Key, AlertCircle, Square, ChevronDown, Copy, Check, ChevronRight, Brain } from "lucide-react";
+import { Send, Loader2, User, Key, AlertCircle, Square, ChevronDown, Copy, Check, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -164,8 +164,8 @@ function runStateReducer(state: RunStateReducerState, action: RunStateAction): R
       
     case 'task.updated':
       // Find run containing this task and update it
-      for (const [runId, run] of newState.runs) {
-        const taskIndex = run.tasks.findIndex(t => t.id === action.data.taskId);
+      newState.runs.forEach((run) => {
+        const taskIndex = run.tasks.findIndex((t: RunTask) => t.id === action.data.taskId);
         if (taskIndex >= 0) {
           if (action.data.status) {
             const oldStatus = run.tasks[taskIndex].status;
@@ -180,7 +180,7 @@ function runStateReducer(state: RunStateReducerState, action: RunStateAction): R
           if (action.data.artifacts) run.tasks[taskIndex].artifacts = action.data.artifacts;
           run.tasks[taskIndex].updatedAt = new Date().toISOString();
         }
-      }
+      });
       break;
       
     case 'run.completed':
@@ -246,8 +246,6 @@ export function UniversalChat({
   const [phaseMessage, setPhaseMessage] = useState<string>('');
   const [artifacts, setArtifacts] = useState<ArtifactItem[]>([]);
   const [showArtifactsDrawer, setShowArtifactsDrawer] = useState(false);
-  const [thoughts, setThoughts] = useState<Array<{id: string, content: string, timestamp: number}>>([]);
-  const [isThoughtPanelOpen, setIsThoughtPanelOpen] = useState(false);
 
   // Deployment modal state
   const [showDeploymentModal, setShowDeploymentModal] = useState(false);
@@ -306,6 +304,7 @@ export function UniversalChat({
     reasons: string[];
   } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   // Default greeting message
@@ -502,17 +501,6 @@ export function UniversalChat({
       setProgressMessage(streamState.currentThought);
       setCurrentPhase('thinking');
       setPhaseMessage(streamState.currentThought);
-      
-      // Add to thoughts panel
-      setThoughts(prev => [
-        ...prev,
-        {
-          id: `thought-${Date.now()}-${Math.random()}`,
-          content: streamState.currentThought || '',
-          timestamp: Date.now(),
-        }
-      ]);
-      setIsThoughtPanelOpen(true);
     } else if (streamState.currentAction) {
       setProgressStatus('working');
       setProgressMessage(streamState.currentAction);
@@ -596,14 +584,12 @@ export function UniversalChat({
     }
   }, [streamState.deployment?.status]);
 
-  // Clear thoughts when AI completes and refresh credit balance
+  // Clear status when AI completes and refresh credit balance
   useEffect(() => {
     if (streamState.currentStatus === 'completed') {
       setProgressStatus('idle');
       setProgressMessage("");
       setIsGenerating(false);
-      setThoughts([]);
-      setIsThoughtPanelOpen(false);
       
       // Refresh credit balance after completion
       if (!isFreeAccess) {
@@ -1341,16 +1327,12 @@ export function UniversalChat({
     }
   };
 
-  // Auto-scroll to bottom
+  // Auto-scroll to bottom when messages or streaming content changes
   useEffect(() => {
-    const timer = setTimeout(() => {
-      scrollRef.current?.scrollTo({
-        top: scrollRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [messages, isGenerating]);
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, streamState.fullMessage, isGenerating]);
 
   return (
     <div className="flex h-full overflow-hidden bg-[hsl(220,20%,12%)] relative">
@@ -1439,6 +1421,7 @@ export function UniversalChat({
           <StatusStrip 
             phase={currentPhase}
             message={phaseMessage}
+            currentThought={streamState.currentThought}
             isExecuting={isGenerating}
             billingMetrics={billingMetrics}
           />
@@ -1510,44 +1493,6 @@ export function UniversalChat({
                   </div>
                 </div>
               ))}
-            </div>
-          )}
-
-          {/* Thought Display Panel */}
-          {thoughts.length > 0 && (
-            <div className="mb-2">
-              <Collapsible open={isThoughtPanelOpen} onOpenChange={setIsThoughtPanelOpen}>
-                <CollapsibleTrigger asChild>
-                  <button 
-                    className="flex items-center gap-2 w-full px-3 py-2 rounded-md border bg-card hover-elevate active-elevate-2 text-left"
-                    data-testid="button-toggle-thoughts"
-                  >
-                    <div className="flex items-center gap-2 flex-1">
-                      <Brain className="w-4 h-4 text-primary" />
-                      <span className="text-sm font-medium">Thinking...</span>
-                      <span className="text-xs text-muted-foreground ml-auto">
-                        {thoughts.length} {thoughts.length === 1 ? 'thought' : 'thoughts'}
-                      </span>
-                    </div>
-                    {isThoughtPanelOpen ? (
-                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                    ) : (
-                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                    )}
-                  </button>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="mt-2 space-y-2">
-                  {thoughts.map((thought) => (
-                    <div 
-                      key={thought.id} 
-                      className="px-3 py-2 rounded-md bg-muted/50 border border-border/50"
-                      data-testid={`thought-${thought.id}`}
-                    >
-                      <MarkdownRenderer content={thought.content} />
-                    </div>
-                  ))}
-                </CollapsibleContent>
-              </Collapsible>
             </div>
           )}
 
@@ -1644,6 +1589,9 @@ export function UniversalChat({
               </div>
             </div>
           )}
+
+          {/* Scroll anchor - keeps chat scrolled to bottom */}
+          <div ref={messagesEndRef} />
         </div>
 
         {/* Secrets Request Dialog */}
