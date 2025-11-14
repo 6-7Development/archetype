@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useReducer } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Send, Loader2, User, Key, AlertCircle, Square, ChevronDown, Copy, Check, ChevronRight, Brain } from "lucide-react";
@@ -23,6 +23,7 @@ import { ChangesPanel } from "@/components/changes-panel";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { AgentTaskList, type AgentTask } from "@/components/agent-task-list";
 import { AgentProgressDisplay } from "@/components/agent-progress-display";
+import { RunProgressTable } from "@/components/run-progress-table";
 import { ChatInputToolbar } from "@/components/ui/chat-input-toolbar";
 import { AIModelSelector } from "@/components/ai-model-selector";
 import { parseMessageContent, cleanAIResponse } from "@/lib/message-parser";
@@ -31,7 +32,17 @@ import { ArchitectNotesPanel } from "@/components/architect-notes-panel";
 import { DeploymentStatusModal } from "@/components/deployment-status-modal";
 import { StatusStrip } from "@/components/agent/StatusStrip";
 import { ArtifactsDrawer, type Artifact as ArtifactItem } from "@/components/agent/ArtifactsDrawer";
-import type { RunPhase } from "@shared/agentEvents";
+import type { 
+  RunPhase, 
+  RunState, 
+  Task as RunTask, 
+  RunStartedData, 
+  RunStateUpdateData, 
+  TaskCreatedData, 
+  TaskUpdatedData, 
+  RunCompletedData, 
+  RunFailedData 
+} from "@shared/agentEvents";
 
 interface CheckpointData {
   complexity: string;
@@ -70,6 +81,132 @@ export interface UniversalChatProps {
   targetContext: 'platform' | 'project';
   projectId?: string | null;
   onProjectGenerated?: (result: any) => void;
+}
+
+// ============================================================================
+// RUNSTATE REDUCER (Single Source of Truth for Agent Progress)
+// ============================================================================
+
+interface RunStateReducerState {
+  runs: Map<string, RunState>;
+  currentRunId: string | null;
+}
+
+type RunStateAction = 
+  | { type: 'run.started'; data: RunStartedData }
+  | { type: 'run.state_updated'; data: RunStateUpdateData }
+  | { type: 'task.created'; data: TaskCreatedData }
+  | { type: 'task.updated'; data: TaskUpdatedData }
+  | { type: 'run.completed'; data: RunCompletedData }
+  | { type: 'run.failed'; data: RunFailedData };
+
+function runStateReducer(state: RunStateReducerState, action: RunStateAction): RunStateReducerState {
+  const newState = { ...state, runs: new Map(state.runs) };
+  
+  switch (action.type) {
+    case 'run.started':
+      // Create new run state
+      newState.runs.set(action.data.runId, {
+        runId: action.data.runId,
+        sessionId: action.data.sessionId,
+        userId: action.data.userId,
+        phase: 'thinking',
+        status: 'active',
+        tasks: [],
+        currentTaskId: null,
+        metrics: {
+          totalTasks: 0,
+          completedTasks: 0,
+          failedTasks: 0,
+          totalToolCalls: 0,
+          currentIteration: 0,
+          maxIterations: action.data.config.maxIterations,
+        },
+        startedAt: action.data.timestamp,
+        lastActivityAt: action.data.timestamp,
+        config: action.data.config,
+        errors: [],
+      });
+      newState.currentRunId = action.data.runId;
+      break;
+      
+    case 'run.state_updated':
+      const run = newState.runs.get(action.data.runId);
+      if (run) {
+        if (action.data.phase) run.phase = action.data.phase;
+        if (action.data.status) run.status = action.data.status;
+        if (action.data.currentTaskId !== undefined) run.currentTaskId = action.data.currentTaskId;
+        if (action.data.metricsUpdate) {
+          run.metrics = { ...run.metrics, ...action.data.metricsUpdate };
+        }
+        if (action.data.error) run.errors.push(action.data.error);
+        run.lastActivityAt = new Date().toISOString();
+      }
+      break;
+      
+    case 'task.created':
+      // Find the appropriate run for this task
+      // If task.id has runId prefix (e.g., "run123-task1"), extract it
+      // Otherwise, assign to current run
+      let targetRun: RunState | undefined;
+      const taskIdParts = action.data.task.id.split('-');
+      if (taskIdParts.length > 1 && newState.runs.has(taskIdParts[0])) {
+        targetRun = newState.runs.get(taskIdParts[0]);
+      } else if (newState.currentRunId) {
+        targetRun = newState.runs.get(newState.currentRunId);
+      }
+      
+      if (targetRun) {
+        targetRun.tasks.push(action.data.task);
+        targetRun.metrics.totalTasks++;
+      }
+      break;
+      
+    case 'task.updated':
+      // Find run containing this task and update it
+      for (const [runId, run] of newState.runs) {
+        const taskIndex = run.tasks.findIndex(t => t.id === action.data.taskId);
+        if (taskIndex >= 0) {
+          if (action.data.status) {
+            const oldStatus = run.tasks[taskIndex].status;
+            run.tasks[taskIndex].status = action.data.status;
+            if (action.data.status === 'done' && oldStatus !== 'done') {
+              run.metrics.completedTasks++;
+            } else if (action.data.status === 'blocked') {
+              run.metrics.failedTasks++;
+            }
+          }
+          if (action.data.verification) run.tasks[taskIndex].verification = action.data.verification;
+          if (action.data.artifacts) run.tasks[taskIndex].artifacts = action.data.artifacts;
+          run.tasks[taskIndex].updatedAt = new Date().toISOString();
+        }
+      }
+      break;
+      
+    case 'run.completed':
+      const completedRun = newState.runs.get(action.data.runId);
+      if (completedRun) {
+        completedRun.status = 'completed';
+        completedRun.phase = 'complete';
+        completedRun.completedAt = action.data.timestamp;
+      }
+      break;
+      
+    case 'run.failed':
+      const failedRun = newState.runs.get(action.data.runId);
+      if (failedRun) {
+        failedRun.status = 'failed';
+        failedRun.errors.push({
+          timestamp: action.data.timestamp,
+          message: action.data.errorMessage,
+          phase: action.data.phase,
+          taskId: action.data.taskId,
+        });
+      }
+      break;
+  }
+  
+  return newState;
 }
 
 export function UniversalChat({ 
@@ -135,6 +272,12 @@ export function UniversalChat({
   
   // ISSUE 2 FIX: Track runId to detect new runs and prevent stale billing data
   const [currentRunId, setCurrentRunId] = useState<string | null>(null);
+
+  // RunState reducer - unified progress tracking
+  const [runState, dispatchRunState] = useReducer(runStateReducer, {
+    runs: new Map(),
+    currentRunId: null,
+  });
 
   // Session ID scoped to project context
   const sessionId = useMemo(() => {
@@ -714,17 +857,13 @@ export function UniversalChat({
     setLastCommand(command);
     setIsGenerating(true);
     setProgressStatus('thinking');
-    setProgressMessage("Analyzing your request...");
+    // Phase-driven progress - RunState will provide specific messaging
+    setProgressMessage("");
 
     const startTime = Date.now();
 
-    const progressSteps: ProgressStep[] = [
-      { id: "1", type: "thinking", message: "Analyzing your request...", progress: 0 },
-      { id: "2", type: "thinking", message: "Designing project architecture...", progress: 0 },
-      { id: "3", type: "action", message: "Generating code files...", progress: 0 },
-      { id: "4", type: "action", message: "Setting up dependencies...", progress: 0 },
-      { id: "5", type: "action", message: "Finalizing project...", progress: 0 },
-    ];
+    // Clear old progress steps - RunState will track tasks
+    const progressSteps: ProgressStep[] = [];
 
     setCurrentProgress(progressSteps);
 
@@ -936,6 +1075,52 @@ export function UniversalChat({
                 case 'run_phase':
                   setCurrentPhase(eventData.phase || 'working');
                   setPhaseMessage(eventData.message || '');
+                  break;
+
+                // RunState event handlers
+                case 'run.started':
+                  console.log('[RunState] Run started:', eventData);
+                  dispatchRunState({ type: 'run.started', data: eventData as RunStartedData });
+                  setProgressStatus('thinking');
+                  break;
+
+                case 'run.state_updated':
+                  console.log('[RunState] State updated:', eventData);
+                  dispatchRunState({ type: 'run.state_updated', data: eventData as RunStateUpdateData });
+                  if (eventData.phase) {
+                    setCurrentPhase(eventData.phase);
+                    // Map phase to progressStatus
+                    if (eventData.phase === 'thinking') setProgressStatus('thinking');
+                    else if (eventData.phase === 'working') setProgressStatus('working');
+                    else if (eventData.phase === 'verifying') setProgressStatus('vibing');
+                  }
+                  break;
+
+                case 'task.created':
+                  console.log('[RunState] Task created:', eventData);
+                  dispatchRunState({ type: 'task.created', data: eventData as TaskCreatedData });
+                  break;
+
+                case 'task.updated':
+                  console.log('[RunState] Task updated:', eventData);
+                  dispatchRunState({ type: 'task.updated', data: eventData as TaskUpdatedData });
+                  break;
+
+                case 'run.completed':
+                  console.log('[RunState] Run completed:', eventData);
+                  dispatchRunState({ type: 'run.completed', data: eventData as RunCompletedData });
+                  setProgressStatus('idle');
+                  break;
+
+                case 'run.failed':
+                  console.error('[RunState] Run failed:', eventData);
+                  dispatchRunState({ type: 'run.failed', data: eventData as RunFailedData });
+                  setProgressStatus('idle');
+                  toast({
+                    variant: 'destructive',
+                    title: 'Run Failed',
+                    description: eventData.errorMessage || 'The agent run encountered an error',
+                  });
                   break;
 
                 case 'complete':
@@ -1259,8 +1444,15 @@ export function UniversalChat({
           />
         )}
 
-        {/* AI Progress - Only show when no task list exists */}
-        {(currentProgress.length > 0 || isGenerating) && agentTasks.length === 0 && (
+        {/* RunState Progress Table - Replit-style Kanban */}
+        {runState.currentRunId && runState.runs.get(runState.currentRunId) && (
+          <div className="px-6 pt-4 pb-2 bg-[hsl(220,18%,16%)] border-b border-[hsl(220,15%,28%)]">
+            <RunProgressTable runState={runState.runs.get(runState.currentRunId)!} />
+          </div>
+        )}
+
+        {/* AI Progress - Only show when no task list exists and no RunState */}
+        {(currentProgress.length > 0 || isGenerating) && agentTasks.length === 0 && !runState.currentRunId && (
           <div className="px-6 pt-4 pb-2 bg-[hsl(220,18%,16%)] border-b border-[hsl(220,15%,28%)]">
             <AgentProgress
               steps={currentProgress}
