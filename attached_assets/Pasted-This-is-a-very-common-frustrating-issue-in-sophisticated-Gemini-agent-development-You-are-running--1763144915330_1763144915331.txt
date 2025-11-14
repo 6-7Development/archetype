@@ -1,0 +1,67 @@
+This is a very common, frustrating issue in sophisticated Gemini agent development. You are running into a model output flaw where the LLM is following the instructions but failing to use the correct API structure—it's outputting the JSON as raw text instead of invoking the native function call mechanism.
+
+The problem lies in your application's interpretation of the API response, not the model's core logic. The model is likely putting the function call JSON inside the standard text part of the response ("parts": [{ "text": "{\"name\":\"perform_diagnosis\",...}" }]) instead of the required, separate function call object ("parts": [{ "functionCall": { ... } }]).
+
+You need to implement a Response Parser Fallback in your Python code to catch this behavior.
+
+🛠️ The Ultimate Fix: The Response Parser Fallback
+The Gemini API is not guaranteeing a clean split. Your code must handle both scenarios.
+
+1. The Standard Check (The Correct Way)
+Your application must first check for the official, clean API format in the response object.
+
+Python Logic:
+
+Python
+
+# Check 1: The correct, structured way (as expected by the SDK)
+if response.function_calls:
+    # Success! The model correctly placed the call in the function_calls field.
+    # Proceed to execute the tool: execute_custom_tool(response.function_calls[0])
+    pass 
+2. The Text Fallback Check (The Fix)
+If the standard check fails, the application must immediately look inside the text response for the JSON output.
+
+Python Logic:
+
+Python
+
+# Check 2: The Fallback - Look for the JSON inside the text
+elif response.text and '{"name":' in response.text:
+    # Lomu incorrectly put the JSON in the text field.
+    try:
+        # Step A: Isolate and clean the raw JSON string
+        raw_json_string = response.text.strip().replace("```json", "").replace("```", "")
+
+        # Step B: Parse the JSON string into an executable object
+        tool_call_data = json.loads(raw_json_string)
+
+        # Step C: Verify the structure
+        if 'name' in tool_call_data and 'args' in tool_call_data:
+            print("LOMU FIX: Successfully parsed function call from text field.")
+            # Success! Treat this parsed object as a valid tool call.
+            # Proceed to execute the tool: execute_custom_tool(tool_call_data)
+
+    except json.JSONDecodeError as e:
+        # The text was malformed, even with the JSON present.
+        # Trigger the structured retry mechanism (see below)
+        send_structured_retry("Error parsing function JSON from text.")
+
+else:
+    # No tool call found; proceed with normal text response.
+    pass
+3. Fortifying the System Instruction (To Prevent Future Drift)
+You must tell Lomu how he is expected to behave to minimize this fallback scenario.
+
+System Instruction Addition:
+
+"CRITICAL PROTOCOL: When invoking a tool, your response MUST be a clean, direct tool invocation object with NO surrounding text, explanation, or commentary. Do not embed the function call JSON within your conversational text. Your ONLY output in that turn should be the system-recognized function call object."
+
+🧠 Why This Happens
+The issue stems from a subtle ambiguity in how the LLM decides to format the function call:
+
+Correct (API Success): The model places the call in the functionCall object in the API payload.
+
+Incorrect (Your Error): The model places a JSON string representation of the call into the text field, because it's following the instruction to generate the tool call but failing to use the correct API channel for output.
+
+The Response Parser Fallback is the robust engineering solution that accounts for this behavioral flaw in the LLM's structured output generation.

@@ -1720,6 +1720,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     let consecutiveThinkingCount = 0; // Track consecutive "thought" scratchpad entries
     const MAX_CONSECUTIVE_THINKING = 3; // Force action after 3 consecutive thoughts
     let systemEnforcementMessage = ''; // Temporary system message (NOT saved to conversation history)
+    
+    // 🔧 FORCE MODE: Track if we should force function calling due to malformed calls
+    let shouldForceFunctionCall = false;
 
     // ============================================================================
     // T2: PHASE ORCHESTRATION - EMIT THINKING PHASE (PRE-LOOP MILESTONE)
@@ -1798,7 +1801,12 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       
       // ✅ GAP 5: Reset iteration timer at start of each iteration
       iterationStartTime = Date.now();
-      console.log(`[LOMU-AI-ITERATION] Starting iteration ${iterationCount}/${MAX_ITERATIONS}`);
+      
+      // FIX 5: Enhanced diagnostic logging
+      console.log(`[LOMU-AI-ITERATION] Starting iteration ${iterationCount}/${MAX_ITERATIONS}`, {
+        forceFunctionCall: shouldForceFunctionCall,
+        consecutiveEmptyIterations: consecutiveEmptyIterations || 0
+      });
 
       // ✅ GAP 6: Update RunStateManager with current iteration
       if (runStateManager) {
@@ -1940,7 +1948,18 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           system: safeSystemPrompt,
           messages: finalMessages, // ✅ GAP 4: Use summarized messages if needed
           tools: availableTools,
+          forceFunctionCall: shouldForceFunctionCall, // 🔧 Force mode: ANY when malformed calls detected
         onChunk: (chunk: any) => {
+          // FIX 3: Detect fallback_used event and enable force mode
+          if (chunk.type === 'fallback_used') {
+            console.log('[LOMU-AI-FALLBACK] ⚠️ Fallback parser was triggered - enabling force mode');
+            shouldForceFunctionCall = true;
+            sendEvent('progress', { 
+              message: '⚠️ Detected malformed function call - will enforce strict mode...' 
+            });
+            return;
+          }
+          
           if (chunk.type === 'chunk' && chunk.content) {
             // 🔥 DUPLICATE CHUNK SUPPRESSION: Prevent duplicate text from SSE retries
             const chunkText = chunk.content;
@@ -3705,6 +3724,12 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       if (toolResults.length > 0) {
         // Track tool calls for quality analysis
         totalToolCallCount += toolResults.length;
+        
+        // FIX 4: Reset force mode after successful tool execution
+        if (shouldForceFunctionCall) {
+          console.log('[LOMU-AI-FORCE] Tools executed successfully, resetting force mode');
+          shouldForceFunctionCall = false;
+        }
 
         // 📊 WORKFLOW TELEMETRY: Track read vs code-modifying operations
         let iterationHadCodeModifications = false;

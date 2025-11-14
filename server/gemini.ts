@@ -54,6 +54,7 @@ interface StreamOptions {
   onToolUse?: (toolUse: any) => Promise<any>;
   onComplete?: (fullText: string, usage: any) => void;
   onError?: (error: Error) => void;
+  forceFunctionCall?: boolean;  // Force mode: ANY instead of AUTO when malformed calls detected
 }
 
 /**
@@ -396,18 +397,20 @@ If you need to call a function, emit ONLY the JSON object.`),
     if (geminiTools && geminiTools.length > 0 && geminiTools[0]?.functionDeclarations) {
       requestParams.tools = geminiTools;
       
-      // ✅ FIXED: Use AUTO mode to allow Gemini to complete work naturally
+      // ✅ FORCE MODE: Use mode: ANY when forceFunctionCall is true to prevent text-based malformed calls
       // mode: 'AUTO' (default) = Gemini decides when to use tools vs return text
-      // This prevents infinite thinking loops where mode: 'ANY' forces tool calls every turn
+      // mode: 'ANY' (forced) = Gemini MUST call a tool (prevents outputting function calls as text)
       const functionNames = geminiTools[0].functionDeclarations.map((fn: any) => fn.name);
+      
+      const callingMode = options.forceFunctionCall ? 'ANY' : 'AUTO';
       
       requestParams.toolConfig = {
         functionCallingConfig: {
-          mode: 'AUTO', // ✅ Let Gemini decide when to use tools (prevents infinite loops)
+          mode: callingMode,
         }
       };
       
-      console.log(`[GEMINI-TOOLCONFIG] mode: AUTO, ${functionNames.length} functions available:`, functionNames.slice(0, 5).join(', '));
+      console.log(`[GEMINI-TOOLCONFIG] mode: ${callingMode}, forceFunctionCall: ${options.forceFunctionCall || false}, ${functionNames.length} functions available:`, functionNames.slice(0, 5).join(', '));
     }
 
     // 🔍 DEBUG: Log what we're sending to Gemini
@@ -589,7 +592,78 @@ Please try:
             }
           }
 
-          // Handle text content
+          // ============================================================================
+          // RESPONSE PARSER FALLBACK: Handle Gemini's dual output formats
+          // ============================================================================
+          
+          let extractedFunctionCall: any = null;
+          
+          // CHECK 1: Standard API format (correct way)
+          if (part.functionCall) {
+            extractedFunctionCall = part.functionCall;
+            console.log('[GEMINI-PARSER] ✅ Function call found in correct API format');
+          }
+          
+          // CHECK 2: Fallback - Parse JSON from text field (Gemini bug workaround)
+          else if (part.text && part.text.includes('{"name":')) {
+            console.log('[GEMINI-PARSER] ⚠️ Function call detected in TEXT field - parsing...');
+            
+            try {
+              // Step A: Extract and clean the JSON string
+              let rawJsonString = part.text.trim();
+              
+              // Remove markdown code blocks if present
+              rawJsonString = rawJsonString.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+              
+              // Find the JSON object (might be embedded in conversational text)
+              const jsonMatch = rawJsonString.match(/\{[\s\S]*?"name"[\s\S]*?"args"[\s\S]*?\}/);
+              if (jsonMatch) {
+                rawJsonString = jsonMatch[0];
+              }
+              
+              // Step B: Parse the JSON string
+              const parsedCall = JSON.parse(rawJsonString);
+              
+              // Step C: Verify structure
+              if (parsedCall.name && parsedCall.args) {
+                extractedFunctionCall = {
+                  name: parsedCall.name,
+                  args: parsedCall.args
+                };
+                console.log('[GEMINI-PARSER] ✅ Successfully extracted function call from text:', parsedCall.name);
+                
+                // FIX 1: Signal that fallback was used (triggers force mode in next iteration)
+                if (onChunk) {
+                  try {
+                    onChunk({
+                      type: 'fallback_used',
+                      message: 'Function call extracted from text - will enforce strict mode next iteration'
+                    });
+                  } catch (fallbackEventError) {
+                    console.error('❌ Error sending fallback_used event:', fallbackEventError);
+                  }
+                }
+                
+                // FIX 2: Preserve legitimate text - only remove JSON part
+                if (jsonMatch) {
+                  const jsonStr = jsonMatch[0];
+                  part.text = part.text.replace(jsonStr, '').trim();
+                  
+                  // If only whitespace remains, clear it
+                  if (!part.text || part.text.length === 0) {
+                    part.text = '';
+                  } else {
+                    console.log('[GEMINI-PARSER] Preserved non-JSON text:', part.text.substring(0, 50));
+                  }
+                }
+              }
+            } catch (error) {
+              console.error('[GEMINI-PARSER] ❌ Failed to parse function call from text:', error);
+              // Don't fail completely - just log and continue
+            }
+          }
+
+          // Handle text content (only if it wasn't a function call in text format)
           if (part.text) {
             const text = part.text;
             fullText += text;
@@ -617,13 +691,12 @@ Please try:
             }
           }
 
-          // Handle function calls (tool use)
-          if (part.functionCall) {
-            const functionCall = part.functionCall;
+          // Process the function call if found (from either CHECK 1 or CHECK 2)
+          if (extractedFunctionCall) {
             const toolCallId = `call_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
             
             // ✅ VALIDATION: Ensure args is a valid object (external advice: schema validation)
-            let validatedArgs = functionCall.args || {};
+            let validatedArgs = extractedFunctionCall.args || {};
             
             try {
               // Defensive parsing: Ensure args is an object, not a string or array
@@ -647,18 +720,27 @@ Please try:
             }
             
             // 🔍 DEBUG: Log when Gemini requests a tool
-            console.log(`[GEMINI-TOOLS] 🔧 Gemini requested tool: ${functionCall.name}`);
+            console.log(`[GEMINI-TOOLS] 🔧 Gemini requested tool: ${extractedFunctionCall.name}`);
             console.log(`[GEMINI-TOOLS] Tool args:`, JSON.stringify(validatedArgs).substring(0, 100));
+            
+            // 📊 Enhanced diagnostic logging
+            console.log('[GEMINI-CHUNK-DEBUG]', {
+              chunkNumber: chunkCount,
+              hasFunctionCall: !!part.functionCall,
+              hasText: !!part.text,
+              textContainsFunctionJson: part.text ? part.text.includes('{"name":') : false,
+              extractedFunctionCall: extractedFunctionCall ? extractedFunctionCall.name : null
+            });
             
             functionCalls.push({
               id: toolCallId,
-              name: functionCall.name,
+              name: extractedFunctionCall.name,
               input: validatedArgs
             });
 
             // Notify about tool use (DE-DUPLICATED)
-            if (onAction && functionCall.name) {
-              const action = getActionMessageFromFunctionCall(functionCall.name);
+            if (onAction && extractedFunctionCall.name) {
+              const action = getActionMessageFromFunctionCall(extractedFunctionCall.name);
               if (action !== lastAction) {
                 lastAction = action;
                 onAction(action);
