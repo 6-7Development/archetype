@@ -1,0 +1,1138 @@
+import React, { useState } from 'react';
+import { 
+  Clock, Calendar, Users, Edit2, Check, X, Bell, History,
+  MapPin, Camera, Play, Square, Coffee, LogOut, LogIn,
+  Download, Filter, Search, ChevronDown, ChevronRight,
+  AlertCircle, CheckCircle, XCircle, Eye, Shield, FileText,
+  TrendingUp, DollarSign, User, Settings, Menu, MoreVertical,
+  Printer, Send, Archive, RefreshCw, Pause, PlayCircle
+} from 'lucide-react';
+
+const UniversalTimesheet = () => {
+  // Current user with role-based permissions
+  const [currentUser, setCurrentUser] = useState({
+    id: 'user-001',
+    name: 'John Smith',
+    role: 'manager', // employee, supervisor, manager, hr, admin, accountant
+    permissions: {
+      clockInOut: true,
+      viewOwnTime: true,
+      editOwnTime: true,
+      viewTeamTime: true,
+      editTeamTime: true,
+      approveTime: true,
+      viewAllTime: true,
+      exportPayroll: true,
+      manageUsers: false,
+      viewAudit: true
+    },
+    department: 'Operations',
+    employeeId: 'EMP-001'
+  });
+
+  // Role definitions
+  const roles = {
+    employee: {
+      name: 'Employee',
+      color: 'blue',
+      permissions: ['clockInOut', 'viewOwnTime', 'editOwnTime']
+    },
+    supervisor: {
+      name: 'Supervisor',
+      color: 'green',
+      permissions: ['clockInOut', 'viewOwnTime', 'editOwnTime', 'viewTeamTime', 'editTeamTime', 'approveTime']
+    },
+    manager: {
+      name: 'Manager',
+      color: 'purple',
+      permissions: ['clockInOut', 'viewOwnTime', 'editOwnTime', 'viewTeamTime', 'editTeamTime', 'approveTime', 'viewAllTime', 'viewAudit']
+    },
+    hr: {
+      name: 'HR Manager',
+      color: 'pink',
+      permissions: ['viewAllTime', 'editTeamTime', 'approveTime', 'exportPayroll', 'manageUsers', 'viewAudit']
+    },
+    accountant: {
+      name: 'Accountant',
+      color: 'indigo',
+      permissions: ['viewAllTime', 'approveTime', 'exportPayroll', 'viewAudit']
+    },
+    admin: {
+      name: 'Administrator',
+      color: 'red',
+      permissions: ['all']
+    }
+  };
+
+  const [view, setView] = useState('clock'); // clock, timesheet, approvals, audit
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [currentlyClocked, setCurrentlyClocked] = useState(false);
+  const [onBreak, setOnBreak] = useState(false);
+  const [clockedInTime, setClockedInTime] = useState(null);
+
+  // Sample employees for team view
+  const employees = [
+    { id: 1, name: 'Sarah Johnson', role: 'employee', department: 'Operations', status: 'clocked_in', currentHours: 6.5 },
+    { id: 2, name: 'Mike Chen', role: 'employee', department: 'Operations', status: 'on_break', currentHours: 4.0 },
+    { id: 3, name: 'Emily Davis', role: 'supervisor', department: 'Operations', status: 'clocked_out', currentHours: 0 },
+    { id: 4, name: 'James Wilson', role: 'employee', department: 'Sales', status: 'clocked_in', currentHours: 3.5 },
+  ];
+
+  // Sample time entries
+  const [timeEntries, setTimeEntries] = useState([
+    {
+      id: 1,
+      employeeId: 1,
+      employeeName: 'Sarah Johnson',
+      date: '2025-11-13',
+      clockIn: '09:00 AM',
+      clockOut: '05:30 PM',
+      breakTime: 30,
+      totalHours: 8.0,
+      location: 'Office - Building A',
+      status: 'pending_approval',
+      approvedBy: null,
+      notes: '',
+      hasPhoto: true,
+      modifications: []
+    },
+    {
+      id: 2,
+      employeeId: 2,
+      employeeName: 'Mike Chen',
+      date: '2025-11-13',
+      clockIn: '08:30 AM',
+      clockOut: '04:45 PM',
+      breakTime: 45,
+      totalHours: 7.5,
+      location: 'Office - Building A',
+      status: 'approved',
+      approvedBy: 'John Smith',
+      approvedAt: '2025-11-13 06:00 PM',
+      notes: '',
+      hasPhoto: true,
+      modifications: []
+    },
+    {
+      id: 3,
+      employeeId: 1,
+      employeeName: 'Sarah Johnson',
+      date: '2025-11-12',
+      clockIn: '09:15 AM',
+      clockOut: '05:00 PM',
+      breakTime: 30,
+      totalHours: 7.25,
+      location: 'Office - Building A',
+      status: 'approved',
+      approvedBy: 'John Smith',
+      approvedAt: '2025-11-12 06:30 PM',
+      notes: 'Started 15 mins late - traffic',
+      hasPhoto: true,
+      modifications: [
+        {
+          type: 'edit',
+          field: 'clockIn',
+          oldValue: '09:30 AM',
+          newValue: '09:15 AM',
+          modifiedBy: 'Sarah Johnson',
+          modifiedAt: '2025-11-12 05:05 PM',
+          reason: 'Corrected clock in time'
+        }
+      ]
+    },
+  ]);
+
+  // Notifications
+  const [notifications, setNotifications] = useState([
+    {
+      id: 1,
+      type: 'approval_request',
+      message: 'Sarah Johnson submitted timesheet for Nov 13',
+      timestamp: '10 minutes ago',
+      read: false,
+      data: { entryId: 1 }
+    },
+    {
+      id: 2,
+      type: 'edit_notification',
+      message: 'Your timesheet for Nov 12 was approved',
+      timestamp: '2 hours ago',
+      read: false
+    },
+    {
+      id: 3,
+      type: 'reminder',
+      message: 'Remember to clock out at end of shift',
+      timestamp: '5 hours ago',
+      read: true
+    },
+  ]);
+
+  // Audit log
+  const [auditLog, setAuditLog] = useState([
+    {
+      id: 1,
+      timestamp: '2025-11-13 06:00 PM',
+      userId: 'user-001',
+      userName: 'John Smith',
+      action: 'approved_timesheet',
+      target: 'Mike Chen - Nov 13',
+      details: 'Approved 7.5 hours'
+    },
+    {
+      id: 2,
+      timestamp: '2025-11-13 05:05 PM',
+      userId: 'user-002',
+      userName: 'Sarah Johnson',
+      action: 'edited_timesheet',
+      target: 'Sarah Johnson - Nov 12',
+      details: 'Changed clock in from 09:30 AM to 09:15 AM'
+    },
+    {
+      id: 3,
+      timestamp: '2025-11-13 05:30 PM',
+      userId: 'user-002',
+      userName: 'Sarah Johnson',
+      action: 'clocked_out',
+      target: 'Sarah Johnson',
+      details: 'Total hours: 8.0'
+    },
+  ]);
+
+  const handleClockIn = () => {
+    setCurrentlyClocked(true);
+    setClockedInTime(new Date());
+    
+    // Add audit log
+    const newAuditEntry = {
+      id: auditLog.length + 1,
+      timestamp: new Date().toLocaleString(),
+      userId: currentUser.id,
+      userName: currentUser.name,
+      action: 'clocked_in',
+      target: currentUser.name,
+      details: 'Clocked in at office location'
+    };
+    setAuditLog([newAuditEntry, ...auditLog]);
+
+    // Send notification
+    const newNotification = {
+      id: notifications.length + 1,
+      type: 'clock_action',
+      message: 'Successfully clocked in',
+      timestamp: 'Just now',
+      read: false
+    };
+    setNotifications([newNotification, ...notifications]);
+  };
+
+  const handleClockOut = () => {
+    setCurrentlyClocked(false);
+    setOnBreak(false);
+    
+    // Calculate hours
+    const hours = clockedInTime ? ((new Date() - clockedInTime) / (1000 * 60 * 60)).toFixed(2) : 0;
+    
+    // Create new time entry
+    const newEntry = {
+      id: timeEntries.length + 1,
+      employeeId: currentUser.id,
+      employeeName: currentUser.name,
+      date: new Date().toISOString().split('T')[0],
+      clockIn: clockedInTime.toLocaleTimeString(),
+      clockOut: new Date().toLocaleTimeString(),
+      breakTime: 30,
+      totalHours: parseFloat(hours),
+      location: 'Office - Building A',
+      status: 'pending_approval',
+      approvedBy: null,
+      notes: '',
+      hasPhoto: true,
+      modifications: []
+    };
+    setTimeEntries([newEntry, ...timeEntries]);
+
+    // Add audit log
+    const newAuditEntry = {
+      id: auditLog.length + 1,
+      timestamp: new Date().toLocaleString(),
+      userId: currentUser.id,
+      userName: currentUser.name,
+      action: 'clocked_out',
+      target: currentUser.name,
+      details: `Total hours: ${hours}`
+    };
+    setAuditLog([newAuditEntry, ...auditLog]);
+  };
+
+  const handleStartBreak = () => {
+    setOnBreak(true);
+    
+    const newAuditEntry = {
+      id: auditLog.length + 1,
+      timestamp: new Date().toLocaleString(),
+      userId: currentUser.id,
+      userName: currentUser.name,
+      action: 'started_break',
+      target: currentUser.name,
+      details: 'Break started'
+    };
+    setAuditLog([newAuditEntry, ...auditLog]);
+  };
+
+  const handleEndBreak = () => {
+    setOnBreak(false);
+    
+    const newAuditEntry = {
+      id: auditLog.length + 1,
+      timestamp: new Date().toLocaleString(),
+      userId: currentUser.id,
+      userName: currentUser.name,
+      action: 'ended_break',
+      target: currentUser.name,
+      details: 'Break ended'
+    };
+    setAuditLog([newAuditEntry, ...auditLog]);
+  };
+
+  const handleApproveEntry = (entryId) => {
+    setTimeEntries(timeEntries.map(entry => 
+      entry.id === entryId 
+        ? { 
+            ...entry, 
+            status: 'approved',
+            approvedBy: currentUser.name,
+            approvedAt: new Date().toLocaleString()
+          }
+        : entry
+    ));
+
+    const entry = timeEntries.find(e => e.id === entryId);
+    
+    // Add audit log
+    const newAuditEntry = {
+      id: auditLog.length + 1,
+      timestamp: new Date().toLocaleString(),
+      userId: currentUser.id,
+      userName: currentUser.name,
+      action: 'approved_timesheet',
+      target: `${entry.employeeName} - ${entry.date}`,
+      details: `Approved ${entry.totalHours} hours`
+    };
+    setAuditLog([newAuditEntry, ...auditLog]);
+
+    // Notify employee
+    const newNotification = {
+      id: notifications.length + 1,
+      type: 'approval',
+      message: `Timesheet for ${entry.date} approved by ${currentUser.name}`,
+      timestamp: 'Just now',
+      read: false
+    };
+    setNotifications([newNotification, ...notifications]);
+  };
+
+  const handleRejectEntry = (entryId) => {
+    setTimeEntries(timeEntries.map(entry => 
+      entry.id === entryId 
+        ? { ...entry, status: 'rejected' }
+        : entry
+    ));
+
+    const entry = timeEntries.find(e => e.id === entryId);
+    
+    const newAuditEntry = {
+      id: auditLog.length + 1,
+      timestamp: new Date().toLocaleString(),
+      userId: currentUser.id,
+      userName: currentUser.name,
+      action: 'rejected_timesheet',
+      target: `${entry.employeeName} - ${entry.date}`,
+      details: 'Timesheet rejected'
+    };
+    setAuditLog([newAuditEntry, ...auditLog]);
+  };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+  const pendingApprovals = timeEntries.filter(e => e.status === 'pending_approval').length;
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Desktop/Mobile Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white sticky top-0 z-40 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 py-3 lg:py-4">
+          <div className="flex items-center justify-between">
+            {/* Left: Menu + Title */}
+            <div className="flex items-center space-x-3">
+              <button 
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="lg:hidden p-2 hover:bg-white hover:bg-opacity-20 rounded-lg"
+              >
+                <Menu className="w-6 h-6" />
+              </button>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <Clock className="w-6 h-6" />
+                  <h1 className="text-lg lg:text-xl font-bold">TimeTracker</h1>
+                </div>
+                <p className="text-xs opacity-90 hidden lg:block">Universal Time Management</p>
+              </div>
+            </div>
+
+            {/* Right: User + Notifications */}
+            <div className="flex items-center space-x-2 lg:space-x-4">
+              {/* Clock Status - Desktop */}
+              {currentlyClocked && (
+                <div className="hidden lg:flex items-center space-x-2 bg-white bg-opacity-20 px-3 py-1.5 rounded-lg">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-medium">Clocked In</span>
+                </div>
+              )}
+
+              {/* Notifications */}
+              <button 
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative p-2 hover:bg-white hover:bg-opacity-20 rounded-lg"
+              >
+                <Bell className="w-5 h-5 lg:w-6 lg:h-6" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center font-bold">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* User Menu */}
+              <div className="flex items-center space-x-2 bg-white bg-opacity-20 px-2 lg:px-3 py-1.5 rounded-lg">
+                <Shield className="w-4 h-4 lg:w-5 lg:h-5" />
+                <div className="hidden lg:block">
+                  <div className="text-sm font-medium">{currentUser.name}</div>
+                  <div className="text-xs opacity-90">{roles[currentUser.role].name}</div>
+                </div>
+                <div className="lg:hidden">
+                  <div className="text-xs font-medium">{currentUser.name.split(' ')[0]}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center space-x-2 mt-4">
+            <button
+              onClick={() => setView('clock')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                view === 'clock' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10'
+              }`}
+            >
+              <Clock className="w-4 h-4 inline mr-2" />
+              Clock In/Out
+            </button>
+            <button
+              onClick={() => setView('timesheet')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                view === 'timesheet' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10'
+              }`}
+            >
+              <Calendar className="w-4 h-4 inline mr-2" />
+              Timesheets
+            </button>
+            {currentUser.permissions.approveTime && (
+              <button
+                onClick={() => setView('approvals')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors relative ${
+                  view === 'approvals' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10'
+                }`}
+              >
+                <CheckCircle className="w-4 h-4 inline mr-2" />
+                Approvals
+                {pendingApprovals > 0 && (
+                  <span className="ml-2 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                    {pendingApprovals}
+                  </span>
+                )}
+              </button>
+            )}
+            {currentUser.permissions.viewAudit && (
+              <button
+                onClick={() => setView('audit')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  view === 'audit' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10'
+                }`}
+              >
+                <History className="w-4 h-4 inline mr-2" />
+                Audit Log
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="max-w-7xl mx-auto px-4 py-4 lg:py-6">
+        {/* Clock In/Out View */}
+        {view === 'clock' && (
+          <div className="space-y-4 lg:space-y-6">
+            {/* Current Status Card */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-20 h-20 lg:w-24 lg:h-24 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 mb-4">
+                  {currentlyClocked ? (
+                    onBreak ? (
+                      <Coffee className="w-10 h-10 lg:w-12 lg:h-12 text-white" />
+                    ) : (
+                      <PlayCircle className="w-10 h-10 lg:w-12 lg:h-12 text-white" />
+                    )
+                  ) : (
+                    <Clock className="w-10 h-10 lg:w-12 lg:h-12 text-white" />
+                  )}
+                </div>
+
+                <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2">
+                  {currentlyClocked ? (onBreak ? 'On Break' : 'Currently Working') : 'Ready to Clock In'}
+                </h2>
+                
+                {currentlyClocked && clockedInTime && (
+                  <div className="text-gray-600 mb-4">
+                    <p className="text-sm">Clocked in at {clockedInTime.toLocaleTimeString()}</p>
+                    <p className="text-2xl lg:text-3xl font-bold text-blue-600 mt-2">
+                      {Math.floor((new Date() - clockedInTime) / (1000 * 60 * 60))}h{' '}
+                      {Math.floor(((new Date() - clockedInTime) / (1000 * 60)) % 60)}m
+                    </p>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto mt-6">
+                  {!currentlyClocked ? (
+                    <button
+                      onClick={handleClockIn}
+                      className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 lg:py-4 rounded-lg font-bold text-lg hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg flex items-center justify-center space-x-2"
+                    >
+                      <LogIn className="w-5 h-5 lg:w-6 lg:h-6" />
+                      <span>Clock In</span>
+                    </button>
+                  ) : (
+                    <>
+                      {!onBreak ? (
+                        <>
+                          <button
+                            onClick={handleStartBreak}
+                            className="flex-1 bg-orange-600 text-white py-3 lg:py-4 rounded-lg font-bold hover:bg-orange-700 transition-colors flex items-center justify-center space-x-2"
+                          >
+                            <Coffee className="w-5 h-5" />
+                            <span>Start Break</span>
+                          </button>
+                          <button
+                            onClick={handleClockOut}
+                            className="flex-1 bg-gradient-to-r from-red-600 to-rose-600 text-white py-3 lg:py-4 rounded-lg font-bold hover:from-red-700 hover:to-rose-700 transition-all shadow-lg flex items-center justify-center space-x-2"
+                          >
+                            <LogOut className="w-5 h-5 lg:w-6 lg:h-6" />
+                            <span>Clock Out</span>
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={handleEndBreak}
+                          className="flex-1 bg-blue-600 text-white py-3 lg:py-4 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
+                        >
+                          <PlayCircle className="w-5 h-5" />
+                          <span>End Break</span>
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                {/* Location Info */}
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <div className="flex items-center justify-center space-x-2 text-gray-600">
+                    <MapPin className="w-4 h-4" />
+                    <span className="text-sm">Office - Building A</span>
+                  </div>
+                  <div className="flex items-center justify-center space-x-2 text-gray-600 mt-2">
+                    <Camera className="w-4 h-4" />
+                    <span className="text-sm">Photo verification enabled</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Today's Summary */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Clock className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600">Today's Hours</p>
+                    <p className="text-xl font-bold text-gray-900">
+                      {currentlyClocked && clockedInTime 
+                        ? ((new Date() - clockedInTime) / (1000 * 60 * 60)).toFixed(1)
+                        : '0.0'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Calendar className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600">This Week</p>
+                    <p className="text-xl font-bold text-gray-900">32.5h</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <TrendingUp className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600">This Month</p>
+                    <p className="text-xl font-bold text-gray-900">142h</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <AlertCircle className="w-5 h-5 text-orange-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600">Pending</p>
+                    <p className="text-xl font-bold text-gray-900">{pendingApprovals}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Team Status (for managers) */}
+            {currentUser.permissions.viewTeamTime && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Team Status</h3>
+                <div className="space-y-3">
+                  {employees.map(emp => (
+                    <div key={emp.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold">
+                          {emp.name.split(' ').map(n => n[0]).join('')}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{emp.name}</p>
+                          <p className="text-xs text-gray-600">{emp.department}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${
+                          emp.status === 'clocked_in' ? 'bg-green-100 text-green-700' :
+                          emp.status === 'on_break' ? 'bg-orange-100 text-orange-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          <div className={`w-2 h-2 rounded-full ${
+                            emp.status === 'clocked_in' ? 'bg-green-500' :
+                            emp.status === 'on_break' ? 'bg-orange-500' :
+                            'bg-gray-400'
+                          }`}></div>
+                          <span className="capitalize">{emp.status.replace('_', ' ')}</span>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">{emp.currentHours}h today</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Timesheet View */}
+        {view === 'timesheet' && (
+          <div className="space-y-4">
+            {/* Filters */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    placeholder="Search by date or employee..."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center space-x-2">
+                  <Filter className="w-4 h-4" />
+                  <span>Filter</span>
+                </button>
+                {currentUser.permissions.exportPayroll && (
+                  <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center space-x-2">
+                    <Download className="w-4 h-4" />
+                    <span>Export</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Timesheet Entries */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              {/* Desktop Table */}
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Employee</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Date</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Clock In</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Clock Out</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Break</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Total</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Status</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {timeEntries.map(entry => (
+                      <tr key={entry.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-gray-900">{entry.employeeName}</div>
+                          {entry.hasPhoto && (
+                            <div className="flex items-center space-x-1 text-xs text-gray-500 mt-1">
+                              <Camera className="w-3 h-3" />
+                              <span>Photo verified</span>
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{entry.date}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{entry.clockIn}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{entry.clockOut}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{entry.breakTime} min</td>
+                        <td className="px-4 py-3">
+                          <span className="font-bold text-gray-900">{entry.totalHours}h</span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                            entry.status === 'approved' ? 'bg-green-100 text-green-700' :
+                            entry.status === 'pending_approval' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-red-100 text-red-700'
+                          }`}>
+                            {entry.status === 'approved' && <CheckCircle className="w-3 h-3 mr-1" />}
+                            {entry.status === 'pending_approval' && <Clock className="w-3 h-3 mr-1" />}
+                            {entry.status === 'rejected' && <XCircle className="w-3 h-3 mr-1" />}
+                            {entry.status.replace('_', ' ')}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center space-x-2">
+                            <button 
+                              onClick={() => {
+                                setSelectedEntry(entry);
+                                setShowEditModal(true);
+                              }}
+                              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            {currentUser.permissions.editTeamTime && (
+                              <button className="p-1 text-gray-600 hover:bg-gray-50 rounded">
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Cards */}
+              <div className="lg:hidden divide-y divide-gray-200">
+                {timeEntries.map(entry => (
+                  <div key={entry.id} className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <p className="font-bold text-gray-900">{entry.employeeName}</p>
+                        <p className="text-sm text-gray-600">{entry.date}</p>
+                      </div>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        entry.status === 'approved' ? 'bg-green-100 text-green-700' :
+                        entry.status === 'pending_approval' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>
+                        {entry.status.replace('_', ' ')}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                      <div>
+                        <p className="text-gray-600">Clock In</p>
+                        <p className="font-medium text-gray-900">{entry.clockIn}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600">Clock Out</p>
+                        <p className="font-medium text-gray-900">{entry.clockOut}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600">Break</p>
+                        <p className="font-medium text-gray-900">{entry.breakTime} min</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600">Total Hours</p>
+                        <p className="font-bold text-gray-900">{entry.totalHours}h</p>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setSelectedEntry(entry);
+                        setShowEditModal(true);
+                      }}
+                      className="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-medium"
+                    >
+                      View Details
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Approvals View */}
+        {view === 'approvals' && currentUser.permissions.approveTime && (
+          <div className="space-y-4">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 lg:p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">
+                Pending Approvals ({timeEntries.filter(e => e.status === 'pending_approval').length})
+              </h3>
+
+              <div className="space-y-4">
+                {timeEntries.filter(e => e.status === 'pending_approval').map(entry => (
+                  <div key={entry.id} className="border-2 border-orange-200 rounded-lg p-4 bg-orange-50">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold">
+                            {entry.employeeName.split(' ').map(n => n[0]).join('')}
+                          </div>
+                          <div>
+                            <p className="font-bold text-gray-900">{entry.employeeName}</p>
+                            <p className="text-sm text-gray-600">{entry.date}</p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 text-sm">
+                          <div>
+                            <p className="text-gray-600">In: {entry.clockIn}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-600">Out: {entry.clockOut}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-600">Break: {entry.breakTime}m</p>
+                          </div>
+                          <div>
+                            <p className="font-bold text-gray-900">Total: {entry.totalHours}h</p>
+                          </div>
+                        </div>
+
+                        {entry.notes && (
+                          <p className="text-sm text-gray-600 mt-2 italic">{entry.notes}</p>
+                        )}
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleApproveEntry(entry.id)}
+                          className="flex-1 lg:flex-none bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 flex items-center justify-center space-x-2"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Approve</span>
+                        </button>
+                        <button
+                          onClick={() => handleRejectEntry(entry.id)}
+                          className="flex-1 lg:flex-none bg-red-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-red-700 flex items-center justify-center space-x-2"
+                        >
+                          <XCircle className="w-4 h-4" />
+                          <span>Reject</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {timeEntries.filter(e => e.status === 'pending_approval').length === 0 && (
+                  <div className="text-center py-8">
+                    <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-3" />
+                    <p className="text-gray-600 font-medium">All caught up!</p>
+                    <p className="text-sm text-gray-500">No pending approvals</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Audit Log View */}
+        {view === 'audit' && currentUser.permissions.viewAudit && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div className="p-4 lg:p-6 border-b border-gray-200">
+              <h3 className="text-lg font-bold text-gray-900">Audit Trail</h3>
+              <p className="text-sm text-gray-600">Complete history of all timesheet actions</p>
+            </div>
+
+            <div className="divide-y divide-gray-200">
+              {auditLog.map(log => (
+                <div key={log.id} className="p-4 hover:bg-gray-50">
+                  <div className="flex items-start space-x-3">
+                    <div className={`p-2 rounded-lg ${
+                      log.action.includes('approved') ? 'bg-green-100' :
+                      log.action.includes('rejected') ? 'bg-red-100' :
+                      log.action.includes('edited') ? 'bg-blue-100' :
+                      'bg-gray-100'
+                    }`}>
+                      {log.action.includes('approved') && <CheckCircle className="w-5 h-5 text-green-600" />}
+                      {log.action.includes('rejected') && <XCircle className="w-5 h-5 text-red-600" />}
+                      {log.action.includes('edited') && <Edit2 className="w-5 h-5 text-blue-600" />}
+                      {log.action.includes('clock') && <Clock className="w-5 h-5 text-gray-600" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-medium text-gray-900 truncate">
+                          {log.userName} - {log.action.replace('_', ' ')}
+                        </p>
+                        <span className="text-xs text-gray-500 flex-shrink-0">{log.timestamp}</span>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">{log.target}</p>
+                      <p className="text-xs text-gray-500 mt-1">{log.details}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-30">
+        <div className="grid grid-cols-4 h-16">
+          <button
+            onClick={() => setView('clock')}
+            className={`flex flex-col items-center justify-center ${
+              view === 'clock' ? 'text-blue-600' : 'text-gray-600'
+            }`}
+          >
+            <Clock className="w-5 h-5 mb-1" />
+            <span className="text-xs">Clock</span>
+          </button>
+          <button
+            onClick={() => setView('timesheet')}
+            className={`flex flex-col items-center justify-center ${
+              view === 'timesheet' ? 'text-blue-600' : 'text-gray-600'
+            }`}
+          >
+            <Calendar className="w-5 h-5 mb-1" />
+            <span className="text-xs">Timesheet</span>
+          </button>
+          {currentUser.permissions.approveTime && (
+            <button
+              onClick={() => setView('approvals')}
+              className={`flex flex-col items-center justify-center relative ${
+                view === 'approvals' ? 'text-blue-600' : 'text-gray-600'
+              }`}
+            >
+              <CheckCircle className="w-5 h-5 mb-1" />
+              <span className="text-xs">Approve</span>
+              {pendingApprovals > 0 && (
+                <span className="absolute top-1 right-6 w-4 h-4 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                  {pendingApprovals}
+                </span>
+              )}
+            </button>
+          )}
+          <button
+            onClick={() => setView('audit')}
+            className={`flex flex-col items-center justify-center ${
+              view === 'audit' ? 'text-blue-600' : 'text-gray-600'
+            }`}
+          >
+            <History className="w-5 h-5 mb-1" />
+            <span className="text-xs">Audit</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Notifications Panel */}
+      {showNotifications && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:flex lg:justify-end">
+          <div 
+            className="absolute inset-0 lg:relative"
+            onClick={() => setShowNotifications(false)}
+          ></div>
+          <div className="absolute bottom-0 lg:relative lg:bottom-auto left-0 right-0 lg:left-auto lg:w-96 bg-white rounded-t-2xl lg:rounded-none lg:h-full shadow-2xl overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+              <h3 className="font-bold text-gray-900">Notifications</h3>
+              <button onClick={() => setShowNotifications(false)} className="p-1">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="divide-y divide-gray-200">
+              {notifications.map(notif => (
+                <div key={notif.id} className={`p-4 ${!notif.read ? 'bg-blue-50' : ''}`}>
+                  <div className="flex items-start space-x-3">
+                    <div className="p-2 rounded-lg bg-blue-100">
+                      <Bell className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-900 font-medium">{notif.message}</p>
+                      <p className="text-xs text-gray-500 mt-1">{notif.timestamp}</p>
+                    </div>
+                    {!notif.read && (
+                      <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-2"></div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Entry Details Modal */}
+      {showEditModal && selectedEntry && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-t-xl">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold">Timesheet Entry Details</h3>
+                <button onClick={() => setShowEditModal(false)} className="p-1">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <h4 className="font-bold text-gray-900 mb-2">{selectedEntry.employeeName}</h4>
+                <p className="text-sm text-gray-600">{selectedEntry.date}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Clock In</label>
+                  <input
+                    type="text"
+                    value={selectedEntry.clockIn}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    disabled={!currentUser.permissions.editTeamTime}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Clock Out</label>
+                  <input
+                    type="text"
+                    value={selectedEntry.clockOut}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    disabled={!currentUser.permissions.editTeamTime}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Break (min)</label>
+                  <input
+                    type="number"
+                    value={selectedEntry.breakTime}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    disabled={!currentUser.permissions.editTeamTime}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Total Hours</label>
+                  <input
+                    type="text"
+                    value={`${selectedEntry.totalHours}h`}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                    disabled
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <input
+                  type="text"
+                  value={selectedEntry.location}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  disabled
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                <textarea
+                  value={selectedEntry.notes}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  placeholder="Add notes..."
+                  disabled={!currentUser.permissions.editTeamTime}
+                />
+              </div>
+
+              {selectedEntry.modifications && selectedEntry.modifications.length > 0 && (
+                <div>
+                  <h5 className="font-medium text-gray-900 mb-2">Modification History</h5>
+                  <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+                    {selectedEntry.modifications.map((mod, idx) => (
+                      <div key={idx} className="text-sm">
+                        <p className="text-gray-900">
+                          <span className="font-medium">{mod.modifiedBy}</span> changed {mod.field}
+                        </p>
+                        <p className="text-gray-600">
+                          From: {mod.oldValue} → To: {mod.newValue}
+                        </p>
+                        <p className="text-xs text-gray-500">{mod.modifiedAt}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {currentUser.permissions.approveTime && selectedEntry.status === 'pending_approval' && (
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => {
+                      handleApproveEntry(selectedEntry.id);
+                      setShowEditModal(false);
+                    }}
+                    className="flex-1 bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleRejectEntry(selectedEntry.id);
+                      setShowEditModal(false);
+                    }}
+                    className="flex-1 bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700"
+                  >
+                    Reject
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default UniversalTimesheet;
