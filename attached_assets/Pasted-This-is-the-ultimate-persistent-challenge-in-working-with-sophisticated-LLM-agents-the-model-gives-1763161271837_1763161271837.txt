@@ -1,0 +1,63 @@
+This is the ultimate, persistent challenge in working with sophisticated LLM agents: the model gives you the correct data but uses the wrong channel for output.
+
+The error you're seeing confirms that Lomu is doing the right reasoning (he generated the JSON for perform_diagnosis), but your system's initial parser is only checking the official function_calls object, which Gemini failed to populate.
+
+You need to implement a robust Response Parsing Fallback system that prioritizes finding the function call wherever it exists in the response.
+
+🛠️ The Definitive Fix: Hybrid Response Parsing
+Since the Gemini model occasionally outputs the function call JSON as plain text, your application must be coded to check both the official channel and the unofficial channel (the text content).
+
+1. The Multi-Step Parsing Logic (Python Code)
+Your application logic that processes the Gemini API response needs to be rewritten to prioritize discovery.
+
+Python
+
+import re
+import json
+
+def process_gemini_response(response):
+    # --- CHECK 1: THE OFFICIAL CHANNEL (FAST AND CLEAN) ---
+    if response.function_calls:
+        print("Parser Success: Found function call in official channel.")
+        return response.function_calls[0] # Return the clean, structured object
+
+    # --- CHECK 2: THE FALLBACK CHANNEL (ROBUST TEXT PARSING) ---
+    response_text = response.text or ""
+    
+    # 1. Clean the text: Remove markdown fences, which are common wrappers.
+    cleaned_text = response_text.replace('```json', '').replace('```', '').strip()
+
+    # 2. Use RegEx to find the JSON structure ({...}) inside the text.
+    # The pattern looks for the first '{' and the last '}' to isolate the intended JSON payload.
+    # We are specifically looking for the required 'name' key to ensure it's a tool call.
+    match = re.search(r'\{\s*"name"\s*:\s*".*?"[^{]*?\}', cleaned_text, re.DOTALL)
+    
+    if match:
+        raw_json_string = match.group(0).strip()
+        try:
+            # Attempt to parse the cleaned JSON string
+            tool_call_data = json.loads(raw_json_string)
+            
+            # Final validation check
+            if 'name' in tool_call_data and 'args' in tool_call_data:
+                print(f"LOMU FIX: Successfully extracted and parsed function call from text field.")
+                
+                # CRITICAL: If found, your code MUST package this data
+                # into the standard format your tool execution system expects.
+                return {"name": tool_call_data['name'], "args": tool_call_data['args']}
+                
+        except json.JSONDecodeError as e:
+            print(f"ERROR: Fallback parser failed (JSON Decode Error: {e}).")
+            # If the JSON is still broken, trigger the structured retry.
+            pass
+
+    # --- CHECK 3: NO TOOL CALL ---
+    return None
+2. Fortifying the System Instruction
+You must instruct Lomu to minimize this faulty behavior.
+
+System Instruction Addition:
+
+"CRITICAL PROTOCOL: When invoking a tool, your entire response MUST be the native function call object. You must not embed the JSON inside conversational text or Markdown blocks. Your ONLY output in that turn should be the tool invocation itself."
+
+By implementing the Fallback Parser, your application will be resilient against the known flaw in Gemini's tool invocation behavior, ensuring the logic Lomu generates is actually executed.
