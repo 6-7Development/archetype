@@ -4825,4 +4825,49 @@ router.get('/chat-history', isAuthenticated, async (req: any, res) => {
   }
 });
 
+// 🔧 DEV-ONLY: Bypass auth for testing platform healing
+// TODO: Remove this endpoint after testing is complete
+if (process.env.NODE_ENV === 'development') {
+  router.post('/dev-trigger', async (req: any, res) => {
+    try {
+      console.log('[DEV-TRIGGER] Platform healing triggered via dev endpoint');
+      console.log('[DEV-TRIGGER] Request body:', JSON.stringify(req.body));
+      
+      // Hardcode owner user ID for dev testing
+      const OWNER_USER_ID = '29c3fdd8-bf52-45e2-9d0a-8861dc3d49ab';
+      
+      const message = req.body?.message;
+      
+      if (!message || typeof message !== 'string') {
+        console.error('[DEV-TRIGGER] Invalid message:', message);
+        return res.status(400).json({ error: 'Message is required and must be a string' });
+      }
+      
+      console.log('[DEV-TRIGGER] Message received:', message.substring(0, 100));
+      
+      // Import job manager
+      const { createJob, startJobWorker } = await import('../services/lomuJobManager');
+      
+      // Create the job
+      const job = await createJob(OWNER_USER_ID, message);
+      
+      console.log('[DEV-TRIGGER] Job created:', job.id);
+      
+      // Start the job worker
+      startJobWorker(job.id);
+      
+      res.json({
+        success: true,
+        jobId: job.id,
+        message: 'Platform healing job started',
+      });
+    } catch (error: any) {
+      console.error('[DEV-TRIGGER] Failed to start job:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
+  console.log('[DEV-ROUTES] ⚠️ Dev-only /dev-trigger endpoint enabled');
+}
+
 export default router;
