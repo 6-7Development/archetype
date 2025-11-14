@@ -14,11 +14,17 @@ export interface PhaseEmitter {
   (phase: Phase, message: string): void;
 }
 
+export interface PhaseChangeCallback {
+  (runId: string, phase: Phase, message: string): void;
+}
+
 export class PhaseOrchestrator {
   private currentPhase: Phase | null = null;
   private emittedPhases: Set<Phase> = new Set();
   private transitions: PhaseTransition[] = [];
   private readonly emitter: PhaseEmitter;
+  private readonly runId: string;
+  private readonly onPhaseChange?: PhaseChangeCallback;
   
   // Phase sequence for validation
   private static readonly PHASE_SEQUENCE: Phase[] = [
@@ -38,8 +44,14 @@ export class PhaseOrchestrator {
     'complete': 4
   };
 
-  constructor(emitter: PhaseEmitter) {
+  constructor(
+    emitter: PhaseEmitter, 
+    runId: string,
+    onPhaseChange?: PhaseChangeCallback
+  ) {
     this.emitter = emitter;
+    this.runId = runId;
+    this.onPhaseChange = onPhaseChange;
   }
 
   /**
@@ -77,6 +89,11 @@ export class PhaseOrchestrator {
       message,
       timestamp: new Date()
     });
+
+    // Call onPhaseChange callback to update RunStateManager
+    if (this.onPhaseChange) {
+      this.onPhaseChange(this.runId, phase, message);
+    }
 
     console.log(`[PHASE-ORCHESTRATOR] ✅ Emitted phase '${phase}': ${message}`);
     return true;

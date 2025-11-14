@@ -28,6 +28,10 @@ export type EventType =
   | "artifact.created"
   | "artifact.updated"
   | "run.phase"
+  | "run.state_updated"     // ✅ NEW: Unified run state updates
+  | "run.started"           // ✅ NEW: Run initialization
+  | "run.completed"         // ✅ NEW: Run completion
+  | "run.failed"            // ✅ NEW: Run failure
   | "agent.delegated"
   | "agent.guidance"
   | "deploy.started"
@@ -377,6 +381,101 @@ export interface BillingWarningData {
   percentageUsed: number;
   creditsRemaining: number;
   message: string;
+}
+
+// ============================================================================
+// UNIFIED RUN STATE (Single Source of Truth)
+// ============================================================================
+
+/**
+ * RunState: Canonical state tracker for LomuAI jobs
+ * Replaces duplicate task managers and provides single source of truth
+ */
+export interface RunState {
+  // Run Identity
+  runId: string;
+  sessionId: string;
+  userId: string;
+  
+  // Current State
+  phase: RunPhase;
+  status: "active" | "paused" | "completed" | "failed" | "cancelled";
+  
+  // Task Tracking (Kanban-style)
+  tasks: Task[];
+  currentTaskId: string | null;
+  
+  // Progress Metrics
+  metrics: {
+    totalTasks: number;
+    completedTasks: number;
+    failedTasks: number;
+    totalToolCalls: number;
+    currentIteration: number;
+    maxIterations: number;
+  };
+  
+  // Timing
+  startedAt: string;
+  lastActivityAt: string;
+  completedAt?: string;
+  
+  // Configuration
+  config: RunConfig;
+  
+  // Error Tracking
+  errors: Array<{
+    timestamp: string;
+    message: string;
+    phase: RunPhase;
+    taskId?: string;
+  }>;
+}
+
+/**
+ * RunStateUpdate: Event data for run.state_updated events
+ */
+export interface RunStateUpdateData {
+  runId: string;
+  phase?: RunPhase;
+  status?: RunState['status'];
+  currentTaskId?: string | null;
+  metricsUpdate?: Partial<RunState['metrics']>;
+  error?: RunState['errors'][0];
+}
+
+/**
+ * RunStarted: Event data for run.started events
+ */
+export interface RunStartedData {
+  runId: string;
+  sessionId: string;
+  userId: string;
+  config: RunConfig;
+  timestamp: string;
+}
+
+/**
+ * RunCompleted: Event data for run.completed events
+ */
+export interface RunCompletedData {
+  runId: string;
+  totalDurationMs: number;
+  tasksCompleted: number;
+  totalToolCalls: number;
+  finalPhase: RunPhase;
+  timestamp: string;
+}
+
+/**
+ * RunFailed: Event data for run.failed events
+ */
+export interface RunFailedData {
+  runId: string;
+  phase: RunPhase;
+  errorMessage: string;
+  timestamp: string;
+  taskId?: string;
 }
 
 // ============================================================================

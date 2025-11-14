@@ -396,21 +396,18 @@ If you need to call a function, emit ONLY the JSON object.`),
     if (geminiTools && geminiTools.length > 0 && geminiTools[0]?.functionDeclarations) {
       requestParams.tools = geminiTools;
       
-      // ✅ NEW ARCHITECTURE: Force tool calling with explicit function list (external advice v2)
-      // "Even perfect prompts won't stop free-text if tool config isn't strict"
-      // mode: "ANY" = force tool call every time (no prose allowed)
-      // allowedFunctionNames = explicit list of what can be called
+      // ✅ FIXED: Use AUTO mode to allow Gemini to complete work naturally
+      // mode: 'AUTO' (default) = Gemini decides when to use tools vs return text
+      // This prevents infinite thinking loops where mode: 'ANY' forces tool calls every turn
       const functionNames = geminiTools[0].functionDeclarations.map((fn: any) => fn.name);
       
       requestParams.toolConfig = {
         functionCallingConfig: {
-          // ✅ ARCHITECT FIX: Removed mode: 'ANY' - clashes with responseMimeType
-          // Default behavior already allows tool calls, responseMimeType enforces JSON
-          allowedFunctionNames: functionNames, // ✅ BE EXPLICIT about what's allowed
+          mode: 'AUTO', // ✅ Let Gemini decide when to use tools (prevents infinite loops)
         }
       };
       
-      console.log(`[GEMINI-TOOLCONFIG] mode: ANY (forced), ${functionNames.length} functions allowed:`, functionNames.slice(0, 5).join(', '));
+      console.log(`[GEMINI-TOOLCONFIG] mode: AUTO, ${functionNames.length} functions available:`, functionNames.slice(0, 5).join(', '));
     }
 
     // 🔍 DEBUG: Log what we're sending to Gemini

@@ -1,0 +1,47 @@
+This is a classic issue of misconfigured Tool/Function Calling Mode in the Gemini API. The error message is providing you with the exact technical gap you missed.
+
+You are absolutely correct: the error "Please set allowed_function_names only when function calling mode is ANY" means your current configuration has two conflicting settings:
+
+You are telling Gemini which specific functions it's allowed to use (allowed\_function\_names).
+
+But you are NOT telling Gemini how to use them (the mode is missing or defaulted to AUTO).
+
+The API requires that if you restrict the list of callable functions, you must explicitly set the mode to ANY to trigger the Forced Function Calling logic.
+
+🛠️ The Final Configuration Fix for Lomu
+You need to restore the correct mode setting within your ToolConfig structure. This ensures Lomu's brain knows how to handle the tools you've provided.
+
+1. Restore the mode: 'ANY' Setting
+This is the non-negotiable step to resolve the error.
+
+Logic: The ANY mode forces the model to look at the list of allowed functions and predict one of them. The default AUTO mode lets the model decide between a natural language response OR a function call, which doesn't work when you've already provided a restricted list.
+
+The Code Fix (Conceptual Python/JSON):
+
+Python
+
+tool_config = {
+    "function_calling_config": {
+        # CRITICAL FIX: The model must be explicitly told how to use the allowed list.
+        "mode": "ANY", 
+        
+        # This list restricts Lomu to only these tools when he decides to act.
+        "allowed_function_names": [
+            "generate_schedule", 
+            "get_employee_profiles",
+            # ... and so on
+        ]
+    }
+}
+2. Final Check on the JSON/Tool Conflict
+You've already learned to bypass the conflict, but ensure the code reflects it:
+
+Rule: The moment you include any tools or tool_config in the request, you MUST NOT include response_mime_type: "application/json".
+
+Workflow:
+
+Phase 1 (Tooling): Call with tools and mode: ANY. (This generates function calls).
+
+Phase 2 (Reporting): Call without tools but with response_mime_type: "application/json". (This generates structured text).
+
+By restoring the mode: 'ANY' setting, you align the API configuration with the advanced, constrained function calling behavior required for your complex multi-tool agent. This should eliminate the error and allow Lomu to execute his logic.

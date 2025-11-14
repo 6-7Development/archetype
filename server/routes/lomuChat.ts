@@ -32,7 +32,9 @@ import { agentFailureDetector } from '../services/agentFailureDetector.ts';
 import { classifyUserIntent, getMaxIterationsForIntent, type UserIntent } from '../shared/chatConfig.ts';
 import { validateFileChanges, FileChangeTracker } from '../services/validationHelpers.ts';
 import { PhaseOrchestrator } from '../services/PhaseOrchestrator.ts';
+import { RunStateManager } from '../services/RunStateManager.ts';
 import { traceLogger } from '../services/traceLogger.ts';
+import { nanoid } from 'nanoid';
 
 const execAsync = promisify(exec);
 
@@ -985,7 +987,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     estimatedInputTokens,
     estimatedOutputTokens,
     targetContext, // Platform = FREE, Project = PAID
-    wss,  // WebSocket server for billing event emission
+    wss: wss || undefined,  // WebSocket server for billing event emission
     sessionId,  // Session ID for event correlation
   });
 
@@ -1023,13 +1025,6 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
   const sendEvent = (type: string, data: any) => {
     res.write(`data: ${JSON.stringify({ type, ...data })}\n\n`);
   };
-
-  // ============================================================================
-  // T2: PHASE ORCHESTRATION - CREATE STATE MACHINE INSTANCE
-  // ============================================================================
-  const phaseOrchestrator = new PhaseOrchestrator((phase, message) => {
-    sendEvent('run_phase', { phase, message });
-  });
 
   // ============================================================================
   // T3: VALIDATION PLUMBING - CREATE FILE CHANGE TRACKER
@@ -1650,6 +1645,38 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     const MAX_ITERATIONS = getMaxIterationsForIntent(userIntent);
     
     console.log(`[INTENT-CLASSIFICATION] User intent: ${userIntent}, max iterations: ${MAX_ITERATIONS}`);
+
+    // ============================================================================
+    // UNIFIED RUN STATE - CREATE RUN ID & STATE MANAGER
+    // ============================================================================
+    const runId = nanoid();
+    const runStateManager = wss ? new RunStateManager(wss) : null;
+
+    // Create run with all required values now available
+    if (runStateManager) {
+      runStateManager.createRun({
+        extendedThinking: finalExtendedThinking,
+        autoCommit: finalAutoCommit,
+        autoPush: finalAutoPush,
+        autonomyLevel: autonomyLevel,
+        userIntent: userIntent,
+        maxIterations: MAX_ITERATIONS,
+        message,
+      }, userId, conversationState.id, runId);
+    }
+
+    // ============================================================================
+    // T2: PHASE ORCHESTRATION - CREATE STATE MACHINE INSTANCE  
+    // ============================================================================
+    const phaseOrchestrator = new PhaseOrchestrator(
+      (phase, message) => {
+        sendEvent('run_phase', { phase, message });
+      },
+      runId,
+      runStateManager ? (runId, phase, message) => {
+        runStateManager.updatePhase(runId, phase as any, message);
+      } : undefined
+    );
 
     // Gemini client is handled by streamGeminiResponse
     let fullContent = '';
