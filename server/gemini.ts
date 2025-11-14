@@ -837,6 +837,60 @@ Please try:
             console.log(`[GEMINI-TOOLS] 🔧 Gemini requested tool: ${extractedFunctionCall.name}`);
             console.log(`[GEMINI-TOOLS] Tool args:`, JSON.stringify(validatedArgs).substring(0, 100));
             
+            // ✅ VALIDATE: Check for LomuAI's specific double-escape bug in string content
+            // Only check actual string values (not JSON encoding which naturally escapes backslashes)
+            const checkForMalformedEscapes = (obj: any, path: string = ''): { found: boolean; details?: string } => {
+              if (typeof obj === 'string') {
+                // SMART CHECK: Only flag patterns that indicate LomuAI's specific bug
+                const bugPatterns = [
+                  { pattern: /\.join\(['"]\\\\n['"]\)/, name: ".join('\\\\n')" },
+                  { pattern: /\.replace\([^,]+,\s*['"]\\\\n['"]\)/, name: ".replace(x, '\\\\n')" },
+                  { pattern: /}\s*\\n\s*}/, name: "}\\n}" },
+                ];
+                
+                for (const { pattern, name } of bugPatterns) {
+                  if (pattern.test(obj)) {
+                    return { 
+                      found: true, 
+                      details: `Found malformed pattern ${name} at ${path || 'root'}` 
+                    };
+                  }
+                }
+              } else if (typeof obj === 'object' && obj !== null) {
+                // Recursively check nested objects/arrays
+                for (const [key, value] of Object.entries(obj)) {
+                  const result = checkForMalformedEscapes(value, path ? `${path}.${key}` : key);
+                  if (result.found) return result;
+                }
+              }
+              return { found: false };
+            };
+            
+            const escapeCheck = checkForMalformedEscapes(validatedArgs);
+            if (escapeCheck.found) {
+              console.error(`[GEMINI-STREAM] ❌ MALFORMED FUNCTION CALL: ${escapeCheck.details}`);
+              console.error(`[GEMINI-STREAM] Function: ${extractedFunctionCall.name}`);
+              
+              // Send error event to client
+              if (onEvent) {
+                onEvent({
+                  type: 'error',
+                  timestamp: new Date().toISOString(),
+                  data: {
+                    message: `Gemini returned malformed function call: ${escapeCheck.details}`,
+                    functionName: extractedFunctionCall.name,
+                    hint: 'Detected LomuAI double-escape bug pattern that causes syntax errors.'
+                  }
+                });
+              }
+              
+              // Don't push malformed function call - throw error to trigger retry
+              throw new Error(
+                `MALFORMED_FUNCTION_CALL: ${escapeCheck.details}. ` +
+                `This indicates Gemini output bug that will cause syntax errors.`
+              );
+            }
+            
             // 📊 Enhanced diagnostic logging
             console.log('[GEMINI-CHUNK-DEBUG]', {
               chunkNumber: chunkCount,

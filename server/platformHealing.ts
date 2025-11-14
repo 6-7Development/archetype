@@ -708,6 +708,22 @@ export class PlatformHealingService {
           commitMessage += `\n\n${metadata.join(' | ')}`;
         }
         
+        // ✅ PRE-COMMIT VALIDATION: Run checks BEFORE GitHub production commit
+        console.log(`[PLATFORM-WRITE] 🔍 Running pre-commit validation...`);
+        const quickValidation = await codeValidator.validateSingleFile(filePath, content);
+        
+        if (!quickValidation.valid) {
+          console.error(`[PLATFORM-WRITE] ❌ Pre-commit validation FAILED`);
+          console.error(`[PLATFORM-WRITE] Errors:`, quickValidation.errors);
+          
+          // CRITICAL: Don't push broken code to production
+          throw new Error(
+            `Cannot commit to GitHub - validation failed:\n\n${quickValidation.errors.join('\n\n')}\n\n` +
+            `This prevents LomuAI from pushing broken code to production.`
+          );
+        }
+        console.log(`[PLATFORM-WRITE] ✅ Pre-commit validation passed`);
+        
         console.log(`[PLATFORM-WRITE] 🔧 Committing to GitHub: ${filePath}`);
         console.log(`[PLATFORM-WRITE] Maintenance mode: ENABLED`);
         console.log(`[PLATFORM-WRITE] Reason: ${maintenanceMode.reason}`);

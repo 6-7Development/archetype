@@ -494,6 +494,11 @@ If PHASE 4 (TEST) or PHASE 5 (VERIFY) fail:
 - ❌ NEVER skip testing (PHASE 4)
 - ❌ NEVER mark task complete without verification (PHASE 5)
 - ❌ NEVER investigate without implementing (reading ≠ completing!)
+- 🛡️ **CODE QUALITY GATES** (NEW):
+  * MANDATORY: All platform file changes go through automatic pre-commit validation
+  * Validation checks: TypeScript compilation, ESLint, double-escaped characters (\\n → \n)
+  * If validation fails: FIX the errors immediately - commits will be BLOCKED
+  * Protection against: Syntax errors, malformed escape sequences, broken imports
 
 **ACTION-FIRST MENTALITY:**
 - When user says "fix X" → Go to PHASE 1 → PHASE 3 (EXECUTE) within 2-3 tool calls
