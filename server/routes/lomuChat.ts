@@ -38,6 +38,29 @@ import { nanoid } from 'nanoid';
 
 const execAsync = promisify(exec);
 
+// ✅ STATUS MAPPING: Convert database statuses to RunStateManager TaskStatus
+function mapDatabaseStatusToRunState(dbStatus: string): 'backlog' | 'in_progress' | 'verifying' | 'done' | 'blocked' {
+  const statusMap: Record<string, 'backlog' | 'in_progress' | 'verifying' | 'done' | 'blocked'> = {
+    'pending': 'backlog',
+    'in_progress': 'in_progress',
+    'completed': 'done',
+    'failed': 'blocked',
+    'cancelled': 'blocked',
+    'verifying': 'verifying',
+    'backlog': 'backlog',
+    'done': 'done',
+    'blocked': 'blocked',
+  };
+  
+  const mapped = statusMap[dbStatus.toLowerCase()];
+  if (!mapped) {
+    console.warn(`[STATUS-MAP] Unknown status "${dbStatus}", defaulting to "backlog"`);
+    return 'backlog';
+  }
+  
+  return mapped;
+}
+
 // 📊 GAP 1: RUNTIME VALIDATION - Detect low-confidence patterns in responses
 function detectLowConfidencePatterns(response: string): { hasLowConfidence: boolean; patterns: string[] } {
   const lowConfidencePatterns = [
@@ -1689,6 +1712,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     const MAX_EMPTY_ITERATIONS = 3; // Stop if 3 consecutive iterations without tool calls
     let totalToolCallCount = 0; // Track total tool calls for quality analysis
     
+    // ✅ GAP 5: Per-iteration timeout safeguards
+    const ITERATION_TIMEOUT_MS = 60000; // 1 minute per iteration
+    let iterationStartTime = Date.now();
+    
     // 🚨 WATCHDOG: Prevent endless thinking loops
     let consecutiveThinkingCount = 0; // Track consecutive "thought" scratchpad entries
     const MAX_CONSECUTIVE_THINKING = 3; // Force action after 3 consecutive thoughts
@@ -1768,6 +1795,15 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     while (continueLoop && iterationCount < MAX_ITERATIONS) {
       iterationCount++;
+      
+      // ✅ GAP 5: Reset iteration timer at start of each iteration
+      iterationStartTime = Date.now();
+      console.log(`[LOMU-AI-ITERATION] Starting iteration ${iterationCount}/${MAX_ITERATIONS}`);
+
+      // ✅ GAP 6: Update RunStateManager with current iteration
+      if (runStateManager) {
+        runStateManager.incrementIteration(runId);
+      }
 
       // ✅ CLEAN FLOW: Only show iteration count for long-running tasks (5+ iterations)
       if (iterationCount % 5 === 0) {
@@ -2320,6 +2356,22 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 sendEvent('content', { content: `✅ **Task list created!** Track my progress in the card above.\n\n` });
                 console.log('[LOMU-AI] Task list created:', result.taskListId);
 
+                // ✅ GAP 1: Update RunStateManager with tasks (with status mapping)
+                if (runStateManager && result.tasks) {
+                  const runStateTasks = result.tasks.map((t: any) => ({
+                    id: t.id,
+                    title: t.title,
+                    status: mapDatabaseStatusToRunState(t.status || 'pending'),
+                    owner: 'agent' as const,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                  }));
+                  
+                  runStateManager.addTasks(runId, runStateTasks, typedInput.title);
+                  runStateManager.updatePhase(runId, 'planning', 'Created task breakdown');
+                  console.log(`[GAP-1] ✅ RunStateManager updated with ${runStateTasks.length} tasks (mapped statuses)`);
+                }
+
                 // ✅ FULL AUTONOMY: No forcing, no micromanagement
                 // LomuAI will naturally proceed with tasks like Replit Agent does
               } else {
@@ -2345,6 +2397,22 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               if (result.success) {
                 toolResult = `✅ Task updated to ${typedInput.status}`;
                 sendEvent('task_updated', { taskId: typedInput.taskId, status: typedInput.status });
+                
+                // ✅ GAP 2: Update RunStateManager (with status mapping)
+                if (runStateManager) {
+                  const mappedStatus = mapDatabaseStatusToRunState(typedInput.status);
+                  runStateManager.updateTask(runId, typedInput.taskId, {
+                    status: mappedStatus,
+                    updatedAt: new Date().toISOString(),
+                  });
+                  
+                  // Update phase based on task progress
+                  const completionPercentage = runStateManager.getCompletionPercentage(runId);
+                  if (completionPercentage > 0) {
+                    runStateManager.updatePhase(runId, 'working', `Progress: ${completionPercentage}%`);
+                  }
+                  console.log(`[GAP-2] ✅ RunStateManager updated task ${typedInput.taskId}: "${typedInput.status}" → "${mappedStatus}" (${completionPercentage}% complete)`);
+                }
               } else {
                 toolResult = `❌ Failed to update task: ${result.error}`;
               }
@@ -3707,6 +3775,25 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         // ✅ NO AUTO-DIAGNOSIS FORCING - Let LomuAI work naturally
         // Only run diagnosis when user explicitly asks for it
         console.log('[LOMU-AI-FORCE] ✓ No forcing - LomuAI works autonomously');
+        
+        // ✅ GAP 5: Check iteration timeout after tool execution
+        const iterationDuration = Date.now() - iterationStartTime;
+        if (iterationDuration > ITERATION_TIMEOUT_MS) {
+          console.error('[LOMU-AI-TIMEOUT] Iteration timeout exceeded!');
+          
+          if (runStateManager) {
+            runStateManager.markFailed(runId, `Iteration ${iterationCount} timed out after ${iterationDuration}ms`);
+          }
+          
+          sendEvent('error', { 
+            message: '⏱️ Iteration took too long. Please try a simpler request or break it into steps.',
+            iterationCount,
+            duration: iterationDuration
+          });
+          
+          continueLoop = false;
+          break;
+        }
       } else {
         // No tool calls this iteration - check if we should continue
         // 🐛 FIX: Don't end if there are tasks still in progress - LomuAI might need another turn
@@ -3759,6 +3846,26 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           console.log('[LOMU-AI-CONTINUATION] No task list - ending session naturally');
           continueLoop = false;
         }
+      }
+      
+      // ============================================================================
+      // GAP 3: COMPLETION DETECTION - Stop when all tasks are done
+      // ============================================================================
+      if (runStateManager && runStateManager.areAllTasksComplete(runId)) {
+        console.log('[LOMU-AI-COMPLETION] All tasks completed! Marking run as complete...');
+        
+        runStateManager.markComplete(runId);
+        
+        sendEvent('complete', { 
+          message: '✅ All tasks completed successfully!',
+          runId,
+          totalTasks: runStateManager.getTasks(runId).length,
+          finalPhase: 'complete'
+        });
+        
+        console.log('[LOMU-AI-COMPLETION] Run marked as complete, stopping iteration');
+        continueLoop = false;
+        break; // Exit iteration loop immediately
       }
     }
 

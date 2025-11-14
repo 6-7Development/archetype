@@ -517,13 +517,30 @@ Return ONLY the raw JSON object.`;
               });
             }
             
-            // 🚫 MAX RETRIES EXCEEDED: Provide helpful error
-            const errorText = `⚠️ Internal error: AI used invalid function syntax after ${MAX_RETRIES} retry attempts. This has been logged. Please try rephrasing your request differently.`;
+            // 🚫 GAP 4: MAX RETRIES EXCEEDED - Provide user-friendly error
+            const userFriendlyError = `I apologize, but I'm having trouble using my tools correctly. This usually happens when:
+
+1. The request is very complex - try breaking it into smaller steps
+2. The tools are returning unexpected data formats
+
+What I attempted: ${attemptedFunction || 'unknown action'}
+Error details: Used incompatible syntax format
+
+Please try:
+- Rephrasing your request more specifically
+- Breaking the task into smaller pieces
+- Or let me know if you'd like me to try a different approach`;
+            
+            if (onError) {
+              onError(new Error(userFriendlyError));
+            }
             
             if (onChunk) {
-              onChunk(errorText);
+              onChunk(userFriendlyError);
             }
-            fullText += errorText;
+            fullText += userFriendlyError;
+            
+            console.error('[GAP-4] ✅ User-friendly error message sent after MAX_RETRIES');
             
             // Stop processing this malformed response
             break;
