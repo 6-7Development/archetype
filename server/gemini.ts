@@ -23,6 +23,27 @@ if (apiKey === "dummy-key-for-development") {
 
 const genai = new GoogleGenerativeAI(apiKey);
 
+// Telemetry for JSON healing performance monitoring
+declare global {
+  var jsonHealingTelemetry: {
+    success: number;
+    failure: number;
+    invalidStructure: number;
+    totalAttempts: number;
+    lastReset: Date;
+  };
+}
+
+if (!global.jsonHealingTelemetry) {
+  global.jsonHealingTelemetry = {
+    success: 0,
+    failure: 0,
+    invalidStructure: 0,
+    totalAttempts: 0,
+    lastReset: new Date()
+  };
+}
+
 /**
  * Sanitize text to remove invisible characters that could corrupt JSON
  * (External advice: Google Docs can inject smart quotes, en-dashes, zero-width spaces)
@@ -45,12 +66,20 @@ function sanitizeText(text: string): string {
 
 /**
  * Robust JSON extraction and healing for incomplete/truncated Gemini responses
- * Uses jsonrepair library to fix missing braces, trailing commas, and other JSON errors
+ * Uses aggressive repair strategy + jsonrepair library to fix:
+ * - Missing closing braces
+ * - Trailing commas
+ * - Truncated mid-transmission JSON
  * 
  * @param responseText - Accumulated text from streaming chunks
  * @returns Parsed function call object or null if no valid JSON found
  */
 function robustExtractAndHeal(responseText: string): { name: string; args: any } | null {
+  // Track telemetry - increment total attempts at start
+  if (global.jsonHealingTelemetry) {
+    global.jsonHealingTelemetry.totalAttempts++;
+  }
+  
   // 1. Clean and isolate JSON payload
   let cleanedText = responseText.replace(/```json|```/g, '').trim();
   
@@ -59,19 +88,56 @@ function robustExtractAndHeal(responseText: string): { name: string; args: any }
   if (firstBraceIndex === -1) return null;
   cleanedText = cleanedText.substring(firstBraceIndex);
   
-  // 3. Attempt to heal the JSON structure
+  // 3. AGGRESSIVE PRE-REPAIR: Handle common truncation patterns
+  let preppedText = cleanedText;
+  
+  // If doesn't end with closing brace, likely truncated
+  if (!preppedText.endsWith('}')) {
+    console.log('[JSON-HEALING] 🔧 Detected incomplete JSON (missing closing brace)');
+    
+    // Remove trailing comma (common truncation artifact)
+    if (preppedText.endsWith(',')) {
+      preppedText = preppedText.slice(0, -1);
+    }
+    
+    // Count opening/closing braces to estimate how many we need
+    const openBraces = (preppedText.match(/\{/g) || []).length;
+    const closeBraces = (preppedText.match(/\}/g) || []).length;
+    const missingBraces = openBraces - closeBraces;
+    
+    // Append missing closing braces
+    if (missingBraces > 0) {
+      preppedText += '}'.repeat(missingBraces);
+      console.log(`[JSON-HEALING] 🔧 Added ${missingBraces} missing closing brace(s)`);
+    }
+  }
+  
+  // 4. Attempt to heal with jsonrepair library
   try {
-    const repairedJsonString = jsonrepair(cleanedText);
+    const repairedJsonString = jsonrepair(preppedText);
     const parsed = JSON.parse(repairedJsonString);
     
     // Validate it's a function call
     if (parsed.name && parsed.args) {
       console.log('[JSON-HEALING] ✅ Successfully healed function call:', parsed.name);
+      // Track telemetry
+      if (global.jsonHealingTelemetry) {
+        global.jsonHealingTelemetry.success++;
+      }
       return { name: parsed.name, args: parsed.args };
+    }
+    
+    // Track telemetry for invalid structure
+    if (global.jsonHealingTelemetry) {
+      global.jsonHealingTelemetry.invalidStructure++;
     }
     return null;
   } catch (e) {
-    console.error('[JSON-HEALING] Repair failed:', e);
+    console.error('[JSON-HEALING] ❌ Repair failed:', e);
+    // Track telemetry
+    if (global.jsonHealingTelemetry) {
+      global.jsonHealingTelemetry.failure++;
+    }
     return null;
   }
 }

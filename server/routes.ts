@@ -153,6 +153,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // JSON Healing Telemetry endpoints (public - for monitoring)
+  // GET /api/telemetry/json-healing - Get JSON healing statistics
+  app.get('/api/telemetry/json-healing', (req, res) => {
+    console.log('[TELEMETRY] GET request received for /api/telemetry/json-healing');
+    const stats = global.jsonHealingTelemetry;
+    const successRate = stats.totalAttempts > 0 
+      ? ((stats.success / stats.totalAttempts) * 100).toFixed(2)
+      : 0;
+    
+    const responseData = {
+      ...stats,
+      successRate: `${successRate}%`,
+      uptime: Date.now() - stats.lastReset.getTime()
+    };
+    
+    console.log('[TELEMETRY] Sending JSON response:', JSON.stringify(responseData));
+    res.json(responseData);
+  });
+  
+  // POST /api/telemetry/json-healing/reset - Reset statistics
+  app.post('/api/telemetry/json-healing/reset', (req, res) => {
+    global.jsonHealingTelemetry = {
+      success: 0,
+      failure: 0,
+      invalidStructure: 0,
+      totalAttempts: 0,
+      lastReset: new Date()
+    };
+    res.json({ message: 'Telemetry reset successfully' });
+  });
+
   // ==================== AUTHENTICATION SETUP ====================
   
   // Setup OAuth authentication (must be before routes)
