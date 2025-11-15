@@ -9,6 +9,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { WebSocket } from 'ws';
 import { jsonrepair } from 'jsonrepair';
+import { telemetry } from './services/healingTelemetry';
 
 const DEFAULT_MODEL = "gemini-2.5-flash";
 
@@ -74,12 +75,7 @@ function sanitizeText(text: string): string {
  * @param responseText - Accumulated text from streaming chunks
  * @returns Parsed function call object or null if no valid JSON found
  */
-function robustExtractAndHeal(responseText: string): { name: string; args: any } | null {
-  // Track telemetry - increment total attempts at start
-  if (global.jsonHealingTelemetry) {
-    global.jsonHealingTelemetry.totalAttempts++;
-  }
-  
+export function robustExtractAndHeal(responseText: string): { name: string; args: any } | null {
   // 1. Clean and isolate JSON payload
   let cleanedText = responseText.replace(/```json|```/g, '').trim();
   
@@ -88,56 +84,86 @@ function robustExtractAndHeal(responseText: string): { name: string; args: any }
   if (firstBraceIndex === -1) return null;
   cleanedText = cleanedText.substring(firstBraceIndex);
   
-  // 3. AGGRESSIVE PRE-REPAIR: Handle common truncation patterns
-  let preppedText = cleanedText;
-  
-  // If doesn't end with closing brace, likely truncated
-  if (!preppedText.endsWith('}')) {
+  // 3. PRE-REPAIR: Fix obvious truncation issues
+  let finalJsonString = cleanedText;
+  if (!finalJsonString.endsWith('}')) {
     console.log('[JSON-HEALING] 🔧 Detected incomplete JSON (missing closing brace)');
     
-    // Remove trailing comma (common truncation artifact)
-    if (preppedText.endsWith(',')) {
-      preppedText = preppedText.slice(0, -1);
+    // Count missing braces/brackets (smart counting - ignore delimiters inside strings)
+    let openBraces = 0;
+    let closeBraces = 0;
+    let openBrackets = 0;
+    let closeBrackets = 0;
+    let inString = false;
+    let escape = false;
+    
+    for (const char of finalJsonString) {
+      if (escape) {
+        escape = false;
+        continue;
+      }
+      if (char === '\\') {
+        escape = true;
+        continue;
+      }
+      if (char === '"') {
+        inString = !inString;
+        continue;
+      }
+      if (!inString) {
+        if (char === '{') openBraces++;
+        if (char === '}') closeBraces++;
+        if (char === '[') openBrackets++;
+        if (char === ']') closeBrackets++;
+      }
     }
     
-    // Count opening/closing braces to estimate how many we need
-    const openBraces = (preppedText.match(/\{/g) || []).length;
-    const closeBraces = (preppedText.match(/\}/g) || []).length;
+    // If we ended inside a string, close it first
+    if (inString) {
+      finalJsonString += '"';
+      console.log('[JSON-HEALING] 🔧 Closed incomplete string');
+    }
+    
+    // Remove trailing comma
+    if (finalJsonString.endsWith(',')) {
+      finalJsonString = finalJsonString.slice(0, -1);
+    }
+    
+    // Add missing closing brackets and braces
+    const missingBrackets = openBrackets - closeBrackets;
     const missingBraces = openBraces - closeBraces;
     
-    // Append missing closing braces
+    if (missingBrackets > 0) {
+      finalJsonString += ']'.repeat(missingBrackets);
+      console.log(`[JSON-HEALING] 🔧 Added ${missingBrackets} missing closing bracket(s)`);
+    }
+    
     if (missingBraces > 0) {
-      preppedText += '}'.repeat(missingBraces);
+      finalJsonString += '}'.repeat(missingBraces);
       console.log(`[JSON-HEALING] 🔧 Added ${missingBraces} missing closing brace(s)`);
+    } else if (missingBraces === 0 && missingBrackets === 0) {
+      // Edge case: no braces/brackets counted but doesn't end with }
+      // This can happen with malformed JSON, add at least one closing brace
+      finalJsonString += '}';
+      console.log('[JSON-HEALING] 🔧 Added fallback closing brace');
     }
   }
   
-  // 4. Attempt to heal with jsonrepair library
+  // 4. Attempt to heal with jsonrepair
   try {
-    const repairedJsonString = jsonrepair(preppedText);
+    const repairedJsonString = jsonrepair(finalJsonString);
     const parsed = JSON.parse(repairedJsonString);
     
     // Validate it's a function call
     if (parsed.name && parsed.args) {
+      telemetry.recordHealingSuccess(parsed.name);
       console.log('[JSON-HEALING] ✅ Successfully healed function call:', parsed.name);
-      // Track telemetry
-      if (global.jsonHealingTelemetry) {
-        global.jsonHealingTelemetry.success++;
-      }
       return { name: parsed.name, args: parsed.args };
-    }
-    
-    // Track telemetry for invalid structure
-    if (global.jsonHealingTelemetry) {
-      global.jsonHealingTelemetry.invalidStructure++;
     }
     return null;
   } catch (e) {
+    telemetry.recordHealingFailure(String(e));
     console.error('[JSON-HEALING] ❌ Repair failed:', e);
-    // Track telemetry
-    if (global.jsonHealingTelemetry) {
-      global.jsonHealingTelemetry.failure++;
-    }
     return null;
   }
 }
@@ -874,17 +900,13 @@ Please try:
               console.error(`[GEMINI-STREAM] ❌ MALFORMED FUNCTION CALL: ${escapeCheck.details}`);
               console.error(`[GEMINI-STREAM] Function: ${extractedFunctionCall.name}`);
               
-              // Send error event to client
-              if (onEvent) {
-                onEvent({
-                  type: 'error',
-                  timestamp: new Date().toISOString(),
-                  data: {
-                    message: `Gemini returned malformed function call: ${escapeCheck.details}`,
-                    functionName: extractedFunctionCall.name,
-                    hint: 'Detected LomuAI double-escape bug pattern that causes syntax errors.'
-                  }
-                });
+              // Send error via error callback if available
+              if (onError) {
+                onError(new Error(
+                  `Gemini returned malformed function call: ${escapeCheck.details}. ` +
+                  `Function: ${extractedFunctionCall.name}. ` +
+                  `Hint: Detected LomuAI double-escape bug pattern that causes syntax errors.`
+                ));
               }
               
               // Don't push malformed function call - throw error to trigger retry

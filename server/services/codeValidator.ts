@@ -15,6 +15,7 @@ import { execFile } from 'child_process';
 import { promisify } from 'util';
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import * as crypto from 'crypto';
 
 const execFileAsync = promisify(execFile);
 
@@ -32,9 +33,14 @@ export interface ValidationResult {
 
 export class CodeValidator {
   private PROJECT_ROOT: string;
+  private validationCache = new Map<string, { hash: string; result: boolean; timestamp: number }>();
+  private CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache lifetime
 
   constructor(projectRoot: string = process.cwd()) {
     this.PROJECT_ROOT = projectRoot;
+    
+    // Clean expired cache entries every minute
+    setInterval(() => this.cleanExpiredCache(), 60 * 1000);
   }
 
   /**
@@ -276,11 +282,82 @@ export class CodeValidator {
   }
 
   /**
+   * Calculate SHA-256 hash of file content for cache validation
+   */
+  private async getFileHash(filePath: string): Promise<string> {
+    try {
+      const fullPath = path.resolve(this.PROJECT_ROOT, filePath);
+      const content = await fs.readFile(fullPath, 'utf-8');
+      return crypto.createHash('sha256').update(content).digest('hex');
+    } catch (error) {
+      // If file doesn't exist or can't be read, return empty hash
+      return '';
+    }
+  }
+
+  /**
+   * Clean expired cache entries to prevent memory leaks
+   */
+  private cleanExpiredCache() {
+    const now = Date.now();
+    let cleaned = 0;
+    
+    // Convert to array to avoid iterator issues
+    const entries = Array.from(this.validationCache.entries());
+    for (const [filePath, cacheEntry] of entries) {
+      if (now - cacheEntry.timestamp > this.CACHE_TTL) {
+        this.validationCache.delete(filePath);
+        cleaned++;
+      }
+    }
+    
+    if (cleaned > 0) {
+      console.log(`[CODE-VALIDATOR] 🧹 Cleaned ${cleaned} expired cache entries`);
+    }
+  }
+
+  /**
    * Quick validation for single file (used by write_platform_file)
    * SMART DETECTION: Only flag literal strings in source output, not regex/JSON encoding
+   * CACHING: Uses file hash to avoid redundant validation of unchanged files
    */
   async validateSingleFile(filePath: string, content: string): Promise<ValidationResult> {
     console.log(`[CODE-VALIDATOR] 🔍 Quick validation for: ${filePath}`);
+
+    // Only validate code files
+    if (!filePath.match(/\.(ts|tsx|js|jsx)$/)) {
+      console.log('[CODE-VALIDATOR] ⏭️  Skipping non-code file');
+      return {
+        valid: true,
+        errors: [],
+        warnings: [],
+        checks: {
+          typescript: false,
+          eslint: false,
+          escapeChars: true,
+          gitDiff: true,
+        },
+      };
+    }
+
+    // Check cache
+    const contentHash = crypto.createHash('sha256').update(content).digest('hex');
+    const cached = this.validationCache.get(filePath);
+    
+    if (cached && cached.hash === contentHash) {
+      console.log(`[CODE-VALIDATOR] ✅ Using cached validation result for ${filePath}`);
+      return {
+        valid: cached.result,
+        errors: cached.result ? [] : ['Previous validation failed (from cache)'],
+        warnings: [],
+        checks: {
+          typescript: cached.result,
+          eslint: cached.result,
+          escapeChars: cached.result,
+          gitDiff: cached.result,
+        },
+      };
+    }
 
     const result: ValidationResult = {
       valid: true,
@@ -293,12 +370,6 @@ export class CodeValidator {
         gitDiff: true,
       },
     };
-
-    // Only validate code files
-    if (!filePath.match(/\.(ts|tsx|js|jsx)$/)) {
-      console.log('[CODE-VALIDATOR] ⏭️  Skipping non-code file');
-      return result;
-    }
 
     // SCOPED PATTERNS: Only catch LomuAI's specific bug (literal \\n in string operations)
     const suspiciousPatterns = [
@@ -349,7 +420,44 @@ export class CodeValidator {
       console.log('[CODE-VALIDATOR] ✅ Quick validation passed');
     }
 
+    // Cache the result
+    this.validationCache.set(filePath, {
+      hash: contentHash,
+      result: result.valid,
+      timestamp: Date.now()
+    });
+
     return result;
+  }
+  
+  /**
+   * Clear validation cache for specific file or all files
+   * Useful when files are modified externally or to force re-validation
+   */
+  clearCache(filePath?: string) {
+    if (filePath) {
+      this.validationCache.delete(filePath);
+      console.log(`[CODE-VALIDATOR] 🧹 Cleared cache for ${filePath}`);
+    } else {
+      const size = this.validationCache.size;
+      this.validationCache.clear();
+      console.log(`[CODE-VALIDATOR] 🧹 Cleared entire validation cache (${size} entries)`);
+    }
+  }
+  
+  /**
+   * Get cache statistics for monitoring
+   */
+  getCacheStats() {
+    return {
+      size: this.validationCache.size,
+      entries: Array.from(this.validationCache.entries()).map(([path, entry]) => ({
+        path,
+        hash: entry.hash.substring(0, 8) + '...',
+        valid: entry.result,
+        age: Math.floor((Date.now() - entry.timestamp) / 1000) + 's'
+      }))
+    };
   }
 }
 
