@@ -62,7 +62,38 @@ Comprehensive fixes for Gemini's function calling quirks ensure production-grade
     -   **Purpose**: Directs agent's attention to syntax error and forces disciplined recovery attempt
     -   **Integration**: Works with intent-sensitive mode to ensure retries use forced tool calling
 
-**Result**: Production-grade Gemini function calling with automatic recovery, hybrid parsing, intent-based mode selection, and comprehensive safety guards. Zero-mutation failures eliminated while preserving natural conversation capabilities.
+5.  **Production-Grade Rate Limit Protection (429 Error Handling)**
+    
+    **Phase 1: Token Bucket Rate Limiter** (`server/services/rateLimiter.ts`)
+    -   **Capacity**: 900K tokens/min (90% of 1M Gemini API limit)
+    -   **Refill Rate**: 15K tokens/sec for smooth distribution
+    -   **Overflow Guard**: Rejects requests exceeding capacity with clear error message
+    -   **Queue**: FIFO processing for graceful request handling
+    -   **Backoff Helper**: Exponential backoff with jitter (baseDelay × 2^attempt + random jitter)
+    -   **Token Estimation**: 1 token ≈ 4 characters for request sizing
+    
+    **Phase 2: Gemini API Integration** (`server/gemini.ts`)
+    -   **Pre-Request Acquisition**: Checks token availability before stream start
+    -   **Full Retry Loop**: Wraps entire stream with 3 retry attempts
+    -   **Mid-Stream Detection**: Catches 429 errors during active streaming
+    -   **Promise-Safe Callbacks**: `await Promise.resolve().then()` isolates onComplete errors from retry logic
+    -   **Exponential Backoff**: Uses rate limiter's backoff helper with max 60s delay cap
+    -   **API Delay Extraction**: Parses retry-after from Gemini error responses
+    -   **User-Friendly Messages**: Clear explanations with actionable guidance
+    
+    **Phase 3: Frontend Graceful Degradation** (`client/src/components/universal-chat.tsx`)
+    -   **Rate Limit Detection**: Monitors progress messages for rate limit indicators
+    -   **Toast Notifications**: Non-destructive alerts with retry information (no emojis)
+    -   **Clear Communication**: User-friendly messages explaining wait times
+    
+    **Benefits**:
+    - ✅ Prevents request bursts that trigger 429 errors
+    - ✅ Automatic retry with exponential backoff when limits hit
+    - ✅ Callback errors isolated from retry loop (no infinite retries)
+    - ✅ User-friendly error handling with actionable guidance
+    - ✅ Production-ready monitoring and telemetry
+
+**Result**: Production-grade Gemini function calling with automatic recovery, hybrid parsing, intent-based mode selection, comprehensive safety guards, and bulletproof rate limit protection. Zero-mutation failures eliminated while preserving natural conversation capabilities.
 
 ### Design Preferences
 -   **Brand Identity**: Professional swarm/hive intelligence theme with collaborative AI energy
@@ -105,16 +136,10 @@ The platform implements a comprehensive Agent Chatroom interface with real-time 
 - **Mobile + Desktop**: Fully responsive across both Lomu (desktop) and Lomu5 (mobile) interfaces
 
 **Universal Chat Architecture (100% Consolidation):**
-The platform uses a **single UniversalChat component** (`client/src/components/universal-chat.tsx`) as the foundation for ALL chat interactions across 4 pages:
-- **platform-healing.tsx**: Owner-only platform healing (targetContext="platform", projectId=null)
-- **builder.tsx**: Project-based development (targetContext="project", projectId from URL)
-- **workspace.tsx**: Full IDE workspace - desktop & mobile (targetContext="project", projectId from activeSession)
-- **mobile-workspace.tsx**: Mobile-optimized workspace (targetContext="project", inherited projectId)
-
-Benefits: Single source of truth ensures all fixes (progress handlers, streaming, WebSocket management) apply universally. Reduced code duplication (~400+ lines eliminated). Consistent UX with proper null-safety guards showing user-friendly empty states when no project is selected. Context-aware access control, smart billing, and WebSocket isolation built-in.
+The platform uses a **single UniversalChat component** (`client/src/components/universal-chat.tsx`) as the foundation for ALL chat interactions across 4 pages. This ensures consistent UX, reduced code duplication, and proper null-safety guards.
 
 **Unified LomuAI Brain:**
-The platform features a **centralized session management system** (`server/services/lomuAIBrain.ts`) that consolidates all scattered session logic into a hybrid architecture with in-memory registry and database durability. It ensures session isolation, comprehensive tracking of conversation, execution, billing, and transport, with auto-cleanup and duplicate prevention mechanisms.
+The platform features a **centralized session management system** (`server/services/lomuAIBrain.ts`) that consolidates all scattered session logic into a hybrid architecture with in-memory registry and database durability. It ensures session isolation, comprehensive tracking of conversation, execution, billing, and transport.
 
 ### System Design Choices
 LomuAI acts as the autonomous worker, committing changes through a strict 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). I AM Architect is a user-summoned premium consultant that provides guidance without committing code. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing.
