@@ -20,6 +20,12 @@ export async function requirePaymentMethod(req: any, res: Response, next: NextFu
       return res.status(401).json({ error: 'Authentication required' });
     }
 
+    // 🧪 DEV-ONLY BILLING BYPASS: Allow free testing without granting owner privileges
+    if (process.env.NODE_ENV === 'development' && process.env.LOMU_BILLING_BYPASS === 'true') {
+      console.log('[BILLING-BYPASS] ⚠️  Payment validation skipped (dev mode)');
+      return next();
+    }
+
     // Get user from database
     const [user] = await db.select().from(users).where(eq(users.id, userId));
 
@@ -88,6 +94,12 @@ export async function requireSufficientCredits(estimatedCredits: number = 100) {
   return async (req: any, res: Response, next: NextFunction) => {
     try {
       const userId = req.authenticatedUserId;
+
+      // 🧪 DEV-ONLY BILLING BYPASS: Allow free testing without granting owner privileges
+      if (process.env.NODE_ENV === 'development' && process.env.LOMU_BILLING_BYPASS === 'true') {
+        console.log('[BILLING-BYPASS] ⚠️  Credit validation skipped (dev mode)');
+        return next();
+      }
 
       // Owner bypass
       if (req.isOwner) {

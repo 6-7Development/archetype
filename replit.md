@@ -118,33 +118,17 @@ Comprehensive fixes for Gemini's function calling quirks ensure production-grade
     -   Interconnected network visualizations
 
 ## System Architecture
-The platform is built with a React frontend, an Express.js backend, and PostgreSQL for data persistence.
-
-### Dual-Version Architecture
-The platform uses a unified codebase for Lomu (Desktop, 4-panel layout) and Lomu5 (Mobile, bottom tab navigation), sharing backend APIs, WebSockets, authentication, and database access.
+The platform is built with a React frontend, an Express.js backend, and PostgreSQL for data persistence. It uses a unified codebase for Lomu (Desktop, 4-panel layout) and Lomu5 (Mobile, bottom tab navigation), sharing backend APIs, WebSockets, authentication, and database access.
 
 ### UI/UX Decisions
 The user interface features a tab-based workspace with a command console and real-time live preview. The design uses a professional swarm/hive theme with honey-gold and mint-teal accents, utilizing card-based layouts, warm shadows, smooth transitions, and ADA/WCAG accessibility. Chat interfaces use semantic theme tokens for consistent, polished appearance with modern message bubbles and smooth transitions. Loading states feature smooth animations.
 
-**Agent Chatroom UX (100% Replit Agent Parity):**
-The platform implements a comprehensive Agent Chatroom interface with real-time progress tracking:
-- **StatusStrip**: Live phase indicator showing current agent state (🤔 thinking → 📝 planning → 🛠️ working → 🧪 verifying → ✅ complete)
-- **TaskPane**: Kanban-style task board with columns (Backlog → In Progress → Verifying → Done → Blocked)
-- **ToolCallCard**: Transparent tool execution display showing function calls, parameters, and results
-- **ArtifactsDrawer**: File changes tracker showing modified files, generated URLs, and test reports with copy-to-clipboard
-- **Event System**: 16 structured event types (thinking, planning, task_update, tool_call, artifact_created, etc.) streamed via Server-Sent Events (SSE)
-- **Mobile + Desktop**: Fully responsive across both Lomu (desktop) and Lomu5 (mobile) interfaces
-
-**Universal Chat Architecture (100% Consolidation):**
-The platform uses a **single UniversalChat component** (`client/src/components/universal-chat.tsx`) as the foundation for ALL chat interactions across 4 pages. This ensures consistent UX, reduced code duplication, and proper null-safety guards.
-
-**Unified LomuAI Brain:**
-The platform features a **centralized session management system** (`server/services/lomuAIBrain.ts`) that consolidates all scattered session logic into a hybrid architecture with in-memory registry and database durability. It ensures session isolation, comprehensive tracking of conversation, execution, billing, and transport.
+The platform implements a comprehensive Agent Chatroom interface with real-time progress tracking, including a StatusStrip, TaskPane, ToolCallCard, and ArtifactsDrawer, all driven by 16 structured event types streamed via Server-Sent Events (SSE). A single `UniversalChat` component (`client/src/components/universal-chat.tsx`) handles all chat interactions.
 
 ### System Design Choices
-LomuAI acts as the autonomous worker, committing changes through a strict 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). I AM Architect is a user-summoned premium consultant that provides guidance without committing code. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing.
-LomuAI incorporates efficiency rules within its system prompt, such as SEARCH BEFORE CODING, COPY DON'T REINVENT, VERIFY THE TASK, and ITERATION BUDGET AWARENESS.
-The access model provides owner-only access for platform healing, usage-based credit billing for regular LomuAI, and premium consulting for I AM Architect. A competitive credit system leverages Gemini 2.5 Flash's cost advantage for billing, with multiple subscription tiers.
+LomuAI acts as the autonomous worker, committing changes through a strict 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). I AM Architect is a user-summoned premium consultant providing guidance without committing code. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing. LomuAI incorporates efficiency rules within its system prompt, such as SEARCH BEFORE CODING, COPY DON'T REINVENT, VERIFY THE TASK, and ITERATION BUDGET AWARENESS.
+
+A centralized session management system (`server/services/lomuAIBrain.ts`) consolidates all session logic into a hybrid architecture with in-memory registry and database durability. The access model provides owner-only access for platform healing, usage-based credit billing for regular LomuAI, and premium consulting for I AM Architect.
 
 **Key Features:**
 - **Optimized Tool Distribution Architecture**: LomuAI (18 tools), Sub-Agents (12 tools), I AM Architect (23 tools), with automatic tool count validation.
@@ -158,21 +142,13 @@ The access model provides owner-only access for platform healing, usage-based cr
 - **Security & Production Readiness**: Authentication/authorization, protected APIs, RCE prevention.
 - **Vision Analysis**: LomuAI can analyze images and screenshots.
 - **Strict Function Calling**: Transport-layer enforcement of JSON function calling for Gemini.
-- **Production-Ready Code Validation System**: Implemented a 3-layer validation architecture for Gemini's responses, pre-write, and pre-commit to prevent broken code from being committed. Includes JSON healing and validation caching.
+- **Production-Ready Code Validation System**: 3-layer validation architecture (pre-write, pre-commit) to prevent broken code. Includes JSON healing and validation caching.
 - **Telemetry System**: Tracks healing attempts, successes, failures with detailed statistics.
-- **Reflection and Structured Retry Mandate**: LomuAI is mandated to analyze tool failures, state root cause, and propose alternative strategies before retrying.
+- **Reflection and Structured Retry Mandate**: LomuAI analyzes tool failures, states root cause, and proposes alternative strategies before retrying.
 
-**Enhanced JSON Healing System**:
-1. **Robust JSON Healing** (`server/gemini.ts`): Smart brace/bracket counting, incomplete string closure, missing bracket completion, aggressive pre-repair.
-2. **Healing Telemetry Service** (`server/services/healingTelemetry.ts`): Tracks attempts, successes, failures; auto-logs stats in production.
-3. **Reflection & Retry Mandate** (`server/lomuSuperCore.ts`): Requires explicit root cause analysis and alternative strategies for failed tool calls.
-4. **Validation Caching** (`server/services/codeValidator.ts`): SHA-256 hash-based caching for TypeScript/ESLint validation results with 5-minute TTL.
-5. **Integration Testing**: 17 comprehensive tests using Vitest covering truncation, arguments, and edge cases.
-
-### Streaming Architecture
 The platform prioritizes native JSON function calling for AI streaming due to superior speed, reliability, and type safety, integrating utilities for validation, retry logic, and file change tracking.
 
-### Feature Specifications
+**Feature Specifications:**
 - **Workspace Features**: Tab-based navigation, unified talk & build interface, Monaco editor, full project ZIP export.
 - **Publishing/Deployment System**: Management of deployments, logs, and analytics.
 - **Team Workspaces**: Collaboration with role-based access.
@@ -182,13 +158,13 @@ The platform prioritizes native JSON function calling for AI streaming due to su
 - **Advanced AI Development Features**: Sub-Agent/Task Runner System, Message Queue, Autonomy Controls, AI Image Generation, Dynamic Intelligence, Plan Mode, Design Mode, Workflows, Agents & Automations, and General Agent Mode.
 
 ## External Dependencies
-- **Frontend**: React, TypeScript, Monaco Editor, Tailwind CSS, Shadcn UI, next-themes
-- **Backend**: Express.js, WebSocket
-- **Database**: PostgreSQL (Neon), Drizzle ORM
-- **AI**: Google Gemini 2.5 Flash, Anthropic Claude Sonnet 4, OpenAI (gpt-image-1)
-- **Deployment**: Railway
-- **Payment Processing**: Stripe
-- **Authentication**: Passport.js, bcrypt, `connect-pg-simple`
-- **Charting**: Recharts
-- **Browser Automation**: Playwright
-- **Web Search**: Tavily API
+-   **Frontend**: React, TypeScript, Monaco Editor, Tailwind CSS, Shadcn UI, next-themes
+-   **Backend**: Express.js, WebSocket
+-   **Database**: PostgreSQL (Neon), Drizzle ORM
+-   **AI**: Google Gemini 2.5 Flash, Anthropic Claude Sonnet 4, OpenAI (gpt-image-1)
+-   **Deployment**: Railway
+-   **Payment Processing**: Stripe
+-   **Authentication**: Passport.js, bcrypt, `connect-pg-simple`
+-   **Charting**: Recharts
+-   **Browser Automation**: Playwright
+-   **Web Search**: Tavily API
