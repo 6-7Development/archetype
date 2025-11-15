@@ -104,8 +104,14 @@ The platform implements a comprehensive Agent Chatroom interface with real-time 
 - **Event System**: 16 structured event types (thinking, planning, task_update, tool_call, artifact_created, etc.) streamed via Server-Sent Events (SSE)
 - **Mobile + Desktop**: Fully responsive across both Lomu (desktop) and Lomu5 (mobile) interfaces
 
-**Universal Chat Architecture:**
-The platform uses a **single UniversalChat component** (`client/src/components/universal-chat.tsx`) as the foundation for all chat interactions, providing platform healing and user project support with context-aware access control, smart billing, and WebSocket isolation, leading to significant code reduction and identical Agent Chatroom UX across contexts.
+**Universal Chat Architecture (100% Consolidation):**
+The platform uses a **single UniversalChat component** (`client/src/components/universal-chat.tsx`) as the foundation for ALL chat interactions across 4 pages:
+- **platform-healing.tsx**: Owner-only platform healing (targetContext="platform", projectId=null)
+- **builder.tsx**: Project-based development (targetContext="project", projectId from URL)
+- **workspace.tsx**: Full IDE workspace - desktop & mobile (targetContext="project", projectId from activeSession)
+- **mobile-workspace.tsx**: Mobile-optimized workspace (targetContext="project", inherited projectId)
+
+Benefits: Single source of truth ensures all fixes (progress handlers, streaming, WebSocket management) apply universally. Reduced code duplication (~400+ lines eliminated). Consistent UX with proper null-safety guards showing user-friendly empty states when no project is selected. Context-aware access control, smart billing, and WebSocket isolation built-in.
 
 **Unified LomuAI Brain:**
 The platform features a **centralized session management system** (`server/services/lomuAIBrain.ts`) that consolidates all scattered session logic into a hybrid architecture with in-memory registry and database durability. It ensures session isolation, comprehensive tracking of conversation, execution, billing, and transport, with auto-cleanup and duplicate prevention mechanisms.

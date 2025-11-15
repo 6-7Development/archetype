@@ -6,6 +6,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { NewProjectDialog } from "@/components/new-project-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,7 +27,8 @@ import {
   Plus,
   FileCode,
   Save,
-  CheckCircle2
+  CheckCircle2,
+  Sparkles
 } from "lucide-react";
 import { Project, File } from "@shared/schema";
 
@@ -306,16 +308,62 @@ export default function Builder() {
           <div className="flex-1 overflow-hidden">
             {/* Build Tab - UniversalChat */}
             <TabsContent value="build" className="h-full m-0" data-testid="content-build">
-              <UniversalChat 
-                targetContext="project"
-                projectId={currentProjectId}
-                onProjectGenerated={handleProjectGenerated}
-              />
+              {currentProjectId ? (
+                <UniversalChat 
+                  targetContext="project"
+                  projectId={currentProjectId}
+                  onProjectGenerated={handleProjectGenerated}
+                />
+              ) : (
+                <div className="h-full flex items-center justify-center p-8">
+                  <Card className="max-w-md">
+                    <CardContent className="pt-6">
+                      <div className="text-center space-y-4">
+                        <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto">
+                          <Sparkles className="w-6 h-6 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold mb-2">No Project Selected</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Select a project from the dropdown above to start building with LomuAI
+                          </p>
+                        </div>
+                        <Button 
+                          onClick={() => setShowNewProjectDialog(true)}
+                          className="w-full"
+                          data-testid="button-create-project-empty"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Create New Project
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
             </TabsContent>
 
             {/* Preview Tab */}
             <TabsContent value="preview" className="h-full m-0" data-testid="content-preview">
-              <LivePreview projectId={currentProjectId} fileCount={files.length} />
+              {currentProjectId ? (
+                <LivePreview projectId={currentProjectId} fileCount={files.length} />
+              ) : (
+                <div className="h-full flex items-center justify-center p-8">
+                  <Card className="max-w-md">
+                    <CardContent className="pt-6">
+                      <div className="text-center space-y-4">
+                        <Eye className="w-12 h-12 text-muted-foreground mx-auto" />
+                        <div>
+                          <h3 className="font-semibold mb-2">No Active Project</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Open a project to see the live preview
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
             </TabsContent>
 
             {/* Files Tab */}

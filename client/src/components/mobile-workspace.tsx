@@ -4,8 +4,9 @@ import { LivePreview } from "@/components/live-preview";
 import { UniversalChat } from "@/components/universal-chat";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FileCode, Eye, Bot, Plus, Trash } from "lucide-react";
+import { FileCode, Eye, Bot, Plus, Trash, Sparkles } from "lucide-react";
 
 interface FileData {
   id: string;
@@ -15,7 +16,7 @@ interface FileData {
 }
 
 interface MobileWorkspaceProps {
-  projectId: string;
+  projectId: string | null;
   files: FileData[];
   activeFile: FileData | null;
   onFileSelect: (file: FileData) => void;
@@ -156,17 +157,51 @@ export function MobileWorkspace({
           </TabsContent>
 
           <TabsContent value="preview" className="flex-1 m-0 overflow-hidden">
-            <LivePreview projectId={projectId} />
+            {projectId ? (
+              <LivePreview projectId={projectId} />
+            ) : (
+              <div className="h-full flex items-center justify-center p-4">
+                <Card>
+                  <CardContent className="pt-6 text-center">
+                    <div className="space-y-2">
+                      <Eye className="w-12 h-12 text-muted-foreground mx-auto" />
+                      <h3 className="font-semibold">No Active Project</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Open a project to see the live preview
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="chat" className="flex-1 m-0 overflow-hidden">
-            <UniversalChat 
-              targetContext="project"
-              projectId={projectId}
-              onProjectGenerated={(result) => {
-                console.log('[MOBILE] Project generated:', result);
-              }}
-            />
+            {projectId ? (
+              <UniversalChat 
+                targetContext="project"
+                projectId={projectId}
+                onProjectGenerated={(result) => {
+                  console.log('[MOBILE] Project generated:', result);
+                }}
+              />
+            ) : (
+              <div className="h-full flex items-center justify-center p-4">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center space-y-4">
+                      <Sparkles className="w-12 h-12 text-muted-foreground mx-auto" />
+                      <div>
+                        <h3 className="font-semibold mb-2">No Active Project</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Open a project to start coding with LomuAI
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>

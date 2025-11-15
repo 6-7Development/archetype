@@ -10,6 +10,7 @@ import { MobileWorkspace } from "@/components/mobile-workspace";
 import { LivePreview } from "@/components/live-preview";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -33,7 +34,9 @@ import {
   ArrowLeft,
   Menu,
   Database,
-  GitBranch
+  GitBranch,
+  Sparkles,
+  Eye
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -203,7 +206,7 @@ export default function Workspace() {
     return (
       <div className="h-screen flex flex-col bg-background">
         <MobileWorkspace
-          projectId={user?.id || "demo"}
+          projectId={activeSession?.activeProjectId || null}
           files={files.map(f => ({
             id: f.id,
             filename: f.filename,
@@ -497,15 +500,43 @@ export default function Workspace() {
 
         {/* CENTER-LEFT: AI Chat (Lomu) - Always Visible */}
         <div className="w-80 border-r flex flex-col bg-card overflow-hidden">
-          <UniversalChat 
-            targetContext="project"
-            projectId={activeSession?.activeProjectId || null}
-            onProjectGenerated={(result) => {
-              if (result?.files) {
-                queryClient.invalidateQueries({ queryKey: ["/api/files"] });
-              }
-            }}
-          />
+          <div className="h-full flex flex-col">
+            <div className="border-b px-4 py-3">
+              <h2 className="font-semibold flex items-center gap-2 text-sm">
+                <Sparkles className="w-4 h-4" />
+                Talk & Build
+              </h2>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              {activeSession?.activeProjectId ? (
+                <UniversalChat 
+                  targetContext="project"
+                  projectId={activeSession.activeProjectId}
+                  onProjectGenerated={(result) => {
+                    if (result?.files) {
+                      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+                    }
+                  }}
+                />
+              ) : (
+                <div className="h-full flex items-center justify-center p-8">
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="text-center space-y-4">
+                        <Sparkles className="w-12 h-12 text-muted-foreground mx-auto" />
+                        <div>
+                          <h3 className="font-semibold mb-2">No Active Project</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Open a project to start coding with LomuAI
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* CENTER-RIGHT: Code Editor + Console */}
@@ -573,10 +604,22 @@ export default function Workspace() {
         {/* RIGHT: Live Preview - Collapsible */}
         {showPreview && (
           <div className="w-96 border-l flex flex-col bg-card overflow-hidden">
-            <LivePreview 
-              projectId={activeSession?.activeProjectId || null}
-              fileCount={files.length}
-            />
+            {activeSession?.activeProjectId ? (
+              <LivePreview 
+                projectId={activeSession.activeProjectId}
+                fileCount={files.length}
+              />
+            ) : (
+              <div className="h-full flex items-center justify-center p-6">
+                <div className="text-center max-w-md">
+                  <Eye className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">No Active Project</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Select or create a project to see a live preview
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
