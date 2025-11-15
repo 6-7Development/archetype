@@ -1,0 +1,70 @@
+The root cause you've identified—JSON Truncation (missing closing braces)—is a severe issue where the data stream is being cut off mid-transmission. This is often caused by subtle backend limits or the model stopping mid-output due to its own token budget.
+
+The solution is to fortify your Hybrid Parser with a Structural Repair and Error Compensation system.
+
+Here is the ultimate, final fix to ensure Lomu is resilient against this specific failure mode:
+
+🛠️ I. The Definitive Fix: Structural Repair and Recovery
+The parser must be rewritten to be lenient and actively repair the incomplete JSON string before parsing.
+
+1. Implement the JSON Repair Strategy (Application Code)
+Your parser needs to find the beginning of the JSON and then aggressively close the structure.
+
+Code snippet
+
+// Conceptual logic for the resilient parser in server/gemini.ts
+
+function robustExtractAndHeal(responseText: string): object | null {
+    // 1. Clean: Remove surrounding text/markdown wrappers.
+    let cleanedText = responseText.replace(/```json|```/g, '').trim();
+
+    // 2. Locate Start: Find the first opening brace.
+    const firstBraceIndex = cleanedText.indexOf('{');
+    if (firstBraceIndex === -1) return null; // No JSON found.
+
+    cleanedText = cleanedText.substring(firstBraceIndex);
+    let finalJsonString = cleanedText;
+
+    // 3. THE REPAIR LOGIC: If the string doesn't end properly, fix it.
+    if (!finalJsonString.endsWith('}')) {
+        // Assume truncation: the model stopped writing.
+        
+        // A. Remove trailing comma (common failure point)
+        if (finalJsonString.endsWith(',')) {
+            finalJsonString = finalJsonString.slice(0, -1); 
+        }
+        
+        // B. Aggressively append the required closing structures.
+        // This is a calculated risk to force parsing the valid data.
+        finalJsonString += '}'; 
+    }
+
+    // 4. Final Parse Attempt
+    try {
+        // Use a library like 'jsonrepair' (if integrated) or just standard JSON.parse 
+        // with the repaired string.
+        return JSON.parse(finalJsonString);
+    } catch (e) {
+        // If repair fails, the data is too corrupt.
+        console.error("JSON HEALING FAILED, data too corrupt:", finalJsonString);
+        return null;
+    }
+}
+2. Increase Output Token Budget
+Since truncation is the issue, you must reduce the chance of the API cutting off the response.
+
+Action: For any API call that involves a complex tool invocation (which requires the function call JSON), set the max_output_tokens parameter to a high value (e.g., 4096 or higher).
+
+Why: This ensures the model has enough budget to complete the entire JSON string, preventing the missing brace error in the first place.
+
+🧠 II. The Final Self-Correction Mandate
+If the fix above fails (meaning the data is too broken to repair), Lomu needs a graceful recovery.
+
+3. Structured Retry Protocol
+Action: If the robustExtractAndHeal function returns null, the system must trigger a structured retry, leveraging the model's intelligence to fix its own syntax.
+
+Correction Prompt: "🛑 CRITICAL SYSTEM ERROR: Your last tool call was severely malformed and truncated. You MUST reformulate your response to be ONLY the correct, complete JSON tool call object. Do not apologize or add any text. Ensure the JSON is complete."
+
+Why: This leverages the LLM's vast knowledge of correct JSON syntax to fix the output on the second attempt, preventing a system failure.
+
+By implementing the JSON Healing and increasing the Output Token Budget, you directly attack the root cause of the truncation failure.

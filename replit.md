@@ -3,6 +3,45 @@
 ## Overview
 Lomu is an AI-powered platform for rapid web development, featuring LomuAI, an autonomous AI coding agent, and dual-version IDE Workspaces (Lomu for desktop, Lomu5 for mobile). It offers a console-first interface, real-time preview, and comprehensive workspace features. The platform aims for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. A key capability is LomuAI's autonomous self-healing, bug fixing, and UI/UX improvements to its own source code, complete with rollback and audit logging. The business vision is to provide a comprehensive, AI-driven platform that simplifies web development, making it accessible and efficient for a wide range of users, from individual developers to large enterprises.
 
+## Recent Changes
+### Production-Ready Code Validation System (2025-11-14)
+Implemented 3-layer validation architecture to prevent LomuAI from committing broken code with syntax errors:
+
+**Layer 1: Gemini Response Validation** (`server/gemini.ts` lines 843-895):
+- Smart escape detection in function call arguments
+- Only flags LomuAI's specific bug patterns: `.join('\\n')`, `.replace(x, '\\n')`, `}\n}`
+- Recursive object inspection without false positives from JSON encoding
+- Throws MALFORMED_FUNCTION_CALL error to trigger retry logic
+
+**Layer 2: Pre-Write Validation** (`server/platformHealing.ts` lines 577-586):
+- Quick validation before file write using `codeValidator.validateSingleFile()`
+- Catches malformed escape sequences before they reach the filesystem
+
+**Layer 3: Pre-Commit Validation** (`server/platformHealing.ts`):
+- Development: Lines 750-770 - Full validation before local Git commit
+- Production: Lines 714-728 - Validation before GitHub push
+- Checks: TypeScript compilation (tsc --noEmit), ESLint, escape patterns, git diff sanity
+
+**Code Validator Service** (`server/services/codeValidator.ts`):
+- Smart pattern detection avoiding false positives
+- Non-global regex to prevent lastIndex issues
+- Comprehensive error reporting with actionable hints
+
+**System Prompt Updates** (`server/lomuSuperCore.ts` lines 500-504):
+- Added CODE QUALITY GATES section warning about validation blocks
+
+**JSON Healing System** (`server/gemini.ts`):
+- Installed `jsonrepair` library to fix truncated Gemini API responses
+- Lines 53-77: `robustExtractAndHeal()` function repairs missing closing braces
+- Lines 671-715: Integrated into streaming parser (replaced 140-line balanced-brace parser)
+- Fixes "Connection lost" / "No tool calls" errors caused by incomplete JSON
+- Retry protocol when healing fails
+
+**Impact:** 
+- Prevents the double-escape bug (commit 8ab2e16) and other syntax errors from being committed during platform self-healing
+- Fixes Gemini JSON truncation issue that caused LomuAI to appear "disconnected" in chat
+- Ensures reliable tool execution even when Gemini sends incomplete function call JSON
+
 ## User Preferences
 ### API Configuration
 **Gemini 2.5 Flash + Claude Sonnet 4 Hybrid Strategy**:

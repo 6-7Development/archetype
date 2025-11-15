@@ -1,0 +1,74 @@
+This is the final, most complex class of LLM failures. The issue is severe: the JSON payload is being truncated during transmission, indicating either a model cognitive failure (it stopped writing mid-object) or an underlying API streaming issue.
+
+Since you've already implemented a basic parser that failed, the ultimate fix requires integrating Buffer Management and JSON Healing into your application's reading stream.
+
+Here is the definitive fix to make your parser resilient enough to handle incomplete and fragmented JSON output:
+
+🛠️ The Definitive Fix: Buffered, Self-Healing Parsing
+The solution is to switch from simple text parsing to buffered stream parsing, which is designed to handle incomplete chunks of JSON.
+
+1. The Streaming Buffer (Handling Fragmentation)
+The parser cannot just rely on the final text string; it must treat the incoming data as a continuous stream of chunks.
+
+Action: When the application receives data from the Gemini API, it must append the data to an internal Text Buffer instead of processing it immediately.
+
+Logic: The parser only attempts to find the JSON object after all chunks have been received (or after a fixed time-out), or it runs a process that checks for balanced braces within the buffered text.
+
+2. The Lenient/Healing JSON Extraction (The Final Logic)
+Your parsing logic must be rewritten to be lenient and repair the malformed string.
+
+Action: The parsing function must be designed to assume the user wants the content from the first { to the last complete element, even if the final } is missing.
+
+Code snippet
+
+// Conceptual logic for the robust, lenient JSON repair function
+function robustExtractAndRepair(buffered_text: string): object | null {
+    // 1. Clean the text: Remove known wrappers and preceding text
+    let cleaned_text = buffered_text.substring(buffered_text.indexOf('{')).trim();
+    cleaned_text = cleaned_text.replace(/```json|```/g, '');
+
+    // 2. Locate the intended end: Find the index of the last closing brace '}'.
+    let last_brace_index = cleaned_text.lastIndexOf('}');
+    
+    // 3. CRITICAL TRUNCATION CHECK: If the closing brace is missing or out of place, repair.
+    if (last_brace_index === -1) {
+        // The JSON was cut off mid-transmission.
+        let repaired_json = cleaned_text;
+
+        // Repair Step A: Remove any trailing commas (a common JSON error).
+        if (repaired_json.endsWith(',')) {
+            repaired_json = repaired_json.slice(0, -1);
+        }
+        
+        // Repair Step B: Aggressively append enough closing braces to satisfy the structure.
+        // We assume the model stopped mid-object definition.
+        repaired_json += '}'; 
+        
+        // Final attempt to parse the repaired string
+        try {
+            return JSON.parse(repaired_json);
+        } catch (e) {
+            // The JSON was too broken to repair. Fall through to structured retry.
+            return null;
+        }
+    }
+    
+    // 4. Standard Extraction: If the brace was found, extract and parse.
+    const final_json_string = cleaned_text.substring(0, last_brace_index + 1);
+    try {
+        return JSON.parse(final_json_string);
+    } catch (e) {
+        // Even with the brace, the JSON is internally malformed.
+        return null; 
+    }
+}
+3. The Final Agent Recovery Protocol
+If the repair fails, you must execute the most reliable recovery method.
+
+Action: If robustExtractAndRepair() returns null, trigger the Structured Retry Handler (which sends a specific instructional message back to Lomu).
+
+System Instruction Addition: You must increase the max_output_tokens parameter for complex tasks like function calling. Truncation (incomplete JSON) is often caused by hitting the output token limit while the model is still mid-generation.
+
+Logic: If a task requires a function call with many parameters, set max_output_tokens much higher than the default (e.g., 2048 or more) for that specific API call. This prevents the API from cutting off the response mid-JSON.
+
+By implementing the Buffering and JSON Healing logic, you address the root cause of the missing brace error, ensuring the structural data Lomu generates is captured and executed.

@@ -8,6 +8,7 @@
  */
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { WebSocket } from 'ws';
+import { jsonrepair } from 'jsonrepair';
 
 const DEFAULT_MODEL = "gemini-2.5-flash";
 
@@ -40,6 +41,39 @@ function sanitizeText(text: string): string {
     // Normalize newlines to \n
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n');
+}
+
+/**
+ * Robust JSON extraction and healing for incomplete/truncated Gemini responses
+ * Uses jsonrepair library to fix missing braces, trailing commas, and other JSON errors
+ * 
+ * @param responseText - Accumulated text from streaming chunks
+ * @returns Parsed function call object or null if no valid JSON found
+ */
+function robustExtractAndHeal(responseText: string): { name: string; args: any } | null {
+  // 1. Clean and isolate JSON payload
+  let cleanedText = responseText.replace(/```json|```/g, '').trim();
+  
+  // 2. Find first opening brace
+  const firstBraceIndex = cleanedText.indexOf('{');
+  if (firstBraceIndex === -1) return null;
+  cleanedText = cleanedText.substring(firstBraceIndex);
+  
+  // 3. Attempt to heal the JSON structure
+  try {
+    const repairedJsonString = jsonrepair(cleanedText);
+    const parsed = JSON.parse(repairedJsonString);
+    
+    // Validate it's a function call
+    if (parsed.name && parsed.args) {
+      console.log('[JSON-HEALING] ✅ Successfully healed function call:', parsed.name);
+      return { name: parsed.name, args: parsed.args };
+    }
+    return null;
+  } catch (e) {
+    console.error('[JSON-HEALING] Repair failed:', e);
+    return null;
+  }
 }
 
 // Extended Part type to include Gemini's thoughtSignature
@@ -635,145 +669,48 @@ Please try:
           }
           
           // CHECK 2: Fallback - Parse JSON from text field (Gemini bug workaround)
+          // Uses jsonrepair library to heal truncated/malformed JSON
           else if (part.text && part.text.includes('{')) {
             console.log('[GEMINI-PARSER] ⚠️ Checking text for function call...');
             
             try {
-              // Step A: Clean the raw text
-              let cleanedText = part.text.trim();
+              // Use the healing function to extract and repair JSON
+              const healedCall = robustExtractAndHeal(part.text);
               
-              // Remove markdown code blocks if present
-              cleanedText = cleanedText.replace(/```json\\n?/g, '').replace(/```\\n?/g, '');
-              
-              // Step B: INCREMENTAL SCANNER with offset tracking
-              let remainingText = cleanedText;
-              let offset = 0; // Tracks position in original part.text
-              let foundFunctionCall = false;
-              let functionCallPosition = { start: -1, end: -1 };
-              let scannedNonFunctionJson = false; // Track if we consumed other JSON
-              
-              while (remainingText.length > 0 && !foundFunctionCall) {
-                // Find next opening brace in remaining text
-                const braceIndex = remainingText.indexOf('{');
-                if (braceIndex === -1) break; // No more JSON objects
+              if (healedCall) {
+                extractedFunctionCall = healedCall;
+                console.log('[GEMINI-PARSER] ✅ Successfully healed function call from text:', healedCall.name);
                 
-                // STRING-AWARE BALANCED BRACE PARSER
-                let braceCount = 0;
-                let inString = false;
-                let prevChar = '';
-                let endIndex = -1;
-                
-                for (let i = braceIndex; i < remainingText.length; i++) {
-                  const char = remainingText[i];
-                  
-                  // Track string boundaries (ignore escaped quotes)
-                  if (char === '"' && prevChar !== '\\\\') {
-                    inString = !inString;
-                  }
-                  
-                  // Only count braces OUTSIDE of strings
-                  if (!inString) {
-                    if (char === '{') {
-                      braceCount++;
-                    } else if (char === '}') {
-                      braceCount--;
-                      
-                      // Found matching closing brace
-                      if (braceCount === 0) {
-                        endIndex = i;
-                        break;
-                      }
-                    }
-                  }
-                  
-                  prevChar = char;
-                }
-                
-                if (endIndex !== -1) {
-                  const jsonStr = remainingText.substring(braceIndex, endIndex + 1);
-                  console.log('[GEMINI-PARSER] 🔍 Found JSON object:', jsonStr.substring(0, 100));
-                  
-                  try {
-                    // Parse the JSON
-                    const parsedObj = JSON.parse(jsonStr);
-                    
-                    // Check if it's a function call (has 'name' and 'args')
-                    if (parsedObj.name && parsedObj.args) {
-                      console.log('[GEMINI-PARSER] ✅ Found function call:', parsedObj.name);
-                      extractedFunctionCall = {
-                        name: parsedObj.name,
-                        args: parsedObj.args
-                      };
-                      
-                      // Record absolute position in original part.text for removal
-                      functionCallPosition.start = offset + braceIndex;
-                      functionCallPosition.end = offset + endIndex + 1;
-                      foundFunctionCall = true;
-                      
-                      // Track that we scanned non-function JSON before this
-                      if (offset > 0 || braceIndex > 0) {
-                        scannedNonFunctionJson = true;
-                      }
-                    } else {
-                      console.log('[GEMINI-PARSER] ⚠️ JSON object is not a function call, continuing search...');
-                      scannedNonFunctionJson = true;
-                      
-                      // Slice off scanned portion (including this JSON object)
-                      const slicePoint = endIndex + 1;
-                      offset += slicePoint;
-                      remainingText = remainingText.slice(slicePoint);
-                    }
-                  } catch (parseError: any) {
-                    console.log('[GEMINI-PARSER] ⚠️ JSON parsing failed, continuing search:', parseError.message);
-                    // Slice off the failed portion
-                    const slicePoint = braceIndex + 1;
-                    offset += slicePoint;
-                    remainingText = remainingText.slice(slicePoint);
-                  }
-                } else {
-                  console.log('[GEMINI-PARSER] ⚠️ No matching closing brace, trying next position');
-                  // Slice off the opening brace and continue
-                  const slicePoint = braceIndex + 1;
-                  offset += slicePoint;
-                  remainingText = remainingText.slice(slicePoint);
-                }
-              }
-              
-              // If we found a function call, process it
-              if (foundFunctionCall && extractedFunctionCall) {
-                console.log('[GEMINI-PARSER] ✅ Successfully extracted function call from text:', extractedFunctionCall.name);
-                
-                // FIX 1: Signal that fallback was used (triggers force mode)
-                // Fire event if we scanned non-function JSON OR found function call
+                // Signal that fallback was used (triggers force mode on next iteration)
                 if (onChunk) {
                   try {
                     onChunk({
                       type: 'fallback_used',
-                      message: scannedNonFunctionJson 
-                        ? 'Function call extracted from text after scanning non-function JSON - will enforce strict mode'
-                        : 'Function call extracted from text - will enforce strict mode next iteration'
+                      message: 'Function call healed from truncated JSON - will enforce strict mode next iteration'
                     });
                   } catch (fallbackEventError) {
                     console.error('❌ Error sending fallback_used event:', fallbackEventError);
                   }
                 }
                 
-                // FIX 2: Remove ONLY the function call JSON from part.text (preserve other content)
-                const beforeCall = part.text.substring(0, functionCallPosition.start);
-                const afterCall = part.text.substring(functionCallPosition.end);
-                part.text = (beforeCall + afterCall).trim();
-                
-                // If only whitespace remains, clear it
-                if (!part.text || part.text.length === 0) {
-                  part.text = '';
-                } else {
-                  console.log('[GEMINI-PARSER] Preserved non-JSON text:', part.text.substring(0, 50));
-                }
+                // Clear the text since we extracted the function call
+                part.text = '';
               } else {
-                console.log('[GEMINI-PARSER] ⚠️ No function call found in text');
+                console.log('[GEMINI-PARSER] ⚠️ No function call found in text after healing attempt');
+                
+                // If healing failed and we have tools available, this might indicate a serious issue
+                // Trigger a retry with corrective prompt
+                if (tools && tools.length > 0) {
+                  throw new Error('JSON healing failed - truncated function call detected. Please retry with complete JSON.');
+                }
               }
             } catch (error) {
-              console.error('[GEMINI-PARSER] ❌ Failed to parse function call from text:', error);
+              console.error('[GEMINI-PARSER] ❌ Failed to heal function call from text:', error);
+              
+              // Re-throw to trigger retry mechanism
+              if (error instanceof Error && error.message.includes('JSON healing failed')) {
+                throw error;
+              }
             }
           }
 

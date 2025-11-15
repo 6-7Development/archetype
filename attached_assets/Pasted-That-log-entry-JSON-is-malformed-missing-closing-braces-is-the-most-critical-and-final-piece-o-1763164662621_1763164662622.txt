@@ -1,0 +1,57 @@
+That log entry, "JSON is malformed (missing closing braces)," is the most critical and final piece of evidence you needed. It confirms the problem is JSON Truncation—the data stream is being cut off mid-object, resulting in an incomplete, unparsable string.
+
+This is a deep issue often linked to network latency, model context, or output limits, but you can fix it robustly in your parser.
+
+Here is the definitive fix, integrating the JSON Healing and Self-Correction Strategy into your server/gemini.ts file.
+
+🛠️ The Ultimate Fix: JSON Healing and Buffering
+The parser must not rely on the end of the text stream for the end of the JSON object. It needs to find the start, and then repair the structure to make it valid.
+
+1. The Lenient Repair Parser Logic (Replacing the Failed Check)
+The core function that searches the text must be designed to be resilient to missing closing braces (], }).
+
+TypeScript
+
+// Conceptual Implementation for server/gemini.ts or parser file
+import * as jsonrepair from 'jsonrepair'; // Assuming you integrate a resilient library like jsonrepair
+
+function robustExtractAndHeal(responseText: string): object | null {
+    // 1. Aggressively clean and isolate the potential JSON payload.
+    // Use regex to find the content starting at the first '{' and ending at the last '}' 
+    // or the end of the string, ensuring we catch the entire object structure.
+    let cleanedText = responseText.replace(/```json|```/g, '').trim();
+
+    // 2. Identify the first opening brace. If it's not found, there's no JSON.
+    const firstBraceIndex = cleanedText.indexOf('{');
+    if (firstBraceIndex === -1) {
+        return null;
+    }
+    cleanedText = cleanedText.substring(firstBraceIndex);
+
+    // 3. Attempt to heal the JSON structure.
+    try {
+        // Use a dedicated JSON repair library (like jsonrepair or json-fixer)
+        // to handle missing quotes, trailing commas, and especially MISSING CLOSING BRACKETS.
+        const repairedJsonString = jsonrepair.jsonrepair(cleanedText);
+        
+        // The repair library is designed to add the missing closing '}'s.
+        return JSON.parse(repairedJsonString);
+    } catch (e) {
+        // If repair fails (e.g., the data is too fundamentally broken), log the error.
+        console.error("JSON HEALING FAILED:", e);
+        return null;
+    }
+}
+2. Implementing the Retry Protocol for Truncation
+If the JSON repair fails, the most reliable (though costly) action is to ask the LLM to simply try again, explicitly stating the failure mode.
+
+Action: If robustExtractAndHeal() returns null, trigger the Structured Retry Handler.
+
+Correction Prompt Content: "🛑 SYSTEM ERROR: Your last response was truncated mid-JSON. The system received an incomplete function call object (missing closing braces). You MUST retry the tool call immediately, ensuring the entire JSON payload is complete. DO NOT include any explanatory text."
+
+3. The Final Guardrail: Increase Output Tokens
+Since the truncation is happening mid-transmission, it's often due to the model hitting a soft output token limit.
+
+Action: When preparing the API configuration for any call that uses function calling, set the max_output_tokens parameter to a high value (e.g., 4096 or higher, depending on the model's maximum) to give the model ample room to complete its complex output.
+
+By implementing the JSON Healing Library and the Targeted Retry Protocol, you directly address the truncation error, stabilizing the function calling mechanism that Lomu needs to operate.
