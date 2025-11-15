@@ -35,11 +35,19 @@ Comprehensive fixes for Gemini's function calling quirks ensure production-grade
     -   `MAX_READ_ONLY_ITERATIONS: 20` for read-only iterations
     -   **Purpose**: Gives LomuAI 3-5 reasoning steps to fail, diagnose, retry, and recover from I AM Architect guidance
 
-2.  **Core Incompatibility Fix (Forced Function Calling)**
-    -   `mode: 'ANY'` with `allowed_function_names` array in `toolConfig`
-    -   **Implementation**: Custom `toolConfig` parameter in `StreamOptions` interface
-    -   **Purpose**: Forces Gemini to use proper JSON function calling instead of Python-like syntax
-    -   **Location**: `server/gemini.ts` lines 505-528
+2.  **Intent-Sensitive Mode Control (Smart Function Calling)**
+    -   **Implementation**: Dynamic mode selection based on user intent and tool availability
+    -   **Logic**: `mode: 'ANY'` for fix/build requests + retries, `mode: 'AUTO'` for casual questions
+    -   **Safety Guards**:
+        - Falls back to AUTO when `forceFunctionCall=true` but no tools available
+        - Aggregates function names from ALL tool entries (not just first)
+        - Prevents API rejection from empty `allowedFunctionNames`
+    -   **Behavior**:
+        - Fix/build requests → forces tool calling (mode: ANY)
+        - Casual questions → allows natural responses (mode: AUTO)
+        - Retry logic → `forceFunctionCall=true` overrides to ANY
+    -   **Location**: `server/gemini.ts` lines 546-578
+    -   **Frontend**: Added "progress" event handler to display workflow failures
 
 3.  **Response Parsing Fallback (Hybrid Parser - The Missing Link)**
     -   **Step 1**: Check `part.functionCall` (correct API format)
@@ -52,9 +60,9 @@ Comprehensive fixes for Gemini's function calling quirks ensure production-grade
     -   **Instruction**: "🛑 SYSTEM ERROR: The last output was malformed. You must not use Python syntax. You must IMMEDIATELY RETRY the tool call using ONLY the JSON structure. Do not add any explanatory text or commentary."
     -   **Mechanism**: On `MALFORMED_FUNCTION_CALL`, inserts disciplined corrective instruction + forces `mode: 'ANY'` with specific function
     -   **Purpose**: Directs agent's attention to syntax error and forces disciplined recovery attempt
-    -   **Location**: `server/gemini.ts` lines 497-547
+    -   **Integration**: Works with intent-sensitive mode to ensure retries use forced tool calling
 
-**Result**: Production-grade Gemini function calling with automatic recovery, hybrid parsing, and forced tool use modes.
+**Result**: Production-grade Gemini function calling with automatic recovery, hybrid parsing, intent-based mode selection, and comprehensive safety guards. Zero-mutation failures eliminated while preserving natural conversation capabilities.
 
 ### Design Preferences
 -   **Brand Identity**: Professional swarm/hive intelligence theme with collaborative AI energy
@@ -123,44 +131,12 @@ The access model provides owner-only access for platform healing, usage-based cr
 - **Telemetry System**: Tracks healing attempts, successes, failures with detailed statistics.
 - **Reflection and Structured Retry Mandate**: LomuAI is mandated to analyze tool failures, state root cause, and propose alternative strategies before retrying.
 
-**Enhanced JSON Healing System (Production-Ready as of 2025-11-15)**:
-
-1. **Robust JSON Healing** (`server/gemini.ts`):
-   - Smart brace/bracket counting (string-aware - ignores braces in quoted strings)
-   - Detects and closes incomplete strings before adding closing braces
-   - Counts and adds missing `}` and `]` for nested structures
-   - Aggressive pre-repair before jsonrepair fallback
-   - Exported `robustExtractAndHeal()` for integration testing
-   - Success rate: 90% in production tests (9/10 healing attempts)
-
-2. **Healing Telemetry Service** (`server/services/healingTelemetry.ts`):
-   - Tracks healing attempts, successes, failures with detailed statistics
-   - Auto-logs stats every 5 minutes in production (uses `unref()` to prevent process hanging)
-   - Lifecycle methods: `startAutoLogging()`, `stopAutoLogging()`
-   - Only runs in production (`NODE_ENV !== 'test'`)
-   - Provides `getStats()` for real-time monitoring
-
-3. **Reflection & Retry Mandate** (`server/lomuSuperCore.ts`):
-   - "REFLECTION AND STRUCTURED RETRY MANDATE" section in LomuAI system prompt
-   - Requires explicit root cause analysis before retrying failed tool calls
-   - Mandates 2-3 alternative strategies before asking for help
-   - Special handling for JSON truncation errors with corrective prompts
-
-4. **Validation Caching** (`server/services/codeValidator.ts`):
-   - SHA-256 hash-based caching for TypeScript/ESLint validation results
-   - 5-minute TTL to balance freshness and performance
-   - Auto-cleanup of stale cache entries
-   - Reduces validation overhead on repeated file checks
-
-5. **Integration Testing** (`server/__tests__/jsonHealing.test.ts` + `test.sh` + `.github/workflows/test.yml`):
-   - 17 comprehensive tests using Vitest framework
-   - Tests import real production code (no duplication)
-   - Coverage: basic truncation, complex arguments, edge cases, telemetry integration
-   - 100% pass rate (17/17 tests)
-   - Proper exit codes (0 on success, 1 on failure)
-   - Local: Run `./test.sh` to execute tests
-   - CI/CD: GitHub Actions workflow automatically runs tests on every push/PR
-   - Canonical test entry point: `./test.sh` (works locally and in CI)
+**Enhanced JSON Healing System**:
+1. **Robust JSON Healing** (`server/gemini.ts`): Smart brace/bracket counting, incomplete string closure, missing bracket completion, aggressive pre-repair.
+2. **Healing Telemetry Service** (`server/services/healingTelemetry.ts`): Tracks attempts, successes, failures; auto-logs stats in production.
+3. **Reflection & Retry Mandate** (`server/lomuSuperCore.ts`): Requires explicit root cause analysis and alternative strategies for failed tool calls.
+4. **Validation Caching** (`server/services/codeValidator.ts`): SHA-256 hash-based caching for TypeScript/ESLint validation results with 5-minute TTL.
+5. **Integration Testing**: 17 comprehensive tests using Vitest covering truncation, arguments, and edge cases.
 
 ### Streaming Architecture
 The platform prioritizes native JSON function calling for AI streaming due to superior speed, reliability, and type safety, integrating utilities for validation, retry logic, and file change tracking.
