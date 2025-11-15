@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { MonacoEditor } from "@/components/monaco-editor";
 import { LivePreview } from "@/components/live-preview";
-import { AIChat } from "@/components/ai-chat";
+import { UniversalChat } from "@/components/universal-chat";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -160,9 +160,13 @@ export function MobileWorkspace({
           </TabsContent>
 
           <TabsContent value="chat" className="flex-1 m-0 overflow-hidden">
-            <AIChat currentProjectId={projectId} onProjectGenerated={(result) => {
-              console.log('[MOBILE] Project generated:', result);
-            }} />
+            <UniversalChat 
+              targetContext="project"
+              projectId={projectId}
+              onProjectGenerated={(result) => {
+                console.log('[MOBILE] Project generated:', result);
+              }}
+            />
           </TabsContent>
         </Tabs>
       </div>

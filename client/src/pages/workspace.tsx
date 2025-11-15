@@ -5,10 +5,8 @@ import { MonacoEditor } from "@/components/monaco-editor";
 import { SplitEditor } from "@/components/split-editor";
 import { useSplitEditor } from "@/hooks/useSplitEditor";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { AIChat } from "@/components/ai-chat";
+import { UniversalChat } from "@/components/universal-chat";
 import { MobileWorkspace } from "@/components/mobile-workspace";
-import { TaskProgressWidget } from "@/components/task-progress-widget";
-import { AgentTaskList, type AgentTask } from "@/components/agent-task-list";
 import { LivePreview } from "@/components/live-preview";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,13 +15,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { 
-  Code2, 
   Play, 
   Square,
   Plus,
   Folder,
-  ChevronRight,
-  ChevronLeft,
   FileCode,
   Terminal as TerminalIcon,
   Loader2,
@@ -35,11 +30,8 @@ import {
   LogOut,
   User,
   LayoutDashboard,
-  Sparkles,
   ArrowLeft,
   Menu,
-  CheckSquare,
-  Target,
   Database,
   GitBranch
 } from "lucide-react";
@@ -59,10 +51,7 @@ export default function Workspace() {
   const [consoleOutput, setConsoleOutput] = useState<string[]>([]);
   const [showFileTree, setShowFileTree] = useState(true);
   const [showPreview, setShowPreview] = useState(true);
-  const [showTaskPanel, setShowTaskPanel] = useState(true); // NEW: Task panel toggle
   const [showMobileFileExplorer, setShowMobileFileExplorer] = useState(false);
-  const [tasks, setTasks] = useState<AgentTask[]>([]); // NEW: Task state
-  const [activeTaskId, setActiveTaskId] = useState<string | null>(null); // NEW: Active task
   const consoleRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -153,40 +142,11 @@ export default function Workspace() {
     }
   }, [consoleOutput]);
 
-  // NEW: Demo tasks for testing
-  useEffect(() => {
-    const demoTasks: AgentTask[] = [
-      {
-        id: '1',
-        title: 'Analyze project structure',
-        description: 'Scanning files and dependencies',
-        status: 'completed'
-      },
-      {
-        id: '2',
-        title: 'Generate component files',
-        description: 'Creating React components',
-        status: 'in_progress',
-        substeps: [
-          { id: '2a', title: 'Create Header.tsx', status: 'completed' },
-          { id: '2b', title: 'Create Layout.tsx', status: 'in_progress' },
-          { id: '2c', title: 'Create App.tsx', status: 'pending' }
-        ]
-      },
-      {
-        id: '3',
-        title: 'Setup routing',
-        description: 'Configure React Router',
-        status: 'pending'
-      }
-    ];
-    setTasks(demoTasks);
-    setActiveTaskId('2');
-  }, []);
-
-  const handleSave = () => {
-    if (activeFile) {
-      saveFileMutation.mutate({ id: activeFile.id, content: editorContent });
+  const handleSave = async (fileId?: string, content?: string) => {
+    const id = fileId || activeFile?.id;
+    const contentToSave = content || editorContent;
+    if (id) {
+      await saveFileMutation.mutateAsync({ id, content: contentToSave });
     }
   };
 
@@ -257,8 +217,11 @@ export default function Workspace() {
             language: activeFile.language
           } : null}
           onFileSelect={(file) => {
-            setActiveFile(file);
-            setEditorContent(file.content);
+            const fullFile = files.find(f => f.id === file.id);
+            if (fullFile) {
+              setActiveFile(fullFile);
+              setEditorContent(file.content);
+            }
           }}
           onFileCreate={handleCreateFile}
           onFileUpdate={handleSave}
@@ -328,17 +291,6 @@ export default function Workspace() {
                 data-testid="button-toggle-preview"
               >
                 {showPreview ? <PanelRightClose className="h-4 w-4" /> : <PanelRight className="h-4 w-4" />}
-              </Button>
-              {/* NEW: Task panel toggle */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 hidden md:flex"
-                onClick={() => setShowTaskPanel(!showTaskPanel)}
-                data-testid="button-toggle-tasks"
-                title="Toggle Task Panel"
-              >
-                <CheckSquare className="h-4 w-4" />
               </Button>
             </>
           )}
@@ -544,20 +496,16 @@ export default function Workspace() {
         )}
 
         {/* CENTER-LEFT: AI Chat (Lomu) - Always Visible */}
-        <div className="w-80 border-r flex flex-col bg-card">
-          <div className="h-9 flex items-center px-3 border-b">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-pulse" />
-              <span className="text-xs font-semibold">AI Agent (Lomu)</span>
-            </div>
-          </div>
-          <div className="flex-1 min-h-0 overflow-hidden">
-            <AIChat onProjectGenerated={(result) => {
+        <div className="w-80 border-r flex flex-col bg-card overflow-hidden">
+          <UniversalChat 
+            targetContext="project"
+            projectId={activeSession?.activeProjectId || null}
+            onProjectGenerated={(result) => {
               if (result?.files) {
                 queryClient.invalidateQueries({ queryKey: ["/api/files"] });
               }
-            }} />
-          </div>
+            }}
+          />
         </div>
 
         {/* CENTER-RIGHT: Code Editor + Console */}
@@ -631,43 +579,6 @@ export default function Workspace() {
             />
           </div>
         )}
-
-        {/* FAR RIGHT: Task Management Panel (NEW!) */}
-        {showTaskPanel && (
-          <div className="w-80 border-l flex flex-col bg-card">
-            <div className="h-9 flex items-center px-3 border-b">
-              <div className="flex items-center gap-2">
-                <Target className="h-3.5 w-3.5 text-orange-500" />
-                <span className="text-xs font-semibold">Task Manager</span>
-              </div>
-            </div>
-            <div className="flex-1 min-h-0 overflow-hidden">
-              <Tabs defaultValue="progress" className="h-full flex flex-col">
-                <TabsList className="h-8 border-b rounded-none bg-transparent px-2 flex-shrink-0">
-                  <TabsTrigger value="progress" className="text-xs h-6" data-testid="tab-progress">
-                    Progress
-                  </TabsTrigger>
-                  <TabsTrigger value="list" className="text-xs h-6" data-testid="tab-list">
-                    Tasks
-                  </TabsTrigger>
-                </TabsList>
-                <TabsContent value="progress" className="flex-1 m-0 p-2 overflow-hidden">
-                  <TaskProgressWidget 
-                    tasks={tasks} 
-                    activeTaskId={activeTaskId} 
-                  />
-                </TabsContent>
-                <TabsContent value="list" className="flex-1 m-0 overflow-hidden">
-                  <AgentTaskList 
-                    tasks={tasks}
-                    activeTaskId={activeTaskId}
-                    onTaskClick={setActiveTaskId}
-                  />
-                </TabsContent>
-              </Tabs>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Bottom Status Bar */}
@@ -679,10 +590,6 @@ export default function Workspace() {
           </div>
           {activeFile && (
             <span className="uppercase tracking-wide">{activeFile.language}</span>
-          )}
-          {/* NEW: Task status */}
-          {tasks.length > 0 && (
-            <span>{tasks.filter(t => t.status === 'completed').length}/{tasks.length} tasks</span>
           )}
         </div>
         <div className="flex items-center gap-3">
