@@ -3,93 +3,6 @@
 ## Overview
 Lomu is an AI-powered platform for rapid web development, featuring LomuAI, an autonomous AI coding agent, and dual-version IDE Workspaces (Lomu for desktop, Lomu5 for mobile). It offers a console-first interface, real-time preview, and comprehensive workspace features. The platform aims for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. A key capability is LomuAI's autonomous self-healing, bug fixing, and UI/UX improvements to its own source code, complete with rollback and audit logging. The business vision is to provide a comprehensive, AI-driven platform that simplifies web development, making it accessible and efficient for a wide range of users, from individual developers to large enterprises.
 
-## Recent Changes
-### Production-Ready Code Validation System (2025-11-14)
-Implemented 3-layer validation architecture to prevent LomuAI from committing broken code with syntax errors:
-
-**Layer 1: Gemini Response Validation** (`server/gemini.ts` lines 843-895):
-- Smart escape detection in function call arguments
-- Only flags LomuAI's specific bug patterns: `.join('\\n')`, `.replace(x, '\\n')`, `}\n}`
-- Recursive object inspection without false positives from JSON encoding
-- Throws MALFORMED_FUNCTION_CALL error to trigger retry logic
-
-**Layer 2: Pre-Write Validation** (`server/platformHealing.ts` lines 577-586):
-- Quick validation before file write using `codeValidator.validateSingleFile()`
-- Catches malformed escape sequences before they reach the filesystem
-
-**Layer 3: Pre-Commit Validation** (`server/platformHealing.ts`):
-- Development: Lines 750-770 - Full validation before local Git commit
-- Production: Lines 714-728 - Validation before GitHub push
-- Checks: TypeScript compilation (tsc --noEmit), ESLint, escape patterns, git diff sanity
-
-**Code Validator Service** (`server/services/codeValidator.ts`):
-- Smart pattern detection avoiding false positives
-- Non-global regex to prevent lastIndex issues
-- Comprehensive error reporting with actionable hints
-
-**System Prompt Updates** (`server/lomuSuperCore.ts` lines 500-504):
-- Added CODE QUALITY GATES section warning about validation blocks
-
-**JSON Healing System** (`server/gemini.ts`):
-- Installed `jsonrepair` library to fix truncated Gemini API responses
-- Lines 53-77: `robustExtractAndHeal()` function repairs missing closing braces
-- Lines 671-715: Integrated into streaming parser (replaced 140-line balanced-brace parser)
-- Fixes "Connection lost" / "No tool calls" errors caused by incomplete JSON
-- Retry protocol when healing fails
-
-**Production-Ready Enhancements (2025-11-15)**:
-
-**1. Enhanced JSON Healing with Smart Brace Counting** (`server/gemini.ts`):
-- String-aware brace/bracket counting (ignores braces in quoted strings)
-- Detects and closes incomplete strings before adding closing braces
-- Counts and adds missing `}` and `]` for nested structures
-- Aggressive pre-repair before jsonrepair fallback
-- Exported for integration testing
-- Success rate: 90% in production tests (9/10 attempts)
-
-**2. Telemetry System** (`server/services/healingTelemetry.ts` - NEW):
-- Tracks healing attempts, successes, failures with detailed statistics
-- Auto-logs stats every 5 minutes in production (uses `unref()` to prevent process hanging)
-- Lifecycle methods: `startAutoLogging()`, `stopAutoLogging()`
-- Only runs in production (`NODE_ENV !== 'test'`)
-- Provides `getStats()` for real-time monitoring
-
-**3. Reflection and Structured Retry Mandate** (`server/lomuSuperCore.ts`):
-- Added "REFLECTION AND STRUCTURED RETRY MANDATE" section to system prompt
-- Requires LomuAI to pause and analyze tool failures before attempting fixes
-- Must state root cause explicitly before retrying
-- Mandates 2-3 alternative strategies before asking for help
-- Special handling for JSON truncation errors with corrective prompts
-
-**4. Integration Tests** (`server/__tests__/jsonHealing.test.ts` - NEW):
-- 17 comprehensive tests using Vitest framework
-- Tests import real production code (no duplication)
-- Coverage: basic truncation, complex arguments, edge cases, telemetry integration
-- 100% pass rate (17/17 tests)
-- Proper exit codes (0 on success, 1 on failure)
-- Run with: `./test.sh` or `npx vitest run`
-
-**5. Validation Caching** (`server/services/codeValidator.ts`):
-- SHA-256 hash-based caching for TypeScript/ESLint validation results
-- 5-minute TTL to balance freshness and performance
-- Auto-cleanup of stale cache entries
-- Reduces validation overhead on repeated file checks
-
-**6. Test Automation** (`test.sh` - NEW):
-- Executable script runs complete test suite
-- Exits 0 on success, 1 on failure (CI/CD compatible)
-- Usage: `./test.sh` (all tests), `./test.sh --watch` (watch mode), `./test.sh --ui` (UI mode)
-- **IMPORTANT**: Run before committing changes to JSON healing system
-
-**Impact:** 
-- Prevents the double-escape bug (commit 8ab2e16) and other syntax errors from being committed during platform self-healing
-- Fixes Gemini JSON truncation issue that caused LomuAI to appear "disconnected" in chat
-- Ensures reliable tool execution even when Gemini sends incomplete function call JSON
-- LomuAI now self-corrects when tool calls fail (reflection mandate)
-- Comprehensive test coverage prevents regressions
-- Intelligent caching speeds up validation workflow
-- Real-time telemetry provides visibility into healing success rates
-
 ## User Preferences
 ### API Configuration
 **Gemini 2.5 Flash + Claude Sonnet 4 Hybrid Strategy**:
@@ -206,6 +119,48 @@ The access model provides owner-only access for platform healing, usage-based cr
 - **Security & Production Readiness**: Authentication/authorization, protected APIs, RCE prevention.
 - **Vision Analysis**: LomuAI can analyze images and screenshots.
 - **Strict Function Calling**: Transport-layer enforcement of JSON function calling for Gemini.
+- **Production-Ready Code Validation System**: Implemented a 3-layer validation architecture for Gemini's responses, pre-write, and pre-commit to prevent broken code from being committed. Includes JSON healing and validation caching.
+- **Telemetry System**: Tracks healing attempts, successes, failures with detailed statistics.
+- **Reflection and Structured Retry Mandate**: LomuAI is mandated to analyze tool failures, state root cause, and propose alternative strategies before retrying.
+
+**Enhanced JSON Healing System (Production-Ready as of 2025-11-15)**:
+
+1. **Robust JSON Healing** (`server/gemini.ts`):
+   - Smart brace/bracket counting (string-aware - ignores braces in quoted strings)
+   - Detects and closes incomplete strings before adding closing braces
+   - Counts and adds missing `}` and `]` for nested structures
+   - Aggressive pre-repair before jsonrepair fallback
+   - Exported `robustExtractAndHeal()` for integration testing
+   - Success rate: 90% in production tests (9/10 healing attempts)
+
+2. **Healing Telemetry Service** (`server/services/healingTelemetry.ts`):
+   - Tracks healing attempts, successes, failures with detailed statistics
+   - Auto-logs stats every 5 minutes in production (uses `unref()` to prevent process hanging)
+   - Lifecycle methods: `startAutoLogging()`, `stopAutoLogging()`
+   - Only runs in production (`NODE_ENV !== 'test'`)
+   - Provides `getStats()` for real-time monitoring
+
+3. **Reflection & Retry Mandate** (`server/lomuSuperCore.ts`):
+   - "REFLECTION AND STRUCTURED RETRY MANDATE" section in LomuAI system prompt
+   - Requires explicit root cause analysis before retrying failed tool calls
+   - Mandates 2-3 alternative strategies before asking for help
+   - Special handling for JSON truncation errors with corrective prompts
+
+4. **Validation Caching** (`server/services/codeValidator.ts`):
+   - SHA-256 hash-based caching for TypeScript/ESLint validation results
+   - 5-minute TTL to balance freshness and performance
+   - Auto-cleanup of stale cache entries
+   - Reduces validation overhead on repeated file checks
+
+5. **Integration Testing** (`server/__tests__/jsonHealing.test.ts` + `test.sh` + `.github/workflows/test.yml`):
+   - 17 comprehensive tests using Vitest framework
+   - Tests import real production code (no duplication)
+   - Coverage: basic truncation, complex arguments, edge cases, telemetry integration
+   - 100% pass rate (17/17 tests)
+   - Proper exit codes (0 on success, 1 on failure)
+   - Local: Run `./test.sh` to execute tests
+   - CI/CD: GitHub Actions workflow automatically runs tests on every push/PR
+   - Canonical test entry point: `./test.sh` (works locally and in CI)
 
 ### Streaming Architecture
 The platform prioritizes native JSON function calling for AI streaming due to superior speed, reliability, and type safety, integrating utilities for validation, retry logic, and file change tracking.
