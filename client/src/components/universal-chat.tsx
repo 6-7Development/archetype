@@ -524,6 +524,35 @@ export function UniversalChat({
     }
   }, [streamState.currentThought, streamState.currentAction, streamState.chatProgress, isGenerating]);
 
+  // ✅ PHASE 3: Handle rate limit messages gracefully
+  useEffect(() => {
+    const checkForRateLimitMessage = (message: string | undefined) => {
+      if (!message) return false;
+      
+      // Detect rate limit messages
+      const isRateLimitMessage = 
+        message.includes('Rate limit') ||
+        message.includes('rate limit') ||
+        message.includes('Waiting') && message.includes('before retry');
+      
+      if (isRateLimitMessage) {
+        // Show user-friendly toast (not destructive - this is expected behavior)
+        toast({
+          title: "API Rate Limit",
+          description: message,
+          variant: "default",
+        });
+        return true;
+      }
+      return false;
+    };
+
+    // Check all message sources for rate limit indicators
+    checkForRateLimitMessage(streamState.currentAction) ||
+    checkForRateLimitMessage(streamState.currentThought) ||
+    checkForRateLimitMessage(streamState.chatProgress?.message);
+  }, [streamState.currentAction, streamState.currentThought, streamState.chatProgress, toast]);
+
   // Update agent UI from WebSocket events
   useEffect(() => {
     if (streamState.tasks && streamState.tasks.length > 0) {

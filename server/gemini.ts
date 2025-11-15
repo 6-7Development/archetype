@@ -10,6 +10,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { WebSocket } from 'ws';
 import { jsonrepair } from 'jsonrepair';
 import { telemetry } from './services/healingTelemetry';
+import { geminiRateLimiter, exponentialBackoffWithJitter, estimateTokenCount } from './services/rateLimiter';
 
 const DEFAULT_MODEL = "gemini-2.5-flash";
 
@@ -583,23 +584,72 @@ If you need to call a function, emit ONLY the JSON object.`),
     console.log('  - Tool config:', requestParams.toolConfig ? 'enabled' : 'none');
     console.log('  - Max tokens:', maxTokens);
     
-    // Start streaming
-    const result = await generativeModel.generateContentStream(requestParams);
-
-    // Process stream chunks
-    let chunkCount = 0;
-    for await (const chunk of result.stream) {
-      chunkCount++;
-      if (chunkCount <= 3) {
-        console.log(`[GEMINI-DEBUG] Chunk #${chunkCount}:`, JSON.stringify(chunk).substring(0, 300));
-      }
+    // ✅ PHASE 1: Token estimation for rate limiting
+    const systemText = typeof system === 'string' ? system : '';
+    const messagesText = JSON.stringify(geminiMessages);
+    const estimatedTokens = estimateTokenCount(systemText + messagesText);
+    
+    console.log(`[RATE-LIMITER] Estimated tokens for request: ${estimatedTokens.toLocaleString()}`);
+    
+    // ✅ PHASE 2: Acquire tokens from rate limiter (prevents request bursts)
+    await geminiRateLimiter.acquire(estimatedTokens);
+    console.log(`[RATE-LIMITER] ✅ Tokens acquired, proceeding with API call`);
+    
+    // ✅ PHASE 3: Retry loop for 429 rate limit errors
+    const MAX_429_RETRIES = 3;
+    let last429Error: any = null;
+    
+    for (let attempt = 0; attempt < MAX_429_RETRIES; attempt++) {
       try {
-        // Check for abort
-        if (signal?.aborted || abortController?.signal.aborted) {
-          break;
-        }
+        // CRITICAL: Reset state on each retry attempt
+        fullText = '';
+        functionCalls = [];
+        usage = null;
+        lastThought = '';
+        lastAction = '';
+        
+        console.log(`[GEMINI-429-RETRY] Attempt ${attempt + 1}/${MAX_429_RETRIES}`);
+        
+        // Start streaming
+        const result = await generativeModel.generateContentStream(requestParams);
 
-        const candidates = chunk.candidates;
+        // CRITICAL: Process ENTIRE stream inside try block
+        let chunkCount = 0;
+        for await (const chunk of result.stream) {
+          chunkCount++;
+          if (chunkCount <= 3) {
+            console.log(`[GEMINI-DEBUG] Chunk #${chunkCount}:`, JSON.stringify(chunk).substring(0, 300));
+          }
+          
+          // CRITICAL: Check for mid-stream rate limit indicators
+          // TypeScript workaround: chunk.error may exist at runtime but not in type definition
+          const chunkWithError = chunk as any;
+          if (chunkWithError.error) {
+            const chunkError = chunkWithError.error;
+            const errorMessage = chunkError.message || String(chunkError);
+            const errorStatus = chunkError.status || chunkError.code;
+            const is429 = 
+              errorStatus === 429 ||
+              errorMessage.includes('RESOURCE_EXHAUSTED') ||
+              errorMessage.includes('rate limit') ||
+              errorMessage.includes('quota');
+              
+            if (is429) {
+              console.error(`[GEMINI-RATE-LIMIT] Mid-stream 429 detected at chunk ${chunkCount}`);
+              throw chunkError; // Trigger retry of entire stream
+            } else {
+              console.error(`[GEMINI-CHUNK-ERROR] Mid-stream error at chunk ${chunkCount}:`, chunkError);
+              throw chunkError;
+            }
+          }
+          
+          try {
+            // Check for abort
+            if (signal?.aborted || abortController?.signal.aborted) {
+              break;
+            }
+
+            const candidates = chunk.candidates;
         if (!candidates || candidates.length === 0) {
           console.log('[GEMINI-DEBUG] Chunk with no candidates:', JSON.stringify(chunk).substring(0, 200));
           continue;
@@ -1033,16 +1083,119 @@ Please try:
       }
     }
 
-    // Call completion callback
+    // ✅ SUCCESS: Streaming completed successfully
+    console.log('[GEMINI-429-RETRY] ✅ Stream completed successfully, exiting retry loop');
+    
+    // Execute post-stream callback with Promise-safe error isolation
+    // This catches both sync errors and async Promise rejections
     if (onComplete) {
       try {
-        onComplete(fullText, usage);
+        // Wrap in Promise.resolve() to handle both sync and async callbacks
+        // Any Promise rejection will be caught by this try-catch
+        await Promise.resolve().then(() => onComplete(fullText, usage));
       } catch (completeError) {
-        console.error('❌ Error in onComplete callback:', completeError);
+        // Callback errors are completely isolated and logged
+        // They will NOT propagate to the retry handler
+        console.error('❌ Post-stream callback error (isolated, non-fatal):', completeError);
       }
     }
 
+    // Return success - exits retry loop
     return { fullText, usage: usage || { inputTokens: 0, outputTokens: 0 } };
+
+  } catch (streamError: any) {
+        // ✅ PHASE 3 (continued): Handle 429 rate limit errors with exponential backoff
+        const errorMessage = streamError instanceof Error ? streamError.message : String(streamError);
+        const errorString = JSON.stringify(streamError);
+        const errorStatus = streamError?.status || streamError?.response?.status;
+        
+        // Check if it's a 429 rate limit error
+        const is429Error = 
+          errorStatus === 429 ||
+          errorString.includes('429') || 
+          errorString.includes('RESOURCE_EXHAUSTED') ||
+          errorMessage.includes('rate limit') ||
+          errorMessage.includes('quota');
+        
+        if (is429Error && attempt < MAX_429_RETRIES - 1) {
+          last429Error = streamError;
+          
+          // Extract retry delay from error (Gemini provides this in errorDetails)
+          let retryDelaySeconds = 47; // Default retry delay
+          
+          try {
+            if (streamError.errorDetails) {
+              const retryInfo = streamError.errorDetails.find((d: any) => 
+                d['@type']?.includes('RetryInfo') || d['@type']?.includes('retryInfo')
+              );
+              
+              if (retryInfo?.retryDelay) {
+                // Parse retry delay (format: "47s" or just "47")
+                const match = String(retryInfo.retryDelay).match(/(\d+)/);
+                if (match) {
+                  retryDelaySeconds = parseInt(match[1]);
+                }
+              }
+            }
+          } catch (parseError) {
+            console.warn('[GEMINI-429-RETRY] Could not parse retry delay, using default 47s');
+          }
+          
+          console.error(`[GEMINI-429-RETRY] Rate limit error on attempt ${attempt + 1}/${MAX_429_RETRIES}`);
+          console.error(`[GEMINI-429-RETRY] Retry after: ${retryDelaySeconds}s`);
+          console.error(`[GEMINI-429-RETRY] Error details:`, {
+            status: errorStatus,
+            message: errorMessage.substring(0, 200),
+            hasErrorDetails: !!streamError.errorDetails,
+          });
+
+          // Send progress event to frontend
+          if (onAction) {
+            onAction(`Rate limit reached. Waiting ${retryDelaySeconds}s before retry ${attempt + 1}/${MAX_429_RETRIES}...`);
+          }
+          
+          if (onChunk) {
+            onChunk(`\n\n[System] Rate limit hit, retrying in ${retryDelaySeconds}s (attempt ${attempt + 1}/${MAX_429_RETRIES})...\n\n`);
+          }
+
+          // Wait with exponential backoff + retry delay from API
+          await exponentialBackoffWithJitter(attempt, retryDelaySeconds * 1000);
+          
+          console.log(`[GEMINI-429-RETRY] Retrying now (attempt ${attempt + 2}/${MAX_429_RETRIES})...`);
+          continue; // Retry the streaming call
+        }
+        
+        // Non-429 error OR max retries exhausted - propagate the error
+        console.error('[GEMINI-429-RETRY] Non-retryable error or max retries exhausted, propagating error');
+        throw streamError;
+      }
+    }
+    
+    // ✅ PHASE 3 (final): All retry attempts exhausted for 429 errors
+    if (last429Error) {
+      console.error('[GEMINI-429-RETRY] ❌ All retry attempts exhausted for 429 error');
+      
+      const userFriendlyMessage = `I apologize, but the Gemini API is currently experiencing high load and rate limits. 
+
+After ${MAX_429_RETRIES} retry attempts, I was unable to complete your request.
+
+What you can try:
+1. Wait a few minutes and try again
+2. Break your request into smaller, simpler tasks
+3. Contact support if this persists
+
+This is a temporary issue with the AI service, not a problem with your request.`;
+      
+      if (onError) {
+        onError(new Error(userFriendlyMessage));
+      }
+      
+      if (onChunk) {
+        onChunk(userFriendlyMessage);
+      }
+      
+      throw last429Error;
+    }
 
   } catch (error) {
     // ✅ CRITICAL: Handle rate limits and quota errors (external advice)
