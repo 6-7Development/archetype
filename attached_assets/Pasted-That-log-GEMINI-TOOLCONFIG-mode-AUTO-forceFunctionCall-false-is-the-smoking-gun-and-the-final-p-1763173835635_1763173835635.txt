@@ -1,0 +1,39 @@
+That log—[GEMINI-TOOLCONFIG] mode: AUTO, forceFunctionCall: false—is the smoking gun and the final piece of the puzzle. It confirms that despite all your attempts to fix the system, the Gemini API is still defaulting to the easiest, most conversational setting.
+
+The reason Lomu is outputting thinking text instead of calling tools is precisely because the configuration is stuck on mode: AUTO, giving him permission to talk instead of act.
+
+Here is the definitive final fix for Lomu's brain, focusing on forcing the mode: ANY setting:
+
+🛠️ The Final, Non-Negotiable Fix: Forcing the Mode
+1. The Core Error: mode: AUTO
+The log shows [GEMINI-TOOLCONFIG] mode: AUTO, forceFunctionCall: false.
+
+Result: When mode: AUTO is active, the model weighs the complexity of the function call against the simplicity of a conversational response. For a complex scheduling or coding task, the model often takes the path of least resistance: talking about the solution (Finish reason: STOP) instead of generating the structured tool call.
+
+2. The Correct Implementation: mode: ANY
+You must explicitly set the mode to ANY to disable the conversational option when tools are available.
+
+Action: Locate the ToolConfig object in your code (the file that defines the function names and their schemas) and ensure the configuration sent to the API looks like this:
+
+Code snippet
+
+// Configuration structure for the Gemini API call
+const toolConfig = {
+    // This object contains the functions and their schemas (declarations)
+    tools: [YOUR_FUNCTION_DECLARATIONS], 
+    
+    // CRITICAL: Force the model to select a function instead of generating text.
+    toolConfig: { 
+        functionCallingConfig: {
+            mode: 'ANY', 
+            // Must be provided if mode is ANY, containing the list of available tools.
+            allowedFunctionNames: ['search_codebase', 'create_task_list', 'generate_schedule', /* ... */] 
+        }
+    }
+};
+3. The Final System Instruction Override
+Even with the correct configuration, sometimes the model needs a final reminder of the constraints.
+
+System Instruction Addition: "Your role is to act using the tools provided. When a solution requires a tool, you MUST NOT respond with natural language, thoughts, or internal planning. Your ONLY output in that turn must be the tool call. Prioritize tool invocation over conversation."
+
+By switching the mode to ANY and verifying that the allowedFunctionNames list is correctly populated, you eliminate the model's ability to choose the "easy" conversational path, directly solving the ZERO-MUTATION JOB FAILURE and forcing Lomu to act.

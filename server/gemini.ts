@@ -190,6 +190,7 @@ interface StreamOptions {
   onComplete?: (fullText: string, usage: any) => void;
   onError?: (error: Error) => void;
   forceFunctionCall?: boolean;  // Force mode: ANY instead of AUTO when malformed calls detected
+  userIntent?: 'fix' | 'build' | 'question' | 'casual' | 'diagnostic'; // Intent-sensitive mode control
 }
 
 /**
@@ -540,20 +541,37 @@ If you need to call a function, emit ONLY the JSON object.`),
         };
         console.log('[GEMINI-TOOLCONFIG] Using custom tool config:', JSON.stringify(toolConfig));
       } else {
-        // ✅ FORCE MODE: Use mode: ANY when forceFunctionCall is true to prevent text-based malformed calls
-        // mode: 'AUTO' (default) = Gemini decides when to use tools vs return text
-        // mode: 'ANY' (forced) = Gemini MUST call a tool (prevents outputting function calls as text)
-        const functionNames = geminiTools[0].functionDeclarations.map((fn: any) => fn.name);
+        // ✅ INTENT-SENSITIVE MODE: Intelligent mode selection based on context
+        // Two pathways that force mode: ANY (Gemini MUST call a tool):
+        //   1. forceFunctionCall=true: Retry pathway after malformed function calls
+        //   2. userIntent='fix'/'build': Initial requests for code changes
+        // All other cases use mode: AUTO (Gemini can choose natural response or tool use)
+        const shouldForceTools = options.forceFunctionCall || options.userIntent === 'fix' || options.userIntent === 'build';
         
-        const callingMode = options.forceFunctionCall ? 'ANY' : 'AUTO';
+        // Aggregate function names from ALL tool entries (not just geminiTools[0])
+        const functionNames = (geminiTools || []).flatMap((toolSet: any) => 
+          (toolSet.functionDeclarations || []).map((fn: any) => fn.name)
+        );
         
+        // 🛡️ SAFETY: Can't use mode: ANY without tools
+        // If forceFunctionCall=true BUT no functions available → fall back to AUTO
+        // This prevents Gemini API rejection during diagnostic retries that disable tools
+        const hasFunctions = functionNames.length > 0;
+        const callingMode = (shouldForceTools && hasFunctions) ? 'ANY' : 'AUTO';
+        
+        // Only set allowedFunctionNames if we have functions AND mode is ANY
         requestParams.toolConfig = {
           functionCallingConfig: {
             mode: callingMode,
+            ...(hasFunctions && callingMode === 'ANY' ? { allowedFunctionNames: functionNames } : {})
           }
         };
         
-        console.log(`[GEMINI-TOOLCONFIG] mode: ${callingMode}, forceFunctionCall: ${options.forceFunctionCall || false}, ${functionNames.length} functions available:`, functionNames.slice(0, 5).join(', '));
+        // Enhanced logging to explain mode selection reasoning
+        if (shouldForceTools && !hasFunctions) {
+          console.log(`[GEMINI-TOOLCONFIG] ⚠️ SAFETY FALLBACK: forceFunctionCall=true but no tools available → using mode: AUTO instead of ANY`);
+        }
+        console.log(`[GEMINI-TOOLCONFIG] mode: ${callingMode} (forceFunctionCall: ${options.forceFunctionCall || false}, intent: ${options.userIntent || 'not specified'}, ${functionNames.length} functions available${functionNames.length > 0 ? ': ' + functionNames.slice(0, 5).join(', ') : ''})`);
       }
     }
 

@@ -1197,6 +1197,7 @@ Let's build! 🚀`;
         system: safeSystemPrompt,
         messages: safeMessages,
         tools: availableTools,
+        userIntent: userIntent, // ✅ INTENT-SENSITIVE MODE: Pass detected intent for mode control
         onChunk: (chunk: any) => {
           if (chunk.type === 'chunk' && chunk.content) {
             const chunkText = chunk.content;

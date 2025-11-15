@@ -433,6 +433,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
               maxTokens: 16000, // ⚠️ CRITICAL: High limit prevents truncated JSON/code (external advice)
               system: systemPrompt,
               messages: conversationMessages,
+              userIntent: userIntent, // ✅ INTENT-SENSITIVE MODE: Pass detected intent for mode control
               onThought: async (thought: string) => {
                 // 🧠 GEMINI THINKING: Broadcast thinking indicators to frontend
                 if (deps?.wss && userId) {
@@ -1428,6 +1429,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
               maxTokens: 8000, // Enough room for comprehensive summaries without truncation
               system: systemPrompt,
               messages: conversationMessages,
+              userIntent: userIntent, // ✅ INTENT-SENSITIVE MODE: Pass detected intent for mode control
               // NO TOOLS - we just want the final answer
               tools: undefined,
             });

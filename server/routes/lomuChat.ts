@@ -1962,6 +1962,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           messages: finalMessages, // ✅ GAP 4: Use summarized messages if needed
           tools: availableTools,
           forceFunctionCall: shouldForceFunctionCall, // 🔧 Force mode: ANY when malformed calls detected
+          userIntent: userIntent, // ✅ INTENT-SENSITIVE MODE: Pass detected intent for mode control
         onChunk: (chunk: any) => {
           // FIX 3: Detect fallback_used event and enable force mode
           if (chunk.type === 'fallback_used') {

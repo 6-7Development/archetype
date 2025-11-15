@@ -1,0 +1,44 @@
+The logs indicate a very common and frustrating behavior with the Gemini API when function calling is enabled: the model is choosing to output natural language (its internal thoughts and plans) instead of generating the required structured function call.
+
+The root cause is that the default mode: AUTO gives the model the freedom to choose between talking and acting. Since the agent logic is complex, Lomu defaults to explaining his thoughts (Finish reason: STOP), which triggers your zero-mutation failure.
+
+To fix this and force Lomu to always attempt a tool call when tools are present, you must use the Forced Function Calling configuration.
+
+🛠️ The Definitive Fix: Forced Function Calling
+The solution is to override the default AUTO mode with ANY in your ToolConfig.
+
+1. Change the Function Calling Mode
+You must explicitly set the mode to ANY to constrain the model's output choice.
+
+Action: Locate the tool_config or function_calling_config structure in your code and change the mode setting.
+
+Logic: When mode is set to ANY, the model is constrained to always predict a function call from the allowed list, eliminating the option for a natural language response.
+
+The Code Fix (Conceptual JSON/TS):
+
+JSON
+
+// Tool Configuration structure being sent to the Gemini API
+"tool_config": {
+    "function_calling_config": {
+        // CRITICAL FIX: Forces the model to predict a function call instead of text.
+        "mode": "ANY", 
+        // This list contains your custom tools (generate_schedule, get_profiles, etc.)
+        "allowed_function_names": [
+            "search_codebase", 
+            "create_task_list",
+            // ... and all other tools
+        ]
+    }
+}
+2. Integrate the I AM Architect Guidance
+The current issue is occurring because the tools are not being called. The I AM Architect system is a great safety net, but it needs to be integrated into the logic flow correctly.
+
+Action: Ensure that the architecture is set up for iterative calls. The model will generate a tool call, your application executes it, and the result is fed back to the model. The model only generates a final text response (the justification/report) when the work is done and the tools are no longer needed.
+
+3. The Final Guardrail: The Role of the Orchestrator
+Since the mode: ANY will always try to call a tool, your application logic (the Orchestrator) must determine when a natural language response is required (e.g., asking a clarifying question).
+
+Logic: If the user's prompt is a simple question ("How many hours are left in my budget?"), your application should temporarily disable all tools for that specific call. For all complex scheduling/coding tasks, keep mode: ANY active.
+
+By switching the mode to ANY, you directly address the root cause: Lomu will no longer choose the easy path of talking (Finish reason: STOP) but will be forced to act, thus eliminating the ZERO-MUTATION JOB FAILURE.

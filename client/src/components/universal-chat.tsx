@@ -1120,6 +1120,22 @@ export function UniversalChat({
                   queryClient.invalidateQueries({ queryKey: ['/api/lomu-ai/history', effectiveProjectId] });
                   break;
 
+                case 'progress':
+                  // Handle inline progress thoughts (like Replit Agent)
+                  console.log('[SSE] Progress:', eventData.message);
+                  if (eventData.message) {
+                    setProgressMessage(eventData.message);
+                    // If it's a warning/failure message, show it prominently
+                    if (eventData.message.includes('🚨') || eventData.message.includes('failure')) {
+                      toast({
+                        variant: 'default',
+                        title: 'LomuAI Progress',
+                        description: eventData.message,
+                      });
+                    }
+                  }
+                  break;
+
                 case 'error':
                   console.error('[SSE] Error event:', eventData);
                   toast({
