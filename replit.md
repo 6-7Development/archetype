@@ -95,6 +95,43 @@ Comprehensive fixes for Gemini's function calling quirks ensure production-grade
 
 **Result**: Production-grade Gemini function calling with automatic recovery, hybrid parsing, intent-based mode selection, comprehensive safety guards, and bulletproof rate limit protection. Zero-mutation failures eliminated while preserving natural conversation capabilities.
 
+### Testing Infrastructure
+**Production-Ready LomuAI Testing System** - Completed and verified via comprehensive Playwright tests:
+
+**Billing Bypass Options:**
+1. **Owner Account (Primary)** - `scripts/create-root-account.ts`
+   - Account: root@getdc360.com / admin123@*
+   - Auto-bypasses billing via `isOwner=true` flag
+   - Redirects to `/platform-healing` for free platform fixes
+   - Script idempotently updates/creates owner account
+   
+2. **Dev Bypass Flag (Backup)** - `server/middleware/creditValidation.ts`
+   - Environment variable: `LOMU_BILLING_BYPASS=true`
+   - Dev-only flag for testing without owner privileges
+   - **OPS NOTE**: Never set in production - dev/staging only
+   - Preserves normal billing flow when unset
+   - Security-safe (doesn't grant owner privileges)
+
+**Playwright Test Results** (Comprehensive):
+- ✅ Authentication flow: /auth login works correctly
+- ✅ Owner redirect: Auto-redirects to /platform-healing
+- ✅ Chat functionality: Message send/receive verified
+- ✅ LomuAI streaming: Gemini 2.5 Flash responds correctly
+- ✅ Rate limit protection: No 429 errors, graceful handling
+- ✅ No crashes or fatal errors
+- ⚠️ Minor WebSocket reconnects (non-critical, auto-recovers)
+
+**Authentication Routes:**
+- Login page: `/auth` (not `/login`)
+- Test IDs: `input-login-email`, `input-login-password`, `button-login`
+- Owner redirect: `/platform-healing` (free access)
+- Regular user redirect: `/dashboard` (credit-based billing)
+
+**Monitoring Notes:**
+- WebSocket reconnects occasionally occur but recover gracefully
+- "Connection lost" banner may appear briefly during reconnection
+- No impact on core functionality - monitored for staging/production
+
 ### Design Preferences
 -   **Brand Identity**: Professional swarm/hive intelligence theme with collaborative AI energy
 -   **Color Palette (Hive Theme)**:
