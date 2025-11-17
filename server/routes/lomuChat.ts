@@ -3518,6 +3518,34 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           shouldForceFunctionCall = false;
         }
 
+        // 🚨 CONTEXTUAL TOOL FORCING: Force action mode after read_platform_file during fix sessions
+        const justReadPlatformFile = toolNames.includes('read_platform_file');
+        const isFixSession = userIntent === 'fix' || userIntent === 'build';
+        
+        if (justReadPlatformFile && isFixSession && !shouldForceFunctionCall) {
+          console.log('[ACTION-MANDATE] ✅ read_platform_file completed during fix session - ACTIVATING ACTION MODE');
+          console.log('[ACTION-MANDATE] Next iteration: Forcing write_platform_file call with mode:ANY');
+          
+          // Enable force mode for next iteration
+          shouldForceFunctionCall = true;
+          
+          // Restrict tools to read/write only for next iteration
+          availableTools = tools.filter(tool => 
+            tool.name === 'read_platform_file' || 
+            tool.name === 'write_platform_file' ||
+            tool.name === 'write_project_file'
+          );
+          
+          console.log(`[ACTION-MANDATE] Restricted to ${availableTools.length} tools: ${availableTools.map(t => t.name).join(', ')}`);
+          
+          // Inject system enforcement message
+          systemEnforcementMessage = `\n\n🚨 **ACTION MANDATE ACTIVATED**\n\nYou have successfully read the file and identified the issue. Per your core directive, you are now REQUIRED to immediately call write_platform_file() to implement the fix.\n\n**Your next action MUST be**: write_platform_file() with the corrected code.\n\n**DO NOT**:\n- Create task lists\n- Read additional files  \n- Wait for confirmation\n- Defer the fix\n\n**Remember**: You are pre-authorized to modify this file. Proceed with the write operation now.`;
+          
+          sendEvent('progress', { 
+            message: '🚨 Read completed - ACTION MANDATE: Must write fix immediately' 
+          });
+        }
+
         // 📊 WORKFLOW TELEMETRY: Track read vs code-modifying operations
         let iterationHadCodeModifications = false;
         for (const toolName of toolNames) {
