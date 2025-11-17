@@ -1090,13 +1090,6 @@ export function UniversalChat({
 
                 case 'content':
                   assistantMessageContent += eventData.content || '';
-                  
-                  // Update streamState so streaming indicator can display content
-                  setStreamState(prev => ({
-                    ...prev,
-                    fullMessage: assistantMessageContent
-                  }));
-                  
                   setMessages((prev) => {
                     const updated = [...prev];
                     const lastMsg = updated[updated.length - 1];
