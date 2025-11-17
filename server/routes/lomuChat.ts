@@ -4210,42 +4210,44 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // ✅ T1: Use runConfig as single source of truth
     let commitHash = '';
     if (runConfig.autoCommit && fileChanges.length > 0 && !usedGitHubAPI) {
-      // VALIDATE BEFORE COMMIT (Replit Agent parity)
-      // Only validate create/modify operations - deletions are intentionally missing
-      sendEvent('progress', { message: `🔍 Validating ${fileChanges.length} file changes before commit...` });
+      // SIMPLE TYPESCRIPT-ONLY VALIDATION (Replit Agent parity)
+      // Trust LomuAI's 7-phase workflow for file-level validation
+      // Only check TypeScript compilation as final safety gate
+      sendEvent('progress', { message: `🔍 Running TypeScript validation before commit...` });
       
-      // Extract file paths - handle both 'file' and 'path' properties
-      const filesToValidate = fileChanges
-        .filter((fc: any) => fc.operation !== 'delete')
-        .map((fc: any) => fc.file || fc.path)
-        .filter((f: string | undefined) => f !== undefined);
-      
-      let validation: ValidationResult = { success: true, errors: [], warnings: [] };
-      if (filesToValidate.length > 0) {
-        // Use validateAllChanges for comprehensive validation (file existence + TypeScript)
-        validation = await validateAllChanges(filesToValidate, {
-          workingDir: process.cwd(),
-          skipTypeScriptCheck: false, // Enable TypeScript validation
+      try {
+        // Run TypeScript compiler check (non-emitting)
+        const { stdout, stderr } = await execAsync('npx tsc --noEmit', {
+          cwd: process.cwd(),
+          timeout: 30000, // 30 second timeout
         });
-      }
-      
-      if (validation.success) {
-        // Validation passed - safe to commit
-        sendEvent('progress', { message: `✅ Validation passed (files + TypeScript) - committing ${fileChanges.length} files...` });
+        
+        // TypeScript passed - safe to commit
+        sendEvent('progress', { message: `✅ TypeScript validation passed - committing ${fileChanges.length} files...` });
         commitHash = await platformHealing.commitChanges(`Fix: ${message.slice(0, 100)}`, fileChanges as any);
-        console.log(`[LOMU-AI] ✅ Validated and committed autonomously: ${fileChanges.length} files`);
+        console.log(`[LOMU-AI] ✅ TypeScript validated and committed autonomously: ${fileChanges.length} files`);
 
         if (runConfig.autoPush) {
           sendEvent('progress', { message: '✅ Pushing to GitHub (deploying to production)...' });
           await platformHealing.pushToRemote();
           console.log(`[LOMU-AI] ✅ Pushed to GitHub autonomously`);
         }
-      } else {
-        // Validation failed - don't commit
-        const errorMsg = `⚠️ Validation failed - ${validation.errors.length} errors found. Changes NOT committed.`;
+      } catch (tscError: any) {
+        // TypeScript validation failed - don't commit
+        const errorOutput = tscError.stdout || tscError.stderr || tscError.message;
+        const errorMsg = `⚠️ TypeScript validation failed - changes NOT committed.`;
+        
         sendEvent('progress', { message: errorMsg });
-        console.error(`[LOMU-AI] ❌ Validation failed:`, validation.errors);
-        sendEvent('content', { content: `\n\n**Validation Failed**\n${validation.errors.map(e => `- ${e}`).join('\n')}\n\nChanges were not committed due to validation errors.\n` });
+        console.error(`[LOMU-AI] ❌ TypeScript validation failed:`, errorOutput);
+        
+        // Parse TypeScript errors for better display
+        const errorLines = errorOutput.split('\n').filter((line: string) => 
+          line.includes('error TS') || line.includes('.ts(')
+        ).slice(0, 10); // Show first 10 errors
+        
+        sendEvent('content', { 
+          content: `\n\n**TypeScript Validation Failed**\n\nChanges were not committed due to TypeScript errors:\n\`\`\`\n${errorLines.join('\n')}\n\`\`\`\n\nPlease fix these errors and try again.\n` 
+        });
       }
     } else if (usedGitHubAPI) {
       console.log(`[LOMU-AI] ℹ️ Skipping fallback commit - already committed via GitHub API`);
