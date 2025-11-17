@@ -671,21 +671,21 @@ If you need to call a function, emit ONLY the JSON object.`),
           
           // 🚨 CRITICAL: Handle MALFORMED_FUNCTION_CALL with auto-retry
           if (candidate.finishReason === 'MALFORMED_FUNCTION_CALL') {
-            console.error(`🚨 [GEMINI-MALFORMED] Detected malformed function call! (Attempt ${retryCount + 1}/${MAX_RETRIES + 1})`);
+            console.error(`🚨 [GEMINI-ERROR] Detected invalid function call! (Attempt ${retryCount + 1}/${MAX_RETRIES + 1})`);
             
-            // Log the malformed content for debugging
+            // Log the invalid content for debugging
             const finishMessage = (candidate as any).finishMessage;
             let attemptedFunction: string | null = null;
             
             if (finishMessage) {
-              console.error('[GEMINI-MALFORMED] Error details:', finishMessage);
+              console.error('[GEMINI-ERROR] Error details:', finishMessage);
               
               // Extract function name if present in error message
               const functionNameMatch = finishMessage.match(/function call:\s*([a-zA-Z_]+)/i);
               if (functionNameMatch) {
                 attemptedFunction = functionNameMatch[1];
-                console.error(`[GEMINI-MALFORMED] Attempted to call: ${attemptedFunction}`);
-                console.error('[GEMINI-MALFORMED] This means Gemini used Python-like syntax instead of JSON');
+                console.error(`[GEMINI-ERROR] Attempted to call: ${attemptedFunction}`);
+                console.error('[GEMINI-ERROR] Invalid function call format detected');
               }
             }
             
@@ -694,7 +694,7 @@ If you need to call a function, emit ONLY the JSON object.`),
               for (const part of content.parts) {
                 if ((part as any).functionCall?.name) {
                   attemptedFunction = (part as any).functionCall.name;
-                  console.log('[GEMINI-MALFORMED] Found function name from content:', attemptedFunction);
+                  console.log('[GEMINI-ERROR] Found function name from content:', attemptedFunction);
                   break;
                 }
               }
@@ -707,9 +707,9 @@ If you need to call a function, emit ONLY the JSON object.`),
               const functionExists = tools?.some(tool => tool.name === attemptedFunction);
               
               if (!functionExists) {
-                console.error(`[GEMINI-MALFORMED] ❌ Function "${attemptedFunction}" does not exist in available tools`);
-                console.error('[GEMINI-MALFORMED] Available functions:', tools?.map(t => t.name).join(', '));
-                console.error('[GEMINI-MALFORMED] This appears to be a hallucinated/invalid function - skipping forced retry');
+                console.error(`[GEMINI-ERROR] ❌ Function "${attemptedFunction}" does not exist in available tools`);
+                console.error('[GEMINI-ERROR] Available functions:', tools?.map(t => t.name).join(', '));
+                console.error('[GEMINI-ERROR] This appears to be a hallucinated/invalid function - skipping forced retry');
                 // Fall through to the general retry or error handling below
               } else {
                 retryCount++;
@@ -747,9 +747,10 @@ If you need to call a function, emit ONLY the JSON object.`),
             // General retry without forcing specific function (when function doesn't exist or wasn't identified)
             if (retryCount < MAX_RETRIES) {
               retryCount++;
-              console.log(`[GEMINI-RETRY] Retrying with clarifying message (${retryCount}/${MAX_RETRIES})...`);
+              console.log(`[GEMINI-RETRY] Retrying with structural constraint (${retryCount}/${MAX_RETRIES})...`);
               
-              const clarifyingContent = `🛑 SYSTEM ERROR: The last output was malformed. You must not use Python syntax. You must IMMEDIATELY RETRY the tool call using ONLY the JSON structure. Do not add any explanatory text or commentary.`;
+              // Minimalist structural command (no mention of error type)
+              const clarifyingContent = `🛑 SYSTEM ERROR: The last response was not executable. You must immediately retry your previous action. Your ONLY output must be a clean, complete function call object. Do NOT include any explanatory text, reasoning, or examples. Retry now.`;
               
               const clarifyingMessage: any = {
                 role: 'user',
@@ -766,13 +767,12 @@ If you need to call a function, emit ONLY the JSON object.`),
             }
             
             // 🚫 GAP 4: MAX RETRIES EXCEEDED - Provide user-friendly error
-            const userFriendlyError = `I apologize, but I'm having trouble using my tools correctly. This usually happens when:
+            const userFriendlyError = `I apologize, but I'm having trouble completing this action. This usually happens when:
 
 1. The request is very complex - try breaking it into smaller steps
-2. The tools are returning unexpected data formats
+2. The tools are returning unexpected results
 
 What I attempted: ${attemptedFunction || 'unknown action'}
-Error details: Used incompatible syntax format
 
 Please try:
 - Rephrasing your request more specifically
@@ -977,21 +977,21 @@ Please try:
             
             const escapeCheck = checkForMalformedEscapes(validatedArgs);
             if (escapeCheck.found) {
-              console.error(`[GEMINI-STREAM] ❌ MALFORMED FUNCTION CALL: ${escapeCheck.details}`);
+              console.error(`[GEMINI-STREAM] ❌ INVALID FUNCTION CALL: ${escapeCheck.details}`);
               console.error(`[GEMINI-STREAM] Function: ${extractedFunctionCall.name}`);
               
               // Send error via error callback if available
               if (onError) {
                 onError(new Error(
-                  `Gemini returned malformed function call: ${escapeCheck.details}. ` +
+                  `Gemini returned invalid function call: ${escapeCheck.details}. ` +
                   `Function: ${extractedFunctionCall.name}. ` +
                   `Hint: Detected LomuAI double-escape bug pattern that causes syntax errors.`
                 ));
               }
               
-              // Don't push malformed function call - throw error to trigger retry
+              // Don't push invalid function call - throw error to trigger retry
               throw new Error(
-                `MALFORMED_FUNCTION_CALL: ${escapeCheck.details}. ` +
+                `INVALID_FUNCTION_CALL: ${escapeCheck.details}. ` +
                 `This indicates Gemini output bug that will cause syntax errors.`
               );
             }
