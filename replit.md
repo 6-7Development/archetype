@@ -57,6 +57,13 @@ The user interface features a tab-based workspace with a command console and rea
 
 The platform implements a comprehensive Agent Chatroom interface with real-time progress tracking, including a StatusStrip, TaskPane, ToolCallCard, and ArtifactsDrawer, all driven by 16 structured event types streamed via Server-Sent Events (SSE). A single `UniversalChat` component (`client/src/components/universal-chat.tsx`) handles all chat interactions.
 
+**Inline Thinking Display**: LomuAI's thought process is displayed inline with responses using the `EnhancedMessageDisplay` component. Progress messages streamed during execution are captured and persisted with each assistant message, then rendered as collapsible, color-coded blocks:
+- **Purple blocks**: Thinking (analyzing, planning, evaluating)
+- **Blue blocks**: Tool calls (reading, writing, modifying files)
+- **Green blocks**: Results (completed tasks, successful operations)
+
+This organized, unified view mirrors Replit Agent's inline `<thinking>` tags, showing the AI's work process alongside the final response. Progress messages persist with message history, maintaining transparency across sessions.
+
 ### System Design Choices
 LomuAI acts as the autonomous worker, committing changes through a strict 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). I AM Architect is a user-summoned premium consultant providing guidance without committing code. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing. LomuAI incorporates efficiency rules within its system prompt, such as SEARCH BEFORE CODING, COPY DON'T REINVENT, VERIFY THE TASK, and ITERATION BUDGET AWARENESS.
 
@@ -70,6 +77,7 @@ A centralized session management system (`server/services/lomuAIBrain.ts`) conso
 - **Platform Healing System**: Owner-only two-tier incident resolution.
 - **Replit Agent Parity**: Matches complex task handling with increased limits.
 - **Auto-Commit & Auto-Push**: Full Replit Agent parity with TypeScript validation gate.
+- **Inline Thinking Display**: Unified progress visualization with collapsible, color-coded blocks showing LomuAI's reasoning, tool use, and results inline with responses.
 - **Credit-Based Billing System**: Production-ready monetization with Stripe.
 - **Monetization Infrastructure**: Lead capture, subscriptions, template marketplace.
 - **Security & Production Readiness**: Authentication/authorization, protected APIs, RCE prevention.
