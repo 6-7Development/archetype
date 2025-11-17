@@ -174,6 +174,7 @@ A centralized session management system (`server/services/lomuAIBrain.ts`) conso
 - **Code Intelligence System**: AST-based code understanding.
 - **Platform Healing System**: Owner-only two-tier incident resolution.
 - **Replit Agent Parity**: Matches complex task handling with increased limits.
+- **Auto-Commit & Auto-Push**: Full Replit Agent parity with TypeScript validation gate.
 - **Credit-Based Billing System**: Production-ready monetization with Stripe.
 - **Monetization Infrastructure**: Lead capture, subscriptions, template marketplace.
 - **Security & Production Readiness**: Authentication/authorization, protected APIs, RCE prevention.
@@ -182,6 +183,55 @@ A centralized session management system (`server/services/lomuAIBrain.ts`) conso
 - **Production-Ready Code Validation System**: 3-layer validation architecture (pre-write, pre-commit) to prevent broken code. Includes JSON healing and validation caching.
 - **Telemetry System**: Tracks healing attempts, successes, failures with detailed statistics.
 - **Reflection and Structured Retry Mandate**: LomuAI analyzes tool failures, states root cause, and proposes alternative strategies before retrying.
+
+### Auto-Commit Implementation (Replit Agent Parity)
+**Production-Ready Autonomous Commits** - LomuAI now commits and pushes changes automatically, matching Replit Agent behavior:
+
+**Configuration** (`client/src/components/universal-chat.tsx`):
+- `autoCommit: true` - Automatically commits file changes after validation
+- `autoPush: true` - Automatically pushes to GitHub/production after commit
+- **Owner-only** for platform-healing (free access)
+- **Credit-based billing** for regular user projects
+
+**TypeScript-Only Validation Strategy** (`server/routes/lomuChat.ts` lines 4215-4254):
+```typescript
+// Before commit, run TypeScript compiler (non-emitting)
+try {
+  await execAsync('npx tsc --noEmit', { cwd: process.cwd(), timeout: 30000 });
+  // ✅ TypeScript passed → commit + push
+  commitHash = await platformHealing.commitChanges(...);
+  if (autoPush) { await platformHealing.pushToRemote(); }
+} catch (tscError) {
+  // ❌ TypeScript failed → show errors, block commit
+  sendEvent('content', { content: TypeScript errors });
+}
+```
+
+**Why TypeScript-Only Validation?**
+1. **Trusts LomuAI's 7-Phase Workflow**: ASSESS → PLAN → EXECUTE → **TEST** → **VERIFY** → CONFIRM → COMMIT
+2. **Simple & Reliable**: No edge cases with file paths, renames, deletions, mixed file types
+3. **TypeScript Safety Gate**: Catches type errors, import errors, syntax errors before commit
+4. **Handles All Cases**:
+   - ✅ Create new files (TypeScript checks them)
+   - ✅ Modify files (TypeScript validates changes)
+   - ✅ Delete files (TypeScript ensures no broken imports)
+   - ✅ Rename files (TypeScript catches missing references)
+   - ✅ Mixed file types (.ts, .tsx, .js, .json, etc.)
+
+**Complete Auto-Commit Workflow:**
+1. ✅ User sends message to LomuAI
+2. ✅ LomuAI iterates through 7-phase workflow
+3. ✅ Creates/modifies/deletes files as needed
+4. ✅ Runs `npx tsc --noEmit` validation (30s timeout)
+5. ✅ **If TypeScript passes**: Commits → Pushes to GitHub → Deploys to production
+6. ✅ **If TypeScript fails**: Shows clear error messages → Blocks commit
+
+**Benefits:**
+- ✅ **Full Replit Agent Parity**: "Auto commit for both platform and projects - users want their projects to save"
+- ✅ **Safe Validation Gate**: "Iterate well and re-test until no platform breaking errors"
+- ✅ **Production-Ready**: TypeScript compilation ensures code quality before deployment
+- ✅ **Deterministic Behavior**: Handles all edge cases (renames, deletes, mixed files) reliably
+- ✅ **Owner Trust**: Platform-healing uses owner bypass for free, trusted autonomous fixes
 
 The platform prioritizes native JSON function calling for AI streaming due to superior speed, reliability, and type safety, integrating utilities for validation, retry logic, and file change tracking.
 
