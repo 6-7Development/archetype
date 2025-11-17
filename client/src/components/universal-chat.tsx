@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo, useReducer } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Send, Loader2, User, Key, AlertCircle, Square, ChevronDown, Copy, Check, ChevronRight } from "lucide-react";
+import { Send, Loader2, User, Key, AlertCircle, Square, ChevronDown, Copy, Check, ChevronRight, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -33,6 +34,9 @@ import { DeploymentStatusModal } from "@/components/deployment-status-modal";
 import { StatusStrip } from "@/components/agent/StatusStrip";
 import { ArtifactsDrawer, type Artifact as ArtifactItem } from "@/components/agent/ArtifactsDrawer";
 import { EnhancedMessageDisplay } from "@/components/enhanced-message-display";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { ChatHeader } from "@/components/chat/ChatHeader";
+import { ContextRail } from "@/components/chat/ContextRail";
 import type { 
   RunPhase, 
   RunState, 
@@ -251,6 +255,9 @@ export function UniversalChat({
 
   // Deployment modal state
   const [showDeploymentModal, setShowDeploymentModal] = useState(false);
+
+  // Mobile drawer state
+  const [contextDrawerOpen, setContextDrawerOpen] = useState(false);
 
   // Billing state
   const [creditBalance, setCreditBalance] = useState<number>(0);
@@ -1402,147 +1409,94 @@ export function UniversalChat({
   }, [messages, streamState.fullMessage, streamState.progressMessages, isGenerating]);
 
   return (
-    <div className="flex h-full overflow-hidden bg-[hsl(220,20%,12%)] relative">
-      {/* Task List Sidebar */}
-      {showTaskList && agentTasks.length > 0 && (
-        <div className="w-64 border-r border-[hsl(220,15%,28%)] flex-shrink-0 overflow-y-auto bg-[hsl(220,18%,16%)]">
-          <div className="p-3 border-b border-[hsl(220,15%,28%)] flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-[hsl(220,8%,98%)]">Tasks</h3>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6"
-              onClick={() => setShowTaskList(false)}
-              data-testid="button-hide-tasks"
-            >
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </div>
-          <AgentTaskList tasks={agentTasks} activeTaskId={activeTaskId} onTaskClick={setActiveTaskId} />
-        </div>
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Global overlays - outside panels */}
+      {lastChanges && (
+        <ChangesPanel
+          changes={lastChanges}
+          onClose={() => setLastChanges(null)}
+        />
       )}
 
-      {/* Main Content */}
-      <div className="flex flex-col h-full max-h-full overflow-hidden flex-1 relative touch-none">
-        {/* Changes Panel - Fixed Overlay */}
-        {lastChanges && (
-          <ChangesPanel
-            changes={lastChanges}
-            onClose={() => setLastChanges(null)}
-          />
-        )}
+      {/* ChatHeader */}
+      <ChatHeader
+        targetContext={targetContext}
+        creditBalance={creditBalance}
+        isFreeAccess={isFreeAccess}
+        isConnected={streamState.isConnected}
+        onHistoryClick={() => {
+          toast({ title: "Chat history", description: "History feature coming soon" });
+        }}
+        onSettingsClick={() => {
+          toast({ title: "Settings", description: "Settings feature coming soon" });
+        }}
+      />
 
-        {/* Credit Balance Display - Only show when NOT free access */}
-        {!isFreeAccess && (
-          <div className="px-4 py-2 border-b border-[hsl(220,15%,28%)] bg-[hsl(220,18%,16%)]">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-[hsl(220,10%,72%)]">Credit Balance:</span>
-              <span className="font-medium text-[hsl(220,8%,98%)]" data-testid="text-credit-balance">
-                {creditBalance.toLocaleString()} credits
-              </span>
-            </div>
-          </div>
-        )}
+      {/* ResizablePanel Layout */}
+      <ResizablePanelGroup direction="horizontal" className="flex-1 overflow-hidden">
+        {/* Left Panel: Messages (70%) */}
+        <ResizablePanel defaultSize={70} minSize={50}>
+          <div className="flex flex-col h-full overflow-hidden">
+            {/* Agent Status Strip - Shows current phase */}
+            {isGenerating && (
+              <StatusStrip 
+                phase={currentPhase}
+                message={phaseMessage}
+                currentThought={streamState.currentThought}
+                isExecuting={isGenerating}
+                billingMetrics={billingMetrics}
+              />
+            )}
 
-        {/* Progress Display Header - Only show when no task list exists */}
-        {isGenerating && progressStatus !== 'idle' && agentTasks.length === 0 && (
-          <div className="px-4 py-3 border-b border-[hsl(220,15%,28%)] bg-[hsl(220,18%,16%)]">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h2 className="text-sm font-semibold text-[hsl(220,8%,98%)] truncate">
-                    Working...
-                  </h2>
-                </div>
-                <AgentProgressDisplay status={progressStatus} message={progressMessage} />
+            {/* RunState Progress Table - Replit-style Kanban */}
+            {runState.currentRunId && runState.runs.get(runState.currentRunId) && (
+              <div className="px-6 pt-4 pb-2 bg-[hsl(220,18%,16%)] border-b border-[hsl(220,15%,28%)]">
+                <RunProgressTable runState={runState.runs.get(runState.currentRunId)!} />
               </div>
-              {isGenerating && (
+            )}
+
+            {/* AI Progress - Only show when no task list exists and no RunState */}
+            {(currentProgress.length > 0 || isGenerating) && agentTasks.length === 0 && !runState.currentRunId && (
+              <div className="px-6 pt-4 pb-2 bg-[hsl(220,18%,16%)] border-b border-[hsl(220,15%,28%)]">
+                <AgentProgress
+                  steps={currentProgress}
+                  metrics={currentMetrics}
+                />
+              </div>
+            )}
+
+            {/* Copy Chat History Button */}
+            {messages.length > 1 && (
+              <div className="px-4 py-2 border-b border-border bg-muted/20 flex justify-end">
                 <Button
-                  variant="destructive"
+                  variant="outline"
                   size="sm"
-                  onClick={handleStop}
-                  className="shrink-0"
-                  data-testid="button-stop"
+                  onClick={() => {
+                    const chatHistory = messages.filter(m => !m.isSummary).map(m => 
+                      `${m.role === 'user' ? 'USER' : 'LOMU AI'}:\n${m.content}\n`
+                    ).join('\n---\n\n');
+                    navigator.clipboard.writeText(chatHistory);
+                    setCopiedChatHistory(true);
+                    setTimeout(() => setCopiedChatHistory(false), 2000);
+                    toast({ title: "✅ Chat copied!" });
+                  }}
+                  className="h-7 gap-1.5"
+                  data-testid="button-copy-chat"
                 >
-                  <Square className="h-3.5 w-3.5 mr-1.5 fill-current" />
-                  Stop
+                  {copiedChatHistory ? (
+                    <>
+                      <Check className="h-3.5 w-3.5" />
+                      <span className="text-xs">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3.5 w-3.5" />
+                      <span className="text-xs">Copy Chat</span>
+                    </>
+                  )}
                 </Button>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Header with Connection Status and Model Selector */}
-        <div className="px-4 py-2 border-b border-[hsl(220,15%,28%)] bg-[hsl(220,18%,16%)] flex items-center justify-between gap-4">
-          <ConnectionStatus
-            isConnected={streamState.isConnected}
-            isReconnecting={streamState.isReconnecting}
-            reconnectAttempt={streamState.reconnectAttempt}
-            onReconnect={streamState.forceReconnect}
-          />
-          <AIModelSelector />
-        </div>
-
-        {/* Agent Status Strip - Shows current phase */}
-        {isGenerating && (
-          <StatusStrip 
-            phase={currentPhase}
-            message={phaseMessage}
-            currentThought={streamState.currentThought}
-            isExecuting={isGenerating}
-            billingMetrics={billingMetrics}
-          />
-        )}
-
-        {/* RunState Progress Table - Replit-style Kanban */}
-        {runState.currentRunId && runState.runs.get(runState.currentRunId) && (
-          <div className="px-6 pt-4 pb-2 bg-[hsl(220,18%,16%)] border-b border-[hsl(220,15%,28%)]">
-            <RunProgressTable runState={runState.runs.get(runState.currentRunId)!} />
-          </div>
-        )}
-
-        {/* AI Progress - Only show when no task list exists and no RunState */}
-        {(currentProgress.length > 0 || isGenerating) && agentTasks.length === 0 && !runState.currentRunId && (
-          <div className="px-6 pt-4 pb-2 bg-[hsl(220,18%,16%)] border-b border-[hsl(220,15%,28%)]">
-            <AgentProgress
-              steps={currentProgress}
-              metrics={currentMetrics}
-            />
-          </div>
-        )}
-
-        {/* Copy Chat History Button */}
-        {messages.length > 1 && (
-          <div className="px-4 py-2 border-b border-border bg-muted/20 flex justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const chatHistory = messages.filter(m => !m.isSummary).map(m => 
-                  `${m.role === 'user' ? 'USER' : 'LOMU AI'}:\n${m.content}\n`
-                ).join('\n---\n\n');
-                navigator.clipboard.writeText(chatHistory);
-                setCopiedChatHistory(true);
-                setTimeout(() => setCopiedChatHistory(false), 2000);
-                toast({ title: "✅ Chat copied!" });
-              }}
-              className="h-7 gap-1.5"
-              data-testid="button-copy-chat"
-            >
-              {copiedChatHistory ? (
-                <>
-                  <Check className="h-3.5 w-3.5" />
-                  <span className="text-xs">Copied!</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="h-3.5 w-3.5" />
-                  <span className="text-xs">Copy Chat</span>
-                </>
-              )}
-            </Button>
-          </div>
-        )}
+              </div>
+            )}
 
         {/* Messages Area */}
         <div
@@ -1665,78 +1619,6 @@ export function UniversalChat({
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Secrets Request Dialog */}
-        <Dialog open={!!secretsRequest} onOpenChange={() => setSecretsRequest(null)}>
-          <DialogContent className="max-w-[95vw] sm:max-w-2xl">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Key className="w-5 h-5" />
-                Secure Credentials Required
-              </DialogTitle>
-              <DialogDescription>
-                {secretsRequest?.message}
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4">
-              {secretsRequest?.requiredSecrets.map((secret) => (
-                <div key={secret.key} className="space-y-2">
-                  <Label htmlFor={secret.key}>{secret.key}</Label>
-                  <Input
-                    id={secret.key}
-                    type="password"
-                    placeholder={secret.description}
-                    value={secretsInput[secret.key] || ""}
-                    onChange={(e) =>
-                      setSecretsInput((prev) => ({
-                        ...prev,
-                        [secret.key]: e.target.value,
-                      }))
-                    }
-                    data-testid={`input-secret-${secret.key}`}
-                  />
-                  {secret.getInstructions && (
-                    <p className="text-xs text-muted-foreground">
-                      {secret.getInstructions}
-                    </p>
-                  )}
-                </div>
-              ))}
-
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Your credentials are encrypted and never stored. They're used only for this project generation.
-                </AlertDescription>
-              </Alert>
-            </div>
-
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setSecretsRequest(null)}
-                data-testid="button-cancel-secrets"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSecretsSubmit}
-                disabled={commandMutation.isPending}
-                data-testid="button-submit-secrets"
-              >
-                {commandMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  "Continue Generation"
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
         {/* Input Area */}
         <div className="flex-shrink-0 border-t border-[hsl(220,15%,28%)] bg-[hsl(220,18%,16%)] p-4">
           {/* WebSocket Stream: File Status */}
@@ -1840,38 +1722,129 @@ export function UniversalChat({
             </Button>
           </div>
         </div>
-      </div>
+          </div>
+        </ResizablePanel>
 
-      {/* Scratchpad Sidebar */}
-      <div className="w-80 border-l border-[hsl(220,15%,28%)] hidden lg:block overflow-hidden flex flex-col" data-testid="scratchpad-panel">
-        <div className="p-4 space-y-4 overflow-y-auto flex-1">
-          {/* Artifacts Drawer */}
-          {artifacts.length > 0 && (
-            <Collapsible open={showArtifactsDrawer} onOpenChange={setShowArtifactsDrawer}>
-              <CollapsibleTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-between p-2 h-auto"
-                  data-testid="button-toggle-artifacts"
-                >
-                  <span className="text-sm font-medium">Artifacts ({artifacts.length})</span>
-                  {showArtifactsDrawer ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <ArtifactsDrawer artifacts={artifacts} />
-              </CollapsibleContent>
-            </Collapsible>
-          )}
+        <ResizableHandle className="hidden md:flex" />
 
-          <ScratchpadDisplay 
-            entries={streamState.scratchpadEntries}
-            onClear={handleClearScratchpad}
-            sessionId={sessionId}
+        {/* Right Panel: Context Rail (30%) - Hidden on mobile */}
+        <ResizablePanel defaultSize={30} minSize={20} maxSize={40} className="hidden md:block">
+          <ContextRail
+            tasks={agentTasks}
+            artifacts={artifacts}
+            runState={runState.currentRunId ? runState.runs.get(runState.currentRunId) || null : null}
+            onTaskClick={setActiveTaskId}
+            onArtifactView={(artifact) => {
+              // Handle artifact view - could open in a modal or drawer
+              setShowArtifactsDrawer(true);
+            }}
           />
-          <ArchitectNotesPanel projectId={targetContext === 'platform' ? null : (projectId || null)} />
-        </div>
-      </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
+
+      {/* Mobile: Drawer for Context Rail */}
+      <Drawer open={contextDrawerOpen} onOpenChange={setContextDrawerOpen}>
+        <DrawerContent className="h-[80vh] md:hidden">
+          <div className="overflow-y-auto h-full">
+            <ContextRail
+              tasks={agentTasks}
+              artifacts={artifacts}
+              runState={runState.currentRunId ? runState.runs.get(runState.currentRunId) || null : null}
+              onTaskClick={(taskId) => {
+                setActiveTaskId(taskId);
+                setContextDrawerOpen(false);
+              }}
+              onArtifactView={(artifact) => {
+                setShowArtifactsDrawer(true);
+                setContextDrawerOpen(false);
+              }}
+            />
+          </div>
+        </DrawerContent>
+      </Drawer>
+
+      {/* Mobile: FAB to open context drawer */}
+      <button
+        onClick={() => setContextDrawerOpen(true)}
+        className="md:hidden fixed bottom-20 right-4 z-50 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all flex items-center justify-center"
+        data-testid="button-open-context-drawer"
+        aria-label="Open context menu"
+        title="Open context menu"
+      >
+        <Menu className="h-6 w-6" />
+      </button>
+
+      {/* Secrets Request Dialog */}
+      <Dialog open={!!secretsRequest} onOpenChange={() => setSecretsRequest(null)}>
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Key className="w-5 h-5" />
+              Secure Credentials Required
+            </DialogTitle>
+            <DialogDescription>
+              {secretsRequest?.message}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {secretsRequest?.requiredSecrets.map((secret) => (
+              <div key={secret.key} className="space-y-2">
+                <Label htmlFor={secret.key}>{secret.key}</Label>
+                <Input
+                  id={secret.key}
+                  type="password"
+                  placeholder={secret.description}
+                  value={secretsInput[secret.key] || ""}
+                  onChange={(e) =>
+                    setSecretsInput((prev) => ({
+                      ...prev,
+                      [secret.key]: e.target.value,
+                    }))
+                  }
+                  data-testid={`input-secret-${secret.key}`}
+                />
+                {secret.getInstructions && (
+                  <p className="text-xs text-muted-foreground">
+                    {secret.getInstructions}
+                  </p>
+                )}
+              </div>
+            ))}
+
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Your credentials are encrypted and never stored. They're used only for this project generation.
+              </AlertDescription>
+            </Alert>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setSecretsRequest(null)}
+              data-testid="button-cancel-secrets"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSecretsSubmit}
+              disabled={commandMutation.isPending}
+              data-testid="button-submit-secrets"
+            >
+              {commandMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                "Continue Generation"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       {/* Cost Preview Dialog - Only show when NOT free access */}
       {!isFreeAccess && (

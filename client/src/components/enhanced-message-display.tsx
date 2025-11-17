@@ -20,6 +20,7 @@ interface EnhancedMessageDisplayProps {
 
 export function EnhancedMessageDisplay({ content, progressMessages = [], isStreaming = false }: EnhancedMessageDisplayProps) {
   const [expandedBlocks, setExpandedBlocks] = useState<Set<string>>(new Set());
+  const [showAllProgress, setShowAllProgress] = useState(false);
 
   const toggleBlock = (id: string) => {
     setExpandedBlocks(prev => {
@@ -96,12 +97,44 @@ export function EnhancedMessageDisplay({ content, progressMessages = [], isStrea
   };
 
   const blocks = parseProgressToBlocks();
+  
+  // Calculate summary stats
+  const thinkingCount = blocks.filter(b => b.type === 'thinking').length;
+  const toolCallCount = blocks.filter(b => b.type === 'tool_call').length;
+  const resultCount = blocks.filter(b => b.type === 'result').length;
+  
+  // Limit displayed blocks to prevent UI bloat (show max 5 by default)
+  const BASE_LIMIT = 5;
+  const visibleBlocks = showAllProgress ? blocks : blocks.slice(0, BASE_LIMIT);
+  const hasMore = blocks.length > BASE_LIMIT;
 
   return (
     <div className="space-y-3">
       {blocks.length > 0 && (
         <div className="space-y-2">
-          {blocks.map((block) => (
+          {/* Summary header */}
+          <div className="flex items-center gap-2 text-xs text-muted-foreground pb-1">
+            {thinkingCount > 0 && (
+              <span className="flex items-center gap-1">
+                <Brain className="w-3 h-3 text-purple-500" />
+                {thinkingCount} thinking
+              </span>
+            )}
+            {toolCallCount > 0 && (
+              <span className="flex items-center gap-1">
+                <Wrench className="w-3 h-3 text-blue-500" />
+                {toolCallCount} tool{toolCallCount > 1 ? 's' : ''}
+              </span>
+            )}
+            {resultCount > 0 && (
+              <span className="flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3 text-green-500" />
+                {resultCount} result{resultCount > 1 ? 's' : ''}
+              </span>
+            )}
+          </div>
+          
+          {visibleBlocks.map((block) => (
             <Collapsible 
               key={block.id}
               open={expandedBlocks.has(block.id)}
@@ -109,41 +142,47 @@ export function EnhancedMessageDisplay({ content, progressMessages = [], isStrea
             >
               <CollapsibleTrigger className="w-full">
                 <div className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-lg text-sm border transition-colors",
+                  "flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs border transition-colors",
                   block.type === 'thinking' && "bg-purple-500/10 border-purple-500/30 hover:bg-purple-500/20",
                   block.type === 'tool_call' && "bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/20",
                   block.type === 'result' && "bg-green-500/10 border-green-500/30 hover:bg-green-500/20"
                 )}>
                   <ChevronRight className={cn(
-                    "w-4 h-4 transition-transform",
+                    "w-3 h-3 transition-transform flex-shrink-0",
                     expandedBlocks.has(block.id) && "rotate-90"
                   )} />
                   
-                  {block.type === 'thinking' && <Brain className="w-4 h-4 text-purple-500" />}
-                  {block.type === 'tool_call' && <Wrench className="w-4 h-4 text-blue-500" />}
-                  {block.type === 'result' && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                  {block.type === 'thinking' && <Brain className="w-3 h-3 text-purple-500 flex-shrink-0" />}
+                  {block.type === 'tool_call' && <Wrench className="w-3 h-3 text-blue-500 flex-shrink-0" />}
+                  {block.type === 'result' && <CheckCircle2 className="w-3 h-3 text-green-500 flex-shrink-0" />}
                   
-                  <span className="font-medium flex-1 text-left">
+                  <span className="font-medium flex-1 text-left truncate">
                     {block.type === 'thinking' && 'Thinking'}
-                    {block.type === 'tool_call' && `Tool: ${block.toolName}`}
-                    {block.type === 'result' && 'Result'}
-                  </span>
-                  
-                  <span className="text-xs text-muted-foreground">
-                    {block.content.length} chars
+                    {block.type === 'tool_call' && block.toolName}
+                    {block.type === 'result' && 'Completed'}
                   </span>
                 </div>
               </CollapsibleTrigger>
               
               <CollapsibleContent>
-                <div className="mt-2 ml-6 px-3 py-2 rounded-lg bg-muted/50 border border-border/50">
-                  <div className="text-sm text-muted-foreground font-mono whitespace-pre-wrap">
+                <div className="mt-1 ml-5 px-2.5 py-2 rounded-md bg-muted/50 border border-border/50">
+                  <div className="text-xs text-muted-foreground font-mono whitespace-pre-wrap">
                     {block.content}
                   </div>
                 </div>
               </CollapsibleContent>
             </Collapsible>
           ))}
+          
+          {hasMore && (
+            <button
+              onClick={() => setShowAllProgress(!showAllProgress)}
+              className="w-full px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground border border-dashed rounded-md hover:bg-accent/50 transition-colors"
+              data-testid="button-toggle-progress"
+            >
+              {showAllProgress ? '− Show less' : `+ Show ${blocks.length - BASE_LIMIT} more`}
+            </button>
+          )}
         </div>
       )}
 
