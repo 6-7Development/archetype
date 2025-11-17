@@ -85,6 +85,13 @@ export function robustExtractAndHeal(responseText: string): { name: string; args
   if (firstBraceIndex === -1) return null;
   cleanedText = cleanedText.substring(firstBraceIndex);
   
+  // 2.5. EARLY EXIT: Don't attempt to heal fragments that are too incomplete
+  // If we only have "{" or "{\"" or similar minimal fragments, we need more data
+  if (cleanedText.length < 10 || !cleanedText.includes(':')) {
+    console.log('[JSON-HEALING] ⏸️ Fragment too small to heal, waiting for more chunks...');
+    return null;
+  }
+  
   // 3. PRE-REPAIR: Fix obvious truncation issues
   let finalJsonString = cleanedText;
   if (!finalJsonString.endsWith('}')) {
@@ -870,21 +877,13 @@ Please try:
                 // Clear the text since we extracted the function call
                 part.text = '';
               } else {
-                console.log('[GEMINI-PARSER] ⚠️ No function call found in text after healing attempt');
-                
-                // If healing failed and we have tools available, this might indicate a serious issue
-                // Trigger a retry with corrective prompt
-                if (tools && tools.length > 0) {
-                  throw new Error('JSON healing failed - truncated function call detected. Please retry with complete JSON.');
-                }
+                // Healing returned null - this is normal for incomplete chunks
+                // Just continue processing and wait for more chunks
+                console.log('[GEMINI-PARSER] ⏸️ Function call incomplete, waiting for more chunks...');
               }
             } catch (error) {
-              console.error('[GEMINI-PARSER] ❌ Failed to heal function call from text:', error);
-              
-              // Re-throw to trigger retry mechanism
-              if (error instanceof Error && error.message.includes('JSON healing failed')) {
-                throw error;
-              }
+              console.error('[GEMINI-PARSER] ❌ Unexpected error during healing:', error);
+              // Don't throw - just log and continue processing
             }
           }
 
