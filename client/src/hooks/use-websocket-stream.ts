@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
+// GLOBAL SINGLETON: Ensure only ONE WebSocket connection exists across all component instances
+// This prevents React StrictMode from creating duplicate connections
+let globalWs: WebSocket | null = null;
+let globalConnectionInProgress = false;
+const globalListeners = new Set<(msg: StreamMessage) => void>();
+
 export interface Task {
   id: string;
   title: string;
@@ -257,16 +263,16 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
   }, []);
 
   const connect = useCallback(() => {
-    // Don't connect if we're already connected/connecting or exceeding max attempts
-    // CRITICAL FIX: Also check for CONNECTING state to prevent React StrictMode double-render duplicates
-    if (wsRef.current?.readyState === WebSocket.OPEN || wsRef.current?.readyState === WebSocket.CONNECTING) {
-      console.log('[WS] 🔒 Preventing duplicate connection (already connected/connecting)');
+    // GLOBAL SINGLETON CHECK: Prevent duplicate connections across all component instances
+    if (globalWs?.readyState === WebSocket.OPEN || globalWs?.readyState === WebSocket.CONNECTING) {
+      console.log('[WS] 🔒 Using existing global connection');
+      wsRef.current = globalWs;
+      setStreamState(prev => ({ ...prev, isConnected: true, error: null }));
       return;
     }
     
-    // Additional deduplication: prevent multiple simultaneous connection attempts
-    if (connectionInitiatedRef.current && !wsRef.current) {
-      console.log('[WS] 🔒 Connection already in progress, skipping duplicate attempt');
+    if (globalConnectionInProgress) {
+      console.log('[WS] 🔒 Global connection already in progress, waiting...');
       return;
     }
     
@@ -279,7 +285,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
       return;
     }
     
-    connectionInitiatedRef.current = true;
+    globalConnectionInProgress = true;
 
     try {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -292,7 +298,9 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
       ws.onopen = () => {
         console.log('✅ WebSocket connected');
         reconnectAttemptsRef.current = 0; // Reset on successful connection
-        connectionInitiatedRef.current = false; // Reset flag on success
+        globalConnectionInProgress = false; // Reset global flag
+        globalWs = ws; // Store as global singleton
+        
         setStreamState(prev => ({
           ...prev,
           isConnected: true,
@@ -756,7 +764,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
 
       ws.onerror = (error) => {
         console.error('❌ WebSocket error:', error);
-        connectionInitiatedRef.current = false; // Reset flag on error
+        globalConnectionInProgress = false; // Reset global flag on error
         setStreamState(prev => ({
           ...prev,
           error: 'Connection error',
@@ -772,6 +780,12 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
 
         setStreamState(prev => ({ ...prev, isConnected: false }));
         wsRef.current = null;
+        
+        // Clear global singleton if this was the global connection
+        if (globalWs === ws) {
+          globalWs = null;
+          globalConnectionInProgress = false;
+        }
 
         // Attempt reconnection if it was an unexpected disconnect and we should reconnect
         if (shouldReconnectRef.current && !event.wasClean) {
@@ -817,6 +831,13 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
       wsRef.current.close(1000, 'Client disconnect'); // 1000 = normal closure
       wsRef.current = null;
     }
+    
+    // Also clear global singleton (all instances should disconnect together)
+    if (globalWs) {
+      globalWs.close(1000, 'Client disconnect');
+      globalWs = null;
+      globalConnectionInProgress = false;
+    }
 
     setStreamState(prev => ({
       ...prev,
@@ -857,22 +878,17 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
 
   useEffect(() => {
     shouldReconnectRef.current = true;
-    
-    // Only connect if we haven't already initiated a connection
-    if (!connectionInitiatedRef.current) {
-      connect();
-    }
+    connect(); // Try to connect (will use global singleton if exists)
 
     return () => {
       shouldReconnectRef.current = false;
-      connectionInitiatedRef.current = false; // Reset on unmount
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }
-      if (wsRef.current) {
-        wsRef.current.close(1000, 'Component unmount');
-        wsRef.current = null;
-      }
+      
+      // On unmount: DON'T close the global connection, other components may be using it
+      // Just clear our local reference
+      wsRef.current = null;
     };
   }, []); // Empty dependency array - only run once on mount
 
