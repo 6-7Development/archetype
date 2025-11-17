@@ -1480,7 +1480,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
 
     // 💬 PROGRESS MESSAGES: Track thinking/action/result messages for inline display and persistence
     const progressMessages: Array<{ id: string; message: string; timestamp: number; category: 'thinking' | 'action' | 'result' }> = [];
-    assistantMessageId = nanoid(); // Generate temporary message ID for SSE events (will be replaced with real ID after save)
+    let assistantMessageId = nanoid(); // Generate temporary message ID for SSE events (will be replaced with real ID after save)
 
     // ============================================================================
     // T2: PHASE ORCHESTRATION - EMIT THINKING PHASE (PRE-LOOP MILESTONE)
