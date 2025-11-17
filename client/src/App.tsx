@@ -156,11 +156,9 @@ function Router() {
         </AppLayout>
       </Route>
       <Route path="/platform-healing">
-        <AppLayout>
-          <OwnerGuard>
-            <PlatformHealing />
-          </OwnerGuard>
-        </AppLayout>
+        <OwnerGuard>
+          <PlatformHealing />
+        </OwnerGuard>
       </Route>
       <Route path="/workflow-analytics">
         <AppLayout>

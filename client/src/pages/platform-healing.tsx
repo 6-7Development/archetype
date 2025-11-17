@@ -1,21 +1,12 @@
-import { OwnerGuard } from '@/components/owner-guard';
 import { UniversalChat } from '@/components/universal-chat';
 
-function PlatformHealingContent() {
+export default function PlatformHealing() {
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-screen w-full overflow-hidden">
       <UniversalChat 
         targetContext="platform"
         projectId={null}
       />
     </div>
-  );
-}
-
-export default function PlatformHealing() {
-  return (
-    <OwnerGuard>
-      <PlatformHealingContent />
-    </OwnerGuard>
   );
 }

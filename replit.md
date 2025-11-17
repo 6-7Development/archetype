@@ -1,7 +1,7 @@
 # Lomu - "When Code Throws You Lemons"
 
 ## Overview
-Lomu is an AI-powered platform for rapid web development, featuring LomuAI, an autonomous AI coding agent, and dual-version IDE Workspaces (Lomu for desktop, Lomu5 for mobile). It offers a console-first interface, real-time preview, and comprehensive workspace features. The platform aims for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. A key capability is LomuAI's autonomous self-healing, bug fixing, and UI/UX improvements to its own source code, complete with rollback and audit logging. The business vision is to provide a comprehensive, AI-driven platform that simplifies web development, making it accessible and efficient for a wide range of users, from individual developers to large enterprises.
+Lomu is an AI-powered platform for rapid web development, featuring the autonomous AI coding agent LomuAI and dual-version IDE Workspaces (Lomu for desktop, Lomu5 for mobile). It offers a console-first interface, real-time preview, and comprehensive workspace features. The platform aims for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. A key capability is LomuAI's autonomous self-healing, bug fixing, and UI/UX improvements to its own source code, complete with rollback and audit logging. The business vision is to provide a comprehensive, AI-driven platform that simplifies web development, making it accessible and efficient for a wide range of users, from individual developers to large enterprises.
 
 ## User Preferences
 ### API Configuration
@@ -184,15 +184,6 @@ A centralized session management system (`server/services/lomuAIBrain.ts`) conso
 - **Reflection and Structured Retry Mandate**: LomuAI analyzes tool failures, states root cause, and proposes alternative strategies before retrying.
 
 The platform prioritizes native JSON function calling for AI streaming due to superior speed, reliability, and type safety, integrating utilities for validation, retry logic, and file change tracking.
-
-**Feature Specifications:**
-- **Workspace Features**: Tab-based navigation, unified talk & build interface, Monaco editor, full project ZIP export.
-- **Publishing/Deployment System**: Management of deployments, logs, and analytics.
-- **Team Workspaces**: Collaboration with role-based access.
-- **API Key Management**: Secure system for Pro+ users.
-- **Support Ticketing**: Complete system with plan-based SLA.
-- **AI Request Management**: Priority processing queue, real-time cost preview, usage dashboard, token-based pricing, parallel subagent execution.
-- **Advanced AI Development Features**: Sub-Agent/Task Runner System, Message Queue, Autonomy Controls, AI Image Generation, Dynamic Intelligence, Plan Mode, Design Mode, Workflows, Agents & Automations, and General Agent Mode.
 
 ## External Dependencies
 -   **Frontend**: React, TypeScript, Monaco Editor, Tailwind CSS, Shadcn UI, next-themes

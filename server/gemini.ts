@@ -694,38 +694,52 @@ If you need to call a function, emit ONLY the JSON object.`),
             }
             
             // 🔄 RETRY LOGIC: Force function call with mode: ANY (per Gemini resilience guidance)
+            // ✅ VALIDATION: Ensure the attempted function actually exists in our tools
             if (retryCount < MAX_RETRIES && attemptedFunction) {
-              retryCount++;
-              console.log(`[GEMINI-RETRY] Forcing function call with mode: ANY (${retryCount}/${MAX_RETRIES})...`);
-              console.log(`[GEMINI-RETRY] Forcing function: ${attemptedFunction}`);
+              // Check if the attempted function is in the available tools
+              const functionExists = tools?.some(tool => tool.name === attemptedFunction);
               
-              // Build DISCIPLINED corrective instruction (per Gemini resilience engineering)
-              const clarifyingContent = `🛑 SYSTEM ERROR: The last output was malformed. You must not use Python syntax. You must IMMEDIATELY RETRY the tool call using ONLY the JSON structure. Do not add any explanatory text or commentary.`;
-              
-              const clarifyingMessage: any = {
-                role: 'user',
-                content: clarifyingContent
-              };
-              
-              // Recursive retry with FORCED function call
-              const retryMessages = [...messages, clarifyingMessage];
-              
-              // Force the specific function call using mode: ANY
-              const forcedToolConfig = {
-                function_calling_config: {
-                  mode: 'ANY' as const,
-                  allowed_function_names: [attemptedFunction]
-                }
-              };
-              
-              console.log('[GEMINI-RETRY] Using forced tool config:', JSON.stringify(forcedToolConfig));
-              
-              return streamGeminiResponse({
-                ...options,
-                messages: retryMessages,
-                toolConfig: forcedToolConfig,
-              });
-            } else if (retryCount < MAX_RETRIES && !attemptedFunction) {
+              if (!functionExists) {
+                console.error(`[GEMINI-MALFORMED] ❌ Function "${attemptedFunction}" does not exist in available tools`);
+                console.error('[GEMINI-MALFORMED] Available functions:', tools?.map(t => t.name).join(', '));
+                console.error('[GEMINI-MALFORMED] This appears to be a hallucinated/invalid function - skipping forced retry');
+                // Fall through to the general retry or error handling below
+              } else {
+                retryCount++;
+                console.log(`[GEMINI-RETRY] Forcing function call with mode: ANY (${retryCount}/${MAX_RETRIES})...`);
+                console.log(`[GEMINI-RETRY] Forcing function: ${attemptedFunction}`);
+                
+                // Build DISCIPLINED corrective instruction (per Gemini resilience engineering)
+                const clarifyingContent = `🛑 SYSTEM ERROR: The last output was malformed. You must not use Python syntax. You must IMMEDIATELY RETRY the tool call using ONLY the JSON structure. Do not add any explanatory text or commentary.`;
+                
+                const clarifyingMessage: any = {
+                  role: 'user',
+                  content: clarifyingContent
+                };
+                
+                // Recursive retry with FORCED function call
+                const retryMessages = [...messages, clarifyingMessage];
+                
+                // Force the specific function call using mode: ANY
+                const forcedToolConfig = {
+                  function_calling_config: {
+                    mode: 'ANY' as const,
+                    allowed_function_names: [attemptedFunction]
+                  }
+                };
+                
+                console.log('[GEMINI-RETRY] Using forced tool config:', JSON.stringify(forcedToolConfig));
+                
+                return streamGeminiResponse({
+                  ...options,
+                  messages: retryMessages,
+                  toolConfig: forcedToolConfig,
+                });
+              }
+            }
+            
+            // General retry without forcing specific function (when function doesn't exist or wasn't identified)
+            if (retryCount < MAX_RETRIES) {
               retryCount++;
               console.log(`[GEMINI-RETRY] Retrying with clarifying message (${retryCount}/${MAX_RETRIES})...`);
               
