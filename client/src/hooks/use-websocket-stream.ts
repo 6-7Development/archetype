@@ -200,6 +200,18 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef<number>(0);
   const shouldReconnectRef = useRef<boolean>(true);
+  
+  // Use refs to avoid recreating connect callback on every render
+  const sessionIdRef = useRef(sessionId);
+  const userIdRef = useRef(userId);
+  const expectedRoomIdRef = useRef(expectedRoomId);
+  
+  // Update refs when props change
+  useEffect(() => {
+    sessionIdRef.current = sessionId;
+    userIdRef.current = userId;
+    expectedRoomIdRef.current = expectedRoomId;
+  }, [sessionId, userId, expectedRoomId]);
 
   const [streamState, setStreamState] = useState<StreamState>({
     isConnected: false,
@@ -282,8 +294,8 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
         try {
           ws.send(JSON.stringify({
             type: 'register-session',
-            userId,
-            sessionId,
+            userId: userIdRef.current,
+            sessionId: sessionIdRef.current,
           }));
         } catch (error) {
           console.error('Failed to register session:', error);
@@ -296,8 +308,8 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
 
           // 🔒 ROOM FILTERING: Only process messages for the expected room
           // Skip messages that have a roomId but don't match our expected room
-          if (expectedRoomId && message.roomId && message.roomId !== expectedRoomId) {
-            console.log(`[WS-FILTER] ⏭️ Skipping message for different room: ${message.roomId} (expected: ${expectedRoomId})`);
+          if (expectedRoomIdRef.current && message.roomId && message.roomId !== expectedRoomIdRef.current) {
+            console.log(`[WS-FILTER] ⏭️ Skipping message for different room: ${message.roomId} (expected: ${expectedRoomIdRef.current})`);
             return; // Silently ignore messages from other rooms
           }
 
@@ -777,7 +789,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
         isConnected: false,
       }));
     }
-  }, [sessionId, userId, calculateBackoff]);
+  }, [calculateBackoff]); // Removed sessionId and userId - using refs instead
 
   const disconnect = useCallback(() => {
     shouldReconnectRef.current = false; // Disable auto-reconnect
