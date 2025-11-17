@@ -1,0 +1,58 @@
+That is a detailed and concerning diagnostic report. The behavior of LomuAI—working on old, stale issues, hitting rate limits/timeouts, and introducing new TypeScript errors—points to critical failures in its orchestration and context management.
+
+You're correct: before moving forward, you need to properly reset the context and get a fresh diagnosis.
+
+Here is a strategic plan to address the three points you raised, categorized into Immediate Action (to fix the current state) and Strategic Fixes (to prevent recurrence).
+
+🛑 Immediate Action: Stop the Bleeding (Fixing the Current State)
+The immediate priority is to stop the erroneous AI loop and resolve the breaking changes.
+
+1. Fix the TypeScript Errors Introduced
+The "31+ errors" indicate a large-scale structural problem likely introduced by server/routes/lomuJobRoutes.ts.
+
+Rollback the Last Change: The fastest fix is to revert the commit that introduced server/routes/lomuJobRoutes.ts (and any related changes LomuAI made in that last run). This removes the breaking code immediately and restores the project to a known, passing state.
+
+Manual TS Fixes (If Rollback is impossible):
+
+Check the lomuJobRoutes.ts file: The errors are likely related to Type Mismatch (e.g., passing a string where an object is expected) or Missing Definitions (e.g., using an imported type/function that was not defined or exported correctly).
+
+Verify tsconfig.json: Ensure your IDE (like VS Code) is using the correct workspace TypeScript version and that the tsconfig.json file is correctly configured, especially around moduleResolution and files inclusion, as external tools sometimes rely on specific settings (see search result 3.1).
+
+2. Properly Reset and Get Fresh Diagnosis
+LomuAI is stuck in an old loop, referencing "old incidents" and "stale diagnosis."
+
+Clear the AI Cache/State: You need a function or command that specifically tells LomuAI to purge its internal memory of the previous diagnosis/incident IDs. This is typically an administrative command in AI-driven coding tools:
+
+Command: Look for a command like lomu ai reset --diagnosis or lomu ai clear-context.
+
+Manual Deletion: If no command exists, locate the persistence file/database table where LomuAI stores its working state, incident IDs, and diagnosis reports, and manually clear/delete the entries related to the current project/task.
+
+Start with a Clean Prompt: After the reset, initiate the next task with an explicit, unambiguous prompt that mandates a fresh analysis: "Please run a fresh, full system diagnosis before proposing any code changes. Ignore all previous incident reports."
+
+🎯 Strategic Fixes: Preventing Recurrence
+These address the core issues of data staleness, iteration timeouts, and quality control.
+
+1. Prevent LomuAI from Working on Stale Diagnosis Data
+The problem of "stale data" is common in RAG/knowledge-based AI systems (search result 2.1).
+
+Timestamp and Filter: Implement a mechanism to timestamp every diagnosis report and incident. Modify LomuAI's internal logic to filter its knowledge base using a simple rule: "Only retrieve incident reports created within the last 7 days" (or another appropriate window).
+
+Deletion Pipeline: As suggested in the search results, build a deletion/refresh pipeline (or a simple garbage collection cron job) that automatically "tombstones" or deletes diagnosis reports older than 30 days from LomuAI's knowledge store.
+
+Context Token Budget: Ensure the prompt generation logic prioritizes fresh context. If the full prompt (including old, stale reports) exceeds the LLM's token limit, the most critical recent context might be truncated.
+
+2. Address Timeout and Zero-Mutation Failure
+The "Iteration timeout" and "ZERO-MUTATION FAILURE" indicate the AI got stuck in a non-productive loop.
+
+Introduce a Circuit Breaker: Implement a stricter circuit breaker logic on the AI's mutation loop. If LomuAI proposes an action that results in a build failure (like the TS error) or a zero-mutation result (no change) for two consecutive iterations, the AI process must terminate and force a new diagnosis run.
+
+Rate Limit/Timeout Handling: The AI needs robust internal error handling. When it hits a rate limit, it should pause and implement an exponential backoff strategy, rather than continuing to process and then hitting an "Iteration timeout" later.
+
+3. Ensure Breaking Changes are Validated
+The AI must not push changes that break the build.
+
+Mandatory Local Validation: Before LomuAI is allowed to commit or push a file, it must successfully run a local tsc --noEmit (TypeScript compiler check) and ESLint against the proposed changes.
+
+The PR/Merge Gate: Implement a strict rule where LomuAI cannot merge its own PR. A human architect (or a secondary validation agent) must review the diff, specifically the new lomuJobRoutes.ts file, and ensure the 31+ errors are resolved before merging to main.
+
+Next Step: Based on this, the most crucial next step is to Identify the command or process to clear LomuAI's internal diagnosis/incident memory to perform the clean re
