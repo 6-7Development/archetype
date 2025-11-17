@@ -82,16 +82,26 @@ export function registerFileRoutes(app: Express) {
   });
 
   // GET /api/chat/history/:projectId - Get chat history for a project
+  // Accepts optional ?sessionId=UUID query param to load specific conversation session
   app.get("/api/chat/history/:projectId", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.authenticatedUserId;
       const { projectId } = req.params;
+      const { sessionId } = req.query;
       
-      console.log(`📝 [CHAT-HISTORY] Fetching history for project ${projectId}, user ${userId}`);
+      let history: any[];
       
-      const history = await storage.getChatHistory(userId, projectId);
-      
-      console.log(`📝 [CHAT-HISTORY] Found ${history?.length || 0} messages for project ${projectId}`);
+      if (sessionId) {
+        // Load messages for specific session (with security check)
+        console.log(`📝 [CHAT-HISTORY] Fetching history for session ${sessionId}, user ${userId}`);
+        history = await storage.getChatHistoryBySession(userId, sessionId);
+        console.log(`📝 [CHAT-HISTORY] Found ${history?.length || 0} messages for session ${sessionId}`);
+      } else {
+        // Load messages by project (backward compatible)
+        console.log(`📝 [CHAT-HISTORY] Fetching history for project ${projectId}, user ${userId}`);
+        history = await storage.getChatHistory(userId, projectId);
+        console.log(`📝 [CHAT-HISTORY] Found ${history?.length || 0} messages for project ${projectId}`);
+      }
       
       // Filter out tool calls from messages before sending to frontend
       const filteredHistory = filterToolCallsFromMessages(history || []);

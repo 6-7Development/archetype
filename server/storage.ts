@@ -564,6 +564,34 @@ export class DatabaseStorage implements IStorage {
     return this.getChatMessagesByProject(userId, projectId);
   }
 
+  async getChatHistoryBySession(userId: string, sessionId: string): Promise<ChatMessage[]> {
+    // SECURITY: First verify the session belongs to the user
+    const [session] = await db
+      .select()
+      .from(conversationStates)
+      .where(and(
+        eq(conversationStates.id, sessionId),
+        eq(conversationStates.userId, userId)
+      ))
+      .limit(1);
+
+    if (!session) {
+      // Session doesn't exist or doesn't belong to user - return empty array
+      console.log(`[STORAGE] Session ${sessionId} not found or unauthorized for user ${userId}`);
+      return [];
+    }
+
+    // Fetch messages for this specific conversation session
+    return await db
+      .select()
+      .from(chatMessages)
+      .where(and(
+        eq(chatMessages.userId, userId),
+        eq(chatMessages.conversationStateId, sessionId)
+      ))
+      .orderBy(chatMessages.createdAt);
+  }
+
   async getNonProjectChatMessages(userId: string): Promise<ChatMessage[]> {
     return await db
       .select()

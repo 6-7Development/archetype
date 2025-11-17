@@ -568,7 +568,7 @@ router.get('/task-list/:taskListId', isAuthenticated, isAdmin, async (req: any, 
   }
 });
 
-// Get LomuAI chat history
+// Get LomuAI chat history (platform healing only - admin)
 router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
     const userId = req.authenticatedUserId;
@@ -605,6 +605,53 @@ router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
     res.json({ messages: filteredMessages });
   } catch (error: any) {
     console.error('[LOMU-AI-CHAT] Error loading history:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get LomuAI chat history for a specific project
+// Accepts optional ?sessionId=UUID query param to load specific conversation session
+router.get('/history/:projectId', isAuthenticated, async (req: any, res) => {
+  try {
+    const userId = req.authenticatedUserId;
+    const { projectId } = req.params;
+    const { sessionId } = req.query;
+
+    let messages: any[];
+
+    if (sessionId) {
+      // Load messages for specific session (with security check)
+      console.log(`📝 [LOMU-CHAT-HISTORY] Fetching history for session ${sessionId}, user ${userId}`);
+      messages = await storage.getChatHistoryBySession(userId, sessionId);
+      console.log(`📝 [LOMU-CHAT-HISTORY] Found ${messages?.length || 0} messages for session ${sessionId}`);
+    } else {
+      // Load messages by project (backward compatible)
+      console.log(`📝 [LOMU-CHAT-HISTORY] Fetching history for project ${projectId}, user ${userId}`);
+      messages = await storage.getChatHistory(userId, projectId);
+      console.log(`📝 [LOMU-CHAT-HISTORY] Found ${messages?.length || 0} messages for project ${projectId}`);
+    }
+
+    // Fetch attachments for each message
+    const messagesWithAttachments = await Promise.all(
+      messages.map(async (msg) => {
+        const attachments = await db
+          .select()
+          .from(lomuAttachments)
+          .where(eq(lomuAttachments.messageId, msg.id));
+
+        return {
+          ...msg,
+          attachments: attachments.length > 0 ? attachments : undefined,
+        };
+      })
+    );
+
+    // Filter out tool calls from messages before sending to frontend
+    const filteredMessages = filterToolCallsFromMessages(messagesWithAttachments);
+
+    res.json({ messages: filteredMessages });
+  } catch (error: any) {
+    console.error('[LOMU-CHAT-HISTORY] Error loading history:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -823,12 +870,28 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     };
     const config = levelConfig[autonomyLevel as keyof typeof levelConfig] || levelConfig.basic;
 
-    // Save user message
+    // 🎯 LOMU BRAIN: Get or create session for unified session management
+    const session = await lomuAIBrain.getOrCreateSession({
+      userId,
+      sessionId: req.body.sessionId || nanoid(),
+      targetContext: 'platform', // Platform healing context
+      projectId: undefined,
+    });
+    
+    // Update session activity
+    lomuAIBrain.touchSession(userId, session.sessionId);
+    
+    // Get conversation state for backward compatibility with existing code
+    // Brain tracks session, but we still use conversationState for some DB operations
+    conversationState = await getOrCreateState(userId, null);
+
+    // Save user message (with conversationStateId)
     const [userMsg] = await db
       .insert(chatMessages)
       .values({
         userId,
         projectId: null, // Platform healing has no specific project
+        conversationStateId: conversationState.id, // Link to conversation session
         fileId: null,
         role: 'user',
         content: message,
@@ -853,21 +916,6 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     }
 
     sendEvent('user_message', { messageId: userMsg.id });
-
-    // 🎯 LOMU BRAIN: Get or create session for unified session management
-    const session = await lomuAIBrain.getOrCreateSession({
-      userId,
-      sessionId: req.body.sessionId || nanoid(),
-      targetContext: 'platform', // Platform healing context
-      projectId: undefined,
-    });
-    
-    // Update session activity
-    lomuAIBrain.touchSession(userId, session.sessionId);
-    
-    // Get conversation state for backward compatibility with existing code
-    // Brain tracks session, but we still use conversationState for some DB operations
-    conversationState = await getOrCreateState(userId, null);
 
     // 🔍 GAP 3: TRACE LOGGING - Start trace for this conversation
     traceId = conversationState.traceId;
@@ -921,6 +969,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         .values({
           userId,
           projectId: null,
+          conversationStateId: conversationState.id,
           fileId: null,
           role: 'assistant',
           content: resetMessage,
@@ -1621,6 +1670,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
           .values({
             userId,
             projectId: null,
+            conversationStateId: conversationState.id,
             fileId: null,
             role: 'assistant',
             content: emergencyBrakeTriggered.reason,
@@ -2749,6 +2799,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 .values({
                   userId,
                   projectId: null,
+                  conversationStateId: conversationState.id,
                   fileId: null,
                   role: 'assistant',
                   content: `**Approval Request**\n\n${typedInput.summary}\n\n**Files to be changed:**\n${typedInput.filesChanged.map(f => `- ${f}`).join('\n')}\n\n**Estimated impact:** ${typedInput.estimatedImpact}`,
@@ -4004,6 +4055,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       .values({
         userId,
         projectId: null,
+        conversationStateId: conversationState.id,
         fileId: null,
         role: 'assistant',
         content: finalMessage,
@@ -4180,6 +4232,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       const [errorAssistantMsg] = await db.insert(chatMessages).values({
         userId,
         projectId: null,
+        conversationStateId: conversationState?.id || null,
         fileId: null,
         role: 'assistant',
         content: errorMsg,
@@ -4310,12 +4363,15 @@ router.post('/start', isAuthenticated, async (req: any, res) => {
         response = simpleResponses.yes_no;
       }
 
-      // Save simple exchange to chat history
+      // Save simple exchange to chat history (Note: conversationState not available in this context - create one)
+      const simpleConversationState = await import('../services/conversationState').then(m => m.getOrCreateState(userId, null));
+      
       const [assistantMsg] = await db
         .insert(chatMessages)
         .values({
           userId,
           projectId: null,
+          conversationStateId: simpleConversationState.id,
           fileId: null,
           role: 'assistant',
           content: response,

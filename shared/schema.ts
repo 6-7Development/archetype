@@ -584,6 +584,7 @@ export const chatMessages = pgTable("chat_messages", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
   projectId: varchar("project_id"), // Link messages to projects (null for LomuAI platform healing)
+  conversationStateId: varchar("conversation_state_id"), // Link messages to specific conversation sessions (null for backward compatibility)
   fileId: varchar("file_id"),
   role: text("role").notNull(), // 'user' | 'assistant' | 'system'
   content: text("content").notNull(),
@@ -598,6 +599,7 @@ export const chatMessages = pgTable("chat_messages", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => [
   index("idx_chat_messages_project_id").on(table.projectId),
+  index("idx_chat_messages_conversation_state_id").on(table.conversationStateId),
 ]);
 
 export const insertChatMessageSchema = createInsertSchema(chatMessages)
@@ -608,6 +610,7 @@ export const insertChatMessageSchema = createInsertSchema(chatMessages)
   })
   .extend({
     projectId: z.string().nullable().optional(), // Allow null for general chat conversations
+    conversationStateId: z.string().nullable().optional(), // Allow null for backward compatibility
   });
 
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;

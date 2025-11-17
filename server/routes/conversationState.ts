@@ -9,8 +9,55 @@ import {
   updateContext,
   formatStateForPrompt,
 } from '../services/conversationState';
+import { db } from '../db';
+import { conversationStates } from '@shared/schema';
+import { eq, desc } from 'drizzle-orm';
 
 const router = Router();
+
+/**
+ * GET /api/conversation/sessions
+ * List all conversation sessions for the current user
+ */
+router.get('/sessions', isAuthenticated, async (req: any, res) => {
+  try {
+    const userId = req.authenticatedUserId;
+    const limit = parseInt(req.query.limit as string) || 50;
+    const search = req.query.search as string | undefined;
+
+    let query = db
+      .select()
+      .from(conversationStates)
+      .where(eq(conversationStates.userId, userId))
+      .orderBy(desc(conversationStates.lastInteractionAt))
+      .limit(limit);
+
+    const sessions = await query;
+
+    // Filter by search term if provided
+    let filteredSessions = sessions;
+    if (search && search.trim()) {
+      const searchLower = search.toLowerCase();
+      filteredSessions = sessions.filter(session => 
+        (session.currentGoal?.toLowerCase() ?? '').includes(searchLower) ||
+        (session.sessionSummary?.toLowerCase() ?? '').includes(searchLower) ||
+        (session.projectId?.toLowerCase() ?? '').includes(searchLower)
+      );
+    }
+
+    res.json({
+      success: true,
+      sessions: filteredSessions,
+      total: filteredSessions.length
+    });
+  } catch (error: any) {
+    console.error('[CONVERSATION-STATE-API] Failed to list sessions:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
 
 /**
  * GET /api/conversation/state/:projectId

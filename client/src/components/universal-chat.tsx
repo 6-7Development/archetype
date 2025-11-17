@@ -37,6 +37,7 @@ import { EnhancedMessageDisplay } from "@/components/enhanced-message-display";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { ContextRail } from "@/components/chat/ContextRail";
+import { MessageHistory } from "@/components/chat/MessageHistory";
 import type { 
   RunPhase, 
   RunState, 
@@ -258,6 +259,8 @@ export function UniversalChat({
 
   // Mobile drawer state
   const [contextDrawerOpen, setContextDrawerOpen] = useState(false);
+  const [showHistoryDialog, setShowHistoryDialog] = useState(false);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
 
   // Billing state
   const [creditBalance, setCreditBalance] = useState<number>(0);
@@ -340,12 +343,16 @@ export function UniversalChat({
     enabled: !!user,
   });
 
-  // Load chat history
+  // Load chat history (with optional sessionId)
   const effectiveProjectId = targetContext === 'platform' ? 'platform' : (projectId || 'general');
   const { data: chatHistory, isLoading: isLoadingHistory } = useQuery<{ messages: Message[] }>({
-    queryKey: ['/api/lomu-ai/history', effectiveProjectId],
+    queryKey: ['/api/lomu-ai/history', effectiveProjectId, selectedSessionId],
     queryFn: async () => {
-      const response = await fetch(`/api/lomu-ai/history/${effectiveProjectId}`, {
+      const url = selectedSessionId 
+        ? `/api/lomu-ai/history/${effectiveProjectId}?sessionId=${selectedSessionId}`
+        : `/api/lomu-ai/history/${effectiveProjectId}`;
+      
+      const response = await fetch(url, {
         credentials: 'include',
       });
       if (!response.ok) {
@@ -1424,9 +1431,7 @@ export function UniversalChat({
         creditBalance={creditBalance}
         isFreeAccess={isFreeAccess}
         isConnected={streamState.isConnected}
-        onHistoryClick={() => {
-          toast({ title: "Chat history", description: "History feature coming soon" });
-        }}
+        onHistoryClick={() => setShowHistoryDialog(true)}
         onSettingsClick={() => {
           toast({ title: "Settings", description: "Settings feature coming soon" });
         }}
@@ -1773,6 +1778,35 @@ export function UniversalChat({
       >
         <Menu className="h-6 w-6" />
       </button>
+
+      {/* Message History Dialog */}
+      <Dialog open={showHistoryDialog} onOpenChange={setShowHistoryDialog}>
+        <DialogContent className="max-w-2xl h-[80vh] p-0">
+          <MessageHistory
+            currentSessionId={selectedSessionId}
+            onSessionSelect={(session) => {
+              // Close dialog immediately for better UX
+              setShowHistoryDialog(false);
+              
+              // Hybrid navigation: different project = full reload, same project = state update
+              const newProjectId = session.projectId || 'general';
+              
+              if (newProjectId !== projectId) {
+                // Different project: Full page navigation
+                // Use setTimeout to ensure dialog closes before navigation
+                setTimeout(() => {
+                  window.location.href = `/chat/${newProjectId}`;
+                }, 100);
+              } else {
+                // Same project: Update selectedSessionId to trigger instant message reload
+                console.log(`📝 [MESSAGE-HISTORY] Loading session ${session.id} for current project`);
+                setSelectedSessionId(session.id);
+              }
+            }}
+            onClose={() => setShowHistoryDialog(false)}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Secrets Request Dialog */}
       <Dialog open={!!secretsRequest} onOpenChange={() => setSecretsRequest(null)}>
