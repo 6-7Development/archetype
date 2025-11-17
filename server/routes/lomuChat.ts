@@ -1774,6 +1774,9 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 entry
               });
               
+              // 💭 Send thinking to inline chat display (SSE) - but NOT tool calls (they go in status bar)
+              sendEvent('progress', { message: `💭 ${thought}` });
+              
               // 🚨 WATCHDOG: Increment consecutive thinking counter
               consecutiveThinkingCount++;
               console.log(`[THINKING-WATCHDOG] Consecutive thoughts: ${consecutiveThinkingCount}/${MAX_CONSECUTIVE_THINKING}`);

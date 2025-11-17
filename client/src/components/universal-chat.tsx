@@ -1101,12 +1101,48 @@ export function UniversalChat({
 
                 case 'thinking':
                   setProgressStatus('thinking');
-                  setProgressMessage(eventData.message || 'Thinking...');
+                  const thinkingMsg = eventData.message || 'Thinking...';
+                  setProgressMessage(thinkingMsg);
+                  
+                  // 🔥 FIX: Show thinking in real-time progress
+                  const thinkingItem = {
+                    id: nanoid(),
+                    message: `💭 ${thinkingMsg}`,
+                    timestamp: Date.now()
+                  };
+                  capturedProgress.push(thinkingItem);
+                  setMessages((prev) => {
+                    const updated = [...prev];
+                    const lastMsg = updated[updated.length - 1];
+                    if (lastMsg && lastMsg.role === 'assistant') {
+                      lastMsg.progressMessages = [...capturedProgress];
+                      return [...updated];
+                    }
+                    return updated;
+                  });
                   break;
 
                 case 'tool_call':
                   setProgressStatus('working');
-                  setProgressMessage(`Using tool: ${eventData.tool || 'unknown'}...`);
+                  const toolMsg = `Using tool: ${eventData.tool || 'unknown'}...`;
+                  setProgressMessage(toolMsg);
+                  
+                  // 🔥 FIX: Show tool calls in real-time progress
+                  const toolItem = {
+                    id: nanoid(),
+                    message: `🔧 ${toolMsg}`,
+                    timestamp: Date.now()
+                  };
+                  capturedProgress.push(toolItem);
+                  setMessages((prev) => {
+                    const updated = [...prev];
+                    const lastMsg = updated[updated.length - 1];
+                    if (lastMsg && lastMsg.role === 'assistant') {
+                      lastMsg.progressMessages = [...capturedProgress];
+                      return [...updated];
+                    }
+                    return updated;
+                  });
                   break;
 
                 case 'run_phase':
@@ -1176,10 +1212,22 @@ export function UniversalChat({
                   console.log('[SSE] Progress:', eventData.message);
                   if (eventData.message) {
                     // Store progress for inline display
-                    capturedProgress.push({
+                    const progressItem = {
                       id: nanoid(),
                       message: eventData.message,
                       timestamp: Date.now()
+                    };
+                    capturedProgress.push(progressItem);
+                    
+                    // 🔥 FIX: Update assistant message in real-time with progress
+                    setMessages((prev) => {
+                      const updated = [...prev];
+                      const lastMsg = updated[updated.length - 1];
+                      if (lastMsg && lastMsg.role === 'assistant') {
+                        lastMsg.progressMessages = [...capturedProgress]; // Update with ALL captured progress
+                        return [...updated]; // Force React re-render
+                      }
+                      return updated;
                     });
                     
                     setProgressMessage(eventData.message);
