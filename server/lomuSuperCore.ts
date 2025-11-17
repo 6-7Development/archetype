@@ -1085,11 +1085,36 @@ interface ResponseMetrics {
  */
 export class LomuLearningSystem {
   private static successPatterns = new Map<string, ResponseMetrics[]>();
-  
+  private static cleanupTimer: NodeJS.Timeout | null = null;
+  private static readonly CLEANUP_INTERVAL = 3600000; // Clean up every hour (3600 seconds * 1000 ms)
+
   // 🧹 MEMORY MANAGEMENT: Add cleanup method
   static cleanup() {
+    // Clear patterns that are older than a certain threshold or simply clear all to manage memory aggressively.
+    // For now, let's clear all to ensure memory is reclaimed.
     this.successPatterns.clear();
     console.log('[LOMU-LEARNING] Pattern cache cleared');
+  }
+
+  // 🧹 MEMORY MANAGEMENT: Start periodic cleanup
+  static startCleanupTimer(): void {
+    if (this.cleanupTimer) {
+      console.log('[LOMU-LEARNING] Cleanup timer already running');
+      return;
+    }
+    console.log('[LOMU-LEARNING] Starting periodic cleanup timer');
+    this.cleanupTimer = setInterval(() => {
+      this.cleanup();
+    }, this.CLEANUP_INTERVAL);
+  }
+
+  // 🧹 MEMORY MANAGEMENT: Stop periodic cleanup
+  static stopCleanupTimer(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+      this.cleanupTimer = null;
+      console.log('[LOMU-LEARNING] Stopped periodic cleanup timer');
+    }
   }
   
   // 🧹 MEMORY MANAGEMENT: Get current cache stats
@@ -1140,4 +1165,9 @@ export class LomuLearningSystem {
       return currentEfficiency > bestEfficiency ? current : best;
     });
   }
+}
+
+// Auto-start cleanup timer in production
+if (process.env.NODE_ENV === 'production') {
+  LomuLearningSystem.startCleanupTimer();
 }
