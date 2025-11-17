@@ -37,10 +37,10 @@ export function AIModelSelector() {
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="claude" data-testid="option-claude">
-          Claude Sonnet 4 ($3/$15)
+          I AM Architect
         </SelectItem>
         <SelectItem value="gemini" data-testid="option-gemini">
-          Gemini 2.5 Flash ($0.075/$0.30)
+          Lomu
         </SelectItem>
       </SelectContent>
     </Select>
