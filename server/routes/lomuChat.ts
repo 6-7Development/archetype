@@ -3513,36 +3513,31 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         totalToolCallCount += toolResults.length;
         
         // FIX 4: Reset force mode after successful tool execution
-        if (shouldForceFunctionCall) {
-          console.log('[LOMU-AI-FORCE] Tools executed successfully, resetting force mode');
+        const justWroteFile = toolNames.some(name => name === 'write_platform_file' || name === 'write_project_file');
+        
+        if (shouldForceFunctionCall && justWroteFile) {
+          console.log('[LOMU-AI-FORCE] Write operation completed - resetting force mode');
           shouldForceFunctionCall = false;
         }
 
-        // 🚨 CONTEXTUAL TOOL FORCING: Force action mode after read_platform_file during fix sessions
-        const justReadPlatformFile = toolNames.includes('read_platform_file');
+        // 🚨 GLOBAL ACTION MODE: Force write-first behavior for all fix/build sessions
+        // ARCHITECT FIX: Don't wait for read_platform_file - apply globally for fix sessions
         const isFixSession = userIntent === 'fix' || userIntent === 'build';
+        const hasNotWrittenYet = workflowTelemetry.writeOperations === 0;
+        const hasReadAtLeastOnce = workflowTelemetry.readOperations > 0;
         
-        if (justReadPlatformFile && isFixSession && !shouldForceFunctionCall) {
-          console.log('[ACTION-MANDATE] ✅ read_platform_file completed during fix session - ACTIVATING ACTION MODE');
-          console.log('[ACTION-MANDATE] Next iteration: Forcing write_platform_file call with mode:ANY');
+        if (isFixSession && hasReadAtLeastOnce && hasNotWrittenYet && iterationCount >= 2) {
+          console.log('[ACTION-MANDATE] ✅ Fix session with reads but NO writes - ACTIVATING ACTION MODE');
+          console.log(`[ACTION-MANDATE] Iteration ${iterationCount}: Forcing mode:ANY to encourage write operations`);
           
-          // Enable force mode for next iteration
+          // Enable force mode to encourage function calling over text responses
           shouldForceFunctionCall = true;
           
-          // Restrict tools to read/write only for next iteration
-          availableTools = tools.filter(tool => 
-            tool.name === 'read_platform_file' || 
-            tool.name === 'write_platform_file' ||
-            tool.name === 'write_project_file'
-          );
-          
-          console.log(`[ACTION-MANDATE] Restricted to ${availableTools.length} tools: ${availableTools.map(t => t.name).join(', ')}`);
-          
-          // Inject system enforcement message
-          systemEnforcementMessage = `\n\n🚨 **ACTION MANDATE ACTIVATED**\n\nYou have successfully read the file and identified the issue. Per your core directive, you are now REQUIRED to immediately call write_platform_file() to implement the fix.\n\n**Your next action MUST be**: write_platform_file() with the corrected code.\n\n**DO NOT**:\n- Create task lists\n- Read additional files  \n- Wait for confirmation\n- Defer the fix\n\n**Remember**: You are pre-authorized to modify this file. Proceed with the write operation now.`;
+          // Inject system enforcement message (reward/penalty messaging, not absolute rules)
+          systemEnforcementMessage = `\n\n🎯 **WRITE-FIRST REMINDER**\n\nYou've read ${workflowTelemetry.readOperations} file(s) to understand the issue. Great analysis!\n\nNow it's time to implement fixes. Your goal is to WRITE code, not just read it.\n\n**High-value actions** (preferred):\n- ✅ write_platform_file() - Implement the fix\n- ✅ write_project_file() - Create new files\n- ✅ bash() - Run tests/validation\n\n**Low-value actions** (avoid unless necessary):\n- ⚠️ Reading more files without writing\n- ⚠️ Creating task lists for simple fixes\n- ⚠️ Endless analysis paralysis\n\n**Remember**: You're authorized to make changes. Trust your analysis and proceed with confidence.`;
           
           sendEvent('progress', { 
-            message: '🚨 Read completed - ACTION MANDATE: Must write fix immediately' 
+            message: '🎯 Analysis complete - prioritizing write operations now' 
           });
         }
 
