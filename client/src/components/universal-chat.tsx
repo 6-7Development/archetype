@@ -1001,8 +1001,8 @@ export function UniversalChat({
           sessionId,
           targetContext,
           projectId: targetContext === 'platform' ? null : (projectId || null),
-          autoCommit: false,
-          autoPush: false,
+          autoCommit: true,
+          autoPush: true,
         }),
       });
 
