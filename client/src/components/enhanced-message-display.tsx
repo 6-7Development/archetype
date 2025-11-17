@@ -38,30 +38,33 @@ export function EnhancedMessageDisplay({ content, progressMessages = [], isStrea
     
     progressMessages.forEach((progress, index) => {
       const msg = progress.message.toLowerCase();
+      const original = progress.message;
       
-      if (msg.includes('analyzing') || msg.includes('planning') || msg.includes('considering') || msg.includes('evaluating') || msg.includes('reviewing')) {
+      // Categorize ALL messages - nothing should be filtered out
+      if (msg.includes('analyzing') || msg.includes('planning') || msg.includes('considering') || msg.includes('evaluating') || msg.includes('reviewing') || msg.includes('assessing') || msg.includes('examining')) {
         blocks.push({
           id: `thinking-${index}`,
           type: 'thinking',
-          content: progress.message,
+          content: original,
           timestamp: progress.timestamp
         });
       }
-      else if (msg.includes('🔧') || msg.includes('reading') || msg.includes('writing') || msg.includes('modifying') || msg.includes('creating') || msg.includes('deleting') || msg.includes('searching')) {
-        const toolName = extractToolName(progress.message);
-        blocks.push({
-          id: `tool-${index}`,
-          type: 'tool_call',
-          content: progress.message,
-          toolName,
-          timestamp: progress.timestamp
-        });
-      }
-      else if (msg.includes('✅') || msg.includes('completed') || msg.includes('finished') || msg.includes('done')) {
+      else if (msg.includes('✅') || msg.includes('completed') || msg.includes('finished') || msg.includes('done') || msg.includes('success')) {
         blocks.push({
           id: `result-${index}`,
           type: 'result',
-          content: progress.message,
+          content: original,
+          timestamp: progress.timestamp
+        });
+      }
+      // DEFAULT: Treat as tool action (most progress messages are tool-related)
+      else {
+        const toolName = extractToolName(original);
+        blocks.push({
+          id: `tool-${index}`,
+          type: 'tool_call',
+          content: original,
+          toolName,
           timestamp: progress.timestamp
         });
       }
@@ -71,15 +74,18 @@ export function EnhancedMessageDisplay({ content, progressMessages = [], isStrea
   };
 
   const extractToolName = (message: string): string => {
-    if (message.includes('Reading')) return 'read_file';
-    if (message.includes('Writing') || message.includes('Modifying')) return 'write_file';
-    if (message.includes('Creating')) return 'create_file';
-    if (message.includes('Deleting')) return 'delete_file';
-    if (message.includes('Listing')) return 'list_files';
-    if (message.includes('Searching')) return 'search';
-    if (message.includes('Consulting I AM')) return 'architect_consult';
-    if (message.includes('Generating design')) return 'generate_design';
-    return 'unknown_tool';
+    const lower = message.toLowerCase();
+    if (lower.includes('reading') || message.includes('📖')) return 'read_file';
+    if (lower.includes('writing') || lower.includes('modifying') || lower.includes('fixing') || message.includes('✏️')) return 'write_file';
+    if (lower.includes('creating')) return 'create_file';
+    if (lower.includes('deleting')) return 'delete_file';
+    if (lower.includes('listing')) return 'list_files';
+    if (lower.includes('searching')) return 'search';
+    if (lower.includes('executing') || message.includes('🔨')) return 'execute';
+    if (lower.includes('consulting i am')) return 'architect_consult';
+    if (lower.includes('generating design')) return 'generate_design';
+    if (lower.includes('rate limit') || lower.includes('waiting')) return 'wait';
+    return 'action';
   };
 
   const blocks = parseProgressToBlocks();
