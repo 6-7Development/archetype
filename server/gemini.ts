@@ -1043,12 +1043,7 @@ Please try:
     // Execute tools if Gemini requested them
     if (functionCalls.length > 0 && onToolUse) {
       try {
-        if (onAction) {
-          const actionMessage = functionCalls.length === 1 
-            ? '🔨 Running checks...' 
-            : `🔨 Running ${functionCalls.length} checks...`;
-          onAction(actionMessage);
-        }
+        // NOTE: Removed duplicate "Running checks..." message - individual tool actions are already reported
 
         // Execute all function calls
         const toolResults = await Promise.all(

@@ -319,12 +319,7 @@ async function streamClaudeResponse(options: StreamOptions) {
     // Execute tools if Claude requested them
     if (toolCalls.length > 0 && onToolUse) {
       try {
-        if (onAction) {
-          const actionMessage = toolCalls.length === 1
-            ? '🔨 Running checks...'
-            : `🔨 Running ${toolCalls.length} checks...`;
-          onAction(actionMessage);
-        }
+        // NOTE: Removed duplicate "Running checks..." message - individual tool actions are already reported
 
         // Execute all tool calls
         const toolResults = await Promise.all(

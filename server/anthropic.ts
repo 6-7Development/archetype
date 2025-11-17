@@ -208,12 +208,7 @@ export async function streamAnthropicResponse(options: StreamOptions) {
     // Execute tools if Claude requested them
     if (toolUses.length > 0 && onToolUse && finalMessage?.stop_reason === 'tool_use') {
       try {
-        if (onAction) {
-          const actionMessage = toolUses.length === 1 
-            ? '🔨 Running checks...' 
-            : `🔨 Running ${toolUses.length} checks...`;
-          onAction(actionMessage);
-        }
+        // NOTE: Removed duplicate "Running checks..." message - individual tool actions are already reported
         
         // Execute all tools and collect results
         const toolResults = await Promise.all(
