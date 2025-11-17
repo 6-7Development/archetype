@@ -130,11 +130,13 @@ Content: [3000 lines of code...]  ← This will be truncated and destroy the fil
 </action_mandate>
 
 <tool_calling_rules>
-⚠️ **CRITICAL: Gemini Function Calling Format**
+⚠️ **CRITICAL: ONLY Use Declared Tools**
 
-When using tools, you MUST follow Google's official JSON function calling format:
+You have been given a specific set of tools. **Only these tools exist.** Use their exact names and JSON format.
 
-**CORRECT FORMAT (pure JSON object):**
+**TOOL CALL FORMAT:**
+Tools are called via pure JSON objects using Google's function calling API:
+
 {
   "name": "write_platform_file",
   "args": {
@@ -143,36 +145,43 @@ When using tools, you MUST follow Google's official JSON function calling format
   }
 }
 
-**FORBIDDEN:**
-❌ NEVER wrap tools in code: print(default_api.write_platform_file(...))
-❌ NEVER use Python-style syntax: api.tool_name(...)
-❌ NEVER add any code wrapper around tool calls
+**EXAMPLES OF CORRECT TOOL CALLS:**
 
-**Rules:**
-1. Tools are called via JSON objects only - NOT code
-2. Use exact tool names from the schema (no prefixes like default_api.)
-3. Pass arguments as JSON objects, not code parameters
-4. One tool call per JSON object
-5. System will show inline progress automatically - you don't implement it
+Read a file:
+{
+  "name": "read_platform_file",
+  "args": { "path": "server/routes.ts" }
+}
 
-If you catch yourself writing tool calls as code, STOP and use the JSON format above.
+Write a file:
+{
+  "name": "write_platform_file",
+  "args": {
+    "path": "server/newFile.ts",
+    "content": "export const example = 'value';"
+  }
+}
 
-**CRITICAL FUNCTION CALL PROTOCOL:**
-Your role is to act using the tools provided. When a solution requires a tool, you MUST NOT respond with natural language, thoughts, or internal planning. Your ONLY output in that turn must be the tool call. Prioritize tool invocation over conversation.
+Run diagnosis:
+{
+  "name": "perform_diagnosis",
+  "args": { "target": "platform" }
+}
 
-When invoking a tool, your response MUST be a clean, direct tool invocation using the native function call API.
-- ✅ CORRECT: Use the functionCall API object
-- ❌ WRONG: Do NOT embed function call JSON within conversational text
-- ❌ WRONG: Do NOT explain what you're about to call before calling it
-- ❌ WRONG: Do NOT output thinking text instead of calling tools
-- Your ONLY output in that turn should be the system-recognized function call object.
-- No surrounding text, explanation, or commentary when calling tools.
+Search code:
+{
+  "name": "search_codebase",
+  "args": { "query": "authentication logic" }
+}
 
-Example WRONG (do not do this):
-"I'll call the diagnosis tool: {\"name\":\"perform_diagnosis\",\"args\":{\"target\":\"platform\"}}"
+**FUNCTION CALL PROTOCOL:**
+1. Use exact tool names from the available tools list
+2. Pass arguments as JSON objects
+3. One tool call per JSON object
+4. Your output must be ONLY the tool call - no explanatory text
+5. Do not wrap tool calls in any syntax (no code blocks, no wrappers)
 
-Example CORRECT:
-[Direct function call invocation through API, no text]
+When you need to use a tool, your entire response is the tool call. Nothing else.
 </tool_calling_rules>
 
 <proactiveness>
