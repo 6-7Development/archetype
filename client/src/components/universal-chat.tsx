@@ -1090,6 +1090,8 @@ export function UniversalChat({
                     const lastMsg = updated[updated.length - 1];
                     if (lastMsg && lastMsg.role === 'assistant') {
                       lastMsg.content = assistantMessageContent;
+                      // Force React to recognize this as a state change
+                      return [...updated];
                     }
                     return updated;
                   });
@@ -1522,7 +1524,16 @@ export function UniversalChat({
             </div>
           )}
 
-          {messages.map((message, index) => (
+          {messages
+            .filter((msg, idx) => {
+              // Filter out the last assistant message if we're currently streaming
+              // (it will be shown in the streaming indicator below)
+              if (isGenerating && idx === messages.length - 1 && msg.role === 'assistant') {
+                return false;
+              }
+              return true;
+            })
+            .map((message, index) => (
             <div
               key={index}
               className={cn(
@@ -1595,29 +1606,45 @@ export function UniversalChat({
             </div>
           ))}
 
-          {/* Streaming Indicator */}
-          {isGenerating && streamState.fullMessage && (
-            <div className="flex gap-3 items-start">
-              <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-secondary text-secondary-foreground shadow-sm border border-border/50">
-                <EnhancedMessageDisplay 
-                  content={cleanAIResponse(parseMessageContent(streamState.fullMessage))}
-                  progressMessages={streamState.progressMessages}
-                  isStreaming={true}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* AI Streaming Indicator */}
-          {isGenerating && !streamState.fullMessage && (
-            <div className="flex gap-3 items-start">
-              <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-muted border border-border">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Thinking...</span>
-                </div>
-              </div>
-            </div>
+          {/* Streaming Indicator - Use WebSocket OR check if last message has content */}
+          {isGenerating && (
+            (() => {
+              // Check if we have streaming content from either WebSocket or SSE
+              const lastMessage = messages[messages.length - 1];
+              const hasContent = streamState.fullMessage || (lastMessage?.role === 'assistant' && lastMessage.content);
+              
+              if (hasContent) {
+                // Show actual streaming content
+                const content = streamState.fullMessage || lastMessage?.content || '';
+                const progressMsgs = streamState.progressMessages.length > 0 
+                  ? streamState.progressMessages 
+                  : (lastMessage?.progressMessages || []);
+                
+                return (
+                  <div className="flex gap-3 items-start">
+                    <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-secondary text-secondary-foreground shadow-sm border border-border/50">
+                      <EnhancedMessageDisplay 
+                        content={cleanAIResponse(parseMessageContent(content))}
+                        progressMessages={progressMsgs}
+                        isStreaming={true}
+                      />
+                    </div>
+                  </div>
+                );
+              } else {
+                // Show thinking indicator
+                return (
+                  <div className="flex gap-3 items-start">
+                    <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-muted border border-border">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Thinking...</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+            })()
           )}
 
           {/* Scroll anchor - keeps chat scrolled to bottom */}
