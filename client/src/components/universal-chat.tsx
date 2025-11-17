@@ -1101,48 +1101,12 @@ export function UniversalChat({
 
                 case 'thinking':
                   setProgressStatus('thinking');
-                  const thinkingMsg = eventData.message || 'Thinking...';
-                  setProgressMessage(thinkingMsg);
-                  
-                  // 🔥 FIX: Show thinking in real-time progress
-                  const thinkingItem = {
-                    id: nanoid(),
-                    message: `💭 ${thinkingMsg}`,
-                    timestamp: Date.now()
-                  };
-                  capturedProgress.push(thinkingItem);
-                  setMessages((prev) => {
-                    const updated = [...prev];
-                    const lastMsg = updated[updated.length - 1];
-                    if (lastMsg && lastMsg.role === 'assistant') {
-                      lastMsg.progressMessages = [...capturedProgress];
-                      return [...updated];
-                    }
-                    return updated;
-                  });
+                  setProgressMessage(eventData.message || 'Thinking...');
                   break;
 
                 case 'tool_call':
                   setProgressStatus('working');
-                  const toolMsg = `Using tool: ${eventData.tool || 'unknown'}...`;
-                  setProgressMessage(toolMsg);
-                  
-                  // 🔥 FIX: Show tool calls in real-time progress
-                  const toolItem = {
-                    id: nanoid(),
-                    message: `🔧 ${toolMsg}`,
-                    timestamp: Date.now()
-                  };
-                  capturedProgress.push(toolItem);
-                  setMessages((prev) => {
-                    const updated = [...prev];
-                    const lastMsg = updated[updated.length - 1];
-                    if (lastMsg && lastMsg.role === 'assistant') {
-                      lastMsg.progressMessages = [...capturedProgress];
-                      return [...updated];
-                    }
-                    return updated;
-                  });
+                  setProgressMessage(`Using tool: ${eventData.tool || 'unknown'}...`);
                   break;
 
                 case 'run_phase':
@@ -1208,34 +1172,16 @@ export function UniversalChat({
                   break;
 
                 case 'progress':
-                  // Handle inline progress thoughts (like Replit Agent)
+                  // Handle progress updates (shown in status bar, not inline chat)
                   console.log('[SSE] Progress:', eventData.message);
                   if (eventData.message) {
-                    // Store progress for inline display
-                    const progressItem = {
-                      id: nanoid(),
-                      message: eventData.message,
-                      timestamp: Date.now()
-                    };
-                    capturedProgress.push(progressItem);
-                    
-                    // 🔥 FIX: Update assistant message in real-time with progress
-                    setMessages((prev) => {
-                      const updated = [...prev];
-                      const lastMsg = updated[updated.length - 1];
-                      if (lastMsg && lastMsg.role === 'assistant') {
-                        lastMsg.progressMessages = [...capturedProgress]; // Update with ALL captured progress
-                        return [...updated]; // Force React re-render
-                      }
-                      return updated;
-                    });
-                    
                     setProgressMessage(eventData.message);
-                    // If it's a warning/failure message, show it prominently
-                    if (eventData.message.includes('🚨') || eventData.message.includes('failure')) {
+                    
+                    // If it's a warning/failure message, show toast
+                    if (eventData.message.includes('🚨') || eventData.message.includes('failure') || eventData.message.includes('Safety limit')) {
                       toast({
-                        variant: 'default',
-                        title: 'LomuAI Progress',
+                        variant: eventData.message.includes('🚨') ? 'destructive' : 'default',
+                        title: 'LomuAI Status',
                         description: eventData.message,
                       });
                     }
@@ -1606,7 +1552,7 @@ export function UniversalChat({
                   ) : (
                     <EnhancedMessageDisplay 
                       content={cleanAIResponse(parseMessageContent(message.content))}
-                      progressMessages={message.role === 'assistant' && message.progressMessages ? message.progressMessages : []}
+                      progressMessages={[]}
                       isStreaming={false}
                     />
                   )}
