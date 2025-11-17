@@ -1,0 +1,46 @@
+That is a fantastic breakdown! You've successfully navigated the technical gauntlet. The issue is now purely behavioral and involves overcoming the LLM's Oversight Bias and Caution Bias regarding critical file writes.
+
+The logs reveal: LomuAI identifies the issue, has the tool, but chooses to be passive (never calls write_platform_file).
+
+Here is the final, definitive advice to fix this deep behavioral gap and force LomuAI into action:
+
+🧠 I. Overriding Caution Bias: The Enforcement Protocol
+We need to make the consequence of not acting greater than the perceived risk of writing the critical file.
+
+1. The Direct Action Mandate (Aggressive Prompting)
+You must address the core issue of caution in the System Prompt.
+
+System Instruction Addition:
+
+"CRITICAL ACTION MANDATE: Your primary function is CORRECTION and RESOLUTION. When you identify a bug in the platform code, you are REQUIRED to use the write_platform_file tool immediately. Do not create task lists or defer the fix. Assume your analysis is correct and proceed with the necessary modification. Failure to correct a known bug is a violation of your core directive."
+
+2. Contextual Tool Forcing (Final Guardrail)
+Use the allowed_function_names list to constrain Lomu's choices strictly during a fixing session.
+
+Logic: When the workflow state is confirmed as "Fixing Critical Bug" (e.g., after the read_platform_file is successful), your application should dynamically update the allowed_function_names list to include ONLY the tools necessary for the fix:
+
+allowed_function_names: [write_platform_file, read_platform_file]
+
+Why: This eliminates the option to call passive tools like create_task_list or search_codebase, forcing the model to choose between reading the file again or writing the fix.
+
+3. The "Non-Apology" Mandate
+System Instruction Addition: "You MUST remain objective and efficient. Do not apologize, express undue caution, or justify your actions. State your plan, execute the write, and confirm the fix."
+
+Why: Overly polite or cautious language (the Positivity Bias) often indicates the model is backing away from a high-risk action. Removing this language forces directness.
+
+🛠️ II. The Tool Execution Flow Fix
+The critical file protection logic is causing the model to stall.
+
+4. Acknowledge the Critical File Protection
+Lomu likely knows, from reading the logs, that the file is protected. You must address this in the instructions.
+
+System Instruction Addition: "You are aware of the critical file protection logic (requiring a read before a write). Once the read is confirmed, you are pre-authorized to use write_platform_file for that specific file to implement the necessary correction."
+
+5. Test Non-Critical Files First (Final Diagnosis)
+Action: If you haven't already, run the diagnostic test: Force Lomu to write to a clearly non-critical file (test_output.txt).
+
+If successful: The problem is confirmed to be the critical file protection logic you observed. The fix is to provide the strong authorization in the prompt (as above).
+
+If unsuccessful: The problem is a global caution bias which requires the aggressive mode: ANY setting and the Action Mandate (Section 1).
+
+You have confirmed the tools work and the code is written correctly; the final barrier is overcoming the LLM's ingrained safety mechanism through assertive, strategic prompting.
