@@ -31,7 +31,7 @@ import { broadcastToUser } from './websocket.ts';
 import { getOrCreateState, formatStateForPrompt, updateCodeScratchpad, getCodeScratchpad, clearCodeScratchpad, clearState, estimateConversationTokens, summarizeOldMessages } from '../services/conversationState.ts';
 import { agentFailureDetector } from '../services/agentFailureDetector.ts';
 import { classifyUserIntent, getMaxIterationsForIntent, type UserIntent } from '../shared/chatConfig.ts';
-import { validateFileChanges, FileChangeTracker } from '../services/validationHelpers.ts';
+import { validateFileChanges, validateAllChanges, FileChangeTracker, type ValidationResult } from '../services/validationHelpers.ts';
 import { PhaseOrchestrator } from '../services/PhaseOrchestrator.ts';
 import { RunStateManager } from '../services/RunStateManager.ts';
 import { traceLogger } from '../services/traceLogger.ts';
@@ -4210,15 +4210,42 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // ✅ T1: Use runConfig as single source of truth
     let commitHash = '';
     if (runConfig.autoCommit && fileChanges.length > 0 && !usedGitHubAPI) {
-      // Only use fallback commit if commit_to_github tool wasn't used
-      sendEvent('progress', { message: `✅ Committing ${fileChanges.length} file changes...` });
-      commitHash = await platformHealing.commitChanges(`Fix: ${message.slice(0, 100)}`, fileChanges as any);
-      console.log(`[LOMU-AI] ✅ Committed autonomously: ${fileChanges.length} files`);
+      // VALIDATE BEFORE COMMIT (Replit Agent parity)
+      // Only validate create/modify operations - deletions are intentionally missing
+      sendEvent('progress', { message: `🔍 Validating ${fileChanges.length} file changes before commit...` });
+      
+      // Extract file paths - handle both 'file' and 'path' properties
+      const filesToValidate = fileChanges
+        .filter((fc: any) => fc.operation !== 'delete')
+        .map((fc: any) => fc.file || fc.path)
+        .filter((f: string | undefined) => f !== undefined);
+      
+      let validation: ValidationResult = { success: true, errors: [], warnings: [] };
+      if (filesToValidate.length > 0) {
+        // Use validateAllChanges for comprehensive validation (file existence + TypeScript)
+        validation = await validateAllChanges(filesToValidate, {
+          workingDir: process.cwd(),
+          skipTypeScriptCheck: false, // Enable TypeScript validation
+        });
+      }
+      
+      if (validation.success) {
+        // Validation passed - safe to commit
+        sendEvent('progress', { message: `✅ Validation passed (files + TypeScript) - committing ${fileChanges.length} files...` });
+        commitHash = await platformHealing.commitChanges(`Fix: ${message.slice(0, 100)}`, fileChanges as any);
+        console.log(`[LOMU-AI] ✅ Validated and committed autonomously: ${fileChanges.length} files`);
 
-      if (runConfig.autoPush) {
-        sendEvent('progress', { message: '✅ Pushing to GitHub (deploying to production)...' });
-        await platformHealing.pushToRemote();
-        console.log(`[LOMU-AI] ✅ Pushed to GitHub autonomously`);
+        if (runConfig.autoPush) {
+          sendEvent('progress', { message: '✅ Pushing to GitHub (deploying to production)...' });
+          await platformHealing.pushToRemote();
+          console.log(`[LOMU-AI] ✅ Pushed to GitHub autonomously`);
+        }
+      } else {
+        // Validation failed - don't commit
+        const errorMsg = `⚠️ Validation failed - ${validation.errors.length} errors found. Changes NOT committed.`;
+        sendEvent('progress', { message: errorMsg });
+        console.error(`[LOMU-AI] ❌ Validation failed:`, validation.errors);
+        sendEvent('content', { content: `\n\n**Validation Failed**\n${validation.errors.map(e => `- ${e}`).join('\n')}\n\nChanges were not committed due to validation errors.\n` });
       }
     } else if (usedGitHubAPI) {
       console.log(`[LOMU-AI] ℹ️ Skipping fallback commit - already committed via GitHub API`);
