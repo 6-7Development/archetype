@@ -13,6 +13,7 @@ import { files } from "@shared/schema";
 import { autoHealing } from "./autoHealing";
 import multer from "multer"; // Import multer
 import { eq } from "drizzle-orm";
+import WebSocket from 'ws'; // Import WebSocket
 
 // DEPLOYMENT VERIFICATION: October 28, 2025 01:50 UTC - LomuAI execution fix deployed
 // ✅ LomuAI system prompt rewritten to force immediate tool execution
@@ -247,13 +248,13 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
         DELETE FROM chat_messages 
         WHERE content LIKE '%createTaskList(%' 
            OR content LIKE '%updateTask(%' 
-           OR content LIKE '%readTaskList(%'
-           OR content LIKE '%startSubagent(%'
-           OR content LIKE '%architectConsult(%'
-           OR content LIKE '%performDiagnosis(%'
-           OR content LIKE '%readPlatformFile(%'
-           OR content LIKE '%writePlatformFile(%'
-           OR content LIKE '%listPlatformDirectory(%'
+           OR content LIKE '%readTaskList(%' 
+           OR content LIKE '%startSubagent(%' 
+           OR content LIKE '%architectConsult(%' 
+           OR content LIKE '%performDiagnosis(%' 
+           OR content LIKE '%readPlatformFile(%' 
+           OR content LIKE '%writePlatformFile(%' 
+           OR content LIKE '%listPlatformDirectory(%' 
       `);
       console.log('✅ Chat history cleanup complete');
     } catch (cleanupError: any) {
@@ -444,3 +445,83 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
 
   console.log('[RAILWAY] Graceful shutdown handler registered (SIGTERM)');
 })();
+
+// WebSocket server instance
+let wss: WebSocket.Server | null = null;
+
+// Initialize WebSocket server
+export function initializeWebSocket(websocketServer: WebSocket.Server) {
+  wss = websocketServer;
+  console.log('[WEBSOCKET] WebSocket server initialized');
+
+  wss.on('connection', (ws: WebSocket) => {
+    console.log('[WEBSOCKET] Client connected');
+
+    ws.on('error', (error: Error) => {
+      console.error('[WEBSOCKET] Client WebSocket error:', error.message);
+    });
+
+    ws.on('close', (code: number, reason: string) => {
+      console.log(`[WEBSOCKET] Client WebSocket closed: Code ${code}, Reason: ${reason}`);
+    });
+  });
+}
+
+// Broadcast message to all connected WebSocket clients
+export function broadcastToAll(message: string) {
+  if (!wss) {
+    console.warn('[WEBSOCKET] WebSocket server not initialized, cannot broadcast');
+    return;
+  }
+
+  wss.clients.forEach(client => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(message);
+    }
+  });
+}
+
+// Broadcast message to a specific user (if they have active WebSocket connections)
+export function broadcastToUser(wss: WebSocket.Server, userId: string, message: any) {
+  wss.clients.forEach((client: any) => {
+    // Assuming client.userId is set on connection (e.g., during authentication)
+    if (client.readyState === WebSocket.OPEN && client.userId === userId) {
+      client.send(JSON.stringify(message));
+    }
+  });
+}
+
+// Broadcast message to a specific project room
+export function broadcastToProject(wss: WebSocket.Server, projectId: string, message: any) {
+  wss.clients.forEach((client: any) => {
+    // Assuming client.projectId is set on connection
+    if (client.readyState === WebSocket.OPEN && client.projectId === projectId) {
+      client.send(JSON.stringify(message));
+    }
+  });
+}
+
+// Broadcast message to a specific platform room (e.g., for owner-only updates)
+export function broadcastToPlatform(wss: WebSocket.Server, message: any) {
+  wss.clients.forEach((client: any) => {
+    // Assuming client.isOwner is set on connection
+    if (client.readyState === WebSocket.OPEN && client.isOwner) {
+      client.send(JSON.stringify(message));
+    }
+  });
+}
+
+// Broadcast message to a specific room (generic)
+export function broadcastToRoom(wss: WebSocket.Server, roomId: string, message: any) {
+  wss.clients.forEach((client: any) => {
+    // Assuming client.roomId is set on connection
+    if (client.readyState === WebSocket.OPEN && client.roomId === roomId) {
+      client.send(JSON.stringify(message));
+    }
+  });
+}
+
+// Export the WebSocket server instance for other modules to use
+export { wss };
+
+// Add a comment '// Test auto-commit' to the top of server/routes/lomuChat.ts

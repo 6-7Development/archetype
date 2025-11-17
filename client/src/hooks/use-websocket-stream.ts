@@ -593,9 +593,19 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
             case 'scratchpad_entry':
               console.log('📝 Scratchpad entry:', message.entry);
               if (message.entry) {
+                const entry = message.entry; // Capture to avoid multiple non-null assertions
                 setStreamState(prev => ({
                   ...prev,
-                  scratchpadEntries: [...prev.scratchpadEntries, message.entry!],
+                  scratchpadEntries: [...prev.scratchpadEntries, entry],
+                  // ALSO add to progressMessages so EnhancedMessageDisplay can show it inline
+                  progressMessages: [
+                    ...prev.progressMessages,
+                    {
+                      id: `scratchpad-${entry.id}`,
+                      message: entry.content,
+                      timestamp: new Date(entry.createdAt).getTime(),
+                    },
+                  ],
                 }));
               }
               break;
