@@ -38,36 +38,43 @@ export function EnhancedMessageDisplay({ content, progressMessages = [], isStrea
     
     progressMessages.forEach((progress, index) => {
       const msg = progress.message.toLowerCase();
-      const original = progress.message;
       
-      // Categorize ALL messages - nothing should be filtered out
-      if (msg.includes('analyzing') || msg.includes('planning') || msg.includes('considering') || msg.includes('evaluating') || msg.includes('reviewing') || msg.includes('assessing') || msg.includes('examining')) {
+      // THINKING: Analysis, planning, evaluation
+      if (msg.includes('analyzing') || msg.includes('planning') || msg.includes('considering') || 
+          msg.includes('evaluating') || msg.includes('reviewing') || msg.includes('assessing') || 
+          msg.includes('examining') || msg.includes('understanding')) {
         blocks.push({
           id: `thinking-${index}`,
           type: 'thinking',
-          content: original,
+          content: progress.message,
           timestamp: progress.timestamp
         });
       }
-      else if (msg.includes('✅') || msg.includes('completed') || msg.includes('finished') || msg.includes('done') || msg.includes('success')) {
-        blocks.push({
-          id: `result-${index}`,
-          type: 'result',
-          content: original,
-          timestamp: progress.timestamp
-        });
-      }
-      // DEFAULT: Treat as tool action (most progress messages are tool-related)
-      else {
-        const toolName = extractToolName(original);
+      // TOOL CALLS: File operations, searches, tool execution
+      else if (msg.includes('🔧') || msg.includes('📖') || msg.includes('✏️') || msg.includes('🔨') ||
+               msg.includes('reading') || msg.includes('writing') || msg.includes('modifying') || 
+               msg.includes('creating') || msg.includes('deleting') || msg.includes('searching') ||
+               msg.includes('executing') || msg.includes('fixing')) {
+        const toolName = extractToolName(progress.message);
         blocks.push({
           id: `tool-${index}`,
           type: 'tool_call',
-          content: original,
+          content: progress.message,
           toolName,
           timestamp: progress.timestamp
         });
       }
+      // RESULTS: Completions, successes
+      else if (msg.includes('✅') || msg.includes('completed') || msg.includes('finished') || 
+               msg.includes('done') || msg.includes('success')) {
+        blocks.push({
+          id: `result-${index}`,
+          type: 'result',
+          content: progress.message,
+          timestamp: progress.timestamp
+        });
+      }
+      // NOTE: Messages that don't match are intentionally filtered out to reduce noise
     });
 
     return blocks;
@@ -81,11 +88,11 @@ export function EnhancedMessageDisplay({ content, progressMessages = [], isStrea
     if (lower.includes('deleting')) return 'delete_file';
     if (lower.includes('listing')) return 'list_files';
     if (lower.includes('searching')) return 'search';
-    if (lower.includes('executing') || message.includes('🔨')) return 'execute';
+    if (lower.includes('executing') || message.includes('🔨')) return 'execute_tool';
     if (lower.includes('consulting i am')) return 'architect_consult';
     if (lower.includes('generating design')) return 'generate_design';
     if (lower.includes('rate limit') || lower.includes('waiting')) return 'wait';
-    return 'action';
+    return 'tool';
   };
 
   const blocks = parseProgressToBlocks();

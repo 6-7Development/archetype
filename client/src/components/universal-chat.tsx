@@ -1399,7 +1399,7 @@ export function UniversalChat({
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, streamState.fullMessage, isGenerating]);
+  }, [messages, streamState.fullMessage, streamState.progressMessages, isGenerating]);
 
   return (
     <div className="flex h-full overflow-hidden bg-[hsl(220,20%,12%)] relative">
