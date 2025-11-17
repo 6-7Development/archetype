@@ -1648,16 +1648,13 @@ export function UniversalChat({
               if (hasContent) {
                 // Show actual streaming content
                 const content = streamState.fullMessage || lastMessage?.content || '';
-                const progressMsgs = streamState.progressMessages.length > 0 
-                  ? streamState.progressMessages 
-                  : (lastMessage?.progressMessages || []);
                 
                 return (
                   <div className="flex gap-3 items-start">
                     <div className="max-w-[75%] rounded-lg px-4 py-3 bg-card text-card-foreground shadow-sm border border-border/30">
                       <EnhancedMessageDisplay 
                         content={cleanAIResponse(parseMessageContent(content))}
-                        progressMessages={progressMsgs}
+                        progressMessages={[]}
                         isStreaming={true}
                       />
                     </div>
