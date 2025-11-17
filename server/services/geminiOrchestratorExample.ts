@@ -6,7 +6,12 @@
  */
 
 import { createGeminiOrchestrator, type StreamEvent, type ExecutionResult } from './geminiOrchestrator';
-import { broadcastToUser } from '../routes/websocket';
+
+// Example placeholder - In production, import: import { broadcastToUser } from '../routes/websocket';
+// and pass wss as first argument: broadcastToUser(wss, userId, data)
+function broadcastToUser(_userId: string, _data: any) {
+  // Placeholder for examples - replace with actual WebSocket broadcast
+}
 
 /**
  * Example 1: Simple Usage with Console Logging
@@ -229,11 +234,11 @@ export async function advancedExample(userId: string) {
       // Custom event handling
       switch (event.type) {
         case 'task_start':
-          console.log(\`📋 Starting task: \${event.task?.description}\`);
+          console.log(`📋 Starting task: ${event.task?.description}`);
           break;
 
         case 'file_operation':
-          console.log(\`✏️ File operation: \${event.operation} on \${event.filePath}\`);
+          console.log(`✏️ File operation: ${event.operation} on ${event.filePath}`);
           break;
 
         case 'validation':
@@ -271,7 +276,7 @@ export async function advancedExample(userId: string) {
 /**
  * Example Usage in Real Project
  */
-export const realWorldUsage = \`
+export const realWorldUsage = `
 // Example: Building a feature using the orchestrator
 
 import { createGeminiOrchestrator } from '@/server/services/geminiOrchestrator';
@@ -290,16 +295,7 @@ async function buildDashboard(userId: string) {
     }
   );
 
-  const result = await orchestrator.execute(\`
-    Build a dashboard page with the following features:
-    1. User stats cards (total users, active sessions, revenue)
-    2. Charts showing growth over time (using recharts)
-    3. Recent activity feed
-    4. Quick actions section
-    
-    Use TypeScript, React, Tailwind CSS, and shadcn/ui components.
-    Follow existing code patterns in client/src/pages/
-  \`);
+  const result = await orchestrator.execute('Build a dashboard page with the following features: 1. User stats cards, 2. Charts, 3. Activity feed, 4. Quick actions. Use TypeScript, React, Tailwind CSS, and shadcn/ui.');
 
   if (result.success) {
     console.log('Dashboard built successfully!');
@@ -310,4 +306,4 @@ async function buildDashboard(userId: string) {
 
   return result;
 }
-\`;
+`;
