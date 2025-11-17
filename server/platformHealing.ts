@@ -590,6 +590,68 @@ export class PlatformHealingService {
       console.log(`[PLATFORM-WRITE] 📦 BATCH MODE - Will NOT auto-commit (commit manually later)`);
     }
     
+    // 🛡️ CATASTROPHIC DELETION PROTECTION
+    // Prevents LomuAI from accidentally destroying files due to Gemini truncation bugs
+    try {
+      const existingFullPath = path.resolve(this.PROJECT_ROOT, filePath);
+      const existingStats = await fs.stat(existingFullPath);
+      const existingContent = await fs.readFile(existingFullPath, 'utf-8');
+      const existingSize = existingContent.length;
+      const newSize = content.length;
+      const existingLines = existingContent.split('\n').length;
+      const newLines = content.split('\n').length;
+      
+      // Check 1: Catastrophic size reduction (>70% deletion)
+      if (newSize < existingSize * 0.3) {
+        const percentReduction = Math.round((1 - newSize / existingSize) * 100);
+        console.error(`[PLATFORM-WRITE] 🚨 CATASTROPHIC DELETION DETECTED!`);
+        console.error(`[PLATFORM-WRITE] File: ${filePath}`);
+        console.error(`[PLATFORM-WRITE] Original: ${existingSize} bytes (${existingLines} lines)`);
+        console.error(`[PLATFORM-WRITE] New: ${newSize} bytes (${newLines} lines)`);
+        console.error(`[PLATFORM-WRITE] Reduction: ${percentReduction}% - BLOCKED!`);
+        throw new Error(
+          `🚨 CATASTROPHIC DELETION BLOCKED: Attempting to reduce ${filePath} by ${percentReduction}% ` +
+          `(${existingLines} → ${newLines} lines). This usually means Gemini's function call args were ` +
+          `truncated during streaming. Use the 'edit' tool to make targeted changes instead of rewriting entire files.`
+        );
+      }
+      
+      // Check 2: Large file rewrite detection (>500 lines)
+      if (existingLines > 500 && newLines > 400) {
+        console.warn(`[PLATFORM-WRITE] ⚠️ LARGE FILE REWRITE: ${filePath} (${existingLines} → ${newLines} lines)`);
+        console.warn(`[PLATFORM-WRITE] Recommendation: Use 'edit' tool for targeted changes instead of full rewrites`);
+      }
+      
+      // Check 3: Truncation detection for TypeScript/JavaScript files
+      if (filePath.match(/\.(ts|tsx|js|jsx)$/) && newLines > 100) {
+        const lastLines = content.split('\n').slice(-10).join('\n');
+        const hasClosingBrace = lastLines.includes('}');
+        const endsAbruptly = !content.trim().endsWith('}') && !content.trim().endsWith(';');
+        
+        if (endsAbruptly && !hasClosingBrace) {
+          console.error(`[PLATFORM-WRITE] 🚨 TRUNCATION DETECTED!`);
+          console.error(`[PLATFORM-WRITE] File appears to end mid-function/class`);
+          console.error(`[PLATFORM-WRITE] Last 100 chars:`, content.slice(-100));
+          throw new Error(
+            `🚨 TRUNCATION DETECTED: ${filePath} appears incomplete (doesn't end with '}' or ';'). ` +
+            `This is likely due to Gemini's function call args being cut off during streaming. ` +
+            `Use the 'edit' tool instead.`
+          );
+        }
+      }
+      
+      console.log(`[PLATFORM-WRITE] ✅ Size check passed: ${existingLines} → ${newLines} lines (${Math.round((newLines / existingLines - 1) * 100)}% change)`);
+    } catch (statError: any) {
+      // File doesn't exist - this is a new file, which is fine
+      if (statError.code === 'ENOENT') {
+        console.log(`[PLATFORM-WRITE] 📝 Creating new file: ${filePath}`);
+      } else if (statError.message?.includes('CATASTROPHIC') || statError.message?.includes('TRUNCATION')) {
+        // Re-throw our safety checks
+        throw statError;
+      }
+      // Ignore other stat errors (permissions, etc.)
+    }
+    
     // 🚫 BLOCK TEMP/HELPER FILES - Prevent lazy AI behavior
     const tempFilePatterns = [
       /temp_/i,                    // temp_search.js, temp_anything

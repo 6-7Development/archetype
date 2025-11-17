@@ -116,7 +116,7 @@ import {
   scratchpadEntries
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, isNull, sql } from "drizzle-orm";
+import { eq, and, desc, isNull, sql, inArray } from "drizzle-orm";
 import { PLAN_LIMITS } from "./usage-tracking";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
