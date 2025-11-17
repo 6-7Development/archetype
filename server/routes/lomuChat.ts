@@ -1478,6 +1478,10 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // 🔧 FORCE MODE: Track if we should force function calling due to malformed calls
     let shouldForceFunctionCall = false;
 
+    // 💬 PROGRESS MESSAGES: Track thinking/action/result messages for inline display and persistence
+    const progressMessages: Array<{ id: string; message: string; timestamp: number; category: 'thinking' | 'action' | 'result' }> = [];
+    assistantMessageId = nanoid(); // Generate temporary message ID for SSE events (will be replaced with real ID after save)
+
     // ============================================================================
     // T2: PHASE ORCHESTRATION - EMIT THINKING PHASE (PRE-LOOP MILESTONE)
     // ============================================================================
@@ -1774,8 +1778,25 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
                 entry
               });
               
-              // 💭 Send thinking to inline chat display (SSE) - but NOT tool calls (they go in status bar)
-              sendEvent('progress', { message: `💭 ${thought}` });
+              // 💭 Send thinking to inline chat display (SSE) with proper structure
+              const progressId = nanoid();
+              const progressEntry = {
+                id: progressId,
+                message: thought,
+                timestamp: Date.now(),
+                category: 'thinking' as const
+              };
+              
+              // Track progress message for persistence
+              progressMessages.push(progressEntry);
+              
+              // Send SSE event for real-time display
+              sendEvent('assistant_progress', {
+                messageId: assistantMessageId,
+                progressId,
+                content: thought,
+                category: 'thinking'
+              });
               
               // 🚨 WATCHDOG: Increment consecutive thinking counter
               consecutiveThinkingCount++;
@@ -1833,6 +1854,26 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
               broadcastToUser(wss, userId, {
                 type: 'scratchpad_entry',
                 entry
+              });
+              
+              // 🔧 Send action to inline chat display (SSE) with proper structure
+              const progressId = nanoid();
+              const progressEntry = {
+                id: progressId,
+                message: action,
+                timestamp: Date.now(),
+                category: 'action' as const
+              };
+              
+              // Track progress message for persistence
+              progressMessages.push(progressEntry);
+              
+              // Send SSE event for real-time display
+              sendEvent('assistant_progress', {
+                messageId: assistantMessageId,
+                progressId,
+                content: action,
+                category: 'action'
               });
               
               // 🚨 WATCHDOG: Reset thinking counter when action is taken
@@ -4075,7 +4116,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
       console.log(`[OUTPUT-VALIDATION] ✅ Response follows THREE-STEP format (${formatValidation.score}%)`);
     }
 
-    // Save assistant message
+    // Save assistant message with progress messages for inline display
     const [assistantMsg] = await db
       .insert(chatMessages)
       .values({
@@ -4086,6 +4127,7 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         role: 'assistant',
         content: finalMessage,
         isPlatformHealing: true,
+        progressMessages: progressMessages.length > 0 ? progressMessages : null,
         platformChanges: fileChanges.length > 0 ? { files: fileChanges } : null,
       })
       .returning();

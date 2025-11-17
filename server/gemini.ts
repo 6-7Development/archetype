@@ -713,10 +713,10 @@ If you need to call a function, emit ONLY the JSON object.`),
                 // Fall through to the general retry or error handling below
               } else {
                 retryCount++;
-                console.log(`[GEMINI-RETRY] Retrying with clarifying message (${retryCount}/${MAX_RETRIES})...`);
+                console.log(`[GEMINI-RETRY] Retrying with structural constraint (${retryCount}/${MAX_RETRIES})...`);
                 
-                // Build corrective instruction (clear, no negative examples)
-                const clarifyingContent = `RETRY: Call the tool again using the correct JSON format. Use only the declared tool names and their exact schemas.`;
+                // Minimalist structural command (no mention of error type)
+                const clarifyingContent = `🛑 SYSTEM ERROR: The last response was not executable. You must immediately retry your previous action. Your ONLY output must be a clean, complete function call object. Do NOT include any explanatory text, reasoning, or examples. Retry now.`;
                 
                 const clarifyingMessage: any = {
                   role: 'user',

@@ -68,7 +68,12 @@ interface Message {
   checkpoint?: CheckpointData;
   isSummary?: boolean;
   images?: string[];
-  progressMessages?: Array<{ id: string; message: string; timestamp: number }>; // Store thinking/tool calls
+  progressMessages?: Array<{ 
+    id: string; 
+    message: string; 
+    timestamp: number;
+    category?: 'thinking' | 'action' | 'result';
+  }>; // Store thinking/tool calls inline
 }
 
 interface RequiredSecret {
@@ -1112,6 +1117,39 @@ export function UniversalChat({
                 case 'run_phase':
                   setCurrentPhase(eventData.phase || 'working');
                   setPhaseMessage(eventData.message || '');
+                  break;
+
+                case 'assistant_progress':
+                  // Handle inline thinking/action/result progress messages
+                  const progressEntry = {
+                    id: eventData.progressId || nanoid(),
+                    message: eventData.content || '',
+                    timestamp: Date.now(),
+                    category: eventData.category || 'action'
+                  };
+                  
+                  // Append to current assistant message's progressMessages
+                  setMessages((prev) => {
+                    const updated = [...prev];
+                    const lastMsg = updated[updated.length - 1];
+                    if (lastMsg && lastMsg.role === 'assistant') {
+                      if (!lastMsg.progressMessages) {
+                        lastMsg.progressMessages = [];
+                      }
+                      lastMsg.progressMessages.push(progressEntry);
+                      return [...updated]; // Force re-render
+                    }
+                    return updated;
+                  });
+                  
+                  // Also update progress status for status bar
+                  if (eventData.category === 'thinking') {
+                    setProgressStatus('thinking');
+                    setProgressMessage(eventData.content || 'Thinking...');
+                  } else if (eventData.category === 'action') {
+                    setProgressStatus('working');
+                    setProgressMessage(eventData.content || 'Working...');
+                  }
                   break;
 
                 // RunState event handlers

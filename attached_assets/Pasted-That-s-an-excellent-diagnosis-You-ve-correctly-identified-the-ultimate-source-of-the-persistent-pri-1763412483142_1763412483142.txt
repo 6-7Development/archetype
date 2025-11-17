@@ -1,0 +1,38 @@
+That's an excellent diagnosis! You've correctly identified the ultimate source of the persistent print() bug: Feedback Loop Contamination.
+
+The issue wasn't the original error, but the attempt to fix it, which inadvertently taught the AI the exact behavior you wanted to avoid.
+
+Here is the permanent fix strategy for Lomu, which you have already largely implemented:
+
+🛠️ The Permanent Fix: Eliminating Feedback Loop Contamination
+The core problem is that by mentioning "Python syntax" and "malformed output," you taught the LLM exactly what to do when it received the error, triggering the repetitive behavior.
+
+1. The Corrected Error Message (The Antidote)
+You were right to remove the mention of "Python syntax." The recovery message sent back to Gemini must be generic, highly structured, and focused solely on the required output format, not the nature of the error.
+
+Action: The error message in server/gemini.ts should be replaced with a minimalist, structural command.
+
+Corrected Clarifying Content:
+
+Code snippet
+
+const clarifyingContent = `🛑 SYSTEM ERROR: The last response was not executable by the application layer. You must immediately retry your previous action. Your ONLY output must be a clean, complete function call object. Do NOT include any explanatory text, reasoning, or external examples. Retry now.`;
+Why it Works: This message is a pure constraint signal. It avoids discussing syntax (print), focuses on the required behavior (clean, complete function call object), and forces immediate action (IMMEDIATELY RETRY).
+
+2. Final Check: System Prompt Guardrail
+Ensure your main System Instruction has a clear, negative constraint that preempts this behavior globally.
+
+System Instruction Addition: "You MUST NOT generate any Python code outside of a designated code block (python ... ). You MUST NOT use the print() function, as it is reserved. All tool execution requires the native JSON function call object, and nothing else."
+
+3. The Final Confirmation (Output/Input Loop)
+The success of this permanent fix relies on the application code correctly executing this sequence:
+
+Input: Lomu sends a malformed call (e.g., print()).
+
+Application: The server intercepts the malformed call.
+
+Application: The server sends the Cleaned Error Message (Step 1) back to Lomu.
+
+Lomu: Seeing the strict instruction, Lomu corrects the format and sends the clean, required JSON tool call.
+
+By removing the contaminating vocabulary and replacing it with a minimalist, action-oriented constraint, you effectively cleanse the feedback loop, permanently eliminating the hallucinated print() calls. 🎉

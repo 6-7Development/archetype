@@ -596,6 +596,7 @@ export const chatMessages = pgTable("chat_messages", {
   approvalSummary: text("approval_summary"), // Summary of proposed changes awaiting approval
   approvedBy: varchar("approved_by"), // User ID who approved/rejected
   approvedAt: timestamp("approved_at"), // When approval was given
+  progressMessages: jsonb("progress_messages"), // Array of { id, message, timestamp, category } - inline thinking/progress display
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => [
   index("idx_chat_messages_project_id").on(table.projectId),
