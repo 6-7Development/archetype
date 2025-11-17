@@ -12,7 +12,7 @@
 import { LOMU_TOOLS } from './index';
 
 /**
- * LOMU CORE TOOLS (18 tools)
+ * LOMU CORE TOOLS (21 tools)
  * For regular LomuAI development work - fast execution primitives
  * Used by: LomuAI Chat, Platform Healing
  */
@@ -21,6 +21,11 @@ export const LOMU_CORE_TOOLS = LOMU_TOOLS.filter(tool => [
   'read',
   'write',
   'ls',
+  
+  // Platform File Operations (3) - CRITICAL: LomuAI needs these to fix platform issues!
+  'read_platform_file',
+  'write_platform_file',
+  'list_platform_files',
   
   // Smart Code Intelligence (3)
   'smart_read_file',
