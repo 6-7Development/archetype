@@ -1,9 +1,9 @@
-import { db } from '../../db';
+import { db } from '../../db.ts';
 import { conversationStates, users } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import * as path from 'path';
 import type { WebSocketServer } from 'ws';
-import { EMERGENCY_LIMITS } from './constants';
+import { EMERGENCY_LIMITS } from './constants.ts';
 
 // ✅ STATUS MAPPING: Convert database statuses to RunStateManager TaskStatus
 export function mapDatabaseStatusToRunState(dbStatus: string): 'backlog' | 'in_progress' | 'verifying' | 'done' | 'blocked' {

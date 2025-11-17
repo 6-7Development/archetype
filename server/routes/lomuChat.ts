@@ -37,7 +37,7 @@ import { RunStateManager } from '../services/RunStateManager.ts';
 import { traceLogger } from '../services/traceLogger.ts';
 import { nanoid } from 'nanoid';
 // Import extracted utilities and constants
-import { EMERGENCY_LIMITS, MAX_CONSECUTIVE_THINKING } from './lomu/constants';
+import { EMERGENCY_LIMITS, MAX_CONSECUTIVE_THINKING } from './lomu/constants.ts';
 import {
   mapDatabaseStatusToRunState,
   detectLowConfidencePatterns,
@@ -49,7 +49,7 @@ import {
   broadcastFileUpdate as broadcastFileUpdateUtil,
   waitForApproval,
   resolveApproval
-} from './lomu/utils';
+} from './lomu/utils.ts';
 
 const execAsync = promisify(exec);
 
