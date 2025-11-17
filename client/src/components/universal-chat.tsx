@@ -1543,12 +1543,12 @@ export function UniversalChat({
             >
               <div
                 className={cn(
-                  "max-w-[75%] rounded-2xl px-4 py-3",
+                  "max-w-[75%] rounded-lg px-4 py-3 border",
                   message.role === "user"
-                    ? "bg-primary text-primary-foreground shadow-md"
+                    ? "bg-primary text-primary-foreground shadow-md border-primary/20"
                     : message.isSummary 
-                      ? "bg-muted border border-border" 
-                      : "bg-secondary text-secondary-foreground shadow-sm"
+                      ? "bg-muted/30 border-border/50" 
+                      : "bg-card text-card-foreground border-border/30 shadow-sm"
                 )}>
                   {message.isSummary ? (
                     <div className="text-sm text-muted-foreground italic flex items-center gap-2">
@@ -1622,7 +1622,7 @@ export function UniversalChat({
                 
                 return (
                   <div className="flex gap-3 items-start">
-                    <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-secondary text-secondary-foreground shadow-sm border border-border/50">
+                    <div className="max-w-[75%] rounded-lg px-4 py-3 bg-card text-card-foreground shadow-sm border border-border/30">
                       <EnhancedMessageDisplay 
                         content={cleanAIResponse(parseMessageContent(content))}
                         progressMessages={progressMsgs}
