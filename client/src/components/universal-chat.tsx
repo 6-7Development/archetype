@@ -32,6 +32,7 @@ import { ArchitectNotesPanel } from "@/components/architect-notes-panel";
 import { DeploymentStatusModal } from "@/components/deployment-status-modal";
 import { StatusStrip } from "@/components/agent/StatusStrip";
 import { ArtifactsDrawer, type Artifact as ArtifactItem } from "@/components/agent/ArtifactsDrawer";
+import { EnhancedMessageDisplay } from "@/components/enhanced-message-display";
 import type { 
   RunPhase, 
   RunState, 
@@ -62,6 +63,7 @@ interface Message {
   checkpoint?: CheckpointData;
   isSummary?: boolean;
   images?: string[];
+  progressMessages?: Array<{ id: string; message: string; timestamp: number }>; // Store thinking/tool calls
 }
 
 interface RequiredSecret {
@@ -1021,6 +1023,9 @@ export function UniversalChat({
       let buffer = '';
       let assistantMessageContent = '';
       let assistantMessageId = '';
+      
+      // Capture progress messages during streaming
+      const capturedProgress: Array<{ id: string; message: string; timestamp: number }> = [];
 
       // Create temporary assistant message for streaming
       const tempAssistantMessage: Message = {
@@ -1028,6 +1033,7 @@ export function UniversalChat({
         role: 'assistant',
         content: '',
         timestamp: new Date(),
+        progressMessages: [],
       };
       setMessages((prev) => [...prev, tempAssistantMessage]);
 
@@ -1153,6 +1159,13 @@ export function UniversalChat({
                   // Handle inline progress thoughts (like Replit Agent)
                   console.log('[SSE] Progress:', eventData.message);
                   if (eventData.message) {
+                    // Store progress for inline display
+                    capturedProgress.push({
+                      id: nanoid(),
+                      message: eventData.message,
+                      timestamp: Date.now()
+                    });
+                    
                     setProgressMessage(eventData.message);
                     // If it's a warning/failure message, show it prominently
                     if (eventData.message.includes('🚨') || eventData.message.includes('failure')) {
@@ -1188,7 +1201,16 @@ export function UniversalChat({
         }
       }
 
-      // Final cleanup
+      // Final cleanup - attach captured progress to the last assistant message
+      setMessages((prev) => {
+        const updated = [...prev];
+        const lastMsg = updated[updated.length - 1];
+        if (lastMsg && lastMsg.role === 'assistant') {
+          lastMsg.progressMessages = capturedProgress;
+        }
+        return updated;
+      });
+      
       setIsGenerating(false);
       setProgressStatus('idle');
       setProgressMessage('');
@@ -1564,9 +1586,11 @@ export function UniversalChat({
                       <span>Earlier messages summarized for efficiency</span>
                     </div>
                   ) : (
-                    <div className="prose prose-invert max-w-none text-sm leading-relaxed">
-                      <MarkdownRenderer content={cleanAIResponse(parseMessageContent(message.content))} />
-                    </div>
+                    <EnhancedMessageDisplay 
+                      content={cleanAIResponse(parseMessageContent(message.content))}
+                      progressMessages={message.role === 'assistant' && message.progressMessages ? message.progressMessages : []}
+                      isStreaming={false}
+                    />
                   )}
 
                   {message.checkpoint && !isFreeAccess && (
@@ -1616,9 +1640,11 @@ export function UniversalChat({
           {isGenerating && streamState.fullMessage && (
             <div className="flex gap-3 items-start">
               <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-secondary text-secondary-foreground shadow-sm border border-border/50">
-                <div className="prose prose-invert max-w-none text-sm leading-relaxed">
-                  <MarkdownRenderer content={cleanAIResponse(parseMessageContent(streamState.fullMessage))} />
-                </div>
+                <EnhancedMessageDisplay 
+                  content={cleanAIResponse(parseMessageContent(streamState.fullMessage))}
+                  progressMessages={streamState.progressMessages}
+                  isStreaming={true}
+                />
               </div>
             </div>
           )}
