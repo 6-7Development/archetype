@@ -713,11 +713,10 @@ If you need to call a function, emit ONLY the JSON object.`),
                 // Fall through to the general retry or error handling below
               } else {
                 retryCount++;
-                console.log(`[GEMINI-RETRY] Forcing function call with mode: ANY (${retryCount}/${MAX_RETRIES})...`);
-                console.log(`[GEMINI-RETRY] Forcing function: ${attemptedFunction}`);
+                console.log(`[GEMINI-RETRY] Retrying with clarifying message (${retryCount}/${MAX_RETRIES})...`);
                 
-                // Build DISCIPLINED corrective instruction (per Gemini resilience engineering)
-                const clarifyingContent = `🛑 SYSTEM ERROR: The last output was malformed. You must not use Python syntax. You must IMMEDIATELY RETRY the tool call using ONLY the JSON structure. Do not add any explanatory text or commentary.`;
+                // Build corrective instruction (clear, no negative examples)
+                const clarifyingContent = `RETRY: Call the tool again using the correct JSON format. Use only the declared tool names and their exact schemas.`;
                 
                 const clarifyingMessage: any = {
                   role: 'user',
