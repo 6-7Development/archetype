@@ -200,6 +200,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef<number>(0);
   const shouldReconnectRef = useRef<boolean>(true);
+  const connectionInitiatedRef = useRef<boolean>(false); // Prevent duplicate initial connections
   
   // Use refs to avoid recreating connect callback on every render
   const sessionIdRef = useRef(sessionId);
@@ -262,6 +263,13 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
       console.log('[WS] 🔒 Preventing duplicate connection (already connected/connecting)');
       return;
     }
+    
+    // Additional deduplication: prevent multiple simultaneous connection attempts
+    if (connectionInitiatedRef.current && !wsRef.current) {
+      console.log('[WS] 🔒 Connection already in progress, skipping duplicate attempt');
+      return;
+    }
+    
     if (reconnectAttemptsRef.current >= MAX_RECONNECT_ATTEMPTS) {
       setStreamState(prev => ({
         ...prev,
@@ -270,6 +278,8 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
       }));
       return;
     }
+    
+    connectionInitiatedRef.current = true;
 
     try {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -282,6 +292,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
       ws.onopen = () => {
         console.log('✅ WebSocket connected');
         reconnectAttemptsRef.current = 0; // Reset on successful connection
+        connectionInitiatedRef.current = false; // Reset flag on success
         setStreamState(prev => ({
           ...prev,
           isConnected: true,
@@ -745,6 +756,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
 
       ws.onerror = (error) => {
         console.error('❌ WebSocket error:', error);
+        connectionInitiatedRef.current = false; // Reset flag on error
         setStreamState(prev => ({
           ...prev,
           error: 'Connection error',
@@ -845,18 +857,24 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
 
   useEffect(() => {
     shouldReconnectRef.current = true;
-    connect();
+    
+    // Only connect if we haven't already initiated a connection
+    if (!connectionInitiatedRef.current) {
+      connect();
+    }
 
     return () => {
       shouldReconnectRef.current = false;
+      connectionInitiatedRef.current = false; // Reset on unmount
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }
       if (wsRef.current) {
         wsRef.current.close(1000, 'Component unmount');
+        wsRef.current = null;
       }
     };
-  }, [connect]);
+  }, []); // Empty dependency array - only run once on mount
 
   return {
     ...streamState,
