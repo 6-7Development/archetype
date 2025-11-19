@@ -1133,10 +1133,8 @@ export function UniversalChat({
                     const updated = [...prev];
                     const lastMsg = updated[updated.length - 1];
                     if (lastMsg && lastMsg.role === 'assistant') {
-                      if (!lastMsg.progressMessages) {
-                        lastMsg.progressMessages = [];
-                      }
-                      lastMsg.progressMessages.push(progressEntry);
+                      // ✅ Create NEW array instead of mutating - React detects changes
+                      lastMsg.progressMessages = [...(lastMsg.progressMessages || []), progressEntry];
                       return [...updated]; // Force re-render
                     }
                     return updated;

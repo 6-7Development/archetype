@@ -64,6 +64,8 @@ The platform implements a comprehensive Agent Chatroom interface with real-time 
 
 This organized, unified view mirrors Replit Agent's inline `<thinking>` tags, showing the AI's work process alongside the final response. Progress messages persist with message history, maintaining transparency across sessions.
 
+**Recent Fix (Nov 19, 2025)**: Fixed React state mutation bug in `assistant_progress` event handler - changed from direct `.push()` mutation to immutable spread operator (`[...(array || []), newItem]`), restoring real-time progress display during streaming.
+
 ### System Design Choices
 LomuAI acts as the autonomous worker, committing changes through a strict 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). I AM Architect is a user-summoned premium consultant providing guidance without committing code. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing. LomuAI incorporates efficiency rules within its system prompt, such as SEARCH BEFORE CODING, COPY DON'T REINVENT, VERIFY THE TASK, and ITERATION BUDGET AWARENESS.
 
