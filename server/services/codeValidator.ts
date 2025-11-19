@@ -294,24 +294,26 @@ export class CodeValidator {
   }
 
   /**
-   * P1-GAP-2: Integration Test - Backend-only smoke test via dedicated health script
-   * Uses lightweight Express server (no Vite) with HTTP health check for reliable validation
+   * P1-GAP-2: Integration Test - Start REAL backend to catch middleware/config regressions
+   * Uses actual server/index.ts with production environment to skip Vite setup
    */
   private async checkServerStartup(result: ValidationResult): Promise<void> {
     const { spawn } = await import('child_process');
-    const http = await import('http');
+    const { exec } = await import('child_process');
+    const { promisify } = await import('util');
+    const execAsync = promisify(exec);
     let serverProcess: any = null;
     
     try {
-      console.log('[CODE-VALIDATOR] 🔍 Running integration test - backend-only smoke test...');
+      console.log('[CODE-VALIDATOR] 🔍 Running integration test - real backend smoke test...');
       
-      // Start lightweight health check server (backend only, no Vite)
-      console.log('[CODE-VALIDATOR] Starting health check server...');
-      serverProcess = spawn('node', ['--loader', 'tsx', 'server/healthCheck.ts'], {
+      // Start the ACTUAL server/index.ts (production mode skips Vite)
+      console.log('[CODE-VALIDATOR] Starting server/index.ts in production mode (skips Vite)...');
+      serverProcess = spawn('tsx', ['server/index.ts'], {
         cwd: this.PROJECT_ROOT,
         env: { 
           ...process.env, 
-          NODE_ENV: 'test',
+          NODE_ENV: 'production', // Production mode skips Vite setup
           PORT: '5001', // Use different port to avoid conflicts
         },
         stdio: ['ignore', 'pipe', 'pipe'],
@@ -319,14 +321,14 @@ export class CodeValidator {
       
       let serverOutput = '';
       let serverError = '';
-      let listening = false;
+      let serverReady = false;
       
       serverProcess.stdout?.on('data', (data: Buffer) => {
         const output = data.toString();
         serverOutput += output;
-        // Detect when server is listening
-        if (output.includes('listening on port')) {
-          listening = true;
+        // Detect the EXACT readiness signal from server/index.ts line 223
+        if (output.includes('serving on port')) {
+          serverReady = true;
         }
       });
       
@@ -334,79 +336,109 @@ export class CodeValidator {
         serverError += data.toString();
       });
       
-      // Wait for server to emit "listening" signal
-      const timeout = 10000;
+      // Wait for server to emit readiness signal
+      const timeout = 15000;
       const startTime = Date.now();
       
-      while (!listening && Date.now() - startTime < timeout) {
-        // Check if process exited prematurely
+      while (!serverReady && Date.now() - startTime < timeout) {
+        // Check if process exited prematurely (runtime crash)
         if (serverProcess.exitCode !== null) {
-          throw new Error(`Server process exited with code ${serverProcess.exitCode}:\n${serverError || serverOutput}`);
+          throw new Error(
+            `Server crashed during startup (exit code ${serverProcess.exitCode}):\n` +
+            `STDOUT:\n${serverOutput.slice(0, 300)}\n` +
+            `STDERR:\n${serverError.slice(0, 300)}`
+          );
         }
         
         await new Promise(resolve => setTimeout(resolve, 100));
       }
       
-      if (!listening) {
-        throw new Error(`Server did not start within ${timeout}ms. Output:\n${serverOutput}\nErrors:\n${serverError}`);
+      if (!serverReady) {
+        throw new Error(
+          `Server did not emit readiness signal within ${timeout}ms.\n` +
+          `STDOUT:\n${serverOutput.slice(0, 300)}\n` +
+          `STDERR:\n${serverError.slice(0, 300)}`
+        );
       }
       
-      // Verify HTTP health endpoint responds
+      console.log('[CODE-VALIDATOR] ✅ Server emitted readiness signal');
+      
+      // Verify server actually accepts HTTP requests (not just bound to port)
+      console.log('[CODE-VALIDATOR] Verifying HTTP endpoint responds...');
+      const http = await import('http');
+      
       await new Promise<void>((resolve, reject) => {
-        const req = http.request({ host: 'localhost', port: 5001, path: '/health', timeout: 2000 }, (res) => {
-          if (res.statusCode === 200) {
-            resolve();
-          } else {
-            reject(new Error(`Health check returned status ${res.statusCode}`));
-          }
+        const req = http.request({ 
+          host: 'localhost', 
+          port: 5001, 
+          path: '/', // Any path - even 404 means server is accepting requests
+          timeout: 3000 
+        }, (res) => {
+          // Any response (200, 404, 500) means server is actually working
+          console.log(`[CODE-VALIDATOR] ✅ Server responding (status ${res.statusCode})`);
+          resolve();
         });
-        req.on('error', reject);
-        req.on('timeout', () => { req.destroy(); reject(new Error('Health check timeout')); });
+        req.on('error', (err) => {
+          reject(new Error(`HTTP health check failed: ${err.message}`));
+        });
+        req.on('timeout', () => { 
+          req.destroy(); 
+          reject(new Error('HTTP health check timeout - server not accepting connections')); 
+        });
         req.end();
       });
       
-      console.log('[CODE-VALIDATOR] ✅ Server started and health check passed');
+      console.log('[CODE-VALIDATOR] ✅ Server started and responding to HTTP requests');
       result.checks.serverStartup = true;
-      console.log('[CODE-VALIDATOR] ✅ Integration test passed - backend can boot');
+      console.log('[CODE-VALIDATOR] ✅ Integration test passed - backend boots and accepts requests');
     } catch (error: any) {
       result.checks.serverStartup = false;
       
       const errorSnippet = error.message || error.toString();
       
       result.errors.push(
-        `Backend smoke test failed - server cannot boot:\n${errorSnippet.slice(0, 500)}\n\n` +
-        `This means the code compiles but crashes at runtime. Fix the runtime errors before committing.`
+        `Backend smoke test failed - server cannot boot:\n${errorSnippet}\n\n` +
+        `This catches middleware/config/runtime errors that TypeScript can't detect.`
       );
       
       console.error('[CODE-VALIDATOR] ❌ Integration test failed - backend cannot boot');
     } finally {
-      // Always kill the server process and wait for cleanup
+      // Kill server process tree (handles child processes like database connections)
       if (serverProcess && serverProcess.exitCode === null) {
-        console.log('[CODE-VALIDATOR] Killing test server...');
+        console.log('[CODE-VALIDATOR] Cleaning up test server...');
         
-        // Create promise that resolves when process exits
-        const processExited = new Promise<void>((resolve) => {
-          serverProcess.once('exit', () => {
-            console.log('[CODE-VALIDATOR] Test server exited');
-            resolve();
+        try {
+          // Kill entire process tree (including any child processes)
+          if (process.platform === 'win32') {
+            await execAsync(`taskkill /pid ${serverProcess.pid} /T /F`).catch(() => {});
+          } else {
+            await execAsync(`pkill -P ${serverProcess.pid}`).catch(() => {});
+            serverProcess.kill('SIGTERM');
+          }
+          
+          // Wait for exit with timeout
+          const processExited = new Promise<void>((resolve) => {
+            serverProcess.once('exit', () => {
+              console.log('[CODE-VALIDATOR] Test server exited');
+              resolve();
+            });
           });
-        });
+          
+          const killTimeout = new Promise<void>((resolve) => {
+            setTimeout(() => {
+              if (serverProcess && serverProcess.exitCode === null) {
+                console.log('[CODE-VALIDATOR] Force killing unresponsive server...');
+                serverProcess.kill('SIGKILL');
+              }
+              resolve();
+            }, 3000);
+          });
+          
+          await Promise.race([processExited, killTimeout]);
+        } catch (cleanupError: any) {
+          console.warn('[CODE-VALIDATOR] Cleanup warning:', cleanupError.message);
+        }
         
-        // Send SIGTERM for graceful shutdown
-        serverProcess.kill('SIGTERM');
-        
-        // Race between clean exit and 3-second timeout
-        const killTimeout = new Promise<void>((resolve) => {
-          setTimeout(() => {
-            if (serverProcess && serverProcess.exitCode === null) {
-              console.log('[CODE-VALIDATOR] Force killing unresponsive server...');
-              serverProcess.kill('SIGKILL');
-            }
-            resolve();
-          }, 3000);
-        });
-        
-        await Promise.race([processExited, killTimeout]);
         console.log('[CODE-VALIDATOR] Test server cleanup complete');
       }
     }
