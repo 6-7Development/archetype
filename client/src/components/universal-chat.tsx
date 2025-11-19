@@ -1092,13 +1092,17 @@ export function UniversalChat({
                   assistantMessageContent += eventData.content || '';
                   setMessages((prev) => {
                     const updated = [...prev];
-                    const lastMsg = updated[updated.length - 1];
+                    const lastMsgIndex = updated.length - 1;
+                    const lastMsg = updated[lastMsgIndex];
                     if (lastMsg && lastMsg.role === 'assistant') {
-                      lastMsg.content = assistantMessageContent;
-                      // Force React to recognize this as a state change
-                      return [...updated];
+                      // ✅ CREATE NEW MESSAGE OBJECT - React detects change!
+                      updated[lastMsgIndex] = {
+                        ...lastMsg,
+                        content: assistantMessageContent
+                      };
+                      return updated;
                     }
-                    return updated;
+                    return prev;  // Return original if no assistant message found
                   });
                   setProgressStatus('working');
                   setProgressMessage('Generating response...');

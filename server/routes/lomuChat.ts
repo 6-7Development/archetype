@@ -1826,10 +1826,21 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
             }
             lastChunkHash = chunkHash;
 
-            // 🔥 STREAM TEXT IMMEDIATELY - Don't wait!
+            // 🔥 STREAM TEXT IMMEDIATELY via WebSocket - Frontend expects 'ai-chunk' messages!
             currentTextBlock += chunkText;
             fullContent += chunkText;
-            console.log('[SSE-DEBUG] ✅ Sending content event:', chunkText.substring(0, 80) + '...');
+            
+            // ✅ WEBSOCKET BROADCAST: Send 'ai-chunk' message to frontend
+            if (wss && userId) {
+              broadcastToUser(wss, userId, {
+                type: 'ai-chunk',
+                content: chunkText,
+                timestamp: new Date().toISOString()
+              });
+              console.log('[WS-STREAM] ✅ Broadcasted ai-chunk:', chunkText.substring(0, 80) + '...');
+            }
+            
+            // Also send via SSE for compatibility (some clients may use both)
             sendEvent('content', { content: chunkText });
 
             // 🚨 WATCHDOG: Reset thinking counter on substantive assistant text
