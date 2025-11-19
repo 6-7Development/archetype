@@ -1418,6 +1418,26 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
       );
     }
 
+    // 🚨 DEFIBRILLATOR PROMPT DETECTION: Emergency escape from read-eval-no-write loops
+    // Detects special "override" messages that force LomuAI out of analysis paralysis
+    const isDefibrillatorPrompt = /🔴.*SYSTEM.*OVERRIDE|STOP.*READING|FORCE.*WRITE|emergency.*override/i.test(message);
+    
+    if (isDefibrillatorPrompt) {
+      console.log('[DEFIBRILLATOR] 🚨 Emergency override detected - clearing caches and forcing write mode');
+      
+      // Clear conversation state caches to prevent stale analysis
+      try {
+        await clearCodeScratchpad(conversationState.id);
+        console.log('[DEFIBRILLATOR] ✅ Cleared code scratchpad');
+      } catch (error) {
+        console.warn('[DEFIBRILLATOR] ⚠️ Failed to clear scratchpad:', error);
+      }
+      
+      sendEvent('system_info', { 
+        message: '🚨 EMERGENCY MODE: Analysis mode disabled. Forcing write operations.' 
+      });
+    }
+    
     // 🎯 DYNAMIC ITERATION LIMITS (like Replit Agent)
     // Classify user intent to set appropriate iteration limits
     const userIntent = classifyUserIntent(message);
@@ -1511,6 +1531,39 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
       sendEvent('content', { content: errorMsg });
       sendEvent('done', { messageId: assistantMessageId });
       throw new Error('Safety backup creation failed - halting execution to prevent data loss');
+    }
+    
+    // 🌿 P2-GAP-5: FEATURE BRANCH WORKFLOW - Prevent context saturation
+    // Create ephemeral branch for this fix session to limit scope
+    let workBranch: string | null = null;
+    let createdEphemeralBranch = false;
+    
+    // Only create feature branches for fix/build tasks with GitHub configured
+    const shouldUseFeatureBranch = (userIntent === 'fix' || userIntent === 'build') && 
+                                   !isGitRestricted && 
+                                   process.env.GITHUB_TOKEN;
+    
+    if (shouldUseFeatureBranch) {
+      try {
+        const github = new GitHubService();
+        const timestamp = Date.now();
+        const sanitizedMessage = message.slice(0, 30).replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+        workBranch = `lomu-ai/${userIntent}-${sanitizedMessage}-${timestamp}`;
+        
+        console.log(`[P2-GAP-5] Creating ephemeral branch: ${workBranch}`);
+        const branchResult = await github.createBranchFromMain(workBranch);
+        createdEphemeralBranch = true;
+        
+        sendEvent('system_info', { 
+          message: `✅ Working on branch: ${workBranch} (prevents context saturation)` 
+        });
+        
+        console.log(`[P2-GAP-5] ✅ Created branch ${workBranch} at ${branchResult.sha.slice(0, 7)}`);
+      } catch (error: any) {
+        console.warn(`[P2-GAP-5] ⚠️ Failed to create feature branch: ${error.message}`);
+        // Non-fatal - continue on main branch
+        workBranch = null;
+      }
     }
     
     if (isGitRestricted && isDevelopment) {
@@ -3611,7 +3664,30 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
         const hasNotWrittenYet = workflowTelemetry.writeOperations === 0;
         const hasReadAtLeastOnce = workflowTelemetry.readOperations > 0;
         
-        if (isFixSession && hasReadAtLeastOnce && hasNotWrittenYet && iterationCount >= 2) {
+        // 🚨 CIRCUIT BREAKER: Hard limit to force write operations after too many reads
+        const READ_LIMIT = isDefibrillatorPrompt ? 0 : 5; // Defibrillator bypasses reads entirely
+        const hitCircuitBreaker = isFixSession && 
+                                  workflowTelemetry.readOperations >= READ_LIMIT && 
+                                  hasNotWrittenYet;
+        
+        if (hitCircuitBreaker) {
+          console.log(`[CIRCUIT-BREAKER] 🚨 HARD LIMIT ENGAGED: ${workflowTelemetry.readOperations} reads with ZERO writes`);
+          console.log(`[CIRCUIT-BREAKER] Blocking all read operations - WRITE-ONLY mode activated`);
+          
+          // BLOCK all read-only tools
+          availableTools = availableTools.filter(tool => !READ_ONLY_TOOLS.has(tool.name));
+          console.log(`[CIRCUIT-BREAKER] ✅ Filtered to ${availableTools.length} write-only tools`);
+          
+          // Force function calling mode
+          shouldForceFunctionCall = true;
+          
+          // Critical warning message
+          systemEnforcementMessage = `\n\n🚨 **CIRCUIT BREAKER ACTIVATED**\n\nYou've read ${workflowTelemetry.readOperations} files without making ANY changes.\n\n**READ OPERATIONS NOW BLOCKED** - You can ONLY use write operations:\n- ✅ write_platform_file() - Implement fixes NOW\n- ✅ edit() - Modify existing files\n- ✅ bash() - Run commands/tests\n- ❌ NO MORE READING - All read tools disabled\n\nIMPLEMENT THE FIX IMMEDIATELY or explain why you cannot proceed.`;
+          
+          sendEvent('progress', { 
+            message: '🚨 CIRCUIT BREAKER: Read limit exceeded - WRITE-ONLY mode' 
+          });
+        } else if (isFixSession && hasReadAtLeastOnce && hasNotWrittenYet && iterationCount >= 2) {
           console.log('[ACTION-MANDATE] ✅ Fix session with reads but NO writes - ACTIVATING ACTION MODE');
           console.log(`[ACTION-MANDATE] Iteration ${iterationCount}: Forcing mode:ANY to encourage write operations`);
           
@@ -3619,7 +3695,7 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
           shouldForceFunctionCall = true;
           
           // Inject system enforcement message (reward/penalty messaging, not absolute rules)
-          systemEnforcementMessage = `\n\n🎯 **WRITE-FIRST REMINDER**\n\nYou've read ${workflowTelemetry.readOperations} file(s) to understand the issue. Great analysis!\n\nNow it's time to implement fixes. Your goal is to WRITE code, not just read it.\n\n**High-value actions** (preferred):\n- ✅ write_platform_file() - Implement the fix\n- ✅ write_project_file() - Create new files\n- ✅ bash() - Run tests/validation\n\n**Low-value actions** (avoid unless necessary):\n- ⚠️ Reading more files without writing\n- ⚠️ Creating task lists for simple fixes\n- ⚠️ Endless analysis paralysis\n\n**Remember**: You're authorized to make changes. Trust your analysis and proceed with confidence.`;
+          systemEnforcementMessage = `\n\n🎯 **WRITE-FIRST REMINDER**\n\nYou've read ${workflowTelemetry.readOperations} file(s) to understand the issue. Great analysis!\n\nNow it's time to implement fixes. Your goal is to WRITE code, not just read it.\n\n**High-value actions** (preferred):\n- ✅ write_platform_file() - Implement the fix\n- ✅ write_project_file() - Create new files\n- ✅ bash() - Run tests/validation\n\n**Low-value actions** (avoid unless necessary):\n- ⚠️ Reading more files without writing (${READ_LIMIT - workflowTelemetry.readOperations} reads left before hard block)\n- ⚠️ Creating task lists for simple fixes\n- ⚠️ Endless analysis paralysis\n\n**Remember**: You're authorized to make changes. Trust your analysis and proceed with confidence.`;
           
           sendEvent('progress', { 
             message: '🎯 Analysis complete - prioritizing write operations now' 
