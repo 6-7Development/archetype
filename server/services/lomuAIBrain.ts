@@ -309,18 +309,67 @@ class LomuAIBrain {
   }
   
   /**
-   * Update session activity timestamp
+   * Update session activity timestamp (heartbeat)
+   * CRITICAL: Call this on every user interaction to prevent stale session cleanup
    */
   touchSession(userId: string, sessionId: string): void {
     const session = this.registry.get(userId, sessionId);
     if (session) {
       session.lastActivityAt = new Date();
-      session.status = 'active';
+      
+      // If session was idle, reactivate it
+      if (session.status === 'idle') {
+        console.log(`[BRAIN] Reactivating idle session: ${userId}:${sessionId}`);
+        session.status = 'active';
+      } else {
+        session.status = 'active';
+      }
     }
   }
   
   /**
+   * Mark session as idle (for cleanup)
+   * Called when no heartbeat received for threshold period
+   */
+  markSessionIdle(userId: string, sessionId: string): void {
+    const session = this.registry.get(userId, sessionId);
+    if (session && session.status === 'active') {
+      console.log(`[BRAIN] Marking session as idle: ${userId}:${sessionId}`);
+      session.status = 'idle';
+    }
+  }
+  
+  /**
+   * Check for stale sessions and mark them idle
+   * Session is stale if no activity for STALE_THRESHOLD_MS
+   */
+  checkStaleSessionsAndMarkIdle(): number {
+    const now = Date.now();
+    const STALE_THRESHOLD_MS = 60 * 1000; // 60 seconds - matches Gemini's recommendation
+    let markedIdle = 0;
+    
+    for (const session of this.registry.getAll()) {
+      if (session.status === 'active') {
+        const idleTime = now - session.lastActivityAt.getTime();
+        
+        if (idleTime > STALE_THRESHOLD_MS) {
+          console.log(`[BRAIN-STALE-DETECTION] Session ${session.userId}:${session.sessionId} idle for ${Math.floor(idleTime / 1000)}s - marking as idle`);
+          this.markSessionIdle(session.userId, session.sessionId);
+          markedIdle++;
+        }
+      }
+    }
+    
+    if (markedIdle > 0) {
+      console.log(`[BRAIN-STALE-DETECTION] Marked ${markedIdle} sessions as idle`);
+    }
+    
+    return markedIdle;
+  }
+  
+  /**
    * Close session and persist final state
+   * CRITICAL: Also releases all file locks and cleans up resources
    */
   async closeSession(userId: string, sessionId: string): Promise<void> {
     const session = this.registry.get(userId, sessionId);
@@ -335,6 +384,26 @@ class LomuAIBrain {
     // Persist final conversation state
     if (session.currentGoal || session.mentionedFiles.length > 0) {
       await this.persistence.persistConversationState(session);
+    }
+    
+    // BRAIN-GAP-1: Release all file locks for this session
+    try {
+      const { fileLockManager } = await import('./fileLockManager');
+      const releasedLocks = fileLockManager.releaseAllLocksForSession(sessionId);
+      if (releasedLocks > 0) {
+        console.log(`[BRAIN] Released ${releasedLocks} file locks for session ${sessionId}`);
+      }
+    } catch (error: any) {
+      console.error('[BRAIN] Error releasing file locks:', error.message);
+    }
+    
+    // Close WebSocket if still connected
+    if (session.wsConnection) {
+      try {
+        session.wsConnection.close(1000, 'Session closed');
+      } catch (err) {
+        console.error('[BRAIN] Error closing WebSocket:', err);
+      }
     }
     
     // Remove from registry
@@ -480,10 +549,73 @@ class LomuAIBrain {
   }
   
   /**
-   * Cleanup idle sessions (called periodically)
+   * RESILIENT CLEANUP (Architect's Simplified Design)
+   * 
+   * CRITICAL: Timeout protection prevents lock release hangs
+   * - Wraps lock release in Promise.race with 5s timeout
+   * - ALWAYS deletes from registry (even on failure/timeout)
+   * - Structured logging for diagnostics
    */
-  cleanupIdleSessions(): number {
-    return this.registry.cleanupIdleSessions();
+  async cleanupIdleSessions(): Promise<number> {
+    const idleSessions = this.registry.getAll().filter(s => s.status === 'idle');
+    let cleaned = 0;
+    
+    if (idleSessions.length === 0) {
+      return 0;
+    }
+    
+    console.log(`[BRAIN-CLEANUP] Starting cleanup of ${idleSessions.length} idle sessions`);
+    
+    // Process each session with error isolation
+    for (const session of idleSessions) {
+      const sessionKey = `${session.userId}:${session.sessionId}`;
+      let releasedLocks = 0;
+      
+      try {
+        // Structured logging - session context
+        console.log(`[BRAIN-CLEANUP] Processing: ${sessionKey}`);
+        console.log(`[BRAIN-CLEANUP]   - Created: ${session.createdAt.toISOString()}`);
+        console.log(`[BRAIN-CLEANUP]   - Last activity: ${session.lastActivityAt.toISOString()}`);
+        console.log(`[BRAIN-CLEANUP]   - Files modified: ${session.filesModified.size}`);
+        console.log(`[BRAIN-CLEANUP]   - Active tool calls: ${session.activeToolCalls.size}`);
+        
+        // ARCHITECT'S TIMEOUT PROTECTION (5s limit)
+        const { fileLockManager } = await import('./fileLockManager');
+        const releasePromise = fileLockManager.releaseAllLocksForSession(session.sessionId);
+        
+        releasedLocks = await Promise.race([
+          releasePromise,
+          new Promise<number>((_, reject) => 
+            setTimeout(() => reject(new Error('Lock release timeout (5s)')), 5000)
+          )
+        ]);
+        
+        if (releasedLocks > 0) {
+          console.log(`[BRAIN-CLEANUP] ✅ Released ${releasedLocks} locks for ${sessionKey}`);
+        } else {
+          console.log(`[BRAIN-CLEANUP] No locks to release for ${sessionKey}`);
+        }
+      } catch (error: any) {
+        // Log error but continue cleanup
+        console.error(`[BRAIN-CLEANUP] ❌ Lock release failed/timeout for ${sessionKey}:`);
+        console.error(`[BRAIN-CLEANUP]   - Error: ${error.message}`);
+        console.error(`[BRAIN-CLEANUP]   - Continuing cleanup...`);
+      } finally {
+        // ALWAYS delete from registry (critical for preventing orphaned sessions)
+        const deleted = this.registry.delete(session.userId, session.sessionId);
+        
+        if (deleted) {
+          cleaned++;
+          console.log(`[BRAIN-CLEANUP] ✅ Removed ${sessionKey} from registry (locks: ${releasedLocks})`);
+        } else {
+          console.warn(`[BRAIN-CLEANUP] ⚠️  Session ${sessionKey} already removed`);
+        }
+      }
+    }
+    
+    console.log(`[BRAIN-CLEANUP] ✅ Complete: ${cleaned} sessions removed`);
+    
+    return cleaned;
   }
 }
 
@@ -491,9 +623,20 @@ class LomuAIBrain {
 
 export const lomuAIBrain = new LomuAIBrain();
 
-// Cleanup idle sessions every 10 minutes
+// BRAIN-GAP-2: Check for stale sessions every 30 seconds
+// Mark sessions as idle if no heartbeat for 60s
 setInterval(() => {
-  lomuAIBrain.cleanupIdleSessions();
+  lomuAIBrain.checkStaleSessionsAndMarkIdle();
+}, 30 * 1000);
+
+// Cleanup idle sessions every 10 minutes
+// This removes sessions marked as idle and releases their file locks
+setInterval(async () => {
+  const cleaned = await lomuAIBrain.cleanupIdleSessions();
+  
+  if (cleaned > 0) {
+    console.log(`[BRAIN-CLEANUP] Cleaned ${cleaned} idle sessions with file locks released`);
+  }
 }, 10 * 60 * 1000);
 
 console.log('[BRAIN] ✅ LomuAI Brain initialized - Universal session management active');
