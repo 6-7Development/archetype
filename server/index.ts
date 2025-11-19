@@ -221,7 +221,7 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
   // START SERVER IMMEDIATELY - Don't wait for database!
   server.listen(port, '0.0.0.0', async () => {
     log(`serving on port ${port}`);
-    console.log(`🌐 Server accessible at http://0.0.0.0:${port}`);
+    console.log(`🚀 LomuAI server is running on http://0.0.0.0:${port}`);
     
     // Setup Vite AFTER server is listening
     if (app.get("env") === "development") {
@@ -264,7 +264,7 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
     // 🧹 CLEANUP: Fix stuck/zombie LomuAI jobs on server restart
     // ANY job with status 'pending' or 'running' is invalid after restart
     // because the server's activeJobs Map is cleared on restart
-    console.log('🧹 Cleaning up stuck LomuAI jobs from previous server session...');
+    // console.log('🧹 Cleaning up stuck LomuAI jobs from previous server session...');
     try {
       const { lomuJobs } = await import('@shared/schema');
       const { inArray } = await import('drizzle-orm');
@@ -299,7 +299,7 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
   const autoHealingEnabled = process.env.ENABLE_AUTO_HEALING === 'true';
   
   if (autoHealingEnabled) {
-    console.log('🔧 Auto-healing system ENABLED (uses platform credits - for testing only!)');
+    console.log('🔧 Auto-healing system ENABLEED (uses platform credits - for testing only!)');
     console.log('   ⚡ Kill-switch: Disabled after 3 consecutive failures (1 hour cooldown)');
     console.log('   ⏱️ Rate limit: Max 3 healing sessions per hour');
     console.log('   📋 Audit trail: All attempts logged to platformHealAttempts');
@@ -345,7 +345,9 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
       // Only warn if CPU is consistently high (avoid noise)
       if (cpuPercent > 85 && elapsedTimeSeconds > 10) {
         console.warn(`🚨 HIGH CPU USAGE: ${cpuPercent.toFixed(1)}% over ${elapsedTimeSeconds.toFixed(1)}s`);
-        console.warn('   - Check response logging JSON.stringify operations');
+        console.warn(
+          '   - Check response logging JSON.stringify operations'
+        );
         console.warn('   - Review auto-test-loop circuit breaker');
         console.warn('   - Monitor WebSocket connection count');
         

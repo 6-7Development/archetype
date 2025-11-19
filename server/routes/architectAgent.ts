@@ -10,6 +10,9 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || "dummy-key-for-development",
 });
 
+// Define a constant for platform-wide notes
+const PLATFORM_PROJECT_ID = "platform-wide-notes";
+
 /**
  * I AM (The Architect) - FULLY AUTONOMOUS Agent with Developer Tools
  * Upgraded from read-only consultant to autonomous architect with full developer capabilities
@@ -453,7 +456,7 @@ async function executeArchitectTool(toolName: string, toolInput: any): Promise<s
           const [note] = await db
             .insert(architectNotes)
             .values({
-              projectId: null, // I AM creates platform-wide notes
+              projectId: PLATFORM_PROJECT_ID, // I AM creates platform-wide notes
               title: toolInput.title,
               content: toolInput.content,
               authorRole: 'architect',
@@ -515,52 +518,9 @@ export async function runArchitectAgent(params: ArchitectAgentParams): Promise<A
       codeSnapshot
     });
 
-    const userPrompt = `🚨 ARCHITECTURAL DEADLOCK SITUATION
-
-SySop is stuck after multiple failed fix attempts and needs your AUTONOMOUS help.
-
-📋 PROBLEM:
-${problem}
-
-🔍 CONTEXT:
-${context}
-
-❌ PREVIOUS ATTEMPTS (that failed):
-${previousAttempts.map((attempt, i) => `${i + 1}. ${attempt}`).join('\n')}
-
-${codeSnapshot ? `📸 CODE SNAPSHOT:\n${codeSnapshot}\n` : ''}
-
-🎯 YOUR AUTONOMOUS MISSION:
-
-PHASE 1: INVESTIGATE (Use your analysis tools)
-- Use readPlatformFile to inspect relevant code
-- Use grep to search for patterns and error messages
-- Use code_search to find proven solutions
-- Use knowledge_query to learn from past fixes
-
-PHASE 2: DIAGNOSE (Evidence-based root cause analysis)
-- Identify the ROOT CAUSE with specific evidence
-- Explain WHY previous attempts failed (cite code, line numbers)
-- Validate hypotheses by inspecting actual implementations
-
-PHASE 3: FIX (Execute changes autonomously)
-- Use edit to make precise code changes
-- Use bash to run tests or check configurations
-- Use packager_tool to install/uninstall packages if needed
-- Use get_latest_lsp_diagnostics to validate changes
-
-PHASE 4: VALIDATE & REPORT
-- Run get_latest_lsp_diagnostics to check for TypeScript errors
-- Provide alternative approaches if needed
-- Give SPECIFIC, ACTIONABLE recommendations with file references
-
-💡 REMEMBER:
-- You have FULL developer capabilities - not just read-only
-- Always cite specific evidence (files, lines, code snippets)
-- Think step-by-step, use tools systematically
-- Make fixes autonomously when you identify the issue
-
-Start by inspecting relevant files to understand the problem deeply.`;
+    const userPrompt = `🚨 ARCHITECTURAL DEADLOCK SITUATION\n\nSySop is stuck after multiple failed fix attempts and needs your AUTONOMOUS help.\n\n📋 PROBLEM:\n${problem}\n\n🔍 CONTEXT:\n${context}\n\n❌ PREVIOUS ATTEMPTS (that failed):\n${previousAttempts.map((attempt, i) => `${i + 1}. ${attempt}`).join('\n')}\n\n${codeSnapshot ? `📸 CODE SNAPSHOT:\n${codeSnapshot}\n` : ''}\n\n🎯 YOUR AUTONOMOUS MISSION:\n\nPHASE 1: INVESTIGATE (Use your analysis tools)\n- Use readPlatformFile to inspect relevant code\n- Use grep to search for patterns and error messages\n- Use code_search to find proven solutions\n- Use knowledge_query to learn from past fixes\n\nPHASE 2: DIAGNOSE (Evidence-based root cause analysis)\n- Identify the ROOT CAUSE with specific evidence\n- Explain WHY previous attempts failed (cite code, line numbers)\n- Validate hypotheses by inspecting actual implementations\n
+PHASE 3: FIX (Execute changes autonomously)\n- Use edit to make precise code changes\n- Use bash to run tests or check configurations\n- Use packager_tool to install/uninstall packages if needed\n- Use get_latest_lsp_diagnostics to validate changes\n
+PHASE 4: VALIDATE & REPORT\n- Run get_latest_lsp_diagnostics to check for TypeScript errors\n- Provide alternative approaches if needed\n- Give SPECIFIC, ACTIONABLE recommendations with file references\n\n💡 REMEMBER:\n- You have FULL developer capabilities - not just read-only\n- Always cite specific evidence (files, lines, code snippets)\n- Think step-by-step, use tools systematically\n- Make fixes autonomously when you identify the issue\n\nStart by inspecting relevant files to understand the problem deeply.`;
 
     const messages: Anthropic.MessageParam[] = [
       { role: "user", content: userPrompt }
@@ -613,7 +573,7 @@ Start by inspecting relevant files to understand the problem deeply.`;
         // Try to extract structured information
         let parsedGuidance: any = {};
         try {
-          const jsonMatch = guidanceText.match(/\{[\s\S]*\}/);
+          const jsonMatch = guidanceText.match(/{\s*[\s\S]*\s*}/);
           if (jsonMatch) {
             parsedGuidance = JSON.parse(jsonMatch[0]);
           }

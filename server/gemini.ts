@@ -882,6 +882,16 @@ Please try:
                 lastThought = thought;
                 onThought(thought);
               }
+              
+              // ✅ ARCHITECT FIX: Also send the ACTUAL text content to chat!
+              // Previously we only sent generic "Thinking..." to scratchpad
+              // But the user wants to see Gemini's actual thoughts in the chat
+              if (part.text && onChunk) {
+                const text = part.text;
+                fullText += text;
+                onChunk({ type: 'chunk', content: text });
+                console.log('[GEMINI-THOUGHT-TEXT] Sent thinking text to chat:', text.substring(0, 100) + '...');
+              }
             } catch (thoughtError) {
               console.error('❌ Error processing thoughtSignature:', thoughtError);
             }
