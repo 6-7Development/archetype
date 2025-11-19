@@ -672,45 +672,65 @@ Your available functions are declared in the tools schema. Use them directly.`);
           
           // 🚨 CRITICAL: Handle MALFORMED_FUNCTION_CALL with auto-retry
           if (candidate.finishReason === 'MALFORMED_FUNCTION_CALL') {
-            console.error(`🚨 [GEMINI-ERROR] Detected invalid function call! (Attempt ${retryCount + 1}/${MAX_RETRIES + 1})`);
+            console.error(`🚨 [GEMINI-MALFORMED] Detected malformed function call flag (Attempt ${retryCount + 1}/${MAX_RETRIES + 1})`);
             
-            // Log the invalid content for debugging
-            const finishMessage = (candidate as any).finishMessage;
+            // ✅ ARCHITECT FIX: Try to extract valid function call BEFORE treating as error
+            // Often Gemini returns valid calls that our parser can extract, but flags them as malformed
+            let extractedCall: any = null;
             let attemptedFunction: string | null = null;
             
-            if (finishMessage) {
-              console.error('[GEMINI-ERROR] Error details:', finishMessage);
+            // STEP 1: Check if content has a valid functionCall (standard format)
+            if (content?.parts) {
+              for (const part of content.parts) {
+                if ((part as any).functionCall?.name && (part as any).functionCall?.args) {
+                  extractedCall = (part as any).functionCall;
+                  attemptedFunction = extractedCall.name;
+                  console.log('[GEMINI-MALFORMED] ✅ Found valid function call in parts:', attemptedFunction);
+                  break;
+                }
+                
+                // STEP 2: Try to heal from text field
+                if (!extractedCall && (part as any).text && (part as any).text.includes('{')) {
+                  try {
+                    const healedCall = robustExtractAndHeal((part as any).text);
+                    if (healedCall?.name && healedCall?.args) {
+                      extractedCall = healedCall;
+                      attemptedFunction = healedCall.name;
+                      console.log('[GEMINI-MALFORMED] ✅ Healed function call from text:', attemptedFunction);
+                      break;
+                    }
+                  } catch (e) {
+                    console.log('[GEMINI-MALFORMED] Could not heal from text');
+                  }
+                }
+              }
+            }
+            
+            // ✅ SUCCESS: We extracted a valid call - use it instead of retrying!
+            if (extractedCall && attemptedFunction) {
+              console.log('[GEMINI-MALFORMED] ✅ Extracted valid call despite malformed flag - proceeding with execution');
+              functionCalls.push(extractedCall);
               
-              // ✅ GOLD STANDARD FIX: Parse INNER function from wrappers
-              // Gemini sometimes wraps calls in print(default_api.function_name(...))
-              // We need to extract the ACTUAL function name, not the wrapper
+              // Skip the retry logic - we have a valid call!
+              // Continue processing the stream normally
+              continue;
+            }
+            
+            // STEP 3: If extraction failed, try to identify the function from error message
+            const finishMessage = (candidate as any).finishMessage;
+            if (!attemptedFunction && finishMessage) {
+              console.error('[GEMINI-ERROR] Could not extract valid call, checking error message:', finishMessage);
               
-              // Try to extract from patterns like:
-              // - print(write_platform_file(...))
-              // - print(default_api.write_platform_file(...))
-              // - default_api.write_platform_file(...)
+              // Try to extract function name from error message
               const innerFunctionMatch = finishMessage.match(/(?:print\()?(?:default_api\.)?([a-zA-Z_]+)\s*\(/i);
               if (innerFunctionMatch) {
                 attemptedFunction = innerFunctionMatch[1];
-                console.error(`[GEMINI-ERROR] Extracted inner function: ${attemptedFunction}`);
+                console.error(`[GEMINI-ERROR] Extracted function name from error: ${attemptedFunction}`);
               } else {
-                // Fallback to simple extraction
                 const functionNameMatch = finishMessage.match(/function call:\s*([a-zA-Z_]+)/i);
                 if (functionNameMatch) {
                   attemptedFunction = functionNameMatch[1];
-                  console.error(`[GEMINI-ERROR] Attempted to call: ${attemptedFunction}`);
-                }
-              }
-              console.error('[GEMINI-ERROR] Invalid function call format detected');
-            }
-            
-            // Try to find the intended function from candidate content
-            if (!attemptedFunction && content?.parts) {
-              for (const part of content.parts) {
-                if ((part as any).functionCall?.name) {
-                  attemptedFunction = (part as any).functionCall.name;
-                  console.log('[GEMINI-ERROR] Found function name from content:', attemptedFunction);
-                  break;
+                  console.error(`[GEMINI-ERROR] Found function name: ${attemptedFunction}`);
                 }
               }
             }
@@ -759,20 +779,18 @@ Please restate your request and I'll use the correct tools this time.`;
                 // Recursive retry with FORCED function call
                 const retryMessages = [...messages, clarifyingMessage];
                 
-                // Force the specific function call using mode: ANY
-                const forcedToolConfig = {
-                  function_calling_config: {
-                    mode: 'ANY' as const,
-                    allowed_function_names: [attemptedFunction]
-                  }
-                };
+                // ✅ ARCHITECT FIX: Keep ALL tools available during retry
+                // Gemini often needs prerequisite tools (e.g., read_platform_file before write_platform_file)
+                // Restricting to a single function causes deadlock!
+                // Keep the full tool list so Gemini can execute the complete workflow
                 
-                console.log('[GEMINI-RETRY] Using forced tool config:', JSON.stringify(forcedToolConfig));
+                console.log('[GEMINI-RETRY] Retrying with FULL tool access (no restrictions) to allow prerequisite calls');
                 
                 return streamGeminiResponse({
                   ...options,
                   messages: retryMessages,
-                  toolConfig: forcedToolConfig,
+                  forceFunctionCall: true,  // Force ANY tool call, but don't restrict which ones
+                  // ❌ NO toolConfig restriction - let Gemini choose the right tools
                 });
               }
             }
