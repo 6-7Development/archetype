@@ -3664,11 +3664,15 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
         const hasNotWrittenYet = workflowTelemetry.writeOperations === 0;
         const hasReadAtLeastOnce = workflowTelemetry.readOperations > 0;
         
-        // 🚨 CIRCUIT BREAKER: Hard limit to force write operations after too many reads
+        // 🚨 CIRCUIT BREAKER: DISABLED (causes Gemini to freeze)
+        // ARCHITECT FIX: Removing all read tools mid-stream causes Gemini to freeze indefinitely
+        // - Gemini was diagnosing (reading code)
+        // - Circuit breaker suddenly removed ALL read tools
+        // - Gemini can't finish its thought process without reading
+        // - Result: Thinks forever until 5-minute timeout
+        // SOLUTION: Let ACTION-MANDATE handle write encouragement (forceFunctionCall: true)
         const READ_LIMIT = isDefibrillatorPrompt ? 0 : 5; // Defibrillator bypasses reads entirely
-        const hitCircuitBreaker = isFixSession && 
-                                  workflowTelemetry.readOperations >= READ_LIMIT && 
-                                  hasNotWrittenYet;
+        const hitCircuitBreaker = false; // DISABLED - too aggressive
         
         if (hitCircuitBreaker) {
           console.log(`[CIRCUIT-BREAKER] 🚨 HARD LIMIT ENGAGED: ${workflowTelemetry.readOperations} reads with ZERO writes`);
