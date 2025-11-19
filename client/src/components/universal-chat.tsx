@@ -1590,7 +1590,7 @@ export function UniversalChat({
                   ) : (
                     <EnhancedMessageDisplay 
                       content={cleanAIResponse(parseMessageContent(message.content))}
-                      progressMessages={[]}
+                      progressMessages={message.progressMessages || []}
                       isStreaming={false}
                     />
                   )}
@@ -1654,7 +1654,7 @@ export function UniversalChat({
                     <div className="max-w-[75%] rounded-lg px-4 py-3 bg-card text-card-foreground shadow-sm border border-border/30">
                       <EnhancedMessageDisplay 
                         content={cleanAIResponse(parseMessageContent(content))}
-                        progressMessages={[]}
+                        progressMessages={lastMessage?.progressMessages || streamState.progressMessages || []}
                         isStreaming={true}
                       />
                     </div>
