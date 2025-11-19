@@ -442,6 +442,8 @@ export async function streamGeminiResponse(options: StreamOptions) {
     onToolUse,
     onComplete,
     onError,
+    forceFunctionCall = false,  // CRITICAL FIX: Extract forceFunctionCall parameter
+    userIntent,  // CRITICAL FIX: Extract userIntent parameter
   } = options;
 
   let fullText = '';
@@ -554,7 +556,7 @@ If you need to call a function, emit ONLY the JSON object.`),
         //   1. forceFunctionCall=true: Retry pathway after malformed function calls
         //   2. userIntent='fix'/'build': Initial requests for code changes
         // All other cases use mode: AUTO (Gemini can choose natural response or tool use)
-        const shouldForceTools = options.forceFunctionCall || options.userIntent === 'fix' || options.userIntent === 'build';
+        const shouldForceTools = forceFunctionCall || userIntent === 'fix' || userIntent === 'build';
         
         // Aggregate function names from ALL tool entries (not just geminiTools[0])
         const functionNames = (geminiTools || []).flatMap((toolSet: any) => 
