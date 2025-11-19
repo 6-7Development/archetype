@@ -1135,13 +1135,17 @@ export function UniversalChat({
                   // Append to current assistant message's progressMessages
                   setMessages((prev) => {
                     const updated = [...prev];
-                    const lastMsg = updated[updated.length - 1];
+                    const lastMsgIndex = updated.length - 1;
+                    const lastMsg = updated[lastMsgIndex];
                     if (lastMsg && lastMsg.role === 'assistant') {
-                      // ✅ Create NEW array instead of mutating - React detects changes
-                      lastMsg.progressMessages = [...(lastMsg.progressMessages || []), progressEntry];
-                      return [...updated]; // Force re-render
+                      // ✅ CREATE NEW MESSAGE OBJECT - React detects change!
+                      updated[lastMsgIndex] = {
+                        ...lastMsg,
+                        progressMessages: [...(lastMsg.progressMessages || []), progressEntry]
+                      };
+                      return updated;
                     }
-                    return updated;
+                    return prev;
                   });
                   
                   // Also update progress status for status bar
@@ -1256,9 +1260,14 @@ export function UniversalChat({
       // Final cleanup - attach captured progress to the last assistant message
       setMessages((prev) => {
         const updated = [...prev];
-        const lastMsg = updated[updated.length - 1];
+        const lastMsgIndex = updated.length - 1;
+        const lastMsg = updated[lastMsgIndex];
         if (lastMsg && lastMsg.role === 'assistant') {
-          lastMsg.progressMessages = capturedProgress;
+          // ✅ CREATE NEW MESSAGE OBJECT - React detects change!
+          updated[lastMsgIndex] = {
+            ...lastMsg,
+            progressMessages: capturedProgress
+          };
         }
         return updated;
       });

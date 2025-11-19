@@ -22,21 +22,23 @@ import { nanoid } from 'nanoid';
 /**
  * RunStateManager - Single Source of Truth for LomuAI Run State
  * 
- * Centralizes ALL run state mutations and WebSocket broadcasts.
+ * Centralizes ALL run state mutations and broadcasts via BOTH WebSocket AND SSE.
  * Replaces scattered task/phase emissions with unified state management.
  * 
  * Key Responsibilities:
  * - Maintain canonical RunState for each active run
  * - Emit structured events (run.started, run.state_updated, task.created, etc.)
- * - Broadcast state changes via WebSocket
+ * - Broadcast state changes via WebSocket AND SSE (dual transport)
  * - Provide query methods for current state
  */
 export class RunStateManager {
   private runStates: Map<string, RunState> = new Map();
   private wss: WebSocketServer;
+  private sendEvent?: (type: string, data: any) => void;
 
-  constructor(wss: WebSocketServer) {
+  constructor(wss: WebSocketServer, sendEvent?: (type: string, data: any) => void) {
     this.wss = wss;
+    this.sendEvent = sendEvent;
     console.log('[RUN-STATE-MGR] 🎯 RunStateManager initialized');
   }
 
@@ -382,10 +384,17 @@ export class RunStateManager {
   }
 
   /**
-   * Broadcast event to user via WebSocket
+   * Broadcast event to user via BOTH WebSocket AND SSE (dual transport)
+   * This ensures frontend can receive events regardless of which transport it uses
    */
   private broadcast(userId: string, event: EventEnvelope): void {
+    // WebSocket broadcast (for WebSocket clients)
     broadcastToUser(this.wss, userId, event);
+    
+    // SSE broadcast (for SSE clients - universal-chat.tsx expects this!)
+    if (this.sendEvent) {
+      this.sendEvent(event.type, event.data);
+    }
   }
 
   /**
