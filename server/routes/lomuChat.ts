@@ -1489,6 +1489,24 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
     // The orchestrator handles idempotency - safe to call even if already emitted
     phaseOrchestrator.emitThinking('Analyzing your request and considering approaches...');
 
+    // 🔒 P1-GAP-1: AUTO-ROLLBACK SAFETY - Create mandatory backup before making changes
+    // CRITICAL: Backup creation is MANDATORY for code modifications - halt if it fails
+    console.log('[SAFETY-BACKUP] Creating pre-execution safety backup...');
+    const backup = await platformHealing.createBackup(`Pre-execution safety backup for: ${message.slice(0, 100)}`);
+    const safetyBackupId = backup.id;
+    
+    // Verify backup was created successfully (not a fallback/error backup)
+    if (!safetyBackupId || backup.commitHash === 'error' || backup.commitHash === 'no-git') {
+      const errorMsg = `❌ **SAFETY BACKUP FAILED** - Cannot proceed with code modifications without a safety backup.\n` +
+        `This is a safety mechanism to prevent data loss. Please check your Git configuration.\n`;
+      sendEvent('error', { message: 'Safety backup creation failed - cannot proceed' });
+      sendEvent('content', { content: errorMsg });
+      sendEvent('done', { messageId: assistantMessageId });
+      throw new Error('Safety backup creation failed - halting execution to prevent data loss');
+    }
+    
+    console.log(`[SAFETY-BACKUP] ✅ Created backup ${safetyBackupId} - will auto-rollback on validation failure`);
+    
     // 📊 WORKFLOW TELEMETRY: Track read vs write operations
     // 🎯 REPLIT AGENT PARITY: High ceiling for diagnostics while preserving stall detection
     const workflowTelemetry = {
@@ -3840,6 +3858,38 @@ router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
         console.error('[LOMU-AI-VALIDATION] ❌ Validation error - BLOCKING:', validationError.message);
         phaseOrchestrator.emitVerifying(`❌ Validation error: ${validationError.message}`);
         sendEvent('error', { message: `Validation error: ${validationError.message}` });
+        
+        // 🔒 P1-GAP-1: AUTO-ROLLBACK on validation failure
+        if (safetyBackupId) {
+          try {
+            console.log(`[SAFETY-ROLLBACK] 🔄 Validation failed - rolling back to backup ${safetyBackupId}...`);
+            await platformHealing.rollback(safetyBackupId);
+            console.log('[SAFETY-ROLLBACK] ✅ Successfully rolled back to pre-execution state');
+            
+            // Clean up workflow state - clear file change tracker
+            console.log('[SAFETY-ROLLBACK] Cleaning up workflow state...');
+            fileChangeTracker.clear(); // Clear all tracked file changes
+            console.log('[SAFETY-ROLLBACK] ✅ Workflow state cleaned');
+            
+            const rollbackMsg = `\n\n🔄 **AUTO-ROLLBACK COMPLETED** - All changes have been reverted to the pre-execution state.\n` +
+              `The platform is now back to its original state before this request.\n` +
+              `Workflow state has been cleaned to prevent contamination.\n`;
+            sendEvent('content', { content: rollbackMsg });
+            fullContent += rollbackMsg;
+          } catch (rollbackError: any) {
+            console.error('[SAFETY-ROLLBACK] ❌ Auto-rollback failed:', rollbackError.message);
+            const rollbackFailMsg = `\n\n⚠️ **AUTO-ROLLBACK FAILED** - Could not revert changes automatically.\n` +
+              `Error: ${rollbackError.message}\n` +
+              `Please use manual rollback if needed.\n`;
+            sendEvent('content', { content: rollbackFailMsg });
+            fullContent += rollbackFailMsg;
+          }
+        } else {
+          const noBackupMsg = `\n\n⚠️ **NO SAFETY BACKUP** - Auto-rollback not available (backup creation failed).\n` +
+            `You may need to manually revert changes if needed.\n`;
+          sendEvent('content', { content: noBackupMsg });
+          fullContent += noBackupMsg;
+        }
         
         // Re-throw to ensure execution is blocked
         throw validationError;

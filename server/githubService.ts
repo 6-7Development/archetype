@@ -1,4 +1,5 @@
 import { Octokit } from '@octokit/rest';
+import { exponentialBackoffWithJitter } from './services/rateLimiter'; // P1-GAP-3: Import backoff utility
 
 interface FileChange {
   path: string;
@@ -259,11 +260,21 @@ export class GitHubService {
         lastError = error;
         console.error(`[GITHUB-SERVICE] Commit attempt ${attempt + 1} failed:`, error.message);
 
+        // P1-GAP-3: Enhanced retry with exponential backoff + jitter
         if (attempt < retries - 1) {
-          // Exponential backoff: 1s, 2s, 4s
-          const delay = 1000 * Math.pow(2, attempt);
-          console.log(`[GITHUB-SERVICE] Retrying in ${delay}ms...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          // Detect rate limiting or server errors
+          const status = error.status || error.response?.status;
+          const isRateLimitError = status === 429 || error.message?.toLowerCase().includes('rate limit');
+          const isServerError = status === 503 || status === 502 || status === 500;
+          
+          if (isRateLimitError) {
+            console.warn(`[GITHUB-SERVICE] ⏱️ Rate limit detected - using backoff...`);
+          } else if (isServerError) {
+            console.warn(`[GITHUB-SERVICE] ⏱️ Server error (${status}) - retrying...`);
+          }
+          
+          // Use exponentialBackoffWithJitter from rate limiter (supports jitter for better retry)
+          await exponentialBackoffWithJitter(attempt, 2000); // 2s base delay
         }
       }
     }
