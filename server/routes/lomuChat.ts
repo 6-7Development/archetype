@@ -1469,7 +1469,8 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
     let totalToolCallCount = 0; // Track total tool calls for quality analysis
     
     // ✅ GAP 5: Per-iteration timeout safeguards
-    const ITERATION_TIMEOUT_MS = 60000; // 1 minute per iteration
+    // Increased to 3 minutes for complex analysis/fix tasks (Gemini needs time to analyze + implement)
+    const ITERATION_TIMEOUT_MS = 180000; // 3 minutes per iteration
     let iterationStartTime = Date.now();
     
     // 🚨 WATCHDOG: Prevent endless thinking loops
