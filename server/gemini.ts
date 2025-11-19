@@ -500,31 +500,30 @@ export async function streamGeminiResponse(options: StreamOptions) {
       signal.addEventListener('abort', abortHandler);
     }
 
-    // Get the generative model
-    const generativeModel = genai.getGenerativeModel({ 
-      model: model || DEFAULT_MODEL 
-    });
-
-    // Prepare request parameters with systemInstruction and tools at top level
-    const requestParams: any = {
-      contents: geminiMessages,
-      // ✅ CRITICAL: Hard "no-prose" contract at the top (from external advice)
-      // ✅ SANITIZE: Remove invisible characters that could corrupt JSON (external advice)
-      systemInstruction: sanitizeText(`CRITICAL: Return exactly one JSON object that conforms to the schema. Do not include any text before or after the JSON. Do not include backticks, comments, or explanations.
+    // ✅ CRITICAL FIX: Move systemInstruction to MODEL level (not request level)
+    // This ensures function calling respects the "no print() wrapping" rule
+    const systemInstructionText = sanitizeText(`CRITICAL: You MUST use ONLY the tools declared in the schema. Do not wrap function calls in print() or any other syntax.
 
 ${system}
 
-FUNCTION CALLING FORMAT (REQUIRED):
-When calling a function, emit a pure JSON object with exactly this structure:
-{"name":"function_name","args":{"param1":"value1","param2":"value2"}}
+FUNCTION CALLING RULES (MANDATORY):
+1. When calling a function, Gemini API handles it automatically - you just specify the name and args
+2. DO NOT wrap calls in print(), code blocks, or any programming syntax
+3. DO NOT use Python/JavaScript syntax like print(write_platform_file(...))
+4. CORRECT: Just call the function name with its arguments
+5. INCORRECT: print(function_name(...)) or function_name()(...) or any wrapper
 
-FORBIDDEN:
-- Do NOT wrap in code: print(api.function_name(...))
-- Do NOT use programming syntax
-- Do NOT add explanations or prose around the JSON
-- Do NOT include markdown fences or backticks
+Your available functions are declared in the tools schema. Use them directly.`);
 
-If you need to call a function, emit ONLY the JSON object.`),
+    // Get the generative model with systemInstruction at MODEL level
+    const generativeModel = genai.getGenerativeModel({ 
+      model: model || DEFAULT_MODEL,
+      systemInstruction: systemInstructionText  // ✅ MODEL-level instruction (stronger than request-level)
+    });
+
+    // Prepare request parameters (systemInstruction now at model level, not here)
+    const requestParams: any = {
+      contents: geminiMessages,
       generationConfig: {
         maxOutputTokens: Math.max(maxTokens, 16000), // ⚠️ CRITICAL: Prevent truncated JSON (external advice: "silent killer")
         temperature: 0.0, // ZERO randomness for function calling (external advice: 0.0-0.3)
