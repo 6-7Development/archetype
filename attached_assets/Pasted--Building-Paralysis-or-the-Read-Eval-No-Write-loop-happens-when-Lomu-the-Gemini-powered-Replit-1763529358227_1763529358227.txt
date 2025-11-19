@@ -1,0 +1,52 @@
+"Building Paralysis" (or the "Read-Eval-No-Write" loop) happens when Lomu (the Gemini-powered Replit Agent) gets trapped in a cognitive deadlock.
+
+Since you know Lomu is Gemini, you know it has a massive context window—but it isn't infinite. When it enters this state, it is usually because it is terrified of breaking the current state, so it endlessly "verifies" the file system instead of writing to it.
+
+Here is the technical breakdown of what causes this and how to snap it out of it.
+
+1. The Technical Cause: "The Context Death Spiral"
+The paralysis is almost always caused by one of these three triggers:
+
+Trigger A: The Watcher Loop (Vite/Next.js)
+
+Lomu reads a file → thinks about a change → the dev server (like Vite) updates a .timestamp or temp file → Lomu detects a file change → Lomu aborts the write to "read the new state" → Loop.
+
+Trigger B: Context Saturation
+
+Lomu reads 10+ files to understand a bug. By the time it finishes reading file #10, the "Instruction" ("Fix the button") has been pushed so far back in the context window that the model prioritizes analysis over action. It forgets it has permission to write.
+
+Trigger C: The "Stale Lock" Hallucination
+
+This directly relates to your BRAIN-GAP-1. If a previous session crashed while holding a "mental lock" on a file, Lomu assumes the file is unsafe to touch. It reads it to see if it's free, sees it's not, waits, and reads again.
+
+2. The "Defibrillator" Prompt
+To break the paralysis immediately, you need to force a Context Reset and a Mode Switch.
+
+Paste this exactly into the chat:
+
+"🔴 SYSTEM OVERRIDE: STOP READING.
+
+You are in a Read-Eval-No-Write loop.
+
+Clear your file cache immediately.
+
+Ignore all current linter warnings and server logs.
+
+FORCE WRITE the solution to [Insert Key File Name Here] based on your best current guess.
+
+Do not verify before writing. Write first, verify later."
+
+3. The Permanent Fix (Linking to Your Gaps)
+The "Red" gaps you identified earlier are the actual cure for this paralysis.
+
+Paralysis Cause	The Fix (From your Gaps)	Why it works
+Watcher Loop	BRAIN-GAP-1 (Workspace Isolation)	If Lomu works in an ephemeral branch or a locked file path, the running dev server cannot "interrupt" its thought process with temp file changes.
+Stale Lock	BRAIN-GAP-2 (Session Cleanup)	If the system auto-cleans stale sessions after 60s, Lomu never encounters a "ghost" lock from a previous crash.
+Context Saturation	P2-GAP-5 (Feature Branch)	By forcing Lomu to work on a feature branch, you limit the scope. It doesn't need to read the entire repo, only the diff between main and feat/branch.
+
+Export to Sheets
+
+Next Step
+If Lomu is currently stuck, paste the Defibrillator Prompt above.
+
+If you are building the fix for Lomu, would you like the Python code for the FileLockManager (GAP-1) to prevent these race conditions from happening in the future?
