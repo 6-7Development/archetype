@@ -1082,14 +1082,18 @@ export function UniversalChat({
               const eventData = JSON.parse(line.substring(6));
               console.log('[SSE] Event:', eventData.type, eventData);
 
+              // ✅ FIX: Backend now sends { type, data } envelope
+              // Extract data payload for easier access
+              const payload = eventData.data || {};
+              
               switch (eventData.type) {
                 case 'user_message':
-                  assistantMessageId = eventData.messageId;
+                  assistantMessageId = payload.messageId;
                   setProgressMessage('Processing your request...');
                   break;
 
                 case 'content':
-                  assistantMessageContent += eventData.content || '';
+                  assistantMessageContent += payload.content || '';
                   setMessages((prev) => {
                     const updated = [...prev];
                     const lastMsgIndex = updated.length - 1;
@@ -1110,26 +1114,26 @@ export function UniversalChat({
 
                 case 'thinking':
                   setProgressStatus('thinking');
-                  setProgressMessage(eventData.message || 'Thinking...');
+                  setProgressMessage(payload.message || 'Thinking...');
                   break;
 
                 case 'tool_call':
                   setProgressStatus('working');
-                  setProgressMessage(`Using tool: ${eventData.tool || 'unknown'}...`);
+                  setProgressMessage(`Using tool: ${payload.tool || 'unknown'}...`);
                   break;
 
                 case 'run_phase':
-                  setCurrentPhase(eventData.phase || 'working');
-                  setPhaseMessage(eventData.message || '');
+                  setCurrentPhase(payload.phase || 'working');
+                  setPhaseMessage(payload.message || '');
                   break;
 
                 case 'assistant_progress':
                   // Handle inline thinking/action/result progress messages
                   const progressEntry = {
-                    id: eventData.progressId || nanoid(),
-                    message: eventData.content || '',
+                    id: payload.progressId || nanoid(),
+                    message: payload.content || '',
                     timestamp: Date.now(),
-                    category: eventData.category || 'action'
+                    category: payload.category || 'action'
                   };
                   
                   // Append to current assistant message's progressMessages
@@ -1149,58 +1153,58 @@ export function UniversalChat({
                   });
                   
                   // Also update progress status for status bar
-                  if (eventData.category === 'thinking') {
+                  if (payload.category === 'thinking') {
                     setProgressStatus('thinking');
-                    setProgressMessage(eventData.content || 'Thinking...');
-                  } else if (eventData.category === 'action') {
+                    setProgressMessage(payload.content || 'Thinking...');
+                  } else if (payload.category === 'action') {
                     setProgressStatus('working');
-                    setProgressMessage(eventData.content || 'Working...');
+                    setProgressMessage(payload.content || 'Working...');
                   }
                   break;
 
                 // RunState event handlers
                 case 'run.started':
-                  console.log('[RunState] Run started:', eventData);
-                  dispatchRunState({ type: 'run.started', data: eventData as RunStartedData });
+                  console.log('[RunState] Run started:', payload);
+                  dispatchRunState({ type: 'run.started', data: payload as RunStartedData });
                   setProgressStatus('thinking');
                   break;
 
                 case 'run.state_updated':
-                  console.log('[RunState] State updated:', eventData);
-                  dispatchRunState({ type: 'run.state_updated', data: eventData as RunStateUpdateData });
-                  if (eventData.phase) {
-                    setCurrentPhase(eventData.phase);
+                  console.log('[RunState] State updated:', payload);
+                  dispatchRunState({ type: 'run.state_updated', data: payload as RunStateUpdateData });
+                  if (payload.phase) {
+                    setCurrentPhase(payload.phase);
                     // Map phase to progressStatus
-                    if (eventData.phase === 'thinking') setProgressStatus('thinking');
-                    else if (eventData.phase === 'working') setProgressStatus('working');
-                    else if (eventData.phase === 'verifying') setProgressStatus('vibing');
+                    if (payload.phase === 'thinking') setProgressStatus('thinking');
+                    else if (payload.phase === 'working') setProgressStatus('working');
+                    else if (payload.phase === 'verifying') setProgressStatus('vibing');
                   }
                   break;
 
                 case 'task.created':
-                  console.log('[RunState] Task created:', eventData);
-                  dispatchRunState({ type: 'task.created', data: eventData as TaskCreatedData });
+                  console.log('[RunState] Task created:', payload);
+                  dispatchRunState({ type: 'task.created', data: payload as TaskCreatedData });
                   break;
 
                 case 'task.updated':
-                  console.log('[RunState] Task updated:', eventData);
-                  dispatchRunState({ type: 'task.updated', data: eventData as TaskUpdatedData });
+                  console.log('[RunState] Task updated:', payload);
+                  dispatchRunState({ type: 'task.updated', data: payload as TaskUpdatedData });
                   break;
 
                 case 'run.completed':
-                  console.log('[RunState] Run completed:', eventData);
-                  dispatchRunState({ type: 'run.completed', data: eventData as RunCompletedData });
+                  console.log('[RunState] Run completed:', payload);
+                  dispatchRunState({ type: 'run.completed', data: payload as RunCompletedData });
                   setProgressStatus('idle');
                   break;
 
                 case 'run.failed':
-                  console.error('[RunState] Run failed:', eventData);
-                  dispatchRunState({ type: 'run.failed', data: eventData as RunFailedData });
+                  console.error('[RunState] Run failed:', payload);
+                  dispatchRunState({ type: 'run.failed', data: payload as RunFailedData });
                   setProgressStatus('idle');
                   toast({
                     variant: 'destructive',
                     title: 'Run Failed',
-                    description: eventData.errorMessage || 'The agent run encountered an error',
+                    description: payload.errorMessage || 'The agent run encountered an error',
                   });
                   break;
 
@@ -1219,27 +1223,27 @@ export function UniversalChat({
 
                 case 'progress':
                   // Handle progress updates (shown in status bar, not inline chat)
-                  console.log('[SSE] Progress:', eventData.message);
-                  if (eventData.message) {
-                    setProgressMessage(eventData.message);
+                  console.log('[SSE] Progress:', payload.message);
+                  if (payload.message) {
+                    setProgressMessage(payload.message);
                     
                     // If it's a warning/failure message, show toast
-                    if (eventData.message.includes('🚨') || eventData.message.includes('failure') || eventData.message.includes('Safety limit')) {
+                    if (payload.message.includes('🚨') || payload.message.includes('failure') || payload.message.includes('Safety limit')) {
                       toast({
-                        variant: eventData.message.includes('🚨') ? 'destructive' : 'default',
+                        variant: payload.message.includes('🚨') ? 'destructive' : 'default',
                         title: 'LomuAI Status',
-                        description: eventData.message,
+                        description: payload.message,
                       });
                     }
                   }
                   break;
 
                 case 'error':
-                  console.error('[SSE] Error event:', eventData);
+                  console.error('[SSE] Error event:', payload);
                   toast({
                     variant: 'destructive',
                     title: 'Error',
-                    description: eventData.message || 'An error occurred while processing your request',
+                    description: payload.message || 'An error occurred while processing your request',
                   });
                   setIsGenerating(false);
                   setProgressStatus('idle');

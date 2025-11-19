@@ -787,8 +787,10 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
   res.setHeader('X-Accel-Buffering', 'no'); // Disable buffering on Railway/nginx proxies
   res.setHeader('Content-Encoding', 'none'); // Prevent gzip buffering
 
+  // ✅ FIX: Wrap payload in { type, data } envelope for frontend compatibility
+  // Frontend expects: { type: 'content', data: { content: 'text' } }
   const sendEvent = (type: string, data: any) => {
-    res.write(`data: ${JSON.stringify({ type, ...data })}\n\n`);
+    res.write(`data: ${JSON.stringify({ type, data })}\n\n`);
   };
 
   // ============================================================================
@@ -799,7 +801,7 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
 
   // Helper function to emit structured section events for collapsible UI
   const emitSection = (sectionId: string, sectionType: 'thinking' | 'tool' | 'text', phase: 'start' | 'update' | 'finish', content: string, metadata?: any) => {
-    const event = {
+    const eventData = {
       sectionId,
       sectionType,
       title: metadata?.title || content.substring(0, 50),
@@ -808,7 +810,8 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
       content,
       metadata
     };
-    res.write(`data: ${JSON.stringify({ type: `section_${phase}`, ...event })}\n\n`);
+    // ✅ FIX: Use proper { type, data } envelope
+    res.write(`data: ${JSON.stringify({ type: `section_${phase}`, data: eventData })}\n\n`);
   };
 
   // Helper function to ensure consistent SSE stream termination
