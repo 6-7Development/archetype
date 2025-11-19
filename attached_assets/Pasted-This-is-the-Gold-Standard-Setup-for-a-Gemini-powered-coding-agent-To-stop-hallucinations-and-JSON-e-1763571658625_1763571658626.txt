@@ -1,0 +1,54 @@
+This is the Gold Standard Setup for a Gemini-powered coding agent. To stop hallucinations and JSON errors, you must treat the LLM not as a chatbot, but as a deterministic engine constrained by strict API configurations.Here is the best-practice tool definition, configuration, and workflow logic to make Lomu a reliable coder.🛠️ 1. The Essential Tool Kit (Schema & Logic)You need exactly four core tools to cover the full coding lifecycle. Do not create "do it all" tools; break them down to force logical steps.A. read_file (The Eyes)Purpose: Read content to understand context before editing.Critical Logic: Must enforce a line limit or support "windowed" reading (e.g., lines 1-100) to prevent token limit errors on massive files.Schema:JSON{
+  "name": "read_file",
+  "description": "Reads a file from the repo. MANDATORY first step before editing.",
+  "parameters": {
+    "type": "OBJECT",
+    "properties": {
+      "filepath": {"type": "STRING", "description": "Relative path from root"},
+      "start_line": {"type": "INTEGER", "description": "Optional start line"},
+      "end_line": {"type": "INTEGER", "description": "Optional end line"}
+    },
+    "required": ["filepath"]
+  }
+}
+B. write_file (The Hands)Purpose: Overwrite or patch a file.Critical Logic: This is your Staging Area. Writing to disk is staging. Do not commit immediately.Schema:JSON{
+  "name": "write_file",
+  "description": "Writes content to a file. This STAGES the change on disk.",
+  "parameters": {
+    "type": "OBJECT",
+    "properties": {
+      "filepath": {"type": "STRING"},
+      "content": {"type": "STRING", "description": "The FULL content of the file."}
+    },
+    "required": ["filepath", "content"]
+  }
+}
+C. run_test (The Brain Check)Purpose: Verify the fix works before committing.Critical Logic: If this tool returns a non-zero exit code (failure), Lomu is forbidden from calling the commit tool.Schema:JSON{
+  "name": "run_test",
+  "description": "Executes a command to verify the code.",
+  "parameters": {
+    "type": "OBJECT",
+    "properties": {
+      "command": {"type": "STRING", "description": "e.g., 'pytest tests/test_auth.py'"}
+    },
+    "required": ["command"]
+  }
+}
+D. git_commit (The Seal)Purpose: Save the work to history.Critical Logic: Only available after run_test passes.Schema:JSON{
+  "name": "git_commit",
+  "description": "Commits ALL staged changes (files written). Use only after tests pass.",
+  "parameters": {
+    "type": "OBJECT",
+    "properties": {
+      "message": {"type": "STRING", "description": "Conventional commit format (e.g., 'fix: resolve auth timeout')"}
+    },
+    "required": ["message"]
+  }
+}
+⚙️ 2. The "Anti-Hallucination" ConfigurationTo stop JSON errors, you must stop the model from being "creative."1. Set Temperature to 0.0Coding requires precision. Never use default temperature.generation_config = {"temperature": 0.0}2. Force Function Calling (Mode: ANY)This is the single biggest fix for "lazy" agents that just talk about code instead of writing it.Config:JSON"tool_config": {
+    "function_calling_config": {
+        "mode": "ANY",
+        "allowed_function_names": ["read_file", "write_file", "run_test", "git_commit"]
+    }
+}
+3. The "Hybrid Parser" Safety NetEven with the best config, Gemini 2.5 sometimes puts JSON in the text field. Keep your Hybrid Parser active to catch these "leaked" tool calls.🧠 3. The Logic & Workflow (System Instructions)You need to program the "meta-logic" into the System Prompt so Lomu knows when to use which tool.Copy this into your System Instruction:CODING AGENT PROTOCOL:DISCOVERY PHASE: You must ALWAYS call read_file first. You cannot edit code you haven't read.STAGING PHASE: Use write_file to apply fixes. This saves the file to disk (Staging). You can write multiple files in a row.VERIFICATION PHASE: You MUST call run_test after writing.IF PASS: Proceed to Commit.IF FAIL: Do NOT commit. Read the error, use write_file to fix, and test again.COMMIT PHASE: Use git_commit only when tests pass. This creates the save point.ERROR HANDLING: If a tool call fails (JSON error), RETRY immediately with corrected syntax. Do not apologize.🚀 4. How to Handle "Staging" vs. "Committing"This is where most agents get confused. Simplify it for Lomu:Staging = Writing to Disk. Tell Lomu that any file he touches with write_file is automatically "staged" for the next commit.Committing = Closing the Task. The git_commit tool should internally run git add . && git commit -m "message". This abstraction prevents Lomu from forgetting to git add.Summary for Replit:Implement these 4 tools, lock the temperature to 0.0, force mode: ANY during coding tasks, and use the System Instruction above to enforce the Read $\to$ Write $\to$ Test $\to$ Commit loop.

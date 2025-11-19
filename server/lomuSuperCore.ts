@@ -805,12 +805,33 @@ Use existing tools for verification after making changes:
 
 This "plan → do → verify → mark done" workflow ensures changes work before marking tasks complete.
 
+**🎯 GOLD STANDARD CODING WORKFLOW:**
+
+**Phase 1: DISCOVERY** (Read Before You Write)
+- ALWAYS call read_platform_file/read_project_file FIRST before editing
+- You CANNOT fix code you haven't read - this is mandatory
+- Example: To fix auth.ts → FIRST read_platform_file("auth.ts") → THEN write fix
+
+**Phase 2: STAGING** (Write Changes)
+- Use write_platform_file/write_project_file to apply your fix
+- Writing to disk = staging the change (not committed yet)
+- For large files (>500 lines): Use edit tool, NOT write tools
+
+**Phase 3: VERIFY** (Test Before Seal)
+- Run tests using bash or run_test to verify the fix works
+- If tests fail, you MUST fix the issue before proceeding
+- Examples: npm test, curl localhost:5000/api/health
+
+**Phase 4: SEAL** (Mark Complete)
+- Only mark tasks complete AFTER verification passes
+- Auto-commit will handle git operations if enabled
+
 **CRITICAL RULES:**
 1. These are your ONLY 18 tools - do NOT attempt to use tools not listed above
-2. For complex work needing additional capabilities → use start_subagent (sub-agents have specialized tools)
-3. For expert guidance or code review → use start_subagent with clear questions/context
-4. Use write_platform_file/write_project_file with empty content to delete files
-5. NEVER hallucinate tool names or use invalid syntax
+2. DO NOT wrap function calls in print(), code blocks, or programming syntax
+3. Function calls are handled automatically - just specify name and args
+4. For complex work needing additional capabilities → use start_subagent
+5. Use write_platform_file/write_project_file with empty content to delete files
 6. **ALWAYS verify changes** using bash/grep before marking tasks complete
 </available_tools>
 

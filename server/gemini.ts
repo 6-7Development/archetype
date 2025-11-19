@@ -681,13 +681,27 @@ Your available functions are declared in the tools schema. Use them directly.`);
             if (finishMessage) {
               console.error('[GEMINI-ERROR] Error details:', finishMessage);
               
-              // Extract function name if present in error message
-              const functionNameMatch = finishMessage.match(/function call:\s*([a-zA-Z_]+)/i);
-              if (functionNameMatch) {
-                attemptedFunction = functionNameMatch[1];
-                console.error(`[GEMINI-ERROR] Attempted to call: ${attemptedFunction}`);
-                console.error('[GEMINI-ERROR] Invalid function call format detected');
+              // ✅ GOLD STANDARD FIX: Parse INNER function from wrappers
+              // Gemini sometimes wraps calls in print(default_api.function_name(...))
+              // We need to extract the ACTUAL function name, not the wrapper
+              
+              // Try to extract from patterns like:
+              // - print(write_platform_file(...))
+              // - print(default_api.write_platform_file(...))
+              // - default_api.write_platform_file(...)
+              const innerFunctionMatch = finishMessage.match(/(?:print\()?(?:default_api\.)?([a-zA-Z_]+)\s*\(/i);
+              if (innerFunctionMatch) {
+                attemptedFunction = innerFunctionMatch[1];
+                console.error(`[GEMINI-ERROR] Extracted inner function: ${attemptedFunction}`);
+              } else {
+                // Fallback to simple extraction
+                const functionNameMatch = finishMessage.match(/function call:\s*([a-zA-Z_]+)/i);
+                if (functionNameMatch) {
+                  attemptedFunction = functionNameMatch[1];
+                  console.error(`[GEMINI-ERROR] Attempted to call: ${attemptedFunction}`);
+                }
               }
+              console.error('[GEMINI-ERROR] Invalid function call format detected');
             }
             
             // Try to find the intended function from candidate content
