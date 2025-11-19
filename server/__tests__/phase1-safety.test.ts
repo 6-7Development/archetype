@@ -559,21 +559,27 @@ describe('Phase 1 Safety - Integration Tests', () => {
     expect(fileLockManager.getLockStatus(file).queueSize).toBe(5);
     console.log('[CONCURRENT] ✅ 5 requests queued');
     
-    // Release initial lock
+    // Release locks sequentially to allow FIFO processing
+    const results: import('../services/fileLockManager').LockResult[] = [];
+    
+    // Release initial lock to start the queue
     fileLockManager.releaseLock(lock1.lockId!);
     
-    // All should be granted in FIFO order
-    const results = await Promise.all(promises);
-    
-    expect(results.every(r => r.acquired)).toBe(true);
-    console.log('[CONCURRENT] ✅ All requests granted in FIFO order');
-    
-    // Cleanup
-    for (const result of results) {
+    // Process each queued request in order
+    // (Write locks are exclusive, so each must be released before next is granted)
+    for (const promise of promises) {
+      const result = await promise;
+      results.push(result);
+      expect(result.acquired).toBe(true);
+      
+      // Release this lock to allow next in queue to be granted
       if (result.lockId) {
         fileLockManager.releaseLock(result.lockId);
       }
     }
+    
+    expect(results.every(r => r.acquired)).toBe(true);
+    console.log('[CONCURRENT] ✅ All requests granted in FIFO order');
     
     vi.useRealTimers();
   });
