@@ -709,8 +709,26 @@ If you need to call a function, emit ONLY the JSON object.`),
               if (!functionExists) {
                 console.error(`[GEMINI-ERROR] ❌ Function "${attemptedFunction}" does not exist in available tools`);
                 console.error('[GEMINI-ERROR] Available functions:', tools?.map(t => t.name).join(', '));
-                console.error('[GEMINI-ERROR] This appears to be a hallucinated/invalid function - skipping forced retry');
-                // Fall through to the general retry or error handling below
+                console.error('[GEMINI-ERROR] This appears to be a hallucinated/invalid function - sending error to frontend');
+                
+                // CRITICAL FIX: Send error message immediately instead of retrying
+                const hallucinatedError = `I apologize - I attempted to use a tool that doesn't exist ("${attemptedFunction}"). Let me try a different approach to help you.
+
+Please restate your request and I'll use the correct tools this time.`;
+                
+                if (onError) {
+                  onError(new Error(hallucinatedError));
+                }
+                
+                if (onChunk) {
+                  onChunk(hallucinatedError);
+                }
+                
+                fullText += hallucinatedError;
+                console.error('[GEMINI-ERROR] ✅ Hallucinated function error sent to frontend');
+                
+                // Stop processing this malformed response
+                break;
               } else {
                 retryCount++;
                 console.log(`[GEMINI-RETRY] Retrying with structural constraint (${retryCount}/${MAX_RETRIES})...`);
