@@ -86,6 +86,10 @@ A centralized session management system (`server/services/lomuAIBrain.ts`) conso
 - **Production-Ready Code Validation System**: 3-layer validation architecture (pre-write, pre-commit) to prevent broken code. Includes JSON healing and validation caching.
 - **Telemetry System**: Tracks healing attempts, successes, failures with detailed statistics.
 - **Reflection and Structured Retry Mandate**: LomuAI analyzes tool failures, states root cause, and proposes alternative strategies before retrying.
+- **Priority 1 Safety Mechanisms** (Production-Ready ✅):
+  - **P1-GAP-1: Auto-Rollback on Validation Failure** - Mandatory backup creation before execution; automatic rollback with workflow state cleanup (`fileChangeTracker.clear()`) if validation fails
+  - **P1-GAP-2: Server Startup Integration Test** - Real `server/index.ts` smoke test in production mode (skips Vite); waits for "serving on port" signal + HTTP health probe to catch middleware/config/runtime regressions
+  - **P1-GAP-3: GitHub API Retry with Exponential Backoff** - Enhanced retry logic with `exponentialBackoffWithJitter` for 429/503 rate limit errors
 
 The platform prioritizes native JSON function calling for AI streaming due to superior speed, reliability, and type safety, integrating utilities for validation, retry logic, and file change tracking.
 
