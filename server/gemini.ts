@@ -858,9 +858,41 @@ Please try:
 
         // Process each part (cast to GeminiPart to include thoughtSignature)
         for (const part of (content.parts as GeminiPart[])) {
-          // 🧠 CRITICAL FIX: Handle thoughtSignature with contextual messages
-          // thoughtSignature + functionCall = action message
-          // thoughtSignature alone = thinking message
+          // ============================================================================
+          // ✅ PERMANENT FIX: Stream text content IMMEDIATELY (before any other processing)
+          // ============================================================================
+          // PROBLEM HISTORY:
+          // - When Gemini sends thoughtSignature + functionCall + text together,
+          //   the old code would process thoughtSignature/functionCall but SKIP the text
+          // - This caused "Thinking..." badge to show but NO actual text in chat
+          // - User only saw one big dump at the end
+          //
+          // SOLUTION:
+          // - Stream ALL text content FIRST, before checking thoughtSignature/functionCall
+          // - Skip only if text is function call JSON (contains '{"name":')
+          // - This ensures text ALWAYS reaches the frontend, regardless of metadata
+          //
+          // ORDER MATTERS:
+          // 1. Stream text (this section) ← MUST BE FIRST
+          // 2. Process thoughtSignature for scratchpad status
+          // 3. Extract function calls if present
+          // ============================================================================
+          if (part.text && !part.text.includes('{"name":')) {
+            const text = part.text;
+            fullText += text;
+            
+            // Stream immediately to frontend
+            if (onChunk) {
+              try {
+                onChunk({ type: 'chunk', content: text });
+                console.log('[GEMINI-TEXT-STREAM] ✅ Streamed:', text.substring(0, 80) + '...');
+              } catch (chunkError) {
+                console.error('❌ Error in onChunk callback:', chunkError);
+              }
+            }
+          }
+          
+          // 🧠 Then handle thoughtSignature metadata (for scratchpad status only)
           if (part.thoughtSignature && part.functionCall) {
             // Thinking + function call = action message
             try {
@@ -874,23 +906,12 @@ Please try:
               console.error('❌ Error processing thoughtSignature + functionCall:', thoughtError);
             }
           } else if (part.thoughtSignature) {
-            // Thinking alone = contextual thinking message based on nearby text
+            // Thinking alone = contextual thinking message for scratchpad
             try {
-              // Use the text content to determine context, or default to generic
               const thought = part.text ? getThinkingMessageFromText(part.text) : '🧠 Analyzing...';
               if (thought !== lastThought && onThought) {
                 lastThought = thought;
                 onThought(thought);
-              }
-              
-              // ✅ ARCHITECT FIX: Also send the ACTUAL text content to chat!
-              // Previously we only sent generic "Thinking..." to scratchpad
-              // But the user wants to see Gemini's actual thoughts in the chat
-              if (part.text && onChunk) {
-                const text = part.text;
-                fullText += text;
-                onChunk({ type: 'chunk', content: text });
-                console.log('[GEMINI-THOUGHT-TEXT] Sent thinking text to chat:', text.substring(0, 100) + '...');
               }
             } catch (thoughtError) {
               console.error('❌ Error processing thoughtSignature:', thoughtError);
@@ -947,33 +968,8 @@ Please try:
             }
           }
 
-          // Handle text content (only if it wasn't a function call in text format)
-          if (part.text) {
-            const text = part.text;
-            fullText += text;
-
-            // Send chunk
-            if (onChunk) {
-              try {
-                onChunk({ type: 'chunk', content: text });
-              } catch (chunkError) {
-                console.error('❌ Error in onChunk callback:', chunkError);
-              }
-            }
-
-            // Detect thinking patterns in text (FALLBACK: when no thoughtSignature)
-            try {
-              if (/\\b(planning|considering|evaluating|analyzing|thinking|reviewing)\\b/i.test(text)) {
-                const thought = getThinkingMessageFromText(text);
-                if (thought !== lastThought && onThought) {
-                  lastThought = thought;
-                  onThought(thought);
-                }
-              }
-            } catch (thoughtError) {
-              console.error('❌ Error detecting thoughts in text:', thoughtError);
-            }
-          }
+          // ✅ Text handling moved to the beginning of the loop (lines 866-879)
+          // This section removed to prevent duplicate streaming
 
           // Process the function call if found (from either CHECK 1 or CHECK 2)
           if (extractedFunctionCall) {
