@@ -1829,6 +1829,7 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
             // 🔥 STREAM TEXT IMMEDIATELY - Don't wait!
             currentTextBlock += chunkText;
             fullContent += chunkText;
+            console.log('[SSE-DEBUG] ✅ Sending content event:', chunkText.substring(0, 80) + '...');
             sendEvent('content', { content: chunkText });
 
             // 🚨 WATCHDOG: Reset thinking counter on substantive assistant text

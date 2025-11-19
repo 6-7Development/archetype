@@ -9,10 +9,10 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { apiLimiter } from "./rateLimiting";
 import { db } from "./db";
-import { files } from "@shared/schema";
+import { files, chatMessages } from "@shared/schema"; // Import chatMessages
 import { autoHealing } from "./autoHealing";
 import multer from "multer"; // Import multer
-import { eq } from "drizzle-orm";
+import { eq, or, like } from "drizzle-orm"; // Import or and like
 import WebSocket from 'ws'; // Import WebSocket
 
 // DEPLOYMENT VERIFICATION: October 28, 2025 01:50 UTC - LomuAI execution fix deployed
@@ -221,7 +221,7 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
   // START SERVER IMMEDIATELY - Don't wait for database!
   server.listen(port, '0.0.0.0', async () => {
     log(`serving on port ${port}`);
-    console.log(`🚀 LomuAI server is running on http://0.0.0.0:${port}`);
+    console.log(`👋 Welcome to LomuAI! Server is running on http://0.0.0.0:${port}`);
     
     // Setup Vite AFTER server is listening
     if (app.get("env") === "development") {
@@ -243,19 +243,19 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
     // This prevents old incorrect tool calls from polluting Claude's context
     console.log('🧹 Running startup cleanup for chat history...');
     try {
-      const { sql } = await import('drizzle-orm');
-      const cleanupResult = await db.execute(sql`
-        DELETE FROM chat_messages 
-        WHERE content LIKE '%createTaskList(%' 
-           OR content LIKE '%updateTask(%' 
-           OR content LIKE '%readTaskList(%' 
-           OR content LIKE '%startSubagent(%' 
-           OR content LIKE '%architectConsult(%' 
-           OR content LIKE '%performDiagnosis(%' 
-           OR content LIKE '%readPlatformFile(%' 
-           OR content LIKE '%writePlatformFile(%' 
-           OR content LIKE '%listPlatformDirectory(%' 
-      `);
+      const cleanupResult = await db.delete(chatMessages).where(
+        or(
+          like(chatMessages.content, '%createTaskList(%'),
+          like(chatMessages.content, '%updateTask(%'),
+          like(chatMessages.content, '%readTaskList(%'),
+          like(chatMessages.content, '%startSubagent(%'),
+          like(chatMessages.content, '%architectConsult(%'),
+          like(chatMessages.content, '%performDiagnosis(%'),
+          like(chatMessages.content, '%readPlatformFile(%'),
+          like(chatMessages.content, '%writePlatformFile(%'),
+          like(chatMessages.content, '%listPlatformDirectory(%')
+        )
+      );
       console.log('✅ Chat history cleanup complete');
     } catch (cleanupError: any) {
       console.warn('⚠️ Chat history cleanup failed (non-critical):', cleanupError.message);
