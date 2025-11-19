@@ -64,7 +64,14 @@ The platform implements a comprehensive Agent Chatroom interface with real-time 
 
 This organized, unified view mirrors Replit Agent's inline `<thinking>` tags, showing the AI's work process alongside the final response. Progress messages persist with message history, maintaining transparency across sessions.
 
-**Recent Fix (Nov 19, 2025)**: Fixed React state mutation bug in `assistant_progress` event handler - changed from direct `.push()` mutation to immutable spread operator (`[...(array || []), newItem]`), restoring real-time progress display during streaming.
+**Recent Fixes (Nov 19, 2025)**:
+- **SSE Format Mismatch Fix**: Fixed critical bug where backend was spreading data directly into SSE events instead of wrapping in `{ type, data }` envelope. Frontend expects `eventData.data.content` but was receiving `eventData.content`, causing ALL events to be discarded. Fixed by:
+  - Backend `sendEvent()` now wraps: `{ type, data }` instead of `{ type, ...data }`
+  - Frontend extracts: `const payload = eventData.data || {}` then accesses `payload.content`
+  - Updated ALL 16+ event handlers to use `payload.x` pattern
+  - This fix restores text streaming, run/task updates, and progress display
+- **React State Mutation Fix**: Changed from direct `.push()` mutation to immutable spread operator (`[...(array || []), newItem]`), ensuring React detects state changes
+- **Dual Transport Fix**: RunStateManager now broadcasts via BOTH WebSocket AND SSE by accepting `sendEvent` callback, ensuring run/task events reach task panel
 
 ### System Design Choices
 LomuAI acts as the autonomous worker, committing changes through a strict 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). I AM Architect is a user-summoned premium consultant providing guidance without committing code. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing. LomuAI incorporates efficiency rules within its system prompt, such as SEARCH BEFORE CODING, COPY DON'T REINVENT, VERIFY THE TASK, and ITERATION BUDGET AWARENESS.
