@@ -657,7 +657,9 @@ router.get('/history/:projectId', isAuthenticated, async (req: any, res) => {
 });
 
 // Stream LomuAI chat response
-router.post('/stream', isAuthenticated, isAdmin, async (req: any, res) => {
+// NOTE: Removed isAdmin middleware - regular users can now use LomuAI via credit-based billing
+// Platform healing (targetContext="platform") has owner-only access checks inside the handler
+router.post('/stream', isAuthenticated, async (req: any, res) => {
   console.log('[LOMU-AI-CHAT] Stream request received');
   
   // STEP 1: Extract targetContext from request body (with backward compatibility)

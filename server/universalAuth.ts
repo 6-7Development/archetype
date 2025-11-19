@@ -9,6 +9,8 @@ import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 import { authLimiter } from "./rateLimiting";
 import { registerUserSchema, loginUserSchema, type RegisterUser, type LoginUser } from "@shared/schema";
+import { db } from "./db";
+import { creditWallets, creditLedger } from "@shared/schema";
 
 const SALT_ROUNDS = 12; // Bcrypt salt rounds (higher = more secure, slower)
 
@@ -155,6 +157,32 @@ export async function setupAuth(app: Express) {
         firstName: validatedData.firstName,
         lastName: validatedData.lastName,
       });
+      
+      // Initialize credit wallet with starter credits (1000 credits = $50 value for testing)
+      const STARTER_CREDITS = 1000;
+      try {
+        await db.insert(creditWallets).values({
+          userId: user.id,
+          availableCredits: STARTER_CREDITS,
+          reservedCredits: 0,
+          initialMonthlyCredits: STARTER_CREDITS,
+        }).onConflictDoNothing();
+        
+        // Log credit allocation in ledger
+        await db.insert(creditLedger).values({
+          userId: user.id,
+          deltaCredits: STARTER_CREDITS,
+          source: 'monthly_allocation',
+          metadata: {
+            reason: 'New user starter credits',
+          },
+        });
+        
+        console.log(`[AUTH] Created credit wallet for new user ${user.email} with ${STARTER_CREDITS} starter credits`);
+      } catch (walletError) {
+        console.error('[AUTH] Failed to create credit wallet:', walletError);
+        // Don't fail registration if wallet creation fails
+      }
       
       // Log user in automatically
       req.login(user, (err) => {

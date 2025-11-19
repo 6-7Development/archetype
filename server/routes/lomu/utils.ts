@@ -177,14 +177,12 @@ export async function validateContextAccess(
     return { allowed: true };
   }
   
-  // Project context: verify projectId is provided and user owns project
+  // Project context: allow scratch work (null projectId) or project-specific work
   if (targetContext === 'project') {
+    // Allow scratch/temporary work without a project (credit-based billing applies)
     if (!projectId) {
-      console.log(`[TARGET-CONTEXT] ❌ Access denied - projectId required for project context`);
-      return { 
-        allowed: false, 
-        reason: 'Project context requires a valid projectId' 
-      };
+      console.log(`[TARGET-CONTEXT] ✅ Project scratch access granted (userId: ${userId}, no projectId - scratch work)`);
+      return { allowed: true };
     }
     
     // TODO: Add project ownership check when project ownership system is implemented
