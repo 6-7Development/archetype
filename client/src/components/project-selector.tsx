@@ -3,12 +3,25 @@ import { queryClient } from "@/lib/queryClient";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Folder } from "lucide-react";
 
+interface Project {
+  id: string;
+  name: string;
+}
+
+interface ProjectsData {
+  projects: Project[];
+}
+
+interface ActiveSessionData {
+  activeProjectId: string | null;
+}
+
 export function ProjectSelector() {
-  const { data: projects } = useQuery({
+  const { data: projects } = useQuery<ProjectsData>({
     queryKey: ["/api/projects"],
   });
   
-  const { data: activeSession } = useQuery({
+  const { data: activeSession } = useQuery<ActiveSessionData>({
     queryKey: ["/api/user/active-project"],
   });
   
@@ -31,7 +44,7 @@ export function ProjectSelector() {
     <div className="flex items-center gap-2">
       <Folder className="h-4 w-4 text-muted-foreground" />
       <Select
-        value={activeSession?.activeProjectId}
+        value={activeSession?.activeProjectId || ""}
         onValueChange={(projectId) => activateMutation.mutate(projectId)}
         data-testid="select-project"
       >
@@ -39,7 +52,7 @@ export function ProjectSelector() {
           <SelectValue placeholder="Select project" />
         </SelectTrigger>
         <SelectContent>
-          {projects?.projects?.map((p: any) => (
+          {projects?.projects?.map((p) => (
             <SelectItem key={p.id} value={p.id} data-testid={`option-project-${p.id}`}>
               {p.name}
             </SelectItem>

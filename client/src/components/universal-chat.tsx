@@ -1203,8 +1203,10 @@ export function UniversalChat({
                   setProgressStatus('idle');
                   setProgressMessage('');
                   
-                  // Refresh chat history to get server-saved messages
-                  queryClient.invalidateQueries({ queryKey: ['/api/lomu-ai/history', effectiveProjectId] });
+                  // ✅ DON'T refetch history - we already have the message locally from SSE
+                  // Refetching causes race condition where server data overwrites local state
+                  // and the message disappears (especially if progressMessages aren't saved)
+                  // queryClient.invalidateQueries({ queryKey: ['/api/lomu-ai/history', effectiveProjectId] });
                   break;
 
                 case 'progress':

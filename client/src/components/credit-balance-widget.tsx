@@ -4,11 +4,21 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { CreditPurchaseModal } from "./credit-purchase-modal";
 
+interface CreditBalance {
+  available: number;
+  reserved: number;
+}
+
+interface CreditBalanceData {
+  success: boolean;
+  balance: CreditBalance;
+}
+
 export function CreditBalanceWidget() {
   const [showPurchase, setShowPurchase] = useState(false);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['/api/credits/balance'],
+  const { data, isLoading, error } = useQuery<CreditBalanceData>({
+    queryKey: ["/api/credits/balance"],
     refetchInterval: 10000, // Refresh every 10 seconds
   });
 

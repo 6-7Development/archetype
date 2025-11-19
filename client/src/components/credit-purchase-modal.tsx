@@ -6,6 +6,17 @@ import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 
+interface CreditPackage {
+  id: string;
+  name: string;
+  credits: number;
+  usd: number;
+}
+
+interface CreditPackagesData {
+  packages: CreditPackage[];
+}
+
 interface CreditPurchaseModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -17,32 +28,32 @@ export function CreditPurchaseModal({ isOpen, onClose, pausedRunId, onResumed }:
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const { data: packagesData, isLoading } = useQuery({
-    queryKey: ['/api/credits/packages'],
+  const { data: packagesData, isLoading } = useQuery<CreditPackagesData>({
+    queryKey: ["/api/credits/packages"],
     enabled: isOpen,
   });
 
   const purchaseMutation = useMutation({
     mutationFn: async (packageId: string) => {
-      return await apiRequest(`/api/credits/purchase`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ packageId }),
-      });
+      return await apiRequest(
+        "POST",
+        `/api/credits/purchase`,
+        { packageId }
+      );
     },
     onSuccess: async (data) => {
       toast({
         title: "Credits purchased successfully!",
         description: `Added ${data.creditsAdded.toLocaleString()} credits to your account.`,
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/credits/balance'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/credits/balance"] });
       
       // Auto-resume paused agent if runId is provided
       if (pausedRunId) {
         try {
           const response = await fetch(`/api/agents/resume/${pausedRunId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ additionalCredits: 100 }),
           });
 
@@ -57,7 +68,7 @@ export function CreditPurchaseModal({ isOpen, onClose, pausedRunId, onResumed }:
             }
           }
         } catch (error) {
-          console.error('Failed to auto-resume:', error);
+          console.error("Failed to auto-resume:", error);
           // Don't show error to user - they can manually resume
         }
       }
@@ -91,11 +102,11 @@ export function CreditPurchaseModal({ isOpen, onClose, pausedRunId, onResumed }:
           </div>
         ) : (
           <div className="grid gap-3">
-            {packages.map((pkg: any) => (
+            {packages.map((pkg) => (
               <button
                 key={pkg.id}
                 className={`flex items-center justify-between p-4 border rounded-md hover-elevate active-elevate-2 ${
-                  selectedPackage === pkg.id ? 'border-primary bg-primary/10' : 'border-border'
+                  selectedPackage === pkg.id ? "border-primary bg-primary/10" : "border-border"
                 }`}
                 onClick={() => setSelectedPackage(pkg.id)}
                 data-testid={`package-${pkg.id}`}

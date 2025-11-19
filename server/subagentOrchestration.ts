@@ -42,6 +42,8 @@ export async function startSubagent(params: SubagentParams): Promise<SubagentRes
 
   sendEvent('progress', { message: `🤖 Sub-agent started: ${task.slice(0, 60)}...` });
 
+  const MAX_ITERATIONS = 8; // Moved declaration here
+
   const systemPrompt = `You are a specialized sub-agent working on a focused coding task within the Lomu platform.
 
 🎯 YOUR MISSION: ${task}
@@ -427,7 +429,6 @@ Work systematically, verify your changes, and report completion when done!`;
   let finalSummary = '';
   let continueLoop = true;
   let iterationCount = 0;
-  const MAX_ITERATIONS = 8;
 
   // 🎯 MAP-BASED TOOL DISPATCHER - Clean, maintainable, architect-approved pattern
   type ToolExecutor = (input: any) => Promise<{ result: any; trackFile?: string }>;
