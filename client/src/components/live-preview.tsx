@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { RefreshCw, Maximize2, Eye, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { useWebSocketStream, addWebSocketListener, sendWebSocketMessage } from "@/hooks/use-websocket-stream";
 
 interface LivePreviewProps {
   projectId: string | null;
@@ -15,6 +16,70 @@ export function LivePreview({ projectId, fileCount = 0 }: LivePreviewProps) {
   const [previewStatus, setPreviewStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<string | null>(null);
+  
+  // Debounce timeout ref (300ms delay to batch rapid file changes)
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Use global WebSocket singleton (just need connection status)
+  const streamState = useWebSocketStream('live-preview-session', 'anonymous');
+  const { isConnected } = streamState;
+
+  // 📡 LIVE PREVIEW: Listen for file-change events from backend
+  useEffect(() => {
+    if (!projectId) return;
+
+    // Add custom listener for file-change events
+    const removeListener = addWebSocketListener((message) => {
+      // Listen for new file-change events (P1-1 Backend)
+      if (message.type === 'file-change' && message.projectId === projectId) {
+        console.log('[LIVE-PREVIEW] 📡 File changed:', message.files);
+        
+        // Debounce iframe reload (300ms delay to batch rapid changes)
+        if (debounceTimerRef.current) {
+          clearTimeout(debounceTimerRef.current);
+        }
+        
+        debounceTimerRef.current = setTimeout(() => {
+          console.log('[LIVE-PREVIEW] 🔄 Reloading preview after debounce');
+          setPreviewStatus('loading');
+          setLastUpdate(message.files?.[0] || 'files');
+          setIframeKey(prev => prev + 1);
+          
+          // Clear update notification after 3s
+          setTimeout(() => setLastUpdate(null), 3000);
+        }, 300);
+      }
+    });
+
+    // Cleanup: Remove listener and clear debounce timer
+    return () => {
+      removeListener();
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [projectId]);
+
+  // Subscribe to project when projectId or connection changes
+  useEffect(() => {
+    if (!projectId || !isConnected) return;
+    
+    // Send subscription message to backend
+    console.log('[LIVE-PREVIEW] 📡 Subscribing to project:', projectId);
+    sendWebSocketMessage({
+      type: 'subscribe',
+      projectId: projectId
+    });
+    
+    // Cleanup: Unsubscribe on unmount or project change
+    return () => {
+      console.log('[LIVE-PREVIEW] 🔕 Unsubscribing from project:', projectId);
+      sendWebSocketMessage({
+        type: 'unsubscribe',
+        projectId: projectId
+      });
+    };
+  }, [projectId, isConnected]);
 
   // Auto-refresh when projectId changes
   useEffect(() => {
@@ -23,82 +88,6 @@ export function LivePreview({ projectId, fileCount = 0 }: LivePreviewProps) {
       setErrorMessage(null);
       setIframeKey(prev => prev + 1);
     }
-  }, [projectId]);
-
-  // 📡 LIVE PREVIEW: Listen for LomuAI file updates via WebSocket
-  useEffect(() => {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
-    
-    let ws: WebSocket | null = null;
-    let reconnectTimeout: NodeJS.Timeout | null = null;
-
-    const connect = () => {
-      try {
-        ws = new WebSocket(wsUrl);
-
-        ws.onopen = () => {
-          console.log('[LIVE-PREVIEW] WebSocket connected for file updates');
-        };
-
-        ws.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            
-            // Listen for LomuAI file updates
-            if (data.type === 'platform_file_updated') {
-              // Match current project OR platform code
-              const currentProject = projectId || 'platform';
-              const updateProject = data.projectId || 'platform';
-              
-              if (currentProject === updateProject) {
-                console.log('[LIVE-PREVIEW] 📡 File updated for project:', updateProject, data.path);
-                
-                // Force iframe reload to show changes
-                setPreviewStatus('loading');
-                setLastUpdate(data.path);
-                setIframeKey(prev => prev + 1);
-                
-                // Show update notification briefly
-                setTimeout(() => {
-                  setLastUpdate(null);
-                }, 3000);
-              } else {
-                console.log('[LIVE-PREVIEW] 🔇 Ignoring update for different project:', updateProject);
-              }
-            }
-          } catch (error) {
-            console.error('[LIVE-PREVIEW] Failed to parse WebSocket message:', error);
-          }
-        };
-
-        ws.onerror = (error) => {
-          console.error('[LIVE-PREVIEW] WebSocket error:', error);
-        };
-
-        ws.onclose = () => {
-          console.log('[LIVE-PREVIEW] WebSocket disconnected, will reconnect in 3s');
-          // Auto-reconnect after 3 seconds
-          reconnectTimeout = setTimeout(() => {
-            connect();
-          }, 3000);
-        };
-      } catch (error) {
-        console.error('[LIVE-PREVIEW] Failed to create WebSocket:', error);
-      }
-    };
-
-    connect();
-
-    // Cleanup on unmount
-    return () => {
-      if (ws) {
-        ws.close();
-      }
-      if (reconnectTimeout) {
-        clearTimeout(reconnectTimeout);
-      }
-    };
   }, [projectId]);
 
   const handleRefresh = () => {

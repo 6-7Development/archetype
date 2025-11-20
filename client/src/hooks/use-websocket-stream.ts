@@ -6,6 +6,41 @@ let globalWs: WebSocket | null = null;
 let globalConnectionInProgress = false;
 const globalListeners = new Set<(msg: StreamMessage) => void>();
 
+// ============================================================================
+// EXPORTED HELPERS: For components that need custom WebSocket message handling
+// ============================================================================
+
+/**
+ * Send a message through the global WebSocket connection
+ * @param message - Message object to send (will be JSON.stringify'd)
+ */
+export function sendWebSocketMessage(message: any): void {
+  if (globalWs && globalWs.readyState === WebSocket.OPEN) {
+    globalWs.send(JSON.stringify(message));
+  } else {
+    console.warn('[WS] Cannot send message - WebSocket not connected');
+  }
+}
+
+/**
+ * Add a custom message listener to the global WebSocket
+ * @param listener - Callback function that receives StreamMessage
+ * @returns Cleanup function to remove the listener
+ */
+export function addWebSocketListener(listener: (msg: StreamMessage) => void): () => void {
+  globalListeners.add(listener);
+  return () => {
+    globalListeners.delete(listener);
+  };
+}
+
+/**
+ * Check if the global WebSocket is currently connected
+ */
+export function isWebSocketConnected(): boolean {
+  return globalWs?.readyState === WebSocket.OPEN;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -34,7 +69,7 @@ export interface DeploymentStep {
 }
 
 interface StreamMessage {
-  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'chat-error' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics' | 'heal:init' | 'heal:thought' | 'heal:tool' | 'heal:write-pending' | 'heal:approved' | 'heal:rejected' | 'heal:completed' | 'heal:error' | 'approval_requested' | 'progress' | 'platform_preview_ready' | 'platform_preview_error' | 'lomu_ai_job_update' | 'scratchpad_entry' | 'scratchpad_cleared' | 'deploy.started' | 'deploy.step_update' | 'deploy.complete' | 'deploy.failed' | 'billing.estimate' | 'billing.update' | 'billing.reconciled' | 'billing.warning';
+  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'chat-error' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics' | 'heal:init' | 'heal:thought' | 'heal:tool' | 'heal:write-pending' | 'heal:approved' | 'heal:rejected' | 'heal:completed' | 'heal:error' | 'approval_requested' | 'progress' | 'platform_preview_ready' | 'platform_preview_error' | 'lomu_ai_job_update' | 'scratchpad_entry' | 'scratchpad_cleared' | 'deploy.started' | 'deploy.step_update' | 'deploy.complete' | 'deploy.failed' | 'billing.estimate' | 'billing.update' | 'billing.reconciled' | 'billing.warning' | 'file-change';
   roomId?: string;
   commandId?: string;
   data?: any;  // Generic data field for billing events
@@ -42,6 +77,9 @@ interface StreamMessage {
   status?: string;
   message?: string;
   content?: string;
+  // File change specific (P1-1 Backend)
+  projectId?: string;
+  files?: string[];
   thought?: string;
   action?: string;
   step?: number;
@@ -324,6 +362,16 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
       ws.onmessage = (event) => {
         try {
           const message: StreamMessage = JSON.parse(event.data);
+
+          // 📡 GLOBAL LISTENERS: Call all registered custom listeners FIRST (before room filtering)
+          // This allows components like LivePreview to receive messages they're interested in
+          globalListeners.forEach(listener => {
+            try {
+              listener(message);
+            } catch (error) {
+              console.error('[WS] Error in custom listener:', error);
+            }
+          });
 
           // 🔒 ROOM FILTERING: Only process messages for the expected room
           // Skip messages that have a roomId but don't match our expected room

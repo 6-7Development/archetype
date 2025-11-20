@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { useAuth } from "@/hooks/useAuth";
 import { LivePreview } from "@/components/live-preview";
 import { MonacoEditor } from "@/components/monaco-editor";
@@ -42,6 +43,7 @@ export default function Builder() {
   const [activeFileId, setActiveFileId] = useState<string | null>(null);
   const [fileContent, setFileContent] = useState<string>("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showPreviewSplit, setShowPreviewSplit] = useState(false);
   
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
@@ -394,33 +396,64 @@ export default function Builder() {
                             </Badge>
                           )}
                         </div>
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onClick={handleSaveFile}
-                          disabled={!hasUnsavedChanges || saveFileMutation.isPending}
-                          data-testid="button-save-file"
-                        >
-                          {saveFileMutation.isPending ? (
-                            <>
-                              <CheckCircle2 className="w-4 h-4 mr-2 animate-spin" />
-                              Saving...
-                            </>
-                          ) : (
-                            <>
-                              <Save className="w-4 h-4 mr-2" />
-                              Save
-                            </>
-                          )}
-                        </Button>
+                        
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant={showPreviewSplit ? "default" : "outline"}
+                            onClick={() => setShowPreviewSplit(!showPreviewSplit)}
+                            data-testid="button-toggle-preview-split"
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            {showPreviewSplit ? "Hide Preview" : "Show Preview"}
+                          </Button>
+                          
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={handleSaveFile}
+                            disabled={!hasUnsavedChanges || saveFileMutation.isPending}
+                            data-testid="button-save-file"
+                          >
+                            {saveFileMutation.isPending ? (
+                              <>
+                                <CheckCircle2 className="w-4 h-4 mr-2 animate-spin" />
+                                Saving...
+                              </>
+                            ) : (
+                              <>
+                                <Save className="w-4 h-4 mr-2" />
+                                Save
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       </div>
 
                       <div className="flex-1 overflow-hidden">
-                        <MonacoEditor
-                          value={fileContent}
-                          onChange={handleFileContentChange}
-                          language={activeFile.language}
-                        />
+                        {showPreviewSplit ? (
+                          <ResizablePanelGroup direction="horizontal">
+                            <ResizablePanel defaultSize={50} minSize={30}>
+                              <MonacoEditor
+                                value={fileContent}
+                                onChange={handleFileContentChange}
+                                language={activeFile.language}
+                              />
+                            </ResizablePanel>
+                            
+                            <ResizableHandle withHandle />
+                            
+                            <ResizablePanel defaultSize={50} minSize={30}>
+                              <LivePreview projectId={currentProjectId} fileCount={files.length} />
+                            </ResizablePanel>
+                          </ResizablePanelGroup>
+                        ) : (
+                          <MonacoEditor
+                            value={fileContent}
+                            onChange={handleFileContentChange}
+                            language={activeFile.language}
+                          />
+                        )}
                       </div>
                     </>
                   ) : (
