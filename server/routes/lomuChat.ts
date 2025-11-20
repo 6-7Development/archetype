@@ -3903,8 +3903,20 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
       phaseOrchestrator.emitVerifying(`Validating ${modifiedFiles.length} file changes...`);
       
       try {
-        // ✅ T3 FIX: Make validation BLOCKING - surface errors prominently
-        const validationResult = await validateFileChanges(modifiedFiles, process.cwd());
+        // ✅ P0-3: 3-LAYER VALIDATION - Full validation with TypeScript compilation check
+        // FIX: Normalize paths (convert absolute to relative) before validation
+        const workingDir = process.cwd();
+        const relativeFiles = modifiedFiles.map(file => 
+          file.startsWith(workingDir) ? file.substring(workingDir.length + 1) : file
+        );
+        
+        console.log(`[LOMU-AI-VALIDATION] Validating ${relativeFiles.length} files (normalized paths)`);
+        
+        const validationResult = await validateAllChanges(relativeFiles, {
+          workingDir: workingDir,
+          skipTypeScriptCheck: false, // Enable TypeScript compilation checking
+          timeout: 30000, // 30 second timeout
+        });
         
         if (validationResult.success) {
           console.log(`[LOMU-AI-VALIDATION] ✅ All ${modifiedFiles.length} files validated successfully`);
@@ -3925,8 +3937,87 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
               console.log('[SCRATCHPAD] ✅ Updated code scratchpad with latest verified code');
             }
           }
+
+          // ============================================================================
+          // P0-1: AUTO-COMMIT TO GITHUB - Commit validated changes
+          // ============================================================================
+          try {
+            const githubService = getGitHubService();
+            
+            if (githubService && githubService.isConfigured() && relativeFiles.length > 0) {
+              console.log(`[AUTO-COMMIT] 🚀 Starting auto-commit for ${relativeFiles.length} files...`);
+              sendEvent('progress', { message: `🔄 Committing ${relativeFiles.length} files to GitHub...` });
+              phaseOrchestrator.emitVerifying(`Committing ${relativeFiles.length} files to GitHub...`);
+              
+              // FIX: Make file read failures BLOCKING (trigger rollback instead of silent drop)
+              const fileChanges = [];
+              const readFailures = [];
+              
+              for (const filePath of relativeFiles) {
+                try {
+                  const content = await fs.readFile(filePath, 'utf-8');
+                  fileChanges.push({
+                    path: filePath,
+                    content,
+                    operation: 'modify' as const,
+                  });
+                } catch (error: any) {
+                  console.error(`[AUTO-COMMIT] ❌ BLOCKING: Failed to read ${filePath}:`, error.message);
+                  readFailures.push({ file: filePath, error: error.message });
+                }
+              }
+
+              // FIX: Treat file read failures as blocking validation failures
+              if (readFailures.length > 0) {
+                const errorMsg = `\n\n❌ **AUTO-COMMIT BLOCKED**\n` +
+                  `Cannot commit - ${readFailures.length} file(s) failed to read:\n\n` +
+                  readFailures.map(f => `  • ${f.file}: ${f.error}`).join('\n') + `\n\n` +
+                  `**Triggering auto-rollback to maintain consistency...**\n`;
+                
+                sendEvent('content', { content: errorMsg });
+                sendEvent('error', { message: `File read failures blocked commit: ${readFailures.length} files` });
+                fullContent += errorMsg;
+                
+                // Trigger rollback
+                throw new Error(`File read failures: ${readFailures.map(f => f.file).join(', ')}`);
+              }
+
+              if (fileChanges.length > 0) {
+                // Generate commit message based on user intent
+                const commitMessage = `${message.substring(0, 72)}${message.length > 72 ? '...' : ''}`;
+                
+                console.log(`[AUTO-COMMIT] Committing ${fileChanges.length} files with message: "${commitMessage}"`);
+                
+                const commitResult = await githubService.commitFiles(fileChanges, commitMessage);
+                
+                console.log(`[AUTO-COMMIT] ✅ Successfully committed to GitHub`);
+                console.log(`[AUTO-COMMIT] Commit hash: ${commitResult.commitHash}`);
+                console.log(`[AUTO-COMMIT] Commit URL: ${commitResult.commitUrl}`);
+                
+                const commitMsg = `\n\n✅ **AUTO-COMMIT SUCCESSFUL**\n` +
+                  `📦 Committed ${fileChanges.length} files to GitHub\n` +
+                  `🔗 [View commit](${commitResult.commitUrl})\n` +
+                  `📝 Commit: \`${commitResult.commitHash.substring(0, 7)}\`\n`;
+                
+                sendEvent('content', { content: commitMsg });
+                sendEvent('progress', { message: `✅ Committed to GitHub: ${commitResult.commitHash.substring(0, 7)}` });
+                fullContent += commitMsg;
+                
+                phaseOrchestrator.emitComplete(`Committed ${fileChanges.length} files to GitHub`);
+              }
+            } else if (!githubService || !githubService.isConfigured()) {
+              console.log('[AUTO-COMMIT] ⏭️ GitHub not configured - skipping auto-commit');
+            } else {
+              console.log('[AUTO-COMMIT] ⏭️ No modified files - skipping auto-commit');
+            }
+          } catch (commitError: any) {
+            console.error('[AUTO-COMMIT] ❌ Auto-commit failed:', commitError.message);
+            
+            // FIX: Throw error to trigger rollback (blocking failure)
+            throw new Error(`Auto-commit failed: ${commitError.message}`);
+          }
         } else {
-          // ✅ T3 FIX: BLOCKING validation failure - HARD FAIL and STOP execution
+          // FIX: Surface TypeScript validation errors with full diagnostics
           console.error('[LOMU-AI-VALIDATION] ❌ VALIDATION FAILED - BLOCKING EXECUTION:');
           validationResult.errors.forEach(error => console.error(`  - ${error}`));
           
@@ -3937,14 +4028,26 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
           
           phaseOrchestrator.emitVerifying(`❌ Validation failed: ${errorSummary}`);
           
-          // Surface errors prominently to user
-          const errorMsg = `\n\n❌ **VALIDATION FAILED** - File changes did not pass verification:\n\n${validationResult.errors.slice(0, 5).map(e => `  • ${e}`).join('\n')}${validationResult.errors.length > 5 ? `\n  • ... and ${validationResult.errors.length - 5} more errors` : ''}\n\n**Execution stopped. Please review the changes and fix the issues.**\n`;
+          // FIX: Show full TypeScript diagnostics to user (not just summary)
+          const errorDetails = validationResult.errors.length > 10
+            ? validationResult.errors.slice(0, 10).map((e, i) => `${i + 1}. ${e}`).join('\n') + 
+              `\n\n... and ${validationResult.errors.length - 10} more errors (check logs for full details)`
+            : validationResult.errors.map((e, i) => `${i + 1}. ${e}`).join('\n');
+          
+          const errorMsg = `\n\n❌ **VALIDATION FAILED** - TypeScript compilation errors detected:\n\n` +
+            `${errorDetails}\n\n` +
+            `**Files validated**: ${relativeFiles.length}\n` +
+            `**Total errors**: ${validationResult.errors.length}\n` +
+            `${validationResult.warnings.length > 0 ? `**Warnings**: ${validationResult.warnings.length}\n` : ''}` +
+            `\n**Execution stopped and changes rolled back.**\n`;
+          
           sendEvent('content', { content: errorMsg });
-          sendEvent('error', { message: `Validation failed: ${validationResult.errors.length} errors - execution blocked` });
+          sendEvent('error', { message: `TypeScript validation failed: ${validationResult.errors.length} errors` });
           fullContent += errorMsg;
           
-          // Log error prominently
+          // Log error prominently with file list
           console.error(`[LOMU-AI-VALIDATION] ❌ ${validationResult.errors.length} validation errors - BLOCKING COMPLETION`);
+          console.error(`[LOMU-AI-VALIDATION] Files checked: ${relativeFiles.join(', ')}`);
           
           // Show validation summary in logs
           const recentChanges = fileChangeTracker.getRecentChanges(60000);
@@ -3954,7 +4057,7 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
           });
           
           // ✅ T3 FIX: THROW ERROR TO BLOCK COMPLETION - Don't proceed to safety checks or cleanup
-          throw new Error(`Validation failed: ${validationResult.errors.length} files failed verification`);
+          throw new Error(`TypeScript validation failed: ${validationResult.errors.length} errors in ${relativeFiles.length} files`);
         }
         
         // Show validation summary in logs (only if success)

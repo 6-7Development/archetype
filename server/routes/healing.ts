@@ -1435,12 +1435,12 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
             });
           }, 3, `Healing recovery API call`); // Close retry wrapper
           
-          if (recoveryResponse.fullText && recoveryResponse.fullText.trim().length > 0) {
+          if (recoveryResponse?.fullText && recoveryResponse.fullText.trim().length > 0) {
             fullResponse = recoveryResponse.fullText;
             console.log(`[HEALING-CHAT-RECOVERY] ✅ Recovery successful: ${fullResponse.length} chars`);
             
             // Add recovery tokens to total
-            if (recoveryResponse.usage) {
+            if (recoveryResponse?.usage) {
               totalInputTokens += recoveryResponse.usage.inputTokens || 0;
               totalOutputTokens += recoveryResponse.usage.outputTokens || 0;
               console.log(`[HEALING-CHAT-RECOVERY] 📊 Recovery tokens: input=${recoveryResponse.usage.inputTokens}, output=${recoveryResponse.usage.outputTokens}`);
