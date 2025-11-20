@@ -1,8 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
-import { storage } from "../storage";
-import { lomuAIBrain } from "../services/lomuAIBrain";
+import { storage } from "../storage.ts";
+import { lomuAIBrain } from "../services/lomuAIBrain.ts";
 
 export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSocketServer } {
   // Create HTTP server
@@ -72,10 +72,56 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
           ws.send(JSON.stringify({ type: 'pong' }));
         }
         
-        // Handle project subscription
+        // Handle project subscription with AUTHORIZATION CHECK
         if (data.type === 'subscribe_project') {
-          ws.projectId = data.projectId;
-          console.log(`📂 WebSocket subscribed to project: ${ws.projectId}`);
+          // SECURITY FIX: Verify user has access to requested project
+          if (!ws.userId) {
+            console.error(`🚫 [WS-SECURITY] Unauthorized subscribe_project attempt (no userId)`);
+            ws.send(JSON.stringify({
+              type: 'error',
+              message: 'Authentication required to subscribe to projects'
+            }));
+            ws.terminate(); // Severe connection on tampering attempt
+            return;
+          }
+          
+          const requestedProjectId = data.projectId;
+          if (!requestedProjectId) {
+            console.error(`🚫 [WS-SECURITY] Invalid subscribe_project request (no projectId)`);
+            ws.send(JSON.stringify({
+              type: 'error',
+              message: 'Invalid project subscription request'
+            }));
+            return;
+          }
+          
+          // Verify project ownership/access
+          try {
+            const project = await storage.getProject(requestedProjectId, ws.userId);
+            if (!project) {
+              console.error(`🚫 [WS-SECURITY] Unauthorized subscribe_project attempt: userId=${ws.userId}, projectId=${requestedProjectId}`);
+              ws.send(JSON.stringify({
+                type: 'error',
+                message: 'Project not found or access denied'
+              }));
+              ws.terminate(); // Severe connection on unauthorized access attempt
+              return;
+            }
+            
+            // Authorization successful - allow subscription
+            ws.projectId = requestedProjectId;
+            console.log(`✅ [WS] Authorized project subscription: userId=${ws.userId}, projectId=${ws.projectId}`);
+            ws.send(JSON.stringify({
+              type: 'project_subscribed',
+              projectId: ws.projectId
+            }));
+          } catch (error: any) {
+            console.error(`❌ [WS-SECURITY] Project authorization check failed:`, error.message);
+            ws.send(JSON.stringify({
+              type: 'error',
+              message: 'Failed to verify project access'
+            }));
+          }
         }
       } catch (error) {
         console.error('WebSocket message error:', error);

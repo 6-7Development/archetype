@@ -27,7 +27,7 @@ import { createSafeAnthropicRequest } from '../lib/anthropic-wrapper.ts';
 import { sanitizeDiagnosisForAI } from '../lib/diagnosis-sanitizer.ts';
 import { filterToolCallsFromMessages } from '../lib/message-filter.ts';
 import type { WebSocketServer } from 'ws';
-import { broadcastToUser } from './websocket.ts';
+import { broadcastToUser, broadcastToProject } from './websocket.ts';
 import { getOrCreateState, formatStateForPrompt, updateCodeScratchpad, getCodeScratchpad, clearCodeScratchpad, clearState, estimateConversationTokens, summarizeOldMessages } from '../services/conversationState.ts';
 import { agentFailureDetector } from '../services/agentFailureDetector.ts';
 import { classifyUserIntent, getMaxIterationsForIntent, type UserIntent } from '../shared/chatConfig.ts';
@@ -3924,6 +3924,39 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
           
           // Emit success in verifying phase
           phaseOrchestrator.emitComplete(`Validation passed: ${modifiedFiles.length} files verified`);
+          
+          // ============================================================================
+          // P1-1: EMIT FILE-CHANGE EVENTS - Broadcast validated changes for live preview
+          // ============================================================================
+          try {
+            if (wss && projectId && relativeFiles.length > 0) {
+              const fileChangePayload = {
+                type: 'file-change',
+                projectId: projectId,
+                sessionId: sessionId,
+                files: relativeFiles,
+                timestamp: Date.now(),
+                changeCount: changeCount,
+              };
+              
+              console.log(`[LIVE-PREVIEW] 📡 Broadcasting file-change event to project ${projectId}: ${relativeFiles.length} files`);
+              
+              // FIX: Use scoped broadcast to prevent cross-tenant leakage (ESM import at top)
+              broadcastToProject(wss, projectId, fileChangePayload);
+              
+              // Also emit via SSE as fallback (already scoped to current connection)
+              sendEvent('file-change', {
+                projectId: projectId,
+                files: relativeFiles,
+                changeCount: changeCount,
+              });
+              
+              console.log(`[LIVE-PREVIEW] ✅ File-change event broadcast complete (scoped to project ${projectId})`);
+            }
+          } catch (previewError: any) {
+            // Non-blocking - log error but continue
+            console.error('[LIVE-PREVIEW] ⚠️ Failed to broadcast file-change event:', previewError.message);
+          }
           
           // 🔄 GAP 2: UPDATE CODE SCRATCHPAD after successful validation
           // Store the working code for future reference
