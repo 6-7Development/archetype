@@ -55,6 +55,7 @@
     "@types/adm-zip": "^0.5.7",
     "@types/bcrypt": "^6.0.0",
     "@types/compression": "^1.8.1",
+    "@types/cookie-signature": "^1.1.2",
     "@types/memoizee": "^0.4.12",
     "@types/multer": "^2.0.0",
     "@types/nock": "^10.0.3",

@@ -14,34 +14,38 @@ import { creditWallets, creditLedger } from "@shared/schema";
 
 const SALT_ROUNDS = 12; // Bcrypt salt rounds (higher = more secure, slower)
 
-// Create secure session store
+// Create session store singleton - shared between HTTP and WebSocket
+const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
+const pgStore = connectPg(session);
+
+// SSL configuration for production (Render PostgreSQL requires SSL)
+const storeConfig = process.env.NODE_ENV === 'production'
+  ? {
+      conObject: {
+        connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false },
+      },
+      createTableIfMissing: false,
+      ttl: sessionTtl,
+      tableName: "sessions",
+    }
+  : {
+      conString: process.env.DATABASE_URL,
+      createTableIfMissing: false,
+      ttl: sessionTtl,
+      tableName: "sessions",
+    };
+
+// Export session store singleton for WebSocket reuse
+// CRITICAL: This ensures HTTP and WebSocket share the SAME session store
+// No duplicate PostgreSQL connections, no session data out-of-sync
+export const sessionStore = new pgStore(storeConfig);
+
+// Create secure session middleware using singleton store
 export function getSession() {
-  const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
-  const pgStore = connectPg(session);
-  
-  // SSL configuration for production (Render PostgreSQL requires SSL)
-  const storeConfig = process.env.NODE_ENV === 'production'
-    ? {
-        conObject: {
-          connectionString: process.env.DATABASE_URL,
-          ssl: { rejectUnauthorized: false },
-        },
-        createTableIfMissing: false,
-        ttl: sessionTtl,
-        tableName: "sessions",
-      }
-    : {
-        conString: process.env.DATABASE_URL,
-        createTableIfMissing: false,
-        ttl: sessionTtl,
-        tableName: "sessions",
-      };
-  
-  const sessionStore = new pgStore(storeConfig);
-  
   return session({
     secret: process.env.SESSION_SECRET!,
-    store: sessionStore,
+    store: sessionStore, // Use singleton store
     resave: false,
     saveUninitialized: false,
     cookie: {

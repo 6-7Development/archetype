@@ -1,8 +1,118 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
+import type { IncomingMessage } from "http";
 import { storage } from "../storage.ts";
 import { lomuAIBrain } from "../services/lomuAIBrain.ts";
+import { sessionStore } from "../universalAuth.ts";
+import cookieSignature from "cookie-signature";
+
+// ARCHITECTURE FIX: Import session store singleton from universalAuth.ts
+// This ensures HTTP and WebSocket share the SAME session store instance
+// ✅ Single PostgreSQL connection pool
+// ✅ Synchronized session data between HTTP and WebSocket
+// ✅ No duplicate session stores
+
+/**
+ * Parse cookies from HTTP header
+ * @param cookieHeader Cookie header string
+ * @returns Object mapping cookie names to values
+ */
+function parseCookie(cookieHeader: string | undefined): Record<string, string> {
+  const cookies: Record<string, string> = {};
+  if (!cookieHeader) return cookies;
+  
+  cookieHeader.split(';').forEach(cookie => {
+    const [name, ...rest] = cookie.split('=');
+    const value = rest.join('=');
+    if (name && value) {
+      cookies[name.trim()] = decodeURIComponent(value.trim());
+    }
+  });
+  
+  return cookies;
+}
+
+/**
+ * SECURITY: Validate Express session from WebSocket upgrade request
+ * Uses session store's get() method to properly validate sessions with signing,
+ * deserialization, and expiry checks - reusing Express session infrastructure
+ * @param req WebSocket upgrade request
+ * @returns Validated userId or null if session is invalid/missing
+ */
+async function validateSessionFromRequest(req: IncomingMessage): Promise<string | null> {
+  try {
+    // 1. Parse cookie from request headers
+    const cookies = parseCookie(req.headers.cookie);
+    const sessionCookie = cookies['connect.sid'];
+    
+    if (!sessionCookie) {
+      console.log('[WS-AUTH] ❌ No session cookie found in request');
+      return null;
+    }
+    
+    // 2. SECURITY: Verify cookie signature before accepting sessionId
+    // Cookie format: s:sessionId.signature (signed by SESSION_SECRET)
+    if (!sessionCookie.startsWith('s:')) {
+      console.log('[WS-AUTH] ❌ Session cookie missing signature prefix');
+      return null;
+    }
+    
+    // Unsign cookie with SESSION_SECRET to verify HMAC signature
+    const unsignedValue = cookieSignature.unsign(sessionCookie.slice(2), process.env.SESSION_SECRET!);
+    
+    if (unsignedValue === false) {
+      console.error('🚫 [WS-SECURITY] Tampered session cookie detected - signature verification failed');
+      return null;
+    }
+    
+    // FIX 2: Extract bare session ID (split on final '.' to remove signature)
+    // The unsignedValue may still contain the session ID plus signature: "sessionId.signature"
+    // We need just the session ID part for the lookup key
+    const parts = (unsignedValue as string).split('.');
+    const sessionId = parts[0]; // Just the session ID, no signature
+    
+    if (!sessionId || sessionId.length === 0) {
+      console.log('[WS-AUTH] ❌ Invalid session ID after extraction');
+      return null;
+    }
+    
+    console.log(`[WS-AUTH] 🔓 Session cookie unsigned successfully, session ID: ${sessionId.substring(0, 8)}...`);
+    
+    // 3. Use session store's get() method - handles signing, deserialization, and expiry automatically
+    return new Promise((resolve) => {
+      sessionStore.get(sessionId, (err, session) => {
+        if (err) {
+          console.error('[WS-AUTH] ❌ Session store error:', err);
+          resolve(null);
+          return;
+        }
+        
+        if (!session) {
+          console.log('[WS-AUTH] ❌ Session not found or expired');
+          resolve(null);
+          return;
+        }
+        
+        // Extract userId from Passport.js session structure
+        // Type assertion needed as express-session doesn't know about passport extension
+        const userId = (session as any).passport?.user;
+        
+        if (!userId) {
+          console.log('[WS-AUTH] ❌ No user ID found in session data');
+          resolve(null);
+          return;
+        }
+        
+        console.log(`[WS-AUTH] ✅ Session validated successfully for userId: ${userId}`);
+        resolve(userId);
+      });
+    });
+  } catch (error) {
+    console.error('[WS-AUTH] ❌ Session validation error:', error);
+    return null;
+  }
+}
 
 export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSocketServer } {
   // Create HTTP server
@@ -13,12 +123,27 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
 
   console.log('📡 WebSocket server initialized at /ws');
 
-  // WebSocket connection handler
-  wss.on('connection', (ws: any) => {
-    console.log('✅ WebSocket client connected');
+  // WebSocket connection handler with SESSION AUTHENTICATION
+  wss.on('connection', async (ws: any, req: IncomingMessage) => {
+    // SECURITY FIX: Validate session BEFORE accepting connection
+    const validatedUserId = await validateSessionFromRequest(req);
     
-    ws.userId = null; // Will be set after authentication
+    if (!validatedUserId) {
+      console.error('🚫 [WS-SECURITY] Unauthenticated connection attempt - terminating');
+      ws.send(JSON.stringify({
+        type: 'error',
+        message: 'Authentication required. Please log in to establish WebSocket connection.'
+      }));
+      ws.terminate();
+      return;
+    }
+    
+    // Set VALIDATED userId (server-side only - NEVER trust client input)
+    ws.userId = validatedUserId;
+    ws.isAuthenticated = true;
     ws.isAlive = true;
+    
+    console.log(`✅ WebSocket authenticated connection established for user: ${ws.userId}`);
 
     ws.on('pong', () => {
       ws.isAlive = true;
@@ -28,27 +153,54 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
       try {
         const data = JSON.parse(message);
         
-        // Handle authentication
+        // SECURITY: Reject client attempts to override authenticated userId
         if (data.type === 'auth') {
-          // Validate userId (in production, verify with session/token)
-          ws.userId = data.userId;
-          console.log(`🔐 WebSocket authenticated for user: ${ws.userId}`);
+          // Check if client is trying to spoof userId
+          if (data.userId && data.userId !== ws.userId) {
+            console.error(`🚫 [WS-SECURITY] SPOOFING ATTEMPT DETECTED!`);
+            console.error(`  Session userId: ${ws.userId}`);
+            console.error(`  Claimed userId: ${data.userId}`);
+            console.error(`  Remote address: ${req.socket.remoteAddress}`);
+            
+            ws.send(JSON.stringify({
+              type: 'error',
+              message: 'Authentication mismatch - connection terminated for security violation'
+            }));
+            ws.terminate();
+            return;
+          }
           
-          // Send confirmation
+          // Send confirmation with server-validated userId
           ws.send(JSON.stringify({
             type: 'auth_success',
             userId: ws.userId
           }));
+          console.log(`✅ [WS] Auth confirmation sent for userId: ${ws.userId}`);
         }
         
-        // Handle session registration (for AI streaming)
+        // SECURITY: Handle session registration with validated userId only
         if (data.type === 'register-session') {
-          ws.userId = data.userId || 'anonymous';
+          // Check if client is trying to spoof userId
+          if (data.userId && data.userId !== ws.userId) {
+            console.error(`🚫 [WS-SECURITY] SPOOFING ATTEMPT in register-session!`);
+            console.error(`  Session userId: ${ws.userId}`);
+            console.error(`  Claimed userId: ${data.userId}`);
+            console.error(`  Remote address: ${req.socket.remoteAddress}`);
+            
+            ws.send(JSON.stringify({
+              type: 'error',
+              message: 'Authentication mismatch - connection terminated for security violation'
+            }));
+            ws.terminate();
+            return;
+          }
+          
+          // Use server-validated userId (NEVER trust client input)
           ws.sessionId = data.sessionId;
           
           // Get or create session in brain (must create to register WebSocket)
           const session = await lomuAIBrain.getOrCreateSession({
-            userId: ws.userId,
+            userId: ws.userId, // Use validated userId from session
             sessionId: ws.sessionId,
             targetContext: data.targetContext || 'project',
             projectId: data.projectId,
@@ -57,9 +209,9 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
           // Register WebSocket connection with brain
           lomuAIBrain.registerWebSocket(ws.userId, ws.sessionId, ws, `project_${ws.sessionId}`);
           
-          console.log(`📡 [WS] Session registered: userId=${ws.userId}, sessionId=${ws.sessionId}`);
+          console.log(`✅ [WS] Session registered: userId=${ws.userId}, sessionId=${ws.sessionId}`);
           
-          // Send confirmation
+          // Send confirmation with server-validated userId
           ws.send(JSON.stringify({
             type: 'session-registered',
             sessionId: ws.sessionId,
