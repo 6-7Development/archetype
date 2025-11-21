@@ -1010,6 +1010,7 @@ export function UniversalChat({
     setProgressMessage('Connecting to LomuAI...');
 
     try {
+      console.log('[SSE-FETCH] Starting fetch request to /api/lomu-ai/stream');
       const response = await fetch('/api/lomu-ai/stream', {
         method: 'POST',
         headers: {
@@ -1027,14 +1028,28 @@ export function UniversalChat({
         }),
       });
 
+      console.log('[SSE-FETCH] Response received:', {
+        ok: response.ok,
+        status: response.status,
+        statusText: response.statusText,
+        headers: {
+          contentType: response.headers.get('content-type'),
+          cacheControl: response.headers.get('cache-control'),
+        }
+      });
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.error('[SSE-FETCH] Response not OK:', errorData);
         throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
       }
 
       if (!response.body) {
+        console.error('[SSE-FETCH] No response body!');
         throw new Error('No response body received');
       }
+
+      console.log('[SSE-FETCH] ✅ Response body exists, starting stream parsing...');
 
       // Parse SSE stream
       const reader = response.body.getReader();
