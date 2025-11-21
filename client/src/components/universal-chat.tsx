@@ -1081,20 +1081,28 @@ export function UniversalChat({
 
         // Decode chunk and add to buffer
         buffer += decoder.decode(value, { stream: true });
+        console.log('[SSE-DEBUG] Buffer chunk received, length:', buffer.length);
 
-        // Process complete SSE messages (end with \n\n)
-        const lines = buffer.split('\n\n');
+        // Process complete SSE messages (end with \n\n or \r\n\r\n)
+        // Split on both Unix (\n\n) and Windows (\r\n\r\n) line endings
+        const lines = buffer.split(/\r?\n\r?\n/);
         buffer = lines.pop() || ''; // Keep incomplete message in buffer
+        console.log('[SSE-DEBUG] Extracted', lines.length, 'lines from buffer');
 
         for (const line of lines) {
-          if (!line.trim() || line.startsWith(':')) {
+          const trimmedLine = line.trim(); // Remove carriage returns and whitespace
+          
+          if (!trimmedLine || trimmedLine.startsWith(':')) {
             // Skip empty lines and comments (heartbeat)
+            console.log('[SSE-DEBUG] Skipping comment or empty line');
             continue;
           }
 
-          if (line.startsWith('data: ')) {
+          if (trimmedLine.startsWith('data: ')) {
             try {
-              const eventData = JSON.parse(line.substring(6));
+              const jsonStr = trimmedLine.substring(6).trim(); // Remove 'data: ' and trim
+              console.log('[SSE-DEBUG] Parsing JSON:', jsonStr.substring(0, 100));
+              const eventData = JSON.parse(jsonStr);
               console.log('[SSE] Event:', eventData.type, eventData);
 
               // ✅ FIX: Backend now sends { type, data } envelope
