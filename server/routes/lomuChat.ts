@@ -780,17 +780,34 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
   console.log('[LOMU-AI-CHAT] Stream registered for user:', userId);
 
   console.log('[LOMU-AI-CHAT] Setting up SSE headers');
-  // Set up Server-Sent Events with Railway-specific anti-buffering headers
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache, no-transform');
-  res.setHeader('Connection', 'keep-alive');
+  // ============================================================================
+  // SSE HEADER CONFIGURATION - CRITICAL for real-time streaming
+  // Prevents buffering at multiple layers (compression, proxies, CDN)
+  // ============================================================================
+  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-transform'); // Prevent proxy caching
+  res.setHeader('Connection', 'keep-alive'); // Keep connection open
   res.setHeader('X-Accel-Buffering', 'no'); // Disable buffering on Railway/nginx proxies
   res.setHeader('Content-Encoding', 'none'); // Prevent gzip buffering
+  
+  // 🔥 CRITICAL: Flush headers immediately to establish SSE connection
+  // This prevents buffering and enables real-time incremental delivery
+  res.flushHeaders();
+  
+  // Enable TCP keep-alive to prevent connection drops
+  if (req.socket) {
+    req.socket.setKeepAlive(true);
+  }
 
   // ✅ FIX: Wrap payload in { type, data } envelope for frontend compatibility
   // Frontend expects: { type: 'content', data: { content: 'text' } }
   const sendEvent = (type: string, data: any) => {
     res.write(`data: ${JSON.stringify({ type, data })}\n\n`);
+    // Flush if compression middleware provides it
+    // After flushHeaders(), writes should auto-flush, but ensure explicitly
+    if (typeof (res as any).flush === 'function') {
+      (res as any).flush();
+    }
   };
 
   // ============================================================================
