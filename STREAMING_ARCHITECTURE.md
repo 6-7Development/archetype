@@ -101,6 +101,12 @@ sendEvent('done', { messageId: string, error: boolean })
 
 // Error handling
 sendEvent('error', { message: string })
+
+// System information (safety backups, git status, configuration)
+sendEvent('system_info', { message: string })
+
+// Informational messages (non-critical notifications)
+sendEvent('info', { message: string })
 ```
 
 ### Tool & Task Events
@@ -358,6 +364,12 @@ switch (eventData.type) {
       title: 'Error',
       description: payload.message
     });
+    break;
+    
+  case 'system_info':
+  case 'info':
+    // Informational messages (logged, not shown as toasts)
+    console.log('[SSE] System info:', payload.message);
     break;
     
   case 'complete':
@@ -683,21 +695,84 @@ SELECT * FROM lomu_messages WHERE id = 'abc123';
 
 ---
 
+## 🚨 Quick Diagnostic Commands
+
+Use these commands for rapid incident response:
+
+### Check Active Streaming Session
+```bash
+# Get latest log file
+LOG_FILE=$(ls -t /tmp/logs/Start_application_*.log | head -1)
+
+# Verify SSE headers sent
+grep "SSE HEADER CONFIGURATION" $LOG_FILE
+
+# Check initial heartbeat
+grep "Initial heartbeat sent" $LOG_FILE
+
+# Monitor live streaming events
+tail -f $LOG_FILE | grep -E "sendEvent|CONTENT|PROGRESS|COMPLETE"
+```
+
+### Verify Buffer Protection
+```bash
+# Check if buffer overflow protection triggered
+grep "BUFFER OVERFLOW PROTECTION" $LOG_FILE
+
+# Check if stream completion flushed buffered text
+grep "STREAM-COMPLETE.*Flushing" $LOG_FILE
+```
+
+### Monitor Heartbeat Health
+```bash
+# Count heartbeats in last 2 minutes (should be ~8)
+grep "LOMU-AI-HEARTBEAT" $LOG_FILE | tail -10
+```
+
+### Check Error Rate
+```bash
+# Find all error events
+grep "sendEvent('error'" $LOG_FILE
+
+# Check for anti-paralysis blocks
+grep "ANTI_PARALYSIS_BLOCK" $LOG_FILE
+```
+
+### Trace Specific Message
+```bash
+# Replace with actual message ID from frontend
+MESSAGE_ID="your-message-id"
+grep "$MESSAGE_ID" $LOG_FILE | grep -E "sendEvent|content|progress"
+```
+
+---
+
 ## ✅ Health Checklist
 
 Use this to verify streaming is working correctly:
 
-- [ ] Initial heartbeat sent (`: init\n\n`)
-- [ ] Heartbeat every 15s (`: keepalive\n\n`)
-- [ ] `content` events stream word-by-word
-- [ ] `assistant_progress` creates inline blocks
-- [ ] `progress` updates status bar
+### SSE Connection
+- [ ] Initial heartbeat sent (`: init\n\n`) → `grep "Initial heartbeat sent" $LOG_FILE`
+- [ ] Heartbeat every 15s (`: keepalive\n\n`) → `grep "LOMU-AI-HEARTBEAT" $LOG_FILE`
+- [ ] SSE headers configured → `grep "SSE HEADER CONFIGURATION" $LOG_FILE`
+
+### Content Streaming
+- [ ] `content` events stream word-by-word → Check browser DevTools Network tab
+- [ ] `assistant_progress` creates inline blocks → Verify purple/blue/green blocks appear
+- [ ] `progress` updates status bar → Check StatusStrip shows messages
+- [ ] Buffer overflow protection triggers after 800 chars → `grep "BUFFER OVERFLOW" $LOG_FILE`
+- [ ] Stream completion flushes remaining buffered text → `grep "STREAM-COMPLETE.*Flushing" $LOG_FILE`
+
+### UI Rendering
 - [ ] Thinking blocks render with purple styling
 - [ ] Action blocks render with blue styling
 - [ ] Result blocks render with green styling
-- [ ] Buffer overflow protection triggers after 800 chars
-- [ ] Stream completion flushes remaining buffered text
+- [ ] EnhancedMessageDisplay shows collapsible blocks
+- [ ] flushSync() provides word-by-word updates
+
+### Event Handling
 - [ ] Error events show toast notifications
+- [ ] system_info events logged (not shown as toasts)
 - [ ] Test events show in TestingPanel (if applicable)
 - [ ] Deployment events show deployment UI (if applicable)
 
