@@ -473,15 +473,31 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
+    // DUAL AUTH SUPPORT: Handle both OAuth (provider+providerId) and local (email+password) users
+    // For OAuth users: provider and providerId are set
+    // For local users: provider='local', password is set
+    
+    const updateData: any = {
+      ...userData,
+      updatedAt: new Date(),
+    };
+    
+    // If this is an OAuth login (provider is set and not 'local'), update lastLoginAt
+    if (userData.provider && userData.provider !== 'local') {
+      updateData.lastLoginAt = new Date();
+    }
+    
+    // Don't overwrite password with undefined/null for OAuth users
+    if (!userData.password && updateData.password === undefined) {
+      delete updateData.password;
+    }
+    
     const [user] = await db
       .insert(users)
       .values(userData)
       .onConflictDoUpdate({
-        target: users.email, // Conflict on email (unique field), not id
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
+        target: users.email, // Conflict on email (unique field)
+        set: updateData,
       })
       .returning();
     return user;

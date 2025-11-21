@@ -117,11 +117,9 @@ export default function WorkingAuth() {
     registerMutation.mutate(data);
   };
 
-  const handleSocialLogin = (provider: string) => {
-    toast({
-      title: "Coming Soon",
-      description: `${provider} authentication will be available soon.`,
-    });
+  const handleReplitLogin = () => {
+    // Redirect to Replit OAuth login
+    window.location.href = "/api/login";
   };
 
   return (
@@ -171,28 +169,21 @@ export default function WorkingAuth() {
           </CardHeader>
 
           <CardContent className="space-y-4 px-6 pb-6">
-            {/* Social Login Buttons */}
+            {/* Replit OAuth - Primary Authentication Method */}
             <div className="space-y-2.5">
               <Button 
-                variant="outline" 
-                className="w-full h-11 text-white border-honey/20 hover:bg-honey/10" 
-                onClick={() => handleSocialLogin("Google")}
-                data-testid="button-google-login"
+                variant="default" 
+                className="w-full h-11 bg-honey text-charcoal-950 hover:bg-honey/90 font-semibold" 
+                onClick={handleReplitLogin}
+                data-testid="button-replit-login"
                 type="button"
               >
-                <Chrome className="w-4 h-4 mr-2" />
-                Continue with Google
+                <Hexagon className="w-4 h-4 mr-2 fill-charcoal-950" />
+                Continue with Replit
               </Button>
-              <Button 
-                variant="outline" 
-                className="w-full h-11 text-white border-honey/20 hover:bg-honey/10"
-                onClick={() => handleSocialLogin("GitHub")}
-                data-testid="button-github-login"
-                type="button"
-              >
-                <Github className="w-4 h-4 mr-2" />
-                Continue with GitHub
-              </Button>
+              <p className="text-xs text-center text-slate-400">
+                Sign in with Google, GitHub, X, or Apple
+              </p>
             </div>
 
             {/* Separator */}
@@ -201,7 +192,7 @@ export default function WorkingAuth() {
                 <Separator />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-3 text-slate-400 font-medium">Or continue with email</span>
+                <span className="bg-card px-3 text-slate-400 font-medium">Testing Credentials (Root Only)</span>
               </div>
             </div>
 

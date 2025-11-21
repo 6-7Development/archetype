@@ -1,5 +1,6 @@
 // Universal Authentication System - Portable & Secure
 // Works anywhere with PostgreSQL - no external dependencies
+// DUAL AUTH: Supports both local (email/password) and OAuth (Replit) authentication
 import bcrypt from "bcrypt";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
@@ -11,6 +12,7 @@ import { authLimiter } from "./rateLimiting";
 import { registerUserSchema, loginUserSchema, type RegisterUser, type LoginUser } from "@shared/schema";
 import { db } from "./db";
 import { creditWallets, creditLedger } from "@shared/schema";
+import { setupReplitAuth } from "./replitAuth";
 
 const SALT_ROUNDS = 12; // Bcrypt salt rounds (higher = more secure, slower)
 
@@ -124,12 +126,14 @@ export async function setupAuth(app: Express) {
     )
   );
 
-  // Serialize user for session
+  // Serialize user for session (works for both local and OAuth users)
   passport.serializeUser((user: any, done) => {
-    done(null, user.id);
+    // OAuth users have a 'claims' object, local users have an 'id' directly
+    const userId = user.claims?.sub || user.id;
+    done(null, userId);
   });
 
-  // Deserialize user from session
+  // Deserialize user from session (works for both local and OAuth users)
   passport.deserializeUser(async (id: string, done) => {
     try {
       const user = await storage.getUser(id);
@@ -138,6 +142,10 @@ export async function setupAuth(app: Express) {
       done(error);
     }
   });
+
+  // DUAL AUTH: Setup Replit OAuth (Google/GitHub/X/Apple) alongside local auth
+  // This shares the same session store and passport instance
+  await setupReplitAuth(app);
 
   // Registration endpoint
   app.post("/api/auth/register", authLimiter, async (req, res) => {
@@ -154,12 +162,13 @@ export async function setupAuth(app: Express) {
       // Hash password
       const hashedPassword = await hashPassword(validatedData.password);
       
-      // Create user
+      // Create user (local auth provider)
       const user = await storage.upsertUser({
         email: validatedData.email,
         password: hashedPassword,
         firstName: validatedData.firstName,
         lastName: validatedData.lastName,
+        provider: "local", // Mark as local auth user
       });
       
       // Initialize credit wallet with starter credits (1000 credits = $50 value for testing)

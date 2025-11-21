@@ -22,6 +22,11 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: varchar("email").unique().notNull(), // Required for login
   password: varchar("password"), // Bcrypt hash - optional (null for OAuth users)
+  
+  // OAuth fields for dual authentication (Replit Auth + Local)
+  provider: varchar("provider"), // 'replit' | 'local' | null (for legacy users)
+  providerId: varchar("provider_id"), // OAuth user ID (e.g., Replit's sub claim)
+  
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
@@ -31,6 +36,7 @@ export const users = pgTable("users", {
   billingStatus: text("billing_status").notNull().default("trial"), // Enum: 'trial', 'trial_grace', 'active', 'suspended'
   stripeCustomerId: text("stripe_customer_id"), // Stripe customer ID
   defaultPaymentMethodId: varchar("default_payment_method_id"), // Stripe payment method ID
+  lastLoginAt: timestamp("last_login_at"), // Track last login time
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
