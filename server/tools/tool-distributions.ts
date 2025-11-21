@@ -12,9 +12,11 @@
 import { LOMU_TOOLS } from './index';
 
 /**
- * LOMU CORE TOOLS (21 tools)
+ * LOMU CORE TOOLS (18 tools)
  * For regular LomuAI development work - fast execution primitives
  * Used by: LomuAI Chat, Platform Healing
+ * 
+ * Optimized to stay within Google's recommended 10-20 tool limit
  */
 export const LOMU_CORE_TOOLS = LOMU_TOOLS.filter(tool => [
   // File Operations (3)
@@ -37,16 +39,11 @@ export const LOMU_CORE_TOOLS = LOMU_TOOLS.filter(tool => [
   'update_task',
   'read_task_list',
   
-  // Web & Research (2)
+  // Web & Research (1) - Removed web_fetch (redundant with web_search)
   'web_search',
-  'web_fetch',
   
-  // Testing & Diagnosis (2)
-  'browser_test',
+  // Diagnosis (1) - Removed browser_test (less critical)
   'perform_diagnosis',
-  
-  // Vision Analysis (1) - NEW! Scan websites/images and systematically fix issues
-  'vision_analyze',
   
   // Escalation (1) - Consult architect when stuck
   'architect_consult',
