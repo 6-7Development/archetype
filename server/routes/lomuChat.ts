@@ -1475,25 +1475,18 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
     // When user sends greetings/casual messages like "hello", "hi", "thanks", etc.
     // we should respond conversationally WITHOUT loading tools or running diagnostics
     if (userIntent === 'casual') {
-      console.log(`[CASUAL-SHORT-CIRCUIT] ✅ Casual message detected - clearing tools to force conversational response`);
+      console.log(`[CASUAL-SHORT-CIRCUIT] ✅ Casual message detected - clearing tools AND history to force conversational response`);
       availableTools = []; // Empty tools array forces Gemini to respond conversationally
       
-      // 🔥 CRITICAL FIX: Override conversation history to prevent continuing previous work
-      // Gemini sees the history and thinks "hello" is a continuation of "diagnose platform"
-      // Solution: Replace the last user message with explicit instruction to respond casually
-      const lastMsgIndex = conversationMessages.length - 1;
-      if (lastMsgIndex >= 0) {
-        const originalContent = typeof conversationMessages[lastMsgIndex].content === 'string' 
-          ? conversationMessages[lastMsgIndex].content 
-          : message;
-        
-        conversationMessages[lastMsgIndex] = {
-          role: 'user',
-          content: `${originalContent}\n\n[SYSTEM INSTRUCTION: This is a casual greeting/acknowledgment. Respond friendly and conversational. Do NOT continue any previous work or diagnosis. Do NOT use tools. Just have a natural conversation.]`
-        };
-        
-        console.log(`[CASUAL-SHORT-CIRCUIT] 🔧 Modified user message to include casual response instruction`);
-      }
+      // 🔥 CRITICAL FIX: Clear conversation history to prevent continuing previous work
+      // Architect finding: Modifying in-memory message doesn't persist to DB
+      // Solution: Clear entire conversation history and only send current greeting
+      // This creates a clean context break - Gemini won't see "diagnose platform" anymore
+      const currentUserMessage = conversationMessages[conversationMessages.length - 1];
+      conversationMessages.length = 0; // Clear all history
+      conversationMessages.push(currentUserMessage); // Keep only current greeting
+      
+      console.log(`[CASUAL-SHORT-CIRCUIT] 🧹 Cleared conversation history - only current message remains`);
     }
 
     // ============================================================================
