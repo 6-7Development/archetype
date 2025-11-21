@@ -38,6 +38,7 @@ import { traceLogger } from '../services/traceLogger.ts';
 import { nanoid } from 'nanoid';
 // Import extracted utilities and constants
 import { EMERGENCY_LIMITS, MAX_CONSECUTIVE_THINKING } from './lomu/constants.ts';
+import { LOMU_CORE_TOOLS } from '../tools/tool-distributions.ts';
 import {
   mapDatabaseStatusToRunState,
   detectLowConfidencePatterns,
@@ -1224,204 +1225,10 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
       extendedThinking: finalExtendedThinking, // ✅ Using mutable variable (pre-runConfig)
     });
 
-    // ⚡ GOOGLE GEMINI OPTIMIZED: 13 CORE TOOLS (Google recommends 10-20 max)
-    // All other tools delegated to sub-agents or I AM Architect for optimal performance
-    const tools = [
-      {
-        name: 'start_subagent',
-        description: 'Delegate complex multi-file work to sub-agents. Supports parallel execution (max 2 concurrent per user).',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            task: { type: 'string' as const, description: 'Task for sub-agent' },
-            relevantFiles: { type: 'array' as const, items: { type: 'string' as const }, description: 'Files to work with' },
-            parallel: { type: 'boolean' as const, description: 'Run in parallel (max 2 concurrent). Default: false (sequential)' },
-          },
-          required: ['task', 'relevantFiles'],
-        },
-      },
-      {
-        name: 'create_task_list',
-        description: 'Create visible task breakdown for work requests',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            title: { type: 'string' as const, description: 'Task list title' },
-            tasks: { type: 'array' as const, items: { type: 'object' as const, properties: { title: { type: 'string' as const }, description: { type: 'string' as const } }, required: ['title', 'description'] }, description: 'Tasks to complete' },
-          },
-          required: ['title', 'tasks'],
-        },
-      },
-      {
-        name: 'read_task_list',
-        description: 'Read current task list status',
-        input_schema: { type: 'object' as const, properties: {}, required: [] },
-      },
-      {
-        name: 'update_task',
-        description: 'Update task status to show progress',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            taskId: { type: 'string' as const, description: 'Task ID' },
-            status: { type: 'string' as const, description: 'New status' },
-            result: { type: 'string' as const, description: 'Result when completing' },
-          },
-          required: ['taskId', 'status'],
-        },
-      },
-      {
-        name: 'read_platform_file',
-        description: 'Read platform file',
-        input_schema: {
-          type: 'object' as const,
-          properties: { path: { type: 'string' as const, description: 'File path' } },
-          required: ['path'],
-        },
-      },
-      {
-        name: 'write_platform_file',
-        description: 'Write platform file (also handles create/delete operations)',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            path: { type: 'string' as const, description: 'File path' },
-            content: { type: 'string' as const, description: 'File content (empty to delete)' },
-          },
-          required: ['path', 'content'],
-        },
-      },
-      {
-        name: 'list_platform_files',
-        description: 'List directory contents (replaces search_platform_files - use with glob patterns)',
-        input_schema: {
-          type: 'object' as const,
-          properties: { directory: { type: 'string' as const, description: 'Directory path' } },
-          required: ['directory'],
-        },
-      },
-      {
-        name: 'read_project_file',
-        description: 'Read user project file',
-        input_schema: {
-          type: 'object' as const,
-          properties: { path: { type: 'string' as const, description: 'File path' } },
-          required: ['path'],
-        },
-      },
-      {
-        name: 'write_project_file',
-        description: 'Write user project file (also handles create/delete/list operations)',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            path: { type: 'string' as const, description: 'File path' },
-            content: { type: 'string' as const, description: 'File content (empty to delete)' },
-          },
-          required: ['path', 'content'],
-        },
-      },
-      {
-        name: 'perform_diagnosis',
-        description: 'Analyze platform for issues',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            target: { type: 'string' as const, description: 'Diagnostic target' },
-            focus: { type: 'array' as const, items: { type: 'string' as const }, description: 'Files to analyze' },
-          },
-          required: ['target'],
-        },
-      },
-      {
-        name: 'run_test',
-        description: 'Run Playwright e2e tests for UI/UX',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            testPlan: { type: 'string' as const, description: 'Test plan steps' },
-            technicalDocs: { type: 'string' as const, description: 'Technical context' }
-          },
-          required: ['testPlan', 'technicalDocs'],
-        },
-      },
-      {
-        name: 'search_integrations',
-        description: 'Search Replit integrations',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            query: { type: 'string' as const, description: 'Integration name' }
-          },
-          required: ['query'],
-        },
-      },
-      {
-        name: 'web_search',
-        description: 'Search web for documentation',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            query: { type: 'string' as const, description: 'Search query' },
-            maxResults: { type: 'number' as const, description: 'Max results' },
-          },
-          required: ['query'],
-        },
-      },
-      {
-        name: 'search_codebase',
-        description: 'Semantic code search - find code by meaning',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            query: { type: 'string' as const, description: 'Search query' }
-          },
-          required: ['query']
-        }
-      },
-      {
-        name: 'grep',
-        description: 'Search file patterns',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            pattern: { type: 'string' as const, description: 'Search pattern' },
-            pathFilter: { type: 'string' as const, description: 'File filter (*.ts)' }
-          },
-          required: ['pattern']
-        }
-      },
-      {
-        name: 'bash',
-        description: 'Execute terminal commands',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            command: { type: 'string' as const, description: 'Command to run' }
-          },
-          required: ['command']
-        }
-      },
-      {
-        name: 'read_logs',
-        description: 'Read application logs',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            lines: { type: 'number' as const, description: 'Number of lines (default: 100)' }
-          }
-        }
-      },
-      {
-        name: 'list_project_files',
-        description: 'List user project files',
-        input_schema: {
-          type: 'object' as const,
-          properties: {},
-          required: []
-        }
-      },
-    ];
+    // ⚡ GOOGLE GEMINI OPTIMIZED: Use LOMU_CORE_TOOLS (21 tools optimized for Gemini)
+    // Tool distribution architecture: LOMU_CORE_TOOLS provides the complete set of tools
+    // needed for autonomous development, filtered from the master LOMU_TOOLS collection
+    const tools = LOMU_CORE_TOOLS;
 
     // 📊 TOOL COUNT VALIDATION: Log on startup to verify we're within Google's recommended limit
     console.log(`✅ LomuAI using ${tools.length} tools (Google recommends 10-20 for optimal Gemini performance)`);
@@ -1894,89 +1701,49 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
             }
             lastChunkHash = chunkHash;
 
-            // 🧠 THINKING DETECTION: Buffer text until we can determine if it's thinking
-            // Patterns like "**Acknowledging the User**\n\n...content...\n\n\n"
+            // ✅ STREAMING FIX: Emit content immediately for real-time word-by-word streaming
+            // This is the core fix - always send chunks as they arrive, like ChatGPT/Replit Agent
+            fullContent += chunkText;
+            sendEvent('content', { content: chunkText });
+            
+            // 🧠 THINKING DETECTION: Also accumulate in buffer to detect thinking patterns
+            // This runs in parallel with streaming - doesn't block content emission
             currentTextBlock += chunkText;
             
-            // 🚨 BUFFER OVERFLOW PROTECTION: If buffer exceeds 800 chars without delimiter, flush it
-            // This prevents infinite buffering when AI sends ** text without proper thinking format
-            const MAX_BUFFER_SIZE = 800;
-            if (currentTextBlock.length > MAX_BUFFER_SIZE && !currentTextBlock.includes('\n\n\n')) {
-              console.log(`[THINKING-BUFFER] Buffer overflow (${currentTextBlock.length} chars) - flushing as regular content`);
-              fullContent += currentTextBlock;
-              sendEvent('content', { content: currentTextBlock });
-              currentTextBlock = '';
-              return;
-            }
+            // Check for complete thinking pattern: **Title**\n\ncontent\n\n\n
+            const thinkingPattern = /^\*\*([A-Z][^*]+)\*\*\n\n([\s\S]+?)\n\n\n/;
+            const match = currentTextBlock.match(thinkingPattern);
             
-            // Check if we've already processed thinking - if so, stream everything immediately
-            if (currentTextBlock.includes('\n\n\n')) {
-              // We have the \n\n\n delimiter - check if this is thinking
-              const thinkingPattern = /^\*\*([A-Z][^*]+)\*\*\n\n([\s\S]+?)\n\n\n/;
-              const match = currentTextBlock.match(thinkingPattern);
+            if (match) {
+              // Found complete thinking block - emit as assistant_progress
+              const thinkingTitle = match[1];
+              const thinkingContent = match[2];
+              const thinkingBlock = `**${thinkingTitle}**\n\n${thinkingContent}`;
               
-              if (match) {
-                // Found complete thinking pattern!
-                const thinkingTitle = match[1];
-                const thinkingContent = match[2];
-                const fullMatch = match[0]; // Complete matched text including \n\n\n
-                const thinkingBlock = `**${thinkingTitle}**\n\n${thinkingContent}`;
-                const remainingText = currentTextBlock.substring(fullMatch.length);
-                
-                console.log(`[THINKING-DETECTED] Separated thinking from response`);
-                console.log(`[THINKING-DETECTED] Title: ${thinkingTitle}`);
-                console.log(`[THINKING-DETECTED] Remaining: ${remainingText.substring(0, 50)}...`);
-                
-                // Send thinking as progress message
-                const progressId = nanoid();
-                const progressEntry = {
-                  id: progressId,
-                  message: thinkingBlock,
-                  timestamp: Date.now(),
-                  category: 'thinking' as const
-                };
-                
-                console.log(`[THINKING-SSE] Sending assistant_progress event`);
-                progressMessages.push(progressEntry);
-                sendEvent('assistant_progress', {
-                  progressId,
-                  content: thinkingBlock,
-                  category: 'thinking'
-                });
-                
-                // Reset buffer and stream remaining text immediately
-                currentTextBlock = '';
-                fullContent += remainingText;
-                
-                if (remainingText) {
-                  sendEvent('content', { content: remainingText });
-                }
-                
-                // Future chunks will stream immediately (no more buffering)
-                return;
-              } else {
-                // Has \n\n\n but not a thinking pattern - send everything and stop buffering
-                console.log(`[THINKING-BUFFER] No thinking pattern, flushing ${currentTextBlock.length} chars`);
-                fullContent += currentTextBlock;
-                sendEvent('content', { content: currentTextBlock });
-                currentTextBlock = '';
-                return;
-              }
-            }
-            
-            // Still buffering, waiting for delimiter
-            // But only buffer if content looks like it might be thinking (starts with **)
-            // AND we haven't exceeded buffer size limit
-            if (currentTextBlock.trim().startsWith('**') && currentTextBlock.length <= MAX_BUFFER_SIZE) {
-              console.log(`[THINKING-BUFFER] Buffering ${currentTextBlock.length} chars (looks like thinking)...`);
-              return; // Keep buffering
-            } else if (!currentTextBlock.trim().startsWith('**')) {
-              // Doesn't look like thinking - send immediately
-              console.log(`[THINKING-BUFFER] Doesn't look like thinking, sending ${currentTextBlock.length} chars`);
-              fullContent += currentTextBlock;
-              sendEvent('content', { content: currentTextBlock });
+              console.log(`[THINKING-DETECTED] Emitting progress for: ${thinkingTitle}`);
+              
+              const progressId = nanoid();
+              const progressEntry = {
+                id: progressId,
+                message: thinkingBlock,
+                timestamp: Date.now(),
+                category: 'thinking' as const
+              };
+              
+              progressMessages.push(progressEntry);
+              sendEvent('assistant_progress', {
+                progressId,
+                content: thinkingBlock,
+                category: 'thinking'
+              });
+              
+              // Clear thinking buffer (content already streamed)
               currentTextBlock = '';
-              return;
+            } else if (currentTextBlock.length > 800) {
+              // Buffer overflow protection - clear old thinking buffer
+              // (Content already streamed, so just reset the thinking detector)
+              console.log(`[THINKING-BUFFER] Clearing overflow buffer (${currentTextBlock.length} chars)`);
+              currentTextBlock = '';
             }
 
             // 🚨 WATCHDOG: Reset thinking counter on substantive assistant text
