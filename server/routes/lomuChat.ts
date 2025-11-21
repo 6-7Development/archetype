@@ -1471,6 +1471,14 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
     
     console.log(`[INTENT-CLASSIFICATION] User intent: ${userIntent}, max iterations: ${MAX_ITERATIONS}`);
 
+    // 🗨️ CASUAL INTENT SHORT-CIRCUIT: Prevent tool loading for casual messages
+    // When user sends greetings/casual messages like "hello", "hi", "thanks", etc.
+    // we should respond conversationally WITHOUT loading tools or running diagnostics
+    if (userIntent === 'casual') {
+      console.log(`[CASUAL-SHORT-CIRCUIT] ✅ Casual message detected - clearing tools to force conversational response`);
+      availableTools = []; // Empty tools array forces Gemini to respond conversationally
+    }
+
     // ============================================================================
     // UNIFIED RUN STATE - CREATE RUN ID & STATE MANAGER
     // ============================================================================

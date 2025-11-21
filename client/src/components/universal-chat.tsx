@@ -1071,8 +1071,16 @@ export function UniversalChat({
       };
       setMessages((prev) => [...prev, tempAssistantMessage]);
 
+      console.log('[SSE-DEBUG] ⚡ Entering while loop, about to start reading stream...');
+      let chunkCount = 0;
+      
       while (true) {
+        console.log('[SSE-DEBUG] 🔄 About to call reader.read(), chunk#:', chunkCount);
+        
         const { done, value } = await reader.read();
+        chunkCount++;
+        
+        console.log('[SSE-DEBUG] ✅ reader.read() returned, done:', done, 'value length:', value?.length || 0);
         
         if (done) {
           console.log('[SSE] Stream complete');
@@ -1081,7 +1089,7 @@ export function UniversalChat({
 
         // Decode chunk and add to buffer
         buffer += decoder.decode(value, { stream: true });
-        console.log('[SSE-DEBUG] Buffer chunk received, length:', buffer.length);
+        console.log('[SSE-DEBUG] 📦 Buffer chunk received, total buffer length:', buffer.length);
 
         // Process complete SSE messages (end with \n\n or \r\n\r\n)
         // Split on both Unix (\n\n) and Windows (\r\n\r\n) line endings

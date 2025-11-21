@@ -413,6 +413,230 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
       const MAX_ITERATIONS = getMaxIterationsForIntent(userIntent);
       console.log(`[HEALING-CHAT] User intent: ${userIntent}, max iterations: ${MAX_ITERATIONS}`);
       
+      // 🗨️ CASUAL INTENT SHORT-CIRCUIT: Prevent tool loading for casual messages
+      // When user sends greetings/casual messages like "hello", "hi", "thanks", etc.
+      // we should respond conversationally WITHOUT loading tools or running diagnostics
+      let healingTools: any[] = [];
+      
+      if (userIntent !== 'casual') {
+        // Only load tools for non-casual messages
+        healingTools = [
+          // ⚡ GOOGLE GEMINI OPTIMIZED: 13 CORE TOOLS (Google recommends 10-20 max)
+          // All other tools delegated to sub-agents or I AM Architect for optimal performance
+          {
+            name: 'start_subagent',
+            description: 'Delegate complex multi-file work to sub-agents. Supports parallel execution (max 2 concurrent)',
+            input_schema: {
+              type: 'object',
+              properties: {
+                task: { type: 'string', description: 'Task for sub-agent' },
+                relevantFiles: { type: 'array', items: { type: 'string' }, description: 'Files to work with' },
+                parallel: { type: 'boolean', description: 'Run in parallel (default: false)' }
+              },
+              required: ['task', 'relevantFiles']
+            }
+          },
+          {
+            name: 'create_task_list',
+            description: 'Create a visible task breakdown showing what you will do. REQUIRED for all work requests.',
+            input_schema: {
+              type: 'object',
+              properties: {
+                title: { type: 'string', description: 'Task list title summarizing the work' },
+                tasks: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      title: { type: 'string', description: 'Task title' },
+                      description: { type: 'string', description: 'What this task does' }
+                    },
+                    required: ['title', 'description']
+                  },
+                  description: 'List of tasks to complete'
+                }
+              },
+              required: ['title', 'tasks']
+            }
+          },
+          {
+            name: 'read_task_list',
+            description: 'Read current task list status to see what has been completed',
+            input_schema: {
+              type: 'object',
+              properties: {},
+              required: []
+            }
+          },
+          {
+            name: 'update_task',
+            description: 'Update task status to show progress (e.g., in_progress, completed)',
+            input_schema: {
+              type: 'object',
+              properties: {
+                taskId: { type: 'string', description: 'Task ID from task list' },
+                status: { type: 'string', description: 'New status: pending, in_progress, or completed' },
+                result: { type: 'string', description: 'Brief result summary when completing a task' }
+              },
+              required: ['taskId', 'status']
+            }
+          },
+          {
+            name: 'read_platform_file',
+            description: 'Read platform file',
+            input_schema: {
+              type: 'object',
+              properties: { path: { type: 'string', description: 'File path' } },
+              required: ['path']
+            }
+          },
+          {
+            name: 'write_platform_file',
+            description: 'Write platform file (also handles create/delete operations)',
+            input_schema: {
+              type: 'object',
+              properties: {
+                path: { type: 'string', description: 'File path' },
+                content: { type: 'string', description: 'File content (empty to delete)' }
+              },
+              required: ['path', 'content']
+            }
+          },
+          {
+            name: 'list_platform_files',
+            description: 'List directory contents (replaces search_platform_files - use with glob patterns)',
+            input_schema: {
+              type: 'object',
+              properties: { directory: { type: 'string', description: 'Directory path' } },
+              required: ['directory']
+            }
+          },
+          {
+            name: 'read_project_file',
+            description: 'Read user project file',
+            input_schema: {
+              type: 'object',
+              properties: { path: { type: 'string', description: 'File path' } },
+              required: ['path']
+            }
+          },
+          {
+            name: 'write_project_file',
+            description: 'Write user project file (also handles create/delete/list operations)',
+            input_schema: {
+              type: 'object',
+              properties: {
+                path: { type: 'string', description: 'File path' },
+                content: { type: 'string', description: 'File content (empty to delete)' }
+              },
+              required: ['path', 'content']
+            }
+          },
+          {
+            name: 'perform_diagnosis',
+            description: 'Analyze platform for issues',
+            input_schema: {
+              type: 'object',
+              properties: {
+                target: { type: 'string', description: 'Diagnostic target' },
+                focus: { type: 'array', items: { type: 'string' }, description: 'Files to analyze' }
+              },
+              required: ['target']
+            }
+          },
+          {
+            name: 'run_test',
+            description: 'Run Playwright e2e tests for UI/UX',
+            input_schema: {
+              type: 'object',
+              properties: {
+                testPlan: { type: 'string', description: 'Test plan steps' },
+                technicalDocs: { type: 'string', description: 'Technical context' }
+              },
+              required: ['testPlan', 'technicalDocs']
+            }
+          },
+          {
+            name: 'search_integrations',
+            description: 'Search Replit integrations',
+            input_schema: {
+              type: 'object',
+              properties: {
+                query: { type: 'string', description: 'Integration name' }
+              },
+              required: ['query']
+            }
+          },
+          {
+            name: 'web_search',
+            description: 'Search web for documentation',
+            input_schema: {
+              type: 'object',
+              properties: {
+                query: { type: 'string', description: 'Search query' },
+                maxResults: { type: 'number', description: 'Max results' }
+              },
+              required: ['query']
+            }
+          },
+          {
+            name: 'search_codebase',
+            description: 'Semantic code search - find code by meaning',
+            input_schema: {
+              type: 'object',
+              properties: {
+                query: { type: 'string', description: 'Search query' }
+              },
+              required: ['query']
+            }
+          },
+          {
+            name: 'grep',
+            description: 'Search file patterns',
+            input_schema: {
+              type: 'object',
+              properties: {
+                pattern: { type: 'string', description: 'Search pattern' },
+                pathFilter: { type: 'string', description: 'File filter (*.ts)' }
+              },
+              required: ['pattern']
+            }
+          },
+          {
+            name: 'bash',
+            description: 'Execute terminal commands',
+            input_schema: {
+              type: 'object',
+              properties: {
+                command: { type: 'string', description: 'Command to run' }
+              },
+              required: ['command']
+            }
+          },
+          {
+            name: 'read_logs',
+            description: 'Read application logs',
+            input_schema: {
+              type: 'object',
+              properties: {
+                lines: { type: 'number', description: 'Number of lines (default: 100)' }
+              }
+            }
+          },
+          {
+            name: 'list_project_files',
+            description: 'List user project files',
+            input_schema: {
+              type: 'object',
+              properties: {},
+              required: []
+            }
+          }
+        ];
+      } else {
+        console.log(`[CASUAL-SHORT-CIRCUIT] ✅ Casual message detected - clearing tools to force conversational response`);
+      }
+      
       let iterationCount = 0;
       let continueLoop = true;
       
@@ -496,219 +720,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   }
                 }
               },
-              tools: [
-              // ⚡ GOOGLE GEMINI OPTIMIZED: 13 CORE TOOLS (Google recommends 10-20 max)
-              // All other tools delegated to sub-agents or I AM Architect for optimal performance
-              {
-                name: 'start_subagent',
-                description: 'Delegate complex multi-file work to sub-agents. Supports parallel execution (max 2 concurrent)',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    task: { type: 'string', description: 'Task for sub-agent' },
-                    relevantFiles: { type: 'array', items: { type: 'string' }, description: 'Files to work with' },
-                    parallel: { type: 'boolean', description: 'Run in parallel (default: false)' }
-                  },
-                  required: ['task', 'relevantFiles']
-                }
-              },
-              {
-                name: 'create_task_list',
-                description: 'Create a visible task breakdown showing what you will do. REQUIRED for all work requests.',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    title: { type: 'string', description: 'Task list title summarizing the work' },
-                    tasks: {
-                      type: 'array',
-                      items: {
-                        type: 'object',
-                        properties: {
-                          title: { type: 'string', description: 'Task title' },
-                          description: { type: 'string', description: 'What this task does' }
-                        },
-                        required: ['title', 'description']
-                      },
-                      description: 'List of tasks to complete'
-                    }
-                  },
-                  required: ['title', 'tasks']
-                }
-              },
-              {
-                name: 'read_task_list',
-                description: 'Read current task list status to see what has been completed',
-                input_schema: {
-                  type: 'object',
-                  properties: {},
-                  required: []
-                }
-              },
-              {
-                name: 'update_task',
-                description: 'Update task status to show progress (e.g., in_progress, completed)',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    taskId: { type: 'string', description: 'Task ID from task list' },
-                    status: { type: 'string', description: 'New status: pending, in_progress, or completed' },
-                    result: { type: 'string', description: 'Brief result summary when completing a task' }
-                  },
-                  required: ['taskId', 'status']
-                }
-              },
-              {
-                name: 'read_platform_file',
-                description: 'Read platform file',
-                input_schema: {
-                  type: 'object',
-                  properties: { path: { type: 'string', description: 'File path' } },
-                  required: ['path']
-                }
-              },
-              {
-                name: 'write_platform_file',
-                description: 'Write platform file (also handles create/delete operations)',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    path: { type: 'string', description: 'File path' },
-                    content: { type: 'string', description: 'File content (empty to delete)' }
-                  },
-                  required: ['path', 'content']
-                }
-              },
-              {
-                name: 'list_platform_files',
-                description: 'List directory contents (replaces search_platform_files - use with glob patterns)',
-                input_schema: {
-                  type: 'object',
-                  properties: { directory: { type: 'string', description: 'Directory path' } },
-                  required: ['directory']
-                }
-              },
-              {
-                name: 'read_project_file',
-                description: 'Read user project file',
-                input_schema: {
-                  type: 'object',
-                  properties: { path: { type: 'string', description: 'File path' } },
-                  required: ['path']
-                }
-              },
-              {
-                name: 'write_project_file',
-                description: 'Write user project file (also handles create/delete/list operations)',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    path: { type: 'string', description: 'File path' },
-                    content: { type: 'string', description: 'File content (empty to delete)' }
-                  },
-                  required: ['path', 'content']
-                }
-              },
-              {
-                name: 'perform_diagnosis',
-                description: 'Analyze platform for issues',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    target: { type: 'string', description: 'Diagnostic target' },
-                    focus: { type: 'array', items: { type: 'string' }, description: 'Files to analyze' }
-                  },
-                  required: ['target']
-                }
-              },
-              {
-                name: 'run_test',
-                description: 'Run Playwright e2e tests for UI/UX',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    testPlan: { type: 'string', description: 'Test plan steps' },
-                    technicalDocs: { type: 'string', description: 'Technical context' }
-                  },
-                  required: ['testPlan', 'technicalDocs']
-                }
-              },
-              {
-                name: 'search_integrations',
-                description: 'Search Replit integrations',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    query: { type: 'string', description: 'Integration name' }
-                  },
-                  required: ['query']
-                }
-              },
-              {
-                name: 'web_search',
-                description: 'Search web for documentation',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    query: { type: 'string', description: 'Search query' },
-                    maxResults: { type: 'number', description: 'Max results' }
-                  },
-                  required: ['query']
-                }
-              },
-              {
-                name: 'search_codebase',
-                description: 'Semantic code search - find code by meaning',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    query: { type: 'string', description: 'Search query' }
-                  },
-                  required: ['query']
-                }
-              },
-              {
-                name: 'grep',
-                description: 'Search file patterns',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    pattern: { type: 'string', description: 'Search pattern' },
-                    pathFilter: { type: 'string', description: 'File filter (*.ts)' }
-                  },
-                  required: ['pattern']
-                }
-              },
-              {
-                name: 'bash',
-                description: 'Execute terminal commands',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    command: { type: 'string', description: 'Command to run' }
-                  },
-                  required: ['command']
-                }
-              },
-              {
-                name: 'read_logs',
-                description: 'Read application logs',
-                input_schema: {
-                  type: 'object',
-                  properties: {
-                    lines: { type: 'number', description: 'Number of lines (default: 100)' }
-                  }
-                }
-              },
-              {
-                name: 'list_project_files',
-                description: 'List user project files',
-                input_schema: {
-                  type: 'object',
-                  properties: {},
-                  required: []
-                }
-              }
-            ],
+              tools: healingTools,
             onToolUse: async (toolUse: any) => {
               // RAILWAY FIX: Reduce logging in production (only log essential actions)
               if (isDev) {
