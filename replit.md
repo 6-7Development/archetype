@@ -3,18 +3,19 @@
 ## Overview
 Lomu is an AI-powered platform for rapid web development, featuring the autonomous AI coding agent LomuAI and dual-version IDE Workspaces (Lomu for desktop, Lomu5 for mobile). It offers a console-first interface, real-time preview, and comprehensive workspace features. The platform aims for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. LomuAI's key capability is autonomous self-healing, bug fixing, and UI/UX improvements to its own source code, complete with rollback and audit logging. The business vision is to provide a comprehensive, AI-driven platform that simplifies web development, making it accessible and efficient for a wide range of users.
 
-## Recent Issues (Nov 21, 2025)
-**Critical SSE Streaming Bug**:
-- **Symptom**: Chat UI shows "Thinking..." with no streamed text, then entire response appears at once
-- **Root Cause**: `server/routes/lomuChat.ts` thinking detection logic buffers ALL text starting with `**` as "thinking blocks", waiting for `\n\n\n` delimiter that never comes, so NO `content` SSE events are emitted during streaming
-- **Expected**: Thinking blocks → `assistant_progress` events (✅ working), PLUS word-by-word text → `content` events (❌ broken)
-- **Fix Needed**: Modify onChunk handler to emit BOTH `assistant_progress` (for thinking) AND `content` (for real-time text streaming)
+## Recent Fixes (Nov 21, 2025)
+**✅ Fixed: SSE Streaming Bug**:
+- **Issue**: Chat UI showed "Thinking..." with no streamed text, then entire response appeared at once
+- **Root Cause**: onChunk handler buffered ALL text as "thinking blocks", never emitting `content` events
+- **Fix Applied**: Modified `server/routes/lomuChat.ts` (lines 1900-1943) to emit content chunks IMMEDIATELY for real-time word-by-word streaming, while still detecting thinking patterns in parallel
+- **Result**: Text now streams word-by-word like ChatGPT/Replit Agent ✅
 
-**Missing Search Tools**:
-- LomuAI only has 5 tools (should be 18): `start_subagent`, `create_task_list`, `read_task_list`, `update_task`, `read_platform_file`
-- Missing: `search_codebase`, `grep_tool`, `write_platform_file`, etc.
-- Impact: LomuAI reads entire 5312-line files instead of using efficient search
-- Fix Needed: Ensure all 18 tools are properly passed to Gemini API
+**✅ Fixed: Missing Tools**:
+- **Issue**: LomuAI only had 5 tools, missing critical search/file operations
+- **Fix Applied**: Replaced hard-coded tool array with centralized `LOMU_CORE_TOOLS` from `tools/tool-distributions.ts`
+- **Final Tool Count**: 18 tools (optimized for Google's 10-20 recommendation)
+- **Tools Included**: read, write, search_codebase, grep_tool, ls, smart_read_file, get_auto_context, extract_function, create_task_list, update_task, read_task_list, perform_diagnosis, architect_consult, bash, refresh_all_logs, glob, web_search
+- **Result**: LomuAI uses efficient search instead of reading entire 5312-line files ✅
 
 ## User Preferences
 ### API Configuration
