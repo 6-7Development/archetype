@@ -148,6 +148,7 @@ export function EnhancedMessageDisplay({ content, progressMessages = [], isStrea
           {visibleBlocks.map((block) => {
             const styles = getCategoryStyles(block.category);
             const Icon = styles.icon;
+            const displayContent = block.content.length > 80 ? `${block.content.substring(0, 80)}...` : block.content;
             
             return (
               <Collapsible 
@@ -169,8 +170,9 @@ export function EnhancedMessageDisplay({ content, progressMessages = [], isStrea
                     
                     <Icon className={cn("w-4 h-4 flex-shrink-0", styles.iconColor)} />
                     
-                    <span className="font-medium flex-1 text-left truncate text-foreground">
-                      {block.content.substring(0, 50)}{block.content.length > 50 ? '...' : ''}
+                    <span className="font-medium flex-1 text-left text-foreground">
+                      {displayContent}
+                      {block.content.length > 80 && <span className="text-muted-foreground/70 ml-1"> (Read more)</span>}
                     </span>
                   </div>
                 </CollapsibleTrigger>
