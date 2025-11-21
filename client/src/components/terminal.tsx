@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Terminal as TerminalIcon, AlertCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -164,20 +163,20 @@ export function Terminal({ projectId }: TerminalProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-black text-green-400 font-mono text-sm">
+    <div className="flex flex-col h-full bg-black text-green-400 font-mono text-sm" data-testid="container-terminal">
       <div className="h-10 border-b border-green-800 bg-black/50 flex items-center justify-between px-3">
         <div className="flex items-center gap-2">
           <TerminalIcon className="w-4 h-4" />
           <span className="text-xs">Terminal</span>
           {isConnected ? (
-            <span className="text-xs text-green-500">● Connected</span>
+            <span className="text-xs text-green-500" data-testid="status-terminal-connected">● Connected</span>
           ) : (
-            <span className="text-xs text-red-500">● Disconnected</span>
+            <span className="text-xs text-red-500" data-testid="status-terminal-disconnected">● Disconnected</span>
           )}
         </div>
         
         {isExecuting && (
-          <div className="flex items-center gap-2 text-xs text-yellow-400">
+          <div className="flex items-center gap-2 text-xs text-yellow-400" data-testid="status-terminal-executing">
             <Loader2 className="w-3 h-3 animate-spin" />
             Executing...
           </div>
@@ -185,17 +184,22 @@ export function Terminal({ projectId }: TerminalProps) {
       </div>
 
       {error && (
-        <Alert variant="destructive" className="m-2 bg-red-950 border-red-800">
+        <Alert variant="destructive" className="m-2 bg-red-950 border-red-800" data-testid="alert-terminal-error">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription data-testid="text-terminal-error">{error}</AlertDescription>
         </Alert>
       )}
 
-      <ScrollArea className="flex-1 p-3" ref={scrollRef}>
+      <div 
+        ref={scrollRef}
+        className="flex-1 p-3 overflow-y-auto overflow-x-hidden" 
+        data-testid="scroll-terminal-output"
+      >
         <div className="space-y-1">
           {lines.map((line, i) => (
             <div
               key={i}
+              data-testid={`text-terminal-line-${i}`}
               className={cn(
                 "font-mono whitespace-pre-wrap break-all",
                 line.type === 'input' && "text-green-300 font-semibold",
@@ -206,7 +210,7 @@ export function Terminal({ projectId }: TerminalProps) {
             </div>
           ))}
         </div>
-      </ScrollArea>
+      </div>
 
       <form onSubmit={handleSubmit} className="border-t border-green-800 bg-black/50 p-2">
         <div className="flex items-center gap-2">
