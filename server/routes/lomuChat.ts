@@ -4222,28 +4222,16 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
     // 📊 WORKFLOW VALIDATION: Detect zero-mutation jobs and flag as failed
     console.log(`[WORKFLOW-VALIDATION] Job completed with ${workflowTelemetry.writeOperations} code-modifying operations`);
     console.log(`[WORKFLOW-VALIDATION] Has produced fixes: ${workflowTelemetry.hasProducedFixes}`);
+    console.log(`[WORKFLOW-VALIDATION] User intent: ${userIntent}`);
 
-    // Detect if this was a fix/build request but no code modifications occurred
-    // CRITICAL: Comprehensive keyword matching for fix requests (case-insensitive)
-    // Note: lowerMessage already declared at line 837 for reset detection, reusing it here
-    const FIX_REQUEST_KEYWORDS = [
-      'fix', 'repair', 'resolve', 'patch', 'correct', 'address',
-      'diagnose', 'debug', 'troubleshoot',
-      'implement', 'build', 'create', 'add', 'develop', 'write',
-      'update', 'modify', 'change', 'edit', 'refactor',
-      'heal', 'platform-healing', 'self-healing',
-      'bug', 'issue', 'problem', 'error', 'broken', 'failing'
-    ];
-
-    // Check if this conversation used diagnostic tools (perform_diagnosis, architect_consult, execute_sql)
-    const diagnosticKeywords = ['diagnose', 'diagnosis', 'check', 'analyze', 'inspect', 'investigate', 'audit'];
-    const isDiagnosticRequest = diagnosticKeywords.some(keyword => lowerMessage.includes(keyword));
-    
-    const isFixRequest = FIX_REQUEST_KEYWORDS.some(keyword => lowerMessage.includes(keyword));
-    const isZeroMutationJob = isFixRequest && !workflowTelemetry.hasProducedFixes && !isDiagnosticRequest;
+    // 🎯 FIX: Use classified userIntent instead of keyword matching
+    // Only create incidents for genuine fix/build failures (not casual/diagnostic requests)
+    const isZeroMutationJob = 
+      (userIntent === 'fix' || userIntent === 'build') && 
+      !workflowTelemetry.hasProducedFixes;
 
     if (isZeroMutationJob) {
-      console.error(`[WORKFLOW-VALIDATION] 🚨 ZERO-MUTATION JOB FAILURE - Fix request with no code modifications`);
+      console.error(`[WORKFLOW-VALIDATION] 🚨 ZERO-MUTATION JOB FAILURE - ${userIntent} request with no code modifications`);
       console.error(`[WORKFLOW-VALIDATION] Read operations: ${workflowTelemetry.readOperations}, Code modifications: ${workflowTelemetry.writeOperations}`);
       console.error(`[WORKFLOW-VALIDATION] Message: "${message.slice(0, 100)}..."`);
 
@@ -4251,7 +4239,7 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
       await platformAudit.log({
         userId,
         action: 'heal',
-        description: `❌ ZERO-MUTATION FAILURE: ${message.slice(0, 100)}`,
+        description: `❌ ZERO-MUTATION FAILURE (${userIntent}): ${message.slice(0, 100)}`,
         changes: [],
         backupId: undefined,
         commitHash: '',
@@ -4264,7 +4252,7 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
           type: 'agent_failure',
           severity: 'high',
           title: 'LomuAI Zero-Mutation Job Failure',
-          description: `LomuAI completed a fix request without making any code changes.\n\nUser request: "${message}"\n\nTelemetry: ${workflowTelemetry.readOperations} reads, ${workflowTelemetry.writeOperations} writes\n\nThis indicates a workflow enforcement failure that requires I AM Architect review.`,
+          description: `LomuAI completed a ${userIntent} request without making any code changes.\n\nUser request: "${message}"\n\nIntent: ${userIntent}\nTelemetry: ${workflowTelemetry.readOperations} reads, ${workflowTelemetry.writeOperations} writes\n\nThis indicates a workflow enforcement failure that requires I AM Architect review.`,
           source: 'agent_monitor',
           status: 'open',
           metrics: {
@@ -4272,6 +4260,7 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
             message: message.slice(0, 200),
             telemetry: workflowTelemetry,
             jobId: null, // This is a chat job, not a healing job
+            intent: userIntent,
           }
         }).returning();
 
@@ -4280,12 +4269,14 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
       } catch (incidentError: any) {
         console.error('[WORKFLOW-VALIDATION] Failed to create incident:', incidentError.message);
       }
-    } else if (isDiagnosticRequest && !workflowTelemetry.hasProducedFixes) {
+    } else if (userIntent === 'diagnostic' && !workflowTelemetry.hasProducedFixes) {
       console.log(`[WORKFLOW-VALIDATION] ✅ Diagnostic operation completed successfully - ${workflowTelemetry.readOperations} read operations, no code changes expected`);
-    } else if (isFixRequest && workflowTelemetry.hasProducedFixes) {
-      console.log(`[WORKFLOW-VALIDATION] ✅ Fix request completed successfully with ${workflowTelemetry.writeOperations} code-modifying operations`);
+    } else if (userIntent === 'casual' && !workflowTelemetry.hasProducedFixes) {
+      console.log(`[WORKFLOW-VALIDATION] ✅ Casual conversation completed - no code modifications expected (intent: casual)`);
+    } else if ((userIntent === 'fix' || userIntent === 'build') && workflowTelemetry.hasProducedFixes) {
+      console.log(`[WORKFLOW-VALIDATION] ✅ ${userIntent} request completed successfully with ${workflowTelemetry.writeOperations} code-modifying operations`);
     } else {
-      console.log(`[WORKFLOW-VALIDATION] ℹ️ Non-fix request (question/status check) - no code modifications expected`);
+      console.log(`[WORKFLOW-VALIDATION] ℹ️ Request completed (intent: ${userIntent}, modifications: ${workflowTelemetry.hasProducedFixes})`);
     }
     
     // 🚨 ANTI-PARALYSIS TELEMETRY: Log intervention statistics

@@ -76,7 +76,16 @@ LomuAI's thought process is displayed inline with responses using the `EnhancedM
 The system includes a Replit Agent-style Testing UI with a collapsible `TestingPanel` component for live browser previews, AI narration streaming, and step progress tracking, all powered by SSE events.
 
 ### System Design Choices
-LomuAI acts as the autonomous worker, committing changes through a strict 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). I AM Architect is a user-summoned premium consultant providing guidance without committing code. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing. LomuAI incorporates efficiency rules within its system prompt, such as SEARCH BEFORE CODING, COPY DON'T REINVENT, VERIFY THE TASK, and ITERATION BUDGET AWARENESS.
+LomuAI acts as the autonomous worker, committing changes through a strict 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). I AM Architect is a **manually-triggered premium consultant** providing guidance without committing code - it does NOT automatically heal the platform. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing. LomuAI incorporates efficiency rules within its system prompt, such as SEARCH BEFORE CODING, COPY DON'T REINVENT, VERIFY THE TASK, and ITERATION BUDGET AWARENESS.
+
+**Platform Healing Architecture**:
+- **LomuAI**: Autonomous worker that executes changes (Gemini 2.5 Flash)
+- **I AM Architect**: Owner-triggered consultant for strategic guidance (Claude Sonnet 4)
+  - **Manual activation only** - Owner must trigger via UI
+  - **Consultative role** - Analyzes, recommends, but doesn't auto-fix
+  - **Requires approval** - All changes need owner confirmation
+- **HealOrchestrator**: Monitors health incidents, can auto-trigger workflows for critical issues
+- **Incident System**: Logs failures → Owner reviews → Manually triggers I AM Architect if needed
 
 A centralized session management system (`server/services/lomuAIBrain.ts`) consolidates all session logic into a hybrid architecture with in-memory registry and database durability. The access model provides owner-only access for platform healing, usage-based credit billing for regular LomuAI, and premium consulting for I AM Architect.
 
