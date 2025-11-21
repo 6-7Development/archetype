@@ -103,10 +103,18 @@ export async function setupReplitAuth(app: Express) {
     tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
     verified: passport.AuthenticateCallback
   ) => {
-    // Create OAuth session object (different from database User)
-    const user: any = {};
-    updateUserSession(user, tokens);
-    await upsertOAuthUser(tokens.claims());
+    // Save OAuth user to database and get the persisted User record
+    const dbUser = await upsertOAuthUser(tokens.claims());
+    
+    // Attach OAuth session metadata to the DB user for token refresh
+    const user: any = {
+      ...dbUser, // Include all DB user fields (id, email, etc.)
+      claims: tokens.claims(),
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      expires_at: tokens.claims()?.exp,
+    };
+    
     verified(null, user);
   };
 

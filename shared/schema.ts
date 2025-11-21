@@ -39,7 +39,10 @@ export const users = pgTable("users", {
   lastLoginAt: timestamp("last_login_at"), // Track last login time
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  // Composite unique index for OAuth users - prevents duplicate accounts from same provider
+  uniqueIndex("users_provider_provider_id_unique").on(table.provider, table.providerId),
+]);
 
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;

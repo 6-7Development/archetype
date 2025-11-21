@@ -473,9 +473,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
-    // DUAL AUTH SUPPORT: Handle both OAuth (provider+providerId) and local (email+password) users
-    // For OAuth users: provider and providerId are set
-    // For local users: provider='local', password is set
+    // DUAL AUTH SUPPORT: Route local vs OAuth through appropriate conflict targets
+    // For OAuth users: composite (provider, providerId) unique constraint
+    // For local users: email unique constraint
     
     const updateData: any = {
       ...userData,
@@ -492,11 +492,18 @@ export class DatabaseStorage implements IStorage {
       delete updateData.password;
     }
     
+    // Route to correct conflict target based on auth type
+    // OAuth users: use (provider, providerId) composite - both fields are non-null
+    // Local users: use email - provider is null or 'local'
+    const isOAuth = userData.provider && userData.provider !== 'local' && userData.providerId;
+    
     const [user] = await db
       .insert(users)
       .values(userData)
       .onConflictDoUpdate({
-        target: users.email, // Conflict on email (unique field)
+        target: isOAuth 
+          ? [users.provider, users.providerId]  // OAuth: composite
+          : users.email,  // Local: email
         set: updateData,
       })
       .returning();
