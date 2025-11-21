@@ -1037,7 +1037,6 @@ export function UniversalChat({
       }
 
       // Parse SSE stream
-      console.log('[SSE-DEBUG] Starting stream read...');
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
@@ -1055,12 +1054,10 @@ export function UniversalChat({
         timestamp: new Date(),
         progressMessages: [],
       };
-      console.log('[SSE-DEBUG] Created temp assistant message:', tempAssistantMessage.id);
       setMessages((prev) => [...prev, tempAssistantMessage]);
 
       while (true) {
         const { done, value } = await reader.read();
-        console.log('[SSE-DEBUG] Read chunk, done:', done, 'value length:', value?.length || 0);
         
         if (done) {
           console.log('[SSE] Stream complete');
@@ -1069,22 +1066,18 @@ export function UniversalChat({
 
         // Decode chunk and add to buffer
         buffer += decoder.decode(value, { stream: true });
-        console.log('[SSE-DEBUG] Buffer length:', buffer.length, 'First 100 chars:', buffer.substring(0, 100));
 
         // Process complete SSE messages (end with \n\n)
         const lines = buffer.split('\n\n');
         buffer = lines.pop() || ''; // Keep incomplete message in buffer
-        console.log('[SSE-DEBUG] Processing', lines.length, 'complete messages');
 
         for (const line of lines) {
           if (!line.trim() || line.startsWith(':')) {
             // Skip empty lines and comments (heartbeat)
-            console.log('[SSE-DEBUG] Skipping empty/comment line');
             continue;
           }
 
           if (line.startsWith('data: ')) {
-            console.log('[SSE-DEBUG] Found data line, raw:', line.substring(0, 100));
             try {
               const eventData = JSON.parse(line.substring(6));
               console.log('[SSE] Event:', eventData.type, eventData);
