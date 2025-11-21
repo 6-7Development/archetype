@@ -16,6 +16,7 @@ import { MonacoEditor } from "@/components/monaco-editor";
 import { FileExplorer } from "@/components/file-explorer";
 import { NewFileDialog } from "@/components/new-file-dialog";
 import { LogViewer } from "@/components/log-viewer";
+import { Terminal } from "@/components/terminal";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { 
@@ -29,7 +30,8 @@ import {
   FileCode,
   Save,
   CheckCircle2,
-  Sparkles
+  Sparkles,
+  Terminal as TerminalIcon
 } from "lucide-react";
 import { Project, File } from "@shared/schema";
 
@@ -304,6 +306,14 @@ export default function Builder() {
                 <Activity className="w-4 h-4" />
                 <span className="hidden sm:inline">Logs</span>
               </TabsTrigger>
+              <TabsTrigger 
+                value="terminal" 
+                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground gap-2 rounded-t rounded-b-none min-h-[44px] px-4 flex-shrink-0"
+                data-testid="tab-terminal"
+              >
+                <TerminalIcon className="w-4 h-4" />
+                <span className="hidden sm:inline">Terminal</span>
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -476,6 +486,29 @@ export default function Builder() {
             {/* Logs Tab */}
             <TabsContent value="logs" className="h-full m-0" data-testid="content-logs">
               <LogViewer projectId={currentProjectId ?? undefined} />
+            </TabsContent>
+
+            {/* Terminal Tab */}
+            <TabsContent value="terminal" className="h-full m-0" data-testid="content-terminal">
+              {currentProjectId ? (
+                <Terminal projectId={currentProjectId} />
+              ) : (
+                <div className="h-full flex items-center justify-center p-8">
+                  <Card className="max-w-md">
+                    <CardContent className="pt-6">
+                      <div className="text-center space-y-4">
+                        <TerminalIcon className="w-12 h-12 text-muted-foreground mx-auto" />
+                        <div>
+                          <h3 className="font-semibold mb-2">No Active Project</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Open a project to access the terminal
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
             </TabsContent>
           </div>
         </Tabs>
