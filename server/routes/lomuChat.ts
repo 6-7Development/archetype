@@ -1883,44 +1883,52 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
 
             // 🧠 THINKING DETECTION: Detect and separate inner monologue from response
             // Patterns like "**Acknowledging the User**\n\n...content...\n\n\n"
-            const fullText = currentTextBlock + chunkText;
-            const thinkingPattern = /^\*\*([A-Z][^*]+)\*\*\n\n([\s\S]+?)\n\n\n(.*)$/;
-            const match = fullText.match(thinkingPattern);
-            
-            if (match && !currentTextBlock.includes('\n\n\n')) {
-              // Found complete thinking pattern with response after it
-              const thinkingTitle = match[1];
-              const thinkingContent = match[2];
-              const actualResponse = match[3];
-              const thinkingBlock = `**${thinkingTitle}**\n\n${thinkingContent}`;
+            // Only detect once per response (before we've sent any thinking blocks)
+            if (!currentTextBlock.includes('\n\n\n')) {
+              const fullText = currentTextBlock + chunkText;
+              const thinkingPattern = /^\*\*([A-Z][^*]+)\*\*\n\n([\s\S]+?)\n\n\n/;
+              const match = fullText.match(thinkingPattern);
               
-              console.log(`[THINKING-DETECTED] Separated thinking from response`);
-              console.log(`[THINKING-DETECTED] Title: ${thinkingTitle}`);
-              console.log(`[THINKING-DETECTED] Response: ${actualResponse.substring(0, 50)}...`);
-              
-              // Send thinking as progress message
-              const progressId = nanoid();
-              const progressEntry = {
-                id: progressId,
-                message: thinkingBlock,
-                timestamp: Date.now(),
-                category: 'thinking' as const
-              };
-              
-              progressMessages.push(progressEntry);
-              sendEvent('assistant_progress', {
-                progressId,
-                content: thinkingBlock,
-                category: 'thinking'
-              });
-              
-              // Now send the actual response as content
-              currentTextBlock = actualResponse;
-              fullContent += actualResponse;
-              sendEvent('content', { content: actualResponse });
-              
-              // Skip the regular content handling below
-              return;
+              if (match) {
+                // Found complete thinking pattern
+                const thinkingTitle = match[1];
+                const thinkingContent = match[2];
+                const fullMatch = match[0]; // Complete matched text including \n\n\n
+                const thinkingBlock = `**${thinkingTitle}**\n\n${thinkingContent}`;
+                const remainingText = fullText.substring(fullMatch.length);
+                
+                console.log(`[THINKING-DETECTED] Separated thinking from response`);
+                console.log(`[THINKING-DETECTED] Title: ${thinkingTitle}`);
+                console.log(`[THINKING-DETECTED] Remaining: ${remainingText.substring(0, 50)}...`);
+                
+                // Send thinking as progress message
+                const progressId = nanoid();
+                const progressEntry = {
+                  id: progressId,
+                  message: thinkingBlock,
+                  timestamp: Date.now(),
+                  category: 'thinking' as const
+                };
+                
+                progressMessages.push(progressEntry);
+                sendEvent('assistant_progress', {
+                  progressId,
+                  content: thinkingBlock,
+                  category: 'thinking'
+                });
+                
+                // Update currentTextBlock to exclude thinking, include only response
+                currentTextBlock = remainingText;
+                fullContent += remainingText;
+                
+                // Send the remaining text as content if any
+                if (remainingText) {
+                  sendEvent('content', { content: remainingText });
+                }
+                
+                // Skip the regular content handling below
+                return;
+              }
             }
 
             // 🔥 STREAM TEXT IMMEDIATELY via SSE only (avoid duplicate rendering)
