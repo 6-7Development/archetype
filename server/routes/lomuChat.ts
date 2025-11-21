@@ -1881,63 +1881,70 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
             }
             lastChunkHash = chunkHash;
 
-            // 🧠 THINKING DETECTION: Detect and separate inner monologue from response
+            // 🧠 THINKING DETECTION: Buffer text until we can determine if it's thinking
             // Patterns like "**Acknowledging the User**\n\n...content...\n\n\n"
-            // Only detect once per response (before we've sent any thinking blocks)
-            if (!currentTextBlock.includes('\n\n\n')) {
-              const fullText = currentTextBlock + chunkText;
-              const thinkingPattern = /^\*\*([A-Z][^*]+)\*\*\n\n([\s\S]+?)\n\n\n/;
-              const match = fullText.match(thinkingPattern);
-              
-              if (match) {
-                // Found complete thinking pattern
-                const thinkingTitle = match[1];
-                const thinkingContent = match[2];
-                const fullMatch = match[0]; // Complete matched text including \n\n\n
-                const thinkingBlock = `**${thinkingTitle}**\n\n${thinkingContent}`;
-                const remainingText = fullText.substring(fullMatch.length);
-                
-                console.log(`[THINKING-DETECTED] Separated thinking from response`);
-                console.log(`[THINKING-DETECTED] Title: ${thinkingTitle}`);
-                console.log(`[THINKING-DETECTED] Remaining: ${remainingText.substring(0, 50)}...`);
-                
-                // Send thinking as progress message
-                const progressId = nanoid();
-                const progressEntry = {
-                  id: progressId,
-                  message: thinkingBlock,
-                  timestamp: Date.now(),
-                  category: 'thinking' as const
-                };
-                
-                progressMessages.push(progressEntry);
-                sendEvent('assistant_progress', {
-                  progressId,
-                  content: thinkingBlock,
-                  category: 'thinking'
-                });
-                
-                // Update currentTextBlock to exclude thinking, include only response
-                currentTextBlock = remainingText;
-                fullContent += remainingText;
-                
-                // Send the remaining text as content if any
-                if (remainingText) {
-                  sendEvent('content', { content: remainingText });
-                }
-                
-                // Skip the regular content handling below
-                return;
-              }
-            }
-
-            // 🔥 STREAM TEXT IMMEDIATELY via SSE only (avoid duplicate rendering)
             currentTextBlock += chunkText;
-            fullContent += chunkText;
             
-            // ✅ SSE ONLY: Frontend consumes 'content' events via SSE stream
-            // Note: We don't broadcast via WebSocket to avoid duplicate rendering
-            sendEvent('content', { content: chunkText });
+            // Only try to detect thinking before we've sent any thinking blocks
+            if (!currentTextBlock.includes('\n\n\n')) {
+              // Still accumulating - might be thinking, don't send yet
+              // Wait for more chunks to see if we get the \n\n\n delimiter
+              console.log(`[THINKING-BUFFER] Buffering ${currentTextBlock.length} chars, waiting for complete pattern...`);
+              return; // Don't send anything yet
+            }
+            
+            // We have the \n\n\n delimiter - check if this is thinking
+            const thinkingPattern = /^\*\*([A-Z][^*]+)\*\*\n\n([\s\S]+?)\n\n\n/;
+            const match = currentTextBlock.match(thinkingPattern);
+            
+            if (match) {
+              // Found complete thinking pattern!
+              const thinkingTitle = match[1];
+              const thinkingContent = match[2];
+              const fullMatch = match[0]; // Complete matched text including \n\n\n
+              const thinkingBlock = `**${thinkingTitle}**\n\n${thinkingContent}`;
+              const remainingText = currentTextBlock.substring(fullMatch.length);
+              
+              console.log(`[THINKING-DETECTED] Separated thinking from response`);
+              console.log(`[THINKING-DETECTED] Title: ${thinkingTitle}`);
+              console.log(`[THINKING-DETECTED] Remaining: ${remainingText.substring(0, 50)}...`);
+              
+              // Send thinking as progress message
+              const progressId = nanoid();
+              const progressEntry = {
+                id: progressId,
+                message: thinkingBlock,
+                timestamp: Date.now(),
+                category: 'thinking' as const
+              };
+              
+              console.log(`[THINKING-SSE] Sending assistant_progress event with progressId: ${progressId}`);
+              progressMessages.push(progressEntry);
+              sendEvent('assistant_progress', {
+                progressId,
+                content: thinkingBlock,
+                category: 'thinking'
+              });
+              console.log(`[THINKING-SSE] ✅ Sent assistant_progress event`);
+              
+              // Update state and send remaining text
+              currentTextBlock = remainingText;
+              fullContent += remainingText;
+              
+              // Send the remaining text as content if any
+              if (remainingText) {
+                sendEvent('content', { content: remainingText });
+              }
+              
+              // Continue to allow more chunks
+              return;
+            }
+            
+            // Not thinking - send buffered content now
+            console.log(`[THINKING-BUFFER] No thinking pattern found, sending ${currentTextBlock.length} chars as content`);
+            fullContent += currentTextBlock;
+            sendEvent('content', { content: currentTextBlock });
+            currentTextBlock = ''; // Reset buffer after sending
 
             // 🚨 WATCHDOG: Reset thinking counter on substantive assistant text
             // Guard: only reset if text is meaningful (not just whitespace)
