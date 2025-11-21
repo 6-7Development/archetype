@@ -794,6 +794,12 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
   // This prevents buffering and enables real-time incremental delivery
   res.flushHeaders();
   
+  // 🎯 CRITICAL FIX: Write initial heartbeat to resolve fetch promise immediately
+  // Without this, browser hangs waiting for first byte until Gemini setup completes
+  // This unblocks the frontend and shows "connected" status
+  res.write(': init\n\n');
+  console.log('[LOMU-AI-CHAT] Initial heartbeat sent to unblock fetch promise');
+  
   // Enable TCP keep-alive to prevent connection drops
   if (req.socket) {
     req.socket.setKeepAlive(true);
