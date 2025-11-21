@@ -41,7 +41,13 @@ export type EventType =
   | "billing.estimate"
   | "billing.update"
   | "billing.reconciled"
-  | "billing.warning";
+  | "billing.warning"
+  | "test.started"          // ✅ NEW: Browser test started
+  | "test.narration"        // ✅ NEW: AI narration during test
+  | "test.step_update"      // ✅ NEW: Test step status update
+  | "test.screenshot"       // ✅ NEW: Screenshot captured
+  | "test.completed"        // ✅ NEW: Test completed
+  | "test.failed";          // ✅ NEW: Test failed
 
 export type Actor = "user" | "agent" | "subagent" | "system";
 
@@ -178,6 +184,63 @@ export interface ArtifactUpdatedData {
   type: "file" | "url" | "report";
   operation: "modify" | "delete";
   taskId?: string;
+}
+
+// ============================================================================
+// TEST EVENTS (Browser Testing with Playwright)
+// ============================================================================
+
+export type TestStepStatus = 'pending' | 'running' | 'passed' | 'failed';
+
+export interface TestStep {
+  id: string;
+  type: 'navigate' | 'action' | 'assertion' | 'screenshot';
+  description: string;
+  status: TestStepStatus;
+  timestamp: number;
+  screenshot?: string; // base64 encoded
+  error?: string;
+}
+
+export interface TestStartedData {
+  sessionId: string;
+  url: string;
+  timestamp: number;
+}
+
+export interface TestNarrationData {
+  sessionId: string;
+  text: string;
+  timestamp: number;
+}
+
+export interface TestStepUpdateData {
+  sessionId: string;
+  step: TestStep;
+  timestamp: number;
+}
+
+export interface TestScreenshotData {
+  sessionId: string;
+  stepId: string;
+  screenshot: string; // base64 encoded
+  timestamp: number;
+}
+
+export interface TestCompletedData {
+  sessionId: string;
+  passedSteps: number;
+  failedSteps: number;
+  totalSteps: number;
+  duration: number;
+  timestamp: number;
+}
+
+export interface TestFailedData {
+  sessionId: string;
+  error: string;
+  failedStep?: TestStep;
+  timestamp: number;
 }
 
 // ============================================================================

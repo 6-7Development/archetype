@@ -64,6 +64,18 @@ The platform implements a comprehensive Agent Chatroom interface with real-time 
 
 This organized, unified view mirrors Replit Agent's inline `<thinking>` tags, showing the AI's work process alongside the final response. Progress messages persist with message history, maintaining transparency across sessions.
 
+**Replit Agent-Style Testing UI** (Nov 21, 2025):
+- **Full Testing UI Parity**: Complete Replit Agent-style testing interface with:
+  - **TestingPanel Component** (`client/src/components/testing-panel.tsx`) - Collapsible panel with browser preview iframe, real-time narration display, and step-by-step progress tracking
+  - **Live Browser Preview** - Real-time iframe showing test execution with screenshots
+  - **AI Narration Streaming** - Real-time updates like "I'm heading to the app URL..." matching Replit Agent's style
+  - **Step Progress Tracking** - Color-coded status indicators (running, passed, failed) with detailed step descriptions
+  - **SSE Event System** - 6 new event types: test.started, test.narration, test.step_update, test.screenshot, test.completed, test.failed
+  - **Screenshot Persistence** - Latest screenshot persists after step completion, resets on new session
+  - **Auto-hide on Completion** - Panel automatically closes 5 seconds after test completion
+- **Backend Integration** (`server/tools/browser-test.ts`) - Emits real-time narration and step updates during Playwright testing
+- **Tool Wiring** (`server/routes/lomuChat.ts`) - browser_test tool handler passes sendEvent callback for live streaming
+
 **Recent Fixes (Nov 21, 2025)**:
 - **Casual Conversation Streaming Fix**: Eliminated 3-second delay and missing responses for simple greetings:
   - **Updated casual system prompt**: Explicitly prohibits thinking/analysis blocks for instant responses

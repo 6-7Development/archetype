@@ -2679,6 +2679,32 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
               toolResult = results.length > 0 
                 ? `Found ${results.length} files:\n${results.join('\n')}` 
                 : 'No files found matching pattern';
+            } else if (name === 'browser_test') {
+              const typedInput = input as { 
+                url: string; 
+                actions?: any[]; 
+                assertions?: any[];
+                recordVideo?: boolean;
+              };
+              sendEvent('progress', { message: '🧪 Testing in browser with Playwright...' });
+
+              // Import browser test function
+              const { executeBrowserTest } = await import('../tools/browser-test');
+              
+              // Execute browser test with SSE streaming
+              const result = await executeBrowserTest({
+                ...typedInput,
+                sendEvent, // Pass sendEvent for real-time test updates
+              });
+
+              toolResult = JSON.stringify({
+                success: result.success,
+                screenshots: result.screenshots.length,
+                logs: result.logs,
+                assertions: result.assertions,
+                videoPath: result.videoPath,
+                error: result.error,
+              });
             } else if (name === 'run_test') {
               const typedInput = input as { testPlan: string; technicalDocs: string };
               sendEvent('progress', { message: '🧪 Running Playwright e2e tests...' });

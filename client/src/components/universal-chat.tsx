@@ -35,6 +35,7 @@ import { DeploymentStatusModal } from "@/components/deployment-status-modal";
 import { StatusStrip } from "@/components/agent/StatusStrip";
 import { ArtifactsDrawer, type Artifact as ArtifactItem } from "@/components/agent/ArtifactsDrawer";
 import { EnhancedMessageDisplay } from "@/components/enhanced-message-display";
+import { TestingPanel } from "@/components/testing-panel";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { ContextRail } from "@/components/chat/ContextRail";
@@ -262,6 +263,25 @@ export function UniversalChat({
 
   // Deployment modal state
   const [showDeploymentModal, setShowDeploymentModal] = useState(false);
+
+  // Testing panel state
+  const [testingSession, setTestingSession] = useState<{
+    sessionId: string;
+    url: string;
+    status: 'initializing' | 'running' | 'completed' | 'failed';
+    narration: string[];
+    steps: Array<{
+      id: string;
+      type: 'navigate' | 'action' | 'assertion' | 'screenshot';
+      description: string;
+      status: 'pending' | 'running' | 'passed' | 'failed';
+      timestamp: number;
+      screenshot?: string;
+      error?: string;
+    }>;
+    startedAt: number;
+    completedAt?: number;
+  } | null>(null);
 
   // Mobile drawer state
   const [contextDrawerOpen, setContextDrawerOpen] = useState(false);
@@ -1306,6 +1326,97 @@ export function UniversalChat({
                   setProgressMessage('');
                   break;
 
+                // Test events
+                case 'test.started':
+                  console.log('[Test] Test started:', payload);
+                  setTestingSession({
+                    sessionId: payload.sessionId,
+                    url: payload.url,
+                    status: 'initializing',
+                    narration: [],
+                    steps: [],
+                    startedAt: payload.timestamp || Date.now(),
+                  });
+                  break;
+
+                case 'test.narration':
+                  console.log('[Test] Narration:', payload.text);
+                  setTestingSession((prev) => {
+                    if (!prev || prev.sessionId !== payload.sessionId) return prev;
+                    return {
+                      ...prev,
+                      narration: [...prev.narration, payload.text],
+                    };
+                  });
+                  break;
+
+                case 'test.step_update':
+                  console.log('[Test] Step update:', payload.step);
+                  setTestingSession((prev) => {
+                    if (!prev || prev.sessionId !== payload.sessionId) return prev;
+                    const existingIndex = prev.steps.findIndex(s => s.id === payload.step.id);
+                    const updatedSteps = existingIndex >= 0
+                      ? prev.steps.map((s, i) => i === existingIndex ? payload.step : s)
+                      : [...prev.steps, payload.step];
+                    return {
+                      ...prev,
+                      status: 'running',
+                      steps: updatedSteps,
+                    };
+                  });
+                  break;
+
+                case 'test.screenshot':
+                  console.log('[Test] Screenshot captured for step:', payload.stepId);
+                  setTestingSession((prev) => {
+                    if (!prev || prev.sessionId !== payload.sessionId) return prev;
+                    return {
+                      ...prev,
+                      steps: prev.steps.map(step =>
+                        step.id === payload.stepId
+                          ? { ...step, screenshot: payload.screenshot }
+                          : step
+                      ),
+                    };
+                  });
+                  break;
+
+                case 'test.completed':
+                  console.log('[Test] Test completed:', payload);
+                  setTestingSession((prev) => {
+                    if (!prev || prev.sessionId !== payload.sessionId) return prev;
+                    return {
+                      ...prev,
+                      status: 'completed',
+                      completedAt: payload.timestamp || Date.now(),
+                    };
+                  });
+                  toast({
+                    title: 'Test Completed',
+                    description: `${payload.passedSteps}/${payload.totalSteps} tests passed`,
+                    variant: payload.failedSteps > 0 ? 'destructive' : 'default',
+                  });
+                  // Auto-hide after 5 seconds
+                  setTimeout(() => setTestingSession(null), 5000);
+                  break;
+
+                case 'test.failed':
+                  console.error('[Test] Test failed:', payload);
+                  setTestingSession((prev) => {
+                    if (!prev || prev.sessionId !== payload.sessionId) return prev;
+                    return {
+                      ...prev,
+                      status: 'failed',
+                      completedAt: payload.timestamp || Date.now(),
+                    };
+                  });
+                  toast({
+                    variant: 'destructive',
+                    title: 'Test Failed',
+                    description: payload.error || 'Browser test encountered an error',
+                  });
+                  break;
+
                 default:
                   // Handle other event types (task_list_created, task_updated, file_change, etc.)
                   console.log('[SSE] Unhandled event type:', eventData.type);
@@ -2111,6 +2222,14 @@ export function UniversalChat({
             />
           </DialogContent>
         </Dialog>
+      )}
+
+      {/* Testing Panel - Shows browser testing UI like Replit Agent */}
+      {testingSession && (
+        <TestingPanel
+          session={testingSession}
+          onClose={() => setTestingSession(null)}
+        />
       )}
     </div>
   );
