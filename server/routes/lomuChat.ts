@@ -1474,9 +1474,11 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
     // 🗨️ CASUAL INTENT SHORT-CIRCUIT: Prevent tool loading for casual messages
     // When user sends greetings/casual messages like "hello", "hi", "thanks", etc.
     // we should respond conversationally WITHOUT loading tools or running diagnostics
+    let isCasualConversation = false; // Flag to replace system prompt
     if (userIntent === 'casual') {
       console.log(`[CASUAL-SHORT-CIRCUIT] ✅ Casual message detected - clearing tools AND history to force conversational response`);
       availableTools = []; // Empty tools array forces Gemini to respond conversationally
+      isCasualConversation = true; // Set flag to replace system prompt
       
       // 🔥 CRITICAL FIX: Clear conversation history to prevent continuing previous work
       // Architect finding: Modifying in-memory message doesn't persist to DB
@@ -1722,9 +1724,16 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
 
       // ⚡ Use ultra-compressed prompt (no extra platform knowledge - read files when needed)
       // ✅ ARCHITECT FIX: Append enforcement message WITHOUT adding to conversation history
+      // 🗨️ CASUAL FIX: Replace system prompt entirely for casual conversations
+      let basePrompt = systemPrompt;
+      if (isCasualConversation) {
+        basePrompt = `You are LomuAI, a friendly AI coding assistant. The user sent a casual greeting or acknowledgment. Respond naturally and conversationally - just have a nice chat! Do NOT use any tools or continue previous work. Keep it friendly and brief.`;
+        console.log(`[CASUAL-SHORT-CIRCUIT] 🎭 Using conversational system prompt instead of full LomuAI prompt`);
+      }
+      
       const finalSystemPrompt = systemEnforcementMessage 
-        ? `${systemPrompt}\n\n${systemEnforcementMessage}`
-        : systemPrompt;
+        ? `${basePrompt}\n\n${systemEnforcementMessage}`
+        : basePrompt;
       
       // Clear enforcement message after use (one-time injection)
       if (systemEnforcementMessage) {
