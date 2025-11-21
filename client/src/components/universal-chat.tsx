@@ -1037,6 +1037,7 @@ export function UniversalChat({
       }
 
       // Parse SSE stream
+      console.log('[SSE-DEBUG] Starting stream read...');
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
@@ -1054,10 +1055,12 @@ export function UniversalChat({
         timestamp: new Date(),
         progressMessages: [],
       };
+      console.log('[SSE-DEBUG] Created temp assistant message:', tempAssistantMessage.id);
       setMessages((prev) => [...prev, tempAssistantMessage]);
 
       while (true) {
         const { done, value } = await reader.read();
+        console.log('[SSE-DEBUG] Read chunk, done:', done, 'value length:', value?.length || 0);
         
         if (done) {
           console.log('[SSE] Stream complete');
@@ -1066,18 +1069,22 @@ export function UniversalChat({
 
         // Decode chunk and add to buffer
         buffer += decoder.decode(value, { stream: true });
+        console.log('[SSE-DEBUG] Buffer length:', buffer.length, 'First 100 chars:', buffer.substring(0, 100));
 
         // Process complete SSE messages (end with \n\n)
         const lines = buffer.split('\n\n');
         buffer = lines.pop() || ''; // Keep incomplete message in buffer
+        console.log('[SSE-DEBUG] Processing', lines.length, 'complete messages');
 
         for (const line of lines) {
           if (!line.trim() || line.startsWith(':')) {
             // Skip empty lines and comments (heartbeat)
+            console.log('[SSE-DEBUG] Skipping empty/comment line');
             continue;
           }
 
           if (line.startsWith('data: ')) {
+            console.log('[SSE-DEBUG] Found data line, raw:', line.substring(0, 100));
             try {
               const eventData = JSON.parse(line.substring(6));
               console.log('[SSE] Event:', eventData.type, eventData);
@@ -1094,18 +1101,24 @@ export function UniversalChat({
 
                 case 'content':
                   assistantMessageContent += payload.content || '';
+                  console.log('[SSE-CONTENT] Accumulated:', assistantMessageContent.length, 'chars');
                   setMessages((prev) => {
                     const updated = [...prev];
                     const lastMsgIndex = updated.length - 1;
                     const lastMsg = updated[lastMsgIndex];
                     if (lastMsg && lastMsg.role === 'assistant') {
                       // ✅ CREATE NEW MESSAGE OBJECT - React detects change!
-                      updated[lastMsgIndex] = {
+                      const updatedMsg = {
                         ...lastMsg,
-                        content: assistantMessageContent
+                        content: assistantMessageContent,
+                        id: lastMsg.id || nanoid(), // Ensure ID exists
+                        messageId: lastMsg.messageId || lastMsg.id || nanoid() // Ensure messageId exists
                       };
+                      updated[lastMsgIndex] = updatedMsg;
+                      console.log('[SSE-UPDATE] Updated message:', updatedMsg.id, 'content length:', updatedMsg.content.length);
                       return updated;
                     }
+                    console.warn('[SSE-UPDATE] No assistant message found to update!');
                     return prev;  // Return original if no assistant message found
                   });
                   setProgressStatus('working');
