@@ -1898,6 +1898,17 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
             // Patterns like "**Acknowledging the User**\n\n...content...\n\n\n"
             currentTextBlock += chunkText;
             
+            // 🚨 BUFFER OVERFLOW PROTECTION: If buffer exceeds 800 chars without delimiter, flush it
+            // This prevents infinite buffering when AI sends ** text without proper thinking format
+            const MAX_BUFFER_SIZE = 800;
+            if (currentTextBlock.length > MAX_BUFFER_SIZE && !currentTextBlock.includes('\n\n\n')) {
+              console.log(`[THINKING-BUFFER] Buffer overflow (${currentTextBlock.length} chars) - flushing as regular content`);
+              fullContent += currentTextBlock;
+              sendEvent('content', { content: currentTextBlock });
+              currentTextBlock = '';
+              return;
+            }
+            
             // Check if we've already processed thinking - if so, stream everything immediately
             if (currentTextBlock.includes('\n\n\n')) {
               // We have the \n\n\n delimiter - check if this is thinking
@@ -1955,10 +1966,11 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
             
             // Still buffering, waiting for delimiter
             // But only buffer if content looks like it might be thinking (starts with **)
-            if (currentTextBlock.trim().startsWith('**')) {
+            // AND we haven't exceeded buffer size limit
+            if (currentTextBlock.trim().startsWith('**') && currentTextBlock.length <= MAX_BUFFER_SIZE) {
               console.log(`[THINKING-BUFFER] Buffering ${currentTextBlock.length} chars (looks like thinking)...`);
               return; // Keep buffering
-            } else {
+            } else if (!currentTextBlock.trim().startsWith('**')) {
               // Doesn't look like thinking - send immediately
               console.log(`[THINKING-BUFFER] Doesn't look like thinking, sending ${currentTextBlock.length} chars`);
               fullContent += currentTextBlock;
@@ -2148,9 +2160,17 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
           return null; // Tool execution happens later
         },
         onComplete: async (text: string, usage: any) => {
-          // Add any final text block
-          if (currentTextBlock && contentBlocks[contentBlocks.length - 1]?.text !== currentTextBlock) {
-            contentBlocks.push({ type: 'text', text: currentTextBlock });
+          // 🚨 CRITICAL FIX: Flush any buffered text before completion
+          if (currentTextBlock) {
+            console.log(`[STREAM-COMPLETE] Flushing ${currentTextBlock.length} chars of buffered text`);
+            fullContent += currentTextBlock;
+            sendEvent('content', { content: currentTextBlock });
+            
+            // Also add to contentBlocks for consistency
+            if (contentBlocks[contentBlocks.length - 1]?.text !== currentTextBlock) {
+              contentBlocks.push({ type: 'text', text: currentTextBlock });
+            }
+            currentTextBlock = '';
           }
 
           // ============================================================================
