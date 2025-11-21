@@ -1727,8 +1727,15 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
       // 🗨️ CASUAL FIX: Replace system prompt entirely for casual conversations
       let basePrompt = systemPrompt;
       if (isCasualConversation) {
-        basePrompt = `You are LomuAI, a friendly AI coding assistant. The user sent a casual greeting or acknowledgment. Respond naturally and conversationally - just have a nice chat! Do NOT use any tools or continue previous work. Keep it friendly and brief.`;
-        console.log(`[CASUAL-SHORT-CIRCUIT] 🎭 Using conversational system prompt instead of full LomuAI prompt`);
+        basePrompt = `You are LomuAI, a friendly AI coding assistant. The user sent a casual greeting or acknowledgment.
+
+IMPORTANT: Respond IMMEDIATELY with just a brief, friendly greeting. Do NOT:
+- Generate any thinking or analysis blocks
+- Use any tools or continue previous work  
+- Add metadata or internal monologue
+
+Just reply naturally like: "Hello there! How can I help you today?"`;
+        console.log(`[CASUAL-SHORT-CIRCUIT] 🎭 Using conversational system prompt (no thinking allowed)`);
       }
       
       const finalSystemPrompt = systemEnforcementMessage 
@@ -1885,66 +1892,74 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
             // Patterns like "**Acknowledging the User**\n\n...content...\n\n\n"
             currentTextBlock += chunkText;
             
-            // Only try to detect thinking before we've sent any thinking blocks
-            if (!currentTextBlock.includes('\n\n\n')) {
-              // Still accumulating - might be thinking, don't send yet
-              // Wait for more chunks to see if we get the \n\n\n delimiter
-              console.log(`[THINKING-BUFFER] Buffering ${currentTextBlock.length} chars, waiting for complete pattern...`);
-              return; // Don't send anything yet
+            // Check if we've already processed thinking - if so, stream everything immediately
+            if (currentTextBlock.includes('\n\n\n')) {
+              // We have the \n\n\n delimiter - check if this is thinking
+              const thinkingPattern = /^\*\*([A-Z][^*]+)\*\*\n\n([\s\S]+?)\n\n\n/;
+              const match = currentTextBlock.match(thinkingPattern);
+              
+              if (match) {
+                // Found complete thinking pattern!
+                const thinkingTitle = match[1];
+                const thinkingContent = match[2];
+                const fullMatch = match[0]; // Complete matched text including \n\n\n
+                const thinkingBlock = `**${thinkingTitle}**\n\n${thinkingContent}`;
+                const remainingText = currentTextBlock.substring(fullMatch.length);
+                
+                console.log(`[THINKING-DETECTED] Separated thinking from response`);
+                console.log(`[THINKING-DETECTED] Title: ${thinkingTitle}`);
+                console.log(`[THINKING-DETECTED] Remaining: ${remainingText.substring(0, 50)}...`);
+                
+                // Send thinking as progress message
+                const progressId = nanoid();
+                const progressEntry = {
+                  id: progressId,
+                  message: thinkingBlock,
+                  timestamp: Date.now(),
+                  category: 'thinking' as const
+                };
+                
+                console.log(`[THINKING-SSE] Sending assistant_progress event`);
+                progressMessages.push(progressEntry);
+                sendEvent('assistant_progress', {
+                  progressId,
+                  content: thinkingBlock,
+                  category: 'thinking'
+                });
+                
+                // Reset buffer and stream remaining text immediately
+                currentTextBlock = '';
+                fullContent += remainingText;
+                
+                if (remainingText) {
+                  sendEvent('content', { content: remainingText });
+                }
+                
+                // Future chunks will stream immediately (no more buffering)
+                return;
+              } else {
+                // Has \n\n\n but not a thinking pattern - send everything and stop buffering
+                console.log(`[THINKING-BUFFER] No thinking pattern, flushing ${currentTextBlock.length} chars`);
+                fullContent += currentTextBlock;
+                sendEvent('content', { content: currentTextBlock });
+                currentTextBlock = '';
+                return;
+              }
             }
             
-            // We have the \n\n\n delimiter - check if this is thinking
-            const thinkingPattern = /^\*\*([A-Z][^*]+)\*\*\n\n([\s\S]+?)\n\n\n/;
-            const match = currentTextBlock.match(thinkingPattern);
-            
-            if (match) {
-              // Found complete thinking pattern!
-              const thinkingTitle = match[1];
-              const thinkingContent = match[2];
-              const fullMatch = match[0]; // Complete matched text including \n\n\n
-              const thinkingBlock = `**${thinkingTitle}**\n\n${thinkingContent}`;
-              const remainingText = currentTextBlock.substring(fullMatch.length);
-              
-              console.log(`[THINKING-DETECTED] Separated thinking from response`);
-              console.log(`[THINKING-DETECTED] Title: ${thinkingTitle}`);
-              console.log(`[THINKING-DETECTED] Remaining: ${remainingText.substring(0, 50)}...`);
-              
-              // Send thinking as progress message
-              const progressId = nanoid();
-              const progressEntry = {
-                id: progressId,
-                message: thinkingBlock,
-                timestamp: Date.now(),
-                category: 'thinking' as const
-              };
-              
-              console.log(`[THINKING-SSE] Sending assistant_progress event with progressId: ${progressId}`);
-              progressMessages.push(progressEntry);
-              sendEvent('assistant_progress', {
-                progressId,
-                content: thinkingBlock,
-                category: 'thinking'
-              });
-              console.log(`[THINKING-SSE] ✅ Sent assistant_progress event`);
-              
-              // Update state and send remaining text
-              currentTextBlock = remainingText;
-              fullContent += remainingText;
-              
-              // Send the remaining text as content if any
-              if (remainingText) {
-                sendEvent('content', { content: remainingText });
-              }
-              
-              // Continue to allow more chunks
+            // Still buffering, waiting for delimiter
+            // But only buffer if content looks like it might be thinking (starts with **)
+            if (currentTextBlock.trim().startsWith('**')) {
+              console.log(`[THINKING-BUFFER] Buffering ${currentTextBlock.length} chars (looks like thinking)...`);
+              return; // Keep buffering
+            } else {
+              // Doesn't look like thinking - send immediately
+              console.log(`[THINKING-BUFFER] Doesn't look like thinking, sending ${currentTextBlock.length} chars`);
+              fullContent += currentTextBlock;
+              sendEvent('content', { content: currentTextBlock });
+              currentTextBlock = '';
               return;
             }
-            
-            // Not thinking - send buffered content now
-            console.log(`[THINKING-BUFFER] No thinking pattern found, sending ${currentTextBlock.length} chars as content`);
-            fullContent += currentTextBlock;
-            sendEvent('content', { content: currentTextBlock });
-            currentTextBlock = ''; // Reset buffer after sending
 
             // 🚨 WATCHDOG: Reset thinking counter on substantive assistant text
             // Guard: only reset if text is meaningful (not just whitespace)
@@ -2210,6 +2225,14 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
 
       // Skip "Analysis complete" spam - the response speaks for itself
 
+      // 🧠 FLUSH BUFFERED CONTENT: If stream ended with buffered text, send it now
+      if (currentTextBlock.trim().length > 0) {
+        console.log(`[THINKING-BUFFER] Stream ended with ${currentTextBlock.length} chars buffered - flushing now`);
+        fullContent += currentTextBlock;
+        sendEvent('content', { content: currentTextBlock });
+        currentTextBlock = '';
+      }
+      
       conversationMessages.push({
         role: 'assistant',
         content: contentBlocks,
