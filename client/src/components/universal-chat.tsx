@@ -1013,7 +1013,13 @@ export function UniversalChat({
       console.log('[SSE-FETCH] ⚡ Starting fetch request to /api/lomu-ai/stream');
       console.log('[SSE-FETCH] 📦 Request body:', { message: userMessage.substring(0, 50), sessionId, targetContext });
       
-      const fetchPromise = fetch('/api/lomu-ai/stream', {
+      // 🔥 USE ABSOLUTE URL to bypass Vite's middleware buffering
+      const baseUrl = window.location.origin;
+      const sseUrl = `${baseUrl}/api/lomu-ai/stream`;
+      
+      console.log('[SSE-FETCH] 🌐 Using absolute URL to bypass Vite:', sseUrl);
+      
+      const response = await fetch(sseUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1032,14 +1038,6 @@ export function UniversalChat({
         }),
       });
       
-      console.log('[SSE-FETCH] ⏳ Waiting for response (30s timeout)...');
-      
-      // Add 30-second timeout to detect hangs
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Fetch timeout after 30 seconds')), 30000)
-      );
-      
-      const response = await Promise.race([fetchPromise, timeoutPromise]) as Response;
       console.log('[SSE-FETCH] ✅ Response received!', response.status, response.statusText);
 
       console.log('[SSE-FETCH] Response received:', {
