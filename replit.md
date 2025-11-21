@@ -112,6 +112,17 @@ A centralized session management system (`server/services/lomuAIBrain.ts`) conso
 - **Production-Ready Code Validation System**: 3-layer validation architecture (pre-write, pre-commit) to prevent broken code. Includes JSON healing and validation caching.
 - **Telemetry System**: Tracks healing attempts, successes, failures with detailed statistics.
 - **Reflection and Structured Retry Mandate**: LomuAI analyzes tool failures, states root cause, and proposes alternative strategies before retrying.
+- **Anti-Paralysis System** (Production-Ready ✅, Nov 21 2025):
+  - **Three-Layer Defense**: System prompt guidance + Diagnosis tool fixes + Runtime enforcement
+  - **Guard Before Read**: Checks file size AND line count BEFORE expensive read operations
+  - **Dual Detection**: fileSize > 50KB OR lineCount > 1000 triggers large-file mode
+  - **Progressive Intervention**: Warns on 2nd read (still delivers file), blocks on 3rd read (throws error)
+  - **Forced Pivot**: Throws structured error to halt iteration and force strategy change
+  - **Comprehensive Reset Logic**: Clears read counters after write/edit/grep/search_codebase/architect_consult
+  - **Diagnosis Tool Fix**: Recognizes Drizzle ORM patterns, eliminates false SQL injection warnings
+  - **Telemetry Tracking**: Logs warnings/blocks with final summary statistics
+  - **Non-Blocking Implementation**: Uses async fs.readFile instead of blocking execSync for line counting
+  - Prevents LomuAI from reading massive files (>1000 lines) repeatedly, forcing targeted grep/search_codebase instead
 - **Priority 1 Safety Mechanisms** (Production-Ready ✅):
   - **P1-GAP-1: Auto-Rollback on Validation Failure** - Mandatory backup creation before execution; automatic rollback with workflow state cleanup (`fileChangeTracker.clear()`) if validation fails
   - **P1-GAP-2: Server Startup Integration Test** - Real `server/index.ts` smoke test in production mode (skips Vite); waits for "serving on port" signal + HTTP health probe to catch middleware/config/runtime regressions

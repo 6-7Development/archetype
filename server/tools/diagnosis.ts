@@ -594,13 +594,27 @@ async function diagnoseSecurity(
       }
 
       // Check for SQL injection risks
-      const sqlConcatCount = (content.match(/\+\s*['"`][^'"`]*SELECT|WHERE|FROM[^'"`]*['"`]\s*\+/gi) || []).length;
-      if (sqlConcatCount > 0) {
+      // First, check if this file uses Drizzle ORM (which auto-parameterizes)
+      const usesDrizzle = content.includes("from 'drizzle-orm") || content.includes('from "drizzle-orm');
+      
+      // Only flag SQL injection if NOT using Drizzle OR using unsafe sql.raw() with concatenation
+      const unsafeSqlRaw = content.match(/sql\.raw\([^)]*\+[^)]*\)/gi) || [];
+      const stringConcatSql = (content.match(/\+\s*['"`][^'"`]*SELECT|WHERE|FROM[^'"`]*['"`]\s*\+/gi) || []).length;
+      
+      if (unsafeSqlRaw.length > 0) {
         findings.push({
           severity: 'critical',
           category: 'Security',
-          issue: `${sqlConcatCount} potential SQL injection vulnerabilities (string concatenation)`,
-          evidence: 'Use parameterized queries instead of string concatenation',
+          issue: `${unsafeSqlRaw.length} unsafe sql.raw() with string concatenation`,
+          evidence: 'Use parameterized queries instead of concatenating user input into sql.raw()',
+          location: file,
+        });
+      } else if (stringConcatSql > 0 && !usesDrizzle) {
+        findings.push({
+          severity: 'warning',
+          category: 'Security',
+          issue: `${stringConcatSql} potential SQL patterns with string concatenation`,
+          evidence: 'Consider using Drizzle ORM which auto-parameterizes queries',
           location: file,
         });
       }

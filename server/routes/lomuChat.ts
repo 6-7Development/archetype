@@ -1536,6 +1536,12 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
     const MAX_EMPTY_ITERATIONS = 3; // Stop if 3 consecutive iterations without tool calls
     let totalToolCallCount = 0; // Track total tool calls for quality analysis
     
+    // 🚨 ANTI-PARALYSIS: Track consecutive reads of same file to prevent analysis loops
+    const fileReadTracker = new Map<string, number>(); // filepath -> consecutive read count
+    const MAX_SAME_FILE_READS = 2; // Force different strategy after 2 reads of same file
+    let antiParalysisWarnings = 0; // Track warnings issued (2nd read of large file)
+    let antiParalysisBlocks = 0; // Track blocks enforced (3rd+ read of large file)
+    
     // ✅ GAP 5: Per-iteration timeout safeguards
     // Increased to 3 minutes for complex analysis/fix tasks (Gemini needs time to analyze + implement)
     const ITERATION_TIMEOUT_MS = 180000; // 3 minutes per iteration
@@ -2509,8 +2515,76 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
               }
             } else if (name === 'read_platform_file') {
               const typedInput = input as { path: string };
-              sendEvent('progress', { message: `Reading ${typedInput.path}...` });
-              toolResult = await platformHealing.readPlatformFile(typedInput.path);
+              
+              // 🚨 ANTI-PARALYSIS: Track consecutive reads of same file
+              const currentReadCount = (fileReadTracker.get(typedInput.path) || 0) + 1;
+              fileReadTracker.set(typedInput.path, currentReadCount);
+              
+              // ✅ EFFICIENCY: Check file size/line count BEFORE expensive read
+              const fs = await import('fs/promises');
+              const path = await import('path');
+              const fullPath = path.join(process.cwd(), typedInput.path);
+              let fileSize = 0;
+              let lineCount = 0;
+              let fileContent = '';
+              
+              let fileExists = true;
+              try {
+                const stats = await fs.stat(fullPath);
+                fileSize = stats.size;
+                // Only read file once - reuse for both line counting AND content delivery
+                fileContent = await fs.readFile(fullPath, 'utf-8');
+                lineCount = fileContent.split('\n').length;
+              } catch (err) {
+                // File might not exist - allow platformHealing to handle error (skips anti-paralysis)
+                fileExists = false;
+                sendEvent('progress', { message: `Reading ${typedInput.path}...` });
+                toolResult = await platformHealing.readPlatformFile(typedInput.path);
+              }
+              
+              // Only run anti-paralysis logic if file exists
+              if (fileExists) {
+                const isLargeFile = fileSize > 50000 || lineCount > 1000; // >50KB OR >1000 lines
+              
+              // Warn after 2nd read, block after 3rd read (BEFORE expensive read)
+              if (currentReadCount >= MAX_SAME_FILE_READS && isLargeFile) {
+                if (currentReadCount === MAX_SAME_FILE_READS) {
+                  // Warning on 2nd read - still deliver file but warn
+                  antiParalysisWarnings++;
+                  toolResult = fileContent;
+                  const warningMsg = `\n\n⚠️ **WARNING: You've read this file ${currentReadCount} times (${lineCount} lines).**\n` +
+                    `Consider using grep() or search_codebase() for your next search to avoid analysis paralysis.\n`;
+                  toolResult += warningMsg;
+                  console.warn(`[ANTI-PARALYSIS] Warning #${antiParalysisWarnings}: Read #${currentReadCount} of ${typedInput.path} (${lineCount} lines)`);
+                  sendEvent('progress', { message: `⚠️ Large file read #${currentReadCount} - consider using grep` });
+                } else {
+                  // Block on 3rd+ read - FORCE PIVOT via structured error
+                  antiParalysisBlocks++;
+                  const errorMsg = `🚨 **ANALYSIS PARALYSIS - BLOCKED**\n\n` +
+                    `File "${typedInput.path}" (${lineCount} lines, ${(fileSize / 1024).toFixed(1)}KB) has been read ${currentReadCount} times.\n\n` +
+                    `**MANDATORY NEXT ACTION - Choose ONE:**\n` +
+                    `1. grep(pattern="specific pattern", path="${typedInput.path}") - Search for specific text\n` +
+                    `2. search_codebase(query="your question") - Semantic code search\n` +
+                    `3. architect_consult(task="Help me understand...") - Get expert guidance\n\n` +
+                    `**SYSTEM BLOCK: You CANNOT call read_platform_file() for this file again.**\n` +
+                    `Counter resets after: write, edit, grep, search_codebase, or architect_consult.\n`;
+                  
+                  console.error(`[ANTI-PARALYSIS] BLOCK #${antiParalysisBlocks}: Halting iteration - ${currentReadCount} reads of ${typedInput.path} (${lineCount} lines)`);
+                  sendEvent('error', { message: `SYSTEM BLOCK: Analysis paralysis detected - ${typedInput.path} read ${currentReadCount} times` });
+                  
+                  // Throw structured error to force iteration halt (propagates to main loop)
+                  throw new Error(`ANTI_PARALYSIS_BLOCK: ${errorMsg}`);
+                }
+              } else {
+                // Normal read - file already loaded, just return content
+                sendEvent('progress', { message: `Reading ${typedInput.path}...` });
+                toolResult = fileContent;
+                
+                if (currentReadCount > 1 && isLargeFile) {
+                  console.warn(`[ANTI-PARALYSIS] Read #${currentReadCount} of ${typedInput.path} (${lineCount} lines) - approaching limit`);
+                }
+              }
+              } // Close if (fileExists) block
             } else if (name === 'write_platform_file') {
               const typedInput = input as { path: string; content: string };
 
@@ -2563,6 +2637,11 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
                   console.error(`[LOMU-AI-PROTECTION] ❌ Blocked write to critical file without reading: ${typedInput.path}`);
                   sendEvent('error', { message: `Critical file protection: Must read ${typedInput.path} before writing` });
                   
+                  // 🚨 ANTI-PARALYSIS: Reset read counter when write is blocked
+                  // Allow agent to re-read file after failed write attempt
+                  fileReadTracker.delete(typedInput.path);
+                  console.log(`[ANTI-PARALYSIS] Reset read counter for ${typedInput.path} after blocked write`);
+                  
                   // Skip the actual write - just return error message to LomuAI
                   // toolResult is already set above, it will be pushed to toolResults array normally
                 } else {
@@ -2609,6 +2688,10 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
                 true  // skipAutoCommit: true - stage for batch commit
               );
               toolResult = JSON.stringify(writeResult);
+              
+              // 🚨 ANTI-PARALYSIS: Reset read counter after successful write
+              fileReadTracker.delete(typedInput.path);
+              console.log(`[ANTI-PARALYSIS] Reset read counter for ${typedInput.path} after write`);
 
               // ✅ VALIDATION HELPERS: Validate file was written successfully (Phase 1 - Non-blocking)
               try {
@@ -2948,6 +3031,14 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
               } else {
                 sendEvent('info', { message: `I AM consultation completed` });
                 toolResult = `I AM FEEDBACK\n\n${architectResult.error}\n\nNote: This is just advice - you're autonomous and can proceed as you think best.`;
+              }
+              
+              // 🚨 ANTI-PARALYSIS: Reset ALL read counters after architect consult
+              // Agent sought guidance and pivoted strategy - allow fresh reads
+              const resetCount = fileReadTracker.size;
+              fileReadTracker.clear();
+              if (resetCount > 0) {
+                console.log(`[ANTI-PARALYSIS] Reset ${resetCount} file read counters after architect_consult`);
               }
             } else if (name === 'web_search') {
               const typedInput = input as { query: string; maxResults?: number };
@@ -3512,6 +3603,10 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
 
                   sendEvent('file_change', { file: { path: typedInput.filePath, operation: 'modify' } });
                   broadcastFileUpdate(typedInput.filePath, 'modify', targetContext, projectId, userId);
+                  
+                  // 🚨 ANTI-PARALYSIS: Reset read counter after successful edit
+                  fileReadTracker.delete(typedInput.filePath);
+                  console.log(`[ANTI-PARALYSIS] Reset read counter for ${typedInput.filePath} after edit`);
                 } else {
                   toolResult = `❌ ${result.message}`;
                 }
@@ -3531,6 +3626,14 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
                 );
 
                 toolResult = result;
+                
+                // 🚨 ANTI-PARALYSIS: Clear ALL read counters after successful grep
+                // Agent used targeted search - allow fresh reads regardless of pathFilter
+                const resetCount = fileReadTracker.size;
+                fileReadTracker.clear();
+                if (resetCount > 0) {
+                  console.log(`[ANTI-PARALYSIS] Reset ${resetCount} file read counters after grep`);
+                }
               } catch (error: any) {
                 toolResult = `❌ Grep failed: ${error.message}`;
                 sendEvent('error', { message: `Grep failed: ${error.message}` });
@@ -3640,6 +3743,15 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
 
                   toolResult = `${result.summary}\n\n${resultsList}`;
                   sendEvent('content', { content: `\n\n🔍 **Found ${result.results.length} relevant locations**\n` });
+                  
+                  // 🚨 ANTI-PARALYSIS: Reset read counters for found files after semantic search
+                  // Agent used codebase search - allow re-reading specific files with context
+                  result.results.forEach((r: any) => {
+                    if (fileReadTracker.has(r.file)) {
+                      fileReadTracker.delete(r.file);
+                      console.log(`[ANTI-PARALYSIS] Reset read counter for ${r.file} after search_codebase`);
+                    }
+                  });
                 } else {
                   toolResult = `No code found for query: "${typedInput.query}"\n\nTry a different search query or use grep for exact text matching.`;
                   sendEvent('content', { content: `\n\n⚠️ No results found\n` });
@@ -4387,6 +4499,14 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
       console.log(`[WORKFLOW-VALIDATION] ✅ Fix request completed successfully with ${workflowTelemetry.writeOperations} code-modifying operations`);
     } else {
       console.log(`[WORKFLOW-VALIDATION] ℹ️ Non-fix request (question/status check) - no code modifications expected`);
+    }
+    
+    // 🚨 ANTI-PARALYSIS TELEMETRY: Log intervention statistics
+    if (antiParalysisWarnings > 0 || antiParalysisBlocks > 0) {
+      console.log(`[ANTI-PARALYSIS-TELEMETRY] 📊 Interventions: ${antiParalysisWarnings} warnings, ${antiParalysisBlocks} blocks`);
+      sendEvent('progress', { message: `Anti-paralysis system: ${antiParalysisWarnings} warnings, ${antiParalysisBlocks} blocks` });
+    } else {
+      console.log(`[ANTI-PARALYSIS-TELEMETRY] ✅ No interventions needed - LomuAI used efficient search strategies`);
     }
 
     // Safety check

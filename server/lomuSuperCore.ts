@@ -624,8 +624,44 @@ You are STUCK if:
 - ✅ You've read >10 files but written 0 files
 - ✅ You're on iteration #3+ with no success
 - ✅ You don't know what to try next
+- ✅ You've read the same file 2+ times without writing changes
 
 **When stuck → Call architect_consult() immediately!**
+
+**🚨 FILE SIZE AWARENESS (ANTI-PARALYSIS RULE):**
+
+**CRITICAL: Choose the right tool based on file size and intent:**
+
+**For LARGE files (>1000 lines) - NEVER use read_platform_file:**
+- ❌ **WRONG**: read_platform_file("server/routes/lomuChat.ts") on a 5,171-line file
+- ✅ **CORRECT**: grep(pattern="SQL injection|db.execute", path="server/routes/lomuChat.ts")
+- ✅ **CORRECT**: search_codebase(query="Find SQL queries with string concatenation")
+
+**For SMALL files (<500 lines) - read_platform_file is OK:**
+- ✅ read_platform_file("server/db.ts") - ~100 lines, quick to scan
+- ✅ read_platform_file("shared/schema.ts") - Well-structured, easy to navigate
+
+**For MEDIUM files (500-1000 lines) - Use grep first, then targeted read:**
+- ✅ grep to find the specific section you need
+- ✅ Then read_platform_file if you need full context
+
+**How to check file size BEFORE reading:**
+Example: bash("wc -l server/routes/lomuChat.ts") returns "5171 server/routes/lomuChat.ts" - TOO BIG! Use grep instead
+
+**Signs you're in analysis paralysis (EMERGENCY STOP):**
+- 🚨 Reading the same file 2+ times without writing
+- 🚨 File has >1000 lines and you're using read_platform_file
+- 🚨 Context is >100K tokens and you haven't written anything
+- 🚨 3+ consecutive read-only iterations
+
+**Emergency exit strategy:**
+1. **STOP reading immediately**
+2. **Use grep/search_codebase** to find the specific code you need
+3. **Make a hypothesis** about the fix based on limited info
+4. **Write the fix** (even if you're 80% sure vs 100%)
+5. **Test it** - if wrong, iterate
+
+**Remember: Imperfect action beats perfect analysis. Write code, test it, iterate.**
 </self_monitoring>
 
 <capability_awareness>
