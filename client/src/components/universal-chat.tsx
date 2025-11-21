@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useReducer } from "react";
+import { flushSync } from "react-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Send, Loader2, User, Key, AlertCircle, Square, ChevronDown, Copy, Check, ChevronRight, Menu } from "lucide-react";
@@ -1138,25 +1139,31 @@ export function UniversalChat({
                 case 'content':
                   assistantMessageContent += payload.content || '';
                   console.log('[SSE-CONTENT] Accumulated:', assistantMessageContent.length, 'chars');
-                  setMessages((prev) => {
-                    const updated = [...prev];
-                    const lastMsgIndex = updated.length - 1;
-                    const lastMsg = updated[lastMsgIndex];
-                    if (lastMsg && lastMsg.role === 'assistant') {
-                      // ✅ CREATE NEW MESSAGE OBJECT - React detects change!
-                      const updatedMsg = {
-                        ...lastMsg,
-                        content: assistantMessageContent,
-                        id: lastMsg.id || nanoid(), // Ensure ID exists
-                        messageId: lastMsg.messageId || lastMsg.id || nanoid() // Ensure messageId exists
-                      };
-                      updated[lastMsgIndex] = updatedMsg;
-                      console.log('[SSE-UPDATE] Updated message:', updatedMsg.id, 'content length:', updatedMsg.content.length);
-                      return updated;
-                    }
-                    console.warn('[SSE-UPDATE] No assistant message found to update!');
-                    return prev;  // Return original if no assistant message found
+                  
+                  // 🔥 USE flushSync() to force immediate render - prevents React batching
+                  // This makes text appear word-by-word like ChatGPT instead of in chunks
+                  flushSync(() => {
+                    setMessages((prev) => {
+                      const updated = [...prev];
+                      const lastMsgIndex = updated.length - 1;
+                      const lastMsg = updated[lastMsgIndex];
+                      if (lastMsg && lastMsg.role === 'assistant') {
+                        // ✅ CREATE NEW MESSAGE OBJECT - React detects change!
+                        const updatedMsg = {
+                          ...lastMsg,
+                          content: assistantMessageContent,
+                          id: lastMsg.id || nanoid(), // Ensure ID exists
+                          messageId: lastMsg.messageId || lastMsg.id || nanoid() // Ensure messageId exists
+                        };
+                        updated[lastMsgIndex] = updatedMsg;
+                        console.log('[SSE-UPDATE] Updated message:', updatedMsg.id, 'content length:', updatedMsg.content.length);
+                        return updated;
+                      }
+                      console.warn('[SSE-UPDATE] No assistant message found to update!');
+                      return prev;  // Return original if no assistant message found
+                    });
                   });
+                  
                   setProgressStatus('working');
                   setProgressMessage('Generating response...');
                   break;
