@@ -315,26 +315,3 @@ export function validateToolResult(
     };
   }
 }
-
-/**
- * @deprecated No longer needed - sanitization happens in validateToolResult.
- * This function is kept for backward compatibility with existing tests.
- * TODO: Remove after updating all callers to use validateToolResult directly.
- * Tracked in: Future iteration - Consumer integration alignment
- * 
- * This function no longer performs control character removal. Control character
- * sanitization now happens at the data level in validateToolResult() before
- * JSON serialization.
- * 
- * @param result - String result to sanitize
- * @param maxLength - Maximum allowed length (default: 50000)
- * @returns Sanitized string safe for database persistence
- */
-export function sanitizeToolResultForPersistence(result: string, maxLength = 50000): string {
-  // For backward compatibility, just return the result
-  // Control character removal now happens in validateToolResult
-  if (result.length > maxLength) {
-    return result.substring(0, maxLength) + '\n... [truncated]';
-  }
-  return result;
-}

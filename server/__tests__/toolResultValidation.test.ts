@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { validateToolResult, toolResultToJSON, parseToolResult, type ToolResult, sanitizeToolResultForPersistence } from '../validation/toolResultValidators';
+import { validateToolResult, toolResultToJSON, parseToolResult, type ToolResult } from '../validation/toolResultValidators';
 
 describe('Tool Result Validation', () => {
   describe('validateToolResult', () => {
@@ -146,55 +146,6 @@ describe('Tool Result Validation', () => {
       expect(parsed.valid).toBe(original.valid);
       expect(parsed.payload).toBe(original.payload);
       expect(parsed.warnings).toEqual(original.warnings);
-    });
-  });
-  
-  describe('sanitizeToolResultForPersistence (DEPRECATED)', () => {
-    test('no longer removes control characters (deprecated behavior)', () => {
-      const dirty = 'hello\x00world\x01test\x1Fdata\x7F';
-      const result = sanitizeToolResultForPersistence(dirty);
-      
-      // DEPRECATED: This function no longer removes control characters
-      // Control character removal now happens in validateToolResult
-      expect(result).toBe(dirty);
-    });
-    
-    test('preserves all characters including control chars', () => {
-      const text = 'line1\nline2\tcolumn2\x00\x1F\nline3';
-      const result = sanitizeToolResultForPersistence(text);
-      
-      // Deprecated function no longer sanitizes
-      expect(result).toBe(text);
-    });
-    
-    test('truncates overly long results', () => {
-      const long = 'a'.repeat(100000);
-      const truncated = sanitizeToolResultForPersistence(long, 50000);
-      
-      expect(truncated.length).toBeLessThanOrEqual(50020); // 50000 + truncation message
-      expect(truncated).toContain('[truncated]');
-      expect(truncated.endsWith('... [truncated]')).toBe(true);
-    });
-    
-    test('respects custom maxLength', () => {
-      const text = 'a'.repeat(1000);
-      const truncated = sanitizeToolResultForPersistence(text, 500);
-      
-      expect(truncated.length).toBeLessThanOrEqual(520); // 500 + truncation message
-      expect(truncated).toContain('[truncated]');
-    });
-    
-    test('does not truncate short results', () => {
-      const text = 'This is a short result';
-      const result = sanitizeToolResultForPersistence(text);
-      
-      expect(result).toBe(text);
-      expect(result).not.toContain('[truncated]');
-    });
-    
-    test('handles empty strings', () => {
-      const result = sanitizeToolResultForPersistence('');
-      expect(result).toBe('');
     });
   });
   
