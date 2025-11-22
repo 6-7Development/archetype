@@ -8,9 +8,24 @@
 
 ## Executive Summary
 
-✅ **Result: VALIDATION PASSED**
+⚠️ **Result: PARTIAL VALIDATION - Runtime Streaming Workflows Unverified**
 
-All programmatic validation tests passed successfully after major backend/frontend modularization. Zero errors detected in application startup, routing, component exports, or browser runtime.
+**What Was Validated:** ✅
+- Application startup (server, database, routes, WebSocket initialization)
+- Component exports (UniversalChat, ChatMessages, ChatInput, ChatDialogs, etc.)
+- LSP diagnostics (zero errors)
+- Browser console (zero React/TypeScript errors)
+- API endpoint availability (health, auth, lomu-ai, architect routes)
+
+**What Was NOT Validated:** ⚠️
+- SSE streaming runtime behavior (word-by-word vs buffered)
+- WebSocket file change broadcasts during execution
+- Tool execution streaming and display
+- Checkpoint/scratchpad rendering during actual usage
+- I AM Architect consultation flow execution
+- Chat UI component interactions (send message, receive response)
+
+**Reason:** Automated Playwright e2e blocked by Stripe requirements; programmatic validation limited to startup/export checks without authenticated session testing.
 
 ---
 
@@ -170,21 +185,53 @@ A comprehensive 20+ test suite guide has been created covering:
 
 ## Identified Workflow Gaps
 
-### Automated Testing Limitation
-**Gap:** Cannot run automated Playwright e2e tests without Stripe configuration  
-**Severity:** Medium  
-**Impact:** Manual testing required for full workflow validation  
-**Workaround:** Use MANUAL_TEST_GUIDE.md for comprehensive testing  
-**Recommendation:** Configure VITE_STRIPE_PUBLIC_KEY or bypass Stripe requirement in test environment
+### Gap 1: SSE Streaming Runtime Behavior Unverified
+**Severity:** High  
+**Description:** After lomuChat.ts modularization (5,020 → 1,063 lines, 9 modules), SSE streaming orchestrator loads successfully but word-by-word streaming behavior has NOT been verified in actual chat sessions  
+**Affected Component:** `server/routes/lomuChat/stream/orchestrator.ts`, `stream-emitter.ts`  
+**Validation Status:** ✅ Code loads, ⚠️ Runtime behavior untested  
+**Required Test:** Send chat message in authenticated session, verify response streams word-by-word (not buffered)  
+**Workaround:** Manual testing via MANUAL_TEST_GUIDE.md Test Suite 3
 
-### No Additional Gaps Detected
-All programmatic validations passed:
-- ✅ Zero LSP errors
-- ✅ Zero runtime errors  
-- ✅ Zero component errors
-- ✅ All routes working
-- ✅ All exports verified
-- ✅ Application running successfully
+### Gap 2: WebSocket File Change Broadcasts Unverified
+**Severity:** High  
+**Description:** WebSocket server initializes correctly but file change broadcast behavior during LomuAI code execution has NOT been verified  
+**Affected Component:** WebSocket `/ws`, file change indicators in ChatMessages.tsx  
+**Validation Status:** ✅ Server initialized, ⚠️ Broadcast behavior untested  
+**Required Test:** Execute LomuAI task that modifies code, verify file change indicators appear in chat UI  
+**Workaround:** Manual testing via MANUAL_TEST_GUIDE.md Test Suite 4
+
+### Gap 3: Tool Execution Streaming Unverified
+**Severity:** High  
+**Description:** Tool distribution configured (18 tools for LomuAI) but tool execution streaming display has NOT been verified  
+**Affected Component:** Tool call/result streaming in ChatMessages.tsx, Enhanced message display  
+**Validation Status:** ✅ Tools loaded, ⚠️ Execution display untested  
+**Required Test:** Send message requiring tool use (e.g., "list files"), verify tool call/result renders  
+**Workaround:** Manual testing via MANUAL_TEST_GUIDE.md Test Suite 3.2
+
+### Gap 4: I AM Architect Consultation Flow Unverified
+**Severity:** Medium  
+**Description:** After lomuSuperCore modularization and architectPrompt.ts extraction, Architect API mounts correctly but consultation flow has NOT been verified  
+**Affected Component:** `server/lomuSuperCore/architectPrompt.ts`, `/api/architect`  
+**Validation Status:** ✅ Module loads, route mounted, ⚠️ Execution flow untested  
+**Required Test:** Trigger architect mode, send consultation request, verify Claude Sonnet 4 responds  
+**Workaround:** Manual testing via MANUAL_TEST_GUIDE.md Test Suite 5
+
+### Gap 5: Chat UI Components Runtime Interaction Unverified
+**Severity:** Medium  
+**Description:** ChatMessages, ChatInput, ChatDialogs, StatusBar components export correctly but runtime interactions (send message, checkpoint display, scratchpad rendering) have NOT been verified  
+**Affected Components:** `client/src/components/chat/*`  
+**Validation Status:** ✅ Exports verified, ✅ Browser renders, ⚠️ User interactions untested  
+**Required Test:** Full chat session testing all UI component features  
+**Workaround:** Manual testing via MANUAL_TEST_GUIDE.md Test Suites 2, 6
+
+### Gap 6: Automated Testing Blocked by Stripe Requirement
+**Severity:** Medium  
+**Description:** Playwright e2e testing framework requires Stripe configuration, blocking automated workflow validation  
+**Impact:** All runtime behavior testing must be done manually  
+**Missing Config:** VITE_STRIPE_PUBLIC_KEY environment variable  
+**Workaround:** Use MANUAL_TEST_GUIDE.md for comprehensive testing  
+**Recommendation:** Configure VITE_STRIPE_PUBLIC_KEY or create Stripe-free test mode flag
 
 ---
 
@@ -260,20 +307,42 @@ All programmatic validations passed:
 
 ## Conclusion
 
-**Overall Status:** ✅ VALIDATION PASSED
+**Overall Status:** ⚠️ PARTIAL VALIDATION - Manual Runtime Testing Required
 
 The major backend and frontend modularization has been completed successfully with:
-- Zero LSP diagnostics
-- Zero runtime errors
-- Zero component errors
-- All routes functional
-- All exports verified
-- Application running successfully
-- Architect review PASSED
+- ✅ Zero LSP diagnostics
+- ✅ Zero component export errors
+- ✅ All routes functional at startup
+- ✅ Application running successfully
+- ✅ Architect review PASSED (for code structure)
 
-While automated e2e testing is blocked by Stripe configuration, all programmatic validations indicate the modularization was executed correctly without breaking any functionality. Manual testing guide provided for comprehensive end-user workflow validation.
+**However:**
+- ⚠️ SSE streaming runtime behavior UNVERIFIED
+- ⚠️ WebSocket file broadcasts UNVERIFIED
+- ⚠️ Tool execution streaming UNVERIFIED
+- ⚠️ I AM Architect consultation flow UNVERIFIED
+- ⚠️ Chat UI component interactions UNVERIFIED
 
-**Next Steps:** Execute manual testing guide to validate end-user workflows and SSE streaming behavior.
+**Validation Limitations:**
+Programmatic validation confirmed the modularization did not break startup/exports, but the critical streaming workflows the user asked to verify remain untested due to:
+1. Automated Playwright e2e blocked by Stripe requirements
+2. Runtime behavior testing requires authenticated chat sessions
+3. Lightweight verification scripts limited to endpoint availability checks
+
+**Manual Testing Required:**
+Use `MANUAL_TEST_GUIDE.md` to execute comprehensive runtime validation covering:
+- Chat SSE streaming (word-by-word verification)
+- WebSocket file change broadcasts
+- Tool execution and display
+- Checkpoint/scratchpad rendering
+- I AM Architect consultation flow
+- Full UI component interactions
+
+**Next Steps:** 
+1. **CRITICAL:** Execute MANUAL_TEST_GUIDE.md Test Suites 3-5 to verify streaming workflows
+2. Configure VITE_STRIPE_PUBLIC_KEY or create test mode flag to enable automated e2e
+3. Document any runtime issues discovered during manual testing
+4. Update this summary with manual test results
 
 ---
 
