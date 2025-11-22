@@ -281,7 +281,7 @@ export async function handleStreamRequest(
         await retryWithBackoff(async () => {
           return await streamGeminiResponse({
             model: 'gemini-2.5-flash',
-            maxTokens: config.maxTokens,
+            maxTokens: runConfig.finalMaxTokens || LOMU_LIMITS.API.MAX_GEMINI_TOKENS,
             system: systemPrompt,
             messages: conversationMessages,
             tools: tools as any,
@@ -441,18 +441,46 @@ export async function handleStreamRequest(
                   }
                 }
                 
-                // Execute tool (simplified mapping - full implementation would use proper dispatcher)
-                let toolResult: any = `Tool ${toolName} executed successfully (stub)`;
+                // Execute tool using AgentExecutor dispatcher
+                const agentExecutor = new AgentExecutor();
+                let toolResult: string;
                 
-                // Add tool result to results array
-                toolResults.push({
-                  type: 'tool_result',
-                  tool_use_id: toolId,
-                  content: toolResult
-                });
-                
-                // Emit tool result event
-                emitToolResult(emitContext, toolName, toolId, toolResult, false);
+                try {
+                  // Execute tool with input parameters
+                  toolResult = await agentExecutor.executeTool(
+                    toolName,
+                    input,
+                    {
+                      userId: userId || 'unknown',
+                      sessionId: sessionId || 'default',
+                      projectId: projectId || undefined,
+                      targetContext: targetContext || 'project',
+                      runId: agentRunId,
+                    }
+                  );
+                  
+                  // Add successful tool result
+                  toolResults.push({
+                    type: 'tool_result',
+                    tool_use_id: toolId,
+                    content: toolResult
+                  });
+                  
+                  // Emit tool result event
+                  emitToolResult(emitContext, toolName, toolId, toolResult, false);
+                  
+                } catch (toolError: any) {
+                  // Handle tool execution error
+                  const errorMsg = `Tool execution failed: ${toolError.message}`;
+                  toolResults.push({
+                    type: 'tool_result',
+                    tool_use_id: toolId,
+                    is_error: true,
+                    content: errorMsg
+                  });
+                  emitToolResult(emitContext, toolName, toolId, errorMsg, true);
+                  throw toolError; // Re-throw to outer catch block
+                }
                 
                 // Complete tool call in brain
                 if (userId) {
