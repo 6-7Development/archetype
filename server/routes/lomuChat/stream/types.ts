@@ -284,6 +284,7 @@ export interface RunConfigGovernance {
   finalAutoCommit: boolean;
   finalAutoPush: boolean;
   finalAutonomyLevel: 'basic' | 'standard' | 'deep' | 'max';
+  finalMaxTokens?: number;
   userIntent: UserIntent;
   complexityLevel: string;
   complexityScore: number;

@@ -299,6 +299,7 @@ export async function prepareAIContext(
     finalAutoCommit,
     finalAutoPush,
     finalAutonomyLevel,
+    finalMaxTokens: 8000, // Default token limit per iteration
     userIntent,
     complexityLevel: complexityResult.level,
     complexityScore,

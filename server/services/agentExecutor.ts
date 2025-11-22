@@ -319,4 +319,122 @@ export class AgentExecutor {
       return { success: false, error: error.message };
     }
   }
+
+  /**
+   * Execute a tool and return its result
+   * Dispatches tool execution to appropriate handlers
+   */
+  static async executeTool(
+    toolName: string,
+    input: Record<string, any>,
+    context: {
+      userId: string;
+      sessionId: string;
+      projectId?: string;
+      targetContext?: 'platform' | 'project';
+      runId?: string;
+    }
+  ): Promise<string> {
+    const { userId, sessionId, projectId, targetContext, runId } = context;
+    
+    try {
+      console.log(`[AGENT-EXECUTOR] Executing tool: ${toolName}`, { input, userId, sessionId });
+      
+      // Import tool handlers
+      const toolHandlers = await import('../routes/lomuChat/tools/toolHandler');
+      
+      // Route to appropriate handler based on tool name
+      switch (toolName) {
+        case 'read':
+          return await toolHandlers.handleReadFile(input.file_path || input.path || '');
+        
+        case 'write':
+          return await toolHandlers.handleWriteFile(
+            input.file_path || input.path || '',
+            input.content || ''
+          );
+        
+        case 'edit':
+          return await toolHandlers.handleEditFile(
+            input.file_path || input.path || '',
+            input.old_string || '',
+            input.new_string || ''
+          );
+        
+        case 'bash':
+          return await toolHandlers.handleBashCommand(
+            input.command || '',
+            input.timeout || 120000
+          );
+        
+        case 'search_codebase':
+          return await toolHandlers.handleSearchCodebase(
+            input.query || '',
+            input.search_paths || []
+          );
+        
+        case 'grep_tool':
+          return await toolHandlers.handleGrep(
+            input.pattern || '',
+            input.path || '.'
+          );
+        
+        case 'ls':
+          return await toolHandlers.handleListDirectory(
+            input.path || '.'
+          );
+        
+        case 'glob':
+          return await toolHandlers.handleGlobPattern(
+            input.pattern || '',
+            input.path || '.'
+          );
+        
+        case 'create_task_list':
+          return await toolHandlers.handleCreateTaskList(input.tasks || []);
+        
+        case 'update_task':
+          return await toolHandlers.handleUpdateTask(input.task_id || '', input.status || 'pending');
+        
+        case 'read_task_list':
+          return await toolHandlers.handleReadTaskList();
+        
+        case 'start_subagent':
+          return await toolHandlers.handleStartSubagent(input);
+        
+        case 'web_search':
+          return await toolHandlers.handleWebSearch(input.query || '');
+        
+        case 'get_auto_context':
+          return await toolHandlers.handleGetAutoContext(input.file_path || '');
+        
+        case 'extract_function':
+          return await toolHandlers.handleExtractFunction(
+            input.file_path || '',
+            input.function_name || ''
+          );
+        
+        case 'smart_read_file':
+          return await toolHandlers.handleSmartReadFile(
+            input.file_path || '',
+            input.context || ''
+          );
+        
+        case 'perform_diagnosis':
+          return await toolHandlers.handlePerformDiagnosis(input.issue || '');
+        
+        case 'architect_consult':
+          return await toolHandlers.handleArchitectConsult(input.query || '');
+        
+        case 'refresh_all_logs':
+          return await toolHandlers.handleRefreshAllLogs();
+        
+        default:
+          throw new Error(`Unknown tool: ${toolName}`);
+      }
+    } catch (error: any) {
+      console.error(`[AGENT-EXECUTOR] Tool ${toolName} failed:`, error);
+      throw new Error(`Tool execution failed: ${error.message}`);
+    }
+  }
 }
