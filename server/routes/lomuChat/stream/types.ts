@@ -94,6 +94,8 @@ export interface ToolResultEventPayload {
   output: string;
   isError?: boolean;
   messageId?: string;
+  // ✅ PHASE 3: Structured payload (Gap #1 fix - keep objects as objects)
+  payload?: any;
   // ✅ PHASE 2: Validation metadata for UI awareness
   metadata?: {
     valid?: boolean;
