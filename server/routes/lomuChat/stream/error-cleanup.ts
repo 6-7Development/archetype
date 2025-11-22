@@ -248,6 +248,9 @@ export function getFriendlyErrorMessage(error: Error): string {
 /**
  * Cleanup partial changes on error
  * Rolls back uncommitted file changes to prevent corruption
+ * 
+ * @param fileChanges - Array of file changes to rollback
+ * @param projectPath - Root path of the project
  */
 export async function rollbackPartialChanges(
   fileChanges: Array<{ path: string; operation: string }>,
@@ -255,11 +258,64 @@ export async function rollbackPartialChanges(
 ): Promise<void> {
   console.log(`[ERROR-CLEANUP] Rolling back ${fileChanges.length} partial changes`);
   
-  // Implementation would go here - kept as stub for future enhancement
-  // Would involve:
-  // 1. Checking git status
-  // 2. Reverting uncommitted changes
-  // 3. Cleaning untracked files
+  if (fileChanges.length === 0) {
+    console.log('[ERROR-CLEANUP] No changes to rollback');
+    return;
+  }
   
-  console.log('[ERROR-CLEANUP] Rollback completed (stub)');
+  try {
+    const { simpleGit } = await import('simple-git');
+    const git = simpleGit(projectPath);
+    
+    // Check if we're in a git repository
+    const isRepo = await git.checkIsRepo();
+    if (!isRepo) {
+      console.warn('[ERROR-CLEANUP] Not a git repository - cannot rollback');
+      return;
+    }
+    
+    // Get current status
+    const status = await git.status();
+    console.log(`[ERROR-CLEANUP] Git status - modified: ${status.modified.length}, created: ${status.created.length}`);
+    
+    // Rollback strategy:
+    // 1. Revert modified files
+    // 2. Delete newly created files
+    // 3. Restore deleted files
+    
+    const modifiedFiles = fileChanges.filter(f => f.operation === 'modify').map(f => f.path);
+    const createdFiles = fileChanges.filter(f => f.operation === 'create').map(f => f.path);
+    const deletedFiles = fileChanges.filter(f => f.operation === 'delete').map(f => f.path);
+    
+    // Revert modified files to HEAD
+    if (modifiedFiles.length > 0) {
+      console.log(`[ERROR-CLEANUP] Reverting ${modifiedFiles.length} modified files`);
+      await git.checkout(['HEAD', '--', ...modifiedFiles]);
+    }
+    
+    // Delete newly created files
+    if (createdFiles.length > 0) {
+      console.log(`[ERROR-CLEANUP] Removing ${createdFiles.length} newly created files`);
+      const fs = await import('fs/promises');
+      for (const file of createdFiles) {
+        try {
+          await fs.unlink(file);
+          console.log(`[ERROR-CLEANUP] Deleted: ${file}`);
+        } catch (err: any) {
+          console.warn(`[ERROR-CLEANUP] Failed to delete ${file}: ${err.message}`);
+        }
+      }
+    }
+    
+    // Restore deleted files from HEAD
+    if (deletedFiles.length > 0) {
+      console.log(`[ERROR-CLEANUP] Restoring ${deletedFiles.length} deleted files`);
+      await git.checkout(['HEAD', '--', ...deletedFiles]);
+    }
+    
+    console.log('[ERROR-CLEANUP] ✅ Rollback completed successfully');
+  } catch (error: any) {
+    console.error('[ERROR-CLEANUP] ❌ Rollback failed:', error.message);
+    console.error('[ERROR-CLEANUP] Manual intervention may be required');
+  }
 }

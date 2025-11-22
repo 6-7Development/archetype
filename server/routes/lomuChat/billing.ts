@@ -114,13 +114,55 @@ export function formatBillingInfo(inputTokens: number, outputTokens: number, cos
 }
 
 /**
- * Check if user has sufficient credits (placeholder)
+ * Check if user has sufficient credits
+ * 
+ * @param userId - User ID to check credits for
+ * @param requiredCredits - Number of credits required for operation
+ * @returns Object with availability status and optional reason
  */
 export async function checkCreditsAvailable(
   userId: string,
   requiredCredits: number
 ): Promise<{ available: boolean; reason?: string }> {
-  // TODO: Implement actual credit check against credits table
-  // For now, always allow (platform healing is FREE for owner)
-  return { available: true };
+  try {
+    const { creditWallets } = await import('@shared/schema');
+    const { eq } = await import('drizzle-orm');
+    
+    // Fetch user's credit wallet
+    const [wallet] = await db.select().from(creditWallets).where(eq(creditWallets.userId, userId));
+    
+    if (!wallet) {
+      console.warn(`[BILLING] No credit wallet found for user ${userId}`);
+      return { 
+        available: false, 
+        reason: 'No credit wallet found. Please contact support.' 
+      };
+    }
+    
+    // Check if user has enough available credits
+    const hasEnoughCredits = wallet.availableCredits >= requiredCredits;
+    
+    if (!hasEnoughCredits) {
+      console.log(
+        `[BILLING] Insufficient credits - User ${userId}: has ${wallet.availableCredits}, needs ${requiredCredits}`
+      );
+      return { 
+        available: false, 
+        reason: `Insufficient credits. You have ${wallet.availableCredits} credits but need ${requiredCredits}.` 
+      };
+    }
+    
+    console.log(
+      `[BILLING] Credit check passed - User ${userId}: has ${wallet.availableCredits}, needs ${requiredCredits}`
+    );
+    
+    return { available: true };
+  } catch (error: any) {
+    console.error('[BILLING] Error checking credits:', error);
+    // Fail closed: deny access if we can't verify credits
+    return { 
+      available: false, 
+      reason: 'Error verifying credits. Please try again.' 
+    };
+  }
 }

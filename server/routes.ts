@@ -40,6 +40,7 @@ import { registerUserPreferencesRoutes } from "./routes/user-preferences";
 import { registerScratchpadRoutes } from "./routes/scratchpad";
 import creditsRouter from "./routes/credits";
 import agentsRouter from "./routes/agents";
+import approvalRouter from "./routes/approvalRoutes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // ==================== HEALTH & DIAGNOSTICS ====================
@@ -305,7 +306,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Mount credits router (credit purchase and balance management)
   app.use('/api/credits', creditsRouter);
+  
+  // Mount approval router (user approval for file modifications)
+  app.use('/api', approvalRouter);
+  console.log('[APPROVALS] Approval router mounted at /api');
   console.log('[CREDITS] Credits router mounted at /api/credits');
+  
+  // Mount approval router (file modification approvals)
+  app.use('/api', approvalRouter);
+  console.log('[APPROVALS] Approval router mounted at /api');
   
   // Mount agents router (agent run management and resume)
   app.use('/api/agents', agentsRouter);

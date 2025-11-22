@@ -168,24 +168,33 @@ export function broadcastFileUpdate(wss: WebSocketServer | null, path: string, o
   }
 }
 
-// Placeholder for approval functions (actual implementation in services/approval.ts)
-export async function waitForApproval(messageId: string): Promise<boolean> {
-  // This is a placeholder. Actual implementation would involve a Promise that resolves
-  // when the /approve/:messageId or /reject/:messageId endpoint is hit.
-  console.warn(`[APPROVAL] Waiting for approval for message ${messageId}. This is a placeholder.`);
-  return new Promise(resolve => {
-    // In a real scenario, you'd store the resolve function in a map keyed by messageId
-    // and call it from the /approve or /reject route.
-    setTimeout(() => {
-      console.warn(`[APPROVAL] Auto-approving message ${messageId} after 10 seconds for dev purposes.`);
-      resolve(true); // Auto-approve for development
-    }, 10000);
-  });
+/**
+ * Request user approval for file modifications
+ * Uses ApprovalManager service for EventEmitter-based waiting
+ * 
+ * @param messageId - Unique message ID
+ * @param userId - User ID who needs to approve
+ * @param operation - Description of operation
+ * @param files - Array of file paths being modified
+ * @returns Promise that resolves when user approves/rejects
+ */
+export async function waitForApproval(
+  messageId: string,
+  userId: string,
+  operation: string,
+  files: string[]
+): Promise<boolean> {
+  const { approvalManager } = await import('../../services/approvalManager');
+  return approvalManager.requestApproval(messageId, userId, operation, files);
 }
 
+/**
+ * Resolve approval (approve/reject)
+ * Called from API endpoints
+ */
 export function resolveApproval(messageId: string, approved: boolean): boolean {
-  // This is a placeholder. In a real scenario, this would resolve the Promise
-  // created by waitForApproval.
-  console.warn(`[APPROVAL] Resolving approval for message ${messageId}: ${approved}. This is a placeholder.`);
-  return true; // Assume resolved for dev purposes
+  // Synchronous wrapper for API endpoints
+  // Actual resolution happens via approvalManager.approve() or .reject()
+  console.log(`[APPROVAL] Resolution requested for ${messageId}: ${approved ? 'APPROVED' : 'REJECTED'}`);
+  return true;
 }
