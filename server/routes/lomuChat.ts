@@ -4,6 +4,7 @@ import { storage } from '../storage.ts';
 import { chatMessages, taskLists, tasks, lomuAttachments, lomuJobs, users, subscriptions, projects, conversationStates, platformIncidents, tokenLedger } from '@shared/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../universalAuth.ts';
+import { aiLimiter } from '../rateLimiting';
 import { streamGeminiResponse } from '../gemini.ts';
 import { TokenTracker } from '../services/tokenTracker.ts';
 import { CreditManager } from '../services/creditManager.ts';
@@ -687,7 +688,7 @@ router.get('/history/:projectId', isAuthenticated, async (req: any, res) => {
 // Stream LomuAI chat response
 // NOTE: Removed isAdmin middleware - regular users can now use LomuAI via credit-based billing
 // Platform healing (targetContext="platform") has owner-only access checks inside the handler
-router.post('/stream', isAuthenticated, async (req: any, res) => {
+router.post('/stream', isAuthenticated, aiLimiter, async (req: any, res) => {
   const { handleStreamRequest } = await import('./lomuChat/stream/orchestrator.ts');
   return handleStreamRequest(req, res, wss, activeStreams);
 });

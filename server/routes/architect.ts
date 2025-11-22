@@ -3,6 +3,7 @@ import { db } from '../db';
 import { chatMessages } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { isAuthenticated } from '../universalAuth';
+import { aiLimiter } from '../rateLimiting';
 import { streamAnthropicResponse } from '../anthropic';
 import { buildArchitectSystemPrompt } from '../lomuSuperCore';
 import Anthropic from '@anthropic-ai/sdk';
@@ -99,7 +100,7 @@ router.post('/access-tier', isAuthenticated, async (req: any, res) => {
  * POST /api/architect/stream
  * Stream AI responses from I AM Architect using Claude Sonnet 4
  */
-router.post('/stream', isAuthenticated, async (req: any, res) => {
+router.post('/stream', isAuthenticated, aiLimiter, async (req: any, res) => {
   const userId = req.authenticatedUserId;
   const { message, sessionId = nanoid(), conversationHistory = [] } = req.body;
 

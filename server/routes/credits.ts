@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { db } from '../db';
 import { users } from '@shared/schema';
 import { isAuthenticated } from '../universalAuth';
+import { apiLimiter } from '../rateLimiting';
 import { CreditManager } from '../services/creditManager';
 import { CREDIT_CONSTANTS } from '@shared/schema';
 import { eq } from 'drizzle-orm';
@@ -84,7 +85,7 @@ router.get('/packages', isAuthenticated, async (req: any, res) => {
 });
 
 // Purchase credits
-router.post('/purchase', isAuthenticated, async (req: any, res) => {
+router.post('/purchase', isAuthenticated, apiLimiter, async (req: any, res) => {
   try {
     const userId = req.authenticatedUserId;
     const { packageId } = req.body;
