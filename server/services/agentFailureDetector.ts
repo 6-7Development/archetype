@@ -310,14 +310,11 @@ export class AgentFailureDetector {
 }
 
 export const agentFailureDetector = new AgentFailureDetector();
+
 /**
  * Enhanced Agent Failure Detection
  * Extends original detector with more patterns and recovery strategies
  */
-
-import { db } from '../db';
-import { lomuJobs, chatMessages, tasks, platformIncidents } from '@shared/schema';
-import { desc, eq, and, gt, count } from 'drizzle-orm';
 
 export interface FailurePattern {
   name: string;
