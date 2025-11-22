@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, useReducer } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { flushSync } from "react-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -40,6 +40,11 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/componen
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { ContextRail } from "@/components/chat/ContextRail";
 import { MessageHistory } from "@/components/chat/MessageHistory";
+import { useStreamEvents } from "./chat/useStreamEvents";
+import { ChatMessages } from "./chat/ChatMessages";
+import { ChatInput } from "./chat/ChatInput";
+import { StatusBar } from "./chat/StatusBar";
+import { ChatDialogs } from "./chat/ChatDialogs";
 import type { 
   RunPhase, 
   RunState, 
@@ -98,130 +103,8 @@ export interface UniversalChatProps {
 }
 
 // ============================================================================
-// RUNSTATE REDUCER (Single Source of Truth for Agent Progress)
+// Component now uses extracted useStreamEvents hook for run state management
 // ============================================================================
-
-interface RunStateReducerState {
-  runs: Map<string, RunState>;
-  currentRunId: string | null;
-}
-
-type RunStateAction = 
-  | { type: 'run.started'; data: RunStartedData }
-  | { type: 'run.state_updated'; data: RunStateUpdateData }
-  | { type: 'task.created'; data: TaskCreatedData }
-  | { type: 'task.updated'; data: TaskUpdatedData }
-  | { type: 'run.completed'; data: RunCompletedData }
-  | { type: 'run.failed'; data: RunFailedData };
-
-function runStateReducer(state: RunStateReducerState, action: RunStateAction): RunStateReducerState {
-  const newState = { ...state, runs: new Map(state.runs) };
-  
-  switch (action.type) {
-    case 'run.started':
-      // Create new run state
-      newState.runs.set(action.data.runId, {
-        runId: action.data.runId,
-        sessionId: action.data.sessionId,
-        userId: action.data.userId,
-        phase: 'thinking',
-        status: 'active',
-        tasks: [],
-        currentTaskId: null,
-        metrics: {
-          totalTasks: 0,
-          completedTasks: 0,
-          failedTasks: 0,
-          totalToolCalls: 0,
-          currentIteration: 0,
-          maxIterations: action.data.config.maxIterations,
-        },
-        startedAt: action.data.timestamp,
-        lastActivityAt: action.data.timestamp,
-        config: action.data.config,
-        errors: [],
-      });
-      newState.currentRunId = action.data.runId;
-      break;
-      
-    case 'run.state_updated':
-      const run = newState.runs.get(action.data.runId);
-      if (run) {
-        if (action.data.phase) run.phase = action.data.phase;
-        if (action.data.status) run.status = action.data.status;
-        if (action.data.currentTaskId !== undefined) run.currentTaskId = action.data.currentTaskId;
-        if (action.data.metricsUpdate) {
-          run.metrics = { ...run.metrics, ...action.data.metricsUpdate };
-        }
-        if (action.data.error) run.errors.push(action.data.error);
-        run.lastActivityAt = new Date().toISOString();
-      }
-      break;
-      
-    case 'task.created':
-      // Find the appropriate run for this task
-      // If task.id has runId prefix (e.g., "run123-task1"), extract it
-      // Otherwise, assign to current run
-      let targetRun: RunState | undefined;
-      const taskIdParts = action.data.task.id.split('-');
-      if (taskIdParts.length > 1 && newState.runs.has(taskIdParts[0])) {
-        targetRun = newState.runs.get(taskIdParts[0]);
-      } else if (newState.currentRunId) {
-        targetRun = newState.runs.get(newState.currentRunId);
-      }
-      
-      if (targetRun) {
-        targetRun.tasks.push(action.data.task);
-        targetRun.metrics.totalTasks++;
-      }
-      break;
-      
-    case 'task.updated':
-      // Find run containing this task and update it
-      newState.runs.forEach((run) => {
-        const taskIndex = run.tasks.findIndex((t: RunTask) => t.id === action.data.taskId);
-        if (taskIndex >= 0) {
-          if (action.data.status) {
-            const oldStatus = run.tasks[taskIndex].status;
-            run.tasks[taskIndex].status = action.data.status;
-            if (action.data.status === 'done' && oldStatus !== 'done') {
-              run.metrics.completedTasks++;
-            } else if (action.data.status === 'blocked') {
-              run.metrics.failedTasks++;
-            }
-          }
-          if (action.data.verification) run.tasks[taskIndex].verification = action.data.verification;
-          if (action.data.artifacts) run.tasks[taskIndex].artifacts = action.data.artifacts;
-          run.tasks[taskIndex].updatedAt = new Date().toISOString();
-        }
-      });
-      break;
-      
-    case 'run.completed':
-      const completedRun = newState.runs.get(action.data.runId);
-      if (completedRun) {
-        completedRun.status = 'completed';
-        completedRun.phase = 'complete';
-        completedRun.completedAt = action.data.timestamp;
-      }
-      break;
-      
-    case 'run.failed':
-      const failedRun = newState.runs.get(action.data.runId);
-      if (failedRun) {
-        failedRun.status = 'failed';
-        failedRun.errors.push({
-          timestamp: action.data.timestamp,
-          message: action.data.errorMessage,
-          phase: action.data.phase,
-          taskId: action.data.taskId,
-        });
-      }
-      break;
-  }
-  
-  return newState;
-}
 
 export function UniversalChat({ 
   targetContext, 
@@ -309,11 +192,8 @@ export function UniversalChat({
   // ISSUE 2 FIX: Track runId to detect new runs and prevent stale billing data
   const [currentRunId, setCurrentRunId] = useState<string | null>(null);
 
-  // RunState reducer - unified progress tracking
-  const [runState, dispatchRunState] = useReducer(runStateReducer, {
-    runs: new Map(),
-    currentRunId: null,
-  });
+  // RunState reducer - unified progress tracking (extracted to useStreamEvents hook)
+  const { runState, dispatchRunState } = useStreamEvents();
 
   // Session ID scoped to project context
   const sessionId = useMemo(() => {
@@ -1778,251 +1658,55 @@ export function UniversalChat({
             )}
 
         {/* Messages Area */}
-        <div
-          ref={scrollRef}
-          className="flex-1 overflow-y-auto px-6 py-4 space-y-4 scroll-smooth"
-          data-testid="messages-container"
-        >
-          {/* Progress Messages */}
-          {streamState.progressMessages.length > 0 && (
-            <div className="flex flex-col gap-2">
-              {streamState.progressMessages.map((progress) => (
-                <div key={progress.id} className="flex gap-3 justify-start">
-                  <div className="max-w-[75%] rounded-2xl px-3 py-2 bg-secondary/30 border border-border/30">
-                    <p className="text-xs text-muted-foreground leading-relaxed">{progress.message}</p>
-                  </div>
-                </div>
-              ))}
+        <ChatMessages 
+          messages={messages}
+          isGenerating={isGenerating}
+          runState={runState.currentRunId ? runState.runs.get(runState.currentRunId) || null : null}
+          onImageZoom={setZoomImage}
+          scrollRef={scrollRef}
+          messagesEndRef={messagesEndRef}
+        />
+
+        {/* WebSocket Stream: File Status */}
+        {streamState.currentFile && (
+          <div className="mx-4 mb-2 px-3 py-1.5 bg-[hsl(220,16%,20%)] border-l-2 border-emerald-500/60 rounded text-xs" data-testid="stream-file-status">
+            <p className="text-[hsl(220,10%,72%)] flex items-center gap-2">
+              <span className="font-mono text-[hsl(220,70%,60%)]">{streamState.currentFile.action}</span>
+              <span className="font-mono">{streamState.currentFile.filename}</span>
+              <span className="ml-auto text-[hsl(220,12%,55%)]">{streamState.currentFile.language}</span>
+              <Loader2 className="w-3 h-3 animate-spin text-[hsl(220,70%,60%)]" />
+            </p>
+          </div>
+        )}
+
+        {/* WebSocket Stream: File Summary */}
+        {streamState.fileSummary && !streamState.currentFile && (
+          <div className="mx-4 mb-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-xs" data-testid="stream-file-summary">
+            <div className="flex items-center justify-between text-emerald-200">
+              <span className="font-semibold">
+                ✓ Modified {streamState.fileSummary.filesChanged} file{streamState.fileSummary.filesChanged !== 1 ? 's' : ''}
+              </span>
+              <span className="text-emerald-300/70">
+                +{streamState.fileSummary.linesAdded} lines
+                {streamState.fileSummary.linesRemoved !== undefined && ` / -${streamState.fileSummary.linesRemoved}`}
+              </span>
             </div>
-          )}
-
-          {messages
-            .filter((msg, idx) => {
-              // Filter out the last assistant message if we're currently streaming
-              // (it will be shown in the streaming indicator below)
-              if (isGenerating && idx === messages.length - 1 && msg.role === 'assistant') {
-                return false;
-              }
-              return true;
-            })
-            .map((message, index) => (
-            <div
-              key={index}
-              className={cn(
-                "flex gap-3 items-start",
-                message.role === "user" ? "justify-end" : "justify-start"
-              )}
-            >
-              <div
-                className={cn(
-                  "max-w-[75%] rounded-lg px-4 py-3 border",
-                  message.role === "user"
-                    ? "bg-primary text-primary-foreground shadow-md border-primary/20"
-                    : message.isSummary 
-                      ? "bg-muted/30 border-border/50" 
-                      : "bg-card text-card-foreground border-border/30 shadow-sm"
-                )}>
-                  {message.isSummary ? (
-                    <div className="text-sm text-muted-foreground italic flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Earlier messages summarized for efficiency</span>
-                    </div>
-                  ) : (
-                    <EnhancedMessageDisplay 
-                      content={cleanAIResponse(parseMessageContent(message.content))}
-                      progressMessages={message.progressMessages || []}
-                      isStreaming={false}
-                    />
-                  )}
-
-                  {message.checkpoint && !isFreeAccess && (
-                    <div className="mt-3 pt-3 border-t border-white/10">
-                      <div className="text-xs space-y-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-white/70">Complexity:</span>
-                          <span className="font-semibold">{message.checkpoint.complexity}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-white/70">Estimated Cost:</span>
-                          <span className="font-semibold">${message.checkpoint.cost.toFixed(2)}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-white/70">Time:</span>
-                          <span className="font-semibold">{message.checkpoint.estimatedTime}</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {message.images && message.images.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {message.images.map((imageUrl, imgIndex) => (
-                        <img
-                          key={imgIndex}
-                          src={imageUrl}
-                          alt={`Attached ${imgIndex + 1}`}
-                          className="max-w-[200px] rounded border border-white/20 cursor-pointer hover:opacity-80 transition-opacity"
-                          onClick={() => setZoomImage(imageUrl)}
-                          data-testid={`message-image-${index}-${imgIndex}`}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-              {message.role === "user" && (
-                <div className="flex-shrink-0 w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
-                  <User className="w-5 h-5 text-primary" />
-                </div>
-              )}
-            </div>
-          ))}
-
-          {/* Streaming Indicator - Use WebSocket OR check if last message has content */}
-          {isGenerating && (
-            (() => {
-              // Check if we have streaming content from either WebSocket or SSE
-              const lastMessage = messages[messages.length - 1];
-              const hasContent = streamState.fullMessage || (lastMessage?.role === 'assistant' && lastMessage.content);
-              
-              if (hasContent) {
-                // Show actual streaming content
-                const content = streamState.fullMessage || lastMessage?.content || '';
-                
-                return (
-                  <div className="flex gap-3 items-start">
-                    <div className="max-w-[75%] rounded-lg px-4 py-3 bg-card text-card-foreground shadow-sm border border-border/30">
-                      <EnhancedMessageDisplay 
-                        content={cleanAIResponse(parseMessageContent(content))}
-                        progressMessages={lastMessage?.progressMessages || streamState.progressMessages || []}
-                        isStreaming={true}
-                      />
-                    </div>
-                  </div>
-                );
-              } else {
-                // Show thinking indicator
-                return (
-                  <div className="flex gap-3 items-start">
-                    <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-muted border border-border">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Thinking...</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              }
-            })()
-          )}
-
-          {/* Scroll anchor - keeps chat scrolled to bottom */}
-          <div ref={messagesEndRef} />
-        </div>
+          </div>
+        )}
 
         {/* Input Area */}
-        <div className="flex-shrink-0 border-t border-[hsl(220,15%,28%)] bg-[hsl(220,18%,16%)] p-4">
-          {/* WebSocket Stream: File Status */}
-          {streamState.currentFile && (
-            <div className="mb-2 px-3 py-1.5 bg-[hsl(220,16%,20%)] border-l-2 border-emerald-500/60 rounded text-xs" data-testid="stream-file-status">
-              <p className="text-[hsl(220,10%,72%)] flex items-center gap-2">
-                <span className="font-mono text-[hsl(220,70%,60%)]">{streamState.currentFile.action}</span>
-                <span className="font-mono">{streamState.currentFile.filename}</span>
-                <span className="ml-auto text-[hsl(220,12%,55%)]">{streamState.currentFile.language}</span>
-                <Loader2 className="w-3 h-3 animate-spin text-[hsl(220,70%,60%)]" />
-              </p>
-            </div>
-          )}
-
-          {/* WebSocket Stream: File Summary */}
-          {streamState.fileSummary && !streamState.currentFile && (
-            <div className="mb-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-xs" data-testid="stream-file-summary">
-              <div className="flex items-center justify-between text-emerald-200">
-                <span className="font-semibold">
-                  ✓ Modified {streamState.fileSummary.filesChanged} file{streamState.fileSummary.filesChanged !== 1 ? 's' : ''}
-                </span>
-                <span className="text-emerald-300/70">
-                  +{streamState.fileSummary.linesAdded} lines
-                  {streamState.fileSummary.linesRemoved !== undefined && ` / -${streamState.fileSummary.linesRemoved}`}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Image Preview Section */}
-          {(pendingImages.length > 0 || uploadingImages.size > 0) && (
-            <div className="mb-3 flex flex-wrap gap-2">
-              {Array.from(uploadingImages.keys()).map((tempId) => (
-                <div key={tempId} className="relative">
-                  <div className="h-20 w-20 rounded border border-[hsl(220,15%,28%)] bg-[hsl(220,18%,16%)] flex items-center justify-center">
-                    <Loader2 className="w-6 h-6 animate-spin text-[hsl(220,70%,60%)]" />
-                  </div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-xs text-[hsl(220,12%,55%)] bg-[hsl(220,20%,12%)]/80 px-2 py-1 rounded">
-                      Uploading...
-                    </span>
-                  </div>
-                </div>
-              ))}
-
-              {pendingImages.map((imageUrl, index) => (
-                <div key={index} className="relative group">
-                  <img
-                    src={imageUrl}
-                    alt={`Preview ${index + 1}`}
-                    className="h-20 w-20 object-cover rounded border border-[hsl(220,15%,28%)]"
-                    data-testid={`image-preview-${index}`}
-                  />
-                  <button
-                    onClick={() => removeImage(imageUrl)}
-                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                    data-testid={`button-remove-image-${index}`}
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="flex gap-2 items-end">
-            <div className="flex-1 relative">
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onPaste={handlePaste}
-                placeholder="Message LomuAI..."
-                className="min-h-[60px] max-h-[200px] resize-none text-base bg-background border-border focus-visible:ring-2 focus-visible:ring-primary/50 rounded-2xl px-4 py-3 pr-12 transition-all"
-                disabled={isGenerating}
-                data-testid="input-chat-message"
-                rows={3}
-              />
-              <div className="absolute bottom-2 right-2">
-                <ChatInputToolbar
-                  onImageSelect={handleImageSelect}
-                  disabled={isGenerating}
-                />
-              </div>
-            </div>
-            <Button
-              onClick={handleSend}
-              disabled={!input.trim() || isGenerating}
-              size="icon"
-              variant="default"
-              className="flex-shrink-0 h-12 w-12 rounded-full shadow-md hover:shadow-lg transition-all"
-              data-testid="button-send-chat"
-            >
-              {isGenerating ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <Send className="w-5 h-5" />
-              )}
-            </Button>
-          </div>
-        </div>
+        <ChatInput 
+          input={input}
+          setInput={setInput}
+          onSend={handleSend}
+          onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
+          onImageSelect={handleImageSelect}
+          pendingImages={pendingImages}
+          uploadingImages={uploadingImages}
+          onRemoveImage={removeImage}
+          isGenerating={isGenerating}
+        />
           </div>
         </ResizablePanel>
 
@@ -2043,250 +1727,64 @@ export function UniversalChat({
         </ResizablePanel>
       </ResizablePanelGroup>
 
-      {/* Mobile: Drawer for Context Rail */}
-      <Drawer open={contextDrawerOpen} onOpenChange={setContextDrawerOpen}>
-        <DrawerContent className="h-[80vh] md:hidden">
-          <div className="overflow-y-auto h-full">
-            <ContextRail
-              tasks={agentTasks}
-              artifacts={artifacts}
-              runState={runState.currentRunId ? runState.runs.get(runState.currentRunId) || null : null}
-              onTaskClick={(taskId) => {
-                setActiveTaskId(taskId);
-                setContextDrawerOpen(false);
-              }}
-              onArtifactView={(artifact) => {
-                setShowArtifactsDrawer(true);
-                setContextDrawerOpen(false);
-              }}
-            />
-          </div>
-        </DrawerContent>
-      </Drawer>
-
-      {/* Mobile: FAB to open context drawer */}
-      <button
-        onClick={() => setContextDrawerOpen(true)}
-        className="md:hidden fixed bottom-20 right-4 z-50 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all flex items-center justify-center"
-        data-testid="button-open-context-drawer"
-        aria-label="Open context menu"
-        title="Open context menu"
-      >
-        <Menu className="h-6 w-6" />
-      </button>
-
-      {/* Message History Dialog */}
-      <Dialog open={showHistoryDialog} onOpenChange={setShowHistoryDialog}>
-        <DialogContent className="max-w-2xl h-[80vh] p-0">
-          <MessageHistory
-            currentSessionId={selectedSessionId}
-            onSessionSelect={(session) => {
-              // Close dialog immediately for better UX
-              setShowHistoryDialog(false);
-              
-              // Hybrid navigation: different project = full reload, same project = state update
-              const newProjectId = session.projectId || 'general';
-              
-              if (newProjectId !== projectId) {
-                // Different project: Full page navigation
-                // Use setTimeout to ensure dialog closes before navigation
-                setTimeout(() => {
-                  window.location.href = `/chat/${newProjectId}`;
-                }, 100);
-              } else {
-                // Same project: Update selectedSessionId to trigger instant message reload
-                console.log(`📝 [MESSAGE-HISTORY] Loading session ${session.id} for current project`);
-                setSelectedSessionId(session.id);
-              }
-            }}
-            onClose={() => setShowHistoryDialog(false)}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Secrets Request Dialog */}
-      <Dialog open={!!secretsRequest} onOpenChange={() => setSecretsRequest(null)}>
-        <DialogContent className="max-w-[95vw] sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Key className="w-5 h-5" />
-              Secure Credentials Required
-            </DialogTitle>
-            <DialogDescription>
-              {secretsRequest?.message}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            {secretsRequest?.requiredSecrets.map((secret) => (
-              <div key={secret.key} className="space-y-2">
-                <Label htmlFor={secret.key}>{secret.key}</Label>
-                <Input
-                  id={secret.key}
-                  type="password"
-                  placeholder={secret.description}
-                  value={secretsInput[secret.key] || ""}
-                  onChange={(e) =>
-                    setSecretsInput((prev) => ({
-                      ...prev,
-                      [secret.key]: e.target.value,
-                    }))
-                  }
-                  data-testid={`input-secret-${secret.key}`}
-                />
-                {secret.getInstructions && (
-                  <p className="text-xs text-muted-foreground">
-                    {secret.getInstructions}
-                  </p>
-                )}
-              </div>
-            ))}
-
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Your credentials are encrypted and never stored. They're used only for this project generation.
-              </AlertDescription>
-            </Alert>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setSecretsRequest(null)}
-              data-testid="button-cancel-secrets"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSecretsSubmit}
-              disabled={commandMutation.isPending}
-              data-testid="button-submit-secrets"
-            >
-              {commandMutation.isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                "Continue Generation"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Cost Preview Dialog - Only show when NOT free access */}
-      {!isFreeAccess && (
-        <Dialog open={showCostPreview} onOpenChange={setShowCostPreview}>
-          <DialogContent className="max-w-[95vw] sm:max-w-2xl">
-            {costData && (
-              <CostPreview
-                complexity={costData?.complexity}
-                estimatedTokens={costData?.estimatedTokens}
-                tokensRemaining={costData?.tokensRemaining}
-                tokenLimit={costData?.tokenLimit}
-                overageTokens={costData?.overageTokens}
-                overageCost={costData?.overageCost}
-                reasons={costData?.reasons}
-                onConfirm={handleCostPreviewProceed}
-                onCancel={() => {
-                  setShowCostPreview(false);
-                  setPendingCommand("");
-                  setCostData(null);
-                }}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Complexity Error Dialog */}
-      <Dialog open={showComplexityError} onOpenChange={setShowComplexityError}>
-        <DialogContent className="max-w-[95vw] sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Token Estimation Failed</DialogTitle>
-            <DialogDescription>
-              {complexityErrorMessage}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowComplexityError(false)}>
-              Cancel
-            </Button>
-            <Button onClick={() => {
-              setShowComplexityError(false);
-              if (pendingCommand) {
-                executeCommand(pendingCommand);
-                setPendingCommand("");
-              }
-            }}>
-              Proceed Anyway
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Deployment Modal */}
-      {streamState.deployment && (
-        <DeploymentStatusModal
-          open={showDeploymentModal}
-          onOpenChange={setShowDeploymentModal}
-          deploymentId={streamState.deployment.deploymentId}
-          commitHash={streamState.deployment.commitHash}
-          commitMessage={streamState.deployment.commitMessage}
-          commitUrl={streamState.deployment.commitUrl}
-          timestamp={streamState.deployment.timestamp}
-          platform={streamState.deployment.platform}
-          steps={streamState.deployment.steps}
-          status={streamState.deployment.status}
-          deploymentUrl={streamState.deployment.deploymentUrl}
-          errorMessage={streamState.deployment.errorMessage}
-        />
-      )}
-
-      {/* Insufficient Credits Dialog */}
-      <AlertDialog open={showInsufficientCredits} onOpenChange={setShowInsufficientCredits}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Insufficient Credits</AlertDialogTitle>
-            <AlertDialogDescription>
-              You don't have enough credits to complete this request. 
-              Please purchase more credits to continue using LomuAI.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel data-testid="button-insufficient-credits-cancel">Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={() => window.location.href = '/pricing'}
-              data-testid="button-insufficient-credits-purchase"
-            >
-              Purchase Credits
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Image Zoom Modal */}
-      {zoomImage && (
-        <Dialog open={!!zoomImage} onOpenChange={() => setZoomImage(null)}>
-          <DialogContent className="max-w-[95vw] max-h-[95vh] p-0">
-            <img
-              src={zoomImage}
-              alt="Zoomed"
-              className="w-full h-full object-contain"
-            />
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Testing Panel - Shows browser testing UI like Replit Agent */}
-      {testingSession && (
-        <TestingPanel
-          session={testingSession}
-          onClose={() => setTestingSession(null)}
-        />
-      )}
+      {/* All Dialogs and Drawers */}
+      <ChatDialogs 
+        secretsRequest={secretsRequest}
+        setSecretsRequest={setSecretsRequest}
+        secretsInput={secretsInput}
+        setSecretsInput={setSecretsInput}
+        onSecretsSubmit={handleSecretsSubmit}
+        isSubmittingSecrets={commandMutation.isPending}
+        showCostPreview={showCostPreview}
+        setShowCostPreview={setShowCostPreview}
+        isFreeAccess={isFreeAccess}
+        costData={costData}
+        onCostPreviewProceed={handleCostPreviewProceed}
+        pendingCommand={pendingCommand}
+        setPendingCommand={setPendingCommand}
+        setCostData={setCostData}
+        showComplexityError={showComplexityError}
+        setShowComplexityError={setShowComplexityError}
+        complexityErrorMessage={complexityErrorMessage}
+        onComplexityErrorProceed={() => {
+          setShowComplexityError(false);
+          if (pendingCommand) {
+            executeCommand(pendingCommand);
+            setPendingCommand("");
+          }
+        }}
+        showDeploymentModal={showDeploymentModal}
+        setShowDeploymentModal={setShowDeploymentModal}
+        deployment={streamState.deployment}
+        showInsufficientCredits={showInsufficientCredits}
+        setShowInsufficientCredits={setShowInsufficientCredits}
+        zoomImage={zoomImage}
+        setZoomImage={setZoomImage}
+        testingSession={testingSession}
+        setTestingSession={setTestingSession}
+        showHistoryDialog={showHistoryDialog}
+        setShowHistoryDialog={setShowHistoryDialog}
+        selectedSessionId={selectedSessionId}
+        onSessionSelect={(session) => {
+          setShowHistoryDialog(false);
+          const newProjectId = session.projectId || 'general';
+          if (newProjectId !== projectId) {
+            setTimeout(() => {
+              window.location.href = `/chat/${newProjectId}`;
+            }, 100);
+          } else {
+            console.log(`📝 [MESSAGE-HISTORY] Loading session ${session.id} for current project`);
+            setSelectedSessionId(session.id);
+          }
+        }}
+        contextDrawerOpen={contextDrawerOpen}
+        setContextDrawerOpen={setContextDrawerOpen}
+        agentTasks={agentTasks}
+        artifacts={artifacts}
+        runState={runState.currentRunId ? runState.runs.get(runState.currentRunId) || null : null}
+        setActiveTaskId={setActiveTaskId}
+        setShowArtifactsDrawer={setShowArtifactsDrawer}
+      />
     </div>
   );
 }
