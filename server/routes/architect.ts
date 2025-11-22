@@ -10,6 +10,11 @@ import multer from 'multer';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { nanoid } from 'nanoid';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import { knowledge_search } from '../tools/knowledge.js';
+
+const execAsync = promisify(exec);
 
 const router = Router();
 
@@ -185,17 +190,12 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
             const content = await fs.readFile(fullPath, 'utf-8');
             result = { content };
           } else if (toolUse.name === 'bash') {
-            const { exec } = require('child_process');
-            const { promisify } = require('util');
-            const execAsync = promisify(exec);
-            
             const { stdout, stderr } = await execAsync(toolUse.input.command, {
               timeout: 30000,
               maxBuffer: 1024 * 1024
             });
             result = { stdout, stderr };
           } else if (toolUse.name === 'knowledge_search') {
-            const { knowledge_search } = require('../tools/knowledge');
             result = await knowledge_search(toolUse.input);
           } else {
             result = { error: `Tool ${toolUse.name} not implemented` };
