@@ -133,6 +133,20 @@ export class TerminalService {
       return;
     }
 
+    // NEW: Guard against empty tokens
+    if (tokens.length === 0) {
+      console.warn(`[TERMINAL] Command parsing failed: no valid tokens`);
+      this.sendMessage(session.ws, {
+        type: 'error',
+        data: 'Command parsing failed: no valid tokens',
+      });
+      this.sendMessage(session.ws, {
+        type: 'exit',
+        code: 1,
+      });
+      return;
+    }
+
     const cmd = tokens[0];
     const cmdArgs = tokens.slice(1);
 

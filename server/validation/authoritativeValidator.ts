@@ -24,19 +24,30 @@ export function sanitizeAndTokenizeCommand(cmd: string): string[] {
     throw new Error(`Invalid command syntax: ${e.message}`);
   }
   
-  // Extract string tokens, reject operators
+  // NEW: Re-validate EACH token AFTER parsing (catches escaped newlines)
   const stringTokens: string[] = [];
   for (const token of tokens) {
     if (typeof token === 'string') {
-      // Re-check each token
-      if (/[\x00-\x1F\x7F\n\r]/.test(token) || /[;&|><`$()]/.test(token)) {
-        throw new Error(`Invalid token: ${token.substring(0, 20)}`);
+      // CRITICAL: Check for control chars AFTER shell-quote expansion
+      if (/[\x00-\x1F\x7F]/.test(token)) {
+        throw new Error(`Token contains control characters after parsing: ${token.substring(0, 20)}`);
+      }
+      if (/[\n\r]/.test(token)) {
+        throw new Error(`Token contains newlines after parsing: ${token.substring(0, 20)}`);
+      }
+      if (/[;&|><`$()]/.test(token)) {
+        throw new Error(`Token contains shell metacharacters: ${token.substring(0, 20)}`);
       }
       stringTokens.push(token);
     } else {
       // Shell operators (objects) are rejected
       throw new Error(`Shell operators not allowed: ${JSON.stringify(token)}`);
     }
+  }
+  
+  // NEW: Guard against empty token array
+  if (stringTokens.length === 0) {
+    throw new Error('Command produced no valid tokens');
   }
   
   return stringTokens; // Safe to use with spawn()
@@ -51,24 +62,34 @@ export function normalizePathForStorage(userPath: string, projectRoot: string): 
   normalized: string;
   error?: string;
 } {
-  // First normalize and resolve to check for path traversal
-  const normalized = path.normalize(userPath);
+  // NEW: Enforce ASCII-only (blocks Unicode homoglyphs)
+  if (/[^\x00-\x7F]/.test(userPath)) {
+    return { 
+      safe: false, 
+      normalized: userPath, 
+      error: 'Path contains non-ASCII characters (Unicode homoglyphs blocked)' 
+    };
+  }
+  
+  // Remove traversal attempts
+  const normalized = path.normalize(userPath).replace(/^(\.\.(\/|\\|$))+/, '');
   const absolutePath = path.resolve(projectRoot, normalized);
   
-  // Ensure within project root (must start with projectRoot + separator)
-  const projectRootWithSep = projectRoot.endsWith(path.sep) ? projectRoot : projectRoot + path.sep;
-  if (!absolutePath.startsWith(projectRootWithSep) && absolutePath !== projectRoot) {
+  // Ensure within project root
+  if (!absolutePath.startsWith(projectRoot + path.sep)) {
     return { safe: false, normalized, error: 'Path escapes project root' };
   }
   
-  // Get the relative path for further checks
-  const relativePath = path.relative(projectRoot, absolutePath);
-  
-  // Block sensitive directories
+  // Block sensitive directories (exact match, not substring)
+  const segments = normalized.split(/[/\\]/);
   const forbidden = ['.git', 'node_modules', '.env', 'dist', 'build'];
-  if (forbidden.some(dir => relativePath.includes(dir))) {
-    return { safe: false, normalized: relativePath, error: 'Access to sensitive directory blocked' };
+  if (segments.some(seg => forbidden.includes(seg))) {
+    return { 
+      safe: false, 
+      normalized, 
+      error: `Access to sensitive directory blocked: ${segments.find(s => forbidden.includes(s))}` 
+    };
   }
   
-  return { safe: true, normalized: relativePath };
+  return { safe: true, normalized: path.relative(projectRoot, absolutePath) };
 }

@@ -531,6 +531,13 @@ export async function handleStreamRequest(
               role: 'assistant',
               content: contentBlocks
             });
+            // TODO (Future): Parse validated tool results and surface truncation/validation flags
+            // Currently conversationMessages stores opaque JSON strings. Future iteration should:
+            // 1. Parse JSON from validateToolResult
+            // 2. Surface `truncated` flag to UI for user awareness
+            // 3. Surface `schemaValidationWarning` for debugging
+            // 4. Consider structured storage instead of JSON strings
+            // Tracked in: Integration alignment iteration
             conversationMessages.push({
               role: 'user',
               content: toolResults

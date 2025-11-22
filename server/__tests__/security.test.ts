@@ -32,6 +32,14 @@ describe('Security Regression Tests', () => {
       const tokens = sanitizeAndTokenizeCommand('npm install express');
       expect(tokens).toEqual(['npm', 'install', 'express']);
     });
+    
+    test('blocks escaped newline injection', () => {
+      expect(() => sanitizeAndTokenizeCommand('echo foo\\nrm -rf /')).toThrow();
+    });
+    
+    test('rejects empty token arrays', () => {
+      expect(() => sanitizeAndTokenizeCommand('')).toThrow('no valid tokens');
+    });
   });
   
   describe('normalizePathForStorage', () => {
@@ -70,6 +78,12 @@ describe('Security Regression Tests', () => {
     test('blocks paths that escape project root', () => {
       const result = normalizePathForStorage('src/../../etc/passwd', '/home/user/project');
       expect(result.safe).toBe(false);
+    });
+    
+    test('blocks Unicode homoglyph paths', () => {
+      const result = normalizePathForStorage('foo９bar', '/home/project');
+      expect(result.safe).toBe(false);
+      expect(result.error).toContain('non-ASCII');
     });
   });
 });

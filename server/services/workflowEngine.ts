@@ -53,6 +53,11 @@ export class WorkflowEngine extends EventEmitter {
     // Use authoritative validator (will throw if dangerous patterns found)
     const tokens = sanitizeAndTokenizeCommand(command);
     
+    // NEW: Guard against empty tokens
+    if (tokens.length === 0) {
+      throw new Error('Command validation failed: no valid tokens');
+    }
+    
     // In production mode, enforce strict allow-listing
     if (workflowsEnabled === 'production') {
       const commandPrefix = tokens[0];

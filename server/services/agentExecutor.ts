@@ -4,6 +4,7 @@ import { eq, and, sql } from 'drizzle-orm';
 import { CreditManager } from './creditManager';
 import { createEvent, BillingEstimateData, BillingReconciledData } from '@shared/agentEvents';
 import type { WebSocketServer } from 'ws';
+import { validateToolResult } from '../validation/toolResultValidators';
 
 export class AgentExecutor {
   /**
@@ -379,6 +380,9 @@ export class AgentExecutor {
   /**
    * Execute a tool and return its result
    * Dispatches tool execution to appropriate handlers
+   * 
+   * ✅ VALIDATION: All tool results are validated and sanitized before returning
+   * to prevent malformed data from corrupting conversation history.
    */
   static async executeTool(
     toolName: string,
@@ -399,95 +403,126 @@ export class AgentExecutor {
       // Import tool handlers
       const toolHandlers = await import('../routes/lomuChat/tools/toolHandler');
       
+      // Execute tool and collect raw result
+      let rawResult: any;
+      
       // Route to appropriate handler based on tool name
       switch (toolName) {
         case 'read':
-          return await toolHandlers.handleReadFile(input.file_path || input.path || '');
+          rawResult = await toolHandlers.handleReadFile(input.file_path || input.path || '');
+          break;
         
         case 'write':
-          return await toolHandlers.handleWriteFile(
+          rawResult = await toolHandlers.handleWriteFile(
             input.file_path || input.path || '',
             input.content || ''
           );
+          break;
         
         case 'edit':
-          return await toolHandlers.handleEditFile(
+          rawResult = await toolHandlers.handleEditFile(
             input.file_path || input.path || '',
             input.old_string || '',
             input.new_string || ''
           );
+          break;
         
         case 'bash':
-          return await toolHandlers.handleBashCommand(
+          rawResult = await toolHandlers.handleBashCommand(
             input.command || '',
             input.timeout || 120000
           );
+          break;
         
         case 'search_codebase':
-          return await toolHandlers.handleSearchCodebase(
+          rawResult = await toolHandlers.handleSearchCodebase(
             input.query || '',
             input.search_paths || []
           );
+          break;
         
         case 'grep_tool':
-          return await toolHandlers.handleGrep(
+          rawResult = await toolHandlers.handleGrep(
             input.pattern || '',
             input.path || '.'
           );
+          break;
         
         case 'ls':
-          return await toolHandlers.handleListDirectory(
+          rawResult = await toolHandlers.handleListDirectory(
             input.path || '.'
           );
+          break;
         
         case 'glob':
-          return await toolHandlers.handleGlobPattern(
+          rawResult = await toolHandlers.handleGlobPattern(
             input.pattern || '',
             input.path || '.'
           );
+          break;
         
         case 'create_task_list':
-          return await toolHandlers.handleCreateTaskList(input.tasks || []);
+          rawResult = await toolHandlers.handleCreateTaskList(input.tasks || []);
+          break;
         
         case 'update_task':
-          return await toolHandlers.handleUpdateTask(input.task_id || '', input.status || 'pending');
+          rawResult = await toolHandlers.handleUpdateTask(input.task_id || '', input.status || 'pending');
+          break;
         
         case 'read_task_list':
-          return await toolHandlers.handleReadTaskList();
+          rawResult = await toolHandlers.handleReadTaskList();
+          break;
         
         case 'start_subagent':
-          return await toolHandlers.handleStartSubagent(input);
+          rawResult = await toolHandlers.handleStartSubagent(input);
+          break;
         
         case 'web_search':
-          return await toolHandlers.handleWebSearch(input.query || '');
+          rawResult = await toolHandlers.handleWebSearch(input.query || '');
+          break;
         
         case 'get_auto_context':
-          return await toolHandlers.handleGetAutoContext(input.file_path || '');
+          rawResult = await toolHandlers.handleGetAutoContext(input.file_path || '');
+          break;
         
         case 'extract_function':
-          return await toolHandlers.handleExtractFunction(
+          rawResult = await toolHandlers.handleExtractFunction(
             input.file_path || '',
             input.function_name || ''
           );
+          break;
         
         case 'smart_read_file':
-          return await toolHandlers.handleSmartReadFile(
+          rawResult = await toolHandlers.handleSmartReadFile(
             input.file_path || '',
             input.context || ''
           );
+          break;
         
         case 'perform_diagnosis':
-          return await toolHandlers.handlePerformDiagnosis(input.issue || '');
+          rawResult = await toolHandlers.handlePerformDiagnosis(input.issue || '');
+          break;
         
         case 'architect_consult':
-          return await toolHandlers.handleArchitectConsult(input.query || '');
+          rawResult = await toolHandlers.handleArchitectConsult(input.query || '');
+          break;
         
         case 'refresh_all_logs':
-          return await toolHandlers.handleRefreshAllLogs();
+          rawResult = await toolHandlers.handleRefreshAllLogs();
+          break;
         
         default:
           throw new Error(`Unknown tool: ${toolName}`);
       }
+      
+      // ✅ VALIDATE AND SANITIZE RESULT BEFORE RETURNING
+      const validation = validateToolResult(toolName, rawResult);
+      if (!validation.valid) {
+        console.warn(`[AGENT-EXECUTOR] Tool ${toolName} returned invalid result:`, validation.error);
+      }
+      
+      console.log(`[AGENT-EXECUTOR] Tool ${toolName} result validated (${validation.sanitized.length} chars)`);
+      return validation.sanitized; // Already sanitized and truncated
     } catch (error: any) {
       console.error(`[AGENT-EXECUTOR] Tool ${toolName} failed:`, error);
       throw new Error(`Tool execution failed: ${error.message}`);
