@@ -133,6 +133,42 @@ class PerformanceMonitor {
   }
 
   /**
+   * Get all metrics (for dashboard exposure)
+   */
+  getMetrics(): AggregatedMetrics {
+    return this.getAggregatedMetrics();
+  }
+
+  /**
+   * Record a successful response
+   */
+  recordResponse(durationMs: number, success: boolean = true): void {
+    this.recordMetric({
+      timestamp: Date.now(),
+      duration: durationMs,
+      tokensUsed: 0,
+      inputTokens: 0,
+      outputTokens: 0,
+      success,
+    });
+  }
+
+  /**
+   * Record an error response
+   */
+  recordError(errorMessage: string): void {
+    this.recordMetric({
+      timestamp: Date.now(),
+      duration: 0,
+      tokensUsed: 0,
+      inputTokens: 0,
+      outputTokens: 0,
+      success: false,
+      error: errorMessage,
+    });
+  }
+
+  /**
    * Clear old metrics to free memory
    */
   clearOldMetrics(olderThanHours: number = 72): number {

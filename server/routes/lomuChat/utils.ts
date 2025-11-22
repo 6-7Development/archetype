@@ -80,7 +80,8 @@ export async function ensureActiveSession(conversationStateId: string) {
   const idleDuration = now.getTime() - lastUpdated.getTime();
 
   // If idle for more than 30 minutes, reset counters (simulate new session)
-  if (idleDuration > LOMU_LIMITS.SESSION.IDLE_TIMEOUT_MS) {
+  const IDLE_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+  if (idleDuration > IDLE_TIMEOUT_MS) {
     console.log(`[SESSION-MANAGER] Session ${conversationStateId} idle for ${idleDuration / 60000} minutes, resetting counters.`);
     await db.update(conversationStates).set({
       apiCallCount: 0,

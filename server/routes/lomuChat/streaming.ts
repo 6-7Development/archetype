@@ -60,8 +60,8 @@ export function emitSection(sendEvent: (type: string, data: any) => void, title:
   });
 }
 
-export function broadcastFileUpdate(wss: WebSocketServer | null, path: string, operation: 'create' | 'modify' | 'delete', targetContext: 'platform' | 'project' = 'platform', projectId: string | null = null, userId: string | null = null) {
-  if (wss) {
+export function broadcastFileUpdate(wss: WebSocketServer | null, path: string, operation: 'create' | 'modify' | 'delete', targetContext: 'platform' | 'project' = 'platform', projectId: string | null = null, userId?: string | null) {
+  if (wss && userId) {
     broadcastToUser(wss, userId, {
       type: 'file_change',
       file: { path, operation },
