@@ -156,6 +156,15 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
     let fullResponse = '';
     let assistantMessageId: string | null = null;
 
+    // SSE helper to send events in correct format (matches lomuChat.ts)
+    const sendEvent = (eventType: string, data: any) => {
+      res.write(`event: ${eventType}\n`);
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
+    };
+
+    // Send initial heartbeat
+    sendEvent('heartbeat', { timestamp: Date.now() });
+
     // Stream response from Claude
     await streamAnthropicResponse({
       model: 'claude-sonnet-4-20250514',
@@ -166,19 +175,18 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
       onChunk: (chunk) => {
         if (chunk.type === 'chunk' && chunk.content) {
           fullResponse += chunk.content;
-          // Send SSE chunk to client
-          res.write(`data: ${JSON.stringify({ type: 'chunk', content: chunk.content })}\n\n`);
+          // Send SSE chunk to client (proper SSE format)
+          sendEvent('content', { content: chunk.content });
         }
       },
       onToolUse: async (toolUse) => {
         console.log('[ARCHITECT] Tool use:', toolUse.name);
         
-        // Send tool use notification to client
-        res.write(`data: ${JSON.stringify({ 
-          type: 'tool_use', 
+        // Send tool use notification to client (proper SSE format)
+        sendEvent('tool_call', { 
           tool: toolUse.name,
           input: toolUse.input 
-        })}\n\n`);
+        });
 
         // Execute tool
         let result: any = null;
@@ -205,12 +213,11 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
           result = { error: error.message };
         }
 
-        // Send tool result to client
-        res.write(`data: ${JSON.stringify({ 
-          type: 'tool_result', 
+        // Send tool result to client (proper SSE format)
+        sendEvent('tool_result', { 
           tool: toolUse.name,
           result 
-        })}\n\n`);
+        });
 
         return result;
       },
@@ -232,20 +239,18 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
 
         assistantMessageId = assistantMsg.id;
 
-        // Send completion event
-        res.write(`data: ${JSON.stringify({ 
-          type: 'complete', 
+        // Send completion event (proper SSE format)
+        sendEvent('done', { 
           messageId: assistantMessageId,
           usage 
-        })}\n\n`);
+        });
         res.end();
       },
       onError: (error) => {
         console.error('[ARCHITECT] Stream error:', error);
-        res.write(`data: ${JSON.stringify({ 
-          type: 'error', 
+        sendEvent('error', { 
           error: error.message 
-        })}\n\n`);
+        });
         res.end();
       }
     });
@@ -255,10 +260,9 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
     if (!res.headersSent) {
       res.status(500).json({ error: error.message });
     } else {
-      res.write(`data: ${JSON.stringify({ 
-        type: 'error', 
-        error: error.message 
-      })}\n\n`);
+      // Use sendEvent helper (defined in stream handler scope)
+      res.write(`event: error\n`);
+      res.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
       res.end();
     }
   }
