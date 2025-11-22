@@ -88,10 +88,8 @@ export async function handleBashCommand(command: string, timeout: number = 12000
  */
 export async function handleSearchCodebase(query: string, searchPaths: string[]): Promise<string> {
   try {
-    // Import the search_codebase tool from Replit agent
-    const { search_codebase } = await import('../../../tools/tool-distributions.ts');
-    
-    // This is a stub - in reality, search_codebase would be called via Replit agent
+    // Stub: search_codebase is an external Replit agent tool
+    // In production, this would call the actual search infrastructure
     return `🔍 Search for: "${query}"\nPaths: ${searchPaths.join(', ') || 'all'}\n\n[Search results would appear here]`;
   } catch (error: any) {
     return `❌ Search failed: ${error.message}`;
