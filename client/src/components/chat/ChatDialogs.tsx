@@ -15,20 +15,21 @@ import type { RunState } from "@shared/agentEvents";
 import type { Artifact as ArtifactItem } from "@/components/agent/ArtifactsDrawer";
 import type { AgentTask } from "@/components/agent-task-list";
 
-interface RequiredSecret {
+// Re-export types for use in other components
+export interface RequiredSecret {
   key: string;
   description: string;
   getInstructions?: string;
 }
 
-interface SecretsRequest {
+export interface SecretsRequest {
   commandId: string;
   command: string;
   message: string;
   requiredSecrets: RequiredSecret[];
 }
 
-interface TestingSession {
+export interface TestingSession {
   sessionId: string;
   url: string;
   status: 'initializing' | 'running' | 'completed' | 'failed';
@@ -46,6 +47,35 @@ interface TestingSession {
   completedAt?: number;
 }
 
+export interface CostData {
+  complexity: 'simple' | 'medium' | 'complex' | 'enterprise';
+  estimatedTokens: number;
+  tokensRemaining: number;
+  tokenLimit: number;
+  overageTokens: number;
+  overageCost: number;
+  reasons: string[];
+}
+
+export interface DeploymentData {
+  deploymentId: string;
+  commitHash: string;
+  commitMessage: string;
+  commitUrl?: string;
+  timestamp: number;
+  platform: string;
+  steps: Array<{
+    id: string;
+    name: string;
+    status: 'pending' | 'running' | 'completed' | 'failed';
+    timestamp?: number;
+    error?: string;
+  }>;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  deploymentUrl?: string;
+  errorMessage?: string;
+}
+
 interface ChatDialogsProps {
   // Secrets dialog
   secretsRequest: SecretsRequest | null;
@@ -59,15 +89,7 @@ interface ChatDialogsProps {
   showCostPreview: boolean;
   setShowCostPreview: (value: boolean) => void;
   isFreeAccess: boolean;
-  costData: {
-    complexity: 'simple' | 'medium' | 'complex' | 'enterprise';
-    estimatedTokens: number;
-    tokensRemaining: number;
-    tokenLimit: number;
-    overageTokens: number;
-    overageCost: number;
-    reasons: string[];
-  } | null;
+  costData: CostData | null;
   onCostPreviewProceed: () => void;
   pendingCommand: string;
   setPendingCommand: (value: string) => void;
@@ -82,7 +104,7 @@ interface ChatDialogsProps {
   // Deployment modal
   showDeploymentModal: boolean;
   setShowDeploymentModal: (value: boolean) => void;
-  deployment: any;
+  deployment: DeploymentData | null;
 
   // Insufficient credits dialog
   showInsufficientCredits: boolean;

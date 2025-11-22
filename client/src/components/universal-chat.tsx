@@ -1596,68 +1596,7 @@ export function UniversalChat({
         {/* Left Panel: Messages (70%) */}
         <ResizablePanel defaultSize={70} minSize={50}>
           <div className="flex flex-col h-full overflow-hidden">
-            {/* Agent Status Strip - Shows current phase */}
-            {isGenerating && (
-              <StatusStrip 
-                phase={currentPhase}
-                message={phaseMessage}
-                currentThought={streamState.currentThought}
-                isExecuting={isGenerating}
-                billingMetrics={billingMetrics}
-              />
-            )}
-
-            {/* RunState Progress Table - Replit-style Kanban */}
-            {runState.currentRunId && runState.runs.get(runState.currentRunId) && (
-              <div className="px-6 pt-4 pb-2 bg-[hsl(220,18%,16%)] border-b border-[hsl(220,15%,28%)]">
-                <RunProgressTable runState={runState.runs.get(runState.currentRunId)!} />
-              </div>
-            )}
-
-            {/* AI Progress - Only show when no task list exists and no RunState */}
-            {(currentProgress.length > 0 || isGenerating) && agentTasks.length === 0 && !runState.currentRunId && (
-              <div className="px-6 pt-4 pb-2 bg-[hsl(220,18%,16%)] border-b border-[hsl(220,15%,28%)]">
-                <AgentProgress
-                  steps={currentProgress}
-                  metrics={currentMetrics}
-                />
-              </div>
-            )}
-
-            {/* Copy Chat History Button */}
-            {messages.length > 1 && (
-              <div className="px-4 py-2 border-b border-border bg-muted/20 flex justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const chatHistory = messages.filter(m => !m.isSummary).map(m => 
-                      `${m.role === 'user' ? 'USER' : 'LOMU AI'}:\n${m.content}\n`
-                    ).join('\n---\n\n');
-                    navigator.clipboard.writeText(chatHistory);
-                    setCopiedChatHistory(true);
-                    setTimeout(() => setCopiedChatHistory(false), 2000);
-                    toast({ title: "✅ Chat copied!" });
-                  }}
-                  className="h-7 gap-1.5"
-                  data-testid="button-copy-chat"
-                >
-                  {copiedChatHistory ? (
-                    <>
-                      <Check className="h-3.5 w-3.5" />
-                      <span className="text-xs">Copied!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-3.5 w-3.5" />
-                      <span className="text-xs">Copy Chat</span>
-                    </>
-                  )}
-                </Button>
-              </div>
-            )}
-
-        {/* Messages Area */}
+        {/* Messages Area - Now includes all overlays and status displays */}
         <ChatMessages 
           messages={messages}
           isGenerating={isGenerating}
@@ -1665,34 +1604,17 @@ export function UniversalChat({
           onImageZoom={setZoomImage}
           scrollRef={scrollRef}
           messagesEndRef={messagesEndRef}
+          currentPhase={currentPhase}
+          phaseMessage={phaseMessage}
+          currentProgress={currentProgress}
+          currentMetrics={currentMetrics}
+          agentTasks={agentTasks}
+          streamState={streamState}
+          billingMetrics={billingMetrics}
+          scratchpadEntries={streamState.scratchpad || []}
+          sessionId={sessionId}
+          onClearScratchpad={handleClearScratchpad}
         />
-
-        {/* WebSocket Stream: File Status */}
-        {streamState.currentFile && (
-          <div className="mx-4 mb-2 px-3 py-1.5 bg-[hsl(220,16%,20%)] border-l-2 border-emerald-500/60 rounded text-xs" data-testid="stream-file-status">
-            <p className="text-[hsl(220,10%,72%)] flex items-center gap-2">
-              <span className="font-mono text-[hsl(220,70%,60%)]">{streamState.currentFile.action}</span>
-              <span className="font-mono">{streamState.currentFile.filename}</span>
-              <span className="ml-auto text-[hsl(220,12%,55%)]">{streamState.currentFile.language}</span>
-              <Loader2 className="w-3 h-3 animate-spin text-[hsl(220,70%,60%)]" />
-            </p>
-          </div>
-        )}
-
-        {/* WebSocket Stream: File Summary */}
-        {streamState.fileSummary && !streamState.currentFile && (
-          <div className="mx-4 mb-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-xs" data-testid="stream-file-summary">
-            <div className="flex items-center justify-between text-emerald-200">
-              <span className="font-semibold">
-                ✓ Modified {streamState.fileSummary.filesChanged} file{streamState.fileSummary.filesChanged !== 1 ? 's' : ''}
-              </span>
-              <span className="text-emerald-300/70">
-                +{streamState.fileSummary.linesAdded} lines
-                {streamState.fileSummary.linesRemoved !== undefined && ` / -${streamState.fileSummary.linesRemoved}`}
-              </span>
-            </div>
-          </div>
-        )}
 
         {/* Input Area */}
         <ChatInput 

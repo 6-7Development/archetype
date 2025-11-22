@@ -1,8 +1,16 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { EnhancedMessageDisplay } from "@/components/enhanced-message-display";
-import { Loader2 } from "lucide-react";
-import type { RunState } from "@shared/agentEvents";
-import type { ProgressStep } from "@/components/agent-progress";
+import { ScratchpadDisplay } from "@/components/scratchpad-display";
+import { StatusStrip, BillingMetrics } from "@/components/agent/StatusStrip";
+import { RunProgressTable } from "@/components/run-progress-table";
+import { AgentProgress, type ProgressStep, type ProgressMetrics } from "@/components/agent-progress";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2, Copy, Check, User } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import type { RunState, RunPhase } from "@shared/agentEvents";
+import type { ScratchpadEntry } from "@/hooks/use-websocket-stream";
 
 export interface Message {
   role: "user" | "assistant" | "system";
@@ -28,6 +36,20 @@ export interface Message {
   }>;
 }
 
+interface StreamState {
+  currentFile?: {
+    action: string;
+    filename: string;
+    language: string;
+  };
+  fileSummary?: {
+    filesChanged: number;
+    linesAdded: number;
+    linesRemoved?: number;
+  };
+  currentThought?: string;
+}
+
 interface ChatMessagesProps {
   messages: Message[];
   isGenerating: boolean;
@@ -35,6 +57,18 @@ interface ChatMessagesProps {
   onImageZoom?: (imageUrl: string) => void;
   scrollRef?: React.RefObject<HTMLDivElement>;
   messagesEndRef?: React.RefObject<HTMLDivElement>;
+  
+  // Additional props for overlays and status
+  currentPhase?: RunPhase;
+  phaseMessage?: string;
+  currentProgress?: ProgressStep[];
+  currentMetrics?: ProgressMetrics;
+  agentTasks?: Array<{ id: string; title: string; status: string }>;
+  streamState?: StreamState;
+  billingMetrics?: BillingMetrics;
+  scratchpadEntries?: ScratchpadEntry[];
+  sessionId?: string;
+  onClearScratchpad?: () => void;
 }
 
 export function ChatMessages({ 
@@ -43,10 +77,22 @@ export function ChatMessages({
   runState,
   onImageZoom,
   scrollRef,
-  messagesEndRef 
+  messagesEndRef,
+  currentPhase = 'complete',
+  phaseMessage = '',
+  currentProgress = [],
+  currentMetrics = {},
+  agentTasks = [],
+  streamState = {},
+  billingMetrics,
+  scratchpadEntries = [],
+  sessionId = '',
+  onClearScratchpad,
 }: ChatMessagesProps) {
   const localScrollRef = useRef<HTMLDivElement>(null);
   const localMessagesEndRef = useRef<HTMLDivElement>(null);
+  const [copiedChatHistory, setCopiedChatHistory] = useState(false);
+  const { toast } = useToast();
   
   const activeScrollRef = scrollRef || localScrollRef;
   const activeMessagesEndRef = messagesEndRef || localMessagesEndRef;
@@ -55,29 +101,222 @@ export function ChatMessages({
     activeMessagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, activeMessagesEndRef]);
 
-  return (
-    <div
-      ref={activeScrollRef}
-      className="flex-1 overflow-y-auto px-4 py-6 space-y-6"
-      data-testid="chat-messages-container"
-    >
-      {messages.map((message, index) => (
-        <EnhancedMessageDisplay
-          key={message.id || message.messageId || index}
-          content={message.content}
-          progressMessages={message.progressMessages}
-          isStreaming={false}
-        />
-      ))}
+  const handleCopyChatHistory = () => {
+    const chatHistory = messages
+      .filter(m => !m.isSummary)
+      .map(m => `${m.role === 'user' ? 'USER' : 'LOMU AI'}:\n${m.content}\n`)
+      .join('\n---\n\n');
+    navigator.clipboard.writeText(chatHistory);
+    setCopiedChatHistory(true);
+    setTimeout(() => setCopiedChatHistory(false), 2000);
+    toast({ title: "✅ Chat copied!" });
+  };
 
-      {isGenerating && (
-        <div className="flex items-center gap-2 text-muted-foreground" data-testid="typing-indicator">
-          <Loader2 className="w-4 h-4 animate-spin" />
-          <span className="text-sm">LomuAI is thinking...</span>
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Agent Status Strip - Shows current phase */}
+      {isGenerating && billingMetrics && (
+        <StatusStrip 
+          phase={currentPhase}
+          message={phaseMessage}
+          currentThought={streamState?.currentThought}
+          isExecuting={isGenerating}
+          billingMetrics={billingMetrics}
+        />
+      )}
+
+      {/* RunState Progress Table - Replit-style Kanban */}
+      {runState && (
+        <div className="px-6 pt-4 pb-2 bg-[hsl(220,18%,16%)] border-b border-[hsl(220,15%,28%)]">
+          <RunProgressTable runState={runState} />
         </div>
       )}
 
-      <div ref={activeMessagesEndRef} />
+      {/* AI Progress - Only show when no task list exists and no RunState */}
+      {(currentProgress.length > 0 || isGenerating) && agentTasks.length === 0 && !runState && (
+        <div className="px-6 pt-4 pb-2 bg-[hsl(220,18%,16%)] border-b border-[hsl(220,15%,28%)]">
+          <AgentProgress
+            steps={currentProgress}
+            metrics={currentMetrics}
+          />
+        </div>
+      )}
+
+      {/* Copy Chat History Button */}
+      {messages.length > 1 && (
+        <div className="px-4 py-2 border-b border-border bg-muted/20 flex justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCopyChatHistory}
+            className="h-7 gap-1.5"
+            data-testid="button-copy-chat"
+          >
+            {copiedChatHistory ? (
+              <>
+                <Check className="h-3.5 w-3.5" />
+                <span className="text-xs">Copied!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="h-3.5 w-3.5" />
+                <span className="text-xs">Copy Chat</span>
+              </>
+            )}
+          </Button>
+        </div>
+      )}
+
+      {/* Messages Area */}
+      <div
+        ref={activeScrollRef}
+        className="flex-1 overflow-y-auto px-4 py-6 space-y-6"
+        data-testid="chat-messages-container"
+      >
+        {messages.map((message, index) => (
+          <div
+            key={message.id || message.messageId || index}
+            className={cn(
+              "flex gap-3",
+              message.role === 'user' ? 'justify-end' : 'justify-start'
+            )}
+          >
+            {/* Assistant Avatar */}
+            {message.role === 'assistant' && (
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
+                AI
+              </div>
+            )}
+
+            {/* Message Content */}
+            <div className={cn(
+              "flex-1 max-w-[85%]",
+              message.role === 'user' && 'max-w-[75%]'
+            )}>
+              {/* User messages: simple card */}
+              {message.role === 'user' ? (
+                <Card className="bg-primary/5 border-primary/20">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-2">
+                      <User className="w-4 h-4 mt-0.5 flex-shrink-0 text-primary" />
+                      <div className="flex-1">
+                        <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+                        
+                        {/* User-attached images */}
+                        {message.images && message.images.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {message.images.map((imageUrl, imgIndex) => (
+                              <img
+                                key={imgIndex}
+                                src={imageUrl}
+                                alt={`Attached ${imgIndex + 1}`}
+                                className="max-w-xs max-h-64 rounded border border-border cursor-pointer hover-elevate"
+                                onClick={() => onImageZoom?.(imageUrl)}
+                                data-testid={`user-image-${index}-${imgIndex}`}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                /* Assistant messages: enhanced display */
+                <div className="space-y-3">
+                  {/* Checkpoint display (if present) */}
+                  {message.checkpoint && (
+                    <Card className="bg-yellow-50/50 dark:bg-yellow-950/20 border-yellow-200/50 dark:border-yellow-800/30">
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-2">
+                          <div className="text-xl">⚠️</div>
+                          <div className="flex-1 space-y-2">
+                            <h4 className="font-semibold text-sm">Checkpoint Required</h4>
+                            <p className="text-xs text-muted-foreground">
+                              Complexity: <span className="font-medium">{message.checkpoint.complexity}</span> |
+                              Estimated Cost: <span className="font-medium">${message.checkpoint.cost.toFixed(2)}</span> |
+                              Time: <span className="font-medium">{message.checkpoint.estimatedTime}</span>
+                            </p>
+                            <div className="text-xs">
+                              <p className="font-medium mb-1">Planned Actions:</p>
+                              <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
+                                {message.checkpoint.actions.map((action, i) => (
+                                  <li key={i}>{action}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Main content with progress */}
+                  <EnhancedMessageDisplay
+                    content={message.content}
+                    progressMessages={message.progressMessages}
+                    isStreaming={isGenerating && index === messages.length - 1}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* User Avatar */}
+            {message.role === 'user' && (
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                <User className="w-4 h-4 text-muted-foreground" />
+              </div>
+            )}
+          </div>
+        ))}
+
+        {/* Scratchpad Display (if entries exist) */}
+        {scratchpadEntries.length > 0 && sessionId && (
+          <div className="mt-4">
+            <ScratchpadDisplay
+              entries={scratchpadEntries}
+              sessionId={sessionId}
+              onClear={onClearScratchpad}
+            />
+          </div>
+        )}
+
+        {isGenerating && (
+          <div className="flex items-center gap-2 text-muted-foreground" data-testid="typing-indicator">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm">LomuAI is thinking...</span>
+          </div>
+        )}
+
+        <div ref={activeMessagesEndRef} />
+      </div>
+
+      {/* WebSocket Stream: File Status */}
+      {streamState?.currentFile && (
+        <div className="mx-4 mb-2 px-3 py-1.5 bg-[hsl(220,16%,20%)] border-l-2 border-emerald-500/60 rounded text-xs" data-testid="stream-file-status">
+          <p className="text-[hsl(220,10%,72%)] flex items-center gap-2">
+            <span className="font-mono text-[hsl(220,70%,60%)]">{streamState.currentFile.action}</span>
+            <span className="font-mono">{streamState.currentFile.filename}</span>
+            <span className="ml-auto text-[hsl(220,12%,55%)]">{streamState.currentFile.language}</span>
+            <Loader2 className="w-3 h-3 animate-spin text-[hsl(220,70%,60%)]" />
+          </p>
+        </div>
+      )}
+
+      {/* WebSocket Stream: File Summary */}
+      {streamState?.fileSummary && !streamState?.currentFile && (
+        <div className="mx-4 mb-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-xs" data-testid="stream-file-summary">
+          <div className="flex items-center justify-between text-emerald-200">
+            <span className="font-semibold">
+              ✓ Modified {streamState.fileSummary.filesChanged} file{streamState.fileSummary.filesChanged !== 1 ? 's' : ''}
+            </span>
+            <span className="text-emerald-300/70">
+              +{streamState.fileSummary.linesAdded} lines
+              {streamState.fileSummary.linesRemoved !== undefined && ` / -${streamState.fileSummary.linesRemoved}`}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
