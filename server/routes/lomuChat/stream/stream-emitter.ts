@@ -172,7 +172,7 @@ export function emitToolResult(
   toolResult: ToolResult,
   isError: boolean = false
 ): void {
-  // Extract payload as string for SSE event
+  // Gap #1 Fix: Keep objects as objects in SSE event (don't convert to JSON string)
   const output = typeof toolResult.payload === 'string'
     ? toolResult.payload
     : JSON.stringify(toolResult.payload);
@@ -181,6 +181,7 @@ export function emitToolResult(
     toolId,
     toolName,
     output,
+    payload: toolResult.payload, // Gap #1: Preserve structured payload
     isError,
     messageId: context.messageId,
     // ✅ PHASE 2: Include validation metadata in event
@@ -194,11 +195,12 @@ export function emitToolResult(
 
   // Broadcast to WebSocket with truncated output
   if (context.wss && context.userId) {
+    const wsOutput = typeof output === 'string' ? output.substring(0, 500) : JSON.stringify(output).substring(0, 500);
     broadcastToUser(context.wss, context.userId, {
       type: 'tool_result',
       toolName,
       toolId,
-      output: output.substring(0, 500), // Truncate for WebSocket
+      output: wsOutput,
       isError,
       timestamp: new Date().toISOString(),
       // ✅ PHASE 2: Include metadata in WebSocket event

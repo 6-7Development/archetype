@@ -222,19 +222,22 @@ export function validateToolResult(
         payload = truncatedArray;
         warnings.push(`Array truncated from ${cleanData.length} to ${truncatedArray.length} items`);
       }
-      schemaValidated = true; // Accept any array
+      // Gap #2 Fix: Validate array schema - expect array of valid objects/primitives
+      const arraySchema = z.array(z.any()).min(0);
+      const arrayValidated = arraySchema.safeParse(payload);
+      schemaValidated = arrayValidated.success;
       
     } else if (typeof cleanData === 'object' && cleanData !== null) {
       // Objects: validate against schema
-      let schema = baseToolResultSchema;
+      let schema: any = baseToolResultSchema;
       if (['read', 'write', 'edit'].includes(toolName)) {
-        schema = toolResultSchemas.fileOperation;
+        schema = toolResultSchemas.fileOperation as any;
       } else if (toolName === 'bash') {
-        schema = toolResultSchemas.commandExecution;
+        schema = toolResultSchemas.commandExecution as any;
       } else if (['search_codebase', 'grep', 'glob'].includes(toolName)) {
-        schema = toolResultSchemas.searchResult;
+        schema = toolResultSchemas.searchResult as any;
       } else if (['create_task_list', 'read_task_list'].includes(toolName)) {
-        schema = toolResultSchemas.taskList;
+        schema = toolResultSchemas.taskList as any;
       }
       
       const validated = schema.safeParse(cleanData);
@@ -243,7 +246,7 @@ export function validateToolResult(
         schemaValidated = true;
       } else {
         warnings.push(`Schema validation failed: ${validated.error.message}`);
-        payload = cleanData; // Keep original data even if schema fails
+        payload = cleanData; // Keep original data even if schema fails (Gap #1 fix: keep as object)
         valid = false; // Mark as invalid
         schemaValidated = false;
       }
