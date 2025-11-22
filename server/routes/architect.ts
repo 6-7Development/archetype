@@ -155,6 +155,7 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
 
     let fullResponse = '';
     let assistantMessageId: string | null = null;
+    let totalUsage = { inputTokens: 0, outputTokens: 0 };
 
     // SSE helper to send events in correct format (matches lomuChat.ts)
     const sendEvent = (eventType: string, data: any) => {
@@ -165,66 +166,104 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
     // Send initial heartbeat
     sendEvent('heartbeat', { timestamp: Date.now() });
 
-    // Stream response from Claude
-    await streamAnthropicResponse({
-      model: 'claude-sonnet-4-20250514',
-      maxTokens: 4096,
-      system: systemPrompt,
-      messages,
-      tools: ARCHITECT_TOOLS,
-      onChunk: (chunk) => {
-        if (chunk.type === 'chunk' && chunk.content) {
-          fullResponse += chunk.content;
-          // Send SSE chunk to client (proper SSE format)
-          sendEvent('content', { content: chunk.content });
-        }
-      },
-      onToolUse: async (toolUse) => {
-        console.log('[ARCHITECT] Tool use:', toolUse.name);
-        
-        // Send tool use notification to client (proper SSE format)
-        sendEvent('tool_call', { 
-          tool: toolUse.name,
-          input: toolUse.input 
-        });
+    // Tool continuation loop - keep streaming until Claude is done
+    let needsContinuation = true;
+    let iterationCount = 0;
+    const MAX_ITERATIONS = 10; // Prevent infinite loops
 
-        // Execute tool
-        let result: any = null;
-        
-        try {
-          if (toolUse.name === 'readPlatformFile') {
-            const filePath = toolUse.input.path;
-            const fullPath = path.join(process.cwd(), filePath);
-            const content = await fs.readFile(fullPath, 'utf-8');
-            result = { content };
-          } else if (toolUse.name === 'bash') {
-            const { stdout, stderr } = await execAsync(toolUse.input.command, {
-              timeout: 30000,
-              maxBuffer: 1024 * 1024
-            });
-            result = { stdout, stderr };
-          } else if (toolUse.name === 'knowledge_search') {
-            result = await knowledge_search(toolUse.input);
-          } else {
-            result = { error: `Tool ${toolUse.name} not implemented` };
+    while (needsContinuation && iterationCount < MAX_ITERATIONS) {
+      iterationCount++;
+      console.log(`[ARCHITECT] Stream iteration ${iterationCount}`);
+
+      // Stream response from Claude
+      const result = await streamAnthropicResponse({
+        model: 'claude-sonnet-4-20250514',
+        maxTokens: 4096,
+        system: systemPrompt,
+        messages,
+        tools: ARCHITECT_TOOLS,
+        onChunk: (chunk) => {
+          if (chunk.type === 'chunk' && chunk.content) {
+            fullResponse += chunk.content;
+            // Send SSE chunk to client (proper SSE format)
+            sendEvent('content', { content: chunk.content });
           }
-        } catch (error: any) {
-          console.error('[ARCHITECT] Tool execution error:', error);
-          result = { error: error.message };
-        }
+        },
+        onToolUse: async (toolUse) => {
+          console.log('[ARCHITECT] Tool use:', toolUse.name);
+          
+          // Send tool use notification to client (proper SSE format)
+          sendEvent('tool_call', { 
+            tool: toolUse.name,
+            input: toolUse.input 
+          });
 
-        // Send tool result to client (proper SSE format)
-        sendEvent('tool_result', { 
-          tool: toolUse.name,
-          result 
+          // Execute tool
+          let result: any = null;
+          
+          try {
+            if (toolUse.name === 'readPlatformFile') {
+              const filePath = toolUse.input.path;
+              const fullPath = path.join(process.cwd(), filePath);
+              const content = await fs.readFile(fullPath, 'utf-8');
+              result = { content };
+            } else if (toolUse.name === 'bash') {
+              const { stdout, stderr } = await execAsync(toolUse.input.command, {
+                timeout: 30000,
+                maxBuffer: 1024 * 1024
+              });
+              result = { stdout, stderr };
+            } else if (toolUse.name === 'knowledge_search') {
+              result = await knowledge_search(toolUse.input);
+            } else {
+              result = { error: `Tool ${toolUse.name} not implemented` };
+            }
+          } catch (error: any) {
+            console.error('[ARCHITECT] Tool execution error:', error);
+            result = { error: error.message };
+          }
+
+          // Send tool result to client (proper SSE format)
+          sendEvent('tool_result', { 
+            tool: toolUse.name,
+            result 
+          });
+
+          return result;
+        },
+      });
+
+      // Accumulate usage
+      if (result.usage) {
+        totalUsage.inputTokens += result.usage.inputTokens;
+        totalUsage.outputTokens += result.usage.outputTokens;
+      }
+
+      // Check if we need to continue (Claude used tools)
+      if (result.needsContinuation && result.assistantContent && result.toolResults) {
+        console.log('[ARCHITECT] Tool continuation needed, appending results to conversation');
+        
+        // Add assistant's tool-use message to conversation
+        messages.push({
+          role: 'assistant',
+          content: result.assistantContent
         });
 
-        return result;
-      },
-      onComplete: async (fullText, usage) => {
+        // Add tool results as user message
+        messages.push({
+          role: 'user',
+          content: result.toolResults
+        });
+
+        needsContinuation = true;
+      } else {
+        // No more tools, we're done
+        needsContinuation = false;
+        
         console.log('[ARCHITECT] Stream complete:', {
-          responseLength: fullText.length,
-          usage
+          responseLength: fullResponse.length,
+          iterations: iterationCount,
+          usage: totalUsage
         });
 
         // Save assistant response to database
@@ -233,7 +272,7 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
           projectId: null,
           conversationStateId: sessionId,
           role: 'assistant',
-          content: fullText,
+          content: fullResponse,
           isPlatformHealing: true,
         }).returning();
 
@@ -242,18 +281,20 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
         // Send completion event (proper SSE format)
         sendEvent('done', { 
           messageId: assistantMessageId,
-          usage 
-        });
-        res.end();
-      },
-      onError: (error) => {
-        console.error('[ARCHITECT] Stream error:', error);
-        sendEvent('error', { 
-          error: error.message 
+          usage: totalUsage 
         });
         res.end();
       }
-    });
+    }
+
+    // Safety check for infinite loops
+    if (iterationCount >= MAX_ITERATIONS) {
+      console.error('[ARCHITECT] Max iterations reached, stopping');
+      sendEvent('error', { 
+        error: 'Maximum tool iterations reached' 
+      });
+      res.end();
+    }
 
   } catch (error: any) {
     console.error('[ARCHITECT] Fatal error:', error);
