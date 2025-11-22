@@ -14,6 +14,54 @@ import { z } from 'zod';
  */
 
 /**
+ * Typed tool result with structured metadata
+ * Replaces opaque JSON strings with typed discriminated union
+ */
+export type ToolResult = {
+  toolName: string;
+  valid: boolean;
+  payload: any; // The actual tool output (sanitized)
+  warnings: string[]; // Validation warnings, truncation notices, etc.
+  metadata: {
+    truncated?: boolean;
+    originalSize?: number;
+    schemaValidated?: boolean;
+  };
+};
+
+/**
+ * Helper to convert ToolResult to JSON for backward compatibility
+ */
+export function toolResultToJSON(result: ToolResult): string {
+  return JSON.stringify({
+    success: result.valid,
+    content: typeof result.payload === 'string' ? result.payload : JSON.stringify(result.payload),
+    toolName: result.toolName,
+    truncated: result.metadata.truncated,
+    warnings: result.warnings,
+    ...result.metadata
+  });
+}
+
+/**
+ * Helper to parse JSON back to ToolResult
+ */
+export function parseToolResult(json: string): ToolResult {
+  const parsed = JSON.parse(json);
+  return {
+    toolName: parsed.toolName,
+    valid: parsed.success !== false,
+    payload: parsed.content,
+    warnings: parsed.warnings || [],
+    metadata: {
+      truncated: parsed.truncated,
+      originalSize: parsed.originalSize,
+      schemaValidated: parsed.schemaValidated
+    }
+  };
+}
+
+/**
  * Base schema for all tool results
  */
 const baseToolResultSchema = z.object({
@@ -114,41 +162,70 @@ function deepSanitizeControlChars(data: any, seen: WeakSet<object> = new WeakSet
 
 /**
  * Validate tool result format
- * Sanitizes control characters from DATA before JSON serialization
+ * Returns typed ToolResult with structured metadata instead of JSON string
  * 
- * CRITICAL: This function now sanitizes at the DATA level, not the JSON string level.
- * This ensures that when the JSON is parsed later, it contains no control characters.
+ * CRITICAL: This function now returns a typed ToolResult object with:
+ * - toolName: The name of the tool
+ * - valid: Whether the result passed validation
+ * - payload: The sanitized tool output (primitives, arrays, or objects)
+ * - warnings: Array of validation warnings and truncation notices
+ * - metadata: Structured metadata (truncated, originalSize, schemaValidated)
  * 
  * @param toolName - Name of the tool that generated the result
  * @param rawResult - Raw result from tool execution
- * @returns Validation result with sanitized string and schema validation status
+ * @returns ToolResult with structured validation metadata
  */
 export function validateToolResult(
   toolName: string,
   rawResult: any
-): { valid: boolean; sanitized: string; error?: string; schemaValid?: boolean } {
+): ToolResult {
+  const warnings: string[] = [];
+  let valid = true;
+  let schemaValidated = false;
+  
   try {
-    // STEP 1: Sanitize control characters from data FIRST
+    // STEP 1: Sanitize control characters from data
     const cleanData = deepSanitizeControlChars(rawResult);
     
-    // STEP 2: Handle different result types
-    let resultObject: any;
-    let schemaValid = true; // Track schema validation status
+    // STEP 2: Determine result type and validate
+    let payload: any;
+    let originalSize = 0;
     
+    // Handle primitives (string, number, boolean, null)
     if (typeof cleanData === 'string') {
-      // Truncate CONTENT before creating object
-      const truncatedContent = cleanData.length > 45000 
-        ? cleanData.substring(0, 45000) + '\n... [content truncated by validation layer]'
-        : cleanData;
+      originalSize = cleanData.length;
+      if (cleanData.length > 45000) {
+        payload = cleanData.substring(0, 45000) + '\n... [content truncated]';
+        warnings.push(`Content truncated from ${originalSize} to 45000 chars`);
+      } else {
+        payload = cleanData;
+      }
+      schemaValidated = true; // Strings are always valid
       
-      resultObject = {
-        success: true,
-        content: truncatedContent,
-        toolName,
-        truncated: cleanData.length > 45000
-      };
+    } else if (typeof cleanData === 'number' || typeof cleanData === 'boolean' || cleanData === null) {
+      payload = cleanData;
+      schemaValidated = true; // Primitives are always valid
+      
+    } else if (Array.isArray(cleanData)) {
+      // Arrays: validate elements, truncate if needed
+      payload = cleanData;
+      originalSize = JSON.stringify(cleanData).length;
+      if (originalSize > 45000) {
+        const truncatedArray = [];
+        let currentSize = 2; // Start with "[]"
+        for (const item of cleanData) {
+          const itemSize = JSON.stringify(item).length;
+          if (currentSize + itemSize > 45000) break;
+          truncatedArray.push(item);
+          currentSize += itemSize + 1; // +1 for comma
+        }
+        payload = truncatedArray;
+        warnings.push(`Array truncated from ${cleanData.length} to ${truncatedArray.length} items`);
+      }
+      schemaValidated = true; // Accept any array
+      
     } else if (typeof cleanData === 'object' && cleanData !== null) {
-      // Validate schema
+      // Objects: validate against schema
       let schema = baseToolResultSchema;
       if (['read', 'write', 'edit'].includes(toolName)) {
         schema = toolResultSchemas.fileOperation;
@@ -162,78 +239,79 @@ export function validateToolResult(
       
       const validated = schema.safeParse(cleanData);
       if (validated.success) {
-        resultObject = validated.data;
-        schemaValid = true;
+        payload = validated.data;
+        schemaValidated = true;
       } else {
-        // SCHEMA VALIDATION FAILED
-        console.warn(`[VALIDATION] Tool ${toolName} schema validation failed:`, validated.error.message);
-        schemaValid = false;
-        // Use JSON.stringify to preserve object data instead of String() which just gives "[object Object]"
-        const jsonContent = JSON.stringify(cleanData);
-        resultObject = { 
-          success: true, 
-          content: jsonContent.length > 45000 
-            ? jsonContent.substring(0, 45000) + '\n... [content truncated by validation layer]'
-            : jsonContent,
-          toolName,
-          schemaValidationWarning: validated.error.message,
-          truncated: jsonContent.length > 45000
-        };
+        warnings.push(`Schema validation failed: ${validated.error.message}`);
+        payload = cleanData; // Keep original data even if schema fails
+        valid = false; // Mark as invalid
+        schemaValidated = false;
       }
       
-      // Truncate CONTENT field if it's a string and too long
-      if (resultObject.content && typeof resultObject.content === 'string' && resultObject.content.length > 45000) {
-        resultObject.content = resultObject.content.substring(0, 45000) + '\n... [content truncated by validation layer]';
-        resultObject.truncated = true;
+      // Truncate content/output fields
+      if (payload.content && typeof payload.content === 'string') {
+        originalSize = payload.content.length;
+        if (payload.content.length > 45000) {
+          payload.content = payload.content.substring(0, 45000) + '\n... [content truncated]';
+          warnings.push(`Content field truncated from ${originalSize} to 45000 chars`);
+        }
+      }
+      if (payload.output && typeof payload.output === 'string') {
+        const outputSize = payload.output.length;
+        if (payload.output.length > 45000) {
+          payload.output = payload.output.substring(0, 45000) + '\n... [output truncated]';
+          warnings.push(`Output field truncated from ${outputSize} to 45000 chars`);
+        }
       }
       
-      // Also truncate OUTPUT field for bash commands
-      if (resultObject.output && typeof resultObject.output === 'string' && resultObject.output.length > 45000) {
-        resultObject.output = resultObject.output.substring(0, 45000) + '\n... [content truncated by validation layer]';
-        resultObject.truncated = true;
-      }
     } else {
-      resultObject = { success: true, content: String(cleanData), toolName };
+      // Unexpected type
+      payload = String(cleanData);
+      warnings.push(`Unexpected result type: ${typeof cleanData}`);
+      valid = false;
     }
     
-    // STEP 3: Convert to JSON string (this will ALWAYS be valid JSON now)
-    const jsonString = JSON.stringify(resultObject);
-    
-    // STEP 4: Final safety check on JSON string size
-    // If somehow the entire JSON object is > 50KB, wrap in error object
-    if (jsonString.length > 50000) {
-      const safeError = {
-        success: false,
-        content: '',
-        error: `Tool result too large (${jsonString.length} bytes) - truncated for safety`,
-        toolName,
-        truncated: true
-      };
+    // STEP 3: Final size check on serialized payload
+    const jsonSize = JSON.stringify(payload).length;
+    if (jsonSize > 50000) {
+      warnings.push(`Result too large (${jsonSize} bytes) - wrapped in error`);
       return {
+        toolName,
         valid: false,
-        sanitized: JSON.stringify(safeError),
-        error: 'Result too large after validation',
-        schemaValid: false
+        payload: { error: `Result too large (${jsonSize} bytes)` },
+        warnings,
+        metadata: {
+          truncated: true,
+          originalSize: jsonSize,
+          schemaValidated: false
+        }
       };
     }
     
+    // Return structured result
     return {
-      valid: schemaValid, // NOW PROPERLY REFLECTS SCHEMA VALIDATION
-      sanitized: jsonString, // ALWAYS VALID JSON
-      schemaValid
+      toolName,
+      valid,
+      payload,
+      warnings,
+      metadata: {
+        truncated: warnings.some(w => w.includes('truncated')),
+        originalSize,
+        schemaValidated
+      }
     };
+    
   } catch (error: any) {
     console.error(`[VALIDATION] Error validating tool result for ${toolName}:`, error);
     return {
+      toolName,
       valid: false,
-      sanitized: JSON.stringify({ 
-        success: false, 
-        content: '', 
-        error: 'Validation error', 
-        toolName 
-      }),
-      error: error.message,
-      schemaValid: false
+      payload: { error: 'Validation error' },
+      warnings: [error.message],
+      metadata: {
+        truncated: false,
+        schemaValidated: false
+      }
     };
   }
 }

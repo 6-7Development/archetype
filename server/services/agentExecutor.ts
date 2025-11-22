@@ -4,7 +4,7 @@ import { eq, and, sql } from 'drizzle-orm';
 import { CreditManager } from './creditManager';
 import { createEvent, BillingEstimateData, BillingReconciledData } from '@shared/agentEvents';
 import type { WebSocketServer } from 'ws';
-import { validateToolResult } from '../validation/toolResultValidators';
+import { validateToolResult, toolResultToJSON, type ToolResult } from '../validation/toolResultValidators';
 
 export class AgentExecutor {
   /**
@@ -516,13 +516,18 @@ export class AgentExecutor {
       }
       
       // ✅ VALIDATE AND SANITIZE RESULT BEFORE RETURNING
-      const validation = validateToolResult(toolName, rawResult);
-      if (!validation.valid) {
-        console.warn(`[AGENT-EXECUTOR] Tool ${toolName} returned invalid result:`, validation.error);
+      // Validate and get structured result
+      const toolResult: ToolResult = validateToolResult(toolName, rawResult);
+      
+      if (!toolResult.valid) {
+        console.warn(`[AGENT-EXECUTOR] Tool ${toolName} validation failed:`, toolResult.warnings);
       }
       
-      console.log(`[AGENT-EXECUTOR] Tool ${toolName} result validated (${validation.sanitized.length} chars)`);
-      return validation.sanitized; // Already sanitized and truncated
+      // Convert to JSON for backward compatibility with orchestrator
+      // (Phase 2 will remove this conversion)
+      const jsonResult = toolResultToJSON(toolResult);
+      console.log(`[AGENT-EXECUTOR] Tool ${toolName} validated (valid=${toolResult.valid}, ${toolResult.warnings.length} warnings)`);
+      return jsonResult;
     } catch (error: any) {
       console.error(`[AGENT-EXECUTOR] Tool ${toolName} failed:`, error);
       throw new Error(`Tool execution failed: ${error.message}`);
