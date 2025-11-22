@@ -97,14 +97,14 @@ export async function handleStreamRequest(
       autoCommit,
       autoPush,
       projectId,
-      sessionId,
+      sessionId: validatedSessionId,
       targetContext: validatedContext,
       userId: validatedUserId,
     } = validatedRequest;
 
     userId = validatedUserId;
     targetContext = validatedContext;
-    sessionId = validatedRequest.sessionId;
+    sessionId = validatedSessionId;
 
     // ============================================================================
     // STEP 2: BILLING SETUP AND CREDIT RESERVATION
@@ -251,7 +251,7 @@ export async function handleStreamRequest(
 
     // ✅ FIX #2: TOKEN BUDGET MANAGEMENT - Initialize token counter
     let totalTokensUsed = 0;
-    const tokenLimit = LOMU_LIMITS.MAX_TOKENS_PER_SESSION; // 500K tokens
+    const tokenLimit = LOMU_LIMITS.API.MAX_CONTEXT_TOKENS; // 500K tokens
     
     // Execute AI loop with iteration controller
     const iterationState = await executeAILoop({
@@ -356,25 +356,27 @@ export async function handleStreamRequest(
                 totalCreditsUsed += creditsForIteration;
                 
                 // Log token usage to analytics
-                await TokenTracker.logUsage(
-                  {
-                    promptTokens: usage.inputTokens,
-                    candidatesTokens: usage.outputTokens,
-                    totalTokens: iterationTokens,
-                  },
-                  {
-                    userId,
-                    modelUsed: 'gemini-2.5-flash',
-                    requestType: 'CODE_GEN',
-                    targetContext,
-                    projectId: projectId || undefined,
-                    agentRunId,
-                  },
-                  creditsForIteration
-                );
-                
-                // Track tokens in LomuAI Brain for session management
-                await lomuAIBrain.recordTokens(userId, sessionId || 'default', usage.inputTokens, usage.outputTokens);
+                if (userId && targetContext) {
+                  await TokenTracker.logUsage(
+                    {
+                      promptTokens: usage.inputTokens,
+                      candidatesTokens: usage.outputTokens,
+                      totalTokens: iterationTokens,
+                    },
+                    {
+                      userId,
+                      modelUsed: 'gemini-2.5-flash',
+                      requestType: 'CODE_GEN',
+                      targetContext,
+                      projectId: projectId || undefined,
+                      agentRunId,
+                    },
+                    creditsForIteration
+                  );
+                  
+                  // Track tokens in LomuAI Brain for session management
+                  await lomuAIBrain.recordTokens(userId, sessionId || 'default', usage.inputTokens, usage.outputTokens);
+                }
               }
             },
           });
@@ -397,18 +399,18 @@ export async function handleStreamRequest(
               console.log(`[TOOL-EXECUTION] Executing: ${toolName}`);
               
               // Track tool call in brain
-              const toolCallId = lomuAIBrain.recordToolCall(userId, sessionId || 'default', toolName, input);
+              const toolCallId = userId ? lomuAIBrain.recordToolCall(userId, sessionId || 'default', toolName, input) : nanoid();
               
               try {
                 // ✅ FIX #3: APPROVAL WORKFLOW - Check if tool requires approval
                 const approvalRequiredTools = ['write', 'edit', 'create_platform_file', 'delete_platform_file'];
                 const needsApproval = approvalRequiredTools.includes(toolName);
                 
-                if (needsApproval && !autoCommit) {
+                if (needsApproval && !autoCommit && userId) {
                   // Request user approval
                   const approvalMsg = await db.insert(chatMessages).values({
                     userId,
-                    projectId,
+                    projectId: projectId || undefined,
                     conversationStateId: conversationState.id,
                     fileId: null,
                     role: 'assistant',
@@ -453,7 +455,9 @@ export async function handleStreamRequest(
                 emitToolResult(emitContext, toolName, toolId, toolResult, false);
                 
                 // Complete tool call in brain
-                lomuAIBrain.completeToolCall(userId, sessionId || 'default', toolCallId, toolResult);
+                if (userId) {
+                  lomuAIBrain.completeToolCall(userId, sessionId || 'default', toolCallId, toolResult);
+                }
                 
               } catch (error: any) {
                 console.error(`[TOOL-EXECUTION] Tool ${toolName} failed:`, error);
