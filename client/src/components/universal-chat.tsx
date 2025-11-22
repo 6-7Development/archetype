@@ -92,7 +92,7 @@ interface SecretsRequest {
 }
 
 export interface UniversalChatProps {
-  targetContext: 'platform' | 'project';
+  targetContext: 'platform' | 'project' | 'architect';
   projectId?: string | null;
   onProjectGenerated?: (result: any) => void;
 }
@@ -348,7 +348,9 @@ export function UniversalChat({
   // Default greeting message
   const DEFAULT_GREETING: Message = {
     role: "assistant",
-    content: targetContext === 'platform'
+    content: targetContext === 'architect'
+      ? "Hi! I'm the I AM Architect. I can help you design and architect your application with advanced reasoning. What would you like to build?"
+      : targetContext === 'platform'
       ? "Hi! I'm LomuAI. I can help you diagnose and fix platform issues. What would you like me to help with?"
       : "Hi! I'm LomuAI, your self-healing development assistant. What would you like to build today?",
     timestamp: new Date(),
@@ -371,12 +373,18 @@ export function UniversalChat({
 
   // Load chat history (with optional sessionId)
   const effectiveProjectId = targetContext === 'platform' ? 'platform' : (projectId || 'general');
+  
+  // 🔥 Route to correct history endpoint based on targetContext
+  const historyEndpointBase = targetContext === 'architect' 
+    ? '/api/architect/history' 
+    : '/api/lomu-ai/history';
+  
   const { data: chatHistory, isLoading: isLoadingHistory } = useQuery<{ messages: Message[] }>({
-    queryKey: ['/api/lomu-ai/history', effectiveProjectId, selectedSessionId],
+    queryKey: [historyEndpointBase, effectiveProjectId, selectedSessionId],
     queryFn: async () => {
       const url = selectedSessionId 
-        ? `/api/lomu-ai/history/${effectiveProjectId}?sessionId=${selectedSessionId}`
-        : `/api/lomu-ai/history/${effectiveProjectId}`;
+        ? `${historyEndpointBase}/${effectiveProjectId}?sessionId=${selectedSessionId}`
+        : `${historyEndpointBase}/${effectiveProjectId}`;
       
       const response = await fetch(url, {
         credentials: 'include',
@@ -405,7 +413,13 @@ export function UniversalChat({
     mutationFn: async (file) => {
       const formData = new FormData();
       formData.append('image', file);
-      const response = await fetch('/api/lomu-ai/upload-image', {
+      
+      // 🔥 Route to correct upload endpoint based on targetContext
+      const uploadEndpoint = targetContext === 'architect' 
+        ? '/api/architect/upload-image' 
+        : '/api/lomu-ai/upload-image';
+      
+      const response = await fetch(uploadEndpoint, {
         method: 'POST',
         body: formData,
         credentials: 'include',
@@ -451,7 +465,12 @@ export function UniversalChat({
   useEffect(() => {
     async function fetchAccessTier() {
       try {
-        const response = await fetch('/api/lomu-ai/access-tier', {
+        // 🔥 Route to correct access-tier endpoint based on targetContext
+        const accessTierEndpoint = targetContext === 'architect' 
+          ? '/api/architect/access-tier' 
+          : '/api/lomu-ai/access-tier';
+        
+        const response = await fetch(accessTierEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ targetContext, projectId }),
@@ -1031,12 +1050,17 @@ export function UniversalChat({
     setProgressMessage('Connecting to LomuAI...');
 
     try {
-      console.log('[SSE-FETCH] ⚡ Starting fetch request to /api/lomu-ai/stream');
+      // 🔥 Route to correct endpoint based on targetContext
+      const endpoint = targetContext === 'architect' 
+        ? '/api/architect/stream' 
+        : '/api/lomu-ai/stream';
+      
+      console.log('[SSE-FETCH] ⚡ Starting fetch request to', endpoint);
       console.log('[SSE-FETCH] 📦 Request body:', { message: userMessage.substring(0, 50), sessionId, targetContext });
       
       // 🔥 USE ABSOLUTE URL to bypass Vite's middleware buffering
       const baseUrl = window.location.origin;
-      const sseUrl = `${baseUrl}/api/lomu-ai/stream`;
+      const sseUrl = `${baseUrl}${endpoint}`;
       
       console.log('[SSE-FETCH] 🌐 Using absolute URL to bypass Vite:', sseUrl);
       

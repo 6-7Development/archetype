@@ -5,7 +5,7 @@ import { Coins, History, Settings, Wifi, WifiOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ChatHeaderProps {
-  targetContext: 'platform' | 'project';
+  targetContext: 'platform' | 'project' | 'architect';
   creditBalance?: number;
   isFreeAccess?: boolean;
   isConnected?: boolean;
