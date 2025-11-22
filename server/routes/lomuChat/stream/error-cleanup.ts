@@ -264,7 +264,7 @@ export async function rollbackPartialChanges(
   }
   
   try {
-    const { simpleGit } = await import('simple-git');
+    const { default: simpleGit } = await import('simple-git');
     const git = simpleGit(projectPath);
     
     // Check if we're in a git repository

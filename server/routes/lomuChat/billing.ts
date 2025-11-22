@@ -139,21 +139,23 @@ export async function checkCreditsAvailable(
       };
     }
     
-    // Check if user has enough available credits
-    const hasEnoughCredits = wallet.availableCredits >= requiredCredits;
+    // Calculate truly available credits (available - reserved for active runs)
+    const reservedCredits = wallet.reservedCredits || 0;
+    const trulyAvailable = wallet.availableCredits - reservedCredits;
+    const hasEnoughCredits = trulyAvailable >= requiredCredits;
     
     if (!hasEnoughCredits) {
       console.log(
-        `[BILLING] Insufficient credits - User ${userId}: has ${wallet.availableCredits}, needs ${requiredCredits}`
+        `[BILLING] Insufficient credits - User ${userId}: available ${wallet.availableCredits}, reserved ${reservedCredits}, truly available ${trulyAvailable}, needs ${requiredCredits}`
       );
       return { 
         available: false, 
-        reason: `Insufficient credits. You have ${wallet.availableCredits} credits but need ${requiredCredits}.` 
+        reason: `Insufficient credits. You have ${trulyAvailable} available credits (${wallet.availableCredits} - ${reservedCredits} reserved) but need ${requiredCredits}.` 
       };
     }
     
     console.log(
-      `[BILLING] Credit check passed - User ${userId}: has ${wallet.availableCredits}, needs ${requiredCredits}`
+      `[BILLING] Credit check passed - User ${userId}: truly available ${trulyAvailable}, needs ${requiredCredits}`
     );
     
     return { available: true };

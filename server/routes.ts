@@ -213,6 +213,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setTaskManagementWebSocketServer(wss);
   console.log('[TASK-MGMT] Task management connected to WebSocket');
   
+  // Wire WebSocket server to approval manager for approval request broadcasts
+  const { approvalManager } = await import('./services/approvalManager');
+  approvalManager.setWebSocketServer(wss);
+  console.log('[APPROVAL-MANAGER] Connected to WebSocket server');
+  
   // Initialize platform metrics broadcaster
   const { PlatformMetricsBroadcaster } = await import('./services/platformMetricsBroadcaster');
   const metricsBroadcaster = new PlatformMetricsBroadcaster(wss);
@@ -306,13 +311,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Mount credits router (credit purchase and balance management)
   app.use('/api/credits', creditsRouter);
-  
-  // Mount approval router (user approval for file modifications)
-  app.use('/api', approvalRouter);
-  console.log('[APPROVALS] Approval router mounted at /api');
   console.log('[CREDITS] Credits router mounted at /api/credits');
   
-  // Mount approval router (file modification approvals)
+  // Mount approval router (user approval for file modifications)
   app.use('/api', approvalRouter);
   console.log('[APPROVALS] Approval router mounted at /api');
   
