@@ -3,6 +3,9 @@
  * Combined intelligence: Cost-aware + Tool-capable + Self-optimizing
  */
 
+// 🗺️ PLATFORM AWARENESS SYSTEM - Inject platform structure into system prompt
+import { getPlatformAwarenessPrompt } from './services/platformManifest.ts';
+
 export interface LomuCoreConfig {
   mode: 'dev' | 'prod';
   maxTokensPerAction: number;
@@ -36,6 +39,8 @@ export function buildLomuSuperCorePrompt(options: {
   const { platform, autoCommit, intent, contextPrompt, userMessage, autonomyLevel = 'standard', extendedThinking = false } = options;
   
   return `You are Lomu, an autonomous AI software engineer assistant that helps users build and debug software projects.
+
+${getPlatformAwarenessPrompt()}
 
 <role>
 You are an autonomous software engineer that helps users with software engineering tasks. Use the instructions below and the tools available to you to assist the user.
