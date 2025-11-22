@@ -45,6 +45,7 @@ import { lomuAIBrain } from '../../../services/lomuAIBrain.ts';
 import { AgentExecutor } from '../../../services/agentExecutor.ts';
 import { LOMU_LIMITS } from '../../../config/lomuLimits.ts';
 import { waitForApproval } from '../../lomu/utils.ts';
+import type { RunConfigGovernance } from './types.ts';
 
 // Import tool execution functions
 import * as tools from '../../../tools/index.ts';
@@ -442,12 +443,11 @@ export async function handleStreamRequest(
                 }
                 
                 // Execute tool using AgentExecutor dispatcher
-                const agentExecutor = new AgentExecutor();
                 let toolResult: string;
                 
                 try {
                   // Execute tool with input parameters
-                  toolResult = await agentExecutor.executeTool(
+                  toolResult = await AgentExecutor.executeTool(
                     toolName,
                     input,
                     {
@@ -526,6 +526,54 @@ export async function handleStreamRequest(
     });
 
     console.log(`[ORCHESTRATOR] ✅ AI loop completed after ${iterationState.iterationCount} iterations`);
+
+    // ============================================================================
+    // STEP 5.5: GITHUB COMMIT & PUSH (if autoPush enabled)
+    // ============================================================================
+    if (runConfig.finalAutoPush && targetContext === 'project') {
+      try {
+        console.log('[ORCHESTRATOR] Step 5.5: Committing changes to GitHub...');
+        
+        const { platformGitService } = await import('../../../services/gitService.ts');
+        
+        // Get git status to see what changed
+        const gitStatus = await platformGitService.getStatus();
+        const hasChanges = gitStatus.modified.length > 0 || gitStatus.added.length > 0 || gitStatus.deleted.length > 0;
+        
+        if (hasChanges) {
+          // Stage all changes
+          const allChangedFiles = [...gitStatus.modified, ...gitStatus.added, ...gitStatus.deleted];
+          await platformGitService.stageFiles(allChangedFiles);
+          
+          // Commit with message
+          const commitMessage = `[LomuAI] ${fullContent?.substring(0, 50) || 'Auto-update'}\n\nFiles changed: ${allChangedFiles.join(', ')}`;
+          
+          const commitHash = await platformGitService.commit(commitMessage, {
+            name: 'LomuAI Autonomous',
+            email: 'lomuai@lomu.dev'
+          });
+          
+          emitSystemInfo(emitContext, `✅ Changes committed: ${commitHash.substring(0, 7)}`, 'info');
+          console.log(`[ORCHESTRATOR] ✅ Committed to GitHub: ${commitHash}`);
+          
+          // Track file changes for platform healing
+          if (targetContext === 'platform') {
+            progressMessages.push({
+              phase: 'COMMIT',
+              status: 'completed',
+              message: `Files committed: ${allChangedFiles.join(', ')}`,
+              timestamp: new Date().toISOString()
+            });
+          }
+        } else {
+          console.log('[ORCHESTRATOR] No changes to commit');
+        }
+      } catch (gitError: any) {
+        console.error('[ORCHESTRATOR] Git commit failed:', gitError);
+        emitSystemInfo(emitContext, `⚠️ Git commit failed: ${gitError.message}`, 'warning');
+        // Continue with persistence even if git fails
+      }
+    }
 
     // ============================================================================
     // STEP 6: FINAL PERSISTENCE
