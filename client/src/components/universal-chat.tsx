@@ -1166,8 +1166,8 @@ export function UniversalChat({
             continue;
           }
 
-          // ✅ NEW SSE PARSER: Handle proper SSE format with event: and data: lines
-          // Parse event name (e.g., "event: content")
+          // ✅ NEW SSE PARSER: Handle BOTH proper SSE format AND old envelope format
+          // Parse event name and data
           let eventName = 'message'; // default event type
           let dataStr = '';
           
@@ -1186,8 +1186,15 @@ export function UniversalChat({
               const eventData = JSON.parse(dataStr);
               console.log('[SSE] Event:', eventName, eventData);
 
-              // ✅ Extract data payload (backend sends {content: "..."} directly, not {type, data})
-              const payload = eventData;
+              // ✅ HYBRID SUPPORT: Handle both old envelope format AND new proper SSE format
+              let payload = eventData;
+              
+              // If backend sent old format {type: "X", data: {...}}, extract the type and data
+              if (eventData.type && typeof eventData.data === 'object') {
+                console.log('[SSE] Old envelope format detected, extracting type:', eventData.type);
+                eventName = eventData.type; // Use type from envelope as event name
+                payload = eventData.data || eventData; // Use data field as payload
+              }
               
               switch (eventName) {
                 case 'heartbeat':
