@@ -227,6 +227,7 @@ export async function handleStreamRequest(
     const chunkState = createChunkState();
     let fullContent = '';
     const progressMessages: Array<{ id: string; message: string; timestamp: number; category: 'thinking' | 'action' | 'result' }> = [];
+    const allToolResults: ToolResult[] = []; // ✅ PHASE 3: Track all tool results across iterations for persistence
     
     // ✅ PHASE ORCHESTRATION: Wire up 7-phase workflow
     // ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT
@@ -391,7 +392,7 @@ export async function handleStreamRequest(
         // ✅ FIX #1: TOOL EXECUTION - Execute tools returned by Gemini
         // ✅ PHASE 2: Collect ToolResult[] array instead of any[]
         // ============================================================================
-        const toolResults: ToolResult[] = [];
+        const iterationToolResults: ToolResult[] = [];
         const hasToolUse = contentBlocks.some(block => block.type === 'tool_use');
         
         if (hasToolUse) {
@@ -470,8 +471,9 @@ export async function handleStreamRequest(
                     }
                   );
                   
-                  // Add structured tool result to array
-                  toolResults.push(toolResult);
+                  // Add structured tool result to array (both iteration and all-time tracking)
+                  iterationToolResults.push(toolResult);
+                  allToolResults.push(toolResult);
                   
                   // Emit tool result event with ToolResult
                   emitToolResult(emitContext, toolName, toolId, toolResult, false);
@@ -491,7 +493,7 @@ export async function handleStreamRequest(
                   // ✅ PHASE 2: Create error ToolResult
                   const errorMsg = `Tool execution failed: ${toolError.message}`;
                   const errorToolResult: ToolResult = {
-                    toolName,
+                    toolName, // Fix: add missing line
                     valid: false,
                     payload: { error: errorMsg },
                     warnings: [errorMsg],
@@ -500,7 +502,8 @@ export async function handleStreamRequest(
                       schemaValidated: false
                     }
                   };
-                  toolResults.push(errorToolResult);
+                  iterationToolResults.push(errorToolResult);
+                  allToolResults.push(errorToolResult);
                   emitToolResult(emitContext, toolName, toolId, errorToolResult, true);
                   throw toolError; // Re-throw to outer catch block
                 }
@@ -710,13 +713,13 @@ export async function handleStreamRequest(
         progressMessages: JSON.stringify(progressMessages),
         isPlatformHealing: targetContext === 'platform',
         // Aggregate validation metadata from all tool results
-        validationMetadata: toolResults.length > 0 
+        validationMetadata: allToolResults.length > 0 
           ? {
-              toolResultCount: toolResults.length,
-              allValid: toolResults.every(tr => tr.valid),
-              warnings: toolResults.flatMap(tr => tr.warnings),
-              truncated: toolResults.some(tr => tr.metadata.truncated),
-              schemaValidated: toolResults.every(tr => tr.metadata.schemaValidated)
+              toolResultCount: allToolResults.length,
+              allValid: allToolResults.every((tr: ToolResult) => tr.valid),
+              warnings: allToolResults.flatMap((tr: ToolResult) => tr.warnings),
+              truncated: allToolResults.some((tr: ToolResult) => tr.metadata.truncated),
+              schemaValidated: allToolResults.every((tr: ToolResult) => tr.metadata.schemaValidated)
             }
           : undefined,
       }).returning();
