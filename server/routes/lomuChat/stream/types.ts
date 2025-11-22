@@ -94,6 +94,13 @@ export interface ToolResultEventPayload {
   output: string;
   isError?: boolean;
   messageId?: string;
+  // ✅ PHASE 2: Validation metadata for UI awareness
+  metadata?: {
+    valid?: boolean;
+    truncated?: boolean;
+    warnings?: string[];
+    schemaValidated?: boolean;
+  };
 }
 
 /**

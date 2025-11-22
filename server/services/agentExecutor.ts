@@ -383,6 +383,8 @@ export class AgentExecutor {
    * 
    * ✅ VALIDATION: All tool results are validated and sanitized before returning
    * to prevent malformed data from corrupting conversation history.
+   * 
+   * ✅ PHASE 2: Returns structured ToolResult instead of JSON string
    */
   static async executeTool(
     toolName: string,
@@ -394,7 +396,7 @@ export class AgentExecutor {
       targetContext?: 'platform' | 'project';
       runId?: string;
     }
-  ): Promise<string> {
+  ): Promise<ToolResult> {
     const { userId, sessionId, projectId, targetContext, runId } = context;
     
     try {
@@ -523,11 +525,9 @@ export class AgentExecutor {
         console.warn(`[AGENT-EXECUTOR] Tool ${toolName} validation failed:`, toolResult.warnings);
       }
       
-      // Convert to JSON for backward compatibility with orchestrator
-      // (Phase 2 will remove this conversion)
-      const jsonResult = toolResultToJSON(toolResult);
+      // ✅ PHASE 2: Return structured ToolResult directly (no JSON conversion!)
       console.log(`[AGENT-EXECUTOR] Tool ${toolName} validated (valid=${toolResult.valid}, ${toolResult.warnings.length} warnings)`);
-      return jsonResult;
+      return toolResult;
     } catch (error: any) {
       console.error(`[AGENT-EXECUTOR] Tool ${toolName} failed:`, error);
       throw new Error(`Tool execution failed: ${error.message}`);

@@ -15,6 +15,7 @@ import type {
 import { nanoid } from 'nanoid';
 import { broadcastToUser } from '../../websocket.ts';
 import type { WebSocketServer } from 'ws';
+import type { ToolResult } from '../../../validation/toolResultValidators.ts';
 
 /**
  * SSE Event Emission Module
@@ -154,32 +155,44 @@ export function emitToolCall(
 }
 
 /**
- * Emit a tool result event
+ * ✅ PHASE 2: Emit a tool result event with validation metadata
  * 
- * Sends the output of a completed tool execution.
+ * Sends the output of a completed tool execution along with validation metadata.
  * 
  * @param context - Emit context
  * @param toolName - Name of the tool that executed
  * @param toolId - Tool call identifier
- * @param output - Tool execution result
+ * @param toolResult - Structured ToolResult with payload and metadata
  * @param isError - Whether the tool execution failed
  */
 export function emitToolResult(
   context: EmitContext,
   toolName: string,
   toolId: string,
-  output: string,
+  toolResult: ToolResult,
   isError: boolean = false
 ): void {
+  // Extract payload as string for SSE event
+  const output = typeof toolResult.payload === 'string'
+    ? toolResult.payload
+    : JSON.stringify(toolResult.payload);
+
   context.sendEvent('tool_result', {
     toolId,
     toolName,
     output,
     isError,
     messageId: context.messageId,
+    // ✅ PHASE 2: Include validation metadata in event
+    metadata: {
+      valid: toolResult.valid,
+      truncated: toolResult.metadata.truncated,
+      warnings: toolResult.warnings,
+      schemaValidated: toolResult.metadata.schemaValidated,
+    },
   });
 
-  // Broadcast to WebSocket
+  // Broadcast to WebSocket with truncated output
   if (context.wss && context.userId) {
     broadcastToUser(context.wss, context.userId, {
       type: 'tool_result',
@@ -188,6 +201,11 @@ export function emitToolResult(
       output: output.substring(0, 500), // Truncate for WebSocket
       isError,
       timestamp: new Date().toISOString(),
+      // ✅ PHASE 2: Include metadata in WebSocket event
+      metadata: {
+        valid: toolResult.valid,
+        truncated: toolResult.metadata.truncated,
+      },
     });
   }
 }

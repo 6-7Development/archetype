@@ -595,9 +595,10 @@ export const chatMessages = pgTable("chat_messages", {
   projectId: varchar("project_id"), // Link messages to projects (null for LomuAI platform healing)
   conversationStateId: varchar("conversation_state_id"), // Link messages to specific conversation sessions (null for backward compatibility)
   fileId: varchar("file_id"),
-  role: text("role").notNull(), // 'user' | 'assistant' | 'system'
+  role: text("role").notNull(), // 'user' | 'assistant' | 'system' | 'tool'
   content: text("content").notNull(),
   images: jsonb("images"), // Array of image URLs/paths for Vision API support
+  toolName: text("tool_name"), // Tool name for 'tool' role messages (PHASE 2: structured tool results)
   isSummary: boolean("is_summary").notNull().default(false), // True for compressed conversation summaries
   isPlatformHealing: boolean("is_platform_healing").notNull().default(false), // True for LomuAI platform healing conversations
   platformChanges: jsonb("platform_changes"), // Track file modifications in LomuAI messages
@@ -606,6 +607,15 @@ export const chatMessages = pgTable("chat_messages", {
   approvedBy: varchar("approved_by"), // User ID who approved/rejected
   approvedAt: timestamp("approved_at"), // When approval was given
   progressMessages: jsonb("progress_messages"), // Array of { id, message, timestamp, category } - inline thinking/progress display
+  
+  // ✅ PHASE 2: Validation metadata for tool results
+  validationMetadata: jsonb("validation_metadata").$type<{
+    valid?: boolean;
+    truncated?: boolean;
+    warnings?: string[];
+    schemaValidated?: boolean;
+  }>(),
+  
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => [
   index("idx_chat_messages_project_id").on(table.projectId),

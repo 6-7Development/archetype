@@ -46,6 +46,7 @@ import { AgentExecutor } from '../../../services/agentExecutor.ts';
 import { LOMU_LIMITS } from '../../../config/lomuLimits.ts';
 import { waitForApproval } from '../../lomu/utils.ts';
 import type { RunConfigGovernance } from './types.ts';
+import type { ToolResult } from '../../../validation/toolResultValidators.ts';
 
 // Import tool execution functions
 import * as tools from '../../../tools/index.ts';
@@ -388,8 +389,9 @@ export async function handleStreamRequest(
 
         // ============================================================================
         // ✅ FIX #1: TOOL EXECUTION - Execute tools returned by Gemini
+        // ✅ PHASE 2: Collect ToolResult[] array instead of any[]
         // ============================================================================
-        const toolResults: any[] = [];
+        const toolResults: ToolResult[] = [];
         const hasToolUse = contentBlocks.some(block => block.type === 'tool_use');
         
         if (hasToolUse) {
@@ -434,22 +436,28 @@ export async function handleStreamRequest(
                   const approved = await waitForApproval(approvalMsg[0].id);
                   
                   if (!approved) {
-                    // User rejected - stop loop
+                    // ✅ PHASE 2: Create rejection ToolResult
                     shouldContinue = false;
-                    toolResults.push({
-                      type: 'tool_result',
-                      tool_use_id: toolId,
-                      content: '❌ USER REJECTED this operation. Please ask what they would like to do instead.'
-                    });
+                    const rejectionResult: ToolResult = {
+                      toolName,
+                      valid: false,
+                      payload: '❌ USER REJECTED this operation. Please ask what they would like to do instead.',
+                      warnings: ['User rejected approval'],
+                      metadata: {
+                        truncated: false,
+                        schemaValidated: true
+                      }
+                    };
+                    toolResults.push(rejectionResult);
                     continue;
                   }
                 }
                 
-                // Execute tool using AgentExecutor dispatcher
-                let toolResult: string;
+                // ✅ PHASE 2: Execute tool and get structured ToolResult
+                let toolResult: ToolResult;
                 
                 try {
-                  // Execute tool with input parameters
+                  // Execute tool with input parameters - now returns ToolResult
                   toolResult = await AgentExecutor.executeTool(
                     toolName,
                     input,
@@ -462,14 +470,10 @@ export async function handleStreamRequest(
                     }
                   );
                   
-                  // Add successful tool result
-                  toolResults.push({
-                    type: 'tool_result',
-                    tool_use_id: toolId,
-                    content: toolResult
-                  });
+                  // Add structured tool result to array
+                  toolResults.push(toolResult);
                   
-                  // Emit tool result event
+                  // Emit tool result event with ToolResult
                   emitToolResult(emitContext, toolName, toolId, toolResult, false);
                   
                 } catch (toolError: any) {
@@ -484,21 +488,30 @@ export async function handleStreamRequest(
                     category: 'result'
                   });
                   
-                  // Handle tool execution error
+                  // ✅ PHASE 2: Create error ToolResult
                   const errorMsg = `Tool execution failed: ${toolError.message}`;
-                  toolResults.push({
-                    type: 'tool_result',
-                    tool_use_id: toolId,
-                    is_error: true,
-                    content: errorMsg
-                  });
-                  emitToolResult(emitContext, toolName, toolId, errorMsg, true);
+                  const errorToolResult: ToolResult = {
+                    toolName,
+                    valid: false,
+                    payload: { error: errorMsg },
+                    warnings: [errorMsg],
+                    metadata: {
+                      truncated: false,
+                      schemaValidated: false
+                    }
+                  };
+                  toolResults.push(errorToolResult);
+                  emitToolResult(emitContext, toolName, toolId, errorToolResult, true);
                   throw toolError; // Re-throw to outer catch block
                 }
                 
                 // Complete tool call in brain
+                // ✅ PHASE 2: Convert ToolResult payload to string for brain tracking
                 if (userId) {
-                  lomuAIBrain.completeToolCall(userId, sessionId || 'default', toolCallId, toolResult);
+                  const resultStr = typeof toolResult.payload === 'string' 
+                    ? toolResult.payload 
+                    : JSON.stringify(toolResult.payload);
+                  lomuAIBrain.completeToolCall(userId, sessionId || 'default', toolCallId, resultStr);
                 }
                 
                 // Track successful tool execution in progress
@@ -512,35 +525,61 @@ export async function handleStreamRequest(
               } catch (error: any) {
                 console.error(`[TOOL-EXECUTION] Tool ${toolName} failed:`, error);
                 
+                // ✅ PHASE 2: Create error ToolResult for outer catch
                 const errorMsg = `Error in ${toolName}: ${error.message}`;
-                toolResults.push({
-                  type: 'tool_result',
-                  tool_use_id: toolId,
-                  is_error: true,
-                  content: errorMsg
-                });
-                
-                emitToolResult(emitContext, toolName, toolId, errorMsg, true);
+                const errorToolResult: ToolResult = {
+                  toolName,
+                  valid: false,
+                  payload: { error: errorMsg },
+                  warnings: [errorMsg],
+                  metadata: {
+                    truncated: false,
+                    schemaValidated: false
+                  }
+                };
+                toolResults.push(errorToolResult);
+                emitToolResult(emitContext, toolName, toolId, errorToolResult, true);
               }
             }
           }
           
-          // Add tool results to conversation for next iteration
+          // ✅ PHASE 2: Add tool results to conversation with metadata awareness
           if (toolResults.length > 0) {
             conversationMessages.push({
               role: 'assistant',
               content: contentBlocks
             });
-            // TODO (Future): Parse validated tool results and surface truncation/validation flags
-            // Currently conversationMessages stores opaque JSON strings. Future iteration should:
-            // 1. Parse JSON from validateToolResult
-            // 2. Surface `truncated` flag to UI for user awareness
-            // 3. Surface `schemaValidationWarning` for debugging
-            // 4. Consider structured storage instead of JSON strings
-            // Tracked in: Integration alignment iteration
+            
+            // Convert ToolResult[] to Gemini API format for next iteration
+            // Format: { role: 'user', content: [{ type: 'tool_result', tool_use_id, content }] }
+            const toolResultContent = contentBlocks
+              .filter(block => block.type === 'tool_use')
+              .map((block, idx) => {
+                const toolResult = toolResults[idx];
+                if (!toolResult) return null;
+                
+                // Convert payload to string for Gemini
+                const resultContent = typeof toolResult.payload === 'string'
+                  ? toolResult.payload
+                  : JSON.stringify(toolResult.payload);
+                
+                // Log if truncation occurred
+                if (toolResult.metadata.truncated) {
+                  console.log(`[ORCHESTRATOR] ⚠️ Tool ${toolResult.toolName} result was truncated`);
+                }
+                
+                return {
+                  type: 'tool_result',
+                  tool_use_id: block.id,
+                  content: resultContent,
+                  is_error: !toolResult.valid
+                };
+              })
+              .filter(Boolean);
+            
             conversationMessages.push({
               role: 'user',
-              content: toolResults
+              content: toolResultContent
             });
           }
         }
