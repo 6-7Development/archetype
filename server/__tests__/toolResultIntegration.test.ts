@@ -173,4 +173,65 @@ describe('Tool Result Integration Tests', () => {
       expect(typeof warning).toBe('string');
     });
   });
+
+  // ✅ END-TO-END TEST: Tool execution → Database persistence → Retrieval
+  test('end-to-end: execute tool, persist with metadata, retrieve and verify', async () => {
+    const { db } = await import('../db.ts');
+    const { chatMessages } = await import('@shared/schema');
+    const { eq } = await import('drizzle-orm');
+
+    // STEP 1: Execute tool and get structured result with validation metadata
+    const toolResult: ToolResult = await AgentExecutor.executeTool(
+      'read',
+      { file_path: 'package.json' },
+      mockContext
+    );
+
+    expect(toolResult.valid).toBe(true);
+    expect(toolResult.metadata).toBeDefined();
+    expect(toolResult.metadata.schemaValidated).toBe(true);
+
+    // STEP 2: Save to database with validation metadata
+    const messageId = `test-msg-${Date.now()}`;
+    const insertedMessage = await db
+      .insert(chatMessages)
+      .values({
+        id: messageId,
+        userId: mockContext.userId,
+        role: 'tool',
+        content: typeof toolResult.payload === 'string' 
+          ? toolResult.payload 
+          : JSON.stringify(toolResult.payload),
+        toolName: toolResult.toolName,
+        validationMetadata: toolResult.metadata, // ✅ Persist metadata
+      })
+      .returning();
+
+    expect(insertedMessage).toHaveLength(1);
+    const savedMsg = insertedMessage[0];
+    expect(savedMsg.validationMetadata).toBeDefined();
+
+    // STEP 3: Retrieve from database
+    const retrievedMessages = await db
+      .select()
+      .from(chatMessages)
+      .where(eq(chatMessages.id, messageId));
+
+    expect(retrievedMessages).toHaveLength(1);
+    const retrievedMsg = retrievedMessages[0];
+
+    // STEP 4: Verify metadata is intact and accessible
+    expect(retrievedMsg.validationMetadata).toBeDefined();
+    expect(retrievedMsg.validationMetadata.valid).toBe(toolResult.metadata.valid);
+    expect(retrievedMsg.validationMetadata.schemaValidated).toBe(true);
+    expect(retrievedMsg.toolName).toBe('read');
+    expect(retrievedMsg.role).toBe('tool');
+
+    // STEP 5: Verify warnings are preserved if present
+    if (toolResult.warnings.length > 0) {
+      expect(retrievedMsg.validationMetadata.warnings).toBeDefined();
+    }
+
+    console.log('[E2E-TEST] ✅ Tool result persisted and retrieved successfully with metadata intact');
+  });
 });

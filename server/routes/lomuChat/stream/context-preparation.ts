@@ -173,12 +173,27 @@ export async function prepareAIContext(
   // STEP 2: BUILD CONVERSATION MESSAGES
   // ============================================================================
   // Build conversation for AI model
+  // ✅ PHASE 3: Include validationMetadata for tool results (for UI/downstream consumers)
   const conversationMessages: any[] = history
     .filter(msg => msg.id !== userMessageId) // Exclude the message we just added
-    .map(msg => ({
-      role: msg.role === 'user' ? 'user' : 'assistant',
-      content: msg.content,
-    }));
+    .map(msg => {
+      const msgObj: any = {
+        role: msg.role === 'user' ? 'user' : 'assistant',
+        content: msg.content,
+      };
+      
+      // Preserve validation metadata if present (for tool result messages)
+      if (msg.validationMetadata) {
+        msgObj.validationMetadata = msg.validationMetadata;
+      }
+      
+      // Preserve tool name if this is a tool result message
+      if (msg.toolName) {
+        msgObj.toolName = msg.toolName;
+      }
+      
+      return msgObj;
+    });
 
   // ============================================================================
   // STEP 3: PROCESS ATTACHMENTS
