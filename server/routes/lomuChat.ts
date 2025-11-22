@@ -1237,18 +1237,14 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
     let availableTools = tools;
 
     if (autonomyLevel === 'basic') {
-      // Basic: NO subagents, NO task tracking, NO web search
+      // Basic: NO subagents, NO web search (only restricted tools in LOMU_CORE_TOOLS)
       availableTools = tools.filter(tool => 
         tool.name !== 'start_subagent' && 
-        tool.name !== 'readTaskList' &&
-        tool.name !== 'updateTask' &&
         tool.name !== 'web_search'
       );
     } else {
-      // Standard/Deep/Max: ALL tools including subagents ✅
-      availableTools = tools.filter(tool => 
-        tool.name !== 'request_user_approval'
-      );
+      // Standard/Deep/Max: ALL tools in LOMU_CORE_TOOLS ✅
+      availableTools = tools;
     }
 
     // 🚨 DEFIBRILLATOR PROMPT DETECTION: Emergency escape from read-eval-no-write loops
