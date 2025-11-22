@@ -37,7 +37,7 @@ import { RunStateManager } from '../services/RunStateManager.ts';
 import { traceLogger } from '../services/traceLogger.ts';
 import { nanoid } from 'nanoid';
 // Import extracted utilities and constants
-import { EMERGENCY_LIMITS, MAX_CONSECUTIVE_THINKING } from './lomu/constants.ts';
+import { MAX_CONSECUTIVE_THINKING } from './lomu/constants.ts';
 import { LOMU_CORE_TOOLS } from '../tools/tool-distributions.ts';
 import {
   mapDatabaseStatusToRunState,
@@ -744,33 +744,9 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
   // TIER 1 BILLING: Estimate tokens BEFORE streaming to reserve credits
   // ============================================================================
   
-  // Estimate input tokens from user message (rough: 1 char ≈ 4 tokens)
-  const promptTokens = message.length * 4;
-  
-  // Estimate conversation history tokens (last 5 messages)
-  const historyForEstimate = await db
-    .select()
-    .from(chatMessages)
-    .where(
-      and(
-        eq(chatMessages.userId, userId),
-        eq(chatMessages.isPlatformHealing, true)
-      )
-    )
-    .orderBy(desc(chatMessages.createdAt))
-    .limit(5);
-  
-  const conversationTokens = estimateConversationTokens(
-    historyForEstimate.map(msg => ({
-      role: msg.role,
-      content: msg.content,
-    }))
-  );
-  
-  const estimatedInputTokens = conversationTokens + promptTokens;
-  const estimatedOutputTokens = Math.max(1000, estimatedInputTokens * 0.5); // Conservative estimate
-  
-  console.log(`[BILLING] Token estimates - Input: ${estimatedInputTokens}, Output: ${estimatedOutputTokens}`);
+  // 🆕 Use modular billing module for token estimation
+  const { inputTokens: estimatedInputTokens, outputTokens: estimatedOutputTokens } = 
+    await calculateTokenEstimate(userId, message, targetContext === 'platform');
 
   // Start agent run and reserve credits based on token estimates
   const AgentExecutor = (await import('../services/agentExecutor')).AgentExecutor;
@@ -1301,7 +1277,8 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
     
     // ✅ GAP 5: Per-iteration timeout safeguards
     // Increased to 3 minutes for complex analysis/fix tasks (Gemini needs time to analyze + implement)
-    const ITERATION_TIMEOUT_MS = 180000; // 3 minutes per iteration
+    // 🆕 Use centralized limit configuration
+    const ITERATION_TIMEOUT_MS = LOMU_LIMITS.ITERATION.TIMEOUT_MS;
     let iterationStartTime = Date.now();
     
     // 🚨 WATCHDOG: Prevent endless thinking loops
@@ -1571,16 +1548,18 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
       // ✅ REMOVED: Total duration check - if user is active, let them work
 
       // Check 3: API call count (50 calls max per session)
+      // 🆕 Use centralized limit configuration
       const currentApiCallCount = conversationState.apiCallCount || 0;
-      if (currentApiCallCount >= EMERGENCY_LIMITS.MAX_API_CALLS_PER_SESSION) {
+      if (currentApiCallCount >= LOMU_LIMITS.API.MAX_API_CALLS_PER_SESSION) {
         emergencyBrakeTriggered.triggered = true;
-        emergencyBrakeTriggered.reason = '🛑 Safety limit reached: Maximum API calls (50) exceeded. Please start a new conversation to continue.';
+        emergencyBrakeTriggered.reason = `🛑 Safety limit reached: Maximum API calls (${LOMU_LIMITS.API.MAX_API_CALLS_PER_SESSION}) exceeded. Please start a new conversation to continue.`;
       }
 
       // Check 4: Session token limit (500K tokens max)
-      if (currentTokens > EMERGENCY_LIMITS.MAX_SESSION_TOKENS) {
+      // 🆕 Use centralized limit configuration
+      if (currentTokens > LOMU_LIMITS.API.MAX_CONTEXT_TOKENS) {
         emergencyBrakeTriggered.triggered = true;
-        emergencyBrakeTriggered.reason = '💾 Safety limit reached: Conversation memory exceeded 500K tokens. Please start a new conversation.';
+        emergencyBrakeTriggered.reason = `💾 Safety limit reached: Conversation memory exceeded ${LOMU_LIMITS.API.MAX_CONTEXT_TOKENS} tokens. Please start a new conversation.`;
       }
 
       if (emergencyBrakeTriggered.triggered) {
@@ -1615,7 +1594,8 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
         })
         .where(eq(conversationStates.id, conversationState.id));
       
-      console.log(`[EMERGENCY-BRAKE] API call ${currentApiCallCount + 1}/${EMERGENCY_LIMITS.MAX_API_CALLS_PER_SESSION}`);
+      // 🆕 Use centralized limit configuration
+      console.log(`[EMERGENCY-BRAKE] API call ${currentApiCallCount + 1}/${LOMU_LIMITS.API.MAX_API_CALLS_PER_SESSION}`);
 
       // ✅ FIXED GEMINI: 40x cheaper with proper functionResponse format
       // Fixed the tool response structure to match Gemini's expected format
@@ -1933,6 +1913,9 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
               // 4. Track tokens in LomuAI Brain for session management
               await lomuAIBrain.recordTokens(userId, session.sessionId, usage.inputTokens, usage.outputTokens);
               
+              // 5. 🆕 Record token usage in performance monitor via billing module
+              await recordTokenUsage(userId, session.sessionId, usage.inputTokens, usage.outputTokens, true);
+              
               console.log(`[BILLING] ✅ Reconciliation complete - ${creditsActuallyUsed} credits charged`);
             } else {
               // FALLBACK: Missing usage metadata - reconcile with 0 credits to avoid stuck reservations
@@ -2032,12 +2015,15 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
 
           // 🛑 FIX 1: EMERGENCY BRAKES - Enforce max tool calls per iteration
           toolCallsThisIteration++;
-          if (toolCallsThisIteration > EMERGENCY_LIMITS.MAX_TOOL_CALLS_PER_ITERATION) {
-            const errorMsg = `🛑 Emergency brake: Too many tool calls in single iteration (max ${EMERGENCY_LIMITS.MAX_TOOL_CALLS_PER_ITERATION})`;
+          
+          // 🆕 Use modular tools validation from tools module
+          const validation = validateToolExecution(name, toolCallsThisIteration, currentApiCallCount);
+          if (!validation.valid) {
+            const errorMsg = `🛑 Emergency brake: ${validation.reason}`;
             console.error(`[EMERGENCY-BRAKE] ${errorMsg}`);
             throw new Error(errorMsg);
           }
-          console.log(`[EMERGENCY-BRAKE] Tool call ${toolCallsThisIteration}/${EMERGENCY_LIMITS.MAX_TOOL_CALLS_PER_ITERATION} this iteration`);
+          console.log(`[EMERGENCY-BRAKE] Tool call ${toolCallsThisIteration}/${LOMU_LIMITS.TOOL.MAX_PER_ITERATION} this iteration`);
           
           // 🧠 BRAIN TRACKING: Record tool call start
           const toolCallId = lomuAIBrain.recordToolCall(userId, session.sessionId, name, input);
@@ -2119,6 +2105,9 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
           if (slowTools.includes(name)) {
             sendEvent('progress', { message: `🔧 ${name.replace('_', ' ')}...` });
           }
+
+          // 🆕 Track tool execution time for performance monitoring
+          const toolStartTime = Date.now();
 
           try {
             let toolResult: any = null;
@@ -3614,6 +3603,10 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
             
             // 🧠 BRAIN TRACKING: Record tool call completion
             lomuAIBrain.completeToolCall(userId, session.sessionId, toolCallId, toolResult);
+            
+            // 🆕 Record tool execution metrics for performance monitoring
+            const toolDuration = Date.now() - toolStartTime;
+            recordToolMetric(name, toolDuration, true);
 
             // 💬 CONVERSATIONAL: Stream friendly text AFTER tool execution
             const postMessage = getPostToolMessage(name, toolResult || '');
@@ -3645,6 +3638,10 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
               } catch (brainError: any) {
                 console.warn('[BRAIN] Failed to complete tool call tracking:', brainError.message);
               }
+              
+              // 🆕 Record tool execution error metrics for performance monitoring
+              const toolDuration = Date.now() - toolStartTime;
+              recordToolMetric(name, toolDuration, false, error.message);
 
               // 💬 CONVERSATIONAL: Stream friendly text AFTER tool error
               const errorPostMessage = getPostToolMessage(name, errorMessage);
@@ -4479,6 +4476,9 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
       console.log(`[TRACE] Persisted trace ${conversationState.traceId} for conversation ${conversationState.id}`);
     }
 
+    // 🆕 Record successful response in performance monitor
+    performanceMonitor.recordResponse(Date.now() - iterationStartTime, true);
+
     // ✅ Send completion event immediately - don't wait for quality analysis
     sendEvent('done', { messageId: assistantMsg.id, commitHash, filesChanged: fileChanges.length });
     res.end();
@@ -4574,6 +4574,9 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
     });
   } catch (error: any) {
     console.error('[LOMU-AI-CHAT] Stream error:', error);
+
+    // 🆕 Record error in performance monitor
+    performanceMonitor.recordError(error.message || 'Unknown error');
 
     // 🔥 RAILWAY FIX: Clear heartbeat on error
     if (heartbeatInterval) {

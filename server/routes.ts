@@ -4,6 +4,8 @@ import { db } from "./db";
 import { files, users } from "@shared/schema";
 import { setupAuth } from "./universalAuth";
 import { FEATURES } from "./routes/common";
+import { performanceMonitor } from "./services/performanceMonitor";
+import { isAdmin } from "./universalAuth";
 import toolsRouter from './routes/tools';
 import uploadRouter from './routes/upload';
 import platformRouter from './platformRoutes';
@@ -50,6 +52,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.get('/health', healthHandler);
   app.get('/api/health', healthHandler);
+
+  // 🆕 Performance metrics endpoint (admin only - for monitoring)
+  // GET /api/metrics - Get performance monitor statistics
+  app.get('/api/metrics', isAdmin, async (_req: any, res) => {
+    try {
+      const metrics = performanceMonitor.getMetrics();
+      res.json({
+        success: true,
+        metrics,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error: any) {
+      console.error('[METRICS] Error fetching metrics:', error);
+      res.status(500).json({ error: error.message || 'Failed to fetch metrics' });
+    }
+  });
 
   // Admin emergency endpoint (requires ADMIN_SECRET_KEY)
   app.get('/admin/emergency', async (req, res) => {
