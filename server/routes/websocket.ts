@@ -316,13 +316,40 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
   return { httpServer, wss };
 }
 
-// Utility function to broadcast to specific user
-export function broadcastToUser(wss: WebSocketServer, userId: string, data: any) {
+/**
+ * Broadcast message to specific user
+ * 
+ * 🔧 BUG FIX: Now returns boolean to indicate if message was delivered to any clients.
+ * This fixes the issue where requestApproval would stall for offline users.
+ * 
+ * @param wss - WebSocket server instance
+ * @param userId - User ID to broadcast to
+ * @param data - Data to send (will be JSON stringified)
+ * @returns true if message was delivered to at least one client, false if user is offline
+ */
+export function broadcastToUser(wss: WebSocketServer, userId: string, data: any): boolean {
+  let delivered = false;
+  let clientCount = 0;
+  
   wss.clients.forEach((client: any) => {
     if (client.readyState === WebSocket.OPEN && client.userId === userId) {
-      client.send(JSON.stringify(data));
+      try {
+        client.send(JSON.stringify(data));
+        delivered = true;
+        clientCount++;
+      } catch (error: any) {
+        console.error(`[WS-BROADCAST] Failed to send to client for user ${userId}:`, error.message);
+      }
     }
   });
+  
+  if (delivered) {
+    console.log(`[WS-BROADCAST] ✅ Message delivered to ${clientCount} client(s) for user ${userId}`);
+  } else {
+    console.warn(`[WS-BROADCAST] ⚠️ No active WebSocket clients found for user ${userId}`);
+  }
+  
+  return delivered;
 }
 
 // Utility function to broadcast to specific project

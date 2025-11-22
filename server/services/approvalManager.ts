@@ -43,6 +43,9 @@ class ApprovalManager extends EventEmitter {
   /**
    * Request approval for file modifications
    * 
+   * 🔧 BUG FIX: Now handles offline users by checking broadcastToUser return value.
+   * If no active WebSocket clients are found, immediately rejects instead of stalling.
+   * 
    * @param messageId - Unique message ID for this approval
    * @param userId - User ID who needs to approve
    * @param operation - Description of operation (e.g., "modify 3 files")
@@ -68,7 +71,7 @@ class ApprovalManager extends EventEmitter {
     return new Promise<boolean>((resolve) => {
       // Set timeout to auto-reject after timeoutMs
       const timeoutId = setTimeout(() => {
-        console.warn(`[APPROVAL-MANAGER] Approval timeout for ${messageId} - auto-rejecting`);
+        console.warn(`[APPROVAL-MANAGER] ⏰ Approval timeout for ${messageId} - auto-rejecting`);
         this.pendingApprovals.delete(messageId);
         resolve(false);
       }, timeoutMs);
@@ -87,18 +90,37 @@ class ApprovalManager extends EventEmitter {
       this.pendingApprovals.set(messageId, request);
       
       // Broadcast approval request to user via WebSocket
-      if (this.wss) {
-        broadcastToUser(this.wss, userId, {
-          type: 'approval_request',
-          messageId,
-          operation,
-          files,
-          timestamp: new Date().toISOString(),
-        });
-        console.log(`[APPROVAL-MANAGER] Broadcasted approval request to user ${userId}`);
-      } else {
-        console.warn('[APPROVAL-MANAGER] No WebSocket server - cannot broadcast approval request');
+      if (!this.wss) {
+        console.error('[APPROVAL-MANAGER] ❌ No WebSocket server available - cannot request approval');
+        clearTimeout(timeoutId);
+        this.pendingApprovals.delete(messageId);
+        resolve(false);
+        return;
       }
+      
+      // 🔧 BUG FIX: Check if broadcast was successful (user has active connection)
+      const delivered = broadcastToUser(this.wss, userId, {
+        type: 'approval_request',
+        messageId,
+        operation,
+        files,
+        timestamp: new Date().toISOString(),
+      });
+      
+      // Handle offline user - reject immediately instead of stalling
+      if (!delivered) {
+        console.error(
+          `[APPROVAL-MANAGER] ❌ User ${userId} has no active WebSocket connection - ` +
+          `cannot request approval for ${messageId}`
+        );
+        console.error('[APPROVAL-MANAGER] Auto-rejecting approval request due to offline user');
+        clearTimeout(timeoutId);
+        this.pendingApprovals.delete(messageId);
+        resolve(false);
+        return;
+      }
+      
+      console.log(`[APPROVAL-MANAGER] ✅ Approval request broadcasted successfully to user ${userId}`);
     });
   }
   

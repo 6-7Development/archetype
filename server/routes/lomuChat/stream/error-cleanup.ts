@@ -249,6 +249,9 @@ export function getFriendlyErrorMessage(error: Error): string {
  * Cleanup partial changes on error
  * Rolls back uncommitted file changes to prevent corruption
  * 
+ * 🔧 BUG FIX: Added comprehensive error handling and git instance validation
+ * to prevent "git instance is undefined" runtime errors.
+ * 
  * @param fileChanges - Array of file changes to rollback
  * @param projectPath - Root path of the project
  */
@@ -256,66 +259,150 @@ export async function rollbackPartialChanges(
   fileChanges: Array<{ path: string; operation: string }>,
   projectPath: string
 ): Promise<void> {
-  console.log(`[ERROR-CLEANUP] Rolling back ${fileChanges.length} partial changes`);
+  console.log(`[ERROR-CLEANUP] 🔄 Rolling back ${fileChanges.length} partial changes in ${projectPath}`);
   
   if (fileChanges.length === 0) {
     console.log('[ERROR-CLEANUP] No changes to rollback');
     return;
   }
   
+  // Validate projectPath before attempting git operations
+  if (!projectPath || typeof projectPath !== 'string') {
+    console.error('[ERROR-CLEANUP] ❌ Invalid projectPath:', projectPath);
+    return;
+  }
+  
   try {
-    const { default: simpleGit } = await import('simple-git');
-    const git = simpleGit(projectPath);
+    // STEP 1: Import and instantiate git client with comprehensive error handling
+    console.log('[ERROR-CLEANUP] 📦 Importing simple-git...');
+    const simpleGitModule = await import('simple-git');
     
-    // Check if we're in a git repository
-    const isRepo = await git.checkIsRepo();
-    if (!isRepo) {
-      console.warn('[ERROR-CLEANUP] Not a git repository - cannot rollback');
+    // Validate module import
+    if (!simpleGitModule || !simpleGitModule.default) {
+      console.error('[ERROR-CLEANUP] ❌ Failed to import simple-git - module or default export is undefined');
+      console.error('[ERROR-CLEANUP] Module:', simpleGitModule);
       return;
     }
     
-    // Get current status
-    const status = await git.status();
-    console.log(`[ERROR-CLEANUP] Git status - modified: ${status.modified.length}, created: ${status.created.length}`);
+    const simpleGit = simpleGitModule.default;
+    console.log('[ERROR-CLEANUP] ✅ simple-git imported successfully');
     
-    // Rollback strategy:
-    // 1. Revert modified files
-    // 2. Delete newly created files
-    // 3. Restore deleted files
+    // STEP 2: Create git instance with validation
+    console.log(`[ERROR-CLEANUP] 🔧 Instantiating git client for: ${projectPath}`);
+    const git = simpleGit(projectPath);
     
+    // Validate git instance was created
+    if (!git) {
+      console.error('[ERROR-CLEANUP] ❌ Git instance is undefined after calling simpleGit()');
+      return;
+    }
+    
+    // Validate git instance has required methods
+    if (typeof git.checkIsRepo !== 'function') {
+      console.error('[ERROR-CLEANUP] ❌ Git instance missing checkIsRepo method');
+      console.error('[ERROR-CLEANUP] Git instance type:', typeof git);
+      console.error('[ERROR-CLEANUP] Git instance keys:', Object.keys(git));
+      return;
+    }
+    
+    console.log('[ERROR-CLEANUP] ✅ Git client instantiated successfully');
+    
+    // STEP 3: Check if we're in a git repository
+    console.log('[ERROR-CLEANUP] 🔍 Checking if directory is a git repository...');
+    let isRepo: boolean;
+    try {
+      isRepo = await git.checkIsRepo();
+      console.log(`[ERROR-CLEANUP] Repository check result: ${isRepo}`);
+    } catch (repoError: any) {
+      console.error('[ERROR-CLEANUP] ❌ Failed to check if directory is a git repo:', repoError.message);
+      return;
+    }
+    
+    if (!isRepo) {
+      console.warn('[ERROR-CLEANUP] ⚠️ Not a git repository - cannot rollback via git');
+      console.warn('[ERROR-CLEANUP] Files will remain in their current state');
+      return;
+    }
+    
+    // STEP 4: Get current git status
+    console.log('[ERROR-CLEANUP] 📊 Fetching git status...');
+    let status;
+    try {
+      status = await git.status();
+      console.log(
+        `[ERROR-CLEANUP] Git status - ` +
+        `modified: ${status.modified.length}, ` +
+        `created: ${status.created.length}, ` +
+        `deleted: ${status.deleted.length}, ` +
+        `not_added: ${status.not_added.length}`
+      );
+    } catch (statusError: any) {
+      console.error('[ERROR-CLEANUP] ❌ Failed to get git status:', statusError.message);
+      return;
+    }
+    
+    // STEP 5: Categorize file changes
     const modifiedFiles = fileChanges.filter(f => f.operation === 'modify').map(f => f.path);
     const createdFiles = fileChanges.filter(f => f.operation === 'create').map(f => f.path);
     const deletedFiles = fileChanges.filter(f => f.operation === 'delete').map(f => f.path);
     
-    // Revert modified files to HEAD
-    if (modifiedFiles.length > 0) {
-      console.log(`[ERROR-CLEANUP] Reverting ${modifiedFiles.length} modified files`);
-      await git.checkout(['HEAD', '--', ...modifiedFiles]);
-    }
+    console.log('[ERROR-CLEANUP] 📋 Rollback plan:');
+    console.log(`  - Revert ${modifiedFiles.length} modified files`);
+    console.log(`  - Delete ${createdFiles.length} newly created files`);
+    console.log(`  - Restore ${deletedFiles.length} deleted files`);
     
-    // Delete newly created files
-    if (createdFiles.length > 0) {
-      console.log(`[ERROR-CLEANUP] Removing ${createdFiles.length} newly created files`);
-      const fs = await import('fs/promises');
-      for (const file of createdFiles) {
-        try {
-          await fs.unlink(file);
-          console.log(`[ERROR-CLEANUP] Deleted: ${file}`);
-        } catch (err: any) {
-          console.warn(`[ERROR-CLEANUP] Failed to delete ${file}: ${err.message}`);
-        }
+    // STEP 6: Revert modified files to HEAD
+    if (modifiedFiles.length > 0) {
+      console.log(`[ERROR-CLEANUP] ↩️ Reverting ${modifiedFiles.length} modified files...`);
+      try {
+        await git.checkout(['HEAD', '--', ...modifiedFiles]);
+        console.log('[ERROR-CLEANUP] ✅ Modified files reverted successfully');
+      } catch (checkoutError: any) {
+        console.error('[ERROR-CLEANUP] ❌ Failed to revert modified files:', checkoutError.message);
+        console.error('[ERROR-CLEANUP] Files that failed:', modifiedFiles);
       }
     }
     
-    // Restore deleted files from HEAD
+    // STEP 7: Delete newly created files (not in git yet)
+    if (createdFiles.length > 0) {
+      console.log(`[ERROR-CLEANUP] 🗑️ Removing ${createdFiles.length} newly created files...`);
+      const fs = await import('fs/promises');
+      let deletedCount = 0;
+      let failedCount = 0;
+      
+      for (const file of createdFiles) {
+        try {
+          await fs.unlink(file);
+          deletedCount++;
+          console.log(`[ERROR-CLEANUP] ✅ Deleted: ${file}`);
+        } catch (err: any) {
+          failedCount++;
+          console.warn(`[ERROR-CLEANUP] ⚠️ Failed to delete ${file}: ${err.message}`);
+        }
+      }
+      
+      console.log(`[ERROR-CLEANUP] File deletion complete - ${deletedCount} deleted, ${failedCount} failed`);
+    }
+    
+    // STEP 8: Restore deleted files from HEAD
     if (deletedFiles.length > 0) {
-      console.log(`[ERROR-CLEANUP] Restoring ${deletedFiles.length} deleted files`);
-      await git.checkout(['HEAD', '--', ...deletedFiles]);
+      console.log(`[ERROR-CLEANUP] 📥 Restoring ${deletedFiles.length} deleted files...`);
+      try {
+        await git.checkout(['HEAD', '--', ...deletedFiles]);
+        console.log('[ERROR-CLEANUP] ✅ Deleted files restored successfully');
+      } catch (restoreError: any) {
+        console.error('[ERROR-CLEANUP] ❌ Failed to restore deleted files:', restoreError.message);
+        console.error('[ERROR-CLEANUP] Files that failed:', deletedFiles);
+      }
     }
     
     console.log('[ERROR-CLEANUP] ✅ Rollback completed successfully');
+    
   } catch (error: any) {
-    console.error('[ERROR-CLEANUP] ❌ Rollback failed:', error.message);
-    console.error('[ERROR-CLEANUP] Manual intervention may be required');
+    console.error('[ERROR-CLEANUP] ❌ Rollback failed with error:', error.message);
+    console.error('[ERROR-CLEANUP] Error stack:', error.stack);
+    console.error('[ERROR-CLEANUP] ⚠️ Manual intervention may be required');
+    console.error('[ERROR-CLEANUP] Project path:', projectPath);
+    console.error('[ERROR-CLEANUP] File changes:', fileChanges);
   }
 }
