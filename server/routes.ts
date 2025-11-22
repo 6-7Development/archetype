@@ -53,22 +53,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/health', healthHandler);
   app.get('/api/health', healthHandler);
 
-  // 🆕 Performance metrics endpoint (admin only - for monitoring)
-  // GET /api/metrics - Get performance monitor statistics
-  app.get('/api/metrics', isAdmin, async (_req: any, res) => {
-    try {
-      const metrics = performanceMonitor.getMetrics();
-      res.json({
-        success: true,
-        metrics,
-        timestamp: new Date().toISOString(),
-      });
-    } catch (error: any) {
-      console.error('[METRICS] Error fetching metrics:', error);
-      res.status(500).json({ error: error.message || 'Failed to fetch metrics' });
-    }
-  });
-
   // Admin emergency endpoint (requires ADMIN_SECRET_KEY)
   app.get('/admin/emergency', async (req, res) => {
     const adminSecret = req.query.secret || req.headers['x-admin-secret'];
@@ -260,6 +244,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register all route modules with dependencies
   registerAuthRoutes(app);
   registerAdminRoutes(app);
+  
+  // 🆕 Performance metrics endpoint (admin only - for monitoring dashboard)
+  // GET /api/metrics - Returns real-time performance statistics
+  app.get('/api/metrics', isAdmin, async (_req: any, res) => {
+    try {
+      const metrics = performanceMonitor.getMetrics();
+      res.json({
+        success: true,
+        metrics,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error: any) {
+      console.error('[METRICS] Error fetching metrics:', error);
+      res.status(500).json({ error: error.message || 'Failed to fetch metrics' });
+    }
+  });
+  
   registerArchitectNotesRoutes(app);
   registerUserPreferencesRoutes(app);
   registerScratchpadRoutes(app, { wss });
