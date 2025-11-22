@@ -70,13 +70,13 @@ export function setupHeartbeat(res: Response): NodeJS.Timeout {
 export function setupStreamTimeout(
   res: Response,
   sendEvent: (type: string, data: any) => void,
-  messageId: string
+  messageId?: string
 ): NodeJS.Timeout {
   return setTimeout(() => {
     console.error('[STREAM] Timeout after 5 minutes - force closing');
     if (!res.writableEnded) {
       sendEvent('error', { message: '⏱️ Stream timeout after 5 minutes. Please try again.' });
-      sendEvent('done', { messageId, error: true });
+      sendEvent('done', { messageId: messageId || 'timeout', error: true });
       res.end();
     }
   }, STREAM_TIMEOUT_MS);

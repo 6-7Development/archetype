@@ -30,7 +30,7 @@ import type { WebSocketServer } from 'ws';
 import { broadcastToUser, broadcastToProject } from './websocket.ts';
 import { getOrCreateState, formatStateForPrompt, updateCodeScratchpad, getCodeScratchpad, clearCodeScratchpad, clearState, estimateConversationTokens, summarizeOldMessages } from '../services/conversationState.ts';
 import { agentFailureDetector } from '../services/agentFailureDetector.ts';
-import { classifyUserIntent, getMaxIterationsForIntent, type UserIntent } from '../shared/chatConfig.ts';
+import { classifyUserIntent, type UserIntent } from '../shared/chatConfig.ts';
 import { validateFileChanges, validateAllChanges, FileChangeTracker, type ValidationResult } from '../services/validationHelpers.ts';
 import { PhaseOrchestrator } from '../services/PhaseOrchestrator.ts';
 import { RunStateManager } from '../services/RunStateManager.ts';
@@ -824,7 +824,7 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
 
   // 🆕 Setup heartbeat and timeout using modular functions
   const heartbeatInterval = setupHeartbeat(res);
-  const streamTimeoutId = setupStreamTimeout(res, sendEvent, messageId);
+  const streamTimeoutId = setupStreamTimeout(res, sendEvent); // messageId will be added later
 
   console.log('[LOMU-AI-CHAT] Heartbeat and timeout configured from modular streaming module');
 
@@ -4609,11 +4609,11 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
       }).returning();
 
       // Send error and done events, then close stream
-      terminateStream(errorAssistantMsg.id, `Oops! ${error.message}. Let me try again!`);
+      terminateStream(res, sendEvent, errorAssistantMsg.id, `Oops! ${error.message}. Let me try again!`);
     } catch (dbError: any) {
       // If we can't save to DB, at least send done event with generic ID
       console.error('[LOMU-AI-CHAT] Failed to save error message:', dbError);
-      terminateStream('error-' + Date.now(), `Something went sideways, but I'm still here to help!`);
+      terminateStream(res, sendEvent, 'error-' + Date.now(), `Something went sideways, but I'm still here to help!`);
     }
   } finally {
     // STEP 3: Complete run and reconcile credits using centralized billing
