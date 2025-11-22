@@ -1,135 +1,93 @@
-/**
- * SSE Streaming module for LomuAI
- * Handles real-time event streaming to frontend with proper buffering prevention
- * Extracted from massive lomuChat.ts for maintainability
- */
-
 import type { Response } from 'express';
+import type { WebSocketServer } from 'ws';
+import { broadcastToUser } from '../websocket.ts';
+import { nanoid } from 'nanoid';
 
-const HEARTBEAT_INTERVAL_MS = 15000; // Every 15 seconds
-const STREAM_TIMEOUT_MS = 300000; // 5 minutes
-
-/**
- * Configure SSE headers to prevent buffering at multiple layers
- */
-export function configureSSEHeaders(res: Response): void {
-  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-cache, no-transform');
+export function configureSSEHeaders(res: Response) {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
-  res.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
-  res.setHeader('Content-Encoding', 'none'); // Prevent gzip buffering
   res.flushHeaders();
-  console.log('[SSE] Headers configured and flushed');
 }
 
-/**
- * Send initial heartbeat to unblock fetch promise
- */
-export function sendInitialHeartbeat(res: Response): void {
-  res.write(': init\n\n');
-  console.log('[SSE] Initial heartbeat sent');
+export function sendInitialHeartbeat(res: Response) {
+  res.write('data: { "type": "heartbeat", "message": "LomuAI stream active" }\n\n');
 }
 
-/**
- * Create sendEvent function for streaming responses
- */
 export function createEventSender(res: Response) {
   return (type: string, data: any) => {
-    try {
-      res.write(`data: ${JSON.stringify({ type, data })}\n\n`);
-      if (typeof (res as any).flush === 'function') {
-        (res as any).flush();
-      }
-    } catch (error) {
-      console.error(`[SSE] Failed to send event ${type}:`, error);
-    }
+    res.write(`data: ${JSON.stringify({ type, ...data })}\n\n`);
   };
 }
 
-/**
- * Setup heartbeat to prevent connection timeout
- */
-export function setupHeartbeat(res: Response): NodeJS.Timeout {
-  const heartbeat = setInterval(() => {
-    try {
-      res.write(': keepalive\n\n');
-      console.log('[HEARTBEAT] Keepalive sent');
-    } catch (error) {
-      console.error('[HEARTBEAT] Failed to send keepalive:', error);
-      clearInterval(heartbeat);
-    }
-  }, HEARTBEAT_INTERVAL_MS);
-
-  console.log('[HEARTBEAT] Started (interval: 15s)');
-  return heartbeat;
+export function setupHeartbeat(res: Response) {
+  const heartbeatInterval = setInterval(() => {
+    res.write('data: { "type": "heartbeat" }\n\n');
+  }, 15000); // Send heartbeat every 15 seconds
+  return heartbeatInterval;
 }
 
-/**
- * Setup stream timeout with cleanup
- */
-export function setupStreamTimeout(
-  res: Response,
-  sendEvent: (type: string, data: any) => void,
-  messageId?: string
-): NodeJS.Timeout {
-  return setTimeout(() => {
-    console.error('[STREAM] Timeout after 5 minutes - force closing');
-    if (!res.writableEnded) {
-      sendEvent('error', { message: '⏱️ Stream timeout after 5 minutes. Please try again.' });
-      sendEvent('done', { messageId: messageId || 'timeout', error: true });
-      res.end();
-    }
-  }, STREAM_TIMEOUT_MS);
-}
-
-/**
- * Setup TCP keep-alive on socket
- */
-export function setupSocketKeepAlive(req: any): void {
-  if (req.socket) {
-    req.socket.setKeepAlive(true);
-    console.log('[TCP] Keep-alive enabled');
-  }
-}
-
-/**
- * Terminate stream gracefully
- */
-export function terminateStream(
-  res: Response,
-  sendEvent: (type: string, data: any) => void,
-  messageId: string,
-  error?: string
-): void {
-  if (!res.writableEnded) {
-    if (error) {
-      sendEvent('error', { message: error });
-    }
-    sendEvent('done', { messageId, error: !!error });
+export function setupStreamTimeout(res: Response, sendEvent: (type: string, data: any) => void) {
+  const streamTimeoutId = setTimeout(() => {
+    console.warn('[LOMU-AI-STREAM] Stream timed out after 10 minutes of inactivity.');
+    sendEvent('error', { message: 'Stream timed out due to inactivity.' });
     res.end();
-    console.log(`[STREAM] Terminated${error ? ` with error: ${error}` : ' successfully'}`);
+  }, 600000); // 10 minutes
+  return streamTimeoutId;
+}
+
+export function setupSocketKeepAlive(req: any) {
+  req.socket.setTimeout(0);
+  req.socket.setNoDelay(true);
+  req.socket.setKeepAlive(true, 15000); // Keep alive every 15 seconds
+}
+
+export function terminateStream(res: Response, sendEvent: (type: string, data: any) => void, messageId: string, errorMessage?: string) {
+  if (errorMessage) {
+    sendEvent('error', { message: errorMessage });
+  }
+  sendEvent('done', { messageId });
+  res.end();
+}
+
+export function emitSection(sendEvent: (type: string, data: any) => void, title: string, content: string, category: 'thinking' | 'action' | 'result', messageId: string) {
+  const progressId = nanoid();
+  sendEvent('assistant_progress', {
+    messageId,
+    progressId,
+    content: `**${title}**\n\n${content}`,
+    category
+  });
+}
+
+export function broadcastFileUpdate(wss: WebSocketServer | null, path: string, operation: 'create' | 'modify' | 'delete', targetContext: 'platform' | 'project' = 'platform', projectId: string | null = null, userId: string | null = null) {
+  if (wss) {
+    broadcastToUser(wss, userId, {
+      type: 'file_change',
+      file: { path, operation },
+      targetContext,
+      projectId,
+      userId,
+      timestamp: new Date().toISOString()
+    });
   }
 }
 
-/**
- * Emit structured section for collapsible UI
- */
-export function emitSection(
-  sendEvent: (type: string, data: any) => void,
-  sectionId: string,
-  sectionType: 'thinking' | 'tool' | 'text',
-  phase: 'start' | 'update' | 'finish',
-  content: string,
-  metadata?: any
-): void {
-  const eventData = {
-    sectionId,
-    sectionType,
-    title: metadata?.title || content.substring(0, 50),
-    phase,
-    timestamp: Date.now(),
-    content,
-    metadata,
-  };
-  sendEvent(`section_${phase}`, eventData);
+export function mapDatabaseStatusToRunState(dbStatus: string): 'pending' | 'running' | 'completed' | 'failed' | 'cancelled' {
+  switch (dbStatus) {
+    case 'pending':
+      return 'pending';
+    case 'in_progress':
+      return 'running';
+    case 'completed':
+      return 'completed';
+    case 'completed_pending_review':
+      return 'completed'; // Treat as completed for run state
+    case 'cancelled':
+      return 'cancelled';
+    case 'failed':
+      return 'failed';
+    default:
+      return 'pending';
+  }
 }
