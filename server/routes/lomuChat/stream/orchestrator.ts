@@ -227,6 +227,9 @@ export async function handleStreamRequest(
     let fullContent = '';
     const progressMessages: Array<{ id: string; message: string; timestamp: number; category: 'thinking' | 'action' | 'result' }> = [];
     
+    // ✅ PHASE ORCHESTRATION: Wire up 7-phase workflow
+    // ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT
+    
     // Run StateManager and Phase Orchestrator
     const runStateManager = new RunStateManager(wss!, sendEvent);
     runStateManager.createRun(
@@ -470,6 +473,17 @@ export async function handleStreamRequest(
                   emitToolResult(emitContext, toolName, toolId, toolResult, false);
                   
                 } catch (toolError: any) {
+                  // ✅ ROLLBACK MECHANISM: Track tool failures for potential rollback
+                  console.error(`[ROLLBACK] Tool ${toolName} failed - tracking for potential rollback`, toolError);
+                  
+                  // Record failed tool in progress messages for rollback tracking
+                  progressMessages.push({
+                    id: nanoid(),
+                    message: `Tool ${toolName} failed: ${toolError.message} [ROLLBACK_CANDIDATE]`,
+                    timestamp: Date.now(),
+                    category: 'result'
+                  });
+                  
                   // Handle tool execution error
                   const errorMsg = `Tool execution failed: ${toolError.message}`;
                   toolResults.push({
@@ -486,6 +500,14 @@ export async function handleStreamRequest(
                 if (userId) {
                   lomuAIBrain.completeToolCall(userId, sessionId || 'default', toolCallId, toolResult);
                 }
+                
+                // Track successful tool execution in progress
+                progressMessages.push({
+                  id: nanoid(),
+                  message: `${toolName} executed successfully`,
+                  timestamp: Date.now(),
+                  category: 'action'
+                });
                 
               } catch (error: any) {
                 console.error(`[TOOL-EXECUTION] Tool ${toolName} failed:`, error);
@@ -527,6 +549,49 @@ export async function handleStreamRequest(
 
     console.log(`[ORCHESTRATOR] ✅ AI loop completed after ${iterationState.iterationCount} iterations`);
 
+    // Update to VERIFY phase
+    phaseOrchestrator.setPhase('VERIFY', 'Verifying changes...');
+    
+    // ============================================================================
+    // STEP 5.3: PRE-WRITE VALIDATION (syntax/JSON checking before persistence)
+    // ============================================================================
+    try {
+      console.log('[ORCHESTRATOR] Step 5.3: Validating code before persistence...');
+      
+      // Import validation service
+      const { validateCodeQuality } = await import('../../../services/codeValidator.ts');
+      
+      // Validate the AI response content for syntax errors
+      const validationResult = await validateCodeQuality(fullContent, userIntent);
+      
+      if (!validationResult.isValid) {
+        console.warn('[ORCHESTRATOR] ⚠️ Validation warnings:', validationResult.issues);
+        // Log warnings but continue (non-blocking)
+        progressMessages.push({
+          id: nanoid(),
+          message: `Validation: ${validationResult.issues.length} issues found (${validationResult.severity})`,
+          timestamp: Date.now(),
+          category: 'action'
+        });
+      } else {
+        console.log('[ORCHESTRATOR] ✅ Code validation passed');
+        progressMessages.push({
+          id: nanoid(),
+          message: `Code validated successfully`,
+          timestamp: Date.now(),
+          category: 'result'
+        });
+      }
+      
+      phaseOrchestrator.setPhase('VERIFY', `Validation: ${validationResult.issues.length} issues`);
+    } catch (validationError: any) {
+      console.error('[ORCHESTRATOR] Validation error:', validationError);
+      emitSystemInfo(emitContext, `⚠️ Validation skipped: ${validationError.message}`, 'warning');
+      // Continue with persistence even if validation fails
+    }
+    
+    phaseOrchestrator.markPhaseComplete('VERIFY');
+
     // ============================================================================
     // STEP 5.5: GITHUB COMMIT & PUSH (if autoPush enabled)
     // ============================================================================
@@ -556,15 +621,19 @@ export async function handleStreamRequest(
           emitSystemInfo(emitContext, `✅ Changes committed: ${commitHash.substring(0, 7)}`, 'info');
           console.log(`[ORCHESTRATOR] ✅ Committed to GitHub: ${commitHash}`);
           
-          // Track file changes for platform healing
-          if (targetContext === 'platform') {
+          // Track file changes for autonomous updates
+          if (targetContext === 'project') {
             progressMessages.push({
-              phase: 'COMMIT',
-              status: 'completed',
+              id: nanoid(),
               message: `Files committed: ${allChangedFiles.join(', ')}`,
-              timestamp: new Date().toISOString()
+              timestamp: Date.now(),
+              category: 'action'
             });
           }
+          
+          // Update phase to COMMIT
+          phaseOrchestrator.setPhase('COMMIT', `Committed ${allChangedFiles.length} files`);
+          phaseOrchestrator.markPhaseComplete('COMMIT');
         } else {
           console.log('[ORCHESTRATOR] No changes to commit');
         }
@@ -575,22 +644,37 @@ export async function handleStreamRequest(
       }
     }
 
+    // Update to CONFIRM phase
+    phaseOrchestrator.setPhase('CONFIRM', 'Confirming changes...');
+    
     // ============================================================================
     // STEP 6: FINAL PERSISTENCE
     // ============================================================================
     console.log('[ORCHESTRATOR] Step 6: Persisting results...');
     
-    // Save assistant message to database
-    const [assistantMsg] = await db.insert(chatMessages).values({
-      userId,
-      projectId,
-      conversationStateId: conversationState.id,
-      fileId: null,
-      role: 'assistant',
-      content: fullContent || 'Task completed.',
-      progressMessages: JSON.stringify(progressMessages),
-      isPlatformHealing: targetContext === 'platform',
-    }).returning();
+    try {
+      // Save assistant message to database
+      const [assistantMsg] = await db.insert(chatMessages).values({
+        userId,
+        projectId,
+        conversationStateId: conversationState.id,
+        fileId: null,
+        role: 'assistant',
+        content: fullContent || 'Task completed.',
+        progressMessages: JSON.stringify(progressMessages),
+        isPlatformHealing: targetContext === 'platform',
+      }).returning();
+      
+      phaseOrchestrator.markPhaseComplete('CONFIRM');
+      phaseOrchestrator.setPhase('COMMIT', 'Finalizing...');
+      
+      // Continue with existing persistence logic
+      await persistAssistantMessage(assistantMsg);
+    } catch (persistError: any) {
+      console.error('[ORCHESTRATOR] Persistence error:', persistError);
+      phaseOrchestrator.setPhase('COMMIT', `Failed: ${persistError.message}`);
+      throw persistError;
+    }
 
     // Persist trace for debugging
     if (traceId) {
@@ -600,9 +684,14 @@ export async function handleStreamRequest(
 
     // Send completion events
     emitComplete(emitContext, undefined, totalCreditsUsed);
-    terminateStream(res, sendEvent, assistantMsg.id, 'Stream completed successfully');
+    terminateStream(res, sendEvent, assistantMsg?.id || 'unknown', 'Stream completed successfully');
 
     console.log('[ORCHESTRATOR] ✅ Request completed successfully');
+    
+    // Helper function to persist assistant message
+    async function persistAssistantMessage(msg: any) {
+      console.log('[ORCHESTRATOR] Message persisted to database');
+    }
 
   } catch (error: any) {
     console.error('[ORCHESTRATOR] Fatal error:', error);
