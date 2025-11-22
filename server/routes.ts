@@ -10,6 +10,7 @@ import platformRouter from './platformRoutes';
 import lomuAIChatRouter from './routes/lomuChat';
 import aiKnowledgeRouter from './routes/aiKnowledge';
 import conversationStateRouter from './routes/conversationState';
+import architectRouter from './routes/architect';
 import { getDeploymentInfo } from './deploymentInfo';
 import { storage } from "./storage";
 
@@ -275,6 +276,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Mount LomuAI chat router (chat-based platform healing)
   app.use('/api/lomu-ai', lomuAIChatRouter);
   console.log('[LOMU-AI] LomuAI router mounted at /api/lomu-ai');
+  
+  // Mount I AM Architect router (architectural consultation with Claude Sonnet 4)
+  app.use('/api/architect', architectRouter);
+  console.log('[ARCHITECT] I AM Architect router mounted at /api/architect');
   
   // Mount conversation state router (context tracking for AI chats)
   app.use('/api/conversation', conversationStateRouter);

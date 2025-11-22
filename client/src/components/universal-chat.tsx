@@ -463,14 +463,16 @@ export function UniversalChat({
 
   // Fetch access tier from backend on mount
   useEffect(() => {
+    // 🔧 Architect context is ALWAYS FREE (no need to check backend)
+    if (targetContext === 'architect') {
+      setIsFreeAccess(true);
+      console.log('[ACCESS] Architect context - FREE access granted');
+      return;
+    }
+    
     async function fetchAccessTier() {
       try {
-        // 🔥 Route to correct access-tier endpoint based on targetContext
-        const accessTierEndpoint = targetContext === 'architect' 
-          ? '/api/architect/access-tier' 
-          : '/api/lomu-ai/access-tier';
-        
-        const response = await fetch(accessTierEndpoint, {
+        const response = await fetch('/api/lomu-ai/access-tier', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ targetContext, projectId }),
@@ -984,7 +986,8 @@ export function UniversalChat({
     if (!input.trim() && pendingImages.length === 0) return;
 
     // CRITICAL: Refresh credit balance before EVERY message (not just on mount)
-    if (!isFreeAccess) {
+    // 🔧 SKIP credit check for architect context (always FREE for platform healing)
+    if (!isFreeAccess && targetContext !== 'architect') {
       try {
         const response = await fetch('/api/credits/balance', {
           credentials: 'include',
