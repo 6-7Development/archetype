@@ -29,37 +29,9 @@ export type ToolResult = {
   };
 };
 
-/**
- * Helper to convert ToolResult to JSON for backward compatibility
- */
-export function toolResultToJSON(result: ToolResult): string {
-  return JSON.stringify({
-    success: result.valid,
-    content: typeof result.payload === 'string' ? result.payload : JSON.stringify(result.payload),
-    toolName: result.toolName,
-    truncated: result.metadata.truncated,
-    warnings: result.warnings,
-    ...result.metadata
-  });
-}
-
-/**
- * Helper to parse JSON back to ToolResult
- */
-export function parseToolResult(json: string): ToolResult {
-  const parsed = JSON.parse(json);
-  return {
-    toolName: parsed.toolName,
-    valid: parsed.success !== false,
-    payload: parsed.content,
-    warnings: parsed.warnings || [],
-    metadata: {
-      truncated: parsed.truncated,
-      originalSize: parsed.originalSize,
-      schemaValidated: parsed.schemaValidated
-    }
-  };
-}
+// Deprecated: toolResultToJSON and parseToolResult were used during Phase 2 transition
+// Phase 3 complete: ToolResult objects now flow directly through the pipeline
+// These exports removed - no longer needed for orchestrator or SSE events
 
 /**
  * Base schema for all tool results
