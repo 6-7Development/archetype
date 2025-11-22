@@ -2800,21 +2800,21 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
               const typedInput = input as { 
                 problem: string; 
                 context: string; 
-                proposedSolution: string;
-                affectedFiles: string[];
+                previousAttempts?: string[];
+                codeSnapshot?: string;
               };
               sendEvent('progress', { message: '🏗️ Consulting I AM (The Architect) for strategic guidance...' });
 
               const architectResult = await consultArchitect({
                 problem: typedInput.problem,
                 context: typedInput.context,
-                previousAttempts: [],
-                codeSnapshot: `Proposed Solution:\n${typedInput.proposedSolution}\n\nAffected Files:\n${typedInput.affectedFiles.join('\n')}`
+                previousAttempts: typedInput.previousAttempts || [],
+                codeSnapshot: typedInput.codeSnapshot || ''
               });
 
               if (architectResult.success) {
                 sendEvent('progress', { message: `✅ I AM provided guidance` });
-                toolResult = `✅ I AM GUIDANCE\n\n${architectResult.guidance}\n\nRecommendations:\n${architectResult.recommendations.join('\n')}\n\nNote: This is consultation, not approval. You're autonomous - use this advice as you see fit!`;
+                toolResult = `✅ I AM GUIDANCE\n\n${architectResult.guidance}\n\nRecommendations:\n${(architectResult.recommendations || []).join('\n')}\n\nNote: This is consultation, not approval. You're autonomous - use this advice as you see fit!`;
               } else {
                 sendEvent('info', { message: `I AM consultation completed` });
                 toolResult = `I AM FEEDBACK\n\n${architectResult.error}\n\nNote: This is just advice - you're autonomous and can proceed as you think best.`;
