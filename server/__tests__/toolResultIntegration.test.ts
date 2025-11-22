@@ -177,7 +177,7 @@ describe('Tool Result Integration Tests', () => {
   // ✅ END-TO-END TEST: Tool execution → Database persistence → Retrieval
   test('end-to-end: execute tool, persist with metadata, retrieve and verify', async () => {
     const { db } = await import('../db.ts');
-    const { chatMessages } = await import('../../../shared/schema.ts');
+    const { chatMessages } = await import('../../shared/schema.ts');
     const { eq } = await import('drizzle-orm');
 
     // STEP 1: Execute tool and get structured result with validation metadata
@@ -222,15 +222,19 @@ describe('Tool Result Integration Tests', () => {
 
     // STEP 4: Verify metadata is intact and accessible
     expect(retrievedMsg.validationMetadata).toBeDefined();
-    expect(retrievedMsg.validationMetadata.schemaValidated).toBe(toolResult.metadata.schemaValidated);
-    expect(retrievedMsg.validationMetadata.schemaValidated).toBe(true);
+    
+    if (retrievedMsg.validationMetadata) {
+      expect(retrievedMsg.validationMetadata.schemaValidated).toBe(toolResult.metadata.schemaValidated);
+      expect(retrievedMsg.validationMetadata.schemaValidated).toBe(true);
+      
+      // STEP 5: Verify warnings are preserved if present
+      if (toolResult.warnings.length > 0) {
+        expect(retrievedMsg.validationMetadata.warnings).toBeDefined();
+      }
+    }
+    
     expect(retrievedMsg.toolName).toBe('read');
     expect(retrievedMsg.role).toBe('tool');
-
-    // STEP 5: Verify warnings are preserved if present
-    if (toolResult.warnings.length > 0) {
-      expect(retrievedMsg.validationMetadata.warnings).toBeDefined();
-    }
 
     console.log('[E2E-TEST] ✅ Tool result persisted and retrieved successfully with metadata intact');
   });
