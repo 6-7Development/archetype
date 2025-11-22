@@ -169,7 +169,7 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
     // Tool continuation loop - keep streaming until Claude is done
     let needsContinuation = true;
     let iterationCount = 0;
-    const MAX_ITERATIONS = 10; // Prevent infinite loops
+    const MAX_ITERATIONS = 20; // Allow thorough analysis (Claude often needs 10-15 tool calls)
 
     while (needsContinuation && iterationCount < MAX_ITERATIONS) {
       iterationCount++;

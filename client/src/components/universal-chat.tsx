@@ -1166,18 +1166,35 @@ export function UniversalChat({
             continue;
           }
 
-          if (trimmedLine.startsWith('data: ')) {
-            try {
-              const jsonStr = trimmedLine.substring(6).trim(); // Remove 'data: ' and trim
-              console.log('[SSE-DEBUG] Parsing JSON:', jsonStr.substring(0, 100));
-              const eventData = JSON.parse(jsonStr);
-              console.log('[SSE] Event:', eventData.type, eventData);
+          // ✅ NEW SSE PARSER: Handle proper SSE format with event: and data: lines
+          // Parse event name (e.g., "event: content")
+          let eventName = 'message'; // default event type
+          let dataStr = '';
+          
+          const eventLines = trimmedLine.split('\n');
+          for (const eventLine of eventLines) {
+            if (eventLine.startsWith('event: ')) {
+              eventName = eventLine.substring(7).trim();
+            } else if (eventLine.startsWith('data: ')) {
+              dataStr = eventLine.substring(6).trim();
+            }
+          }
 
-              // ✅ FIX: Backend now sends { type, data } envelope
-              // Extract data payload for easier access
-              const payload = eventData.data || {};
+          if (dataStr) {
+            try {
+              console.log('[SSE-DEBUG] Parsing event:', eventName, 'data:', dataStr.substring(0, 100));
+              const eventData = JSON.parse(dataStr);
+              console.log('[SSE] Event:', eventName, eventData);
+
+              // ✅ Extract data payload (backend sends {content: "..."} directly, not {type, data})
+              const payload = eventData;
               
-              switch (eventData.type) {
+              switch (eventName) {
+                case 'heartbeat':
+                  // Heartbeat event, just log
+                  console.log('[SSE] Heartbeat received');
+                  break;
+
                 case 'user_message':
                   assistantMessageId = payload.messageId;
                   setProgressMessage('Processing your request...');
@@ -1223,6 +1240,11 @@ export function UniversalChat({
                 case 'tool_call':
                   setProgressStatus('working');
                   setProgressMessage(`Using tool: ${payload.tool || 'unknown'}...`);
+                  break;
+
+                case 'tool_result':
+                  // Tool execution completed
+                  console.log('[SSE] Tool result received:', payload.tool);
                   break;
 
                 case 'run_phase':
