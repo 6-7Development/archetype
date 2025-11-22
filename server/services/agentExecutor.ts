@@ -1,6 +1,6 @@
 import { db } from '../db';
-import { agentRuns, creditWallets } from '@shared/schema';
-import { eq, and } from 'drizzle-orm';
+import { agentRuns, creditWallets, creditLedger } from '@shared/schema';
+import { eq, and, sql } from 'drizzle-orm';
 import { CreditManager } from './creditManager';
 import { createEvent, BillingEstimateData, BillingReconciledData } from '@shared/agentEvents';
 import type { WebSocketServer } from 'ws';
@@ -219,6 +219,8 @@ export class AgentExecutor {
    * OVERLOADED: Supports both legacy and new signatures for backward compatibility
    * - NEW: completeRun({ runId, actualCreditsUsed, source, wss, sessionId, finalInputTokens, finalOutputTokens })
    * - LEGACY: completeRun(runId, creditsUsed) - defaults source to 'lomu_chat'
+   * 
+   * CRITICAL FIX: All database operations wrapped in single transaction to prevent inconsistent state
    */
   static async completeRun(
     paramsOrRunId: { 
@@ -260,36 +262,90 @@ export class AgentExecutor {
         return { success: false, error: 'Run not found' };
       }
 
-      // Reconcile credits
-      if (run.creditsReserved > 0) {
-        await CreditManager.reconcileCredits({
-          userId: run.userId,
-          agentRunId: runId,
-          creditsReserved: run.creditsReserved,
-          creditsActuallyUsed: actualCreditsUsed,
-          source,
-          metadata: { projectId: run.projectId },
-        });
-      }
-
-      // Mark run as completed
-      await db
-        .update(agentRuns)
-        .set({
-          status: 'completed',
-          creditsConsumed: actualCreditsUsed,
-          completedAt: new Date(),
-        })
-        .where(eq(agentRuns.id, runId));
-
-      // Get updated credit balance for billing event
-      const [wallet] = await db
-        .select()
-        .from(creditWallets)
-        .where(eq(creditWallets.userId, run.userId));
-
-      const newBalance = wallet ? wallet.availableCredits : 0;
+      // CRITICAL FIX: Wrap ALL operations in a SINGLE transaction for atomicity
+      // This ensures credits are only reconciled if agent run update succeeds
+      let newBalance = 0;
       const creditsRefunded = run.creditsReserved - actualCreditsUsed;
+
+      if (run.creditsReserved > 0) {
+        // Execute credit reconciliation + run update + balance fetch atomically
+        const result = await db.transaction(async (tx) => {
+          const creditsToReturn = run.creditsReserved - actualCreditsUsed;
+
+          // 1. Update credit wallet atomically
+          const updateResult = await tx
+            .update(creditWallets)
+            .set({
+              availableCredits: sql`available_credits + ${creditsToReturn}`,
+              reservedCredits: sql`reserved_credits - ${run.creditsReserved}`,
+              updatedAt: new Date(),
+            })
+            .where(
+              and(
+                eq(creditWallets.userId, run.userId),
+                sql`reserved_credits >= ${run.creditsReserved}` // Guard against negative reserved
+              )
+            )
+            .returning();
+
+          if (updateResult.length === 0) {
+            throw new Error('Insufficient reserved credits to reconcile');
+          }
+
+          // 2. Log consumption to credit ledger
+          await tx.insert(creditLedger).values({
+            userId: run.userId,
+            deltaCredits: -actualCreditsUsed,
+            usdAmount: null,
+            source,
+            referenceId: runId,
+            metadata: {
+              projectId: run.projectId,
+              creditsReserved: run.creditsReserved,
+              creditsReturned: creditsToReturn,
+            },
+          });
+
+          // 3. Update agent run status
+          await tx
+            .update(agentRuns)
+            .set({
+              status: 'completed',
+              creditsConsumed: actualCreditsUsed,
+              completedAt: new Date(),
+            })
+            .where(eq(agentRuns.id, runId));
+
+          // 4. Get final wallet balance (inside transaction for consistency)
+          const [wallet] = await tx
+            .select()
+            .from(creditWallets)
+            .where(eq(creditWallets.userId, run.userId));
+
+          return { wallet, updateResult };
+        });
+
+        // Extract balance from transaction result
+        newBalance = result.wallet ? result.wallet.availableCredits : 0;
+      } else {
+        // No credits to reconcile (FREE access) - just update run status
+        await db
+          .update(agentRuns)
+          .set({
+            status: 'completed',
+            creditsConsumed: actualCreditsUsed,
+            completedAt: new Date(),
+          })
+          .where(eq(agentRuns.id, runId));
+
+        // Get final wallet balance for FREE access
+        const [wallet] = await db
+          .select()
+          .from(creditWallets)
+          .where(eq(creditWallets.userId, run.userId));
+
+        newBalance = wallet ? wallet.availableCredits : 0;
+      }
 
       // Emit billing.reconciled event if WebSocket is available
       if (wss && sessionId) {
