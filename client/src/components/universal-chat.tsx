@@ -1473,6 +1473,46 @@ export function UniversalChat({
                   });
                   break;
 
+                // ✅ LomuAI THINKING/PROGRESS - Display inline in chat
+                case 'assistant_progress':
+                  console.log('[SSE] Assistant progress:', payload.category, payload.content?.substring(0, 80));
+                  const progressEntry = {
+                    id: payload.progressId || nanoid(),
+                    message: payload.content || '',
+                    timestamp: Date.now(),
+                  };
+                  capturedProgress.push(progressEntry);
+                  
+                  // Also update currentProgress for real-time UI
+                  setCurrentProgress((prev) => [
+                    ...prev,
+                    {
+                      id: payload.progressId || nanoid(),
+                      label: payload.category === 'thinking' ? '💭 Thinking' : payload.category === 'action' ? '🔨 Action' : '✅ Result',
+                      status: 'complete',
+                      timestamp: Date.now(),
+                      details: payload.content,
+                    } as ProgressStep,
+                  ]);
+                  break;
+
+                // ✅ RUN PHASE UPDATES - Show current phase (thinking → working → verifying)
+                case 'run.phase':
+                  console.log('[SSE] Run phase:', payload.phase);
+                  if (payload.message) {
+                    setProgressMessage(`📍 ${payload.message}`);
+                    setProgressStatus(payload.phase || 'working');
+                  }
+                  break;
+
+                // ✅ RUN STATE UPDATES - Track run state changes
+                case 'run.state_updated':
+                  console.log('[SSE] Run state updated:', payload.phase);
+                  if (payload.phase) {
+                    setProgressStatus(payload.phase);
+                  }
+                  break;
+
                 default:
                   // Handle other event types (task_list_created, task_updated, file_change, etc.)
                   console.log('[SSE] Unhandled event type:', eventData.type);
