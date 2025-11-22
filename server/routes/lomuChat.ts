@@ -3668,38 +3668,30 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
           shouldForceFunctionCall = false;
         }
 
-        // 🚨 GLOBAL ACTION MODE: Force write-first behavior for all fix/build sessions
-        // ARCHITECT FIX: Don't wait for read_platform_file - apply globally for fix sessions
+        // 🚨 SMART CIRCUIT BREAKER: Force writes after reading files without removing tools
+        // KEY INSIGHT: Don't remove read tools (causes Gemini to freeze)
+        // Instead: Inject harsh system message + force function calling
+        // This keeps Gemini thinking clearly while pushing toward action
         const isFixSession = userIntent === 'fix' || userIntent === 'build';
         const hasNotWrittenYet = workflowTelemetry.writeOperations === 0;
         const hasReadAtLeastOnce = workflowTelemetry.readOperations > 0;
+        const READ_LIMIT = isDefibrillatorPrompt ? 0 : 4; // After 4 reads, force writes
         
-        // 🚨 CIRCUIT BREAKER: DISABLED (causes Gemini to freeze)
-        // ARCHITECT FIX: Removing all read tools mid-stream causes Gemini to freeze indefinitely
-        // - Gemini was diagnosing (reading code)
-        // - Circuit breaker suddenly removed ALL read tools
-        // - Gemini can't finish its thought process without reading
-        // - Result: Thinks forever until 5-minute timeout
-        // SOLUTION: Let ACTION-MANDATE handle write encouragement (forceFunctionCall: true)
-        const READ_LIMIT = isDefibrillatorPrompt ? 0 : 5; // Defibrillator bypasses reads entirely
-        const hitCircuitBreaker = false; // DISABLED - too aggressive
+        // 🚨 AGGRESSIVE THRESHOLD: After 4 reads with 0 writes, FORCE action mode
+        const hasHitReadLimit = !isDefibrillatorPrompt && workflowTelemetry.readOperations >= READ_LIMIT && hasNotWrittenYet;
         
-        if (hitCircuitBreaker) {
-          console.log(`[CIRCUIT-BREAKER] 🚨 HARD LIMIT ENGAGED: ${workflowTelemetry.readOperations} reads with ZERO writes`);
-          console.log(`[CIRCUIT-BREAKER] Blocking all read operations - WRITE-ONLY mode activated`);
+        if (hasHitReadLimit && iterationCount >= 3) {
+          console.log(`[SMART-CIRCUIT-BREAKER] 🚨 Read limit hit: ${workflowTelemetry.readOperations} reads with ZERO writes`);
+          console.log(`[SMART-CIRCUIT-BREAKER] Activating HARSH enforcement message + forced function calling`);
           
-          // BLOCK all read-only tools
-          availableTools = availableTools.filter(tool => !READ_ONLY_TOOLS.has(tool.name));
-          console.log(`[CIRCUIT-BREAKER] ✅ Filtered to ${availableTools.length} write-only tools`);
-          
-          // Force function calling mode
+          // FORCE function calling mode (STRONG)
           shouldForceFunctionCall = true;
           
-          // Critical warning message
-          systemEnforcementMessage = `\n\n🚨 **CIRCUIT BREAKER ACTIVATED**\n\nYou've read ${workflowTelemetry.readOperations} files without making ANY changes.\n\n**READ OPERATIONS NOW BLOCKED** - You can ONLY use write operations:\n- ✅ write_platform_file() - Implement fixes NOW\n- ✅ edit() - Modify existing files\n- ✅ bash() - Run commands/tests\n- ❌ NO MORE READING - All read tools disabled\n\nIMPLEMENT THE FIX IMMEDIATELY or explain why you cannot proceed.`;
+          // HARSH system message - no encouragement, pure mandate
+          systemEnforcementMessage = `\n\n🚨 **STOP ANALYZING - START IMPLEMENTING**\n\nYou've read ${workflowTelemetry.readOperations} files. Analysis is COMPLETE.\n\n**⏰ TIME TO ACT** - You must NOW use one of these tools:\n- ✅ write_platform_file() - Create or modify a file\n- ✅ edit() - Edit existing code  \n- ✅ bash() - Run tests/commands\n\nYou have full permission to modify the platform. STOP reading and START writing immediately.\n\nIf you cannot proceed, explain the specific blocker preventing changes.`;
           
           sendEvent('progress', { 
-            message: '🚨 CIRCUIT BREAKER: Read limit exceeded - WRITE-ONLY mode' 
+            message: `⚡ Forced write mode - analysis complete after ${workflowTelemetry.readOperations} reads` 
           });
         } else if (isFixSession && hasReadAtLeastOnce && hasNotWrittenYet && iterationCount >= 2) {
           console.log('[ACTION-MANDATE] ✅ Fix session with reads but NO writes - ACTIVATING ACTION MODE');
@@ -3708,11 +3700,17 @@ Just reply naturally like: "Hello there! How can I help you today?"`;
           // Enable force mode to encourage function calling over text responses
           shouldForceFunctionCall = true;
           
+          // Progressive messaging based on read count
+          let readWarning = '';
+          if (workflowTelemetry.readOperations >= 3) {
+            readWarning = `\n\n⚠️ You've now read ${workflowTelemetry.readOperations} files without writing. At 4+ reads, enforcement mode activates.`;
+          }
+          
           // Inject system enforcement message (reward/penalty messaging, not absolute rules)
-          systemEnforcementMessage = `\n\n🎯 **WRITE-FIRST REMINDER**\n\nYou've read ${workflowTelemetry.readOperations} file(s) to understand the issue. Great analysis!\n\nNow it's time to implement fixes. Your goal is to WRITE code, not just read it.\n\n**High-value actions** (preferred):\n- ✅ write_platform_file() - Implement the fix\n- ✅ write_project_file() - Create new files\n- ✅ bash() - Run tests/validation\n\n**Low-value actions** (avoid unless necessary):\n- ⚠️ Reading more files without writing (${READ_LIMIT - workflowTelemetry.readOperations} reads left before hard block)\n- ⚠️ Creating task lists for simple fixes\n- ⚠️ Endless analysis paralysis\n\n**Remember**: You're authorized to make changes. Trust your analysis and proceed with confidence.`;
+          systemEnforcementMessage = `\n\n🎯 **WRITE-FIRST PRIORITY**\n\nAnalysis phase: ${workflowTelemetry.readOperations} file(s) read. Great work understanding the issue!\n\n**NOW: Implement the fixes** using:\n- ✅ write_platform_file() - Implement fixes\n- ✅ edit() - Modify existing code\n- ✅ bash() - Run tests${readWarning}\n\n**Remember**: You're fully authorized to make changes. Trust your analysis and act now.`;
           
           sendEvent('progress', { 
-            message: '🎯 Analysis complete - prioritizing write operations now' 
+            message: '🎯 Time to implement - switching to write mode' 
           });
         }
 
