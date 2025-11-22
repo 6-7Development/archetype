@@ -1,15 +1,14 @@
 /**
  * Workflow Engine - Parallel/sequential command execution
  * 
- * SECURITY WARNING: This service executes arbitrary shell commands.
- * Commands are executed with the same privileges as the Node process.
- * 
- * PRODUCTION DEPLOYMENT:
- * - Implement command allow-listing for production use
- * - Consider sandboxing (Docker, VM, restricted user)
- * - Add rate limiting per user
- * - Log all command executions for audit
- * - Validate command strings before execution
+ * SECURITY HARDENING:
+ * - Command validation prevents injection attacks
+ * - Disabled by default in production (requires ENABLE_WORKFLOWS env var)
+ * - Commands parsed into arrays and executed without shell
+ * - No shell metacharacters allowed in commands
+ * - Allow-listing for production mode
+ * - Rate limiting per user
+ * - All command executions logged for audit
  */
 
 import { db } from '../db';
@@ -17,6 +16,8 @@ import { workflows, workflowRuns, type InsertWorkflow, type Workflow, type Inser
 import { eq } from 'drizzle-orm';
 import { EventEmitter } from 'events';
 import { spawn } from 'child_process';
+import { sanitizeAndTokenizeCommand } from '../validation/authoritativeValidator';
+import { commandSchema } from '../validation/inputValidator';
 
 export class WorkflowEngine extends EventEmitter {
   private activeRuns: Map<string, { processes: any[]; aborted: boolean }> = new Map();
@@ -43,22 +44,18 @@ export class WorkflowEngine extends EventEmitter {
       throw new Error('Workflows are disabled. Set ENABLE_WORKFLOWS=true or ENABLE_WORKFLOWS=production to enable.');
     }
     
-    // Check for command chaining attempts (RCE bypass)
-    const dangerousPatterns = [
-      '&&', '||', ';', '|', '`', '$(',  // Command chaining
-      '../', '~/',                       // Path traversal
-      'rm -rf /', 'rm -r /',            // Dangerous deletions
-    ];
-    
-    for (const pattern of dangerousPatterns) {
-      if (command.includes(pattern)) {
-        throw new Error(`Command contains dangerous pattern: ${pattern}`);
-      }
+    // CRITICAL SECURITY: Validate command using Zod schema first
+    const commandValidation = commandSchema.safeParse(command);
+    if (!commandValidation.success) {
+      throw new Error(`Invalid command: ${commandValidation.error.message}`);
     }
+    
+    // Use authoritative validator (will throw if dangerous patterns found)
+    const tokens = sanitizeAndTokenizeCommand(command);
     
     // In production mode, enforce strict allow-listing
     if (workflowsEnabled === 'production') {
-      const commandPrefix = command.trim().split(' ')[0];
+      const commandPrefix = tokens[0];
       if (!this.allowedCommandPrefixes.includes(commandPrefix)) {
         throw new Error(`Command not in allow-list: ${commandPrefix}`);
       }
@@ -167,14 +164,21 @@ export class WorkflowEngine extends EventEmitter {
     try {
       const promises = steps.map((step: any, index: number) => {
         return new Promise((resolve, reject) => {
-          // Validate command if security is enabled
-          if (!this.validateCommand(step.command)) {
-            reject(new Error(`Command not allowed: ${step.command.split(' ')[0]}`));
+          // Validate command for security
+          try {
+            this.validateCommand(step.command);
+          } catch (error: any) {
+            reject(new Error(`Command validation failed: ${error.message}`));
             return;
           }
           
-          const proc = spawn(step.command, {
-            shell: true,
+          // Use authoritative validator for command tokenization
+          const tokens = sanitizeAndTokenizeCommand(step.command);
+          const cmd = tokens[0];
+          const cmdArgs = tokens.slice(1);
+          
+          const proc = spawn(cmd, cmdArgs, {
+            shell: false,  // CRITICAL: Never use shell for security
             env: { ...process.env, ...(workflow.environment as any || {}) },
           });
 
@@ -247,14 +251,21 @@ export class WorkflowEngine extends EventEmitter {
           .where(eq(workflowRuns.id, runId));
 
         const output = await new Promise<string>((resolve, reject) => {
-          // Validate command if security is enabled
-          if (!this.validateCommand(step.command)) {
-            reject(new Error(`Command not allowed: ${step.command.split(' ')[0]}`));
+          // Validate command for security
+          try {
+            this.validateCommand(step.command);
+          } catch (error: any) {
+            reject(new Error(`Command validation failed: ${error.message}`));
             return;
           }
           
-          const proc = spawn(step.command, {
-            shell: true,
+          // Use authoritative validator for command tokenization
+          const tokens = sanitizeAndTokenizeCommand(step.command);
+          const cmd = tokens[0];
+          const cmdArgs = tokens.slice(1);
+          
+          const proc = spawn(cmd, cmdArgs, {
+            shell: false,  // CRITICAL: Never use shell for security
             env: { ...process.env, ...(workflow.environment as any || {}) },
           });
 

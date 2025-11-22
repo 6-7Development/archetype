@@ -3,6 +3,7 @@ import type { WebSocket } from 'ws';
 import * as fs from 'fs';
 import * as path from 'path';
 import { storage } from '../storage';
+import { sanitizeAndTokenizeCommand } from '../validation/authoritativeValidator';
 
 /**
  * SECURITY HARDENING:
@@ -115,16 +116,32 @@ export class TerminalService {
 
     console.log(`[TERMINAL] Executing command in session ${sessionId}: ${command}`);
 
-    // SECURITY: Sanitize command (remove path traversal attempts)
-    const sanitizedCommand = this.sanitizeCommand(command);
-
-    // SECURITY: Check command against allow-list
-    if (!this.isCommandAllowed(sanitizedCommand)) {
-      const baseCommand = sanitizedCommand.trim().split(' ')[0];
-      console.warn(`[TERMINAL] Blocked disallowed command: ${baseCommand}`);
+    // Use authoritative validator for command sanitization and tokenization
+    let tokens: string[];
+    try {
+      tokens = sanitizeAndTokenizeCommand(command);
+    } catch (error: any) {
+      console.warn(`[TERMINAL] Command validation failed: ${error.message}`);
       this.sendMessage(session.ws, {
         type: 'error',
-        data: `Command not allowed: ${baseCommand}. Only approved commands can be executed.`,
+        data: error.message,
+      });
+      this.sendMessage(session.ws, {
+        type: 'exit',
+        code: 1,
+      });
+      return;
+    }
+
+    const cmd = tokens[0];
+    const cmdArgs = tokens.slice(1);
+
+    // SECURITY: Check command against allow-list
+    if (!this.isCommandAllowed(cmd)) {
+      console.warn(`[TERMINAL] Blocked disallowed command: ${cmd}`);
+      this.sendMessage(session.ws, {
+        type: 'error',
+        data: `Command not allowed: ${cmd}. Only approved commands can be executed.`,
       });
       this.sendMessage(session.ws, {
         type: 'exit',
@@ -155,11 +172,6 @@ export class TerminalService {
       console.warn('[TERMINAL] Failed to save command to history:', error);
       // Continue execution even if history fails
     }
-
-    // Parse sanitized command into array for spawn
-    const args = this.parseCommand(sanitizedCommand);
-    const cmd = args[0];
-    const cmdArgs = args.slice(1);
 
     console.log(`[TERMINAL] Spawning process: ${cmd} ${cmdArgs.join(' ')}`);
 
@@ -405,41 +417,6 @@ export class TerminalService {
     return ALLOWED_COMMANDS.includes(baseCommand);
   }
 
-  /**
-   * Parse command string into array for spawn
-   */
-  private parseCommand(command: string): string[] {
-    // Simple parser - splits by spaces but respects quotes
-    const args: string[] = [];
-    let current = '';
-    let inQuote = false;
-    let quoteChar = '';
-
-    for (let i = 0; i < command.length; i++) {
-      const char = command[i];
-
-      if ((char === '"' || char === "'") && !inQuote) {
-        inQuote = true;
-        quoteChar = char;
-      } else if (char === quoteChar && inQuote) {
-        inQuote = false;
-        quoteChar = '';
-      } else if (char === ' ' && !inQuote) {
-        if (current) {
-          args.push(current);
-          current = '';
-        }
-      } else {
-        current += char;
-      }
-    }
-
-    if (current) {
-      args.push(current);
-    }
-
-    return args;
-  }
 
   /**
    * Setup project files in the working directory

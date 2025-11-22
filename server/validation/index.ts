@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { Request, Response, NextFunction } from 'express';
+import { parse as parseShellCommand } from 'shell-quote';
 
 /**
  * Security validation middleware for API routes
@@ -189,6 +190,77 @@ export function sanitizePath(inputPath: string): string {
 }
 
 /**
+ * CRITICAL SECURITY FIX: Validate command using shell-quote parser
+ * Uses proper shell parsing to handle quotes while blocking dangerous patterns
+ * @throws Error if command contains dangerous characters or syntax
+ */
+export function sanitizeCommand(cmd: string): string {
+  // STEP 0: Block newlines explicitly (highest priority - fail-fast)
+  if (/[\n\r]/.test(cmd)) {
+    throw new Error('Command rejected: contains newline characters');
+  }
+  
+  // STEP 1: Block ALL control characters BEFORE parsing (including \x00-\x1F, \x7F)
+  const controlChars = /[\x00-\x1F\x7F]/;
+  if (controlChars.test(cmd)) {
+    throw new Error('Command rejected: contains control characters');
+  }
+  
+  // STEP 2: Parse command preserving quotes using shell-quote
+  let tokens: any[];
+  try {
+    tokens = parseShellCommand(cmd);
+  } catch (e: any) {
+    throw new Error(`Invalid command syntax: ${e.message}`);
+  }
+  
+  // STEP 3: Check each token for dangerous patterns
+  const shellMeta = /[;&|><`$()]/;
+  
+  for (const token of tokens) {
+    if (typeof token === 'string') {
+      // Re-check control chars and newlines in each token (defense in depth)
+      if (controlChars.test(token) || /[\n\r]/.test(token)) {
+        throw new Error(`Token contains control characters: ${token.substring(0, 20)}`);
+      }
+      // Check for shell metacharacters
+      if (shellMeta.test(token)) {
+        throw new Error(`Token contains shell metacharacters: ${token.substring(0, 20)}`);
+      }
+    } else {
+      // Shell-quote returns objects for operators - reject these
+      throw new Error(`Command contains shell operators: ${JSON.stringify(token)}`);
+    }
+  }
+  
+  // Return original command if all tokens are safe
+  return cmd;
+}
+
+/**
+ * CRITICAL SECURITY FIX: Validate command arguments array
+ * Checks each argument for control characters and shell metacharacters
+ * @throws Error if any argument contains dangerous characters
+ */
+export function validateCommandArgs(args: string[]): boolean {
+  // Explicit newline check
+  const newlineCheck = /[\n\r]/;
+  const controlChars = /[\x00-\x1F\x7F]/;
+  const shellMeta = /[;&|><`$()]/;
+  
+  for (const arg of args) {
+    if (newlineCheck.test(arg)) {
+      throw new Error(`Invalid argument: contains newline characters`);
+    }
+    if (controlChars.test(arg) || shellMeta.test(arg)) {
+      throw new Error(`Invalid argument: ${arg.substring(0, 50)}`);
+    }
+  }
+  
+  return true;
+}
+
+/**
  * Rate limiting configuration per endpoint
  */
 export const rateLimits = {
@@ -291,4 +363,18 @@ export function validateEnvironment() {
   }
   
   console.log('✅ Environment validation passed');
+}
+
+// CRITICAL SECURITY TEST: Verify newlines are blocked (runs on module load)
+try {
+  sanitizeCommand('rm\n-rf /');
+  console.error('[VALIDATION] ❌ CRITICAL: Newlines not blocked! Security vulnerability!');
+  process.exit(1);
+} catch (e: any) {
+  if (e.message && e.message.includes('newline')) {
+    console.log('[VALIDATION] ✅ Newline block test passed');
+  } else {
+    console.error('[VALIDATION] ❌ Test failed with unexpected error:', e.message);
+    process.exit(1);
+  }
 }

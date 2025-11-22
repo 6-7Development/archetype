@@ -1,6 +1,7 @@
 import type { Response } from 'express';
 import type { StreamRequest, ValidationResult } from './types.ts';
 import { validateContextAccess } from '../utils.ts';
+import { chatMessageSchema, safeStringSchema } from '../../../validation/inputValidator.ts';
 
 /**
  * Validated request parameters after successful validation
@@ -94,13 +95,24 @@ export async function validateStreamRequest(
   }
 
   // ============================================================================
-  // STEP 1.3: Validate message parameter
+  // STEP 1.3: Validate message parameter using Zod schema
   // ============================================================================
   
   if (!message || typeof message !== 'string') {
-    console.log('[LOMU-AI-CHAT] ERROR: Message validation failed');
+    console.log('[LOMU-AI-CHAT] ERROR: Message validation failed - empty or invalid type');
     res.status(400).json({ 
       error: 'Oops! I need a message to help you. What would you like me to work on?' 
+    });
+    return null;
+  }
+
+  // CRITICAL SECURITY: Validate message content using Zod schema
+  const messageValidation = safeStringSchema.safeParse(message);
+  if (!messageValidation.success) {
+    console.log('[LOMU-AI-CHAT] ERROR: Message validation failed -', messageValidation.error.errors);
+    res.status(400).json({
+      error: 'Invalid message content',
+      details: messageValidation.error.errors
     });
     return null;
   }

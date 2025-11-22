@@ -6,12 +6,51 @@ import { isAuthenticated } from "../universalAuth";
 import path from "path";
 import * as fs from "fs/promises";
 import * as crypto from "crypto";
+import { fileUploadSchema, filePathSchema, filenameSchema } from '../validation/inputValidator';
+import { normalizePathForStorage } from '../validation/authoritativeValidator';
 
 const router = express.Router();
 const upload = multer({ 
   storage: multer.memoryStorage(),
   limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
 });
+
+// Project root for path validation (uploads directory)
+const PROJECT_ROOT = path.join(process.cwd(), 'uploads');
+
+/**
+ * Validate file path to prevent path traversal attacks
+ * Returns validation result with normalized safe path
+ */
+function validatePath(userPath: string): { safe: boolean; normalized: string; absolutePath: string } {
+  // Normalize the path (resolves .., ., //)
+  const normalized = path.normalize(userPath).replace(/^(\.\.(\/|\\|$))+/, '');
+  
+  // Resolve to absolute path within PROJECT_ROOT
+  const absolutePath = path.resolve(PROJECT_ROOT, normalized);
+  
+  // Ensure path stays within PROJECT_ROOT
+  if (!absolutePath.startsWith(PROJECT_ROOT + path.sep) && absolutePath !== PROJECT_ROOT) {
+    console.warn(`[PATH-VALIDATION] Rejected path traversal: ${userPath} -> ${absolutePath}`);
+    return { safe: false, normalized, absolutePath };
+  }
+  
+  // Block access to sensitive directories
+  const forbidden = ['.git', 'node_modules', '.env', '.env.local'];
+  const pathLower = normalized.toLowerCase();
+  if (forbidden.some(dir => pathLower.includes(dir.toLowerCase()))) {
+    console.warn(`[PATH-VALIDATION] Rejected access to forbidden directory: ${userPath}`);
+    return { safe: false, normalized, absolutePath };
+  }
+  
+  // Block null bytes (directory traversal attack)
+  if (userPath.includes('\0') || normalized.includes('\0')) {
+    console.warn(`[PATH-VALIDATION] Rejected null byte in path: ${userPath}`);
+    return { safe: false, normalized, absolutePath };
+  }
+  
+  return { safe: true, normalized, absolutePath };
+}
 
 // Upload and import project from ZIP
 router.post('/upload', isAuthenticated, upload.single('project'), async (req: any, res) => {
@@ -23,6 +62,15 @@ router.post('/upload', isAuthenticated, upload.single('project'), async (req: an
     if (!req.file) {
       console.log('❌ No file in request');
       return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    // CRITICAL SECURITY: Validate filename using Zod schema
+    const filenameValidation = filenameSchema.safeParse(req.file.originalname);
+    if (!filenameValidation.success) {
+      return res.status(400).json({
+        error: 'Invalid filename',
+        details: filenameValidation.error.errors
+      });
     }
 
     if (!req.file.originalname.endsWith('.zip')) {
@@ -57,10 +105,11 @@ router.post('/upload', isAuthenticated, upload.single('project'), async (req: an
       .map(async (entry) => {
         const filePath = entry.entryName;
         
-        // SECURITY: Validate path - reject absolute paths and path traversal attempts
-        if (filePath.startsWith('/') || filePath.includes('..')) {
-          console.warn(`❌ Rejected malicious path: ${filePath}`);
-          return null;
+        // Use authoritative path validator to prevent path traversal attacks
+        const validation = normalizePathForStorage(filePath, PROJECT_ROOT);
+        if (!validation.safe) {
+          console.error(`❌ SECURITY: Path traversal detected in ZIP: ${filePath}`);
+          throw new Error(validation.error || `Path traversal detected in ZIP: ${filePath}`);
         }
         
         // SECURITY: Check uncompressed size before extracting
@@ -76,8 +125,8 @@ router.post('/upload', isAuthenticated, upload.single('project'), async (req: an
           throw new Error('ZIP archive exceeds maximum uncompressed size (100MB). Possible zip bomb detected.');
         }
         
-        const fileName = path.basename(filePath);
-        const folderPath = path.dirname(filePath);
+        const fileName = path.basename(validation.normalized);
+        const folderPath = path.dirname(validation.normalized);
         
         // Extract content safely
         let content: string;
@@ -106,6 +155,7 @@ router.post('/upload', isAuthenticated, upload.single('project'), async (req: an
         const language = languageMap[ext] || 'plaintext';
 
         try {
+          // Use validated normalized path components for storage
           await storage.createFile({
             userId,
             projectId: project.id,
@@ -158,19 +208,38 @@ router.post('/chat-file', isAuthenticated, upload.single('file'), async (req: an
     const userId = req.authenticatedUserId;
     const projectId = req.body.projectId; // Optional - can be null for general uploads
     
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = path.join(process.cwd(), 'uploads', 'chat');
-    await fs.mkdir(uploadsDir, { recursive: true });
+    // Create uploads directory if it doesn't exist (validated path)
+    const chatDirPath = 'chat';
+    const chatDirValidation = normalizePathForStorage(chatDirPath, PROJECT_ROOT);
+    
+    if (!chatDirValidation.safe) {
+      return res.status(400).json({ error: chatDirValidation.error || 'Invalid upload directory path' });
+    }
+    
+    const chatDirAbsolutePath = path.resolve(PROJECT_ROOT, chatDirValidation.normalized);
+    await fs.mkdir(chatDirAbsolutePath, { recursive: true });
     
     // Generate unique filename with timestamp and random hash
     const fileExtension = path.extname(req.file.originalname);
+    
+    // SECURITY: Sanitize file extension (only allow safe characters)
+    const safeExtension = fileExtension.replace(/[^a-zA-Z0-9.-]/g, '');
+    
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const hash = crypto.randomBytes(8).toString('hex');
-    const filename = `${timestamp}-${hash}${fileExtension}`;
-    const filePath = path.join(uploadsDir, filename);
+    const filename = `${timestamp}-${hash}${safeExtension}`;
     
-    // Save file to disk
-    await fs.writeFile(filePath, req.file.buffer);
+    // SECURITY: Validate full file path before writing
+    const filePathInChat = path.join(chatDirPath, filename);
+    const fileValidation = normalizePathForStorage(filePathInChat, PROJECT_ROOT);
+    
+    if (!fileValidation.safe) {
+      return res.status(400).json({ error: fileValidation.error || 'Invalid file path - security violation detected' });
+    }
+    
+    // Save file to disk using validated absolute path
+    const fileAbsolutePath = path.resolve(PROJECT_ROOT, fileValidation.normalized);
+    await fs.writeFile(fileAbsolutePath, req.file.buffer);
     
     // Determine file type and create metadata
     const isImage = req.file.mimetype.startsWith('image/');
