@@ -52,6 +52,33 @@ import {
   resolveApproval
 } from './lomu/utils.ts';
 
+// 🆕 Import modular components from refactored architecture
+import { LOMU_LIMITS, getMaxIterationsForIntent } from '../config/lomuLimits.ts';
+import { performanceMonitor } from '../services/performanceMonitor.ts';
+import {
+  configureSSEHeaders,
+  sendInitialHeartbeat,
+  createEventSender,
+  setupHeartbeat,
+  setupStreamTimeout,
+  setupSocketKeepAlive,
+  terminateStream,
+  emitSection
+} from './lomuChat/streaming.ts';
+import {
+  estimateTokensFromText,
+  calculateTokenEstimate,
+  recordTokenUsage,
+  formatBillingInfo
+} from './lomuChat/billing.ts';
+import {
+  validateToolExecution,
+  formatToolResult,
+  recordToolMetric,
+  shouldTriggerAntiParalysis,
+  getToolTimeout
+} from './lomuChat/tools.ts';
+
 const execAsync = promisify(exec);
 
 // 🎯 INTENT CLASSIFICATION (like Replit Agent)
@@ -780,42 +807,14 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
   activeStreams.add(activeStreamsKey);
   console.log('[LOMU-AI-CHAT] Stream registered for user:', userId);
 
+  // 🆕 Use modular streaming setup functions
   console.log('[LOMU-AI-CHAT] Setting up SSE headers');
-  // ============================================================================
-  // SSE HEADER CONFIGURATION - CRITICAL for real-time streaming
-  // Prevents buffering at multiple layers (compression, proxies, CDN)
-  // ============================================================================
-  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-cache, no-transform'); // Prevent proxy caching
-  res.setHeader('Connection', 'keep-alive'); // Keep connection open
-  res.setHeader('X-Accel-Buffering', 'no'); // Disable buffering on Railway/nginx proxies
-  res.setHeader('Content-Encoding', 'none'); // Prevent gzip buffering
-  
-  // 🔥 CRITICAL: Flush headers immediately to establish SSE connection
-  // This prevents buffering and enables real-time incremental delivery
-  res.flushHeaders();
-  
-  // 🎯 CRITICAL FIX: Write initial heartbeat to resolve fetch promise immediately
-  // Without this, browser hangs waiting for first byte until Gemini setup completes
-  // This unblocks the frontend and shows "connected" status
-  res.write(': init\n\n');
-  console.log('[LOMU-AI-CHAT] Initial heartbeat sent to unblock fetch promise');
-  
-  // Enable TCP keep-alive to prevent connection drops
-  if (req.socket) {
-    req.socket.setKeepAlive(true);
-  }
+  configureSSEHeaders(res);
+  sendInitialHeartbeat(res);
+  setupSocketKeepAlive(req);
 
-  // ✅ FIX: Wrap payload in { type, data } envelope for frontend compatibility
-  // Frontend expects: { type: 'content', data: { content: 'text' } }
-  const sendEvent = (type: string, data: any) => {
-    res.write(`data: ${JSON.stringify({ type, data })}\n\n`);
-    // Flush if compression middleware provides it
-    // After flushHeaders(), writes should auto-flush, but ensure explicitly
-    if (typeof (res as any).flush === 'function') {
-      (res as any).flush();
-    }
-  };
+  // Create event sender using modular function
+  const sendEvent = createEventSender(res);
 
   // ============================================================================
   // T3: VALIDATION PLUMBING - CREATE FILE CHANGE TRACKER
@@ -823,56 +822,11 @@ router.post('/stream', isAuthenticated, async (req: any, res) => {
   const fileChangeTracker = new FileChangeTracker();
   console.log('[LOMU-AI-VALIDATION] FileChangeTracker initialized');
 
-  // Helper function to emit structured section events for collapsible UI
-  const emitSection = (sectionId: string, sectionType: 'thinking' | 'tool' | 'text', phase: 'start' | 'update' | 'finish', content: string, metadata?: any) => {
-    const eventData = {
-      sectionId,
-      sectionType,
-      title: metadata?.title || content.substring(0, 50),
-      phase,
-      timestamp: Date.now(),
-      content,
-      metadata
-    };
-    // ✅ FIX: Use proper { type, data } envelope
-    res.write(`data: ${JSON.stringify({ type: `section_${phase}`, data: eventData })}\n\n`);
-  };
+  // 🆕 Setup heartbeat and timeout using modular functions
+  const heartbeatInterval = setupHeartbeat(res);
+  const streamTimeoutId = setupStreamTimeout(res, sendEvent, messageId);
 
-  // Helper function to ensure consistent SSE stream termination
-  const terminateStream = (messageId: string, error?: string) => {
-    console.log('[LOMU-AI-CHAT] Terminating stream:', messageId, error ? `Error: ${error}` : 'Success');
-    if (error) {
-      sendEvent('error', { message: error });
-    }
-    sendEvent('done', { messageId, error: error ? true : false });
-    res.end();
-  };
-
-  // 🔥 RAILWAY FIX: Heartbeat to prevent 502 timeout errors
-  // Railway kills connections with no data for ~2 minutes
-  // Send keepalive comment every 15 seconds to maintain connection
-  const heartbeatInterval = setInterval(() => {
-    try {
-      res.write(': keepalive\n\n'); // SSE comment (lines starting with : are ignored by EventSource)
-      console.log('[LOMU-AI-HEARTBEAT] Sent keepalive to prevent timeout');
-    } catch (error) {
-      console.error('[LOMU-AI-HEARTBEAT] Failed to send keepalive:', error);
-    }
-  }, 15000); // Every 15 seconds
-
-  console.log('[LOMU-AI-CHAT] Heartbeat started - will send keepalive every 15s');
-
-  // Wrap entire route handler in timeout to prevent infinite hanging
-  const STREAM_TIMEOUT_MS = RAILWAY_CONFIG.STREAM_TIMEOUT; // Use Railway config (5 minutes)
-  const streamTimeoutId = setTimeout(() => {
-    console.error('[LOMU-AI] ⏱️ STREAM TIMEOUT - Force closing after 5 minutes');
-    if (!res.writableEnded) {
-      sendEvent('error', { message: '⏱️ Stream timeout after 5 minutes. Please try again.' });
-      sendEvent('done', { messageId: 'timeout', error: true });
-      res.end();
-    }
-  }, STREAM_TIMEOUT_MS);
-  console.log('[LOMU-AI-CHAT] Stream timeout set - will force close after 5 minutes');
+  console.log('[LOMU-AI-CHAT] Heartbeat and timeout configured from modular streaming module');
 
   console.log('[LOMU-AI-CHAT] Entering try block');
   
