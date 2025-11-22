@@ -534,6 +534,58 @@ export class CodeValidator {
       },
     };
 
+    // 🔒 CRITICAL: TypeScript Compilation Check - Prevents broken code from being written
+    // This is the main safety gate that prevents LomuAI from crashing the platform
+    try {
+      console.log(`[CODE-VALIDATOR] 🔍 Running TypeScript compilation check for: ${filePath}`);
+      
+      const tempPath = path.resolve(this.PROJECT_ROOT, filePath);
+      
+      // Ensure directory exists
+      await fs.mkdir(path.dirname(tempPath), { recursive: true });
+      
+      // Temporarily write file to disk
+      await fs.writeFile(tempPath, content, 'utf-8');
+      
+      try {
+        // Run TypeScript compiler without emitting files
+        await execFileAsync('npx', ['tsc', '--noEmit'], { 
+          cwd: this.PROJECT_ROOT,
+          timeout: 10000,
+        });
+        
+        result.checks.typescript = true;
+        console.log(`[CODE-VALIDATOR] ✅ TypeScript compilation passed for ${filePath}`);
+      } finally {
+        // Always delete temp file, even if compilation fails
+        try {
+          await fs.unlink(tempPath);
+        } catch (unlinkError: any) {
+          console.warn(`[CODE-VALIDATOR] ⚠️ Failed to delete temp file ${tempPath}:`, unlinkError.message);
+        }
+      }
+    } catch (error: any) {
+      result.checks.typescript = false;
+      result.valid = false;
+      
+      // Extract meaningful error message
+      const stderr = error.stderr || error.message || 'Unknown TypeScript error';
+      const errorMsg = stderr
+        .split('\n')
+        .filter((line: string) => line.trim().length > 0)
+        .slice(0, 10) // Limit to first 10 lines
+        .join('\n');
+      
+      result.errors.push(
+        `🚨 TypeScript Compilation Failed in ${filePath}:\n${errorMsg}\n\n` +
+        `This file has syntax or type errors and cannot be written to disk. ` +
+        `Please fix the errors and try again.`
+      );
+      
+      console.error(`[CODE-VALIDATOR] ❌ TypeScript compilation FAILED for ${filePath}`);
+      console.error('[CODE-VALIDATOR] Error details:', errorMsg);
+    }
+
     // SCOPED PATTERNS: Only catch LomuAI's specific bug (literal \\n in string operations)
     const suspiciousPatterns = [
       {
