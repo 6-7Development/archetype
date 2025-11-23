@@ -80,10 +80,19 @@ export async function spawnSubAgent(params: {
     });
 
     // Create sub-agent record
-    const [subAgent] = await db
+    const subAgentResult = await db
       .insert(subAgents)
       .values(subAgentData)
       .returning();
+
+    if (!subAgentResult || subAgentResult.length === 0) {
+      return {
+        success: false,
+        error: 'Failed to create sub-agent record',
+      };
+    }
+
+    const subAgent = subAgentResult[0];
 
     // Execute sub-agent task using Claude with transactional safety
     const systemPrompt =
@@ -104,6 +113,15 @@ export async function spawnSubAgent(params: {
         system: systemPrompt,
         messages: messages,
       });
+
+      // Validate response structure
+      if (!response.content || response.content.length === 0) {
+        throw new Error('Claude returned empty response');
+      }
+
+      if (!response.usage || response.usage.input_tokens === undefined || response.usage.output_tokens === undefined) {
+        throw new Error('Claude response missing token usage data');
+      }
 
       const resultContent =
         response.content[0].type === 'text' ? response.content[0].text : '';
