@@ -774,8 +774,8 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
         });
       }
 
-      // Get chat history for context
-      const chatHistory = projectId ? await storage.getChatHistory(userId, projectId) : [];
+      // Get chat history for context (always fetch, even for general/null projectId)
+      const chatHistory = await storage.getChatHistory(userId, projectId || null);
 
       // Build system prompt
       const systemPrompt = buildSystemPrompt('MODIFY', [], chatHistory, {});
@@ -890,7 +890,7 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
         });
       }
 
-      // Get chat history for context (supports both project-scoped and general chat)
+      // Get chat history for context (always fetch, even for general/null projectId)
       const chatHistory = await storage.getChatHistory(userId, projectId || null);
       console.log(`📚 [AI-CHAT-CONVERSATION] Loaded ${chatHistory.length} messages from history for ${projectId ? `project ${projectId}` : 'general chat'}`);
 
