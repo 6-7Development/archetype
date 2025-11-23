@@ -213,7 +213,7 @@ export function LivePreview({ projectId, fileCount = 0 }: LivePreviewProps) {
           <iframe
             key={iframeKey}
             src={`/api/preview/${projectId}`}
-            className="w-full h-full border-0 bg-white
+            className="w-full h-full border-0 bg-white"
             sandbox="allow-scripts allow-same-origin allow-modals allow-forms allow-popups"
             title="Live Preview"
             data-testid="iframe-preview"

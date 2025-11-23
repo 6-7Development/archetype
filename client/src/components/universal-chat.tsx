@@ -574,7 +574,7 @@ export function UniversalChat({
           size="sm"
           variant="ghost"
           onClick={handleClearChat}
-          className="h-6 text-xs hover:text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/10
+          className="h-6 text-xs hover:text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/10"
           data-testid="button-clear-all-messages"
         >
           Clear all

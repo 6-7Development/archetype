@@ -17,11 +17,11 @@ export function FileExplorer({ files, activeFileId, onFileSelect, onCreateFile }
 
   const getLanguageBadgeColor = (language: string) => {
     const colors: Record<string, string> = {
-      javascript: "bg-yellow-500/10 text-yellow-600
-      typescript: "bg-blue-500/10 text-blue-600
-      python: "bg-green-500/10 text-green-600
-      html: "bg-orange-500/10 text-orange-600
-      css: "bg-purple-500/10 text-purple-600
+      javascript: "bg-yellow-500/10 text-yellow-600",
+      typescript: "bg-blue-500/10 text-blue-600",
+      python: "bg-green-500/10 text-green-600",
+      html: "bg-orange-500/10 text-orange-600",
+      css: "bg-purple-500/10 text-purple-600",
     };
     return colors[language] || "bg-muted text-muted-foreground";
   };
