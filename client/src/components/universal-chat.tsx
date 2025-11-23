@@ -304,7 +304,7 @@ export function UniversalChat({
       // 🔥 Route to correct upload endpoint based on targetContext
       const uploadEndpoint = targetContext === 'architect' 
         ? '/api/architect/upload-image' 
-        : '/api/lomu-ai/upload-image';
+        : '/api/chat/upload-image';
       
       const response = await fetch(uploadEndpoint, {
         method: 'POST',
