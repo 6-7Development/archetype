@@ -38,7 +38,7 @@ import { handleBilling, retryWithBackoff } from '../../lomu/utils.ts';
 import { LOMU_CORE_TOOLS } from '../../../tools/tool-distributions.ts';
 import { RunStateManager } from '../../../services/RunStateManager.ts';
 import { PhaseOrchestrator } from '../../../services/PhaseOrchestrator.ts';
-import { emitContentChunk, emitToolCall, emitToolResult, emitProgress, emitSystemInfo, emitComplete, emitThinking, createChunkState, createEmitContext } from './stream-emitter.ts';
+import { emitContentChunk, emitToolCall, emitToolResult, emitProgress, emitSystemInfo, emitComplete, emitThinking, createChunkState, createEmitContext, emitTaskUpdate, emitPhaseTransition } from './stream-emitter.ts';
 import { TokenTracker } from '../../../services/tokenTracker.ts';
 import { CreditManager } from '../../../services/creditManager.ts';
 import { lomuAIBrain } from '../../../services/lomuAIBrain.ts';
@@ -432,12 +432,28 @@ export async function handleStreamRequest(
         if (hasToolUse) {
           console.log(`[TOOL-EXECUTION] Found ${contentBlocks.filter(b => b.type === 'tool_use').length} tools to execute`);
           
+          // ✅ PHASE TRANSITION: Switch from thinking to working when tools start executing
+          try {
+            phaseOrchestrator.emitPhase('working', 'Executing tools...');
+            emitPhaseTransition(emitContext, 'working', 'Executing tools...');
+          } catch (phaseError: any) {
+            console.error('[ORCHESTRATOR] Phase transition to working failed:', phaseError);
+          }
+          
           // Execute each tool
           for (const block of contentBlocks) {
             if (block.type === 'tool_use') {
               const { name: toolName, input, id: toolId } = block;
               
               console.log(`[TOOL-EXECUTION] Executing: ${toolName}`);
+              
+              // ✅ EMIT TASK CREATED: Notify frontend that a new task is starting
+              const taskId = `task_${toolId}`;
+              try {
+                emitTaskUpdate(emitContext, taskId, 'in_progress');
+              } catch (taskError: any) {
+                console.error('[ORCHESTRATOR] emitTaskUpdate (created) failed:', taskError);
+              }
               
               // Track tool call in brain
               const toolCallId = userId ? lomuAIBrain.recordToolCall(userId, sessionId || 'default', toolName, input) : nanoid();
@@ -517,6 +533,13 @@ export async function handleStreamRequest(
                     console.error('[ORCHESTRATOR] emitToolResult failed:', emitError);
                   }
                   
+                  // ✅ EMIT TASK UPDATED: Mark task as complete with success
+                  try {
+                    emitTaskUpdate(emitContext, taskId, 'done');
+                  } catch (taskError: any) {
+                    console.error('[ORCHESTRATOR] emitTaskUpdate (done) failed:', taskError);
+                  }
+                  
                 } catch (toolError: any) {
                   // ✅ ROLLBACK MECHANISM: Track tool failures for potential rollback
                   console.error(`[ROLLBACK] Tool ${toolName} failed - tracking for potential rollback`, toolError);
@@ -528,6 +551,13 @@ export async function handleStreamRequest(
                     timestamp: Date.now(),
                     category: 'result'
                   });
+                  
+                  // ✅ EMIT TASK UPDATED: Mark task as failed
+                  try {
+                    emitTaskUpdate(emitContext, taskId, 'blocked');
+                  } catch (taskError: any) {
+                    console.error('[ORCHESTRATOR] emitTaskUpdate (blocked) failed:', taskError);
+                  }
                   
                   // ✅ PHASE 2: Create error ToolResult
                   const errorMsg = `Tool execution failed: ${toolError.message}`;
@@ -570,6 +600,13 @@ export async function handleStreamRequest(
                 
               } catch (error: any) {
                 console.error(`[TOOL-EXECUTION] Tool ${toolName} failed:`, error);
+                
+                // ✅ EMIT TASK UPDATED: Mark task as failed
+                try {
+                  emitTaskUpdate(emitContext, taskId, 'blocked');
+                } catch (taskError: any) {
+                  console.error('[ORCHESTRATOR] emitTaskUpdate (outer catch blocked) failed:', taskError);
+                }
                 
                 // ✅ PHASE 2: Create error ToolResult for outer catch
                 const errorMsg = `Error in ${toolName}: ${error.message}`;
