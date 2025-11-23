@@ -174,9 +174,23 @@ export function UniversalChat({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Send on Enter (not Shift+Enter which adds newline)
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+    // Also support Cmd/Ctrl+Enter on Mac/Windows
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      e.preventDefault();
+      handleSend();
+    }
+    // Arrow up to recall last assistant message
+    if (e.key === "ArrowUp" && !input.trim() && runState.messages.length > 0) {
+      const lastMsg = runState.messages[runState.messages.length - 1];
+      if (lastMsg?.role === "assistant") {
+        setInput(lastMsg.content);
+        e.preventDefault();
+      }
     }
   };
 
