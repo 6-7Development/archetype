@@ -54,9 +54,11 @@ interface StreamState {
     filesChanged: number;
     linesAdded: number;
     linesRemoved?: number;
-  };
+  } | null;  // ✅ FIX: Allow null from WebSocket data
   currentThought?: string;
   scratchpad?: Array<{ id: string; content: string; timestamp: number }>;
+  // Allow spread of WebSocket StreamState
+  [key: string]: any;
 }
 
 interface ChatMessagesProps {

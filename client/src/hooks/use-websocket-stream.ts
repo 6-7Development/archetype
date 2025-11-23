@@ -61,11 +61,14 @@ export interface ScratchpadEntry {
 }
 
 export interface DeploymentStep {
+  id?: string;  // ✅ FIX: Add optional id field
   name: string;
-  status: 'pending' | 'in_progress' | 'complete' | 'failed';
+  status: 'pending' | 'in_progress' | 'complete' | 'failed' | 'running' | 'completed';  // ✅ FIX: Support both naming conventions
   durationMs?: number;
   startTime?: string;
   endTime?: string;
+  timestamp?: number;  // ✅ FIX: Add optional timestamp
+  error?: string;     // ✅ FIX: Add optional error field
 }
 
 interface StreamMessage {

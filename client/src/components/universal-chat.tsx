@@ -1697,10 +1697,20 @@ export function UniversalChat({
           timestamp: typeof streamState.deployment.timestamp === 'string' 
             ? new Date(streamState.deployment.timestamp).getTime()
             : streamState.deployment.timestamp,
+          // ✅ FIX: Map deployment statuses to match DeploymentData type
+          status: (streamState.deployment.status === 'in_progress' 
+            ? 'running' 
+            : streamState.deployment.status === 'complete'
+            ? 'completed'
+            : streamState.deployment.status) as 'pending' | 'running' | 'failed' | 'completed',
           steps: (streamState.deployment.steps || []).map(step => ({
             id: step.id || `step-${Math.random()}`,
             name: step.name || 'Unknown',
-            status: step.status as any,
+            status: (step.status === 'in_progress' 
+              ? 'running'
+              : step.status === 'complete'
+              ? 'completed'
+              : step.status) as 'pending' | 'running' | 'failed' | 'completed',
             timestamp: step.timestamp,
             error: step.error
           }))
