@@ -1646,15 +1646,10 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
       });
       
       const userId = req.user!.id;
-      
-      // Create a promise to track the job ID
-      let resolveJobId: (jobId: string) => void;
-      const jobIdPromise = new Promise<string>((resolve) => {
-        resolveJobId = resolve;
-      });
+      let jobIdForResponse: string | null = null;
 
       // Trigger async healing in background
-      const healingPromise = (async () => {
+      (async () => {
         try {
           console.log(`[HEALING-AUTO] Starting autonomous healing for user ${userId}`);
           
@@ -1720,9 +1715,7 @@ Use your tools to diagnose, fix, test, and commit all improvements autonomously.
 
           const job = await createJob(userId, healingMessage);
           console.log(`[HEALING-AUTO] LomuAI job created: ${job.id}`);
-          
-          // Resolve the job ID promise so we can send it in the response
-          resolveJobId(job.id);
+          jobIdForResponse = job.id;
           
           // Start the job worker in background
           await startJobWorker(job.id);
@@ -1752,21 +1745,12 @@ Use your tools to diagnose, fix, test, and commit all improvements autonomously.
         }
       })();
       
-      // Wait for job ID before responding (with timeout)
-      const jobId = await Promise.race([
-        jobIdPromise,
-        new Promise<string>((_, reject) => 
-          setTimeout(() => reject(new Error('Job creation timeout')), 5000)
-        )
-      ]).catch(() => null);
-      
-      // Start background healing process immediately (don't wait)
-      // The process will run in the background and broadcast updates via WebSocket
+      // Return immediately with response (healing runs in background)
       res.json({ 
         success: true, 
         message: "Autonomous healing process started in background",
         status: "initiated",
-        jobId: jobId
+        jobId: jobIdForResponse
       });
     } catch (error: any) {
       console.error("[HEALING] Error starting auto-heal:", error);
