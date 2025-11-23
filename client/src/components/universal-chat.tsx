@@ -1611,6 +1611,16 @@ export function UniversalChat({
         {/* Left Panel: Messages (70%) */}
         <ResizablePanel defaultSize={70} minSize={50}>
           <div className="flex flex-col h-full overflow-hidden">
+        {/* Status Bar - Shows phase progress and task updates */}
+        <StatusBar
+          progressStatus={progressStatus}
+          progressMessage={progressMessage}
+          currentPhase={currentPhase}
+          phaseMessage={phaseMessage}
+          runState={runState.currentRunId ? runState.runs.get(runState.currentRunId) || null : null}
+          isGenerating={isGenerating}
+        />
+
         {/* Messages Area - Now includes all overlays and status displays */}
         <ChatMessages 
           messages={messages}
