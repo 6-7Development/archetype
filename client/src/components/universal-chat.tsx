@@ -249,11 +249,12 @@ export function UniversalChat({
       formData.append('image', file);
 
       try {
-        const response = await apiRequest('/api/chat/upload-image', {
+        const response = await fetch('/api/chat/upload-image', {
           method: 'POST',
           body: formData,
-          // Don't set Content-Type - let browser set it with boundary for FormData
-        }, true);
+          credentials: 'include',
+          // Browser automatically sets Content-Type with boundary for FormData
+        });
 
         if (response.ok) {
           const data = await response.json();
