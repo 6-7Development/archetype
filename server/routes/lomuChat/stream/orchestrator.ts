@@ -38,7 +38,7 @@ import { handleBilling, retryWithBackoff } from '../../lomu/utils.ts';
 import { LOMU_CORE_TOOLS } from '../../../tools/tool-distributions.ts';
 import { RunStateManager } from '../../../services/RunStateManager.ts';
 import { PhaseOrchestrator } from '../../../services/PhaseOrchestrator.ts';
-import { emitContentChunk, emitToolCall, emitToolResult, emitProgress, emitSystemInfo, emitComplete, createChunkState, createEmitContext } from './stream-emitter.ts';
+import { emitContentChunk, emitToolCall, emitToolResult, emitProgress, emitSystemInfo, emitComplete, emitThinking, createChunkState, createEmitContext } from './stream-emitter.ts';
 import { TokenTracker } from '../../../services/tokenTracker.ts';
 import { CreditManager } from '../../../services/creditManager.ts';
 import { lomuAIBrain } from '../../../services/lomuAIBrain.ts';
@@ -307,8 +307,7 @@ export async function handleStreamRequest(
                     const thinkingContent = contentMatch ? contentMatch[1] : content;
                     
                     // Emit as thinking block instead of content
-                    const { emitThinking: emitThinkingFunc } = await import('./stream-emitter.ts');
-                    emitThinkingFunc(emitContext, title, thinkingContent, progressMessages);
+                    emitThinking(emitContext, title, thinkingContent, progressMessages);
                     isThinking = true;
                   } else {
                     // Regular content - emit normally
