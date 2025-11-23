@@ -6,6 +6,7 @@ enforceRequiredEnvVars();
 import express, { type Request, Response, NextFunction } from "express";
 import compression from "compression";
 import { registerRoutes } from "./routes";
+import { registerHealingRoutes } from "./routes/healing";
 import { setupVite, serveStatic, log } from "./vite";
 import { apiLimiter } from "./rateLimiting";
 import { db } from "./db";
@@ -161,6 +162,9 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
 
 (async () => {
   const server = await registerRoutes(app);
+  
+  // Register Platform Healing Routes
+  registerHealingRoutes(app, { wss: server });
 
   // 🛡️ CRITICAL WebSocket MEMORY LEAK FIX: Add error and close handlers to all WebSocket connections
   // This prevents memory leaks detected in platform diagnosis
