@@ -705,6 +705,17 @@ export async function handleStreamRequest(
     try {
       // Save assistant message to database
       // ✅ PHASE 3: Include validationMetadata from tool results
+      
+      // Build validation metadata
+      const validationMetadata = allToolResults.length > 0 
+        ? {
+            valid: allToolResults.every((tr: ToolResult) => tr.valid),
+            warnings: allToolResults.flatMap((tr: ToolResult) => tr.warnings),
+            truncated: allToolResults.some((tr: ToolResult) => tr.metadata.truncated),
+            schemaValidated: allToolResults.every((tr: ToolResult) => tr.metadata.schemaValidated)
+          } as const
+        : undefined;
+      
       const result = await db.insert(chatMessages).values({
         userId,
         projectId,
@@ -714,16 +725,7 @@ export async function handleStreamRequest(
         content: fullContent || 'Task completed.',
         progressMessages: JSON.stringify(progressMessages),
         isPlatformHealing: targetContext === 'platform',
-        // Aggregate validation metadata from all tool results
-        validationMetadata: allToolResults.length > 0 
-          ? {
-              toolResultCount: allToolResults.length,
-              allValid: allToolResults.every((tr: ToolResult) => tr.valid),
-              warnings: allToolResults.flatMap((tr: ToolResult) => tr.warnings),
-              truncated: allToolResults.some((tr: ToolResult) => tr.metadata.truncated),
-              schemaValidated: allToolResults.every((tr: ToolResult) => tr.metadata.schemaValidated)
-            }
-          : undefined,
+        validationMetadata,
       }).returning();
       
       assistantMsg = result[0];
