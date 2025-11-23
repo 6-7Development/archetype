@@ -22,12 +22,44 @@ type RunStateAction =
   | { type: 'task.created'; data: TaskCreatedData }
   | { type: 'task.updated'; data: TaskUpdatedData }
   | { type: 'run.completed'; data: RunCompletedData }
-  | { type: 'run.failed'; data: RunFailedData };
+  | { type: 'run.failed'; data: RunFailedData }
+  | { type: 'message.added'; message: Message }
+  | { type: 'messages.clear' }
+  | { type: 'loading.start' }
+  | { type: 'loading.end' }
+  | { type: 'error.set'; error: string }
+  | { type: 'error.clear' };
 
 function runStateReducer(state: RunStateReducerState, action: RunStateAction): RunStateReducerState {
-  const newState = { ...state, runs: new Map(state.runs) };
+  const newState = { ...state, runs: new Map(state.runs) } as UseStreamEventsState;
   
   switch (action.type) {
+    case 'message.added':
+      newState.messages.push(action.message);
+      break;
+      
+    case 'messages.clear':
+      newState.messages = [];
+      break;
+      
+    case 'loading.start':
+      newState.isLoading = true;
+      newState.error = undefined;
+      break;
+      
+    case 'loading.end':
+      newState.isLoading = false;
+      break;
+      
+    case 'error.set':
+      newState.error = action.error;
+      newState.isLoading = false;
+      break;
+      
+    case 'error.clear':
+      newState.error = undefined;
+      break;
+    
     case 'run.started':
       newState.runs.set(action.data.runId, {
         runId: action.data.runId,
@@ -144,6 +176,8 @@ export interface Message {
 
 interface UseStreamEventsState extends RunStateReducerState {
   messages: Message[];
+  error?: string;
+  isLoading?: boolean;
 }
 
 export interface UseStreamEventsReturn {
@@ -160,10 +194,30 @@ export function useStreamEvents(options?: { projectId?: string; targetContext?: 
     runs: new Map(),
     currentRunId: null,
     messages: [],
+    isLoading: false,
+    error: undefined,
   } as UseStreamEventsState);
 
   const sendMessage = async (msg: { message: string; images?: string[] }) => {
     try {
+      dispatchRunState({ type: 'loading.start' });
+      dispatchRunState({ type: 'error.clear' });
+
+      // Add user message to state
+      const userMessageId = `msg-${Date.now()}-user`;
+      dispatchRunState({
+        type: 'message.added',
+        message: {
+          id: userMessageId,
+          messageId: userMessageId,
+          role: 'user',
+          content: msg.message,
+          timestamp: new Date(),
+          images: msg.images || [],
+        },
+      });
+
+      // Call backend API
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -176,12 +230,34 @@ export function useStreamEvents(options?: { projectId?: string; targetContext?: 
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to send message');
-      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to send message');
+      }
+
+      // Parse and add assistant response
+      const data = await response.json();
+      const assistantMessageId = `msg-${Date.now()}-assistant`;
+      dispatchRunState({
+        type: 'message.added',
+        message: {
+          id: assistantMessageId,
+          messageId: assistantMessageId,
+          role: 'assistant',
+          content: data.response || '',
+          timestamp: new Date(),
+        },
+      });
+
+      dispatchRunState({ type: 'loading.end' });
+
       // Trigger callbacks to unblock UI
       if (options?.onRunCompleted) options.onRunCompleted();
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send message';
       console.error('Error sending message:', error);
+      dispatchRunState({ type: 'error.set', error: errorMessage });
+      dispatchRunState({ type: 'loading.end' });
       if (options?.onRunFailed) options.onRunFailed();
     }
   };
