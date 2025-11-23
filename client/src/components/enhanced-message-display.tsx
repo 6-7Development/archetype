@@ -202,4 +202,3 @@ export function EnhancedMessageDisplay({ content, progressMessages = [], isStrea
     </div>
   );
 }
-```
