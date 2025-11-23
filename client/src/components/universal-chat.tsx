@@ -1617,12 +1617,12 @@ export function UniversalChat({
           currentMetrics={currentMetrics}
           agentTasks={agentTasks}
           streamState={{
-            ...streamState,
             currentFile: streamState.currentFile ?? undefined,
-            scratchpad: streamState.scratchpad ?? []
+            fileSummary: streamState.fileSummary ?? undefined,
+            scratchpad: streamState.scratchpadEntries ?? []
           }}
           billingMetrics={billingMetrics}
-          scratchpadEntries={streamState.scratchpad ?? []}
+          scratchpadEntries={streamState.scratchpadEntries ?? []}
           sessionId={sessionId}
           onClearScratchpad={handleClearScratchpad}
         />
@@ -1697,10 +1697,10 @@ export function UniversalChat({
           timestamp: typeof streamState.deployment.timestamp === 'string' 
             ? new Date(streamState.deployment.timestamp).getTime()
             : streamState.deployment.timestamp,
-          // ✅ FIX: Map deployment statuses to match DeploymentData type
+          // ✅ FIX: Map deployment statuses - successful/in_progress to completed/running
           status: (streamState.deployment.status === 'in_progress' 
             ? 'running' 
-            : streamState.deployment.status === 'complete'
+            : streamState.deployment.status === 'successful'
             ? 'completed'
             : streamState.deployment.status) as 'pending' | 'running' | 'failed' | 'completed',
           steps: (streamState.deployment.steps || []).map(step => ({
@@ -1708,9 +1708,11 @@ export function UniversalChat({
             name: step.name || 'Unknown',
             status: (step.status === 'in_progress' 
               ? 'running'
-              : step.status === 'complete'
+              : step.status === 'complete' || step.status === 'completed'
               ? 'completed'
-              : step.status) as 'pending' | 'running' | 'failed' | 'completed',
+              : step.status === 'pending'
+              ? 'pending'
+              : 'failed') as 'pending' | 'running' | 'failed' | 'completed',
             timestamp: step.timestamp,
             error: step.error
           }))
