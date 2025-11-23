@@ -268,6 +268,7 @@ router.post('/stream', isAuthenticated, aiLimiter, async (req: any, res) => {
         });
 
         // Save assistant response to database
+        // ✅ GAP #2 FIX: Add validationMetadata (Architect doesn't validate tool results)
         const [assistantMsg] = await db.insert(chatMessages).values({
           userId,
           projectId: null,
@@ -275,6 +276,7 @@ router.post('/stream', isAuthenticated, aiLimiter, async (req: any, res) => {
           role: 'assistant',
           content: fullResponse,
           isPlatformHealing: true,
+          validationMetadata: undefined,
         }).returning();
 
         assistantMessageId = assistantMsg.id;
