@@ -557,10 +557,13 @@ export async function handleStreamRequest(
             
             // Convert ToolResult[] to Gemini API format for next iteration
             // Format: { role: 'user', content: [{ type: 'tool_result', tool_use_id, content }] }
+            // ✅ GAP FIX #1: Match by toolId instead of array index to avoid mismatches
+            const toolResultMap = new Map(iterationToolResults.map(tr => [tr.toolName, tr]));
+            
             const toolResultContent = contentBlocks
               .filter(block => block.type === 'tool_use')
-              .map((block, idx) => {
-                const toolResult = iterationToolResults[idx];
+              .map((block) => {
+                const toolResult = toolResultMap.get(block.name);
                 if (!toolResult) return null;
                 
                 // Convert payload to string for Gemini

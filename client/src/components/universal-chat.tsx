@@ -81,6 +81,13 @@ interface Message {
     timestamp: number;
     category?: 'thinking' | 'action' | 'result';
   }>; // Store thinking/tool calls inline
+  // ✅ GAP FIX #3: Add validation metadata field for tool results
+  validationMetadata?: {
+    valid?: boolean;
+    truncated?: boolean;
+    warnings?: string[];
+    schemaValidated?: boolean;
+  };
 }
 
 interface RequiredSecret {
@@ -1611,7 +1618,7 @@ export function UniversalChat({
           agentTasks={agentTasks}
           streamState={streamState}
           billingMetrics={billingMetrics}
-          scratchpadEntries={streamState.scratchpad || []}
+          scratchpadEntries={streamState.scratchpad ?? []}
           sessionId={sessionId}
           onClearScratchpad={handleClearScratchpad}
         />
@@ -1623,7 +1630,11 @@ export function UniversalChat({
           onSend={handleSend}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
-          onImageSelect={handleImageSelect}
+          onImageSelect={(files: FileList | null) => {
+            if (files) {
+              handleImageSelect(files);
+            }
+          }}
           pendingImages={pendingImages}
           uploadingImages={uploadingImages}
           onRemoveImage={removeImage}
@@ -1677,7 +1688,12 @@ export function UniversalChat({
         }}
         showDeploymentModal={showDeploymentModal}
         setShowDeploymentModal={setShowDeploymentModal}
-        deployment={streamState.deployment}
+        deployment={streamState.deployment ? {
+          ...streamState.deployment,
+          timestamp: typeof streamState.deployment.timestamp === 'string' 
+            ? new Date(streamState.deployment.timestamp).getTime()
+            : streamState.deployment.timestamp
+        } : null}
         showInsufficientCredits={showInsufficientCredits}
         setShowInsufficientCredits={setShowInsufficientCredits}
         zoomImage={zoomImage}
