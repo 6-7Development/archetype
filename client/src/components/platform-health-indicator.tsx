@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, CheckCircle2, AlertCircle, Zap, Activity, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { API_ENDPOINTS, getQueryKey, postApi } from "@/lib/api-utils";
 import { APP_CONFIG } from "@/config/app.config";
+import { HealingProgressModal } from "./healing-progress-modal";
 
 interface HealthStatus {
   status: 'healthy' | 'degraded' | 'critical';
@@ -17,6 +19,8 @@ interface HealthStatus {
 export function PlatformHealthIndicator() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [showHealingModal, setShowHealingModal] = useState(false);
+  const [healingJobId, setHealingJobId] = useState<string | null>(null);
   
   const { data: health, isLoading } = useQuery<HealthStatus>({
     queryKey: getQueryKey(API_ENDPOINTS.PLATFORM_HEALTH),
@@ -42,12 +46,17 @@ export function PlatformHealthIndicator() {
         throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
+      // Open the progress modal to show real-time healing progress
+      setShowHealingModal(true);
+      setHealingJobId(data.jobId || null);
+      
       toast({ 
         title: "🤖 Autonomous Healing Started", 
-        description: "LomuAI is analyzing and fixing platform issues in the background...",
-        duration: 5000,
+        description: "Watch LomuAI analyze and fix issues in real-time...",
+        duration: 3000,
       });
+      
       // Invalidate health query to trigger refetch
       queryClient.invalidateQueries({ queryKey: getQueryKey(API_ENDPOINTS.PLATFORM_HEALTH) });
     },
@@ -62,6 +71,13 @@ export function PlatformHealthIndicator() {
 
   const handleHealClick = () => {
     autoHealMutation.mutate();
+  };
+  
+  const handleCloseModal = () => {
+    setShowHealingModal(false);
+    setHealingJobId(null);
+    // Refetch health status when modal closes
+    queryClient.invalidateQueries({ queryKey: getQueryKey(API_ENDPOINTS.PLATFORM_HEALTH) });
   };
 
   if (isLoading || !health) {
@@ -156,6 +172,13 @@ export function PlatformHealthIndicator() {
           )}
         </Button>
       )}
+      
+      {/* Healing Progress Modal */}
+      <HealingProgressModal 
+        isOpen={showHealingModal}
+        onClose={handleCloseModal}
+        jobId={healingJobId}
+      />
     </div>
   );
 }
