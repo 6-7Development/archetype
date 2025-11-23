@@ -140,22 +140,22 @@ export function LivePreview({ projectId, fileCount = 0 }: LivePreviewProps) {
           <span className="text-sm font-semibold">Live Preview</span>
           
           {previewStatus === 'loading' && (
-            <Badge variant="outline" className="text-xs border-blue-500/20 text-blue-600
-              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+            <Badge variant="outline" className="text-xs border-blue-500/20 text-blue-600 flex items-center gap-1">
+              <Loader2 className="w-3 h-3 animate-spin" />
               Compiling...
             </Badge>
           )}
           
           {previewStatus === 'ready' && (
-            <Badge variant="outline" className="text-xs border-green-500/20 text-green-600
-              <CheckCircle2 className="w-3 h-3 mr-1" />
+            <Badge variant="outline" className="text-xs border-green-500/20 text-green-600 flex items-center gap-1">
+              <CheckCircle2 className="w-3 h-3" />
               Ready
             </Badge>
           )}
           
           {previewStatus === 'error' && (
-            <Badge variant="outline" className="text-xs border-red-500/20 text-red-600
-              <AlertCircle className="w-3 h-3 mr-1" />
+            <Badge variant="outline" className="text-xs border-red-500/20 text-red-600 flex items-center gap-1">
+              <AlertCircle className="w-3 h-3" />
               Error
             </Badge>
           )}

@@ -476,11 +476,11 @@ export function UniversalChat({
             {runState.messages.length === 0 ? (
               <div className="flex items-center justify-center h-full text-muted-foreground" data-testid="empty-state-chat">
                 <div className="text-center space-y-3">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[hsl(var(--primary))]/15
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[hsl(var(--primary))]/15">
                     <Zap className="w-6 h-6 text-[hsl(var(--primary))]" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-[hsl(var(--primary))] to help</p>
+                    <p className="text-sm font-bold text-[hsl(var(--primary))]">Start your project</p>
                     <p className="text-xs text-muted-foreground/70 mt-1">Send a message to get started</p>
                   </div>
                 </div>
