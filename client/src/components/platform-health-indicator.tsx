@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { API_ENDPOINTS, getQueryKey, apiRequest } from "@/lib/api-utils";
+import { API_ENDPOINTS, getQueryKey, postApi } from "@/lib/api-utils";
 import { APP_CONFIG } from "@/config/app.config";
 
 interface HealthStatus {
@@ -27,7 +27,7 @@ export function PlatformHealthIndicator() {
   // Autonomous healing mutation
   const autoHealMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest("POST", "/api/healing/auto-heal", {});
+      return postApi("/api/healing/auto-heal", {});
     },
     onSuccess: () => {
       toast({ 
