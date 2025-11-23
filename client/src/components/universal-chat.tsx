@@ -366,6 +366,15 @@ export function UniversalChat({
     return currentRun.status === 'completed' && lastMessage?.role === 'assistant' && lastMessage?.content.includes('Scratchpad');
   }, [currentRun, currentRunMessages]);
 
+  // Derived state for task and artifact displays
+  const agentTasks = useMemo(() => {
+    return currentRun?.tasks || [];
+  }, [currentRun]);
+
+  const artifacts = useMemo(() => {
+    return currentRun?.artifacts || [];
+  }, [currentRun]);
+
   return (
     <div className="flex h-full flex-col bg-background">
       <ChatHeader
