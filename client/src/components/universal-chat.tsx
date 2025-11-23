@@ -135,61 +135,40 @@ export function UniversalChat({
     projectId,
     targetContext,
     onProjectGenerated,
-    onRunCompleted: () => setIsGenerating(false),
-    onRunFailed: () => setIsGenerating(false),
   });
 
-  const { mutate: sendChatMessage } = useMutation({
-    mutationFn: async ({ message, images }: { message: string; images?: string[] }) => {
-      const response = await apiRequest(
-        `/api/chat`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            message,
-            projectId,
-            targetContext,
-            images, // Pass image URLs to the backend
-          }),
-        },
-        true
-      );
-      return response.json();
-    },
-    onSuccess: (data) => {
-      // The actual streaming response will update the UI, so no direct message update here
-      // We might want to store the initial message in the state immediately for responsiveness
-      // but the full message will come via SSE.
-    },
-    onError: (error) => {
-      console.error("Error sending chat message:", error);
+  // Sync isGenerating with runState.isLoading
+  useEffect(() => {
+    setIsGenerating(runState.isLoading || false);
+  }, [runState.isLoading]);
+
+  // Show error toast when error occurs
+  useEffect(() => {
+    if (runState.error) {
       toast({
         title: "Error",
-        description: "Failed to send message. Please try again.",
+        description: runState.error,
         variant: "destructive",
       });
-      setIsGenerating(false);
-    },
-  });
+    }
+  }, [runState.error, toast]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim() && uploadedImageUrls.length === 0) return;
-    setIsGenerating(true);
 
     const messageToSend = input.trim();
     const imagesToSend = [...uploadedImageUrls];
 
-    sendMessage({
-      message: messageToSend,
-      images: imagesToSend,
-    });
-
+    // Clear input immediately for responsive UX
     setInput("");
     setPendingImages([]);
     setUploadedImageUrls([]);
+
+    // Send message (loading state will be managed by runState.isLoading)
+    await sendMessage({
+      message: messageToSend,
+      images: imagesToSend,
+    });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -396,7 +375,35 @@ export function UniversalChat({
             onScroll={handleScroll}
             data-testid="chat-messages-container"
           >
-            <MessageHistory messages={runState.messages} latestMessageRef={latestMessageRef} />
+            {/* Error Display */}
+            {runState.error && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{runState.error}</AlertDescription>
+              </Alert>
+            )}
+
+            {/* Messages Display */}
+            {runState.messages.length === 0 ? (
+              <div className="flex items-center justify-center h-full text-muted-foreground">
+                <div className="text-center">
+                  <p className="text-lg font-medium mb-2">Start a conversation</p>
+                  <p className="text-sm">Send a message to get started with LomuAI</p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <MessageHistory messages={runState.messages} latestMessageRef={latestMessageRef} />
+                {/* Loading indicator */}
+                {isGenerating && (
+                  <div className="flex items-center gap-2 text-muted-foreground text-sm p-4">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>LomuAI is thinking...</span>
+                  </div>
+                )}
+                <div ref={latestMessageRef} />
+              </>
+            )}
           </div>
 
           {/* Chat Input */}
