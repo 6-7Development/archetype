@@ -513,6 +513,30 @@ export class AgentExecutor {
           rawResult = await toolHandlers.handleRefreshAllLogs();
           break;
         
+        case 'read_platform_file':
+          rawResult = await toolHandlers.handleReadPlatformFile(input.path || '');
+          break;
+        
+        case 'write_platform_file':
+          rawResult = await toolHandlers.handleWritePlatformFile(input.path || '', input.content || '');
+          break;
+        
+        case 'list_platform_files':
+          rawResult = await toolHandlers.handleListPlatformFiles(input.directory || '');
+          break;
+        
+        case 'google_docs_read':
+          rawResult = await toolHandlers.handleGoogleDocsRead(input.documentId || '');
+          break;
+        
+        case 'google_docs_search':
+          rawResult = await toolHandlers.handleGoogleDocsSearch(input.documentId || '', input.searchTerm || '');
+          break;
+        
+        case 'google_docs_metadata':
+          rawResult = await toolHandlers.handleGoogleDocsMetadata(input.documentId || '');
+          break;
+        
         default:
           throw new Error(`Unknown tool: ${toolName}`);
       }
