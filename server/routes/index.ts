@@ -1,7 +1,6 @@
 import type { Express } from "express";
 import type { Server } from "http";
-import type { WebSocketServer } from "ws";
-import WebSocket from "ws";
+import { WebSocketServer } from "ws";
 
 // Import all route registration functions
 import { registerAuthRoutes } from "./auth";
@@ -26,11 +25,12 @@ import { registerArchitectNotesRoutes } from "./architect-notes";
  * Initializes all API routes and WebSocket server
  */
 export async function registerRoutes(app: Express): Promise<Server & { wss?: WebSocketServer }> {
-  // Create HTTP server for WebSocket support
-  const server = require("http").createServer(app) as Server;
+  // Create HTTP server for WebSocket support (ES module import)
+  const http = await import("http");
+  const server = http.createServer(app) as Server;
   
   // Create WebSocket server
-  const wss = new WebSocket.Server({ server });
+  const wss = new WebSocketServer({ server });
   console.log("[ROUTES] WebSocket server created");
 
   // Register HTTP API routes (order matters - register more specific routes first)
@@ -58,7 +58,7 @@ export async function registerRoutes(app: Express): Promise<Server & { wss?: Web
   // Register LomuAI chat routes from the main lomuChat.ts file
   console.log("[LOMU-AI] LomuAI router mounted at /api/lomu-ai");
   try {
-    const lomuChatRouter = require("../lomuChat").default;
+    const { default: lomuChatRouter } = await import("../lomuChat.js");
     if (lomuChatRouter) {
       app.use("/api/lomu-ai", lomuChatRouter);
     }
@@ -69,7 +69,7 @@ export async function registerRoutes(app: Express): Promise<Server & { wss?: Web
   // Register other specialized routers
   console.log("[ROUTES] Registering specialized routers...");
   try {
-    const architectRouter = require("./architect").default;
+    const { default: architectRouter } = await import("./architect.js");
     if (architectRouter) {
       app.use("/api/architect", architectRouter);
       console.log("[ARCHITECT] I AM Architect router mounted at /api/architect");
@@ -79,7 +79,7 @@ export async function registerRoutes(app: Express): Promise<Server & { wss?: Web
   }
 
   try {
-    const creditsRouter = require("./credits").default;
+    const { default: creditsRouter } = await import("./credits.js");
     if (creditsRouter) {
       app.use("/api/credits", creditsRouter);
       console.log("[CREDITS] Credits router mounted at /api/credits");
@@ -89,7 +89,7 @@ export async function registerRoutes(app: Express): Promise<Server & { wss?: Web
   }
 
   try {
-    const approvalRouter = require("./approvalRoutes").default;
+    const { default: approvalRouter } = await import("./approvalRoutes.js");
     if (approvalRouter) {
       app.use("/api", approvalRouter);
       console.log("[APPROVALS] Approval router mounted at /api");
@@ -99,7 +99,7 @@ export async function registerRoutes(app: Express): Promise<Server & { wss?: Web
   }
 
   try {
-    const agentsRouter = require("./agents").default;
+    const { default: agentsRouter } = await import("./agents.js");
     if (agentsRouter) {
       app.use("/api/agents", agentsRouter);
       console.log("[AGENTS] Agents router mounted at /api/agents");
@@ -109,7 +109,7 @@ export async function registerRoutes(app: Express): Promise<Server & { wss?: Web
   }
 
   try {
-    const webhooksRouter = require("./webhooks").default;
+    const { default: webhooksRouter } = await import("./webhooks.js");
     if (webhooksRouter) {
       app.use("/api/webhooks", webhooksRouter);
       console.log("[WEBHOOKS] Webhooks router mounted at /api/webhooks");
@@ -119,7 +119,7 @@ export async function registerRoutes(app: Express): Promise<Server & { wss?: Web
   }
 
   try {
-    const gitRouter = require("./git").default;
+    const { default: gitRouter } = await import("./git.js");
     if (gitRouter) {
       app.use(gitRouter);
       console.log("[GIT] Git router mounted");

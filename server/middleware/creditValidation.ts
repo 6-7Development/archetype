@@ -90,7 +90,7 @@ export async function requirePaymentMethod(req: any, res: Response, next: NextFu
  * Middleware to check if user has sufficient credits
  * Estimates credits needed and validates availability
  */
-export async function requireSufficientCredits(estimatedCredits: number = 100) {
+export function requireSufficientCredits(estimatedCredits: number = 100) {
   return async (req: any, res: Response, next: NextFunction) => {
     try {
       const userId = req.authenticatedUserId;
