@@ -118,7 +118,7 @@ export default function Workspace() {
             value={editorContent}
             onChange={setEditorContent}
             language={activeFile.language || 'javascript'}
-            theme="vs-dark"
+            theme="vs-light"
             options={{
               minimap: { enabled: false },
               fontSize: 13,
