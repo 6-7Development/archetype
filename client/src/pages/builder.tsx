@@ -401,7 +401,7 @@ export default function Builder() {
                             <span className="text-xs text-muted-foreground">/{activeFile.path}</span>
                           )}
                           {hasUnsavedChanges && (
-                            <Badge variant="outline" className="text-xs border-yellow-500/20 text-yellow-600 dark:text-yellow-400">
+                            <Badge variant="outline" className="text-xs border-yellow-500/20 text-yellow-600
                               Unsaved
                             </Badge>
                           )}

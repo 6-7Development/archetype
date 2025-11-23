@@ -85,36 +85,36 @@ export function EnhancedMessageDisplay({ content, progressMessages = [], isStrea
     switch (category) {
       case 'thinking':
         return {
-          bg: 'bg-purple-50/50 dark:bg-purple-950/20',
-          border: 'border-purple-200/50 dark:border-purple-800/30',
-          hover: 'hover:bg-purple-100/50 dark:hover:bg-purple-900/30',
+          bg: 'bg-purple-50/50
+          border: 'border-purple-200/50
+          hover: 'hover:bg-purple-100/50
           icon: Brain,
-          iconColor: 'text-purple-600 dark:text-purple-400',
+          iconColor: 'text-purple-600
           badgeBg: 'bg-purple-500/10',
           badgeBorder: 'border-purple-500/20',
-          badgeText: 'text-purple-700 dark:text-purple-300'
+          badgeText: 'text-purple-700
         };
       case 'action':
         return {
-          bg: 'bg-blue-50/50 dark:bg-blue-950/20',
-          border: 'border-blue-200/50 dark:border-blue-800/30',
-          hover: 'hover:bg-blue-100/50 dark:hover:bg-blue-900/30',
+          bg: 'bg-blue-50/50
+          border: 'border-blue-200/50
+          hover: 'hover:bg-blue-100/50
           icon: Wrench,
-          iconColor: 'text-blue-600 dark:text-blue-400',
+          iconColor: 'text-blue-600
           badgeBg: 'bg-blue-500/10',
           badgeBorder: 'border-blue-500/20',
-          badgeText: 'text-blue-700 dark:text-blue-300'
+          badgeText: 'text-blue-700
         };
       case 'result':
         return {
-          bg: 'bg-green-50/50 dark:bg-green-950/20',
-          border: 'border-green-200/50 dark:border-green-800/30',
-          hover: 'hover:bg-green-100/50 dark:hover:bg-green-900/30',
+          bg: 'bg-green-50/50
+          border: 'border-green-200/50
+          hover: 'hover:bg-green-100/50
           icon: CheckCircle2,
-          iconColor: 'text-green-600 dark:text-green-400',
+          iconColor: 'text-green-600
           badgeBg: 'bg-green-500/10',
           badgeBorder: 'border-green-500/20',
-          badgeText: 'text-green-700 dark:text-green-300'
+          badgeText: 'text-green-700
         };
     }
   };
@@ -127,19 +127,19 @@ export function EnhancedMessageDisplay({ content, progressMessages = [], isStrea
           <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground flex-wrap">
             {thinkingCount > 0 && (
               <span className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-purple-500/10 border border-purple-500/20">
-                <Brain className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                <Brain className="w-3.5 h-3.5 text-purple-600 />
                 {thinkingCount} Thinking
               </span>
             )}
             {actionCount > 0 && (
               <span className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-blue-500/10 border border-blue-500/20">
-                <Wrench className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                <Wrench className="w-3.5 h-3.5 text-blue-600 />
                 {actionCount} Actions
               </span>
             )}
             {resultCount > 0 && (
               <span className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-green-500/10 border border-green-500/20">
-                <CheckCircle2 className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-green-600 />
                 {resultCount} Results
               </span>
             )}

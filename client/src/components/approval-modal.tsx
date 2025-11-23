@@ -84,13 +84,13 @@ export function ApprovalModal({
   const severityConfig = {
     warning: {
       icon: AlertCircle,
-      color: 'text-yellow-600 dark:text-yellow-400',
-      bgColor: 'bg-yellow-50 dark:bg-yellow-950/30',
+      color: 'text-yellow-600
+      bgColor: 'bg-yellow-50
     },
     critical: {
       icon: Shield,
-      color: 'text-red-600 dark:text-red-400',
-      bgColor: 'bg-red-50 dark:bg-red-950/30',
+      color: 'text-red-600
+      bgColor: 'bg-red-50
     },
   };
 

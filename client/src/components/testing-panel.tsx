@@ -132,7 +132,7 @@ export function TestingPanel({ session, onClose }: TestingPanelProps) {
                 </div>
               </div>
               
-              <div className="flex-1 bg-white dark:bg-gray-900 relative overflow-hidden">
+              <div className="flex-1 bg-white relative overflow-hidden">
                 {latestScreenshot ? (
                   <img
                     src={`data:image/png;base64,${latestScreenshot}`}
@@ -201,22 +201,22 @@ export function TestingPanel({ session, onClose }: TestingPanelProps) {
                       key={step.id}
                       className={cn(
                         "flex items-start gap-2 p-2 rounded-md border",
-                        step.status === 'running' && "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800",
-                        step.status === 'passed' && "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800",
-                        step.status === 'failed' && "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800",
+                        step.status === 'running' && "bg-blue-50 border-blue-200 dark:border-blue-800",
+                        step.status === 'passed' && "bg-green-50 border-green-200 dark:border-green-800",
+                        step.status === 'failed' && "bg-red-50 border-red-200 dark:border-red-800",
                         step.status === 'pending' && "bg-muted/30"
                       )}
                       data-testid={`step-${step.id}`}
                     >
                       {step.status === 'pending' && <div className="w-4 h-4 rounded-full border-2 mt-0.5" />}
-                      {step.status === 'running' && <PlayCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 animate-pulse" />}
-                      {step.status === 'passed' && <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5" />}
-                      {step.status === 'failed' && <XCircle className="w-4 h-4 text-red-600 dark:text-red-400 mt-0.5" />}
+                      {step.status === 'running' && <PlayCircle className="w-4 h-4 text-blue-600 mt-0.5 animate-pulse" />}
+                      {step.status === 'passed' && <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5" />}
+                      {step.status === 'failed' && <XCircle className="w-4 h-4 text-red-600 mt-0.5" />}
                       
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{step.description}</p>
                         {step.error && (
-                          <p className="text-xs text-red-600 dark:text-red-400 mt-1">{step.error}</p>
+                          <p className="text-xs text-red-600 mt-1">{step.error}</p>
                         )}
                       </div>
                     </div>

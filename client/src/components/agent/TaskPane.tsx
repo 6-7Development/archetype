@@ -27,27 +27,27 @@ const STATUS_CONFIG: Record<TaskStatus, {
   backlog: {
     label: 'Backlog',
     icon: <Circle className="h-3.5 w-3.5" />,
-    color: 'text-gray-500 dark:text-gray-400'
+    color: 'text-gray-500
   },
   in_progress: {
     label: 'In Progress',
     icon: <Loader2 className="h-3.5 w-3.5 animate-spin" />,
-    color: 'text-blue-600 dark:text-blue-400'
+    color: 'text-blue-600
   },
   verifying: {
     label: 'Verifying',
     icon: <Clock className="h-3.5 w-3.5" />,
-    color: 'text-yellow-600 dark:text-yellow-400'
+    color: 'text-yellow-600
   },
   done: {
     label: 'Done',
     icon: <CheckCircle2 className="h-3.5 w-3.5" />,
-    color: 'text-green-600 dark:text-green-400'
+    color: 'text-green-600
   },
   blocked: {
     label: 'Blocked',
     icon: <AlertCircle className="h-3.5 w-3.5" />,
-    color: 'text-red-600 dark:text-red-400'
+    color: 'text-red-600
   }
 };
 
@@ -85,10 +85,10 @@ function TaskCard({ task }: { task: Task }) {
                   variant="outline" 
                   className={`text-xs h-5 ${
                     verificationPassed 
-                      ? 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800'
+                      ? 'bg-green-500/10 text-green-700 border-green-200 dark:border-green-800'
                       : verificationFailed
-                      ? 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800'
-                      : 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800'
+                      ? 'bg-red-500/10 text-red-700 border-red-200 dark:border-red-800'
+                      : 'bg-yellow-500/10 text-yellow-700 border-yellow-200 dark:border-yellow-800'
                   }`}
                   data-testid="task-verification"
                 >

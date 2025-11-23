@@ -32,7 +32,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
   };
 
   return (
-    <div className={cn("prose dark:prose-invert max-w-none", className)}>
+    <div className={cn("prose max-w-none", className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[

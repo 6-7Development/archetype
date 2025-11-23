@@ -23,8 +23,8 @@ export function TaskProgressWidget({ tasks, activeTaskId }: TaskProgressWidgetPr
         <CardTitle className="text-base font-medium flex items-center gap-2">
           {allCompleted ? (
             <>
-              <PartyPopper className="h-4 w-4 text-green-600 dark:text-green-400" />
-              <span className="text-green-600 dark:text-green-400">All Tasks Complete!</span>
+              <PartyPopper className="h-4 w-4 text-green-600 />
+              <span className="text-green-600 Tasks Complete!</span>
             </>
           ) : (
             <>
@@ -58,7 +58,7 @@ export function TaskProgressWidget({ tasks, activeTaskId }: TaskProgressWidgetPr
               <div className="flex items-start gap-2">
                 <div className="flex-shrink-0 mt-0.5">
                   {isCompleted ? (
-                    <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" data-testid="icon-completed" />
+                    <CheckCircle className="h-4 w-4 text-green-600 data-testid="icon-completed" />
                   ) : isActive ? (
                     <Loader2 className="h-4 w-4 animate-spin text-primary" data-testid="icon-active" />
                   ) : (
@@ -69,7 +69,7 @@ export function TaskProgressWidget({ tasks, activeTaskId }: TaskProgressWidgetPr
                 <div className="flex-1 min-w-0">
                   <div className={cn(
                     "text-sm font-medium leading-tight",
-                    isCompleted && "text-green-700 dark:text-green-300",
+                    isCompleted && "text-green-700
                     isActive && "text-primary",
                     isPending && "text-muted-foreground"
                   )}>

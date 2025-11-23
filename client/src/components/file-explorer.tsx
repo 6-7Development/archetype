@@ -17,11 +17,11 @@ export function FileExplorer({ files, activeFileId, onFileSelect, onCreateFile }
 
   const getLanguageBadgeColor = (language: string) => {
     const colors: Record<string, string> = {
-      javascript: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
-      typescript: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
-      python: "bg-green-500/10 text-green-600 dark:text-green-400",
-      html: "bg-orange-500/10 text-orange-600 dark:text-orange-400",
-      css: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+      javascript: "bg-yellow-500/10 text-yellow-600
+      typescript: "bg-blue-500/10 text-blue-600
+      python: "bg-green-500/10 text-green-600
+      html: "bg-orange-500/10 text-orange-600
+      css: "bg-purple-500/10 text-purple-600
     };
     return colors[language] || "bg-muted text-muted-foreground";
   };
@@ -119,7 +119,7 @@ export function FileExplorer({ files, activeFileId, onFileSelect, onCreateFile }
                         {status === 'new' && (
                           <Badge 
                             variant="outline" 
-                            className="text-[10px] px-1.5 py-0 h-4 bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20"
+                            className="text-[10px] px-1.5 py-0 h-4 bg-green-500/10 text-green-600 border-green-500/20"
                             data-testid={`badge-new-${file.id}`}
                           >
                             NEW
@@ -128,7 +128,7 @@ export function FileExplorer({ files, activeFileId, onFileSelect, onCreateFile }
                         {status === 'modified' && (
                           <Badge 
                             variant="outline" 
-                            className="text-[10px] px-1.5 py-0 h-4 bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                            className="text-[10px] px-1.5 py-0 h-4 bg-amber-500/10 text-amber-600 border-amber-500/20"
                             data-testid={`badge-modified-${file.id}`}
                           >
                             MOD

@@ -20,29 +20,29 @@ export interface CostPreviewProps {
 const COMPLEXITY_CONFIG = {
   simple: {
     label: 'Simple Project',
-    color: 'text-green-600 dark:text-green-400',
-    bgColor: 'bg-green-50 dark:bg-green-950',
+    color: 'text-green-600
+    bgColor: 'bg-green-50
     icon: CheckCircle,
     description: 'Landing pages, portfolios, basic sites',
   },
   medium: {
     label: 'Medium Project',
-    color: 'text-blue-600 dark:text-blue-400',
-    bgColor: 'bg-blue-50 dark:bg-blue-950',
+    color: 'text-blue-600
+    bgColor: 'bg-blue-50
     icon: Zap,
     description: 'Web apps, dashboards, interactive sites',
   },
   complex: {
     label: 'Complex Project',
-    color: 'text-purple-600 dark:text-purple-400',
-    bgColor: 'bg-purple-50 dark:bg-purple-950',
+    color: 'text-purple-600
+    bgColor: 'bg-purple-50
     icon: TrendingUp,
     description: 'SaaS platforms, marketplaces, advanced apps',
   },
   enterprise: {
     label: 'Enterprise Project',
-    color: 'text-orange-600 dark:text-orange-400',
-    bgColor: 'bg-orange-50 dark:bg-orange-950',
+    color: 'text-orange-600
+    bgColor: 'bg-orange-50
     icon: AlertCircle,
     description: 'Games, large platforms, enterprise systems',
   },
@@ -125,7 +125,7 @@ export default function CostPreview({
 
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Tokens Remaining</span>
-            <span className={`text-sm font-mono ${tokensRemaining < estimatedTokens ? 'text-orange-600 dark:text-orange-400' : ''}`} data-testid="tokens-remaining">
+            <span className={`text-sm font-mono ${tokensRemaining < estimatedTokens ? 'text-orange-600 : ''}`} data-testid="tokens-remaining">
               {tokensRemaining.toLocaleString()} / {tokenLimit.toLocaleString()}
             </span>
           </div>
@@ -160,14 +160,14 @@ export default function CostPreview({
         {hasOverage && (
           <>
             <Separator />
-            <div className="rounded-lg border-2 border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950 p-4">
+            <div className="rounded-lg border-2 border-orange-200 bg-orange-50 dark:bg-orange-950 p-4">
               <div className="flex items-start gap-3">
-                <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5" />
+                <AlertCircle className="h-5 w-5 text-orange-600 mt-0.5" />
                 <div className="flex-1">
-                  <h4 className="font-medium text-orange-900 dark:text-orange-100">
+                  <h4 className="font-medium text-orange-900
                     Overage Tokens Required
                   </h4>
-                  <p className="text-sm text-orange-700 dark:text-orange-300 mt-1">
+                  <p className="text-sm text-orange-700 mt-1">
                     This project needs more tokens than your current plan allows
                   </p>
                   
@@ -195,14 +195,14 @@ export default function CostPreview({
         {!hasOverage && (
           <>
             <Separator />
-            <div className="rounded-lg bg-green-50 dark:bg-green-950 p-4">
+            <div className="rounded-lg bg-green-50 p-4">
               <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                <CheckCircle className="h-5 w-5 text-green-600 />
                 <div>
-                  <h4 className="font-medium text-green-900 dark:text-green-100" data-testid="cost-included">
+                  <h4 className="font-medium text-green-900 data-testid="cost-included">
                     ✓ Cost Included in Your Plan
                   </h4>
-                  <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                  <p className="text-sm text-green-700 mt-1">
                     No additional charges for this project
                   </p>
                 </div>

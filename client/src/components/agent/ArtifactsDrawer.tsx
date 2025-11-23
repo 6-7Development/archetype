@@ -37,9 +37,9 @@ const ARTIFACT_ICONS = {
 };
 
 const ARTIFACT_COLORS = {
-  file: 'text-blue-600 dark:text-blue-400',
-  url: 'text-purple-600 dark:text-purple-400',
-  report: 'text-green-600 dark:text-green-400'
+  file: 'text-blue-600
+  url: 'text-purple-600
+  report: 'text-green-600
 };
 
 function ArtifactCard({ artifact }: { artifact: Artifact }) {
@@ -89,7 +89,7 @@ function ArtifactCard({ artifact }: { artifact: Artifact }) {
               )}
               
               {artifact.operation === 'delete' && (
-                <Badge variant="outline" className="text-xs h-5 bg-red-500/10 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800">
+                <Badge variant="outline" className="text-xs h-5 bg-red-500/10 text-red-700 border-red-200 dark:border-red-800">
                   deleted
                 </Badge>
               )}

@@ -25,7 +25,7 @@ interface MigrationsPanelProps {
 function MigrationStatusBadge({ status }: { status: string }) {
   if (status === "applied") {
     return (
-      <Badge variant="outline" className="border-green-500/30 text-green-600 dark:text-green-400">
+      <Badge variant="outline" className="border-green-500/30 text-green-600
         <CheckCircle2 className="w-3 h-3 mr-1" />
         Applied
       </Badge>
@@ -34,7 +34,7 @@ function MigrationStatusBadge({ status }: { status: string }) {
   
   if (status === "failed") {
     return (
-      <Badge variant="outline" className="border-red-500/30 text-red-600 dark:text-red-400">
+      <Badge variant="outline" className="border-red-500/30 text-red-600
         <XCircle className="w-3 h-3 mr-1" />
         Failed
       </Badge>
@@ -42,7 +42,7 @@ function MigrationStatusBadge({ status }: { status: string }) {
   }
   
   return (
-    <Badge variant="outline" className="border-yellow-500/30 text-yellow-600 dark:text-yellow-400">
+    <Badge variant="outline" className="border-yellow-500/30 text-yellow-600
       <Clock className="w-3 h-3 mr-1" />
       Pending
     </Badge>

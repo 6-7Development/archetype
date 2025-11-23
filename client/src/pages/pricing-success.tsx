@@ -13,7 +13,7 @@ export default function PricingSuccess() {
         transition={{ duration: 0.5 }}
         className="max-w-2xl w-full"
       >
-        <Card className="p-12 text-center bg-slate-900/50 border-cyan-500/30">
+        <Card className="p-12 text-center bg-card/50 border-cyan-500/30">
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}

@@ -140,21 +140,21 @@ export function LivePreview({ projectId, fileCount = 0 }: LivePreviewProps) {
           <span className="text-sm font-semibold">Live Preview</span>
           
           {previewStatus === 'loading' && (
-            <Badge variant="outline" className="text-xs border-blue-500/20 text-blue-600 dark:text-blue-400">
+            <Badge variant="outline" className="text-xs border-blue-500/20 text-blue-600
               <Loader2 className="w-3 h-3 mr-1 animate-spin" />
               Compiling...
             </Badge>
           )}
           
           {previewStatus === 'ready' && (
-            <Badge variant="outline" className="text-xs border-green-500/20 text-green-600 dark:text-green-400">
+            <Badge variant="outline" className="text-xs border-green-500/20 text-green-600
               <CheckCircle2 className="w-3 h-3 mr-1" />
               Ready
             </Badge>
           )}
           
           {previewStatus === 'error' && (
-            <Badge variant="outline" className="text-xs border-red-500/20 text-red-600 dark:text-red-400">
+            <Badge variant="outline" className="text-xs border-red-500/20 text-red-600
               <AlertCircle className="w-3 h-3 mr-1" />
               Error
             </Badge>
@@ -213,7 +213,7 @@ export function LivePreview({ projectId, fileCount = 0 }: LivePreviewProps) {
           <iframe
             key={iframeKey}
             src={`/api/preview/${projectId}`}
-            className="w-full h-full border-0 bg-white dark:bg-gray-900"
+            className="w-full h-full border-0 bg-white
             sandbox="allow-scripts allow-same-origin allow-modals allow-forms allow-popups"
             title="Live Preview"
             data-testid="iframe-preview"

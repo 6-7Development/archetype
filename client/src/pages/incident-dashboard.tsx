@@ -25,10 +25,10 @@ export default function IncidentDashboard() {
   const resolvedIncidents = incidents?.filter(i => i.status === 'resolved') || [];
 
   const severityConfig = {
-    low: { color: 'bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800', label: 'Low', badge: 'default' },
-    medium: { color: 'bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800', label: 'Medium', badge: 'secondary' },
-    high: { color: 'bg-orange-50 dark:bg-orange-950 border-orange-200 dark:border-orange-800', label: 'High', badge: 'destructive' },
-    critical: { color: 'bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800', label: 'Critical', badge: 'destructive' },
+    low: { color: 'bg-blue-50 border-blue-200 dark:border-blue-800', label: 'Low', badge: 'default' },
+    medium: { color: 'bg-amber-50 border-amber-200 dark:border-amber-800', label: 'Medium', badge: 'secondary' },
+    high: { color: 'bg-orange-50 border-orange-200 dark:border-orange-800', label: 'High', badge: 'destructive' },
+    critical: { color: 'bg-red-50 border-red-200 dark:border-red-800', label: 'Critical', badge: 'destructive' },
   };
 
   if (isLoading) {

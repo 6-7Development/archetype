@@ -261,7 +261,7 @@ function TaskItem({ task, index, animation }: TaskItemProps) {
   const getStatusColor = () => {
     switch (task.status) {
       case 'completed':
-        return 'text-green-700 dark:text-green-300';
+        return 'text-green-700
       case 'failed':
         return 'text-destructive';
       case 'in_progress':

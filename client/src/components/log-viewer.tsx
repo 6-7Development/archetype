@@ -115,12 +115,12 @@ export function LogViewer({ projectId }: LogViewerProps) {
 
   const getLogColor = (level: LogLevel) => {
     switch (level) {
-      case 'error': return 'text-red-600 dark:text-red-400 bg-red-500/10';
-      case 'warning': return 'text-amber-600 dark:text-amber-400 bg-amber-500/10';
-      case 'success': return 'text-green-600 dark:text-green-400 bg-green-500/10';
-      case 'ai': return 'text-purple-600 dark:text-purple-400 bg-purple-500/10';
-      case 'database': return 'text-blue-600 dark:text-blue-400 bg-blue-500/10';
-      case 'websocket': return 'text-cyan-600 dark:text-cyan-400 bg-cyan-500/10';
+      case 'error': return 'text-red-600 bg-red-500/10';
+      case 'warning': return 'text-amber-600 bg-amber-500/10';
+      case 'success': return 'text-green-600 bg-green-500/10';
+      case 'ai': return 'text-purple-600 bg-purple-500/10';
+      case 'database': return 'text-blue-600 bg-blue-500/10';
+      case 'websocket': return 'text-cyan-600 bg-cyan-500/10';
       default: return 'text-muted-foreground bg-muted/50';
     }
   };

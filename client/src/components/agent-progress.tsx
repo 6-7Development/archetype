@@ -188,7 +188,7 @@ export function AgentProgress({ steps, isWorking, onStop, showTeachingEmojis = f
                       <span className="font-medium text-foreground">
                         {totalFilesChanged}
                         {metrics.filesCreated && metrics.filesCreated > 0 && (
-                          <span className="text-green-600 dark:text-green-400 ml-1">
+                          <span className="text-green-600 ml-1">
                             (+{metrics.filesCreated})
                           </span>
                         )}
@@ -201,9 +201,9 @@ export function AgentProgress({ steps, isWorking, onStop, showTeachingEmojis = f
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Lines Changed:</span>
                       <span className="font-medium">
-                        <span className="text-green-600 dark:text-green-400">+{metrics.linesAdded || 0}</span>
+                        <span className="text-green-600 || 0}</span>
                         {" / "}
-                        <span className="text-red-600 dark:text-red-400">-{metrics.linesRemoved || 0}</span>
+                        <span className="text-red-600 || 0}</span>
                       </span>
                     </div>
                   )}
@@ -261,9 +261,9 @@ export function AgentProgress({ steps, isWorking, onStop, showTeachingEmojis = f
                 )}
                 {((metrics.linesAdded || 0) + (metrics.linesRemoved || 0) > 0) && (
                   <div>
-                    <span className="text-green-600 dark:text-green-400">+{metrics.linesAdded || 0}</span>
+                    <span className="text-green-600 || 0}</span>
                     {" / "}
-                    <span className="text-red-600 dark:text-red-400">-{metrics.linesRemoved || 0}</span>
+                    <span className="text-red-600 || 0}</span>
                     {" lines"}
                   </div>
                 )}

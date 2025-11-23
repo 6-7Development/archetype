@@ -27,11 +27,11 @@ interface StatusStripProps {
 }
 
 const PHASE_COLORS: Record<RunPhase, string> = {
-  thinking: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800',
-  planning: 'bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800',
-  working: 'bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800',
-  verifying: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
-  complete: 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800'
+  thinking: 'bg-blue-500/10 text-blue-700 border-blue-200 dark:border-blue-800',
+  planning: 'bg-purple-500/10 text-purple-700 border-purple-200 dark:border-purple-800',
+  working: 'bg-orange-500/10 text-orange-700 border-orange-200 dark:border-orange-800',
+  verifying: 'bg-emerald-500/10 text-emerald-700 border-emerald-200 dark:border-emerald-800',
+  complete: 'bg-green-500/10 text-green-700 border-green-200 dark:border-green-800'
 };
 
 export function StatusStrip({ phase, message, currentThought, isExecuting = false, billingMetrics }: StatusStripProps) {
@@ -45,9 +45,9 @@ export function StatusStrip({ phase, message, currentThought, isExecuting = fals
     const safeAllowance = monthlyAllowance > 0 ? monthlyAllowance : 5000;
     const percentageRemaining = (balance / safeAllowance) * 100;
     
-    if (percentageRemaining > 50) return 'text-green-600 dark:text-green-400'; // >50% = green
-    if (percentageRemaining > 20) return 'text-yellow-600 dark:text-yellow-400'; // 20-50% = yellow
-    return 'text-red-600 dark:text-red-400'; // <20% = red
+    if (percentageRemaining > 50) return 'text-green-600 // >50% = green
+    if (percentageRemaining > 20) return 'text-yellow-600 // 20-50% = yellow
+    return 'text-red-600 // <20% = red
   };
 
   return (
@@ -73,7 +73,7 @@ export function StatusStrip({ phase, message, currentThought, isExecuting = fals
       {billingMetrics && (
         <div className="flex items-center gap-3 text-xs" data-testid="billing-cost-meter">
           {billingMetrics.isFreeAccess ? (
-            <Badge variant="outline" className="bg-green-500/10 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800" data-testid="badge-free-access">
+            <Badge variant="outline" className="bg-green-500/10 text-green-700 border-green-200 dark:border-green-800" data-testid="badge-free-access">
               <Coins className="h-3 w-3 mr-1" />
               FREE ACCESS
             </Badge>

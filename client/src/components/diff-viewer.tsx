@@ -93,8 +93,8 @@ export function DiffViewer({ diff, className }: DiffViewerProps) {
             className={cn(
               "flex gap-4 px-4 py-0.5",
               {
-                'bg-green-500/10 text-green-600 dark:text-green-400': line.type === 'added',
-                'bg-red-500/10 text-red-600 dark:text-red-400': line.type === 'removed',
+                'bg-green-500/10 text-green-600 line.type === 'added',
+                'bg-red-500/10 text-red-600 line.type === 'removed',
                 'text-foreground': line.type === 'unchanged',
                 'bg-muted/50 text-muted-foreground font-semibold': line.type === 'hunk',
                 'text-muted-foreground': line.type === 'header',

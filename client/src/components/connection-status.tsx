@@ -88,19 +88,19 @@ export function ConnectionIndicator({
         {isConnected && !isReconnecting && (
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-xs text-green-600 dark:text-green-400 font-medium">Live</span>
+            <span className="text-xs text-green-600 font-medium">Live</span>
           </div>
         )}
         {isReconnecting && (
           <div className="flex items-center gap-1.5">
             <RefreshCw className="w-3 h-3 text-yellow-500 animate-spin" />
-            <span className="text-xs text-yellow-600 dark:text-yellow-400 font-medium">Reconnecting...</span>
+            <span className="text-xs text-yellow-600 font-medium">Reconnecting...</span>
           </div>
         )}
         {!isConnected && !isReconnecting && (
           <div className="flex items-center gap-1.5">
             <WifiOff className="w-3 h-3 text-red-500" />
-            <span className="text-xs text-red-600 dark:text-red-400 font-medium">Offline</span>
+            <span className="text-xs text-red-600 font-medium">Offline</span>
           </div>
         )}
       </div>

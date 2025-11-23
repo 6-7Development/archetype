@@ -185,7 +185,7 @@ export default function Marketplace() {
                     </p>
                   )}
                   {owned && (
-                    <div className="flex items-center gap-1 text-sm text-green-600 dark:text-green-400" data-testid={`text-owned-${template.id}`}>
+                    <div className="flex items-center gap-1 text-sm text-green-600 data-testid={`text-owned-${template.id}`}>
                       <Check className="w-4 h-4" />
                       <span>Owned</span>
                     </div>

@@ -240,7 +240,7 @@ export function ChatMessages({
                 <div className="space-y-3">
                   {/* Checkpoint display (if present) */}
                   {message.checkpoint && (
-                    <Card className="bg-yellow-50/50 dark:bg-yellow-950/20 border-yellow-200/50 dark:border-yellow-800/30">
+                    <Card className="bg-yellow-50/50 border-yellow-200/50 dark:border-yellow-800/30">
                       <CardContent className="p-4">
                         <div className="flex items-start gap-2">
                           <div className="text-xl">⚠️</div>
@@ -312,7 +312,7 @@ export function ChatMessages({
 
       {/* WebSocket Stream: File Status */}
       {streamState?.currentFile && (
-        <div className="mx-4 mb-2 px-3 py-1.5 bg-[hsl(220,16%,20%)] border-l-2 border-emerald-500/60 rounded text-xs" data-testid="stream-file-status">
+        <div className="mx-4 mb-2 px-3 py-1.5 bg-card border-l-2 border-emerald-500/60 rounded text-xs" data-testid="stream-file-status">
           <p className="text-[hsl(220,10%,72%)] flex items-center gap-2">
             <span className="font-mono text-[hsl(220,70%,60%)]">{streamState.currentFile.action}</span>
             <span className="font-mono">{streamState.currentFile.filename}</span>

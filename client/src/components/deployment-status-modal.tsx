@@ -61,7 +61,7 @@ export function DeploymentStatusModal({
   const timeAgo = formatDistanceToNow(new Date(timestamp), { addSuffix: true });
   
   const platformColors = {
-    github: "bg-[#24292e] text-white",
+    github: "bg-background292e] text-white",
     railway: "bg-[#0B0D0E] text-white",
     replit: "bg-[#F26207] text-white",
   };

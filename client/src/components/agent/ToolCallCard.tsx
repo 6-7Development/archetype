@@ -32,10 +32,10 @@ export function ToolCallCard({ called, result }: ToolCallCardProps) {
   const isPending = !result;
   
   const statusColor = isSuccess 
-    ? 'text-green-600 dark:text-green-400' 
+    ? 'text-green-600 
     : isFailed 
-    ? 'text-red-600 dark:text-red-400'
-    : 'text-blue-600 dark:text-blue-400';
+    ? 'text-red-600
+    : 'text-blue-600
 
   const statusIcon = isSuccess 
     ? <CheckCircle2 className="h-4 w-4" /> 
@@ -143,7 +143,7 @@ export function ToolCallCard({ called, result }: ToolCallCardProps) {
             </TabsContent>
 
             <TabsContent value="stderr" className="mt-2">
-              <pre className="text-xs bg-muted/50 p-3 rounded border border-border overflow-x-auto font-mono text-red-600 dark:text-red-400" data-testid="tool-stderr-content">
+              <pre className="text-xs bg-muted/50 p-3 rounded border border-border overflow-x-auto font-mono text-red-600 data-testid="tool-stderr-content">
                 {result && 'stderr' in result && result.stderr
                   ? result.stderr
                   : result && 'result' in result && typeof result.result === 'object' && 'stderr' in result.result

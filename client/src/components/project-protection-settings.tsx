@@ -82,7 +82,7 @@ export function ProjectProtectionSettings({ projectId }: ProjectProtectionSettin
               <Badge variant="destructive">Protected</Badge>
             </div>
 
-            <Alert className="bg-red-50 dark:bg-red-950/30">
+            <Alert className="bg-red-50
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
                 Critical files cannot be modified without admin intervention
@@ -129,10 +129,10 @@ export function ProjectProtectionSettings({ projectId }: ProjectProtectionSettin
           </div>
 
           {/* Editable Files Section */}
-          <div className="space-y-3 p-4 rounded-lg bg-green-50/50 dark:bg-green-950/20 border border-green-200/30">
+          <div className="space-y-3 p-4 rounded-lg bg-green-50/50 border border-green-200/30">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold">Editable Files</h3>
-              <Badge variant="outline" className="border-green-500 text-green-700 dark:text-green-400">
+              <Badge variant="outline" className="border-green-500 text-green-700
                 Allowed
               </Badge>
             </div>
@@ -148,7 +148,7 @@ export function ProjectProtectionSettings({ projectId }: ProjectProtectionSettin
           </div>
 
           {/* Approval Requirements */}
-          <div className="space-y-3 p-4 rounded-lg bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/30">
+          <div className="space-y-3 p-4 rounded-lg bg-amber-50/50 border border-amber-200/30">
             <h3 className="font-semibold flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
               Operations Requiring Approval
@@ -164,7 +164,7 @@ export function ProjectProtectionSettings({ projectId }: ProjectProtectionSettin
           </div>
 
           {/* Pending Approvals */}
-          <div className="space-y-3 p-4 rounded-lg bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/30">
+          <div className="space-y-3 p-4 rounded-lg bg-blue-50/50 border border-blue-200/30">
             <h3 className="font-semibold">Your Approval Authority</h3>
             <p className="text-sm text-muted-foreground">
               As project owner, you review and approve changes to protected files

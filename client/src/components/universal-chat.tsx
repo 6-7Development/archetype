@@ -420,9 +420,9 @@ export function UniversalChat({
   }, [runState.messages]);
 
   return (
-    <div className="flex h-full flex-col bg-background dark:bg-gradient-to-br dark:from-[hsl(var(--background))] dark:to-[hsl(220,25%,10%)]">
+    <div className="flex h-full flex-col bg-background dark:from-[hsl(var(--background))] dark:to-[hsl(220,25%,10%)]">
       {/* Workspace Header with Status */}
-      <div className="border-b bg-muted/30 dark:bg-[hsl(var(--card))]/40 dark:border-[hsl(var(--primary))]/20 px-4 py-2 flex items-center justify-between text-xs gap-4">
+      <div className="border-b bg-muted/30 dark:border-[hsl(var(--primary))]/20 px-4 py-2 flex items-center justify-between text-xs gap-4">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <span className="text-muted-foreground truncate">
             <strong>Workspace:</strong> {targetContext}
@@ -476,11 +476,11 @@ export function UniversalChat({
             {runState.messages.length === 0 ? (
               <div className="flex items-center justify-center h-full text-muted-foreground" data-testid="empty-state-chat">
                 <div className="text-center space-y-3">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[hsl(var(--primary))]/15 dark:bg-[hsl(var(--primary))]/20">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[hsl(var(--primary))]/15
                     <Zap className="w-6 h-6 text-[hsl(var(--primary))]" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-[hsl(var(--primary))] dark:text-[hsl(var(--primary))]">Ready to help</p>
+                    <p className="text-sm font-bold text-[hsl(var(--primary))] to help</p>
                     <p className="text-xs text-muted-foreground/70 mt-1">Send a message to get started</p>
                   </div>
                 </div>
@@ -507,7 +507,7 @@ export function UniversalChat({
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col items-start">
                       <div className="text-xs font-bold mb-1 text-[hsl(var(--secondary))]">LomuAI</div>
-                      <div className="bg-[hsl(var(--card))]/60 dark:bg-[hsl(var(--secondary))]/10 rounded-2xl rounded-bl-none px-4 py-2.5 flex items-center gap-2 border border-[hsl(var(--secondary))]/20 dark:border-[hsl(var(--secondary))]/30">
+                      <div className="bg-[hsl(var(--card))]/60 rounded-2xl rounded-bl-none px-4 py-2.5 flex items-center gap-2 border border-[hsl(var(--secondary))]/20 dark:border-[hsl(var(--secondary))]/30">
                         <Loader2 className="h-4 w-4 animate-spin text-[hsl(var(--secondary))]" />
                         <span className="text-sm text-[hsl(var(--secondary))] font-semibold">Thinking...</span>
                       </div>
@@ -520,7 +520,7 @@ export function UniversalChat({
           </div>
 
           {/* Chat Input */}
-          <div className="border-t bg-background dark:bg-[hsl(var(--card))]/30 dark:border-[hsl(var(--primary))]/20 p-4">
+          <div className="border-t bg-background dark:border-[hsl(var(--primary))]/20 p-4">
             <ChatInput
               input={input}
               setInput={setInput}
@@ -553,7 +553,7 @@ export function UniversalChat({
       </ResizablePanelGroup>
 
       {/* Footer Status Bar */}
-      <div className="border-t bg-muted/20 dark:bg-[hsl(var(--card))]/20 dark:border-[hsl(var(--primary))]/20 px-4 py-2 flex items-center justify-between text-xs text-muted-foreground">
+      <div className="border-t bg-muted/20 dark:border-[hsl(var(--primary))]/20 px-4 py-2 flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-4">
           {runState.error && (
             <div className="flex items-center gap-1 text-destructive font-semibold">
@@ -574,7 +574,7 @@ export function UniversalChat({
           size="sm"
           variant="ghost"
           onClick={handleClearChat}
-          className="h-6 text-xs hover:text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/10 dark:hover:bg-[hsl(var(--primary))]/15"
+          className="h-6 text-xs hover:text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/10
           data-testid="button-clear-all-messages"
         >
           Clear all

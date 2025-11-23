@@ -203,8 +203,8 @@ export default function Landing() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {/* Screenshot 1: AI Chat */}
-            <Card className="p-4 sm:p-6 bg-slate-900/30 border-slate-700/50 backdrop-blur-sm hover-elevate">
-              <div className="aspect-video bg-slate-950/50 rounded-lg border border-slate-700/50 flex items-center justify-center mb-3 sm:mb-4">
+            <Card className="p-4 sm:p-6 bg-background border-border/50 backdrop-blur-sm hover-elevate">
+              <div className="aspect-video bg-background rounded-lg border border-border/50 flex items-center justify-center mb-3 sm:mb-4">
                 <div className="text-center">
                   <Sparkles className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-2 sm:mb-3 text-honey" />
                   <p className="text-sm text-slate-300 font-medium">AI Chat Interface</p>
@@ -218,8 +218,8 @@ export default function Landing() {
             </Card>
 
             {/* Screenshot 2: Live Preview */}
-            <Card className="p-4 sm:p-6 bg-slate-900/30 border-slate-700/50 backdrop-blur-sm hover-elevate">
-              <div className="aspect-video bg-slate-950/50 rounded-lg border border-slate-700/50 flex items-center justify-center mb-3 sm:mb-4">
+            <Card className="p-4 sm:p-6 bg-background border-border/50 backdrop-blur-sm hover-elevate">
+              <div className="aspect-video bg-background rounded-lg border border-border/50 flex items-center justify-center mb-3 sm:mb-4">
                 <div className="text-center">
                   <Play className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-2 sm:mb-3 text-mint" />
                   <p className="text-sm text-slate-300 font-medium">Live Preview</p>
@@ -233,8 +233,8 @@ export default function Landing() {
             </Card>
 
             {/* Screenshot 3: Code Editor */}
-            <Card className="p-4 sm:p-6 bg-slate-900/30 border-slate-700/50 backdrop-blur-sm hover-elevate">
-              <div className="aspect-video bg-slate-950/50 rounded-lg border border-slate-700/50 flex items-center justify-center mb-3 sm:mb-4">
+            <Card className="p-4 sm:p-6 bg-background border-border/50 backdrop-blur-sm hover-elevate">
+              <div className="aspect-video bg-background rounded-lg border border-border/50 flex items-center justify-center mb-3 sm:mb-4">
                 <div className="text-center">
                   <Code className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-2 sm:mb-3 text-honey" />
                   <p className="text-sm text-slate-300 font-medium">Monaco Editor</p>
@@ -248,8 +248,8 @@ export default function Landing() {
             </Card>
 
             {/* Screenshot 4: Deployment */}
-            <Card className="p-4 sm:p-6 bg-slate-900/30 border-slate-700/50 backdrop-blur-sm hover-elevate">
-              <div className="aspect-video bg-slate-950/50 rounded-lg border border-slate-700/50 flex items-center justify-center mb-3 sm:mb-4">
+            <Card className="p-4 sm:p-6 bg-background border-border/50 backdrop-blur-sm hover-elevate">
+              <div className="aspect-video bg-background rounded-lg border border-border/50 flex items-center justify-center mb-3 sm:mb-4">
                 <div className="text-center">
                   <Rocket className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-2 sm:mb-3 text-mint" />
                   <p className="text-sm text-slate-300 font-medium">Production Deployment</p>
@@ -279,7 +279,7 @@ export default function Landing() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Speed */}
-            <Card className="p-6 sm:p-8 bg-slate-900/30 border-slate-700/50 backdrop-blur-sm hover-elevate h-full">
+            <Card className="p-6 sm:p-8 bg-background border-border/50 backdrop-blur-sm hover-elevate h-full">
               <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-xl bg-honey/20 flex items-center justify-center text-honey mb-4 sm:mb-6">
                 <Zap className="w-6 sm:w-7 h-6 sm:h-7" />
               </div>
@@ -290,7 +290,7 @@ export default function Landing() {
             </Card>
 
             {/* Quality */}
-            <Card className="p-6 sm:p-8 bg-slate-900/30 border-slate-700/50 backdrop-blur-sm hover-elevate h-full">
+            <Card className="p-6 sm:p-8 bg-background border-border/50 backdrop-blur-sm hover-elevate h-full">
               <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-xl bg-mint/20 flex items-center justify-center text-mint mb-4 sm:mb-6">
                 <Shield className="w-6 sm:w-7 h-6 sm:h-7" />
               </div>
@@ -301,7 +301,7 @@ export default function Landing() {
             </Card>
 
             {/* Swarm */}
-            <Card className="p-6 sm:p-8 bg-slate-900/30 border-slate-700/50 backdrop-blur-sm hover-elevate h-full">
+            <Card className="p-6 sm:p-8 bg-background border-border/50 backdrop-blur-sm hover-elevate h-full">
               <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-xl bg-honey/20 flex items-center justify-center text-honey mb-4 sm:mb-6">
                 <Hexagon className="w-6 sm:w-7 h-6 sm:h-7" />
               </div>
