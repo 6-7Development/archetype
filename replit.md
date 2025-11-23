@@ -52,6 +52,17 @@ Lomu is an AI-powered platform for rapid web development, featuring the autonomo
 ## System Architecture
 The platform is built with a React frontend, an Express.js backend, and PostgreSQL for data persistence. It uses a unified codebase for Lomu (Desktop, 4-panel layout) and Lomu5 (Mobile, bottom tab navigation), sharing backend APIs, WebSockets, authentication, and database access.
 
+### Universal RBAC System (NEW)
+**File**: `shared/rbac.ts` - Single source of truth for all permissions
+- **Dynamic role-based access control**: No hard-coded access control scattered through code
+- **Three roles**: user, admin, owner
+- **Five resources**: platform, projects, healing, admin, billing, team
+- **Five actions**: read, write, delete, execute, manage
+- **Zero configuration needed**: Changes to permission matrix apply immediately
+- **Frontend hooks**: `useHasPermission()`, `useAccessibleResources()`, `useIsAdmin()`, `useIsOwner()`
+- **Auth integration**: All auth endpoints (`/api/auth/me`, login, register) return dynamic permissions
+- **Pattern**: Request contains user + permissions array, UI uses permissions to conditionally render features
+
 ### UI/UX Decisions
 The user interface features a tab-based workspace with a command console and real-time live preview. The design uses a professional swarm/hive theme with honey-gold and mint-teal accents, utilizing card-based layouts, warm shadows, smooth transitions, and ADA/WCAG accessibility. Chat interfaces use semantic theme tokens for consistent, polished appearance with modern message bubbles and smooth transitions. Loading states feature smooth animations.
 
@@ -70,6 +81,12 @@ LomuAI acts as the autonomous worker, committing changes through a strict 7-phas
   - **Manual activation only** - Owner must trigger via UI
   - **Consultative role** - Analyzes, recommends, but doesn't auto-fix
   - **Requires approval** - All changes need owner confirmation
+- **Autonomous Healing Button**: One-click background healing process
+  - Shows "Healing..." spinner on button
+  - Toast notification: "🤖 Autonomous Healing Started"
+  - Runs in background while user stays on platform
+  - Updates incident count when complete
+  - No page navigation required
 - **HealOrchestrator**: Monitors health incidents, can auto-trigger workflows for critical issues
 - **Incident System**: Logs failures → Owner reviews → Manually triggers I AM Architect if needed
 
@@ -77,6 +94,7 @@ A centralized session management system (`server/services/lomuAIBrain.ts`) conso
 
 **Key Features:**
 - **Optimized Tool Distribution Architecture**: LomuAI (18 tools), Sub-Agents (12 tools), I AM Architect (23 tools), with automatic tool count validation.
+- **Universal RBAC**: Dynamic permission matrix (shared/rbac.ts) with zero hard-coded checks
 - **GitHub Integration**: Full version control.
 - **Environment Variables Management**: Project-level secrets.
 - **Code Intelligence System**: AST-based code understanding.
@@ -94,6 +112,7 @@ A centralized session management system (`server/services/lomuAIBrain.ts`) conso
 - **Anti-Paralysis System**: Three-layer defense (system prompt, diagnosis tool, runtime enforcement) to prevent repeated reading of large files, ensuring efficient execution.
 - **Priority 1 Safety Mechanisms**: Auto-rollback on validation failure, server startup integration tests, and GitHub API retry with exponential backoff.
 - **Phase 1 Multi-User Safety**: Workspace isolation using FIFO file locking, stale session cleanup, and crash recovery with metadata persistence and transactional file operations.
+- **Session/Credentials Fix**: All API calls now include `credentials: 'include'` to properly send session cookies for authentication
 
 The platform prioritizes native JSON function calling for AI streaming due to superior speed, reliability, and type safety, integrating utilities for validation, retry logic, and file change tracking.
 
@@ -101,9 +120,10 @@ The platform prioritizes native JSON function calling for AI streaming due to su
 - **Centralized `app.config.ts`**: Contains branding, theme colors, API endpoints, chat settings, UI constants, feature flags, keyboard shortcuts, limits/quotas, messages/copy, telemetry, social links, and environment detection.
 - **Global `constants.ts`**: Defines application routes, API endpoints, UI constants, inline strings, time constants, validation rules, status enums, colors, and accessibility labels.
 - **`classNameHelper.ts`**: Provides reusable Tailwind CSS class builders for buttons, cards, text, layout, spacing, state classes, and component-specific styles.
-- **`api-utils.ts`**: Centralizes API utilities for building URLs, generic fetch wrappers, POST requests, streaming responses, and React Query key generation.
+- **`api-utils.ts`**: Centralizes API utilities for building URLs, generic fetch wrappers, POST requests, streaming responses, and React Query key generation. NOW INCLUDES credentials support.
 - **`useAppConfig.ts`**: React hook for type-safe access to configuration with helper methods.
 - **`ConfigProvider.tsx`**: Context provider wrapping the entire application to make configuration accessible.
+- **`shared/rbac.ts`**: Universal RBAC system with dynamic permission matrix - single source of truth for all access control.
 
 ### Modularization
 The system has undergone significant modularization to improve maintainability and LomuAI's self-healing capabilities.
@@ -131,3 +151,13 @@ The system has undergone significant modularization to improve maintainability a
 -   **Charting**: Recharts
 -   **Browser Automation**: Playwright
 -   **Web Search**: Tavily API
+
+## Recent Session Progress
+- ✅ Created universal RBAC system in `shared/rbac.ts`
+- ✅ Integrated RBAC into auth endpoints (login, register, /api/auth/me)
+- ✅ Fixed async message rendering (extracted MessageBubble component)
+- ✅ Made user an owner in database
+- ✅ Implemented autonomous healing button with background processing
+- ✅ Fixed credentials issue - all API calls now send session cookies
+- ✅ Platform healing triggered without page navigation
+- ✅ Heal button shows spinner + toast during process

@@ -76,6 +76,7 @@ export async function fetchApi<T = any>(
 ): Promise<T> {
   const url = buildApiUrl(endpoint);
   const response = await fetch(url, {
+    credentials: 'include', // Send cookies for authentication
     headers: {
       'Content-Type': 'application/json',
       ...options?.headers,
@@ -114,6 +115,7 @@ export async function streamApi(
 ): Promise<ReadableStream<Uint8Array>> {
   const url = buildApiUrl(endpoint);
   const response = await fetch(url, {
+    credentials: 'include', // Send cookies for authentication
     headers: {
       'Content-Type': 'application/json',
       ...options?.headers,
