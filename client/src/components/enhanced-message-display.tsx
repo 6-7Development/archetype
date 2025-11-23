@@ -1,5 +1,5 @@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronRight, Brain, Wrench, CheckCircle2 } from "lucide-react";
+import { ChevronRight, Brain, Wrench, CheckCircle2, Loader2 } from "lucide-react"; // Added Loader2
 import { useState } from "react";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { cn } from "@/lib/utils";
@@ -128,93 +128,78 @@ export function EnhancedMessageDisplay({ content, progressMessages = [], isStrea
             {thinkingCount > 0 && (
               <span className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-purple-500/10 border border-purple-500/20">
                 <Brain className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-                <span className="text-purple-700 dark:text-purple-300">{thinkingCount} thought{thinkingCount > 1 ? 's' : ''}</span>
+                {thinkingCount} Thinking
               </span>
             )}
             {actionCount > 0 && (
               <span className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-blue-500/10 border border-blue-500/20">
                 <Wrench className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                <span className="text-blue-700 dark:text-blue-300">{actionCount} action{actionCount > 1 ? 's' : ''}</span>
+                {actionCount} Actions
               </span>
             )}
             {resultCount > 0 && (
               <span className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-green-500/10 border border-green-500/20">
                 <CheckCircle2 className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
-                <span className="text-green-700 dark:text-green-300">{resultCount} result{resultCount > 1 ? 's' : ''}</span>
+                {resultCount} Results
               </span>
             )}
           </div>
-          
-          {visibleBlocks.map((block) => {
-            const styles = getCategoryStyles(block.category);
-            const Icon = styles.icon;
-            const displayContent = block.content.length > 80 ? `${block.content.substring(0, 80)}...` : block.content;
-            
-            return (
-              <Collapsible 
-                key={block.id}
-                open={expandedBlocks.has(block.id)}
-                onOpenChange={() => toggleBlock(block.id)}
-              >
-                <CollapsibleTrigger className="w-full group">
-                  <div className={cn(
-                    "flex items-center gap-2.5 px-3 py-2 rounded-md text-sm border transition-all",
-                    styles.bg,
-                    styles.border,
-                    styles.hover
-                  )}>
-                    <ChevronRight className={cn(
-                      "w-4 h-4 transition-transform flex-shrink-0 text-muted-foreground",
-                      expandedBlocks.has(block.id) && "rotate-90"
-                    )} />
-                    
-                    <Icon className={cn("w-4 h-4 flex-shrink-0", styles.iconColor)} />
-                    
-                    <span className="font-medium flex-1 text-left text-foreground">
-                      {displayContent}
-                      {block.content.length > 80 && <span className="text-muted-foreground/70 ml-1"> (Read more)</span>}
-                    </span>
-                  </div>
-                </CollapsibleTrigger>
-                
-                <CollapsibleContent>
-                  <div className="mt-2 ml-7 px-3 py-2.5 rounded-md bg-muted/30 border border-border/40">
-                    <div className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">
-                      {block.content}
+
+          {/* Individual progress blocks */}
+          <div className="space-y-2">
+            {visibleBlocks.map((block, index) => {
+              const { bg, border, hover, icon: Icon, iconColor, badgeBg, badgeBorder, badgeText } = getCategoryStyles(block.category);
+              const isLastVisibleBlock = index === visibleBlocks.length - 1;
+              const showStreamingIndicator = isStreaming && isLastVisibleBlock; // Only show on the last visible block if streaming
+
+              return (
+                <Collapsible
+                  key={block.id}
+                  open={expandedBlocks.has(block.id)}
+                  onOpenChange={() => toggleBlock(block.id)}
+                  className={cn(
+                    "rounded-lg border p-3 transition-all duration-200",
+                    bg,
+                    border,
+                    hover
+                  )}
+                >
+                  <CollapsibleTrigger className="flex w-full items-center justify-between text-sm font-medium">
+                    <div className="flex items-center gap-2">
+                      <Icon className={cn("h-4 w-4", iconColor)} />
+                      <span className={cn("font-semibold", badgeText)}>
+                        {block.category.charAt(0).toUpperCase() + block.category.slice(1)}
+                      </span>
+                      {showStreamingIndicator && (
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> // Streaming indicator
+                      )}
                     </div>
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-            );
-          })}
-          
-          {hasMore && (
-            <button
-              onClick={() => setShowAllProgress(!showAllProgress)}
-              className="w-full px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground border border-dashed rounded-md hover:bg-accent/50 transition-colors"
-              data-testid="button-toggle-progress"
-            >
-              {showAllProgress ? '− Show less' : `+ Show ${blocks.length - BASE_LIMIT} more`}
-            </button>
-          )}
+                    <ChevronRight className={cn("h-4 w-4 transition-transform", expandedBlocks.has(block.id) && "rotate-90")} />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pt-2 text-sm text-muted-foreground">
+                    <MarkdownRenderer content={block.content} />
+                  </CollapsibleContent>
+                </Collapsible>
+              );
+            })}
+
+            {hasMore && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowAllProgress(true)}
+                className="w-full justify-center text-muted-foreground"
+              >
+                Show All {blocks.length} Progress Steps
+              </Button>
+            )}
+          </div>
         </div>
       )}
 
-      {content && (
-        <div className={cn(
-          "prose dark:prose-invert max-w-none prose-sm prose-neutral",
-          "prose-headings:font-semibold prose-headings:text-foreground",
-          "prose-p:text-foreground/90 prose-p:leading-relaxed",
-          "prose-a:text-primary prose-a:no-underline hover:prose-a:underline",
-          "prose-code:text-foreground/90 prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded",
-          "prose-pre:bg-muted prose-pre:border prose-pre:border-border/50",
-          "prose-strong:text-foreground prose-strong:font-semibold",
-          "prose-ul:text-foreground/90 prose-ol:text-foreground/90",
-          isStreaming && "animate-pulse"
-        )}>
-          <MarkdownRenderer content={content} />
-        </div>
-      )}
+      {/* Main message content */}
+      <MarkdownRenderer content={content} />
     </div>
   );
 }
+```
