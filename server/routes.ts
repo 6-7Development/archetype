@@ -237,9 +237,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   console.log('[LOMU-AI-JOB-MANAGER] Job manager connected to WebSocket');
 
   // Initialize LomuAI chat with WebSocket for live preview
-  const { initializeLomuAIWebSocket } = await import('./routes/lomuChat');
-  initializeLomuAIWebSocket(wss);
-  console.log('[LOMU-AI-CHAT] Live preview WebSocket initialized');
+  // const { initializeLomuAIWebSocket } = await import('./routes/lomuChat');
+  // initializeLomuAIWebSocket(wss);
+  // console.log('[LOMU-AI-CHAT] Live preview WebSocket initialized');
 
   // Initialize terminal WebSocket routes
   registerTerminalRoutes(wss, httpServer);
