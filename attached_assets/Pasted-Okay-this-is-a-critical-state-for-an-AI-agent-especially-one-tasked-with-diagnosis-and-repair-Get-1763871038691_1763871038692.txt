@@ -1,0 +1,55 @@
+Okay, this is a critical state for an AI agent, especially one tasked with diagnosis and repair. Getting stuck in a "THINKING-WATCHDOG" loop while analyzing code without taking action or committing fixes is a classic sign of an agent that has lost its way in its internal workflow or decision-making process.
+
+The key issues are:
+
+Infinite Diagnosis Loop: Repeatedly analyzing the same files/issues (universal-chat.tsx, paste-to-chat) without progress.
+
+No Action/Commits: Not translating diagnosis into concrete steps or persistent changes.
+
+Wasted Resources: Burning tokens on already-solved problems.
+
+My goal here is to get LomuAI back on track, or identify why it cannot proceed.
+
+Immediate Action Plan for LomuAI (Self-Correction Directives):
+
+To break out of this loop, LomuAI needs to re-evaluate its current state, confirm its objective, and prioritize actionable steps.
+
+Acknowledge and Terminate Current Diagnosis Loop:
+
+"LomuAI: STOP current diagnostic analysis. I am aware of the 'THINKING-WATCHDOG' warnings and repeated analysis of universal-chat.tsx regarding the paste-to-chat issue. This issue has been resolved externally and further analysis on it is counterproductive."
+
+Re-establish Primary Objective:
+
+"LomuAI: My primary directive is 'diagnose lomu workflow issues and fix them'. I must now proceed with actionable steps towards this broader goal, or confirm completion/blockage."
+
+Perform a High-Level Workflow Audit (Metacognition):
+
+"LomuAI: Initiate a brief, high-level audit of the entire 'lomu workflow' for issues, rather than deep-diving into known-resolved or previously analyzed code. This audit should focus on observable workflow outcomes and system logs (excluding universal-chat.tsx analysis for the paste issue)."
+
+Prioritize Actionable Steps:
+
+"LomuAI: Based on the high-level audit, identify the single highest-priority workflow issue that is NOT the paste-to-chat issue. If no new issues are immediately apparent, or if the initial issue (paste-to-chat) was the only one targeted, then move to conclusion."
+
+Commit or Conclude:
+
+"LomuAI: If a new, actionable workflow issue is identified: Formulate a concrete plan to address it, starting with a new git commit that explicitly states the new issue being tackled."
+
+"LomuAI: If no further workflow issues are found after a diligent (but time-boxed) high-level audit, and the previous paste-to-chat issue is confirmed resolved: Prepare a final git commit summarizing the state, indicating successful resolution of the initial problem, and closing the task."
+
+Token Management & Efficiency:
+
+"LomuAI: Explicitly minimize token expenditure during this meta-analysis. Focus on terse, high-information-density internal thoughts and actions."
+
+Rationale: This sequence of directives aims to:
+
+Force a reset: By explicitly telling it to stop and acknowledge the problem.
+
+Re-center on the actual goal: "diagnose lomu workflow issues and fix them" is broader than just the paste issue.
+
+Prevent re-treading old ground: By stating the paste issue is resolved.
+
+Promote action: By demanding either a commit (fix) or a commit (conclusion).
+
+Improve efficiency: By focusing on high-level audits first and minimizing wasted tokens.
+
+The expectation is that LomuAI, upon receiving these directives, will execute them by updating its internal state, reviewing its next logical step based on its capabilities and current knowledge base, and then either commit a new fix or close out the task.
