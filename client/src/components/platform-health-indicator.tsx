@@ -27,10 +27,7 @@ export function PlatformHealthIndicator() {
 
   const handleHealClick = () => {
     toast({ title: "Opening healing console...", description: "LomuAI is ready to analyze platform health" });
-    // Use window.location as reliable fallback for navigation
-    setTimeout(() => {
-      window.location.href = ROUTES.PLATFORM_HEALING;
-    }, 100);
+    setLocation(ROUTES.PLATFORM_HEALING);
   };
 
   if (isLoading || !health) {
