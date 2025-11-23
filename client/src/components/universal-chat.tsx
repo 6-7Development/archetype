@@ -368,6 +368,40 @@ export function UniversalChat({
     return currentRun?.artifacts || [];
   }, [currentRun]);
 
+  // Persist chat session to database on message update
+  const saveChatSession = async (messages: typeof runState.messages) => {
+    if (!projectId || messages.length === 0) return;
+    
+    try {
+      await fetch('/api/chat/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId,
+          targetContext,
+          messages: messages.map(m => ({
+            role: m.role,
+            content: m.content,
+            images: m.images,
+            timestamp: m.timestamp,
+          })),
+        }),
+      });
+    } catch (error) {
+      console.warn('[CHAT] Failed to save session:', error);
+    }
+  };
+
+  // Auto-save on message update
+  useEffect(() => {
+    if (runState.messages.length > 0) {
+      const timer = setTimeout(() => {
+        saveChatSession(runState.messages);
+      }, 2000); // Debounce save
+      return () => clearTimeout(timer);
+    }
+  }, [runState.messages]);
+
   return (
     <div className="flex h-full flex-col bg-background">
       {/* Workspace Header with Status */}

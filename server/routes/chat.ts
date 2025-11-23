@@ -171,6 +171,38 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
     }
   });
 
+  // GET /api/incidents - List all incidents
+  app.get("/api/incidents", async (req: any, res) => {
+    try {
+      const incidents = await db
+        .select()
+        .from(platformIncidents)
+        .orderBy(desc(platformIncidents.createdAt));
+
+      res.json(incidents);
+    } catch (error) {
+      console.error('Error fetching incidents:', error);
+      res.status(500).json({ error: 'Failed to fetch incidents' });
+    }
+  });
+
+  // GET /api/lomu-ai/jobs - List LomuAI jobs
+  app.get("/api/lomu-ai/jobs", async (req: any, res) => {
+    try {
+      const { lomuJobs } = await import("@shared/schema");
+      const jobs = await db
+        .select()
+        .from(lomuJobs)
+        .orderBy(desc(lomuJobs.createdAt))
+        .limit(50);
+
+      res.json(jobs);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+      res.status(500).json({ error: 'Failed to fetch jobs' });
+    }
+  });
+
   // Get commands for user
   app.get("/api/commands", isAuthenticated, async (req: any, res) => {
     try {

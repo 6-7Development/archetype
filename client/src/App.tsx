@@ -28,6 +28,7 @@ import Support from "@/pages/support";
 import Admin from "@/pages/admin";
 import Publishing from "@/pages/publishing";
 import PlatformHealing from "@/pages/platform-healing";
+import IncidentDashboard from "@/pages/incident-dashboard";
 import WorkflowAnalytics from "@/pages/workflow-analytics";
 import AgentFeatures from "@/pages/agent-features";
 import Setup from "@/pages/setup";
@@ -160,6 +161,13 @@ function Router() {
         <OwnerGuard>
           <PlatformHealing />
         </OwnerGuard>
+      </Route>
+      <Route path="/incidents">
+        <AppLayout>
+          <OwnerGuard>
+            <IncidentDashboard />
+          </OwnerGuard>
+        </AppLayout>
       </Route>
       <Route path="/workflow-analytics">
         <AppLayout>
