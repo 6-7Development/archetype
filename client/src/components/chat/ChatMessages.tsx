@@ -266,6 +266,11 @@ export function ChatMessages({
                     progressMessages={message.progressMessages}
                     isStreaming={isGenerating && index === messages.length - 1}
                   />
+                  
+                  {/* ✅ GAP #4: Display validation metadata for tool results */}
+                  {message.validationMetadata && (
+                    <ValidationMetadataDisplay metadata={message.validationMetadata} />
+                  )}
                 </div>
               )}
             </div>
