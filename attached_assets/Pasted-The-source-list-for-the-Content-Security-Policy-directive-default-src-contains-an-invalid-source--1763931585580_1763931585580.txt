@@ -1,0 +1,218 @@
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.Understand this error
+14The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?Understand this error
+14The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.Understand this error
+Archetype:1 The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.Understand this error
+Archetype:1 The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?Understand this error
+Archetype:1 The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.Understand this error
+www.google-analytics.com/analytics.js:1  Failed to load resource: net::ERR_BLOCKED_BY_CLIENTUnderstand this error
+googleads.g.doubleclick.net/pagead/viewthroughconversion/11411994397/?random=1763931162831&cv=11&fst=1763931162831&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be5bj0h2v9171242957za200zd9171242957xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=103116026~103200004~104527906~104528500~104684208~104684211~115583767~115616985~115938465~115938469~116184927~116184929~116217636~116217638&u_w=3440&u_h=1440&url=https%3A%2F%2Freplit.com%2F%40DrillConsult360%2FArchetype&ref=https%3A%2F%2Freplit.com%2F%40DrillConsult360%2FArchetype&frm=0&tiba=Loading...%20-%20Replit&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=1931441115.1761774970&data=event%3Dgtag.config&rfmt=3&fmt=4:1  Failed to load resource: net::ERR_BLOCKED_BY_CLIENTUnderstand this error
+933aee7f0ce912e1.js:2 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+933aee7f0ce912e1.js:2 Download the Apollo DevTools for a better development experience: https://chrome.google.com/webstore/detail/apollo-client-developer-t/jdkknkkbebbapilgoeccciglkfbmbnfm
+933aee7f0ce912e1.js:2 [LaunchDarkly] LaunchDarkly client initialized
+anchor?ar=1&k=6LdqhwwoAAAAAFPdw8jCuvY3PaHQItGj3RzOS4fW&co=aHR0cHM6Ly9yZXBsaXQuY29tOjQ0Mw..&hl=en&v=…:1 Loading the script 'https://www.gstatic.com/recaptcha/releases/TkacYOdEJbdB_JjX802TMer9/recaptcha__en.js' violates the following Content Security Policy directive: "script-src 'unsafe-inline'". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The policy is report-only, so the violation has been logged but no further action has been taken.
+7Evaluating a string as JavaScript violates the following Content Security Policy directive because 'unsafe-eval' is not an allowed source of script: "script-src 'unsafe-inline'".
+ The policy is report-only, so the violation has been logged but no further action has been taken.
+recaptcha__en.js:545 Creating a worker from 'https://www.google.com/recaptcha/enterprise/webworker.js?hl=en&v=TkacYOdEJbdB_JjX802TMer9' violates the following Content Security Policy directive: "script-src 'unsafe-inline'". Note that 'worker-src' was not explicitly set, so 'script-src' is used as a fallback. The policy is report-only, so the violation has been logged but no further action has been taken.
+ed1e693c96a75807.js:2 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+z @ ed1e693c96a75807.js:2Understand this error
+ed1e693c96a75807.js:2 Unrecognized feature: 'ambient-light-sensor'.
+z @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'battery'.
+z @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'execution-while-not-rendered'.
+z @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'execution-while-out-of-viewport'.
+z @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'layout-animations'.
+z @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'legacy-image-formats'.
+z @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'navigation-override'.
+z @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'oversized-images'.
+z @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'publickey-credentials'.
+z @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'speaker-selection'.
+z @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'unoptimized-images'.
+z @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'unsized-media'.
+z @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Unrecognized feature: 'pointer-lock'.
+z @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Allow attribute will take precedence over 'allowfullscreen'.
+z @ ed1e693c96a75807.js:2Understand this warning
+ed1e693c96a75807.js:2 Allow attribute will take precedence over 'allowpaymentrequest'.
+z @ ed1e693c96a75807.js:2Understand this warning
+4Archetype:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was receivedUnderstand this error
+stallwart.build.js:1 stallwart: failed ping 1
+stallwart.build.js:1 stallwart: failed ping 2
+stallwart.build.js:1 stallwart: failed ping 3
+stallwart.build.js:1 stallwart: failed ping 4
+stallwart.build.js:1 stallwart: failed ping 5
+stallwart.build.js:1 stallwart: session stalled
+ed1e693c96a75807.js:2 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+z @ ed1e693c96a75807.js:2Understand this error
+ed1e693c96a75807.js:2 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+z @ ed1e693c96a75807.js:2Understand this error
+workspace_iframe.html?initialPath=%2F&id=%3Ara3%3A:32 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.Understand this error
+workspace_iframe.html?initialPath=%2F&id=%3Ara3%3A:32 Unrecognized feature: 'ambient-light-sensor'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ara3%3A:32 Unrecognized feature: 'battery'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ara3%3A:32 Unrecognized feature: 'execution-while-not-rendered'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ara3%3A:32 Unrecognized feature: 'execution-while-out-of-viewport'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ara3%3A:32 Unrecognized feature: 'layout-animations'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ara3%3A:32 Unrecognized feature: 'legacy-image-formats'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ara3%3A:32 Unrecognized feature: 'navigation-override'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ara3%3A:32 Unrecognized feature: 'oversized-images'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ara3%3A:32 Unrecognized feature: 'publickey-credentials'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ara3%3A:32 Unrecognized feature: 'speaker-selection'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ara3%3A:32 Unrecognized feature: 'unoptimized-images'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ara3%3A:32 Unrecognized feature: 'unsized-media'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ara3%3A:32 Allow attribute will take precedence over 'allowfullscreen'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ara3%3A:32 Allow attribute will take precedence over 'allowpaymentrequest'.Understand this warning
+client:536 WebSocket connection to 'wss://0.0.0.0/?token=pLr-QaToIHcG' failed: 
+setupWebSocket @ client:536Understand this error
+injected.js:37 [vite] server connection lost. Polling for restart...
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+injected.js:37 [MAIN] Starting app initialization...
+injected.js:37 [MAIN] Creating React root...
+injected.js:37 [MAIN] App render initiated
+injected.js:37 [VERSION-PROVIDER] Detection: Object
+injected.js:37 [VERSION-PROVIDER] Detection: Object
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+injected.js:37 [HEAL-BUTTON] Starting autonomous heal request...
+injected.js:37 [HEAL-BUTTON] API endpoint: /api/healing/auto-heal
+injected.js:37 [HEAL-BUTTON] Full URL: http://localhost:5000/api/healing/auto-heal
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+localhost:5000/api/healing/auto-heal:1  Failed to load resource: net::ERR_CONNECTION_REFUSEDUnderstand this error
+injected.js:37 [HEAL-BUTTON] Error details: TypeError: Failed to fetch
+    at Object.apply (injected.js:214:39)
+    at fetchApi (api-utils.ts:78:26)
+    at postApi (api-utils.ts:102:10)
+    at Object.mutationFn (platform-health-indicator.tsx:35:30)
+    at Object.fn (@tanstack_react-query.js?v=53203996:1189:29)
+    at run (@tanstack_react-query.js?v=53203996:494:49)
+    at Object.start (@tanstack_react-query.js?v=53203996:536:9)
+    at _a6.execute (@tanstack_react-query.js?v=53203996:1225:56)
+(anonymous) @ injected.js:37Understand this error
+injected.js:37 [HEAL-BUTTON] Error type: TypeError
+(anonymous) @ injected.js:37Understand this error
+injected.js:37 [HEAL-BUTTON] Error message: Failed to fetch
+(anonymous) @ injected.js:37Understand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+injected.js:37 [HEAL-BUTTON] Starting autonomous heal request...
+injected.js:37 [HEAL-BUTTON] API endpoint: /api/healing/auto-heal
+injected.js:37 [HEAL-BUTTON] Full URL: http://localhost:5000/api/healing/auto-heal
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+localhost:5000/api/healing/auto-heal:1  Failed to load resource: net::ERR_CONNECTION_REFUSEDUnderstand this error
+injected.js:37 [HEAL-BUTTON] Error details: TypeError: Failed to fetch
+    at Object.apply (injected.js:214:39)
+    at fetchApi (api-utils.ts:78:26)
+    at postApi (api-utils.ts:102:10)
+    at Object.mutationFn (platform-health-indicator.tsx:35:30)
+    at Object.fn (@tanstack_react-query.js?v=53203996:1189:29)
+    at run (@tanstack_react-query.js?v=53203996:494:49)
+    at Object.start (@tanstack_react-query.js?v=53203996:536:9)
+    at _a6.execute (@tanstack_react-query.js?v=53203996:1225:56)
+(anonymous) @ injected.js:37Understand this error
+injected.js:37 [HEAL-BUTTON] Error type: TypeError
+(anonymous) @ injected.js:37Understand this error
+injected.js:37 [HEAL-BUTTON] Error message: Failed to fetch
+(anonymous) @ injected.js:37Understand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+0.0.0.0/:1  Failed to load resource: net::ERR_ADDRESS_INVALIDUnderstand this error
+injected.js:37 [VERSION-PROVIDER] Detection: Object
+injected.js:214  GET https://0.0.0.0/ net::ERR_ADDRESS_INVALID
+apply @ injected.js:214
+ping @ client:736
+waitForSuccessfulPing @ client:755Understand this error
+injected.js:214  GET https://0.0.0.0/ net::ERR_ADDRESS_INVALID
+apply @ injected.js:214
+ping @ client:736
+waitForSuccessfulPing @ client:755Understand this error
+injected.js:214  GET https://0.0.0.0/ net::ERR_ADDRESS_INVALID
+apply @ injected.js:214
+ping @ client:736
+waitForSuccessfulPing @ client:755Understand this error
+injected.js:214  GET https://0.0.0.0/ net::ERR_ADDRESS_INVALID
+apply @ injected.js:214
+ping @ client:736
+waitForSuccessfulPing @ client:755Understand this error
+injected.js:214  GET https://0.0.0.0/ net::ERR_ADDRESS_INVALID
+apply @ injected.js:214
+ping @ client:736
+waitForSuccessfulPing @ client:755Understand this error
+injected.js:214  GET https://0.0.0.0/ net::ERR_ADDRESS_INVALID
+apply @ injected.js:214
+ping @ client:736
+waitForSuccessfulPing @ client:755Understand this error
+injected.js:214  GET https://0.0.0.0/ net::ERR_ADDRESS_INVALID
+apply @ injected.js:214
+ping @ client:736
+waitForSuccessfulPing @ client:755Understand this error
+injected.js:214  GET https://0.0.0.0/ net::ERR_ADDRESS_INVALID
+apply @ injected.js:214
+ping @ client:736
+waitForSuccessfulPing @ client:755Understand this error
+injected.js:214  GET https://0.0.0.0/ net::ERR_ADDRESS_INVALID
+apply @ injected.js:214
+ping @ client:736
+waitForSuccessfulPing @ client:755Understand this error
+injected.js:214  GET https://0.0.0.0/ net::ERR_ADDRESS_INVALID
+apply @ injected.js:214
+ping @ client:736
+waitForSuccessfulPing @ client:755Understand this error
+injected.js:214  GET https://0.0.0.0/ net::ERR_ADDRESS_INVALID
+apply @ injected.js:214
+ping @ client:736
+waitForSuccessfulPing @ client:755Understand this error
+injected.js:214  GET https://0.0.0.0/ net::ERR_ADDRESS_INVALID
