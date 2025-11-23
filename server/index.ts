@@ -190,8 +190,8 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
 (async () => {
   const server = await registerRoutes(app);
   
-  // Register Platform Healing Routes
-  registerHealingRoutes(app, { wss: server });
+  // Register Platform Healing Routes (pass WebSocket server, not HTTP server)
+  registerHealingRoutes(app, { wss: (server as any).wss });
 
   // 🛡️ CRITICAL WebSocket MEMORY LEAK FIX: Add error and close handlers to all WebSocket connections
   // This prevents memory leaks detected in platform diagnosis
