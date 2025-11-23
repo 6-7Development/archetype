@@ -491,7 +491,7 @@ export function UniversalChat({
                 <div className="space-y-2">
                   {runState.messages.map((message, index) => (
                     <MessageBubble
-                      key={message.id || message.messageId}
+                      key={`${message.id || message.messageId || index}-${index}`}
                       message={message}
                       index={index}
                       totalMessages={runState.messages.length}
