@@ -46,6 +46,7 @@ import { ChatInput } from "./chat/ChatInput";
 import { StatusBar } from "./chat/StatusBar";
 import { ChatDialogs } from "./chat/ChatDialogs";
 import { PlatformHealthIndicator } from "@/components/platform-health-indicator";
+import { MarkdownMessage } from "./chat/MarkdownMessage";
 import type {
   RunPhase,
   RunState,
@@ -518,8 +519,8 @@ export function UniversalChat({
                             }`}
                             data-testid={`message-bubble-${message.id}`}
                           >
-                            <div className="text-sm leading-relaxed whitespace-pre-wrap">
-                              {message.content}
+                            <div className="text-sm leading-relaxed">
+                              <MarkdownMessage content={message.content} isUser={isUser} />
                             </div>
 
                             {/* Image Rendering */}
