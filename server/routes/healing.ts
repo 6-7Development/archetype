@@ -1609,4 +1609,95 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
       res.status(500).json({ error: "Failed to clear messages" });
     }
   });
+
+  // POST /api/healing/auto-heal - Trigger autonomous background healing process
+  app.post("/api/healing/auto-heal", isAuthenticated, isOwner, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      
+      // Start background healing process immediately (don't wait)
+      // The process will run in the background and broadcast updates via WebSocket
+      res.json({ 
+        success: true, 
+        message: "Autonomous healing process started in background",
+        status: "initiated"
+      });
+
+      // Trigger async healing in background (fire and forget)
+      setImmediate(async () => {
+        try {
+          console.log(`[HEALING-AUTO] Starting autonomous healing for user ${userId}`);
+          
+          // Get platform target for healing
+          const targets = await storage.getHealingTargets(userId);
+          const platformTarget = targets.find(t => t.type === 'platform');
+          
+          if (!platformTarget) {
+            console.error("[HEALING-AUTO] No platform target found");
+            return;
+          }
+
+          // Create healing conversation
+          const conversation = await storage.createHealingConversation({
+            targetId: platformTarget.id,
+            title: "🤖 Autonomous Platform Healing",
+            mode: "autonomous",
+            metadata: {
+              triggeredBy: "heal-button",
+              autoHealing: true,
+              timestamp: new Date().toISOString(),
+            },
+          });
+
+          // Send initial context to Claude for autonomous healing
+          const systemPrompt = `You are LomuAI's Platform Healing Agent. The user has initiated AUTONOMOUS healing mode.
+
+Your mission: Analyze and fix ALL platform issues autonomously. Focus on:
+1. Bug fixes
+2. Performance improvements
+3. Security enhancements
+4. Code quality improvements
+5. Error handling
+
+Provide a structured summary of:
+- Issues found (count)
+- Issues fixed (count)  
+- Recommendations remaining
+
+Execute tools directly. Work autonomously without waiting for user input.`;
+
+          // Queue autonomous healing message
+          await storage.createHealingMessage({
+            conversationId: conversation.id,
+            role: "system",
+            content: systemPrompt,
+          });
+
+          // Notify via WebSocket that autonomous healing started
+          if (deps?.wss) {
+            broadcastToUser(userId, {
+              type: "healing:started",
+              conversationId: conversation.id,
+              message: "Autonomous healing process initiated...",
+            });
+          }
+
+          console.log(`[HEALING-AUTO] Autonomous healing conversation created: ${conversation.id}`);
+        } catch (error: any) {
+          console.error("[HEALING-AUTO] Background healing error:", error);
+          // Notify user of error via WebSocket
+          if (deps?.wss) {
+            broadcastToUser(userId, {
+              type: "healing:error",
+              message: "Autonomous healing encountered an error",
+              error: error.message,
+            });
+          }
+        }
+      });
+    } catch (error: any) {
+      console.error("[HEALING] Error starting auto-heal:", error);
+      res.status(500).json({ error: "Failed to start autonomous healing" });
+    }
+  });
 }

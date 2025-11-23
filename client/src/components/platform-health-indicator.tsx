@@ -1,13 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, CheckCircle2, AlertCircle, Zap, Activity } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { AlertTriangle, CheckCircle2, AlertCircle, Zap, Activity, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { useLocation } from "wouter";
-import { API_ENDPOINTS, getQueryKey } from "@/lib/api-utils";
+import { API_ENDPOINTS, getQueryKey, apiRequest } from "@/lib/api-utils";
 import { APP_CONFIG } from "@/config/app.config";
-import { ROUTES } from "@/config/constants";
 
 interface HealthStatus {
   status: 'healthy' | 'degraded' | 'critical';
@@ -18,16 +16,39 @@ interface HealthStatus {
 
 export function PlatformHealthIndicator() {
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
+  
   const { data: health, isLoading } = useQuery<HealthStatus>({
     queryKey: getQueryKey(API_ENDPOINTS.PLATFORM_HEALTH),
     refetchInterval: APP_CONFIG.limits.sessionTimeout,
     retry: false,
   });
 
+  // Autonomous healing mutation
+  const autoHealMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/healing/auto-heal", {});
+    },
+    onSuccess: () => {
+      toast({ 
+        title: "🤖 Autonomous Healing Started", 
+        description: "LomuAI is analyzing and fixing platform issues in the background...",
+        duration: 5000,
+      });
+      // Invalidate health query to trigger refetch
+      queryClient.invalidateQueries({ queryKey: getQueryKey(API_ENDPOINTS.PLATFORM_HEALTH) });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Healing Failed", 
+        description: error?.message || "Could not start autonomous healing process",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleHealClick = () => {
-    toast({ title: "Opening healing console...", description: "LomuAI is ready to analyze platform health" });
-    setLocation(ROUTES.PLATFORM_HEALING);
+    autoHealMutation.mutate();
   };
 
   if (isLoading || !health) {
@@ -107,9 +128,19 @@ export function PlatformHealthIndicator() {
           className="h-6 text-xs gap-1"
           onClick={handleHealClick}
           data-testid="button-trigger-healing"
+          disabled={autoHealMutation.isPending}
         >
-          <Zap className="w-3 h-3" />
-          Heal
+          {autoHealMutation.isPending ? (
+            <>
+              <Loader2 className="w-3 h-3 animate-spin" />
+              Healing...
+            </>
+          ) : (
+            <>
+              <Zap className="w-3 h-3" />
+              Heal
+            </>
+          )}
         </Button>
       )}
     </div>
