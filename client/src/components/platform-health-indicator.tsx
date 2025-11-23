@@ -1,12 +1,11 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, CheckCircle2, AlertCircle, Zap, Activity } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { useLocation } from "wouter";
-import { API_ENDPOINTS, postApi, getQueryKey, buildApiUrl } from "@/lib/api-utils";
+import { Link } from "wouter";
+import { API_ENDPOINTS, getQueryKey } from "@/lib/api-utils";
 import { APP_CONFIG } from "@/config/app.config";
 import { ROUTES } from "@/config/constants";
 
@@ -18,18 +17,12 @@ interface HealthStatus {
 }
 
 export function PlatformHealthIndicator() {
-  const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { data: health, isLoading } = useQuery<HealthStatus>({
     queryKey: getQueryKey(API_ENDPOINTS.PLATFORM_HEALTH),
     refetchInterval: APP_CONFIG.limits.sessionTimeout,
     retry: false,
   });
-
-  const handleTriggerHealing = () => {
-    toast({ title: "Opening healing console...", description: "LomuAI is ready to analyze platform health" });
-    setLocation(ROUTES.PLATFORM_HEALING);
-  };
 
   if (isLoading || !health) {
     return (
@@ -103,15 +96,19 @@ export function PlatformHealthIndicator() {
 
       {/* Manual Healing Trigger */}
       {health.incidentCount > 0 && (
-        <Button
-          size="sm"
-          className="h-6 text-xs gap-1"
-          onClick={handleTriggerHealing}
-          data-testid="button-trigger-healing"
-        >
-          <Zap className="w-3 h-3" />
-          Heal
-        </Button>
+        <Link href={ROUTES.PLATFORM_HEALING}>
+          <Button
+            size="sm"
+            className="h-6 text-xs gap-1"
+            data-testid="button-trigger-healing"
+            asChild
+          >
+            <a onClick={() => toast({ title: "Opening healing console...", description: "LomuAI is ready to analyze platform health" })}>
+              <Zap className="w-3 h-3" />
+              Heal
+            </a>
+          </Button>
+        </Link>
       )}
     </div>
   );
