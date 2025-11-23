@@ -138,7 +138,22 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser(async (id: string, done) => {
     try {
       const user = await storage.getUser(id);
-      done(null, user);
+      
+      // CRITICAL FIX: Normalize user object after session deserialization
+      // Issue: connect-pg-simple serializes sessions as plain JSON, losing Drizzle's
+      // prototype-based getter that maps is_owner → isOwner
+      // Solution: Explicitly ensure isOwner (camelCase) exists for middleware checks
+      if (user) {
+        const normalized = {
+          ...user,
+          isOwner: user?.isOwner ?? (user as any)?.is_owner ?? false
+        };
+        // Remove snake_case variant to prevent confusion
+        delete (normalized as any).is_owner;
+        done(null, normalized);
+      } else {
+        done(null, user);
+      }
     } catch (error) {
       done(error);
     }
