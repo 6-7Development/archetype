@@ -1142,6 +1142,8 @@ export function UniversalChat({
                   break;
 
                 case 'run_phase':
+                case 'run.phase':
+                  // ✅ FIX: Handle both run_phase (underscore) and run.phase (dot) formats
                   setCurrentPhase(payload.phase || 'working');
                   setPhaseMessage(payload.message || '');
                   break;
@@ -1362,7 +1364,7 @@ export function UniversalChat({
 
                 default:
                   // Handle other event types (task_list_created, task_updated, file_change, etc.)
-                  console.log('[SSE] Unhandled event type:', eventData.type);
+                  console.log('[SSE] Unhandled event type:', eventName, 'Payload:', payload);
               }
             } catch (parseError) {
               console.error('[SSE] Failed to parse event:', parseError, line);
