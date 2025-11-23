@@ -254,7 +254,21 @@ export function useStreamEvents(options?: { projectId?: string; targetContext?: 
         message: userMessage,
       });
 
-      // Call backend API
+      // Create assistant message with placeholder for streaming
+      const assistantMessageId = `msg-${Date.now()}-assistant`;
+      const assistantMessage: Message = {
+        id: assistantMessageId,
+        messageId: assistantMessageId,
+        role: 'assistant',
+        content: '',
+        timestamp: new Date(),
+      };
+      dispatchRunState({
+        type: 'message.added',
+        message: assistantMessage,
+      });
+
+      // Call backend API with SSE streaming
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -268,27 +282,62 @@ export function useStreamEvents(options?: { projectId?: string; targetContext?: 
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to send message');
+        throw new Error('Failed to start streaming');
       }
 
-      // Parse and add assistant response
-      const data = await response.json();
-      const assistantMessageId = `msg-${Date.now()}-assistant`;
-      const assistantMessage: Message = {
-        id: assistantMessageId,
-        messageId: assistantMessageId,
-        role: 'assistant',
-        content: data.response || '',
-        timestamp: new Date(),
-      };
-      dispatchRunState({
-        type: 'message.added',
-        message: assistantMessage,
-      });
+      // Handle SSE stream
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let fullText = '';
 
-      // Persist to localStorage after both messages are added
-      const newMessages = [...runState.messages, userMessage, assistantMessage];
+      if (!reader) {
+        throw new Error('Response body not readable');
+      }
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              
+              if (data.type === 'text_delta') {
+                // Append text chunk
+                fullText += data.text || '';
+                // Update assistant message with new content
+                assistantMessage.content = fullText;
+                dispatchRunState({
+                  type: 'message.added',
+                  message: { ...assistantMessage },
+                });
+              } else if (data.type === 'done') {
+                // Stream complete
+                fullText = data.fullResponse || fullText;
+                assistantMessage.content = fullText;
+                dispatchRunState({
+                  type: 'message.added',
+                  message: { ...assistantMessage },
+                });
+              } else if (data.type === 'error') {
+                throw new Error(data.error || 'Streaming error');
+              }
+            } catch (e) {
+              // Ignore JSON parse errors from non-data lines
+              if (!line.includes('[DONE]')) {
+                console.debug('SSE parse debug:', line);
+              }
+            }
+          }
+        }
+      }
+
+      // Persist to localStorage after streaming completes
+      const newMessages = [...runState.messages.slice(0, -1), assistantMessage];
       persistMessages(newMessages);
 
       dispatchRunState({ type: 'loading.end' });

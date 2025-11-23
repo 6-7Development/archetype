@@ -755,7 +755,7 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
     }
   });
 
-  // POST /api/chat - AI chat conversation endpoint (streaming)
+  // POST /api/chat - AI chat conversation endpoint (Server-Sent Events streaming)
   app.post("/api/chat", aiLimiter, isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.authenticatedUserId;
@@ -774,19 +774,16 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
         });
       }
 
-      // Get chat history for context (always fetch, even for general/null projectId)
-      const chatHistory = await storage.getChatHistory(userId, projectId || null);
+      // Set SSE headers
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.setHeader('Access-Control-Allow-Origin', '*');
 
-      // Build system prompt
+      // Get chat history for context
+      const chatHistory = await storage.getChatHistory(userId, projectId || null);
       const systemPrompt = buildSystemPrompt('MODIFY', [], chatHistory, {});
 
-      // Stream response
-      const computeStartTime = Date.now();
-      
-      const subscription = await storage.getSubscription(userId);
-      const plan = subscription?.plan || 'free';
-
-      // Filter out messages with empty content (Claude API requirement)
       const validMessages = chatHistory.filter((m: any) => {
         const hasContent = m.content && typeof m.content === 'string' && m.content.trim().length > 0;
         if (!hasContent) {
@@ -795,11 +792,20 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
         return hasContent;
       });
 
-      console.log(`🤖 [AI-CHAT] Calling Claude API with ${validMessages.length} valid messages (filtered ${chatHistory.length - validMessages.length} empty)...`);
-      const completion = await aiQueue.enqueue(userId, plan, async () => {
-        const result = await anthropic.messages.create({
+      console.log(`🤖 [AI-CHAT] Streaming response with ${validMessages.length} context messages...`);
+      const computeStartTime = Date.now();
+      let fullResponse = '';
+      let inputTokens = 0;
+      let outputTokens = 0;
+
+      // Use streaming API
+      const subscription = await storage.getSubscription(userId);
+      const plan = subscription?.plan || 'free';
+
+      await aiQueue.enqueue(userId, plan, async () => {
+        await streamAnthropicResponse({
           model: DEFAULT_MODEL,
-          max_tokens: 4096,
+          maxTokens: 4096,
           system: systemPrompt,
           messages: [
             ...validMessages.map((m: any) => ({
@@ -811,52 +817,78 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
               content: message,
             },
           ],
+          onChunk: (chunk: any) => {
+            try {
+              // Handle text delta events
+              if (chunk.type === 'content_block_delta' && chunk.delta?.type === 'text_delta') {
+                const text = chunk.delta.text || '';
+                fullResponse += text;
+                // Stream chunk to client
+                res.write(`data: ${JSON.stringify({ type: 'text_delta', text })}\n\n`);
+              }
+              // Capture usage info from message_delta
+              if (chunk.type === 'message_delta' && chunk.usage) {
+                inputTokens = chunk.usage.input_tokens || 0;
+                outputTokens = chunk.usage.output_tokens || 0;
+              }
+              // Initial message usage
+              if (chunk.type === 'message_start' && chunk.message?.usage) {
+                inputTokens = chunk.message.usage.input_tokens || 0;
+              }
+            } catch (e) {
+              console.error('Error processing chunk:', e);
+            }
+          },
+          onComplete: async () => {
+            try {
+              const computeTimeMs = Date.now() - computeStartTime;
+
+              // Save messages to database
+              await storage.createChatMessage({
+                userId,
+                projectId,
+                role: 'user',
+                content: message,
+              });
+
+              await storage.createChatMessage({
+                userId,
+                projectId,
+                role: 'assistant',
+                content: fullResponse,
+              });
+
+              // Track usage
+              await trackAIUsage({
+                userId,
+                projectId,
+                type: "ai_chat",
+                inputTokens,
+                outputTokens,
+                computeTimeMs,
+                metadata: { message },
+              });
+
+              // Send completion event
+              res.write(`data: ${JSON.stringify({ type: 'done', fullResponse, inputTokens, outputTokens })}\n\n`);
+              res.end();
+            } catch (e) {
+              console.error('Error in completion handler:', e);
+              res.write(`data: ${JSON.stringify({ type: 'error', error: (e as Error).message })}\n\n`);
+              res.end();
+            }
+          },
+          onError: (error: Error) => {
+            console.error('Stream error:', error);
+            res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`);
+            res.end();
+          },
         });
-        return result;
-      });
-
-      const computeTimeMs = Date.now() - computeStartTime;
-      const responseText = completion.content[0].type === 'text' ? completion.content[0].text : "";
-
-      // Save chat messages
-      await storage.createChatMessage({
-        userId,
-        projectId,
-        role: 'user',
-        content: message,
-      });
-
-      await storage.createChatMessage({
-        userId,
-        projectId,
-        role: 'assistant',
-        content: responseText,
-      });
-
-      // Track usage
-      const inputTokens = completion.usage?.input_tokens || 0;
-      const outputTokens = completion.usage?.output_tokens || 0;
-      
-      await trackAIUsage({
-        userId,
-        projectId,
-        type: "ai_chat",
-        inputTokens,
-        outputTokens,
-        computeTimeMs,
-        metadata: { message },
-      });
-
-      res.json({
-        response: responseText,
-        usage: {
-          inputTokens,
-          outputTokens,
-        },
       });
     } catch (error: any) {
       console.error('AI chat error:', error);
-      res.status(500).json({ error: error.message || 'Failed to process message' });
+      res.write(`data: ${JSON.stringify({ type: 'error', error: error.message || 'Failed to process message' })}\n\n`);
+      res.end();
     }
   });
 
