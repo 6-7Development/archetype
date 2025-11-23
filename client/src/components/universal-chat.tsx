@@ -1616,7 +1616,11 @@ export function UniversalChat({
           currentProgress={currentProgress}
           currentMetrics={currentMetrics}
           agentTasks={agentTasks}
-          streamState={streamState}
+          streamState={{
+            ...streamState,
+            currentFile: streamState.currentFile ?? undefined,
+            scratchpad: streamState.scratchpad ?? []
+          }}
           billingMetrics={billingMetrics}
           scratchpadEntries={streamState.scratchpad ?? []}
           sessionId={sessionId}
@@ -1692,7 +1696,14 @@ export function UniversalChat({
           ...streamState.deployment,
           timestamp: typeof streamState.deployment.timestamp === 'string' 
             ? new Date(streamState.deployment.timestamp).getTime()
-            : streamState.deployment.timestamp
+            : streamState.deployment.timestamp,
+          steps: (streamState.deployment.steps || []).map(step => ({
+            id: step.id || `step-${Math.random()}`,
+            name: step.name || 'Unknown',
+            status: step.status as any,
+            timestamp: step.timestamp,
+            error: step.error
+          }))
         } : null}
         showInsufficientCredits={showInsufficientCredits}
         setShowInsufficientCredits={setShowInsufficientCredits}

@@ -4,6 +4,7 @@ import { ScratchpadDisplay } from "@/components/scratchpad-display";
 import { StatusStrip, BillingMetrics } from "@/components/agent/StatusStrip";
 import { RunProgressTable } from "@/components/run-progress-table";
 import { AgentProgress, type ProgressStep, type ProgressMetrics } from "@/components/agent-progress";
+import { ValidationMetadataDisplay } from "@/components/agent/ValidationMetadataDisplay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, Copy, Check, User } from "lucide-react";
@@ -34,6 +35,13 @@ export interface Message {
     timestamp: number;
     category?: 'thinking' | 'action' | 'result';
   }>;
+  // ✅ GAP #4: Add validation metadata field for display
+  validationMetadata?: {
+    valid?: boolean;
+    truncated?: boolean;
+    warnings?: string[];
+    schemaValidated?: boolean;
+  };
 }
 
 interface StreamState {
@@ -41,13 +49,14 @@ interface StreamState {
     action: string;
     filename: string;
     language: string;
-  };
+  } | null;
   fileSummary?: {
     filesChanged: number;
     linesAdded: number;
     linesRemoved?: number;
   };
   currentThought?: string;
+  scratchpad?: Array<{ id: string; content: string; timestamp: number }>;
 }
 
 interface ChatMessagesProps {
