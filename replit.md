@@ -112,6 +112,13 @@ The system has undergone significant modularization to improve maintainability a
     - `lomuSuperCore.ts` (prompt builder) restructured from 1,268 lines into 5 focused modules.
 - **Frontend Modularization**:
     - `universal-chat.tsx` (Chat UI) reduced from 2,293 to 1,790 lines by extracting 5 focused components including `useStreamEvents.ts`, `ChatMessages.tsx`, `ChatInput.tsx`, `StatusBar.tsx`, and `ChatDialogs.tsx`.
+- **Universal Workspace Layout System**:
+    - `WorkspaceLayout` component: Replit-style IDE layout (left task panel + right editor/preview/console tabs)
+    - `WorkspaceContainer`: Easy wrapper for any page
+    - `useWorkspaceConfig` hook: Presets for project, admin, platformHealing, dashboard, team modes
+    - `workspace-defaults.ts`: Global configuration (fonts, colors, debounce, etc.)
+    - Ready-to-use pages: `dashboard-workspace.tsx`, `admin-workspace.tsx`
+    - RBAC built-in: Automatically enforces role-based visibility
 
 ## External Dependencies
 -   **Frontend**: React, TypeScript, Monaco Editor, Tailwind CSS, Shadcn UI, next-themes
