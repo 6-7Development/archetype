@@ -52,93 +52,41 @@ Lomu is an AI-powered platform for rapid web development, featuring the autonomo
 ## System Architecture
 The platform is built with a React frontend, an Express.js backend, and PostgreSQL for data persistence. It uses a unified codebase for Lomu (Desktop, 4-panel layout) and Lomu5 (Mobile, bottom tab navigation), sharing backend APIs, WebSockets, authentication, and database access.
 
-### Universal RBAC System (NEW)
-**File**: `shared/rbac.ts` - Single source of truth for all permissions
-- **Dynamic role-based access control**: No hard-coded access control scattered through code
-- **Three roles**: user, admin, owner
-- **Five resources**: platform, projects, healing, admin, billing, team
-- **Five actions**: read, write, delete, execute, manage
-- **Zero configuration needed**: Changes to permission matrix apply immediately
-- **Frontend hooks**: `useHasPermission()`, `useAccessibleResources()`, `useIsAdmin()`, `useIsOwner()`
-- **Auth integration**: All auth endpoints (`/api/auth/me`, login, register) return dynamic permissions
-- **Pattern**: Request contains user + permissions array, UI uses permissions to conditionally render features
+### Universal RBAC System
+A dynamic role-based access control system (`shared/rbac.ts`) serves as a single source of truth for permissions, supporting 'user', 'admin', 'owner' roles, five resources (platform, projects, healing, admin, billing, team), and five actions (read, write, delete, execute, manage). It offers zero configuration, immediate application of permission matrix changes, and frontend hooks for permission checks.
 
 ### UI/UX Decisions
-The user interface features a tab-based workspace with a command console and real-time live preview. The design uses a professional swarm/hive theme with honey-gold and mint-teal accents, utilizing card-based layouts, warm shadows, smooth transitions, and ADA/WCAG accessibility. Chat interfaces use semantic theme tokens for consistent, polished appearance with modern message bubbles and smooth transitions. Loading states feature smooth animations.
-
-The platform implements a comprehensive Agent Chatroom interface with real-time progress tracking, including a StatusStrip, TaskPane, ToolCallCard, and ArtifactsDrawer, all driven by 16 structured event types streamed via Server-Sent Events (SSE). A single `UniversalChat` component (`client/src/components/universal-chat.tsx`) handles all chat interactions.
-
-LomuAI's thought process is displayed inline with responses using the `EnhancedMessageDisplay` component. Progress messages streamed during execution are captured and persisted with each assistant message, then rendered as collapsible, color-coded blocks: Purple for thinking, Blue for tool calls, and Green for results. This organized, unified view mirrors Replit Agent's inline `<thinking>` tags.
-
-The system includes a Replit Agent-style Testing UI with a collapsible `TestingPanel` component for live browser previews, AI narration streaming, and step progress tracking, all powered by SSE events.
+The UI features a tab-based workspace with a command console and real-time live preview, adhering to a professional swarm/hive theme with honey-gold and mint-teal accents. It uses card-based layouts, warm shadows, smooth transitions, and ADA/WCAG accessibility. Chat interfaces utilize semantic theme tokens for consistent messaging and display LomuAI's thought process inline with responses using `EnhancedMessageDisplay` and collapsible, color-coded blocks for thinking, tool calls, and results. A comprehensive Agent Chatroom interface includes real-time progress tracking via SSE events, managed by a `UniversalChat` component. A Replit Agent-style Testing UI with a `TestingPanel` provides live browser previews, AI narration, and step progress tracking.
 
 ### System Design Choices
-LomuAI acts as the autonomous worker, committing changes through a strict 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). I AM Architect is a **manually-triggered premium consultant** providing guidance without committing code - it does NOT automatically heal the platform. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing. LomuAI incorporates efficiency rules within its system prompt, such as SEARCH BEFORE CODING, COPY DON'T REINVENT, VERIFY THE TASK, and ITERATION BUDGET AWARENESS.
+LomuAI operates as an autonomous worker using a 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). I AM Architect is a manually-triggered premium consultant, providing strategic guidance without committing code. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing. LomuAI incorporates efficiency rules like SEARCH BEFORE CODING and ITERATION BUDGET AWARENESS.
 
 **Platform Healing Architecture**:
-- **LomuAI**: Autonomous worker that executes changes (Gemini 2.5 Flash)
-- **I AM Architect**: Owner-triggered consultant for strategic guidance (Claude Sonnet 4)
-  - **Manual activation only** - Owner must trigger via UI
-  - **Consultative role** - Analyzes, recommends, but doesn't auto-fix
-  - **Requires approval** - All changes need owner confirmation
-- **Autonomous Healing Button**: One-click background healing process
-  - Shows "Healing..." spinner on button
-  - Toast notification: "🤖 Autonomous Healing Started"
-  - Runs in background while user stays on platform
-  - Updates incident count when complete
-  - No page navigation required
-- **HealOrchestrator**: Monitors health incidents, can auto-trigger workflows for critical issues
-- **Incident System**: Logs failures → Owner reviews → Manually triggers I AM Architect if needed
+-   **LomuAI**: Autonomous worker executing changes (Gemini 2.5 Flash).
+-   **I AM Architect**: Owner-triggered consultant for strategic guidance (Claude Sonnet 4), requiring manual activation and owner approval for changes.
+-   **Autonomous Healing Button**: One-click background healing process with toast notifications and incident count updates.
+-   **HealOrchestrator**: Monitors health incidents and can auto-trigger workflows.
+-   **Incident System**: Logs failures for owner review and manual I AM Architect triggering.
 
-A centralized session management system (`server/services/lomuAIBrain.ts`) consolidates all session logic into a hybrid architecture with in-memory registry and database durability. The access model provides owner-only access for platform healing, usage-based credit billing for regular LomuAI, and premium consulting for I AM Architect.
+A centralized session management system (`server/services/lomuAIBrain.ts`) combines in-memory and database persistence. The access model provides owner-only access for platform healing, usage-based billing for LomuAI, and premium consulting for I AM Architect.
 
-**Key Features:**
-- **Optimized Tool Distribution Architecture**: LomuAI (18 tools), Sub-Agents (12 tools), I AM Architect (23 tools), with automatic tool count validation.
-- **Universal RBAC**: Dynamic permission matrix (shared/rbac.ts) with zero hard-coded checks
-- **GitHub Integration**: Full version control.
-- **Environment Variables Management**: Project-level secrets.
-- **Code Intelligence System**: AST-based code understanding.
-- **Platform Healing System**: Owner-only two-tier incident resolution.
-- **Replit Agent Parity**: Matches complex task handling with increased limits, including auto-commit and auto-push with TypeScript validation.
-- **Inline Thinking Display**: Unified progress visualization with collapsible, color-coded blocks showing LomuAI's reasoning, tool use, and results inline with responses.
-- **Credit-Based Billing System**: Production-ready monetization with Stripe.
-- **Monetization Infrastructure**: Lead capture, subscriptions, template marketplace.
-- **Security & Production Readiness**: Authentication/authorization, protected APIs, RCE prevention.
-- **Vision Analysis**: LomuAI can analyze images and screenshots.
-- **Strict Function Calling**: Transport-layer enforcement of JSON function calling for Gemini.
-- **Production-Ready Code Validation System**: 3-layer validation architecture (pre-write, pre-commit) to prevent broken code. Includes JSON healing and validation caching.
-- **Telemetry System**: Tracks healing attempts, successes, failures with detailed statistics.
-- **Reflection and Structured Retry Mandate**: LomuAI analyzes tool failures, states root cause, and proposes alternative strategies before retrying.
-- **Anti-Paralysis System**: Three-layer defense (system prompt, diagnosis tool, runtime enforcement) to prevent repeated reading of large files, ensuring efficient execution.
-- **Priority 1 Safety Mechanisms**: Auto-rollback on validation failure, server startup integration tests, and GitHub API retry with exponential backoff.
-- **Phase 1 Multi-User Safety**: Workspace isolation using FIFO file locking, stale session cleanup, and crash recovery with metadata persistence and transactional file operations.
-- **Session/Credentials Fix**: All API calls now include `credentials: 'include'` to properly send session cookies for authentication
-
-The platform prioritizes native JSON function calling for AI streaming due to superior speed, reliability, and type safety, integrating utilities for validation, retry logic, and file change tracking.
+Key features include optimized tool distribution, universal RBAC, GitHub integration, environment variable management, AST-based code intelligence, production-ready monetization with Stripe, robust security measures (RCE prevention, protected APIs), vision analysis (image/screenshot analysis), strict JSON function calling, a 3-layer code validation system, telemetry, reflection and structured retry mechanisms, an anti-paralysis system, and priority safety mechanisms like auto-rollback and server startup integration tests. Phase 1 multi-user safety includes workspace isolation, stale session cleanup, and crash recovery. All API calls include `credentials: 'include'` for proper session cookie authentication.
 
 ### Configuration System
-- **Centralized `app.config.ts`**: Contains branding, theme colors, API endpoints, chat settings, UI constants, feature flags, keyboard shortcuts, limits/quotas, messages/copy, telemetry, social links, and environment detection.
-- **Global `constants.ts`**: Defines application routes, API endpoints, UI constants, inline strings, time constants, validation rules, status enums, colors, and accessibility labels.
-- **`classNameHelper.ts`**: Provides reusable Tailwind CSS class builders for buttons, cards, text, layout, spacing, state classes, and component-specific styles.
-- **`api-utils.ts`**: Centralizes API utilities for building URLs, generic fetch wrappers, POST requests, streaming responses, and React Query key generation. NOW INCLUDES credentials support.
-- **`useAppConfig.ts`**: React hook for type-safe access to configuration with helper methods.
-- **`ConfigProvider.tsx`**: Context provider wrapping the entire application to make configuration accessible.
-- **`shared/rbac.ts`**: Universal RBAC system with dynamic permission matrix - single source of truth for all access control.
+The platform uses a centralized configuration approach:
+-   **`app.config.ts`**: Global settings including branding, themes, APIs, chat, UI constants, feature flags, and environment detection.
+-   **`constants.ts`**: Defines application routes, API endpoints, UI constants, validation rules, status enums, and accessibility labels.
+-   **`classNameHelper.ts`**: Reusable Tailwind CSS class builders.
+-   **`api-utils.ts`**: Centralized API utilities for building URLs, fetch wrappers, and React Query key generation, now with `credentials` support.
+-   **`useAppConfig.ts`**: React hook for type-safe configuration access.
+-   **`ConfigProvider.tsx`**: Context provider for application-wide configuration access.
+-   **`shared/rbac.ts`**: Universal RBAC system.
 
 ### Modularization
-The system has undergone significant modularization to improve maintainability and LomuAI's self-healing capabilities.
-- **Backend Modularization**:
-    - `lomuChat.ts` (streaming handler) reduced from 5,020 to 1,063 lines by extracting 9 focused modules.
-    - `lomuSuperCore.ts` (prompt builder) restructured from 1,268 lines into 5 focused modules.
-- **Frontend Modularization**:
-    - `universal-chat.tsx` (Chat UI) reduced from 2,293 to 1,790 lines by extracting 5 focused components including `useStreamEvents.ts`, `ChatMessages.tsx`, `ChatInput.tsx`, `StatusBar.tsx`, and `ChatDialogs.tsx`.
-- **Universal Workspace Layout System**:
-    - `WorkspaceLayout` component: Replit-style IDE layout (left task panel + right editor/preview/console tabs)
-    - `WorkspaceContainer`: Easy wrapper for any page
-    - `useWorkspaceConfig` hook: Presets for project, admin, platformHealing, dashboard, team modes
-    - `workspace-defaults.ts`: Global configuration (fonts, colors, debounce, etc.)
-    - Ready-to-use pages: `dashboard-workspace.tsx`, `admin-workspace.tsx`
-    - RBAC built-in: Automatically enforces role-based visibility
+The system is highly modularized for maintainability and self-healing:
+-   **Backend**: `lomuChat.ts` and `lomuSuperCore.ts` significantly reduced in size by extracting focused modules.
+-   **Frontend**: `universal-chat.tsx` refactored into focused components.
+-   **Universal Workspace Layout System**: Provides a Replit-style IDE layout with a `WorkspaceLayout` component, `WorkspaceContainer`, `useWorkspaceConfig` hook for various modes, and built-in RBAC for role-based visibility.
 
 ## External Dependencies
 -   **Frontend**: React, TypeScript, Monaco Editor, Tailwind CSS, Shadcn UI, next-themes
@@ -151,19 +99,3 @@ The system has undergone significant modularization to improve maintainability a
 -   **Charting**: Recharts
 -   **Browser Automation**: Playwright
 -   **Web Search**: Tavily API
-
-## Recent Session Progress
-- ✅ Created universal RBAC system in `shared/rbac.ts`
-- ✅ Integrated RBAC into auth endpoints (login, register, /api/auth/me)
-- ✅ Fixed async message rendering (extracted MessageBubble component)
-- ✅ Made user an owner in database
-- ✅ Implemented autonomous healing button with background processing
-- ✅ Fixed credentials issue - all API calls now send session cookies
-- ✅ Platform healing triggered without page navigation
-- ✅ Heal button shows spinner + toast during process
-- ✅ **CRITICAL FIX**: Created `server/routes/index.ts` - centralized route registration system
-- ✅ Fixed ES module imports (replaced CommonJS `require()` with dynamic `import()`)
-- ✅ Fixed WebSocket Server constructor import issue
-- ✅ Fixed import paths in `server/lomuChat.ts` (converted `../` to `./` with `.js` extensions)
-- ✅ Server now starts successfully - all routes registered and operational
-- ✅ Platform healing orchestrator running and ready for use
