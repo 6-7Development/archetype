@@ -3,60 +3,6 @@
 ## Overview
 Lomu is an AI-powered platform for rapid web development, featuring the autonomous AI coding agent LomuAI and dual-version IDE Workspaces (Lomu for desktop, Lomu5 for mobile). It offers a console-first interface, real-time preview, and comprehensive workspace features. The platform aims for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. LomuAI's key capability is autonomous self-healing, bug fixing, and UI/UX improvements to its own source code, complete with rollback and audit logging. The business vision is to provide a comprehensive, AI-driven platform that simplifies web development, making it accessible and efficient for a wide range of users.
 
-## Recent Fixes (Nov 22, 2025)
-**✅ COMPLETE: Backend & Frontend Modularization**:
-- **Mission**: Transform monolithic files into focused modules to dramatically improve LomuAI's self-healing capability by reducing file sizes below the 3-read anti-paralysis limit
-
-**Backend Modularization (3 Major Refactorings):**
-1. **lomuChat.ts** - Streaming handler modularization
-   - Reduced from 5,020 → 1,063 lines (79% reduction)
-   - Extracted 9 focused modules: orchestrator.ts, types.ts, request-validation.ts, billing-setup.ts, session-bootstrap.ts, context-preparation.ts, stream-emitter.ts, iteration-controller.ts, error-cleanup.ts
-   - All critical functionality preserved: tool execution, token management, approval workflow, billing settlement
-   - Single settlement path in orchestrator.ts finally block eliminates double-charging risk
-
-2. **lomuSuperCore.ts** - Prompt builder modularization
-   - Restructured from 1,268 lines into 5 focused modules
-   - Modules: config.ts (18 lines), promptSections.ts (247 lines), promptBuilder.ts (87 lines), tooling.ts (63 lines), architectPrompt.ts (92 lines)
-   - Clean index.ts orchestrator with centralized exports
-   - Separated I AM Architect prompt building (architectPrompt.ts) from LomuAI prompt building (promptBuilder.ts)
-
-3. **Type Safety & Integration**
-   - All discriminated unions for SSE events, tool operations, persistence operations
-   - Comprehensive interfaces for type safety across all modules
-   - Zero LSP diagnostics after full modularization
-
-**Frontend Modularization (1 Major Refactoring):**
-1. **universal-chat.tsx** - Chat UI component extraction
-   - Reduced from 2,293 → 1,790 lines (22% reduction, 503 lines removed)
-   - Extracted 5 focused components:
-     - `useStreamEvents.ts` (145 lines): SSE event handling hook with runStateReducer
-     - `ChatMessages.tsx` (330 lines): Complete message rendering with overlays, checkpoints, scratchpad, WebSocket status
-     - `ChatInput.tsx` (108 lines): Input area with image uploads and toolbar
-     - `StatusBar.tsx` (33 lines): Progress status display
-     - `ChatDialogs.tsx` (368 lines): All 10 dialogs/drawers consolidated
-   - Feature parity achieved: All overlays, checkpoints, scratchpad, streaming indicators, WebSocket status, billing controls preserved
-   - Architect-reviewed PASS: Zero functionality loss, clean component composition
-
-**Impact on Anti-Paralysis System:**
-- ✅ lomuChat.ts: Now 1,063 lines (was 5,020) - LomuAI can read entire orchestrator in 1 pass
-- ✅ lomuSuperCore modules: Largest is 247 lines - all fit in 1 read
-- ✅ universal-chat.tsx: Now 1,790 lines (was 2,293) - Still large but 22% improvement
-- ✅ **Result**: LomuAI can now efficiently self-heal backend streaming logic and prompt building without hitting 3-read limit
-
-**Previous Fixes (Nov 21, 2025):**
-**✅ Fixed: SSE Streaming Bug**:
-- **Issue**: Chat UI showed "Thinking..." with no streamed text, then entire response appeared at once
-- **Root Cause**: onChunk handler buffered ALL text as "thinking blocks", never emitting `content` events
-- **Fix Applied**: Modified `server/routes/lomuChat.ts` (lines 1900-1943) to emit content chunks IMMEDIATELY for real-time word-by-word streaming, while still detecting thinking patterns in parallel
-- **Result**: Text now streams word-by-word like ChatGPT/Replit Agent ✅
-
-**✅ Fixed: Missing Tools**:
-- **Issue**: LomuAI only had 5 tools, missing critical search/file operations
-- **Fix Applied**: Replaced hard-coded tool array with centralized `LOMU_CORE_TOOLS` from `tools/tool-distributions.ts`
-- **Final Tool Count**: 18 tools (optimized for Google's 10-20 recommendation)
-- **Tools Included**: read, write, search_codebase, grep_tool, ls, smart_read_file, get_auto_context, extract_function, create_task_list, update_task, read_task_list, perform_diagnosis, architect_consult, bash, refresh_all_logs, glob, web_search
-- **Result**: LomuAI uses efficient search instead of reading entire 5312-line files ✅
-
 ## User Preferences
 ### API Configuration
 **Gemini 2.5 Flash + Claude Sonnet 4 Hybrid Strategy**:
@@ -150,6 +96,22 @@ A centralized session management system (`server/services/lomuAIBrain.ts`) conso
 - **Phase 1 Multi-User Safety**: Workspace isolation using FIFO file locking, stale session cleanup, and crash recovery with metadata persistence and transactional file operations.
 
 The platform prioritizes native JSON function calling for AI streaming due to superior speed, reliability, and type safety, integrating utilities for validation, retry logic, and file change tracking.
+
+### Configuration System
+- **Centralized `app.config.ts`**: Contains branding, theme colors, API endpoints, chat settings, UI constants, feature flags, keyboard shortcuts, limits/quotas, messages/copy, telemetry, social links, and environment detection.
+- **Global `constants.ts`**: Defines application routes, API endpoints, UI constants, inline strings, time constants, validation rules, status enums, colors, and accessibility labels.
+- **`classNameHelper.ts`**: Provides reusable Tailwind CSS class builders for buttons, cards, text, layout, spacing, state classes, and component-specific styles.
+- **`api-utils.ts`**: Centralizes API utilities for building URLs, generic fetch wrappers, POST requests, streaming responses, and React Query key generation.
+- **`useAppConfig.ts`**: React hook for type-safe access to configuration with helper methods.
+- **`ConfigProvider.tsx`**: Context provider wrapping the entire application to make configuration accessible.
+
+### Modularization
+The system has undergone significant modularization to improve maintainability and LomuAI's self-healing capabilities.
+- **Backend Modularization**:
+    - `lomuChat.ts` (streaming handler) reduced from 5,020 to 1,063 lines by extracting 9 focused modules.
+    - `lomuSuperCore.ts` (prompt builder) restructured from 1,268 lines into 5 focused modules.
+- **Frontend Modularization**:
+    - `universal-chat.tsx` (Chat UI) reduced from 2,293 to 1,790 lines by extracting 5 focused components including `useStreamEvents.ts`, `ChatMessages.tsx`, `ChatInput.tsx`, `StatusBar.tsx`, and `ChatDialogs.tsx`.
 
 ## External Dependencies
 -   **Frontend**: React, TypeScript, Monaco Editor, Tailwind CSS, Shadcn UI, next-themes

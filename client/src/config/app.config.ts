@@ -25,7 +25,7 @@ export const APP_CONFIG = {
 
   // API Endpoints
   api: {
-    baseURL: process.env.VITE_API_URL || 'http://localhost:5000',
+    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
     endpoints: {
       chat: '/api/chat',
       commands: '/api/commands',

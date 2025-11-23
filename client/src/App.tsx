@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { CommandPalette } from "@/components/command-palette";
 import { ThemeProvider } from "@/components/theme-provider";
 import { VersionProvider } from "@/providers/version-provider";
+import { ConfigProvider } from "@/components/providers/ConfigProvider";
 import { AppLayout } from "@/components/app-layout";
 import { AdminGuard } from "@/components/admin-guard";
 import { OwnerGuard } from "@/components/owner-guard";
@@ -72,6 +73,7 @@ class ErrorBoundary extends Component<
             <button
               onClick={() => window.location.reload()}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+              data-testid="button-reload-page"
             >
               Reload Page
             </button>
@@ -223,15 +225,17 @@ function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider defaultTheme="dark">
-          <VersionProvider mobileBreakpoint={768}>
-            <TooltipProvider>
-              <CommandPalette />
-              <Toaster />
-              <Router />
-            </TooltipProvider>
-          </VersionProvider>
-        </ThemeProvider>
+        <ConfigProvider>
+          <ThemeProvider defaultTheme="dark">
+            <VersionProvider mobileBreakpoint={768}>
+              <TooltipProvider>
+                <CommandPalette />
+                <Toaster />
+                <Router />
+              </TooltipProvider>
+            </VersionProvider>
+          </ThemeProvider>
+        </ConfigProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );

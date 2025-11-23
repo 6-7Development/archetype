@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { API_ENDPOINTS, postApi, getQueryKey, buildApiUrl } from "@/lib/api-utils";
+import { APP_CONFIG } from "@/config/app.config";
+import { ROUTES } from "@/config/constants";
 
 interface HealthStatus {
   status: 'healthy' | 'degraded' | 'critical';
@@ -19,26 +22,20 @@ export function PlatformHealthIndicator() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: health, isLoading } = useQuery<HealthStatus>({
-    queryKey: ['/api/platform-health'],
-    refetchInterval: 30000, // Refresh every 30 seconds
+    queryKey: getQueryKey(API_ENDPOINTS.PLATFORM_HEALTH),
+    refetchInterval: APP_CONFIG.limits.sessionTimeout, // Use config instead of hardcoded 30000
     retry: false,
   });
 
   const triggerHealingMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch('/api/healing/start', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetType: 'platform' }),
-      });
-      if (!response.ok) throw new Error('Failed to trigger healing');
-      return response.json();
+      return postApi(API_ENDPOINTS.HEALING_START, { targetType: 'platform' });
     },
     onSuccess: () => {
       toast({ title: "Healing started!", description: "LomuAI is analyzing platform health..." });
-      queryClient.invalidateQueries({ queryKey: ['/api/platform-health'] });
+      queryClient.invalidateQueries({ queryKey: getQueryKey(API_ENDPOINTS.PLATFORM_HEALTH) });
       // Navigate to platform healing page
-      setLocation('/platform-healing');
+      setLocation(ROUTES.PLATFORM_HEALING);
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to trigger healing", variant: "destructive" });
