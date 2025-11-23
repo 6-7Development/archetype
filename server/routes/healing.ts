@@ -1671,6 +1671,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
 
           // Create healing conversation
           const conversation = await storage.createHealingConversation({
+            userId: userId,
             targetId: platformTarget.id,
             title: "🤖 Autonomous Platform Healing",
             mode: "autonomous",
@@ -1707,7 +1708,7 @@ Execute tools directly. Work autonomously without waiting for user input.`;
 
           // Notify via WebSocket that autonomous healing started
           if (deps?.wss) {
-            broadcastToUser(userId, {
+            broadcastToUser(deps.wss, userId, {
               type: "healing:started",
               conversationId: conversation.id,
               message: "Autonomous healing process initiated...",
@@ -1719,7 +1720,7 @@ Execute tools directly. Work autonomously without waiting for user input.`;
           console.error("[HEALING-AUTO] Background healing error:", error);
           // Notify user of error via WebSocket
           if (deps?.wss) {
-            broadcastToUser(userId, {
+            broadcastToUser(deps.wss, userId, {
               type: "healing:error",
               message: "Autonomous healing encountered an error",
               error: error.message,
