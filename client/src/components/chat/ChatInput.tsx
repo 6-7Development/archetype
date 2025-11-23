@@ -35,11 +35,11 @@ export function ChatInput({
         <div className="mb-3 flex flex-wrap gap-2">
           {Array.from(uploadingImages.keys()).map((tempId) => (
             <div key={tempId} className="relative">
-              <div className="h-20 w-20 rounded border border-[hsl(220,15%,28%)] bg-[hsl(220,18%,16%)] flex items-center justify-center">
+              <div className="h-20 w-20 rounded border border-border bg-card flex items-center justify-center">
                 <Loader2 className="w-6 h-6 animate-spin text-[hsl(220,70%,60%)]" />
               </div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-xs text-[hsl(220,12%,55%)] bg-[hsl(220,20%,12%)]/80 px-2 py-1 rounded">
+                <span className="text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
                   Uploading...
                 </span>
               </div>
@@ -51,7 +51,7 @@ export function ChatInput({
               <img
                 src={imageUrl}
                 alt={`Preview ${index + 1}`}
-                className="h-20 w-20 object-cover rounded border border-[hsl(220,15%,28%)]"
+                className="h-20 w-20 object-cover rounded border border-border"
                 data-testid={`image-preview-${index}`}
               />
               <button

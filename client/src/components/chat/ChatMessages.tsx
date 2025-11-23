@@ -141,14 +141,14 @@ export function ChatMessages({
 
       {/* RunState Progress Table - Replit-style Kanban */}
       {runState && (
-        <div className="px-6 pt-4 pb-2 bg-[hsl(220,18%,16%)] border-b border-[hsl(220,15%,28%)]">
+        <div className="px-6 pt-4 pb-2 bg-card border-b border-border">
           <RunProgressTable runState={runState} />
         </div>
       )}
 
       {/* AI Progress - Only show when no task list exists and no RunState */}
       {(currentProgress.length > 0 || isGenerating) && agentTasks.length === 0 && !runState && (
-        <div className="px-6 pt-4 pb-2 bg-[hsl(220,18%,16%)] border-b border-[hsl(220,15%,28%)]">
+        <div className="px-6 pt-4 pb-2 bg-card border-b border-border">
           <AgentProgress
             steps={currentProgress}
             metrics={currentMetrics}
@@ -316,7 +316,7 @@ export function ChatMessages({
           <p className="text-[hsl(220,10%,72%)] flex items-center gap-2">
             <span className="font-mono text-[hsl(220,70%,60%)]">{streamState.currentFile.action}</span>
             <span className="font-mono">{streamState.currentFile.filename}</span>
-            <span className="ml-auto text-[hsl(220,12%,55%)]">{streamState.currentFile.language}</span>
+            <span className="ml-auto text-muted-foreground">{streamState.currentFile.language}</span>
             <Loader2 className="w-3 h-3 animate-spin text-[hsl(220,70%,60%)]" />
           </p>
         </div>

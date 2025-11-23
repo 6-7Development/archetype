@@ -207,7 +207,7 @@ export default function WorkingAuth() {
                     placeholder="you@example.com" 
                     data-testid="input-login-email"
                     autoComplete="email"
-                    className="h-11 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+                    className="h-11 bg-card border-border text-foreground placeholder:text-muted-foreground"
                     {...loginForm.register("email")}
                   />
                   {loginForm.formState.errors.email && (
@@ -224,7 +224,7 @@ export default function WorkingAuth() {
                     placeholder="••••••••" 
                     data-testid="input-login-password"
                     autoComplete="current-password"
-                    className="h-11 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+                    className="h-11 bg-card border-border text-foreground placeholder:text-muted-foreground"
                     {...loginForm.register("password")}
                   />
                   {loginForm.formState.errors.password && (
@@ -253,7 +253,7 @@ export default function WorkingAuth() {
                       placeholder="John" 
                       data-testid="input-register-firstname"
                       autoComplete="given-name"
-                      className="h-11 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+                      className="h-11 bg-card border-border text-foreground placeholder:text-muted-foreground"
                       {...registerForm.register("firstName")}
                     />
                     {registerForm.formState.errors.firstName && (
@@ -269,7 +269,7 @@ export default function WorkingAuth() {
                       placeholder="Doe" 
                       data-testid="input-register-lastname"
                       autoComplete="family-name"
-                      className="h-11 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+                      className="h-11 bg-card border-border text-foreground placeholder:text-muted-foreground"
                       {...registerForm.register("lastName")}
                     />
                     {registerForm.formState.errors.lastName && (
@@ -287,7 +287,7 @@ export default function WorkingAuth() {
                     placeholder="you@example.com" 
                     data-testid="input-register-email"
                     autoComplete="email"
-                    className="h-11 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+                    className="h-11 bg-card border-border text-foreground placeholder:text-muted-foreground"
                     {...registerForm.register("email")}
                   />
                   {registerForm.formState.errors.email && (
@@ -304,7 +304,7 @@ export default function WorkingAuth() {
                     placeholder="••••••••" 
                     data-testid="input-register-password"
                     autoComplete="new-password"
-                    className="h-11 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+                    className="h-11 bg-card border-border text-foreground placeholder:text-muted-foreground"
                     {...registerForm.register("password")}
                   />
                   {registerForm.formState.errors.password && (
@@ -359,7 +359,7 @@ export default function WorkingAuth() {
         <div className="mt-6 text-center text-sm">
           <a 
             href="/" 
-            className="text-slate-300 hover:text-white transition-colors inline-flex items-center gap-1.5 hover:underline font-medium"
+            className="text-slate-300 hover:text-foreground transition-colors inline-flex items-center gap-1.5 hover:underline font-medium"
           >
             ← Back to Home
           </a>

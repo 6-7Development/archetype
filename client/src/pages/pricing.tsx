@@ -194,7 +194,7 @@ export default function Pricing() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 border-b border-white/10 bg-slate-950/80 backdrop-blur-xl">
+      <nav className="fixed top-0 w-full z-50 border-b border-border bg-background backdrop-blur-xl">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -245,7 +245,7 @@ export default function Pricing() {
                   </p>
                   
                   <div className="grid md:grid-cols-3 gap-4 mb-6">
-                    <div className="rounded-lg bg-slate-900/50 p-4 border border-slate-700">
+                    <div className="rounded-lg bg-card p-4 border border-border">
                       <div className="flex items-center gap-2 mb-2">
                         <DollarSign className="w-5 h-5 text-green-400" />
                         <span className="font-semibold text-white">Real-Time Cost Preview</span>
@@ -255,7 +255,7 @@ export default function Pricing() {
                       </p>
                     </div>
                     
-                    <div className="rounded-lg bg-slate-900/50 p-4 border border-slate-700">
+                    <div className="rounded-lg bg-card p-4 border border-border">
                       <div className="flex items-center gap-2 mb-2">
                         <Zap className="w-5 h-5 text-primary" />
                         <span className="font-semibold text-white">Smart Complexity Detection</span>
@@ -265,7 +265,7 @@ export default function Pricing() {
                       </p>
                     </div>
                     
-                    <div className="rounded-lg bg-slate-900/50 p-4 border border-slate-700">
+                    <div className="rounded-lg bg-card p-4 border border-border">
                       <div className="flex items-center gap-2 mb-2">
                         <TrendingUp className="w-5 h-5 text-secondary" />
                         <span className="font-semibold text-white">Usage Dashboard</span>
@@ -321,7 +321,7 @@ export default function Pricing() {
                 className={`p-8 relative ${
                   plan.popular 
                     ? 'bg-gradient-to-br from-primary/30 to-secondary/30 border-primary/50 shadow-xl shadow-primary/20' 
-                    : 'bg-slate-900/50 border-slate-800'
+                    : 'bg-card border-border'
                 } hover-elevate transition-all overflow-visible`}
                 data-testid={`card-plan-${plan.name.toLowerCase()}`}
               >
@@ -342,7 +342,7 @@ export default function Pricing() {
                   </div>
                   
                   {/* Token Allowance Badge */}
-                  <div className="mt-4 p-3 rounded-lg bg-slate-800/50 border border-slate-700">
+                  <div className="mt-4 p-3 rounded-lg bg-card/50 border border-border">
                     <div className="text-xs text-slate-400 mb-1">Token Allowance</div>
                     <div className="text-sm font-mono text-primary">{plan.tokenAllowance}</div>
                     <div className="text-xs text-slate-500 mt-1">{plan.projectEstimate}</div>
@@ -386,7 +386,7 @@ export default function Pricing() {
 
           {/* Overage Pricing Explainer */}
           <div className="mt-12 text-center">
-            <Card className="inline-block p-6 bg-slate-900/50 border-slate-800">
+            <Card className="inline-block p-6 bg-card border-border">
               <h4 className="text-lg font-semibold text-white mb-2">Transparent Overage Pricing</h4>
               <p className="text-slate-400 mb-4">
                 Need more tokens? No problem. No surprise bills.
@@ -403,7 +403,7 @@ export default function Pricing() {
 
           {/* AI Disclaimer */}
           <div className="mt-8 text-center" data-testid="section-ai-disclaimer">
-            <div className="inline-flex items-start gap-2 px-4 py-3 rounded-lg bg-slate-800/30 border border-slate-700/50 max-w-3xl">
+            <div className="inline-flex items-start gap-2 px-4 py-3 rounded-lg bg-card/30 border border-border/50 max-w-3xl">
               <Info className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
               <p className="text-sm text-slate-400 text-left">
                 Note: All plans include AI-assisted code generation that requires human review and testing. Actual development time varies based on project complexity.
@@ -414,7 +414,7 @@ export default function Pricing() {
       </section>
 
       {/* What Makes Us Different */}
-      <section className="py-20 px-6 bg-slate-950/50">
+      <section className="py-20 px-6 bg-background">
         <div className="container mx-auto max-w-6xl">
           <h2 className="text-3xl font-bold text-center mb-12">
             <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
@@ -423,7 +423,7 @@ export default function Pricing() {
           </h2>
           
           <div className="grid md:grid-cols-3 gap-6">
-            <Card className="p-8 bg-slate-900/50 border-slate-800">
+            <Card className="p-8 bg-card border-border">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-3 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20">
                   <DollarSign className="w-8 h-8 text-primary" />
@@ -449,7 +449,7 @@ export default function Pricing() {
               </ul>
             </Card>
 
-            <Card className="p-8 bg-slate-900/50 border-slate-800">
+            <Card className="p-8 bg-card border-border">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-3 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20">
                   <TrendingUp className="w-8 h-8 text-secondary" />
@@ -475,7 +475,7 @@ export default function Pricing() {
               </ul>
             </Card>
 
-            <Card className="p-8 bg-slate-900/50 border-slate-800">
+            <Card className="p-8 bg-card border-border">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-3 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20">
                   <Shield className="w-8 h-8 text-green-400" />
@@ -537,7 +537,7 @@ export default function Pricing() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-6 border-t border-white/10">
+      <footer className="py-12 px-6 border-t border-border">
         <div className="container mx-auto max-w-6xl text-center text-slate-500">
           <div className="flex items-center justify-center gap-3 mb-4">
             <LomuTextLogo size="sm" />
