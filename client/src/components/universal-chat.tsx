@@ -252,6 +252,7 @@ export function UniversalChat({
         const response = await apiRequest('/api/chat/upload-image', {
           method: 'POST',
           body: formData,
+          // Don't set Content-Type - let browser set it with boundary for FormData
         }, true);
 
         if (response.ok) {

@@ -127,19 +127,67 @@ function runStateReducer(state: RunStateReducerState, action: RunStateAction): R
   return newState;
 }
 
-export interface UseStreamEventsReturn {
-  runState: RunStateReducerState;
-  dispatchRunState: Dispatch<RunStateAction>;
+export interface Message {
+  id: string;
+  messageId?: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  timestamp?: Date;
+  runId?: string;
+  progressMessages?: Array<{
+    id: string;
+    message: string;
+    timestamp: number;
+    category?: 'thinking' | 'action' | 'result';
+  }>;
 }
 
-export function useStreamEvents(): UseStreamEventsReturn {
+interface UseStreamEventsState extends RunStateReducerState {
+  messages: Message[];
+}
+
+export interface UseStreamEventsReturn {
+  runState: UseStreamEventsState;
+  dispatchRunState: Dispatch<RunStateAction>;
+  sendMessage: (msg: { message: string; images?: string[] }) => void;
+  stopRun: () => void;
+  clearRunState: () => void;
+  setRunState: (state: UseStreamEventsState) => void;
+}
+
+export function useStreamEvents(options?: any): UseStreamEventsReturn {
   const [runState, dispatchRunState] = useReducer(runStateReducer, {
     runs: new Map(),
     currentRunId: null,
-  });
+    messages: [],
+  } as UseStreamEventsState);
+
+  const sendMessage = (msg: { message: string; images?: string[] }) => {
+    // Stub - actual implementation would send to backend via SSE
+    console.log("sendMessage called:", msg);
+  };
+
+  const stopRun = () => {
+    // Stub - stops current run
+    console.log("stopRun called");
+  };
+
+  const clearRunState = () => {
+    // Stub - clears all run state
+    console.log("clearRunState called");
+  };
+
+  const setRunState = (state: UseStreamEventsState) => {
+    // Stub - sets run state directly
+    console.log("setRunState called");
+  };
 
   return {
-    runState,
+    runState: runState as UseStreamEventsState,
     dispatchRunState,
+    sendMessage,
+    stopRun,
+    clearRunState,
+    setRunState,
   };
 }
