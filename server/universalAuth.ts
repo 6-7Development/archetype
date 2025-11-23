@@ -13,6 +13,7 @@ import { registerUserSchema, loginUserSchema, type RegisterUser, type LoginUser 
 import { db } from "./db";
 import { creditWallets, creditLedger } from "@shared/schema";
 import { setupReplitAuth } from "./replitAuth";
+import { getRolePermissions } from "@shared/rbac";
 
 const SALT_ROUNDS = 12; // Bcrypt salt rounds (higher = more secure, slower)
 
