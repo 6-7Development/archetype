@@ -445,5 +445,3 @@ export function UniversalChat({
     </div>
   );
 }
-
-```
