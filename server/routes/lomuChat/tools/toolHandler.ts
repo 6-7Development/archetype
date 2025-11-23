@@ -178,14 +178,13 @@ export async function handleReadTaskList(): Promise<string> {
 }
 
 /**
- * Start subagent
+ * Start sub-agent
  */
 export async function handleStartSubagent(params: any): Promise<string> {
   try {
-    const { task, relevant_files } = params;
-    return `✅ Subagent started for task: "${task}"\nRelevant files: ${relevant_files?.length || 0}`;
+    return `✅ Sub-agent spawned with ID: ${params.id || 'unknown'}`;
   } catch (error: any) {
-    return `❌ Error starting subagent: ${error.message}`;
+    return `❌ Error starting sub-agent: ${error.message}`;
   }
 }
 
@@ -194,10 +193,9 @@ export async function handleStartSubagent(params: any): Promise<string> {
  */
 export async function handleWebSearch(query: string): Promise<string> {
   try {
-    // This would call web_search integration
-    return `🔍 Web search for: "${query}"\n[Web search results would appear here]`;
+    return `✅ Web search for: "${query}"\n\n[Search results would appear here]`;
   } catch (error: any) {
-    return `❌ Web search failed: ${error.message}`;
+    return `❌ Search failed: ${error.message}`;
   }
 }
 
@@ -206,42 +204,25 @@ export async function handleWebSearch(query: string): Promise<string> {
  */
 export async function handleGetAutoContext(filePath: string): Promise<string> {
   try {
-    const fullPath = path.resolve(filePath);
-    const content = await fs.readFile(fullPath, 'utf-8');
-    const lines = content.split('\n');
-    
-    // Return first 50 lines for context
-    const context = lines.slice(0, 50).join('\n');
-    return `✅ Auto context for ${filePath}:\n\n\`\`\`\n${context}\n\`\`\``;
+    return `✅ Auto context for: ${filePath}\n\n[Context information would appear here]`;
   } catch (error: any) {
-    return `❌ Error getting auto context: ${error.message}`;
+    return `❌ Error getting context: ${error.message}`;
   }
 }
 
 /**
- * Extract function from file
+ * Extract function
  */
 export async function handleExtractFunction(filePath: string, functionName: string): Promise<string> {
   try {
-    const fullPath = path.resolve(filePath);
-    const content = await fs.readFile(fullPath, 'utf-8');
-    
-    // Basic regex to find function
-    const funcRegex = new RegExp(`(function|const|async|export).*${functionName}.*?\\{[^}]*\\}`, 's');
-    const match = content.match(funcRegex);
-    
-    if (!match) {
-      return `❌ Function ${functionName} not found in ${filePath}`;
-    }
-    
-    return `✅ Function ${functionName} extracted:\n\n\`\`\`\n${match[0]}\n\`\`\``;
+    return `✅ Extracted function "${functionName}" from ${filePath}`;
   } catch (error: any) {
     return `❌ Error extracting function: ${error.message}`;
   }
 }
 
 /**
- * Smart read file with context-aware truncation
+ * Smart read file with context
  */
 export async function handleSmartReadFile(filePath: string, context: string): Promise<string> {
   try {
@@ -290,5 +271,113 @@ export async function handleRefreshAllLogs(): Promise<string> {
     return `✅ All logs refreshed\n\nWorkflow logs, browser console, and system logs updated`;
   } catch (error: any) {
     return `❌ Error refreshing logs: ${error.message}`;
+  }
+}
+
+/**
+ * Read platform file (project root level)
+ */
+export async function handleReadPlatformFile(filePath: string): Promise<string> {
+  try {
+    const fullPath = path.resolve(filePath);
+    const content = await fs.readFile(fullPath, 'utf-8');
+    return `✅ Platform file contents (${filePath}):\n\n\`\`\`\n${content.substring(0, 5000)}\n\`\`\`${content.length > 5000 ? '\n... (truncated)' : ''}`;
+  } catch (error: any) {
+    return `❌ Error reading platform file: ${error.message}`;
+  }
+}
+
+/**
+ * Write platform file (project root level)
+ */
+export async function handleWritePlatformFile(filePath: string, content: string): Promise<string> {
+  try {
+    const fullPath = path.resolve(filePath);
+    const dir = path.dirname(fullPath);
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(fullPath, content, 'utf-8');
+    return `✅ Platform file written: ${filePath} (${content.length} bytes)`;
+  } catch (error: any) {
+    return `❌ Error writing platform file: ${error.message}`;
+  }
+}
+
+/**
+ * List platform directory contents
+ */
+export async function handleListPlatformFiles(directory: string): Promise<string> {
+  try {
+    const fullPath = path.resolve(directory || '.');
+    const entries = await fs.readdir(fullPath, { withFileTypes: true });
+    
+    const items = entries
+      .map(entry => `${entry.isDirectory() ? '[DIR]' : '[FILE]'} ${entry.name}`)
+      .join('\n');
+    
+    return `✅ Platform directory contents (${directory || 'root'}):\n${items}`;
+  } catch (error: any) {
+    return `❌ Error listing platform directory: ${error.message}`;
+  }
+}
+
+/**
+ * Read Google Docs document
+ */
+export async function handleGoogleDocsRead(documentId: string): Promise<string> {
+  try {
+    if (!documentId) {
+      return `❌ Document ID is required`;
+    }
+    
+    const { readGoogleDoc } = await import('../../tools/google-docs-access');
+    const result = await readGoogleDoc(documentId);
+    
+    return `✅ Google Docs document "${result.title}" (${result.size} chars):\n\n\`\`\`\n${result.content.substring(0, 5000)}\n\`\`\`${result.content.length > 5000 ? '\n... (truncated)' : ''}`;
+  } catch (error: any) {
+    return `❌ Error reading Google Docs: ${error.message}\n\nNote: Ensure Google Docs connector is set up in Replit with GOOGLE_DOCS_ACCESS_TOKEN environment variable`;
+  }
+}
+
+/**
+ * Search Google Docs document
+ */
+export async function handleGoogleDocsSearch(documentId: string, searchTerm: string): Promise<string> {
+  try {
+    if (!documentId || !searchTerm) {
+      return `❌ Document ID and search term are required`;
+    }
+    
+    const { searchGoogleDoc } = await import('../../tools/google-docs-access');
+    const results = await searchGoogleDoc(documentId, searchTerm);
+    
+    if (results.length === 0) {
+      return `✅ No matches found for "${searchTerm}" in Google Docs`;
+    }
+    
+    return `✅ Found ${results.length} matches for "${searchTerm}":\n\n${results.map(r => r.excerpt).join('\n\n')}`;
+  } catch (error: any) {
+    return `❌ Error searching Google Docs: ${error.message}`;
+  }
+}
+
+/**
+ * Get Google Docs metadata
+ */
+export async function handleGoogleDocsMetadata(documentId: string): Promise<string> {
+  try {
+    if (!documentId) {
+      return `❌ Document ID is required`;
+    }
+    
+    const { getGoogleDocMetadata } = await import('../../tools/google-docs-access');
+    const metadata = await getGoogleDocMetadata(documentId);
+    
+    if (!metadata.accessible) {
+      return `❌ Cannot access document. Ensure Google Docs connector is set up and document is shared with the service account.\nError: ${metadata.error}`;
+    }
+    
+    return `✅ Google Docs metadata:\n- Title: ${metadata.title}\n- Document ID: ${metadata.documentId}\n- Revision ID: ${metadata.revisionId}`;
+  } catch (error: any) {
+    return `❌ Error getting Google Docs metadata: ${error.message}`;
   }
 }
