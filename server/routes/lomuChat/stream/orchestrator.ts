@@ -306,12 +306,20 @@ export async function handleStreamRequest(
                     const contentMatch = content.match(/^\*\*[^*]+\*\*\n\n([\s\S]*?)\n\n\n?$/);
                     const thinkingContent = contentMatch ? contentMatch[1] : content;
                     
-                    // Emit as thinking block instead of content
-                    emitThinking(emitContext, title, thinkingContent, progressMessages);
+                    // ✅ Wrap emit in try-catch to prevent silent failures
+                    try {
+                      emitThinking(emitContext, title, thinkingContent, progressMessages);
+                    } catch (emitError) {
+                      console.error('[ORCHESTRATOR] emitThinking failed:', emitError);
+                    }
                     isThinking = true;
                   } else {
                     // Regular content - emit normally
-                    emitContentChunk(emitContext, content, chunkState);
+                    try {
+                      emitContentChunk(emitContext, content, chunkState);
+                    } catch (emitError) {
+                      console.error('[ORCHESTRATOR] emitContentChunk failed:', emitError);
+                    }
                     fullContent += content;
                   }
                   isEmpty = false;
@@ -338,7 +346,11 @@ export async function handleStreamRequest(
                   input: chunk.input
                 });
                 
-                emitToolCall(emitContext, chunk.toolName, chunk.toolId, chunk.input);
+                try {
+                  emitToolCall(emitContext, chunk.toolName, chunk.toolId, chunk.input);
+                } catch (emitError) {
+                  console.error('[ORCHESTRATOR] emitToolCall failed:', emitError);
+                }
               }
               
               if (chunk.type === 'stop') {
@@ -361,11 +373,19 @@ export async function handleStreamRequest(
                 
                 if (tokenUsagePercent >= 100) {
                   const msg = `⚠️ Token limit reached (${totalTokensUsed}/${tokenLimit}). Wrapping up...`;
-                  emitSystemInfo(emitContext, msg, 'warning');
+                  try {
+                    emitSystemInfo(emitContext, msg, 'warning');
+                  } catch (emitError) {
+                    console.error('[ORCHESTRATOR] emitSystemInfo failed:', emitError);
+                  }
                   shouldContinue = false;
                 } else if (tokenUsagePercent >= 80) {
                   const msg = `⚠️ Token budget at ${tokenUsagePercent.toFixed(0)}% (${totalTokensUsed}/${tokenLimit})`;
-                  emitSystemInfo(emitContext, msg, 'warning');
+                  try {
+                    emitSystemInfo(emitContext, msg, 'warning');
+                  } catch (emitError) {
+                    console.error('[ORCHESTRATOR] emitSystemInfo failed:', emitError);
+                  }
                 }
                 
                 // Calculate credits for this iteration
@@ -491,7 +511,11 @@ export async function handleStreamRequest(
                   allToolResults.push(toolResult);
                   
                   // Emit tool result event with ToolResult
-                  emitToolResult(emitContext, toolName, toolId, toolResult, false);
+                  try {
+                    emitToolResult(emitContext, toolName, toolId, toolResult, false);
+                  } catch (emitError) {
+                    console.error('[ORCHESTRATOR] emitToolResult failed:', emitError);
+                  }
                   
                 } catch (toolError: any) {
                   // ✅ ROLLBACK MECHANISM: Track tool failures for potential rollback
@@ -519,7 +543,11 @@ export async function handleStreamRequest(
                   };
                   iterationToolResults.push(errorToolResult);
                   allToolResults.push(errorToolResult);
-                  emitToolResult(emitContext, toolName, toolId, errorToolResult, true);
+                  try {
+                    emitToolResult(emitContext, toolName, toolId, errorToolResult, true);
+                  } catch (emitError) {
+                    console.error('[ORCHESTRATOR] emitToolResult (error) failed:', emitError);
+                  }
                   throw toolError; // Re-throw to outer catch block
                 }
                 

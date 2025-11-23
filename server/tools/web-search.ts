@@ -11,7 +11,7 @@ interface SearchResult {
   title: string;
   url: string;
   content: string;
-  score: string;
+  score: number;
 }
 
 interface WebSearchResult {
@@ -67,7 +67,7 @@ export async function executeWebSearch(params: WebSearchParams): Promise<WebSear
         title: r.title,
         url: r.url,
         content: r.content,
-        score: r.score,
+        score: typeof r.score === 'string' ? parseFloat(r.score) : r.score,
       })),
       answer: response.answer,
     };
