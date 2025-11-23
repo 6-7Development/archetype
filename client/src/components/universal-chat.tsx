@@ -277,6 +277,17 @@ export function UniversalChat({
     }
   }, [runState.messages]);
 
+  // Clear messages when context changes
+  const handleClearChat = () => {
+    dispatchRunState({ type: 'messages.clear' });
+    try {
+      const storageKey = `lomu-chat-messages:${targetContext || 'platform'}:${projectId || 'general'}`;
+      localStorage.removeItem(storageKey);
+    } catch (e) {
+      console.warn('Failed to clear chat history:', e);
+    }
+  };
+
   const handleScroll = () => {
     if (chatContainerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
@@ -393,7 +404,51 @@ export function UniversalChat({
               </div>
             ) : (
               <>
-                <MessageHistory messages={runState.messages} latestMessageRef={latestMessageRef} />
+                {/* Messages with image rendering */}
+                <div className="space-y-3">
+                  {runState.messages.map((message) => (
+                    <div key={message.id || message.messageId} className="flex gap-3 group">
+                      {/* Avatar */}
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-muted text-muted-foreground text-xs font-medium">
+                        {message.role === 'user' ? 'U' : 'A'}
+                      </div>
+
+                      {/* Message Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="bg-muted/50 rounded-lg p-3">
+                          <div className="prose prose-sm dark:prose-invert max-w-none text-sm">
+                            {message.content}
+                          </div>
+
+                          {/* Image Rendering */}
+                          {message.images && message.images.length > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {message.images.map((imageUrl, idx) => (
+                                <div key={idx} className="rounded border border-border overflow-hidden bg-background">
+                                  <img 
+                                    src={imageUrl} 
+                                    alt={`Message image ${idx + 1}`}
+                                    className="max-w-xs max-h-64 object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                                    data-testid={`message-image-${message.id}-${idx}`}
+                                    onClick={() => window.open(imageUrl, '_blank')}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Timestamp */}
+                        {message.timestamp && (
+                          <div className="text-xs text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {new Date(message.timestamp).toLocaleTimeString()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
                 {/* Loading indicator */}
                 {isGenerating && (
                   <div className="flex items-center gap-2 text-muted-foreground text-sm p-4">

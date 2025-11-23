@@ -189,14 +189,50 @@ export interface UseStreamEventsReturn {
   setRunState: (state: UseStreamEventsState) => void;
 }
 
+// Storage key for persisting messages
+const MESSAGES_STORAGE_KEY = (projectId?: string, targetContext?: string) => 
+  `lomu-chat-messages:${targetContext || 'platform'}:${projectId || 'general'}`;
+
 export function useStreamEvents(options?: { projectId?: string; targetContext?: string; onProjectGenerated?: (result: any) => void; onRunCompleted?: () => void; onRunFailed?: () => void }): UseStreamEventsReturn {
-  const [runState, dispatchRunState] = useReducer(runStateReducer, {
-    runs: new Map(),
-    currentRunId: null,
-    messages: [],
-    isLoading: false,
-    error: undefined,
-  } as UseStreamEventsState);
+  // Load persisted messages on mount
+  const getInitialState = (): UseStreamEventsState => {
+    try {
+      const storageKey = MESSAGES_STORAGE_KEY(options?.projectId, options?.targetContext);
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        const messages = JSON.parse(stored);
+        return {
+          runs: new Map(),
+          currentRunId: null,
+          messages,
+          isLoading: false,
+          error: undefined,
+        };
+      }
+    } catch (e) {
+      console.warn('Failed to load messages from storage:', e);
+    }
+    
+    return {
+      runs: new Map(),
+      currentRunId: null,
+      messages: [],
+      isLoading: false,
+      error: undefined,
+    };
+  };
+
+  const [runState, dispatchRunState] = useReducer(runStateReducer, getInitialState());
+
+  // Persist messages to localStorage whenever they change
+  const persistMessages = (messages: Message[]) => {
+    try {
+      const storageKey = MESSAGES_STORAGE_KEY(options?.projectId, options?.targetContext);
+      localStorage.setItem(storageKey, JSON.stringify(messages));
+    } catch (e) {
+      console.warn('Failed to persist messages:', e);
+    }
+  };
 
   const sendMessage = async (msg: { message: string; images?: string[] }) => {
     try {
@@ -205,16 +241,17 @@ export function useStreamEvents(options?: { projectId?: string; targetContext?: 
 
       // Add user message to state
       const userMessageId = `msg-${Date.now()}-user`;
+      const userMessage: Message = {
+        id: userMessageId,
+        messageId: userMessageId,
+        role: 'user',
+        content: msg.message,
+        timestamp: new Date(),
+        images: msg.images && msg.images.length > 0 ? msg.images : undefined,
+      };
       dispatchRunState({
         type: 'message.added',
-        message: {
-          id: userMessageId,
-          messageId: userMessageId,
-          role: 'user',
-          content: msg.message,
-          timestamp: new Date(),
-          images: msg.images || [],
-        },
+        message: userMessage,
       });
 
       // Call backend API
@@ -238,16 +275,21 @@ export function useStreamEvents(options?: { projectId?: string; targetContext?: 
       // Parse and add assistant response
       const data = await response.json();
       const assistantMessageId = `msg-${Date.now()}-assistant`;
+      const assistantMessage: Message = {
+        id: assistantMessageId,
+        messageId: assistantMessageId,
+        role: 'assistant',
+        content: data.response || '',
+        timestamp: new Date(),
+      };
       dispatchRunState({
         type: 'message.added',
-        message: {
-          id: assistantMessageId,
-          messageId: assistantMessageId,
-          role: 'assistant',
-          content: data.response || '',
-          timestamp: new Date(),
-        },
+        message: assistantMessage,
       });
+
+      // Persist to localStorage after both messages are added
+      const newMessages = [...runState.messages, userMessage, assistantMessage];
+      persistMessages(newMessages);
 
       dispatchRunState({ type: 'loading.end' });
 
