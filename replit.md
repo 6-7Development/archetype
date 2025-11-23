@@ -99,3 +99,19 @@ The system is highly modularized for maintainability and self-healing:
 -   **Charting**: Recharts
 -   **Browser Automation**: Playwright
 -   **Web Search**: Tavily API
+
+## Recent Session Progress (November 23, 2025)
+### Server Startup & Authentication Fixes
+- ✅ **CRITICAL FIX**: Created `server/routes/index.ts` - centralized route registration system
+- ✅ Fixed ES module imports (replaced CommonJS `require()` with dynamic `import()`)
+- ✅ Fixed WebSocket Server constructor import (changed from `WebSocket.Server` to `WebSocketServer`)
+- ✅ Fixed import paths in `server/lomuChat.ts` (converted `../` to `./` with `.js` extensions)
+- ✅ Fixed async middleware bug in `server/middleware/creditValidation.ts` (removed `async` from factory function)
+- ✅ Fixed WebSocket server passing to healing routes (pass `server.wss` instead of `server`)
+- ✅ **AUTHENTICATION FIX**: Added `setupAuth()` call BEFORE route registration in `server/index.ts`
+  - Passport strategies (local, OIDC) now properly initialized before routes need them
+  - Fixed "Unknown authentication strategy 'local'" error
+  - Login functionality fully restored
+- ✅ Server now starts successfully - all routes registered and operational
+- ✅ Platform healing orchestrator running and ready for use
+- ✅ LomuAI router mounted successfully at `/api/lomu-ai` with no errors

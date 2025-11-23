@@ -188,6 +188,12 @@ app.use((req, res, next) => {
 const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'uploads/' directory
 
 (async () => {
+  // CRITICAL: Setup authentication BEFORE registering routes
+  // This initializes Passport strategies (local, OIDC) that routes depend on
+  const { setupAuth } = await import('./universalAuth.js');
+  await setupAuth(app);
+  console.log('✅ Authentication strategies initialized');
+  
   const server = await registerRoutes(app);
   
   // Register Platform Healing Routes (pass WebSocket server, not HTTP server)
