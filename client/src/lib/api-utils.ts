@@ -42,7 +42,6 @@ export const API_ENDPOINTS = {
 
   // Chat specific
   CHAT_UPLOAD_IMAGE: '/api/chat/upload-image',
-  CHAT_SESSION: '/api/chat/session',
 
   // Templates
   TEMPLATES: '/api/templates',
