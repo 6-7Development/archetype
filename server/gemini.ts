@@ -1069,6 +1069,21 @@ Please try:
               input: validatedArgs
             });
 
+            // ✅ CRITICAL FIX: Emit tool_use chunk so orchestrator sees it and increments toolCallCount
+            if (onChunk) {
+              try {
+                onChunk({
+                  type: 'tool_use',
+                  toolId: toolCallId,
+                  toolName: extractedFunctionCall.name,
+                  input: validatedArgs
+                });
+                console.log(`[GEMINI-TOOLS] ✅ Emitted tool_use chunk for: ${extractedFunctionCall.name}`);
+              } catch (chunkError) {
+                console.error('❌ Error emitting tool_use chunk:', chunkError);
+              }
+            }
+
             // Notify about tool use (DE-DUPLICATED)
             if (onAction && extractedFunctionCall.name) {
               const action = getActionMessageFromFunctionCall(extractedFunctionCall.name);
