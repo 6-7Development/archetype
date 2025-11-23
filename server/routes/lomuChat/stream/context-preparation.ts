@@ -328,15 +328,18 @@ export async function prepareAIContext(
   // ============================================================================
   // STEP 7: BUILD SYSTEM PROMPT
   // ============================================================================
-  const systemPrompt = buildLomuSuperCorePrompt({
-    platform: 'LomuAI - React+Express+PostgreSQL on Railway',
-    autoCommit: finalAutoCommit,
-    intent: conversationIntent,
-    contextPrompt: enhancedContextPrompt,
-    userMessage: message,
-    autonomyLevel: finalAutonomyLevel,
-    extendedThinking: finalExtendedThinking,
-  });
+  // ✅ FIX #1: Use casual prompt when casual intent detected (no tools/diagnostics)
+  const systemPrompt = userIntent === 'casual'
+    ? buildCasualConversationPrompt()
+    : buildLomuSuperCorePrompt({
+        platform: 'LomuAI - React+Express+PostgreSQL on Railway',
+        autoCommit: finalAutoCommit,
+        intent: conversationIntent,
+        contextPrompt: enhancedContextPrompt,
+        userMessage: message,
+        autonomyLevel: finalAutonomyLevel,
+        extendedThinking: finalExtendedThinking,
+      });
 
   // ============================================================================
   // STEP 8: TOOL FILTERING & AUTONOMY LEVELS
