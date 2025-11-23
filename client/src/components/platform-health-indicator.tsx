@@ -20,27 +20,16 @@ interface HealthStatus {
 export function PlatformHealthIndicator() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const { data: health, isLoading } = useQuery<HealthStatus>({
     queryKey: getQueryKey(API_ENDPOINTS.PLATFORM_HEALTH),
-    refetchInterval: APP_CONFIG.limits.sessionTimeout, // Use config instead of hardcoded 30000
+    refetchInterval: APP_CONFIG.limits.sessionTimeout,
     retry: false,
   });
 
-  const triggerHealingMutation = useMutation({
-    mutationFn: async () => {
-      return postApi(API_ENDPOINTS.HEALING_START, { targetType: 'platform' });
-    },
-    onSuccess: () => {
-      toast({ title: "Healing started!", description: "LomuAI is analyzing platform health..." });
-      queryClient.invalidateQueries({ queryKey: getQueryKey(API_ENDPOINTS.PLATFORM_HEALTH) });
-      // Navigate to platform healing page
-      setLocation(ROUTES.PLATFORM_HEALING);
-    },
-    onError: () => {
-      toast({ title: "Error", description: "Failed to trigger healing", variant: "destructive" });
-    },
-  });
+  const handleTriggerHealing = () => {
+    toast({ title: "Opening healing console...", description: "LomuAI is ready to analyze platform health" });
+    setLocation(ROUTES.PLATFORM_HEALING);
+  };
 
   if (isLoading || !health) {
     return (
@@ -117,12 +106,11 @@ export function PlatformHealthIndicator() {
         <Button
           size="sm"
           className="h-6 text-xs gap-1"
-          onClick={() => triggerHealingMutation.mutate()}
-          disabled={triggerHealingMutation.isPending}
+          onClick={handleTriggerHealing}
           data-testid="button-trigger-healing"
         >
           <Zap className="w-3 h-3" />
-          {triggerHealingMutation.isPending ? 'Starting...' : 'Heal'}
+          Heal
         </Button>
       )}
     </div>
