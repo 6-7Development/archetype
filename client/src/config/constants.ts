@@ -15,6 +15,9 @@ export const ROUTES = {
   BILLING: '/account',
   SUPPORT: '/support',
   ADMIN: '/admin',
+  AUTH: '/auth',
+  ERROR_403: '/error/403',
+  ERROR_500: '/error/500',
 } as const;
 
 export const API_ROUTES = {

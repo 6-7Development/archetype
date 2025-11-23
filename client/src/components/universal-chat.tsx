@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { flushSync } from "react-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { API_ENDPOINTS, getQueryKey, buildApiUrl } from "@/lib/api-utils";
 import { Send, Loader2, User, Key, AlertCircle, Square, ChevronDown, Copy, Check, ChevronRight, Menu, Zap, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -244,7 +245,7 @@ export function UniversalChat({
       formData.append('image', file);
 
       try {
-        const response = await fetch('/api/chat/upload-image', {
+        const response = await fetch(buildApiUrl(API_ENDPOINTS.CHAT_UPLOAD_IMAGE), {
           method: 'POST',
           body: formData,
           credentials: 'include',
@@ -388,7 +389,7 @@ export function UniversalChat({
     if (!projectId || messages.length === 0) return;
     
     try {
-      await fetch('/api/chat/session', {
+      await fetch(buildApiUrl(API_ENDPOINTS.CHAT_SESSION), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

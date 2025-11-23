@@ -39,6 +39,10 @@ export const API_ENDPOINTS = {
   // User
   USER: APP_CONFIG.api.endpoints.user,
 
+  // Chat specific
+  CHAT_UPLOAD_IMAGE: '/api/chat/upload-image',
+  CHAT_SESSION: '/api/chat/session',
+
   // Templates
   TEMPLATES: '/api/templates',
   TEMPLATE_INSTANTIATE: (templateId: string) => `/api/templates/${templateId}/instantiate`,
