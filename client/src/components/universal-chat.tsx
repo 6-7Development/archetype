@@ -1076,11 +1076,11 @@ export function UniversalChat({
               // ✅ HYBRID SUPPORT: Handle both old envelope format AND new proper SSE format
               let payload = eventData;
               
-              // If backend sent old format {type: "X", data: {...}}, extract the type and data
-              if (eventData.type && typeof eventData.data === 'object') {
-                console.log('[SSE] Old envelope format detected, extracting type:', eventData.type);
+              // If backend sent {type: "X", ...} format (with or without data field), extract the type
+              if (eventData.type && typeof eventData.type === 'string') {
+                console.log('[SSE] Envelope format detected, extracting type:', eventData.type);
                 eventName = eventData.type; // Use type from envelope as event name
-                payload = eventData.data || eventData; // Use data field as payload
+                payload = eventData.data || eventData; // Use data field if present, otherwise use entire object
               }
               
               switch (eventName) {
