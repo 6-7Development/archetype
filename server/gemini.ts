@@ -884,7 +884,8 @@ Please try:
             // Stream immediately to frontend
             if (onChunk) {
               try {
-                onChunk({ type: 'chunk', content: text });
+                // ✅ CRITICAL FIX: Use 'content' type (NOT 'chunk') so orchestrator.ts recognizes it
+                onChunk({ type: 'content', content: text });
                 console.log('[GEMINI-TEXT-STREAM] ✅ Streamed:', text.substring(0, 80) + '...');
               } catch (chunkError) {
                 console.error('❌ Error in onChunk callback:', chunkError);
