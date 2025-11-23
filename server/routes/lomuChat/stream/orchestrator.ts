@@ -540,14 +540,15 @@ export async function handleStreamRequest(
                     schemaValidated: false
                   }
                 };
-                toolResults.push(errorToolResult);
+                iterationToolResults.push(errorToolResult);
+                allToolResults.push(errorToolResult);
                 emitToolResult(emitContext, toolName, toolId, errorToolResult, true);
               }
             }
           }
           
           // ✅ PHASE 2: Add tool results to conversation with metadata awareness
-          if (toolResults.length > 0) {
+          if (iterationToolResults.length > 0) {
             conversationMessages.push({
               role: 'assistant',
               content: contentBlocks
@@ -558,7 +559,7 @@ export async function handleStreamRequest(
             const toolResultContent = contentBlocks
               .filter(block => block.type === 'tool_use')
               .map((block, idx) => {
-                const toolResult = toolResults[idx];
+                const toolResult = iterationToolResults[idx];
                 if (!toolResult) return null;
                 
                 // Convert payload to string for Gemini
