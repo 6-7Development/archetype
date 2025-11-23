@@ -207,7 +207,10 @@ export async function setupAuth(app: Express) {
         const { password, ...userWithoutPassword } = user;
         res.json({ 
           success: true, 
-          user: userWithoutPassword 
+          user: {
+            ...userWithoutPassword,
+            isOwner: user.isOwner || false
+          }
         });
       });
     } catch (error: any) {
@@ -248,7 +251,10 @@ export async function setupAuth(app: Express) {
           const { password, ...userWithoutPassword } = user;
           res.json({ 
             success: true, 
-            user: userWithoutPassword 
+            user: {
+              ...userWithoutPassword,
+              isOwner: user.isOwner || false
+            }
           });
         });
       })(req, res, next);
@@ -294,7 +300,13 @@ export async function setupAuth(app: Express) {
     
     const user = req.user as any;
     const { password, ...userWithoutPassword } = user;
-    res.json({ user: userWithoutPassword });
+    // Ensure isOwner is included in response
+    res.json({ 
+      user: {
+        ...userWithoutPassword,
+        isOwner: user.isOwner || false
+      }
+    });
   });
 }
 
