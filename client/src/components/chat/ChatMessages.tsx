@@ -13,6 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import type { RunState, RunPhase } from "@shared/agentEvents";
 import type { ScratchpadEntry } from "@/hooks/use-websocket-stream";
 
+// ✅ FIX GAP #7: Import ScratchpadEntry type for proper typing
+
 export interface Message {
   role: "user" | "assistant" | "system";
   content: string;
@@ -56,7 +58,8 @@ interface StreamState {
     linesRemoved?: number;
   } | null;  // ✅ FIX: Allow null from WebSocket data
   currentThought?: string;
-  scratchpad?: Array<{ id: string; content: string; timestamp: number }>;
+  // ✅ FIX #7: Use actual ScratchpadEntry[] type instead of simplified shape
+  scratchpad?: ScratchpadEntry[];
   // Allow spread of WebSocket StreamState
   [key: string]: any;
 }
