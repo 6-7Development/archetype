@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { flushSync } from "react-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Send, Loader2, User, Key, AlertCircle, Square, ChevronDown, Copy, Check, ChevronRight, Menu } from "lucide-react";
+import { Send, Loader2, User, Key, AlertCircle, Square, ChevronDown, Copy, Check, ChevronRight, Menu, Zap, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -369,6 +369,27 @@ export function UniversalChat({
 
   return (
     <div className="flex h-full flex-col bg-background">
+      {/* Workspace Header with Status */}
+      <div className="border-b bg-muted/30 px-4 py-2 flex items-center justify-between text-xs">
+        <div className="flex items-center gap-2">
+          <span className="text-muted-foreground">
+            <strong>Workspace:</strong> {targetContext}
+            {projectId && ` • Project: ${projectId.slice(0, 8)}`}
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          {isGenerating && (
+            <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              <span>Processing...</span>
+            </div>
+          )}
+          <span className="text-muted-foreground">
+            Messages: <strong>{runState.messages.length}</strong>
+          </span>
+        </div>
+      </div>
+
       <ChatHeader
         currentRun={currentRun}
         stopRun={stopRun}
@@ -409,6 +430,14 @@ export function UniversalChat({
                   {runState.messages.map((message, index) => {
                     const isUser = message.role === 'user';
                     const isLast = index === runState.messages.length - 1;
+                    const [copied, setCopied] = useState(false);
+
+                    const copyMessage = () => {
+                      navigator.clipboard.writeText(message.content);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                      toast({ title: "Message copied!" });
+                    };
                     
                     return (
                       <div 
@@ -474,12 +503,28 @@ export function UniversalChat({
                             )}
                           </div>
 
-                          {/* Timestamp - Always visible */}
-                          {message.timestamp && (
-                            <div className={`text-xs mt-1 ${isUser ? 'text-right' : 'text-left'} text-muted-foreground`}>
-                              {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </div>
-                          )}
+                          {/* Timestamp + Actions */}
+                          <div className={`flex items-center gap-2 mt-1 ${isUser ? 'flex-row-reverse' : 'flex-row'} text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity`}>
+                            {message.timestamp && (
+                              <span>
+                                {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            )}
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-6 w-6"
+                              onClick={copyMessage}
+                              data-testid={`button-copy-message-${message.id}`}
+                              title="Copy message"
+                            >
+                              {copied ? (
+                                <Check className="w-3 h-3 text-green-600" />
+                              ) : (
+                                <Copy className="w-3 h-3" />
+                              )}
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -538,6 +583,35 @@ export function UniversalChat({
           />
         </ResizablePanel>
       </ResizablePanelGroup>
+
+      {/* Footer Status Bar */}
+      <div className="border-t bg-muted/20 px-4 py-2 flex items-center justify-between text-xs text-muted-foreground">
+        <div className="flex items-center gap-4">
+          {runState.error && (
+            <div className="flex items-center gap-1 text-destructive">
+              <AlertTriangle className="w-3 h-3" />
+              <span>Error occurred</span>
+            </div>
+          )}
+          {runState.messages.length > 0 && (
+            <span>
+              Last message: {runState.messages[runState.messages.length - 1].timestamp ? 
+                new Date(runState.messages[runState.messages.length - 1].timestamp!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                : 'N/A'
+              }
+            </span>
+          )}
+        </div>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={handleClearChat}
+          className="h-6 text-xs"
+          data-testid="button-clear-all-messages"
+        >
+          Clear all
+        </Button>
+      </div>
 
       <StatusBar
         currentRun={currentRun}
