@@ -29,6 +29,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { useAuth } from "@/hooks/useAuth";
 import { queryClient } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
+import { API_ENDPOINTS, buildApiUrl } from "@/lib/api-utils";
+import { ROUTES, NAVIGATION } from "@/config/constants";
 import type { User } from "@shared/schema";
 import { LomuFullLogo } from '@/components/lomu-logos-new';
 import { CreditBalanceWidget } from "@/components/credit-balance-widget";
@@ -37,74 +39,19 @@ interface AppLayoutProps {
   children: React.ReactNode;
 }
 
-const mainNavItems = [
-  {
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    path: "/dashboard",
-    testId: "nav-dashboard",
-  },
-  {
-    label: "Builder",
-    icon: Terminal,
-    path: "/builder",
-    testId: "nav-builder",
-  },
-  {
-    label: "Marketplace",
-    icon: ShoppingCart,
-    path: "/marketplace",
-    testId: "nav-marketplace",
-  },
-];
-
-const platformNavItems = [
-  {
-    label: "Analytics",
-    icon: Sparkles,
-    path: "/analytics",
-    testId: "nav-analytics",
-  },
-  {
-    label: "Publishing",
-    icon: Zap,
-    path: "/publishing",
-    testId: "nav-publishing",
-  },
-  {
-    label: "Deployments",
-    icon: Rocket,
-    path: "/deployments",
-    testId: "nav-deployments",
-  },
-  {
-    label: "Team",
-    icon: Users,
-    path: "/team",
-    testId: "nav-team",
-  },
-];
-
-const settingsNavItems = [
-  {
-    label: "API Keys",
-    icon: Key,
-    path: "/api-keys",
-    testId: "nav-api-keys",
-  },
-  {
-    label: "Support",
-    icon: Headphones,
-    path: "/support",
-    testId: "nav-support",
-  },
-  {
-    label: "Account",
-    icon: UserIcon,
-    path: "/account",
-    testId: "nav-account",
-  },
-];
+// Icon map for navigation
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  'nav-dashboard': LayoutDashboard,
+  'nav-builder': Terminal,
+  'nav-marketplace': ShoppingCart,
+  'nav-analytics': Sparkles,
+  'nav-publishing': Zap,
+  'nav-deployments': Rocket,
+  'nav-team': Users,
+  'nav-api-keys': Key,
+  'nav-support': Headphones,
+  'nav-account': UserIcon,
+};
 
 export function AppLayout({ children }: AppLayoutProps) {
   const [location, setLocation] = useLocation();
@@ -115,15 +62,15 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { user, isLoading, isAuthenticated } = useAuth();
 
   const handleLogin = () => {
-    setLocation('/auth');
+    setLocation(ROUTES.AUTH);
   };
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch(buildApiUrl(API_ENDPOINTS.LOGOUT), { method: 'POST' });
       // Invalidate all queries to clear cached auth state
       queryClient.clear();
-      setLocation('/');
+      setLocation(ROUTES.HOME);
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -176,9 +123,9 @@ export function AppLayout({ children }: AppLayoutProps) {
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {/* Main Navigation - Always Visible */}
           <div className="space-y-1">
-            {mainNavItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location === item.path || (item.path === "/builder" && location.startsWith("/builder"));
+            {NAVIGATION.main.map((item) => {
+              const Icon = iconMap[item.testId] || LayoutDashboard;
+              const isActive = location === item.path || (item.path === ROUTES.BUILDER && location.startsWith(ROUTES.BUILDER));
               
               return (
                 <Button
@@ -214,8 +161,8 @@ export function AppLayout({ children }: AppLayoutProps) {
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-1 mt-1">
-              {platformNavItems.map((item) => {
-                const Icon = item.icon;
+              {NAVIGATION.platform.map((item) => {
+                const Icon = iconMap[item.testId] || Sparkles;
                 const isActive = location === item.path;
                 
                 return (
@@ -253,8 +200,8 @@ export function AppLayout({ children }: AppLayoutProps) {
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-1 mt-1">
-              {settingsNavItems.map((item) => {
-                const Icon = item.icon;
+              {NAVIGATION.settings.map((item) => {
+                const Icon = iconMap[item.testId] || UserIcon;
                 const isActive = location === item.path;
                 
                 return (
@@ -298,9 +245,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                     variant="ghost"
                     className={cn(
                       "w-full justify-start gap-3 hover-elevate active-elevate-2 pl-6",
-                      location === "/admin" && "bg-primary/10 text-primary"
+                      location === ROUTES.ADMIN && "bg-primary/10 text-primary"
                     )}
-                    onClick={() => handleNavigation("/admin")}
+                    onClick={() => handleNavigation(ROUTES.ADMIN)}
                     data-testid="nav-admin"
                   >
                     <Shield className="w-4 h-4" />
@@ -312,9 +259,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                     variant="ghost"
                     className={cn(
                       "w-full justify-start gap-3 hover-elevate active-elevate-2 pl-6",
-                      location === "/platform-healing" && "bg-primary/10 text-primary"
+                      location === ROUTES.PLATFORM_HEALING && "bg-primary/10 text-primary"
                     )}
-                    onClick={() => handleNavigation("/platform-healing")}
+                    onClick={() => handleNavigation(ROUTES.PLATFORM_HEALING)}
                     data-testid="nav-platform-healing"
                   >
                     <Wrench className="w-4 h-4" />

@@ -18,6 +18,32 @@ export const ROUTES = {
   AUTH: '/auth',
   ERROR_403: '/error/403',
   ERROR_500: '/error/500',
+  ANALYTICS: '/analytics',
+  PUBLISHING: '/publishing',
+  DEPLOYMENTS: '/deployments',
+  API_KEYS: '/api-keys',
+  MARKETPLACE: '/marketplace',
+  BUILDER: '/builder',
+} as const;
+
+// Navigation items for AppLayout
+export const NAVIGATION = {
+  main: [
+    { label: 'Dashboard', path: ROUTES.DASHBOARD, testId: 'nav-dashboard' },
+    { label: 'Builder', path: ROUTES.BUILDER, testId: 'nav-builder' },
+    { label: 'Marketplace', path: ROUTES.MARKETPLACE, testId: 'nav-marketplace' },
+  ],
+  platform: [
+    { label: 'Analytics', path: ROUTES.ANALYTICS, testId: 'nav-analytics' },
+    { label: 'Publishing', path: ROUTES.PUBLISHING, testId: 'nav-publishing' },
+    { label: 'Deployments', path: ROUTES.DEPLOYMENTS, testId: 'nav-deployments' },
+    { label: 'Team', path: ROUTES.TEAM, testId: 'nav-team' },
+  ],
+  settings: [
+    { label: 'API Keys', path: ROUTES.API_KEYS, testId: 'nav-api-keys' },
+    { label: 'Support', path: ROUTES.SUPPORT, testId: 'nav-support' },
+    { label: 'Account', path: ROUTES.SETTINGS, testId: 'nav-account' },
+  ],
 } as const;
 
 export const API_ROUTES = {

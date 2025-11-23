@@ -30,6 +30,7 @@ export const API_ENDPOINTS = {
   AUTH_LOGOUT: APP_CONFIG.api.endpoints.auth.logout,
   AUTH_REGISTER: APP_CONFIG.api.endpoints.auth.register,
   AUTH_ME: '/api/auth/me',
+  LOGOUT: '/api/auth/logout',
 
   // Deployments
   DEPLOYMENTS: '/api/deployments',
