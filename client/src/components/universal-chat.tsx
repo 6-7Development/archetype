@@ -296,7 +296,7 @@ export function UniversalChat({
 
   // Clear messages when context changes
   const handleClearChat = () => {
-    dispatchRunState({ type: 'messages.clear' });
+    clearRunState();
     try {
       const storageKey = `lomu-chat-messages:${targetContext || 'platform'}:${projectId || 'general'}`;
       localStorage.removeItem(storageKey);
