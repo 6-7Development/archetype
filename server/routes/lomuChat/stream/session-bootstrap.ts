@@ -219,14 +219,25 @@ export async function bootstrapStreamSession(
   // ============================================================================
   if (attachments && attachments.length > 0) {
     console.log('[SESSION-BOOTSTRAP] Saving', attachments.length, 'attachments');
-    const attachmentValues = attachments.map((att) => ({
-      messageId: userMsg.id,
-      fileName: att.fileName,
-      fileType: att.fileType,
-      content: att.content,
-      mimeType: att.mimeType,
-      size: att.size,
-    }));
+    const attachmentValues = attachments.map((att: any) => {
+      // Handle both URL-only attachments (from pasted images) and full attachments
+      const fileName = att.fileName || (att.url ? att.url.split('/').pop() : 'attachment');
+      const fileType = att.fileType || 'image/png';
+      const content = att.content || att.url || '';
+      const mimeType = att.mimeType || 'image/png';
+      const size = att.size || 0;
+      
+      console.log('[SESSION-BOOTSTRAP] Attachment:', { fileName, fileType, size });
+      
+      return {
+        messageId: userMsg.id,
+        fileName,
+        fileType,
+        content,
+        mimeType,
+        size,
+      };
+    });
 
     await db.insert(lomuAttachments).values(attachmentValues);
     console.log('[SESSION-BOOTSTRAP] Attachments saved successfully');
