@@ -167,13 +167,13 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  /* Lomu Hive/Swarm Brand Colors - Light Mode */
-  --honey: 40 97% 50%;             /* Primary honey #F7B500 */
-  --nectar: 48 100% 65%;           /* Accent nectar #FFD34D */
-  --mint: 171 100% 42%;            /* Success mint #00D4B3 */
-  --charcoal: 216 9% 7%;           /* Deep charcoal #101113 */
-  --graphite: 216 11% 12%;         /* Professional text #1B1D21 */
-  --cream: 47 100% 95%;            /* Soft cream #FFF8E6 */
+  /* Lomu Hive/Swarm Brand Colors - Light Mode - VIBRANT */
+  --honey: 40 100% 52%;            /* Vibrant honey #FDAD22 */
+  --nectar: 45 100% 58%;           /* Vibrant nectar #FFB800 */
+  --mint: 168 100% 40%;            /* Saturated mint #00D9A3 */
+  --charcoal: 220 25% 8%;          /* Deep charcoal with more contrast */
+  --graphite: 220 20% 12%;         /* Professional text */
+  --cream: 45 100% 96%;            /* Warm cream #FFF9F0 */
 
   --background: 48 40% 98%;        /* Very light cream */
 
@@ -284,71 +284,71 @@
 }
 
 .dark {
-  --button-outline: rgba(255,255,255, .10);
-  --badge-outline: rgba(255,255,255, .05);
+  --button-outline: rgba(255,255,255, .15);
+  --badge-outline: rgba(255,255,255, .08);
 
-  --opaque-button-border-intensity: 9;  /* In terms of percentages */
+  --opaque-button-border-intensity: 12;  /* In terms of percentages */
 
   /* Backgrounds applied on top of other backgrounds when hovered/active */
-  --elevate-1: rgba(255,255,255, .04);
-  --elevate-2: rgba(255,255,255, .09);
+  --elevate-1: rgba(253, 173, 34, 0.08);  /* Honey glow */
+  --elevate-2: rgba(253, 173, 34, 0.15);  /* Honey glow stronger */
 
-  /* Lomu Hive/Swarm Brand Colors - Dark Mode */
-  --honey: 40 95% 48%;             /* Deeper honey for dark mode */
-  --nectar: 48 98% 62%;            /* Deeper nectar */
-  --mint: 171 95% 40%;             /* Deeper mint */
+  /* Lomu Hive/Swarm Brand Colors - Dark Mode - VIBRANT */
+  --honey: 40 100% 54%;            /* Vibrant honey in dark mode #FFAF2E */
+  --nectar: 45 100% 62%;           /* Vibrant nectar in dark mode #FFC52E */
+  --mint: 168 100% 45%;            /* Bright mint in dark mode #00E5B8 */
 
-  --background: 220 20% 12%;       /* Deep slate */
+  --background: 220 28% 8%;        /* Darker slate for better contrast */
 
-  --foreground: 220 8% 98%;        /* Light text */
+  --foreground: 220 10% 96%;       /* Bright light text */
 
-  --border: 220 15% 28%;
+  --border: 220 20% 22%;           /* More visible borders */
 
-  --card: 220 15% 18%;
+  --card: 220 22% 14%;             /* Elevated cards */
 
-  --card-foreground: 220 8% 98%;
+  --card-foreground: 220 10% 96%;
 
-  --card-border: 220 15% 25%;
+  --card-border: 220 25% 28%;      /* More prominent borders */
 
-  --sidebar: 220 18% 16%;
+  --sidebar: 220 24% 12%;          /* Darker sidebar */
 
-  --sidebar-foreground: 220 8% 98%;
+  --sidebar-foreground: 220 10% 96%;
 
-  --sidebar-border: 220 15% 28%;
+  --sidebar-border: 220 20% 24%;
 
-  --sidebar-primary: 40 95% 48%;   /* Deeper honey */
+  --sidebar-primary: 40 100% 54%;  /* Vibrant honey */
 
-  --sidebar-primary-foreground: 220 20% 12%;
+  --sidebar-primary-foreground: 220 20% 8%;
 
-  --sidebar-accent: 220 15% 22%;
+  --sidebar-accent: 220 20% 20%;   /* More contrast */
 
-  --sidebar-accent-foreground: 220 8% 98%;
+  --sidebar-accent-foreground: 220 10% 96%;
 
-  --sidebar-ring: 40 95% 48%;
+  --sidebar-ring: 40 100% 54%;
 
-  --popover: 220 18% 16%;
+  --popover: 220 24% 14%;
 
-  --popover-foreground: 220 8% 98%;
+  --popover-foreground: 220 10% 96%;
 
-  --popover-border: 220 15% 28%;
+  --popover-border: 220 20% 28%;
 
-  --primary: 40 95% 48%;           /* Deeper honey */
+  --primary: 40 100% 54%;          /* Vibrant honey */
 
-  --primary-foreground: 220 20% 12%; /* Dark text on honey */
+  --primary-foreground: 220 20% 8%; /* Dark text on honey */
 
-  --secondary: 171 95% 40%;        /* Deeper mint */
+  --secondary: 168 100% 45%;       /* Bright mint */
 
   --secondary-foreground: 0 0% 100%;
 
-  --muted: 220 12% 20%;
+  --muted: 220 15% 22%;            /* Better contrast */
 
-  --muted-foreground: 220 12% 55%;
+  --muted-foreground: 220 12% 65%;
 
-  --accent: 220 16% 20%;
+  --accent: 220 20% 24%;           /* More visible */
 
-  --accent-foreground: 220 8% 98%;
+  --accent-foreground: 220 10% 96%;
 
-  --destructive: 0 80% 62%;
+  --destructive: 0 85% 60%;
 
   --destructive-foreground: 0 0% 100%;
 
@@ -362,12 +362,12 @@
 
   --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.3);
   --shadow-xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.4);
-  --shadow-sm: 0px 1px 3px 0px hsl(0 0% 0% / 0.5), 0px 1px 2px -1px hsl(0 0% 0% / 0.5);
-  --shadow: 0px 1px 3px 0px hsl(0 0% 0% / 0.5), 0px 1px 2px -1px hsl(0 0% 0% / 0.5);
-  --shadow-md: 0px 4px 6px -1px hsl(0 0% 0% / 0.5), 0px 2px 4px -2px hsl(0 0% 0% / 0.5);
-  --shadow-lg: 0px 10px 15px -3px hsl(0 0% 0% / 0.5), 0px 4px 6px -4px hsl(0 0% 0% / 0.5);
-  --shadow-xl: 0px 20px 25px -5px hsl(0 0% 0% / 0.5), 0px 8px 10px -6px hsl(0 0% 0% / 0.5);
-  --shadow-2xl: 0px 25px 50px -12px hsl(0 0% 0% / 0.6);
+  --shadow-sm: 0px 1px 3px 0px hsl(0 0% 0% / 0.5), 0px 0px 8px hsl(40 100% 54% / 0.1);
+  --shadow: 0px 1px 3px 0px hsl(0 0% 0% / 0.5), 0px 0px 12px hsl(40 100% 54% / 0.15);
+  --shadow-md: 0px 4px 6px -1px hsl(0 0% 0% / 0.5), 0px 0px 20px hsl(40 100% 54% / 0.2);
+  --shadow-lg: 0px 10px 15px -3px hsl(0 0% 0% / 0.5), 0px 0px 30px hsl(40 100% 54% / 0.25);
+  --shadow-xl: 0px 20px 25px -5px hsl(0 0% 0% / 0.5), 0px 0px 40px hsl(40 100% 54% / 0.3);
+  --shadow-2xl: 0px 25px 50px -12px hsl(0 0% 0% / 0.6), 0px 0px 50px hsl(40 100% 54% / 0.35);
 
   /* Automatically computed borders - intensity can be controlled by the user by the --opaque-button-border-intensity setting */
 
@@ -407,7 +407,40 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(220 22% 10%) 100%);
   }
+
+  /* Vibrant button styling for primary actions */
+  button {
+    @apply transition-all duration-200;
+  }
+}
+
+/* Glowing effects for primary actions */
+@keyframes glow-honey {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(253, 173, 34, 0.3), 0 0 40px rgba(253, 173, 34, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(253, 173, 34, 0.5), 0 0 60px rgba(253, 173, 34, 0.25);
+  }
+}
+
+@keyframes glow-mint {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0, 229, 184, 0.3), 0 0 40px rgba(0, 229, 184, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(0, 229, 184, 0.5), 0 0 60px rgba(0, 229, 184, 0.25);
+  }
+}
+
+.button-glow-honey {
+  animation: glow-honey 3s ease-in-out infinite;
+}
+
+.button-glow-mint {
+  animation: glow-mint 3s ease-in-out infinite;
 }
 
 /**

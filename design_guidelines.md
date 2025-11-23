@@ -2,195 +2,184 @@
 
 ## Design Approach
 
-**Reference Strategy**: Modern SaaS aesthetic with swarm/hive intelligence theme. Professional credibility with collaborative energy through honey-inspired warmth and mint freshness.
+**Reference Strategy**: Modern developer tools aesthetic inspired by VS Code, Cursor, and Linear. Bold, high-contrast interface with vibrant honey-gold and mint-teal accents against deep charcoal. Professional power with collaborative hive intelligence energy.
 
-**Core Principle**: Professional-first with swarm intelligence—enterprise trust powered by collaborative AI agents.
+**Core Principle**: Developer-first precision with swarm intelligence—enterprise trust through bold, confident design.
 
 ---
 
 ## Typography System
 
 **Fonts**: 
-- Primary: Inter (400, 500, 600, 700) for UI/marketing copy
+- Primary: Inter (500, 600, 700) for UI/marketing
 - Code: JetBrains Mono for technical examples
+- Display: Inter (800) for impactful headlines
 
 **Hierarchy**:
-- Hero Headline: text-6xl font-bold leading-tight (72px)
-- Section Headers: text-4xl font-bold (48px)
-- Subheadings: text-2xl font-semibold (30px)
-- Body Large: text-xl font-normal (20px) - feature descriptions
-- Body: text-base (16px) - standard content
-- Small: text-sm (14px) - metadata, captions
+- Hero Headline: text-7xl font-extrabold leading-none tracking-tight (96px)
+- Section Headers: text-5xl font-bold tracking-tight (48px)
+- Feature Titles: text-3xl font-bold (36px)
+- Body Large: text-xl font-medium (20px)
+- Body: text-base font-normal (16px)
+- Code/Technical: text-sm font-mono (14px)
 
 ---
 
 ## Layout System
 
-**Spacing Primitives**: Tailwind units of 4, 6, 8, 12, 16, 20, 24
-- Component internal: p-6, gap-4
-- Section padding: py-20 desktop, py-12 mobile
-- Between major sections: space-y-24
+**Spacing Primitives**: Tailwind units of 4, 6, 8, 12, 16, 20, 24, 32
+- Cards: p-8, gap-6
+- Section padding: py-24 desktop, py-16 mobile
+- Major section gaps: space-y-32
 
 **Container Strategy**:
-- Full-width hero: w-full with max-w-7xl inner
-- Content sections: max-w-6xl
-- Text-heavy areas: max-w-4xl
+- Full-width: w-full with max-w-7xl inner
+- Content: max-w-6xl
+- Text-focused: max-w-4xl
 
-**Responsive Grid**:
-- Features: grid-cols-1 md:grid-cols-2 lg:grid-cols-3
-- Testimonials: grid-cols-1 lg:grid-cols-2
-- Stats: grid-cols-2 lg:grid-cols-4
-- Mobile: Always single column stacks
+**Grid System**:
+- Features: grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8
+- Benefits: lg:grid-cols-2 gap-12
+- Stats: grid-cols-2 lg:grid-cols-4 gap-8
 
 ---
 
-## Page Structure (7 Core Sections)
+## Page Structure (8 Sections)
 
-### 1. Hero Section (80vh)
-**Layout**: Split layout with commanding headline + hero image
-- Left: Headline, tagline, dual-CTA (primary + secondary), trust indicator ("Trusted by 500+ dev teams")
-- Right: Hero image showing platform UI in action
-- Background: Subtle animated gradient (lemon to mint, 12s duration)
-- Floating lemon slice decorations (15% opacity) in corners
+### 1. Hero Section (90vh, Full-Width)
+**Layout**: Centered with powerful imagery
+- Headline (max-w-5xl): Bold statement about AI coding power
+- Tagline: Single line emphasizing speed/intelligence
+- Dual CTAs: Primary "Start Building" + Secondary "Watch Demo"
+- Trust bar below CTAs: "Trusted by 10,000+ developers at [company logos]"
+- Background: Large hero image showing Lomu IDE with glowing mint accent highlights, code completions visible, AI chat panel active
+- Treatment: Gradient overlay (charcoal to transparent) for text readability
+- Accent: Subtle hexagonal grid pattern overlay (honey-gold, 5% opacity)
 
-### 2. Social Proof Bar
-**Layout**: Single row, centered
-- Company logos (6-8) in grayscale, hover to brand color
-- Testimonial highlight: "Lomu cut our debugging time by 60%" - CTO quote
+### 2. Stats Bar (Dark Charcoal Background)
+**Layout**: 4-column grid, centered
+- Large numbers (text-5xl font-bold honey-gold) with labels
+- Examples: "10K+ Developers", "99.9% Uptime", "60% Faster", "24/7 AI"
+- Glowing separator lines between stats (mint-teal, 1px)
 
-### 3. Features Showcase (3-column grid)
-**Layout**: Card-based, icon + title + description
-- Each card: rounded-xl, bg-white, subtle shadow, hover lift effect
-- Icons: Lucide React, tinted with lemon/mint gradient
-- 6-9 feature cards total
-- Examples: "AI Pair Programming", "Instant Bug Detection", "Smart Code Completion"
+### 3. Features Grid (3-Column)
+**Layout**: Elevated cards with glow effects
+- 6 feature cards total
+- Card styling: Deep charcoal background, honey-gold border (2px), rounded-2xl, p-8
+- Hover: Lift (translateY -8px) + mint-teal glow shadow
+- Each card: Icon (gradient honey-to-mint), bold title, description
+- Icons: Lucide React, 48px size
+- Features: AI Pair Programming, Real-time Bug Detection, Smart Completions, Context-Aware Chat, Team Sync, Security Scanning
 
-### 4. Platform Preview (Full-width)
-**Layout**: Large centered image/video with context
-- Heading: "Your AI Coding Companion in Action"
-- Platform screenshot/demo video
-- Surrounding UI: Floating annotation cards pointing to key features
-- Background: Cream base with subtle lemon slice watermarks
+### 4. Platform Showcase (Full-Width, Light Background)
+**Layout**: Large IDE screenshot with floating feature callouts
+- Heading: "Your AI Command Center"
+- Center: Large platform screenshot (rounded-3xl, shadow-2xl with mint glow)
+- Screenshot shows: Split editor view, active AI panel, syntax highlighting with honey accents
+- 4-6 floating annotation cards pointing to features (small cards with arrows)
+- Background: Light cream with subtle honeycomb SVG pattern (8% opacity)
 
-### 5. Benefits Grid (2-column alternating)
-**Layout**: Image-text alternating rows
-- 3 rows total, each with image + benefit explanation
-- Row 1: Image left, "Write Code Faster"
-- Row 2: Image right, "Debug with Confidence"  
-- Row 3: Image left, "Ship with Peace of Mind"
-- Images show real platform usage scenarios
+### 5. Benefits Section (2-Column Alternating)
+**Layout**: Image-text pairs, 3 rows
+- Row 1 (Image Right): "Write Code 3x Faster" - Screenshot of AI autocomplete
+- Row 2 (Image Left): "Debug with Confidence" - Error detection panel
+- Row 3 (Image Right): "Ship Production-Ready Code" - Testing dashboard
+- Images: Elevated cards with honey-gold glow borders
+- Text: Bold headline + 2-3 sentence description + metrics
 
-### 6. Testimonials (2-column grid)
-**Layout**: Quote cards with avatars
-- 4-6 testimonial cards
-- Each: Customer photo, quote, name, title, company
-- Card styling: White background, left border accent (lemon)
-- Background: Very light mint tint (5% opacity)
+### 6. Code Example Showcase (Dark Background)
+**Layout**: Side-by-side comparison or interactive demo
+- Heading: "See Lomu in Action"
+- Code editor mockup showing before/after with AI suggestions
+- Syntax highlighting: Honey-gold for functions, mint-teal for strings
+- Background: Deep charcoal with hexagonal pattern
 
-### 7. Final CTA Section
-**Layout**: Centered, generous padding
-- Headline: "Ready to Make Your Code Sweet?"
-- Subtext: "Join thousands of developers who turned lemons into lemonade"
-- Dual CTAs: "Start Free Trial" + "Book a Demo"
-- Background: Gradient bloom (lemon to citrus bloom)
-- Lumo mascot illustration (subtle, corner placement)
+### 7. Testimonials (3-Column Grid, Light Background)
+**Layout**: Quote cards with developer focus
+- 6 testimonial cards
+- Card: White background, mint-teal left border accent (4px), rounded-xl, p-6
+- Content: Quote text, avatar (circular, honey-gold ring), name, title/company
+- GitHub star icons for developer credibility
+- Background: Soft mint tint (3% opacity)
+
+### 8. Final CTA (Full-Width, Dark Gradient)
+**Layout**: Centered, dramatic
+- Headline: "Ready to Code with AI Power?"
+- Subtext: "Join the hive. Ship faster. Build better."
+- Large primary CTA: "Start Free Trial" (honey-gold, glowing)
+- Secondary: "Talk to Sales" (outline)
+- Background: Radial gradient (charcoal to darker charcoal) with animated hexagonal grid (mint-teal glow)
+- Floating Lumo mascot (bottom right, waving)
 
 ---
 
 ## Component Library
 
 ### Buttons
-**Primary** (Sparkling Lemon bg):
-- px-8 py-4, rounded-full, text-slate-professional
-- Font: font-semibold text-lg
-- Shadow: warm glow on hover
-- If on image: backdrop-blur-md bg-sparkling-lemon/90
+**Primary** (Honey-Gold):
+- px-10 py-4, rounded-lg, font-semibold text-lg
+- bg-honey-gold text-charcoal
+- Hover: Subtle lift + brighter glow shadow (honey-gold/50)
+- On images: backdrop-blur-lg bg-honey-gold/95 (no hover states)
 
 **Secondary** (Outline):
-- border-2 border-fresh-mint, bg-transparent
-- Hover: bg-fresh-mint/10
+- border-2 border-mint-teal, text-mint-teal
+- Hover: bg-mint-teal/10 + glow
 
 ### Cards
-**Standard Card**:
-- rounded-xl, bg-white, p-8
-- border border-slate-100
-- Hover: shadow-lg, translateY(-2px)
+**Elevated Feature Card**:
+- rounded-2xl, p-8, bg-charcoal-dark
+- border-2 border-honey-gold/20
+- Hover: shadow-2xl shadow-mint-teal/20, translateY(-8px), border-honey-gold/40
+- Transition: all 300ms ease
 
-**Feature Card** (specific):
-- Icon container: w-14 h-14, rounded-lg, gradient bg
-- Title: text-xl font-semibold mb-3
-- Description: text-muted leading-relaxed
+**Standard Card**:
+- rounded-xl, bg-white, p-6
+- border border-gray-200
+- Hover: shadow-lg, slight lift
 
 ### Navigation
-**Header**: Sticky, backdrop-blur-xl, border-b
-- Logo left, nav center, CTA right
-- Links: font-medium, hover:text-lemon transition
+**Header**: Sticky, bg-charcoal/95 backdrop-blur-xl, border-b border-honey-gold/10
+- Logo left (with honey-gold accent), nav center, CTA right
+- Links: font-semibold, text-gray-300, hover:text-honey-gold transition
 
-**Footer**: Multi-column (4 columns desktop, stack mobile)
-- Product, Company, Resources, Legal columns
-- Social icons with mint hover states
-- Newsletter signup with lemon CTA button
+**Footer**: 4-column dark charcoal background
+- Columns: Product, Resources, Company, Community
+- Social icons with mint-teal hover glow
+- Bottom bar: Newsletter signup with honey-gold CTA
 
 ---
 
-## Images
+## Images Required
 
-**Required Images**:
-1. **Hero Image** (Right side): Platform dashboard screenshot showing AI suggestions panel, code editor, Lumo avatar - bright, clean UI with lemon accent colors visible
-2. **Platform Preview**: Full IDE view with multiple panels, active AI chat, syntax highlighting
-3. **Benefit Images** (3 total): 
-   - Developer at desk with laptop showing Lomu
-   - Close-up of AI debugging in action
-   - Team celebrating shipping code
-4. **Testimonial Avatars**: 4-6 professional headshots (developers/CTOs)
-5. **Company Logos**: 6-8 recognizable tech companies (grayscale treatment)
+1. **Hero Background**: Full IDE screenshot with active AI features, glowing mint highlights, multiple code panels visible
+2. **Platform Showcase**: Detailed IDE view with split panels, AI chat, code completions, debugging panel
+3. **Benefit Screenshots** (3): Autocomplete in action, bug detection panel, deployment dashboard
+4. **Testimonial Avatars**: 6 developer headshots
+5. **Company Logos**: 8-10 tech company logos (grayscale with honey-gold on hover)
 
-**Image Treatment**:
-- All screenshots: Subtle shadow, slight rotation (2deg) for dynamism
-- Photos: Warm color grade matching lemon palette
-- Rounded corners: rounded-2xl for images
+**Treatment**: All screenshots with rounded-3xl, shadow-2xl, subtle honey-gold or mint-teal glow borders
 
 ---
 
 ## Visual Enhancements
 
-**Lemon Motifs** (Strategic placement):
-- Hero corners: Floating lemon slice SVGs (opacity 15%)
-- Section dividers: Subtle seed pattern texture (opacity 8%)
-- Loading states: Lemonade jar animation
-- Empty states: Lumo mascot illustrations
+**Hexagonal Motifs**: Honeycomb patterns in backgrounds (subtle, 5-8% opacity), section dividers with hex grid lines
 
-**Animations** (Minimal, purposeful):
-- Hero gradient: 12s slow shift
-- Cards: Hover lift (transform translateY -4px, 200ms)
-- Lumo breathing: Subtle scale pulse on load completion
-- NO scroll-triggered animations (keep it fast)
+**Animations**:
+- Cards: Hover lift + glow (300ms ease-out)
+- CTA buttons: Pulse glow on primary (subtle, 2s loop)
+- Hero background: Slow hexagonal grid shimmer (20s)
+- Stats: Count-up animation on scroll into view
+- NO excessive scroll animations
 
----
-
-## Dark Mode Adjustments
-
-**Background System**:
-- Base: hsl(220 20% 12%)
-- Surface cards: hsl(220 18% 16%)
-- Borders: hsl(220 15% 25%)
-
-**Color Adaptations**:
-- Sparkling Lemon: 50 90% 52% (muted but vibrant)
-- Fresh Mint: 145 52% 38%
-- Text: Cream base for primary text
-
-**Maintain**: Lemon jar animation with adjusted colors, Lumo mascot unchanged
+**Glow Accents**: Interactive elements get mint-teal or honey-gold shadow glow on hover/focus
 
 ---
 
 ## Accessibility
 
-- Contrast ratios: Minimum 4.5:1 for all text
-- Focus indicators: 3px lemon ring on interactive elements
-- Reduced motion: Disable gradient animations, keep functional transitions
-- Semantic HTML: Proper heading hierarchy, landmark regions
-
----
-
-**Brand Voice in Copy**: Friendly encouragement ("Turn those bugs into features!"), clear value ("Ship 3x faster with AI"), professional credibility ("Enterprise-grade security")
+- Contrast: Minimum 7:1 for body text on charcoal
+- Focus rings: 3px honey-gold with offset
+- Reduced motion: Disable glows/animations
+- Semantic HTML throughout
