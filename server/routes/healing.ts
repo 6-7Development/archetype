@@ -39,7 +39,19 @@ async function retryWithBackoff<T>(
 
 // Owner-only middleware for Platform Healing
 const isOwner = async (req: any, res: any, next: any) => {
-  if (!req.user || !req.user.isOwner) {
+  // DEBUG: Log what we're receiving
+  console.log('[HEALING-AUTH] Checking ownership:', {
+    hasUser: !!req.user,
+    email: req.user?.email,
+    isOwner: req.user?.isOwner,
+    userKeys: req.user ? Object.keys(req.user) : [],
+  });
+  
+  // Check ownership - handle both camelCase and snake_case property names
+  const isOwnerUser = req.user?.isOwner === true || req.user?.is_owner === true;
+  
+  if (!req.user || !isOwnerUser) {
+    console.error('[HEALING-AUTH] Access denied - user not owner');
     return res.status(403).json({ error: "Access denied. Platform Healing is owner-only." });
   }
   next();
