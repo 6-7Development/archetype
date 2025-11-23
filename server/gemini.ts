@@ -751,12 +751,21 @@ Your available functions are declared in the tools schema. Use them directly.`);
 
 Please restate your request and I'll use the correct tools this time.`;
                 
-                if (onError) {
-                  onError(new Error(hallucinatedError));
+                // ✅ Wrap callbacks in try-catch to prevent silent failures
+                try {
+                  if (onError) {
+                    onError(new Error(hallucinatedError));
+                  }
+                } catch (callbackError) {
+                  console.error('[GEMINI-CALLBACK] onError failed:', callbackError);
                 }
                 
-                if (onChunk) {
-                  onChunk(hallucinatedError);
+                try {
+                  if (onChunk) {
+                    onChunk(hallucinatedError);
+                  }
+                } catch (callbackError) {
+                  console.error('[GEMINI-CALLBACK] onChunk failed:', callbackError);
                 }
                 
                 fullText += hallucinatedError;
@@ -830,12 +839,21 @@ Please try:
 - Breaking the task into smaller pieces
 - Or let me know if you'd like me to try a different approach`;
             
-            if (onError) {
-              onError(new Error(userFriendlyError));
+            // ✅ Wrap callbacks in try-catch to prevent silent failures
+            try {
+              if (onError) {
+                onError(new Error(userFriendlyError));
+              }
+            } catch (callbackError) {
+              console.error('[GEMINI-CALLBACK] onError failed:', callbackError);
             }
             
-            if (onChunk) {
-              onChunk(userFriendlyError);
+            try {
+              if (onChunk) {
+                onChunk(userFriendlyError);
+              }
+            } catch (callbackError) {
+              console.error('[GEMINI-CALLBACK] onChunk failed:', callbackError);
             }
             fullText += userFriendlyError;
             
@@ -1070,6 +1088,7 @@ Please try:
             });
 
             // ✅ CRITICAL FIX: Emit tool_use chunk so orchestrator sees it and increments toolCallCount
+            // ✅ Wrap callback in try-catch to prevent silent failures
             if (onChunk) {
               try {
                 onChunk({
@@ -1080,7 +1099,7 @@ Please try:
                 });
                 console.log(`[GEMINI-TOOLS] ✅ Emitted tool_use chunk for: ${extractedFunctionCall.name}`);
               } catch (chunkError) {
-                console.error('❌ Error emitting tool_use chunk:', chunkError);
+                console.error('[GEMINI-CALLBACK] onChunk failed on tool_use:', chunkError);
               }
             }
 

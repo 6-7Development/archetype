@@ -20,6 +20,19 @@ interface WebSearchResult {
   answer?: string;
 }
 
+// ✅ Type definitions for Tavily API response
+interface TavilySearchResult {
+  title: string;
+  url: string;
+  content: string;
+  score: number;
+}
+
+interface TavilyResponse {
+  results: TavilySearchResult[];
+  answer?: string;
+}
+
 /**
  * Execute web search using Tavily API
  * Allows SySop to fetch real-time documentation, examples, and knowledge
@@ -41,11 +54,16 @@ export async function executeWebSearch(params: WebSearchParams): Promise<WebSear
       exclude_domains: params.excludeDomains,
       search_depth: 'advanced',
       include_answer: true,
-    });
+    }) as TavilyResponse;
+    
+    // ✅ Validate response structure before accessing properties
+    if (!response || !Array.isArray(response.results)) {
+      throw new Error('Tavily API returned invalid response structure');
+    }
     
     return {
       query: params.query,
-      results: response.results.map((r: any) => ({
+      results: response.results.map((r: TavilySearchResult) => ({
         title: r.title,
         url: r.url,
         content: r.content,
@@ -53,9 +71,10 @@ export async function executeWebSearch(params: WebSearchParams): Promise<WebSear
       })),
       answer: response.answer,
     };
-  } catch (error) {
+  } catch (error: Error | unknown) {
     console.error('Web search error:', error);
-    throw new Error(`Web search failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    throw new Error(`Web search failed: ${errorMsg}`);
   }
 }
 

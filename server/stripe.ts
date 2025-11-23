@@ -29,7 +29,21 @@ export function isStripeConfigured(): boolean {
 
 // Get price ID for a plan
 export function getPriceIdForPlan(plan: string): string | undefined {
-  return STRIPE_PRICE_IDS[plan as keyof typeof STRIPE_PRICE_IDS];
+  // ✅ Validate input and ensure price ID exists
+  if (!plan || typeof plan !== 'string') {
+    console.warn('[STRIPE] Invalid plan name:', plan);
+    return undefined;
+  }
+  
+  const priceId = STRIPE_PRICE_IDS[plan as keyof typeof STRIPE_PRICE_IDS];
+  
+  // ✅ Validate that price ID is configured
+  if (!priceId) {
+    console.warn(`[STRIPE] Price ID not configured for plan: ${plan}. Set STRIPE_PRICE_ID_${plan.toUpperCase()} environment variable.`);
+    return undefined;
+  }
+  
+  return priceId;
 }
 
 // Webhook signing secret (must be set for webhook signature verification)
@@ -37,10 +51,18 @@ export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
 // Map Stripe price IDs to plan names
 export function getPlanNameFromPriceId(priceId: string): string | null {
+  // ✅ Validate input
+  if (!priceId || typeof priceId !== 'string') {
+    console.warn('[STRIPE] Invalid price ID:', priceId);
+    return null;
+  }
+  
   for (const [plan, id] of Object.entries(STRIPE_PRICE_IDS)) {
     if (id === priceId) {
       return plan;
     }
   }
+  
+  console.warn(`[STRIPE] Unknown price ID: ${priceId}`);
   return null;
 }

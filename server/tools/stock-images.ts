@@ -113,9 +113,10 @@ export async function stockImageTool(params: {
       throw new Error(`Unsplash API error: ${response.statusText}`);
     }
     
-    const data = await response.json();
+    const data = await response.json() as { results?: Array<{ urls?: { regular?: string }; width?: number; height?: number }> };
     
-    if (!data.results || data.results.length === 0) {
+    // ✅ Validate API response structure
+    if (!data || !Array.isArray(data.results) || data.results.length === 0) {
       return {
         success: false,
         message: `No images found for "${description}"`,
@@ -134,7 +135,13 @@ export async function stockImageTool(params: {
     }
     
     const images = await Promise.all(
-      data.results.slice(0, limit).map(async (result: any, index: number) => {
+      data.results.slice(0, limit).map(async (result, index: number) => {
+        // ✅ Validate result structure before accessing properties
+        if (!result?.urls?.regular) {
+          console.warn('[STOCK-IMAGE] Skipping image with missing URL');
+          return null;
+        }
+        
         const imageUrl = result.urls.regular;
         const fileName = `${description.replace(/\s+/g, '_')}_${Date.now()}_${index}.jpg`;
         const filePath = path.join(stockImagesDir, fileName);
@@ -144,19 +151,19 @@ export async function stockImageTool(params: {
           return {
             url: imageUrl,
             savedPath: `attached_assets/stock_images/${fileName}`,
-            width: result.width,
-            height: result.height,
+            width: result.width || 0,
+            height: result.height || 0,
           };
         } catch (downloadError) {
           console.warn('[STOCK-IMAGE] Download failed for image:', downloadError);
           return {
             url: imageUrl,
-            width: result.width,
-            height: result.height,
+            width: result.width || 0,
+            height: result.height || 0,
           };
         }
       })
-    );
+    ).then(results => results.filter(img => img !== null));
     
     return {
       success: true,
