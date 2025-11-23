@@ -747,7 +747,8 @@ export async function handleStreamRequest(
 
     // Send completion events
     emitComplete(emitContext, undefined, totalCreditsUsed);
-    terminateStream(res, sendEvent, assistantMsg?.id || 'unknown', 'Stream completed successfully');
+    // ✅ FIX #2: Don't emit error on successful stream completion - only emit done event
+    terminateStream(res, sendEvent, assistantMsg?.id || 'unknown', undefined);
 
     console.log('[ORCHESTRATOR] ✅ Request completed successfully');
 

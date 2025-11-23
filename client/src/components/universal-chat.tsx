@@ -1260,6 +1260,12 @@ export function UniversalChat({
                   break;
 
                 case 'error':
+                  // ✅ FIX #3: Filter out informational "success" errors
+                  if (payload.message === 'Stream completed successfully') {
+                    console.log('[SSE] Stream completion marker received');
+                    break; // Skip showing error toast for completion marker
+                  }
+                  
                   console.error('[SSE] Error event:', payload);
                   toast({
                     variant: 'destructive',
