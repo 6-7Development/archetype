@@ -464,15 +464,15 @@ export function UniversalChat({
           >
             {/* Error Display */}
             {runState.error && (
-              <Alert variant="destructive" className="mb-2">
+              <Alert variant="destructive" className="mb-2" data-testid="error-alert">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{runState.error}</AlertDescription>
+                <AlertDescription className="text-sm">{runState.error}</AlertDescription>
               </Alert>
             )}
 
             {/* Messages Display */}
             {runState.messages.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
+              <div className="flex items-center justify-center h-full text-muted-foreground" data-testid="empty-state-chat">
                 <div className="text-center space-y-3">
                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-muted/50">
                     <Loader2 className="w-6 h-6 opacity-40" />

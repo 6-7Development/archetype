@@ -12,38 +12,36 @@ interface MarkdownMessageProps {
 }
 
 export function MarkdownMessage({ content, isUser }: MarkdownMessageProps) {
+  // User messages: plain text, no markdown
   if (isUser) {
-    // User messages: plain text, no markdown
     return <div className="whitespace-pre-wrap">{content}</div>;
   }
 
-  // AI messages: full markdown support with code highlighting
+  // AI messages: markdown with syntax highlighting
   return (
-    <div className="prose prose-sm dark:prose-invert max-w-none break-words">
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeRaw, rehypeHighlight, rehypeSanitize]}
-        components={{
-          code({ inline, className, children, ...props }) {
-            const match = /language-(\w+)/.exec(className || '');
-            const language = match ? match[1] : 'text';
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      rehypePlugins={[rehypeRaw, rehypeHighlight, rehypeSanitize]}
+      components={{
+        // Code blocks with syntax highlighting
+        code({ inline, className, children, ...props }) {
+          const match = /language-(\w+)/.exec(className || '');
+          const language = match ? match[1] : 'text';
 
-            if (inline) {
-              return (
-                <code
-                  className="bg-secondary/40 rounded px-1.5 py-0.5 font-mono text-xs"
-                  {...props}
-                >
-                  {children}
-                </code>
-              );
-            }
-
+          if (inline) {
             return (
-              <div className="bg-secondary/20 rounded-md overflow-hidden my-2 border border-secondary/50">
-                <div className="bg-secondary/30 text-xs text-muted-foreground px-3 py-1.5 font-mono">
-                  {language}
-                </div>
+              <code className="bg-secondary/40 rounded px-1.5 py-0.5 font-mono text-xs">
+                {children}
+              </code>
+            );
+          }
+
+          return (
+            <div className="bg-secondary/20 rounded-md overflow-hidden my-2 border border-secondary/50">
+              <div className="bg-secondary/30 text-xs text-muted-foreground px-3 py-1.5 font-mono">
+                {language}
+              </div>
+              <div className="overflow-x-auto">
                 <SyntaxHighlighter
                   language={language}
                   style={vscDarkPlus}
@@ -52,6 +50,7 @@ export function MarkdownMessage({ content, isUser }: MarkdownMessageProps) {
                     padding: '12px',
                     fontSize: '12px',
                     lineHeight: '1.5',
+                    backgroundColor: 'transparent',
                   }}
                   wrapLongLines
                   {...props}
@@ -59,44 +58,57 @@ export function MarkdownMessage({ content, isUser }: MarkdownMessageProps) {
                   {String(children).replace(/\n$/, '')}
                 </SyntaxHighlighter>
               </div>
-            );
-          },
-          p: ({ children }) => <p className="my-1.5">{children}</p>,
-          ul: ({ children }) => <ul className="list-disc list-inside my-1.5 space-y-0.5">{children}</ul>,
-          ol: ({ children }) => <ol className="list-decimal list-inside my-1.5 space-y-0.5">{children}</ol>,
-          li: ({ children }) => <li className="text-sm">{children}</li>,
-          blockquote: ({ children }) => (
-            <blockquote className="border-l-4 border-primary/30 pl-3 italic my-1.5 text-muted-foreground">
-              {children}
-            </blockquote>
-          ),
-          a: ({ href, children }) => (
-            <a
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              {children}
-            </a>
-          ),
-          table: ({ children }) => (
-            <div className="overflow-x-auto my-2">
-              <table className="border-collapse border border-secondary/50 text-sm">{children}</table>
             </div>
-          ),
-          th: ({ children }) => (
-            <th className="border border-secondary/50 bg-secondary/30 px-2 py-1 text-left">
+          );
+        },
+        // Paragraphs
+        p: ({ children }) => <p className="my-1.5 text-sm">{children}</p>,
+        // Lists
+        ul: ({ children }) => <ul className="list-disc list-inside my-1.5 space-y-0.5 text-sm">{children}</ul>,
+        ol: ({ children }) => <ol className="list-decimal list-inside my-1.5 space-y-0.5 text-sm">{children}</ol>,
+        li: ({ children }) => <li className="text-sm">{children}</li>,
+        // Blockquotes
+        blockquote: ({ children }) => (
+          <blockquote className="border-l-4 border-primary/30 pl-3 italic my-1.5 text-muted-foreground text-sm">
+            {children}
+          </blockquote>
+        ),
+        // Links
+        a: ({ href, children }) => (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline break-all"
+          >
+            {children}
+          </a>
+        ),
+        // Headings
+        h1: ({ children }) => <h1 className="text-lg font-bold my-2">{children}</h1>,
+        h2: ({ children }) => <h2 className="text-base font-bold my-1.5">{children}</h2>,
+        h3: ({ children }) => <h3 className="text-sm font-bold my-1">{children}</h3>,
+        // Tables
+        table: ({ children }) => (
+          <div className="overflow-x-auto my-2">
+            <table className="border-collapse border border-secondary/50 text-xs">
               {children}
-            </th>
-          ),
-          td: ({ children }) => (
-            <td className="border border-secondary/50 px-2 py-1">{children}</td>
-          ),
-        }}
-      >
-        {content}
-      </ReactMarkdown>
-    </div>
+            </table>
+          </div>
+        ),
+        th: ({ children }) => (
+          <th className="border border-secondary/50 bg-secondary/30 px-2 py-1 text-left">
+            {children}
+          </th>
+        ),
+        td: ({ children }) => (
+          <td className="border border-secondary/50 px-2 py-1">{children}</td>
+        ),
+        // Horizontal rule
+        hr: () => <hr className="my-2 border-secondary/30" />,
+      }}
+    >
+      {content}
+    </ReactMarkdown>
   );
 }
