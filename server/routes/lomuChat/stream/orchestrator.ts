@@ -298,8 +298,23 @@ export async function handleStreamRequest(
               if (chunk.type === 'content') {
                 const content = chunk.content || '';
                 if (content) {
-                  emitContentChunk(emitContext, content, chunkState);
-                  fullContent += content;
+                  // ✅ CRITICAL FIX: Detect thinking blocks in content (format: **Title**\n\nContent\n\n\n)
+                  if (content.match(/^\*\*[^*]+\*\*\n\n[\s\S]*?\n\n\n?$/)) {
+                    // This is a thinking block - extract and emit as thinking
+                    const titleMatch = content.match(/^\*\*([^*]+)\*\*/);
+                    const title = titleMatch ? titleMatch[1] : 'Thinking';
+                    const contentMatch = content.match(/^\*\*[^*]+\*\*\n\n([\s\S]*?)\n\n\n?$/);
+                    const thinkingContent = contentMatch ? contentMatch[1] : content;
+                    
+                    // Emit as thinking block instead of content
+                    const { emitThinking: emitThinkingFunc } = await import('./stream-emitter.ts');
+                    emitThinkingFunc(emitContext, title, thinkingContent, progressMessages);
+                    isThinking = true;
+                  } else {
+                    // Regular content - emit normally
+                    emitContentChunk(emitContext, content, chunkState);
+                    fullContent += content;
+                  }
                   isEmpty = false;
                   
                   // Add to content blocks for tool execution

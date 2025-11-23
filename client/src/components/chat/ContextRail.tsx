@@ -72,28 +72,6 @@ export function ContextRail({
             </AccordionItem>
           )}
 
-          {hasProgress && (
-            <AccordionItem value="progress" className="border-b">
-              <AccordionTrigger 
-                className="px-4 py-3 hover:bg-accent/50"
-                data-testid="accordion-progress"
-              >
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <Activity className="h-4 w-4 text-blue-500" />
-                  <span>Execution</span>
-                  <Badge variant="outline" className="ml-auto mr-2">
-                    {runState.metrics.currentIteration}/{runState.metrics.maxIterations}
-                  </Badge>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4">
-                <div className="space-y-3">
-                  <StatusStrip phase={runState.phase} />
-                  <RunProgressTable runState={runState} />
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          )}
 
           {hasArtifacts && (
             <AccordionItem value="artifacts" className="border-b">
