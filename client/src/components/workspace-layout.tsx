@@ -316,6 +316,17 @@ export function WorkspaceLayout({
                     </p>
                   </Card>
 
+                  <Card className="p-4 space-y-4">
+                    <h4 className="font-semibold text-sm">Healing Actions:</h4>
+                    <Button 
+                      className="w-full" 
+                      data-testid="button-trigger-healing"
+                      onClick={() => onTaskSelect?.('heal_platform')}
+                    >
+                      🔧 Trigger Platform Healing
+                    </Button>
+                  </Card>
+
                   <Card className="p-4">
                     <h4 className="font-semibold text-sm mb-2">Available Actions:</h4>
                     <ul className="text-sm space-y-2 text-muted-foreground">
