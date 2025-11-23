@@ -1,9 +1,9 @@
 import type { Express } from "express";
 import { WebSocket } from "ws";
 import { storage } from '../storage.ts';
-import { insertCommandSchema, taskLists, tasks } from "@shared/schema";
+import { insertCommandSchema, taskLists, tasks, platformIncidents } from "@shared/schema";
 import { db } from '../db.ts';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and, isNull } from 'drizzle-orm';
 import { anthropic, DEFAULT_MODEL, streamAnthropicResponse } from '../anthropic.ts';
 import { LOMU_TOOLS } from '../tools/index.ts';
 import { checkUsageLimits, trackAIUsage, decrementAICredits, getUserUsageStats, updateStorageUsage } from '../usage-tracking.ts';
@@ -128,6 +128,48 @@ function broadcastTaskEvent(wss: any, userId: string, eventType: 'task_plan' | '
 
 export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
   const { wss } = dependencies;
+
+  // GET /api/platform-health - Health status for owner UI (no auth required)
+  app.get("/api/platform-health", async (req: any, res) => {
+    try {
+      // Get incident count from database
+      const incidents = await db
+        .select()
+        .from(platformIncidents)
+        .where(and(
+          eq(platformIncidents.status, 'open'),
+          isNull(platformIncidents.resolvedAt)
+        ));
+
+      // Determine health status
+      const incidentCount = incidents.length;
+      let status: 'healthy' | 'degraded' | 'critical' = 'healthy';
+      
+      if (incidentCount > 5) {
+        status = 'critical';
+      } else if (incidentCount > 0) {
+        status = 'degraded';
+      }
+
+      // Get active LomuAI jobs (placeholder - would come from job manager)
+      const activeJobs = 0;
+
+      res.json({
+        status,
+        incidentCount,
+        activeJobs,
+        lastChecked: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error('Error fetching platform health:', error);
+      res.status(500).json({ 
+        status: 'critical',
+        incidentCount: -1,
+        activeJobs: 0,
+        lastChecked: new Date().toISOString(),
+      });
+    }
+  });
 
   // Get commands for user
   app.get("/api/commands", isAuthenticated, async (req: any, res) => {

@@ -45,6 +45,7 @@ import { ChatMessages } from "./chat/ChatMessages";
 import { ChatInput } from "./chat/ChatInput";
 import { StatusBar } from "./chat/StatusBar";
 import { ChatDialogs } from "./chat/ChatDialogs";
+import { PlatformHealthIndicator } from "@/components/platform-health-indicator";
 import type {
   RunPhase,
   RunState,
@@ -370,14 +371,19 @@ export function UniversalChat({
   return (
     <div className="flex h-full flex-col bg-background">
       {/* Workspace Header with Status */}
-      <div className="border-b bg-muted/30 px-4 py-2 flex items-center justify-between text-xs">
-        <div className="flex items-center gap-2">
-          <span className="text-muted-foreground">
+      <div className="border-b bg-muted/30 px-4 py-2 flex items-center justify-between text-xs gap-4">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <span className="text-muted-foreground truncate">
             <strong>Workspace:</strong> {targetContext}
             {projectId && ` • Project: ${projectId.slice(0, 8)}`}
           </span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap justify-end">
+          {/* Platform Health Indicator - Only show for owners/platform context */}
+          {(targetContext === 'platform' || targetContext === 'architect') && (
+            <PlatformHealthIndicator />
+          )}
+          
           {isGenerating && (
             <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
               <Loader2 className="w-3 h-3 animate-spin" />
