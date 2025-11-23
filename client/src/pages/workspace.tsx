@@ -1,11 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useLocation, useParams } from "wouter";
+import { useLocation, useParams, Link } from "wouter";
 import { WorkspaceLayout } from "@/components/workspace-layout";
 import { MonacoEditor } from "@/components/monaco-editor";
+import { SplitEditor } from "@/components/split-editor";
+import { useSplitEditor } from "@/hooks/useSplitEditor";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UniversalChat } from "@/components/universal-chat";
 import { MobileWorkspace } from "@/components/mobile-workspace";
+import { LivePreview } from "@/components/live-preview";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,6 +16,25 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useVersion } from "@/providers/version-provider";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import {
+  Play,
+  Square,
+  Plus,
+  Folder,
+  FileCode,
+  Terminal as TerminalIcon,
+  Loader2,
+  PanelLeftClose,
+  PanelLeft,
+  PanelRightClose,
+  PanelRight,
+  Home,
+  LogOut,
+  User,
+  LayoutDashboard,
+  ArrowLeft,
+  Menu,
+} from "lucide-react";
 import type { File } from "@shared/schema";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +44,11 @@ export default function Workspace() {
   const [activeFile, setActiveFile] = useState<File | null>(null);
   const [editorContent, setEditorContent] = useState("");
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const [consoleOutput, setConsoleOutput] = useState<string[]>([]);
+  const [showFileTree, setShowFileTree] = useState(true);
+  const [showPreview, setShowPreview] = useState(true);
+  const [showMobileFileExplorer, setShowMobileFileExplorer] = useState(false);
   const consoleRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user, isLoading: isAuthLoading } = useAuth();
