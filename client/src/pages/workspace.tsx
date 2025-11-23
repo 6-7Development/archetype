@@ -1,66 +1,115 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { useLocation, useParams } from "wouter";
+import { WorkspaceLayout } from "@/components/workspace-layout";
 import { MonacoEditor } from "@/components/monaco-editor";
-import { SplitEditor } from "@/components/split-editor";
-import { useSplitEditor } from "@/hooks/useSplitEditor";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UniversalChat } from "@/components/universal-chat";
 import { MobileWorkspace } from "@/components/mobile-workspace";
-import { LivePreview } from "@/components/live-preview";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { 
-  Play, 
-  Square,
-  Plus,
-  Folder,
-  FileCode,
-  Terminal as TerminalIcon,
-  Loader2,
-  PanelLeftClose,
-  PanelLeft,
-  PanelRightClose,
-  PanelRight,
-  Home,
-  LogOut,
-  User,
-  LayoutDashboard,
-  ArrowLeft,
-  Menu,
-  Database,
-  GitBranch,
-  Sparkles,
-  Eye
-} from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useVersion } from "@/providers/version-provider";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { File } from "@shared/schema";
 import { cn } from "@/lib/utils";
-import { MigrationsPanel } from "@/components/migrations-panel";
-import { GitPanel } from "@/components/git-panel";
 
 export default function Workspace() {
+  const { projectId } = useParams<{ projectId?: string }>();
+  const [location, setLocation] = useLocation();
   const [activeFile, setActiveFile] = useState<File | null>(null);
   const [editorContent, setEditorContent] = useState("");
-  const [isRunning, setIsRunning] = useState(false);
-  const [consoleOutput, setConsoleOutput] = useState<string[]>([]);
-  const [showFileTree, setShowFileTree] = useState(true);
-  const [showPreview, setShowPreview] = useState(true);
-  const [showMobileFileExplorer, setShowMobileFileExplorer] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const consoleRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user, isLoading: isAuthLoading } = useAuth();
   const { isMobile, version } = useVersion();
-  
-  console.log('[WORKSPACE] Version detection:', { version, isMobile });
+
+  // Fetch project data if projectId provided
+  const { data: project, isLoading: projectLoading } = useQuery({
+    queryKey: projectId ? [`/api/projects/${projectId}`] : [],
+    enabled: !!projectId,
+  });
+
+  // Fetch tasks for this project
+  const { data: tasksData } = useQuery({
+    queryKey: projectId ? [`/api/projects/${projectId}/tasks`] : [],
+    enabled: !!projectId,
+  });
+
+  // RBAC: Determine user role and access
+  const isProjectOwner = projectId && project?.ownerId === user?.id;
+  const isAdmin = user?.role === 'admin';
+  const isSuperAdmin = user?.isOwner;
+  const isPlatformHealing = projectId && project?.type === 'platform' && isSuperAdmin;
+
+  let userRole: 'owner' | 'member' | 'admin' | 'super_admin' = 'member';
+  if (isSuperAdmin) userRole = 'super_admin';
+  else if (isAdmin) userRole = 'admin';
+  else if (isProjectOwner) userRole = 'owner';
+
+  const hasAccess = isProjectOwner || isAdmin || isSuperAdmin;
+
+  // If projectId provided and has access, use new Replit-style layout
+  if (projectId && project) {
+    if (!hasAccess) {
+      return (
+        <div className="h-screen flex items-center justify-center">
+          <div className="text-center space-y-2">
+            <p className="font-semibold text-red-600">Access Denied</p>
+            <p className="text-sm text-muted-foreground">You don't have permission to access this project</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (projectLoading) {
+      return (
+        <div className="h-screen flex items-center justify-center">
+          <Skeleton className="w-full h-full" />
+        </div>
+      );
+    }
+
+    // Use Replit-style layout for projects
+    return (
+      <WorkspaceLayout
+        projectId={projectId}
+        projectName={project.name}
+        mode={isPlatformHealing ? 'platform-healing' : 'project'}
+        isAdmin={isSuperAdmin}
+        userRole={userRole}
+        tasks={(tasksData as any)?.items || []}
+        activityLog={(tasksData as any)?.activity || []}
+        onTaskSelect={(taskId) => setSelectedTaskId(taskId)}
+        onEditorChange={(content) => setEditorContent(content)}
+      >
+        {activeFile ? (
+          <MonacoEditor
+            value={editorContent}
+            onChange={setEditorContent}
+            language={activeFile.language || 'javascript'}
+            theme="vs-dark"
+            options={{
+              minimap: { enabled: false },
+              fontSize: 13,
+              fontFamily: 'JetBrains Mono',
+            }}
+          />
+        ) : (
+          <div className="h-full flex items-center justify-center text-muted-foreground">
+            <div className="text-center">
+              <p className="text-sm">Select a file to start editing</p>
+            </div>
+          </div>
+        )}
+      </WorkspaceLayout>
+    );
+  }
+
+  // Fallback to original workspace for backward compatibility
 
   const { data: files = [] } = useQuery<File[]>({
     queryKey: ["/api/files"],
