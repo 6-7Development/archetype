@@ -29,7 +29,7 @@ export function ChatInput({
   isGenerating,
 }: ChatInputProps) {
   return (
-    <div className="border-t bg-background p-4" data-testid="chat-input-container">
+    <div className="border-t border-border/50 bg-background/50 backdrop-blur-sm px-4 py-3" data-testid="chat-input-container">
       {/* Image Preview Section */}
       {(pendingImages.length > 0 || uploadingImages.size > 0) && (
         <div className="mb-3 flex flex-wrap gap-2">
@@ -76,12 +76,12 @@ export function ChatInput({
             onKeyDown={onKeyDown}
             onPaste={onPaste}
             placeholder="Message LomuAI..."
-            className="min-h-[60px] max-h-[200px] resize-none text-base bg-background border-border focus-visible:ring-2 focus-visible:ring-primary/50 rounded-2xl px-4 py-3 pr-12 transition-all"
+            className="min-h-[44px] max-h-[150px] resize-none text-sm bg-background/80 border border-border/70 focus-visible:ring-1 focus-visible:ring-primary/60 focus-visible:border-primary/50 rounded-lg px-3 py-2.5 pr-10 transition-all"
             disabled={isGenerating}
             data-testid="input-chat-message"
-            rows={3}
+            rows={2}
           />
-          <div className="absolute bottom-2 right-2">
+          <div className="absolute bottom-2.5 right-2.5">
             <ChatInputToolbar
               onImageSelect={onImageSelect}
               disabled={isGenerating}
@@ -93,13 +93,13 @@ export function ChatInput({
           disabled={!input.trim() || isGenerating}
           size="icon"
           variant="default"
-          className="flex-shrink-0 h-12 w-12 rounded-full shadow-md hover:shadow-lg transition-all"
+          className="flex-shrink-0 h-10 w-10 rounded-lg hover:shadow-sm transition-all"
           data-testid="button-send-chat"
         >
           {isGenerating ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            <Send className="w-5 h-5" />
+            <Send className="w-4 h-4" />
           )}
         </Button>
       </div>
