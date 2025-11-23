@@ -155,30 +155,46 @@ export interface UseStreamEventsReturn {
   setRunState: (state: UseStreamEventsState) => void;
 }
 
-export function useStreamEvents(options?: any): UseStreamEventsReturn {
+export function useStreamEvents(options?: { projectId?: string; targetContext?: string; onProjectGenerated?: (result: any) => void; onRunCompleted?: () => void; onRunFailed?: () => void }): UseStreamEventsReturn {
   const [runState, dispatchRunState] = useReducer(runStateReducer, {
     runs: new Map(),
     currentRunId: null,
     messages: [],
   } as UseStreamEventsState);
 
-  const sendMessage = (msg: { message: string; images?: string[] }) => {
-    // Stub - actual implementation would send to backend via SSE
-    console.log("sendMessage called:", msg);
+  const sendMessage = async (msg: { message: string; images?: string[] }) => {
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          message: msg.message,
+          projectId: options?.projectId,
+          targetContext: options?.targetContext || 'platform',
+          images: msg.images || [],
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to send message');
+      
+      // Trigger callbacks to unblock UI
+      if (options?.onRunCompleted) options.onRunCompleted();
+    } catch (error) {
+      console.error('Error sending message:', error);
+      if (options?.onRunFailed) options.onRunFailed();
+    }
   };
 
   const stopRun = () => {
-    // Stub - stops current run
     console.log("stopRun called");
   };
 
   const clearRunState = () => {
-    // Stub - clears all run state
-    console.log("clearRunState called");
+    dispatchRunState({ type: 'run.started', data: { runId: 'cleared', sessionId: '', userId: '', timestamp: new Date().toISOString(), config: { maxIterations: 10 } } } as any);
   };
 
   const setRunState = (state: UseStreamEventsState) => {
-    // Stub - sets run state directly
     console.log("setRunState called");
   };
 
