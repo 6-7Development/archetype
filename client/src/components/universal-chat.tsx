@@ -405,55 +405,100 @@ export function UniversalChat({
             ) : (
               <>
                 {/* Messages with image rendering */}
-                <div className="space-y-3">
-                  {runState.messages.map((message) => (
-                    <div key={message.id || message.messageId} className="flex gap-3 group">
-                      {/* Avatar */}
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-muted text-muted-foreground text-xs font-medium">
-                        {message.role === 'user' ? 'U' : 'A'}
-                      </div>
-
-                      {/* Message Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="bg-muted/50 rounded-lg p-3">
-                          <div className="prose prose-sm dark:prose-invert max-w-none text-sm">
-                            {message.content}
-                          </div>
-
-                          {/* Image Rendering */}
-                          {message.images && message.images.length > 0 && (
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              {message.images.map((imageUrl, idx) => (
-                                <div key={idx} className="rounded border border-border overflow-hidden bg-background">
-                                  <img 
-                                    src={imageUrl} 
-                                    alt={`Message image ${idx + 1}`}
-                                    className="max-w-xs max-h-64 object-cover cursor-pointer hover:opacity-80 transition-opacity"
-                                    data-testid={`message-image-${message.id}-${idx}`}
-                                    onClick={() => window.open(imageUrl, '_blank')}
-                                  />
-                                </div>
-                              ))}
-                            </div>
+                <div className="space-y-4">
+                  {runState.messages.map((message, index) => {
+                    const isUser = message.role === 'user';
+                    const isLast = index === runState.messages.length - 1;
+                    
+                    return (
+                      <div 
+                        key={message.id || message.messageId} 
+                        className={`flex gap-3 group ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
+                        data-testid={`message-container-${message.id}`}
+                      >
+                        {/* Avatar */}
+                        <div 
+                          className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center font-semibold text-xs ${
+                            isUser 
+                              ? 'bg-primary/20 text-primary border border-primary/30' 
+                              : 'bg-secondary/20 text-secondary-foreground border border-secondary/30'
+                          }`}
+                          data-testid={`avatar-${message.role}`}
+                          title={isUser ? 'You' : 'LomuAI'}
+                        >
+                          {isUser ? (
+                            <User className="w-5 h-5" />
+                          ) : (
+                            <span className="font-bold">AI</span>
                           )}
                         </div>
 
-                        {/* Timestamp */}
-                        {message.timestamp && (
-                          <div className="text-xs text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            {new Date(message.timestamp).toLocaleTimeString()}
+                        {/* Message Content */}
+                        <div className={`flex-1 min-w-0 flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
+                          {/* Sender label */}
+                          <div className={`text-xs font-semibold mb-1 ${isUser ? 'text-primary' : 'text-secondary-foreground'}`}>
+                            {isUser ? 'You' : 'LomuAI'}
                           </div>
-                        )}
+
+                          {/* Message bubble */}
+                          <div 
+                            className={`rounded-2xl px-4 py-2.5 max-w-md break-words ${
+                              isUser
+                                ? 'bg-primary text-primary-foreground rounded-br-none'
+                                : 'bg-muted text-foreground rounded-bl-none'
+                            }`}
+                            data-testid={`message-bubble-${message.id}`}
+                          >
+                            <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                              {message.content}
+                            </div>
+
+                            {/* Image Rendering */}
+                            {message.images && message.images.length > 0 && (
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                {message.images.map((imageUrl, idx) => (
+                                  <div 
+                                    key={idx} 
+                                    className="rounded-lg border border-current/20 overflow-hidden bg-background/50 cursor-pointer hover:opacity-80 transition-opacity"
+                                    onClick={() => window.open(imageUrl, '_blank')}
+                                    data-testid={`message-image-${message.id}-${idx}`}
+                                  >
+                                    <img 
+                                      src={imageUrl} 
+                                      alt={`Message image ${idx + 1}`}
+                                      className="max-w-xs max-h-64 object-cover"
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Timestamp - Always visible */}
+                          {message.timestamp && (
+                            <div className={`text-xs mt-1 ${isUser ? 'text-right' : 'text-left'} text-muted-foreground`}>
+                              {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Loading indicator */}
                 {isGenerating && (
-                  <div className="flex items-center gap-2 text-muted-foreground text-sm p-4">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>LomuAI is thinking...</span>
+                  <div className="flex gap-3 group flex-row" data-testid="loading-indicator">
+                    <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center bg-secondary/20 text-secondary-foreground border border-secondary/30">
+                      <span className="font-bold text-xs">AI</span>
+                    </div>
+                    <div className="flex-1 min-w-0 flex flex-col items-start">
+                      <div className="text-xs font-semibold mb-1 text-secondary-foreground">LomuAI</div>
+                      <div className="bg-muted rounded-2xl rounded-bl-none px-4 py-2.5 flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span className="text-sm text-muted-foreground">Thinking...</span>
+                      </div>
+                    </div>
                   </div>
                 )}
                 <div ref={latestMessageRef} />
