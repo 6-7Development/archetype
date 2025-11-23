@@ -1646,9 +1646,16 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
       });
       
       const userId = req.user!.id;
-      let jobIdForResponse: string | null = null;
 
-      // Trigger async healing in background
+      // Immediately respond so user sees the modal
+      res.json({ 
+        success: true, 
+        message: "Autonomous healing process started in background",
+        status: "initiated",
+        jobId: "healing-initiated"
+      });
+
+      // Start healing process in background (fire and forget)
       (async () => {
         try {
           console.log(`[HEALING-AUTO] Starting autonomous healing for user ${userId}`);
@@ -1715,7 +1722,6 @@ Use your tools to diagnose, fix, test, and commit all improvements autonomously.
 
           const job = await createJob(userId, healingMessage);
           console.log(`[HEALING-AUTO] LomuAI job created: ${job.id}`);
-          jobIdForResponse = job.id;
           
           // Start the job worker in background
           await startJobWorker(job.id);
@@ -1744,14 +1750,6 @@ Use your tools to diagnose, fix, test, and commit all improvements autonomously.
           }
         }
       })();
-      
-      // Return immediately with response (healing runs in background)
-      res.json({ 
-        success: true, 
-        message: "Autonomous healing process started in background",
-        status: "initiated",
-        jobId: jobIdForResponse
-      });
     } catch (error: any) {
       console.error("[HEALING] Error starting auto-heal:", error);
       res.status(500).json({ error: "Failed to start autonomous healing" });
