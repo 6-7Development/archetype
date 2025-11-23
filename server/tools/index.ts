@@ -14,6 +14,9 @@ export { knowledge_search, knowledge_store, knowledge_recall, code_search } from
 // NEW: Smart Code Intelligence Tools - AST-based file analysis and context detection
 export { indexFile, smartReadFile, getRelatedFiles, extractFunction, getAutoContext, getFileSummary } from './smart-code-tools';
 
+// NEW: Google Docs Integration
+export { readGoogleDoc, searchGoogleDoc, listGoogleDocs, getGoogleDocMetadata } from './google-docs-access';
+
 // NEW TOOLS - Replit Agent Feature Parity (18 tools)
 // GROUP 1: Deployment & Rollback
 export { suggestDeploy, suggestRollback } from './deployment';
@@ -1394,6 +1397,53 @@ export const LOMU_TOOLS = [
     input_schema: {
       type: 'object',
       properties: {},
+    },
+  },
+  // ========== Google Docs Integration ==========
+  {
+    name: 'google_docs_read',
+    description: 'Read and extract content from a Google Docs document. Requires Google Docs connector to be set up in Replit. Use this to access documentation, design specs, or project requirements stored in Google Docs.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        documentId: {
+          type: 'string',
+          description: 'Google Docs document ID (from the URL)',
+        },
+      },
+      required: ['documentId'],
+    },
+  },
+  {
+    name: 'google_docs_search',
+    description: 'Search for specific content within a Google Docs document. Returns matching excerpts with surrounding context.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        documentId: {
+          type: 'string',
+          description: 'Google Docs document ID',
+        },
+        searchTerm: {
+          type: 'string',
+          description: 'Text to search for',
+        },
+      },
+      required: ['documentId', 'searchTerm'],
+    },
+  },
+  {
+    name: 'google_docs_metadata',
+    description: 'Get document metadata (title, revision, accessible status) without reading full content. Use to verify access before reading.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        documentId: {
+          type: 'string',
+          description: 'Google Docs document ID',
+        },
+      },
+      required: ['documentId'],
     },
   },
 ] as const;

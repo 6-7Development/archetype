@@ -39,8 +39,9 @@ export const LOMU_CORE_TOOLS = LOMU_TOOLS.filter(tool => [
   'update_task',
   'read_task_list',
   
-  // Web & Research (1) - Removed web_fetch (redundant with web_search)
+  // Web & Research (2) - Added google_docs_read for document access
   'web_search',
+  'google_docs_read',
   
   // Diagnosis (1) - Removed browser_test (less critical)
   'perform_diagnosis',
