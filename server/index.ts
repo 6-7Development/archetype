@@ -91,6 +91,26 @@ app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// 🔒 CORS headers for credential-based requests (required for credentials: 'include')
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  
+  // Allow requests from localhost in development
+  if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+    res.header('Access-Control-Allow-Origin', origin || '*');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  }
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  
+  next();
+});
+
 // Apply rate limiting globally to all /api/* routes
 // This ensures all API requests (including error responses) are rate limited
 app.use('/api', apiLimiter);
