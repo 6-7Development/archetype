@@ -27,7 +27,20 @@ export function PlatformHealthIndicator() {
   // Autonomous healing mutation
   const autoHealMutation = useMutation({
     mutationFn: async () => {
-      return postApi("/api/healing/auto-heal", {});
+      console.log('[HEAL-BUTTON] Starting autonomous heal request...');
+      console.log('[HEAL-BUTTON] API endpoint:', '/api/healing/auto-heal');
+      console.log('[HEAL-BUTTON] Full URL:', `${APP_CONFIG.api.baseURL}/api/healing/auto-heal`);
+      
+      try {
+        const result = await postApi("/api/healing/auto-heal", {});
+        console.log('[HEAL-BUTTON] Success:', result);
+        return result;
+      } catch (error) {
+        console.error('[HEAL-BUTTON] Error details:', error);
+        console.error('[HEAL-BUTTON] Error type:', error?.constructor?.name);
+        console.error('[HEAL-BUTTON] Error message:', (error as any)?.message);
+        throw error;
+      }
     },
     onSuccess: () => {
       toast({ 

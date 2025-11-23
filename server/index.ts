@@ -95,16 +95,23 @@ app.use(express.urlencoded({ extended: false }));
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   
-  // Allow requests from localhost in development
-  if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+  // In development, allow all origins (Vite dev server uses different port internally)
+  if (process.env.NODE_ENV === 'development') {
     res.header('Access-Control-Allow-Origin', origin || '*');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  } else if (origin && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
+    // In production, only allow localhost for testing
+    res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
   }
   
-  // Handle preflight requests
+  // Handle preflight OPTIONS requests
   if (req.method === 'OPTIONS') {
+    console.log('[CORS-PREFLIGHT]', req.path, 'Origin:', origin);
     return res.sendStatus(200);
   }
   
