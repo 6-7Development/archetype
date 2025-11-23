@@ -1706,11 +1706,33 @@ Execute tools directly. Work autonomously without waiting for user input.`;
             content: systemPrompt,
           });
 
+          // 🔥 CRITICAL: Actually trigger LomuAI to process the healing conversation
+          const { createJob, startJobWorker } = await import('../services/lomuJobManager');
+          
+          // Create LomuAI job for autonomous healing
+          const healingMessage = `Autonomous Platform Healing initiated. Analyze and fix all ${47} open incidents.
+
+Priority areas:
+1. Critical bugs and errors
+2. Performance issues
+3. Security vulnerabilities
+4. Code quality improvements
+
+Use your tools to diagnose, fix, test, and commit all improvements autonomously.`;
+
+          const job = await createJob(userId, healingMessage);
+          console.log(`[HEALING-AUTO] LomuAI job created: ${job.id}`);
+          
+          // Start the job worker in background
+          await startJobWorker(job.id);
+          console.log(`[HEALING-AUTO] LomuAI job started - autonomous healing in progress`);
+
           // Notify via WebSocket that autonomous healing started
           if (deps?.wss) {
             broadcastToUser(deps.wss, userId, {
               type: "healing:started",
               conversationId: conversation.id,
+              jobId: job.id,
               message: "Autonomous healing process initiated...",
             });
           }
