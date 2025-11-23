@@ -449,7 +449,8 @@ export async function handleStreamRequest(
                         schemaValidated: true
                       }
                     };
-                    toolResults.push(rejectionResult);
+                    iterationToolResults.push(rejectionResult);
+                    allToolResults.push(rejectionResult);
                     continue;
                   }
                 }
