@@ -208,10 +208,7 @@ export async function setupAuth(app: Express) {
         const { password, ...userWithoutPassword } = user;
         res.json({ 
           success: true, 
-          user: {
-            ...userWithoutPassword,
-            isOwner: user.isOwner || false
-          }
+          user: userWithoutPassword 
         });
       });
     } catch (error: any) {
@@ -248,13 +245,17 @@ export async function setupAuth(app: Express) {
             return res.status(500).json({ error: "Login failed" });
           }
           
-          // Return user data (without password)
+          // Return user data (without password) with RBAC permissions
           const { password, ...userWithoutPassword } = user;
+          const userRole = user.role || 'user';
+          const permissions = getRolePermissions(userRole);
+          
           res.json({ 
             success: true, 
             user: {
               ...userWithoutPassword,
-              isOwner: user.isOwner || false
+              isOwner: user.isOwner || false,
+              permissions,
             }
           });
         });
@@ -299,3 +300,73 @@ export async function setupAuth(app: Express) {
       return res.status(401).json({ error: "Not authenticated" });
     }
     
+    const user = req.user as any;
+    const { password, ...userWithoutPassword } = user;
+    const userRole = user.role || 'user';
+    const permissions = getRolePermissions(userRole);
+    
+    res.json({ 
+      user: {
+        ...userWithoutPassword,
+        isOwner: user.isOwner || false,
+        permissions,
+      }
+    });
+  });
+}
+
+// Authentication middleware
+export const isAuthenticated: RequestHandler = (req, res, next) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  
+  const user = req.user as any;
+  if (!user || !user.id) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  
+  // Set canonical authenticated user ID
+  (req as any).authenticatedUserId = user.id;
+  next();
+};
+
+// Admin middleware
+export const isAdmin: RequestHandler = async (req, res, next) => {
+  // First verify authentication
+  return isAuthenticated(req, res, async (err?: any) => {
+    if (err) {
+      return next(err);
+    }
+
+    // Use canonical authenticated user ID
+    const userId = (req as any).authenticatedUserId;
+    const user = await storage.getUser(userId);
+
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ error: "Forbidden - Admin access required" });
+    }
+
+    next();
+  });
+};
+
+// Owner middleware
+export const isOwner: RequestHandler = async (req, res, next) => {
+  // First verify authentication
+  return isAuthenticated(req, res, async (err?: any) => {
+    if (err) {
+      return next(err);
+    }
+
+    // Use canonical authenticated user ID
+    const userId = (req as any).authenticatedUserId;
+    const user = await storage.getUser(userId);
+
+    if (!user || !user.isOwner) {
+      return res.status(403).json({ error: "Forbidden - Owner access required" });
+    }
+
+    next();
+  });
+};
