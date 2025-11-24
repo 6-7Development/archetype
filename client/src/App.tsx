@@ -114,18 +114,10 @@ function Router() {
         </AppLayout>
       </Route>
       <Route path="/builder">
-        {(params) => (
-          <AppLayout>
-            <Builder />
-          </AppLayout>
-        )}
+        <Builder />
       </Route>
       <Route path="/builder/:projectId">
-        {(params) => (
-          <AppLayout>
-            <Builder />
-          </AppLayout>
-        )}
+        <Builder />
       </Route>
       <Route path="/workspace" component={Workspace} />
       <Route path="/workspace/dashboard">
