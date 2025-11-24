@@ -5,13 +5,19 @@
  */
 
 import { useState } from 'react';
-import { Terminal as TerminalIcon, Eye, FileText, Settings, ChevronDown, Plus, X } from 'lucide-react';
+import { Terminal as TerminalIcon, Eye, FileText, Settings, ChevronDown, Plus, X, GitBranch, TestTube, Database, Key, Zap } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Terminal } from '@/components/terminal';
+import { FileExplorer } from '@/components/file-explorer';
+import { GitPanel } from '@/components/git-panel';
+import { TestingPanel } from '@/components/testing-panel';
+import { DatabaseViewer } from '@/components/database-viewer';
+import { EnvironmentEditor } from '@/components/environment-editor';
+import { LogsViewer } from '@/components/logs-viewer';
 
 interface WorkspaceLayoutProps {
   projectId: string;
@@ -54,7 +60,7 @@ export function WorkspaceLayout({
   onTaskSelect,
 }: WorkspaceLayoutProps) {
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
-  const [selectedTab, setSelectedTab] = useState<'editor' | 'preview' | 'terminal'>('editor');
+  const [selectedTab, setSelectedTab] = useState<'editor' | 'preview' | 'terminal' | 'files' | 'git' | 'tests' | 'database' | 'env' | 'logs' | 'healing'>('editor');
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
 
   // RBAC: Only show appropriate content
@@ -237,12 +243,60 @@ export function WorkspaceLayout({
                 Preview
               </TabsTrigger>
               <TabsTrigger
+                value="files"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-4 py-2"
+                data-testid="tab-files"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Files
+              </TabsTrigger>
+              <TabsTrigger
+                value="git"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-4 py-2"
+                data-testid="tab-git"
+              >
+                <GitBranch className="w-4 h-4 mr-2" />
+                Git
+              </TabsTrigger>
+              <TabsTrigger
+                value="database"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-4 py-2"
+                data-testid="tab-database"
+              >
+                <Database className="w-4 h-4 mr-2" />
+                Database
+              </TabsTrigger>
+              <TabsTrigger
                 value="terminal"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-4 py-2"
                 data-testid="tab-terminal"
               >
                 <TerminalIcon className="w-4 h-4 mr-2" />
                 Terminal
+              </TabsTrigger>
+              <TabsTrigger
+                value="env"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-4 py-2"
+                data-testid="tab-env"
+              >
+                <Key className="w-4 h-4 mr-2" />
+                Env
+              </TabsTrigger>
+              <TabsTrigger
+                value="logs"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-4 py-2"
+                data-testid="tab-logs"
+              >
+                <Zap className="w-4 h-4 mr-2" />
+                Logs
+              </TabsTrigger>
+              <TabsTrigger
+                value="tests"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-4 py-2"
+                data-testid="tab-tests"
+              >
+                <TestTube className="w-4 h-4 mr-2" />
+                Tests
               </TabsTrigger>
               
               {/* RBAC: Show platform controls only for admins */}
@@ -296,8 +350,34 @@ export function WorkspaceLayout({
               </div>
             </TabsContent>
 
+            <TabsContent value="files" className="flex-1 overflow-hidden p-0">
+              <FileExplorer files={[]} activeFileId={null} onFileSelect={() => {}} onCreateFile={() => {}} />
+            </TabsContent>
+
+            <TabsContent value="git" className="flex-1 overflow-hidden p-0">
+              <div className="h-full overflow-auto">
+                <GitPanel />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="database" className="flex-1 overflow-hidden p-0">
+              <DatabaseViewer />
+            </TabsContent>
+
             <TabsContent value="terminal" className="flex-1 overflow-hidden p-0">
               <Terminal projectId={projectId} />
+            </TabsContent>
+
+            <TabsContent value="env" className="flex-1 overflow-hidden p-0">
+              <EnvironmentEditor />
+            </TabsContent>
+
+            <TabsContent value="logs" className="flex-1 overflow-hidden p-0">
+              <LogsViewer />
+            </TabsContent>
+
+            <TabsContent value="tests" className="flex-1 overflow-hidden p-0">
+              <TestingPanel session={null} onClose={() => {}} />
             </TabsContent>
 
             {/* Platform Healing Tab - Admin Only */}
