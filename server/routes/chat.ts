@@ -883,6 +883,7 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
           await streamGeminiResponse({
             maxTokens: 4096,
             system: systemPrompt,
+            tools: LOMU_TOOLS,
             messages: [
               ...validMessages.map((m: any) => ({
                 role: m.role === 'system' ? 'user' : m.role,

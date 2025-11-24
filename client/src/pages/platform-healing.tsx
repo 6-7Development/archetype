@@ -8,16 +8,9 @@ import { Beaker } from 'lucide-react';
 export default function PlatformHealing() {
   const [testMode, setTestMode] = useState(false);
   
-  // 🔧 Read user's AI model preference to determine targetContext
-  const { data: prefs } = useQuery({
-    queryKey: ["/api/user/preferences"],
-  });
-  
-  // Map aiModel preference to targetContext:
-  // - "claude" → "architect" (I AM Architect uses Claude Sonnet 4)
-  // - "gemini" → "platform" (LomuAI uses Gemini 2.5 Flash)
-  const aiModel = (prefs as any)?.aiModel || "gemini"; // Default to gemini/LomuAI
-  const targetContext: 'platform' | 'architect' = aiModel === 'claude' ? 'architect' : 'platform';
+  // LomuAI always uses Gemini (cost-effective). 
+  // I AM Architect is an internal advisor - automatically consulted when LomuAI detects it's stuck
+  const targetContext: 'platform' | 'architect' = 'platform';
   
   return (
     <WorkspaceLayout
@@ -52,6 +45,7 @@ export default function PlatformHealing() {
           <UniversalChat 
             targetContext={targetContext}
             projectId={testMode ? "test-project" : null}
+            isTestMode={testMode}
           />
         </div>
       </div>
