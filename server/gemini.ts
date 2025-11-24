@@ -1133,18 +1133,25 @@ Please try:
     // Execute tools if Gemini requested them
     if (functionCalls.length > 0 && onToolUse) {
       try {
-        // NOTE: Removed duplicate "Running checks..." message - individual tool actions are already reported
+        // ⚡ FAST MODE: Parallel Tool Execution
+        // All tools are executed concurrently using Promise.all() for maximum speed
+        // Instead of waiting for each tool sequentially, we fire them all at once
+        console.log(`⚡ [GEMINI-FAST-MODE] Executing ${functionCalls.length} tools in PARALLEL`);
+        const toolStartTime = Date.now();
 
-        // Execute all function calls
+        // Execute all function calls in parallel
         const toolResults = await Promise.all(
           functionCalls.map(async (call) => {
             try {
+              const callStartTime = Date.now();
               const result = await onToolUse({
                 type: 'tool_use',
                 id: call.id,
                 name: call.name,
                 input: call.input
               });
+              const callDuration = Date.now() - callStartTime;
+              console.log(`✅ [GEMINI-FAST-MODE] Tool "${call.name}" completed in ${callDuration}ms`);
               return {
                 type: 'tool_result',
                 tool_use_id: call.id,
@@ -1163,6 +1170,9 @@ Please try:
             }
           })
         );
+
+        const totalToolDuration = Date.now() - toolStartTime;
+        console.log(`⚡ [GEMINI-FAST-MODE] All ${functionCalls.length} tools completed in ${totalToolDuration}ms (parallel execution)`);
 
         // Return tool results in Anthropic-compatible format
         return {
