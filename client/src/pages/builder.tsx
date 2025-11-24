@@ -266,7 +266,7 @@ export default function Builder() {
 
         {/* Main Content Area - Tabs */}
         <div className="flex-1 overflow-hidden flex flex-col">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
           <div className="border-b bg-card px-2 sm:px-4">
             <TabsList className="bg-transparent h-12 p-0 gap-1 w-full justify-start overflow-x-auto" data-testid="tabs-main">
               <TabsTrigger 
