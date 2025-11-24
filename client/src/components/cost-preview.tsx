@@ -164,7 +164,7 @@ export default function CostPreview({
               <div className="flex items-start gap-3">
                 <AlertCircle className="h-5 w-5 text-orange-600 mt-0.5" />
                 <div className="flex-1">
-                  <h4 className="font-medium text-orange-900
+                  <h4 className="font-medium text-orange-900">
                     Overage Tokens Required
                   </h4>
                   <p className="text-sm text-orange-700 mt-1">
@@ -197,9 +197,9 @@ export default function CostPreview({
             <Separator />
             <div className="rounded-lg bg-green-50 p-4">
               <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-600 />
+                <CheckCircle className="h-5 w-5 text-green-600" />
                 <div>
-                  <h4 className="font-medium text-green-900 data-testid="cost-included">
+                  <h4 className="font-medium text-green-900" data-testid="cost-included">
                     ✓ Cost Included in Your Plan
                   </h4>
                   <p className="text-sm text-green-700 mt-1">
