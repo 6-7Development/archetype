@@ -35,7 +35,21 @@ function runStateReducer(state: RunStateReducerState, action: RunStateAction): R
   
   switch (action.type) {
     case 'message.added':
-      newState.messages.push(action.message);
+      // ⚠️ CRITICAL: Deduplicate messages by ID to prevent duplicates and double postings
+      const msgId = action.message.id || action.message.messageId;
+      if (msgId) {
+        const existingIndex = newState.messages.findIndex(m => (m.id || m.messageId) === msgId);
+        if (existingIndex >= 0) {
+          // Update existing message (e.g., streaming updates)
+          newState.messages[existingIndex] = action.message;
+        } else {
+          // Add new message
+          newState.messages.push(action.message);
+        }
+      } else {
+        // Fallback: add message if no ID (shouldn't happen)
+        newState.messages.push(action.message);
+      }
       break;
       
     case 'messages.clear':

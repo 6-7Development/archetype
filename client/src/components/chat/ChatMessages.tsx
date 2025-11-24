@@ -187,7 +187,7 @@ export function ChatMessages({
         className="flex-1 overflow-y-auto px-4 py-6 space-y-6"
         data-testid="chat-messages-container"
       >
-        {messages.map((message, index) => (
+        {messages.filter(msg => msg.content.trim().length > 0).map((message, index) => (
           <div
             key={message.id || message.messageId || index}
             className={cn(
