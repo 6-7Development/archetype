@@ -134,13 +134,13 @@ export default function Landing() {
           </div>
           
           {/* Main Headline - Fluid responsive sizing */}
-          <h1 className="font-bold mb-4 sm:mb-6 leading-[1.1] tracking-tight" style={{ fontSize: 'clamp(2.25rem, 7vw, 5rem)' }}>
+          <h1 className="font-bold mb-4 sm:mb-6 leading-[1.1] tracking-tight" style={{ fontSize: 'clamp(2.25rem, 7vw, 5rem)' }} data-testid="heading-hero">
             <span className="bg-gradient-to-r from-honey via-nectar to-mint bg-clip-text text-transparent text-balance inline-block">
               Build Full-Stack Apps With AI in Minutes
             </span>
           </h1>
           
-          <p className="text-base sm:text-xl md:text-2xl text-muted-foreground mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed font-light">
+          <p className="text-base sm:text-xl md:text-2xl text-muted-foreground mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed font-light" data-testid="text-hero-subtitle">
             Like a hive of expert developers working in perfect harmony. Zero coding required—just pure honey-sweet results.
           </p>
 
@@ -203,7 +203,7 @@ export default function Landing() {
       <section className="pt-20 sm:pt-24 md:pt-32 pb-16 sm:pb-20 md:pb-24 px-4 sm:px-6 relative">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-4 text-foreground break-words">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-4 text-foreground break-words" data-testid="heading-platform">
               See the Platform in Action
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -292,7 +292,7 @@ export default function Landing() {
       <section className="py-20 sm:py-24 md:py-32 px-4 sm:px-6 relative bg-gradient-to-b from-transparent via-honey/5 to-transparent">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16 sm:mb-20">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 break-words">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 break-words" data-testid="heading-features">
               <span className="bg-gradient-to-r from-honey via-nectar to-mint bg-clip-text text-transparent">
                 Why Choose BeehiveAI
               </span>
@@ -304,7 +304,7 @@ export default function Landing() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Speed */}
-            <Card className="group p-8 sm:p-10 bg-card border-border hover-elevate h-full transition-all duration-300 shadow-sm hover:shadow-lg">
+            <Card className="group p-8 sm:p-10 bg-card border-border hover-elevate h-full transition-all duration-300 shadow-sm hover:shadow-lg" data-testid="card-feature-speed">
               <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-honey/20 to-nectar/20 flex items-center justify-center text-honey mb-6 group-hover:scale-110 transition-transform duration-300 border border-honey/20">
                 <Zap className="w-8 sm:w-10 h-8 sm:h-10" />
               </div>
@@ -315,7 +315,7 @@ export default function Landing() {
             </Card>
 
             {/* Quality */}
-            <Card className="group p-8 sm:p-10 bg-card border-border hover-elevate h-full transition-all duration-300 shadow-sm hover:shadow-lg">
+            <Card className="group p-8 sm:p-10 bg-card border-border hover-elevate h-full transition-all duration-300 shadow-sm hover:shadow-lg" data-testid="card-feature-quality">
               <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-mint/20 to-mint/30 flex items-center justify-center text-mint mb-6 group-hover:scale-110 transition-transform duration-300 border border-mint/20">
                 <Shield className="w-8 sm:w-10 h-8 sm:h-10" />
               </div>
@@ -326,7 +326,7 @@ export default function Landing() {
             </Card>
 
             {/* Swarm */}
-            <Card className="group p-8 sm:p-10 bg-card border-border hover-elevate h-full transition-all duration-300 shadow-sm hover:shadow-lg sm:col-span-2 lg:col-span-1">
+            <Card className="group p-8 sm:p-10 bg-card border-border hover-elevate h-full transition-all duration-300 shadow-sm hover:shadow-lg sm:col-span-2 lg:col-span-1" data-testid="card-feature-swarm">
               <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-honey/20 to-nectar/20 flex items-center justify-center text-honey mb-6 group-hover:scale-110 transition-transform duration-300 border border-honey/20">
                 <Hexagon className="w-8 sm:w-10 h-8 sm:h-10" />
               </div>
@@ -353,12 +353,12 @@ export default function Landing() {
                 <span className="text-sm font-semibold text-honey">Start Building Today</span>
               </div>
               
-              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-5 sm:mb-6 break-words">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-5 sm:mb-6 break-words" data-testid="heading-cta">
                 <span className="bg-gradient-to-r from-honey via-nectar to-mint bg-clip-text text-transparent">
                   Ready to Taste the Honey?
                 </span>
               </h2>
-              <p className="text-base sm:text-xl md:text-2xl text-muted-foreground mb-10 sm:mb-12 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-xl md:text-2xl text-muted-foreground mb-10 sm:mb-12 max-w-2xl mx-auto leading-relaxed" data-testid="text-cta-description">
                 Join developers worldwide shipping production apps in minutes, not months
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-xs sm:max-w-none mx-auto">
@@ -395,7 +395,7 @@ export default function Landing() {
         <div className="container mx-auto max-w-6xl">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-8 text-center sm:text-left mb-8">
             <div className="flex flex-col items-center sm:items-start gap-3">
-              <BeehiveIcon size={64} className="flex-shrink-0" />
+              <BeehiveIcon size={64} className="flex-shrink-0" data-testid="icon-footer-logo" />
               <p className="text-muted-foreground text-sm font-medium">
                 Where code gets sweeter by the hive
               </p>
@@ -427,14 +427,14 @@ export default function Landing() {
           
           {/* Copyright */}
           <div className="text-center py-6 border-t border-border">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground" data-testid="text-copyright">
               © 2024 BeehiveAI. All rights reserved.
             </p>
           </div>
           
           {/* AI Disclaimer */}
           <div className="max-w-3xl mx-auto pt-6">
-            <p className="text-xs text-muted-foreground text-center break-words whitespace-normal leading-relaxed">
+            <p className="text-xs text-muted-foreground text-center break-words whitespace-normal leading-relaxed" data-testid="text-disclaimer">
               AI-generated code requires human review and testing. Results may vary based on project complexity. 
               BeehiveAI is an AI-assisted development tool - not a replacement for skilled developers.
             </p>
