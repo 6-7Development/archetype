@@ -135,7 +135,7 @@ export function UniversalChat({
   const latestMessageRef = useRef<HTMLDivElement>(null);
   const isAutoScrolling = useRef(true);
 
-  const { runState, sendMessage, stopRun, clearRunState, setRunState } = useStreamEvents({
+  const { runState, sendMessage, stopRun, clearRunState, setRunState, clearChatHistory } = useStreamEvents({
     projectId,
     targetContext,
     onProjectGenerated,

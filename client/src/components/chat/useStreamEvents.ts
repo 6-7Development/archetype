@@ -389,6 +389,17 @@ export function useStreamEvents(options?: { projectId?: string; targetContext?: 
     console.log("setRunState called");
   };
 
+  const clearChatHistory = () => {
+    try {
+      const storageKey = MESSAGES_STORAGE_KEY(options?.projectId, options?.targetContext);
+      localStorage.removeItem(storageKey);
+      dispatchRunState({ type: 'messages.clear' });
+      console.log('🧹 Chat history cleared');
+    } catch (e) {
+      console.error('Failed to clear chat history:', e);
+    }
+  };
+
   return {
     runState: runState as UseStreamEventsState,
     dispatchRunState,
@@ -396,5 +407,6 @@ export function useStreamEvents(options?: { projectId?: string; targetContext?: 
     stopRun,
     clearRunState,
     setRunState,
+    clearChatHistory,
   };
 }
