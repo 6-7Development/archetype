@@ -283,122 +283,6 @@
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
 
-.dark {
-  --button-outline: rgba(255,255,255, .15);
-  --badge-outline: rgba(255,255,255, .08);
-
-  --opaque-button-border-intensity: 12;  /* In terms of percentages */
-
-  /* Backgrounds applied on top of other backgrounds when hovered/active */
-  --elevate-1: rgba(253, 173, 34, 0.08);  /* Honey glow */
-  --elevate-2: rgba(253, 173, 34, 0.15);  /* Honey glow stronger */
-
-  /* Lomu Hive/Swarm Brand Colors - Dark Mode - VIBRANT */
-  --honey: 40 100% 54%;            /* Vibrant honey in dark mode #FFAF2E */
-  --nectar: 45 100% 62%;           /* Vibrant nectar in dark mode #FFC52E */
-  --mint: 168 100% 45%;            /* Bright mint in dark mode #00E5B8 */
-
-  --background: 220 28% 8%;        /* Darker slate for better contrast */
-
-  --foreground: 220 10% 96%;       /* Bright light text */
-
-  --border: 220 20% 22%;           /* More visible borders */
-
-  --card: 220 22% 14%;             /* Elevated cards */
-
-  --card-foreground: 220 10% 96%;
-
-  --card-border: 220 25% 28%;      /* More prominent borders */
-
-  --sidebar: 220 24% 12%;          /* Darker sidebar */
-
-  --sidebar-foreground: 220 10% 96%;
-
-  --sidebar-border: 220 20% 24%;
-
-  --sidebar-primary: 40 100% 54%;  /* Vibrant honey */
-
-  --sidebar-primary-foreground: 220 20% 8%;
-
-  --sidebar-accent: 220 20% 20%;   /* More contrast */
-
-  --sidebar-accent-foreground: 220 10% 96%;
-
-  --sidebar-ring: 40 100% 54%;
-
-  --popover: 220 24% 14%;
-
-  --popover-foreground: 220 10% 96%;
-
-  --popover-border: 220 20% 28%;
-
-  --primary: 40 100% 54%;          /* Vibrant honey */
-
-  --primary-foreground: 220 20% 8%; /* Dark text on honey */
-
-  --secondary: 168 100% 45%;       /* Bright mint */
-
-  --secondary-foreground: 0 0% 100%;
-
-  --muted: 220 15% 22%;            /* Better contrast */
-
-  --muted-foreground: 220 12% 65%;
-
-  --accent: 220 20% 24%;           /* More visible */
-
-  --accent-foreground: 220 10% 96%;
-
-  --destructive: 0 85% 60%;
-
-  --destructive-foreground: 0 0% 100%;
-
-  --input: 220 15% 28%;
-  --ring: 220 70% 60%;
-  --chart-1: 220 70% 60%;
-  --chart-2: 142 65% 48%;
-  --chart-3: 38 88% 52%;
-  --chart-4: 271 70% 55%;
-  --chart-5: 0 80% 62%;
-
-  --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.3);
-  --shadow-xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.4);
-  --shadow-sm: 0px 1px 3px 0px hsl(0 0% 0% / 0.5), 0px 0px 8px hsl(40 100% 54% / 0.1);
-  --shadow: 0px 1px 3px 0px hsl(0 0% 0% / 0.5), 0px 0px 12px hsl(40 100% 54% / 0.15);
-  --shadow-md: 0px 4px 6px -1px hsl(0 0% 0% / 0.5), 0px 0px 20px hsl(40 100% 54% / 0.2);
-  --shadow-lg: 0px 10px 15px -3px hsl(0 0% 0% / 0.5), 0px 0px 30px hsl(40 100% 54% / 0.25);
-  --shadow-xl: 0px 20px 25px -5px hsl(0 0% 0% / 0.5), 0px 0px 40px hsl(40 100% 54% / 0.3);
-  --shadow-2xl: 0px 25px 50px -12px hsl(0 0% 0% / 0.6), 0px 0px 50px hsl(40 100% 54% / 0.35);
-
-  /* Automatically computed borders - intensity can be controlled by the user by the --opaque-button-border-intensity setting */
-
-  /* Fallback for older browsers */
-  --sidebar-primary-border: hsl(var(--sidebar-primary));
-  --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --sidebar-accent-border: hsl(var(--sidebar-accent));
-  --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --primary-border: hsl(var(--primary));
-  --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --secondary-border: hsl(var(--secondary));
-  --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --muted-border: hsl(var(--muted));
-  --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --accent-border: hsl(var(--accent));
-  --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --destructive-border: hsl(var(--destructive));
-  --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-}
 
 @layer base {
   * {
@@ -406,8 +290,8 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
-    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(220 22% 10%) 100%);
+    @apply font-sans antialiased text-foreground;
+    background: hsl(var(--background));
   }
 
   /* Vibrant button styling for primary actions */

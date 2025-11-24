@@ -12,6 +12,8 @@ import { AppLayout } from "@/components/app-layout";
 import { AdminGuard } from "@/components/admin-guard";
 import { OwnerGuard } from "@/components/owner-guard";
 import { initGA4, trackPageView } from "@/lib/ga4";
+import { useThemeManager } from "@/hooks/useThemeManager";
+import { VIBRANT_LIGHT_THEME } from "@/lib/theme/types";
 import Landing from "@/pages/landing";
 import Pricing from "@/pages/pricing";
 import PricingSuccess from "@/pages/pricing-success";
@@ -224,6 +226,13 @@ function Router() {
   );
 }
 
+function AppWithTheme({ children }: { children: ReactNode }) {
+  // Apply vibrant light theme at runtime
+  useThemeManager(VIBRANT_LIGHT_THEME);
+  
+  return <>{children}</>;
+}
+
 function App() {
   // Initialize Google Analytics 4 on app load
   useEffect(() => {
@@ -235,13 +244,15 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <ConfigProvider>
           <ThemeProvider defaultTheme="light" forcedTheme="light">
-            <VersionProvider mobileBreakpoint={768}>
-              <TooltipProvider>
-                <CommandPalette />
-                <Toaster />
-                <Router />
-              </TooltipProvider>
-            </VersionProvider>
+            <AppWithTheme>
+              <VersionProvider mobileBreakpoint={768}>
+                <TooltipProvider>
+                  <CommandPalette />
+                  <Toaster />
+                  <Router />
+                </TooltipProvider>
+              </VersionProvider>
+            </AppWithTheme>
           </ThemeProvider>
         </ConfigProvider>
       </QueryClientProvider>
