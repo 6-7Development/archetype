@@ -493,6 +493,10 @@ export function UniversalChat({
         open={showArchitectApproval}
         onOpenChange={setShowArchitectApproval}
         guidance={architectGuidance?.guidance || ''}
+        reasoning={architectGuidance?.reasoning}
+        filesInspected={architectGuidance?.filesInspected}
+        evidenceUsed={architectGuidance?.evidenceUsed}
+        risk={architectGuidance?.risk || 'medium'}
         recommendations={
           architectGuidance?.recommendations?.map((rec: string) => ({
             filePath: 'File',

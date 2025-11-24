@@ -22,6 +22,10 @@ interface ArchitectApprovalModalProps {
   onApprove: (approvalNotes?: string) => void;
   onReject: (reason?: string) => void;
   isLoading?: boolean;
+  reasoning?: string;
+  filesInspected?: string[];
+  evidenceUsed?: string[];
+  risk?: 'low' | 'medium' | 'high';
 }
 
 export function ArchitectApprovalModal({
@@ -33,10 +37,15 @@ export function ArchitectApprovalModal({
   onApprove,
   onReject,
   isLoading = false,
+  reasoning = '',
+  filesInspected = [],
+  evidenceUsed = [],
+  risk = 'medium',
 }: ArchitectApprovalModalProps) {
   const [approvalNotes, setApprovalNotes] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectForm, setShowRejectForm] = useState(false);
+  const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set());
 
   const riskColor = {
     low: 'text-emerald-600 dark:text-emerald-400',
@@ -55,8 +64,9 @@ export function ArchitectApprovalModal({
         </DialogHeader>
 
         <Tabs defaultValue="guidance" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="guidance">Guidance</TabsTrigger>
+            <TabsTrigger value="reasoning">🧠 Reasoning</TabsTrigger>
             <TabsTrigger value="changes">Changes ({recommendations.length})</TabsTrigger>
             <TabsTrigger value="metrics">Metrics</TabsTrigger>
           </TabsList>
@@ -66,6 +76,61 @@ export function ArchitectApprovalModal({
             <div className="rounded-lg bg-muted/30 p-4 border border-border/50">
               <p className="text-sm leading-relaxed text-foreground">{guidance}</p>
             </div>
+          </TabsContent>
+
+          {/* Reasoning Tab - Shows architect's thinking process */}
+          <TabsContent value="reasoning" className="space-y-4">
+            {reasoning ? (
+              <div className="space-y-4">
+                <div className="rounded-lg bg-blue-500/10 border border-blue-500/30 p-4">
+                  <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">🏛️ Architect's Thinking Process</h4>
+                  <div className="text-xs leading-relaxed text-foreground/80 whitespace-pre-wrap max-h-48 overflow-y-auto font-mono">
+                    {reasoning}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            {/* Files Analyzed */}
+            {filesInspected.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold">📁 Files Analyzed ({filesInspected.length})</h4>
+                <div className="space-y-1 max-h-40 overflow-y-auto">
+                  {filesInspected.map((file, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-2 p-2 rounded bg-muted/50 text-xs font-mono cursor-pointer hover:bg-muted"
+                      onClick={() => {
+                        const newExpanded = new Set(expandedFiles);
+                        newExpanded.has(file) ? newExpanded.delete(file) : newExpanded.add(file);
+                        setExpandedFiles(newExpanded);
+                      }}
+                    >
+                      <span className="text-muted-foreground">{expandedFiles.has(file) ? '▼' : '▶'}</span>
+                      <span className="text-foreground/70">{file}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Evidence Used */}
+            {evidenceUsed.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold">🔍 Evidence Referenced ({evidenceUsed.length})</h4>
+                <div className="space-y-1 max-h-32 overflow-y-auto">
+                  {evidenceUsed.map((evidence, idx) => (
+                    <div key={idx} className="p-2 rounded bg-green-500/10 border border-green-500/20 text-xs text-foreground/70">
+                      ✓ {evidence}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {!reasoning && filesInspected.length === 0 && evidenceUsed.length === 0 && (
+              <p className="text-sm text-muted-foreground py-4">No reasoning details available</p>
+            )}
           </TabsContent>
 
           {/* Changes Tab */}

@@ -805,6 +805,8 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
                   inputTokens: architectResult.inputTokens || 0,
                   outputTokens: architectResult.outputTokens || 0,
                   filesInspected: architectResult.filesInspected || [],
+                  evidenceUsed: architectResult.evidenceUsed || [],
+                  reasoning: architectResult.reasoning,
                   alternativeApproach: architectResult.alternativeApproach,
                 });
                 

@@ -18,6 +18,7 @@ export interface ArchitectConsultResult {
   outputTokens?: number;
   confidence?: number; // 0-100 confidence score
   risk?: 'low' | 'medium' | 'high'; // Risk assessment
+  reasoning?: string; // I AM's thinking process
   error?: string;
 }
 
@@ -74,6 +75,7 @@ export async function consultArchitect(params: ArchitectConsultParams): Promise<
       outputTokens: result.outputTokens,
       confidence,
       risk,
+      reasoning: `I AM Architect analyzed ${result.filesInspected?.length || 0} files and found ${result.evidenceUsed?.length || 0} pieces of evidence to support these recommendations. Risk assessment: ${risk}.`,
       error: result.error,
     };
 
