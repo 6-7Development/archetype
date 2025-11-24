@@ -5,7 +5,7 @@
  */
 
 import { useState } from 'react';
-import { Terminal as TerminalIcon, Eye, FileText, Settings, ChevronDown, Plus, X, GitBranch, TestTube, Database, Key, Zap, Package, Search, Box } from 'lucide-react';
+import { Terminal as TerminalIcon, Eye, FileText, Settings, ChevronDown, Plus, X, GitBranch, TestTube, Database, Key, Zap, Package, Search, Box, Bug, AlertCircle, Zap as API, Sparkles } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -20,6 +20,11 @@ import { EnvironmentEditor } from '@/components/environment-editor';
 import { LogsViewer } from '@/components/logs-viewer';
 import { PackageManager } from '@/components/package-manager';
 import { SearchPanel } from '@/components/search-panel';
+import { IDESettings } from '@/components/ide-settings';
+import { DebuggerPanel } from '@/components/debugger-panel';
+import { ProblemsPanel } from '@/components/problems-panel';
+import { APIClient } from '@/components/api-client';
+import { AIAssistant } from '@/components/ai-assistant';
 
 interface WorkspaceLayoutProps {
   projectId: string;
@@ -62,7 +67,7 @@ export function WorkspaceLayout({
   onTaskSelect,
 }: WorkspaceLayoutProps) {
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
-  const [selectedTab, setSelectedTab] = useState<'editor' | 'preview' | 'terminal' | 'files' | 'git' | 'tests' | 'database' | 'env' | 'logs' | 'packages' | 'search' | 'deploy' | 'healing'>('editor');
+  const [selectedTab, setSelectedTab] = useState<'editor' | 'preview' | 'terminal' | 'files' | 'git' | 'tests' | 'database' | 'env' | 'logs' | 'packages' | 'search' | 'deploy' | 'debugger' | 'problems' | 'api' | 'ai' | 'settings' | 'healing'>('editor');
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
 
   // RBAC: Only show appropriate content
@@ -324,6 +329,46 @@ export function WorkspaceLayout({
                 <Box className="w-4 h-4 mr-2" />
                 Deploy
               </TabsTrigger>
+              <TabsTrigger
+                value="debugger"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-4 py-2"
+                data-testid="tab-debugger"
+              >
+                <Bug className="w-4 h-4 mr-2" />
+                Debug
+              </TabsTrigger>
+              <TabsTrigger
+                value="problems"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-4 py-2"
+                data-testid="tab-problems"
+              >
+                <AlertCircle className="w-4 h-4 mr-2" />
+                Problems
+              </TabsTrigger>
+              <TabsTrigger
+                value="api"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-4 py-2"
+                data-testid="tab-api"
+              >
+                <API className="w-4 h-4 mr-2" />
+                API
+              </TabsTrigger>
+              <TabsTrigger
+                value="ai"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-4 py-2"
+                data-testid="tab-ai"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                AI
+              </TabsTrigger>
+              <TabsTrigger
+                value="settings"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-4 py-2"
+                data-testid="tab-settings"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Settings
+              </TabsTrigger>
               
               {/* RBAC: Show platform controls only for admins */}
               {isAdmin && mode === 'platform-healing' && (
@@ -423,6 +468,26 @@ export function WorkspaceLayout({
                   <Button data-testid="button-deploy-now">Deploy Now</Button>
                 </div>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="debugger" className="flex-1 overflow-hidden p-0">
+              <DebuggerPanel />
+            </TabsContent>
+
+            <TabsContent value="problems" className="flex-1 overflow-hidden p-0">
+              <ProblemsPanel />
+            </TabsContent>
+
+            <TabsContent value="api" className="flex-1 overflow-hidden p-0">
+              <APIClient />
+            </TabsContent>
+
+            <TabsContent value="ai" className="flex-1 overflow-hidden p-0">
+              <AIAssistant />
+            </TabsContent>
+
+            <TabsContent value="settings" className="flex-1 overflow-hidden p-0">
+              <IDESettings />
             </TabsContent>
 
             {/* Platform Healing Tab - Admin Only */}
