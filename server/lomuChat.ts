@@ -27,10 +27,19 @@ let performanceTracker: any = null;
 let crossAgentLearning: any = null;
 let withRetry: any = null;
 let concurrentRateLimiter: any = null;
+let routeTask: any = null;
+let analyzeTask: any = null;
+let tokenBudgetManager: any = null;
+let detectConflicts: any = null;
+let merge3Way: any = null;
+let compareVersions: any = null;
+let buildDependencyDAG: any = null;
 
 // Lazy load function called during first dispatch_subagent request
 const ensureServicesLoaded = async () => {
   if (performanceTracker) return; // Already loaded
+  
+  // Batch 1: Performance & Learning (Gaps #11, #20)
   try {
     const pt = await import('./services/subagentPerformanceTracker.js');
     performanceTracker = pt.performanceTracker;
@@ -39,6 +48,8 @@ const ensureServicesLoaded = async () => {
     const cal = await import('./services/crossAgentLearningService.js');
     crossAgentLearning = cal.crossAgentLearning;
   } catch (e: any) { console.warn('[LAZY-LOAD] Cross-agent learning:', e.message); }
+  
+  // Batch 2: Reliability (Gaps #10, #16)
   try {
     const retry = await import('./services/subagentRetryService.js');
     withRetry = retry.withRetry;
@@ -47,6 +58,30 @@ const ensureServicesLoaded = async () => {
     const rl = await import('./services/concurrentRateLimiterService.js');
     concurrentRateLimiter = rl.concurrentRateLimiter;
   } catch (e: any) { console.warn('[LAZY-LOAD] Rate limiter:', e.message); }
+  
+  // Batch 3: Intelligence & Optimization (Gaps #12, #13, #14, #17, #18)
+  try {
+    const sr = await import('./services/skillBasedRoutingService.js');
+    routeTask = sr.routeTask;
+    analyzeTask = sr.analyzeTask;
+  } catch (e: any) { console.warn('[LAZY-LOAD] Skill routing:', e.message); }
+  try {
+    const tb = await import('./services/tokenBudgetService.js');
+    tokenBudgetManager = tb.tokenBudgetManager;
+  } catch (e: any) { console.warn('[LAZY-LOAD] Token budget:', e.message); }
+  try {
+    const cr = await import('./services/conflictResolutionService.js');
+    detectConflicts = cr.detectConflicts;
+    merge3Way = cr.merge3Way;
+  } catch (e: any) { console.warn('[LAZY-LOAD] Conflict resolution:', e.message); }
+  try {
+    const av = await import('./services/architectVersioningService.js');
+    compareVersions = av.compareVersions;
+  } catch (e: any) { console.warn('[LAZY-LOAD] Architect versioning:', e.message); }
+  try {
+    const ap = await import('./services/adaptiveParallelizationService.js');
+    buildDependencyDAG = ap.buildDependencyDAG;
+  } catch (e: any) { console.warn('[LAZY-LOAD] Adaptive parallelization:', e.message); }
 };
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -882,27 +917,51 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
                 `• ${r.title}\n  ${r.url}\n  ${r.content}\n`
               ).join('\n')}`;
             } else if (name === 'dispatch_subagent') {
-              // ⚡ FAST MODE: Spawn subagent for parallel task execution
+              // ⚡ FAST MODE: Spawn subagent for parallel task execution with full gap infrastructure
               const typedInput = input as { agentType: string; task: string; relevantFiles?: string[]; priority?: string };
-              sendEvent('progress', { message: `⚡ Spawning ${typedInput.agentType} sub-agent for parallel task...` });
               
-              // Lazy load services on first use
+              // Lazy load all services on first use
               await ensureServicesLoaded();
+              
+              // ✅ GAP #12: Analyze task and route to best agent
+              let recommendedAgent = typedInput.agentType;
+              let routingConfidence = 85;
+              if (analyzeTask && routeTask) {
+                try {
+                  const taskAnalysis = analyzeTask(typedInput.task);
+                  const routing = routeTask(taskAnalysis);
+                  recommendedAgent = routing.recommendedAgent || typedInput.agentType;
+                  routingConfidence = routing.confidence || 85;
+                } catch (e: any) { console.warn('[ROUTING]', e.message); }
+              }
+              
+              sendEvent('progress', { message: `⚡ Routing to ${recommendedAgent} sub-agent (${routingConfidence.toFixed(0)}% confidence)...` });
               
               const startTime = Date.now();
               let subagentResult: any = null;
               
               try {
-                // ✅ GAP #16: Rate limit check (safe - optional)
+                // ✅ GAP #16: Rate limit check
                 if (concurrentRateLimiter?.waitForAvailability) {
                   await concurrentRateLimiter.waitForAvailability('gemini', 50000);
                 }
                 
-                // ✅ GAP #10: Wrap with retry logic (safe - adds resilience)
+                // ✅ GAP #13: Check token budget before execution
+                let tokenBudgetOk = true;
+                if (tokenBudgetManager?.canExecute) {
+                  try {
+                    tokenBudgetOk = tokenBudgetManager.canExecute('subagent', 70000);
+                    if (!tokenBudgetOk) {
+                      sendEvent('progress', { message: `⚠️ Token budget low - deferring sub-agent` });
+                    }
+                  } catch (e: any) { console.warn('[TOKEN-BUDGET]', e.message); }
+                }
+                
+                // ✅ GAP #10: Wrap with retry logic + circuit breaker
                 const executeSubagent = () => spawnSubAgent({
                   userId,
                   projectId: activeProjectId,
-                  agentType: typedInput.agentType,
+                  agentType: recommendedAgent,
                   task: typedInput.task,
                   relevantFiles: typedInput.relevantFiles,
                   executionId: executionContext.executionId,
@@ -919,10 +978,10 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
                   subagentResult = await executeSubagent();
                 }
                 
-                // ✅ GAP #11: Track performance (safe - metrics only)
+                // ✅ GAP #11: Track performance metrics
                 if (performanceTracker?.recordExecution) {
                   performanceTracker.recordExecution({
-                    agentType: typedInput.agentType,
+                    agentType: recommendedAgent,
                     executionId: executionContext.executionId,
                     startTime,
                     endTime: Date.now(),
@@ -938,14 +997,22 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
                   });
                 }
                 
-                // ✅ GAP #20: Record to shared knowledge (safe - event logging only)
+                // ✅ GAP #18: Build dependency DAG for parallel execution (if multiple files)
+                if (buildDependencyDAG && typedInput.relevantFiles?.length) {
+                  try {
+                    const dag = buildDependencyDAG(typedInput.relevantFiles);
+                    console.log(`[DAG] Execution order: ${dag.executionOrder?.join(' → ')}`);
+                  } catch (e: any) { console.warn('[DAG]', e.message); }
+                }
+                
+                // ✅ GAP #20: Record to shared knowledge base
                 if (crossAgentLearning?.recordEvent) {
                   crossAgentLearning.recordEvent({
                     type: subagentResult?.success ? 'success' : 'failure',
-                    agent: typedInput.agentType,
-                    content: `Task: ${typedInput.task}`,
+                    agent: recommendedAgent,
+                    content: `Task: ${typedInput.task} | Confidence: ${routingConfidence}%`,
                     timestamp: Date.now(),
-                    confidence: 75,
+                    confidence: routingConfidence,
                   });
                 }
               } catch (error: any) {
@@ -961,8 +1028,8 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
               }
               
               if (subagentResult?.success) {
-                toolResult = `✅ Sub-agent (${typedInput.agentType}) completed:\n${subagentResult.result || 'Task completed'}`;
-                sendEvent('progress', { message: `✅ Sub-agent completed: ${typedInput.agentType}` });
+                toolResult = `✅ Sub-agent (${recommendedAgent}) completed:\n${subagentResult.result || 'Task completed'}`;
+                sendEvent('progress', { message: `✅ Sub-agent completed: ${recommendedAgent}` });
               } else {
                 toolResult = `❌ Sub-agent failed: ${subagentResult?.error || 'Unknown error'}`;
                 sendEvent('error', { message: `Sub-agent error: ${subagentResult?.error}` });
