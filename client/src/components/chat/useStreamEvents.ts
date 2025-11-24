@@ -318,6 +318,7 @@ export function useStreamEvents(options?: { projectId?: string; targetContext?: 
         messageId: assistantMessageId,
         role: 'assistant',
         content: '',
+        thinking: '',
         timestamp: new Date(),
       };
       dispatchRunState({
@@ -346,6 +347,7 @@ export function useStreamEvents(options?: { projectId?: string; targetContext?: 
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let fullText = '';
+      let fullThinking = '';
 
       if (!reader) {
         throw new Error('Response body not readable');
@@ -373,15 +375,28 @@ export function useStreamEvents(options?: { projectId?: string; targetContext?: 
                   message: { ...assistantMessage },
                 });
                 console.log(`✅ [STREAM] Text delta: +${data.text?.length || 0} chars (total: ${fullText.length})`);
-              } else if (data.type === 'done') {
-                // Stream complete
-                fullText = data.fullResponse || fullText;
-                assistantMessage.content = fullText;
+              } else if (data.type === 'thinking_delta') {
+                // Append thinking chunk
+                fullThinking += data.thinking || '';
+                assistantMessage.thinking = fullThinking;
                 dispatchRunState({
                   type: 'message.added',
                   message: { ...assistantMessage },
                 });
-                console.log(`✅ [STREAM] Done: Final response length: ${fullText.length}`);
+                console.log(`✅ [STREAM] Thinking delta: +${data.thinking?.length || 0} chars`);
+              } else if (data.type === 'done') {
+                // Stream complete
+                fullText = data.fullResponse || fullText;
+                assistantMessage.content = fullText;
+                if (data.thinking) {
+                  fullThinking = data.thinking;
+                  assistantMessage.thinking = fullThinking;
+                }
+                dispatchRunState({
+                  type: 'message.added',
+                  message: { ...assistantMessage },
+                });
+                console.log(`✅ [STREAM] Done: Response ${fullText.length} chars, Thinking ${fullThinking.length} chars`);
               } else if (data.type === 'error') {
                 const errMsg = data.error || 'Streaming error';
                 console.error(`❌ [STREAM] Error:`, errMsg);

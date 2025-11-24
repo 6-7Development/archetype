@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Copy, Check, User } from "lucide-react";
+import { Copy, Check, User, ChevronDown, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { MarkdownMessage } from "./MarkdownMessage";
@@ -7,6 +7,7 @@ import { MarkdownMessage } from "./MarkdownMessage";
 interface Message {
   role: "user" | "assistant" | "system";
   content: string;
+  thinking?: string; // Internal monologue/thought block
   timestamp?: Date;
   id?: string;
   messageId?: string;
@@ -23,9 +24,11 @@ interface MessageBubbleProps {
 export function MessageBubble({ message, index, totalMessages }: MessageBubbleProps) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
+  const [showThinking, setShowThinking] = useState(false);
 
   const isUser = message.role === 'user';
   const isLast = index === totalMessages - 1;
+  const hasThinking = message.thinking && message.thinking.trim().length > 0;
 
   const copyMessage = () => {
     navigator.clipboard.writeText(message.content);
@@ -58,8 +61,31 @@ export function MessageBubble({ message, index, totalMessages }: MessageBubblePr
       </div>
 
       {/* Message Content */}
-      <div className={`flex-1 min-w-0 flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
-        {/* Message bubble */}
+      <div className={`flex-1 min-w-0 flex flex-col ${isUser ? 'items-end' : 'items-start'} gap-2`}>
+        {/* Thinking bubble (collapsible, for assistant only) */}
+        {!isUser && hasThinking && (
+          <button
+            onClick={() => setShowThinking(!showThinking)}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/30 hover:bg-secondary/40 transition-colors text-foreground/80 max-w-2xl group/thinking"
+            data-testid={`button-toggle-thinking-${message.id}`}
+          >
+            <Brain className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="text-xs font-medium">Thinking...</span>
+            <ChevronDown className={`w-3 h-3 flex-shrink-0 transition-transform ${showThinking ? 'rotate-180' : ''}`} />
+          </button>
+        )}
+        
+        {/* Thinking content (hidden by default) */}
+        {!isUser && hasThinking && showThinking && (
+          <div 
+            className="px-3 py-2 rounded-lg bg-secondary/20 max-w-2xl border border-secondary/30 text-xs leading-relaxed text-foreground/75"
+            data-testid={`thinking-bubble-${message.id}`}
+          >
+            <MarkdownMessage content={message.thinking || ''} isUser={false} />
+          </div>
+        )}
+
+        {/* Main message bubble */}
         <div 
           className={`px-3 py-2 max-w-2xl break-words transition-all ${
             isUser
