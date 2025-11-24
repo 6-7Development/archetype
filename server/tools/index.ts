@@ -56,54 +56,12 @@ export const LOMU_TOOLS = [
           description: 'The URL to test (e.g., http://localhost:5000)',
         },
         actions: {
-          type: 'array',
-          description: 'List of actions to perform in the browser',
-          items: {
-            type: 'object',
-            properties: {
-              type: {
-                type: 'string',
-                enum: ['click', 'type', 'navigate', 'screenshot', 'evaluate'],
-                description: 'Type of action to perform',
-              },
-              selector: {
-                type: 'string',
-                description: 'CSS selector for the element (for click, type)',
-              },
-              text: {
-                type: 'string',
-                description: 'Text to type or URL to navigate to',
-              },
-              code: {
-                type: 'string',
-                description: 'JavaScript code to evaluate in the browser',
-              },
-            },
-            required: ['type'],
-          },
+          type: 'string',
+          description: 'JSON array of actions to perform in the browser (e.g., [{"type":"click","selector":"button"},{"type":"screenshot"}])',
         },
         assertions: {
-          type: 'array',
-          description: 'Assertions to verify expected behavior',
-          items: {
-            type: 'object',
-            properties: {
-              type: {
-                type: 'string',
-                enum: ['exists', 'visible', 'text', 'count'],
-                description: 'Type of assertion',
-              },
-              selector: {
-                type: 'string',
-                description: 'CSS selector for the element',
-              },
-              expected: {
-                type: ['string', 'number'],
-                description: 'Expected value',
-              },
-            },
-            required: ['type', 'selector'],
-          },
+          type: 'string',
+          description: 'JSON array of assertions to verify behavior (e.g., [{"type":"exists","selector":"button"},{"type":"text","selector":"h1","expected":"Welcome"}])',
         },
       },
       required: ['url'],
@@ -124,14 +82,12 @@ export const LOMU_TOOLS = [
           description: 'Maximum number of results to return (default: 5)',
         },
         includeDomains: {
-          type: 'array',
-          items: { type: 'string' },
-          description: 'Specific domains to search (e.g., ["github.com", "stackoverflow.com"])',
+          type: 'string',
+          description: 'Comma-separated domains to search (e.g., "github.com,stackoverflow.com")',
         },
         excludeDomains: {
-          type: 'array',
-          items: { type: 'string' },
-          description: 'Domains to exclude from search',
+          type: 'string',
+          description: 'Comma-separated domains to exclude from search',
         },
       },
       required: ['query'],
@@ -175,9 +131,8 @@ export const LOMU_TOOLS = [
           description: 'Relevant context about the project, tech stack, and constraints',
         },
         previousAttempts: {
-          type: 'array',
-          items: { type: 'string' },
-          description: 'List of approaches you already tried that failed',
+          type: 'string',
+          description: 'Comma-separated list of approaches you already tried that failed (e.g., "Approach 1: X failed | Approach 2: Y failed")',
         },
         codeSnapshot: {
           type: 'string',
@@ -198,9 +153,8 @@ export const LOMU_TOOLS = [
           description: 'Describe what to diagnose (e.g., "performance issues", "security vulnerabilities", "platform health", "memory leaks", "database problems"). The tool will automatically determine which checks to run.',
         },
         focus: {
-          type: 'array',
-          items: { type: 'string' },
-          description: 'Optional: specific files to analyze (e.g., ["server/routes.ts"]). If not provided, analyzes common platform files.',
+          type: 'string',
+          description: 'Optional: comma-separated file paths to analyze (e.g., "server/routes.ts,client/src/App.tsx"). If not provided, analyzes common platform files.',
         },
       },
       required: ['target'],
@@ -345,27 +299,8 @@ export const LOMU_TOOLS = [
           description: 'Overall description of the work to be done',
         },
         tasks: {
-          type: 'array',
-          description: 'Array of individual tasks',
-          items: {
-            type: 'object',
-            properties: {
-              title: {
-                type: 'string',
-                description: 'Task title',
-              },
-              description: {
-                type: 'string',
-                description: 'Detailed task description',
-              },
-              status: {
-                type: 'string',
-                enum: ['pending', 'in_progress'],
-                description: 'Initial status (default: pending, use in_progress for first task)',
-              },
-            },
-            required: ['title'],
-          },
+          type: 'string',
+          description: 'JSON array of individual tasks as string (e.g., "[{\\"title\\":\\"Task 1\\",\\"description\\":\\"Desc\\",\\"status\\":\\"pending\\"}]")',
         },
       },
       required: ['title', 'tasks'],
@@ -432,9 +367,8 @@ export const LOMU_TOOLS = [
           description: 'Clear, specific task for the sub-agent. Include file paths, what to change, and success criteria. Example: "Implement user authentication with login/signup forms in auth.tsx and auth.ts"',
         },
         relevantFiles: {
-          type: 'array',
-          items: { type: 'string' },
-          description: 'List of files the sub-agent will work with (e.g., ["auth.tsx", "auth.ts", "schema.ts"])',
+          type: 'string',
+          description: 'Comma-separated file paths the sub-agent will work with (e.g., "auth.tsx,auth.ts,schema.ts")',
         },
         projectId: {
           type: 'string',
@@ -510,9 +444,8 @@ export const LOMU_TOOLS = [
           description: 'Your current approach/implementation strategy',
         },
         constraints: {
-          type: 'array',
-          items: { type: 'string' },
-          description: 'Constraints to consider (e.g., "Must not break existing auth", "Performance critical")',
+          type: 'string',
+          description: 'Comma-separated constraints to consider (e.g., "Must not break existing auth | Performance critical")',
         },
       },
       required: ['reviewType', 'workDescription'],
@@ -538,9 +471,8 @@ export const LOMU_TOOLS = [
           description: 'The knowledge content to store',
         },
         tags: {
-          type: 'array',
-          items: { type: 'string' },
-          description: 'Tags for easier searching (e.g., ["react", "typescript", "error-handling"])',
+          type: 'string',
+          description: 'Comma-separated tags for easier searching (e.g., "react,typescript,error-handling")',
         },
         source: {
           type: 'string',
@@ -569,9 +501,8 @@ export const LOMU_TOOLS = [
           description: 'Filter by category (optional)',
         },
         tags: {
-          type: 'array',
-          items: { type: 'string' },
-          description: 'Filter by tags (optional)',
+          type: 'string',
+          description: 'Comma-separated tags to filter by (optional, e.g., "react,typescript")',
         },
         limit: {
           type: 'number',
@@ -621,9 +552,8 @@ export const LOMU_TOOLS = [
           description: 'Programming language filter (e.g., "typescript", "python")',
         },
         tags: {
-          type: 'array',
-          items: { type: 'string' },
-          description: 'Filter by tags',
+          type: 'string',
+          description: 'Comma-separated tags to filter by (e.g., "react,hooks")',
         },
         store: {
           type: 'object',
