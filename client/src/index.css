@@ -175,19 +175,19 @@
   --graphite: 216 11% 12%;         /* Professional text #1B1D21 */
   --cream: 47 100% 95%;            /* Soft warm white */
 
-  --background: 0 0% 100%;         /* Pure white background */
+  --background: 40 50% 92%;        /* Warm tan background */
 
   --foreground: 216 11% 12%;       /* Dark graphite text */
 
-  --border: 0 0% 89%;              /* Light grey border */
+  --border: 40 40% 80%;            /* Tan border */
 
-  --card: 0 0% 100%;               /* White cards */
+  --card: 40 45% 94%;              /* Tan cards */
 
   --card-foreground: 216 11% 12%;  /* Dark text on cards */
 
-  --card-border: 0 0% 89%;
+  --card-border: 40 40% 85%;
 
-  --sidebar: 0 0% 98%;             /* Light grey sidebar */
+  --sidebar: 40 50% 91%;           /* Tan sidebar */
 
   --sidebar-foreground: 216 11% 12%;
 
@@ -217,7 +217,7 @@
 
   --secondary-foreground: 0 0% 100%;
 
-  --muted: 0 0% 96%;               /* Light muted background */
+  --muted: 40 35% 88%;             /* Light tan muted background */
 
   --muted-foreground: 0 0% 45%;    /* Medium grey text */
 
@@ -229,7 +229,7 @@
 
   --destructive-foreground: 0 0% 100%;
 
-  --input: 0 0% 96%;
+  --input: 40 40% 90%;
   --ring: 40 97% 50%;
   --chart-1: 220 85% 42%;
   --chart-2: 142 65% 48%;
@@ -303,19 +303,19 @@
   --graphite: 216 11% 12%;         /* Professional text #1B1D21 */
   --cream: 45 20% 98%;             /* Subtle warm white */
 
-  --background: 218 14% 11%;       /* Dark charcoal background - comfortable on eyes */
+  --background: 40 30% 18%;        /* Dark tan background - warm and comfortable */
 
   --foreground: 0 0% 95%;          /* Light text for dark background */
 
-  --border: 216 12% 20%;           /* Visible dark border */
+  --border: 40 25% 30%;            /* Dark tan border */
 
-  --card: 218 14% 15%;             /* Slightly lighter cards on dark bg */
+  --card: 40 30% 22%;              /* Slightly lighter tan cards */
 
   --card-foreground: 0 0% 95%;
 
-  --card-border: 216 12% 25%;
+  --card-border: 40 25% 35%;
 
-  --sidebar: 218 14% 13%;          /* Dark sidebar */
+  --sidebar: 40 30% 20%;           /* Dark tan sidebar */
 
   --sidebar-foreground: 0 0% 95%;
 
@@ -357,8 +357,8 @@
 
   --destructive-foreground: 0 0% 100%;
 
-  --input: 218 14% 20%;
-  --ring: 220 85% 42%;
+  --input: 40 30% 25%;
+  --ring: 40 97% 50%;
   --chart-1: 220 85% 42%;
   --chart-2: 142 65% 48%;
   --chart-3: 38 88% 52%;
