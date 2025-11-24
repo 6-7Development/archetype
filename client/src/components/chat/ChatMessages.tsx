@@ -187,7 +187,14 @@ export function ChatMessages({
         className="flex-1 overflow-y-auto px-4 py-6 space-y-6"
         data-testid="chat-messages-container"
       >
-        {messages.filter(msg => msg.content.trim().length > 0).map((message, index) => (
+        {messages.filter((msg, idx) => {
+          // Always show user messages, even if empty
+          if (msg.role === 'user') return true;
+          // Always show the last message (even if empty - it's streaming in)
+          if (idx === messages.length - 1) return true;
+          // Filter out older empty assistant messages
+          return msg.content.trim().length > 0;
+        }).map((message, index) => (
           <div
             key={message.id || message.messageId || index}
             className={cn(
