@@ -123,7 +123,7 @@ export default function WorkingAuth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative dark bg-charcoal-950">
+    <div className="min-h-screen flex items-center justify-center p-4 relative bg-background">
       {/* Honeycomb Pattern Background - Matches Landing Page */}
       <div className="fixed inset-0 opacity-5 pointer-events-none" style={{ zIndex: 0 }}>
         <div className="absolute inset-0" style={{
@@ -154,7 +154,7 @@ export default function WorkingAuth() {
               <CardTitle className="text-3xl font-bold bg-gradient-to-r from-honey via-nectar to-mint bg-clip-text text-transparent mb-2">
                 {mode === "login" ? "Welcome Back" : "Get Started"}
               </CardTitle>
-              <CardDescription className="text-base text-slate-300">
+              <CardDescription className="text-base text-muted-foreground">
                 {mode === "login" 
                   ? "Sign in to continue building amazing projects" 
                   : "Create your account and start building with AI"}
@@ -162,7 +162,7 @@ export default function WorkingAuth() {
             </div>
 
             {/* Professional Badge - Honey/Mint Theme */}
-            <div className="flex items-center justify-center gap-2 text-xs text-slate-400 pt-2">
+            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground pt-2">
               <Hexagon className="w-3.5 h-3.5 text-honey fill-honey/20" />
               <span className="font-medium">AI-Powered Development Platform</span>
             </div>
@@ -181,7 +181,7 @@ export default function WorkingAuth() {
                 <Hexagon className="w-4 h-4 mr-2 fill-charcoal-950" />
                 Continue with Replit
               </Button>
-              <p className="text-xs text-center text-slate-400">
+              <p className="text-xs text-center text-muted-foreground">
                 Sign in with Google, GitHub, X, or Apple
               </p>
             </div>
@@ -192,7 +192,7 @@ export default function WorkingAuth() {
                 <Separator />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-3 text-slate-400 font-medium">Testing Credentials (Root Only)</span>
+                <span className="bg-card px-3 text-muted-foreground font-medium">Testing Credentials (Root Only)</span>
               </div>
             </div>
 
@@ -200,7 +200,7 @@ export default function WorkingAuth() {
             {mode === "login" ? (
               <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="login-email" className="text-slate-200">Email Address</Label>
+                  <Label htmlFor="login-email" className="text-foreground">Email Address</Label>
                   <Input 
                     id="login-email"
                     type="email" 
@@ -217,7 +217,7 @@ export default function WorkingAuth() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="login-password" className="text-slate-200">Password</Label>
+                  <Label htmlFor="login-password" className="text-foreground">Password</Label>
                   <Input 
                     id="login-password"
                     type="password" 
@@ -247,7 +247,7 @@ export default function WorkingAuth() {
               <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <Label htmlFor="register-firstname" className="text-slate-200">First Name</Label>
+                    <Label htmlFor="register-firstname" className="text-foreground">First Name</Label>
                     <Input 
                       id="register-firstname"
                       placeholder="John" 
@@ -263,7 +263,7 @@ export default function WorkingAuth() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="register-lastname" className="text-slate-200">Last Name</Label>
+                    <Label htmlFor="register-lastname" className="text-foreground">Last Name</Label>
                     <Input 
                       id="register-lastname"
                       placeholder="Doe" 
@@ -280,7 +280,7 @@ export default function WorkingAuth() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="register-email" className="text-slate-200">Email Address</Label>
+                  <Label htmlFor="register-email" className="text-foreground">Email Address</Label>
                   <Input 
                     id="register-email"
                     type="email" 
@@ -297,7 +297,7 @@ export default function WorkingAuth() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="register-password" className="text-slate-200">Password</Label>
+                  <Label htmlFor="register-password" className="text-foreground">Password</Label>
                   <Input 
                     id="register-password"
                     type="password" 
@@ -327,7 +327,7 @@ export default function WorkingAuth() {
 
             {/* Toggle Mode */}
             <div className="text-center text-sm pt-2">
-              <span className="text-slate-400">
+              <span className="text-muted-foreground">
                 {mode === "login" ? "Don't have an account?" : "Already have an account?"}
               </span>
               {" "}
@@ -347,7 +347,7 @@ export default function WorkingAuth() {
 
             {/* Trust Badge - Matches Landing */}
             <div className="pt-4 border-t border-honey/10">
-              <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
+              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                 <Sparkles className="w-3.5 h-3.5 text-honey" />
                 <span>Gemini 2.5 Flash + Claude Sonnet 4</span>
               </div>
@@ -359,7 +359,7 @@ export default function WorkingAuth() {
         <div className="mt-6 text-center text-sm">
           <a 
             href="/" 
-            className="text-slate-300 hover:text-foreground transition-colors inline-flex items-center gap-1.5 hover:underline font-medium"
+            className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5 hover:underline font-medium"
           >
             ← Back to Home
           </a>
