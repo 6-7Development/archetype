@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { readdir } from "fs/promises";
 import { join } from "path";
+import { isAuthenticated } from "../universalAuth";
 
 interface FileItem {
   id: string;
@@ -75,7 +76,7 @@ async function buildFileTree(dirPath: string, relativePath: string = "", depth: 
 
 export function registerProjectFileRoutes(app: Express) {
   // GET /api/project-files - Get project file structure (with projectId isolation)
-  app.get("/api/project-files", async (req, res) => {
+  app.get("/api/project-files", isAuthenticated, async (req, res) => {
     try {
       const projectId = req.query.projectId as string | undefined;
       
