@@ -372,6 +372,7 @@ export function useStreamEvents(options?: { projectId?: string; targetContext?: 
                   type: 'message.added',
                   message: { ...assistantMessage },
                 });
+                console.log(`✅ [STREAM] Text delta: +${data.text?.length || 0} chars (total: ${fullText.length})`);
               } else if (data.type === 'done') {
                 // Stream complete
                 fullText = data.fullResponse || fullText;
@@ -380,22 +381,24 @@ export function useStreamEvents(options?: { projectId?: string; targetContext?: 
                   type: 'message.added',
                   message: { ...assistantMessage },
                 });
+                console.log(`✅ [STREAM] Done: Final response length: ${fullText.length}`);
               } else if (data.type === 'error') {
-                throw new Error(data.error || 'Streaming error');
+                const errMsg = data.error || 'Streaming error';
+                console.error(`❌ [STREAM] Error:`, errMsg);
+                throw new Error(errMsg);
               }
             } catch (e) {
               // Ignore JSON parse errors from non-data lines
-              if (!line.includes('[DONE]')) {
-                console.debug('SSE parse debug:', line);
+              if (!line.includes('[DONE]') && line.trim().length > 0) {
+                console.debug('SSE parse:', line.substring(0, 100));
               }
             }
           }
         }
       }
 
-      // Persist to localStorage after streaming completes
-      const newMessages = [...runState.messages.slice(0, -1), assistantMessage];
-      persistMessages(newMessages);
+      // Persist messages after streaming completes
+      persistMessages(runState.messages);
 
       dispatchRunState({ type: 'loading.end' });
 
