@@ -1,8 +1,11 @@
 import { AIModelSelector } from "@/components/ai-model-selector";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Coins, History, Settings, Wifi, WifiOff } from "lucide-react";
+import { Coins, History, Settings, Wifi, WifiOff, BarChart3 } from "lucide-react";
+import { TokenMeter } from "@/components/token-meter";
+import { RateLimitIndicator } from "@/components/rate-limit-indicator";
 import { cn } from "@/lib/utils";
+import { useLink } from "wouter";
 
 interface ChatHeaderProps {
   targetContext: 'platform' | 'project' | 'architect';
@@ -12,6 +15,8 @@ interface ChatHeaderProps {
   onHistoryClick?: () => void;
   onSettingsClick?: () => void;
   className?: string;
+  sessionTokens?: { inputTokens: number; outputTokens: number; totalTokens: number; estimatedCost: number };
+  monthlyTokens?: { inputTokens: number; outputTokens: number; totalTokens: number; estimatedCost: number };
 }
 
 export function ChatHeader({
@@ -21,8 +26,11 @@ export function ChatHeader({
   isConnected = true,
   onHistoryClick,
   onSettingsClick,
-  className
+  className,
+  sessionTokens,
+  monthlyTokens
 }: ChatHeaderProps) {
+  const [, navigate] = useLink();
   return (
     <header 
       className={cn(
@@ -46,6 +54,9 @@ export function ChatHeader({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Token Meter */}
+          {sessionTokens && <TokenMeter sessionTokens={sessionTokens} monthlyTokens={monthlyTokens} />}
+
           <Badge 
             variant={isFreeAccess ? "default" : "secondary"}
             className="hidden sm:flex gap-1.5 items-center"
@@ -54,6 +65,18 @@ export function ChatHeader({
             <Coins className="h-3.5 w-3.5" />
             {isFreeAccess ? "FREE" : `${creditBalance} credits`}
           </Badge>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/consultation-history')}
+            className="h-8 w-8"
+            title="Architect Consultations"
+            data-testid="button-consultations"
+          >
+            <BarChart3 className="h-4 w-4" />
+            <span className="sr-only">Architect Consultations</span>
+          </Button>
 
           <Button
             variant="ghost"
