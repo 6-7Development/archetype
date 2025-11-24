@@ -354,6 +354,15 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
     console.log('   💳 Credits: 1 credit = 1,000 tokens = $0.05 (retail pricing)');
   }
 
+  // Start automatic chat cleanup scheduler
+  console.log('🧹 Initializing automatic chat cleanup...');
+  try {
+    const { startCleanupScheduler } = await import('./services/chatCleanup');
+    await startCleanupScheduler();
+  } catch (cleanupError: any) {
+    console.warn('⚠️ Chat cleanup scheduler failed to start (non-critical):', cleanupError.message);
+  }
+
   // Start platform health monitor
   const { healthMonitor } = await import('./services/healthMonitor');
   await healthMonitor.start();
