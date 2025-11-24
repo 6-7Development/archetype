@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronRight, ChevronDown, File, Folder, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
 
 interface FileItem {
   id: string;
@@ -18,42 +19,18 @@ interface FileBrowserProps {
   changedFiles?: string[];
 }
 
-const DEFAULT_STRUCTURE: FileItem[] = [
-  {
-    id: "1",
-    name: "client",
-    type: "folder",
-    path: "client",
-    children: [
-      { id: "1-1", name: "src", type: "folder", path: "client/src", children: [
-        { id: "1-1-1", name: "App.tsx", type: "file", path: "client/src/App.tsx" },
-        { id: "1-1-2", name: "index.css", type: "file", path: "client/src/index.css" },
-      ]},
-      { id: "1-2", name: "package.json", type: "file", path: "client/package.json" },
-    ],
-  },
-  {
-    id: "2",
-    name: "server",
-    type: "folder",
-    path: "server",
-    children: [
-      { id: "2-1", name: "index.ts", type: "file", path: "server/index.ts" },
-      { id: "2-2", name: "routes", type: "folder", path: "server/routes", children: [
-        { id: "2-2-1", name: "chat.ts", type: "file", path: "server/routes/chat.ts" },
-      ]},
-    ],
-  },
-  {
-    id: "3",
-    name: "shared",
-    type: "folder",
-    path: "shared",
-    children: [
-      { id: "3-1", name: "schema.ts", type: "file", path: "shared/schema.ts" },
-    ],
-  },
-];
+// Fetch real files from API
+function useProjectFiles() {
+  return useQuery({
+    queryKey: ['/api/files'],
+    queryFn: async () => {
+      const res = await fetch('/api/files');
+      if (!res.ok) throw new Error('Failed to load files');
+      return res.json();
+    },
+    staleTime: 30000, // 30 seconds
+  });
+}
 
 function FileTreeItem({ 
   item, 
@@ -121,27 +98,35 @@ function FileTreeItem({
 }
 
 export function FileBrowser({ 
-  files = DEFAULT_STRUCTURE, 
+  files: propFiles,
   onFileSelect, 
   changedFiles 
 }: FileBrowserProps) {
+  const { data, isLoading } = useProjectFiles();
+  const files = data?.files || propFiles || [];
+
   return (
     <div className="flex flex-col h-full bg-card border-r border-border">
       {/* Header */}
       <div className="px-3 py-2 border-b border-border bg-muted/30">
         <div className="text-xs font-semibold text-foreground">Files</div>
+        {isLoading && <div className="text-xs text-muted-foreground">Loading...</div>}
       </div>
 
       {/* File Tree */}
       <div className="flex-1 overflow-y-auto p-2 space-y-1">
-        {files.map((item) => (
-          <FileTreeItem
-            key={item.id}
-            item={item}
-            onSelect={onFileSelect}
-            changedFiles={changedFiles}
-          />
-        ))}
+        {files.length === 0 ? (
+          <div className="text-xs text-muted-foreground p-2">No files found</div>
+        ) : (
+          files.map((item) => (
+            <FileTreeItem
+              key={item.id}
+              item={item}
+              onSelect={onFileSelect}
+              changedFiles={changedFiles}
+            />
+          ))
+        )}
       </div>
     </div>
   );

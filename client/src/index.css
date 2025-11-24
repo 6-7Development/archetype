@@ -219,7 +219,7 @@
 
   --muted: 40 35% 88%;             /* Light tan muted background */
 
-  --muted-foreground: 0 0% 45%;    /* Medium grey text */
+  --muted-foreground: 216 11% 20%;  /* Dark grey text - stronger contrast on tan */
 
   --accent: 171 100% 42%;          /* Mint accent */
 
@@ -347,7 +347,7 @@
 
   --muted: 218 14% 20%;            /* Muted dark tone */
 
-  --muted-foreground: 0 0% 70%;
+  --muted-foreground: 0 0% 88%;    /* Bright text - strong contrast on dark */
 
   --accent: 171 100% 42%;          /* Mint accent - energetic */
 

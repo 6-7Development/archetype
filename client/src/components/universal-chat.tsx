@@ -646,6 +646,8 @@ export function UniversalChat({
         isGenerating={isGenerating}
         latestMessage={latestMessage}
       />
+        </div>
+      </div>
 
       {/* Console Output Panel */}
       <ConsoleViewer
