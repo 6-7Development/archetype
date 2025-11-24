@@ -234,7 +234,7 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <ConfigProvider>
-          <ThemeProvider defaultTheme="light">
+          <ThemeProvider defaultTheme="light" forcedTheme="light">
             <VersionProvider mobileBreakpoint={768}>
               <TooltipProvider>
                 <CommandPalette />
