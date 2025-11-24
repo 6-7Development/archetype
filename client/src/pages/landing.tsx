@@ -125,36 +125,36 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section - Responsive with proper spacing to clear fixed header */}
-      <section className="pt-32 sm:pt-36 md:pt-44 pb-8 sm:pb-16 md:pb-20 px-3 sm:px-6 relative z-10">
+      <section className="pt-32 sm:pt-36 md:pt-44 pb-12 sm:pb-20 md:pb-24 px-3 sm:px-6 relative z-10">
         <div className="container mx-auto max-w-6xl text-center">
           {/* Powered by Badge - Visible below header */}
-          <div className="mb-4 sm:mb-8 inline-flex items-center gap-2 px-3 py-1.5 sm:gap-3 sm:px-6 sm:py-3 rounded-full bg-honey/10 backdrop-blur-sm shadow-[inset_0_0_0_1px_rgba(247,181,0,0.2)]">
-            <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-honey flex-shrink-0" />
-            <span className="text-[11px] sm:text-sm text-honey font-medium">Gemini 2.5 Flash + Claude Sonnet 4</span>
+          <div className="mb-6 sm:mb-8 inline-flex items-center gap-2 px-4 py-2 sm:gap-3 sm:px-6 sm:py-3 rounded-full bg-gradient-to-r from-honey/5 via-nectar/5 to-mint/5 border border-honey/20 backdrop-blur-sm shadow-sm hover-elevate transition-all duration-300" data-testid="badge-hero-stack">
+            <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-honey flex-shrink-0 animate-pulse" />
+            <span className="text-xs sm:text-sm bg-gradient-to-r from-honey via-nectar to-mint bg-clip-text text-transparent font-semibold">Gemini 2.5 Flash + Claude Sonnet 4</span>
           </div>
           
           {/* Main Headline - Fluid responsive sizing */}
-          <h1 className="font-bold mb-3 sm:mb-6 leading-tight tracking-tight" style={{ fontSize: 'clamp(2rem, 6vw, 4.5rem)' }}>
-            <span className="bg-gradient-to-r from-honey via-nectar to-mint bg-clip-text text-transparent text-balance">
+          <h1 className="font-bold mb-4 sm:mb-6 leading-[1.1] tracking-tight" style={{ fontSize: 'clamp(2.25rem, 7vw, 5rem)' }}>
+            <span className="bg-gradient-to-r from-honey via-nectar to-mint bg-clip-text text-transparent text-balance inline-block">
               Build Full-Stack Apps With AI in Minutes
             </span>
           </h1>
           
-          <p className="text-sm sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-10 max-w-3xl mx-auto">
+          <p className="text-base sm:text-xl md:text-2xl text-muted-foreground mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed font-light">
             Like a hive of expert developers working in perfect harmony. Zero coding required—just pure honey-sweet results.
           </p>
 
           {/* CTAs - Stack on mobile, row on desktop */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center items-stretch sm:items-center mb-8 sm:mb-16 md:mb-20 max-w-xs sm:max-w-none mx-auto">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center mb-12 sm:mb-20 md:mb-24 max-w-xs sm:max-w-none mx-auto">
             <Button 
               size="lg" 
-              className="w-full sm:w-auto min-h-[44px] bg-honey text-charcoal-950 hover:bg-honey/90 font-semibold text-base px-8" 
+              className="w-full sm:w-auto min-h-[52px] bg-honey text-charcoal-950 hover:bg-honey/90 font-semibold text-base sm:text-lg px-8 sm:px-10 shadow-lg shadow-honey/20 transition-all duration-300" 
               data-testid="button-hero-start" 
               asChild
             >
               <Link href="/builder">
                 <span className="flex items-center gap-2">
-                  <Zap className="w-4 sm:w-5 h-4 sm:h-5" />
+                  <Zap className="w-5 h-5" />
                   Start Building Free
                 </span>
               </Link>
@@ -162,32 +162,37 @@ export default function Landing() {
             <Button 
               size="lg" 
               variant="outline" 
-              className="w-full sm:w-auto min-h-[44px] text-foreground border-border hover:bg-muted" 
+              className="w-full sm:w-auto min-h-[52px] text-foreground border-border hover:bg-muted text-base sm:text-lg px-8 sm:px-10 transition-all duration-300" 
               data-testid="button-hero-pricing" 
               asChild
             >
               <Link href="/pricing">
                 <span className="flex items-center gap-2">
                   View Pricing
-                  <ArrowRight className="w-4 sm:w-5 h-4 sm:h-5" />
+                  <ArrowRight className="w-5 h-5" />
                 </span>
               </Link>
             </Button>
           </div>
 
           {/* Feature Stats - 2 cols mobile, 4 cols desktop */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 max-w-5xl mx-auto">
             {[
-              { value: "Sonnet 4", label: "Claude AI" },
-              { value: "7-Phase", label: "AI Workflow" },
-              { value: "Full Stack", label: "Web Expertise" },
-              { value: "2D/3D", label: "Game Support" }
+              { value: "Sonnet 4", label: "Claude AI", icon: Sparkles, testId: "card-feature-sonnet4" },
+              { value: "7-Phase", label: "AI Workflow", icon: Zap, testId: "card-feature-7phase" },
+              { value: "Full Stack", label: "Web Expertise", icon: Code, testId: "card-feature-fullstack" },
+              { value: "2D/3D", label: "Game Support", icon: Rocket, testId: "card-feature-games" }
             ].map((stat, i) => (
-              <div key={i} className="text-center p-3 sm:p-4 rounded-lg bg-muted border border-border">
-                <div className="text-xl sm:text-2xl font-bold text-honey mb-1">
+              <div 
+                key={i} 
+                data-testid={stat.testId}
+                className="group text-center p-4 sm:p-6 rounded-xl bg-card border border-border hover-elevate transition-all duration-300 shadow-sm hover:shadow-md"
+              >
+                <stat.icon className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-3 text-honey group-hover:scale-110 transition-transform duration-300" />
+                <div className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-honey to-nectar bg-clip-text text-transparent mb-1">
                   {stat.value}
                 </div>
-                <div className="text-xs sm:text-sm text-muted-foreground">{stat.label}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground font-medium">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -195,69 +200,87 @@ export default function Landing() {
       </section>
 
       {/* Platform Screenshots Section - Responsive with extra top spacing */}
-      <section className="pt-16 sm:pt-20 md:pt-24 pb-12 sm:pb-16 md:pb-20 px-4 sm:px-6 relative">
+      <section className="pt-20 sm:pt-24 md:pt-32 pb-16 sm:pb-20 md:pb-24 px-4 sm:px-6 relative">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 sm:mb-12 text-foreground break-words">
-            See the Platform in Action
-          </h2>
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-4 text-foreground break-words">
+              See the Platform in Action
+            </h2>
+            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+              Everything you need to build, test, and deploy production-ready applications
+            </p>
+          </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
             {/* Screenshot 1: AI Chat */}
-            <Card className="p-4 sm:p-6 bg-background border-border/50 backdrop-blur-sm hover-elevate">
-              <div className="aspect-video bg-background rounded-lg border border-border/50 flex items-center justify-center mb-3 sm:mb-4">
-                <div className="text-center">
-                  <Sparkles className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-2 sm:mb-3 text-honey" />
-                  <p className="text-sm text-foreground/90 font-medium">AI Chat Interface</p>
-                  <p className="text-xs text-muted-foreground mt-1">Real-time code generation</p>
+            <Card data-testid="card-screenshot-chat" className="group p-6 sm:p-8 bg-card border-border hover-elevate transition-all duration-300 shadow-sm hover:shadow-xl">
+              <div className="aspect-video bg-gradient-to-br from-honey/5 to-nectar/5 rounded-xl border border-border flex items-center justify-center mb-5 relative">
+                <div className="text-center z-10">
+                  <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-honey/10 border border-honey/20 mb-3 group-hover:scale-110 transition-transform duration-300">
+                    <Sparkles className="w-8 sm:w-10 h-8 sm:h-10 text-honey" />
+                  </div>
+                  <p className="text-sm sm:text-base text-foreground/90 font-semibold">AI Chat Interface</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">Real-time code generation</p>
                 </div>
+                {/* Decorative gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
-              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2 break-words">Chat with the Hive</h3>
-              <p className="text-sm text-muted-foreground break-words">
+              <h3 className="text-lg sm:text-xl font-bold text-foreground mb-3 break-words">Chat with the Hive</h3>
+              <p className="text-sm sm:text-base text-muted-foreground break-words leading-relaxed">
                 Tell the swarm what you need—watch specialized AI workers build your app with hive-mind precision
               </p>
             </Card>
 
             {/* Screenshot 2: Live Preview */}
-            <Card className="p-4 sm:p-6 bg-background border-border/50 backdrop-blur-sm hover-elevate">
-              <div className="aspect-video bg-background rounded-lg border border-border/50 flex items-center justify-center mb-3 sm:mb-4">
-                <div className="text-center">
-                  <Play className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-2 sm:mb-3 text-mint" />
-                  <p className="text-sm text-foreground/90 font-medium">Live Preview</p>
-                  <p className="text-xs text-muted-foreground mt-1">Instant visual feedback</p>
+            <Card data-testid="card-screenshot-preview" className="group p-6 sm:p-8 bg-card border-border hover-elevate transition-all duration-300 shadow-sm hover:shadow-xl">
+              <div className="aspect-video bg-gradient-to-br from-mint/5 to-mint/10 rounded-xl border border-border flex items-center justify-center mb-5 relative">
+                <div className="text-center z-10">
+                  <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-mint/10 border border-mint/20 mb-3 group-hover:scale-110 transition-transform duration-300">
+                    <Play className="w-8 sm:w-10 h-8 sm:h-10 text-mint" />
+                  </div>
+                  <p className="text-sm sm:text-base text-foreground/90 font-semibold">Live Preview</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">Instant visual feedback</p>
                 </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
-              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2 break-words">Watch the Hive Work</h3>
-              <p className="text-sm text-muted-foreground break-words">
+              <h3 className="text-lg sm:text-xl font-bold text-foreground mb-3 break-words">Watch the Hive Work</h3>
+              <p className="text-sm sm:text-base text-muted-foreground break-words leading-relaxed">
                 See your app crystallize like honey as our worker bees code in real-time
               </p>
             </Card>
 
             {/* Screenshot 3: Code Editor */}
-            <Card className="p-4 sm:p-6 bg-background border-border/50 backdrop-blur-sm hover-elevate">
-              <div className="aspect-video bg-background rounded-lg border border-border/50 flex items-center justify-center mb-3 sm:mb-4">
-                <div className="text-center">
-                  <Code className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-2 sm:mb-3 text-honey" />
-                  <p className="text-sm text-foreground/90 font-medium">Monaco Editor</p>
-                  <p className="text-xs text-muted-foreground mt-1">Full IDE in browser</p>
+            <Card data-testid="card-screenshot-editor" className="group p-6 sm:p-8 bg-card border-border hover-elevate transition-all duration-300 shadow-sm hover:shadow-xl">
+              <div className="aspect-video bg-gradient-to-br from-honey/5 to-nectar/5 rounded-xl border border-border flex items-center justify-center mb-5 relative">
+                <div className="text-center z-10">
+                  <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-honey/10 border border-honey/20 mb-3 group-hover:scale-110 transition-transform duration-300">
+                    <Code className="w-8 sm:w-10 h-8 sm:h-10 text-honey" />
+                  </div>
+                  <p className="text-sm sm:text-base text-foreground/90 font-semibold">Monaco Editor</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">Full IDE in browser</p>
                 </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
-              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2 break-words">Your Personal Honeycomb</h3>
-              <p className="text-sm text-muted-foreground break-words">
+              <h3 className="text-lg sm:text-xl font-bold text-foreground mb-3 break-words">Your Personal Honeycomb</h3>
+              <p className="text-sm sm:text-base text-muted-foreground break-words leading-relaxed">
                 Every file perfectly organized in hexagonal precision—full IDE power at your fingertips
               </p>
             </Card>
 
             {/* Screenshot 4: Deployment */}
-            <Card className="p-4 sm:p-6 bg-background border-border/50 backdrop-blur-sm hover-elevate">
-              <div className="aspect-video bg-background rounded-lg border border-border/50 flex items-center justify-center mb-3 sm:mb-4">
-                <div className="text-center">
-                  <Rocket className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-2 sm:mb-3 text-mint" />
-                  <p className="text-sm text-foreground/90 font-medium">Production Deployment</p>
-                  <p className="text-xs text-muted-foreground mt-1">Production hosting</p>
+            <Card data-testid="card-screenshot-deployment" className="group p-6 sm:p-8 bg-card border-border hover-elevate transition-all duration-300 shadow-sm hover:shadow-xl">
+              <div className="aspect-video bg-gradient-to-br from-mint/5 to-mint/10 rounded-xl border border-border flex items-center justify-center mb-5 relative">
+                <div className="text-center z-10">
+                  <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-mint/10 border border-mint/20 mb-3 group-hover:scale-110 transition-transform duration-300">
+                    <Rocket className="w-8 sm:w-10 h-8 sm:h-10 text-mint" />
+                  </div>
+                  <p className="text-sm sm:text-base text-foreground/90 font-semibold">Production Deployment</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">Production hosting</p>
                 </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
-              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2 break-words">Harvest Your Creation</h3>
-              <p className="text-sm text-muted-foreground break-words">
+              <h3 className="text-lg sm:text-xl font-bold text-foreground mb-3 break-words">Harvest Your Creation</h3>
+              <p className="text-sm sm:text-base text-muted-foreground break-words leading-relaxed">
                 Deploy to production with Cloudflare Pages—custom domains and SSL included
               </p>
             </Card>
@@ -266,46 +289,48 @@ export default function Landing() {
       </section>
 
       {/* Core Features - Responsive Grid */}
-      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 relative">
+      <section className="py-20 sm:py-24 md:py-32 px-4 sm:px-6 relative bg-gradient-to-b from-transparent via-honey/5 to-transparent">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 break-words">
-              <span className="bg-gradient-to-r from-honey to-mint bg-clip-text text-transparent">
+          <div className="text-center mb-16 sm:mb-20">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 break-words">
+              <span className="bg-gradient-to-r from-honey via-nectar to-mint bg-clip-text text-transparent">
                 Why Choose BeehiveAI
               </span>
             </h2>
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground break-words">Swarm intelligence for modern development</p>
+            <p className="text-base sm:text-xl text-muted-foreground break-words max-w-2xl mx-auto">
+              Swarm intelligence for modern development
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Speed */}
-            <Card className="p-6 sm:p-8 bg-background border-border/50 backdrop-blur-sm hover-elevate h-full">
-              <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-xl bg-honey/20 flex items-center justify-center text-honey mb-4 sm:mb-6">
-                <Zap className="w-6 sm:w-7 h-6 sm:h-7" />
+            <Card className="group p-8 sm:p-10 bg-card border-border hover-elevate h-full transition-all duration-300 shadow-sm hover:shadow-lg">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-honey/20 to-nectar/20 flex items-center justify-center text-honey mb-6 group-hover:scale-110 transition-transform duration-300 border border-honey/20">
+                <Zap className="w-8 sm:w-10 h-8 sm:h-10" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 text-foreground break-words">Bee-Line to Production</h3>
+              <h3 className="text-xl sm:text-2xl font-bold mb-4 text-foreground break-words">Bee-Line to Production</h3>
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed break-words">
-                Our swarm takes the most efficient path. 12-step workflow delivers production-ready code in minutes—tested and deployed.
+                Our swarm takes the most efficient path. 7-phase workflow delivers production-ready code in minutes—tested and deployed.
               </p>
             </Card>
 
             {/* Quality */}
-            <Card className="p-6 sm:p-8 bg-background border-border/50 backdrop-blur-sm hover-elevate h-full">
-              <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-xl bg-mint/20 flex items-center justify-center text-mint mb-4 sm:mb-6">
-                <Shield className="w-6 sm:w-7 h-6 sm:h-7" />
+            <Card className="group p-8 sm:p-10 bg-card border-border hover-elevate h-full transition-all duration-300 shadow-sm hover:shadow-lg">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-mint/20 to-mint/30 flex items-center justify-center text-mint mb-6 group-hover:scale-110 transition-transform duration-300 border border-mint/20">
+                <Shield className="w-8 sm:w-10 h-8 sm:h-10" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 text-foreground break-words">Queen Bee Quality</h3>
+              <h3 className="text-xl sm:text-2xl font-bold mb-4 text-foreground break-words">Queen Bee Quality</h3>
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed break-words">
                 Every line inspected by our royal guard—self-testing, validation, and security audits ensure golden-standard code
               </p>
             </Card>
 
             {/* Swarm */}
-            <Card className="p-6 sm:p-8 bg-background border-border/50 backdrop-blur-sm hover-elevate h-full">
-              <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-xl bg-honey/20 flex items-center justify-center text-honey mb-4 sm:mb-6">
-                <Hexagon className="w-6 sm:w-7 h-6 sm:h-7" />
+            <Card className="group p-8 sm:p-10 bg-card border-border hover-elevate h-full transition-all duration-300 shadow-sm hover:shadow-lg sm:col-span-2 lg:col-span-1">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-honey/20 to-nectar/20 flex items-center justify-center text-honey mb-6 group-hover:scale-110 transition-transform duration-300 border border-honey/20">
+                <Hexagon className="w-8 sm:w-10 h-8 sm:h-10" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 text-foreground break-words">Hive Mind Power</h3>
+              <h3 className="text-xl sm:text-2xl font-bold mb-4 text-foreground break-words">Hive Mind Power</h3>
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed break-words">
                 Specialized AI workers buzzing in perfect sync—planning, building, testing, deploying. Ship faster with true collaboration.
               </p>
@@ -315,67 +340,101 @@ export default function Landing() {
       </section>
 
       {/* CTA Section - Responsive */}
-      <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 relative">
-        <div className="container mx-auto max-w-4xl text-center">
-          <div className="p-8 sm:p-10 md:p-12 rounded-2xl bg-gradient-to-br from-honey/10 to-mint/10 border border-honey/20 backdrop-blur-sm">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 text-foreground break-words">
-              Ready to Taste the Honey?
-            </h2>
-            <p className="text-base sm:text-lg md:text-xl text-foreground/90 mb-6 sm:mb-8 break-words">
-              Join developers worldwide shipping production apps in minutes, not months
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-xs sm:max-w-none mx-auto">
-              <Button 
-                size="lg" 
-                className="w-full sm:w-auto min-h-[44px] bg-honey text-charcoal-950 hover:bg-honey/90 font-semibold text-base px-8" 
-                data-testid="button-cta-start"
-                asChild
-              >
-                <Link href="/builder">
-                  <span className="flex items-center gap-2">
-                    <Rocket className="w-4 sm:w-5 h-4 sm:h-5" />
-                    Start Building Free
-                  </span>
-                </Link>
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="w-full sm:w-auto min-h-[44px] text-foreground border-border hover:bg-muted" 
-                data-testid="button-cta-pricing"
-                asChild
-              >
-                <Link href="/pricing">View Pricing Plans</Link>
-              </Button>
+      <section className="py-20 sm:py-24 md:py-32 px-4 sm:px-6 relative overflow-hidden">
+        <div className="container mx-auto max-w-5xl text-center relative z-10">
+          <div className="relative p-10 sm:p-12 md:p-16 rounded-3xl bg-gradient-to-br from-honey/10 via-nectar/5 to-mint/10 border border-honey/20 backdrop-blur-sm shadow-2xl shadow-honey/10 overflow-hidden">
+            {/* Decorative gradient orbs */}
+            <div className="absolute -top-24 -left-24 w-48 h-48 bg-honey/20 rounded-full blur-3xl" />
+            <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-mint/20 rounded-full blur-3xl" />
+            
+            <div className="relative z-10">
+              <div data-testid="badge-cta-today" className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-honey/10 border border-honey/20 mb-6">
+                <Sparkles className="w-4 h-4 text-honey animate-pulse" />
+                <span className="text-sm font-semibold text-honey">Start Building Today</span>
+              </div>
+              
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-5 sm:mb-6 break-words">
+                <span className="bg-gradient-to-r from-honey via-nectar to-mint bg-clip-text text-transparent">
+                  Ready to Taste the Honey?
+                </span>
+              </h2>
+              <p className="text-base sm:text-xl md:text-2xl text-muted-foreground mb-10 sm:mb-12 max-w-2xl mx-auto leading-relaxed">
+                Join developers worldwide shipping production apps in minutes, not months
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-xs sm:max-w-none mx-auto">
+                <Button 
+                  size="lg" 
+                  className="w-full sm:w-auto min-h-[56px] bg-honey text-charcoal-950 hover:bg-honey/90 font-bold text-lg px-10 shadow-lg shadow-honey/30 transition-all duration-300" 
+                  data-testid="button-cta-start"
+                  asChild
+                >
+                  <Link href="/builder">
+                    <span className="flex items-center gap-2">
+                      <Rocket className="w-5 h-5" />
+                      Start Building Free
+                    </span>
+                  </Link>
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="w-full sm:w-auto min-h-[56px] text-foreground border-border hover:bg-muted text-lg px-10 transition-all duration-300" 
+                  data-testid="button-cta-pricing"
+                  asChild
+                >
+                  <Link href="/pricing">View Pricing Plans</Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Footer - Responsive */}
-      <footer className="border-t border-border py-6 sm:py-8 px-4 sm:px-6">
+      <footer className="border-t border-border bg-gradient-to-b from-transparent to-honey/5 py-12 sm:py-16 px-4 sm:px-6">
         <div className="container mx-auto max-w-6xl">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
-            <BeehiveIcon size={60} className="flex-shrink-0" />
-            <p className="text-muted-foreground text-sm">
-              © 2024 BeehiveAI. Where code gets sweeter by the hive.
-            </p>
-            <div className="flex gap-4 flex-wrap justify-center">
-              <Link href="/pricing" className="text-muted-foreground hover:text-foreground text-sm min-h-[44px] flex items-center" data-testid="footer-link-pricing">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-8 text-center sm:text-left mb-8">
+            <div className="flex flex-col items-center sm:items-start gap-3">
+              <BeehiveIcon size={64} className="flex-shrink-0" />
+              <p className="text-muted-foreground text-sm font-medium">
+                Where code gets sweeter by the hive
+              </p>
+            </div>
+            <div className="flex gap-6 flex-wrap justify-center">
+              <Link 
+                href="/pricing" 
+                className="text-foreground hover:text-honey text-base font-medium min-h-[44px] flex items-center transition-colors duration-200" 
+                data-testid="footer-link-pricing"
+              >
                 Pricing
               </Link>
-              <Link href="/support" className="text-muted-foreground hover:text-foreground text-sm min-h-[44px] flex items-center" data-testid="footer-link-support">
+              <Link 
+                href="/support" 
+                className="text-foreground hover:text-honey text-base font-medium min-h-[44px] flex items-center transition-colors duration-200" 
+                data-testid="footer-link-support"
+              >
                 Support
               </Link>
-              <Link href="/auth" className="text-muted-foreground hover:text-foreground text-sm min-h-[44px] flex items-center" data-testid="footer-link-login">
+              <Link 
+                href="/auth" 
+                className="text-foreground hover:text-honey text-base font-medium min-h-[44px] flex items-center transition-colors duration-200" 
+                data-testid="footer-link-login"
+              >
                 Login
               </Link>
             </div>
           </div>
           
+          {/* Copyright */}
+          <div className="text-center py-6 border-t border-border">
+            <p className="text-sm text-muted-foreground">
+              © 2024 BeehiveAI. All rights reserved.
+            </p>
+          </div>
+          
           {/* AI Disclaimer */}
-          <div className="max-w-3xl mx-auto pt-6 sm:pt-8 mt-6 sm:mt-8 border-t border-border">
-            <p className="text-xs text-muted-foreground text-center break-words whitespace-normal">
+          <div className="max-w-3xl mx-auto pt-6">
+            <p className="text-xs text-muted-foreground text-center break-words whitespace-normal leading-relaxed">
               AI-generated code requires human review and testing. Results may vary based on project complexity. 
               BeehiveAI is an AI-assisted development tool - not a replacement for skilled developers.
             </p>

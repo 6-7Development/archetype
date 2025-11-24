@@ -46,12 +46,12 @@ export const VIBRANT_LIGHT_THEME: ThemePalette = {
   // Accent - Nectar Gold (#FFD34D = hsl(48, 100%, 65%))
   accent: { h: 48, s: 100, l: 65 },
   
-  // Backgrounds - Cream (#FFF8E6 = hsl(47, 100%, 95%))
-  background: { h: 47, s: 100, l: 95 },
-  foreground: { h: 216, s: 11, l: 12 }, // Graphite
+  // Backgrounds - Clean white with subtle warmth
+  background: { h: 0, s: 0, l: 100 },   // Pure white for clean look
+  foreground: { h: 216, s: 11, l: 12 }, // Graphite text
   
-  // Cards - Slightly elevated from background
-  card: { h: 0, s: 0, l: 100 },         // White
+  // Cards - Soft off-white with subtle honey tint
+  card: { h: 45, s: 20, l: 98 },        // Very subtle warm white
   cardForeground: { h: 216, s: 11, l: 12 }, // Graphite
   
   // Status colors
@@ -60,11 +60,11 @@ export const VIBRANT_LIGHT_THEME: ThemePalette = {
   error: { h: 0, s: 84, l: 60 },        // Red
   info: { h: 217, s: 91, l: 60 },       // Blue
   
-  // Muted - Subtle backgrounds and secondary text
-  muted: { h: 47, s: 30, l: 88 },       // Muted cream
+  // Muted - Very subtle grey with slight warmth
+  muted: { h: 40, s: 15, l: 96 },       // Barely-there honey tint
   mutedForeground: { h: 216, s: 9, l: 45 }, // Muted charcoal
   
-  // Borders & Rings
-  border: { h: 47, s: 20, l: 85 },      // Soft border
-  ring: { h: 40, s: 97, l: 50 },        // Honey gold ring
+  // Borders & Rings - Subtle and modern
+  border: { h: 0, s: 0, l: 92 },        // Clean light grey border
+  ring: { h: 40, s: 97, l: 50 },        // Honey gold ring for focus
 };

@@ -167,31 +167,31 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  /* Lomu Hive/Swarm Brand Colors - Light Mode - NEW AGE VIBRANT */
+  /* Lomu Hive/Swarm Brand Colors - Light Mode - CLEAN & MODERN */
   --honey: 40 97% 50%;             /* Vibrant honey #F7B500 */
   --nectar: 48 100% 65%;           /* Bright nectar #FFD34D */
   --mint: 171 100% 42%;            /* Vibrant mint-teal #00D4B3 */
   --charcoal: 216 9% 7%;           /* Deep charcoal #101113 */
   --graphite: 216 11% 12%;         /* Professional text #1B1D21 */
-  --cream: 47 100% 95%;            /* Warm cream #FFF8E6 */
+  --cream: 45 20% 98%;             /* Subtle warm white */
 
-  --background: 47 100% 97%;       /* Ultra light cream - fresh start */
+  --background: 0 0% 100%;         /* Pure white - clean modern */
 
   --foreground: 216 9% 7%;         /* Charcoal text */
 
-  --border: 40 20% 92%;            /* Warm subtle border with honey tint */
+  --border: 0 0% 92%;              /* Clean light grey border */
 
-  --card: 0 0% 100%;               /* Pure white cards for contrast */
+  --card: 45 20% 98%;              /* Subtle warm white cards */
 
   --card-foreground: 216 9% 7%;
 
-  --card-border: 48 30% 90%;
+  --card-border: 0 0% 90%;
 
-  --sidebar: 47 100% 95%;          /* Cream base - vibrant */
+  --sidebar: 45 20% 98%;           /* Subtle warm white */
 
   --sidebar-foreground: 216 9% 7%;
 
-  --sidebar-border: 40 20% 92%;
+  --sidebar-border: 0 0% 92%;
 
   --sidebar-primary: 40 97% 50%;   /* Honey primary - VIBRANT */
 
@@ -207,7 +207,7 @@
 
   --popover-foreground: 216 9% 7%;
 
-  --popover-border: 40 20% 92%;
+  --popover-border: 0 0% 92%;
 
   --primary: 40 97% 50%;           /* Honey primary - VIBRANT */
 
@@ -217,7 +217,7 @@
 
   --secondary-foreground: 0 0% 100%;
 
-  --muted: 48 35% 90%;             /* Light muted with warmth */
+  --muted: 40 15% 96%;             /* Very subtle honey tint */
 
   --muted-foreground: 216 9% 45%;
 
