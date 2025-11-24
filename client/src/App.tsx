@@ -42,6 +42,7 @@ import Deployments from "@/pages/deployments";
 import DeploymentDetails from "@/pages/deployment-details";
 import LomuChat from "@/pages/lomu-chat";
 import ConsultationHistory from "@/pages/consultation-history";
+import SwarmDashboard from "@/pages/swarm-dashboard";
 import Documentation from "@/pages/docs";
 import Privacy from "@/pages/privacy";
 import Terms from "@/pages/terms";
@@ -209,6 +210,13 @@ function Router() {
       
       {/* Standalone LomuAI Chat - No project required */}
       <Route path="/lomu" component={LomuChat} />
+      
+      {/* SWARM Mode Dashboard */}
+      <Route path="/swarm-dashboard">
+        <AppLayout>
+          <SwarmDashboard />
+        </AppLayout>
+      </Route>
       
       {/* Consultant History */}
       <Route path="/consultation-history">

@@ -140,6 +140,48 @@ export async function registerRoutes(app: Express): Promise<Server & { wss?: Web
     console.warn("[GIT] Failed to load git router:", (e as any).message);
   }
 
+  // SWARM Mode - Parallel Multi-Agent Execution
+  try {
+    const { default: swarmRouter } = await import("./swarm-mode.js");
+    if (swarmRouter) {
+      app.use("/api/swarm", swarmRouter);
+      console.log("[SWARM] SWARM Mode router mounted at /api/swarm");
+    }
+  } catch (e) {
+    console.warn("[SWARM] Failed to load SWARM Mode router:", (e as any).message);
+  }
+
+  // Additional specialized routers
+  try {
+    const { default: toolsRouter } = await import("./tools.js");
+    if (toolsRouter) {
+      app.use("/api/tools", toolsRouter);
+      console.log("[TOOLS] Tools router mounted at /api/tools");
+    }
+  } catch (e) {
+    console.warn("[TOOLS] Failed to load tools router:", (e as any).message);
+  }
+
+  try {
+    const { default: automationsRouter } = await import("./automations.js");
+    if (automationsRouter) {
+      app.use("/api/automations", automationsRouter);
+      console.log("[AUTOMATIONS] Automations router mounted at /api/automations");
+    }
+  } catch (e) {
+    console.warn("[AUTOMATIONS] Failed to load automations router:", (e as any).message);
+  }
+
+  try {
+    const { default: imageGenRouter } = await import("./imageGeneration.js");
+    if (imageGenRouter) {
+      app.use("/api/image-gen", imageGenRouter);
+      console.log("[IMAGE-GEN] Image Generation router mounted at /api/image-gen");
+    }
+  } catch (e) {
+    console.warn("[IMAGE-GEN] Failed to load image generation router:", (e as any).message);
+  }
+
   console.log("✅ All routes registered successfully");
 
   // Attach wss to server for access by other modules

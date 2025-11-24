@@ -6,7 +6,7 @@
 import { Router, Request, Response } from 'express';
 import { swarmCoordinator } from '../services/swarmModeCoordinator';
 import { aiDecisionLogger } from '../services/aiDecisionLogger';
-import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
 
 const router = Router();
 
@@ -18,14 +18,14 @@ router.post('/execute', async (req: Request, res: Response) => {
   try {
     const { description, requiredTools, params, priority = 'medium', maxCost = 500 } = req.body;
     const userId = (req as any).user?.id || 'anonymous';
-    const sessionId = (req as any).sessionId || uuidv4();
+    const sessionId = (req as any).sessionId || nanoid();
 
     if (!description || !requiredTools || !Array.isArray(requiredTools)) {
       return res.status(400).json({ error: 'Missing or invalid: description, requiredTools' });
     }
 
     const task = {
-      id: uuidv4(),
+      id: nanoid(),
       userId,
       sessionId,
       description,

@@ -3,6 +3,10 @@
  * 
  * Single source of truth for all LomuAI sessions.
  * Hybrid pattern: In-memory cache + database persistence.
+ * 
+ * Integrations:
+ * - GuardRailsManager: RCE prevention, input sanitization, rate limiting
+ * - AIDecisionLogger: Complete audit trail for all AI decisions
  */
 
 import { nanoid } from 'nanoid';
@@ -10,6 +14,8 @@ import { db } from '../db';
 import { conversationStates, chatMessages, tokenLedger, lomuJobs } from '@shared/schema';
 import { eq, and, isNull } from 'drizzle-orm';
 import type { WebSocket } from 'ws';
+import { guardrails } from './guardrailsManager';
+import { aiDecisionLogger } from './aiDecisionLogger';
 
 // ========== INTERFACES ==========
 
