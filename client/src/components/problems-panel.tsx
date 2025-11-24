@@ -1,21 +1,26 @@
-import { AlertCircle, AlertTriangle, Info } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Info, RefreshCw } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 interface Problem {
   severity: 'error' | 'warning' | 'info';
   file: string;
   line: number;
+  column?: number;
   message: string;
+  source?: string;
 }
 
 export function ProblemsPanel() {
-  const [problems] = useState<Problem[]>([
-    { severity: 'error', file: 'App.tsx', line: 42, message: "Property 'user' does not exist on type 'State'" },
-    { severity: 'warning', file: 'utils.ts', line: 15, message: 'Variable unused: helper' },
-    { severity: 'info', file: 'styles.css', line: 8, message: 'Unused CSS class: .obsolete' },
-  ]);
+  const { data, isLoading, refetch } = useQuery<{ problems: Problem[] }>({
+    queryKey: ['/api/problems'],
+    refetchInterval: 30000, // Auto-refresh every 30s
+  });
+
+  const problems = data?.problems || [];
 
   const errors = problems.filter((p) => p.severity === 'error').length;
   const warnings = problems.filter((p) => p.severity === 'warning').length;
@@ -38,9 +43,20 @@ export function ProblemsPanel() {
           Problems
           <Badge variant="outline">{problems.length}</Badge>
         </h3>
-        <div className="flex gap-2 text-xs">
-          <span className="text-destructive">{errors} errors</span>
-          <span className="text-yellow-600">{warnings} warnings</span>
+        <div className="flex gap-2 items-center">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => refetch()}
+            disabled={isLoading}
+            data-testid="button-refresh-problems"
+          >
+            <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
+          </Button>
+          <div className="flex gap-2 text-xs">
+            <span className="text-destructive">{errors} errors</span>
+            <span className="text-yellow-600">{warnings} warnings</span>
+          </div>
         </div>
       </div>
 

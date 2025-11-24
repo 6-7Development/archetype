@@ -21,6 +21,8 @@ import { registerTerminalRoutes } from "./terminal";
 import { registerArchitectNotesRoutes } from "./architect-notes";
 import { registerProjectFileRoutes } from "./project-files";
 import { registerFileContentRoutes } from "./file-content";
+import { registerDatabaseRoutes } from "./database";
+import { registerProblemsRoutes } from "./problems";
 
 /**
  * Main route registration function
@@ -54,6 +56,8 @@ export async function registerRoutes(app: Express): Promise<Server & { wss?: Web
   registerArchitectNotesRoutes(app);
   registerProjectFileRoutes(app);
   registerFileContentRoutes(app);
+  registerDatabaseRoutes(app);
+  registerProblemsRoutes(app);
   
   // Register WebSocket terminal routes (must be after HTTP routes)
   console.log("[ROUTES] Registering WebSocket terminal routes...");
