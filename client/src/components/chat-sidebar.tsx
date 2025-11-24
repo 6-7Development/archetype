@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export function ChatSidebar() {
   return (
-    <div className="flex flex-col overflow-hidden h-full">
+    <div className="flex flex-col overflow-hidden h-full border-l">
       <Tabs defaultValue="context" className="flex-1 flex flex-col overflow-hidden">
         <TabsList className="grid w-full grid-cols-3 rounded-none bg-card border-b">
           <TabsTrigger value="context" className="rounded-none text-xs" data-testid="tab-context">

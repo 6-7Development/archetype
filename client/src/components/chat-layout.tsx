@@ -1,60 +1,94 @@
 /**
- * Chat Layout - Clean, chat-first interface like Replit
- * No tabs, no workspace clutter - just chat + context
+ * Replit-Style Chat Layout
+ * Matches Replit's professional IDE layout structure
  */
 
-import { Menu, X, Settings } from 'lucide-react';
+import { Menu, X, Settings, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 
 interface ChatLayoutProps {
   children: React.ReactNode;
-  headerContent?: React.ReactNode;
-  sidebarContent?: React.ReactNode;
-  showSidebar?: boolean;
+  leftSidebar?: React.ReactNode;
+  rightSidebar?: React.ReactNode;
+  showLeftSidebar?: boolean;
+  showRightSidebar?: boolean;
 }
 
 export function ChatLayout({
   children,
-  headerContent,
-  sidebarContent,
-  showSidebar = true,
+  leftSidebar,
+  rightSidebar,
+  showLeftSidebar = true,
+  showRightSidebar = true,
 }: ChatLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(showSidebar);
+  const [leftOpen, setLeftOpen] = useState(showLeftSidebar);
+  const [rightOpen, setRightOpen] = useState(showRightSidebar);
 
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden bg-background">
-      {/* Minimal Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm px-4 py-2 h-12 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      {/* Top Header - Replit Style */}
+      <header className="border-b bg-card/50 backdrop-blur-sm px-3 py-2 h-11 flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center gap-1">
           <Button
             size="sm"
             variant="ghost"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="h-6 w-6 p-0"
-            data-testid="button-toggle-chat-sidebar"
+            onClick={() => setLeftOpen(!leftOpen)}
+            className="h-7 w-7 p-0"
+            data-testid="button-toggle-left-sidebar"
           >
-            {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            <Menu className="w-4 h-4" />
           </Button>
-          <div className="text-sm font-semibold">LomuAI</div>
+          <div className="text-sm font-semibold px-2">LomuAI</div>
         </div>
-        <div className="flex items-center gap-2">
-          {headerContent}
-          <Button size="sm" variant="ghost" className="h-6 w-6 p-0" data-testid="button-chat-settings">
+
+        <div className="flex items-center gap-1">
+          <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" data-testid="button-publish">
+            Publishing
+          </Button>
+          <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" data-testid="button-preview">
+            Preview
+          </Button>
+          <div className="w-px h-5 bg-border mx-1" />
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setRightOpen(!rightOpen)}
+            className="h-7 w-7 p-0"
+            data-testid="button-toggle-right-sidebar"
+          >
+            {rightOpen ? <X className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          </Button>
+          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" data-testid="button-header-settings">
             <Settings className="w-4 h-4" />
           </Button>
         </div>
       </header>
 
-      {/* Main Chat Area + Sidebar */}
+      {/* Main Content Area - Resizable Panes */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Chat Content */}
-        <div className="flex-1 flex flex-col overflow-hidden bg-background">{children}</div>
-
-        {/* Right Sidebar - Context/Output/Suggestions */}
-        {sidebarOpen && sidebarContent && (
-          <div className="w-80 border-l bg-card/30 flex flex-col overflow-hidden">{sidebarContent}</div>
+        {/* Left Sidebar - File Tree */}
+        {leftOpen && leftSidebar && (
+          <div className="w-64 border-r bg-card/30 flex flex-col overflow-hidden flex-shrink-0">{leftSidebar}</div>
         )}
+
+        {/* Main Chat Area */}
+        <ResizablePanelGroup direction="horizontal" className="flex-1">
+          <ResizablePanel defaultSize={100} minSize={50} className="flex flex-col overflow-hidden">
+            {children}
+          </ResizablePanel>
+
+          {/* Right Sidebar - Context/Output/Suggestions */}
+          {rightOpen && rightSidebar && (
+            <>
+              <ResizableHandle className="w-1 bg-border hover:bg-primary/20" />
+              <ResizablePanel defaultSize={0} minSize={20} maxSize={40} className="bg-card/30 flex flex-col overflow-hidden">
+                {rightSidebar}
+              </ResizablePanel>
+            </>
+          )}
+        </ResizablePanelGroup>
       </div>
     </div>
   );
