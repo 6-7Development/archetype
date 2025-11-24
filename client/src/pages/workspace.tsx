@@ -56,13 +56,13 @@ export default function Workspace() {
 
   // Fetch project data if projectId provided
   const { data: project, isLoading: projectLoading } = useQuery({
-    queryKey: projectId ? [`/api/projects/${projectId}`] : [],
+    queryKey: [`/api/projects/${projectId}`],
     enabled: !!projectId,
   });
 
   // Fetch tasks for this project
   const { data: tasksData } = useQuery({
-    queryKey: projectId ? [`/api/projects/${projectId}/tasks`] : [],
+    queryKey: [`/api/projects/${projectId}/tasks`],
     enabled: !!projectId,
   });
 
