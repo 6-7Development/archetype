@@ -10,6 +10,7 @@ import { platformHealing } from './platformHealing.js';
 import { platformAudit } from './platformAudit.js';
 import { consultArchitect } from './tools/architect-consult.js';
 import { spawnSubAgent } from './tools/sub-agent.js';
+import { initializeExecutionContext, lockFilesForMainAgent, cleanupExecutionContext } from './services/subagentContextManager.js';
 import { executeWebSearch } from './tools/web-search.js';
 import { GitHubService } from './githubService.js';
 import { createTaskList, updateTask, readTaskList } from './tools/task-management.js';

@@ -2,6 +2,7 @@ import { db } from '../db';
 import { subAgents, insertSubAgentSchema } from '@shared/schema';
 import { eq, and } from 'drizzle-orm';
 import { anthropic, DEFAULT_MODEL } from '../anthropic';
+import { acquireFileLocks, releaseFileLocks, validateSubagentChanges } from '../services/subagentContextManager.js';
 
 /**
  * Spawn Sub-Agent Tool
@@ -17,6 +18,7 @@ export async function spawnSubAgent(params: {
   context?: any;
   relevantFiles?: string[];
   systemPrompt?: string;
+  executionId?: string;
 }): Promise<{
   success: boolean;
   subAgentId?: string;
@@ -94,10 +96,22 @@ export async function spawnSubAgent(params: {
 
     const subAgent = subAgentResult[0];
 
+    // ✅ ACQUIRE FILE LOCKS if execution context provided (prevents conflicts)
+    let lockedFiles: string[] = [];
+    if (params.executionId && params.relevantFiles && params.relevantFiles.length > 0) {
+      const lockResult = await acquireFileLocks(params.executionId, subAgent.id, params.relevantFiles);
+      if (!lockResult.success) {
+        console.warn(`[SUBAGENT] Lock conflicts detected:`, lockResult.conflicts);
+        // Continue anyway but warn about conflicts
+      }
+      lockedFiles = lockResult.lockedFiles;
+    }
+
     // Execute sub-agent task using Claude with transactional safety
     const systemPrompt =
       params.systemPrompt ||
-      `You are a specialized ${params.agentType} sub-agent. Complete the following task precisely and efficiently.`;
+      `You are a specialized ${params.agentType} sub-agent. Complete the following task precisely and efficiently.
+${lockedFiles.length > 0 ? `\nYou have exclusive access to these files: ${lockedFiles.join(', ')}` : ''}`;
 
     const messages = [
       {
@@ -142,6 +156,11 @@ export async function spawnSubAgent(params: {
         throw new Error('Failed to update sub-agent: ownership mismatch');
       }
 
+      // ✅ RELEASE FILE LOCKS when complete
+      if (params.executionId) {
+        await releaseFileLocks(params.executionId, subAgent.id);
+      }
+
       return {
         success: true,
         subAgentId: subAgent.id,
@@ -160,6 +179,11 @@ export async function spawnSubAgent(params: {
           .where(and(eq(subAgents.id, subAgent.id), eq(subAgents.userId, params.userId)));
       } catch (updateError) {
         console.error('Failed to update sub-agent error status:', updateError);
+      }
+
+      // ✅ RELEASE FILE LOCKS on error
+      if (params.executionId) {
+        await releaseFileLocks(params.executionId, subAgent.id);
       }
 
       return {
