@@ -74,12 +74,25 @@ async function buildFileTree(dirPath: string, relativePath: string = "", depth: 
 }
 
 export function registerProjectFileRoutes(app: Express) {
-  // GET /api/project-files - Get project file structure
+  // GET /api/project-files - Get project file structure (with projectId isolation)
   app.get("/api/project-files", async (req, res) => {
     try {
+      const projectId = req.query.projectId as string | undefined;
+      
+      // Determine the target directory
+      let targetDir = PROJECT_ROOT;
+      if (projectId && projectId !== 'platform-healing') {
+        // If projectId is specified (e.g., "test-project"), isolate to that directory
+        targetDir = join(PROJECT_ROOT, projectId);
+        console.log(`[PROJECT-FILES] Isolating to project: ${projectId} → ${targetDir}`);
+      } else if (projectId === 'platform-healing') {
+        // Platform healing gets full workspace view
+        console.log("[PROJECT-FILES] Platform healing - showing full workspace");
+      }
+      
       console.log("[PROJECT-FILES] Building file tree...");
-      const files = await buildFileTree(PROJECT_ROOT);
-      console.log(`[PROJECT-FILES] Found ${files.length} root items`);
+      const files = await buildFileTree(targetDir);
+      console.log(`[PROJECT-FILES] Found ${files.length} root items (projectId: ${projectId || 'default'})`);
       res.json({ success: true, files });
     } catch (error) {
       console.error("[PROJECT-FILES-API] Error:", error);
