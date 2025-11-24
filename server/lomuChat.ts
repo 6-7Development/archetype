@@ -852,6 +852,7 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
                   guidance: architectResult.guidance,
                   recommendations: architectResult.recommendations || [],
                   confidence: architectResult.confidence || 50,
+                  confidenceReasoning: architectResult.confidenceReasoning, // Gap #3: WHY confident/not confident
                   risk: architectResult.risk || 'medium',
                   inputTokens: architectResult.inputTokens || 0,
                   outputTokens: architectResult.outputTokens || 0,
@@ -859,6 +860,7 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
                   evidenceUsed: architectResult.evidenceUsed || [],
                   reasoning: architectResult.reasoning,
                   alternativeApproach: architectResult.alternativeApproach,
+                  alternativeApproaches: architectResult.alternativeApproaches, // Gap #3: Alternative recommendations if confidence < 70%
                 });
                 
                 toolResult = `✅ I AM Architect provided guidance (${architectResult.confidence || 50}% confidence, ${architectResult.risk || 'medium'} risk):\n\n${architectResult.guidance}\n\n` +
