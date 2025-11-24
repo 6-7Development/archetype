@@ -94,9 +94,9 @@ export function MessageBubble({ message, index, totalMessages }: MessageBubblePr
         </div>
 
         {/* Timestamp + Actions - Always visible but subtle */}
-        <div className={`flex items-center gap-1 mt-1.5 px-1 ${isUser ? 'flex-row-reverse' : 'flex-row'} text-xs text-muted-foreground/60`}>
+        <div className={`flex items-center gap-1 mt-1.5 px-1 ${isUser ? 'flex-row-reverse' : 'flex-row'} text-xs text-muted-foreground`}>
           {message.timestamp && (
-            <span className="text-xs opacity-70">
+            <span className="text-xs text-muted-foreground">
               {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
