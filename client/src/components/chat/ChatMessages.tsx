@@ -184,7 +184,7 @@ export function ChatMessages({
       {/* Messages Area */}
       <div
         ref={activeScrollRef}
-        className="flex-1 overflow-y-auto px-4 py-6 space-y-6"
+        className="flex-1 min-h-0 overflow-y-auto px-4 py-6 space-y-6"
         data-testid="chat-messages-container"
       >
         {messages.filter((msg) => {
