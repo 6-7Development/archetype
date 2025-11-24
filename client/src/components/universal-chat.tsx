@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { flushSync } from "react-dom";
+import { useRateLimitPolling } from "@/hooks/useRateLimitPolling";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { API_ENDPOINTS, getQueryKey, buildApiUrl } from "@/lib/api-utils";
@@ -146,6 +147,11 @@ export function UniversalChat({
   const [gitStatus, setGitStatus] = useState({ ahead: 0, behind: 0, uncommitted: 2 });
   const [selectedFile, setSelectedFile] = useState<{ path: string; content: string; language: string } | undefined>();
   const [showIDE, setShowIDE] = useState<boolean>(false);
+  
+  // Token & Rate Limit Tracking
+  const [sessionTokens, setSessionTokens] = useState({ inputTokens: 0, outputTokens: 0, totalTokens: 0, estimatedCost: 0 });
+  const [showModelSelector, setShowModelSelector] = useState(false);
+  const { status: rateLimitStatus } = useRateLimitPolling(true);
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const latestMessageRef = useRef<HTMLDivElement>(null);
@@ -401,6 +407,20 @@ export function UniversalChat({
     return currentRun?.artifacts || [];
   }, [currentRun]);
 
+  // Track token usage from responses
+  const updateTokenUsage = useCallback((inputTokens: number, outputTokens: number) => {
+    setSessionTokens(prev => {
+      const newTotal = prev.totalTokens + inputTokens + outputTokens;
+      const costPerM = 0.075; // Gemini pricing
+      return {
+        inputTokens: prev.inputTokens + inputTokens,
+        outputTokens: prev.outputTokens + outputTokens,
+        totalTokens: newTotal,
+        estimatedCost: (newTotal / 1000000) * costPerM,
+      };
+    });
+  }, []);
+
   // Persist chat session to database on message update
   const saveChatSession = async (messages: typeof runState.messages) => {
     if (!projectId || messages.length === 0) return;
@@ -536,8 +556,18 @@ export function UniversalChat({
                 </div>
               )}
               <span className="text-muted-foreground">
-                Messages: <strong>{runState.messages.length}</strong>
+                Messages: <strong>{runState.messages.length}</strong> • Tokens: <strong>{sessionTokens.totalTokens}</strong> (~${sessionTokens.estimatedCost.toFixed(3)})
               </span>
+              
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowModelSelector(true)}
+                className="text-xs h-6"
+                data-testid="button-model-selector"
+              >
+                🤖 Model
+              </Button>
               
               <Button
                 size="sm"
