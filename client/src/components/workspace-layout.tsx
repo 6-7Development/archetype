@@ -5,7 +5,7 @@
  */
 
 import { useState } from 'react';
-import { Terminal as TerminalIcon, Eye, FileText, Settings, ChevronDown, Plus, X, GitBranch, TestTube, Database, Key, Zap } from 'lucide-react';
+import { Terminal as TerminalIcon, Eye, FileText, Settings, ChevronDown, Plus, X, GitBranch, TestTube, Database, Key, Zap, Package, Search, Box } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -18,6 +18,8 @@ import { TestingPanel } from '@/components/testing-panel';
 import { DatabaseViewer } from '@/components/database-viewer';
 import { EnvironmentEditor } from '@/components/environment-editor';
 import { LogsViewer } from '@/components/logs-viewer';
+import { PackageManager } from '@/components/package-manager';
+import { SearchPanel } from '@/components/search-panel';
 
 interface WorkspaceLayoutProps {
   projectId: string;
@@ -60,7 +62,7 @@ export function WorkspaceLayout({
   onTaskSelect,
 }: WorkspaceLayoutProps) {
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
-  const [selectedTab, setSelectedTab] = useState<'editor' | 'preview' | 'terminal' | 'files' | 'git' | 'tests' | 'database' | 'env' | 'logs' | 'healing'>('editor');
+  const [selectedTab, setSelectedTab] = useState<'editor' | 'preview' | 'terminal' | 'files' | 'git' | 'tests' | 'database' | 'env' | 'logs' | 'packages' | 'search' | 'deploy' | 'healing'>('editor');
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
 
   // RBAC: Only show appropriate content
@@ -298,6 +300,30 @@ export function WorkspaceLayout({
                 <TestTube className="w-4 h-4 mr-2" />
                 Tests
               </TabsTrigger>
+              <TabsTrigger
+                value="packages"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-4 py-2"
+                data-testid="tab-packages"
+              >
+                <Package className="w-4 h-4 mr-2" />
+                Packages
+              </TabsTrigger>
+              <TabsTrigger
+                value="search"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-4 py-2"
+                data-testid="tab-search"
+              >
+                <Search className="w-4 h-4 mr-2" />
+                Search
+              </TabsTrigger>
+              <TabsTrigger
+                value="deploy"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-4 py-2"
+                data-testid="tab-deploy"
+              >
+                <Box className="w-4 h-4 mr-2" />
+                Deploy
+              </TabsTrigger>
               
               {/* RBAC: Show platform controls only for admins */}
               {isAdmin && mode === 'platform-healing' && (
@@ -378,6 +404,25 @@ export function WorkspaceLayout({
 
             <TabsContent value="tests" className="flex-1 overflow-hidden p-0">
               <TestingPanel session={null} onClose={() => {}} />
+            </TabsContent>
+
+            <TabsContent value="packages" className="flex-1 overflow-hidden p-0">
+              <PackageManager />
+            </TabsContent>
+
+            <TabsContent value="search" className="flex-1 overflow-hidden p-0">
+              <SearchPanel />
+            </TabsContent>
+
+            <TabsContent value="deploy" className="flex-1 overflow-hidden p-0">
+              <Card className="m-4 p-4">
+                <div className="text-center space-y-3">
+                  <Box className="w-12 h-12 mx-auto opacity-50" />
+                  <h3 className="font-semibold">Deployment</h3>
+                  <p className="text-xs text-muted-foreground">Publish your app to production</p>
+                  <Button data-testid="button-deploy-now">Deploy Now</Button>
+                </div>
+              </Card>
             </TabsContent>
 
             {/* Platform Healing Tab - Admin Only */}
