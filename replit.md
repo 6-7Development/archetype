@@ -101,6 +101,19 @@ The system is highly modularized for maintainability and self-healing:
 -   **Web Search**: Tavily API
 
 ## Recent Session Progress (November 24, 2025)
+### Terminal Integration (November 24, 2025 - ARCHITECT APPROVED ✅)
+- ✅ **Terminal Component Integrated into WorkspaceLayout**
+  - Replaced placeholder "Console" tab with functional Terminal component
+  - Terminal connects to WebSocket at `/ws?terminal=true&projectId=${projectId}`
+  - Full command execution, output streaming, and command history support
+  - Renamed tab from "console" to "terminal" for clarity
+- ✅ **Technical Implementation**
+  - Imported Terminal component: `import { Terminal } from '@/components/terminal'`
+  - Renamed lucide-react icon: `Terminal as TerminalIcon` to avoid naming conflict
+  - Updated tab state type: `'editor' | 'preview' | 'terminal'`
+  - Terminal automatically authenticates with user credentials
+- ✅ **Architect Validation**: Confirmed proper integration, WebSocket connection working, no regressions
+
 ### Dark Mode Implementation (November 24, 2025 - ARCHITECT APPROVED ✅)
 - ✅ **CRITICAL FIX: Theme Toggle Now Functional**
   - Removed `forcedTheme="light"` from `ThemeProvider` in `App.tsx`
