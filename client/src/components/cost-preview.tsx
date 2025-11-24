@@ -125,7 +125,7 @@ export default function CostPreview({
 
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Tokens Remaining</span>
-            <span className={`text-sm font-mono ${tokensRemaining < estimatedTokens ? 'text-orange-600 : ''}`} data-testid="tokens-remaining">
+            <span className={`text-sm font-mono ${tokensRemaining < estimatedTokens ? 'text-orange-600' : ''}`} data-testid="tokens-remaining">
               {tokensRemaining.toLocaleString()} / {tokenLimit.toLocaleString()}
             </span>
           </div>
