@@ -45,9 +45,9 @@ export function StatusStrip({ phase, message, currentThought, isExecuting = fals
     const safeAllowance = monthlyAllowance > 0 ? monthlyAllowance : 5000;
     const percentageRemaining = (balance / safeAllowance) * 100;
     
-    if (percentageRemaining > 50) return 'text-green-600 // >50% = green
-    if (percentageRemaining > 20) return 'text-yellow-600 // 20-50% = yellow
-    return 'text-red-600 // <20% = red
+    if (percentageRemaining > 50) return 'text-green-600'; // >50% = green
+    if (percentageRemaining > 20) return 'text-yellow-600'; // 20-50% = yellow
+    return 'text-red-600'; // <20% = red
   };
 
   return (

@@ -20,29 +20,29 @@ export interface CostPreviewProps {
 const COMPLEXITY_CONFIG = {
   simple: {
     label: 'Simple Project',
-    color: 'text-green-600
-    bgColor: 'bg-green-50
+    color: 'text-green-600',
+    bgColor: 'bg-green-50',
     icon: CheckCircle,
     description: 'Landing pages, portfolios, basic sites',
   },
   medium: {
     label: 'Medium Project',
-    color: 'text-blue-600
-    bgColor: 'bg-blue-50
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-50',
     icon: Zap,
     description: 'Web apps, dashboards, interactive sites',
   },
   complex: {
     label: 'Complex Project',
-    color: 'text-purple-600
-    bgColor: 'bg-purple-50
+    color: 'text-purple-600',
+    bgColor: 'bg-purple-50',
     icon: TrendingUp,
     description: 'SaaS platforms, marketplaces, advanced apps',
   },
   enterprise: {
     label: 'Enterprise Project',
-    color: 'text-orange-600
-    bgColor: 'bg-orange-50
+    color: 'text-orange-600',
+    bgColor: 'bg-orange-50',
     icon: AlertCircle,
     description: 'Games, large platforms, enterprise systems',
   },

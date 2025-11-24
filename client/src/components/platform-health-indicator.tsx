@@ -91,19 +91,19 @@ export function PlatformHealthIndicator() {
   const statusConfig = {
     healthy: {
       icon: CheckCircle2,
-      color: 'text-green-600
+      color: 'text-green-600',
       bg: 'bg-green-50 border-green-200 dark:border-green-800',
       label: 'Healthy',
     },
     degraded: {
       icon: AlertCircle,
-      color: 'text-amber-600
+      color: 'text-amber-600',
       bg: 'bg-amber-50 border-amber-200 dark:border-amber-800',
       label: 'Degraded',
     },
     critical: {
       icon: AlertTriangle,
-      color: 'text-red-600
+      color: 'text-red-600',
       bg: 'bg-red-50 border-red-200 dark:border-red-800',
       label: 'Critical',
     },
