@@ -1,16 +1,17 @@
 /**
  * Workspace Layout - Replit-inspired IDE Layout
- * Left: Task/Activity Panel | Right: Editor/Preview/Console Tabs
+ * Left: Task/Activity Panel | Right: Editor/Preview/Terminal Tabs
  * Supports both user projects and platform healing (admin mode)
  */
 
 import { useState } from 'react';
-import { Terminal, Eye, FileText, Settings, ChevronDown, Plus, X } from 'lucide-react';
+import { Terminal as TerminalIcon, Eye, FileText, Settings, ChevronDown, Plus, X } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { Terminal } from '@/components/terminal';
 
 interface WorkspaceLayoutProps {
   projectId: string;
@@ -53,7 +54,7 @@ export function WorkspaceLayout({
   onTaskSelect,
 }: WorkspaceLayoutProps) {
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
-  const [selectedTab, setSelectedTab] = useState<'editor' | 'preview' | 'console'>('editor');
+  const [selectedTab, setSelectedTab] = useState<'editor' | 'preview' | 'terminal'>('editor');
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
 
   // RBAC: Only show appropriate content
@@ -236,12 +237,12 @@ export function WorkspaceLayout({
                 Preview
               </TabsTrigger>
               <TabsTrigger
-                value="console"
+                value="terminal"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary px-4 py-2"
-                data-testid="tab-console"
+                data-testid="tab-terminal"
               >
-                <Terminal className="w-4 h-4 mr-2" />
-                Console
+                <TerminalIcon className="w-4 h-4 mr-2" />
+                Terminal
               </TabsTrigger>
               
               {/* RBAC: Show platform controls only for admins */}
@@ -295,11 +296,8 @@ export function WorkspaceLayout({
               </div>
             </TabsContent>
 
-            <TabsContent value="console" className="flex-1 overflow-hidden p-4 font-mono text-xs">
-              <div className="space-y-2 text-muted-foreground">
-                <div>{'>'} Console output will appear here</div>
-                <div>{'>'} Run your code to see results</div>
-              </div>
+            <TabsContent value="terminal" className="flex-1 overflow-hidden p-0">
+              <Terminal projectId={projectId} />
             </TabsContent>
 
             {/* Platform Healing Tab - Admin Only */}

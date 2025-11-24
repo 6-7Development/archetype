@@ -101,6 +101,17 @@ The system is highly modularized for maintainability and self-healing:
 -   **Web Search**: Tavily API
 
 ## Recent Session Progress (November 24, 2025)
+### Dark Mode Implementation (November 24, 2025 - ARCHITECT APPROVED ✅)
+- ✅ **CRITICAL FIX: Theme Toggle Now Functional**
+  - Removed `forcedTheme="light"` from `ThemeProvider` in `App.tsx`
+  - Eliminated conflicting `useThemeManager(VIBRANT_LIGHT_THEME)` that was overriding user preference
+  - Changed `defaultTheme` to "dark" as per project requirements
+- ✅ **Distinct Light/Dark Palettes Created**
+  - **Light Mode (`:root`)**: White background `--background: 0 0% 100%`, dark text `--foreground: 216 11% 12%`, light borders
+  - **Dark Mode (`.dark`)**: Charcoal background `--background: 218 14% 11%`, light text `--foreground: 0 0% 95%`, visible dark borders
+  - Both modes preserve honey (#F7B500) and mint (#00D4B3) brand colors
+- ✅ **Architect Validation**: Confirmed proper theme separation, acceptable contrast ratios, and working toggle mechanism
+
 ### Layout Architecture & Code Cleanup
 - ✅ **Layout Double-Wrapping Bug Fixed**: Removed `AppLayout` wrapper from `/builder` routes
   - Builder page now displays proper Replit-style layout with projects sidebar
