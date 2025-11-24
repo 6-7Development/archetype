@@ -5,6 +5,7 @@ import { insertCommandSchema, taskLists, tasks, platformIncidents } from "@share
 import { db } from '../db.ts';
 import { eq, desc, and, isNull } from 'drizzle-orm';
 import { anthropic, DEFAULT_MODEL, streamAnthropicResponse } from '../anthropic.ts';
+import { streamGeminiResponse } from '../gemini.ts';
 import { LOMU_TOOLS } from '../tools/index.ts';
 import { checkUsageLimits, trackAIUsage, decrementAICredits, getUserUsageStats, updateStorageUsage } from '../usage-tracking.ts';
 import { isAuthenticated } from '../universalAuth.ts';
@@ -877,87 +878,93 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
       const plan = subscription?.plan || 'free';
 
       await aiQueue.enqueue(userId, plan, async () => {
-        await streamAnthropicResponse({
-          model: DEFAULT_MODEL,
-          maxTokens: 4096,
-          system: systemPrompt,
-          messages: [
-            ...validMessages.map((m: any) => ({
-              role: m.role === 'system' ? 'user' : m.role,
-              content: m.content
-            })),
-            {
-              role: "user",
-              content: message,
-            },
-          ],
-          onChunk: (chunk: any) => {
-            try {
-              // Handle text delta events
-              if (chunk.type === 'content_block_delta' && chunk.delta?.type === 'text_delta') {
-                const text = chunk.delta.text || '';
-                fullResponse += text;
-                // Stream chunk to client
-                res.write(`data: ${JSON.stringify({ type: 'text_delta', text })}\n\n`);
-              }
-              // Capture usage info from message_delta
-              if (chunk.type === 'message_delta' && chunk.usage) {
-                inputTokens = chunk.usage.input_tokens || 0;
-                outputTokens = chunk.usage.output_tokens || 0;
-              }
-              // Initial message usage
-              if (chunk.type === 'message_start' && chunk.message?.usage) {
-                inputTokens = chunk.message.usage.input_tokens || 0;
-              }
-            } catch (e) {
-              console.error('Error processing chunk:', e);
-            }
-          },
-          onComplete: async () => {
-            try {
-              const computeTimeMs = Date.now() - computeStartTime;
-
-              // Save messages to database
-              await storage.createChatMessage({
-                userId,
-                projectId,
-                role: 'user',
+        try {
+          await streamGeminiResponse({
+            maxTokens: 4096,
+            system: systemPrompt,
+            messages: [
+              ...validMessages.map((m: any) => ({
+                role: m.role === 'system' ? 'user' : m.role,
+                content: m.content
+              })),
+              {
+                role: "user",
                 content: message,
-              });
+              },
+            ],
+            onChunk: (chunk: any) => {
+              try {
+                // Handle Gemini text chunks
+                if (chunk.type === 'text') {
+                  fullResponse += chunk.text || '';
+                  // Stream chunk to client
+                  res.write(`data: ${JSON.stringify({ type: 'text_delta', text: chunk.text })}\n\n`);
+                  console.log(`✅ [GEMINI-CHAT] Streamed ${chunk.text?.length || 0} chars`);
+                }
+                // Capture usage from completion
+                if (chunk.type === 'usage') {
+                  inputTokens = chunk.inputTokens || 0;
+                  outputTokens = chunk.outputTokens || 0;
+                }
+              } catch (e) {
+                console.error('Error processing Gemini chunk:', e);
+              }
+            },
+            onComplete: async (fullText: string, usage: any) => {
+              try {
+                const computeTimeMs = Date.now() - computeStartTime;
+                fullResponse = fullText || fullResponse;
+                inputTokens = usage?.inputTokens || 0;
+                outputTokens = usage?.outputTokens || 0;
 
-              await storage.createChatMessage({
-                userId,
-                projectId,
-                role: 'assistant',
-                content: fullResponse,
-              });
+                console.log(`✅ [GEMINI-CHAT] Response complete: ${fullResponse.length} chars`);
 
-              // Track usage
-              await trackAIUsage({
-                userId,
-                projectId,
-                type: "ai_chat",
-                inputTokens,
-                outputTokens,
-                computeTimeMs,
-                metadata: { message },
-              });
+                // Save messages to database
+                await storage.createChatMessage({
+                  userId,
+                  projectId,
+                  role: 'user',
+                  content: message,
+                });
 
-              // Send completion event
-              res.write(`data: ${JSON.stringify({ type: 'done', fullResponse, inputTokens, outputTokens })}\n\n`);
+                await storage.createChatMessage({
+                  userId,
+                  projectId,
+                  role: 'assistant',
+                  content: fullResponse,
+                });
+
+                // Track usage
+                await trackAIUsage({
+                  userId,
+                  projectId,
+                  type: "ai_chat",
+                  inputTokens,
+                  outputTokens,
+                  computeTimeMs,
+                  metadata: { message },
+                });
+
+                // Send completion event
+                res.write(`data: ${JSON.stringify({ type: 'done', fullResponse, inputTokens, outputTokens })}\n\n`);
+                res.end();
+              } catch (e) {
+                console.error('Error in completion handler:', e);
+                res.write(`data: ${JSON.stringify({ type: 'error', error: (e as Error).message })}\n\n`);
+                res.end();
+              }
+            },
+            onError: (error: Error) => {
+              console.error('Gemini stream error:', error);
+              res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`);
               res.end();
-            } catch (e) {
-              console.error('Error in completion handler:', e);
-              res.write(`data: ${JSON.stringify({ type: 'error', error: (e as Error).message })}\n\n`);
-              res.end();
-            }
-          },
-          onError: (error: Error) => {
-            console.error('Stream error:', error);
-            res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`);
-            res.end();
-          },
-        });
+            },
+          });
+        } catch (error: any) {
+          console.error('Gemini chat error:', error);
+          res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`);
+          res.end();
+        }
       });
     } catch (error: any) {
       console.error('AI chat error:', error);
