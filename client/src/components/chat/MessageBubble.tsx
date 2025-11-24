@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Copy, Check, User, ChevronDown, Brain } from "lucide-react";
+import { Copy, Check, User, ChevronDown, Brain, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { MarkdownMessage } from "./MarkdownMessage";
 
@@ -12,6 +13,8 @@ interface Message {
   id?: string;
   messageId?: string;
   images?: string[];
+  filesChanged?: string[]; // Files modified in this response
+  status?: 'success' | 'error' | 'pending'; // Operation status
   [key: string]: any;
 }
 
@@ -118,6 +121,31 @@ export function MessageBubble({ message, index, totalMessages }: MessageBubblePr
             </div>
           )}
         </div>
+
+        {/* Status Badges - Show for assistant messages */}
+        {!isUser && (message.filesChanged?.length || message.status) && (
+          <div className="flex items-center gap-2 flex-wrap">
+            {message.status && (
+              <Badge 
+                variant="outline" 
+                className={`gap-1 ${
+                  message.status === 'success' ? 'text-green-600' :
+                  message.status === 'error' ? 'text-red-600' :
+                  'text-blue-600'
+                }`}
+              >
+                {message.status === 'success' && <CheckCircle className="w-3 h-3" />}
+                {message.status === 'error' && <AlertCircle className="w-3 h-3" />}
+                <span className="text-xs">{message.status}</span>
+              </Badge>
+            )}
+            {message.filesChanged?.length ? (
+              <Badge variant="secondary" className="text-xs gap-1">
+                <span>{message.filesChanged.length} files</span>
+              </Badge>
+            ) : null}
+          </div>
+        )}
 
         {/* Timestamp + Actions - Always visible but subtle */}
         <div className={`flex items-center gap-1 mt-1.5 px-1 ${isUser ? 'flex-row-reverse' : 'flex-row'} text-xs text-muted-foreground/75`}>
