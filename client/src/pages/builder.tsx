@@ -207,57 +207,6 @@ export default function Builder() {
             </Link>
           </Button>
           
-          {/* Project Switcher */}
-          {isAuthenticated && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className="gap-2 min-h-[44px] max-w-[200px] justify-between"
-                  data-testid="button-project-switcher"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Code className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate text-sm">
-                      {currentProject?.name || (projects.length > 0 ? "Select Project" : "No Projects")}
-                    </span>
-                  </div>
-                  <ChevronDown className="w-4 h-4 flex-shrink-0" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-[250px]">
-                {projects.length > 0 ? (
-                  <>
-                    {projects.map((project) => (
-                      <DropdownMenuItem
-                        key={project.id}
-                        onClick={() => handleProjectSwitch(project.id)}
-                        className="gap-2"
-                        data-testid={`project-item-${project.id}`}
-                      >
-                        <Code className="w-4 h-4" />
-                        <span className="truncate">{project.name}</span>
-                      </DropdownMenuItem>
-                    ))}
-                    <DropdownMenuSeparator />
-                  </>
-                ) : (
-                  <div className="px-2 py-6 text-center text-sm text-muted-foreground">
-                    No projects yet. Create one below!
-                  </div>
-                )}
-                <DropdownMenuItem
-                  onClick={() => setShowNewProjectDialog(true)}
-                  className="gap-2"
-                  data-testid="button-new-project"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>New Project</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-          
           <Badge 
             variant="secondary" 
             className="hidden md:inline-flex bg-primary/10 text-primary border-primary/20 font-mono text-xs"
@@ -272,8 +221,51 @@ export default function Builder() {
         </div>
       </header>
 
-      {/* Tabs */}
-      <div className="flex-1 overflow-hidden">
+      {/* Main Layout - Sidebar + Content */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* LEFT SIDEBAR - Projects List */}
+        <div className="w-64 border-r border-border bg-card/50 flex flex-col overflow-hidden" data-testid="sidebar-projects">
+          {/* Sidebar Header */}
+          <div className="border-b border-border p-4">
+            <h2 className="font-semibold text-sm mb-3">Projects</h2>
+            <Button 
+              size="sm" 
+              className="w-full justify-start gap-2"
+              onClick={() => setShowNewProjectDialog(true)}
+              data-testid="button-new-project-sidebar"
+            >
+              <Plus className="w-4 h-4" />
+              New Project
+            </Button>
+          </div>
+
+          {/* Projects List */}
+          <div className="flex-1 overflow-y-auto">
+            {projects.length === 0 ? (
+              <div className="p-4 text-center text-muted-foreground text-xs">
+                No projects yet
+              </div>
+            ) : (
+              <div className="space-y-1 p-2">
+                {projects.map((project) => (
+                  <Button
+                    key={project.id}
+                    variant={currentProject?.id === project.id ? "default" : "ghost"}
+                    className="w-full justify-start gap-2 text-sm"
+                    onClick={() => handleProjectSwitch(project.id)}
+                    data-testid={`project-item-${project.id}`}
+                  >
+                    <Code className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">{project.name}</span>
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Main Content Area - Tabs */}
+        <div className="flex-1 overflow-hidden flex flex-col">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
           <div className="border-b bg-card px-2 sm:px-4">
             <TabsList className="bg-transparent h-12 p-0 gap-1 w-full justify-start overflow-x-auto" data-testid="tabs-main">
