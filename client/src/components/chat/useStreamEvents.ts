@@ -187,6 +187,7 @@ export interface UseStreamEventsReturn {
   stopRun: () => void;
   clearRunState: () => void;
   setRunState: (state: UseStreamEventsState) => void;
+  clearChatHistory: () => void;
 }
 
 // Storage key for persisting messages
@@ -201,16 +202,39 @@ export function useStreamEvents(options?: { projectId?: string; targetContext?: 
       const stored = localStorage.getItem(storageKey);
       if (stored) {
         const messages = JSON.parse(stored);
+        // Filter out any messages older than 1 day to prevent bloat
+        const now = Date.now();
+        const oneDayMs = 24 * 60 * 60 * 1000;
+        const recentMessages = messages.filter((msg: Message) => {
+          const msgTime = msg.timestamp ? new Date(msg.timestamp).getTime() : 0;
+          return (now - msgTime) < oneDayMs;
+        });
+        
+        if (recentMessages.length === 0) {
+          // If no recent messages, clear localStorage to prevent stale data
+          localStorage.removeItem(storageKey);
+          console.log('🧹 Cleared stale chat messages from localStorage');
+        } else if (recentMessages.length < messages.length) {
+          // If we filtered some out, update storage
+          localStorage.setItem(storageKey, JSON.stringify(recentMessages));
+          console.log(`✅ Filtered ${messages.length - recentMessages.length} stale messages`);
+        }
+        
         return {
           runs: new Map(),
           currentRunId: null,
-          messages,
+          messages: recentMessages,
           isLoading: false,
           error: undefined,
         };
       }
     } catch (e) {
       console.warn('Failed to load messages from storage:', e);
+      // Clear corrupted storage
+      try {
+        const storageKey = MESSAGES_STORAGE_KEY(options?.projectId, options?.targetContext);
+        localStorage.removeItem(storageKey);
+      } catch {}
     }
     
     return {
