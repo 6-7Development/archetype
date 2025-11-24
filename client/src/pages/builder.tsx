@@ -507,6 +507,7 @@ export default function Builder() {
             </TabsContent>
           </div>
         </Tabs>
+        </div>
       </div>
 
       {/* Dialogs */}
