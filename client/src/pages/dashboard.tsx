@@ -38,6 +38,7 @@ import { TemplateGallery } from "@/components/template-gallery";
 import { ProjectUpload } from "@/components/project-upload";
 import { OnboardingTour } from "@/components/onboarding-tour";
 import { NewProjectDialog } from "@/components/new-project-dialog";
+import { FastModeDashboard } from "@/components/fast-mode-dashboard"; // Gap #17
 
 type Project = {
   id: string;
@@ -56,6 +57,7 @@ export default function Dashboard() {
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showFastModeDashboard, setShowFastModeDashboard] = useState(true); // Gap #17
   const { toast } = useToast();
 
   // Check if this is first time user

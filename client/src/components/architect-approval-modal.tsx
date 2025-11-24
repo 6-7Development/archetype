@@ -175,6 +175,30 @@ export function ArchitectApprovalModal({
                 <p className="text-2xl font-bold text-[hsl(var(--primary))]">{recommendations.length}</p>
               </div>
             </div>
+
+            {/* Gap #3: Confidence Reasoning - WHY confident/not confident */}
+            {confidenceReasoning && (
+              <div className="rounded-lg bg-blue-500/10 border border-blue-500/20 p-3">
+                <p className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-1">💡 Confidence Reasoning</p>
+                <p className="text-xs text-foreground/70 leading-relaxed">{confidenceReasoning}</p>
+              </div>
+            )}
+
+            {/* Gap #3: Alternative Approaches - shown if confidence < 70% */}
+            {alternativeApproaches && alternativeApproaches.length > 0 && (
+              <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3">
+                <p className="text-xs font-semibold text-amber-900 dark:text-amber-100 mb-2">🔄 Alternative Approaches</p>
+                <ul className="space-y-1">
+                  {alternativeApproaches.map((alt, idx) => (
+                    <li key={idx} className="text-xs text-foreground/70 flex gap-2">
+                      <span className="text-amber-600 dark:text-amber-400">•</span>
+                      <span>{alt}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3">
               <div className="flex gap-2">
                 <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
