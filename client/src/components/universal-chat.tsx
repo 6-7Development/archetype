@@ -53,6 +53,7 @@ import { WorkspaceStatus } from "@/components/workspace-status";
 import { ConsoleViewer } from "@/components/console-viewer";
 import { FileBrowser } from "@/components/file-browser";
 import { EnvBrowser } from "@/components/env-browser";
+import { IDETabs } from "@/components/ide-tabs";
 import type {
   RunPhase,
   RunState,
@@ -143,6 +144,8 @@ export function UniversalChat({
   const [showFileBrowser, setShowFileBrowser] = useState<boolean>(true);
   const [showEnvBrowser, setShowEnvBrowser] = useState<boolean>(false);
   const [gitStatus, setGitStatus] = useState({ ahead: 0, behind: 0, uncommitted: 2 });
+  const [selectedFile, setSelectedFile] = useState<{ path: string; content: string; language: string } | undefined>();
+  const [showIDE, setShowIDE] = useState<boolean>(false);
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const latestMessageRef = useRef<HTMLDivElement>(null);
@@ -467,8 +470,50 @@ export function UniversalChat({
           </>
         )}
 
-        {/* Right Panel: Chat Interface */}
+        {/* Center/Right Panel: Chat or IDE */}
         <div className="flex flex-col flex-1 min-h-0">
+          {/* Toggle to IDE mode */}
+          {showIDE ? (
+            <>
+              {/* IDE Tabs View */}
+              <IDETabs
+                projectId={projectId || 'default'}
+                selectedFile={selectedFile}
+                onFileSelect={async (path) => {
+                  try {
+                    const res = await fetch(`/api/file-content/${path}`);
+                    if (res.ok) {
+                      const data = await res.json();
+                      setSelectedFile({
+                        path: data.path,
+                        content: data.content,
+                        language: data.language,
+                      });
+                    }
+                  } catch (err) {
+                    console.error("[IDE] Failed to load file:", err);
+                  }
+                }}
+                onFileChange={(path, content) => {
+                  setSelectedFile(prev => prev ? { ...prev, content } : undefined);
+                }}
+              />
+              {/* Back to Chat Button */}
+              <div className="flex-shrink-0 border-t p-2 bg-muted/20">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowIDE(false)}
+                  className="text-xs"
+                  data-testid="button-back-to-chat"
+                >
+                  Back to Chat
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Chat View */}
           {/* Workspace Header with Status */}
           <div className="border-b bg-muted/30 dark:border-[hsl(var(--primary))]/20 px-4 py-2 flex items-center justify-between text-xs gap-4">
             <div className="flex items-center gap-2 flex-1 min-w-0">

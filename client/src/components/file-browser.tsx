@@ -17,6 +17,7 @@ interface FileBrowserProps {
   files?: FileItem[];
   onFileSelect?: (path: string) => void;
   changedFiles?: string[];
+  onFileDoubleClick?: (path: string) => void;
 }
 
 // Fetch real files from API
@@ -35,10 +36,12 @@ function useProjectFiles() {
 function FileTreeItem({ 
   item, 
   onSelect, 
+  onDoubleClick,
   changedFiles 
 }: { 
   item: FileItem; 
   onSelect?: (path: string) => void;
+  onDoubleClick?: (path: string) => void;
   changedFiles?: string[];
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -49,6 +52,7 @@ function FileTreeItem({
       <div
         className="flex items-center gap-2 px-2 py-1 hover:bg-muted rounded text-sm cursor-pointer group"
         onClick={() => onSelect?.(item.path)}
+        onDoubleClick={() => onDoubleClick?.(item.path)}
         data-testid={`file-item-${item.id}`}
       >
         <File className="w-4 h-4 text-muted-foreground flex-shrink-0" />
@@ -88,6 +92,7 @@ function FileTreeItem({
               key={child.id}
               item={child}
               onSelect={onSelect}
+              onDoubleClick={onDoubleClick}
               changedFiles={changedFiles}
             />
           ))}
@@ -100,6 +105,7 @@ function FileTreeItem({
 export function FileBrowser({ 
   files: propFiles,
   onFileSelect, 
+  onFileDoubleClick,
   changedFiles 
 }: FileBrowserProps) {
   const { data, isLoading } = useProjectFiles();
@@ -111,6 +117,7 @@ export function FileBrowser({
       <div className="px-3 py-2 border-b border-border bg-muted/30">
         <div className="text-xs font-semibold text-foreground">Files</div>
         {isLoading && <div className="text-xs text-muted-foreground">Loading...</div>}
+        <div className="text-xs text-muted-foreground mt-1">Double-click to edit</div>
       </div>
 
       {/* File Tree */}
@@ -123,6 +130,7 @@ export function FileBrowser({
               key={item.id}
               item={item}
               onSelect={onFileSelect}
+              onDoubleClick={onFileDoubleClick}
               changedFiles={changedFiles}
             />
           ))

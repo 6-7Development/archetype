@@ -20,6 +20,7 @@ import { registerScratchpadRoutes } from "./scratchpad";
 import { registerTerminalRoutes } from "./terminal";
 import { registerArchitectNotesRoutes } from "./architect-notes";
 import { registerProjectFileRoutes } from "./project-files";
+import { registerFileContentRoutes } from "./file-content";
 
 /**
  * Main route registration function
@@ -52,6 +53,7 @@ export async function registerRoutes(app: Express): Promise<Server & { wss?: Web
   registerScratchpadRoutes(app, { wss });
   registerArchitectNotesRoutes(app);
   registerProjectFileRoutes(app);
+  registerFileContentRoutes(app);
   
   // Register WebSocket terminal routes (must be after HTTP routes)
   console.log("[ROUTES] Registering WebSocket terminal routes...");
