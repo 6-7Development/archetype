@@ -21,21 +21,33 @@ import { trackAIUsage } from './usage-tracking.js';
 import { AgentExecutor } from './services/agentExecutor.js';
 import { CreditManager } from './services/creditManager.js';
 
-// ✅ GAP RE-INTEGRATION - Safe imports with error boundaries
-let performanceTrackerModule: any = null;
-let crossAgentLearningModule: any = null;
-let retryModule: any = null;
-let rateLimiterModule: any = null;
+// ✅ GAP RE-INTEGRATION - Lazy loading with error boundaries
+// Services will be loaded on-demand inside router handlers to avoid async issues at module level
+let performanceTracker: any = null;
+let crossAgentLearning: any = null;
+let withRetry: any = null;
+let concurrentRateLimiter: any = null;
 
-try { performanceTrackerModule = await import('./services/subagentPerformanceTracker.js').catch(e => { console.warn('[SAFE-IMPORT] Performance tracker:', e.message); }); } catch (e) {}
-try { crossAgentLearningModule = await import('./services/crossAgentLearningService.js').catch(e => { console.warn('[SAFE-IMPORT] Cross-agent learning:', e.message); }); } catch (e) {}
-try { retryModule = await import('./services/subagentRetryService.js').catch(e => { console.warn('[SAFE-IMPORT] Retry logic:', e.message); }); } catch (e) {}
-try { rateLimiterModule = await import('./services/concurrentRateLimiterService.js').catch(e => { console.warn('[SAFE-IMPORT] Rate limiter:', e.message); }); } catch (e) {}
-
-const performanceTracker = performanceTrackerModule?.performanceTracker || null;
-const crossAgentLearning = crossAgentLearningModule?.crossAgentLearning || null;
-const { withRetry, CircuitBreaker } = retryModule || {};
-const { concurrentRateLimiter } = rateLimiterModule || {};
+// Lazy load function called during first dispatch_subagent request
+const ensureServicesLoaded = async () => {
+  if (performanceTracker) return; // Already loaded
+  try {
+    const pt = await import('./services/subagentPerformanceTracker.js');
+    performanceTracker = pt.performanceTracker;
+  } catch (e: any) { console.warn('[LAZY-LOAD] Performance tracker:', e.message); }
+  try {
+    const cal = await import('./services/crossAgentLearningService.js');
+    crossAgentLearning = cal.crossAgentLearning;
+  } catch (e: any) { console.warn('[LAZY-LOAD] Cross-agent learning:', e.message); }
+  try {
+    const retry = await import('./services/subagentRetryService.js');
+    withRetry = retry.withRetry;
+  } catch (e: any) { console.warn('[LAZY-LOAD] Retry logic:', e.message); }
+  try {
+    const rl = await import('./services/concurrentRateLimiterService.js');
+    concurrentRateLimiter = rl.concurrentRateLimiter;
+  } catch (e: any) { console.warn('[LAZY-LOAD] Rate limiter:', e.message); }
+};
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { 
@@ -873,6 +885,9 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
               // ⚡ FAST MODE: Spawn subagent for parallel task execution
               const typedInput = input as { agentType: string; task: string; relevantFiles?: string[]; priority?: string };
               sendEvent('progress', { message: `⚡ Spawning ${typedInput.agentType} sub-agent for parallel task...` });
+              
+              // Lazy load services on first use
+              await ensureServicesLoaded();
               
               const startTime = Date.now();
               let subagentResult: any = null;
