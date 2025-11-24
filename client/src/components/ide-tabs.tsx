@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Code2, Eye, Terminal as TerminalIcon, FileText, Database, AlertCircle, GitBranch, Search } from "lucide-react";
+import { Code2, Eye, Terminal as TerminalIcon, FileText, Database, AlertCircle, GitBranch, Search, Settings, FileJson, CheckSquare, Package } from "lucide-react";
 import { MonacoEditor } from "@/components/monaco-editor";
 import { LivePreview } from "@/components/live-preview";
 import { Terminal } from "@/components/terminal";
@@ -8,6 +8,9 @@ import { DatabaseViewer } from "@/components/database-viewer";
 import { GitPanel } from "@/components/git-panel";
 import { ProblemsPanel } from "@/components/problems-panel";
 import { SearchPanel } from "@/components/search-panel";
+import { EnvBrowser } from "@/components/env-browser";
+import { LogsViewer } from "@/components/logs-viewer";
+import { PackageManager } from "@/components/package-manager";
 
 interface IDETabsProps {
   projectId: string;
@@ -68,6 +71,26 @@ export function IDETabs({ projectId, selectedFile, onFileSelect, onFileChange }:
           <Search className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Search</span>
         </TabsTrigger>
+
+        <TabsTrigger value="env" className="gap-1 text-xs" data-testid="tab-env">
+          <Settings className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Env</span>
+        </TabsTrigger>
+
+        <TabsTrigger value="logs" className="gap-1 text-xs" data-testid="tab-logs">
+          <FileJson className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Logs</span>
+        </TabsTrigger>
+
+        <TabsTrigger value="tests" className="gap-1 text-xs" data-testid="tab-tests">
+          <CheckSquare className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Tests</span>
+        </TabsTrigger>
+
+        <TabsTrigger value="packages" className="gap-1 text-xs" data-testid="tab-packages">
+          <Package className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Packages</span>
+        </TabsTrigger>
       </TabsList>
 
       {/* Tab Content */}
@@ -96,8 +119,16 @@ export function IDETabs({ projectId, selectedFile, onFileSelect, onFileChange }:
         </TabsContent>
 
         {/* Preview Tab */}
-        <TabsContent value="preview" className="h-full m-0" data-testid="content-preview">
-          <LivePreview projectId={projectId} />
+        <TabsContent value="preview" className="h-full m-0 flex flex-col" data-testid="content-preview">
+          <iframe
+            key={`preview-${projectId}`}
+            src="http://localhost:5000"
+            className="flex-1 border-0 w-full"
+            title="Live Preview"
+            data-testid="iframe-preview"
+            onLoad={() => console.log("[PREVIEW] Iframe loaded")}
+            onError={() => console.error("[PREVIEW] Iframe failed to load")}
+          />
         </TabsContent>
 
         {/* Terminal Tab */}
@@ -130,6 +161,37 @@ export function IDETabs({ projectId, selectedFile, onFileSelect, onFileChange }:
         {/* Search Tab */}
         <TabsContent value="search" className="h-full m-0" data-testid="content-search">
           <SearchPanel projectId={projectId} />
+        </TabsContent>
+
+        {/* Env Tab */}
+        <TabsContent value="env" className="h-full m-0" data-testid="content-env">
+          <EnvBrowser />
+        </TabsContent>
+
+        {/* Logs Tab */}
+        <TabsContent value="logs" className="h-full m-0" data-testid="content-logs">
+          <LogsViewer />
+        </TabsContent>
+
+        {/* Tests Tab */}
+        <TabsContent value="tests" className="h-full m-0" data-testid="content-tests">
+          <div className="h-full flex flex-col overflow-hidden bg-card/50 p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-sm">Tests</h3>
+            </div>
+            <div className="flex-1 flex items-center justify-center text-muted-foreground">
+              <div className="text-center">
+                <p className="text-sm mb-2">Run tests with npm</p>
+                <code className="text-xs bg-muted p-2 rounded block">npm run test</code>
+                <p className="text-xs text-muted-foreground mt-3">Test results will appear in the Terminal</p>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Packages Tab */}
+        <TabsContent value="packages" className="h-full m-0" data-testid="content-packages">
+          <PackageManager />
         </TabsContent>
       </div>
     </Tabs>
