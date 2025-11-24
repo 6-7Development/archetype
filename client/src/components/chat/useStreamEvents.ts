@@ -198,6 +198,19 @@ export function useStreamEvents(options?: { projectId?: string; targetContext?: 
   // Load persisted messages on mount
   const getInitialState = (): UseStreamEventsState => {
     try {
+      // ⚠️ CRITICAL: Don't load from localStorage for platform/architect contexts or null projectIds
+      // These should start fresh to avoid chat history bleeding between workspace contexts
+      if (!options?.projectId || options?.targetContext === 'platform' || options?.targetContext === 'architect') {
+        console.log('🆕 Starting fresh chat - skipping localStorage for workspace context');
+        return {
+          runs: new Map(),
+          currentRunId: null,
+          messages: [],
+          isLoading: false,
+          error: undefined,
+        };
+      }
+
       const storageKey = MESSAGES_STORAGE_KEY(options?.projectId, options?.targetContext);
       const stored = localStorage.getItem(storageKey);
       if (stored) {
