@@ -538,6 +538,16 @@ export function UniversalChat({
                 Messages: <strong>{runState.messages.length}</strong>
               </span>
               
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowIDE(true)}
+                className="text-xs h-6"
+                data-testid="button-open-ide"
+              >
+                Open IDE
+              </Button>
+              
               {consoleOutput && (
                 <Button
                   size="sm"
@@ -691,6 +701,8 @@ export function UniversalChat({
         isGenerating={isGenerating}
         latestMessage={latestMessage}
       />
+            </>
+          )}
         </div>
       </div>
 
