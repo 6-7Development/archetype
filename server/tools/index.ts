@@ -1448,40 +1448,38 @@ export const LOMU_TOOLS = [
   },
 ] as const;
 
+// ============================================================================
+// EXPORT TOOL DISTRIBUTION STRATEGY (see tools/tool-distribution.ts)
+// ============================================================================
+export {
+  LOMU_AI_TOOL_NAMES,
+  ARCHITECT_TOOL_NAMES,
+  TESTING_SPECIALIST_TOOLS,
+  DATABASE_SPECIALIST_TOOLS,
+  DEVOPS_SPECIALIST_TOOLS,
+  INTEGRATION_SPECIALIST_TOOLS,
+  CODE_INTELLIGENCE_TOOLS,
+  DOCUMENTATION_SPECIALIST_TOOLS,
+  DESIGN_SPECIALIST_TOOLS,
+  TASK_ORCHESTRATION_TOOLS,
+  SUBAGENT_SPECIALISTS,
+  DISTRIBUTION_SUMMARY,
+} from './tool-distribution';
+
 /**
- * Essential LomuAI Tools (~18 tools for Gemini)
- * Includes critical file I/O, diagnostics, and delegation tools
- * LomuAI consults I AM Architect (via architect_consult) for complex decisions
- * LomuAI delegates specialized work (via start_subagent) when needed
- * This balances capability with Gemini's optimal tool count (≤20)
+ * Essential LomuAI Tools (18 tools for Gemini)
+ * Balanced tool distribution strategy:
+ * - LomuAI: 18 core tools (cost-effective Gemini)
+ * - I AM Architect: 16 strategic tools (Claude for complex reasoning)
+ * - Subagents: ~33 specialized tools (domain experts)
+ * This ensures all 67 tools are utilized while respecting Gemini's ≤20 recommendation
  */
-export const ESSENTIAL_LOMU_TOOLS = LOMU_TOOLS.filter(tool => [
-  // Core Development Tools
-  'read_project_file',        // Read project code
-  'write_project_file',       // Write project code
-  'delete_project_file',      // Delete project files
-  'bash',                     // Execute commands
-  'read',                     // Read files (generic)
-  'write',                    // Write files (generic)
-  'glob',                     // Find files by pattern
-  'ls',                       // List directory contents
-  
-  // Testing & Analysis
-  'browser_test',             // Test in browser
-  'vision_analyze',           // Analyze screenshots/UI
-  'perform_diagnosis',        // Diagnose issues
-  'web_search',               // Search for solutions
-  
-  // Critical Decision Support
-  'architect_consult',        // Ask I AM for help (internal advisor)
-  'start_subagent',           // Delegate complex work
-  
-  // Infrastructure
-  'execute_sql_tool',         // Query database
-  'check_database_status',    // Check DB health
-  'ask_secrets',              // Request API keys
-  
-  // Utilities
-  'web_fetch',                // Fetch web content
-  'suggest_deploy',           // Suggest deployment
-].includes(tool.name));
+export const ESSENTIAL_LOMU_TOOLS = LOMU_TOOLS.filter(tool =>
+  [
+    'read_project_file', 'write_project_file', 'delete_project_file',
+    'bash', 'read', 'write', 'glob', 'ls',
+    'browser_test', 'vision_analyze', 'perform_diagnosis', 'web_search',
+    'architect_consult', 'start_subagent',
+    'execute_sql_tool', 'ask_secrets', 'web_fetch', 'suggest_deploy'
+  ].includes(tool.name)
+);
