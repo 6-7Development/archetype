@@ -219,8 +219,8 @@ function Router() {
 }
 
 function AppWithTheme({ children }: { children: ReactNode }) {
-  // Apply vibrant light theme at runtime
-  useThemeManager(VIBRANT_LIGHT_THEME);
+  // Theme is now controlled by ThemeProvider (defaultTheme="dark")
+  // No need to force VIBRANT_LIGHT_THEME - let users toggle freely
   
   return <>{children}</>;
 }
@@ -235,7 +235,7 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <ConfigProvider>
-          <ThemeProvider defaultTheme="light" forcedTheme="light">
+          <ThemeProvider defaultTheme="dark">
             <AppWithTheme>
               <VersionProvider mobileBreakpoint={768}>
                 <TooltipProvider>
