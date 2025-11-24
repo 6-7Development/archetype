@@ -8,6 +8,7 @@ export const ROUTES = {
   PROJECTS: '/projects',
   WORKSPACE: '/workspace',
   CHAT: '/chat',
+  LOMU_CHAT: '/lomu',
   INCIDENTS: '/incidents',
   PLATFORM_HEALING: '/platform-healing',
   SETTINGS: '/account',
@@ -24,6 +25,12 @@ export const ROUTES = {
   API_KEYS: '/api-keys',
   MARKETPLACE: '/marketplace',
   BUILDER: '/builder',
+  CONSULTATION_HISTORY: '/consultation-history',
+  DOCS: '/docs',
+  PRIVACY: '/privacy',
+  TERMS: '/terms',
+  BLOG: '/blog',
+  API_REFERENCE: '/api-reference',
 } as const;
 
 // Navigation items for AppLayout
@@ -31,6 +38,7 @@ export const NAVIGATION = {
   main: [
     { label: 'Dashboard', path: ROUTES.DASHBOARD, testId: 'nav-dashboard' },
     { label: 'Builder', path: ROUTES.BUILDER, testId: 'nav-builder' },
+    { label: 'LomuAI Chat', path: ROUTES.LOMU_CHAT, testId: 'nav-lomu-chat' },
     { label: 'Marketplace', path: ROUTES.MARKETPLACE, testId: 'nav-marketplace' },
   ],
   platform: [
@@ -40,6 +48,7 @@ export const NAVIGATION = {
     { label: 'Team', path: ROUTES.TEAM, testId: 'nav-team' },
   ],
   settings: [
+    { label: 'Consultation History', path: ROUTES.CONSULTATION_HISTORY, testId: 'nav-consultation-history' },
     { label: 'API Keys', path: ROUTES.API_KEYS, testId: 'nav-api-keys' },
     { label: 'Support', path: ROUTES.SUPPORT, testId: 'nav-support' },
     { label: 'Account', path: ROUTES.SETTINGS, testId: 'nav-account' },

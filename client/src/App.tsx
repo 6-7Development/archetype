@@ -42,6 +42,10 @@ import Deployments from "@/pages/deployments";
 import DeploymentDetails from "@/pages/deployment-details";
 import LomuChat from "@/pages/lomu-chat";
 import ConsultationHistory from "@/pages/consultation-history";
+import Documentation from "@/pages/docs";
+import Privacy from "@/pages/privacy";
+import Terms from "@/pages/terms";
+import Blog from "@/pages/blog";
 import NotFound from "@/pages/not-found";
 import Error403 from "@/pages/error-403";
 import Error500 from "@/pages/error-500";
@@ -210,6 +214,33 @@ function Router() {
       <Route path="/consultation-history">
         <AppLayout>
           <ConsultationHistory />
+        </AppLayout>
+      </Route>
+      
+      {/* Documentation & Legal */}
+      <Route path="/docs">
+        <AppLayout>
+          <Documentation />
+        </AppLayout>
+      </Route>
+      <Route path="/privacy">
+        <AppLayout>
+          <Privacy />
+        </AppLayout>
+      </Route>
+      <Route path="/terms">
+        <AppLayout>
+          <Terms />
+        </AppLayout>
+      </Route>
+      <Route path="/blog">
+        <AppLayout>
+          <Blog />
+        </AppLayout>
+      </Route>
+      <Route path="/api-reference">
+        <AppLayout>
+          <Documentation />
         </AppLayout>
       </Route>
       
