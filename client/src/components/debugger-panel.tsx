@@ -43,7 +43,7 @@ export function DebuggerPanel() {
                 <div className="text-xs space-y-1 font-mono">
                   <div className="flex justify-between">
                     <span>user</span>
-                    <span className="text-muted-foreground">Object {...}</span>
+                    <span className="text-muted-foreground">Object</span>
                   </div>
                   <div className="flex justify-between">
                     <span>count</span>
