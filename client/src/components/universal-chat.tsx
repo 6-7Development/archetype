@@ -168,6 +168,10 @@ export function UniversalChat({
     projectId,
     targetContext,
     onProjectGenerated,
+    onArchitectResult: (result) => {
+      // Show architect approval modal when guidance arrives
+      setArchitectGuidance(result);
+    },
   });
 
   // Sync isGenerating with runState.isLoading

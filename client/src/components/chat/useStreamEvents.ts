@@ -384,6 +384,25 @@ export function useStreamEvents(options?: { projectId?: string; targetContext?: 
                   message: { ...assistantMessage },
                 });
                 console.log(`✅ [STREAM] Thinking delta: +${data.thinking?.length || 0} chars`);
+              } else if (data.type === 'architect_result') {
+                // ✅ Architect guidance received - trigger callback to show modal
+                console.log('🏛️ [STREAM] Architect result received:', {
+                  confidence: data.confidence,
+                  risk: data.risk,
+                  recommendationCount: data.recommendations?.length || 0,
+                });
+                if (options?.onArchitectResult) {
+                  options.onArchitectResult({
+                    guidance: data.guidance,
+                    recommendations: data.recommendations || [],
+                    confidence: data.confidence || 50,
+                    risk: data.risk || 'medium',
+                    inputTokens: data.inputTokens || 0,
+                    outputTokens: data.outputTokens || 0,
+                    filesInspected: data.filesInspected || [],
+                    alternativeApproach: data.alternativeApproach,
+                  });
+                }
               } else if (data.type === 'done') {
                 // Stream complete
                 fullText = data.fullResponse || fullText;
