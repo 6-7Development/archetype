@@ -41,6 +41,7 @@ import ArtifactDemo from "@/pages/artifact-demo";
 import Deployments from "@/pages/deployments";
 import DeploymentDetails from "@/pages/deployment-details";
 import LomuChat from "@/pages/lomu-chat";
+import ConsultationHistory from "@/pages/consultation-history";
 import NotFound from "@/pages/not-found";
 import Error403 from "@/pages/error-403";
 import Error500 from "@/pages/error-500";
@@ -204,6 +205,13 @@ function Router() {
       
       {/* Standalone LomuAI Chat - No project required */}
       <Route path="/lomu" component={LomuChat} />
+      
+      {/* Consultant History */}
+      <Route path="/consultation-history">
+        <AppLayout>
+          <ConsultationHistory />
+        </AppLayout>
+      </Route>
       
       {/* Setup page - no layout needed */}
       <Route path="/setup" component={Setup} />

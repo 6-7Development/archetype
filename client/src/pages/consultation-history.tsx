@@ -4,9 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Download, ChevronRight, Calendar, Users } from 'lucide-react';
+import { Search, Download, ChevronRight, Calendar } from 'lucide-react';
 import { buildApiUrl } from '@/lib/api-utils';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
+import { InlineReasoning } from '@/components/inline-reasoning';
 
 export default function ConsultationHistory() {
   const [searchTerm, setSearchTerm] = useState('');

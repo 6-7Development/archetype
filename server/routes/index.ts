@@ -23,6 +23,7 @@ import { registerProjectFileRoutes } from "./project-files";
 import { registerFileContentRoutes } from "./file-content";
 import { registerDatabaseRoutes } from "./database";
 import { registerProblemsRoutes } from "./problems";
+import { registerConsultationRoutes } from "./consultations";
 
 /**
  * Main route registration function
@@ -58,6 +59,7 @@ export async function registerRoutes(app: Express): Promise<Server & { wss?: Web
   registerFileContentRoutes(app);
   registerDatabaseRoutes(app);
   registerProblemsRoutes(app);
+  registerConsultationRoutes(app);
   
   // Register WebSocket terminal routes (must be after HTTP routes)
   console.log("[ROUTES] Registering WebSocket terminal routes...");

@@ -5,7 +5,6 @@ import { Coins, History, Settings, Wifi, WifiOff, BarChart3 } from "lucide-react
 import { TokenMeter } from "@/components/token-meter";
 import { RateLimitIndicator } from "@/components/rate-limit-indicator";
 import { cn } from "@/lib/utils";
-import { useLink } from "wouter";
 
 interface ChatHeaderProps {
   targetContext: 'platform' | 'project' | 'architect';
@@ -30,7 +29,6 @@ export function ChatHeader({
   sessionTokens,
   monthlyTokens
 }: ChatHeaderProps) {
-  const [, navigate] = useLink();
   return (
     <header 
       className={cn(
@@ -69,7 +67,7 @@ export function ChatHeader({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate('/consultation-history')}
+            onClick={() => window.location.href = '/consultation-history'}
             className="h-8 w-8"
             title="Architect Consultations"
             data-testid="button-consultations"
