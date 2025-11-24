@@ -16,6 +16,8 @@ export interface ArchitectConsultResult {
   filesInspected?: string[];
   inputTokens?: number;
   outputTokens?: number;
+  confidence?: number; // 0-100 confidence score
+  risk?: 'low' | 'medium' | 'high'; // Risk assessment
   error?: string;
 }
 
@@ -50,6 +52,17 @@ export async function consultArchitect(params: ArchitectConsultParams): Promise<
       console.log(`[ARCHITECT] 🔍 Evidence gathered: ${result.evidenceUsed.join(', ')}`);
     }
 
+    // Calculate confidence based on evidence quality
+    const evidenceQuality = (result.evidenceUsed?.length || 0) * 15; // 15% per piece of evidence
+    const filesAnalyzed = (result.filesInspected?.length || 0) * 10; // 10% per file
+    const confidence = Math.min(100, 50 + evidenceQuality + filesAnalyzed); // Base 50% + bonuses
+    
+    // Assess risk based on scope of changes
+    const recommendationComplexity = (result.recommendations?.length || 0);
+    let risk: 'low' | 'medium' | 'high' = 'low';
+    if (recommendationComplexity > 5) risk = 'high';
+    else if (recommendationComplexity > 3) risk = 'medium';
+
     return {
       success: result.success,
       guidance: result.guidance,
@@ -59,6 +72,8 @@ export async function consultArchitect(params: ArchitectConsultParams): Promise<
       filesInspected: result.filesInspected,
       inputTokens: result.inputTokens,
       outputTokens: result.outputTokens,
+      confidence,
+      risk,
       error: result.error,
     };
 

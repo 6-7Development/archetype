@@ -155,6 +155,8 @@ export function UniversalChat({
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [currentModel, setCurrentModel] = useState('gemini-2.5-flash');
   const [activeTasks, setActiveTasks] = useState<SubagentTask[]>([]);
+  const [showArchitectApproval, setShowArchitectApproval] = useState(false);
+  const [architectGuidance, setArchitectGuidance] = useState<any>(null);
   const { status: rateLimitStatus } = useRateLimitPolling(true);
 
   const chatContainerRef = useRef<HTMLDivElement>(null);

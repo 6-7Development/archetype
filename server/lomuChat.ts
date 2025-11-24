@@ -795,11 +795,24 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
               
               if (architectResult.success) {
                 sendEvent('progress', { message: PROGRESS_MESSAGES.architectApproved() });
-                toolResult = `✅ I AM Architect provided guidance:\n\n${architectResult.guidance}\n\n` +
+                
+                // ✅ EMIT ARCHITECT RESULT EVENT - Frontend will show approval modal
+                sendEvent('architect_result', {
+                  guidance: architectResult.guidance,
+                  recommendations: architectResult.recommendations || [],
+                  confidence: architectResult.confidence || 50,
+                  risk: architectResult.risk || 'medium',
+                  inputTokens: architectResult.inputTokens || 0,
+                  outputTokens: architectResult.outputTokens || 0,
+                  filesInspected: architectResult.filesInspected || [],
+                  alternativeApproach: architectResult.alternativeApproach,
+                });
+                
+                toolResult = `✅ I AM Architect provided guidance (${architectResult.confidence || 50}% confidence, ${architectResult.risk || 'medium'} risk):\n\n${architectResult.guidance}\n\n` +
                   `${architectResult.recommendations.length > 0 ? `**Recommendations:**\n${architectResult.recommendations.map(r => `- ${r}`).join('\n')}\n\n` : ''}` +
                   `${architectResult.alternativeApproach ? `**Alternative Approach:**\n${architectResult.alternativeApproach}\n\n` : ''}` +
                   `${architectResult.filesInspected.length > 0 ? `**Files I AM Inspected:**\n${architectResult.filesInspected.map(f => `- ${f}`).join('\n')}\n\n` : ''}` +
-                  `I'll implement these recommendations now.`;
+                  `⏳ Awaiting approval before implementing changes...`;
               } else {
                 sendEvent('error', { message: `I AM consultation failed` });
                 toolResult = ERROR_MESSAGES.architectRejection(architectResult.error || 'Unknown issue') + 
