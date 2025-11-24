@@ -870,6 +870,7 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
       console.log(`🤖 [AI-CHAT] Streaming response with ${validMessages.length} context messages...`);
       const computeStartTime = Date.now();
       let fullResponse = '';
+      let fullThinking = '';
       let inputTokens = 0;
       let outputTokens = 0;
 
@@ -899,7 +900,14 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
                   fullResponse += chunk.text || '';
                   // Stream chunk to client
                   res.write(`data: ${JSON.stringify({ type: 'text_delta', text: chunk.text })}\n\n`);
-                  console.log(`✅ [GEMINI-CHAT] Streamed ${chunk.text?.length || 0} chars`);
+                  console.log(`✅ [GEMINI-CHAT] Streamed text: +${chunk.text?.length || 0} chars`);
+                }
+                // Handle Gemini thinking chunks
+                else if (chunk.type === 'thinking') {
+                  fullThinking += chunk.thinking || '';
+                  // Stream thinking chunk to client
+                  res.write(`data: ${JSON.stringify({ type: 'thinking_delta', thinking: chunk.thinking })}\n\n`);
+                  console.log(`🧠 [GEMINI-CHAT] Streamed thinking: +${chunk.thinking?.length || 0} chars`);
                 }
                 // Capture usage from completion
                 if (chunk.type === 'usage') {
@@ -917,7 +925,7 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
                 inputTokens = usage?.inputTokens || 0;
                 outputTokens = usage?.outputTokens || 0;
 
-                console.log(`✅ [GEMINI-CHAT] Response complete: ${fullResponse.length} chars`);
+                console.log(`✅ [GEMINI-CHAT] Response complete: ${fullResponse.length} chars (thinking: ${fullThinking.length} chars)`);
 
                 // Save messages to database
                 await storage.createChatMessage({
@@ -945,8 +953,14 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
                   metadata: { message },
                 });
 
-                // Send completion event
-                res.write(`data: ${JSON.stringify({ type: 'done', fullResponse, inputTokens, outputTokens })}\n\n`);
+                // Send completion event with thinking block
+                res.write(`data: ${JSON.stringify({ 
+                  type: 'done', 
+                  fullResponse, 
+                  thinking: fullThinking,
+                  inputTokens, 
+                  outputTokens 
+                })}\n\n`);
                 res.end();
               } catch (e) {
                 console.error('Error in completion handler:', e);
