@@ -1,14 +1,17 @@
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { platformHealing } from '../platformHealing.ts';
 import { knowledge_search, knowledge_store, knowledge_recall, code_search } from '../tools/knowledge.ts';
-import { buildArchitectSystemPrompt } from '../lomuSuperCore.ts';
+import { buildArchitectSystemPrompt } from '../lomuSuperCore/architectPrompt.ts';
 import { RAILWAY_CONFIG } from '../config/railway.ts';
 import { db } from '../db';
 import { architectNotes } from '@shared/schema';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || "dummy-key-for-development",
+const genai = new GoogleGenerativeAI({
+  apiKey: process.env.GEMINI_API_KEY || "dummy-key-for-development",
 });
+
+// I AM Architect uses Gemini with stronger guardrails
+const ARCHITECT_MODEL = 'gemini-2.5-flash';
 
 // Define a constant for platform-wide notes
 const PLATFORM_PROJECT_ID = "platform-wide-notes";
