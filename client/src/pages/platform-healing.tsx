@@ -1,51 +1,45 @@
 import { UniversalChat } from '@/components/universal-chat';
 import { WorkspaceLayout } from '@/components/workspace-layout';
-import { useQuery } from "@tanstack/react-query";
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Beaker } from 'lucide-react';
+import { ProjectSelector } from '@/components/project-selector';
+import { FolderOpen } from 'lucide-react';
 
 export default function PlatformHealing() {
-  const [testMode, setTestMode] = useState(false);
+  // Project selector - determines which workspace is active
+  const [selectedProject, setSelectedProject] = useState<string>('platform-healing');
   
   // LomuAI always uses Gemini (cost-effective). 
   // I AM Architect is an internal advisor - automatically consulted when LomuAI detects it's stuck
   const targetContext: 'platform' | 'architect' = 'platform';
   
+  // Determine display info based on selected project
+  const isTestProject = selectedProject === 'test-project';
+  const projectName = isTestProject ? '🧪 Test Project' : '⚙️ Platform Healing';
+  const mode = isTestProject ? 'workspace' : 'platform-healing';
+  
   return (
     <WorkspaceLayout
-      projectId={testMode ? "test-project" : "platform-healing"}
-      projectName={testMode ? "Test LomuAI" : "Platform Healing"}
-      mode={testMode ? "workspace" : "platform-healing"}
+      projectId={selectedProject}
+      projectName={projectName}
+      mode={mode}
       isAdmin={true}
       userRole="owner"
     >
       <div className="h-full w-full overflow-hidden flex flex-col">
-        {/* Header with Test Toggle */}
-        <div className="flex items-center justify-between border-b bg-muted/30 px-4 py-2 flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-muted-foreground">
-              {testMode ? '🧪 Test Mode' : '⚙️ Platform Healing'}
-            </span>
-          </div>
-          <Button
-            size="sm"
-            variant={testMode ? "default" : "outline"}
-            onClick={() => setTestMode(!testMode)}
-            className="text-xs gap-2"
-            data-testid="button-toggle-test-mode"
-          >
-            <Beaker className="w-3.5 h-3.5" />
-            {testMode ? 'Back to Healing' : 'Test LomuAI'}
-          </Button>
+        {/* Project Selector Header */}
+        <div className="flex items-center gap-3 border-b bg-muted/30 px-4 py-3 flex-shrink-0">
+          <FolderOpen className="w-4 h-4 text-primary" />
+          <ProjectSelector 
+            projectId={selectedProject}
+            onProjectChange={setSelectedProject}
+          />
         </div>
 
-        {/* Chat/IDE Content */}
+        {/* Chat/IDE Content - Fully Isolated to Selected Project */}
         <div className="flex-1 overflow-hidden">
           <UniversalChat 
             targetContext={targetContext}
-            projectId={testMode ? "test-project" : null}
-            isTestMode={testMode}
+            projectId={selectedProject}
           />
         </div>
       </div>
