@@ -35,6 +35,9 @@ import {
 } from "lucide-react";
 import { Project, File } from "@shared/schema";
 
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { WorkspaceLayout } from "@/components/workspace-layout";
+
 export default function Builder() {
   const [activeTab, setActiveTab] = useState("build");
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);

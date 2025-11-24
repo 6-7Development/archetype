@@ -157,17 +157,17 @@
 
 /* LIGHT MODE - Lomu Fresh & Bright Theme */
 :root {
-  --button-outline: rgba(0,0,0, .10);
-  --badge-outline: rgba(0,0,0, .05);
+  --button-outline: rgba(255,255,255, .10);
+  --badge-outline: rgba(255,255,255, .05);
 
   /* Automatic computation of border around primary / danger buttons */
-  --opaque-button-border-intensity: -8; /* In terms of percentages */
+  --opaque-button-border-intensity: 8; /* In terms of percentages - lighter for dark mode */
 
   /* Backgrounds applied on top of other backgrounds when hovered/active */
-  --elevate-1: rgba(0,0,0, .03);
-  --elevate-2: rgba(0,0,0, .08);
+  --elevate-1: rgba(255,255,255, .03);
+  --elevate-2: rgba(255,255,255, .08);
 
-  /* Lomu Hive/Swarm Brand Colors - Light Mode - CLEAN & MODERN */
+  /* Lomu Hive/Swarm Brand Colors - Light Mode - WARM & COMFORTABLE */
   --honey: 40 97% 50%;             /* Vibrant honey #F7B500 */
   --nectar: 48 100% 65%;           /* Bright nectar #FFD34D */
   --mint: 171 100% 42%;            /* Vibrant mint-teal #00D4B3 */
@@ -175,23 +175,23 @@
   --graphite: 216 11% 12%;         /* Professional text #1B1D21 */
   --cream: 45 20% 98%;             /* Subtle warm white */
 
-  --background: 0 0% 100%;         /* Pure white - clean modern */
+  --background: 218 14% 11%;       /* Dark charcoal background - comfortable on eyes */
 
-  --foreground: 216 9% 7%;         /* Charcoal text */
+  --foreground: 0 0% 95%;          /* Light text for dark background */
 
-  --border: 0 0% 92%;              /* Clean light grey border */
+  --border: 216 12% 20%;           /* Visible dark border */
 
-  --card: 45 20% 98%;              /* Subtle warm white cards */
+  --card: 218 14% 15%;             /* Slightly lighter cards on dark bg */
 
-  --card-foreground: 216 9% 7%;
+  --card-foreground: 0 0% 95%;
 
-  --card-border: 0 0% 90%;
+  --card-border: 216 12% 25%;
 
-  --sidebar: 45 20% 98%;           /* Subtle warm white */
+  --sidebar: 218 14% 13%;          /* Dark sidebar */
 
-  --sidebar-foreground: 216 9% 7%;
+  --sidebar-foreground: 0 0% 95%;
 
-  --sidebar-border: 0 0% 92%;
+  --sidebar-border: 216 12% 25%;
 
   --sidebar-primary: 40 97% 50%;   /* Honey primary - VIBRANT */
 
@@ -203,11 +203,11 @@
 
   --sidebar-ring: 40 97% 50%;
 
-  --popover: 0 0% 100%;
+  --popover: 218 14% 15%;
 
-  --popover-foreground: 216 9% 7%;
+  --popover-foreground: 0 0% 95%;
 
-  --popover-border: 0 0% 92%;
+  --popover-border: 216 12% 25%;
 
   --primary: 40 97% 50%;           /* Honey primary - VIBRANT */
 
@@ -217,9 +217,9 @@
 
   --secondary-foreground: 0 0% 100%;
 
-  --muted: 40 15% 96%;             /* Very subtle honey tint */
+  --muted: 218 14% 20%;            /* Muted dark tone */
 
-  --muted-foreground: 216 9% 45%;
+  --muted-foreground: 0 0% 70%;
 
   --accent: 171 100% 42%;          /* Mint accent - energetic */
 
@@ -229,7 +229,7 @@
 
   --destructive-foreground: 0 0% 100%;
 
-  --input: 220 15% 88%;
+  --input: 218 14% 20%;
   --ring: 220 85% 42%;
   --chart-1: 220 85% 42%;
   --chart-2: 142 65% 48%;
