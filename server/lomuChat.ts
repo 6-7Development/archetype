@@ -383,6 +383,10 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
     // Track architect approval for enforcement (per-file approval map)
     const approvedFiles = new Map<string, { approved: boolean; timestamp: number }>();
     
+    // ✅ INITIALIZE SUBAGENT EXECUTION CONTEXT for parallel execution with file locking
+    const executionContext = await initializeExecutionContext(activeProjectId, userId);
+    console.log(`[LOMU-CHAT] Initialized execution context: ${executionContext.executionId}`);
+    
     // Normalize file paths to prevent bypasses (./path, ../path, etc)
     const normalizePath = (filePath: string): string => {
       // Remove leading ./ and resolve ../ patterns
@@ -860,6 +864,7 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
                 agentType: typedInput.agentType,
                 task: typedInput.task,
                 relevantFiles: typedInput.relevantFiles,
+                executionId: executionContext.executionId, // ✅ Pass execution context for file locking
                 context: {
                   mainTask: message,
                   executionMode: 'FAST_PARALLEL',
@@ -1105,6 +1110,10 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
       });
     }
 
+    // ✅ CLEANUP EXECUTION CONTEXT - Release all file locks
+    cleanupExecutionContext(executionContext.executionId);
+    console.log(`[LOMU-CHAT] Cleaned up execution context: ${executionContext.executionId}`);
+
     // CRITICAL FIX: Complete agent run and reconcile credits
     // This returns unused reserved credits and logs actual consumption
     console.log(`[LOMU-CHAT] Completing agent run ${agentRunId} - used ${totalCreditsUsed} of ${CREDITS_TO_RESERVE} reserved`);
@@ -1146,6 +1155,14 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
     
     // CRITICAL FIX: Reconcile credits even on error to prevent leak
     if (agentRunId) {
+      // ✅ CLEANUP ON ERROR - Release all file locks
+      try {
+        cleanupExecutionContext(executionContext.executionId);
+        console.log(`[LOMU-CHAT] Cleaned up execution context on error: ${executionContext.executionId}`);
+      } catch (cleanupError) {
+        console.warn('[LOMU-CHAT] Cleanup error:', cleanupError);
+      }
+
       try {
         await AgentExecutor.completeRun({
           runId: agentRunId,
