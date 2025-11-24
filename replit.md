@@ -100,8 +100,19 @@ The system is highly modularized for maintainability and self-healing:
 -   **Browser Automation**: Playwright
 -   **Web Search**: Tavily API
 
-## Recent Session Progress (November 23, 2025)
-### Server Startup & Authentication Fixes
+## Recent Session Progress (November 24, 2025)
+### Layout Architecture & Code Cleanup
+- ✅ **Layout Double-Wrapping Bug Fixed**: Removed `AppLayout` wrapper from `/builder` routes
+  - Builder page now displays proper Replit-style layout with projects sidebar
+  - Fixed conflict where custom full-screen layouts were nested inside AppLayout's sidebar
+- ✅ **Comprehensive Layout Audit**: Documented which pages should/shouldn't use AppLayout wrapper
+  - Full-screen workspace pages: Builder, Workspace, DashboardWorkspace, AdminWorkspace, PlatformHealing, LomuChat
+  - Standard pages with navigation: Dashboard, Marketplace, Analytics, Account, Team, etc.
+- ✅ **Code Cleanup**: Deleted orphaned `ide.tsx` page (no route, legacy code)
+  - Modern alternatives exist: Builder (Replit-style) and Workspace (5-panel layout)
+  - Reduced code duplication and maintenance burden
+
+### Server Startup & Authentication Fixes (November 23, 2025)
 - ✅ **CRITICAL FIX**: Created `server/routes/index.ts` - centralized route registration system
 - ✅ Fixed ES module imports (replaced CommonJS `require()` with dynamic `import()`)
 - ✅ Fixed WebSocket Server constructor import (changed from `WebSocket.Server` to `WebSocketServer`)
