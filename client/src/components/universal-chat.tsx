@@ -457,10 +457,10 @@ export function UniversalChat({
 
       <ResizablePanelGroup direction="horizontal" className="flex-1">
         {/* Left Panel: Chat Messages (70%) */}
-        <ResizablePanel defaultSize={70} minSize={50} maxSize={80}>
+        <ResizablePanel defaultSize={70} minSize={50} maxSize={80} className="flex flex-col h-full">
           <div
             ref={chatContainerRef}
-            className="flex-1 overflow-y-auto px-4 py-2 space-y-3 scroll-smooth"
+            className="flex-1 overflow-y-auto px-4 py-2 space-y-3 scroll-smooth min-h-0"
             onScroll={handleScroll}
             data-testid="chat-messages-container"
           >
@@ -519,8 +519,8 @@ export function UniversalChat({
             )}
           </div>
 
-          {/* Chat Input */}
-          <div className="border-t bg-background dark:border-[hsl(var(--primary))]/20 p-4">
+          {/* Chat Input - Fixed at bottom */}
+          <div className="flex-shrink-0 border-t bg-background dark:border-[hsl(var(--primary))]/20 p-4">
             <ChatInput
               input={input}
               setInput={setInput}
