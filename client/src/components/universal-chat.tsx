@@ -460,6 +460,7 @@ export function UniversalChat({
         {showFileBrowser && (
           <>
             <FileBrowser
+              projectId={projectId || undefined}
               onFileSelect={(path) => {
                 setConsoleOutput(prev => prev + `\n📂 Opened: ${path}\n`);
                 toast({ title: "File opened", description: path });
