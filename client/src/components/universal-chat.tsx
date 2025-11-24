@@ -51,6 +51,8 @@ import { MarkdownMessage } from "./chat/MarkdownMessage";
 import { MessageBubble } from "./chat/MessageBubble";
 import { WorkspaceStatus } from "@/components/workspace-status";
 import { ConsoleViewer } from "@/components/console-viewer";
+import { FileBrowser } from "@/components/file-browser";
+import { EnvBrowser } from "@/components/env-browser";
 import type {
   RunPhase,
   RunState,
@@ -138,6 +140,9 @@ export function UniversalChat({
   const [showConsole, setShowConsole] = useState<boolean>(false);
   const [buildStatus, setBuildStatus] = useState<'ready' | 'building' | 'error' | 'deployed'>('ready');
   const [filesChanged, setFilesChanged] = useState<number>(0);
+  const [showFileBrowser, setShowFileBrowser] = useState<boolean>(true);
+  const [showEnvBrowser, setShowEnvBrowser] = useState<boolean>(false);
+  const [gitStatus, setGitStatus] = useState({ ahead: 0, behind: 0, uncommitted: 2 });
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const latestMessageRef = useRef<HTMLDivElement>(null);
@@ -435,6 +440,7 @@ export function UniversalChat({
         status={buildStatus}
         filesChanged={filesChanged}
         branch="main"
+        gitStatus={gitStatus}
         onViewFiles={() => setShowConsole(true)}
         onDeploy={() => {
           setBuildStatus('building');
@@ -442,55 +448,74 @@ export function UniversalChat({
           setConsoleOutput(prev => prev + '\n📦 Building project...\n✅ Deployed successfully!\n');
           toast({ title: "Deployed!", description: "Project published successfully" });
         }}
+        onViewEnv={() => setShowEnvBrowser(true)}
       />
 
-      {/* Workspace Header with Status */}
-      <div className="border-b bg-muted/30 dark:border-[hsl(var(--primary))]/20 px-4 py-2 flex items-center justify-between text-xs gap-4">
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <span className="text-muted-foreground truncate">
-            <strong>Workspace:</strong> {targetContext}
-            {projectId && ` • Project: ${projectId.slice(0, 8)}`}
-          </span>
-        </div>
-        <div className="flex items-center gap-3 flex-wrap justify-end">
-          {/* Platform Health Indicator - Only show for owners/platform context */}
-          {(targetContext === 'platform' || targetContext === 'architect') && (
-            <PlatformHealthIndicator />
-          )}
-          
-          {isGenerating && (
-            <div className="flex items-center gap-1 text-[hsl(var(--primary))] font-semibold animate-pulse">
-              <Loader2 className="w-3 h-3 animate-spin" />
-              <span>Processing...</span>
+      {/* IDE Layout Container - File Browser + Chat */}
+      <div className="flex flex-1 min-h-0">
+        {/* Left Panel: File Browser */}
+        {showFileBrowser && (
+          <>
+            <FileBrowser
+              onFileSelect={(path) => {
+                setConsoleOutput(prev => prev + `\n📂 Opened: ${path}\n`);
+                toast({ title: "File opened", description: path });
+              }}
+              changedFiles={["client/src/App.tsx", "shared/schema.ts"]}
+            />
+            <div className="w-px bg-border" />
+          </>
+        )}
+
+        {/* Right Panel: Chat Interface */}
+        <div className="flex flex-col flex-1 min-h-0">
+          {/* Workspace Header with Status */}
+          <div className="border-b bg-muted/30 dark:border-[hsl(var(--primary))]/20 px-4 py-2 flex items-center justify-between text-xs gap-4">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <span className="text-muted-foreground truncate">
+                <strong>Workspace:</strong> {targetContext}
+                {projectId && ` • Project: ${projectId.slice(0, 8)}`}
+              </span>
             </div>
-          )}
-          <span className="text-muted-foreground">
-            Messages: <strong>{runState.messages.length}</strong>
-          </span>
-          
-          {consoleOutput && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setShowConsole(!showConsole)}
-              className="text-xs h-6"
-              data-testid="button-toggle-console"
-            >
-              {showConsole ? 'Hide' : 'Show'} Console
-            </Button>
-          )}
-        </div>
-      </div>
+            <div className="flex items-center gap-3 flex-wrap justify-end">
+              {/* Platform Health Indicator - Only show for owners/platform context */}
+              {(targetContext === 'platform' || targetContext === 'architect') && (
+                <PlatformHealthIndicator />
+              )}
+              
+              {isGenerating && (
+                <div className="flex items-center gap-1 text-[hsl(var(--primary))] font-semibold animate-pulse">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <span>Processing...</span>
+                </div>
+              )}
+              <span className="text-muted-foreground">
+                Messages: <strong>{runState.messages.length}</strong>
+              </span>
+              
+              {consoleOutput && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowConsole(!showConsole)}
+                  className="text-xs h-6"
+                  data-testid="button-toggle-console"
+                >
+                  {showConsole ? 'Hide' : 'Show'} Console
+                </Button>
+              )}
+            </div>
+          </div>
 
-      <ChatHeader
-        currentRun={currentRun}
-        stopRun={stopRun}
-        clearRunState={clearRunState}
-        isGenerating={isGenerating}
-        setRunState={setRunState}
-      />
+          <ChatHeader
+            currentRun={currentRun}
+            stopRun={stopRun}
+            clearRunState={clearRunState}
+            isGenerating={isGenerating}
+            setRunState={setRunState}
+          />
 
-      <ResizablePanelGroup direction="horizontal" className="flex-1">
+          <ResizablePanelGroup direction="horizontal" className="flex-1">
         {/* Left Panel: Chat Messages (70%) */}
         <ResizablePanel defaultSize={70} minSize={50} maxSize={80} className="flex flex-col h-full">
           <div
@@ -627,6 +652,12 @@ export function UniversalChat({
         output={consoleOutput}
         isOpen={showConsole}
         onClose={() => setShowConsole(false)}
+      />
+
+      {/* Environment Variables Browser */}
+      <EnvBrowser
+        isOpen={showEnvBrowser}
+        onClose={() => setShowEnvBrowser(false)}
       />
 
       <ChatDialogs
