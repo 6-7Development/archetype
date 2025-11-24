@@ -1447,3 +1447,41 @@ export const LOMU_TOOLS = [
     },
   },
 ] as const;
+
+/**
+ * Essential LomuAI Tools (~18 tools for Gemini)
+ * Includes critical file I/O, diagnostics, and delegation tools
+ * LomuAI consults I AM Architect (via architect_consult) for complex decisions
+ * LomuAI delegates specialized work (via start_subagent) when needed
+ * This balances capability with Gemini's optimal tool count (≤20)
+ */
+export const ESSENTIAL_LOMU_TOOLS = LOMU_TOOLS.filter(tool => [
+  // Core Development Tools
+  'read_project_file',        // Read project code
+  'write_project_file',       // Write project code
+  'delete_project_file',      // Delete project files
+  'bash',                     // Execute commands
+  'read',                     // Read files (generic)
+  'write',                    // Write files (generic)
+  'glob',                     // Find files by pattern
+  'ls',                       // List directory contents
+  
+  // Testing & Analysis
+  'browser_test',             // Test in browser
+  'vision_analyze',           // Analyze screenshots/UI
+  'perform_diagnosis',        // Diagnose issues
+  'web_search',               // Search for solutions
+  
+  // Critical Decision Support
+  'architect_consult',        // Ask I AM for help (internal advisor)
+  'start_subagent',           // Delegate complex work
+  
+  // Infrastructure
+  'execute_sql_tool',         // Query database
+  'check_database_status',    // Check DB health
+  'ask_secrets',              // Request API keys
+  
+  // Utilities
+  'web_fetch',                // Fetch web content
+  'suggest_deploy',           // Suggest deployment
+].includes(tool.name));

@@ -6,7 +6,7 @@ import { db } from '../db.ts';
 import { eq, desc, and, isNull } from 'drizzle-orm';
 import { anthropic, DEFAULT_MODEL, streamAnthropicResponse } from '../anthropic.ts';
 import { streamGeminiResponse } from '../gemini.ts';
-import { LOMU_TOOLS } from '../tools/index.ts';
+import { LOMU_TOOLS, ESSENTIAL_LOMU_TOOLS } from '../tools/index.ts';
 import { checkUsageLimits, trackAIUsage, decrementAICredits, getUserUsageStats, updateStorageUsage } from '../usage-tracking.ts';
 import { isAuthenticated } from '../universalAuth.ts';
 import { aiLimiter } from '../rateLimiting.ts';
@@ -883,7 +883,7 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
           await streamGeminiResponse({
             maxTokens: 4096,
             system: systemPrompt,
-            tools: LOMU_TOOLS,
+            tools: ESSENTIAL_LOMU_TOOLS,
             messages: [
               ...validMessages.map((m: any) => ({
                 role: m.role === 'system' ? 'user' : m.role,
