@@ -125,6 +125,21 @@ export default function Dashboard() {
       
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-background">
         <div className="max-w-7xl mx-auto space-y-6">
+        {/* Gap #17: FAST Mode Dashboard - Show performance metrics */}
+        {showFastModeDashboard && (
+          <div className="rounded-lg border border-amber-200 dark:border-amber-800/30 bg-amber-50 dark:bg-amber-950/20 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-semibold text-amber-900 dark:text-amber-100">⚡ FAST Mode Performance</h2>
+              <button
+                onClick={() => setShowFastModeDashboard(false)}
+                className="text-xs text-amber-700 dark:text-amber-300 hover:underline"
+              >
+                Hide
+              </button>
+            </div>
+            <FastModeDashboard />
+          </div>
+        )}
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>

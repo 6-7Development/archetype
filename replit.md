@@ -1,7 +1,7 @@
 # Lomu - "When Code Throws You Lemons"
 
 ## Overview
-Lomu is an AI-powered platform for rapid web development, featuring the autonomous AI coding agent LomuAI and dual-version IDE Workspaces (Lomu for desktop, Lomu5 for mobile). It offers a console-first interface, real-time preview, and comprehensive workspace features. The platform aims for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. LomuAI's key capability is autonomous self-healing, bug fixing, and UI/UX improvements to its own source code, complete with rollback and audit logging. The business vision is to provide a comprehensive, AI-driven platform that simplifies web development, making it accessible and efficient for a wide range of users.
+Lomu is an AI-powered platform for rapid web development, featuring the autonomous AI coding agent LomuAI. It offers a console-first interface, real-time preview, and comprehensive workspace features across desktop (Lomu) and mobile (Lomu5) IDEs. The platform aims for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. LomuAI's key capability is autonomous self-healing, bug fixing, and UI/UX improvements to its own source code, complete with rollback and audit logging. The business vision is to provide a comprehensive, AI-driven platform that simplifies web development, making it accessible and efficient for a wide range of users.
 
 ## User Preferences
 ### API Configuration
@@ -53,10 +53,10 @@ Lomu is an AI-powered platform for rapid web development, featuring the autonomo
 The platform is built with a React frontend, an Express.js backend, and PostgreSQL for data persistence. It uses a unified codebase for Lomu (Desktop, 4-panel layout) and Lomu5 (Mobile, bottom tab navigation), sharing backend APIs, WebSockets, authentication, and database access.
 
 ### Universal RBAC System
-A dynamic role-based access control system (`shared/rbac.ts`) serves as a single source of truth for permissions, supporting 'user', 'admin', 'owner' roles, five resources (platform, projects, healing, admin, billing, team), and five actions (read, write, delete, execute, manage). It offers zero configuration, immediate application of permission matrix changes, and frontend hooks for permission checks.
+A dynamic role-based access control system (`shared/rbac.ts`) serves as a single source of truth for permissions, supporting 'user', 'admin', 'owner' roles, five resources (platform, projects, healing, admin, billing, team), and five actions (read, write, delete, execute, manage).
 
 ### UI/UX Decisions
-The UI features a tab-based workspace with a command console and real-time live preview, adhering to a professional swarm/hive theme with honey-gold and mint-teal accents. It uses card-based layouts, warm shadows, smooth transitions, and ADA/WCAG accessibility. Chat interfaces utilize semantic theme tokens for consistent messaging and display LomuAI's thought process inline with responses using `EnhancedMessageDisplay` and collapsible, color-coded blocks for thinking, tool calls, and results. A comprehensive Agent Chatroom interface includes real-time progress tracking via SSE events, managed by a `UniversalChat` component. A Replit Agent-style Testing UI with a `TestingPanel` provides live browser previews, AI narration, and step progress tracking.
+The UI features a tab-based workspace with a command console and real-time live preview, adhering to a professional swarm/hive theme with honey-gold and mint-teal accents. It uses card-based layouts, warm shadows, smooth transitions, and ADA/WCAG accessibility. Chat interfaces utilize semantic theme tokens for consistent messaging and display LomuAI's thought process inline with responses using `EnhancedMessageDisplay` and collapsible, color-coded blocks for thinking, tool calls, and results. A comprehensive Agent Chatroom interface includes real-time progress tracking via SSE events, managed by a `UniversalChat` component. A Replit Agent-style Testing UI with a `TestingPanel` provides live browser previews, AI narration, and step progress tracking. A functional Terminal component is integrated into the WorkspaceLayout.
 
 ### System Design Choices
 LomuAI operates as an autonomous worker using a 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). I AM Architect is a manually-triggered premium consultant, providing strategic guidance without committing code. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing. LomuAI incorporates efficiency rules like SEARCH BEFORE CODING and ITERATION BUDGET AWARENESS.
@@ -70,23 +70,13 @@ LomuAI operates as an autonomous worker using a 7-phase workflow (ASSESS → PLA
 
 A centralized session management system (`server/services/lomuAIBrain.ts`) combines in-memory and database persistence. The access model provides owner-only access for platform healing, usage-based billing for LomuAI, and premium consulting for I AM Architect.
 
-Key features include optimized tool distribution, universal RBAC, GitHub integration, environment variable management, AST-based code intelligence, production-ready monetization with Stripe, robust security measures (RCE prevention, protected APIs), vision analysis (image/screenshot analysis), strict JSON function calling, a 3-layer code validation system, telemetry, reflection and structured retry mechanisms, an anti-paralysis system, and priority safety mechanisms like auto-rollback and server startup integration tests. Phase 1 multi-user safety includes workspace isolation, stale session cleanup, and crash recovery. All API calls include `credentials: 'include'` for proper session cookie authentication.
+Key features include optimized tool distribution, universal RBAC, GitHub integration, environment variable management, AST-based code intelligence, production-ready monetization with Stripe, robust security measures (RCE prevention, protected APIs), vision analysis (image/screenshot analysis), strict JSON function calling, a 3-layer code validation system, telemetry, reflection and structured retry mechanisms, an anti-paralysis system, and priority safety mechanisms like auto-rollback and server startup integration tests. Phase 1 multi-user safety includes workspace isolation, stale session cleanup, and crash recovery. All API calls include `credentials: 'include'` for proper session cookie authentication. New services include Consultation Refine, Conflict Resolution, Performance Tracking, Architect Versioning, Failure Recovery, Skill-Based Routing, Token Budget, Adaptive Parallelization, and Concurrent Rate Limiting.
 
 ### Configuration System
-The platform uses a centralized configuration approach:
--   **`app.config.ts`**: Global settings including branding, themes, APIs, chat, UI constants, feature flags, and environment detection.
--   **`constants.ts`**: Defines application routes, API endpoints, UI constants, validation rules, status enums, and accessibility labels.
--   **`classNameHelper.ts`**: Reusable Tailwind CSS class builders.
--   **`api-utils.ts`**: Centralized API utilities for building URLs, fetch wrappers, and React Query key generation, now with `credentials` support.
--   **`useAppConfig.ts`**: React hook for type-safe configuration access.
--   **`ConfigProvider.tsx`**: Context provider for application-wide configuration access.
--   **`shared/rbac.ts`**: Universal RBAC system.
+The platform uses a centralized configuration approach including `app.config.ts` for global settings, `constants.ts` for routes and validation, `classNameHelper.ts` for Tailwind CSS, `api-utils.ts` for API utilities, `useAppConfig.ts` hook, `ConfigProvider.tsx` context provider, and `shared/rbac.ts`.
 
 ### Modularization
-The system is highly modularized for maintainability and self-healing:
--   **Backend**: `lomuChat.ts` and `lomuSuperCore.ts` significantly reduced in size by extracting focused modules.
--   **Frontend**: `universal-chat.tsx` refactored into focused components.
--   **Universal Workspace Layout System**: Provides a Replit-style IDE layout with a `WorkspaceLayout` component, `WorkspaceContainer`, `useWorkspaceConfig` hook for various modes, and built-in RBAC for role-based visibility.
+The system is highly modularized for maintainability and self-healing, with refactored backend and frontend components, and a `Universal Workspace Layout System` providing a Replit-style IDE layout with RBAC.
 
 ## External Dependencies
 -   **Frontend**: React, TypeScript, Monaco Editor, Tailwind CSS, Shadcn UI, next-themes
@@ -99,54 +89,3 @@ The system is highly modularized for maintainability and self-healing:
 -   **Charting**: Recharts
 -   **Browser Automation**: Playwright
 -   **Web Search**: Tavily API
-
-## Recent Session Progress (November 24, 2025)
-### Terminal Integration (November 24, 2025 - ARCHITECT APPROVED ✅)
-- ✅ **Terminal Component Integrated into WorkspaceLayout**
-  - Replaced placeholder "Console" tab with functional Terminal component
-  - Terminal connects to WebSocket at `/ws?terminal=true&projectId=${projectId}`
-  - Full command execution, output streaming, and command history support
-  - Renamed tab from "console" to "terminal" for clarity
-- ✅ **Technical Implementation**
-  - Imported Terminal component: `import { Terminal } from '@/components/terminal'`
-  - Renamed lucide-react icon: `Terminal as TerminalIcon` to avoid naming conflict
-  - Updated tab state type: `'editor' | 'preview' | 'terminal'`
-  - Terminal automatically authenticates with user credentials
-- ✅ **Architect Validation**: Confirmed proper integration, WebSocket connection working, no regressions
-
-### Dark Mode Implementation (November 24, 2025 - ARCHITECT APPROVED ✅)
-- ✅ **CRITICAL FIX: Theme Toggle Now Functional**
-  - Removed `forcedTheme="light"` from `ThemeProvider` in `App.tsx`
-  - Eliminated conflicting `useThemeManager(VIBRANT_LIGHT_THEME)` that was overriding user preference
-  - Changed `defaultTheme` to "dark" as per project requirements
-- ✅ **Distinct Light/Dark Palettes Created**
-  - **Light Mode (`:root`)**: White background `--background: 0 0% 100%`, dark text `--foreground: 216 11% 12%`, light borders
-  - **Dark Mode (`.dark`)**: Charcoal background `--background: 218 14% 11%`, light text `--foreground: 0 0% 95%`, visible dark borders
-  - Both modes preserve honey (#F7B500) and mint (#00D4B3) brand colors
-- ✅ **Architect Validation**: Confirmed proper theme separation, acceptable contrast ratios, and working toggle mechanism
-
-### Layout Architecture & Code Cleanup
-- ✅ **Layout Double-Wrapping Bug Fixed**: Removed `AppLayout` wrapper from `/builder` routes
-  - Builder page now displays proper Replit-style layout with projects sidebar
-  - Fixed conflict where custom full-screen layouts were nested inside AppLayout's sidebar
-- ✅ **Comprehensive Layout Audit**: Documented which pages should/shouldn't use AppLayout wrapper
-  - Full-screen workspace pages: Builder, Workspace, DashboardWorkspace, AdminWorkspace, PlatformHealing, LomuChat
-  - Standard pages with navigation: Dashboard, Marketplace, Analytics, Account, Team, etc.
-- ✅ **Code Cleanup**: Deleted orphaned `ide.tsx` page (no route, legacy code)
-  - Modern alternatives exist: Builder (Replit-style) and Workspace (5-panel layout)
-  - Reduced code duplication and maintenance burden
-
-### Server Startup & Authentication Fixes (November 23, 2025)
-- ✅ **CRITICAL FIX**: Created `server/routes/index.ts` - centralized route registration system
-- ✅ Fixed ES module imports (replaced CommonJS `require()` with dynamic `import()`)
-- ✅ Fixed WebSocket Server constructor import (changed from `WebSocket.Server` to `WebSocketServer`)
-- ✅ Fixed import paths in `server/lomuChat.ts` (converted `../` to `./` with `.js` extensions)
-- ✅ Fixed async middleware bug in `server/middleware/creditValidation.ts` (removed `async` from factory function)
-- ✅ Fixed WebSocket server passing to healing routes (pass `server.wss` instead of `server`)
-- ✅ **AUTHENTICATION FIX**: Added `setupAuth()` call BEFORE route registration in `server/index.ts`
-  - Passport strategies (local, OIDC) now properly initialized before routes need them
-  - Fixed "Unknown authentication strategy 'local'" error
-  - Login functionality fully restored
-- ✅ Server now starts successfully - all routes registered and operational
-- ✅ Platform healing orchestrator running and ready for use
-- ✅ LomuAI router mounted successfully at `/api/lomu-ai` with no errors
