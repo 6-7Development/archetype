@@ -13,7 +13,7 @@ export default function Landing() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-charcoal-950 relative overflow-hidden">
+    <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Subtle honeycomb pattern background */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
@@ -23,7 +23,7 @@ export default function Landing() {
       </div>
 
       {/* Responsive Navigation - Accommodates larger logo */}
-      <nav className="fixed top-0 w-full z-50 border-b border-honey/10 bg-charcoal-950/90 backdrop-blur-xl">
+      <nav className="fixed top-0 w-full z-50 border-b border-honey/10 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto px-3 sm:px-6 py-2 sm:py-3 md:py-4 min-h-[60px] sm:min-h-[70px] md:min-h-[140px]">
           <div className="flex flex-wrap items-center justify-between gap-4 md:gap-6">
             {/* Logo - Responsive sizing with flex-shrink-0 */}
@@ -40,7 +40,7 @@ export default function Landing() {
             <div className="hidden md:flex items-center gap-3 flex-shrink-0">
               <Button 
                 variant="ghost" 
-                className="text-white/80 hover:text-white" 
+                className="text-foreground/80 hover:text-foreground" 
                 data-testid="button-nav-pricing" 
                 asChild
               >
@@ -48,7 +48,7 @@ export default function Landing() {
               </Button>
               <Button 
                 variant="ghost" 
-                className="text-white/80 hover:text-white" 
+                className="text-foreground/80 hover:text-foreground" 
                 data-testid="button-nav-login" 
                 asChild
               >
@@ -140,7 +140,7 @@ export default function Landing() {
             </span>
           </h1>
           
-          <p className="text-sm sm:text-lg md:text-xl text-slate-400 mb-6 sm:mb-10 max-w-3xl mx-auto">
+          <p className="text-sm sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-10 max-w-3xl mx-auto">
             Like a hive of expert developers working in perfect harmony. Zero coding required—just pure honey-sweet results.
           </p>
 
@@ -162,7 +162,7 @@ export default function Landing() {
             <Button 
               size="lg" 
               variant="outline" 
-              className="w-full sm:w-auto min-h-[44px] text-white border-white/20 hover:bg-white/5" 
+              className="w-full sm:w-auto min-h-[44px] text-foreground border-border hover:bg-muted" 
               data-testid="button-hero-pricing" 
               asChild
             >
@@ -183,11 +183,11 @@ export default function Landing() {
               { value: "Full Stack", label: "Web Expertise" },
               { value: "2D/3D", label: "Game Support" }
             ].map((stat, i) => (
-              <div key={i} className="text-center p-3 sm:p-4 rounded-lg bg-white/5 border border-white/10">
+              <div key={i} className="text-center p-3 sm:p-4 rounded-lg bg-muted border border-border">
                 <div className="text-xl sm:text-2xl font-bold text-honey mb-1">
                   {stat.value}
                 </div>
-                <div className="text-xs sm:text-sm text-slate-400">{stat.label}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -197,7 +197,7 @@ export default function Landing() {
       {/* Platform Screenshots Section - Responsive with extra top spacing */}
       <section className="pt-16 sm:pt-20 md:pt-24 pb-12 sm:pb-16 md:pb-20 px-4 sm:px-6 relative">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 sm:mb-12 text-white break-words">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 sm:mb-12 text-foreground break-words">
             See the Platform in Action
           </h2>
           
@@ -207,12 +207,12 @@ export default function Landing() {
               <div className="aspect-video bg-background rounded-lg border border-border/50 flex items-center justify-center mb-3 sm:mb-4">
                 <div className="text-center">
                   <Sparkles className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-2 sm:mb-3 text-honey" />
-                  <p className="text-sm text-slate-300 font-medium">AI Chat Interface</p>
-                  <p className="text-xs text-slate-500 mt-1">Real-time code generation</p>
+                  <p className="text-sm text-foreground/90 font-medium">AI Chat Interface</p>
+                  <p className="text-xs text-muted-foreground mt-1">Real-time code generation</p>
                 </div>
               </div>
-              <h3 className="text-base sm:text-lg font-semibold text-white mb-2 break-words">Chat with the Hive</h3>
-              <p className="text-sm text-slate-400 break-words">
+              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2 break-words">Chat with the Hive</h3>
+              <p className="text-sm text-muted-foreground break-words">
                 Tell the swarm what you need—watch specialized AI workers build your app with hive-mind precision
               </p>
             </Card>
@@ -222,12 +222,12 @@ export default function Landing() {
               <div className="aspect-video bg-background rounded-lg border border-border/50 flex items-center justify-center mb-3 sm:mb-4">
                 <div className="text-center">
                   <Play className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-2 sm:mb-3 text-mint" />
-                  <p className="text-sm text-slate-300 font-medium">Live Preview</p>
-                  <p className="text-xs text-slate-500 mt-1">Instant visual feedback</p>
+                  <p className="text-sm text-foreground/90 font-medium">Live Preview</p>
+                  <p className="text-xs text-muted-foreground mt-1">Instant visual feedback</p>
                 </div>
               </div>
-              <h3 className="text-base sm:text-lg font-semibold text-white mb-2 break-words">Watch the Hive Work</h3>
-              <p className="text-sm text-slate-400 break-words">
+              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2 break-words">Watch the Hive Work</h3>
+              <p className="text-sm text-muted-foreground break-words">
                 See your app crystallize like honey as our worker bees code in real-time
               </p>
             </Card>
@@ -237,12 +237,12 @@ export default function Landing() {
               <div className="aspect-video bg-background rounded-lg border border-border/50 flex items-center justify-center mb-3 sm:mb-4">
                 <div className="text-center">
                   <Code className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-2 sm:mb-3 text-honey" />
-                  <p className="text-sm text-slate-300 font-medium">Monaco Editor</p>
-                  <p className="text-xs text-slate-500 mt-1">Full IDE in browser</p>
+                  <p className="text-sm text-foreground/90 font-medium">Monaco Editor</p>
+                  <p className="text-xs text-muted-foreground mt-1">Full IDE in browser</p>
                 </div>
               </div>
-              <h3 className="text-base sm:text-lg font-semibold text-white mb-2 break-words">Your Personal Honeycomb</h3>
-              <p className="text-sm text-slate-400 break-words">
+              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2 break-words">Your Personal Honeycomb</h3>
+              <p className="text-sm text-muted-foreground break-words">
                 Every file perfectly organized in hexagonal precision—full IDE power at your fingertips
               </p>
             </Card>
@@ -252,12 +252,12 @@ export default function Landing() {
               <div className="aspect-video bg-background rounded-lg border border-border/50 flex items-center justify-center mb-3 sm:mb-4">
                 <div className="text-center">
                   <Rocket className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-2 sm:mb-3 text-mint" />
-                  <p className="text-sm text-slate-300 font-medium">Production Deployment</p>
-                  <p className="text-xs text-slate-500 mt-1">Production hosting</p>
+                  <p className="text-sm text-foreground/90 font-medium">Production Deployment</p>
+                  <p className="text-xs text-muted-foreground mt-1">Production hosting</p>
                 </div>
               </div>
-              <h3 className="text-base sm:text-lg font-semibold text-white mb-2 break-words">Harvest Your Creation</h3>
-              <p className="text-sm text-slate-400 break-words">
+              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2 break-words">Harvest Your Creation</h3>
+              <p className="text-sm text-muted-foreground break-words">
                 Deploy to production with Cloudflare Pages—custom domains and SSL included
               </p>
             </Card>
@@ -274,7 +274,7 @@ export default function Landing() {
                 Why Choose BeehiveAI
               </span>
             </h2>
-            <p className="text-base sm:text-lg md:text-xl text-slate-400 break-words">Swarm intelligence for modern development</p>
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground break-words">Swarm intelligence for modern development</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
@@ -283,8 +283,8 @@ export default function Landing() {
               <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-xl bg-honey/20 flex items-center justify-center text-honey mb-4 sm:mb-6">
                 <Zap className="w-6 sm:w-7 h-6 sm:h-7" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 text-white break-words">Bee-Line to Production</h3>
-              <p className="text-sm sm:text-base text-slate-400 leading-relaxed break-words">
+              <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 text-foreground break-words">Bee-Line to Production</h3>
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed break-words">
                 Our swarm takes the most efficient path. 12-step workflow delivers production-ready code in minutes—tested and deployed.
               </p>
             </Card>
@@ -294,8 +294,8 @@ export default function Landing() {
               <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-xl bg-mint/20 flex items-center justify-center text-mint mb-4 sm:mb-6">
                 <Shield className="w-6 sm:w-7 h-6 sm:h-7" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 text-white break-words">Queen Bee Quality</h3>
-              <p className="text-sm sm:text-base text-slate-400 leading-relaxed break-words">
+              <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 text-foreground break-words">Queen Bee Quality</h3>
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed break-words">
                 Every line inspected by our royal guard—self-testing, validation, and security audits ensure golden-standard code
               </p>
             </Card>
@@ -305,8 +305,8 @@ export default function Landing() {
               <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-xl bg-honey/20 flex items-center justify-center text-honey mb-4 sm:mb-6">
                 <Hexagon className="w-6 sm:w-7 h-6 sm:h-7" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 text-white break-words">Hive Mind Power</h3>
-              <p className="text-sm sm:text-base text-slate-400 leading-relaxed break-words">
+              <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 text-foreground break-words">Hive Mind Power</h3>
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed break-words">
                 Specialized AI workers buzzing in perfect sync—planning, building, testing, deploying. Ship faster with true collaboration.
               </p>
             </Card>
@@ -318,10 +318,10 @@ export default function Landing() {
       <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 relative">
         <div className="container mx-auto max-w-4xl text-center">
           <div className="p-8 sm:p-10 md:p-12 rounded-2xl bg-gradient-to-br from-honey/10 to-mint/10 border border-honey/20 backdrop-blur-sm">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 text-white break-words">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 text-foreground break-words">
               Ready to Taste the Honey?
             </h2>
-            <p className="text-base sm:text-lg md:text-xl text-slate-300 mb-6 sm:mb-8 break-words">
+            <p className="text-base sm:text-lg md:text-xl text-foreground/90 mb-6 sm:mb-8 break-words">
               Join developers worldwide shipping production apps in minutes, not months
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-xs sm:max-w-none mx-auto">
@@ -341,7 +341,7 @@ export default function Landing() {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="w-full sm:w-auto min-h-[44px] text-white border-white/20 hover:bg-white/5" 
+                className="w-full sm:w-auto min-h-[44px] text-foreground border-border hover:bg-muted" 
                 data-testid="button-cta-pricing"
                 asChild
               >
@@ -353,29 +353,29 @@ export default function Landing() {
       </section>
 
       {/* Footer - Responsive */}
-      <footer className="border-t border-white/10 py-6 sm:py-8 px-4 sm:px-6">
+      <footer className="border-t border-border py-6 sm:py-8 px-4 sm:px-6">
         <div className="container mx-auto max-w-6xl">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
             <BeehiveIcon size={60} className="flex-shrink-0" />
-            <p className="text-slate-500 text-sm">
+            <p className="text-muted-foreground text-sm">
               © 2024 BeehiveAI. Where code gets sweeter by the hive.
             </p>
             <div className="flex gap-4 flex-wrap justify-center">
-              <Link href="/pricing" className="text-slate-400 hover:text-white text-sm min-h-[44px] flex items-center" data-testid="footer-link-pricing">
+              <Link href="/pricing" className="text-muted-foreground hover:text-foreground text-sm min-h-[44px] flex items-center" data-testid="footer-link-pricing">
                 Pricing
               </Link>
-              <Link href="/support" className="text-slate-400 hover:text-white text-sm min-h-[44px] flex items-center" data-testid="footer-link-support">
+              <Link href="/support" className="text-muted-foreground hover:text-foreground text-sm min-h-[44px] flex items-center" data-testid="footer-link-support">
                 Support
               </Link>
-              <Link href="/auth" className="text-slate-400 hover:text-white text-sm min-h-[44px] flex items-center" data-testid="footer-link-login">
+              <Link href="/auth" className="text-muted-foreground hover:text-foreground text-sm min-h-[44px] flex items-center" data-testid="footer-link-login">
                 Login
               </Link>
             </div>
           </div>
           
           {/* AI Disclaimer */}
-          <div className="max-w-3xl mx-auto pt-6 sm:pt-8 mt-6 sm:mt-8 border-t border-white/10">
-            <p className="text-xs text-slate-500 text-center break-words whitespace-normal">
+          <div className="max-w-3xl mx-auto pt-6 sm:pt-8 mt-6 sm:mt-8 border-t border-border">
+            <p className="text-xs text-muted-foreground text-center break-words whitespace-normal">
               AI-generated code requires human review and testing. Results may vary based on project complexity. 
               BeehiveAI is an AI-assisted development tool - not a replacement for skilled developers.
             </p>
