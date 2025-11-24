@@ -206,8 +206,14 @@ export function useStreamEvents(options?: { projectId?: string; targetContext?: 
         const now = Date.now();
         const oneDayMs = 24 * 60 * 60 * 1000;
         const recentMessages = messages.filter((msg: Message) => {
-          const msgTime = msg.timestamp ? new Date(msg.timestamp).getTime() : 0;
-          return (now - msgTime) < oneDayMs;
+          // Keep messages without timestamp (legacy support)
+          if (!msg.timestamp) return true;
+          try {
+            const msgTime = new Date(msg.timestamp).getTime();
+            return (now - msgTime) < oneDayMs;
+          } catch {
+            return true; // Keep if timestamp parsing fails
+          }
         });
         
         if (recentMessages.length === 0) {
