@@ -338,6 +338,20 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
           required: ['query'],
         },
       },
+      {
+        name: 'dispatch_subagent',
+        description: 'FAST MODE: Spawn a specialized sub-agent to work on independent tasks in parallel. Sub-agents run concurrently with main execution for code analysis, testing, linting, documentation.',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            agentType: { type: 'string' as const, enum: ['analyst', 'tester', 'reviewer', 'linter', 'documenter'], description: 'Type of specialized agent' },
+            task: { type: 'string' as const, description: 'Specific task for the sub-agent' },
+            relevantFiles: { type: 'array' as const, items: { type: 'string' as const }, description: 'Files relevant to this task' },
+            priority: { type: 'string' as const, enum: ['high', 'normal', 'low'], description: 'Execution priority' },
+          },
+          required: ['agentType', 'task'],
+        },
+      },
     ];
 
     // TOKEN EFFICIENCY: Use appropriate tool set based on task complexity
@@ -834,6 +848,31 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
               toolResult = `Search Results:\n${searchResult.results.map((r: any) => 
                 `• ${r.title}\n  ${r.url}\n  ${r.content}\n`
               ).join('\n')}`;
+            } else if (name === 'dispatch_subagent') {
+              // ⚡ FAST MODE: Spawn subagent for parallel task execution
+              const typedInput = input as { agentType: string; task: string; relevantFiles?: string[]; priority?: string };
+              sendEvent('progress', { message: `⚡ Spawning ${typedInput.agentType} sub-agent for parallel task...` });
+              
+              const subagentResult = await spawnSubAgent({
+                userId,
+                projectId: activeProjectId,
+                agentType: typedInput.agentType,
+                task: typedInput.task,
+                relevantFiles: typedInput.relevantFiles,
+                context: {
+                  mainTask: message,
+                  executionMode: 'FAST_PARALLEL',
+                  priority: typedInput.priority || 'normal',
+                },
+              });
+              
+              if (subagentResult.success) {
+                toolResult = `✅ Sub-agent (${typedInput.agentType}) spawned:\n${subagentResult.result || 'Task started'}`;
+                sendEvent('progress', { message: `✅ Sub-agent completed: ${typedInput.agentType}` });
+              } else {
+                toolResult = `❌ Sub-agent failed: ${subagentResult.error}`;
+                sendEvent('error', { message: `Sub-agent error: ${subagentResult.error}` });
+              }
             } else if (name === 'commit_to_github') {
               const typedInput = input as { commitMessage: string };
               
