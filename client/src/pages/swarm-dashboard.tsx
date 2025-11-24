@@ -40,7 +40,7 @@ export default function SwarmDashboard() {
   });
 
   const { data: activeExecution } = useQuery<SwarmExecution>({
-    queryKey: ['/api/swarm/status', activeTaskId],
+    queryKey: [`/api/swarm/status/${activeTaskId}`],
     enabled: !!activeTaskId,
     refetchInterval: 2000,
   });
