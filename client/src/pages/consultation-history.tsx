@@ -8,6 +8,17 @@ import { Search, Download, ChevronRight, Calendar } from 'lucide-react';
 import { buildApiUrl } from '@/lib/api-utils';
 import { MarkdownRenderer } from '@/components/markdown-renderer';
 import { InlineReasoning } from '@/components/inline-reasoning';
+import { ConsultationCostBadge } from '@/components/consultation-cost-badge';
+
+interface Consultation {
+  id: string;
+  question: string;
+  guidance: string;
+  tokensUsed?: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  createdAt?: string;
+}
 
 export default function ConsultationHistory() {
   const [searchTerm, setSearchTerm] = useState('');

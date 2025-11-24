@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { MarkdownMessage } from "./MarkdownMessage";
 import { InlineReasoning, type ReasoningStep } from "@/components/inline-reasoning";
+import { ParallelExecutionBadge } from "@/components/parallel-execution-badge";
+import { ConsultationCostBadge } from "@/components/consultation-cost-badge";
 
 interface Message {
   role: "user" | "assistant" | "system";
@@ -18,6 +20,11 @@ interface Message {
   filesChanged?: string[]; // Files modified in this response
   status?: 'success' | 'error' | 'pending'; // Operation status
   tokenUsage?: { input: number; output: number }; // Token consumption
+  parallelExecution?: { // FAST mode execution data
+    tools: Array<{ name: string; duration: number; status: 'completed' | 'running' | 'pending' }>;
+    totalDuration: number;
+    estimatedSequentialDuration: number;
+  };
   [key: string]: any;
 }
 
@@ -88,6 +95,17 @@ export function MessageBubble({ message, index, totalMessages }: MessageBubblePr
             data-testid={`thinking-bubble-${message.id}`}
           >
             <MarkdownMessage content={message.thinking || ''} isUser={false} />
+          </div>
+        )}
+
+        {/* Parallel Execution Visualization */}
+        {!isUser && message.parallelExecution && (
+          <div className="max-w-2xl">
+            <ParallelExecutionBadge
+              tools={message.parallelExecution.tools}
+              totalDuration={message.parallelExecution.totalDuration}
+              estimatedSequentialDuration={message.parallelExecution.estimatedSequentialDuration}
+            />
           </div>
         )}
 
