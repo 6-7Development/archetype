@@ -22,9 +22,9 @@ interface FileBrowserProps {
 // Fetch real files from API
 function useProjectFiles() {
   return useQuery({
-    queryKey: ['/api/files'],
+    queryKey: ['/api/project-files'],
     queryFn: async () => {
-      const res = await fetch('/api/files');
+      const res = await fetch('/api/project-files');
       if (!res.ok) throw new Error('Failed to load files');
       return res.json();
     },
