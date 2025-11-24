@@ -208,7 +208,7 @@ export interface UseStreamEventsReturn {
 const MESSAGES_STORAGE_KEY = (projectId?: string, targetContext?: string) => 
   `lomu-chat-messages:${targetContext || 'platform'}:${projectId || 'general'}`;
 
-export function useStreamEvents(options?: { projectId?: string; targetContext?: string; onProjectGenerated?: (result: any) => void; onRunCompleted?: () => void; onRunFailed?: () => void }): UseStreamEventsReturn {
+export function useStreamEvents(options?: { projectId?: string; targetContext?: string; onProjectGenerated?: (result: any) => void; onRunCompleted?: () => void; onRunFailed?: () => void; onArchitectResult?: (result: any) => void }): UseStreamEventsReturn {
   // Load persisted messages on mount
   const getInitialState = (): UseStreamEventsState => {
     try {

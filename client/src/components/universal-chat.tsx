@@ -3,6 +3,7 @@ import { flushSync } from "react-dom";
 import { useRateLimitPolling } from "@/hooks/useRateLimitPolling";
 import { ModelSelectorModal } from "@/components/model-selector-modal";
 import { SubagentVisibilityPanel, type SubagentTask } from "@/components/subagent-visibility-panel";
+import { ArchitectApprovalModal } from "@/components/architect-approval-modal";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { API_ENDPOINTS, getQueryKey, buildApiUrl } from "@/lib/api-utils";
@@ -474,8 +475,61 @@ export function UniversalChat({
     }
   }, [runState.messages]);
 
+  // Handle architect result events
+  useEffect(() => {
+    if (architectGuidance) {
+      setShowArchitectApproval(true);
+    }
+  }, [architectGuidance]);
+
   return (
     <div className="flex h-full flex-col bg-background dark:from-[hsl(var(--background))] dark:to-[hsl(220,25%,10%)]">
+      {/* Architect Approval Modal */}
+      <ArchitectApprovalModal
+        open={showArchitectApproval}
+        onOpenChange={setShowArchitectApproval}
+        guidance={architectGuidance?.guidance || ''}
+        recommendations={
+          architectGuidance?.recommendations?.map((rec: string) => ({
+            filePath: 'File',
+            changes: rec,
+            confidence: architectGuidance.confidence || 50,
+            risk: architectGuidance.risk || 'medium',
+          })) || []
+        }
+        confidence={architectGuidance?.confidence || 0}
+        onApprove={(notes?: string) => {
+          // Emit approval event to backend
+          fetch('/api/architect/approve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              guidance: architectGuidance,
+              approvalNotes: notes,
+            }),
+            credentials: 'include',
+          }).catch(err => console.error('Approval failed:', err));
+          
+          toast({ title: 'Architect guidance approved', description: 'Implementing changes...' });
+          setArchitectGuidance(null);
+        }}
+        onReject={(reason?: string) => {
+          // Emit rejection event
+          fetch('/api/architect/reject', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              guidance: architectGuidance,
+              rejectionReason: reason,
+            }),
+            credentials: 'include',
+          }).catch(err => console.error('Rejection failed:', err));
+          
+          toast({ title: 'Guidance rejected', description: 'LomuAI will try a different approach' });
+          setArchitectGuidance(null);
+        }}
+      />
+
       {/* Model Selector Modal */}
       <ModelSelectorModal
         open={showModelSelector}
