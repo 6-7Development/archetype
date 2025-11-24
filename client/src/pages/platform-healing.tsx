@@ -1,4 +1,5 @@
 import { UniversalChat } from '@/components/universal-chat';
+import { WorkspaceLayout } from '@/components/workspace-layout';
 import { useQuery } from "@tanstack/react-query";
 
 export default function PlatformHealing() {
@@ -14,11 +15,19 @@ export default function PlatformHealing() {
   const targetContext: 'platform' | 'architect' = aiModel === 'claude' ? 'architect' : 'platform';
   
   return (
-    <div className="h-screen w-full overflow-hidden">
-      <UniversalChat 
-        targetContext={targetContext}
-        projectId={null}
-      />
-    </div>
+    <WorkspaceLayout
+      projectId="platform-healing"
+      projectName="Platform Healing"
+      mode="platform-healing"
+      isAdmin={true}
+      userRole="owner"
+    >
+      <div className="h-full w-full overflow-hidden">
+        <UniversalChat 
+          targetContext={targetContext}
+          projectId={null}
+        />
+      </div>
+    </WorkspaceLayout>
   );
 }
