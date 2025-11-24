@@ -26,6 +26,8 @@ interface ArchitectApprovalModalProps {
   filesInspected?: string[];
   evidenceUsed?: string[];
   risk?: 'low' | 'medium' | 'high';
+  confidenceReasoning?: string; // Gap #3
+  alternativeApproaches?: string[]; // Gap #3
 }
 
 export function ArchitectApprovalModal({
@@ -41,6 +43,8 @@ export function ArchitectApprovalModal({
   filesInspected = [],
   evidenceUsed = [],
   risk = 'medium',
+  confidenceReasoning = '', // Gap #3
+  alternativeApproaches = [], // Gap #3
 }: ArchitectApprovalModalProps) {
   const [approvalNotes, setApprovalNotes] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
