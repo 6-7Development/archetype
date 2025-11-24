@@ -66,11 +66,11 @@ export function MessageBubble({ message, index, totalMessages }: MessageBubblePr
         {!isUser && hasThinking && (
           <button
             onClick={() => setShowThinking(!showThinking)}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/30 hover:bg-secondary/40 transition-colors text-foreground/80 max-w-2xl group/thinking"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/30 hover:bg-secondary/40 transition-colors text-foreground max-w-2xl group/thinking font-medium"
             data-testid={`button-toggle-thinking-${message.id}`}
           >
             <Brain className="w-3.5 h-3.5 flex-shrink-0" />
-            <span className="text-xs font-medium">Thinking...</span>
+            <span className="text-xs">Thinking...</span>
             <ChevronDown className={`w-3 h-3 flex-shrink-0 transition-transform ${showThinking ? 'rotate-180' : ''}`} />
           </button>
         )}
@@ -78,7 +78,7 @@ export function MessageBubble({ message, index, totalMessages }: MessageBubblePr
         {/* Thinking content (hidden by default) */}
         {!isUser && hasThinking && showThinking && (
           <div 
-            className="px-3 py-2 rounded-lg bg-secondary/20 max-w-2xl border border-secondary/30 text-xs leading-relaxed text-foreground/75"
+            className="px-3 py-2 rounded-lg bg-secondary/20 max-w-2xl border border-secondary/30 text-xs leading-relaxed text-foreground"
             data-testid={`thinking-bubble-${message.id}`}
           >
             <MarkdownMessage content={message.thinking || ''} isUser={false} />
@@ -90,7 +90,7 @@ export function MessageBubble({ message, index, totalMessages }: MessageBubblePr
           className={`px-3 py-2 max-w-2xl break-words transition-all ${
             isUser
               ? 'bg-primary text-primary-foreground rounded-lg rounded-tr-sm'
-              : 'bg-secondary/50 text-foreground rounded-lg rounded-tl-sm'
+              : 'bg-secondary/50 text-foreground font-medium rounded-lg rounded-tl-sm'
           }`}
           data-testid={`message-bubble-${message.id}`}
         >
