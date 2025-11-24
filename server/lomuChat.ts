@@ -378,9 +378,8 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
               description: 'Detailed context including failed approaches, constraints, and scope' 
             },
             relevant_files: { 
-              type: 'array' as const, 
-              items: { type: 'string' as const },
-              description: 'File paths relevant to the question' 
+              type: 'string' as const,
+              description: 'Comma-separated file paths relevant to the question (e.g., "server/index.ts,client/src/App.tsx")' 
             },
             rationale: { 
               type: 'string' as const, 
@@ -410,7 +409,7 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
           properties: {
             agentType: { type: 'string' as const, enum: ['analyst', 'tester', 'reviewer', 'linter', 'documenter'], description: 'Type of specialized agent' },
             task: { type: 'string' as const, description: 'Specific task for the sub-agent' },
-            relevantFiles: { type: 'array' as const, items: { type: 'string' as const }, description: 'Files relevant to this task' },
+            relevantFiles: { type: 'string' as const, description: 'Comma-separated file paths relevant to this task (e.g., "src/index.ts,src/utils.ts")' },
             priority: { type: 'string' as const, enum: ['high', 'normal', 'low'], description: 'Execution priority' },
           },
           required: ['agentType', 'task'],
@@ -918,10 +917,13 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
               ).join('\n')}`;
             } else if (name === 'dispatch_subagent') {
               // ⚡ FAST MODE: Spawn subagent for parallel task execution with full gap infrastructure
-              const typedInput = input as { agentType: string; task: string; relevantFiles?: string[]; priority?: string };
+              const typedInput = input as { agentType: string; task: string; relevantFiles?: string; priority?: string };
               
               // Lazy load all services on first use
               await ensureServicesLoaded();
+              
+              // Parse comma-separated files
+              const filesList = typedInput.relevantFiles?.split(',').map(f => f.trim()).filter(f => f) || [];
               
               // ✅ GAP #12: Analyze task and route to best agent
               let recommendedAgent = typedInput.agentType;
@@ -963,7 +965,7 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
                   projectId: activeProjectId,
                   agentType: recommendedAgent,
                   task: typedInput.task,
-                  relevantFiles: typedInput.relevantFiles,
+                  relevantFiles: filesList,
                   executionId: executionContext.executionId,
                   context: {
                     mainTask: message,
@@ -992,15 +994,15 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
                     tokenEfficiency: 70000 / (Date.now() - startTime),
                     success: subagentResult?.success || false,
                     errorCount: 0,
-                    filesModified: typedInput.relevantFiles?.length || 0,
+                    filesModified: filesList.length,
                     timeoutOccurred: false,
                   });
                 }
                 
                 // ✅ GAP #18: Build dependency DAG for parallel execution (if multiple files)
-                if (buildDependencyDAG && typedInput.relevantFiles?.length) {
+                if (buildDependencyDAG && filesList.length > 1) {
                   try {
-                    const dag = buildDependencyDAG(typedInput.relevantFiles);
+                    const dag = buildDependencyDAG(filesList);
                     console.log(`[DAG] Execution order: ${dag.executionOrder?.join(' → ')}`);
                   } catch (e: any) { console.warn('[DAG]', e.message); }
                 }
