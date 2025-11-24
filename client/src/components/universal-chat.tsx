@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { flushSync } from "react-dom";
 import { useRateLimitPolling } from "@/hooks/useRateLimitPolling";
+import { ModelSelectorModal } from "@/components/model-selector-modal";
+import { SubagentVisibilityPanel, type SubagentTask } from "@/components/subagent-visibility-panel";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { API_ENDPOINTS, getQueryKey, buildApiUrl } from "@/lib/api-utils";
@@ -151,6 +153,8 @@ export function UniversalChat({
   // Token & Rate Limit Tracking
   const [sessionTokens, setSessionTokens] = useState({ inputTokens: 0, outputTokens: 0, totalTokens: 0, estimatedCost: 0 });
   const [showModelSelector, setShowModelSelector] = useState(false);
+  const [currentModel, setCurrentModel] = useState('gemini-2.5-flash');
+  const [activeTasks, setActiveTasks] = useState<SubagentTask[]>([]);
   const { status: rateLimitStatus } = useRateLimitPolling(true);
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -411,15 +415,28 @@ export function UniversalChat({
   const updateTokenUsage = useCallback((inputTokens: number, outputTokens: number) => {
     setSessionTokens(prev => {
       const newTotal = prev.totalTokens + inputTokens + outputTokens;
-      const costPerM = 0.075; // Gemini pricing
+      // Pricing: Gemini $0.075 input / $0.30 output per 1M tokens
+      const costPerM = (inputTokens * 0.075 + outputTokens * 0.30) / 1000000;
       return {
         inputTokens: prev.inputTokens + inputTokens,
         outputTokens: prev.outputTokens + outputTokens,
         totalTokens: newTotal,
-        estimatedCost: (newTotal / 1000000) * costPerM,
+        estimatedCost: prev.estimatedCost + costPerM,
       };
     });
   }, []);
+
+  // Monitor streaming messages for token data
+  useEffect(() => {
+    if (runState.messages.length > 0) {
+      const lastMessage = runState.messages[runState.messages.length - 1];
+      // Extract token data if present in message metadata
+      if (lastMessage?.role === 'assistant' && lastMessage?.tokenUsage) {
+        const { input = 0, output = 0 } = lastMessage.tokenUsage as any;
+        updateTokenUsage(input, output);
+      }
+    }
+  }, [runState.messages, updateTokenUsage]);
 
   // Persist chat session to database on message update
   const saveChatSession = async (messages: typeof runState.messages) => {
@@ -457,6 +474,17 @@ export function UniversalChat({
 
   return (
     <div className="flex h-full flex-col bg-background dark:from-[hsl(var(--background))] dark:to-[hsl(220,25%,10%)]">
+      {/* Model Selector Modal */}
+      <ModelSelectorModal
+        open={showModelSelector}
+        onOpenChange={setShowModelSelector}
+        currentModel={currentModel}
+        onModelSelect={(model) => {
+          setCurrentModel(model);
+          toast({ title: `Switched to ${model}` });
+        }}
+      />
+
       {/* IDE Workspace Status Bar */}
       <WorkspaceStatus
         projectName={`${targetContext}${projectId ? ` • ${projectId.slice(0, 12)}` : ''}`}
@@ -535,6 +563,13 @@ export function UniversalChat({
           ) : (
             <>
               {/* Chat View */}
+          {/* Subagent Visibility Panel */}
+          {activeTasks.length > 0 && (
+            <div className="px-4 py-2 border-b">
+              <SubagentVisibilityPanel tasks={activeTasks} isActive={true} />
+            </div>
+          )}
+
           {/* Workspace Header with Status */}
           <div className="border-b bg-muted/30 dark:border-[hsl(var(--primary))]/20 px-4 py-2 flex items-center justify-between text-xs gap-4">
             <div className="flex items-center gap-2 flex-1 min-w-0">

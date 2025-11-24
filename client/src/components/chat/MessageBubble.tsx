@@ -4,17 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { MarkdownMessage } from "./MarkdownMessage";
+import { InlineReasoning, type ReasoningStep } from "@/components/inline-reasoning";
 
 interface Message {
   role: "user" | "assistant" | "system";
   content: string;
   thinking?: string; // Internal monologue/thought block
+  reasoning?: ReasoningStep[]; // IDE-style reasoning steps
   timestamp?: Date;
   id?: string;
   messageId?: string;
   images?: string[];
   filesChanged?: string[]; // Files modified in this response
   status?: 'success' | 'error' | 'pending'; // Operation status
+  tokenUsage?: { input: number; output: number }; // Token consumption
   [key: string]: any;
 }
 
@@ -88,6 +91,13 @@ export function MessageBubble({ message, index, totalMessages }: MessageBubblePr
           </div>
         )}
 
+        {/* Inline Reasoning (for assistant messages) */}
+        {!isUser && message.reasoning && message.reasoning.length > 0 && (
+          <div className="max-w-2xl">
+            <InlineReasoning steps={message.reasoning} />
+          </div>
+        )}
+
         {/* Main message bubble */}
         <div 
           className={`px-3 py-2 max-w-2xl break-words transition-all ${
@@ -118,6 +128,14 @@ export function MessageBubble({ message, index, totalMessages }: MessageBubblePr
                   />
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Token Usage Badge */}
+          {!isUser && message.tokenUsage && (
+            <div className="mt-2 flex gap-1 text-xs opacity-75">
+              <span className="text-muted-foreground">Tokens:</span>
+              <span>{message.tokenUsage.input}↓ {message.tokenUsage.output}↑</span>
             </div>
           )}
         </div>
