@@ -972,7 +972,7 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
               messages: conversationMessages,
               // GAP #3 FIX: Add onToolUse callback to execute tools and continue conversation
               onToolUse: async (toolUse: any) => {
-                const { toolName, input, toolId } = toolUse;
+                const { name: toolName, input, id: toolId } = toolUse;
                 console.log(`🔧 [GEMINI-TOOL-USE] Executing: ${toolName} (ID: ${toolId})`);
                 
                 try {
@@ -1011,7 +1011,7 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
                   }
                   // GAP #4 FIX: Fix chunk handler property names (toolName, input, toolId)
                   else if (chunk.type === 'tool_use') {
-                    const { toolName, input, toolId } = chunk;
+                    const { name: toolName, input, id: toolId } = chunk;
                     console.log(`🔧 [CHAT-TOOL-CHUNK] Tool requested: ${toolName} (ID: ${toolId})`);
                     
                     // Stream tool execution status to client
