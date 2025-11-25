@@ -419,6 +419,106 @@ class LomuAIBrain {
   }
   
   /**
+   * GUARD RAILS INTEGRATION: Sanitize and validate user input before processing
+   * Layer 1: Input sanitization, Layer 2-5: RCE prevention, rate limiting, cost tracking
+   */
+  async sanitizeUserInput(userId: string, userMessage: string, context: 'shell' | 'code' | 'sql' | 'llm' = 'llm'): Promise<{ safe: boolean; sanitized: string; risks: string[] }> {
+    // Check rate limit FIRST
+    const rateLimit = guardrails.checkRateLimit(userId);
+    if (!rateLimit.allowed) {
+      console.warn(`[BRAIN-GUARD] Rate limit exceeded for user: ${userId}`);
+      return {
+        safe: false,
+        sanitized: '',
+        risks: [`Rate limit exceeded. Remaining: ${rateLimit.remaining}`]
+      };
+    }
+
+    // Sanitize input
+    const sanitizationResult = guardrails.sanitizeInput(userMessage, context);
+    
+    if (!sanitizationResult.isSafe) {
+      console.warn(`[BRAIN-GUARD] Unsafe input detected for user ${userId}:`, sanitizationResult.risks);
+      // Log decision for audit trail
+      aiDecisionLogger.logDecision({
+        timestamp: new Date(),
+        userId,
+        eventType: 'INPUT_REJECTED',
+        data: {
+          reason: 'Failed sanitization',
+          risks: sanitizationResult.risks,
+          messagePreview: userMessage.substring(0, 100)
+        }
+      });
+    } else {
+      console.log(`[BRAIN-GUARD] ✅ Input sanitized for user ${userId} (${sanitizationResult.risks.length} risks detected)`);
+    }
+
+    return {
+      safe: sanitizationResult.isSafe,
+      sanitized: sanitizationResult.sanitized,
+      risks: sanitizationResult.risks
+    };
+  }
+
+  /**
+   * GUARD RAILS INTEGRATION: Validate code safety before execution
+   */
+  async validateCodeExecution(userId: string, code: string): Promise<{ valid: boolean; issues: string[] }> {
+    const validation = guardrails.validateCodeSafety(code);
+    
+    if (!validation.safe) {
+      console.warn(`[BRAIN-GUARD] Unsafe code detected for user ${userId}:`, validation.issues);
+      aiDecisionLogger.logDecision({
+        timestamp: new Date(),
+        userId,
+        eventType: 'CODE_REJECTED',
+        data: {
+          reason: 'Code validation failed',
+          issues: validation.issues,
+          codeHash: guardrails.hashContent(code)
+        }
+      });
+    } else {
+      console.log(`[BRAIN-GUARD] ✅ Code validated for user ${userId}`);
+    }
+
+    return {
+      valid: validation.safe,
+      issues: validation.issues
+    };
+  }
+
+  /**
+   * GUARD RAILS INTEGRATION: Track and enforce cost limits per request
+   */
+  async trackRequestCost(userId: string, requestId: string, estimatedTokens: number): Promise<{ withinBudget: boolean; costUsd: number; remaining: number }> {
+    // Estimate cost: $0.075 per 1M input tokens
+    const costUsd = (estimatedTokens / 1000000) * 0.075;
+    const costTracking = guardrails.trackCost(userId, requestId, costUsd);
+
+    if (!costTracking.withinBudget) {
+      console.warn(`[BRAIN-GUARD] Cost limit exceeded for user ${userId}: $${costUsd.toFixed(4)}`);
+      aiDecisionLogger.logDecision({
+        timestamp: new Date(),
+        userId,
+        eventType: 'COST_LIMIT_EXCEEDED',
+        data: {
+          requestId,
+          costUsd,
+          budgetRemaining: costTracking.remaining
+        }
+      });
+    }
+
+    return {
+      withinBudget: costTracking.withinBudget,
+      costUsd,
+      remaining: costTracking.remaining
+    };
+  }
+
+  /**
    * Record a tool execution
    */
   recordToolCall(userId: string, sessionId: string, toolName: string, args: any): string {
