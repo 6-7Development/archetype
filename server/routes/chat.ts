@@ -939,143 +939,181 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
 
       await aiQueue.enqueue(userId, plan, async () => {
         try {
-          // Build tool map for quick lookup
-          const toolMap = new Map(ESSENTIAL_LOMU_TOOLS.map(t => [t.name, t]));
-
-          await streamGeminiResponse({
-            maxTokens: 4096,
-            system: systemPrompt,
-            tools: ESSENTIAL_LOMU_TOOLS,
-            messages: [
-              ...validMessages.map((m: any) => ({
-                role: m.role === 'system' ? 'user' : m.role,
-                content: m.content
-              })),
-              {
-                role: "user",
-                content: message,
-              },
-            ],
-            // GAP #3 FIX: Add onToolUse callback to execute tools and continue conversation
-            onToolUse: async (toolUse: any) => {
-              const { toolName, input, toolId } = toolUse;
-              console.log(`🔧 [GEMINI-TOOL-USE] Executing: ${toolName} (ID: ${toolId})`);
-              
-              try {
-                // Execute tool via dispatcher
-                const result = await dispatchTool(toolName, input);
-                console.log(`✅ [GEMINI-TOOL-USE] Result for ${toolName}: ${JSON.stringify(result).substring(0, 100)}`);
-                
-                // Stream tool execution status to client
-                res.write(`data: ${JSON.stringify({ type: 'tool_use', toolName, input, toolId })}\n\n`);
-                res.write(`data: ${JSON.stringify({ type: 'tool_result', toolName, result })}\n\n`);
-                
-                // Return result to Gemini so it can continue
-                return result;
-              } catch (e) {
-                console.error(`❌ [GEMINI-TOOL-USE] Error executing ${toolName}:`, e);
-                const error = { success: false, error: (e as Error).message };
-                res.write(`data: ${JSON.stringify({ type: 'tool_error', toolName, error })}\n\n`);
-                return error;
-              }
+          // GAP #5 FIX: Continuation Loop - Handle multi-turn tool execution
+          let conversationMessages = [
+            ...validMessages.map((m: any) => ({
+              role: m.role === 'system' ? 'user' : m.role,
+              content: m.content
+            })),
+            {
+              role: "user",
+              content: message,
             },
-            onChunk: (chunk: any) => {
-              try {
-                // Handle Gemini text chunks
-                if (chunk.type === 'text') {
-                  fullResponse += chunk.text || '';
-                  // Stream chunk to client
-                  res.write(`data: ${JSON.stringify({ type: 'text_delta', text: chunk.text })}\n\n`);
-                  console.log(`✅ [GEMINI-CHAT] Streamed text: +${chunk.text?.length || 0} chars`);
-                }
-                // Handle Gemini thinking chunks
-                else if (chunk.type === 'thinking') {
-                  fullThinking += chunk.thinking || '';
-                  // Stream thinking chunk to client
-                  res.write(`data: ${JSON.stringify({ type: 'thinking_delta', thinking: chunk.thinking })}\n\n`);
-                  console.log(`🧠 [GEMINI-CHAT] Streamed thinking: +${chunk.thinking?.length || 0} chars`);
-                }
-                // GAP #4 FIX: Fix chunk handler property names (toolName, input, toolId)
-                else if (chunk.type === 'tool_use') {
-                  const { toolName, input, toolId } = chunk;
-                  console.log(`🔧 [CHAT-TOOL-CHUNK] Tool requested: ${toolName} (ID: ${toolId})`);
+          ];
+          
+          let continuationCount = 0;
+          const maxContinuations = 3; // Prevent infinite loops
+          let needsContinuation = true;
+
+          while (needsContinuation && continuationCount < maxContinuations) {
+            console.log(`🔄 [CONTINUATION-LOOP] Turn ${continuationCount + 1}/${maxContinuations + 1}`);
+            needsContinuation = false;
+
+            // Build tool map for quick lookup
+            const toolMap = new Map(ESSENTIAL_LOMU_TOOLS.map(t => [t.name, t]));
+            
+            let continuationResult: any = null;
+
+            // Call Gemini and capture return value to check for continuation
+            const result = await streamGeminiResponse({
+              maxTokens: 4096,
+              system: systemPrompt,
+              tools: ESSENTIAL_LOMU_TOOLS,
+              messages: conversationMessages,
+              // GAP #3 FIX: Add onToolUse callback to execute tools and continue conversation
+              onToolUse: async (toolUse: any) => {
+                const { toolName, input, toolId } = toolUse;
+                console.log(`🔧 [GEMINI-TOOL-USE] Executing: ${toolName} (ID: ${toolId})`);
+                
+                try {
+                  // Execute tool via dispatcher
+                  const toolResult = await dispatchTool(toolName, input);
+                  console.log(`✅ [GEMINI-TOOL-USE] Result for ${toolName}: ${JSON.stringify(toolResult).substring(0, 100)}`);
                   
                   // Stream tool execution status to client
-                  res.write(`data: ${JSON.stringify({ type: 'tool_use', toolName, input })}\n\n`);
-                }
-                // Handle tool results from Gemini
-                else if (chunk.type === 'tool_result') {
-                  const { toolName, result } = chunk;
-                  console.log(`✅ [CHAT-TOOL-RESULT] Tool result: ${toolName} = ${JSON.stringify(result).substring(0, 100)}`);
+                  res.write(`data: ${JSON.stringify({ type: 'tool_use', toolName, input, toolId })}\n\n`);
+                  res.write(`data: ${JSON.stringify({ type: 'tool_result', toolName, result: toolResult })}\n\n`);
                   
-                  // Stream result to client
-                  res.write(`data: ${JSON.stringify({ type: 'tool_result', toolName, result })}\n\n`);
+                  // Return result to Gemini so it can continue
+                  return toolResult;
+                } catch (e) {
+                  console.error(`❌ [GEMINI-TOOL-USE] Error executing ${toolName}:`, e);
+                  const error = { success: false, error: (e as Error).message };
+                  res.write(`data: ${JSON.stringify({ type: 'tool_error', toolName, error })}\n\n`);
+                  return error;
                 }
-                // Capture usage from completion
-                if (chunk.type === 'usage') {
-                  inputTokens = chunk.inputTokens || 0;
-                  outputTokens = chunk.outputTokens || 0;
+              },
+              onChunk: (chunk: any) => {
+                try {
+                  // Handle Gemini text chunks
+                  if (chunk.type === 'text') {
+                    fullResponse += chunk.text || '';
+                    // Stream chunk to client
+                    res.write(`data: ${JSON.stringify({ type: 'text_delta', text: chunk.text })}\n\n`);
+                    console.log(`✅ [GEMINI-CHAT] Streamed text: +${chunk.text?.length || 0} chars`);
+                  }
+                  // Handle Gemini thinking chunks
+                  else if (chunk.type === 'thinking') {
+                    fullThinking += chunk.thinking || '';
+                    // Stream thinking chunk to client
+                    res.write(`data: ${JSON.stringify({ type: 'thinking_delta', thinking: chunk.thinking })}\n\n`);
+                    console.log(`🧠 [GEMINI-CHAT] Streamed thinking: +${chunk.thinking?.length || 0} chars`);
+                  }
+                  // GAP #4 FIX: Fix chunk handler property names (toolName, input, toolId)
+                  else if (chunk.type === 'tool_use') {
+                    const { toolName, input, toolId } = chunk;
+                    console.log(`🔧 [CHAT-TOOL-CHUNK] Tool requested: ${toolName} (ID: ${toolId})`);
+                    
+                    // Stream tool execution status to client
+                    res.write(`data: ${JSON.stringify({ type: 'tool_use', toolName, input })}\n\n`);
+                  }
+                  // Handle tool results from Gemini
+                  else if (chunk.type === 'tool_result') {
+                    const { toolName, result } = chunk;
+                    console.log(`✅ [CHAT-TOOL-RESULT] Tool result: ${toolName} = ${JSON.stringify(result).substring(0, 100)}`);
+                    
+                    // Stream result to client
+                    res.write(`data: ${JSON.stringify({ type: 'tool_result', toolName, result })}\n\n`);
+                  }
+                  // Capture usage from completion
+                  if (chunk.type === 'usage') {
+                    inputTokens = chunk.inputTokens || 0;
+                    outputTokens = chunk.outputTokens || 0;
+                  }
+                } catch (e) {
+                  console.error('Error processing Gemini chunk:', e);
                 }
-              } catch (e) {
-                console.error('Error processing Gemini chunk:', e);
-              }
-            },
-            onComplete: async (fullText: string, usage: any) => {
-              try {
-                const computeTimeMs = Date.now() - computeStartTime;
+              },
+              onComplete: async (fullText: string, usage: any) => {
+                // Called on streaming completion
                 fullResponse = fullText || fullResponse;
                 inputTokens = usage?.inputTokens || 0;
                 outputTokens = usage?.outputTokens || 0;
+              },
+              onError: (error: Error) => {
+                console.error('Gemini stream error:', error);
+                res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`);
+              },
+            });
 
-                console.log(`✅ [GEMINI-CHAT] Response complete: ${fullResponse.length} chars (thinking: ${fullThinking.length} chars)`);
+            // CHECK FOR CONTINUATION: If Gemini executed tools, continue the loop
+            if (result?.needsContinuation && result?.toolResults && result?.assistantContent) {
+              console.log(`🔄 [CONTINUATION-LOOP] Detected needsContinuation - building continuation messages`);
+              needsContinuation = true;
+              continuationCount++;
 
-                // Save messages to database
-                await storage.createChatMessage({
-                  userId,
-                  projectId,
-                  role: 'user',
-                  content: message,
-                });
+              // Add assistant's tool requests and tool results to conversation
+              conversationMessages.push({
+                role: 'assistant',
+                content: result.assistantContent,
+              });
 
-                await storage.createChatMessage({
-                  userId,
-                  projectId,
-                  role: 'assistant',
-                  content: fullResponse,
-                });
+              // Add tool results as user message
+              conversationMessages.push({
+                role: 'user',
+                content: result.toolResults.map((tr: any) => ({
+                  type: 'tool_result',
+                  tool_use_id: tr.tool_use_id,
+                  content: tr.content,
+                })),
+              });
 
-                // Track usage
-                await trackAIUsage({
-                  userId,
-                  projectId,
-                  type: "ai_chat",
-                  inputTokens,
-                  outputTokens,
-                  computeTimeMs,
-                  metadata: { message },
-                });
+              console.log(`✅ [CONTINUATION-LOOP] Prepared continuation turn ${continuationCount}`);
+            } else {
+              console.log(`✅ [CONTINUATION-LOOP] No continuation needed - response complete`);
+              needsContinuation = false;
+            }
+          }
 
-                // Send completion event with thinking block
-                res.write(`data: ${JSON.stringify({ 
-                  type: 'done', 
-                  fullResponse, 
-                  thinking: fullThinking,
-                  inputTokens, 
-                  outputTokens 
-                })}\n\n`);
-                res.end();
-              } catch (e) {
-                console.error('Error in completion handler:', e);
-                res.write(`data: ${JSON.stringify({ type: 'error', error: (e as Error).message })}\n\n`);
-                res.end();
-              }
-            },
-            onError: (error: Error) => {
-              console.error('Gemini stream error:', error);
-              res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`);
-              res.end();
-            },
+          // All turns complete - save and send final response
+          const computeTimeMs = Date.now() - computeStartTime;
+          console.log(`✅ [GEMINI-CHAT] Conversation complete after ${continuationCount} continuations: ${fullResponse.length} chars (thinking: ${fullThinking.length} chars)`);
+
+          // Save messages to database
+          await storage.createChatMessage({
+            userId,
+            projectId,
+            role: 'user',
+            content: message,
           });
+
+          await storage.createChatMessage({
+            userId,
+            projectId,
+            role: 'assistant',
+            content: fullResponse,
+          });
+
+          // Track usage
+          await trackAIUsage({
+            userId,
+            projectId,
+            type: "ai_chat",
+            inputTokens,
+            outputTokens,
+            computeTimeMs,
+            metadata: { message, continuations: continuationCount },
+          });
+
+          // Send completion event with thinking block
+          res.write(`data: ${JSON.stringify({ 
+            type: 'done', 
+            fullResponse, 
+            thinking: fullThinking,
+            inputTokens, 
+            outputTokens 
+          })}\n\n`);
+          res.end();
         } catch (error: any) {
           console.error('Gemini chat error:', error);
           res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`);
