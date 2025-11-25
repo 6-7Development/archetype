@@ -13,6 +13,12 @@ import { aiLimiter } from '../rateLimiting.ts';
 import { aiQueue } from '../priority-queue.ts';
 import { buildSystemPrompt, FEATURES, activeGenerations } from './common.ts';
 import { getOrCreateState, autoUpdateFromMessage, formatStateForPrompt } from '../services/conversationState.ts';
+// TOOL EXECUTION IMPORTS
+import { executeProjectRead, executeProjectWrite, executeProjectList, executeProjectDelete } from '../tools/project-tools.ts';
+import { executePlatformRead, executePlatformWrite, executePlatformList } from '../tools/platform-tools.ts';
+import { executeBrowserTest } from '../tools/browser-test.ts';
+import { executeWebSearch } from '../tools/web-search.ts';
+import { executeVisionAnalysis } from '../tools/vision-analyze.ts';
 
 //Helper function to summarize messages
 async function summarizeMessages(messages: any[]): Promise<string> {
