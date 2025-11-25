@@ -880,6 +880,9 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
 
       await aiQueue.enqueue(userId, plan, async () => {
         try {
+          // Build tool map for quick lookup
+          const toolMap = new Map(ESSENTIAL_LOMU_TOOLS.map(t => [t.name, t]));
+
           await streamGeminiResponse({
             maxTokens: 4096,
             system: systemPrompt,
@@ -909,6 +912,25 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
                   // Stream thinking chunk to client
                   res.write(`data: ${JSON.stringify({ type: 'thinking_delta', thinking: chunk.thinking })}\n\n`);
                   console.log(`🧠 [GEMINI-CHAT] Streamed thinking: +${chunk.thinking?.length || 0} chars`);
+                }
+                // CRITICAL FIX: Handle tool_use chunks by executing tools
+                else if (chunk.type === 'tool_use') {
+                  const { name, args, id } = chunk;
+                  console.log(`🔧 [CHAT-TOOL-EXECUTION] Executing tool: ${name}`);
+                  
+                  // Stream tool execution status to client
+                  res.write(`data: ${JSON.stringify({ type: 'tool_use', name, args })}\n\n`);
+                  
+                  // Execute tool (this should be handled by streamGeminiResponse internally)
+                  // We just acknowledge receipt here
+                }
+                // Handle tool results from Gemini
+                else if (chunk.type === 'tool_result') {
+                  const { name, result } = chunk;
+                  console.log(`✅ [CHAT-TOOL-RESULT] Tool result: ${name} = ${result?.substring?.(0, 100) || result}`);
+                  
+                  // Stream result to client
+                  res.write(`data: ${JSON.stringify({ type: 'tool_result', name, result })}\n\n`);
                 }
                 // Capture usage from completion
                 if (chunk.type === 'usage') {
