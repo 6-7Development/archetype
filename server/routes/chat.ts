@@ -37,6 +37,59 @@ async function summarizeMessages(messages: any[]): Promise<string> {
   return `Previous conversation summary: ${summary}`;
 }
 
+/**
+ * TOOL DISPATCHER - Routes tool requests to appropriate executors
+ * GAP #2 FIX: Maps Gemini tool names to execution functions
+ */
+async function dispatchTool(toolName: string, input: any): Promise<any> {
+  console.log(`🔧 [TOOL-DISPATCHER] Routing: ${toolName}`);
+  
+  try {
+    // Project File Tools
+    if (toolName === 'read_project_file') {
+      return await executeProjectRead(input);
+    }
+    if (toolName === 'write_project_file') {
+      return await executeProjectWrite(input);
+    }
+    if (toolName === 'list_project_files') {
+      return await executeProjectList(input);
+    }
+    if (toolName === 'delete_project_file') {
+      return await executeProjectDelete(input);
+    }
+    
+    // Platform File Tools
+    if (toolName === 'read_platform_file') {
+      return await executePlatformRead(input);
+    }
+    if (toolName === 'write_platform_file') {
+      return await executePlatformWrite(input);
+    }
+    if (toolName === 'list_platform_files') {
+      return await executePlatformList(input);
+    }
+    
+    // Browser & Search Tools
+    if (toolName === 'browser_test') {
+      return await executeBrowserTest(input);
+    }
+    if (toolName === 'web_search') {
+      return await executeWebSearch(input);
+    }
+    if (toolName === 'vision_analyze') {
+      return await executeVisionAnalysis(input);
+    }
+    
+    // Fallback
+    console.warn(`⚠️ [TOOL-DISPATCHER] Unknown tool: ${toolName}`);
+    return { success: false, error: `Unknown tool: ${toolName}` };
+  } catch (e) {
+    console.error(`❌ [TOOL-DISPATCHER] Error executing ${toolName}:`, e);
+    return { success: false, error: (e as Error).message };
+  }
+}
+
 // Helper function to parse task plans from Claude's response
 function parseTaskPlan(text: string): { tasks: any[] } | null {
   try {
@@ -903,6 +956,29 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
                 content: message,
               },
             ],
+            // GAP #3 FIX: Add onToolUse callback to execute tools and continue conversation
+            onToolUse: async (toolUse: any) => {
+              const { toolName, input, toolId } = toolUse;
+              console.log(`🔧 [GEMINI-TOOL-USE] Executing: ${toolName} (ID: ${toolId})`);
+              
+              try {
+                // Execute tool via dispatcher
+                const result = await dispatchTool(toolName, input);
+                console.log(`✅ [GEMINI-TOOL-USE] Result for ${toolName}: ${JSON.stringify(result).substring(0, 100)}`);
+                
+                // Stream tool execution status to client
+                res.write(`data: ${JSON.stringify({ type: 'tool_use', toolName, input, toolId })}\n\n`);
+                res.write(`data: ${JSON.stringify({ type: 'tool_result', toolName, result })}\n\n`);
+                
+                // Return result to Gemini so it can continue
+                return result;
+              } catch (e) {
+                console.error(`❌ [GEMINI-TOOL-USE] Error executing ${toolName}:`, e);
+                const error = { success: false, error: (e as Error).message };
+                res.write(`data: ${JSON.stringify({ type: 'tool_error', toolName, error })}\n\n`);
+                return error;
+              }
+            },
             onChunk: (chunk: any) => {
               try {
                 // Handle Gemini text chunks
@@ -919,24 +995,21 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
                   res.write(`data: ${JSON.stringify({ type: 'thinking_delta', thinking: chunk.thinking })}\n\n`);
                   console.log(`🧠 [GEMINI-CHAT] Streamed thinking: +${chunk.thinking?.length || 0} chars`);
                 }
-                // CRITICAL FIX: Handle tool_use chunks by executing tools
+                // GAP #4 FIX: Fix chunk handler property names (toolName, input, toolId)
                 else if (chunk.type === 'tool_use') {
-                  const { name, args, id } = chunk;
-                  console.log(`🔧 [CHAT-TOOL-EXECUTION] Executing tool: ${name}`);
+                  const { toolName, input, toolId } = chunk;
+                  console.log(`🔧 [CHAT-TOOL-CHUNK] Tool requested: ${toolName} (ID: ${toolId})`);
                   
                   // Stream tool execution status to client
-                  res.write(`data: ${JSON.stringify({ type: 'tool_use', name, args })}\n\n`);
-                  
-                  // Execute tool (this should be handled by streamGeminiResponse internally)
-                  // We just acknowledge receipt here
+                  res.write(`data: ${JSON.stringify({ type: 'tool_use', toolName, input })}\n\n`);
                 }
                 // Handle tool results from Gemini
                 else if (chunk.type === 'tool_result') {
-                  const { name, result } = chunk;
-                  console.log(`✅ [CHAT-TOOL-RESULT] Tool result: ${name} = ${result?.substring?.(0, 100) || result}`);
+                  const { toolName, result } = chunk;
+                  console.log(`✅ [CHAT-TOOL-RESULT] Tool result: ${toolName} = ${JSON.stringify(result).substring(0, 100)}`);
                   
                   // Stream result to client
-                  res.write(`data: ${JSON.stringify({ type: 'tool_result', name, result })}\n\n`);
+                  res.write(`data: ${JSON.stringify({ type: 'tool_result', toolName, result })}\n\n`);
                 }
                 // Capture usage from completion
                 if (chunk.type === 'usage') {
