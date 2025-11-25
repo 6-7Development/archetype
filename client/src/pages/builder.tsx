@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link, useRoute, useLocation } from "wouter";
 import { UniversalChat } from "@/components/universal-chat";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SwarmModeButton } from "@/components/swarm-mode-button";
 import { NewProjectDialog } from "@/components/new-project-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -217,6 +218,11 @@ export default function Builder() {
         </div>
 
         <div className="flex items-center gap-2">
+          <SwarmModeButton
+            onActivate={() => setLocation('/swarm-dashboard')}
+            disabled={!currentProjectId}
+            data-testid="button-swarm-mode-builder"
+          />
           <ThemeToggle />
         </div>
       </header>

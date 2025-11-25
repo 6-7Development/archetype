@@ -5,6 +5,7 @@
  */
 
 import { useState } from 'react';
+import { useLocation } from 'wouter';
 import { Terminal as TerminalIcon, Eye, FileText, Settings, ChevronDown, Plus, X, GitBranch, TestTube, Database, Key, Zap, Package, Search, Box, Bug, AlertCircle, Zap as API, Sparkles } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,7 @@ import { DebuggerPanel } from '@/components/debugger-panel';
 import { ProblemsPanel } from '@/components/problems-panel';
 import { APIClient } from '@/components/api-client';
 import { AIAssistant } from '@/components/ai-assistant';
+import { SwarmModeButton } from '@/components/swarm-mode-button';
 
 interface WorkspaceLayoutProps {
   projectId: string;
@@ -66,6 +68,7 @@ export function WorkspaceLayout({
   children,
   onTaskSelect,
 }: WorkspaceLayoutProps) {
+  const [, setLocation] = useLocation();
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [selectedTab, setSelectedTab] = useState<'editor' | 'preview' | 'terminal' | 'files' | 'git' | 'tests' | 'database' | 'env' | 'logs' | 'packages' | 'search' | 'deploy' | 'debugger' | 'problems' | 'api' | 'ai' | 'settings' | 'healing'>('editor');
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
@@ -90,6 +93,11 @@ export function WorkspaceLayout({
           )}
         </div>
         <div className="flex items-center gap-2">
+          <SwarmModeButton
+            onActivate={() => setLocation('/swarm-dashboard')}
+            disabled={mode === 'platform-healing'}
+            data-testid="button-swarm-mode-header"
+          />
           <Button size="sm" variant="ghost" data-testid="button-publish">
             <Eye className="w-4 h-4 mr-1" />
             Publishing
