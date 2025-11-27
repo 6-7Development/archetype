@@ -19,6 +19,10 @@ import { executePlatformRead, executePlatformWrite, executePlatformList } from '
 import { executeBrowserTest } from '../tools/browser-test.ts';
 import { executeWebSearch } from '../tools/web-search.ts';
 import { executeVisionAnalysis } from '../tools/vision-analyze.ts';
+// WORKFLOW INFRASTRUCTURE - Replit FAST Mode Parity
+import { WORKFLOW_CONFIG, WorkflowPhase } from '../workflows/workflow-config.ts';
+import { WorkflowStateManager } from '../workflows/workflow-state.ts';
+import { validateToolInput, requiresApproval, getCachedResult, cacheResult } from '../workflows/tool-validator.ts';
 
 //Helper function to summarize messages
 async function summarizeMessages(messages: any[]): Promise<string> {
@@ -40,52 +44,90 @@ async function summarizeMessages(messages: any[]): Promise<string> {
 /**
  * TOOL DISPATCHER - Routes tool requests to appropriate executors
  * GAP #2 FIX: Maps Gemini tool names to execution functions
+ * PHASE 2: Added tool validation, caching, cost tracking, approval workflows
  */
-async function dispatchTool(toolName: string, input: any): Promise<any> {
+async function dispatchTool(toolName: string, input: any, conversationId?: string): Promise<any> {
   console.log(`🔧 [TOOL-DISPATCHER] Routing: ${toolName}`);
   
+  const toolStartTime = Date.now();
+  
   try {
+    // PHASE 2 FIX #1: Pre-execution validation
+    const validation = validateToolInput(toolName, input);
+    if (!validation.valid) {
+      console.warn(`⚠️ [TOOL-VALIDATOR] Input validation failed: ${validation.error}`);
+      return { success: false, error: `Validation failed: ${validation.error}` };
+    }
+    
+    // PHASE 2 FIX #2: Check for approval requirement (destructive operations)
+    const approval = requiresApproval(toolName);
+    if (approval.required) {
+      console.warn(`🔒 [TOOL-APPROVAL] Tool requires approval: ${approval.reason}`);
+      return { success: false, error: `Approval required: ${approval.reason}`, requiresApproval: true };
+    }
+    
+    // PHASE 2 FIX #3: Check result cache before execution
+    const cached = getCachedResult(toolName, input);
+    if (cached.cached) {
+      if (conversationId) {
+        WorkflowStateManager.recordToolExecution(conversationId, toolName, 'success', 0, true);
+      }
+      return cached.result;
+    }
+    
+    let result: any;
+    
     // Project File Tools
     if (toolName === 'read_project_file') {
-      return await executeProjectRead(input);
+      result = await executeProjectRead(input);
+    } else if (toolName === 'write_project_file') {
+      result = await executeProjectWrite(input);
+    } else if (toolName === 'list_project_files') {
+      result = await executeProjectList(input);
+    } else if (toolName === 'delete_project_file') {
+      result = await executeProjectDelete(input);
     }
-    if (toolName === 'write_project_file') {
-      return await executeProjectWrite(input);
-    }
-    if (toolName === 'list_project_files') {
-      return await executeProjectList(input);
-    }
-    if (toolName === 'delete_project_file') {
-      return await executeProjectDelete(input);
-    }
-    
     // Platform File Tools
-    if (toolName === 'read_platform_file') {
-      return await executePlatformRead(input);
+    else if (toolName === 'read_platform_file') {
+      result = await executePlatformRead(input);
+    } else if (toolName === 'write_platform_file') {
+      result = await executePlatformWrite(input);
+    } else if (toolName === 'list_platform_files') {
+      result = await executePlatformList(input);
     }
-    if (toolName === 'write_platform_file') {
-      return await executePlatformWrite(input);
-    }
-    if (toolName === 'list_platform_files') {
-      return await executePlatformList(input);
-    }
-    
     // Browser & Search Tools
-    if (toolName === 'browser_test') {
-      return await executeBrowserTest(input);
+    else if (toolName === 'browser_test') {
+      result = await executeBrowserTest(input);
+    } else if (toolName === 'web_search') {
+      result = await executeWebSearch(input);
+    } else if (toolName === 'vision_analyze') {
+      result = await executeVisionAnalysis(input);
     }
-    if (toolName === 'web_search') {
-      return await executeWebSearch(input);
-    }
-    if (toolName === 'vision_analyze') {
-      return await executeVisionAnalysis(input);
+    // Fallback
+    else {
+      console.warn(`⚠️ [TOOL-DISPATCHER] Unknown tool: ${toolName}`);
+      return { success: false, error: `Unknown tool: ${toolName}` };
     }
     
-    // Fallback
-    console.warn(`⚠️ [TOOL-DISPATCHER] Unknown tool: ${toolName}`);
-    return { success: false, error: `Unknown tool: ${toolName}` };
+    // PHASE 2 FIX #4: Cache successful result
+    if (result?.success !== false) {
+      cacheResult(toolName, input, result);
+    }
+    
+    // PHASE 2 FIX #5: Record tool execution cost
+    const durationMs = Date.now() - toolStartTime;
+    if (conversationId) {
+      const costTokens = Math.ceil(durationMs / 100); // Rough cost estimate
+      WorkflowStateManager.recordToolExecution(conversationId, toolName, 'success', costTokens, false);
+    }
+    
+    return result;
   } catch (e) {
     console.error(`❌ [TOOL-DISPATCHER] Error executing ${toolName}:`, e);
+    if (conversationId) {
+      WorkflowStateManager.recordToolExecution(conversationId, toolName, 'error', 0, false);
+      WorkflowStateManager.recordError(conversationId);
+    }
     return { success: false, error: (e as Error).message };
   }
 }
@@ -939,6 +981,11 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
 
       await aiQueue.enqueue(userId, plan, async () => {
         try {
+          // PHASE 2 FIX #1: Initialize workflow state for this conversation
+          const conversationId = `chat-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+          WorkflowStateManager.createState(conversationId);
+          WorkflowStateManager.updatePhase(conversationId, WorkflowPhase.ASSESS);
+          
           // GAP #5 FIX: Continuation Loop - Handle multi-turn tool execution
           let conversationMessages = [
             ...validMessages.map((m: any) => ({
@@ -952,11 +999,18 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
           ];
           
           let continuationCount = 0;
-          const maxContinuations = 3; // Prevent infinite loops
+          const maxContinuations = WORKFLOW_CONFIG.chat.maxContinuations; // Use config instead of hardcode
           let needsContinuation = true;
 
           while (needsContinuation && continuationCount < maxContinuations) {
             console.log(`🔄 [CONTINUATION-LOOP] Turn ${continuationCount + 1}/${maxContinuations + 1}`);
+            
+            // PHASE 2 FIX #2: Track workflow phase progression
+            if (continuationCount === 0) {
+              WorkflowStateManager.updatePhase(conversationId, WorkflowPhase.PLAN);
+            }
+            
+            WorkflowStateManager.incrementContinuation(conversationId);
             needsContinuation = false;
 
             // Build tool map for quick lookup
@@ -966,18 +1020,22 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
 
             // Call Gemini and capture return value to check for continuation
             const result = await streamGeminiResponse({
-              maxTokens: 4096,
+              maxTokens: WORKFLOW_CONFIG.chat.maxTokens,
               system: systemPrompt,
               tools: ESSENTIAL_LOMU_TOOLS,
               messages: conversationMessages,
+              timeoutMs: WORKFLOW_CONFIG.chat.timeoutMs,
               // GAP #3 FIX: Add onToolUse callback to execute tools and continue conversation
               onToolUse: async (toolUse: any) => {
                 const { name: toolName, input, id: toolId } = toolUse;
                 console.log(`🔧 [GEMINI-TOOL-USE] Executing: ${toolName} (ID: ${toolId})`);
                 
                 try {
-                  // Execute tool via dispatcher
-                  const toolResult = await dispatchTool(toolName, input);
+                  // PHASE 2 FIX: Update to EXECUTE phase when tools are being run
+                  WorkflowStateManager.updatePhase(conversationId, WorkflowPhase.EXECUTE);
+                  
+                  // Execute tool via dispatcher with workflow tracking
+                  const toolResult = await dispatchTool(toolName, input, conversationId);
                   console.log(`✅ [GEMINI-TOOL-USE] Result for ${toolName}: ${JSON.stringify(toolResult).substring(0, 100)}`);
                   
                   // Stream tool execution status to client
@@ -988,6 +1046,7 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
                   return toolResult;
                 } catch (e) {
                   console.error(`❌ [GEMINI-TOOL-USE] Error executing ${toolName}:`, e);
+                  WorkflowStateManager.recordError(conversationId);
                   const error = { success: false, error: (e as Error).message };
                   res.write(`data: ${JSON.stringify({ type: 'tool_error', toolName, error })}\n\n`);
                   return error;
@@ -1029,6 +1088,8 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
                   if (chunk.type === 'usage') {
                     inputTokens = chunk.inputTokens || 0;
                     outputTokens = chunk.outputTokens || 0;
+                    // PHASE 2 FIX: Track context window usage
+                    WorkflowStateManager.updateContextTokens(conversationId, inputTokens, outputTokens);
                   }
                 } catch (e) {
                   console.error('Error processing Gemini chunk:', e);
@@ -1071,6 +1132,8 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
               console.log(`✅ [CONTINUATION-LOOP] Prepared continuation turn ${continuationCount}`);
             } else {
               console.log(`✅ [CONTINUATION-LOOP] No continuation needed - response complete`);
+              // PHASE 2 FIX: Update to VERIFY phase when all tools are done
+              WorkflowStateManager.updatePhase(conversationId, WorkflowPhase.VERIFY);
               needsContinuation = false;
             }
           }
@@ -1078,6 +1141,11 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
           // All turns complete - save and send final response
           const computeTimeMs = Date.now() - computeStartTime;
           console.log(`✅ [GEMINI-CHAT] Conversation complete after ${continuationCount} continuations: ${fullResponse.length} chars (thinking: ${fullThinking.length} chars)`);
+
+          // PHASE 2 FIX: Mark workflow as complete and get diagnostics
+          WorkflowStateManager.updatePhase(conversationId, WorkflowPhase.COMPLETE);
+          const diagnostics = WorkflowStateManager.getDiagnostics(conversationId);
+          console.log(`📊 [WORKFLOW-DIAGNOSTICS]`, diagnostics);
 
           // Save messages to database
           await storage.createChatMessage({
@@ -1102,17 +1170,22 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
             inputTokens,
             outputTokens,
             computeTimeMs,
-            metadata: { message, continuations: continuationCount },
+            metadata: { message, continuations: continuationCount, workflowDiagnostics: diagnostics },
           });
 
-          // Send completion event with thinking block
+          // Send completion event with thinking block and workflow diagnostics
           res.write(`data: ${JSON.stringify({ 
             type: 'done', 
             fullResponse, 
             thinking: fullThinking,
             inputTokens, 
-            outputTokens 
+            outputTokens,
+            workflowPhase: diagnostics?.phase,
+            totalCost: diagnostics?.totalCost
           })}\n\n`);
+          
+          // Cleanup workflow state after completion
+          WorkflowStateManager.cleanup(conversationId);
           res.end();
         } catch (error: any) {
           console.error('Gemini chat error:', error);
