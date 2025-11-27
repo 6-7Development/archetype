@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import type { Server } from "http";
 import { WebSocketServer } from "ws";
+import healthRouter from "../api/health";
 
 // Import all route registration functions
 import { registerAuthRoutes } from "./auth";
@@ -26,6 +27,7 @@ import { registerProblemsRoutes } from "./problems";
 import { registerConsultationRoutes } from "./consultations";
 import { registerRateLimitRoutes } from "./rate-limit-status";
 import { registerProgressRoutes } from "./progress";
+import { registerGdprRoutes } from "./gdpr";
 
 /**
  * Main route registration function
@@ -39,6 +41,10 @@ export async function registerRoutes(app: Express): Promise<Server & { wss?: Web
   // Create WebSocket server
   const wss = new WebSocketServer({ server });
   console.log("[ROUTES] WebSocket server created");
+
+  // Register health check routes FIRST (bypass all middleware, should never be rate limited)
+  app.use(healthRouter);
+  console.log("[ROUTES] Health check routes registered (bypass rate limiting)");
 
   // Register HTTP API routes (order matters - register more specific routes first)
   console.log("[ROUTES] Registering HTTP routes...");
@@ -64,6 +70,7 @@ export async function registerRoutes(app: Express): Promise<Server & { wss?: Web
   registerConsultationRoutes(app);
   registerRateLimitRoutes(app);
   registerProgressRoutes(app);
+  registerGdprRoutes(app);
   
   // Register WebSocket terminal routes (must be after HTTP routes)
   console.log("[ROUTES] Registering WebSocket terminal routes...");

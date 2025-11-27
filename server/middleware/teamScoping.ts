@@ -6,8 +6,8 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { db } from '../db';
-import { teamMembers, teams } from '@shared/schema';
-import { eq } from 'drizzle-orm';
+import { teamMembers, teams, teamWorkspaces } from '@shared/schema';
+import { eq, sql } from 'drizzle-orm';
 
 export interface TeamContext {
   workspaceId: string;
@@ -65,6 +65,17 @@ export async function extractTeamContext(req: Request, res: Response, next: Next
 
     if (!membership || membership.length === 0) {
       return res.status(403).json({ error: 'Not member of this workspace' });
+    }
+
+    // Set PostgreSQL session variables for RLS policies
+    // These are used by RLS policies to enforce workspace-scoped access
+    try {
+      await db.execute(sql`SET app.workspace_id = ${workspaceId}`);
+      await db.execute(sql`SET app.user_id = ${userId}`);
+      console.debug(`[TEAM-SCOPING] Set RLS session variables: workspace_id=${workspaceId}, user_id=${userId}`);
+    } catch (error: any) {
+      console.warn('[TEAM-SCOPING] Failed to set RLS session variables:', error.message);
+      // Don't fail the request if session variables don't work
     }
 
     // Attach team context to request

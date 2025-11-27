@@ -7,8 +7,10 @@ import express, { type Request, Response, NextFunction } from "express";
 import compression from "compression";
 import { registerRoutes } from "./routes";
 import { registerHealingRoutes } from "./routes/healing";
+import { registerHealthRoutes } from "./routes/health";
 import { setupVite, serveStatic, log } from "./vite";
 import { apiLimiter } from "./rateLimiting";
+import { orgRateLimiterWithContext } from "./middleware/orgRateLimiter";
 import { db } from "./db";
 import { files, chatMessages } from "@shared/schema"; // Import chatMessages
 import { autoHealing } from "./autoHealing";
@@ -118,9 +120,17 @@ app.use((req, res, next) => {
   next();
 });
 
+// Register health check routes BEFORE rate limiting (so they're always accessible)
+registerHealthRoutes(app);
+
 // Apply rate limiting globally to all /api/* routes
 // This ensures all API requests (including error responses) are rate limited
 app.use('/api', apiLimiter);
+
+// 🛡️ Organization-level rate limiting (1000 req/min per org)
+// Applied AFTER global apiLimiter. Uses workspaceId from team context.
+// Health check endpoints are automatically skipped.
+app.use('/api', orgRateLimiterWithContext);
 
 // 🛡️ HIGH-PERFORMANCE response logging with strict CPU protection
 app.use((req, res, next) => {
@@ -328,6 +338,14 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
       }
     } catch (jobCleanupError: any) {
       console.warn('⚠️ LomuAI job cleanup failed (non-critical):', jobCleanupError.message);
+    }
+    
+    // Initialize background jobs (session cleanup, etc.)
+    try {
+      const { initializeJobs } = await import('./jobs');
+      await initializeJobs();
+    } catch (jobInitError: any) {
+      console.warn('⚠️ Background jobs initialization failed (non-critical):', jobInitError.message);
     }
   } catch (error: any) {
     console.error('❌ Database connection failed after retries:', error.message);

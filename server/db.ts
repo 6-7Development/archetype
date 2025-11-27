@@ -50,3 +50,37 @@ console.info(`[db] SSL Configuration: ${JSON.stringify(poolConfig.ssl)}`);
 console.info(`[db] Connection string includes SSL params: ${connectionString.includes('sslmode=')}`);
 
 export const db = drizzle(pool, { schema });
+
+/**
+ * Initialize RLS policies on database connection
+ * This function is called once during application startup to ensure
+ * all Row-Level Security policies are in place for multi-tenant isolation
+ */
+export async function initializeRLSPolicies() {
+  try {
+    const { initializeRLSPolicies: initRLS } = await import('./db/rls-policies');
+    const result = await initRLS();
+    console.info('[db] RLS policies initialized:', result);
+    return result;
+  } catch (error: any) {
+    console.error('[db] Failed to initialize RLS policies:', error.message);
+    // Don't throw - RLS policies are optional in development
+    if (isProduction) {
+      throw error;
+    }
+  }
+}
+
+// Initialize RLS policies on module load (after db connection)
+// Wrapped in try-catch to allow graceful degradation
+(async () => {
+  try {
+    // Small delay to ensure pool is ready
+    await new Promise(resolve => setTimeout(resolve, 100));
+    await initializeRLSPolicies();
+  } catch (error) {
+    console.warn('[db] RLS initialization warning (non-critical):', error);
+  }
+})().catch(err => {
+  console.warn('[db] Failed to run RLS initialization:', err);
+});
