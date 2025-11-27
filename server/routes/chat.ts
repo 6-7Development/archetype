@@ -23,6 +23,11 @@ import { executeVisionAnalysis } from '../tools/vision-analyze.ts';
 import { WORKFLOW_CONFIG, WorkflowPhase } from '../workflows/workflow-config.ts';
 import { WorkflowStateManager } from '../workflows/workflow-state.ts';
 import { validateToolInput, requiresApproval, getCachedResult, cacheResult } from '../workflows/tool-validator.ts';
+import { ToolTimeoutEnforcer } from '../workflows/tool-timeout-enforcer.ts';
+import { ParallelToolOrchestrator } from '../workflows/parallel-tool-orchestrator.ts';
+import { ContextEnforcer } from '../workflows/context-enforcer.ts';
+import { OutputTruncator } from '../workflows/output-truncator.ts';
+import { ApprovalQueue } from '../workflows/approval-queue.ts';
 
 //Helper function to summarize messages
 async function summarizeMessages(messages: any[]): Promise<string> {
@@ -60,10 +65,16 @@ async function dispatchTool(toolName: string, input: any, conversationId?: strin
     }
     
     // PHASE 2 FIX #2: Check for approval requirement (destructive operations)
-    const approval = requiresApproval(toolName);
-    if (approval.required) {
-      console.warn(`🔒 [TOOL-APPROVAL] Tool requires approval: ${approval.reason}`);
-      return { success: false, error: `Approval required: ${approval.reason}`, requiresApproval: true };
+    const approvalCheck = ApprovalQueue.requiresApproval(toolName, input);
+    if (approvalCheck.required) {
+      console.warn(`🔒 [TOOL-APPROVAL] Tool requires approval: ${approvalCheck.reason}`);
+      const approvalReq = ApprovalQueue.requestApproval(toolName, input);
+      return { 
+        success: false, 
+        error: `Approval required: ${approvalCheck.reason}`, 
+        requiresApproval: true,
+        approvalId: approvalReq.id
+      };
     }
     
     // PHASE 2 FIX #3: Check result cache before execution
@@ -77,36 +88,50 @@ async function dispatchTool(toolName: string, input: any, conversationId?: strin
     
     let result: any;
     
-    // Project File Tools
-    if (toolName === 'read_project_file') {
-      result = await executeProjectRead(input);
-    } else if (toolName === 'write_project_file') {
-      result = await executeProjectWrite(input);
-    } else if (toolName === 'list_project_files') {
-      result = await executeProjectList(input);
-    } else if (toolName === 'delete_project_file') {
-      result = await executeProjectDelete(input);
-    }
-    // Platform File Tools
-    else if (toolName === 'read_platform_file') {
-      result = await executePlatformRead(input);
-    } else if (toolName === 'write_platform_file') {
-      result = await executePlatformWrite(input);
-    } else if (toolName === 'list_platform_files') {
-      result = await executePlatformList(input);
-    }
-    // Browser & Search Tools
-    else if (toolName === 'browser_test') {
-      result = await executeBrowserTest(input);
-    } else if (toolName === 'web_search') {
-      result = await executeWebSearch(input);
-    } else if (toolName === 'vision_analyze') {
-      result = await executeVisionAnalysis(input);
-    }
-    // Fallback
-    else {
-      console.warn(`⚠️ [TOOL-DISPATCHER] Unknown tool: ${toolName}`);
-      return { success: false, error: `Unknown tool: ${toolName}` };
+    // PHASE 2 FIX #6: Wrap tool execution with timeout enforcement (GAP #1)
+    const toolExecutor = async (signal: AbortSignal) => {
+      // Project File Tools
+      if (toolName === 'read_project_file') {
+        return await executeProjectRead(input);
+      } else if (toolName === 'write_project_file') {
+        return await executeProjectWrite(input);
+      } else if (toolName === 'list_project_files') {
+        return await executeProjectList(input);
+      } else if (toolName === 'delete_project_file') {
+        return await executeProjectDelete(input);
+      }
+      // Platform File Tools
+      else if (toolName === 'read_platform_file') {
+        return await executePlatformRead(input);
+      } else if (toolName === 'write_platform_file') {
+        return await executePlatformWrite(input);
+      } else if (toolName === 'list_platform_files') {
+        return await executePlatformList(input);
+      }
+      // Browser & Search Tools
+      else if (toolName === 'browser_test') {
+        return await executeBrowserTest(input);
+      } else if (toolName === 'web_search') {
+        return await executeWebSearch(input);
+      } else if (toolName === 'vision_analyze') {
+        return await executeVisionAnalysis(input);
+      }
+      // Fallback
+      else {
+        throw new Error(`Unknown tool: ${toolName}`);
+      }
+    };
+    
+    result = await ToolTimeoutEnforcer.executeWithTimeout(toolName, toolExecutor, WORKFLOW_CONFIG.tools.timeoutMs);
+    
+    // PHASE 2 FIX #7: Truncate large outputs (GAP #4)
+    if (result && typeof result === 'object' && result.content) {
+      const truncated = OutputTruncator.truncate(result.content, 5000);
+      if (truncated.truncated) {
+        console.log(`🔪 [OUTPUT-TRUNCATOR] Truncated ${toolName} output: ${truncated.originalLength} → ${JSON.stringify(truncated.content).length} chars`);
+        result.content = truncated.content;
+        result.truncated = true;
+      }
     }
     
     // PHASE 2 FIX #4: Cache successful result
