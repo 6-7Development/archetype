@@ -2867,3 +2867,60 @@ export const insertScratchpadEntrySchema = createInsertSchema(scratchpadEntries)
 
 export type InsertScratchpadEntry = z.infer<typeof insertScratchpadEntrySchema>;
 export type ScratchpadEntry = typeof scratchpadEntries.$inferSelect;
+
+// GAP #3 FIX: Deployment History - Track all deployments across environments
+export const deploymentHistory = pgTable('deployment_history', {
+  id: serial('id').primaryKey(),
+  version: varchar('version', { length: 50 }).notNull(), // e.g., "1.2.3"
+  environment: varchar('environment', { length: 50 }).notNull(), // 'staging' | 'production'
+  branch: varchar('branch', { length: 255 }).notNull(), // Git branch deployed
+  commitHash: varchar('commit_hash', { length: 40 }).notNull(), // Git commit SHA
+  deployedBy: varchar('deployed_by').notNull(), // User ID
+  status: varchar('status', { length: 50 }).notNull().default('success'), // 'pending' | 'success' | 'failed' | 'rolled_back'
+  errorMessage: text('error_message'), // If failed
+  rollbackVersion: varchar('rollback_version', { length: 50 }), // If rolled back, the version rolled back to
+  validationLog: jsonb('validation_log'), // Pre-deploy validation results
+  metrics: jsonb('metrics'), // Performance metrics post-deploy
+  deployedAt: timestamp('deployed_at').notNull().defaultNow(),
+  completedAt: timestamp('completed_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => [
+  index('idx_deployment_version').on(table.version),
+  index('idx_deployment_environment').on(table.environment),
+  index('idx_deployment_deployed_at').on(table.deployedAt),
+]);
+
+export const insertDeploymentHistorySchema = createInsertSchema(deploymentHistory).omit({
+  id: true,
+  deployedAt: true,
+  createdAt: true,
+});
+
+export type InsertDeploymentHistory = z.infer<typeof insertDeploymentHistorySchema>;
+export type DeploymentHistory = typeof deploymentHistory.$inferSelect;
+
+// GAP #4 FIX: Version Tracking - Track current versions across environments
+export const versionTracking = pgTable('version_tracking', {
+  id: serial('id').primaryKey(),
+  environment: varchar('environment', { length: 50 }).notNull().unique(), // 'development' | 'staging' | 'production'
+  currentVersion: varchar('current_version', { length: 50 }).notNull(), // Current running version
+  previousVersion: varchar('previous_version', { length: 50 }), // Previous version (for rollback)
+  versionDetails: jsonb('version_details').$type<{
+    releaseDate: string;
+    changelog: string[];
+    commitSha: string;
+    features: string[];
+  }>(),
+  lastUpdated: timestamp('last_updated').notNull().defaultNow(),
+  updatedBy: varchar('updated_by'), // User ID who deployed
+}, (table) => [
+  index('idx_version_tracking_env').on(table.environment),
+]);
+
+export const insertVersionTrackingSchema = createInsertSchema(versionTracking).omit({
+  id: true,
+  lastUpdated: true,
+});
+
+export type InsertVersionTracking = z.infer<typeof insertVersionTrackingSchema>;
+export type VersionTracking = typeof versionTracking.$inferSelect;
