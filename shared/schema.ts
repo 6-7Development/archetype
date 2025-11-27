@@ -3072,9 +3072,9 @@ export const billingAnalytics = pgTable('billing_analytics', {
   id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
   workspaceId: varchar('workspace_id').notNull().references(() => teamWorkspaces.id, { onDelete: 'cascade' }),
   date: varchar('date', { length: 10 }).notNull(), // ISO format: YYYY-MM-DD
-  creditsUsed: numeric('credits_used', { precision: 10, scale: 2 }).notNull(),
-  creditsRemaining: numeric('credits_remaining', { precision: 10, scale: 2 }).notNull(),
-  estimatedCost: numeric('estimated_cost', { precision: 10, scale: 2 }).notNull(),
+  creditsUsed: decimal('credits_used', { precision: 10, scale: 2 }).notNull(),
+  creditsRemaining: decimal('credits_remaining', { precision: 10, scale: 2 }).notNull(),
+  estimatedCost: decimal('estimated_cost', { precision: 10, scale: 2 }).notNull(),
   activeUsers: integer('active_users').notNull(),
   aiRequests: integer('ai_requests').notNull(),
   deployments: integer('deployments').notNull(),
@@ -3082,7 +3082,6 @@ export const billingAnalytics = pgTable('billing_analytics', {
 }, (table) => [
   index('idx_billing_workspace_date').on(table.workspaceId, table.date),
   index('idx_billing_date').on(table.date),
-  unique('uq_billing_workspace_date').on(table.workspaceId, table.date),
 ]);
 
 export const usageMetrics = pgTable('usage_metrics', {
@@ -3091,8 +3090,8 @@ export const usageMetrics = pgTable('usage_metrics', {
   userId: varchar('user_id'),
   featureType: varchar('feature_type', { length: 100 }).notNull(), // 'ai_chat', 'code_generation', 'architect', 'deployment'
   usageCount: integer('usage_count').notNull().default(1),
-  costPerUnit: numeric('cost_per_unit', { precision: 10, scale: 2 }).notNull(),
-  totalCost: numeric('total_cost', { precision: 10, scale: 2 }).notNull(),
+  costPerUnit: decimal('cost_per_unit', { precision: 10, scale: 2 }).notNull(),
+  totalCost: decimal('total_cost', { precision: 10, scale: 2 }).notNull(),
   timestamp: timestamp('timestamp').notNull().defaultNow(),
 }, (table) => [
   index('idx_metrics_workspace').on(table.workspaceId),
@@ -3117,7 +3116,7 @@ export const organizations = pgTable('organizations', {
   logoUrl: varchar('logo_url', { length: 255 }),
   website: varchar('website', { length: 255 }),
   planType: varchar('plan_type', { length: 50 }).notNull().default('free'), // 'free', 'pro', 'enterprise'
-  monthlyBudget: numeric('monthly_budget', { precision: 10, scale: 2 }).default('0'),
+  monthlyBudget: decimal('monthly_budget', { precision: 10, scale: 2 }).default('0'),
   billingEmail: varchar('billing_email', { length: 255 }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
@@ -3136,7 +3135,6 @@ export const organizationMembers = pgTable('organization_members', {
 }, (table) => [
   index('idx_org_member_org').on(table.organizationId),
   index('idx_org_member_user').on(table.userId),
-  unique('uq_org_member_user').on(table.organizationId, table.userId),
 ]);
 
 export const organizationWorkspaces = pgTable('organization_workspaces', {
@@ -3147,7 +3145,6 @@ export const organizationWorkspaces = pgTable('organization_workspaces', {
 }, (table) => [
   index('idx_org_workspace_org').on(table.organizationId),
   index('idx_org_workspace_ws').on(table.workspaceId),
-  unique('uq_org_workspace').on(table.organizationId, table.workspaceId),
 ]);
 
 export const insertOrganizationSchema = createInsertSchema(organizations).omit({
