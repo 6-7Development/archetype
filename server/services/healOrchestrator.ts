@@ -68,7 +68,90 @@ export class HealOrchestrator extends EventEmitter {
       console.log(`[HEAL-ORCHESTRATOR] Incident ${data.incidentId} resolved naturally`);
     });
     
+    // GAP #7 FIX: Listen for workflow failures (emitted from chat.ts)
+    this.on('workflow-failure', async (data: { 
+      error: string; 
+      sessionId: string; 
+      consecutiveErrors: number;
+      conversationId?: string;
+    }) => {
+      await this.handleWorkflowFailure(data);
+    });
+    
     console.log('[HEAL-ORCHESTRATOR] Orchestrator started');
+  }
+
+  /**
+   * Handle workflow failure event (GAP #7 FIX)
+   * Triggered after 3 consecutive workflow failures
+   */
+  private async handleWorkflowFailure(data: { 
+    error: string; 
+    sessionId: string; 
+    consecutiveErrors: number;
+    conversationId?: string;
+  }): Promise<void> {
+    console.log(`[HEAL-ORCHESTRATOR] ⚠️ Workflow failure detected: ${data.error}`);
+    console.log(`[HEAL-ORCHESTRATOR] Session: ${data.sessionId}, Consecutive errors: ${data.consecutiveErrors}`);
+    
+    // Only trigger healing after threshold is reached
+    if (data.consecutiveErrors < 3) {
+      console.log('[HEAL-ORCHESTRATOR] Below threshold (3) - monitoring but not healing yet');
+      return;
+    }
+    
+    // Check kill switch and rate limits
+    if (this.killSwitchActive) {
+      console.warn('[HEAL-ORCHESTRATOR] Kill switch active - skipping auto-heal');
+      return;
+    }
+    
+    if (!this.isWithinRateLimit()) {
+      console.warn('[HEAL-ORCHESTRATOR] Rate limit exceeded - skipping auto-heal');
+      return;
+    }
+    
+    // Log the workflow failure as an incident
+    try {
+      await db.insert(platformIncidents).values({
+        type: 'workflow_failure',
+        severity: 'error',
+        component: 'ai-workflow',
+        message: `Workflow failed ${data.consecutiveErrors}x: ${data.error}`,
+        details: JSON.stringify({
+          sessionId: data.sessionId,
+          conversationId: data.conversationId,
+          consecutiveErrors: data.consecutiveErrors,
+          timestamp: new Date().toISOString(),
+        }),
+        detectedAt: new Date(),
+        status: 'open',
+      });
+      
+      console.log('[HEAL-ORCHESTRATOR] Workflow failure incident logged');
+      
+      // Emit event for metrics broadcaster
+      if (this.broadcaster) {
+        this.broadcaster.broadcast({
+          type: 'incident',
+          data: {
+            type: 'workflow_failure',
+            severity: 'error',
+            message: data.error,
+          },
+        });
+      }
+    } catch (dbError) {
+      console.error('[HEAL-ORCHESTRATOR] Failed to log workflow failure:', dbError);
+    }
+  }
+
+  /**
+   * Check if within rate limit for healing sessions
+   */
+  private isWithinRateLimit(): boolean {
+    this.cleanupOldTimestamps();
+    return this.healingSessionTimestamps.length < this.MAX_SESSIONS_PER_HOUR;
   }
   
   /**

@@ -198,6 +198,30 @@ class ApprovalManager extends EventEmitter {
   }
   
   /**
+   * Get approval status by ID (GAP #5 FIX)
+   * Enables client-side polling for approval status changes
+   */
+  getApprovalStatus(approvalId: string): {
+    status: 'pending' | 'approved' | 'rejected' | 'not_found';
+    toolName?: string;
+    createdAt?: Date;
+    resolvedAt?: Date;
+  } | null {
+    const request = this.pendingApprovals.get(approvalId);
+    
+    if (!request) {
+      // Check if it was recently resolved (we could track resolved approvals)
+      return null;
+    }
+    
+    return {
+      status: 'pending',
+      toolName: request.operation,
+      createdAt: request.timestamp,
+    };
+  }
+  
+  /**
    * Cancel all pending approvals (cleanup on shutdown)
    */
   cancelAll(): void {

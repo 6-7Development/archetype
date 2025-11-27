@@ -103,4 +103,83 @@ export class ContextEnforcer {
       actions: strategies,
     };
   }
+
+  /**
+   * Compress conversation history when context threshold exceeded (GAP #6 FIX)
+   * Summarizes older messages to preserve context while freeing tokens
+   */
+  static async compress(messages: any[], currentTokens: number): Promise<{
+    compressed: boolean;
+    messages: any[];
+    tokensSaved: number;
+    summary?: string;
+  }> {
+    const { percentage } = this.checkLimit(currentTokens);
+    
+    // Only compress if above warning threshold (80%)
+    if (percentage < this.WARNING_THRESHOLD) {
+      return { compressed: false, messages, tokensSaved: 0 };
+    }
+
+    console.log(`🗜️ [CONTEXT-ENFORCER] Compressing context (${percentage.toFixed(1)}% used)`);
+
+    // Preserve recent messages (last 10) and summarize the rest
+    const preserveCount = Math.min(10, messages.length);
+    const oldMessages = messages.slice(0, -preserveCount);
+    const recentMessages = messages.slice(-preserveCount);
+
+    if (oldMessages.length === 0) {
+      return { compressed: false, messages, tokensSaved: 0 };
+    }
+
+    // Create summary of old messages
+    const summary = this.summarizeMessages(oldMessages);
+    const estimatedOldTokens = oldMessages.reduce((sum, m) => 
+      sum + Math.ceil((m.content?.length || 0) / 4), 0);
+    const estimatedSummaryTokens = Math.ceil(summary.length / 4);
+    const tokensSaved = Math.max(0, estimatedOldTokens - estimatedSummaryTokens);
+
+    // Create compressed message array
+    const compressedMessages = [
+      {
+        role: 'system',
+        content: `[Context Summary - ${oldMessages.length} messages compressed]\n${summary}`,
+      },
+      ...recentMessages,
+    ];
+
+    console.log(`🗜️ [CONTEXT-ENFORCER] Compressed ${oldMessages.length} messages → summary (saved ~${tokensSaved} tokens)`);
+
+    return {
+      compressed: true,
+      messages: compressedMessages,
+      tokensSaved,
+      summary,
+    };
+  }
+
+  /**
+   * Simple message summarization (for compression)
+   */
+  private static summarizeMessages(messages: any[]): string {
+    const summaries: string[] = [];
+    
+    for (const msg of messages) {
+      const role = msg.role || 'unknown';
+      const content = msg.content || '';
+      
+      // Extract key information based on role
+      if (role === 'assistant' && content.includes('tool')) {
+        summaries.push(`- AI used tools to make changes`);
+      } else if (role === 'user') {
+        const truncated = content.slice(0, 100);
+        summaries.push(`- User: ${truncated}${content.length > 100 ? '...' : ''}`);
+      } else if (role === 'assistant') {
+        const truncated = content.slice(0, 100);
+        summaries.push(`- AI: ${truncated}${content.length > 100 ? '...' : ''}`);
+      }
+    }
+
+    return summaries.slice(-10).join('\n'); // Keep last 10 summary points
+  }
 }

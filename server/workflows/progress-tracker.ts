@@ -18,6 +18,36 @@ export class ProgressTracker {
   private static eventListeners: Set<(event: ProgressEvent) => void> = new Set();
   private static events: ProgressEvent[] = [];
   private static readonly MAX_EVENTS = 100;
+  private static heartbeatInterval: NodeJS.Timeout | null = null;
+  private static readonly HEARTBEAT_INTERVAL_MS = 10000; // 10 seconds
+
+  /**
+   * Start SSE heartbeat mechanism (GAP #4 FIX)
+   * Prevents silent connection failures by sending periodic pings
+   */
+  static startHeartbeat(): void {
+    if (this.heartbeatInterval) return; // Already running
+
+    this.heartbeatInterval = setInterval(() => {
+      this.broadcastProgress({
+        type: 'thinking',
+        message: 'heartbeat',
+      });
+    }, this.HEARTBEAT_INTERVAL_MS);
+
+    console.log('[PROGRESS-TRACKER] Heartbeat started (10s interval)');
+  }
+
+  /**
+   * Stop SSE heartbeat
+   */
+  static stopHeartbeat(): void {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+      console.log('[PROGRESS-TRACKER] Heartbeat stopped');
+    }
+  }
 
   /**
    * Broadcast progress event to all listeners

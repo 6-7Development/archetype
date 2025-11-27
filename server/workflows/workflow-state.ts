@@ -37,14 +37,56 @@ export class WorkflowStateManager {
   }
 
   /**
-   * Update workflow phase
+   * Valid phase transitions (state machine)
    */
-  static updatePhase(conversationId: string, phase: WorkflowPhase): void {
+  private static readonly VALID_TRANSITIONS: Record<WorkflowPhase, WorkflowPhase[]> = {
+    [WorkflowPhase.ASSESS]: [WorkflowPhase.PLAN, WorkflowPhase.ERROR],
+    [WorkflowPhase.PLAN]: [WorkflowPhase.EXECUTE, WorkflowPhase.ASSESS, WorkflowPhase.ERROR],
+    [WorkflowPhase.EXECUTE]: [WorkflowPhase.TEST, WorkflowPhase.VERIFY, WorkflowPhase.ERROR],
+    [WorkflowPhase.TEST]: [WorkflowPhase.VERIFY, WorkflowPhase.EXECUTE, WorkflowPhase.ERROR],
+    [WorkflowPhase.VERIFY]: [WorkflowPhase.COMPLETE, WorkflowPhase.EXECUTE, WorkflowPhase.ERROR],
+    [WorkflowPhase.COMPLETE]: [WorkflowPhase.ASSESS], // Allow restart
+    [WorkflowPhase.ERROR]: [WorkflowPhase.ASSESS, WorkflowPhase.PLAN], // Recovery paths
+  };
+
+  /**
+   * Validate phase transition (GAP #2 FIX)
+   * @returns true if transition is valid, false otherwise
+   */
+  static validatePhaseTransition(conversationId: string, targetPhase: WorkflowPhase): boolean {
     const state = workflowStates.get(conversationId);
-    if (state) {
-      console.log(`📍 [WORKFLOW-PHASE] ${state.currentPhase} → ${phase}`);
-      state.currentPhase = phase;
+    if (!state) {
+      console.warn(`⚠️ [WORKFLOW-STATE] No state found for ${conversationId}`);
+      return false;
     }
+
+    const validTargets = this.VALID_TRANSITIONS[state.currentPhase] || [];
+    const isValid = validTargets.includes(targetPhase);
+
+    if (!isValid) {
+      console.error(`❌ [WORKFLOW-STATE] Invalid transition: ${state.currentPhase} → ${targetPhase}`);
+      console.error(`   Valid targets: ${validTargets.join(', ')}`);
+    }
+
+    return isValid;
+  }
+
+  /**
+   * Update workflow phase with validation (GAP #2 FIX)
+   */
+  static updatePhase(conversationId: string, phase: WorkflowPhase, force: boolean = false): boolean {
+    const state = workflowStates.get(conversationId);
+    if (!state) return false;
+
+    // Validate transition unless forced
+    if (!force && !this.validatePhaseTransition(conversationId, phase)) {
+      console.error(`🚫 [WORKFLOW-PHASE] Blocked invalid transition: ${state.currentPhase} → ${phase}`);
+      return false;
+    }
+
+    console.log(`📍 [WORKFLOW-PHASE] ${state.currentPhase} → ${phase}`);
+    state.currentPhase = phase;
+    return true;
   }
 
   /**

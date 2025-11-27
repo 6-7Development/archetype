@@ -19,6 +19,7 @@ import { executePlatformRead, executePlatformWrite, executePlatformList } from '
 import { executeBrowserTest } from '../tools/browser-test.ts';
 import { executeWebSearch } from '../tools/web-search.ts';
 import { executeVisionAnalysis } from '../tools/vision-analyze.ts';
+import { healOrchestrator } from '../services/healOrchestrator.ts';
 // WORKFLOW INFRASTRUCTURE - Replit FAST Mode Parity
 import { WORKFLOW_CONFIG, WorkflowPhase } from '../workflows/workflow-config.ts';
 import { WorkflowStateManager } from '../workflows/workflow-state.ts';
@@ -163,6 +164,17 @@ async function dispatchTool(toolName: string, input: any, conversationId?: strin
     if (conversationId) {
       WorkflowStateManager.recordToolExecution(conversationId, toolName, 'error', 0, false);
       WorkflowStateManager.recordError(conversationId);
+      
+      // GAP #7 FIX: Emit workflow-failure event after consecutive errors
+      const state = WorkflowStateManager.getState(conversationId);
+      if (state && state.errorCount >= 3) {
+        healOrchestrator.emit('workflow-failure', {
+          error: (e as Error).message,
+          sessionId: conversationId,
+          consecutiveErrors: state.errorCount,
+          conversationId,
+        });
+      }
     }
     return { success: false, error: (e as Error).message };
   }
@@ -1083,6 +1095,18 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
                 } catch (e) {
                   console.error(`❌ [GEMINI-TOOL-USE] Error executing ${toolName}:`, e);
                   WorkflowStateManager.recordError(conversationId);
+                  
+                  // GAP #7 FIX: Emit workflow-failure event after consecutive errors
+                  const state = WorkflowStateManager.getState(conversationId);
+                  if (state && state.errorCount >= 3) {
+                    healOrchestrator.emit('workflow-failure', {
+                      error: (e as Error).message,
+                      sessionId: conversationId,
+                      consecutiveErrors: state.errorCount,
+                      conversationId,
+                    });
+                  }
+                  
                   const error = { success: false, error: (e as Error).message };
                   res.write(`data: ${JSON.stringify({ type: 'tool_error', toolName, error })}\n\n`);
                   return error;

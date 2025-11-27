@@ -104,4 +104,41 @@ router.get('/approvals/pending', isAuthenticated, async (req: any, res) => {
   }
 });
 
+/**
+ * Get status of a specific approval request (GAP #5 FIX)
+ * Enables client-side polling for approval status changes
+ */
+router.get('/approvals/:approvalId/status', isAuthenticated, async (req: any, res) => {
+  try {
+    const { approvalId } = req.params;
+    const userId = req.authenticatedUserId;
+    
+    console.log(`[APPROVAL-API] Status check for ${approvalId} by user ${userId}`);
+    
+    const approval = approvalManager.getApprovalStatus(approvalId);
+    
+    if (!approval) {
+      return res.status(404).json({
+        error: 'Approval request not found',
+        approvalId,
+      });
+    }
+    
+    return res.json({
+      success: true,
+      approvalId,
+      status: approval.status,
+      toolName: approval.toolName,
+      createdAt: approval.createdAt,
+      resolvedAt: approval.resolvedAt,
+    });
+  } catch (error: any) {
+    console.error('[APPROVAL-API] Error fetching approval status:', error);
+    return res.status(500).json({
+      error: 'Failed to fetch approval status',
+      details: error.message,
+    });
+  }
+});
+
 export default router;
