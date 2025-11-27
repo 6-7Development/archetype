@@ -60,10 +60,19 @@ export default function Builder() {
   // Check if projectId is in the URL (/builder/:projectId)
   const [match, params] = useRoute("/builder/:projectId");
   
-  // Set currentProjectId from URL params
+  // Set currentProjectId from URL params (supports both /builder/:projectId and /builder?projectId=...)
   useEffect(() => {
     if (match && params?.projectId) {
+      // Hash-based routing: /builder/:projectId
       setCurrentProjectId(params.projectId);
+    } else if (!match) {
+      // Query-based routing: /builder?projectId=...
+      // Parse query string
+      const searchParams = new URLSearchParams(window.location.search);
+      const queryProjectId = searchParams.get('projectId');
+      if (queryProjectId) {
+        setCurrentProjectId(queryProjectId);
+      }
     }
   }, [match, params]);
 

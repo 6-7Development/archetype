@@ -78,16 +78,24 @@ export function registerProjectRoutes(app: Express) {
       
       console.log(`📂 [FILES] Fetching files for user ${userId}, project ${projectId}`);
       
-      const projectFiles = await storage.getProjectFiles(projectId, userId);
+      let projectFiles = await storage.getProjectFiles(projectId, userId);
       
       console.log(`📂 [FILES] Found ${projectFiles?.length || 0} files for project ${projectId}`);
       
-      if (!projectFiles) {
-        console.warn(`⚠️  [FILES] No files found for project ${projectId} and user ${userId}`);
-        return res.json([]);
+      // Auto-create initial files if project has no files (handles existing projects)
+      if (!projectFiles || projectFiles.length === 0) {
+        console.log(`📝 [FILES] Project has no files - creating initial files automatically...`);
+        try {
+          projectFiles = await storage.createInitialProjectFiles(projectId, userId);
+          console.log(`✅ [FILES] Created ${projectFiles.length} initial files for project ${projectId}`);
+        } catch (createError) {
+          console.warn(`⚠️  [FILES] Failed to create initial files:`, createError);
+          // Continue with empty array if creation fails
+          projectFiles = [];
+        }
       }
       
-      res.json(projectFiles);
+      res.json(projectFiles || []);
     } catch (error: any) {
       console.error(`❌ [FILES] Error fetching files for project:`, error);
       console.error(`❌ [FILES] Stack:`, error.stack);
