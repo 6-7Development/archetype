@@ -5,6 +5,7 @@
  */
 
 export type Role = 'user' | 'admin' | 'owner';
+export type TeamRole = 'admin' | 'member' | 'viewer';
 export type Resource = 'platform' | 'projects' | 'healing' | 'admin' | 'billing' | 'team';
 export type Action = 'read' | 'write' | 'delete' | 'execute' | 'manage';
 export type AutonomyLevel = 'basic' | 'standard' | 'deep' | 'max';
@@ -92,4 +93,39 @@ export function getAccessibleAutonomyLevels(role: Role): AutonomyLevel[] {
  */
 export function isRouteAccessible(role: Role, resource: Resource, action: Action): boolean {
   return hasPermission(role, resource, action);
+}
+
+/**
+ * ENTERPRISE: Team-level permissions
+ * Team admin can manage members, billing, and SSO
+ */
+export function hasTeamPermission(
+  teamRole: TeamRole,
+  resource: 'team' | 'billing' | 'members' | 'sso',
+  action: Action
+): boolean {
+  const TEAM_RBAC_MATRIX: Record<TeamRole, Record<string, Action[]>> = {
+    admin: {
+      team: ['read', 'write', 'manage'],
+      billing: ['read', 'write', 'manage'],
+      members: ['read', 'write', 'delete', 'manage'],
+      sso: ['read', 'write', 'manage'],
+    },
+    member: {
+      team: ['read'],
+      billing: ['read'],
+      members: ['read'],
+      sso: ['read'],
+    },
+    viewer: {
+      team: ['read'],
+      billing: ['read'],
+      members: ['read'],
+      sso: [],
+    },
+  };
+
+  const permissions = TEAM_RBAC_MATRIX[teamRole] || TEAM_RBAC_MATRIX.viewer;
+  const allowedActions = permissions[resource] || [];
+  return allowedActions.includes(action);
 }

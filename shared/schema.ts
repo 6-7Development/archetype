@@ -2924,3 +2924,124 @@ export const insertVersionTrackingSchema = createInsertSchema(versionTracking).o
 
 export type InsertVersionTracking = z.infer<typeof insertVersionTrackingSchema>;
 export type VersionTracking = typeof versionTracking.$inferSelect;
+
+// ENTERPRISE PHASE 1: TEAMS - Multi-tenant workspace model
+export const teams = pgTable('teams', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar('name', { length: 255 }).notNull(),
+  slug: varchar('slug', { length: 255 }).notNull().unique(), // URL-friendly identifier
+  description: text('description'),
+  ownerId: varchar('owner_id').notNull(), // User who created the team
+  planTier: varchar('plan_tier', { length: 50 }).notNull().default('starter'), // 'starter' | 'pro' | 'enterprise'
+  maxMembers: integer('max_members').notNull().default(10),
+  maxProjects: integer('max_projects').notNull().default(50),
+  billingStatus: varchar('billing_status', { length: 50 }).notNull().default('active'), // 'active' | 'suspended' | 'trial'
+  ssoEnabled: boolean('sso_enabled').notNull().default(false),
+  ssoProvider: varchar('sso_provider'), // 'saml' | 'oauth2'
+  workspaceSettings: jsonb('workspace_settings').$type<{
+    allowSharedWorkspace: boolean;
+    defaultAutonomyLevel: string;
+    requireMfa: boolean;
+  }>(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => [
+  index('idx_teams_owner').on(table.ownerId),
+  index('idx_teams_slug').on(table.slug),
+  index('idx_teams_billing_status').on(table.billingStatus),
+]);
+
+export const insertTeamSchema = createInsertSchema(teams).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertTeam = z.infer<typeof insertTeamSchema>;
+export type Team = typeof teams.$inferSelect;
+
+// ENTERPRISE PHASE 1: TEAM_MEMBERS - Team membership and roles
+export const teamMembers = pgTable('team_members', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  teamId: varchar('team_id').notNull().references(() => teams.id, { onDelete: 'cascade' }),
+  userId: varchar('user_id').notNull(),
+  role: varchar('role', { length: 50 }).notNull().default('member'), // 'admin' | 'member' | 'viewer'
+  inviteStatus: varchar('invite_status', { length: 50 }).notNull().default('accepted'), // 'pending' | 'accepted' | 'declined'
+  invitedAt: timestamp('invited_at').notNull().defaultNow(),
+  acceptedAt: timestamp('accepted_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => [
+  index('idx_team_members_team').on(table.teamId),
+  index('idx_team_members_user').on(table.userId),
+  uniqueIndex('idx_team_members_unique').on(table.teamId, table.userId),
+]);
+
+export const insertTeamMemberSchema = createInsertSchema(teamMembers).omit({
+  id: true,
+  invitedAt: true,
+  acceptedAt: true,
+  createdAt: true,
+});
+
+export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;
+export type TeamMember = typeof teamMembers.$inferSelect;
+
+// ENTERPRISE PHASE 1: TEAM_BILLING_CONTACT - Team billing configuration
+export const teamBillingContact = pgTable('team_billing_contact', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  teamId: varchar('team_id').notNull().unique().references(() => teams.id, { onDelete: 'cascade' }),
+  stripeCustomerId: varchar('stripe_customer_id'), // Stripe customer for the team
+  billingEmail: varchar('billing_email', { length: 255 }).notNull(),
+  billingName: varchar('billing_name', { length: 255 }),
+  taxId: varchar('tax_id'),
+  address: text('address'),
+  creditBalance: decimal('credit_balance', { precision: 10, scale: 2 }).notNull().default('0'),
+  monthlyBudget: decimal('monthly_budget', { precision: 10, scale: 2 }), // Optional spending limit
+  autoRecharge: boolean('auto_recharge').notNull().default(false),
+  autoRechargeAmount: decimal('auto_recharge_amount', { precision: 10, scale: 2 }),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => [
+  index('idx_team_billing_team').on(table.teamId),
+  index('idx_team_billing_stripe').on(table.stripeCustomerId),
+]);
+
+export const insertTeamBillingContactSchema = createInsertSchema(teamBillingContact).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertTeamBillingContact = z.infer<typeof insertTeamBillingContactSchema>;
+export type TeamBillingContact = typeof teamBillingContact.$inferSelect;
+
+// ENTERPRISE PHASE 1: TEAM_SSO_CONFIG - SSO provider configuration
+export const teamSsoConfig = pgTable('team_sso_config', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  teamId: varchar('team_id').notNull().unique().references(() => teams.id, { onDelete: 'cascade' }),
+  provider: varchar('provider', { length: 50 }).notNull(), // 'saml2' | 'oauth2'
+  entryPoint: varchar('entry_point', { length: 255 }), // SAML entry point
+  cert: text('cert'), // SAML certificate
+  issuer: varchar('issuer', { length: 255 }), // SAML issuer
+  identifierFormat: varchar('identifier_format', { length: 255 }), // SAML identifier format
+  oauth2ClientId: varchar('oauth2_client_id'),
+  oauth2ClientSecret: varchar('oauth2_client_secret'), // Stored encrypted
+  oauth2AuthUrl: varchar('oauth2_auth_url', { length: 255 }),
+  oauth2TokenUrl: varchar('oauth2_token_url', { length: 255 }),
+  oauth2UserinfoUrl: varchar('oauth2_userinfo_url', { length: 255 }),
+  enabled: boolean('enabled').notNull().default(false),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => [
+  index('idx_team_sso_team').on(table.teamId),
+  index('idx_team_sso_provider').on(table.provider),
+]);
+
+export const insertTeamSsoConfigSchema = createInsertSchema(teamSsoConfig).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertTeamSsoConfig = z.infer<typeof insertTeamSsoConfigSchema>;
+export type TeamSsoConfig = typeof teamSsoConfig.$inferSelect;
