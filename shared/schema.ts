@@ -3014,3 +3014,146 @@ export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({
 
 export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
 export type AuditLog = typeof auditLogs.$inferSelect;
+
+// ENTERPRISE PHASE 6: Compliance Framework - SOC2/HIPAA validators & standards
+export const complianceChecks = pgTable('compliance_checks', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  workspaceId: varchar('workspace_id').notNull().references(() => teamWorkspaces.id, { onDelete: 'cascade' }),
+  checkType: varchar('check_type', { length: 50 }).notNull(), // 'soc2_type2', 'hipaa', 'gdpr', 'pci_dss'
+  status: varchar('status', { length: 20 }).notNull(), // 'pass' | 'fail' | 'warning' | 'unknown'
+  description: text('description'),
+  failureReason: text('failure_reason'),
+  remediationSteps: jsonb('remediation_steps').$type<string[]>(),
+  lastCheckedAt: timestamp('last_checked_at'),
+  nextCheckDue: timestamp('next_check_due'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => [
+  index('idx_compliance_workspace').on(table.workspaceId),
+  index('idx_compliance_type').on(table.checkType),
+  index('idx_compliance_status').on(table.status),
+]);
+
+export const dataRetentionPolicies = pgTable('data_retention_policies', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  workspaceId: varchar('workspace_id').notNull().references(() => teamWorkspaces.id, { onDelete: 'cascade' }),
+  dataType: varchar('data_type', { length: 100 }).notNull(), // 'audit_logs', 'user_data', 'api_calls', etc.
+  retentionDays: integer('retention_days').notNull().default(365),
+  autoDeleteEnabled: boolean('auto_delete_enabled').notNull().default(true),
+  anonymizeBeforeDelete: boolean('anonymize_before_delete').notNull().default(false),
+  lastPurgeAt: timestamp('last_purge_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => [
+  index('idx_retention_workspace').on(table.workspaceId),
+  index('idx_retention_type').on(table.dataType),
+]);
+
+export const encryptionStatus = pgTable('encryption_status', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  workspaceId: varchar('workspace_id').notNull().references(() => teamWorkspaces.id, { onDelete: 'cascade' }),
+  encryptionAtRest: boolean('encryption_at_rest').notNull().default(true),
+  encryptionInTransit: boolean('encryption_in_transit').notNull().default(true),
+  tlsVersion: varchar('tls_version', { length: 10 }).default('1.3'), // '1.2', '1.3'
+  keyRotationIntervalDays: integer('key_rotation_interval_days').notNull().default(90),
+  lastKeyRotation: timestamp('last_key_rotation'),
+  complianceLevel: varchar('compliance_level', { length: 20 }).notNull().default('standard'), // 'standard', 'fips', 'hipaa'
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const insertComplianceCheckSchema = createInsertSchema(complianceChecks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type ComplianceCheck = typeof complianceChecks.$inferSelect;
+
+// ENTERPRISE PHASE 7: Billing Analytics - Usage tracking & forecasting
+export const billingAnalytics = pgTable('billing_analytics', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  workspaceId: varchar('workspace_id').notNull().references(() => teamWorkspaces.id, { onDelete: 'cascade' }),
+  date: varchar('date', { length: 10 }).notNull(), // ISO format: YYYY-MM-DD
+  creditsUsed: numeric('credits_used', { precision: 10, scale: 2 }).notNull(),
+  creditsRemaining: numeric('credits_remaining', { precision: 10, scale: 2 }).notNull(),
+  estimatedCost: numeric('estimated_cost', { precision: 10, scale: 2 }).notNull(),
+  activeUsers: integer('active_users').notNull(),
+  aiRequests: integer('ai_requests').notNull(),
+  deployments: integer('deployments').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => [
+  index('idx_billing_workspace_date').on(table.workspaceId, table.date),
+  index('idx_billing_date').on(table.date),
+  unique('uq_billing_workspace_date').on(table.workspaceId, table.date),
+]);
+
+export const usageMetrics = pgTable('usage_metrics', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  workspaceId: varchar('workspace_id').notNull().references(() => teamWorkspaces.id, { onDelete: 'cascade' }),
+  userId: varchar('user_id'),
+  featureType: varchar('feature_type', { length: 100 }).notNull(), // 'ai_chat', 'code_generation', 'architect', 'deployment'
+  usageCount: integer('usage_count').notNull().default(1),
+  costPerUnit: numeric('cost_per_unit', { precision: 10, scale: 2 }).notNull(),
+  totalCost: numeric('total_cost', { precision: 10, scale: 2 }).notNull(),
+  timestamp: timestamp('timestamp').notNull().defaultNow(),
+}, (table) => [
+  index('idx_metrics_workspace').on(table.workspaceId),
+  index('idx_metrics_user').on(table.userId),
+  index('idx_metrics_feature').on(table.featureType),
+  index('idx_metrics_timestamp').on(table.timestamp),
+]);
+
+export const insertBillingAnalyticsSchema = createInsertSchema(billingAnalytics).omit({
+  id: true,
+  createdAt: true,
+});
+export type BillingAnalytic = typeof billingAnalytics.$inferSelect;
+
+// ENTERPRISE PHASE 8: Multi-Organization Hierarchy
+export const organizations = pgTable('organizations', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar('name', { length: 255 }).notNull(),
+  slug: varchar('slug', { length: 100 }).notNull().unique(),
+  description: text('description'),
+  ownerId: varchar('owner_id').notNull(),
+  logoUrl: varchar('logo_url', { length: 255 }),
+  website: varchar('website', { length: 255 }),
+  planType: varchar('plan_type', { length: 50 }).notNull().default('free'), // 'free', 'pro', 'enterprise'
+  monthlyBudget: numeric('monthly_budget', { precision: 10, scale: 2 }).default('0'),
+  billingEmail: varchar('billing_email', { length: 255 }),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => [
+  index('idx_org_owner').on(table.ownerId),
+  index('idx_org_slug').on(table.slug),
+  index('idx_org_plan').on(table.planType),
+]);
+
+export const organizationMembers = pgTable('organization_members', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  organizationId: varchar('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
+  userId: varchar('user_id').notNull(),
+  role: varchar('role', { length: 50 }).notNull(), // 'owner', 'admin', 'member'
+  joinedAt: timestamp('joined_at').notNull().defaultNow(),
+}, (table) => [
+  index('idx_org_member_org').on(table.organizationId),
+  index('idx_org_member_user').on(table.userId),
+  unique('uq_org_member_user').on(table.organizationId, table.userId),
+]);
+
+export const organizationWorkspaces = pgTable('organization_workspaces', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  organizationId: varchar('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
+  workspaceId: varchar('workspace_id').notNull().references(() => teamWorkspaces.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => [
+  index('idx_org_workspace_org').on(table.organizationId),
+  index('idx_org_workspace_ws').on(table.workspaceId),
+  unique('uq_org_workspace').on(table.organizationId, table.workspaceId),
+]);
+
+export const insertOrganizationSchema = createInsertSchema(organizations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type Organization = typeof organizations.$inferSelect;
+export type OrganizationMember = typeof organizationMembers.$inferSelect;
