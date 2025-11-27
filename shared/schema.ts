@@ -2983,3 +2983,34 @@ export const insertSsoConfigurationSchema = createInsertSchema(ssoConfiguration)
 
 export type InsertSsoConfiguration = z.infer<typeof insertSsoConfigurationSchema>;
 export type SsoConfiguration = typeof ssoConfiguration.$inferSelect;
+
+// ENTERPRISE PHASE 5: Audit Logging - Track all admin actions for compliance
+export const auditLogs = pgTable('audit_logs', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  workspaceId: varchar('workspace_id').notNull().references(() => teamWorkspaces.id, { onDelete: 'cascade' }),
+  userId: varchar('user_id').notNull(), // Who performed the action
+  action: varchar('action', { length: 100 }).notNull(), // e.g., 'workspace.created', 'member.added', 'billing.updated'
+  resourceType: varchar('resource_type', { length: 100 }).notNull(), // e.g., 'workspace', 'member', 'billing'
+  resourceId: varchar('resource_id', { length: 255 }), // ID of affected resource
+  changesBefore: jsonb('changes_before').$type<Record<string, any>>(), // Previous values
+  changesAfter: jsonb('changes_after').$type<Record<string, any>>(), // New values
+  ipAddress: varchar('ip_address', { length: 45 }), // IPv4 or IPv6
+  userAgent: text('user_agent'), // Browser/client info
+  status: varchar('status', { length: 20 }).notNull().default('success'), // 'success' | 'failed'
+  errorMessage: text('error_message'), // Error details if status='failed'
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => [
+  index('idx_audit_workspace').on(table.workspaceId),
+  index('idx_audit_user').on(table.userId),
+  index('idx_audit_action').on(table.action),
+  index('idx_audit_resource').on(table.resourceType, table.resourceId),
+  index('idx_audit_created').on(table.createdAt),
+]);
+
+export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
+export type AuditLog = typeof auditLogs.$inferSelect;

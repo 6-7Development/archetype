@@ -90,7 +90,38 @@ Lomu is an AI-powered platform for rapid web development, featuring the autonomo
 - GAP #B3 (SSO/SAML): ✅ COMPLETE - ssoConfiguration table + SsoService (SAML2/OAuth2)
 - GAP #B4 (Workspace Scoping): ✅ COMPLETE - Middleware + query filtering by workspace context
 - GAP #B5 (RBAC): ✅ ENHANCED - Team-scoped permissions (admin/member/viewer roles)
-- Remaining Gaps: Multi-tenant data isolation at query-layer (already scoped), audit logging, compliance features
+- Remaining Gaps: Multi-tenant data isolation at query-layer (already scoped), compliance features
+
+**Advanced Enterprise Features Roadmap (Phased):**
+
+**Phase 1: Audit Logging (COMPLETE ✅)**
+- ✅ Schema: `auditLogs` table with action tracking (who, what, when, where, changes)
+- ✅ Service: `AuditService` with query methods (by workspace, user, resource, date range)
+- ✅ Middleware: `auditMiddleware` for automatic action logging + manual `auditLog()` helper
+- ✅ API Endpoints (ready to integrate):
+  - `GET /api/audit/logs` - workspace audit trail with filtering
+  - `GET /api/audit/user/:userId` - user's audit history
+  - `GET /api/audit/resource/:resourceType/:resourceId` - resource change history
+  - `GET /api/audit/summary` - stats for 30/60/90-day periods
+- **Use case**: Track member additions, SSO changes, billing updates for compliance
+
+**Phase 2: Compliance Framework (PENDING - Free Tier)**
+- SOC2/HIPAA validators (encryption standards, data retention policies)
+- Compliance checklist endpoints
+- Data retention schedule enforcement
+- Encryption-at-rest verification
+
+**Phase 3: Advanced Billing Analytics (PENDING - Free Tier)**
+- Analytics tables: `billingAnalytics`, `usageMetrics` 
+- Aggregation logic: daily/monthly credit consumption
+- Reporting endpoints: usage by user, by feature, cost breakdown
+- Forecasting: predict monthly spend based on trends
+
+**Phase 4: Multi-Organization Hierarchy (PENDING - Free Tier)**
+- `organizations` table (top-level entity)
+- `organizationMembers` table (org-level roles)
+- Schema relationships: org → workspaces → members
+- New permission model: org admin can manage all workspaces
 
 **Production Readiness Metrics:**
 - All routes registered and responding (HTTP 200) - 9 SWARM endpoints + 5 deployment endpoints
