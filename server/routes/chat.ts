@@ -28,6 +28,7 @@ import { ParallelToolOrchestrator } from '../workflows/parallel-tool-orchestrato
 import { ContextEnforcer } from '../workflows/context-enforcer.ts';
 import { OutputTruncator } from '../workflows/output-truncator.ts';
 import { ApprovalQueue } from '../workflows/approval-queue.ts';
+import { ProgressTracker } from '../workflows/progress-tracker.ts';
 
 //Helper function to summarize messages
 async function summarizeMessages(messages: any[]): Promise<string> {
@@ -122,7 +123,13 @@ async function dispatchTool(toolName: string, input: any, conversationId?: strin
       }
     };
     
+    // PHASE 2 FIX #6B: Broadcast tool action to progress tracker
+    ProgressTracker.action(`Executing ${toolName}...`, toolName);
+    
     result = await ToolTimeoutEnforcer.executeWithTimeout(toolName, toolExecutor, WORKFLOW_CONFIG.tools.timeoutMs);
+    
+    // PHASE 2 FIX #6C: Broadcast tool result
+    ProgressTracker.result(`${toolName} completed successfully`, Date.now() - toolStartTime);
     
     // PHASE 2 FIX #7: Truncate large outputs (GAP #4)
     if (result && typeof result === 'object' && result.content) {
@@ -149,6 +156,10 @@ async function dispatchTool(toolName: string, input: any, conversationId?: strin
     return result;
   } catch (e) {
     console.error(`❌ [TOOL-DISPATCHER] Error executing ${toolName}:`, e);
+    
+    // Broadcast error to progress tracker
+    ProgressTracker.error(`${toolName} failed: ${(e as Error).message}`);
+    
     if (conversationId) {
       WorkflowStateManager.recordToolExecution(conversationId, toolName, 'error', 0, false);
       WorkflowStateManager.recordError(conversationId);

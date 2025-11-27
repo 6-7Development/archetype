@@ -38,6 +38,7 @@ import { Project, File } from "@shared/schema";
 
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { WorkspaceLayout } from "@/components/workspace-layout";
+import { ProgressStreamingDisplay } from "@/components/progress-streaming-display";
 
 export default function Builder() {
   const [activeTab, setActiveTab] = useState("build");
@@ -50,6 +51,7 @@ export default function Builder() {
   const [fileContent, setFileContent] = useState<string>("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showPreviewSplit, setShowPreviewSplit] = useState(false);
+  const [showProgressStream, setShowProgressStream] = useState(true);
   
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
@@ -515,6 +517,13 @@ export default function Builder() {
         </Tabs>
         </div>
       </div>
+
+      {/* Progress Streaming */}
+      {showProgressStream && currentProjectId && (
+        <div className="fixed bottom-4 right-4 w-96 z-40">
+          <ProgressStreamingDisplay conversationId={currentProjectId} compactMode={false} />
+        </div>
+      )}
 
       {/* Dialogs */}
       <NewProjectDialog 

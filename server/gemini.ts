@@ -427,10 +427,12 @@ function getThinkingMessageFromText(text: string): string {
  * 
  * ✨ INCLUDES: Automatic retry loop for malformed function calls
  */
+import { GEMINI_CONFIG } from './workflows/gemini-config.ts';
+
 export async function streamGeminiResponse(options: StreamOptions) {
   const {
-    model = DEFAULT_MODEL,
-    maxTokens = 4096,
+    model = GEMINI_CONFIG.model.default,
+    maxTokens = GEMINI_CONFIG.tokens.maxOutput,
     system,
     messages,
     tools,
@@ -460,7 +462,7 @@ export async function streamGeminiResponse(options: StreamOptions) {
   
   // 🔄 RETRY LOGIC: Track malformed response attempts
   let retryCount = 0;
-  const MAX_RETRIES = 2;
+  const MAX_RETRIES = GEMINI_CONFIG.retry.maxAttempts;
 
   try {
     if (signal?.aborted) {
