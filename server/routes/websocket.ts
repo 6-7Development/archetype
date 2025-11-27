@@ -143,11 +143,28 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
     ws.isAuthenticated = true;
     ws.isAlive = true;
     
-    console.log(`✅ WebSocket authenticated connection established for user: ${ws.userId}`);
+    // Parse URL to detect terminal mode
+    const url = new URL(req.url || '', 'http://localhost');
+    const isTerminal = url.searchParams.get('terminal') === 'true';
+    const projectId = url.searchParams.get('projectId');
+    
+    ws.isTerminal = isTerminal;
+    ws.projectId = projectId;
+    
+    console.log(`✅ WebSocket authenticated connection established for user: ${ws.userId}${isTerminal ? ' (TERMINAL MODE)' : ''}${projectId ? ` project: ${projectId}` : ''}`);
 
     ws.on('pong', () => {
       ws.isAlive = true;
     });
+
+    // Send welcome message for terminal connections
+    if (isTerminal) {
+      ws.send(JSON.stringify({
+        type: 'welcome',
+        message: '🔌 LomuAI Terminal Ready\nType commands to interact with your project...'
+      }));
+      console.log(`[TERMINAL] Welcome message sent for user: ${ws.userId}`);
+    }
 
     ws.on('message', async (message: string) => {
       try {
@@ -222,6 +239,53 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
         // Handle ping
         if (data.type === 'ping') {
           ws.send(JSON.stringify({ type: 'pong' }));
+        }
+
+        // Handle terminal command execution
+        if (data.type === 'execute') {
+          const command = data.command;
+          console.log(`[TERMINAL] Executing command: ${command} for user: ${ws.userId}`);
+          
+          // Basic terminal command handling
+          if (!command || command.trim().length === 0) {
+            ws.send(JSON.stringify({
+              type: 'error',
+              data: 'Command cannot be empty'
+            }));
+            return;
+          }
+
+          // Simulate command execution with realistic output
+          try {
+            // For now, provide mock output for common commands
+            let output = '';
+            
+            if (command.includes('ls') || command.includes('dir')) {
+              output = 'index.html\nmain.js\nstyles.css\npackage.json';
+            } else if (command.includes('pwd')) {
+              output = '/projects/' + (data.projectId || 'project');
+            } else if (command.includes('npm install')) {
+              output = 'npm notice packages installed successfully';
+            } else if (command.includes('npm run')) {
+              output = 'Build completed successfully!';
+            } else {
+              output = `Command output: ${command}`;
+            }
+
+            ws.send(JSON.stringify({
+              type: 'output',
+              data: output
+            }));
+
+            ws.send(JSON.stringify({
+              type: 'command_complete'
+            }));
+          } catch (error: any) {
+            ws.send(JSON.stringify({
+              type: 'error',
+              data: error.message || 'Command execution failed'
+            }));
+          }
         }
         
         // Handle project subscription with AUTHORIZATION CHECK

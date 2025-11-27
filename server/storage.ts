@@ -234,6 +234,7 @@ export interface IStorage {
   getAllProjects(): Promise<Project[]>; // Admin only - get all projects across all users
   getProject(id: string, userId: string): Promise<Project | undefined>;
   createProject(project: InsertProjectWithUser): Promise<Project>;
+  createInitialProjectFiles(projectId: string, userId: string): Promise<File[]>;
   deleteProject(id: string, userId: string): Promise<void>;
   
   getCommands(userId: string, projectId: string | null): Promise<Command[]>;
@@ -712,6 +713,102 @@ export class DatabaseStorage implements IStorage {
       .values(insertProject)
       .returning();
     return project;
+  }
+
+  async createInitialProjectFiles(projectId: string, userId: string): Promise<File[]> {
+    // Create initial files for a new project: index.html and main.js
+    const initialFiles = [
+      {
+        projectId,
+        userId,
+        filename: 'index.html',
+        content: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LomuAI Project</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="root">
+        <h1>Welcome to Your LomuAI Project</h1>
+        <p>Start building with AI-powered development!</p>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html>`,
+        language: 'html',
+        path: undefined,
+        folderId: undefined,
+      },
+      {
+        projectId,
+        userId,
+        filename: 'main.js',
+        content: `// Your LomuAI project starts here!
+console.log('Welcome to LomuAI - AI-powered development platform');
+
+// Add your JavaScript code here
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Application loaded successfully');
+});`,
+        language: 'javascript',
+        path: undefined,
+        folderId: undefined,
+      },
+      {
+        projectId,
+        userId,
+        filename: 'styles.css',
+        content: `/* Your project styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+#root {
+    text-align: center;
+    animation: fadeIn 0.5s ease-in;
+}
+
+#root h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+#root p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}`,
+        language: 'css',
+        path: undefined,
+        folderId: undefined,
+      },
+    ];
+
+    // Insert all initial files in parallel
+    const createdFiles = await Promise.all(
+      initialFiles.map(file => this.createFile(file as InsertFileWithUser))
+    );
+
+    return createdFiles;
   }
 
   async deleteProject(id: string, userId: string): Promise<void> {

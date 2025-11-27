@@ -32,6 +32,17 @@ export function registerProjectRoutes(app: Express) {
       const userId = req.authenticatedUserId;
       const validated = insertProjectSchema.parse(req.body);
       const project = await storage.createProject({ ...validated, userId });
+      
+      // Create initial project files (index.html, main.js, styles.css)
+      console.log(`📁 [PROJECT] Creating initial files for project ${project.id}`);
+      try {
+        await storage.createInitialProjectFiles(project.id, userId);
+        console.log(`✅ [PROJECT] Initial files created for project ${project.id}`);
+      } catch (fileError) {
+        console.error(`⚠️  [PROJECT] Failed to create initial files for project ${project.id}:`, fileError);
+        // Don't fail the project creation if initial files fail, but log it
+      }
+      
       res.json(project);
     } catch (error) {
       console.error('Error creating project:', error);
