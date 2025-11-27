@@ -2,6 +2,8 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { storage } from "../storage";
 import { isAuthenticated, isAdmin } from "../universalAuth";
 import { getGitHubService } from "../githubService";
+import { auditService } from "../services/auditService";
+import { auditLog } from "../middleware/auditMiddleware";
 import { promises as fs } from 'fs';
 import * as path from 'path';
 
@@ -85,6 +87,17 @@ export function registerAdminRoutes(app: Express) {
       
       const mode = await storage.enableMaintenanceMode(user.id, reason);
       
+      // AUDIT: Log maintenance mode enable
+      await auditService.log({
+        workspaceId: 'platform',
+        userId: user.id,
+        action: 'platform.maintenance_enabled',
+        resourceType: 'platform',
+        resourceId: 'maintenance',
+        changesAfter: { enabled: true, reason },
+        status: 'success',
+      });
+      
       console.log(`[MAINTENANCE-MODE] ✅ Enabled by ${user.email} (Owner)`);
       console.log(`[MAINTENANCE-MODE] Reason: ${reason || 'Platform maintenance in progress'}`);
       
@@ -105,6 +118,17 @@ export function registerAdminRoutes(app: Express) {
     try {
       const user = req.user as any;
       const mode = await storage.disableMaintenanceMode();
+      
+      // AUDIT: Log maintenance mode disable
+      await auditService.log({
+        workspaceId: 'platform',
+        userId: user.id,
+        action: 'platform.maintenance_disabled',
+        resourceType: 'platform',
+        resourceId: 'maintenance',
+        changesAfter: { enabled: false },
+        status: 'success',
+      });
       
       console.log(`[MAINTENANCE-MODE] ✅ Disabled by ${user.email} (Owner)`);
       
@@ -159,6 +183,18 @@ export function registerAdminRoutes(app: Express) {
       // Promote to admin
       await storage.updateUserRole(userId, "admin");
       const updatedUser = await storage.getUser(userId);
+
+      // AUDIT: Log admin promotion
+      await auditService.log({
+        workspaceId: 'platform',
+        userId: (req.user as any).id,
+        action: 'platform.admin_promoted',
+        resourceType: 'user',
+        resourceId: userId,
+        changesBefore: { role: user.role },
+        changesAfter: { role: 'admin', email: user.email },
+        status: 'success',
+      });
 
       console.log(`✅ User ${user.email} promoted to admin`);
 
@@ -271,6 +307,18 @@ export function registerAdminRoutes(app: Express) {
 
       const resolvedAt = status === 'resolved' ? new Date() : null;
       const ticket = await storage.updateSupportTicketStatus(id, status, resolvedAt);
+      
+      // AUDIT: Log ticket status change
+      await auditService.log({
+        workspaceId: 'platform',
+        userId: (req.user as any)?.id,
+        action: 'support.ticket_status_updated',
+        resourceType: 'support_ticket',
+        resourceId: id,
+        changesAfter: { status, resolvedAt },
+        status: 'success',
+      });
+      
       res.json(ticket);
     } catch (error: any) {
       console.error('Error updating ticket status:', error);
@@ -288,6 +336,18 @@ export function registerAdminRoutes(app: Express) {
       }
 
       const ticket = await storage.assignSupportTicket(id, assignedTo);
+      
+      // AUDIT: Log ticket assignment
+      await auditService.log({
+        workspaceId: 'platform',
+        userId: (req.user as any)?.id,
+        action: 'support.ticket_assigned',
+        resourceType: 'support_ticket',
+        resourceId: id,
+        changesAfter: { assignedTo },
+        status: 'success',
+      });
+      
       res.json(ticket);
     } catch (error: any) {
       console.error('Error assigning ticket:', error);
@@ -347,6 +407,21 @@ export function registerAdminRoutes(app: Express) {
       
       const commitMessage = message || 'Force deploy from Archetype platform';
       const result = await github.streamCommitFiles(allFiles, PROJECT_ROOT, commitMessage);
+
+      // AUDIT: Log force deploy
+      await auditService.log({
+        workspaceId: 'platform',
+        userId: user.id,
+        action: 'platform.force_deploy',
+        resourceType: 'deployment',
+        resourceId: result.commitHash,
+        changesAfter: { 
+          commitHash: result.commitHash,
+          filesDeployed: allFiles.length,
+          message: commitMessage 
+        },
+        status: 'success',
+      });
 
       console.log(`[FORCE-DEPLOY] ✅ Successfully deployed!`);
       console.log(`[FORCE-DEPLOY] Commit: ${result.commitHash}`);
