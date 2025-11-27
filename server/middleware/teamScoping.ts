@@ -10,10 +10,10 @@ import { teamMembers, teams } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
 export interface TeamContext {
-  teamId: string;
+  workspaceId: string;
   userId: string;
-  role: 'admin' | 'member' | 'viewer';
-  isTeamAdmin: boolean;
+  role: 'owner' | 'editor' | 'viewer';
+  isWorkspaceOwner: boolean;
 }
 
 declare global {
@@ -25,11 +25,11 @@ declare global {
 }
 
 /**
- * Middleware: Extract team context from request
+ * Middleware: Extract workspace context from request
  * Supports:
- *   - Query param: ?teamId=xxx
- *   - Header: X-Team-Id: xxx
- *   - Default: User's primary team (from user profile)
+ *   - Query param: ?workspaceId=xxx
+ *   - Header: X-Workspace-Id: xxx
+ *   - Default: User's primary workspace
  */
 export async function extractTeamContext(req: Request, res: Response, next: NextFunction) {
   try {
@@ -38,11 +38,11 @@ export async function extractTeamContext(req: Request, res: Response, next: Next
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
-    // Priority: query param > header > user's primary team
-    let teamId = (req.query.teamId as string) || req.get('X-Team-Id');
+    // Priority: query param > header > user's primary workspace
+    let workspaceId = (req.query.workspaceId as string) || req.get('X-Workspace-Id');
 
-    if (!teamId) {
-      // Default to user's primary team (first team they're member of)
+    if (!workspaceId) {
+      // Default to user's primary workspace (first workspace they're member of)
       const [memberRecord] = await db
         .select()
         .from(teamMembers)
@@ -50,29 +50,29 @@ export async function extractTeamContext(req: Request, res: Response, next: Next
         .limit(1);
 
       if (!memberRecord) {
-        return res.status(400).json({ error: 'No team context - user not member of any team' });
+        return res.status(400).json({ error: 'No workspace context - user not member of any workspace' });
       }
-      teamId = memberRecord.teamId;
+      workspaceId = memberRecord.workspaceId;
     }
 
-    // Verify user is member of this team
+    // Verify user is member of this workspace
     const membership = await db
       .select()
       .from(teamMembers)
       .where(
-        eq(teamMembers.teamId, teamId) && eq(teamMembers.userId, userId)
+        eq(teamMembers.workspaceId, workspaceId) && eq(teamMembers.userId, userId)
       );
 
     if (!membership || membership.length === 0) {
-      return res.status(403).json({ error: 'Not member of this team' });
+      return res.status(403).json({ error: 'Not member of this workspace' });
     }
 
     // Attach team context to request
     (req as any).teamContext = {
-      teamId,
+      workspaceId,
       userId,
       role: membership[0]?.role,
-      isTeamAdmin: membership[0]?.role === 'admin',
+      isWorkspaceOwner: membership[0]?.role === 'owner',
     };
 
     next();
@@ -95,26 +95,26 @@ export function getTeamContext(req: Request): TeamContext {
 }
 
 /**
- * Helper: Require team admin role
+ * Helper: Require workspace owner role
  */
 export function requireTeamAdmin(req: Request, res: Response, next: NextFunction) {
   const context = (req as any).teamContext;
-  if (!context?.isTeamAdmin) {
-    return res.status(403).json({ error: 'Team admin role required' });
+  if (!context?.isWorkspaceOwner) {
+    return res.status(403).json({ error: 'Workspace owner role required' });
   }
   next();
 }
 
 /**
- * Helper: Verify team membership before operation
+ * Helper: Verify workspace membership before operation
  */
-export async function verifyTeamMembership(userId: string, teamId: string): Promise<boolean> {
+export async function verifyTeamMembership(userId: string, workspaceId: string): Promise<boolean> {
   try {
     const result = await db
       .select()
       .from(teamMembers)
       .where(
-        eq(teamMembers.teamId, teamId) && eq(teamMembers.userId, userId)
+        eq(teamMembers.workspaceId, workspaceId) && eq(teamMembers.userId, userId)
       )
       .limit(1);
 
@@ -125,26 +125,26 @@ export async function verifyTeamMembership(userId: string, teamId: string): Prom
 }
 
 /**
- * Helper: Get user's teams
+ * Helper: Get user's workspaces
  */
-export async function getUserTeams(userId: string): Promise<typeof teams.$inferSelect[]> {
+export async function getUserTeams(userId: string): Promise<typeof teamWorkspaces.$inferSelect[]> {
   try {
-    const userTeams = await db
-      .select({ teamId: teamMembers.teamId })
+    const userWorkspaces = await db
+      .select({ workspaceId: teamMembers.workspaceId })
       .from(teamMembers)
       .where(eq(teamMembers.userId, userId));
 
-    if (userTeams.length === 0) return [];
+    if (userWorkspaces.length === 0) return [];
 
-    const teamIds = userTeams.map((t) => t.teamId);
+    const workspaceIds = userWorkspaces.map((w) => w.workspaceId);
     const results = await db
       .select()
-      .from(teams)
-      .where(teams.id.inArray(teamIds));
+      .from(teamWorkspaces)
+      .where(teamWorkspaces.id.inArray(workspaceIds));
 
     return results;
   } catch (error) {
-    console.error('[TEAM-SCOPING] Error fetching user teams:', error);
+    console.error('[TEAM-SCOPING] Error fetching user workspaces:', error);
     return [];
   }
 }

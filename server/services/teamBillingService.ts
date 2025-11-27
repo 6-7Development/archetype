@@ -4,34 +4,34 @@
  */
 
 import { db } from '../db';
-import { teamBillingContact, teams } from '@shared/schema';
+import { enterpriseWorkspaceSettings, teamWorkspaces } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
 export class TeamBillingService {
   /**
-   * Get team billing contact
+   * Get workspace billing settings
    */
-  static async getTeamBillingContact(teamId: string) {
+  static async getWorkspaceBillingSettings(workspaceId: string) {
     try {
       const result = await db
         .select()
-        .from(teamBillingContact)
-        .where(eq(teamBillingContact.teamId, teamId))
+        .from(enterpriseWorkspaceSettings)
+        .where(eq(enterpriseWorkspaceSettings.workspaceId, workspaceId))
         .limit(1);
 
       return result[0] || null;
     } catch (error) {
-      console.error('[TEAM-BILLING] Error fetching billing contact:', error);
+      console.error('[TEAM-BILLING] Error fetching billing settings:', error);
       return null;
     }
   }
 
   /**
-   * Get team credit balance
+   * Get workspace credit balance
    */
-  static async getTeamCreditBalance(teamId: string): Promise<number> {
+  static async getWorkspaceCreditBalance(workspaceId: string): Promise<number> {
     try {
-      const billing = await this.getTeamBillingContact(teamId);
+      const billing = await this.getWorkspaceBillingSettings(workspaceId);
       return billing ? parseFloat(billing.creditBalance || '0') : 0;
     } catch {
       return 0;
@@ -39,18 +39,17 @@ export class TeamBillingService {
   }
 
   /**
-   * Deduct credits from team
-   * Returns: success status
+   * Deduct credits from workspace (GAP #4 FIX)
    */
-  static async deductTeamCredits(
-    teamId: string,
+  static async deductWorkspaceCredits(
+    workspaceId: string,
     amount: number,
     reason: string
   ): Promise<boolean> {
     try {
-      const billing = await this.getTeamBillingContact(teamId);
+      const billing = await this.getWorkspaceBillingSettings(workspaceId);
       if (!billing) {
-        console.error(`[TEAM-BILLING] No billing contact for team ${teamId}`);
+        console.error(`[TEAM-BILLING] No billing for workspace ${workspaceId}`);
         return false;
       }
 
@@ -58,20 +57,20 @@ export class TeamBillingService {
 
       // Check monthly budget
       if (billing.monthlyBudget && newBalance < 0) {
-        console.warn(`[TEAM-BILLING] Team ${teamId} exceeded budget - balance: ${newBalance}`);
+        console.warn(`[TEAM-BILLING] Workspace ${workspaceId} exceeded budget - balance: ${newBalance}`);
         return false;
       }
 
       await db
-        .update(teamBillingContact)
+        .update(enterpriseWorkspaceSettings)
         .set({
           creditBalance: newBalance.toString(),
           updatedAt: new Date(),
         })
-        .where(eq(teamBillingContact.teamId, teamId));
+        .where(eq(enterpriseWorkspaceSettings.workspaceId, workspaceId));
 
       console.log(
-        `✅ [TEAM-BILLING] Deducted ${amount} credits from team ${teamId} (${reason}) - New balance: ${newBalance}`
+        `✅ [TEAM-BILLING] Deducted ${amount} credits from workspace ${workspaceId} (${reason}) - New balance: ${newBalance}`
       );
 
       return true;
@@ -82,28 +81,28 @@ export class TeamBillingService {
   }
 
   /**
-   * Add credits to team
+   * Add credits to workspace
    */
-  static async addTeamCredits(teamId: string, amount: number, reason: string): Promise<boolean> {
+  static async addWorkspaceCredits(workspaceId: string, amount: number, reason: string): Promise<boolean> {
     try {
-      const billing = await this.getTeamBillingContact(teamId);
+      const billing = await this.getWorkspaceBillingSettings(workspaceId);
       if (!billing) {
-        console.error(`[TEAM-BILLING] No billing contact for team ${teamId}`);
+        console.error(`[TEAM-BILLING] No billing for workspace ${workspaceId}`);
         return false;
       }
 
       const newBalance = parseFloat(billing.creditBalance || '0') + amount;
 
       await db
-        .update(teamBillingContact)
+        .update(enterpriseWorkspaceSettings)
         .set({
           creditBalance: newBalance.toString(),
           updatedAt: new Date(),
         })
-        .where(eq(teamBillingContact.teamId, teamId));
+        .where(eq(enterpriseWorkspaceSettings.workspaceId, workspaceId));
 
       console.log(
-        `✅ [TEAM-BILLING] Added ${amount} credits to team ${teamId} (${reason}) - New balance: ${newBalance}`
+        `✅ [TEAM-BILLING] Added ${amount} credits to workspace ${workspaceId} (${reason}) - New balance: ${newBalance}`
       );
 
       return true;
@@ -114,11 +113,11 @@ export class TeamBillingService {
   }
 
   /**
-   * Check if team has sufficient credits
+   * Check if workspace has sufficient credits
    */
-  static async hasEnoughCredits(teamId: string, requiredAmount: number): Promise<boolean> {
+  static async hasEnoughCredits(workspaceId: string, requiredAmount: number): Promise<boolean> {
     try {
-      const balance = await this.getTeamCreditBalance(teamId);
+      const balance = await this.getWorkspaceCreditBalance(workspaceId);
       return balance >= requiredAmount;
     } catch {
       return false;
@@ -126,24 +125,24 @@ export class TeamBillingService {
   }
 
   /**
-   * Get team billing summary
+   * Get workspace billing summary (GAP #4 FIX)
    */
-  static async getTeamBillingSummary(teamId: string) {
+  static async getWorkspaceBillingSummary(workspaceId: string) {
     try {
-      const billing = await this.getTeamBillingContact(teamId);
-      const team = await db
+      const billing = await this.getWorkspaceBillingSettings(workspaceId);
+      const workspace = await db
         .select()
-        .from(teams)
-        .where(eq(teams.id, teamId))
+        .from(teamWorkspaces)
+        .where(eq(teamWorkspaces.id, workspaceId))
         .limit(1);
 
-      if (!billing || !team) {
+      if (!billing || !workspace) {
         return null;
       }
 
       return {
-        teamName: team[0].name,
-        planTier: team[0].planTier,
+        workspaceName: workspace[0].name,
+        planTier: billing.planTier,
         creditBalance: parseFloat(billing.creditBalance || '0'),
         monthlyBudget: billing.monthlyBudget ? parseFloat(billing.monthlyBudget) : null,
         autoRecharge: billing.autoRecharge,
@@ -151,6 +150,7 @@ export class TeamBillingService {
           ? parseFloat(billing.autoRechargeAmount)
           : null,
         billingEmail: billing.billingEmail,
+        billingStatus: billing.billingStatus,
       };
     } catch (error) {
       console.error('[TEAM-BILLING] Error getting summary:', error);
