@@ -5,7 +5,7 @@ import { storage } from '../../../storage.ts';
 import { chatMessages, lomuAttachments, conversationStates, users } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
-import { lomuAIBrain } from '../../../services/lomuAIBrain.ts';
+import { hexadAIBrain } from '../../../services/lomuAIBrain.ts';
 import { traceLogger } from '../../../services/traceLogger.ts';
 import { FileChangeTracker } from '../../../services/validationHelpers.ts';
 import { 
@@ -50,7 +50,7 @@ export interface BootstrapSessionParams {
  */
 export interface BootstrapSessionResult {
   // Session and conversation context
-  session: any; // LomuAI Brain session
+  session: any; // Hexad Brain session
   conversationState: any; // Database conversation state
   userMsg: any; // Saved user message record
   traceId: string | null;
@@ -107,10 +107,10 @@ const AUTONOMY_LEVEL_CONFIG: Record<string, AutonomyLevelConfig> = {
 /**
  * Bootstrap a new stream session with SSE setup, session creation, and user message handling
  * 
- * This function handles all initialization logic for a LomuAI chat stream:
+ * This function handles all initialization logic for a Hexad chat stream:
  * - Prevents concurrent streams per user
  * - Sets up SSE headers and heartbeat
- * - Creates or retrieves session via lomuAIBrain
+ * - Creates or retrieves session via hexadAIBrain
  * - Saves user message and attachments to database
  * - Initializes trace logging
  * - Detects and handles @RESET/@NEWPROJECT commands
@@ -182,7 +182,7 @@ export async function bootstrapStreamSession(
   // ============================================================================
   // STEP 6: CREATE OR RETRIEVE LOMU BRAIN SESSION
   // ============================================================================
-  const session = await lomuAIBrain.getOrCreateSession({
+  const session = await hexadAIBrain.getOrCreateSession({
     userId,
     sessionId: sessionId || nanoid(),
     targetContext,
@@ -190,7 +190,7 @@ export async function bootstrapStreamSession(
   });
   
   // Update session activity timestamp
-  lomuAIBrain.touchSession(userId, session.sessionId);
+  hexadAIBrain.touchSession(userId, session.sessionId);
   
   // Get conversation state for backward compatibility with existing code
   // Brain tracks session, but we still use conversationState for some DB operations

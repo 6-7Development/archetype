@@ -1,5 +1,5 @@
 /**
- * Billing module for LomuAI
+ * Billing module for Hexad
  * Handles token estimation, credit reservation, and usage tracking
  * Extracted from massive lomuChat.ts for maintainability
  */

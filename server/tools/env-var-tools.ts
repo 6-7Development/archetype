@@ -1,7 +1,7 @@
 /**
  * Environment Variables Tools - Manage deployment environment variables
  * 
- * These tools allow LomuAI to set, get, and delete environment variables
+ * These tools allow Hexad to set, get, and delete environment variables
  * that persist across deployments (Render, Railway, etc.)
  * 
  * Uses project-level projectEnvVars table for reliable variable management

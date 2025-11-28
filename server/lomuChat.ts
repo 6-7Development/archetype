@@ -95,7 +95,7 @@ import { getAIModelConfig } from './config/ai-model';
 
 const router = Router();
 
-// Get LomuAI chat history
+// Get Hexad chat history
 router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
   try {
     const userId = req.authenticatedUserId;
@@ -125,7 +125,7 @@ router.get('/history', isAuthenticated, isAdmin, async (req: any, res) => {
   }
 });
 
-// Stream LomuAI chat response
+// Stream Hexad chat response
 router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSufficientCredits(100), async (req: any, res) => {
   try {
     const { message, autoCommit = false, autoPush = false } = req.body;
@@ -215,7 +215,7 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
     // Create backup before any changes (non-blocking - continue even if it fails)
     let backup: any = null;
     try {
-      backup = await platformHealing.createBackup(`LomuAI session: ${message.slice(0, 50)}`);
+      backup = await platformHealing.createBackup(`Hexad session: ${message.slice(0, 50)}`);
       sendEvent('progress', { message: PROGRESS_MESSAGES.backupCreated() });
     } catch (backupError: any) {
       console.warn('[LOMUAI-CHAT] Backup creation failed (non-critical):', backupError.message);
@@ -483,7 +483,7 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
         return ['server/storage.ts', 'server/db.ts'];
       }
       
-      // LomuAI specific
+      // Hexad specific
       if (msg.includes('meta') || msg.includes('sysop') || msg.includes('platform')) {
         return ['server/lomuChat.ts', 'server/platformHealing.ts'];
       }
@@ -665,7 +665,7 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
               
               const result = await createTaskList({
                 userId,
-                projectId: undefined, // LomuAI works on platform, not user projects
+                projectId: undefined, // Hexad works on platform, not user projects
                 chatMessageId: userMsg.id,
                 title: typedInput.title,
                 description: typedInput.description,
@@ -911,7 +911,7 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
                 maxResults: typedInput.maxResults || 5
               });
               
-              // Format results for LomuAI (using 'content' field from API)
+              // Format results for Hexad (using 'content' field from API)
               toolResult = `Search Results:\n${searchResult.results.map((r: any) => 
                 `• ${r.title}\n  ${r.url}\n  ${r.content}\n`
               ).join('\n')}`;
@@ -1247,7 +1247,7 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
       }
     }
 
-    // BUG FIX 3: Track LomuAI token usage for billing (counts against plan limit)
+    // BUG FIX 3: Track Hexad token usage for billing (counts against plan limit)
     // This call happens ONCE per chat session, after the streaming loop completes
     // billingMode: 'plan' means these tokens count toward monthly token limit
     if (totalInputTokens > 0 || totalOutputTokens > 0) {
@@ -1258,7 +1258,7 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
         inputTokens: totalInputTokens,
         outputTokens: totalOutputTokens,
         model: aiConfig.provider === 'gemini' ? 'gemini' : 'claude',
-        billingMode: 'plan', // CRITICAL: LomuAI counts against plan limit, not premium
+        billingMode: 'plan', // CRITICAL: Hexad counts against plan limit, not premium
         metadata: {
           iterations: iterationCount,
           filesChanged: fileChanges.length,
@@ -1298,7 +1298,7 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
     await platformAudit.log({
       userId,
       action: 'heal',
-      description: `LomuAI chat: ${message.slice(0, 100)}`,
+      description: `Hexad chat: ${message.slice(0, 100)}`,
       changes: fileChanges,
       backupId: backup?.id || null,
       commitHash,

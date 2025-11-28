@@ -1,6 +1,6 @@
 /**
  * Google Docs Access Tool
- * Enables LomuAI to read, search, and analyze Google Docs documents
+ * Enables Hexad to read, search, and analyze Google Docs documents
  * Integrated with Replit's Google Docs connector for secure OAuth handling
  */
 

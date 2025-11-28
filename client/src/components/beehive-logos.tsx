@@ -83,7 +83,7 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
       viewBox={showWordmark ? "0 0 400 100" : "0 0 100 100"}
       xmlns="http://www.w3.org/2000/svg"
       className={className}
-      aria-label="BeehiveAI"
+      aria-label="Hexad"
     >
       <style>{workerBeeAnimationStyles}</style>
       <defs>
@@ -208,7 +208,7 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
           )}
         </g>
 
-        {/* Wordmark (Beehive AI) - DRAMATIC HONEYCOMB REDESIGN */}
+        {/* Wordmark (Hexad AI) - DRAMATIC HONEYCOMB REDESIGN */}
         {showWordmark && (
           <g transform={size === "lg" ? "translate(75, 35)" : "translate(38, 15)"}>
             {/* HONEYCOMB PATTERN OVERLAY on letters */}
@@ -230,7 +230,7 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
               <ellipse cx={size === "lg" ? "155" : "77.5"} cy={size === "lg" ? "48" : "24"} rx={size === "lg" ? "3" : "1.5"} ry={size === "lg" ? "5" : "2.5"} fill="#F7B500"/>
             </g>
 
-            {/* "Beehive" - BOLD stroke outline */}
+            {/* "Hexad" - BOLD stroke outline */}
             <text 
               x="0" 
               y="0" 
@@ -244,10 +244,10 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
               dominantBaseline="hanging"
               strokeLinejoin="round"
             >
-              Beehive
+              Hexad
             </text>
             
-            {/* "Beehive" - Secondary honey stroke */}
+            {/* "Hexad" - Secondary honey stroke */}
             <text 
               x="0" 
               y="0" 
@@ -260,10 +260,10 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
               letterSpacing="-0.03em"
               dominantBaseline="hanging"
             >
-              Beehive
+              Hexad
             </text>
             
-            {/* "Beehive" - Main fill with RICH gradient */}
+            {/* "Hexad" - Main fill with RICH gradient */}
             <text 
               x="0" 
               y="0" 
@@ -275,10 +275,10 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
               dominantBaseline="hanging"
               filter={`url(#${idPrefix}-text-glow)`}
             >
-              Beehive
+              Hexad
             </text>
             
-            {/* "Beehive" - TOP highlight for 3D shine */}
+            {/* "Hexad" - TOP highlight for 3D shine */}
             <text 
               x="0" 
               y={size === "lg" ? "-2" : "-1"} 
@@ -291,7 +291,7 @@ export function UniversalLogo({ variant = "full", size = "md", className = "" }:
               dominantBaseline="hanging"
               style={{ mixBlendMode: 'overlay' }}
             >
-              Beehive
+              Hexad
             </text>
             
             {/* MINT EDGE ACCENTS on select letters */}
@@ -463,11 +463,11 @@ export function SimplifiedMobileLogo({ className = "" }: { className?: string })
   return <UniversalLogo variant="full" size="md" className={className} />;
 }
 
-export function BeehiveLogo({ size = "default", className = "" }: { size?: "default" | "sm"; className?: string }) {
+export function HexadLogo({ size = "default", className = "" }: { size?: "default" | "sm"; className?: string }) {
   return <UniversalLogo variant="full" size={size === "sm" ? "md" : "lg"} className={className} />;
 }
 
-export function BeehiveIcon({ size = 48, className = "" }: { size?: number; className?: string }) {
+export function HexadIcon({ size = 48, className = "" }: { size?: number; className?: string }) {
   const sizeVariant = size < 80 ? "sm" : size < 200 ? "md" : "lg";
   return <UniversalLogo variant="icon" size={sizeVariant} className={className} />;
 }

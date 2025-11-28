@@ -20,7 +20,7 @@ import type { ToolResult } from '../../../validation/toolResultValidators.ts';
 /**
  * SSE Event Emission Module
  * 
- * This module centralizes all Server-Sent Events (SSE) emission logic for LomuAI streaming.
+ * This module centralizes all Server-Sent Events (SSE) emission logic for Hexad streaming.
  * It provides focused, type-safe functions for emitting different event types to the frontend.
  * 
  * Architecture:

@@ -41,8 +41,8 @@ export { refreshAllLogs } from './logs';
 export { glob, ls, read, write } from './file-operations';
 
 /**
- * LomuAI Tool Definitions
- * Complete toolset for LomuAI's autonomous development capabilities
+ * Hexad Tool Definitions
+ * Complete toolset for Hexad's autonomous development capabilities
  */
 export const LOMU_TOOLS = [
   {
@@ -1244,7 +1244,7 @@ export const LOMU_TOOLS = [
       properties: {
         message: {
           type: 'string',
-          description: 'Commit message (default: "Initial commit from LomuAI")',
+          description: 'Commit message (default: "Initial commit from Hexad")',
         },
         excludePatterns: {
           type: 'array',
@@ -1397,9 +1397,9 @@ export {
 } from './tool-distribution';
 
 /**
- * Essential LomuAI Tools (18 tools for Gemini)
+ * Essential Hexad Tools (18 tools for Gemini)
  * Balanced tool distribution strategy:
- * - LomuAI: 18 core tools (cost-effective Gemini)
+ * - Hexad: 18 core tools (cost-effective Gemini)
  * - I AM Architect: 16 strategic tools (Claude for complex reasoning)
  * - Subagents: ~33 specialized tools (domain experts)
  * This ensures all 67 tools are utilized while respecting Gemini's ≤20 recommendation

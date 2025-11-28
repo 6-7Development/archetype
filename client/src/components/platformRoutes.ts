@@ -50,7 +50,7 @@ router.post('/heal', isAuthenticated, isAdmin, async (req: any, res) => {
 
     const client = new Anthropic({ apiKey: anthropicKey });
 
-    const systemPrompt = `You are LomuAI, an elite AI agent that fixes the Archetype platform itself.
+    const systemPrompt = `You are Hexad, an elite AI agent that fixes the Archetype platform itself.
 
 CRITICAL: You are modifying the PRODUCTION PLATFORM CODE, not user projects. Be extremely careful.
 
@@ -137,7 +137,7 @@ Analyze the issue, identify the root cause, and provide the fix.`;
       await platformAudit.log({
         userId,
         action: 'heal',
-        description: `LomuAI analyzing (iteration ${iterationCount}/${MAX_ITERATIONS})...`,
+        description: `Hexad analyzing (iteration ${iterationCount}/${MAX_ITERATIONS})...`,
         status: 'pending',
       });
 

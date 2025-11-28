@@ -613,7 +613,7 @@ export default function Workspace() {
                         <div>
                           <h3 className="font-semibold mb-2">No Active Project</h3>
                           <p className="text-sm text-muted-foreground">
-                            Open a project to start coding with LomuAI
+                            Open a project to start coding with Hexad
                           </p>
                         </div>
                       </div>

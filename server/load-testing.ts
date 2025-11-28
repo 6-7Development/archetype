@@ -249,7 +249,7 @@ async function runTests(): Promise<void> {
   const testType = process.argv[2] || 'health-check';
   const concurrency = parseInt(process.argv[3] || '25', 10);
 
-  console.log('🧪 LomuAI Load Testing Suite');
+  console.log('🧪 Hexad Load Testing Suite');
   console.log(`Testing against: ${BASE_URL}`);
 
   try {

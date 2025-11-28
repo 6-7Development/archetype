@@ -12,7 +12,7 @@
 
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import { fileLockManager } from '../services/fileLockManager';
-import { lomuAIBrain } from '../services/lomuAIBrain';
+import { hexadAIBrain } from '../services/lomuAIBrain';
 
 describe('Phase 1 Safety - FileLockManager (Simplified FIFO)', () => {
   const userId = 'test-user';
@@ -284,26 +284,26 @@ describe('Phase 1 Safety - FileLockManager (Simplified FIFO)', () => {
   });
 });
 
-describe('Phase 1 Safety - LomuAIBrain (Resilient Cleanup)', () => {
+describe('Phase 1 Safety - HexadBrain (Resilient Cleanup)', () => {
   const userId = 'test-brain-user';
   const sessionId = 'test-brain-session';
   
   beforeEach(async () => {
     vi.useFakeTimers();
-    const existing = lomuAIBrain.getSession(userId, sessionId);
+    const existing = hexadAIBrain.getSession(userId, sessionId);
     if (existing) {
-      await lomuAIBrain.closeSession(userId, sessionId);
+      await hexadAIBrain.closeSession(userId, sessionId);
     }
   });
   
   afterEach(async () => {
     vi.useRealTimers();
-    await lomuAIBrain.closeSession(userId, sessionId);
+    await hexadAIBrain.closeSession(userId, sessionId);
   });
   
   test('Idle session cleanup releases locks AND removes session', async () => {
     // Create session
-    const session = await lomuAIBrain.createSession({
+    const session = await hexadAIBrain.createSession({
       userId,
       sessionId,
       targetContext: 'project',
@@ -333,13 +333,13 @@ describe('Phase 1 Safety - LomuAIBrain (Resilient Cleanup)', () => {
     console.log('[TEST] ✅ Two locks acquired');
     
     // Mark session as idle
-    lomuAIBrain.markSessionIdle(userId, sessionId);
-    const idleSession = lomuAIBrain.getSession(userId, sessionId);
+    hexadAIBrain.markSessionIdle(userId, sessionId);
+    const idleSession = hexadAIBrain.getSession(userId, sessionId);
     expect(idleSession?.status).toBe('idle');
     console.log('[TEST] ✅ Session marked idle');
     
     // Run cleanup
-    const cleaned = await lomuAIBrain.cleanupIdleSessions();
+    const cleaned = await hexadAIBrain.cleanupIdleSessions();
     expect(cleaned).toBeGreaterThan(0);
     console.log('[TEST] ✅ Cleanup ran');
     
@@ -349,7 +349,7 @@ describe('Phase 1 Safety - LomuAIBrain (Resilient Cleanup)', () => {
     console.log('[TEST] ✅ Locks released');
     
     // Verify session removed
-    const sessionAfter = lomuAIBrain.getSession(userId, sessionId);
+    const sessionAfter = hexadAIBrain.getSession(userId, sessionId);
     expect(sessionAfter).toBeNull();
     console.log('[TEST] ✅ Session removed from registry');
   });
@@ -357,36 +357,36 @@ describe('Phase 1 Safety - LomuAIBrain (Resilient Cleanup)', () => {
   test('Cleanup continues despite lock release timeout', async () => {
     // This tests the Promise.race timeout protection
     
-    const session1 = await lomuAIBrain.createSession({
+    const session1 = await hexadAIBrain.createSession({
       userId,
       sessionId: 'session-1',
       targetContext: 'platform',
     });
     
-    const session2 = await lomuAIBrain.createSession({
+    const session2 = await hexadAIBrain.createSession({
       userId,
       sessionId: 'session-2',
       targetContext: 'platform',
     });
     
-    lomuAIBrain.markSessionIdle(userId, 'session-1');
-    lomuAIBrain.markSessionIdle(userId, 'session-2');
+    hexadAIBrain.markSessionIdle(userId, 'session-1');
+    hexadAIBrain.markSessionIdle(userId, 'session-2');
     console.log('[TEST] ✅ Two sessions marked idle');
     
     // Run cleanup (should handle timeout gracefully)
-    const cleaned = await lomuAIBrain.cleanupIdleSessions();
+    const cleaned = await hexadAIBrain.cleanupIdleSessions();
     expect(cleaned).toBeGreaterThanOrEqual(2);
     console.log('[TEST] ✅ Both sessions cleaned despite any timeouts');
     
     // Verify both removed
-    expect(lomuAIBrain.getSession(userId, 'session-1')).toBeNull();
-    expect(lomuAIBrain.getSession(userId, 'session-2')).toBeNull();
+    expect(hexadAIBrain.getSession(userId, 'session-1')).toBeNull();
+    expect(hexadAIBrain.getSession(userId, 'session-2')).toBeNull();
     console.log('[TEST] ✅ Sessions removed (resilient cleanup)');
   });
   
   test('Stale session scheduler marks idle sessions', async () => {
     // Create session
-    const session = await lomuAIBrain.createSession({
+    const session = await hexadAIBrain.createSession({
       userId,
       sessionId,
       targetContext: 'platform',
@@ -396,29 +396,29 @@ describe('Phase 1 Safety - LomuAIBrain (Resilient Cleanup)', () => {
     console.log('[TEST] ✅ Session created (active)');
     
     // Touch session to reset activity
-    lomuAIBrain.touchSession(userId, sessionId);
+    hexadAIBrain.touchSession(userId, sessionId);
     
     // Advance time past stale threshold (60s)
     console.log('[TEST] ⏱️  Advancing time past stale threshold...');
     vi.advanceTimersByTime(61000);
     
     // Trigger stale detection
-    const markedIdle = lomuAIBrain.checkStaleSessionsAndMarkIdle();
+    const markedIdle = hexadAIBrain.checkStaleSessionsAndMarkIdle();
     expect(markedIdle).toBeGreaterThan(0);
     console.log('[TEST] ✅ Stale session detected and marked idle');
     
     // Verify session is now idle
-    const sessionAfter = lomuAIBrain.getSession(userId, sessionId);
+    const sessionAfter = hexadAIBrain.getSession(userId, sessionId);
     expect(sessionAfter?.status).toBe('idle');
     console.log('[TEST] ✅ Session status: idle');
     
     // Cleanup
-    await lomuAIBrain.closeSession(userId, sessionId);
+    await hexadAIBrain.closeSession(userId, sessionId);
   });
   
   test('End-to-end: Session lifecycle with fake timers', async () => {
     // Create session
-    const session = await lomuAIBrain.createSession({
+    const session = await hexadAIBrain.createSession({
       userId,
       sessionId,
       targetContext: 'project',
@@ -438,26 +438,26 @@ describe('Phase 1 Safety - LomuAIBrain (Resilient Cleanup)', () => {
     console.log('[TEST] ✅ Lock acquired');
     
     // Touch session (simulate activity)
-    lomuAIBrain.touchSession(userId, sessionId);
+    hexadAIBrain.touchSession(userId, sessionId);
     
     // Advance time to make session stale (60s)
     vi.advanceTimersByTime(61000);
     
     // Run stale detection
-    lomuAIBrain.checkStaleSessionsAndMarkIdle();
+    hexadAIBrain.checkStaleSessionsAndMarkIdle();
     
-    const idleSession = lomuAIBrain.getSession(userId, sessionId);
+    const idleSession = hexadAIBrain.getSession(userId, sessionId);
     expect(idleSession?.status).toBe('idle');
     console.log('[TEST] ✅ Session marked idle after inactivity');
     
     // Run cleanup
-    const cleaned = await lomuAIBrain.cleanupIdleSessions();
+    const cleaned = await hexadAIBrain.cleanupIdleSessions();
     expect(cleaned).toBeGreaterThan(0);
     console.log('[TEST] ✅ Cleanup ran');
     
     // Verify locks released and session removed
     expect(fileLockManager.hasActiveLocks(sessionId)).toBe(false);
-    expect(lomuAIBrain.getSession(userId, sessionId)).toBeNull();
+    expect(hexadAIBrain.getSession(userId, sessionId)).toBeNull();
     console.log('[TEST] ✅ End-to-end lifecycle complete');
   });
 });
@@ -470,7 +470,7 @@ describe('Phase 1 Safety - Integration Tests', () => {
     const sessionId = 'integration-session';
     
     // Create session
-    const session = await lomuAIBrain.createSession({
+    const session = await hexadAIBrain.createSession({
       userId,
       sessionId,
       targetContext: 'project',
@@ -499,27 +499,27 @@ describe('Phase 1 Safety - Integration Tests', () => {
     console.log('[INTEGRATION] ✅ Locks acquired');
     
     // Track activity
-    lomuAIBrain.trackFileModified(userId, sessionId, 'src/main.ts');
-    lomuAIBrain.touchSession(userId, sessionId);
+    hexadAIBrain.trackFileModified(userId, sessionId, 'src/main.ts');
+    hexadAIBrain.touchSession(userId, sessionId);
     
     // Simulate inactivity (61s)
     vi.advanceTimersByTime(61000);
     
     // Mark stale sessions as idle
-    lomuAIBrain.checkStaleSessionsAndMarkIdle();
+    hexadAIBrain.checkStaleSessionsAndMarkIdle();
     
-    const idleSession = lomuAIBrain.getSession(userId, sessionId);
+    const idleSession = hexadAIBrain.getSession(userId, sessionId);
     expect(idleSession?.status).toBe('idle');
     console.log('[INTEGRATION] ✅ Session marked idle');
     
     // Cleanup idle sessions
-    const cleaned = await lomuAIBrain.cleanupIdleSessions();
+    const cleaned = await hexadAIBrain.cleanupIdleSessions();
     expect(cleaned).toBeGreaterThan(0);
     console.log('[INTEGRATION] ✅ Cleanup complete');
     
     // Verify everything cleaned up
     expect(fileLockManager.hasActiveLocks(sessionId)).toBe(false);
-    expect(lomuAIBrain.getSession(userId, sessionId)).toBeNull();
+    expect(hexadAIBrain.getSession(userId, sessionId)).toBeNull();
     expect(fileLockManager.getLockStatus('src/main.ts').isLocked).toBe(false);
     expect(fileLockManager.getLockStatus('src/utils.ts').isLocked).toBe(false);
     

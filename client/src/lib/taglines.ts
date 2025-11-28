@@ -1,8 +1,8 @@
-// Lomu Tagline Variety - Fresh alternatives to avoid overuse
+// Hexad Tagline Variety - Fresh alternatives to avoid overuse
 
 export const taglines = {
   // Primary tagline (classic)
-  primary: "When code throws you lemons, you get Lomu",
+  primary: "When code throws you lemons, you get Hexad",
   
   // Hero variations
   hero: [

@@ -1,7 +1,7 @@
 /**
  * Stream Handler Orchestrator
  * 
- * Main entry point for LomuAI streaming chat endpoint.
+ * Main entry point for Hexad streaming chat endpoint.
  * Coordinates all stream modules to handle the complete request lifecycle:
  * 
  * Flow:
@@ -41,7 +41,7 @@ import { PhaseOrchestrator } from '../../../services/PhaseOrchestrator.ts';
 import { emitContentChunk, emitToolCall, emitToolResult, emitProgress, emitSystemInfo, emitComplete, emitThinking, createChunkState, createEmitContext, emitTaskUpdate, emitPhaseTransition } from './stream-emitter.ts';
 import { TokenTracker } from '../../../services/tokenTracker.ts';
 import { CreditManager } from '../../../services/creditManager.ts';
-import { lomuAIBrain } from '../../../services/lomuAIBrain.ts';
+import { hexadAIBrain } from '../../../services/lomuAIBrain.ts';
 import { AgentExecutor } from '../../../services/agentExecutor.ts';
 import { LOMU_LIMITS } from '../../../config/lomuLimits.ts';
 import { waitForApproval } from '../../lomu/utils.ts';
@@ -54,7 +54,7 @@ import * as tools from '../../../tools/index.ts';
 /**
  * Main stream handler orchestrator
  * 
- * Handles the complete LomuAI chat streaming lifecycle from request validation
+ * Handles the complete Hexad chat streaming lifecycle from request validation
  * through AI execution to final cleanup and persistence.
  * 
  * @param req - Express request with authenticated user
@@ -414,8 +414,8 @@ export async function handleStreamRequest(
                     creditsForIteration
                   );
                   
-                  // Track tokens in LomuAI Brain for session management
-                  await lomuAIBrain.recordTokens(userId, sessionId || 'default', usage.inputTokens, usage.outputTokens);
+                  // Track tokens in Hexad Brain for session management
+                  await hexadAIBrain.recordTokens(userId, sessionId || 'default', usage.inputTokens, usage.outputTokens);
                 }
               }
             },
@@ -456,7 +456,7 @@ export async function handleStreamRequest(
               }
               
               // Track tool call in brain
-              const toolCallId = userId ? lomuAIBrain.recordToolCall(userId, sessionId || 'default', toolName, input) : nanoid();
+              const toolCallId = userId ? hexadAIBrain.recordToolCall(userId, sessionId || 'default', toolName, input) : nanoid();
               
               try {
                 // ✅ FIX #3: APPROVAL WORKFLOW - Check if tool requires approval
@@ -587,7 +587,7 @@ export async function handleStreamRequest(
                   const resultStr = typeof toolResult.payload === 'string' 
                     ? toolResult.payload 
                     : JSON.stringify(toolResult.payload);
-                  lomuAIBrain.completeToolCall(userId, sessionId || 'default', toolCallId, resultStr);
+                  hexadAIBrain.completeToolCall(userId, sessionId || 'default', toolCallId, resultStr);
                 }
                 
                 // Track successful tool execution in progress
@@ -741,10 +741,10 @@ export async function handleStreamRequest(
           await platformGitService.stageFiles(allChangedFiles);
           
           // Commit with message
-          const commitMessage = `[LomuAI] ${fullContent?.substring(0, 50) || 'Auto-update'}\n\nFiles changed: ${allChangedFiles.join(', ')}`;
+          const commitMessage = `[Hexad] ${fullContent?.substring(0, 50) || 'Auto-update'}\n\nFiles changed: ${allChangedFiles.join(', ')}`;
           
           const commitHash = await platformGitService.commit(commitMessage, {
-            name: 'LomuAI Autonomous',
+            name: 'Hexad Autonomous',
             email: 'lomuai@lomu.dev'
           });
           

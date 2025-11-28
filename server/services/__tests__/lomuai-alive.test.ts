@@ -1,5 +1,5 @@
 /**
- * T4: REGRESSION HARNESS - LomuAI Alive Integration Tests
+ * T4: REGRESSION HARNESS - Hexad Alive Integration Tests
  * 
  * Test Coverage:
  * 1. Run-Config State Management (T1 validation)
@@ -7,7 +7,7 @@
  * 3. File Change Tracking & Validation (T3 validation)
  * 4. Graceful Error Handling
  * 
- * These tests validate the "Making LomuAI Alive" implementation:
+ * These tests validate the "Making Hexad Alive" implementation:
  * - T1: Single-source state management via runConfig
  * - T2: Deterministic phase emissions (thinking → planning → working → verifying → complete)
  * - T3: File change tracking and validation plumbing
@@ -559,7 +559,7 @@ describe('T4: Graceful Error Handling', () => {
 // INTEGRATION TEST: Full Lifecycle
 // ============================================================================
 
-describe('Integration: Full LomuAI Alive Lifecycle', () => {
+describe('Integration: Full Hexad Alive Lifecycle', () => {
   it('should complete full T1 + T2 + T3 workflow successfully', async () => {
     console.log('\n🧪 INTEGRATION TEST: Full workflow validation\n');
     

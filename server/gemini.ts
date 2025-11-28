@@ -1024,11 +1024,11 @@ Please try:
             console.log(`[GEMINI-TOOLS] 🔧 Gemini requested tool: ${extractedFunctionCall.name}`);
             console.log(`[GEMINI-TOOLS] Tool args:`, JSON.stringify(validatedArgs).substring(0, 100));
             
-            // ✅ VALIDATE: Check for LomuAI's specific double-escape bug in string content
+            // ✅ VALIDATE: Check for Hexad's specific double-escape bug in string content
             // Only check actual string values (not JSON encoding which naturally escapes backslashes)
             const checkForMalformedEscapes = (obj: any, path: string = ''): { found: boolean; details?: string } => {
               if (typeof obj === 'string') {
-                // SMART CHECK: Only flag patterns that indicate LomuAI's specific bug
+                // SMART CHECK: Only flag patterns that indicate Hexad's specific bug
                 const bugPatterns = [
                   { pattern: /\.join\(['"]\\\\n['"]\)/, name: ".join('\\\\n')" },
                   { pattern: /\.replace\([^,]+,\s*['"]\\\\n['"]\)/, name: ".replace(x, '\\\\n')" },
@@ -1063,7 +1063,7 @@ Please try:
                 onError(new Error(
                   `Gemini returned invalid function call: ${escapeCheck.details}. ` +
                   `Function: ${extractedFunctionCall.name}. ` +
-                  `Hint: Detected LomuAI double-escape bug pattern that causes syntax errors.`
+                  `Hint: Detected Hexad double-escape bug pattern that causes syntax errors.`
                 ));
               }
               

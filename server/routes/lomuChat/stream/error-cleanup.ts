@@ -1,5 +1,5 @@
 /**
- * Error Handling and Cleanup Module for LomuAI Stream Handler
+ * Error Handling and Cleanup Module for Hexad Stream Handler
  * 
  * This module contains centralized error handling and cleanup logic
  * extracted from the main stream handler (lines 4500-4649 of lomuChat.ts).

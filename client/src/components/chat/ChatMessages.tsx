@@ -311,7 +311,7 @@ export function ChatMessages({
         {isGenerating && (
           <div className="flex items-center gap-2 text-muted-foreground" data-testid="typing-indicator">
             <Loader2 className="w-4 h-4 animate-spin" />
-            <span className="text-sm">LomuAI is thinking...</span>
+            <span className="text-sm">Hexad is thinking...</span>
           </div>
         )}
 

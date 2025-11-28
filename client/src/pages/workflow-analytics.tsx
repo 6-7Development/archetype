@@ -141,7 +141,7 @@ export default function WorkflowAnalytics() {
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2" data-testid="text-analytics-title">
             <BarChart3 className="w-8 h-8 text-primary" />
-            LomuAI v2.0 Workflow Analytics
+            Hexad v2.0 Workflow Analytics
           </h1>
           <p className="text-muted-foreground mt-1" data-testid="text-analytics-description">
             Comprehensive metrics for workflow enforcement and quality

@@ -29,7 +29,7 @@ async function deployUpgrades() {
     'server/AGENT_COMMUNICATION_GUIDE.md',
     'server/agentCommunicationExample.ts',
     
-    // LomuAI Orchestrator
+    // Hexad Orchestrator
     'server/routes/lomuChat.ts',
     'server/subagentOrchestration.ts',
   ];
@@ -66,7 +66,7 @@ async function deployUpgrades() {
    - Parallel execution patterns
    - Quality gates (review before completion)
 
-2. **LomuAI Enhanced:**
+2. **Hexad Enhanced:**
    - Already had orchestrator mindset (now standardized)
    - Same delegation patterns as SySop
    - Enhanced with knowledge management tools

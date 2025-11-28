@@ -1,7 +1,7 @@
 /**
  * Phase B: Source⇄Artifact Fidelity Guardrails
  * 
- * Detects drift between source code and compiled artifacts to ensure LomuAI
+ * Detects drift between source code and compiled artifacts to ensure Hexad
  * diagnoses the correct code version in production.
  */
 
@@ -263,7 +263,7 @@ export async function performDriftDetection(githubService?: any): Promise<DriftR
   // Add summary
   if (report.overallDriftDetected) {
     report.warnings.push(
-      'LomuAI diagnosis may reference outdated code. Recommendation: Rebuild and redeploy to sync artifacts.'
+      'Hexad diagnosis may reference outdated code. Recommendation: Rebuild and redeploy to sync artifacts.'
     );
   } else {
     report.warnings.push('✓ No drift detected - build artifacts match source code');
@@ -273,7 +273,7 @@ export async function performDriftDetection(githubService?: any): Promise<DriftR
 }
 
 /**
- * Get drift status summary for LomuAI chat
+ * Get drift status summary for Hexad chat
  */
 export async function getDriftStatusSummary(githubService?: any): Promise<string> {
   const report = await performDriftDetection(githubService);

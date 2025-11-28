@@ -224,7 +224,7 @@ export default function Builder() {
             className="hidden md:inline-flex bg-primary/10 text-primary border-primary/20 font-mono text-xs"
             data-testid="badge-lomu-ai"
           >
-            LomuAI
+            Hexad
           </Badge>
         </div>
 
@@ -349,7 +349,7 @@ export default function Builder() {
                         <div>
                           <h3 className="font-semibold mb-2">No Project Selected</h3>
                           <p className="text-sm text-muted-foreground">
-                            Select a project from the dropdown above to start building with LomuAI
+                            Select a project from the dropdown above to start building with Hexad
                           </p>
                         </div>
                         <Button 

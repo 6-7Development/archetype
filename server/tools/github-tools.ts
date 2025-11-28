@@ -1,7 +1,7 @@
 /**
- * GitHub Tools - Version control and repository management for LomuAI
+ * GitHub Tools - Version control and repository management for Hexad
  * 
- * These tools allow LomuAI to commit code, create branches, and push to GitHub
+ * These tools allow Hexad to commit code, create branches, and push to GitHub
  */
 
 import { GitHubService } from '../githubService';
@@ -204,7 +204,7 @@ export async function exportProjectToGitHub(params: {
   excludePatterns?: string[];
 }): Promise<string> {
   try {
-    const { message = 'Initial commit from LomuAI', excludePatterns = [] } = params;
+    const { message = 'Initial commit from Hexad', excludePatterns = [] } = params;
     
     const github = new GitHubService();
     

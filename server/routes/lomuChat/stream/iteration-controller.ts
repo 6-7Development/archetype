@@ -1,7 +1,7 @@
 /**
  * Iteration Controller Module
  * 
- * This module manages the main AI iteration loop for LomuAI streaming.
+ * This module manages the main AI iteration loop for Hexad streaming.
  * It controls the loop execution, anti-paralysis detection, emergency brakes,
  * and iteration budget management based on user intent.
  * 

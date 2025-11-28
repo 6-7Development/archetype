@@ -32,7 +32,7 @@ export type RequestValidationResult =
   | { success: false; statusCode: number; error: string; details?: any };
 
 /**
- * STEP 1: Extract and validate all request parameters for LomuAI stream endpoint
+ * STEP 1: Extract and validate all request parameters for Hexad stream endpoint
  * 
  * Performs comprehensive validation of incoming stream requests:
  * - Extracts all required and optional parameters

@@ -1,5 +1,5 @@
 /**
- * LomuAI Integration Tests
+ * Hexad Integration Tests
  * Comprehensive test suite covering core workflows, error recovery, and streaming
  */
 
@@ -13,7 +13,7 @@ import {
 } from '../routes/lomuChat/billing';
 import { validateToolExecution, formatToolResult } from '../routes/lomuChat/tools';
 
-describe('LomuAI Integration Tests', () => {
+describe('Hexad Integration Tests', () => {
   describe('Configuration System', () => {
     it('should have LOMU_LIMITS defined', () => {
       expect(LOMU_LIMITS).toBeDefined();
@@ -185,7 +185,7 @@ describe('LomuAI Integration Tests', () => {
   });
 });
 
-describe('LomuAI Workflow Scenarios', () => {
+describe('Hexad Workflow Scenarios', () => {
   it('should handle simple fix workflow', () => {
     const intent = 'fix';
     const maxIterations = getMaxIterationsForIntent(intent);

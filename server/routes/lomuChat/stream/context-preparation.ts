@@ -332,7 +332,7 @@ export async function prepareAIContext(
   const systemPrompt = userIntent === 'casual'
     ? buildCasualConversationPrompt()
     : buildLomuSuperCorePrompt({
-        platform: 'LomuAI - React+Express+PostgreSQL on Railway',
+        platform: 'Hexad - React+Express+PostgreSQL on Railway',
         autoCommit: finalAutoCommit,
         intent: conversationIntent,
         contextPrompt: enhancedContextPrompt,
@@ -364,7 +364,7 @@ export async function prepareAIContext(
   // STEP 9: DEFIBRILLATOR PROMPT DETECTION
   // ============================================================================
   // 🚨 DEFIBRILLATOR PROMPT DETECTION: Emergency escape from read-eval-no-write loops
-  // Detects special "override" messages that force LomuAI out of analysis paralysis
+  // Detects special "override" messages that force Hexad out of analysis paralysis
   const isDefibrillatorPrompt = /🔴.*SYSTEM.*OVERRIDE|STOP.*READING|FORCE.*WRITE|emergency.*override/i.test(message);
   
   if (isDefibrillatorPrompt) {

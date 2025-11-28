@@ -50,16 +50,16 @@ Hexad is an AI-powered platform for rapid web development, featuring the autonom
     -   Interconnected network visualizations
 
 ## System Architecture
-The platform is built with a React frontend, an Express.js backend, and PostgreSQL for data persistence. It uses a unified codebase for Lomu (Desktop, 4-panel layout) and Lomu5 (Mobile, bottom tab navigation), sharing backend APIs, WebSockets, authentication, and database access.
+The platform is built with a React frontend, an Express.js backend, and PostgreSQL for data persistence. It uses a unified codebase for Hexad (Desktop, 4-panel layout) and Hexad5 (Mobile, bottom tab navigation), sharing backend APIs, WebSockets, authentication, and database access.
 
 ### Universal RBAC System
 A dynamic role-based access control system (`shared/rbac.ts`) serves as a single source of truth for permissions, supporting 'user', 'admin', 'owner' roles, five resources (platform, projects, healing, admin, billing, team), and five actions (read, write, delete, execute, manage).
 
 ### UI/UX Decisions
-The UI features a tab-based workspace with a command console and real-time live preview, adhering to a professional swarm/hive theme with honey-gold and mint-teal accents. It uses card-based layouts, warm shadows, smooth transitions, and ADA/WCAG accessibility. Chat interfaces utilize semantic theme tokens for consistent messaging and display LomuAI's thought process inline with responses using `EnhancedMessageDisplay` and collapsible, color-coded blocks for thinking, tool calls, and results. A comprehensive Agent Chatroom interface includes real-time progress tracking via SSE events, managed by a `UniversalChat` component. A Replit Agent-style Testing UI with a `TestingPanel` provides live browser previews, AI narration, and step progress tracking. A functional Terminal component is integrated into the WorkspaceLayout.
+The UI features a tab-based workspace with a command console and real-time live preview, adhering to a professional swarm/hive theme with honey-gold and mint-teal accents. It uses card-based layouts, warm shadows, smooth transitions, and ADA/WCAG accessibility. Chat interfaces utilize semantic theme tokens for consistent messaging and display Hexad's thought process inline with responses using `EnhancedMessageDisplay` and collapsible, color-coded blocks for thinking, tool calls, and results. A comprehensive Agent Chatroom interface includes real-time progress tracking via SSE events, managed by a `UniversalChat` component. A Replit Agent-style Testing UI with a `TestingPanel` provides live browser previews, AI narration, and step progress tracking. A functional Terminal component is integrated into the WorkspaceLayout.
 
 ### System Design Choices
-LomuAI operates as an autonomous worker using a 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). I AM Architect is a manually-triggered premium consultant, providing strategic guidance without committing code. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing. LomuAI incorporates efficiency rules like SEARCH BEFORE CODING and ITERATION BUDGET AWARENESS.
+Hexad operates as an autonomous worker using a 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). I AM Architect is a manually-triggered premium consultant, providing strategic guidance without committing code. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing. Hexad incorporates efficiency rules like SEARCH BEFORE CODING and ITERATION BUDGET AWARENESS.
 
 **SWARM Mode - Parallel Multi-Agent Execution**:
 -   **SwarmModeCoordinator**: 8-step safety pipeline with automatic rollback on failure
@@ -71,13 +71,13 @@ LomuAI operates as an autonomous worker using a 7-phase workflow (ASSESS → PLA
 -   **UI Components**: SwarmModeButton, SwarmDashboard (react-query, data-testid attributes, real-time SSE updates)
 
 **Platform Healing Architecture**:
--   **LomuAI**: Autonomous worker executing changes (Gemini 2.5 Flash).
+-   **Hexad**: Autonomous worker executing changes (Gemini 2.5 Flash).
 -   **I AM Architect**: Owner-triggered consultant for strategic guidance (Claude Sonnet 4), requiring manual activation and owner approval for changes.
 -   **Autonomous Healing Button**: One-click background healing process with toast notifications and incident count updates.
 -   **HealOrchestrator**: Monitors health incidents and can auto-trigger workflows.
 -   **Incident System**: Logs failures for owner review and manual I AM Architect triggering.
 
-A centralized session management system (`server/services/lomuAIBrain.ts`) combines in-memory and database persistence. The access model provides owner-only access for platform healing, usage-based billing for LomuAI, and premium consulting for I AM Architect.
+A centralized session management system (`server/services/lomuAIBrain.ts`) combines in-memory and database persistence. The access model provides owner-only access for platform healing, usage-based billing for Hexad, and premium consulting for I AM Architect.
 
 Key features include optimized tool distribution, universal RBAC, GitHub integration, environment variable management, AST-based code intelligence, production-ready monetization with Stripe, robust security measures, vision analysis, strict JSON function calling, a 3-layer code validation system, telemetry, reflection and structured retry mechanisms, an anti-paralysis system, and priority safety mechanisms like auto-rollback and server startup integration tests. Phase 1 multi-user safety includes workspace isolation, stale session cleanup, and crash recovery. All API calls include `credentials: 'include'` for proper session cookie authentication. New services include Consultation Refine, Conflict Resolution, Performance Tracking, Architect Versioning, Failure Recovery, Skill-Based Routing, Token Budget, Adaptive Parallelization, and Concurrent Rate Limiting.
 

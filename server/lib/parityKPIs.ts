@@ -1,7 +1,7 @@
 /**
  * Parity KPI Tracker
  * 
- * Measures LomuAI behavioral parity with Replit Agent across key metrics:
+ * Measures Hexad behavioral parity with Replit Agent across key metrics:
  * - Task list creation rate: Target ≥99%
  * - Test execution rate: Target ≥97%
  * - Premature completion attempts: Target ≤1%

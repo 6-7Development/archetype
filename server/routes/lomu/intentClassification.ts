@@ -1,5 +1,5 @@
 /**
- * Intent Classification for LomuAI
+ * Intent Classification for Hexad
  * Re-exports shared functions from server/shared/chatConfig.ts
  */
 

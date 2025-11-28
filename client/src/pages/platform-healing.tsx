@@ -8,8 +8,8 @@ export default function PlatformHealing() {
   // Project selector - determines which workspace is active
   const [selectedProject, setSelectedProject] = useState<string>('platform-healing');
   
-  // LomuAI always uses Gemini (cost-effective). 
-  // I AM Architect is an internal advisor - automatically consulted when LomuAI detects it's stuck
+  // Hexad always uses Gemini (cost-effective). 
+  // I AM Architect is an internal advisor - automatically consulted when Hexad detects it's stuck
   const targetContext: 'platform' | 'architect' = 'platform';
   
   // Determine display info based on selected project

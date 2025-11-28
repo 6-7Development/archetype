@@ -2,7 +2,7 @@ import { platformHealing } from '../platformHealing';
 import type { FileChangeTracker } from '../services/validationHelpers';
 
 /**
- * Platform modification tools for LomuAI
+ * Platform modification tools for Hexad
  * Allow SySop to fix Archetype's own code via normal chat
  */
 

@@ -1,9 +1,9 @@
 /**
  * TOOL DISTRIBUTION STRATEGY
- * Balances all 67 tools across LomuAI, I AM Architect, and Specialized Subagents
+ * Balances all 67 tools across Hexad, I AM Architect, and Specialized Subagents
  * 
  * Philosophy:
- * - LomuAI (Gemini): 18 essential tools for core development + delegation
+ * - Hexad (Gemini): 18 essential tools for core development + delegation
  * - I AM Architect (Claude): 15-18 tools for strategic analysis + reviews
  * - Subagents: ~30 specialized tools organized by domain expertise
  */
@@ -175,7 +175,7 @@ export const SUBAGENT_SPECIALISTS = {
 // ============================================================================
 export const DISTRIBUTION_SUMMARY = {
   lomu_ai: {
-    agent: 'LomuAI (Gemini 2.5 Flash)',
+    agent: 'Hexad (Gemini 2.5 Flash)',
     toolCount: LOMU_AI_TOOL_NAMES.length,
     tools: LOMU_AI_TOOL_NAMES,
     purpose: 'Core development, rapid iteration, cost-effective operations',
@@ -186,13 +186,13 @@ export const DISTRIBUTION_SUMMARY = {
     toolCount: ARCHITECT_TOOL_NAMES.length,
     tools: ARCHITECT_TOOL_NAMES,
     purpose: 'Strategic guidance, code review, platform decisions',
-    activation: 'Called by LomuAI via architect_consult when stuck or for approval',
+    activation: 'Called by Hexad via architect_consult when stuck or for approval',
   },
   subagents: {
     totalTools: Object.values(SUBAGENT_SPECIALISTS).reduce((sum, s) => sum + s.tools.length, 0),
     specialists: SUBAGENT_SPECIALISTS,
     purpose: 'Domain-specific expert work, parallel execution',
-    activation: 'Spawned by LomuAI via start_subagent when specialized capability needed',
+    activation: 'Spawned by Hexad via start_subagent when specialized capability needed',
   },
   total: {
     uniqueTools: 67,

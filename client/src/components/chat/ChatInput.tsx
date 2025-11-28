@@ -75,7 +75,7 @@ export function ChatInput({
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKeyDown}
             onPaste={onPaste}
-            placeholder="Message LomuAI..."
+            placeholder="Message Hexad..."
             className="min-h-[44px] max-h-[150px] resize-none text-sm bg-background/80 border border-border/70 focus-visible:ring-1 focus-visible:ring-primary/60 focus-visible:border-primary/50 rounded-lg px-3 py-2.5 pr-10 transition-all"
             disabled={isGenerating}
             data-testid="input-chat-message"

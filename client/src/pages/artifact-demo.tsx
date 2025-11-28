@@ -79,7 +79,7 @@ async function fetchUserData(userId) {
     type: "code",
     title: "config.json",
     content: `{
-  "appName": "LomuAI",
+  "appName": "Hexad",
   "version": "2.6.0",
   "features": {
     "artifacts": true,

@@ -727,18 +727,18 @@ class HexadAIBrain {
 
 // ========== SINGLETON EXPORT ==========
 
-export const lomuAIBrain = new HexadAIBrain();
+export const hexadAIBrain = new HexadAIBrain();
 
 // BRAIN-GAP-2: Check for stale sessions every 30 seconds
 // Mark sessions as idle if no heartbeat for 60s
 setInterval(() => {
-  lomuAIBrain.checkStaleSessionsAndMarkIdle();
+  hexadAIBrain.checkStaleSessionsAndMarkIdle();
 }, 30 * 1000);
 
 // Cleanup idle sessions every 10 minutes
 // This removes sessions marked as idle and releases their file locks
 setInterval(async () => {
-  const cleaned = await lomuAIBrain.cleanupIdleSessions();
+  const cleaned = await hexadAIBrain.cleanupIdleSessions();
   
   if (cleaned > 0) {
     console.log(`[BRAIN-CLEANUP] Cleaned ${cleaned} idle sessions with file locks released`);

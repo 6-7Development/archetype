@@ -2,7 +2,7 @@
  * Enforcement Orchestrator
  * 
  * Coordinates all 5 enforcement layers + I AM Architect guidance injection
- * for real-time LomuAI workflow compliance.
+ * for real-time Hexad workflow compliance.
  * 
  * ENFORCEMENT LAYERS:
  * 1. PhaseGatekeeper - validates responses before phase transitions

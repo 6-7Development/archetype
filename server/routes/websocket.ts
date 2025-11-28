@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import type { IncomingMessage } from "http";
 import { storage } from "../storage.ts";
-import { lomuAIBrain } from "../services/lomuAIBrain.ts";
+import { hexadAIBrain } from "../services/lomuAIBrain.ts";
 import { sessionStore } from "../universalAuth.ts";
 import cookieSignature from "cookie-signature";
 
@@ -216,7 +216,7 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
           ws.sessionId = data.sessionId;
           
           // Get or create session in brain (must create to register WebSocket)
-          const session = await lomuAIBrain.getOrCreateSession({
+          const session = await hexadAIBrain.getOrCreateSession({
             userId: ws.userId, // Use validated userId from session
             sessionId: ws.sessionId,
             targetContext: data.targetContext || 'project',
@@ -224,7 +224,7 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
           });
           
           // Register WebSocket connection with brain
-          lomuAIBrain.registerWebSocket(ws.userId, ws.sessionId, ws, `project_${ws.sessionId}`);
+          hexadAIBrain.registerWebSocket(ws.userId, ws.sessionId, ws, `project_${ws.sessionId}`);
           
           console.log(`✅ [WS] Session registered: userId=${ws.userId}, sessionId=${ws.sessionId}`);
           
@@ -347,7 +347,7 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
     ws.on('close', () => {
       // Unregister WebSocket from brain (pass ws instance to prevent stale unregister)
       if (ws.userId && ws.sessionId) {
-        lomuAIBrain.unregisterWebSocket(ws.userId, ws.sessionId, ws);
+        hexadAIBrain.unregisterWebSocket(ws.userId, ws.sessionId, ws);
       }
       
       console.log(`❌ WebSocket client disconnected${ws.userId ? ` (user: ${ws.userId})` : ''}`);

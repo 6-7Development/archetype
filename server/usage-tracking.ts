@@ -43,7 +43,7 @@ const DEPLOYMENT_PRICING = {
 // Plan limits and costs - V4.0 PROFITABLE TOKEN-BASED PRICING
 // Match industry standard (1:1 credit-to-dollar) while ensuring 50-65% profit margins
 // Customer pays all costs: AI ($0.012/1K) + Infrastructure + Storage + Profit
-// Average LomuAI project: ~83K tokens = $1.00 cost → $1.50-2.00 revenue (50-100% margin)
+// Average Hexad project: ~83K tokens = $1.00 cost → $1.50-2.00 revenue (50-100% margin)
 export const PLAN_LIMITS = {
   free: {
     aiCredits: -1, // Unlimited projects (limited by tokens)

@@ -143,7 +143,7 @@ class AutoHealingService {
 
       const issue = `Automatic healing triggered by errors:\n${errorSummary}`;
 
-      // Use LomuAI to fix
+      // Use Hexad to fix
       await this.executeHealing(issue);
 
       this.errorBuffer = [];
@@ -155,7 +155,7 @@ class AutoHealingService {
   }
 
   /**
-   * Execute healing using LomuAI
+   * Execute healing using Hexad
    */
   private async executeHealing(issue: string): Promise<void> {
     const anthropicKey = process.env.ANTHROPIC_API_KEY;
@@ -182,7 +182,7 @@ class AutoHealingService {
 
       const client = new Anthropic({ apiKey: anthropicKey });
 
-      const systemPrompt = `You are LomuAI's AUTO-HEALING module. You fix platform errors automatically.\n\nCRITICAL: This is AUTOMATIC healing - be conservative and surgical. Only fix what's broken.\n\nAVAILABLE TOOLS:\n1. readPlatformFile(path) - Read source code\n2. writePlatformFile(path, content) - Fix code\n3. listPlatformFiles(directory) - List files\n\nHEALING STRATEGY:\n1. Analyze error messages\n2. Identify root cause\n3. Apply minimal fix\n4. Verify safety\n5. Test the fix\n\nERRORS TO FIX:\n${issue}\n\nFix these errors with minimal changes. Explain each fix clearly.`;
+      const systemPrompt = `You are Hexad's AUTO-HEALING module. You fix platform errors automatically.\n\nCRITICAL: This is AUTOMATIC healing - be conservative and surgical. Only fix what's broken.\n\nAVAILABLE TOOLS:\n1. readPlatformFile(path) - Read source code\n2. writePlatformFile(path, content) - Fix code\n3. listPlatformFiles(directory) - List files\n\nHEALING STRATEGY:\n1. Analyze error messages\n2. Identify root cause\n3. Apply minimal fix\n4. Verify safety\n5. Test the fix\n\nERRORS TO FIX:\n${issue}\n\nFix these errors with minimal changes. Explain each fix clearly.`;
 
       let conversationMessages: any[] = [{
         role: 'user',

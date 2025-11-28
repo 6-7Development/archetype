@@ -64,7 +64,7 @@ export function MessageBubble({ message, index, totalMessages }: MessageBubblePr
             : 'bg-secondary/20 text-secondary-foreground'
         }`}
         data-testid={`avatar-${message.role}`}
-        title={isUser ? 'You' : 'LomuAI'}
+        title={isUser ? 'You' : 'Hexad'}
       >
         {isUser ? (
           <User className="w-4 h-4" />

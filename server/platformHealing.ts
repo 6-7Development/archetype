@@ -48,7 +48,7 @@ const activePRs = new Map<string, PRMetadata>();
 
 export class PlatformHealingService {
   private readonly PROJECT_ROOT = PROJECT_ROOT;
-  private readonly BACKUP_BRANCH_PREFIX = 'backup/lomuai-';
+  private readonly BACKUP_BRANCH_PREFIX = 'backup/hexad-';
   private wss: WebSocketServer | null = null;
   private sessionChangedFiles = new Map<string, Set<string>>(); // sessionId -> Set of file paths
   private sessionManifests = new Map<string, PreviewManifest>(); // sessionId -> manifest
@@ -216,11 +216,11 @@ export class PlatformHealingService {
       try {
         await execFileAsync('git', ['add', '-A'], { cwd: this.PROJECT_ROOT });
         
-        const commitMessage = `[LomuAI Backup] ${description}`;
+        const commitMessage = `[Hexad Backup] ${description}`;
         
         try {
           await execFileAsync('git', [
-            '-c', 'user.name=LomuAI',
+            '-c', 'user.name=Hexad',
             '-c', 'user.email=lomu-ai@lomu.platform',
             'commit', '-m', commitMessage
           ], { cwd: this.PROJECT_ROOT });
@@ -362,10 +362,10 @@ export class PlatformHealingService {
         }
       }
       
-      // Commit with LomuAI identity
+      // Commit with Hexad identity
       try {
         await execFileAsync('git', [
-          '-c', 'user.name=LomuAI',
+          '-c', 'user.name=Hexad',
           '-c', 'user.email=lomu-ai@lomu.platform',
           'commit', '-m', message
         ], { cwd: this.PROJECT_ROOT });
@@ -577,7 +577,7 @@ export class PlatformHealingService {
       console.error(`[PLATFORM-WRITE] ❌ Pre-write validation FAILED for ${filePath}`);
       throw new Error(
         `Cannot write file - validation failed:\n${quickValidation.errors.join('\n')}\n\n` +
-        `HINT: This prevents LomuAI from committing broken code with syntax errors.`
+        `HINT: This prevents Hexad from committing broken code with syntax errors.`
       );
     }
     console.log(`[PLATFORM-WRITE] ✅ Pre-write validation passed`);
@@ -591,7 +591,7 @@ export class PlatformHealingService {
     }
     
     // 🛡️ CATASTROPHIC DELETION PROTECTION
-    // Prevents LomuAI from accidentally destroying files due to Gemini truncation bugs
+    // Prevents Hexad from accidentally destroying files due to Gemini truncation bugs
     try {
       const existingFullPath = path.resolve(this.PROJECT_ROOT, filePath);
       const existingStats = await fs.stat(existingFullPath);
@@ -758,7 +758,7 @@ export class PlatformHealingService {
         
         // Build enriched commit message with context
         const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0];
-        let commitMessage = `[LomuAI 🤖] Update ${filePath}`;
+        let commitMessage = `[Hexad 🤖] Update ${filePath}`;
         if (context?.description) {
           commitMessage += `\n\n${context.description}`;
         }
@@ -781,7 +781,7 @@ export class PlatformHealingService {
           // CRITICAL: Don't push broken code to production
           throw new Error(
             `Cannot commit to GitHub - validation failed:\n\n${quickValidation.errors.join('\n\n')}\n\n` +
-            `This prevents LomuAI from pushing broken code to production.`
+            `This prevents Hexad from pushing broken code to production.`
           );
         }
         console.log(`[PLATFORM-WRITE] ✅ Pre-commit validation passed`);
@@ -833,7 +833,7 @@ export class PlatformHealingService {
             // CRITICAL: Don't commit broken code - throw error with details
             throw new Error(
               `Cannot commit - code validation failed:\n\n${validation.errors.join('\n\n')}\n\n` +
-              `This prevents LomuAI from committing broken code with syntax errors.\n` +
+              `This prevents Hexad from committing broken code with syntax errors.\n` +
               `Fix the issues above and try again.`
             );
           }
@@ -849,7 +849,7 @@ export class PlatformHealingService {
           
           // Build enriched commit message with context
           const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0];
-          let commitMessage = `[LomuAI 🤖 DEV] Update ${filePath}`;
+          let commitMessage = `[Hexad 🤖 DEV] Update ${filePath}`;
           if (context?.description) {
             commitMessage += `\n\n${context.description}`;
           }
@@ -862,7 +862,7 @@ export class PlatformHealingService {
           }
           
           await execFileAsync('git', [
-            '-c', 'user.name=LomuAI',
+            '-c', 'user.name=Hexad',
             '-c', 'user.email=lomu-ai@lomu.platform',
             'commit', '-m', commitMessage
           ], { cwd: this.PROJECT_ROOT });
@@ -999,7 +999,7 @@ export class PlatformHealingService {
         
         // Build enriched commit message with context
         const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0];
-        let commitMessage = `[LomuAI 🤖] Create ${filePath}`;
+        let commitMessage = `[Hexad 🤖] Create ${filePath}`;
         if (context?.description) {
           commitMessage += `\n\n${context.description}`;
         }
@@ -1046,7 +1046,7 @@ export class PlatformHealingService {
         
         // Build enriched commit message with context
         const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0];
-        let commitMessage = `[LomuAI 🤖 DEV] Create ${filePath}`;
+        let commitMessage = `[Hexad 🤖 DEV] Create ${filePath}`;
         if (context?.description) {
           commitMessage += `\n\n${context.description}`;
         }
@@ -1059,7 +1059,7 @@ export class PlatformHealingService {
         }
         
         await execFileAsync('git', [
-          '-c', 'user.name=LomuAI',
+          '-c', 'user.name=Hexad',
           '-c', 'user.email=lomu-ai@lomu.platform',
           'commit', '-m', commitMessage
         ], { cwd: this.PROJECT_ROOT });
@@ -1333,10 +1333,10 @@ export class PlatformHealingService {
     try {
       await execFileAsync('git', ['add', '-A'], { cwd: this.PROJECT_ROOT });
 
-      const commitMessage = `[LomuAI] ${message}\n\nChanges:\n${changes.map(c => `- ${c.operation} ${c.path}`).join('\n')}`;
+      const commitMessage = `[Hexad] ${message}\n\nChanges:\n${changes.map(c => `- ${c.operation} ${c.path}`).join('\n')}`;
 
       await execFileAsync('git', [
-        '-c', 'user.name=LomuAI',
+        '-c', 'user.name=Hexad',
         '-c', 'user.email=lomu-ai@lomu.platform',
         'commit', '-m', commitMessage
       ], { cwd: this.PROJECT_ROOT });
@@ -1543,7 +1543,7 @@ export class PlatformHealingService {
         }
 
         const githubService = getGitHubService();
-        const commitMessage = `Batch deploy ${pendingChanges.length} file(s) via LomuAI\n\nFiles changed:\n${pendingChanges.map(c => `- ${c.operation} ${c.path}`).join('\n')}`;
+        const commitMessage = `Batch deploy ${pendingChanges.length} file(s) via Hexad\n\nFiles changed:\n${pendingChanges.map(c => `- ${c.operation} ${c.path}`).join('\n')}`;
 
         const filesToCommit = pendingChanges
           .filter(c => c.operation !== 'delete')

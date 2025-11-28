@@ -1,14 +1,14 @@
 /**
  * Architect Guidance Injector
  * 
- * Real-time feedback loop between LomuAI (Gemini Flash) and I AM Architect (Claude Sonnet 4).
- * When LomuAI makes mistakes, I AM provides corrective guidance DURING THE ACTIVE SESSION.
+ * Real-time feedback loop between Hexad (Gemini Flash) and I AM Architect (Claude Sonnet 4).
+ * When Hexad makes mistakes, I AM provides corrective guidance DURING THE ACTIVE SESSION.
  * 
  * CRITICAL FEATURES:
  * - Detects violations in real-time (not post-job)
  * - Calls I AM Architect for expert guidance
- * - Injects guidance back into LomuAI conversation as system message
- * - LomuAI reads correction and fixes behavior immediately
+ * - Injects guidance back into Hexad conversation as system message
+ * - Hexad reads correction and fixes behavior immediately
  * - TRUE TEAMWORK: Lomu + I AM work together ❤️
  */
 
@@ -50,7 +50,7 @@ export class ArchitectGuidanceInjector {
   }
   
   /**
-   * Request guidance from I AM Architect when LomuAI violates workflow
+   * Request guidance from I AM Architect when Hexad violates workflow
    */
   async requestGuidance(request: GuidanceRequest): Promise<GuidanceResponse> {
     // Graceful degradation - if no API key configured, return empty guidance
@@ -69,9 +69,9 @@ export class ArchitectGuidanceInjector {
     console.log('[ARCHITECT-GUIDANCE] Phase:', request.context.phase);
     console.log('[ARCHITECT-GUIDANCE] Quality Score:', request.qualityScore);
     
-    const systemPrompt = `You are I AM ARCHITECT, an expert supervisor guiding LomuAI (Gemini Flash) to follow strict workflow rules.
+    const systemPrompt = `You are I AM ARCHITECT, an expert supervisor guiding Hexad (Gemini Flash) to follow strict workflow rules.
 
-LomuAI just violated a workflow rule. Your job is to provide BRIEF, DIRECT corrective guidance that will be injected into LomuAI's conversation as a system message.
+Hexad just violated a workflow rule. Your job is to provide BRIEF, DIRECT corrective guidance that will be injected into Hexad's conversation as a system message.
 
 GUIDANCE RULES:
 1. Be CONCISE (max 100 words)
@@ -98,7 +98,7 @@ EXAMPLE BAD GUIDANCE:
 CONTEXT:
 - Phase: ${request.context.phase}
 - User Request: "${request.context.userMessage.slice(0, 200)}..."
-- LomuAI Response: "${request.context.lomuResponse.slice(0, 300)}..."
+- Hexad Response: "${request.context.lomuResponse.slice(0, 300)}..."
 - Tool Calls Made: ${request.context.toolCalls.length}
 - Quality Score: ${request.qualityScore}/100
 
@@ -128,7 +128,7 @@ Provide brief, direct corrective guidance (max 100 words):`;
       else if (request.qualityScore < 70) severity = 'medium';
       else severity = 'low';
       
-      // Determine if LomuAI should retry (for critical violations)
+      // Determine if Hexad should retry (for critical violations)
       const shouldRetry = severity === 'critical' || request.violation.includes('Missing create_task_list');
       
       // Extract suggested actions from guidance
@@ -183,7 +183,7 @@ Provide brief, direct corrective guidance (max 100 words):`;
   }
   
   /**
-   * Format guidance for injection into LomuAI conversation
+   * Format guidance for injection into Hexad conversation
    */
   formatGuidanceForInjection(guidance: GuidanceResponse, jobId: string): string {
     // Store in history

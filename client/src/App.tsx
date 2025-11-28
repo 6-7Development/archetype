@@ -209,7 +209,7 @@ function Router() {
       </Route>
       <Route path="/artifact-demo" component={ArtifactDemo} />
       
-      {/* Standalone LomuAI Chat - No project required */}
+      {/* Standalone Hexad Chat - No project required */}
       <Route path="/chat" component={HexadChat} />
       
       {/* SWARM Mode Dashboard */}

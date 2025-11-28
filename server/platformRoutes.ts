@@ -14,7 +14,7 @@ const router = Router();
 // Store pending write approvals in memory
 const pendingApprovals = new Map<string, { resolve: (approved: boolean) => void }>();
 
-// Export function to resolve pending approvals (used by LomuAI approval endpoint)
+// Export function to resolve pending approvals (used by Hexad approval endpoint)
 export function resolvePendingApproval(sessionId: string, approved: boolean): boolean {
   const pending = pendingApprovals.get(sessionId);
   if (pending) {
@@ -157,7 +157,7 @@ async function runHealingProcess(
 
     const client = new Anthropic({ apiKey: anthropicKey });
 
-    const systemPrompt = `You are LomuAI, an elite AI agent that fixes the Archetype platform itself.
+    const systemPrompt = `You are Hexad, an elite AI agent that fixes the Archetype platform itself.
 
 CRITICAL: You are modifying the PRODUCTION PLATFORM CODE, not user projects. Be extremely careful.
 
@@ -621,10 +621,10 @@ router.get('/deployment-history', isAuthenticated, isAdmin, async (req: any, res
       const author = commit.commit.author.name;
       const email = commit.commit.author.email;
       
-      // Detect if commit was made by LomuAI
+      // Detect if commit was made by Hexad
       const isMetaSysop = 
-        message.includes('[LomuAI]') ||
-        message.includes('LomuAI:') ||
+        message.includes('[Hexad]') ||
+        message.includes('Hexad:') ||
         author.toLowerCase().includes('lomu-ai') ||
         email.toLowerCase().includes('lomu-ai');
       

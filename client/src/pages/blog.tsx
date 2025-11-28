@@ -8,7 +8,7 @@ export default function Blog() {
   const articles = [
     {
       id: 1,
-      title: "Getting Started with LomuAI: Your First Project",
+      title: "Getting Started with Hexad: Your First Project",
       excerpt: "Learn how to create your first project and use AI assistance to build faster",
       date: "November 2025",
       category: "Getting Started",
@@ -16,21 +16,21 @@ export default function Blog() {
     {
       id: 2,
       title: "Best Practices for Prompt Engineering with Gemini",
-      excerpt: "Discover how to write effective prompts to get the best results from LomuAI",
+      excerpt: "Discover how to write effective prompts to get the best results from Hexad",
       date: "November 2025",
       category: "Tips & Tricks",
     },
     {
       id: 3,
-      title: "Deploying Your LomuAI Projects to Production",
+      title: "Deploying Your Hexad Projects to Production",
       excerpt: "Step-by-step guide to deploying your applications with confidence",
       date: "November 2025",
       category: "Deployment",
     },
     {
       id: 4,
-      title: "Understanding LomuAI's Architecture and Healing System",
-      excerpt: "Deep dive into how LomuAI maintains itself and fixes issues automatically",
+      title: "Understanding Hexad's Architecture and Healing System",
+      excerpt: "Deep dive into how Hexad maintains itself and fixes issues automatically",
       date: "November 2025",
       category: "Technical",
     },
@@ -47,7 +47,7 @@ export default function Blog() {
               <h1 className="text-4xl font-bold">Blog</h1>
             </div>
             <p className="text-lg text-muted-foreground">
-              Latest news, tips, and insights from the LomuAI team
+              Latest news, tips, and insights from the Hexad team
             </p>
           </div>
 

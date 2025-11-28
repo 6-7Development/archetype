@@ -18,11 +18,11 @@ import multer from "multer"; // Import multer
 import { eq, or, like } from "drizzle-orm"; // Import or and like
 import WebSocket from 'ws'; // Import WebSocket
 
-// DEPLOYMENT VERIFICATION: October 28, 2025 01:50 UTC - LomuAI execution fix deployed
-// ✅ LomuAI system prompt rewritten to force immediate tool execution
+// DEPLOYMENT VERIFICATION: October 28, 2025 01:50 UTC - Hexad execution fix deployed
+// ✅ Hexad system prompt rewritten to force immediate tool execution
 // ✅ Continuation logic added to keep working on in_progress tasks
 // ✅ Visual progress bars added to in_progress tasks
-// ✅ Extensive diagnostic logging for LomuAI debugging
+// ✅ Extensive diagnostic logging for Hexad debugging
 // PREVIOUS: Session store SSL, Vite allowedHosts, WebSocket WSS all configured
 
 // PRODUCTION FIX: Handle SSL certificate validation for Render deployment
@@ -268,7 +268,7 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
   // START SERVER IMMEDIATELY - Don't wait for database!
   server.listen(port, '0.0.0.0', async () => {
     log(`Hexad serving on port ${port}`);
-    console.log(`🚀 LomuAI Server is live on http://0.0.0.0:${port}`);
+    console.log(`🚀 Hexad Server is live on http://0.0.0.0:${port}`);
     
     // Setup Vite AFTER server is listening
     if (app.get("env") === "development") {
@@ -313,10 +313,10 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
       console.warn('⚠️ Chat history cleanup failed (non-critical):', cleanupError.message);
     }
     
-    // 🧹 CLEANUP: Fix stuck/zombie LomuAI jobs on server restart
+    // 🧹 CLEANUP: Fix stuck/zombie Hexad jobs on server restart
     // ANY job with status 'pending' or 'running' is invalid after restart
     // because the server's activeJobs Map is cleared on restart
-    // console.log('🧹 Cleaning up stuck LomuAI jobs from previous server session...');
+    // console.log('🧹 Cleaning up stuck Hexad jobs from previous server session...');
     try {
       const { lomuJobs } = await import('@shared/schema');
       const { inArray } = await import('drizzle-orm');
@@ -332,12 +332,12 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
         .returning({ id: lomuJobs.id });
       
       if (staleJobs.length > 0) {
-        console.log(`✅ Cleaned up ${staleJobs.length} interrupted LomuAI jobs`);
+        console.log(`✅ Cleaned up ${staleJobs.length} interrupted Hexad jobs`);
       } else {
-        console.log('✅ No interrupted LomuAI jobs found');
+        console.log('✅ No interrupted Hexad jobs found');
       }
     } catch (jobCleanupError: any) {
-      console.warn('⚠️ LomuAI job cleanup failed (non-critical):', jobCleanupError.message);
+      console.warn('⚠️ Hexad job cleanup failed (non-critical):', jobCleanupError.message);
     }
     
     // Initialize background jobs (session cleanup, etc.)
@@ -375,8 +375,8 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
     console.log('   💰 WARNING: This uses YOUR Anthropic credits!');
   } else {
     console.log('💡 Platform Healing: OWNER-ONLY access (manual trigger via UI)');
-    console.log('   👑 Owner uses LomuAI to fix the platform itself - FREE');
-    console.log('   👥 Regular users use LomuAI for their projects - usage-based billing');
+    console.log('   👑 Owner uses Hexad to fix the platform itself - FREE');
+    console.log('   👥 Regular users use Hexad for their projects - usage-based billing');
     console.log('   💳 Credits: 1 credit = 1,000 tokens = $0.05 (retail pricing)');
   }
 

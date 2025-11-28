@@ -17,7 +17,7 @@ export default function Privacy() {
             <section className="space-y-3">
               <h2 className="text-2xl font-semibold">1. Introduction</h2>
               <p className="text-muted-foreground">
-                LomuAI ("we", "us", "our" or "Company") operates the LomuAI platform. 
+                Hexad ("we", "us", "our" or "Company") operates the Hexad platform. 
                 This page informs you of our policies regarding the collection, use, and 
                 disclosure of personal data when you use our Service and the choices you have 
                 associated with that data.
@@ -44,7 +44,7 @@ export default function Privacy() {
             <section className="space-y-3">
               <h2 className="text-2xl font-semibold">3. Use of Data</h2>
               <p className="text-muted-foreground">
-                LomuAI uses the collected data for various purposes:
+                Hexad uses the collected data for various purposes:
               </p>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
                 <li>Providing and maintaining the Service</li>
