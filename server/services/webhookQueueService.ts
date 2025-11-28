@@ -1,5 +1,5 @@
 import { db } from '../db';
-import { webhookQueue } from '../db/schema';
+import { webhookQueue } from '@shared/schema';
 import { logger, logError, logJob } from './logger';
 import { withRetry } from './retryService';
 import { sql, eq, and, lt } from 'drizzle-orm';

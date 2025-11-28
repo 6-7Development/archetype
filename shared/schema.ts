@@ -3154,3 +3154,49 @@ export const insertOrganizationSchema = createInsertSchema(organizations).omit({
 });
 export type Organization = typeof organizations.$inferSelect;
 export type OrganizationMember = typeof organizationMembers.$inferSelect;
+
+// ENTERPRISE PHASE 9: Webhook Retry Queue
+// Provides reliable webhook delivery with exponential backoff
+export const webhookQueue = pgTable('webhook_queue', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  targetUrl: varchar('target_url', { length: 2048 }).notNull(),
+  payload: jsonb('payload').notNull(),
+  signature: varchar('signature', { length: 255 }).notNull(),
+  status: varchar('status', { length: 50 }).notNull().default('pending'), // 'pending', 'delivered', 'failed'
+  attemptCount: integer('attempt_count').notNull().default(0),
+  nextRetryAt: timestamp('next_retry_at').notNull(),
+  failureReason: text('failure_reason'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  deliveredAt: timestamp('delivered_at'),
+}, (table) => [
+  index('idx_webhook_status').on(table.status),
+  index('idx_webhook_next_retry').on(table.nextRetryAt),
+  index('idx_webhook_created').on(table.createdAt),
+]);
+
+export const insertWebhookQueueSchema = createInsertSchema(webhookQueue).omit({
+  id: true,
+  createdAt: true,
+  deliveredAt: true,
+});
+export type WebhookQueueItem = typeof webhookQueue.$inferSelect;
+export type InsertWebhookQueueItem = typeof webhookQueue.$inferInsert;
+
+// ENTERPRISE PHASE 10: Audit Log Retention Policies
+// Defines how long different types of audit logs should be retained
+export const auditRetentionPolicies = pgTable('audit_retention_policies', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  workspaceId: varchar('workspace_id').notNull().references(() => teamWorkspaces.id, { onDelete: 'cascade' }),
+  logType: varchar('log_type', { length: 100 }).notNull(), // 'access', 'change', 'security', 'compliance'
+  retentionDays: integer('retention_days').notNull().default(90),
+  lastPurgeAt: timestamp('last_purge_at'),
+  nextPurgeAt: timestamp('next_purge_at'),
+  enabled: boolean('enabled').notNull().default(true),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => [
+  index('idx_audit_retention_workspace').on(table.workspaceId),
+  index('idx_audit_retention_type').on(table.logType),
+]);
+
+export type AuditRetentionPolicy = typeof auditRetentionPolicies.$inferSelect;
