@@ -43,6 +43,7 @@ import DeploymentDetails from "@/pages/deployment-details";
 import LomuChat from "@/pages/lomu-chat";
 import ConsultationHistory from "@/pages/consultation-history";
 import SwarmDashboard from "@/pages/swarm-dashboard";
+import Monitoring from "@/pages/monitoring";
 import Documentation from "@/pages/docs";
 import Privacy from "@/pages/privacy";
 import Terms from "@/pages/terms";
@@ -215,6 +216,15 @@ function Router() {
       <Route path="/swarm-dashboard">
         <AppLayout>
           <SwarmDashboard />
+        </AppLayout>
+      </Route>
+
+      {/* System Monitoring */}
+      <Route path="/monitoring">
+        <AppLayout>
+          <OwnerGuard>
+            <Monitoring />
+          </OwnerGuard>
         </AppLayout>
       </Route>
       

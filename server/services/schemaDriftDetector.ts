@@ -203,11 +203,11 @@ export async function detectSchemaDrift(): Promise<DriftReport> {
       // Check RLS status if expected
       if (tableExpectation.rlsEnabled) {
         const rlsResult = await db.execute(sql`
-          SELECT rowsecurity FROM pg_class
+          SELECT relrowsecurity FROM pg_class
           JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
           WHERE relname = ${tableName} AND nspname = 'public';
         `);
-        const rlsEnabled = ((rlsResult as any).rows?.[0]?.rowsecurity) === true;
+        const rlsEnabled = ((rlsResult as any).rows?.[0]?.relrowsecurity) === true;
 
         if (!rlsEnabled) {
           report.rlsDisabled.push(tableName);
