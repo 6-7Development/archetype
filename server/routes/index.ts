@@ -2,6 +2,7 @@ import type { Express } from "express";
 import type { Server } from "http";
 import { WebSocketServer } from "ws";
 import healthRouter from "../api/health";
+import monitoringRouter from "./monitoring";
 
 // Import all route registration functions
 import { registerAuthRoutes } from "./auth";
@@ -44,7 +45,8 @@ export async function registerRoutes(app: Express): Promise<Server & { wss?: Web
 
   // Register health check routes FIRST (bypass all middleware, should never be rate limited)
   app.use(healthRouter);
-  console.log("[ROUTES] Health check routes registered (bypass rate limiting)");
+  app.use('/api/monitoring', monitoringRouter);
+  console.log("[ROUTES] Health check and monitoring routes registered");
 
   // Register HTTP API routes (order matters - register more specific routes first)
   console.log("[ROUTES] Registering HTTP routes...");

@@ -347,6 +347,14 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
     } catch (jobInitError: any) {
       console.warn('⚠️ Background jobs initialization failed (non-critical):', jobInitError.message);
     }
+
+    // Run schema drift detection (catches regressions)
+    try {
+      const { runSchemaDriftCheck } = await import('./services/schemaDriftDetector');
+      await runSchemaDriftCheck();
+    } catch (driftError: any) {
+      console.warn('⚠️ Schema drift check failed (non-critical):', driftError.message);
+    }
   } catch (error: any) {
     console.error('❌ Database connection failed after retries:', error.message);
     console.error('⚠️ Running in degraded mode (database unavailable)');
