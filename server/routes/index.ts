@@ -191,6 +191,17 @@ export async function registerRoutes(app: Express): Promise<Server & { wss?: Web
     console.warn("[IMAGE-GEN] Failed to load image generation router:", (e as any).message);
   }
 
+  // API Documentation (OpenAPI/Swagger)
+  try {
+    const { default: apiDocsRouter } = await import("./api-docs.js");
+    if (apiDocsRouter) {
+      app.use("/api", apiDocsRouter);
+      console.log("[API-DOCS] API Documentation mounted at /api/docs");
+    }
+  } catch (e) {
+    console.warn("[API-DOCS] Failed to load API documentation router:", (e as any).message);
+  }
+
   console.log("✅ All routes registered successfully");
 
   // Attach wss to server for access by other modules

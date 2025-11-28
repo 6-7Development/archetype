@@ -2,6 +2,32 @@ import rateLimit from 'express-rate-limit';
 import { Request, Response, NextFunction } from 'express';
 
 /**
+ * Safely extract IPv4/IPv6 address for rate limiting
+ * Handles edge cases and normalizes addresses
+ */
+function getClientKey(req: Request): string {
+  const teamContext = (req as any).teamContext;
+  if (teamContext?.workspaceId) {
+    return `org_${teamContext.workspaceId}`;
+  }
+  
+  // Extract IP address safely (handles IPv6 and proxied requests)
+  let ip = req.ip || req.socket?.remoteAddress || 'unknown';
+  
+  // Normalize IPv6 localhost to IPv4 format
+  if (ip === '::1' || ip === '::ffff:127.0.0.1') {
+    ip = '127.0.0.1';
+  }
+  
+  // Remove IPv6 prefix if present
+  if (ip.startsWith('::ffff:')) {
+    ip = ip.substring(7);
+  }
+  
+  return `org_ip_${ip}`;
+}
+
+/**
  * Organization-level rate limiter
  * Limits: 1000 requests per minute PER organization (workspace)
  * Uses team context (workspaceId) from request
@@ -13,15 +39,11 @@ export const orgRateLimiter = rateLimit({
   message: 'Organization has exceeded rate limit',
   standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
   legacyHeaders: true, // Enable the `X-RateLimit-*` headers
+  validate: { xForwardedForHeader: false }, // Disable IPv6 validation warning
   
-  // Custom key generator: org_${workspaceId}
+  // Custom key generator using safe IP extraction
   keyGenerator: (req: Request, res: Response) => {
-    const teamContext = (req as any).teamContext;
-    if (!teamContext?.workspaceId) {
-      // For unauthenticated requests, fall back to IP address
-      return `org_${req.ip || 'unknown'}`;
-    }
-    return `org_${teamContext.workspaceId}`;
+    return getClientKey(req);
   },
   
   // Skip health check endpoints
