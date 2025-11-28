@@ -76,18 +76,19 @@ export function registerProjectRoutes(app: Express) {
       const userId = req.authenticatedUserId;
       const { projectId } = req.params;
       
-      console.log(`📂 [FILES] Fetching files for user ${userId}, project ${projectId}`);
+      console.log(`📂 [FILES-API] Fetching files for user ${userId}, project ${projectId}`);
       
       let projectFiles = await storage.getProjectFiles(projectId, userId);
       
-      console.log(`📂 [FILES] Found ${projectFiles?.length || 0} files for project ${projectId}`);
+      console.log(`📂 [FILES-API] Found ${projectFiles?.length || 0} files for project ${projectId}`);
+      console.log(`📂 [FILES-API] Returning:`, projectFiles?.map((f: any) => ({ id: f.id, filename: f.filename })));
       
       // Auto-create initial files if project has no files (handles existing projects)
       if (!projectFiles || projectFiles.length === 0) {
-        console.log(`📝 [FILES] Project has no files - creating initial files automatically...`);
+        console.log(`📝 [FILES-API] Project has no files - creating initial files automatically...`);
         try {
           projectFiles = await storage.createInitialProjectFiles(projectId, userId);
-          console.log(`✅ [FILES] Created ${projectFiles.length} initial files for project ${projectId}`);
+          console.log(`✅ [FILES-API] Created ${projectFiles.length} initial files for project ${projectId}`);
         } catch (createError) {
           console.warn(`⚠️  [FILES] Failed to create initial files:`, createError);
           // Continue with empty array if creation fails
