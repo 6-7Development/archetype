@@ -26,6 +26,7 @@ export const ROUTES = {
   MARKETPLACE: '/marketplace',
   BUILDER: '/builder',
   CONSULTATION_HISTORY: '/consultation-history',
+  MONITORING: '/monitoring',
   DOCS: '/docs',
   PRIVACY: '/privacy',
   TERMS: '/terms',
@@ -48,6 +49,7 @@ export const NAVIGATION = {
     { label: 'Team', path: ROUTES.TEAM, testId: 'nav-team' },
   ],
   settings: [
+    { label: 'System Monitoring', path: ROUTES.MONITORING, testId: 'nav-monitoring' },
     { label: 'Consultation History', path: ROUTES.CONSULTATION_HISTORY, testId: 'nav-consultation-history' },
     { label: 'API Keys', path: ROUTES.API_KEYS, testId: 'nav-api-keys' },
     { label: 'Support', path: ROUTES.SUPPORT, testId: 'nav-support' },

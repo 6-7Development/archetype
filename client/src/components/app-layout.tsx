@@ -18,7 +18,8 @@ import {
   ChevronDown,
   Settings as SettingsIcon,
   Zap,
-  Rocket
+  Rocket,
+  Activity
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   'nav-publishing': Zap,
   'nav-deployments': Rocket,
   'nav-team': Users,
+  'nav-monitoring': Activity,
   'nav-api-keys': Key,
   'nav-support': Headphones,
   'nav-account': UserIcon,
