@@ -1,12 +1,12 @@
 /**
- * Redirect page to help users navigate to LomuChat
+ * Redirect page to help users navigate to HexadChat
  * Shows clear instructions and auto-redirects to /lomu
  */
 
 import { useEffect } from 'react';
 import { useLocation } from 'wouter';
 
-export default function LomuChatLanding() {
+export default function HexadChatLanding() {
   const [, setLocation] = useLocation();
 
   useEffect(() => {

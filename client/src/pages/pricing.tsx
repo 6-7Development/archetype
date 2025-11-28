@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { MobileNav } from "@/components/mobile-nav";
 import { MotionToggle } from "@/components/motion-toggle";
 import { Check, Sparkles, Zap, Shield, TrendingUp, DollarSign, Info } from "lucide-react";
-import { LogoEnhancedBadge, LomuTextLogo } from '@/components/final-logos';
+import { LogoEnhancedBadge, HexadTextLogo } from '@/components/final-logos';
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -23,7 +23,7 @@ const plans = [
     name: "Free",
     price: "$0",
     period: "/forever",
-    description: "Perfect for trying out Lomu",
+    description: "Perfect for trying out Hexad",
     tokenAllowance: "50,000 tokens",
     projectEstimate: "~5-10 simple projects",
     features: [
@@ -205,12 +205,12 @@ export default function Pricing() {
                   { href: "/builder", label: "Get Started" }
                 ]}
                 logo={
-                  <LomuTextLogo size="sm" />
+                  <HexadTextLogo size="sm" />
                 }
               />
               <Link href="/" data-testid="link-home" className="hidden lg:flex">
                 <div className="hover-elevate active-elevate-2 transition-all cursor-pointer">
-                  <LomuTextLogo size="default" />
+                  <HexadTextLogo size="default" />
                 </div>
               </Link>
             </div>
@@ -540,7 +540,7 @@ export default function Pricing() {
       <footer className="py-12 px-6 border-t border-border">
         <div className="container mx-auto max-w-6xl text-center text-slate-500">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <LomuTextLogo size="sm" />
+            <HexadTextLogo size="sm" />
           </div>
           <p className="text-sm">© 2025 Lomu. Transparent AI-Powered Development.</p>
           <p className="text-xs mt-2">No hidden fees. No surprise bills. Pay for what you use.</p>

@@ -267,7 +267,7 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
   
   // START SERVER IMMEDIATELY - Don't wait for database!
   server.listen(port, '0.0.0.0', async () => {
-    log(`LomuAI serving on port ${port}`);
+    log(`Hexad serving on port ${port}`);
     console.log(`🚀 LomuAI Server is live on http://0.0.0.0:${port}`);
     
     // Setup Vite AFTER server is listening

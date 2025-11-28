@@ -40,7 +40,7 @@ import Setup from "@/pages/setup";
 import ArtifactDemo from "@/pages/artifact-demo";
 import Deployments from "@/pages/deployments";
 import DeploymentDetails from "@/pages/deployment-details";
-import LomuChat from "@/pages/lomu-chat";
+import HexadChat from "@/pages/lomu-chat";
 import ConsultationHistory from "@/pages/consultation-history";
 import SwarmDashboard from "@/pages/swarm-dashboard";
 import Monitoring from "@/pages/monitoring";
@@ -210,7 +210,7 @@ function Router() {
       <Route path="/artifact-demo" component={ArtifactDemo} />
       
       {/* Standalone LomuAI Chat - No project required */}
-      <Route path="/lomu" component={LomuChat} />
+      <Route path="/chat" component={HexadChat} />
       
       {/* SWARM Mode Dashboard */}
       <Route path="/swarm-dashboard">
