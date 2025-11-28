@@ -68,8 +68,8 @@ export async function processWebhookQueue(): Promise<void> {
     // Get all pending webhooks that are ready for retry
     const pendingWebhooks = await db.query.webhookQueue.findMany({
       where: and(
-        eq(sql`status`, 'pending'),
-        lt(sql`nextRetryAt`, now)
+        eq(webhookQueue.status, 'pending'),
+        lt(webhookQueue.nextRetryAt, now)
       ),
       limit: 10, // Process in batches
     });
@@ -179,12 +179,12 @@ async function deliverWebhook(webhook: QueuedWebhook): Promise<void> {
 export async function getWebhookQueueStats() {
   const stats = await db
     .select({
-      status: sql`status`,
-      count: sql`COUNT(*) as count`,
-      avgAttempts: sql`AVG(attemptCount) as avg_attempts`,
+      status: webhookQueue.status,
+      count: sql<number>`COUNT(*)`,
+      avgAttempts: sql<number>`AVG(${webhookQueue.attemptCount})`,
     })
     .from(webhookQueue)
-    .groupBy(sql`status`);
+    .groupBy(webhookQueue.status);
 
   return stats;
 }

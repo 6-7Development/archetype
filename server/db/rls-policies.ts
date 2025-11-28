@@ -138,7 +138,7 @@ const RLS_POLICIES = [
       EXISTS (
         SELECT 1 FROM team_projects
         WHERE team_projects.project_id = projects.id
-        AND team_projects.workspace_id = current_setting('app.workspace_id')::uuid
+        AND team_projects.workspace_id = current_setting('app.workspace_id')
       )
     );
   `,
@@ -164,7 +164,7 @@ const RLS_POLICIES = [
       EXISTS (
         SELECT 1 FROM team_projects
         WHERE team_projects.project_id = projects.id
-        AND team_projects.workspace_id = current_setting('app.workspace_id')::uuid
+        AND team_projects.workspace_id = current_setting('app.workspace_id')
       )
     );
   `,
@@ -200,7 +200,7 @@ const RLS_POLICIES = [
         SELECT 1 FROM projects p
         JOIN team_projects tp ON tp.project_id = p.id
         WHERE p.id = files.project_id
-        AND tp.workspace_id = current_setting('app.workspace_id')::uuid
+        AND tp.workspace_id = current_setting('app.workspace_id')
       )
     );
   `,
@@ -227,7 +227,7 @@ const RLS_POLICIES = [
         SELECT 1 FROM projects p
         JOIN team_projects tp ON tp.project_id = p.id
         WHERE p.id = files.project_id
-        AND tp.workspace_id = current_setting('app.workspace_id')::uuid
+        AND tp.workspace_id = current_setting('app.workspace_id')
       )
     );
   `,
@@ -263,7 +263,7 @@ const RLS_POLICIES = [
         SELECT 1 FROM projects p
         JOIN team_projects tp ON tp.project_id = p.id
         WHERE p.id = chat_messages.project_id
-        AND tp.workspace_id = current_setting('app.workspace_id')::uuid
+        AND tp.workspace_id = current_setting('app.workspace_id')
       )
     );
   `,
