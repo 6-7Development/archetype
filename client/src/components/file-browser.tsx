@@ -29,7 +29,7 @@ function useProjectFiles(projectId?: string) {
       const url = projectId 
         ? `/api/project-files?projectId=${encodeURIComponent(projectId)}`
         : '/api/project-files';
-      const res = await fetch(url);
+      const res = await fetch(url, { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to load files');
       return res.json();
     },

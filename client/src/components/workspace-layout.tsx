@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Terminal } from '@/components/terminal';
 import { FileExplorer } from '@/components/file-explorer';
+import { FileBrowser } from '@/components/file-browser';
 import { GitPanel } from '@/components/git-panel';
 import { TestingPanel } from '@/components/testing-panel';
 import { DatabaseViewer } from '@/components/database-viewer';
@@ -432,7 +433,11 @@ export function WorkspaceLayout({
             </TabsContent>
 
             <TabsContent value="files" className="flex-1 overflow-hidden p-0">
-              <FileExplorer files={files} activeFileId={null} onFileSelect={() => {}} onCreateFile={() => {}} />
+              <FileBrowser 
+                projectId={projectId} 
+                onFileSelect={(path) => console.log('[FILES] Selected:', path)}
+                onFileDoubleClick={(path) => console.log('[FILES] Double-clicked:', path)}
+              />
             </TabsContent>
 
             <TabsContent value="git" className="flex-1 overflow-hidden p-0">

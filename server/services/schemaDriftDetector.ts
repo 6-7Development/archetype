@@ -58,7 +58,7 @@ const EXPECTED_SCHEMA: SchemaExpectation = {
         id: 'character varying',
         project_id: 'character varying',
         user_id: 'character varying',
-        name: 'character varying',
+        filename: 'text',
       },
       rlsEnabled: true,
       minPolicies: 4,
