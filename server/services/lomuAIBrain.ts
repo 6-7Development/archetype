@@ -1,7 +1,7 @@
 /**
  * LOMU AI BRAIN - Unified Session Management
  * 
- * Single source of truth for all LomuAI sessions.
+ * Single source of truth for all HexadAI sessions.
  * Hybrid pattern: In-memory cache + database persistence.
  * 
  * Integrations:
@@ -231,7 +231,7 @@ class ActiveSessionRegistry {
 
 // ========== LOMU AI BRAIN (MAIN SERVICE) ==========
 
-class LomuAIBrain {
+class HexadAIBrain {
   private registry = new ActiveSessionRegistry();
   private persistence = new PersistenceAdapter();
   
@@ -727,7 +727,7 @@ class LomuAIBrain {
 
 // ========== SINGLETON EXPORT ==========
 
-export const lomuAIBrain = new LomuAIBrain();
+export const lomuAIBrain = new HexadAIBrain();
 
 // BRAIN-GAP-2: Check for stale sessions every 30 seconds
 // Mark sessions as idle if no heartbeat for 60s
@@ -745,4 +745,4 @@ setInterval(async () => {
   }
 }, 10 * 60 * 1000);
 
-console.log('[BRAIN] ✅ LomuAI Brain initialized - Universal session management active');
+console.log('[BRAIN] ✅ HexadAI Brain initialized - Universal session management active');

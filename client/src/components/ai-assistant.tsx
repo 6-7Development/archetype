@@ -13,7 +13,7 @@ export function AIAssistant() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: 'Hi! I\'m LomuAI, your coding assistant. Ask me for help with code, debugging, or explanations.',
+      content: 'Hi! I\'m HexadAI, your coding assistant. Ask me for help with code, debugging, or explanations.',
     },
   ]);
   const [input, setInput] = useState('');
@@ -43,7 +43,7 @@ export function AIAssistant() {
     <div className="h-full flex flex-col overflow-hidden bg-card/50 p-4">
       <div className="flex items-center gap-2 mb-4">
         <MessageCircle className="w-4 h-4" />
-        <h3 className="font-semibold text-sm">LomuAI Assistant</h3>
+        <h3 className="font-semibold text-sm">HexadAI Assistant</h3>
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-3 mb-3">

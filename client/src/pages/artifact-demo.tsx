@@ -17,7 +17,7 @@ const mockArtifacts: Artifact[] = [
 }
 
 // Usage
-const message = greet("Lomu");
+const message = greet("Hexad");
 console.log(message);`,
     language: "typescript",
     metadata: {

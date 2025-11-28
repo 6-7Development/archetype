@@ -40,7 +40,7 @@ export function AIModelSelector() {
           I AM Architect
         </SelectItem>
         <SelectItem value="gemini" data-testid="option-gemini">
-          Lomu
+          Hexad
         </SelectItem>
       </SelectContent>
     </Select>

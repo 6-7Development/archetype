@@ -1,12 +1,12 @@
-# Lomu - "When Code Throws You Lemons"
+# Hexad - Collaborative Hive Intelligence for Code
 
 ## Overview
-Lomu is an AI-powered platform for rapid web development, featuring the autonomous AI coding agent LomuAI. It offers a console-first interface, real-time preview, and comprehensive workspace features across desktop (Lomu) and mobile (Lomu5) IDEs. The platform aims for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. LomuAI's key capability is autonomous self-healing, bug fixing, and UI/UX improvements to its own source code, complete with rollback and audit logging. The business vision is to provide a comprehensive, AI-driven platform that simplifies web development, making it accessible and efficient for a wide range of users.
+Hexad is an AI-powered platform for rapid web development, featuring the autonomous AI coding agent Hexad Core. It offers a console-first interface, real-time preview, and comprehensive workspace features across desktop (Hexad Desktop) and mobile (Hexad Mobile) IDEs. The platform aims for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. Hexad's key capability is autonomous self-healing, bug fixing, and UI/UX improvements to its own source code, complete with rollback and audit logging. The business vision is to provide a comprehensive, AI-driven platform that simplifies web development through collaborative hive intelligence, making it accessible and efficient for a wide range of users.
 
 ## User Preferences
 ### API Configuration
 **Gemini 2.5 Flash + Claude Sonnet 4 Hybrid Strategy**:
-- **LomuAI & Platform Healing**: Gemini 2.5 Flash via GEMINI_API_KEY
+- **Hexad Core & Platform Healing**: Gemini 2.5 Flash via GEMINI_API_KEY
   - Model: gemini-2.5-flash
   - Cost: $0.075 input / $0.30 output per 1M tokens (**40x cheaper** than Claude)
   - 1M token context window

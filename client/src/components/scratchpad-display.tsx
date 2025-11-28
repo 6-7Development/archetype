@@ -38,7 +38,7 @@ export function ScratchpadDisplay({ entries, onClear, sessionId }: ScratchpadDis
   };
 
   const getAuthorColor = (author: string) => {
-    if (author === 'LomuAI') return 'text-[hsl(50,98%,58%)]';
+    if (author === 'HexadAI') return 'text-[hsl(50,98%,58%)]';
     if (author.startsWith('Sub-Agent')) return 'text-[hsl(145,60%,45%)]';
     if (author === 'Architect' || author === 'I AM Architect') return 'text-[hsl(32,94%,62%)]';
     return 'text-muted-foreground';

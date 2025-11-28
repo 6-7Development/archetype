@@ -89,13 +89,13 @@ export default function WorkingAuth() {
       if (isOwner) {
         toast({
           title: `Account created, ${userName}!`,
-          description: "Welcome to Lomu. Redirecting to Platform Healing...",
+          description: "Welcome to Hexad. Redirecting to Platform Healing...",
         });
         setTimeout(() => setLocation("/platform-healing"), 500);
       } else {
         toast({
           title: `Account created, ${userName}!`,
-          description: "Welcome to Lomu. Redirecting...",
+          description: "Welcome to Hexad. Redirecting...",
         });
         setTimeout(() => setLocation("/dashboard"), 500);
       }

@@ -3,17 +3,17 @@ import { Router, Request, Response } from 'express';
 const router = Router();
 
 /**
- * OpenAPI 3.0 Specification for LomuAI Platform
+ * OpenAPI 3.0 Specification for HexadAI Platform
  * Comprehensive API documentation for all enterprise endpoints
  */
 const openApiSpec = {
   openapi: '3.0.3',
   info: {
-    title: 'LomuAI Platform API',
+    title: 'HexadAI Platform API',
     version: '1.0.0',
     description: 'Enterprise-grade AI-powered development platform with multi-tenant workspace isolation, billing analytics, compliance framework, and autonomous healing capabilities.',
     contact: {
-      name: 'LomuAI Support',
+      name: 'HexadAI Support',
       email: 'support@lomu.ai'
     },
     license: {
@@ -32,7 +32,7 @@ const openApiSpec = {
     { name: 'Authentication', description: 'User authentication and session management' },
     { name: 'Workspaces', description: 'Team workspace management' },
     { name: 'Projects', description: 'Project CRUD operations' },
-    { name: 'LomuAI', description: 'AI agent operations and job management' },
+    { name: 'HexadAI', description: 'AI agent operations and job management' },
     { name: 'Architect', description: 'I AM Architect consultation services' },
     { name: 'SWARM', description: 'SWARM mode parallel execution' },
     { name: 'Billing', description: 'Credits, subscriptions, and billing analytics' },
@@ -137,12 +137,12 @@ const openApiSpec = {
         }
       }
     },
-    '/lomu-ai/jobs': {
+    '/hexad-ai/jobs': {
       get: {
-        tags: ['LomuAI'],
+        tags: ['HexadAI'],
         summary: 'List AI jobs',
         description: 'Returns AI job history for the current workspace',
-        operationId: 'listLomuAIJobs',
+        operationId: 'listHexadAIJobs',
         security: [{ sessionAuth: [] }],
         parameters: [
           { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 } },
@@ -155,7 +155,7 @@ const openApiSpec = {
               'application/json': {
                 schema: {
                   type: 'array',
-                  items: { $ref: '#/components/schemas/LomuAIJob' }
+                  items: { $ref: '#/components/schemas/HexadAIJob' }
                 }
               }
             }
@@ -163,10 +163,10 @@ const openApiSpec = {
         }
       },
       post: {
-        tags: ['LomuAI'],
+        tags: ['HexadAI'],
         summary: 'Start AI job',
         description: 'Starts a new AI coding task',
-        operationId: 'startLomuAIJob',
+        operationId: 'startHexadAIJob',
         security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
@@ -181,7 +181,7 @@ const openApiSpec = {
             description: 'Job started',
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/LomuAIJob' }
+                schema: { $ref: '#/components/schemas/HexadAIJob' }
               }
             }
           }
@@ -428,7 +428,7 @@ const openApiSpec = {
           description: { type: 'string' }
         }
       },
-      LomuAIJob: {
+      HexadAIJob: {
         type: 'object',
         properties: {
           id: { type: 'string', format: 'uuid' },
@@ -560,7 +560,7 @@ router.get('/docs/swagger', (req: Request, res: Response) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LomuAI API Documentation</title>
+  <title>HexadAI API Documentation</title>
   <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
 </head>
 <body>

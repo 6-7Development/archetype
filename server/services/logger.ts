@@ -10,7 +10,7 @@ export const logger = winston.createLogger({
     winston.format.errors({ stack: true }),
     winston.format.json()
   ),
-  defaultMeta: { service: 'lomu-ai' },
+  defaultMeta: { service: 'hexad-ai' },
   transports: [
     // Console output with formatting
     new winston.transports.Console({

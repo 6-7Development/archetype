@@ -1,5 +1,5 @@
 /**
- * Performance monitoring system for LomuAI
+ * Performance monitoring system for HexadAI
  * Tracks response times, token usage, error rates, and streaming performance
  * Exposes metrics via /api/metrics endpoint for dashboard consumption
  */

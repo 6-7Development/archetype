@@ -125,7 +125,7 @@ export function WorkspaceImportDialog({ open, onOpenChange }: ImportDialogProps)
         <DialogHeader>
           <DialogTitle>Import Replit Project</DialogTitle>
           <DialogDescription>
-            Upload a ZIP file of your Replit project to migrate it to Lomu
+            Upload a ZIP file of your Replit project to migrate it to Hexad
           </DialogDescription>
         </DialogHeader>
 

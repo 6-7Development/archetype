@@ -18,7 +18,7 @@ interface TerminalLine {
 export function Terminal({ projectId }: TerminalProps) {
   const { user } = useAuth();
   const [lines, setLines] = useState<TerminalLine[]>([
-    { type: 'output', content: 'Welcome to Lomu Terminal' },
+    { type: 'output', content: 'Welcome to Hexad Terminal' },
     { type: 'output', content: 'Type commands to interact with your project...' },
     { type: 'output', content: '' }
   ]);

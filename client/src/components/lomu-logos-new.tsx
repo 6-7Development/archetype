@@ -1,7 +1,7 @@
 // Simple SVG-based logos (no external image dependencies)
 
 // Icon Logo - Lemon "L" symbol
-export function LomuIconLogo({ size = 40, className = "" }: { size?: number; className?: string }) {
+export function HexadIconLogo({ size = 40, className = "" }: { size?: number; className?: string }) {
   return (
     <div
       className={`relative overflow-hidden rounded-full bg-gradient-to-br from-[hsl(50,98%,58%)] to-[hsl(45,95%,52%)] ${className}`}
@@ -38,7 +38,7 @@ export function LomuIconLogo({ size = 40, className = "" }: { size?: number; cla
 }
 
 // Word Logo - "LOMU" text
-export function LomuWordLogo({ height = 60, className = "" }: { height?: number; className?: string }) {
+export function HexadWordLogo({ height = 60, className = "" }: { height?: number; className?: string }) {
   return (
     <div
       className={`relative flex items-center ${className}`}
@@ -68,7 +68,7 @@ export function LomuWordLogo({ height = 60, className = "" }: { height?: number;
 }
 
 // Combined Logo - Icon + Text
-export function LomuFullLogo({
+export function HexadFullLogo({
   iconSize = 40,
   textHeight = 32,
   className = ""
@@ -79,8 +79,8 @@ export function LomuFullLogo({
 }) {
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <LomuIconLogo size={iconSize} />
-      <LomuWordLogo height={textHeight} />
+      <HexadIconLogo size={iconSize} />
+      <HexadWordLogo height={textHeight} />
     </div>
   );
 }

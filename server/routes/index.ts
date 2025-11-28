@@ -78,12 +78,12 @@ export async function registerRoutes(app: Express): Promise<Server & { wss?: Web
   console.log("[ROUTES] Registering WebSocket terminal routes...");
   registerTerminalRoutes(wss, server);
   
-  // Register LomuAI chat routes from the main lomuChat.ts file
-  console.log("[LOMU-AI] LomuAI router mounted at /api/lomu-ai");
+  // Register HexadAI chat routes from the main lomuChat.ts file
+  console.log("[LOMU-AI] HexadAI router mounted at /api/hexad-ai");
   try {
     const { default: lomuChatRouter } = await import("../lomuChat.js");
     if (lomuChatRouter) {
-      app.use("/api/lomu-ai", lomuChatRouter);
+      app.use("/api/hexad-ai", lomuChatRouter);
     }
   } catch (e) {
     console.warn("[LOMU-AI] Failed to load lomuChat router (non-critical):", (e as any).message);

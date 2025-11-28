@@ -44,7 +44,7 @@ const defaultFileTree: FileTreeItem[] = [
   },
 ];
 
-export function LomuSidebar() {
+export function HexadSidebar() {
   const [fileTree, setFileTree] = useState(defaultFileTree);
 
   const toggleFolder = (id: string) => {

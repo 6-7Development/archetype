@@ -62,7 +62,7 @@ export function CommandConsole({ onProjectGenerated, viewMode = "desktop" }: Com
       return await apiRequest("POST", endpoint, data);
     },
     onSuccess: (data, variables) => {
-      // Check if LomuAI is requesting secrets
+      // Check if HexadAI is requesting secrets
       if (data.needsSecrets) {
         setSecretsRequest({
           commandId: data.commandId,

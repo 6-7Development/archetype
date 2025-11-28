@@ -575,7 +575,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
               break;
 
             case 'lomu_ai_job_update':
-              // Handle task management updates from LomuAI
+              // Handle task management updates from HexadAI
               console.log(`📋 [TASK-MGMT] ${message.updateType}:`, message);
               if (message.updateType === 'task_list_created' && message.tasks) {
                 console.log('📋 Task list created with tasks:', message.tasks);
@@ -592,7 +592,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
                   ),
                 }));
               } else if (message.updateType === 'job_progress' && message.message) {
-                // Handle inline progress messages from Regular LomuAI
+                // Handle inline progress messages from Regular HexadAI
                 console.log('📡 Job progress:', message.message);
                 const progressId = `progress-${Date.now()}-${Math.random()}`;
                 setStreamState(prev => ({

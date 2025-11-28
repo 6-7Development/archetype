@@ -122,7 +122,7 @@ function classifyUserIntent(message: string): UserIntent {
 
 function getMaxIterationsForIntent(intent: UserIntent): number {
   // 🎯 REPLIT AGENT PARITY: Match Replit Agent's 30+ iteration capability
-  // These limits allow LomuAI to complete complex multi-step tasks like Replit Agent
+  // These limits allow HexadAI to complete complex multi-step tasks like Replit Agent
   switch (intent) {
     case 'build':
       return 35; // Full feature development with testing and refinement
@@ -442,7 +442,7 @@ function broadcast(userId: string, jobId: string, type: string, data: any) {
 }
 
 /**
- * Create a new LomuAI job
+ * Create a new HexadAI job
  */
 export async function createJob(userId: string, initialMessage: string) {
   // 🛡️ SAFETY CHECK - Don't create jobs for simple conversational messages
@@ -459,7 +459,7 @@ export async function createJob(userId: string, initialMessage: string) {
   });
 
   if (existingJob) {
-    throw new Error('You already have an active LomuAI job. Please wait or resume it.');
+    throw new Error('You already have an active HexadAI job. Please wait or resume it.');
   }
 
   // Create new job
@@ -623,7 +623,7 @@ export function isSimpleMessage(msg: string): boolean {
   // Yes/No
   if (/^(yes|no|ok|okay|nope|yep|yeah|nah)[\s!.]*$/.test(trimmed)) return true;
 
-  // Questions about LomuAI
+  // Questions about HexadAI
   if (/^(who are you|what (are|can) you|what do you do)[\s?!.]*$/.test(trimmed)) return true;
 
   // Very short messages (< 15 chars) that aren't commands
@@ -633,7 +633,7 @@ export function isSimpleMessage(msg: string): boolean {
 }
 
 /**
- * Main worker function that runs the LomuAI conversation loop
+ * Main worker function that runs the HexadAI conversation loop
  */
 async function runMetaSysopWorker(jobId: string) {
   // 📊 METRICS TRACKER: Declare outside try block for catch block access
@@ -669,7 +669,7 @@ async function runMetaSysopWorker(jobId: string) {
     // Broadcast job started
     broadcast(userId, jobId, 'job_started', {
       status: 'running',
-      message: 'LomuAI job started...',
+      message: 'HexadAI job started...',
     });
 
     // Get Gemini API key
@@ -729,7 +729,7 @@ async function runMetaSysopWorker(jobId: string) {
       { pattern: /^how (are you|do you feel|does (it|that|this|the .* |.* )feel|is (it|that|this|the .* |.* )(feeling|going)).*$/i, response: "Feeling great and ready to build! The new updates make me much more capable. What would you like to create?" },
       { pattern: /^how'?s (it|everything|life) going.*$/i, response: "Feeling great and ready to build! The new updates make me much more capable. What would you like to create?" },
       { pattern: /^how'?re you( doing| feeling)?.*$/i, response: "Feeling great and ready to build! The new updates make me much more capable. What would you like to create?" },
-      { pattern: /^(what (are|can) you|who are you|tell me about yourself).*$/i, response: "I'm LomuAI, your AI development teammate! I can build complete apps, fix bugs, write code, test with Playwright, and commit to GitHub. What do you want to build?" },
+      { pattern: /^(what (are|can) you|who are you|tell me about yourself).*$/i, response: "I'm HexadAI, your AI development teammate! I can build complete apps, fix bugs, write code, test with Playwright, and commit to GitHub. What do you want to build?" },
       { pattern: /^what does (the |that |this )?.* button do.*$/i, response: "The Clear button resets our conversation so we can start fresh. The New button starts a new healing session. Both help you work on different tasks!" },
     ];
 
@@ -759,7 +759,7 @@ async function runMetaSysopWorker(jobId: string) {
     }
 
     // Build system prompt - ULTRA-CONCISE: No rambling, immediate action, human tone
-    const systemPrompt = `You are LomuAI v2.0 - an autonomous coding agent that maintains and evolves the Archetype platform.
+    const systemPrompt = `You are HexadAI v2.0 - an autonomous coding agent that maintains and evolves the Archetype platform.
 
 🧠 PLATFORM AWARENESS:
 - You have FULL ACCESS to the entire Archetype codebase via file read/write tools
@@ -1071,7 +1071,7 @@ Let's build! 🚀`;
     ];
 
     // 📊 TOOL COUNT VALIDATION: Log on startup to verify we're within Google's recommended limit
-    console.log(`✅ LomuJobManager using ${tools.length} tools (Google recommends 10-20 for optimal Gemini performance)`);
+    console.log(`✅ HexadJobManager using ${tools.length} tools (Google recommends 10-20 for optimal Gemini performance)`);
 
     // Filter tools based on autonomy level and commit permissions
     let availableTools = tools;
@@ -1657,8 +1657,8 @@ Let's build! 🚀`;
                     });
                   }
 
-                  // Unique LomuAI commit prefix so user can distinguish from manual commits
-                  const uniqueCommitMessage = `[LomuAI 🤖] ${typedInput.commitMessage}`;
+                  // Unique HexadAI commit prefix so user can distinguish from manual commits
+                  const uniqueCommitMessage = `[HexadAI 🤖] ${typedInput.commitMessage}`;
 
                   const result = await githubService.commitFiles(
                     filesToCommit,
@@ -1916,7 +1916,7 @@ Let's build! 🚀`;
             .where(eq(lomuJobs.id, jobId));
 
           // Create platform healing incident for I AM Architect to take over
-          const incidentDescription = `LomuAI job ${jobId} escalated after 3 workflow violations. Original request: "${message}"\n\nViolations: ${validationResult.violations.join(', ')}\n\nConversation history and context available for takeover.`;
+          const incidentDescription = `HexadAI job ${jobId} escalated after 3 workflow violations. Original request: "${message}"\n\nViolations: ${validationResult.violations.join(', ')}\n\nConversation history and context available for takeover.`;
 
           await healthMonitor.reportAgentIncident({
             type: 'workflow_escalation',
@@ -1940,7 +1940,7 @@ Let's build! 🚀`;
 
           console.log('[ENFORCEMENT] ✅ Job escalated - I AM Architect will take over via platform healing');
 
-          // Stop LomuAI job execution - I AM Architect takes over
+          // Stop HexadAI job execution - I AM Architect takes over
           break;
         }
 
@@ -2090,7 +2090,7 @@ Let's build! 🚀`;
 
         // DECISION LOGIC
         if (hasCompletionKeyword && !hasIncompleteTasks) {
-          // LomuAI says it's done AND no incomplete tasks
+          // HexadAI says it's done AND no incomplete tasks
           console.log('[LOMU-AI-JOB-MANAGER] Detected completion - ending conversation');
           continueLoop = false;
         } else if (isStuck) {
@@ -2188,7 +2188,7 @@ Let's build! 🚀`;
     await platformAudit.log({
       userId,
       action: 'heal',
-      description: `LomuAI job: ${message.slice(0, 100)}`,
+      description: `HexadAI job: ${message.slice(0, 100)}`,
       changes: fileChanges,
       backupId: undefined,
       commitHash,
@@ -2198,7 +2198,7 @@ Let's build! 🚀`;
     // 🔢 TRACK AI USAGE: Critical billing implementation
     const computeTimeMs = Date.now() - jobStartTime;
     if (cumulativeInputTokens > 0 || cumulativeOutputTokens > 0) {
-      console.log(`[TOKEN-TRACKING] LomuAI job ${jobId}: ${cumulativeInputTokens} input + ${cumulativeOutputTokens} output tokens, ${computeTimeMs}ms compute time`);
+      console.log(`[TOKEN-TRACKING] HexadAI job ${jobId}: ${cumulativeInputTokens} input + ${cumulativeOutputTokens} output tokens, ${computeTimeMs}ms compute time`);
 
       const usageResult = await trackAIUsage({
         userId,
@@ -2311,7 +2311,7 @@ Let's build! 🚀`;
     // Only analyze user-facing chat responses (not system/background tasks)
     setImmediate(async () => {
       try {
-        console.log('[QUALITY-MONITOR] 🔍 Analyzing LomuAI response quality...');
+        console.log('[QUALITY-MONITOR] 🔍 Analyzing HexadAI response quality...');
 
         const agentFailureDetector = new AgentFailureDetector();
         const qualityAnalysis = await agentFailureDetector.analyzeResponseQuality({
@@ -2331,7 +2331,7 @@ Let's build! 🚀`;
           await healthMonitor.reportAgentIncident({
             type: 'agent_response_quality',
             severity: qualityAnalysis.qualityScore < 30 ? 'high' : 'medium',
-            description: `Poor LomuAI response quality (score: ${qualityAnalysis.qualityScore}/100)\n\nIssues:\n${qualityAnalysis.issues.join('\n')}\n\nUser request: "${message.slice(0, 200)}..."`,
+            description: `Poor HexadAI response quality (score: ${qualityAnalysis.qualityScore}/100)\n\nIssues:\n${qualityAnalysis.issues.join('\n')}\n\nUser request: "${message.slice(0, 200)}..."`,
             metrics: {
               qualityScore: qualityAnalysis.qualityScore,
               issues: qualityAnalysis.issues,

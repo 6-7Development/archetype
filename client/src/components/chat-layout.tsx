@@ -40,7 +40,7 @@ export function ChatLayout({
           >
             <Menu className="w-4 h-4" />
           </Button>
-          <div className="text-sm font-semibold px-2">LomuAI</div>
+          <div className="text-sm font-semibold px-2">HexadAI</div>
         </div>
 
         <div className="flex items-center gap-1">

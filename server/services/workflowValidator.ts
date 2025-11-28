@@ -1,5 +1,5 @@
 /**
- * Workflow State Machine for LomuAI 7-Phase Workflow
+ * Workflow State Machine for HexadAI 7-Phase Workflow
  * 
  * Enforces: Assess → Plan → Execute → Test → Verify → Confirm → Commit
  * 

@@ -49,7 +49,7 @@ export function registerArchitectNotesRoutes(app: Express) {
     }
   });
 
-  // POST /api/projects/:projectId/notes - Create note (I AM or LomuAI)
+  // POST /api/projects/:projectId/notes - Create note (I AM or HexadAI)
   app.post("/api/projects/:projectId/notes", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const { projectId } = req.params;

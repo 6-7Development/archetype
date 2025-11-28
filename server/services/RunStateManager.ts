@@ -20,7 +20,7 @@ import {
 import { nanoid } from 'nanoid';
 
 /**
- * RunStateManager - Single Source of Truth for LomuAI Run State
+ * RunStateManager - Single Source of Truth for HexadAI Run State
  * 
  * Centralizes ALL run state mutations and broadcasts via BOTH WebSocket AND SSE.
  * Replaces scattered task/phase emissions with unified state management.

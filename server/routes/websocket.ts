@@ -161,7 +161,7 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
     if (isTerminal) {
       ws.send(JSON.stringify({
         type: 'welcome',
-        message: '🔌 LomuAI Terminal Ready\nType commands to interact with your project...'
+        message: '🔌 HexadAI Terminal Ready\nType commands to interact with your project...'
       }));
       console.log(`[TERMINAL] Welcome message sent for user: ${ws.userId}`);
     }

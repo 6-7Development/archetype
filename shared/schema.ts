@@ -32,7 +32,7 @@ export const users = pgTable("users", {
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role").notNull().default("user"), // user, admin
   isOwner: boolean("is_owner").notNull().default(false), // Platform owner (can modify platform in production)
-  autonomyLevel: varchar("autonomy_level", { length: 20 }).notNull().default("basic"), // 'basic' | 'standard' | 'deep' | 'max' - Controls LomuAI capabilities
+  autonomyLevel: varchar("autonomy_level", { length: 20 }).notNull().default("basic"), // 'basic' | 'standard' | 'deep' | 'max' - Controls HexadAI capabilities
   billingStatus: text("billing_status").notNull().default("trial"), // Enum: 'trial', 'trial_grace', 'active', 'suspended'
   stripeCustomerId: text("stripe_customer_id"), // Stripe customer ID
   defaultPaymentMethodId: varchar("default_payment_method_id"), // Stripe payment method ID
@@ -192,8 +192,8 @@ export const platformHealingSessions = pgTable("platform_healing_sessions", {
   knowledgeMatchConfidence: integer("knowledge_match_confidence").default(0), // 0-100 confidence score
   knowledgeMatchId: varchar("knowledge_match_id"), // Link to matched knowledge entry
 
-  // LomuAI delegation tracking (Tier 2)
-  lomuJobId: varchar("lomu_job_id"), // Link to lomuJobs table when delegated to LomuAI
+  // HexadAI delegation tracking (Tier 2)
+  lomuJobId: varchar("lomu_job_id"), // Link to lomuJobs table when delegated to HexadAI
 
   // Diagnosis data
   diagnosisNotes: text("diagnosis_notes"), // AI's analysis
@@ -217,7 +217,7 @@ export const platformHealingSessions = pgTable("platform_healing_sessions", {
 
   // AI metadata
   tokensUsed: integer("tokens_used").default(0),
-  model: varchar("model").default("claude-sonnet-4-20250514"), // or 'gemini-2.5-flash' for LomuAI
+  model: varchar("model").default("claude-sonnet-4-20250514"), // or 'gemini-2.5-flash' for HexadAI
 
   // Timestamps
   startedAt: timestamp("started_at").notNull().defaultNow(),
@@ -432,7 +432,7 @@ export const insertProjectSessionSchema = createInsertSchema(projectSessions).om
 export type InsertProjectSession = z.infer<typeof insertProjectSessionSchema>;
 export type ProjectSession = typeof projectSessions.$inferSelect;
 
-// Architect Notes - I AM → LomuAI collaboration notes
+// Architect Notes - I AM → HexadAI collaboration notes
 export const architectNotes = pgTable("architect_notes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   projectId: varchar("project_id").notNull(),
@@ -545,8 +545,8 @@ export const commands = pgTable("commands", {
   command: text("command").notNull(),
   response: text("response"),
   status: text("status").notNull().default("pending"),
-  platformMode: text("platform_mode").default("user"), // "user" or "platform" - determines if LomuAI modifies user project or Archetype itself
-  platformChanges: jsonb("platform_changes"), // Tracks platform file modifications for LomuAI
+  platformMode: text("platform_mode").default("user"), // "user" or "platform" - determines if HexadAI modifies user project or Archetype itself
+  platformChanges: jsonb("platform_changes"), // Tracks platform file modifications for HexadAI
   autoCommitted: text("auto_committed").default("false"), // Tracks if platform changes were auto-committed to git
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -560,7 +560,7 @@ export const insertCommandSchema = createInsertSchema(commands).omit({
 export type InsertCommand = z.infer<typeof insertCommandSchema>;
 export type Command = typeof commands.$inferSelect;
 
-// LomuAI Tasks - Replit Agent-style task tracking for AI generations
+// HexadAI Tasks - Replit Agent-style task tracking for AI generations
 export const lomuAITasks = pgTable("lomu_ai_tasks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
@@ -579,20 +579,20 @@ export const lomuAITasks = pgTable("lomu_ai_tasks", {
   index("idx_lomu_ai_tasks_command_id").on(table.commandId),
 ]);
 
-export const insertLomuAITaskSchema = createInsertSchema(lomuAITasks).omit({
+export const insertHexadAITaskSchema = createInsertSchema(lomuAITasks).omit({
   id: true,
   userId: true, // Server-injected from auth session
   createdAt: true,
   updatedAt: true,
 });
 
-export type InsertLomuAITask = z.infer<typeof insertLomuAITaskSchema>;
-export type LomuAITask = typeof lomuAITasks.$inferSelect;
+export type InsertHexadAITask = z.infer<typeof insertHexadAITaskSchema>;
+export type HexadAITask = typeof lomuAITasks.$inferSelect;
 
 export const chatMessages = pgTable("chat_messages", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
-  projectId: varchar("project_id"), // Link messages to projects (null for LomuAI platform healing)
+  projectId: varchar("project_id"), // Link messages to projects (null for HexadAI platform healing)
   conversationStateId: varchar("conversation_state_id"), // Link messages to specific conversation sessions (null for backward compatibility)
   fileId: varchar("file_id"),
   role: text("role").notNull(), // 'user' | 'assistant' | 'system' | 'tool'
@@ -600,8 +600,8 @@ export const chatMessages = pgTable("chat_messages", {
   images: jsonb("images"), // Array of image URLs/paths for Vision API support
   toolName: text("tool_name"), // Tool name for 'tool' role messages (PHASE 2: structured tool results)
   isSummary: boolean("is_summary").notNull().default(false), // True for compressed conversation summaries
-  isPlatformHealing: boolean("is_platform_healing").notNull().default(false), // True for LomuAI platform healing conversations
-  platformChanges: jsonb("platform_changes"), // Track file modifications in LomuAI messages
+  isPlatformHealing: boolean("is_platform_healing").notNull().default(false), // True for HexadAI platform healing conversations
+  platformChanges: jsonb("platform_changes"), // Track file modifications in HexadAI messages
   approvalStatus: text("approval_status"), // null | 'pending_approval' | 'approved' | 'rejected' - Replit Agent-style workflow
   approvalSummary: text("approval_summary"), // Summary of proposed changes awaiting approval
   approvedBy: varchar("approved_by"), // User ID who approved/rejected
@@ -679,7 +679,7 @@ export const insertConversationStateSchema = createInsertSchema(conversationStat
 export type InsertConversationState = z.infer<typeof insertConversationStateSchema>;
 export type ConversationState = typeof conversationStates.$inferSelect;
 
-// LomuAI Attachments - Files attached to chat messages (images, code, logs)
+// HexadAI Attachments - Files attached to chat messages (images, code, logs)
 export const lomuAttachments = pgTable('lomu_attachments', {
   id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
   messageId: varchar('message_id').notNull(), // References chatMessages.id
@@ -691,15 +691,15 @@ export const lomuAttachments = pgTable('lomu_attachments', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
-export const insertLomuAttachmentSchema = createInsertSchema(lomuAttachments).omit({
+export const insertHexadAttachmentSchema = createInsertSchema(lomuAttachments).omit({
   id: true,
   createdAt: true,
 });
 
-export type InsertLomuAttachment = z.infer<typeof insertLomuAttachmentSchema>;
-export type LomuAttachment = typeof lomuAttachments.$inferSelect;
+export type InsertHexadAttachment = z.infer<typeof insertHexadAttachmentSchema>;
+export type HexadAttachment = typeof lomuAttachments.$inferSelect;
 
-// LomuAI Sessions - Track pending changes in memory before batch commit
+// HexadAI Sessions - Track pending changes in memory before batch commit
 export const lomuSessions = pgTable('lomu_sessions', {
   id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar('user_id').notNull(),
@@ -713,25 +713,25 @@ export const lomuSessions = pgTable('lomu_sessions', {
   lastUpdated: timestamp('last_updated').defaultNow(),
 });
 
-export const insertLomuSessionSchema = createInsertSchema(lomuSessions).omit({
+export const insertHexadSessionSchema = createInsertSchema(lomuSessions).omit({
   id: true,
   createdAt: true,
   lastUpdated: true,
 });
 
-export type InsertLomuSession = z.infer<typeof insertLomuSessionSchema>;
-export type LomuSession = typeof lomuSessions.$inferSelect;
+export type InsertHexadSession = z.infer<typeof insertHexadSessionSchema>;
+export type HexadSession = typeof lomuSessions.$inferSelect;
 
-// Architect Consultations - Track LomuAI → I AM Architect consultations (premium paid feature)
+// Architect Consultations - Track HexadAI → I AM Architect consultations (premium paid feature)
 export const architectConsultations = pgTable('architect_consultations', {
   id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar('user_id').notNull(), // User who triggered the consultation (for billing)
   
-  // Consultation input from LomuAI
+  // Consultation input from HexadAI
   question: text('question').notNull(), // Specific architectural question
   context: text('context').notNull(), // Detailed context including failed approaches
   relevantFiles: text('relevant_files').array().default(sql`ARRAY[]::text[]`), // File paths relevant to question
-  rationale: text('rationale').notNull(), // Why LomuAI needed guidance
+  rationale: text('rationale').notNull(), // Why HexadAI needed guidance
   
   // I AM Architect's response
   guidance: text('guidance'), // Strategic guidance provided
@@ -745,7 +745,7 @@ export const architectConsultations = pgTable('architect_consultations', {
   filesInspected: text('files_inspected').array().default(sql`ARRAY[]::text[]`), // Files I AM read during analysis
   
   // Session tracking
-  sessionId: varchar('session_id'), // Link to LomuAI session
+  sessionId: varchar('session_id'), // Link to HexadAI session
   chatMessageId: varchar('chat_message_id'), // Link to chat message that triggered consultation
   
   // Status
@@ -770,7 +770,7 @@ export const insertArchitectConsultationSchema = createInsertSchema(architectCon
 export type InsertArchitectConsultation = z.infer<typeof insertArchitectConsultationSchema>;
 export type ArchitectConsultation = typeof architectConsultations.$inferSelect;
 
-// LomuAI Background Jobs - Long-running jobs with resumption capability
+// HexadAI Background Jobs - Long-running jobs with resumption capability
 export const lomuJobs = pgTable('lomu_jobs', {
   id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar('user_id').notNull(),
@@ -793,17 +793,17 @@ export const lomuJobs = pgTable('lomu_jobs', {
   completedAt: timestamp('completed_at'),
 });
 
-export const insertLomuJobSchema = createInsertSchema(lomuJobs).omit({
+export const insertHexadJobSchema = createInsertSchema(lomuJobs).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
   completedAt: true,
 });
 
-export type InsertLomuJob = z.infer<typeof insertLomuJobSchema>;
-export type LomuJob = typeof lomuJobs.$inferSelect;
+export type InsertHexadJob = z.infer<typeof insertHexadJobSchema>;
+export type HexadJob = typeof lomuJobs.$inferSelect;
 
-// LomuAI Workflow Metrics - Track v2.0 workflow enforcement performance
+// HexadAI Workflow Metrics - Track v2.0 workflow enforcement performance
 export const lomuWorkflowMetrics = pgTable('lomu_workflow_metrics', {
   id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
   jobId: varchar('job_id').notNull(), // Link to lomuJobs table
@@ -862,13 +862,13 @@ export const lomuWorkflowMetrics = pgTable('lomu_workflow_metrics', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
-export const insertLomuWorkflowMetricsSchema = createInsertSchema(lomuWorkflowMetrics).omit({
+export const insertHexadWorkflowMetricsSchema = createInsertSchema(lomuWorkflowMetrics).omit({
   id: true,
   createdAt: true,
 });
 
-export type InsertLomuWorkflowMetrics = z.infer<typeof insertLomuWorkflowMetricsSchema>;
-export type LomuWorkflowMetrics = typeof lomuWorkflowMetrics.$inferSelect;
+export type InsertHexadWorkflowMetrics = z.infer<typeof insertHexadWorkflowMetricsSchema>;
+export type HexadWorkflowMetrics = typeof lomuWorkflowMetrics.$inferSelect;
 
 // Usage Tracking & Billing
 export const usageLogs = pgTable("usage_logs", {
@@ -921,7 +921,7 @@ export const monthlyUsage = pgTable("monthly_usage", {
   month: text("month").notNull(), // YYYY-MM format
   aiProjectsCount: integer("ai_projects_count").notNull().default(0),
   totalTokens: integer("total_tokens").notNull().default(0),
-  tokensUsed: integer("tokens_used").notNull().default(0), // Plan-counted tokens (LomuAI chat)
+  tokensUsed: integer("tokens_used").notNull().default(0), // Plan-counted tokens (HexadAI chat)
   totalAICost: decimal("total_ai_cost", { precision: 10, scale: 2 }).notNull().default("0.00"),
   premiumAICost: decimal("premium_ai_cost", { precision: 10, scale: 2 }).notNull().default("0.00"), // I AM Architect premium billing
   storageBytesUsed: bigint("storage_bytes_used", { mode: "number" }).notNull().default(0), // Total file storage in bytes
@@ -1900,7 +1900,7 @@ export const insertArchitectReviewSchema = createInsertSchema(architectReviews).
 export type InsertArchitectReview = z.infer<typeof insertArchitectReviewSchema>;
 export type ArchitectReview = typeof architectReviews.$inferSelect;
 
-// LomuAI Knowledge Base - Stores learned patterns, decisions, and fixes
+// HexadAI Knowledge Base - Stores learned patterns, decisions, and fixes
 export const lomuKnowledge = pgTable("lomu_knowledge", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   category: text("category").notNull(), // 'pattern' | 'fix' | 'decision' | 'rule' | 'preference'
@@ -1914,7 +1914,7 @@ export const lomuKnowledge = pgTable("lomu_knowledge", {
   active: boolean("active").notNull().default(true), // Can be deactivated without deletion
   usageCount: integer("usage_count").notNull().default(0), // How many times this was referenced
   lastUsedAt: timestamp("last_used_at"),
-  createdBy: varchar("created_by"), // User ID or 'system' or 'lomu-ai'
+  createdBy: varchar("created_by"), // User ID or 'system' or 'hexad-ai'
   approvedBy: varchar("approved_by"), // User ID who approved this knowledge (I AM)
   metadata: jsonb("metadata"), // Additional structured data
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -1925,7 +1925,7 @@ export const lomuKnowledge = pgTable("lomu_knowledge", {
   index("idx_lomu_knowledge_priority").on(table.priority),
 ]);
 
-export const insertLomuKnowledgeSchema = createInsertSchema(lomuKnowledge).omit({
+export const insertHexadKnowledgeSchema = createInsertSchema(lomuKnowledge).omit({
   id: true,
   usageCount: true,
   lastUsedAt: true,
@@ -1933,10 +1933,10 @@ export const insertLomuKnowledgeSchema = createInsertSchema(lomuKnowledge).omit(
   updatedAt: true,
 });
 
-export type InsertLomuKnowledge = z.infer<typeof insertLomuKnowledgeSchema>;
-export type LomuKnowledge = typeof lomuKnowledge.$inferSelect;
+export type InsertHexadKnowledge = z.infer<typeof insertHexadKnowledgeSchema>;
+export type HexadKnowledge = typeof lomuKnowledge.$inferSelect;
 
-// LomuAI Instructions - User-given permanent instructions and preferences
+// HexadAI Instructions - User-given permanent instructions and preferences
 export const lomuInstructions = pgTable("lomu_instructions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   type: text("type").notNull(), // 'permanent' | 'conditional' | 'project-specific'
@@ -1957,16 +1957,16 @@ export const lomuInstructions = pgTable("lomu_instructions", {
   index("idx_lomu_instructions_active").on(table.active),
 ]);
 
-export const insertLomuInstructionSchema = createInsertSchema(lomuInstructions).omit({
+export const insertHexadInstructionSchema = createInsertSchema(lomuInstructions).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
 });
 
-export type InsertLomuInstruction = z.infer<typeof insertLomuInstructionSchema>;
-export type LomuInstruction = typeof lomuInstructions.$inferSelect;
+export type InsertHexadInstruction = z.infer<typeof insertHexadInstructionSchema>;
+export type HexadInstruction = typeof lomuInstructions.$inferSelect;
 
-// LomuAI Automation Rules - Automated workflows and triggers
+// HexadAI Automation Rules - Automated workflows and triggers
 export const lomuAutomation = pgTable("lomu_automation", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(), // Human-readable name for this automation
@@ -1991,7 +1991,7 @@ export const lomuAutomation = pgTable("lomu_automation", {
   index("idx_lomu_automation_active").on(table.active),
 ]);
 
-export const insertLomuAutomationSchema = createInsertSchema(lomuAutomation).omit({
+export const insertHexadAutomationSchema = createInsertSchema(lomuAutomation).omit({
   id: true,
   executionCount: true,
   lastExecutedAt: true,
@@ -2001,10 +2001,10 @@ export const insertLomuAutomationSchema = createInsertSchema(lomuAutomation).omi
   updatedAt: true,
 });
 
-export type InsertLomuAutomation = z.infer<typeof insertLomuAutomationSchema>;
-export type LomuAutomation = typeof lomuAutomation.$inferSelect;
+export type InsertHexadAutomation = z.infer<typeof insertHexadAutomationSchema>;
+export type HexadAutomation = typeof lomuAutomation.$inferSelect;
 
-// LomuAI Memory Log - Conversation memory and context retention
+// HexadAI Memory Log - Conversation memory and context retention
 export const lomuMemory = pgTable("lomu_memory", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   sessionId: varchar("session_id"), // Groups related memories together
@@ -2021,13 +2021,13 @@ export const lomuMemory = pgTable("lomu_memory", {
   index("idx_lomu_memory_importance").on(table.importance),
 ]);
 
-export const insertLomuMemorySchema = createInsertSchema(lomuMemory).omit({
+export const insertHexadMemorySchema = createInsertSchema(lomuMemory).omit({
   id: true,
   createdAt: true,
 });
 
-export type InsertLomuMemory = z.infer<typeof insertLomuMemorySchema>;
-export type LomuMemory = typeof lomuMemory.$inferSelect;
+export type InsertHexadMemory = z.infer<typeof insertHexadMemorySchema>;
+export type HexadMemory = typeof lomuMemory.$inferSelect;
 
 // ============================================================================
 // REPLIT AGENT-STYLE FEATURES (Message Queue, Autonomy, Image Gen, etc.)
@@ -2838,11 +2838,11 @@ export const CREDIT_CONSTANTS = {
   I_AM_ENTERPRISE_PRICE: 0, // Free for Enterprise (unlimited included)
 };
 
-// Scratchpad Entries - Shared notepad for LomuAI, sub-agents, and I AM Architect thoughts
+// Scratchpad Entries - Shared notepad for HexadAI, sub-agents, and I AM Architect thoughts
 export const scratchpadEntries = pgTable('scratchpad_entries', {
   id: serial('id').primaryKey(),
   sessionId: varchar('session_id', { length: 255 }).notNull(), // Ties to chat session
-  author: varchar('author', { length: 100 }).notNull(), // 'LomuAI' | 'Sub-Agent-1' | 'I AM Architect' | 'user'
+  author: varchar('author', { length: 100 }).notNull(), // 'HexadAI' | 'Sub-Agent-1' | 'I AM Architect' | 'user'
   role: varchar('role', { length: 50 }).notNull(), // 'agent' | 'subagent' | 'architect' | 'user'
   content: text('content').notNull(), // The thought/note
   entryType: varchar('entry_type', { length: 50 }).notNull(), // 'thought' | 'action' | 'note' | 'result'

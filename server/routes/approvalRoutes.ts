@@ -1,7 +1,7 @@
 /**
  * Approval API Routes
  * 
- * Handles user approval/rejection of file modification requests from LomuAI.
+ * Handles user approval/rejection of file modification requests from HexadAI.
  * 
  * Endpoints:
  * - POST /api/approve/:messageId - Approve pending modification

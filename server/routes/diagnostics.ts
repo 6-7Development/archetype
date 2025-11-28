@@ -215,7 +215,7 @@ router.get('/api/diagnostics/activity', requireAdmin, async (req, res) => {
           title: `✅ Fix Applied Successfully`,
           message: session.proposed_fix || 'Platform issue resolved',
           details: {
-            strategy: session.ai_strategy === 'architect' ? 'I AM Architect (Claude Sonnet 4)' : 'LomuAI',
+            strategy: session.ai_strategy === 'architect' ? 'I AM Architect (Claude Sonnet 4)' : 'HexadAI',
             filesModified: fileCount,
             commitHash: session.commit_hash,
             deploymentStatus: session.deployment_status
@@ -230,7 +230,7 @@ router.get('/api/diagnostics/activity', requireAdmin, async (req, res) => {
           title: `❌ Fix Attempt Failed`,
           message: session.error || 'Unable to resolve issue automatically',
           details: {
-            strategy: session.ai_strategy === 'architect' ? 'I AM Architect' : 'LomuAI',
+            strategy: session.ai_strategy === 'architect' ? 'I AM Architect' : 'HexadAI',
             phase: session.phase
           },
           action: 'Manual intervention may be required'
@@ -243,7 +243,7 @@ router.get('/api/diagnostics/activity', requireAdmin, async (req, res) => {
           title: `🔧 Working on Fix...`,
           message: session.diagnosis_notes || 'AI is analyzing and fixing the issue',
           details: {
-            strategy: session.ai_strategy === 'architect' ? 'I AM Architect' : 'LomuAI',
+            strategy: session.ai_strategy === 'architect' ? 'I AM Architect' : 'HexadAI',
             phase: session.phase
           },
           action: 'In progress...'

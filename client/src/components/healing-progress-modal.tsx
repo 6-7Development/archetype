@@ -56,7 +56,7 @@ export function HealingProgressModal({ isOpen, onClose, jobId }: HealingProgress
               <div className="flex flex-col items-center gap-3 py-8">
                 <Loader2 className="h-12 w-12 animate-spin text-honey" />
                 <div className="text-center">
-                  <p className="text-sm font-medium text-foreground">LomuAI is analyzing the platform</p>
+                  <p className="text-sm font-medium text-foreground">HexadAI is analyzing the platform</p>
                   <p className="text-xs text-muted-foreground mt-1">Diagnosing issues and planning fixes...</p>
                   <p className="text-xs text-honey font-mono mt-3">{elapsedSeconds}s elapsed</p>
                 </div>
@@ -75,7 +75,7 @@ export function HealingProgressModal({ isOpen, onClose, jobId }: HealingProgress
                 <CheckCircle2 className="h-12 w-12 text-mint" />
                 <div className="text-center">
                   <p className="text-sm font-medium text-mint">Healing Process Initiated</p>
-                  <p className="text-xs text-muted-foreground mt-2">LomuAI is working in the background</p>
+                  <p className="text-xs text-muted-foreground mt-2">HexadAI is working in the background</p>
                   <p className="text-xs text-muted-foreground mt-1">Check platform health for updates</p>
                 </div>
               </div>

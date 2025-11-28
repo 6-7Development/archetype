@@ -451,7 +451,7 @@ export interface BillingWarningData {
 // ============================================================================
 
 /**
- * RunState: Canonical state tracker for LomuAI jobs
+ * RunState: Canonical state tracker for HexadAI jobs
  * Replaces duplicate task managers and provides single source of truth
  */
 export interface RunState {

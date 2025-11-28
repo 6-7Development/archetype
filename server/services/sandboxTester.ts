@@ -28,7 +28,7 @@ const execAsync = promisify(exec);
  * 4. Return pass/fail + detailed results
  * 5. Clean up sandbox (delete temp directory)
  * 
- * All testing happens in-memory on LomuAI platform - NOT deployed externally.
+ * All testing happens in-memory on HexadAI platform - NOT deployed externally.
  */
 
 export interface SandboxTestConfig {

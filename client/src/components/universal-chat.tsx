@@ -533,7 +533,7 @@ export function UniversalChat({
             credentials: 'include',
           }).catch(err => console.error('Rejection failed:', err));
           
-          toast({ title: 'Guidance rejected', description: 'LomuAI will try a different approach' });
+          toast({ title: 'Guidance rejected', description: 'HexadAI will try a different approach' });
           setArchitectGuidance(null);
         }}
       />
@@ -751,7 +751,7 @@ export function UniversalChat({
                       AI
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col items-start">
-                      <div className="text-xs font-bold mb-1 text-[hsl(var(--secondary))]">LomuAI</div>
+                      <div className="text-xs font-bold mb-1 text-[hsl(var(--secondary))]">HexadAI</div>
                       <div className="bg-[hsl(var(--card))]/60 rounded-2xl rounded-bl-none px-4 py-2.5 flex items-center gap-2 border border-[hsl(var(--secondary))]/20 dark:border-[hsl(var(--secondary))]/30">
                         <Loader2 className="h-4 w-4 animate-spin text-[hsl(var(--secondary))]" />
                         <span className="text-sm text-[hsl(var(--secondary))] font-semibold">Thinking...</span>

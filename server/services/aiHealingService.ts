@@ -44,7 +44,7 @@ async function getPlatformOwnerId(): Promise<string | null> {
 /**
  * AI Healing Service for Tier 3 (I AM Architect)
  * 
- * Note: Tier 2 (LomuAI) is now handled via LomuAI job delegation in healOrchestrator.ts
+ * Note: Tier 2 (HexadAI) is now handled via HexadAI job delegation in healOrchestrator.ts
  * This service only handles Tier 3 (Architect/Claude) for agent failures and complex issues.
  * 
  * Strategy:
@@ -98,15 +98,15 @@ export class AIHealingService {
       console.log('[AI-HEALING] Starting Claude diagnosis...');
       console.log('[AI-HEALING] Prompt:', diagnosticPrompt);
       
-      const { buildLomuSuperCorePrompt } = await import('../lomuSuperCore');
+      const { buildHexadSuperCorePrompt } = await import('../lomuSuperCore');
       
       const contextPrompt = `Current incident:
 - Type: ${incident.type}
 - Severity: ${incident.severity}
 - Description: ${incident.description}`;
 
-      const systemPrompt = buildLomuSuperCorePrompt({
-        platform: 'LomuAI Platform (Self-Healing Mode)',
+      const systemPrompt = buildHexadSuperCorePrompt({
+        platform: 'HexadAI Platform (Self-Healing Mode)',
         autoCommit: false,
         intent: 'task',
         contextPrompt,

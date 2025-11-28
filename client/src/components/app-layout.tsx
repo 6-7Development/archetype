@@ -33,7 +33,7 @@ import { cn } from "@/lib/utils";
 import { API_ENDPOINTS, buildApiUrl } from "@/lib/api-utils";
 import { ROUTES, NAVIGATION } from "@/config/constants";
 import type { User } from "@shared/schema";
-import { LomuFullLogo } from '@/components/lomu-logos-new';
+import { HexadFullLogo } from '@/components/lomu-logos-new';
 import { CreditBalanceWidget } from "@/components/credit-balance-widget";
 
 interface AppLayoutProps {
@@ -116,7 +116,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       )}>
         {/* Logo - PROUD & PROMINENT! */}
         <div className="h-20 border-b flex items-center px-4 gap-4">
-          <LomuFullLogo iconSize={32} textHeight={28} />
+          <HexadFullLogo iconSize={32} textHeight={28} />
           {/* Brigido was here */}
           {/* Brigido was here */}
         </div>
@@ -332,7 +332,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           {/* AI Agent Badge & Theme */}
           <div className="flex items-center justify-between pt-2">
             <Badge variant="secondary" className="font-mono text-xs">
-              LomuAI
+              HexadAI
             </Badge>
             <ThemeToggle />
           </div>

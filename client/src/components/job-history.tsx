@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Zap, CheckCircle2, XCircle, Clock } from "lucide-react";
 
-interface LomuJob {
+interface HexadJob {
   id: string;
   jobId: string;
   status: 'completed' | 'failed' | 'interrupted';
@@ -16,8 +16,8 @@ interface LomuJob {
 }
 
 export function JobHistory() {
-  const { data: jobs, isLoading } = useQuery<LomuJob[]>({
-    queryKey: ['/api/lomu-ai/jobs'],
+  const { data: jobs, isLoading } = useQuery<HexadJob[]>({
+    queryKey: ['/api/hexad-ai/jobs'],
     refetchInterval: 30000,
   });
 

@@ -6,8 +6,8 @@
 export const APP_CONFIG = {
   // Branding
   branding: {
-    name: 'LomuAI',
-    tagline: 'When Code Throws You Lemons',
+    name: 'Hexad',
+    tagline: 'Collaborative Hive Intelligence for Code',
     logo: '/logo.png', // Configurable path
     favicon: '/favicon.ico',
   },
@@ -52,7 +52,7 @@ export const APP_CONFIG = {
     emptyStateText: 'Ready to help',
     emptyStateSubtext: 'Send a message to get started',
     placeholders: {
-      input: 'Message LomuAI...',
+      input: 'Message Hexad...',
       thinking: 'Processing...',
       typing: 'Typing...',
     },
@@ -169,9 +169,9 @@ export const APP_CONFIG = {
   // Social & External Links
   social: {
     github: 'https://github.com/6-7Development/archetype',
-    twitter: 'https://twitter.com/lomuai',
-    docs: 'https://docs.lomu.ai',
-    support: 'https://support.lomu.ai',
+    twitter: 'https://twitter.com/hexadai',
+    docs: 'https://docs.hexad.ai',
+    support: 'https://support.hexad.ai',
   },
 
   // Environment Detection

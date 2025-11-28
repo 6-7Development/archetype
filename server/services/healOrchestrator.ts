@@ -432,12 +432,12 @@ export class HealOrchestrator extends EventEmitter {
           
           console.log('[HEAL-ORCHESTRATOR] ✅ Knowledge base fix applied successfully (0 tokens used)');
         } catch (kbError) {
-          console.error('[HEAL-ORCHESTRATOR] KB fix failed, falling back to LomuAI:', kbError);
+          console.error('[HEAL-ORCHESTRATOR] KB fix failed, falling back to HexadAI:', kbError);
           // NOTE: I AM Architect is user-summoned only - not automatic
           aiStrategy = 'lomu_ai';
           usedKnowledgeBase = false;
           
-          // Fall through to LomuAI healing (not architect)
+          // Fall through to HexadAI healing (not architect)
           healingResult = await this.callAIHealing(diagnosticPrompt, incident, 'lomu_ai' as AIStrategy);
         }
       } else {
@@ -448,58 +448,58 @@ export class HealOrchestrator extends EventEmitter {
           console.log('[HEAL-ORCHESTRATOR] ❌ No knowledge base match found');
         }
         
-        // TIER 2: Delegate to LomuAI (primary worker agent)
+        // TIER 2: Delegate to HexadAI (primary worker agent)
         // NOTE: I AM Architect is user-summoned only - not automatic
-        console.log('[HEAL-ORCHESTRATOR] 🤖 TIER 2: Delegating to LomuAI agent...');
+        console.log('[HEAL-ORCHESTRATOR] 🤖 TIER 2: Delegating to HexadAI agent...');
         aiStrategy = 'lomu_ai';
         
         try {
-          // Get system user ID for LomuAI job creation
+          // Get system user ID for HexadAI job creation
           const systemUserId = await this.getSystemUserId();
           
           if (!systemUserId) {
-            throw new Error('No system user available for LomuAI delegation');
+            throw new Error('No system user available for HexadAI delegation');
           }
           
-          // Create LomuAI job to fix the incident
+          // Create HexadAI job to fix the incident
           const { createJob, startJobWorker } = await import('./lomuJobManager');
           const diagnosticMessage = `[PLATFORM-HEALING] Fix incident: ${incident.title}\n\n${diagnosticPrompt}\n\nIncident Details:\n- Type: ${incident.type}\n- Severity: ${incident.severity}\n- Description: ${incident.description}`;
           
           const job = await createJob(systemUserId, diagnosticMessage);
           
-          // Update session to track LomuAI delegation
+          // Update session to track HexadAI delegation
           await db.update(platformHealingSessions).set({
             aiStrategy: 'lomu_ai',
             model: 'gemini-2.5-flash',
             lomuJobId: job.id,
-            diagnosisNotes: 'Delegated to LomuAI agent for autonomous fixing',
+            diagnosisNotes: 'Delegated to HexadAI agent for autonomous fixing',
             knowledgeBaseMatched: false,
             knowledgeMatchConfidence: kbResult.confidence,
           }).where(eq(platformHealingSessions.id, session.id));
           
-          console.log(`[HEAL-ORCHESTRATOR] Created LomuAI job ${job.id} to fix incident`);
+          console.log(`[HEAL-ORCHESTRATOR] Created HexadAI job ${job.id} to fix incident`);
           
-          // Start the LomuAI job worker in the background
+          // Start the HexadAI job worker in the background
           await startJobWorker(job.id);
           
-          // Return early - LomuAI will handle the fix autonomously
-          // The LomuAI job will have full tool access and can actually fix the issue
-          // TODO: Monitor LomuAI job completion and update incident status
-          console.log('[HEAL-ORCHESTRATOR] LomuAI job started - delegating fix to agent');
+          // Return early - HexadAI will handle the fix autonomously
+          // The HexadAI job will have full tool access and can actually fix the issue
+          // TODO: Monitor HexadAI job completion and update incident status
+          console.log('[HEAL-ORCHESTRATOR] HexadAI job started - delegating fix to agent');
           
-          // Mark session as delegated (not failed, but waiting for LomuAI)
+          // Mark session as delegated (not failed, but waiting for HexadAI)
           await db.update(platformHealingSessions).set({
             phase: 'repair',
             status: 'active',
           }).where(eq(platformHealingSessions.id, session.id));
           
-          // Release lock and exit - LomuAI will handle it
+          // Release lock and exit - HexadAI will handle it
           this.isHealing = false;
           this.currentSessionId = null;
           return;
           
         } catch (lomuError: any) {
-          console.error('[HEAL-ORCHESTRATOR] LomuAI delegation failed:', lomuError);
+          console.error('[HEAL-ORCHESTRATOR] HexadAI delegation failed:', lomuError);
           console.log('[HEAL-ORCHESTRATOR] ❌ I AM Architect not auto-triggered (user-summoned only)');
           
           // Mark session as failed instead of escalating
@@ -507,7 +507,7 @@ export class HealOrchestrator extends EventEmitter {
           await db.update(platformHealingSessions).set({
             phase: 'failed',
             status: 'failed',
-            diagnosisNotes: `LomuAI failed: ${lomuError.message}. I AM Architect requires manual user request.`,
+            diagnosisNotes: `HexadAI failed: ${lomuError.message}. I AM Architect requires manual user request.`,
           }).where(eq(platformHealingSessions.id, session.id));
           
           // Update incident as failed (no auto-escalation)
@@ -532,7 +532,7 @@ export class HealOrchestrator extends EventEmitter {
         actionsTaken: [{ 
           action: 'diagnosis_started', 
           timestamp: new Date(),
-          // TIER 1: Knowledge Base, TIER 2: LomuAI (TIER 3 architect is manual-only)
+          // TIER 1: Knowledge Base, TIER 2: HexadAI (TIER 3 architect is manual-only)
           tier: usedKnowledgeBase ? 'tier_1_kb' : 'tier_2_lomu',
         }],
         success: false,
@@ -707,7 +707,7 @@ export class HealOrchestrator extends EventEmitter {
             
             try {
               const github = getGitHubService();
-              const branchName = `lomu-ai/auto-heal-${incidentId.substring(0, 8)}`;
+              const branchName = `hexad-ai/auto-heal-${incidentId.substring(0, 8)}`;
               
               // Create branch
               await github.createBranchFromMain(branchName);
@@ -748,7 +748,7 @@ export class HealOrchestrator extends EventEmitter {
               const prResult = await github.createOrUpdatePR(
                 branchName,
                 `🤖 Auto-Heal: ${incident.title}`,
-                `## Proposed Fix\n\n${healingResult.fixApplied}\n\n## Confidence Analysis\n\n**Score: ${confidenceResult.score}%**\n\n${confidenceResult.reasoning.join('\n')}\n\n## Verification Results\n\n✅ TypeScript: ${verification.results.typescriptValid ? 'PASS' : 'FAIL'}\n\n---\n\n*This PR was created automatically by LomuAI's self-healing system. Please review before merging.*`
+                `## Proposed Fix\n\n${healingResult.fixApplied}\n\n## Confidence Analysis\n\n**Score: ${confidenceResult.score}%**\n\n${confidenceResult.reasoning.join('\n')}\n\n## Verification Results\n\n✅ TypeScript: ${verification.results.typescriptValid ? 'PASS' : 'FAIL'}\n\n---\n\n*This PR was created automatically by HexadAI's self-healing system. Please review before merging.*`
               );
               
               console.log(`[HEAL-ORCHESTRATOR] ✅ Created PR #${prResult.prNumber}: ${prResult.prUrl}`);
@@ -946,7 +946,7 @@ export class HealOrchestrator extends EventEmitter {
         return adminUser.id;
       }
       
-      console.warn('[HEAL-ORCHESTRATOR] No system user found - LomuAI delegation will fail');
+      console.warn('[HEAL-ORCHESTRATOR] No system user found - HexadAI delegation will fail');
       return null;
     } catch (error) {
       console.error('[HEAL-ORCHESTRATOR] Error getting system user:', error);

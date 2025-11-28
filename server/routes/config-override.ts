@@ -1,5 +1,5 @@
 /**
- * Configuration Override API - Allows LomuAI to modify editable configs
+ * Configuration Override API - Allows HexadAI to modify editable configs
  * Sensitive operations require owner approval
  */
 
@@ -266,7 +266,7 @@ async function applyConfigChange(path: string, value: any): Promise<void> {
   console.log(`[CONFIG-CHANGE] Applied: ${path} = ${JSON.stringify(value)}`);
 
   // Emit config change event to all connected websockets
-  // This allows LomuAI and other clients to react to config changes
+  // This allows HexadAI and other clients to react to config changes
 }
 
 export default router;

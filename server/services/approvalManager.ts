@@ -2,7 +2,7 @@
  * Approval Manager Service
  * 
  * Manages user approvals for file modifications via EventEmitter.
- * When LomuAI wants to modify files, it:
+ * When HexadAI wants to modify files, it:
  * 1. Registers approval request via requestApproval()
  * 2. Waits for user response (blocks execution)
  * 3. User approves/rejects via frontend → POST /api/approve/:messageId

@@ -1,6 +1,6 @@
 /**
  * Project Change Validator
- * Validates that LomuAI/users can only make changes allowed by project protection settings
+ * Validates that HexadAI/users can only make changes allowed by project protection settings
  * Blocks changes to critical files, creates approval requests for sensitive operations
  */
 

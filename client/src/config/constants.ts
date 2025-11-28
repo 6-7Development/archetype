@@ -8,7 +8,7 @@ export const ROUTES = {
   PROJECTS: '/projects',
   WORKSPACE: '/workspace',
   CHAT: '/chat',
-  LOMU_CHAT: '/lomu',
+  HEXAD_CHAT: '/lomu',
   INCIDENTS: '/incidents',
   PLATFORM_HEALING: '/platform-healing',
   SETTINGS: '/account',
@@ -39,7 +39,7 @@ export const NAVIGATION = {
   main: [
     { label: 'Dashboard', path: ROUTES.DASHBOARD, testId: 'nav-dashboard' },
     { label: 'Builder', path: ROUTES.BUILDER, testId: 'nav-builder' },
-    { label: 'LomuAI Chat', path: ROUTES.LOMU_CHAT, testId: 'nav-lomu-chat' },
+    { label: 'Hexad Chat', path: ROUTES.HEXAD_CHAT, testId: 'nav-lomu-chat' },
     { label: 'Marketplace', path: ROUTES.MARKETPLACE, testId: 'nav-marketplace' },
   ],
   platform: [
@@ -62,7 +62,7 @@ export const API_ROUTES = {
   CHAT_SESSION: '/api/chat/session',
   PLATFORM_HEALTH: '/api/platform-health',
   INCIDENTS: '/api/incidents',
-  JOBS: '/api/lomu-ai/jobs',
+  JOBS: '/api/hexad-ai/jobs',
   HEALING_START: '/api/healing/start',
   COMMANDS: '/api/commands',
   PROJECTS: '/api/projects',
@@ -115,7 +115,7 @@ export const MESSAGES = {
   PROCESSING: 'Processing...',
   READY: 'Ready to help',
   THINKING: 'Thinking...',
-  WELCOME: 'Welcome to LomuAI',
+  WELCOME: 'Welcome to Hexad',
 } as const;
 
 export const TIME_CONSTANTS = {

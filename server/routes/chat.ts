@@ -301,7 +301,7 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
         status = 'degraded';
       }
 
-      // Get active LomuAI jobs (placeholder - would come from job manager)
+      // Get active HexadAI jobs (placeholder - would come from job manager)
       const activeJobs = 0;
 
       res.json({
@@ -336,8 +336,8 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
     }
   });
 
-  // GET /api/lomu-ai/jobs - List LomuAI jobs
-  app.get("/api/lomu-ai/jobs", async (req: any, res) => {
+  // GET /api/hexad-ai/jobs - List HexadAI jobs
+  app.get("/api/hexad-ai/jobs", async (req: any, res) => {
     try {
       const { lomuJobs } = await import("@shared/schema");
       const jobs = await db
