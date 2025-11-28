@@ -66,6 +66,12 @@ export default function Workspace() {
     enabled: !!projectId,
   });
 
+  // Fetch project files
+  const { data: projectFiles = [] } = useQuery<File[]>({
+    queryKey: [`/api/projects/${projectId}/files`],
+    enabled: !!projectId,
+  });
+
   // RBAC: Determine user role and access
   const isProjectOwner = projectId && project?.ownerId === user?.id;
   const isAdmin = user?.role === 'admin';
@@ -108,6 +114,7 @@ export default function Workspace() {
         mode={isPlatformHealing ? 'platform-healing' : 'project'}
         isAdmin={isSuperAdmin}
         userRole={userRole}
+        files={projectFiles}
         tasks={(tasksData as any)?.items || []}
         activityLog={(tasksData as any)?.activity || []}
         onTaskSelect={(taskId) => setSelectedTaskId(taskId)}

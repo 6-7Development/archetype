@@ -1748,15 +1748,18 @@ body {
 
   // Iterative project operations
   async getProjectFiles(projectId: string, userId?: string): Promise<File[]> {
+    console.log(`📂 [STORAGE] getProjectFiles: projectId=${projectId}, userId=${userId}`);
     const conditions = [eq(files.projectId, projectId)];
     if (userId) {
       conditions.push(eq(files.userId, userId));
     }
-    return await db
+    const result = await db
       .select()
       .from(files)
       .where(and(...conditions))
       .orderBy(files.filename);
+    console.log(`✅ [STORAGE] getProjectFiles returned ${result.length} files`);
+    return result;
   }
 
   async batchUpdateProjectFiles(

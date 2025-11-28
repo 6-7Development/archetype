@@ -34,6 +34,7 @@ interface WorkspaceLayoutProps {
   mode: 'project' | 'platform-healing'; // project = user, platform-healing = admin
   isAdmin: boolean;
   userRole: 'owner' | 'member' | 'admin' | 'super_admin';
+  files?: Array<{ id: string; filename: string; content: string; language?: string; createdAt?: string; updatedAt?: string }>;
   
   // Left panel content
   tasks?: Array<{
@@ -63,6 +64,7 @@ export function WorkspaceLayout({
   mode,
   isAdmin,
   userRole,
+  files = [],
   tasks = [],
   activityLog = [],
   children,
@@ -430,7 +432,7 @@ export function WorkspaceLayout({
             </TabsContent>
 
             <TabsContent value="files" className="flex-1 overflow-hidden p-0">
-              <FileExplorer files={[]} activeFileId={null} onFileSelect={() => {}} onCreateFile={() => {}} />
+              <FileExplorer files={files} activeFileId={null} onFileSelect={() => {}} onCreateFile={() => {}} />
             </TabsContent>
 
             <TabsContent value="git" className="flex-1 overflow-hidden p-0">
