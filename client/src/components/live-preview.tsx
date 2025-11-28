@@ -8,14 +8,24 @@ import { useWebSocketStream, addWebSocketListener, sendWebSocketMessage } from "
 interface LivePreviewProps {
   projectId: string | null;
   fileCount?: number;
+  refreshKey?: number;
 }
 
-export function LivePreview({ projectId, fileCount = 0 }: LivePreviewProps) {
+export function LivePreview({ projectId, fileCount = 0, refreshKey = 0 }: LivePreviewProps) {
   const [iframeKey, setIframeKey] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [previewStatus, setPreviewStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<string | null>(null);
+  
+  // Watch for refreshKey changes and reload preview
+  useEffect(() => {
+    if (refreshKey > 0) {
+      console.log('[LIVE-PREVIEW] 🔄 Refresh triggered by parent');
+      setPreviewStatus('loading');
+      setIframeKey(prev => prev + 1);
+    }
+  }, [refreshKey]);
   
   // Debounce timeout ref (300ms delay to batch rapid file changes)
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);

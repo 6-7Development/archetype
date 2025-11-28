@@ -49,6 +49,7 @@ export default function Workspace() {
   const [showFileTree, setShowFileTree] = useState(true);
   const [showPreview, setShowPreview] = useState(true);
   const [showMobileFileExplorer, setShowMobileFileExplorer] = useState(false);
+  const [previewRefreshKey, setPreviewRefreshKey] = useState(0);
   const consoleRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -245,10 +246,12 @@ export default function Workspace() {
 
   const handleRun = () => {
     setIsRunning(true);
+    // Trigger preview refresh by changing the key
+    setPreviewRefreshKey(prev => prev + 1);
     setConsoleOutput([
       "→ Running project...",
-      "✓ Server started on http://localhost:3000",
-      "✓ Ready in 1.2s"
+      "✓ Project started",
+      "✓ Live preview active"
     ]);
     setTimeout(() => {
       setIsRunning(false);
@@ -257,7 +260,7 @@ export default function Workspace() {
 
   const handleStop = () => {
     setIsRunning(false);
-    setConsoleOutput(prev => [...prev, "→ Server stopped"]);
+    setConsoleOutput(prev => [...prev, "→ Preview stopped"]);
   };
 
   const handleCreateFile = () => {
@@ -691,6 +694,7 @@ export default function Workspace() {
               <LivePreview 
                 projectId={activeSession.activeProjectId}
                 fileCount={files.length}
+                refreshKey={previewRefreshKey}
               />
             ) : (
               <div className="h-full flex items-center justify-center p-6">
