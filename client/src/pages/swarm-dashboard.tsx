@@ -133,7 +133,7 @@ export default function SwarmDashboard() {
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold" data-testid="text-success-rate">
-                {((stats?.stats.successRate || 0) * 100).toFixed(1)}%
+                {((stats?.stats?.successRate || 0) * 100).toFixed(1)}%
               </p>
               <p className="text-xs text-muted-foreground">completion rate</p>
             </CardContent>
@@ -148,7 +148,7 @@ export default function SwarmDashboard() {
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold" data-testid="text-avg-cost">
-                ${((stats?.stats.avgCostPerDecision || 0) / 100).toFixed(2)}
+                ${((stats?.stats?.avgCostPerDecision || 0) / 100).toFixed(2)}
               </p>
               <p className="text-xs text-muted-foreground">per execution</p>
             </CardContent>
@@ -163,7 +163,7 @@ export default function SwarmDashboard() {
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold" data-testid="text-avg-duration">
-                {((stats?.stats.avgDurationMs || 0) / 1000).toFixed(1)}s
+                {((stats?.stats?.avgDurationMs || 0) / 1000).toFixed(1)}s
               </p>
               <p className="text-xs text-muted-foreground">execution time</p>
             </CardContent>
@@ -282,7 +282,7 @@ export default function SwarmDashboard() {
         )}
 
         {/* Top Tools Used */}
-        {stats?.stats.topToolsUsed && stats.stats.topToolsUsed.length > 0 && (
+        {stats?.stats?.topToolsUsed && stats.stats?.topToolsUsed.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle>Most Used Tools</CardTitle>
@@ -290,7 +290,7 @@ export default function SwarmDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {stats.stats.topToolsUsed.slice(0, 10).map((item, idx) => (
+                {stats.stats?.topToolsUsed.slice(0, 10).map((item, idx) => (
                   <div
                     key={item.tool}
                     className="flex items-center justify-between"
@@ -304,7 +304,7 @@ export default function SwarmDashboard() {
                     </div>
                     <div className="flex items-center gap-4">
                       <Progress
-                        value={(item.count / stats.stats.topToolsUsed[0].count) * 100}
+                        value={(item.count / (stats.stats?.topToolsUsed?.[0]?.count || 1)) * 100}
                         className="w-32"
                       />
                       <span
