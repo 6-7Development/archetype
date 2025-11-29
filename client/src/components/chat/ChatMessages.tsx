@@ -4,6 +4,7 @@ import { ScratchpadDisplay } from "@/components/scratchpad-display";
 import { StatusStrip, BillingMetrics } from "@/components/agent/StatusStrip";
 import { RunProgressTable } from "@/components/run-progress-table";
 import { AgentProgress, type ProgressStep, type ProgressMetrics } from "@/components/agent-progress";
+import { WorkflowTaskDisplay } from "@/components/workflow-task-display";
 import { ValidationMetadataDisplay } from "@/components/agent/ValidationMetadataDisplay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -128,30 +129,17 @@ export function ChatMessages({
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Agent Status Strip - Shows current phase */}
-      {isGenerating && billingMetrics && (
-        <StatusStrip 
-          phase={currentPhase}
-          message={phaseMessage}
-          currentThought={streamState?.currentThought}
-          isExecuting={isGenerating}
-          billingMetrics={billingMetrics}
-        />
-      )}
-
-      {/* RunState Progress Table - Replit-style Kanban */}
-      {runState && (
-        <div className="px-6 pt-4 pb-2 bg-card border-b border-border">
-          <RunProgressTable runState={runState} />
-        </div>
-      )}
-
-      {/* AI Progress - Only show when no task list exists and no RunState */}
-      {(currentProgress.length > 0 || isGenerating) && agentTasks.length === 0 && !runState && (
-        <div className="px-6 pt-4 pb-2 bg-card border-b border-border">
-          <AgentProgress
+      {/* Unified Workflow Display - Replaces StatusStrip + RunProgressTable + AgentProgress */}
+      {(isGenerating || currentProgress.length > 0 || runState) && (
+        <div className="px-3 md:px-6 pt-3 md:pt-4 pb-2 md:pb-3 bg-card border-b border-border">
+          <WorkflowTaskDisplay
+            phase={currentPhase}
+            currentMessage={phaseMessage}
             steps={currentProgress}
             metrics={currentMetrics}
+            isGenerating={isGenerating}
+            runState={runState}
+            isCompact={typeof window !== 'undefined' && window.innerWidth < 768}
           />
         </div>
       )}
