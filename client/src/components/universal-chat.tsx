@@ -700,33 +700,112 @@ export function UniversalChat({
             setRunState={setRunState}
           />
 
-          <ResizablePanelGroup direction="horizontal" className="flex-1">
+          {/* Mobile: Full-width chat, Desktop: Resizable panels */}
+          <div className="flex-1 flex flex-col md:hidden">
+            {/* Mobile Chat - Full width */}
+            <div
+              ref={chatContainerRef}
+              className="flex-1 overflow-y-auto px-4 py-3 space-y-4 scroll-smooth min-h-0"
+              onScroll={handleScroll}
+              data-testid="chat-messages-container-mobile"
+            >
+              {runState.error && (
+                <Alert variant="destructive" className="mb-2" data-testid="error-alert-mobile">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="text-sm">{runState.error}</AlertDescription>
+                </Alert>
+              )}
+              {runState.messages.length === 0 ? (
+                <div className="flex items-center justify-center h-full text-muted-foreground" data-testid="empty-state-chat-mobile">
+                  <div className="text-center space-y-4 px-4">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[hsl(var(--primary))]/15">
+                      <Zap className="w-8 h-8 text-[hsl(var(--primary))]" />
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold text-[hsl(var(--primary))]">Start your project</p>
+                      <p className="text-sm text-muted-foreground/70 mt-2">Send a message to get started</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-3">
+                    {runState.messages.map((message, index) => (
+                      <MessageBubble
+                        key={`mobile-${message.id || message.messageId || index}-${index}`}
+                        message={message}
+                        index={index}
+                        totalMessages={runState.messages.length}
+                      />
+                    ))}
+                  </div>
+                  {isGenerating && (
+                    <div className="flex gap-3 group flex-row" data-testid="loading-indicator-mobile">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-[hsl(var(--secondary))]/20 text-[hsl(var(--secondary))] border-2 border-[hsl(var(--secondary))]/40 font-bold text-sm button-glow-mint">
+                        AI
+                      </div>
+                      <div className="flex-1 min-w-0 flex flex-col items-start">
+                        <div className="text-sm font-bold mb-1 text-[hsl(var(--secondary))]">HexadAI</div>
+                        <div className="bg-[hsl(var(--card))]/60 rounded-2xl rounded-bl-none px-4 py-3 flex items-center gap-2 border border-[hsl(var(--secondary))]/20">
+                          <Loader2 className="h-5 w-5 animate-spin text-[hsl(var(--secondary))]" />
+                          <span className="text-base text-[hsl(var(--secondary))] font-semibold">Thinking...</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div ref={latestMessageRef} />
+                </>
+              )}
+            </div>
+            {/* Mobile Chat Input - Fixed at bottom */}
+            <div className="flex-shrink-0 border-t bg-background dark:border-[hsl(var(--primary))]/20 p-3">
+              <ChatInput
+                input={input}
+                setInput={setInput}
+                onSend={handleSend}
+                onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
+                onImageSelect={(files: FileList | null) => {
+                  if (files) {
+                    handleImageSelect(files);
+                  }
+                }}
+                pendingImages={pendingImages}
+                uploadingImages={uploadingImages}
+                onRemoveImage={removeImage}
+                isGenerating={isGenerating}
+              />
+            </div>
+          </div>
+
+          {/* Desktop: Resizable panels */}
+          <ResizablePanelGroup direction="horizontal" className="flex-1 hidden md:flex">
         {/* Left Panel: Chat Messages (85%) */}
         <ResizablePanel defaultSize={85} minSize={65} maxSize={95} className="flex flex-col h-full">
           <div
             ref={chatContainerRef}
-            className="flex-1 overflow-y-auto px-6 py-3 space-y-4 scroll-smooth min-h-0"
+            className="flex-1 overflow-y-auto px-6 lg:px-8 py-4 space-y-4 scroll-smooth min-h-0"
             onScroll={handleScroll}
             data-testid="chat-messages-container"
           >
             {/* Error Display */}
             {runState.error && (
-              <Alert variant="destructive" className="mb-2" data-testid="error-alert">
+              <Alert variant="destructive" className="mb-3" data-testid="error-alert">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="text-sm">{runState.error}</AlertDescription>
+                <AlertDescription className="text-base">{runState.error}</AlertDescription>
               </Alert>
             )}
 
             {/* Messages Display */}
             {runState.messages.length === 0 ? (
               <div className="flex items-center justify-center h-full text-muted-foreground" data-testid="empty-state-chat">
-                <div className="text-center space-y-3">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[hsl(var(--primary))]/15">
-                    <Zap className="w-6 h-6 text-[hsl(var(--primary))]" />
+                <div className="text-center space-y-4">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[hsl(var(--primary))]/15">
+                    <Zap className="w-8 h-8 text-[hsl(var(--primary))]" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-[hsl(var(--primary))]">Start your project</p>
-                    <p className="text-xs text-muted-foreground/70 mt-1">Send a message to get started</p>
+                    <p className="text-lg font-bold text-[hsl(var(--primary))]">Start your project</p>
+                    <p className="text-sm text-muted-foreground/70 mt-2">Send a message to get started</p>
                   </div>
                 </div>
               </div>
