@@ -42,6 +42,12 @@ export function MessageBubble({ message, index, totalMessages }: MessageBubblePr
   const isUser = message.role === 'user';
   const isLast = index === totalMessages - 1;
   const hasThinking = message.thinking && message.thinking.trim().length > 0;
+  const hasContent = message.content && message.content.trim().length > 0;
+  
+  // Skip rendering empty assistant messages (these are placeholder messages)
+  if (!isUser && !hasContent && !hasThinking) {
+    return null;
+  }
 
   const copyMessage = () => {
     navigator.clipboard.writeText(message.content);

@@ -549,156 +549,25 @@ export function UniversalChat({
         }}
       />
 
-      {/* IDE Workspace Status Bar */}
-      <WorkspaceStatus
-        projectName={`${targetContext}${projectId ? ` • ${projectId.slice(0, 12)}` : ''}`}
-        status={buildStatus}
-        filesChanged={filesChanged}
-        branch="main"
-        gitStatus={gitStatus}
-        onViewFiles={() => setShowConsole(true)}
-        onDeploy={() => {
-          setBuildStatus('building');
-          setTimeout(() => setBuildStatus('deployed'), 2000);
-          setConsoleOutput(prev => prev + '\n📦 Building project...\n✅ Deployed successfully!\n');
-          toast({ title: "Deployed!", description: "Project published successfully" });
-        }}
-        onViewEnv={() => setShowEnvBrowser(true)}
+      {/* Compact Chat Header */}
+      <ChatHeader
+        targetContext={targetContext}
+        creditBalance={user?.credits || 0}
+        isFreeAccess={targetContext === 'platform'}
+        isConnected={true}
+        sessionTokens={sessionTokens}
+        onHistoryClick={() => window.location.href = '/consultation-history'}
+        onSettingsClick={() => setShowModelSelector(true)}
       />
 
-      {/* IDE Layout Container - File Browser + Chat */}
-      <div className="flex flex-1 min-h-0">
-        {/* Left Panel: File Browser */}
-        {showFileBrowser && (
-          <>
-            <FileBrowser
-              projectId={projectId || undefined}
-              onFileSelect={(path) => {
-                setConsoleOutput(prev => prev + `\n📂 Opened: ${path}\n`);
-                toast({ title: "File opened", description: path });
-              }}
-              changedFiles={["client/src/App.tsx", "shared/schema.ts"]}
-            />
-            <div className="w-px bg-border" />
-          </>
-        )}
-
-        {/* Center/Right Panel: Chat or IDE */}
-        <div className="flex flex-col flex-1 min-h-0">
-          {/* Toggle to IDE mode */}
-          {showIDE ? (
-            <>
-              {/* IDE Tabs View */}
-              <IDETabs
-                projectId={projectId || 'default'}
-                selectedFile={selectedFile}
-                onFileSelect={async (path) => {
-                  try {
-                    const res = await fetch(`/api/file-content/${path}`);
-                    if (res.ok) {
-                      const data = await res.json();
-                      setSelectedFile({
-                        path: data.path,
-                        content: data.content,
-                        language: data.language,
-                      });
-                    }
-                  } catch (err) {
-                    console.error("[IDE] Failed to load file:", err);
-                  }
-                }}
-                onFileChange={(path, content) => {
-                  setSelectedFile(prev => prev ? { ...prev, content } : undefined);
-                }}
-              />
-              {/* Back to Chat Button */}
-              <div className="flex-shrink-0 border-t p-2 bg-muted/20">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setShowIDE(false)}
-                  className="text-xs"
-                  data-testid="button-back-to-chat"
-                >
-                  Back to Chat
-                </Button>
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Chat View */}
-          {/* Subagent Visibility Panel */}
+      {/* Chat Container - Full Height */}
+      <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          {/* Subagent Panel - Only when active */}
           {activeTasks.length > 0 && (
-            <div className="px-4 py-2 border-b">
+            <div className="px-3 py-1.5 border-b bg-muted/20 flex-shrink-0">
               <SubagentVisibilityPanel tasks={activeTasks} isActive={true} />
             </div>
           )}
-
-          {/* Workspace Header with Status */}
-          <div className="border-b bg-muted/30 dark:border-[hsl(var(--primary))]/20 px-4 py-2 flex items-center justify-between text-xs gap-4">
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-              <span className="text-muted-foreground truncate">
-                <strong>Workspace:</strong> {targetContext}
-                {projectId && ` • Project: ${projectId.slice(0, 8)}`}
-              </span>
-            </div>
-            <div className="flex items-center gap-3 flex-wrap justify-end">
-              {/* Platform Health Indicator - Only show for owners/platform context */}
-              {(targetContext === 'platform' || targetContext === 'architect') && (
-                <PlatformHealthIndicator />
-              )}
-              
-              {isGenerating && (
-                <div className="flex items-center gap-1 text-[hsl(var(--primary))] font-semibold animate-pulse">
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                  <span>Processing...</span>
-                </div>
-              )}
-              <span className="text-muted-foreground">
-                Messages: <strong>{runState.messages.length}</strong> • Tokens: <strong>{sessionTokens.totalTokens}</strong> (~${sessionTokens.estimatedCost.toFixed(3)})
-              </span>
-              
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setShowModelSelector(true)}
-                className="text-xs h-6"
-                data-testid="button-model-selector"
-              >
-                🤖 Model
-              </Button>
-              
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setShowIDE(true)}
-                className="text-xs h-6"
-                data-testid="button-open-ide"
-              >
-                Open IDE
-              </Button>
-              
-              {consoleOutput && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setShowConsole(!showConsole)}
-                  className="text-xs h-6"
-                  data-testid="button-toggle-console"
-                >
-                  {showConsole ? 'Hide' : 'Show'} Console
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <ChatHeader
-            currentRun={currentRun}
-            stopRun={stopRun}
-            clearRunState={clearRunState}
-            isGenerating={isGenerating}
-            setRunState={setRunState}
-          />
 
           {/* Mobile: Full-width chat, Desktop: Resizable panels */}
           <div className="flex-1 flex flex-col md:hidden">
@@ -910,9 +779,6 @@ export function UniversalChat({
         isGenerating={isGenerating}
         latestMessage={latestMessage}
       />
-            </>
-          )}
-        </div>
       </div>
 
       {/* Console Output Panel */}
