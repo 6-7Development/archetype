@@ -3200,3 +3200,75 @@ export const auditRetentionPolicies = pgTable('audit_retention_policies', {
 ]);
 
 export type AuditRetentionPolicy = typeof auditRetentionPolicies.$inferSelect;
+
+// PHASE 1: Platform UI Configuration - Dynamic tools, tabs, and links configuration
+// Stores permission-based UI elements that can be modified at runtime
+export const platformUIConfig = pgTable('platform_ui_config', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Resource identification
+  resourceId: varchar('resource_id').notNull(), // e.g., 'header', 'sidebar', 'dashboard'
+  
+  // UI Element configuration
+  toolName: varchar('tool_name').notNull(), // Unique identifier for the tool/tab
+  tabLabel: text('tab_label').notNull(), // Display label shown to users
+  linkHref: text('link_href'), // URL or route
+  linkIcon: varchar('link_icon'), // Icon name (e.g., from lucide-react)
+  
+  // Display metadata
+  order: integer('order').notNull().default(0), // Sort order (ascending)
+  isActive: boolean('is_active').notNull().default(true), // Enable/disable visibility
+  
+  // RBAC configuration - array of roles that can see this element
+  rolesAllowed: jsonb('roles_allowed').$type<string[]>().notNull().default(sql`'["user", "admin", "owner"]'::jsonb`),
+  
+  // Timestamps for audit trail
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => [
+  index('idx_platform_ui_resource').on(table.resourceId),
+  index('idx_platform_ui_active').on(table.isActive),
+  index('idx_platform_ui_order').on(table.order),
+]);
+
+export const insertPlatformUIConfigSchema = createInsertSchema(platformUIConfig).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertPlatformUIConfig = z.infer<typeof insertPlatformUIConfigSchema>;
+export type PlatformUIConfig = typeof platformUIConfig.$inferSelect;
+
+// PHASE 1: Platform Settings - Global platform configuration key-value store
+// Stores dynamic settings that control platform behavior
+export const platformSettings = pgTable('platform_settings', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Setting identification
+  key: varchar('key', { length: 255 }).notNull().unique(), // Unique setting key (e.g., 'max_file_size', 'api_rate_limit')
+  
+  // Setting value and metadata
+  value: text('value').notNull(), // JSON string of the value (flexible type)
+  datatype: varchar('datatype', { length: 50 }).notNull().default('string'), // 'string', 'number', 'boolean', 'json'
+  description: text('description'), // Human-readable description of the setting
+  
+  // Audit trail
+  updatedBy: varchar('updated_by'), // User ID who last updated this setting
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  
+  // Metadata
+  isPublic: boolean('is_public').notNull().default(false), // Whether this setting is visible in public APIs
+  isLocked: boolean('is_locked').notNull().default(false), // Prevent accidental modification
+}, (table) => [
+  index('idx_platform_settings_key').on(table.key),
+  index('idx_platform_settings_updated').on(table.updatedAt),
+]);
+
+export const insertPlatformSettingsSchema = createInsertSchema(platformSettings).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export type InsertPlatformSettings = z.infer<typeof insertPlatformSettingsSchema>;
+export type PlatformSettings = typeof platformSettings.$inferSelect;
