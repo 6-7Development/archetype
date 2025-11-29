@@ -701,11 +701,11 @@ export function UniversalChat({
           />
 
           <ResizablePanelGroup direction="horizontal" className="flex-1">
-        {/* Left Panel: Chat Messages (70%) */}
-        <ResizablePanel defaultSize={70} minSize={50} maxSize={80} className="flex flex-col h-full">
+        {/* Left Panel: Chat Messages (85%) */}
+        <ResizablePanel defaultSize={85} minSize={65} maxSize={95} className="flex flex-col h-full">
           <div
             ref={chatContainerRef}
-            className="flex-1 overflow-y-auto px-4 py-2 space-y-3 scroll-smooth min-h-0"
+            className="flex-1 overflow-y-auto px-6 py-3 space-y-4 scroll-smooth min-h-0"
             onScroll={handleScroll}
             data-testid="chat-messages-container"
           >
@@ -787,8 +787,8 @@ export function UniversalChat({
 
         <ResizableHandle className="hidden md:flex" />
 
-        {/* Right Panel: Context Rail (30%) - Hidden on mobile */}
-        <ResizablePanel defaultSize={30} minSize={20} maxSize={40} className="hidden md:block">
+        {/* Right Panel: Context Rail (15%) - Hidden on mobile */}
+        <ResizablePanel defaultSize={15} minSize={5} maxSize={35} className="hidden md:flex flex-col overflow-hidden">
           <ContextRail
             tasks={agentTasks}
             artifacts={artifacts}
