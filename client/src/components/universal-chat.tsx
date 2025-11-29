@@ -136,20 +136,9 @@ export function UniversalChat({
 
   const [input, setInput] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [pendingImages, setPendingImages] = useState<string[]>([]); // Stores data URLs for preview
-  const [uploadingImages, setUploadingImages] = useState<Map<string, boolean>>(new Map()); // Stores tempId -> isUploading
-  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]); // Stores final URLs from backend
-  
-  // IDE Integration State
-  const [consoleOutput, setConsoleOutput] = useState<string>("");
-  const [showConsole, setShowConsole] = useState<boolean>(false);
-  const [buildStatus, setBuildStatus] = useState<'ready' | 'building' | 'error' | 'deployed'>('ready');
-  const [filesChanged, setFilesChanged] = useState<number>(0);
-  const [showFileBrowser, setShowFileBrowser] = useState<boolean>(true);
-  const [showEnvBrowser, setShowEnvBrowser] = useState<boolean>(false);
-  const [gitStatus, setGitStatus] = useState({ ahead: 0, behind: 0, uncommitted: 2 });
-  const [selectedFile, setSelectedFile] = useState<{ path: string; content: string; language: string } | undefined>();
-  const [showIDE, setShowIDE] = useState<boolean>(false);
+  const [pendingImages, setPendingImages] = useState<string[]>([]);
+  const [uploadingImages, setUploadingImages] = useState<Map<string, boolean>>(new Map());
+  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
   
   // Token & Rate Limit Tracking
   const [sessionTokens, setSessionTokens] = useState({ inputTokens: 0, outputTokens: 0, totalTokens: 0, estimatedCost: 0 });

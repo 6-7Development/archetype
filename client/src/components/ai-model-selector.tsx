@@ -17,32 +17,13 @@ export function AIModelSelector() {
     },
   });
   
-  const currentModel = (prefs as any)?.aiModel || "claude";
+  // Always use Hexad/Gemini for chat
+  const currentModel = "gemini";
   
   return (
-    <Select
-      value={currentModel}
-      onValueChange={(model) => updateMutation.mutate(model)}
-      data-testid="select-ai-model"
-    >
-      <SelectTrigger className="w-56">
-        <div className="flex items-center gap-2">
-          {currentModel === 'gemini' ? (
-            <Zap className="h-3 w-3" />
-          ) : (
-            <Brain className="h-3 w-3" />
-          )}
-          <SelectValue />
-        </div>
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="claude" data-testid="option-claude">
-          I AM Architect
-        </SelectItem>
-        <SelectItem value="gemini" data-testid="option-gemini">
-          Hexad
-        </SelectItem>
-      </SelectContent>
-    </Select>
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary/10" data-testid="hexad-model-badge">
+      <Zap className="h-3 w-3 text-primary" />
+      <span className="text-sm font-medium">Hexad</span>
+    </div>
   );
 }
