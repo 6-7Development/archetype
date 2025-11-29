@@ -29,7 +29,7 @@ export function ChatLayout({
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden bg-background">
       {/* Top Header - Replit Style */}
-      <header className="border-b bg-card/50 backdrop-blur-sm px-3 py-2 h-11 flex items-center justify-between flex-shrink-0">
+      <header className="border-b bg-card/50 backdrop-blur-sm px-3 md:px-4 py-2 md:py-3 h-12 md:h-14 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-1">
           <Button
             size="sm"
@@ -40,7 +40,7 @@ export function ChatLayout({
           >
             <Menu className="w-4 h-4" />
           </Button>
-          <div className="text-sm font-semibold px-2">HexadAI</div>
+          <div className="text-sm md:text-base font-semibold px-2">Hexad</div>
         </div>
 
         <div className="flex items-center gap-1">

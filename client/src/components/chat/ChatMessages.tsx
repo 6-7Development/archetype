@@ -184,7 +184,7 @@ export function ChatMessages({
       {/* Messages Area */}
       <div
         ref={activeScrollRef}
-        className="flex-1 min-h-0 overflow-y-auto px-4 py-6 space-y-6"
+        className="flex-1 min-h-0 overflow-y-auto px-3 md:px-6 py-4 md:py-6 space-y-4 md:space-y-6"
         data-testid="chat-messages-container"
       >
         {messages.filter((msg) => {
@@ -218,11 +218,11 @@ export function ChatMessages({
               {/* User messages: simple card */}
               {message.role === 'user' ? (
                 <Card className="bg-primary/5 border-primary/20">
-                  <CardContent className="p-4">
+                  <CardContent className="p-3 md:p-4">
                     <div className="flex items-start gap-2">
-                      <User className="w-4 h-4 mt-0.5 flex-shrink-0 text-primary" />
+                      <User className="w-5 h-5 mt-0.5 flex-shrink-0 text-primary" />
                       <div className="flex-1">
-                        <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+                        <p className="text-sm md:text-base whitespace-pre-wrap break-words">{message.content}</p>
                         
                         {/* User-attached images */}
                         {message.images && message.images.length > 0 && (
@@ -253,13 +253,13 @@ export function ChatMessages({
                         <div className="flex items-start gap-2">
                           <div className="text-xl">⚠️</div>
                           <div className="flex-1 space-y-2">
-                            <h4 className="font-semibold text-sm">Checkpoint Required</h4>
-                            <p className="text-xs text-muted-foreground">
+                            <h4 className="font-semibold text-sm md:text-base">Checkpoint Required</h4>
+                            <p className="text-sm md:text-base text-muted-foreground">
                               Complexity: <span className="font-medium">{message.checkpoint.complexity}</span> |
                               Estimated Cost: <span className="font-medium">${message.checkpoint.cost.toFixed(2)}</span> |
                               Time: <span className="font-medium">{message.checkpoint.estimatedTime}</span>
                             </p>
-                            <div className="text-xs">
+                            <div className="text-sm">
                               <p className="font-medium mb-1">Planned Actions:</p>
                               <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
                                 {message.checkpoint.actions.map((action, i) => (
@@ -311,7 +311,7 @@ export function ChatMessages({
         {isGenerating && (
           <div className="flex items-center gap-2 text-muted-foreground" data-testid="typing-indicator">
             <Loader2 className="w-4 h-4 animate-spin" />
-            <span className="text-sm">Hexad is thinking...</span>
+            <span className="text-base md:text-lg">Hexad is thinking...</span>
           </div>
         )}
 
@@ -320,7 +320,7 @@ export function ChatMessages({
 
       {/* WebSocket Stream: File Status */}
       {streamState?.currentFile && (
-        <div className="mx-4 mb-2 px-3 py-1.5 bg-card border-l-2 border-emerald-500/60 rounded text-xs" data-testid="stream-file-status">
+        <div className="mx-4 mb-2 px-3 py-1.5 bg-card border-l-2 border-emerald-500/60 rounded text-sm" data-testid="stream-file-status">
           <p className="text-[hsl(220,10%,72%)] flex items-center gap-2">
             <span className="font-mono text-[hsl(220,70%,60%)]">{streamState.currentFile.action}</span>
             <span className="font-mono">{streamState.currentFile.filename}</span>
@@ -332,7 +332,7 @@ export function ChatMessages({
 
       {/* WebSocket Stream: File Summary */}
       {streamState?.fileSummary && !streamState?.currentFile && (
-        <div className="mx-4 mb-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-xs" data-testid="stream-file-summary">
+        <div className="mx-4 mb-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-sm" data-testid="stream-file-summary">
           <div className="flex items-center justify-between text-emerald-200">
             <span className="font-semibold">
               ✓ Modified {streamState.fileSummary.filesChanged} file{streamState.fileSummary.filesChanged !== 1 ? 's' : ''}
