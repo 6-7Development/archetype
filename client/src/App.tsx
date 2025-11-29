@@ -40,7 +40,7 @@ import Setup from "@/pages/setup";
 import ArtifactDemo from "@/pages/artifact-demo";
 import Deployments from "@/pages/deployments";
 import DeploymentDetails from "@/pages/deployment-details";
-import HexadChat from "@/pages/lomu-chat";
+import ChatPage from "@/pages/chat";
 import ConsultationHistory from "@/pages/consultation-history";
 import SwarmDashboard from "@/pages/swarm-dashboard";
 import Monitoring from "@/pages/monitoring";
@@ -209,8 +209,9 @@ function Router() {
       </Route>
       <Route path="/artifact-demo" component={ArtifactDemo} />
       
-      {/* Standalone Hexad Chat - No project required */}
-      <Route path="/chat" component={HexadChat} />
+      {/* Universal Chat - Works for platform and projects */}
+      <Route path="/chat" component={ChatPage} />
+      <Route path="/chat/:projectId" component={ChatPage} />
       
       {/* SWARM Mode Dashboard */}
       <Route path="/swarm-dashboard">
