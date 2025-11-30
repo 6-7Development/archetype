@@ -20,7 +20,7 @@ import { eq } from 'drizzle-orm';
 import { performanceMonitor } from '../../../services/performanceMonitor.ts';
 import { traceLogger } from '../../../services/traceLogger.ts';
 import { terminateStream } from '../streaming.ts';
-import { handleBilling } from '../../lomu/utils.ts';
+import { handleBilling } from '../../beehive/utils.ts';
 
 /**
  * Context for error handling operations

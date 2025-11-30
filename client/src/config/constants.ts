@@ -8,7 +8,7 @@ export const ROUTES = {
   PROJECTS: '/projects',
   WORKSPACE: '/workspace',
   CHAT: '/chat',
-  HEXAD_CHAT: '/lomu',
+  HEXAD_CHAT: '/beehive',
   INCIDENTS: '/incidents',
   PLATFORM_HEALING: '/platform-healing',
   SETTINGS: '/account',
@@ -39,7 +39,7 @@ export const NAVIGATION = {
   main: [
     { label: 'Dashboard', path: ROUTES.DASHBOARD, testId: 'nav-dashboard' },
     { label: 'Builder', path: ROUTES.BUILDER, testId: 'nav-builder' },
-    { label: 'BeeHive Chat', path: ROUTES.HEXAD_CHAT, testId: 'nav-lomu-chat' },
+    { label: 'BeeHive Chat', path: ROUTES.HEXAD_CHAT, testId: 'nav-beehive-chat' },
     { label: 'Marketplace', path: ROUTES.MARKETPLACE, testId: 'nav-marketplace' },
   ],
   platform: [

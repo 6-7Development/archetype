@@ -195,7 +195,7 @@ export function NewDeploymentModal({ open, onOpenChange }: NewDeploymentModalPro
                 data-testid="input-subdomain"
               />
               <span className="text-sm text-muted-foreground whitespace-nowrap">
-                .lomu.app
+                .beehive.app
               </span>
             </div>
             {subdomainError && (

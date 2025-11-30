@@ -324,7 +324,7 @@ export default function APIKeysPage() {
                 </p>
                 <pre className="bg-muted p-3 rounded-md text-sm font-mono overflow-x-auto">
                   {`curl -H "Authorization: Bearer YOUR_API_KEY" \\
-  https://api.lomu.dev/v1/generate`}
+  https://api.beehive.dev/v1/generate`}
                 </pre>
               </div>
               <div>

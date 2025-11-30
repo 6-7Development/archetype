@@ -55,6 +55,9 @@ export const LOMU_CORE_TOOLS = LOMU_TOOLS.filter(tool => [
   'glob',
 ].includes(tool.name));
 
+// BeeHive naming alias for LOMU_CORE_TOOLS
+export const BEEHIVE_CORE_TOOLS = LOMU_CORE_TOOLS;
+
 /**
  * SUBAGENT TOOLS (12 tools)
  * For delegated coding/testing loops - execution-focused

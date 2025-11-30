@@ -147,7 +147,7 @@ export default function DeploymentsPage() {
                   <CardHeader className="gap-2 space-y-0 pb-3">
                     <div className="flex items-start justify-between gap-2">
                       <CardTitle className="text-lg font-semibold truncate" data-testid={`text-subdomain-${deployment.id}`}>
-                        {deployment.subdomain}.lomu.app
+                        {deployment.subdomain}.beehive.app
                       </CardTitle>
                       <Badge
                         className={statusBadge.className}

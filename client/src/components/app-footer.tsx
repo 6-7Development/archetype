@@ -28,7 +28,7 @@ export function AppFooter() {
                 <Github className="w-5 h-5" />
               </a>
               <a
-                href="https://twitter.com/lomuai"
+                href="https://twitter.com/beehive_dev"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors"
@@ -37,7 +37,7 @@ export function AppFooter() {
                 <Twitter className="w-5 h-5" />
               </a>
               <a
-                href="https://linkedin.com/company/lomu"
+                href="https://linkedin.com/company/beehive-dev"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors"

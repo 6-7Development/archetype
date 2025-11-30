@@ -14,7 +14,7 @@
 
 import type { WebSocketServer } from 'ws';
 import type { BillingSetupResult, AgentRunStartParams } from './types.ts';
-import { validateContextAccess } from '../../lomu/utils.ts';
+import { validateContextAccess } from '../../beehive/utils.ts';
 import { calculateTokenEstimate } from '../billing.ts';
 import { AgentExecutor } from '../../../services/agentExecutor.ts';
 

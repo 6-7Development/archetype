@@ -9,7 +9,7 @@ interface SplitEditorState {
   rightContent: string;
 }
 
-const STORAGE_KEY = "lomu-split-editor-state";
+const STORAGE_KEY = "beehive-split-editor-state";
 
 export function useSplitEditor(files: File[]) {
   const [state, setState] = useState<SplitEditorState>(() => {

@@ -32,7 +32,7 @@ export const APP_CONFIG = {
       projects: '/api/projects',
       health: '/api/platform-health',
       incidents: '/api/incidents',
-      jobs: '/api/lomu-ai/jobs',
+      jobs: '/api/beehive-ai/jobs',
       healing: '/api/healing',
       auth: {
         login: '/api/auth/login',

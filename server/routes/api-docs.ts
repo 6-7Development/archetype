@@ -13,12 +13,12 @@ const openApiSpec = {
     version: '1.0.0',
     description: 'Enterprise-grade AI-powered development platform with multi-tenant workspace isolation, billing analytics, compliance framework, and autonomous healing capabilities.',
     contact: {
-      name: 'BeeHiveAI Support',
-      email: 'support@lomu.ai'
+      name: 'BeeHive Support',
+      email: 'support@beehive.dev'
     },
     license: {
       name: 'Proprietary',
-      url: 'https://lomu.ai/license'
+      url: 'https://beehive.dev/license'
     }
   },
   servers: [

@@ -105,7 +105,7 @@ export function OnboardingTour({ onComplete }: OnboardingTourProps) {
   };
 
   const handleTemplateSelect = (template: typeof quickstartTemplates[0]) => {
-    localStorage.setItem('lomu_quickstart_prompt', template.prompt);
+    localStorage.setItem('beehive_quickstart_prompt', template.prompt);
     onComplete();
   };
 

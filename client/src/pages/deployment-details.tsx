@@ -210,7 +210,7 @@ export default function DeploymentDetailsPage() {
             </Button>
             <div>
               <h1 className="text-2xl font-bold" data-testid="text-deployment-title">
-                {deployment.subdomain}.lomu.app
+                {deployment.subdomain}.beehive.app
               </h1>
               <p className="text-sm text-muted-foreground">
                 {deployment.environment === 'production' ? 'Production' : 'Preview'} Deployment

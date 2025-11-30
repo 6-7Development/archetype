@@ -206,7 +206,7 @@ export interface UseStreamEventsReturn {
 
 // Storage key for persisting messages
 const MESSAGES_STORAGE_KEY = (projectId?: string, targetContext?: string) => 
-  `lomu-chat-messages:${targetContext || 'platform'}:${projectId || 'general'}`;
+  `beehive-chat-messages:${targetContext || 'platform'}:${projectId || 'general'}`;
 
 export function useStreamEvents(options?: { projectId?: string; targetContext?: string; onProjectGenerated?: (result: any) => void; onRunCompleted?: () => void; onRunFailed?: () => void; onArchitectResult?: (result: any) => void }): UseStreamEventsReturn {
   // Load persisted messages on mount

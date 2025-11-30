@@ -34,8 +34,8 @@ import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { traceLogger } from '../../../services/traceLogger.ts';
 import { terminateStream } from '../streaming.ts';
-import { handleBilling, retryWithBackoff } from '../../lomu/utils.ts';
-import { LOMU_CORE_TOOLS } from '../../../tools/tool-distributions.ts';
+import { handleBilling, retryWithBackoff } from '../../beehive/utils.ts';
+import { BEEHIVE_CORE_TOOLS } from '../../../tools/tool-distributions.ts';
 import { RunStateManager } from '../../../services/RunStateManager.ts';
 import { PhaseOrchestrator } from '../../../services/PhaseOrchestrator.ts';
 import { emitContentChunk, emitToolCall, emitToolResult, emitProgress, emitSystemInfo, emitComplete, emitThinking, createChunkState, createEmitContext, emitTaskUpdate, emitPhaseTransition } from './stream-emitter.ts';
@@ -44,7 +44,7 @@ import { CreditManager } from '../../../services/creditManager.ts';
 import { beehiveAIBrain } from '../../../services/beehiveAIBrain.ts';
 import { AgentExecutor } from '../../../services/agentExecutor.ts';
 import { BEEHIVE_LIMITS } from '../../../config/beehiveLimits.ts';
-import { waitForApproval } from '../../lomu/utils.ts';
+import { waitForApproval } from '../../beehive/utils.ts';
 import type { RunConfigGovernance } from './types.ts';
 import type { ToolResult } from '../../../validation/toolResultValidators.ts';
 
@@ -744,8 +744,8 @@ export async function handleStreamRequest(
           const commitMessage = `[BeeHive] ${fullContent?.substring(0, 50) || 'Auto-update'}\n\nFiles changed: ${allChangedFiles.join(', ')}`;
           
           const commitHash = await platformGitService.commit(commitMessage, {
-            name: 'BeeHive Autonomous',
-            email: 'lomuai@lomu.dev'
+            name: 'BeeHive Scout',
+            email: 'scout@beehive.dev'
           });
           
           emitSystemInfo(emitContext, `✅ Changes committed: ${commitHash.substring(0, 7)}`, 'info');

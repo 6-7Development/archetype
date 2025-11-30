@@ -340,7 +340,7 @@ export function UniversalChat({
   const handleClearChat = () => {
     clearRunState();
     try {
-      const storageKey = `lomu-chat-messages:${targetContext || 'platform'}:${projectId || 'general'}`;
+      const storageKey = `beehive-chat-messages:${targetContext || 'platform'}:${projectId || 'general'}`;
       localStorage.removeItem(storageKey);
     } catch (e) {
       console.warn('Failed to clear chat history:', e);
