@@ -2,7 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { storage } from "../storage";
 import { isAuthenticated, isAdmin } from "../universalAuth";
 import { getGitHubService } from "../githubService";
-import { auditService } from "../services/auditService";
+import { AuditService } from "../services/auditService";
 import { auditLog } from "../middleware/auditMiddleware";
 import { promises as fs } from 'fs';
 import * as path from 'path';
@@ -88,7 +88,7 @@ export function registerAdminRoutes(app: Express) {
       const mode = await storage.enableMaintenanceMode(user.id, reason);
       
       // AUDIT: Log maintenance mode enable
-      await auditService.log({
+      await AuditService.log({
         workspaceId: 'platform',
         userId: user.id,
         action: 'platform.maintenance_enabled',
@@ -120,7 +120,7 @@ export function registerAdminRoutes(app: Express) {
       const mode = await storage.disableMaintenanceMode();
       
       // AUDIT: Log maintenance mode disable
-      await auditService.log({
+      await AuditService.log({
         workspaceId: 'platform',
         userId: user.id,
         action: 'platform.maintenance_disabled',
