@@ -1,7 +1,6 @@
 /**
- * BeeHive Logo Component
- * Clean, editable SVG-based logo without overlay artifacts
- * Easy to customize colors, text, sizing
+ * BeeHive Logo Component with Animated Scout Bee
+ * Shows emotional states while working (idle, thinking, working, complete)
  */
 
 interface BeeHiveLogoProps {
@@ -9,6 +8,8 @@ interface BeeHiveLogoProps {
   showText?: boolean;
   variant?: 'icon-only' | 'with-text' | 'stacked';
   className?: string;
+  isWorking?: boolean; // Show Scout working animation
+  emotion?: 'idle' | 'working' | 'thinking' | 'complete'; // Emotional state
 }
 
 export function BeeHiveLogo({
@@ -16,6 +17,8 @@ export function BeeHiveLogo({
   showText = true,
   variant = 'with-text',
   className = '',
+  isWorking = false,
+  emotion = 'idle',
 }: BeeHiveLogoProps) {
   // Size presets
   const sizeMap = {
@@ -33,10 +36,14 @@ export function BeeHiveLogo({
   const mintColor = '#00D4B3'; // Mint teal
   const charcoalColor = '#101113'; // Deep dark
   const nectarColor = '#FFD34D'; // Light gold
+  const purpleColor = '#A855F7'; // Working state purple
+
+  // Emotional state colors
+  const stateColor = isWorking || emotion === 'working' ? purpleColor : emotion === 'thinking' ? '#3B82F6' : emotion === 'complete' ? mintColor : honeyColor;
 
   return (
     <div className={`inline-flex items-center gap-3 ${className}`}>
-      {/* Hexagon with Bee Icon */}
+      {/* Hexagon with Animated Scout Bee */}
       <svg
         width={hexSize}
         height={hexSize}
@@ -44,12 +51,21 @@ export function BeeHiveLogo({
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
+        <style>{`
+          @keyframes scout-bob { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-2px); } }
+          @keyframes scout-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+          @keyframes scout-pulse-color { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+          .scout-bee { ${isWorking ? 'animation: scout-bob 1.5s ease-in-out infinite;' : ''} }
+          .scout-wings { ${isWorking ? 'animation: scout-spin 0.6s linear infinite;' : 'animation: scout-pulse-color 2s ease-in-out infinite;'} }
+        `}</style>
+
         {/* Hexagon outline */}
         <path
           d="M32 2L61.24 19.5V54.5L32 72L2.76 54.5V19.5L32 2Z"
-          fill={honeyColor}
+          fill={emotion === 'complete' ? mintColor : honeyColor}
           stroke={charcoalColor}
           strokeWidth="2"
+          style={{ transition: 'fill 0.3s ease' }}
         />
 
         {/* Inner hexagon background */}
@@ -58,21 +74,25 @@ export function BeeHiveLogo({
           fill={charcoalColor}
         />
 
-        {/* Bee body - simple, clean */}
-        <circle cx="32" cy="28" r="8" fill={honeyColor} />
-        <ellipse cx="32" cy="40" rx="6" ry="10" fill={honeyColor} />
+        {/* Scout bee body - animated */}
+        <g className="scout-bee">
+          <circle cx="32" cy="28" r="8" fill={stateColor} style={{ transition: 'fill 0.3s ease' }} />
+          <ellipse cx="32" cy="40" rx="6" ry="10" fill={stateColor} style={{ transition: 'fill 0.3s ease' }} />
 
-        {/* Bee stripes */}
-        <rect x="27" y="35" width="10" height="2" fill={charcoalColor} />
-        <rect x="27" y="41" width="10" height="2" fill={charcoalColor} />
+          {/* Bee stripes */}
+          <rect x="27" y="35" width="10" height="2" fill={charcoalColor} />
+          <rect x="27" y="41" width="10" height="2" fill={charcoalColor} />
 
-        {/* Bee antennae */}
-        <line x1="32" y1="20" x2="28" y2="14" stroke={honeyColor} strokeWidth="2" strokeLinecap="round" />
-        <line x1="32" y1="20" x2="36" y2="14" stroke={honeyColor} strokeWidth="2" strokeLinecap="round" />
+          {/* Bee antennae - wiggles when working */}
+          <line x1="32" y1="20" x2="28" y2="14" stroke={stateColor} strokeWidth="2" strokeLinecap="round" style={{ transition: 'stroke 0.3s ease' }} />
+          <line x1="32" y1="20" x2="36" y2="14" stroke={stateColor} strokeWidth="2" strokeLinecap="round" style={{ transition: 'stroke 0.3s ease' }} />
+        </g>
 
-        {/* Wings - subtle */}
-        <ellipse cx="20" cy="38" rx="4" ry="8" fill={mintColor} opacity="0.6" />
-        <ellipse cx="44" cy="38" rx="4" ry="8" fill={mintColor} opacity="0.6" />
+        {/* Wings - dynamic based on state */}
+        <g className="scout-wings">
+          <ellipse cx="20" cy="38" rx="4" ry="8" fill={mintColor} opacity={isWorking ? 1 : 0.6} />
+          <ellipse cx="44" cy="38" rx="4" ry="8" fill={mintColor} opacity={isWorking ? 1 : 0.6} />
+        </g>
       </svg>
 
       {/* Logo Text */}

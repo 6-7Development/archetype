@@ -7,7 +7,6 @@ import { MarkdownMessage } from "./MarkdownMessage";
 import { InlineReasoning, type ReasoningStep } from "@/components/inline-reasoning";
 import { ParallelExecutionBadge } from "@/components/parallel-execution-badge";
 import { ConsultationCostBadge } from "@/components/consultation-cost-badge";
-import { ScoutLoadingIcon } from "@/components/scout-loading-icon";
 import { cn } from "@/lib/utils";
 
 interface Message {

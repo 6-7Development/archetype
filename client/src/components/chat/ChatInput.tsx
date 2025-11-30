@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { ChatInputToolbar } from "@/components/ui/chat-input-toolbar";
 import { Send, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ScoutLoadingIcon } from "@/components/scout-loading-icon";
 import { cn } from "@/lib/utils";
 
 interface ChatInputProps {
@@ -85,12 +84,6 @@ export function ChatInput({
             data-testid="input-chat-message"
             rows={2}
           />
-          {/* Scout bee icon - inline while generating */}
-          {isGenerating && (
-            <div className="absolute inset-0 flex items-center px-3 md:px-4 py-2.5 md:py-3 pointer-events-none">
-              <ScoutLoadingIcon />
-            </div>
-          )}
           <div className="absolute bottom-2.5 right-2.5">
             <ChatInputToolbar
               onImageSelect={onImageSelect}
