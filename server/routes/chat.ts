@@ -4,8 +4,7 @@ import { storage } from '../storage.ts';
 import { insertCommandSchema, taskLists, tasks, platformIncidents } from "@shared/schema";
 import { db } from '../db.ts';
 import { eq, desc, and, isNull } from 'drizzle-orm';
-import { anthropic, DEFAULT_MODEL, streamAnthropicResponse } from '../anthropic.ts';
-import { streamGeminiResponse } from '../gemini.ts';
+import { streamGeminiResponse, genai } from '../gemini.ts';
 import { LOMU_TOOLS, ESSENTIAL_LOMU_TOOLS } from '../tools/index.ts';
 import { checkUsageLimits, trackAIUsage, decrementAICredits, getUserUsageStats, updateStorageUsage } from '../usage-tracking.ts';
 import { isAuthenticated } from '../universalAuth.ts';
@@ -31,21 +30,28 @@ import { OutputTruncator } from '../workflows/output-truncator.ts';
 import { ApprovalQueue } from '../workflows/approval-queue.ts';
 import { ProgressTracker } from '../workflows/progress-tracker.ts';
 
-//Helper function to summarize messages
+//Helper function to summarize messages using Gemini
 async function summarizeMessages(messages: any[]): Promise<string> {
   const conversation = messages.map(m => `${m.role}: ${m.content}`).join('\n\n');
   
-  const response = await anthropic.messages.create({
-    model: DEFAULT_MODEL,
-    max_tokens: 500,
-    messages: [{
-      role: 'user',
-      content: `Summarize this conversation concisely (2-3 sentences max):\n\n${conversation}`
-    }]
-  });
-  
-  const summary = response.content[0].type === 'text' ? response.content[0].text : '';
-  return `Previous conversation summary: ${summary}`;
+  try {
+    const model = genai.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const response = await model.generateContent({
+      contents: [{
+        role: 'user',
+        parts: [{ text: `Summarize this conversation concisely (2-3 sentences max):\n\n${conversation}` }]
+      }],
+      generationConfig: {
+        maxOutputTokens: 500,
+      }
+    });
+    
+    const summary = response.response.text() || '';
+    return `Previous conversation summary: ${summary}`;
+  } catch (error) {
+    console.error('[SUMMARIZE] Error summarizing messages:', error);
+    return 'Unable to summarize previous conversation.';
+  }
 }
 
 /**
