@@ -142,11 +142,10 @@ export async function performDiagnosis(params: DiagnosisParams): Promise<Diagnos
 
     // Default files to check - updated for actual platform structure
     const DEFAULT_FILES = [
-      'server/routes/lomuChat.ts',
-      'server/lomuSuperCore.ts',
+      'server/routes/beehiveChat/stream/orchestrator.ts',
+      'server/beehiveSuperCore.ts',
       'server/services/healOrchestrator.ts',
       'server/gemini.ts',
-      'server/anthropic.ts',
       'server/index.ts',
       'server/db.ts',
       'shared/schema.ts',

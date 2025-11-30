@@ -19,14 +19,14 @@ export const PLATFORM_STRUCTURE = {
     },
     
     services: {
-      "server/services/lomuAIBrain.ts": "Central BeeHiveAI session management, state persistence, memory registry",
+      "server/services/beehiveAIBrain.ts": "Central BeeHiveAI session management, state persistence, memory registry",
       "server/services/codeValidator.ts": "TypeScript pre-write validation, compilation checks, prevents broken commits",
       "server/services/performanceMonitor.ts": "System health monitoring, CPU/memory tracking, incident detection",
       "server/services/platformManifest.ts": "THIS FILE - Platform structure index for BeeHiveAI awareness",
     },
 
     routes: {
-      "server/routes/lomuChat.ts": "Main BeeHiveAI chat endpoint, 5020 lines, SSE streaming, core orchestration",
+      "server/beehiveChat.ts": "Main BeeHiveAI chat endpoint, SSE streaming, core orchestration",
       "server/routes/terminal.ts": "Terminal WebSocket route, shell execution, command history",
       "server/routes/websocket.ts": "Main WebSocket server, heartbeat/cleanup, project subscriptions, security checks",
       "server/routes/deployment.ts": "Deployment webhooks, Railway integration, build status",
@@ -49,14 +49,14 @@ export const PLATFORM_STRUCTURE = {
     },
 
     config: {
-      "server/config/lomuLimits.ts": "Rate limiting, safety thresholds, anti-paralysis settings",
+      "server/config/beehiveLimits.ts": "Rate limiting, safety thresholds, anti-paralysis settings",
       "server/config/modelConfig.ts": "AI model configuration (Gemini 2.5 Flash, Claude Sonnet 4)",
     },
 
     workflows: {
-      "server/routes/lomuChat/streaming.ts": "SSE event streaming, real-time response streaming",
-      "server/routes/lomuChat/billing.ts": "Credit estimation, token counting, charge calculation",
-      "server/routes/lomuChat/tools.ts": "Tool execution, Gemini function calling wrapper",
+      "server/routes/beehiveChat/streaming.ts": "SSE event streaming, real-time response streaming",
+      "server/routes/beehiveChat/billing.ts": "Credit estimation, token counting, charge calculation",
+      "server/routes/beehiveChat/tools.ts": "Tool execution, Gemini function calling wrapper",
     },
 
     storage: {
@@ -106,7 +106,7 @@ export const PLATFORM_STRUCTURE = {
       purpose: "THIS FILE - Know your own structure",
     },
     "Chat/Streaming": {
-      files: ["server/routes/lomuChat.ts", "client/src/components/universal-chat.tsx"],
+      files: ["server/beehiveChat.ts", "client/src/components/universal-chat.tsx"],
       purpose: "Where BeeHiveAI chats happen - modify if chat isn't working",
     },
     "File Operations": {
@@ -123,25 +123,25 @@ export const PLATFORM_STRUCTURE = {
     },
     "WebSocket/Real-time": {
       files: ["server/routes/websocket.ts", "server/routes/terminal.ts"],
-      purpose: "Real-time connections - web sockets are here, NOT in lomuChat",
+      purpose: "Real-time connections - web sockets are here, NOT in beehiveChat",
     },
     "Session Management": {
-      file: "server/services/lomuAIBrain.ts",
+      file: "server/services/beehiveAIBrain.ts",
       purpose: "Where BeeHiveAI sessions are tracked and managed",
     },
     "Billing": {
-      file: "server/routes/lomuChat/billing.ts",
+      file: "server/routes/beehiveChat/billing.ts",
       purpose: "How credits are charged and calculated",
     },
   },
 
   // CRITICAL ANTIPATTERNS - Things BeeHiveAI Got Wrong
   antipatterns: {
-    "Don't look for WebSocket handlers in lomuChat.ts": {
+    "Don't look for WebSocket handlers in beehiveChat.ts": {
       reason: "WebSocket handling is in server/routes/websocket.ts and terminal.ts",
       correct_file: "server/routes/websocket.ts",
     },
-    "Don't diagnose lomuSuperCore.ts multiple times": {
+    "Don't diagnose beehiveSuperCore.ts multiple times": {
       reason: "It's for system prompt generation, not WebSocket/DB",
       actual_purpose: "BeeHiveLearningSystem for conversation memory",
     },
@@ -153,25 +153,25 @@ export const PLATFORM_STRUCTURE = {
 
   // File Sizes (to avoid anti-paralysis blocks)
   fileSizes: {
-    "server/routes/lomuChat.ts": "5020 lines - LARGE file, use grep/search before reading",
-    "server/lomuSuperCore.ts": "1263 lines - MEDIUM file, read carefully",
+    "server/beehiveChat.ts": "1300+ lines - LARGE file, use grep/search before reading",
+    "server/beehiveSuperCore.ts": "100 lines - SMALL file, re-exports modules",
     "client/src/components/universal-chat.tsx": "2293 lines - LARGE file, search before reading",
     "server/services/codeValidator.ts": "~400 lines - OK to read directly",
   },
 
   // Hot Spots - Files Most Likely to Need Fixes
   hotSpots: {
-    "Real-time Streaming Issues": "server/routes/lomuChat/streaming.ts + client/src/components/universal-chat.tsx",
+    "Real-time Streaming Issues": "server/routes/beehiveChat/streaming.ts + client/src/components/universal-chat.tsx",
     "Database Connection Issues": "server/db.ts + server/storage.ts",
-    "WebSocket Problems": "server/routes/websocket.ts (NOT lomuChat.ts)",
-    "Session Management": "server/services/lomuAIBrain.ts",
-    "Billing/Credits": "server/routes/lomuChat/billing.ts",
+    "WebSocket Problems": "server/routes/websocket.ts (NOT beehiveChat.ts)",
+    "Session Management": "server/services/beehiveAIBrain.ts",
+    "Billing/Credits": "server/routes/beehiveChat/billing.ts",
     "Type/Validation Issues": "shared/schema.ts + server/services/codeValidator.ts",
   },
 };
 
 /**
- * INJECT THIS INTO LOMU AI SYSTEM PROMPT
+ * INJECT THIS INTO BEEHIVE AI SYSTEM PROMPT
  * BeeHiveAI should reference this structure to know where files are
  */
 export function getPlatformAwarenessPrompt(): string {
@@ -183,16 +183,16 @@ You are working on the BeeHive AI platform. Here is the exact structure:
 **BACKEND CORE:**
 - server/index.ts: Server entry point
 - server/db.ts: Database (Drizzle ORM)
-- server/services/lomuAIBrain.ts: Your session management
+- server/services/beehiveAIBrain.ts: Your session management
 - server/services/codeValidator.ts: Prevents broken code commits
 - server/services/platformManifest.ts: THIS STRUCTURE INDEX
 
 **CHAT & STREAMING:**
-- server/routes/lomuChat.ts (5020 lines): Your main chat endpoint
-- server/routes/lomuChat/streaming.ts: SSE streaming logic
+- server/beehiveChat.ts: Your main chat endpoint
+- server/routes/beehiveChat/streaming.ts: SSE streaming logic
 - client/src/components/universal-chat.tsx (2293 lines): Frontend chat
 
-**WEBSOCKET (NOT in lomuChat!):**
+**WEBSOCKET (NOT in beehiveChat!):**
 - server/routes/websocket.ts: Main WS server, heartbeat, project subscriptions
 - server/routes/terminal.ts: Terminal WS with error handlers already present
 
@@ -202,8 +202,8 @@ You are working on the BeeHive AI platform. Here is the exact structure:
 - server/tools/tool-distributions.ts: Your 18 core tools
 
 **CRITICAL ANTIPATTERNS TO AVOID:**
-❌ DON'T look for WebSocket handlers in lomuChat.ts - they're in websocket.ts
-❌ DON'T read lomuSuperCore.ts multiple times - it's for prompts, not WebSocket/DB
+❌ DON'T look for WebSocket handlers in beehiveChat.ts - they're in websocket.ts
+❌ DON'T read beehiveSuperCore.ts multiple times - it's for prompts, not WebSocket/DB
 ❌ DON'T diagnose without using the diagnosis.ts tool first
 ✅ DO use grep/search_codebase before reading large files (>1000 lines)
 ✅ DO reference server/tools/diagnosis.ts to identify REAL issues

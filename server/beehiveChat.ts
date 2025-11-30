@@ -484,7 +484,7 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
       
       // BeeHive specific
       if (msg.includes('meta') || msg.includes('sysop') || msg.includes('platform')) {
-        return ['server/lomuChat.ts', 'server/platformHealing.ts'];
+        return ['server/beehiveChat.ts', 'server/platformHealing.ts'];
       }
       
       // Upload/file issues

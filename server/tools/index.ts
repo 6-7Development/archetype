@@ -963,7 +963,7 @@ export const LOMU_TOOLS = [
       properties: {
         filePath: {
           type: 'string',
-          description: 'Path to file to index (e.g., "server/services/lomuChat.ts")',
+          description: 'Path to file to index (e.g., "server/services/beehiveAIBrain.ts")',
         },
         projectId: {
           type: 'string',

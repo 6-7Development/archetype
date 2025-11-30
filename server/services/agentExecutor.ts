@@ -403,7 +403,7 @@ export class AgentExecutor {
       console.log(`[AGENT-EXECUTOR] Executing tool: ${toolName}`, { input, userId, sessionId });
       
       // Import tool handlers
-      const toolHandlers = await import('../routes/lomuChat/tools/toolHandler');
+      const toolHandlers = await import('../routes/beehiveChat/tools/toolHandler');
       
       // Execute tool and collect raw result
       let rawResult: any;
