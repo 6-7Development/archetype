@@ -315,10 +315,15 @@ export function UniversalChat({
     setUploadedImageUrls((prev) => prev.filter((url) => url !== imageUrlToRemove));
   };
 
-  // Auto-scroll to bottom of chat
+  // Auto-scroll to bottom of chat - ALWAYS scroll on new messages
   useEffect(() => {
-    if (chatContainerRef.current && isAutoScrolling.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    // Scroll to bottom immediately on new messages
+    if (chatContainerRef.current) {
+      setTimeout(() => {
+        if (chatContainerRef.current) {
+          chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+      }, 0);
     }
   }, [runState.messages]);
 
@@ -334,9 +339,10 @@ export function UniversalChat({
   };
 
   const handleScroll = () => {
+    // Track scroll position but always allow auto-scroll on new messages
     if (chatContainerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-      const isAtBottom = scrollHeight - scrollTop - clientHeight < 50; // 50px threshold
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
       isAutoScrolling.current = isAtBottom;
     }
   };
