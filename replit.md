@@ -157,3 +157,16 @@ The platform features a comprehensive animation system with WCAG 2.3.3 accessibi
   - Status transitions with AnimatePresence for enter/exit
   - Task card staggered animations in progress tables
   - WCAG 2.3.3 compliance with prefers-reduced-motion support
+- ✅ **Core Features Completed (MVP)**:
+  - Secure code execution sandbox at `/api/sandbox/run` with resource limits & audit logging
+  - Chat history persistence with PostgreSQL (conversation_sessions, code_execution_runs tables)
+  - Pinned items with sorting & project filtering at `/api/pinned`
+  - Enhanced message bubbles with BeeHive golden/amber theming
+  - Syntax highlighting with Prism (language detection for 20+ languages)
+  - Sound effects hook (WebAudio API) for interactive feedback
+  - Comprehensive Scout e2e tests (18+ test suites covering workflows, security, performance)
+- ✅ **Scout UI Improvements**:
+  - Small animated bee icon (hexagon pattern) like Replit's design
+  - "Working..." indicator during generation (purple/blue hexagons with staggered pulse)
+  - Collapsible thinking bubble (Brain icon, expandable content)
+  - Loading state shows only on last message to avoid clutter

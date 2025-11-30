@@ -7,6 +7,7 @@ import { MarkdownMessage } from "./MarkdownMessage";
 import { InlineReasoning, type ReasoningStep } from "@/components/inline-reasoning";
 import { ParallelExecutionBadge } from "@/components/parallel-execution-badge";
 import { ConsultationCostBadge } from "@/components/consultation-cost-badge";
+import { ScoutLoadingIcon } from "@/components/scout-loading-icon";
 import { cn } from "@/lib/utils";
 
 interface Message {
@@ -37,9 +38,10 @@ interface MessageBubbleProps {
   onPin?: (messageId: string, isPinned: boolean) => void;
   showAvatar?: boolean;
   compact?: boolean;
+  isGenerating?: boolean;
 }
 
-export function MessageBubble({ message, index, totalMessages, onPin, showAvatar = true, compact = false }: MessageBubbleProps) {
+export function MessageBubble({ message, index, totalMessages, onPin, showAvatar = true, compact = false, isGenerating = false }: MessageBubbleProps) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const [showThinking, setShowThinking] = useState(false);
@@ -106,6 +108,13 @@ export function MessageBubble({ message, index, totalMessages, onPin, showAvatar
 
       {/* Message Content */}
       <div className={`flex-1 min-w-0 flex flex-col ${isUser ? 'items-end' : 'items-start'} gap-2`}>
+        {/* Scout Loading Indicator - Show while generating if this is the last message */}
+        {!isUser && isGenerating && isLast && (
+          <div className="px-3 py-2">
+            <ScoutLoadingIcon />
+          </div>
+        )}
+
         {/* Thinking bubble (collapsible, for assistant only) */}
         {!isUser && hasThinking && (
           <button
@@ -114,7 +123,7 @@ export function MessageBubble({ message, index, totalMessages, onPin, showAvatar
             data-testid={`button-toggle-thinking-${message.id}`}
           >
             <Brain className="w-3.5 h-3.5 flex-shrink-0" />
-            <span className="text-xs">Thinking...</span>
+            <span className="text-xs">Thinking</span>
             <ChevronDown className={`w-3 h-3 flex-shrink-0 transition-transform ${showThinking ? 'rotate-180' : ''}`} />
           </button>
         )}
