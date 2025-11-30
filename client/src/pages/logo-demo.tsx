@@ -61,14 +61,14 @@ export default function LogoDemo() {
         <div className="p-8 bg-honey/10 dark:bg-honey/5 rounded-lg border border-honey/30">
           <h3 className="text-lg font-bold text-charcoal dark:text-cream mb-4">How to Customize:</h3>
           <div className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
-            <p>
+            <div>
               <strong>Colors:</strong> Edit the color tokens at the top of <code className="bg-slate-100 dark:bg-slate-800 px-1">beehive-logo.tsx</code>
               <ul className="mt-2 ml-4 space-y-1">
                 <li>• <code className="bg-slate-100 dark:bg-slate-800 px-1">honeyColor</code> - Main logo color (gold)</li>
                 <li>• <code className="bg-slate-100 dark:bg-slate-800 px-1">mintColor</code> - Accent color (teal)</li>
                 <li>• <code className="bg-slate-100 dark:bg-slate-800 px-1">charcoalColor</code> - Dark elements</li>
               </ul>
-            </p>
+            </div>
             <p>
               <strong>Text:</strong> Change "BeeHive" text or SWARM MODE tagline directly in the component
             </p>

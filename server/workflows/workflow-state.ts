@@ -42,7 +42,7 @@ export class WorkflowStateManager {
   private static readonly VALID_TRANSITIONS: Record<WorkflowPhase, WorkflowPhase[]> = {
     [WorkflowPhase.ASSESS]: [WorkflowPhase.PLAN, WorkflowPhase.ERROR],
     [WorkflowPhase.PLAN]: [WorkflowPhase.EXECUTE, WorkflowPhase.ASSESS, WorkflowPhase.ERROR],
-    [WorkflowPhase.EXECUTE]: [WorkflowPhase.TEST, WorkflowPhase.VERIFY, WorkflowPhase.ERROR],
+    [WorkflowPhase.EXECUTE]: [WorkflowPhase.EXECUTE, WorkflowPhase.TEST, WorkflowPhase.VERIFY, WorkflowPhase.ERROR],
     [WorkflowPhase.TEST]: [WorkflowPhase.VERIFY, WorkflowPhase.EXECUTE, WorkflowPhase.ERROR],
     [WorkflowPhase.VERIFY]: [WorkflowPhase.COMPLETE, WorkflowPhase.EXECUTE, WorkflowPhase.ERROR],
     [WorkflowPhase.COMPLETE]: [WorkflowPhase.ASSESS], // Allow restart
