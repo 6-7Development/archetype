@@ -1,10 +1,10 @@
 import { cn } from "@/lib/utils";
 
-export function ScoutLoadingIcon() {
+export function ScoutLoadingIcon({ compact = true }: { compact?: boolean }) {
   return (
-    <div className="inline-flex items-center gap-1.5">
+    <div className="inline-flex items-center gap-1">
       {/* Animated hexagon pattern - Purple/Blue like Replit */}
-      <div className="relative w-4 h-4">
+      <div className={`relative ${compact ? 'w-3 h-3' : 'w-4 h-4'}`}>
         <style>{`
           @keyframes scout-pulse {
             0%, 100% { opacity: 0.4; }
@@ -17,7 +17,7 @@ export function ScoutLoadingIcon() {
           .scout-hex-5 { animation: scout-pulse 1.2s ease-in-out 0.4s infinite; }
           .scout-hex-6 { animation: scout-pulse 1.2s ease-in-out 0.5s infinite; }
         `}</style>
-        <svg viewBox="0 0 24 24" className="w-4 h-4">
+        <svg viewBox="0 0 24 24" className={`${compact ? 'w-3 h-3' : 'w-4 h-4'}`}>
           {/* Hexagon 1 - Top Left */}
           <circle cx="6" cy="6" r="2" fill="currentColor" className="scout-hex-1 text-purple-500 dark:text-purple-400" />
           {/* Hexagon 2 - Top Right */}
@@ -33,7 +33,7 @@ export function ScoutLoadingIcon() {
         </svg>
       </div>
       {/* "Working..." Text */}
-      <span className="text-xs font-medium text-muted-foreground">Working...</span>
+      <span className={`font-medium text-muted-foreground ${compact ? 'text-xs' : 'text-sm'}`}>Working...</span>
     </div>
   );
 }

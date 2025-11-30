@@ -108,13 +108,6 @@ export function MessageBubble({ message, index, totalMessages, onPin, showAvatar
 
       {/* Message Content */}
       <div className={`flex-1 min-w-0 flex flex-col ${isUser ? 'items-end' : 'items-start'} gap-2`}>
-        {/* Scout Loading Indicator - Show while generating if this is the last message */}
-        {!isUser && isGenerating && isLast && (
-          <div className="px-3 py-2">
-            <ScoutLoadingIcon />
-          </div>
-        )}
-
         {/* Thinking bubble (collapsible, for assistant only) */}
         {!isUser && hasThinking && (
           <button

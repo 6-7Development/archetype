@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ChatInputToolbar } from "@/components/ui/chat-input-toolbar";
 import { Send, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ScoutLoadingIcon } from "@/components/scout-loading-icon";
 import { cn } from "@/lib/utils";
 
 interface ChatInputProps {
@@ -78,12 +79,18 @@ export function ChatInput({
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKeyDown}
             onPaste={onPaste}
-            placeholder="Message BeeHive..."
+            placeholder={isGenerating ? "" : "Message BeeHive..."}
             className="min-h-[50px] md:min-h-[56px] max-h-[180px] resize-none text-base md:text-lg bg-background/80 border border-border/70 focus-visible:ring-1 focus-visible:ring-primary/60 focus-visible:border-primary/50 rounded-lg px-3 md:px-4 py-2.5 md:py-3 pr-10 transition-all"
             disabled={isGenerating}
             data-testid="input-chat-message"
             rows={2}
           />
+          {/* Scout bee icon - inline while generating */}
+          {isGenerating && (
+            <div className="absolute inset-0 flex items-center px-3 md:px-4 py-2.5 md:py-3 pointer-events-none">
+              <ScoutLoadingIcon />
+            </div>
+          )}
           <div className="absolute bottom-2.5 right-2.5">
             <ChatInputToolbar
               onImageSelect={onImageSelect}
