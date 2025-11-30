@@ -22,8 +22,6 @@ import AdminPromotePage from "@/pages/admin-promote";
 import Dashboard from "@/pages/dashboard";
 import Builder from "@/pages/builder";
 import Workspace from "@/pages/workspace";
-import DashboardWorkspace from "@/pages/dashboard-workspace";
-import AdminWorkspace from "@/pages/admin-workspace";
 import Marketplace from "@/pages/marketplace";
 import Analytics from "@/pages/analytics";
 import Account from "@/pages/account";
@@ -129,10 +127,16 @@ function Router() {
       </Route>
       <Route path="/workspace" component={Workspace} />
       <Route path="/workspace/dashboard">
-        <DashboardWorkspace />
+        <AppLayout>
+          <Dashboard />
+        </AppLayout>
       </Route>
       <Route path="/workspace/admin">
-        <AdminWorkspace />
+        <AppLayout>
+          <AdminGuard>
+            <Admin />
+          </AdminGuard>
+        </AppLayout>
       </Route>
       <Route path="/marketplace">
         <AppLayout>
