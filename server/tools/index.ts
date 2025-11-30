@@ -37,6 +37,7 @@ export { searchIntegrations, useIntegration } from './integrations';
 export { webFetch } from './web-fetch';
 export { refreshAllLogs } from './logs';
 export { glob, ls, read, write } from './file-operations';
+export { getFileMap } from './file-map';
 
 /**
  * BeeHive Tool Definitions
@@ -739,6 +740,14 @@ export const LOMU_TOOLS = [
           description: 'Maximum number of log entries to return (default: 100)',
         },
       },
+    },
+  },
+  {
+    name: 'get_file_map',
+    description: 'Get complete file map showing all available files and their paths. Scout uses this FIRST to identify file locations before any read/write operations. Returns file map organized by category (client_pages, client_components, server_routes, server_tools, etc.).',
+    input_schema: {
+      type: 'object',
+      properties: {},
     },
   },
   {
