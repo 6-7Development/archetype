@@ -30,7 +30,7 @@ import APIKeys from "@/pages/api-keys";
 import Support from "@/pages/support";
 import Admin from "@/pages/admin";
 import Publishing from "@/pages/publishing";
-import PlatformHealing from "@/pages/platform-healing";
+// PlatformHealing consolidated into UniversalChat with RBAC context switching
 import IncidentDashboard from "@/pages/incident-dashboard";
 import WorkflowAnalytics from "@/pages/workflow-analytics";
 import AgentFeatures from "@/pages/agent-features";
@@ -173,10 +173,12 @@ function Router() {
           <Admin />
         </AppLayout>
       </Route>
+      {/* Platform Healing - Redirects to unified /beehive with RBAC context switching */}
       <Route path="/platform-healing">
-        <OwnerGuard>
-          <PlatformHealing />
-        </OwnerGuard>
+        {() => {
+          window.location.href = '/beehive';
+          return null;
+        }}
       </Route>
       <Route path="/incidents">
         <AppLayout>
@@ -214,7 +216,11 @@ function Router() {
       </Route>
       <Route path="/artifact-demo" component={ArtifactDemo} />
       
-      {/* Universal Chat - Works for platform and projects */}
+      {/* Universal BeeHive Chat - ONE chat for all contexts (RBAC-gated healing mode for owners) */}
+      <Route path="/beehive" component={ChatPage} />
+      <Route path="/beehive/:projectId" component={ChatPage} />
+      
+      {/* Legacy chat routes - redirect to unified /beehive */}
       <Route path="/chat" component={ChatPage} />
       <Route path="/chat/:projectId" component={ChatPage} />
       

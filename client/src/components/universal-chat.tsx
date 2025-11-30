@@ -127,13 +127,16 @@ export interface UniversalChatProps {
 // ============================================================================
 
 export function UniversalChat({
-  targetContext,
+  targetContext: initialContext,
   projectId,
   onProjectGenerated,
 }: UniversalChatProps) {
   const { toast } = useToast();
   const { user } = useAuth();
 
+  // RBAC-based context switching - allows owners to switch between project/healing modes
+  const [activeContext, setActiveContext] = useState<'platform' | 'project' | 'architect'>(initialContext);
+  
   const [input, setInput] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [pendingImages, setPendingImages] = useState<string[]>([]);
@@ -163,13 +166,28 @@ export function UniversalChat({
 
   const { runState, sendMessage, stopRun, clearRunState, setRunState, clearChatHistory } = useStreamEvents({
     projectId,
-    targetContext,
+    targetContext: activeContext,
     onProjectGenerated,
     onArchitectResult: (result) => {
       // Show architect approval modal when guidance arrives
       setArchitectGuidance(result);
     },
   });
+
+  // Handle context mode change with confirmation (RBAC-gated in ChatHeader)
+  const handleContextChange = (newContext: 'platform' | 'project') => {
+    if (newContext === activeContext) return;
+    
+    // Clear chat when switching contexts to avoid confusion
+    clearChatHistory();
+    setActiveContext(newContext);
+    toast({
+      title: newContext === 'platform' ? 'Healing Mode Active' : 'Project Mode Active',
+      description: newContext === 'platform' 
+        ? 'Now targeting platform source code' 
+        : 'Now targeting user projects',
+    });
+  };
 
   // Sync isGenerating with runState.isLoading
   useEffect(() => {
@@ -561,16 +579,15 @@ export function UniversalChat({
         }}
       />
 
-      {/* Compact Chat Header with Context Rail Toggle */}
+      {/* Compact Chat Header with RBAC Context Switcher + Context Rail Toggle */}
       <div className="flex items-center justify-between border-b bg-muted/10 px-3 py-1.5">
         <ChatHeader
-          targetContext={targetContext}
-          creditBalance={user?.credits || 0}
-          isFreeAccess={targetContext === 'platform'}
+          targetContext={activeContext}
           isConnected={true}
-          sessionTokens={sessionTokens}
+          user={user as any}
+          projectId={projectId}
           onHistoryClick={() => window.location.href = '/consultation-history'}
-          onSettingsClick={() => setShowModelSelector(true)}
+          onContextChange={handleContextChange}
         />
         <Button
           size="sm"
