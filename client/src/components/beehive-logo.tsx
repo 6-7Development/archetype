@@ -24,7 +24,7 @@ export function BeeHiveLogo({
     lg: { hexagon: 96, icon: 56 },
   };
 
-  const dims = sizeMap[size];
+  const dims = sizeMap[size] || sizeMap.md;
   const hexSize = dims.hexagon;
   const iconSize = dims.icon;
 
