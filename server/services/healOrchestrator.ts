@@ -462,7 +462,7 @@ export class HealOrchestrator extends EventEmitter {
           }
           
           // Create BeeHiveAI job to fix the incident
-          const { createJob, startJobWorker } = await import('./lomuJobManager');
+          const { createJob, startJobWorker } = await import('./beehiveJobManager');
           const diagnosticMessage = `[PLATFORM-HEALING] Fix incident: ${incident.title}\n\n${diagnosticPrompt}\n\nIncident Details:\n- Type: ${incident.type}\n- Severity: ${incident.severity}\n- Description: ${incident.description}`;
           
           const job = await createJob(systemUserId, diagnosticMessage);

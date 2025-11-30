@@ -17,7 +17,7 @@ import { chatMessages, conversationStates } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { formatStateForPrompt, getCodeScratchpad, clearCodeScratchpad } from '../../../services/conversationState.ts';
 import { classifyUserIntent, getMaxIterationsForIntent } from '../../../shared/chatConfig.ts';
-import { buildLomuSuperCorePrompt } from '../../../lomuSuperCore.ts';
+import { buildBeeHiveSuperCorePrompt } from '../../../beehiveSuperCore.ts';
 import { LOMU_CORE_TOOLS } from '../../../tools/tool-distributions.ts';
 import type { 
   ConversationIntent, 
@@ -331,7 +331,7 @@ export async function prepareAIContext(
   // ✅ FIX #1: Use casual prompt when casual intent detected (no tools/diagnostics)
   const systemPrompt = userIntent === 'casual'
     ? buildCasualConversationPrompt()
-    : buildLomuSuperCorePrompt({
+    : buildBeeHiveSuperCorePrompt({
         platform: 'BeeHive - React+Express+PostgreSQL on Railway',
         autoCommit: finalAutoCommit,
         intent: conversationIntent,

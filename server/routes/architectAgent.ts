@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { platformHealing } from '../platformHealing.ts';
 import { knowledge_search, knowledge_store, knowledge_recall, code_search } from '../tools/knowledge.ts';
-import { buildArchitectSystemPrompt } from '../lomuSuperCore/architectPrompt.ts';
+import { buildArchitectSystemPrompt } from '../beehiveSuperCore/architectPrompt.ts';
 import { RAILWAY_CONFIG } from '../config/railway.ts';
 import { db } from '../db';
 import { architectNotes } from '@shared/schema';

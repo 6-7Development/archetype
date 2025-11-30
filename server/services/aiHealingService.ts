@@ -77,7 +77,7 @@ export class AIHealingService {
       console.log('[AI-HEALING] Starting Gemini diagnosis...');
       console.log('[AI-HEALING] Prompt:', diagnosticPrompt.substring(0, 200) + '...');
       
-      const { buildBeeHiveSuperCorePrompt } = await import('../lomuSuperCore');
+      const { buildBeeHiveSuperCorePrompt } = await import('../beehiveSuperCore');
       
       const contextPrompt = `Current incident:
 - Type: ${incident.type}

@@ -795,7 +795,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   };
                   
                 } else if (toolUse.name === 'cancel_lomu_job') {
-                  const { cancelJob } = await import('../services/lomuJobManager');
+                  const { cancelJob } = await import('../services/beehiveJobManager');
                   const jobId = toolUse.input.job_id;
                   const reason = toolUse.input.reason || 'Cancelled by I AM Architect';
                   
@@ -1707,7 +1707,7 @@ Execute tools directly. Work autonomously without waiting for user input.`;
           });
 
           // 🔥 CRITICAL: Actually trigger BeeHiveAI to process the healing conversation
-          const { createJob, startJobWorker } = await import('../services/lomuJobManager');
+          const { createJob, startJobWorker } = await import('../services/beehiveJobManager');
           
           // Create BeeHiveAI job for autonomous healing
           const healingMessage = `Autonomous Platform Healing initiated. Analyze and fix all ${47} open incidents.

@@ -5,7 +5,7 @@ import { storage } from '../../../storage.ts';
 import { chatMessages, lomuAttachments, conversationStates, users } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
-import { beehiveAIBrain } from '../../../services/lomuAIBrain.ts';
+import { beehiveAIBrain } from '../../../services/beehiveAIBrain.ts';
 import { traceLogger } from '../../../services/traceLogger.ts';
 import { FileChangeTracker } from '../../../services/validationHelpers.ts';
 import { 

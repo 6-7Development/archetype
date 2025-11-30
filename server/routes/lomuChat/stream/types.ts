@@ -2,7 +2,7 @@ import type { Response } from 'express';
 import type { FileChangeTracker } from '../../../services/validationHelpers.ts';
 import type { WebSocketServer } from 'ws';
 import type { ConversationState } from '@shared/schema';
-import type { SessionState } from '../../../services/lomuAIBrain.ts';
+import type { SessionState } from '../../../services/beehiveAIBrain.ts';
 
 /**
  * Request body parameters for BeeHive stream endpoint

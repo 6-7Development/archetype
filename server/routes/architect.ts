@@ -5,7 +5,7 @@ import { eq, and, desc } from 'drizzle-orm';
 import { isAuthenticated } from '../universalAuth';
 import { aiLimiter } from '../rateLimiting';
 import { streamGeminiResponse } from '../gemini';
-import { buildArchitectSystemPrompt } from '../lomuSuperCore';
+import { buildArchitectSystemPrompt } from '../beehiveSuperCore';
 import multer from 'multer';
 import * as fs from 'fs/promises';
 import * as path from 'path';

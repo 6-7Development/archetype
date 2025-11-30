@@ -41,7 +41,7 @@ import { PhaseOrchestrator } from '../../../services/PhaseOrchestrator.ts';
 import { emitContentChunk, emitToolCall, emitToolResult, emitProgress, emitSystemInfo, emitComplete, emitThinking, createChunkState, createEmitContext, emitTaskUpdate, emitPhaseTransition } from './stream-emitter.ts';
 import { TokenTracker } from '../../../services/tokenTracker.ts';
 import { CreditManager } from '../../../services/creditManager.ts';
-import { beehiveAIBrain } from '../../../services/lomuAIBrain.ts';
+import { beehiveAIBrain } from '../../../services/beehiveAIBrain.ts';
 import { AgentExecutor } from '../../../services/agentExecutor.ts';
 import { BEEHIVE_LIMITS } from '../../../config/beehiveLimits.ts';
 import { waitForApproval } from '../../lomu/utils.ts';

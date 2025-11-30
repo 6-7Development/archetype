@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import type { IncomingMessage } from "http";
 import { storage } from "../storage.ts";
-import { beehiveAIBrain } from "../services/lomuAIBrain.ts";
+import { beehiveAIBrain } from "../services/beehiveAIBrain.ts";
 import { sessionStore } from "../universalAuth.ts";
 import cookieSignature from "cookie-signature";
 

@@ -12,7 +12,7 @@
 
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import { fileLockManager } from '../services/fileLockManager';
-import { beehiveAIBrain } from '../services/lomuAIBrain';
+import { beehiveAIBrain } from '../services/beehiveAIBrain';
 
 describe('Phase 1 Safety - FileLockManager (Simplified FIFO)', () => {
   const userId = 'test-user';
