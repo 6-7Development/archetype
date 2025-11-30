@@ -344,12 +344,14 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Header Bar - Global across all pages */}
         <header className="h-16 border-b bg-card/30 backdrop-blur-sm flex items-center justify-between px-4 gap-4">
           <div className="flex items-center gap-4">
-            {/* Page title or breadcrumb can go here */}
-            <h1 className="text-lg font-semibold truncate" data-testid="page-title">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-200 to-yellow-400 animate-pulse">
-                Jesus is King
-              </span>
-            </h1>
+            {/* BeeHive Branding */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-muted-foreground">BeeHive</span>
+              <Badge variant="secondary" className="text-xs">
+                <span className="inline-block w-2 h-2 rounded-full bg-[hsl(var(--primary))] mr-1 animate-pulse" />
+                Active
+              </Badge>
+            </div>
           </div>
           
           <div className="flex items-center gap-4">
