@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { BeeHiveIcon } from "@/components/beehive-logo";
+import { BeeHiveLogo } from "@/components/beehive-logo";
 import { Github, Twitter, Linkedin, Mail } from "lucide-react";
 
 export function AppFooter() {
@@ -12,7 +12,7 @@ export function AppFooter() {
           {/* Brand Column */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <BeeHiveIcon size={60} className="flex-shrink-0" />
+              <BeeHiveLogo size="md" className="flex-shrink-0" />
             </div>
             <p className="text-sm text-muted-foreground max-w-xs">
               Where AI agents swarm together to build your code. Enterprise-grade platform for rapid development.

@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MotionToggle } from "@/components/motion-toggle";
-import { BeeHiveLogo, BeeHiveLogo, BeeHiveIcon } from "@/components/beehive-logo"";
+import { BeeHiveLogo } from "@/components/beehive-logo";
 import { 
   Sparkles, Zap, Shield, Code, Rocket, Check, 
   Play, ArrowRight, Hexagon, Menu, DollarSign, LogIn 
@@ -32,8 +32,8 @@ export default function Landing() {
               data-testid="link-home"
               className="inline-flex items-center hover-elevate rounded-md px-1 py-0.5 sm:px-2 sm:py-1 flex-shrink-0"
             >
-              <BeeHiveLogo size="default" className="hidden lg:block max-w-[360px] xl:max-w-[480px]" />
-              <BeeHiveLogo className="lg:hidden" />
+              <BeeHiveLogo size="lg" className="hidden lg:block" />
+              <BeeHiveLogo size="md" className="lg:hidden" />
             </Link>
             
             {/* Desktop Navigation - Hidden on mobile */}
@@ -395,7 +395,7 @@ export default function Landing() {
         <div className="container mx-auto max-w-6xl">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-8 text-center sm:text-left mb-8">
             <div className="flex flex-col items-center sm:items-start gap-3">
-              <BeeHiveIcon size={64} className="flex-shrink-0" data-testid="icon-footer-logo" />
+              <BeeHiveLogo size="lg" className="flex-shrink-0" data-testid="icon-footer-logo" />
               <p className="text-muted-foreground text-sm font-medium">
                 Where code gets sweeter by the hive
               </p>

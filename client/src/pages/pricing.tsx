@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { MobileNav } from "@/components/mobile-nav";
 import { MotionToggle } from "@/components/motion-toggle";
 import { Check, Sparkles, Zap, Shield, TrendingUp, DollarSign, Info } from "lucide-react";
-import { BeeHiveLogo, BeeHiveLogo } from "@/components/beehive-logo";
+import { BeeHiveLogo } from "@/components/beehive-logo";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";

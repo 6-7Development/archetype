@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Sparkles, Github, Chrome, Building2, Hexagon } from "lucide-react";
-import { BeeHiveIcon } from "@/components/beehive-logo";
+import { BeeHiveLogo } from "@/components/beehive-logo";
 
 export default function WorkingAuth() {
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -147,7 +147,7 @@ export default function WorkingAuth() {
           <CardHeader className="space-y-4 text-center pb-6">
             {/* Tech-Enhanced Bee Logo */}
             <div className="flex justify-center">
-              <BeeHiveIcon size={72} />
+              <BeeHiveLogo size="lg" />
             </div>
 
             <div>
