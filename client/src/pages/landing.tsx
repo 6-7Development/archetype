@@ -130,7 +130,7 @@ export default function Landing() {
           {/* Powered by Badge - Visible below header */}
           <div className="mb-6 sm:mb-8 inline-flex items-center gap-2 px-4 py-2 sm:gap-3 sm:px-6 sm:py-3 rounded-full bg-gradient-to-r from-honey/5 via-nectar/5 to-mint/5 border border-honey/20 backdrop-blur-sm shadow-sm hover-elevate transition-all duration-300" data-testid="badge-hero-stack">
             <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-honey flex-shrink-0 animate-pulse" />
-            <span className="text-xs sm:text-sm bg-gradient-to-r from-honey via-nectar to-mint bg-clip-text text-transparent font-semibold">Gemini 2.5 Flash + Claude Sonnet 4</span>
+            <span className="text-xs sm:text-sm bg-gradient-to-r from-honey via-nectar to-mint bg-clip-text text-transparent font-semibold">Powered by Gemini 2.5 Flash</span>
           </div>
           
           {/* Main Headline - Fluid responsive sizing */}
@@ -178,7 +178,7 @@ export default function Landing() {
           {/* Feature Stats - 2 cols mobile, 4 cols desktop */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 max-w-5xl mx-auto">
             {[
-              { value: "Sonnet 4", label: "Claude AI", icon: Sparkles, testId: "card-feature-sonnet4" },
+              { value: "Gemini 2.5", label: "AI Model", icon: Sparkles, testId: "card-feature-gemini" },
               { value: "7-Phase", label: "AI Workflow", icon: Zap, testId: "card-feature-7phase" },
               { value: "Full Stack", label: "Web Expertise", icon: Code, testId: "card-feature-fullstack" },
               { value: "2D/3D", label: "Game Support", icon: Rocket, testId: "card-feature-games" }

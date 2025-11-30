@@ -142,7 +142,7 @@ Analyze the issue, identify the root cause, and provide the fix.`;
       });
 
       const response = await client.messages.create({
-        model: 'claude-sonnet-4-20250514',
+        model: 'gemini-2.5-pro',
         max_tokens: 8000,
         system: systemPrompt,
         messages: conversationMessages,

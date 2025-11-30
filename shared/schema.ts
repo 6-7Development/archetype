@@ -217,7 +217,7 @@ export const platformHealingSessions = pgTable("platform_healing_sessions", {
 
   // AI metadata
   tokensUsed: integer("tokens_used").default(0),
-  model: varchar("model").default("claude-sonnet-4-20250514"), // or 'gemini-2.5-flash' for BeeHiveAI
+  model: varchar("model").default("gemini-2.5-flash"), // Gemini 2.5 Flash for all healing
 
   // Timestamps
   startedAt: timestamp("started_at").notNull().defaultNow(),
@@ -458,7 +458,7 @@ export type ArchitectNote = typeof architectNotes.$inferSelect;
 // User Preferences - AI model selection and theme
 export const userPreferences = pgTable("user_preferences", {
   userId: varchar("user_id").primaryKey(),
-  aiModel: varchar("ai_model").notNull().default("claude"), // "claude" or "gemini"
+  aiModel: varchar("ai_model").notNull().default("gemini"), // "gemini" (Gemini 2.5 Flash)
   theme: varchar("theme").default("light"), // "light" or "dark"
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -1623,7 +1623,7 @@ export type CostTracking = typeof costTracking.$inferSelect;
 // Pricing Configuration - Dynamic pricing tiers (admin-configurable)
 export const pricingConfig = pgTable("pricing_config", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  resourceType: text("resource_type").notNull().unique(), // 'claude_input', 'claude_output', 'storage', etc.
+  resourceType: text("resource_type").notNull().unique(), // 'gemini_input', 'gemini_output', 'storage', etc.
 
   // Cost (our cost from providers)
   providerCost: decimal("provider_cost", { precision: 10, scale: 6 }).notNull(), // What we pay (e.g., $3/M tokens)
@@ -2830,8 +2830,8 @@ export const CREDIT_CONSTANTS = {
   PROVIDER_COST_PER_CREDIT: 0.0001875, // $0.0001875 blended cost (Gemini 2.5 Flash: $0.075 input / $0.30 output per 1M)
   MARGIN_PERCENT: 99.96, // 99.96% gross margin on credits (Gemini advantage!)
   
-  // I AM Architect Premium Pricing (Claude Sonnet 4 for premium consulting)
-  I_AM_BASE_COST: 0.39, // $0.39 provider cost per consultation (Claude Sonnet 4)
+  // I AM Architect Premium Pricing (Gemini 2.5 Pro for premium consulting)
+  I_AM_BASE_COST: 0.39, // $0.39 provider cost per consultation (Gemini 2.5 Pro)
   I_AM_STARTER_PRICE: 1.50, // $1.50 per consultation (Starter tier)
   I_AM_PRO_PRICE: 1.00, // $1.00 per consultation (Pro tier - discounted)
   I_AM_BUSINESS_PRICE: 0.75, // $0.75 per consultation (Business tier - team discount)

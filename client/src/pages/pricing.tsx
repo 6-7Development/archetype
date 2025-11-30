@@ -515,7 +515,7 @@ export default function Pricing() {
           
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              "Claude Sonnet 4 AI",
+              "Gemini 2.5 Flash AI",
               "Real-time cost preview",
               "Automatic complexity detection",
               "Token usage dashboard",

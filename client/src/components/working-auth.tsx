@@ -349,7 +349,7 @@ export default function WorkingAuth() {
             <div className="pt-4 border-t border-honey/10">
               <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                 <Sparkles className="w-3.5 h-3.5 text-honey" />
-                <span>Gemini 2.5 Flash + Claude Sonnet 4</span>
+                <span>Powered by Gemini 2.5 Flash</span>
               </div>
             </div>
           </CardContent>

@@ -216,11 +216,7 @@ export default function SwarmDashboard() {
                       className="gap-2"
                       data-testid={`badge-agent-${agent}`}
                     >
-                      {agent === 'claude-sonnet-4' ? (
-                        <Activity className="h-3 w-3" />
-                      ) : (
-                        <Zap className="h-3 w-3" />
-                      )}
+                      <Zap className="h-3 w-3" />
                       {agent}
                     </Badge>
                   ))}

@@ -22,15 +22,6 @@ const MODELS = [
     recommended: true,
   },
   {
-    id: 'claude-sonnet-4',
-    name: 'Claude Sonnet 4',
-    icon: Brain,
-    description: 'Advanced reasoning. Best for complex architecture.',
-    costPerMT: '$3.00 input / $15.00 output',
-    speed: '🧠 Thoughtful',
-    recommended: false,
-  },
-  {
     id: 'gpt-4-turbo',
     name: 'GPT-4 Turbo',
     icon: Sparkles,

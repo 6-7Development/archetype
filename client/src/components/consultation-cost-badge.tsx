@@ -4,12 +4,11 @@ import { Coins } from 'lucide-react';
 interface ConsultationCostProps {
   inputTokens: number;
   outputTokens: number;
-  model?: 'claude-sonnet-4' | 'gemini-2.5-flash' | 'gpt-4-turbo';
+  model?: 'gemini-2.5-flash' | 'gpt-4-turbo';
   costPerMT?: number; // Override cost calculation
 }
 
 const MODEL_PRICING = {
-  'claude-sonnet-4': { input: 3.0, output: 15.0 }, // Per 1M tokens
   'gemini-2.5-flash': { input: 0.075, output: 0.3 },
   'gpt-4-turbo': { input: 10.0, output: 30.0 },
 };
@@ -17,10 +16,10 @@ const MODEL_PRICING = {
 export function ConsultationCostBadge({
   inputTokens,
   outputTokens,
-  model = 'claude-sonnet-4',
+  model = 'gemini-2.5-flash',
   costPerMT,
 }: ConsultationCostProps) {
-  const pricing = MODEL_PRICING[model] || MODEL_PRICING['claude-sonnet-4'];
+  const pricing = MODEL_PRICING[model] || MODEL_PRICING['gemini-2.5-flash'];
   
   const cost = costPerMT 
     ? ((inputTokens + outputTokens) * costPerMT) / 1000000
