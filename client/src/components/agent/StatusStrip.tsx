@@ -6,6 +6,7 @@
 import { RunPhase, PHASE_EMOJIS, PHASE_MESSAGES } from '@shared/agentEvents';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Coins } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export interface BillingMetrics {
   inputTokens: number;
@@ -51,23 +52,61 @@ export function StatusStrip({ phase, message, currentThought, isExecuting = fals
   };
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2 bg-card/50 border-b border-border" data-testid="agent-status-strip">
-      <Badge 
-        variant="outline" 
-        className={`${PHASE_COLORS[phase]} font-medium`}
-        data-testid={`status-badge-${phase}`}
+    <motion.div 
+      className="flex items-center gap-2 px-3 py-2 bg-card/50 border-b border-border" 
+      data-testid="agent-status-strip"
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={phase}
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.8, opacity: 0 }}
+          transition={{ duration: 0.15 }}
+        >
+          <Badge 
+            variant="outline" 
+            className={`${PHASE_COLORS[phase]} font-medium`}
+            data-testid={`status-badge-${phase}`}
+          >
+            <motion.span 
+              className="mr-1.5"
+              animate={isExecuting ? { rotate: [0, 10, -10, 0] } : {}}
+              transition={{ duration: 0.5, repeat: isExecuting ? Infinity : 0 }}
+            >
+              {emoji}
+            </motion.span>
+            <span className="capitalize">{phase}</span>
+          </Badge>
+        </motion.div>
+      </AnimatePresence>
+      
+      <AnimatePresence>
+        {isExecuting && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" data-testid="status-spinner" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      <motion.span 
+        key={displayMessage}
+        className="text-sm text-muted-foreground flex-1" 
+        data-testid="status-message"
+        initial={{ opacity: 0, x: 10 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.2 }}
       >
-        <span className="mr-1.5">{emoji}</span>
-        <span className="capitalize">{phase}</span>
-      </Badge>
-      
-      {isExecuting && (
-        <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" data-testid="status-spinner" />
-      )}
-      
-      <span className="text-sm text-muted-foreground flex-1" data-testid="status-message">
         {displayMessage}
-      </span>
+      </motion.span>
 
       {/* Billing Cost Meter */}
       {billingMetrics && (
@@ -118,6 +157,6 @@ export function StatusStrip({ phase, message, currentThought, isExecuting = fals
           )}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

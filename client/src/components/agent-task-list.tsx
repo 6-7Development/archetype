@@ -1,7 +1,8 @@
 import { Check, Circle, Loader2, AlertCircle, ChevronRight, ChevronDown } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export interface AgentTask {
   id: string;
@@ -19,16 +20,53 @@ interface AgentTaskListProps {
 }
 
 function TaskIcon({ status }: { status: AgentTask['status'] }) {
-  switch (status) {
-    case 'completed':
-      return <Check className="w-4 h-4 text-emerald-500" data-testid={`task-icon-completed`} />;
-    case 'in_progress':
-      return <Loader2 className="w-4 h-4 text-blue-500 animate-spin" data-testid={`task-icon-in_progress`} />;
-    case 'failed':
-      return <AlertCircle className="w-4 h-4 text-red-500" data-testid={`task-icon-failed`} />;
-    default:
-      return <Circle className="w-4 h-4 text-muted-foreground" data-testid={`task-icon-pending`} />;
-  }
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={status}
+        initial={{ scale: 0.5, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.5, opacity: 0 }}
+        transition={{ duration: 0.2 }}
+      >
+        {status === 'completed' && (
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 500, damping: 25 }}
+          >
+            <Check className="w-4 h-4 text-emerald-500" data-testid="task-icon-completed" />
+          </motion.div>
+        )}
+        {status === 'in_progress' && (
+          <div className="relative">
+            <Loader2 className="w-4 h-4 text-blue-500 animate-spin" data-testid="task-icon-in_progress" />
+            <motion.div
+              className="absolute inset-0 rounded-full"
+              animate={{
+                boxShadow: [
+                  "0 0 0 0 rgba(59, 130, 246, 0.4)",
+                  "0 0 0 4px rgba(59, 130, 246, 0)",
+                ]
+              }}
+              transition={{ duration: 1, repeat: Infinity }}
+            />
+          </div>
+        )}
+        {status === 'failed' && (
+          <motion.div
+            animate={{ x: [0, -2, 2, -2, 0] }}
+            transition={{ duration: 0.3 }}
+          >
+            <AlertCircle className="w-4 h-4 text-red-500" data-testid="task-icon-failed" />
+          </motion.div>
+        )}
+        {status === 'pending' && (
+          <Circle className="w-4 h-4 text-muted-foreground" data-testid="task-icon-pending" />
+        )}
+      </motion.div>
+    </AnimatePresence>
+  );
 }
 
 function TaskItem({ 
@@ -140,22 +178,43 @@ function TaskItem({
 export function AgentTaskList({ tasks, activeTaskId, onTaskClick }: AgentTaskListProps) {
   if (tasks.length === 0) {
     return (
-      <div className="p-4 text-sm text-muted-foreground text-center">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="p-4 text-sm text-muted-foreground text-center"
+      >
         No tasks yet
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="space-y-1 p-2" data-testid="agent-task-list">
-      {tasks.map((task) => (
-        <TaskItem
+    <motion.div 
+      className="space-y-1 p-2" 
+      data-testid="agent-task-list"
+      initial="hidden"
+      animate="visible"
+      variants={{
+        visible: { transition: { staggerChildren: 0.05 } },
+        hidden: {}
+      }}
+    >
+      {tasks.map((task, index) => (
+        <motion.div
           key={task.id}
-          task={task}
-          isActive={task.id === activeTaskId}
-          onClick={() => onTaskClick?.(task.id)}
-        />
+          variants={{
+            hidden: { opacity: 0, x: -10 },
+            visible: { opacity: 1, x: 0 }
+          }}
+          transition={{ duration: 0.2 }}
+        >
+          <TaskItem
+            task={task}
+            isActive={task.id === activeTaskId}
+            onClick={() => onTaskClick?.(task.id)}
+          />
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 }
