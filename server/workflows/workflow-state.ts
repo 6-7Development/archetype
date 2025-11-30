@@ -38,15 +38,17 @@ export class WorkflowStateManager {
 
   /**
    * Valid phase transitions (state machine)
+   * COMPLETE WORKFLOW: ASSESS → PLAN → EXECUTE → TEST → VERIFY → COMPLETE
+   * ALL phases allow self-transitions for iterative work
    */
   private static readonly VALID_TRANSITIONS: Record<WorkflowPhase, WorkflowPhase[]> = {
-    [WorkflowPhase.ASSESS]: [WorkflowPhase.PLAN, WorkflowPhase.ERROR],
-    [WorkflowPhase.PLAN]: [WorkflowPhase.EXECUTE, WorkflowPhase.ASSESS, WorkflowPhase.ERROR],
-    [WorkflowPhase.EXECUTE]: [WorkflowPhase.EXECUTE, WorkflowPhase.TEST, WorkflowPhase.VERIFY, WorkflowPhase.ERROR],
-    [WorkflowPhase.TEST]: [WorkflowPhase.VERIFY, WorkflowPhase.EXECUTE, WorkflowPhase.ERROR],
-    [WorkflowPhase.VERIFY]: [WorkflowPhase.COMPLETE, WorkflowPhase.EXECUTE, WorkflowPhase.ERROR],
-    [WorkflowPhase.COMPLETE]: [WorkflowPhase.ASSESS], // Allow restart
-    [WorkflowPhase.ERROR]: [WorkflowPhase.ASSESS, WorkflowPhase.PLAN], // Recovery paths
+    [WorkflowPhase.ASSESS]: [WorkflowPhase.ASSESS, WorkflowPhase.PLAN, WorkflowPhase.ERROR],
+    [WorkflowPhase.PLAN]: [WorkflowPhase.PLAN, WorkflowPhase.EXECUTE, WorkflowPhase.ASSESS, WorkflowPhase.ERROR],
+    [WorkflowPhase.EXECUTE]: [WorkflowPhase.EXECUTE, WorkflowPhase.TEST, WorkflowPhase.VERIFY, WorkflowPhase.PLAN, WorkflowPhase.ERROR],
+    [WorkflowPhase.TEST]: [WorkflowPhase.TEST, WorkflowPhase.VERIFY, WorkflowPhase.EXECUTE, WorkflowPhase.ERROR],
+    [WorkflowPhase.VERIFY]: [WorkflowPhase.VERIFY, WorkflowPhase.COMPLETE, WorkflowPhase.EXECUTE, WorkflowPhase.TEST, WorkflowPhase.ERROR],
+    [WorkflowPhase.COMPLETE]: [WorkflowPhase.COMPLETE, WorkflowPhase.ASSESS], // Allow restart
+    [WorkflowPhase.ERROR]: [WorkflowPhase.ASSESS, WorkflowPhase.PLAN, WorkflowPhase.EXECUTE], // Recovery paths
   };
 
   /**
