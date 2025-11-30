@@ -149,7 +149,7 @@ class AutoHealingService {
 
       const genai = new GoogleGenerativeAI(geminiKey);
 
-      const systemPrompt = `You are Hexad's AUTO-HEALING module. You fix platform errors automatically.
+      const systemPrompt = `You are BeeHive's AUTO-HEALING module. You fix platform errors automatically.
 
 CRITICAL: This is AUTOMATIC healing - be conservative and surgical. Only fix what's broken.
 

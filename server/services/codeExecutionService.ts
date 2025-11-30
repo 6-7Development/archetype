@@ -65,7 +65,7 @@ interface ActiveExecution {
 }
 
 const LANGUAGE_CONFIGS: Record<string, { command: string; args: string[]; extension: string }> = {
-  javascript: { command: 'node', args: ['--experimental-permission', '--allow-read=/tmp/hexad-sandbox', '--allow-write=/tmp/hexad-sandbox'], extension: 'js' },
+  javascript: { command: 'node', args: ['--experimental-permission', '--allow-read=/tmp/beehive-sandbox', '--allow-write=/tmp/beehive-sandbox'], extension: 'js' },
   typescript: { command: 'npx', args: ['tsx'], extension: 'ts' },
   python: { command: 'python3', args: ['-u'], extension: 'py' },
 };
@@ -131,7 +131,7 @@ const FORBIDDEN_PATTERNS_PYTHON = [
   /open\s*\(\s*['"`]\/home/,
   /open\s*\(\s*['"`]\/root/,
   /open\s*\(\s*['"`]\/var/,
-  /open\s*\(\s*['"`]\/tmp\/(?!hexad)/,
+  /open\s*\(\s*['"`]\/tmp\/(?!beehive)/,
   /__import__/,
   /eval\s*\(/,
   /exec\s*\(/,
@@ -142,7 +142,7 @@ const DEFAULT_TIMEOUT_MS = 10000;
 const DEFAULT_MEMORY_LIMIT_MB = 128;
 const MAX_OUTPUT_SIZE = 50000;
 const MAX_CODE_SIZE = 50000;
-const TEMP_DIR = '/tmp/hexad-sandbox';
+const TEMP_DIR = '/tmp/beehive-sandbox';
 
 class CodeExecutionService extends EventEmitter {
   private activeExecutions: Map<string, ActiveExecution> = new Map();

@@ -1,5 +1,5 @@
 /**
- * Workflow Metrics Tracker for HexadAI v2.0
+ * Workflow Metrics Tracker for BeeHiveAI v2.0
  * 
  * Tracks comprehensive metrics for workflow enforcement:
  * - Phase transitions with timestamps
@@ -8,10 +8,10 @@
  * - Test execution and verification
  * - Quality scores
  * 
- * Used by lomuJobManager.ts to measure and improve HexadAI workflow compliance
+ * Used by lomuJobManager.ts to measure and improve BeeHiveAI workflow compliance
  */
 
-import type { InsertHexadWorkflowMetrics } from '@shared/schema';
+import type { InsertBeeHiveWorkflowMetrics } from '@shared/schema';
 
 export interface ViolationRecord {
   type: 'phase_skip' | 'test_skip' | 'direct_edit' | 'no_announcement' | 'excessive_rambling' | 'tool_block';

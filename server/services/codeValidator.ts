@@ -1,7 +1,7 @@
 /**
  * CODE VALIDATOR - Pre-Commit Quality Gates
  * 
- * Prevents HexadAI from committing broken code by running comprehensive validation
+ * Prevents BeeHiveAI from committing broken code by running comprehensive validation
  * BEFORE any git commit. This ensures production-ready code quality.
  * 
  * Validation Steps:
@@ -66,7 +66,7 @@ export class CodeValidator {
     // 1. TypeScript Compilation Check
     await this.checkTypeScript(result);
 
-    // 2. Escape Character Validation (critical for preventing HexadAI's specific bug)
+    // 2. Escape Character Validation (critical for preventing BeeHiveAI's specific bug)
     await this.checkEscapeCharacters(filePaths, result);
 
     // 3. Git Diff Sanity Check
@@ -137,14 +137,14 @@ export class CodeValidator {
   }
 
   /**
-   * Check for double-escaped characters (HexadAI's specific bug)
+   * Check for double-escaped characters (BeeHiveAI's specific bug)
    * SMART DETECTION: Only flag literal strings in source output, not regex/JSON encoding
    */
   private async checkEscapeCharacters(filePaths: string[], result: ValidationResult): Promise<void> {
     try {
       console.log('[CODE-VALIDATOR] 🔍 Checking for malformed escape sequences...');
       
-      // SCOPED PATTERNS: Only catch HexadAI's specific bug (literal \\n in string operations)
+      // SCOPED PATTERNS: Only catch BeeHiveAI's specific bug (literal \\n in string operations)
       const suspiciousPatterns = [
         {
           pattern: /\.join\(['"]\\\\n['"]\)/,  // .join('\\n') - should be .join('\n')
@@ -157,7 +157,7 @@ export class CodeValidator {
           severity: 'error'
         },
         {
-          pattern: /}\s*\\n\s*}/,  // Literal \n} at end of block (HexadAI's exact bug)
+          pattern: /}\s*\\n\s*}/,  // Literal \n} at end of block (BeeHiveAI's exact bug)
           name: "Literal backslash-n at closing brace",
           severity: 'error'
         },
@@ -198,7 +198,7 @@ export class CodeValidator {
       if (issues.length > 0) {
         result.checks.escapeChars = false;
         result.errors.push(
-          `Malformed escape sequences detected (HexadAI bug pattern):\n${issues.join('\n')}\n\n` +
+          `Malformed escape sequences detected (BeeHiveAI bug pattern):\n${issues.join('\n')}\n\n` +
           `HINT: These patterns indicate double-escaped newlines that will cause syntax errors.\n` +
           `Example fix: .join('\\\\n') should be .join('\\n')`
         );
@@ -221,7 +221,7 @@ export class CodeValidator {
       console.log('[CODE-VALIDATOR] 🔍 Checking git diff...');
       
       const suspiciousPatterns = [
-        /\\\\n\}/g,         // Literal \n} (common HexadAI bug)
+        /\\\\n\}/g,         // Literal \n} (common BeeHiveAI bug)
         /\\n\}/g,           // Literal newline escape at end of block
         /}\s*\\n\s*}/g,     // Closing brace followed by literal \n
       ];
@@ -535,7 +535,7 @@ export class CodeValidator {
     };
 
     // 🔒 CRITICAL: TypeScript Compilation Check - Prevents broken code from being written
-    // This is the main safety gate that prevents HexadAI from crashing the platform
+    // This is the main safety gate that prevents BeeHiveAI from crashing the platform
     try {
       console.log(`[CODE-VALIDATOR] 🔍 Running TypeScript compilation check for: ${filePath}`);
       
@@ -586,7 +586,7 @@ export class CodeValidator {
       console.error('[CODE-VALIDATOR] Error details:', errorMsg);
     }
 
-    // SCOPED PATTERNS: Only catch HexadAI's specific bug (literal \\n in string operations)
+    // SCOPED PATTERNS: Only catch BeeHiveAI's specific bug (literal \\n in string operations)
     const suspiciousPatterns = [
       {
         pattern: /\.join\(['"]\\\\n['"]\)/,

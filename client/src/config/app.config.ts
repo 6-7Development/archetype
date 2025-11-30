@@ -6,7 +6,7 @@
 export const APP_CONFIG = {
   // Branding
   branding: {
-    name: 'Hexad',
+    name: 'BeeHive',
     tagline: 'Collaborative Hive Intelligence for Code',
     logo: '/logo.png', // Configurable path
     favicon: '/favicon.ico',
@@ -52,7 +52,7 @@ export const APP_CONFIG = {
     emptyStateText: 'Ready to help',
     emptyStateSubtext: 'Send a message to get started',
     placeholders: {
-      input: 'Message Hexad...',
+      input: 'Message BeeHive...',
       thinking: 'Processing...',
       typing: 'Typing...',
     },
@@ -169,9 +169,9 @@ export const APP_CONFIG = {
   // Social & External Links
   social: {
     github: 'https://github.com/6-7Development/archetype',
-    twitter: 'https://twitter.com/hexadai',
-    docs: 'https://docs.hexad.ai',
-    support: 'https://support.hexad.ai',
+    twitter: 'https://twitter.com/beehiveai',
+    docs: 'https://docs.beehive.ai',
+    support: 'https://support.beehive.ai',
   },
 
   // Environment Detection

@@ -5,7 +5,7 @@ import { desc, eq, and, gt, count } from 'drizzle-orm';
 /**
  * Agent Failure Detector
  * 
- * Monitors HexadAI agent performance and detects failures:
+ * Monitors BeeHiveAI agent performance and detects failures:
  * - Repeated task aborts (agent giving up)
  * - Broken code output (TypeScript errors)
  * - Infinite loops / stuck tasks
@@ -79,13 +79,13 @@ export class AgentFailureDetector {
       }
     }
     
-    // 3. Check recent HexadAI job failures
+    // 3. Check recent BeeHiveAI job failures
     const recentFailures = await this.checkRecentJobFailures();
     if (recentFailures.count > 2) {
       isAgentFailure = true;
       incidentCategory = 'agent_failure';
       confidence = Math.min(confidence + 15, 95);
-      evidence.push(`${recentFailures.count} recent HexadAI job failures detected`);
+      evidence.push(`${recentFailures.count} recent BeeHiveAI job failures detected`);
       // NOTE: I AM Architect reserved for explicit user requests
       suggestedStrategy = 'lomu_ai';
     }
@@ -106,7 +106,7 @@ export class AgentFailureDetector {
         incidentCategory = 'platform_failure';
         confidence = 80;
         evidence.push(`Matched platform failure pattern: ${pattern.source}`);
-        suggestedStrategy = 'lomu_ai'; // Platform issues can be fixed by HexadAI
+        suggestedStrategy = 'lomu_ai'; // Platform issues can be fixed by BeeHiveAI
         break;
       }
     }
@@ -129,7 +129,7 @@ export class AgentFailureDetector {
   }
   
   /**
-   * Check recent HexadAI job failures (last hour)
+   * Check recent BeeHiveAI job failures (last hour)
    */
   private async checkRecentJobFailures(): Promise<{ count: number; details: string[] }> {
     try {

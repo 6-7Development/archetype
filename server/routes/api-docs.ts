@@ -3,17 +3,17 @@ import { Router, Request, Response } from 'express';
 const router = Router();
 
 /**
- * OpenAPI 3.0 Specification for HexadAI Platform
+ * OpenAPI 3.0 Specification for BeeHiveAI Platform
  * Comprehensive API documentation for all enterprise endpoints
  */
 const openApiSpec = {
   openapi: '3.0.3',
   info: {
-    title: 'HexadAI Platform API',
+    title: 'BeeHiveAI Platform API',
     version: '1.0.0',
     description: 'Enterprise-grade AI-powered development platform with multi-tenant workspace isolation, billing analytics, compliance framework, and autonomous healing capabilities.',
     contact: {
-      name: 'HexadAI Support',
+      name: 'BeeHiveAI Support',
       email: 'support@lomu.ai'
     },
     license: {
@@ -32,7 +32,7 @@ const openApiSpec = {
     { name: 'Authentication', description: 'User authentication and session management' },
     { name: 'Workspaces', description: 'Team workspace management' },
     { name: 'Projects', description: 'Project CRUD operations' },
-    { name: 'HexadAI', description: 'AI agent operations and job management' },
+    { name: 'BeeHiveAI', description: 'AI agent operations and job management' },
     { name: 'Architect', description: 'I AM Architect consultation services' },
     { name: 'SWARM', description: 'SWARM mode parallel execution' },
     { name: 'Billing', description: 'Credits, subscriptions, and billing analytics' },
@@ -137,12 +137,12 @@ const openApiSpec = {
         }
       }
     },
-    '/hexad-ai/jobs': {
+    '/beehive-ai/jobs': {
       get: {
-        tags: ['HexadAI'],
+        tags: ['BeeHiveAI'],
         summary: 'List AI jobs',
         description: 'Returns AI job history for the current workspace',
-        operationId: 'listHexadAIJobs',
+        operationId: 'listBeeHiveAIJobs',
         security: [{ sessionAuth: [] }],
         parameters: [
           { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 } },
@@ -155,7 +155,7 @@ const openApiSpec = {
               'application/json': {
                 schema: {
                   type: 'array',
-                  items: { $ref: '#/components/schemas/HexadAIJob' }
+                  items: { $ref: '#/components/schemas/BeeHiveAIJob' }
                 }
               }
             }
@@ -163,10 +163,10 @@ const openApiSpec = {
         }
       },
       post: {
-        tags: ['HexadAI'],
+        tags: ['BeeHiveAI'],
         summary: 'Start AI job',
         description: 'Starts a new AI coding task',
-        operationId: 'startHexadAIJob',
+        operationId: 'startBeeHiveAIJob',
         security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
@@ -181,7 +181,7 @@ const openApiSpec = {
             description: 'Job started',
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/HexadAIJob' }
+                schema: { $ref: '#/components/schemas/BeeHiveAIJob' }
               }
             }
           }
@@ -428,7 +428,7 @@ const openApiSpec = {
           description: { type: 'string' }
         }
       },
-      HexadAIJob: {
+      BeeHiveAIJob: {
         type: 'object',
         properties: {
           id: { type: 'string', format: 'uuid' },
@@ -560,7 +560,7 @@ router.get('/docs/swagger', (req: Request, res: Response) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HexadAI API Documentation</title>
+  <title>BeeHiveAI API Documentation</title>
   <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
 </head>
 <body>

@@ -46,7 +46,7 @@ export const PROACTIVENESS_SECTION = `🌟 **BE NATURAL, CONVERSATIONAL, AND ALI
 - Confirm understanding before executing
 - Be precise and systematic, but friendly`;
 
-export const TASK_EXECUTION_SECTION = `⚠️ **GOOGLE GEMINI OPTIMIZED**: Hexad uses 18 core tools (within Google's 10-20 recommendation for optimal performance).
+export const TASK_EXECUTION_SECTION = `⚠️ **GOOGLE GEMINI OPTIMIZED**: BeeHive uses 18 core tools (within Google's 10-20 recommendation for optimal performance).
 
 **Task Lists Are OPTIONAL** - Use your judgment:
 - Create task list when: Complex feature (5+ steps), major refactor, user explicitly asks, 15+ iterations needed

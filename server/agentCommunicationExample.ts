@@ -2,7 +2,7 @@
  * Agent Communication Integration Examples
  * 
  * This file demonstrates how to integrate the agent communication system
- * into existing route handlers (SySop, Hexad, Architect).
+ * into existing route handlers (SySop, BeeHive, Architect).
  * 
  * DO NOT import this file in production - these are reference examples only.
  */
@@ -155,18 +155,18 @@ async function attemptBugFix(): Promise<void> {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// EXAMPLE 2: Hexad Platform Healing Integration
+// EXAMPLE 2: BeeHive Platform Healing Integration
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Example: How Hexad uses delegation and approval workflows
+ * Example: How BeeHive uses delegation and approval workflows
  */
 export async function exampleMetaSySopIntegration(
   wss: WebSocketServer,
   userId: string,
   healingRequest: string
 ) {
-  // 1. Broadcast that Hexad is analyzing the platform
+  // 1. Broadcast that BeeHive is analyzing the platform
   broadcastAgentStatus(wss, 'lomu-ai', {
     userId,
     status: 'thinking',
@@ -339,7 +339,7 @@ export async function exampleArchitectReview(
   // 2. Perform code analysis
   const analysisResults = await performCodeAnalysis(codeToReview);
 
-  // 3. Share evidence with requesting agent (SySop or Hexad)
+  // 3. Share evidence with requesting agent (SySop or BeeHive)
   const evidence = shareEvidencePackage({
     providedBy: 'architect',
     receivedBy: 'sysop', // or 'lomu-ai'
@@ -427,9 +427,9 @@ export function exampleCapabilityDiscovery() {
   console.log('  Expertise:', sysopCaps.expertiseAreas.slice(0, 3).join(', '));
   console.log('  Restrictions:', sysopCaps.restrictions[0]);
 
-  // Get Hexad capabilities
+  // Get BeeHive capabilities
   const metaCaps = getAgentCapabilities('lomu-ai');
-  console.log('\n🔧 Hexad (Platform Healer)');
+  console.log('\n🔧 BeeHive (Platform Healer)');
   console.log('  Capabilities:', metaCaps.capabilities.slice(0, 3).join(', '), '...');
   console.log('  Expertise:', metaCaps.expertiseAreas.slice(0, 3).join(', '));
   console.log('  Restrictions:', metaCaps.restrictions[0]);

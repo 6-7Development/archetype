@@ -1,6 +1,6 @@
 /**
  * Shared Chat Configuration
- * Used by both regular Hexad chat and Platform Healing chat
+ * Used by both regular BeeHive chat and Platform Healing chat
  * 
  * Platform Healing should only differ in TOOLS (platform file access),
  * everything else (iterations, workflow, logic) should be shared.

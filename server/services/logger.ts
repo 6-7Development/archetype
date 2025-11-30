@@ -10,7 +10,7 @@ export const logger = winston.createLogger({
     winston.format.errors({ stack: true }),
     winston.format.json()
   ),
-  defaultMeta: { service: 'hexad-ai' },
+  defaultMeta: { service: 'beehive-ai' },
   transports: [
     // Console output with formatting
     new winston.transports.Console({

@@ -232,7 +232,7 @@ export class PlatformHealthMonitor extends EventEmitter {
   
   /**
    * Report agent-specific incidents (quality issues, failures, etc.)
-   * Used by HexadAI quality monitoring system
+   * Used by BeeHiveAI quality monitoring system
    * 
    * Rate limiting: Max 1 incident per type per 10 minutes
    * Source: Always set to 'agent_monitor' for I AM Architect routing

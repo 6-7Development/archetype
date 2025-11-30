@@ -44,7 +44,7 @@ const defaultFileTree: FileTreeItem[] = [
   },
 ];
 
-export function HexadSidebar() {
+export function BeeHiveSidebar() {
   const [fileTree, setFileTree] = useState(defaultFileTree);
 
   const toggleFolder = (id: string) => {

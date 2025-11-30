@@ -1,14 +1,14 @@
 /**
- * PLATFORM MANIFEST - Self-Aware File Index for HexadAI
+ * PLATFORM MANIFEST - Self-Aware File Index for BeeHiveAI
  * 
- * This file documents the entire platform structure so HexadAI knows exactly
+ * This file documents the entire platform structure so BeeHiveAI knows exactly
  * where files are and what they do. It eliminates guessing and investigation.
  * 
- * HexadAI injects this into its system prompt for instant awareness.
+ * BeeHiveAI injects this into its system prompt for instant awareness.
  */
 
 export const PLATFORM_STRUCTURE = {
-  description: "Hexad AI Platform - Full Stack Architecture",
+  description: "BeeHive AI Platform - Full Stack Architecture",
   
   // Backend Structure
   server: {
@@ -19,14 +19,14 @@ export const PLATFORM_STRUCTURE = {
     },
     
     services: {
-      "server/services/lomuAIBrain.ts": "Central HexadAI session management, state persistence, memory registry",
+      "server/services/lomuAIBrain.ts": "Central BeeHiveAI session management, state persistence, memory registry",
       "server/services/codeValidator.ts": "TypeScript pre-write validation, compilation checks, prevents broken commits",
       "server/services/performanceMonitor.ts": "System health monitoring, CPU/memory tracking, incident detection",
-      "server/services/platformManifest.ts": "THIS FILE - Platform structure index for HexadAI awareness",
+      "server/services/platformManifest.ts": "THIS FILE - Platform structure index for BeeHiveAI awareness",
     },
 
     routes: {
-      "server/routes/lomuChat.ts": "Main HexadAI chat endpoint, 5020 lines, SSE streaming, core orchestration",
+      "server/routes/lomuChat.ts": "Main BeeHiveAI chat endpoint, 5020 lines, SSE streaming, core orchestration",
       "server/routes/terminal.ts": "Terminal WebSocket route, shell execution, command history",
       "server/routes/websocket.ts": "Main WebSocket server, heartbeat/cleanup, project subscriptions, security checks",
       "server/routes/deployment.ts": "Deployment webhooks, Railway integration, build status",
@@ -69,12 +69,12 @@ export const PLATFORM_STRUCTURE = {
     pages: {
       "client/src/pages/dashboard.tsx": "Main dashboard, workspace overview",
       "client/src/pages/editor.tsx": "Code editor, Monaco integration, split view",
-      "client/src/pages/hexad-ai-chat.tsx": "HexadAI chat interface, main interaction point",
+      "client/src/pages/beehive-ai-chat.tsx": "BeeHiveAI chat interface, main interaction point",
     },
 
     components: {
       "client/src/components/universal-chat.tsx": "2293 lines, SSE event handlers, real-time progress display",
-      "client/src/components/enhanced-message-display.tsx": "Displays HexadAI thinking blocks, tool calls, results inline",
+      "client/src/components/enhanced-message-display.tsx": "Displays BeeHiveAI thinking blocks, tool calls, results inline",
       "client/src/components/agent-progress-display.tsx": "Real-time task/phase progress visualization",
       "client/src/components/run-progress-table.tsx": "Task execution table with status tracking",
       "client/src/components/ai-model-selector.tsx": "Choose Gemini (fast) vs Claude (smart) AI",
@@ -100,14 +100,14 @@ export const PLATFORM_STRUCTURE = {
   },
 
   // Key Files by Purpose
-  keyFilesForHexadAI: {
+  keyFilesForBeeHiveAI: {
     "Self-Reference": {
       file: "server/services/platformManifest.ts",
       purpose: "THIS FILE - Know your own structure",
     },
     "Chat/Streaming": {
       files: ["server/routes/lomuChat.ts", "client/src/components/universal-chat.tsx"],
-      purpose: "Where HexadAI chats happen - modify if chat isn't working",
+      purpose: "Where BeeHiveAI chats happen - modify if chat isn't working",
     },
     "File Operations": {
       files: ["server/tools/file-operations.ts", "server/services/codeValidator.ts"],
@@ -127,7 +127,7 @@ export const PLATFORM_STRUCTURE = {
     },
     "Session Management": {
       file: "server/services/lomuAIBrain.ts",
-      purpose: "Where HexadAI sessions are tracked and managed",
+      purpose: "Where BeeHiveAI sessions are tracked and managed",
     },
     "Billing": {
       file: "server/routes/lomuChat/billing.ts",
@@ -135,7 +135,7 @@ export const PLATFORM_STRUCTURE = {
     },
   },
 
-  // CRITICAL ANTIPATTERNS - Things HexadAI Got Wrong
+  // CRITICAL ANTIPATTERNS - Things BeeHiveAI Got Wrong
   antipatterns: {
     "Don't look for WebSocket handlers in lomuChat.ts": {
       reason: "WebSocket handling is in server/routes/websocket.ts and terminal.ts",
@@ -143,7 +143,7 @@ export const PLATFORM_STRUCTURE = {
     },
     "Don't diagnose lomuSuperCore.ts multiple times": {
       reason: "It's for system prompt generation, not WebSocket/DB",
-      actual_purpose: "HexadLearningSystem for conversation memory",
+      actual_purpose: "BeeHiveLearningSystem for conversation memory",
     },
     "Don't assume errors without diagnosis": {
       reason: "Use diagnosis.ts tool to identify real issues first",
@@ -172,13 +172,13 @@ export const PLATFORM_STRUCTURE = {
 
 /**
  * INJECT THIS INTO LOMU AI SYSTEM PROMPT
- * HexadAI should reference this structure to know where files are
+ * BeeHiveAI should reference this structure to know where files are
  */
 export function getPlatformAwarenessPrompt(): string {
   return `
 🗺️ **PLATFORM STRUCTURE AWARENESS** - Know Exactly Where Things Are
 
-You are working on the Hexad AI platform. Here is the exact structure:
+You are working on the BeeHive AI platform. Here is the exact structure:
 
 **BACKEND CORE:**
 - server/index.ts: Server entry point
@@ -219,7 +219,7 @@ Remember: You have 18 tools. Use them efficiently. Reference this structure, don
 `;
 }
 
-export function getPlatformContextForHexadAI(): string {
+export function getPlatformContextForBeeHiveAI(): string {
   return `
 ## Your Platform Structure (Fast Reference)
 

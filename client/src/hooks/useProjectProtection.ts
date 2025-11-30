@@ -1,6 +1,6 @@
 /**
  * Hook to check project protection status before making changes
- * Used by HexadAI and users before committing code
+ * Used by BeeHiveAI and users before committing code
  */
 
 import { useQuery, useMutation } from '@tanstack/react-query';

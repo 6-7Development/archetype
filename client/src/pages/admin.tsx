@@ -355,7 +355,7 @@ export default function Admin() {
                         <div className="flex-1">
                           <p className="text-sm font-medium">Platform modifications enabled</p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Hexad can now modify platform files. Changes will be committed to GitHub and auto-deployed.
+                            BeeHive can now modify platform files. Changes will be committed to GitHub and auto-deployed.
                           </p>
                         </div>
                       </div>
@@ -389,7 +389,7 @@ export default function Admin() {
                         <div className="flex-1">
                           <p className="text-sm font-medium">Platform modifications blocked</p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Enable maintenance mode to allow Hexad to modify platform files and commit to GitHub.
+                            Enable maintenance mode to allow BeeHive to modify platform files and commit to GitHub.
                           </p>
                         </div>
                       </div>

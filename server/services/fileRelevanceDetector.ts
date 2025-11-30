@@ -7,7 +7,7 @@
  * - Test files for the component
  * - Related schema/type definitions
  * 
- * This gives HexadAI better context without manual file specification
+ * This gives BeeHiveAI better context without manual file specification
  */
 
 import { db } from '../db';

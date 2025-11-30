@@ -4,7 +4,7 @@
  * Based on Google's recommendation: Keep tool count between 10-20 for optimal performance
  * 
  * Architecture:
- * - Hexad (Gemini Flash): 18 core development tools
+ * - BeeHive (Gemini Flash): 18 core development tools
  * - Sub-Agents (Gemini Flash): 12 specialized execution tools  
  * - I AM Architect (Claude Sonnet 4): 23+ governance/analysis tools
  */
@@ -13,8 +13,8 @@ import { LOMU_TOOLS } from './index';
 
 /**
  * LOMU CORE TOOLS (18 tools)
- * For regular Hexad development work - fast execution primitives
- * Used by: Hexad Chat, Platform Healing
+ * For regular BeeHive development work - fast execution primitives
+ * Used by: BeeHive Chat, Platform Healing
  * 
  * Optimized to stay within Google's recommended 10-20 tool limit
  */
@@ -24,7 +24,7 @@ export const LOMU_CORE_TOOLS = LOMU_TOOLS.filter(tool => [
   'write',
   'ls',
   
-  // Platform File Operations (3) - CRITICAL: Hexad needs these to fix platform issues!
+  // Platform File Operations (3) - CRITICAL: BeeHive needs these to fix platform issues!
   'read_platform_file',
   'write_platform_file',
   'list_platform_files',
@@ -58,7 +58,7 @@ export const LOMU_CORE_TOOLS = LOMU_TOOLS.filter(tool => [
 /**
  * SUBAGENT TOOLS (12 tools)
  * For delegated coding/testing loops - execution-focused
- * Used by: Sub-agents spawned by Hexad
+ * Used by: Sub-agents spawned by BeeHive
  */
 export const SUBAGENT_TOOLS = LOMU_TOOLS.filter(tool => [
   // File Operations (2)

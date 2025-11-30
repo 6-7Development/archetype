@@ -66,7 +66,7 @@ export class PhaseGatekeeper {
     // PHASE 2: PLAN - OPTIONAL create_task_list (only for complex work)
     if (expectedPhase === 'PLAN') {
       // Task lists are now OPTIONAL - no longer enforced
-      // Hexad should use judgment: create for complex work (5+ steps), skip for simple fixes
+      // BeeHive should use judgment: create for complex work (5+ steps), skip for simple fixes
       
       if (analysis.wordCountBeforeTools > 10) {
         violations.push(`⛔ PHASE 2 VIOLATION: ${analysis.wordCountBeforeTools} words (max 5 allowed)`);
@@ -93,7 +93,7 @@ export class PhaseGatekeeper {
     // PHASE 4: TEST - OPTIONAL testing (recommended for UI/UX features)
     if (expectedPhase === 'TEST') {
       // Testing is now OPTIONAL - encouraged for UI/UX features
-      // Hexad should use judgment: test for UI changes, skip for backend-only fixes
+      // BeeHive should use judgment: test for UI changes, skip for backend-only fixes
       if (!analysis.hasTestExecution) {
         // Don't penalize for skipping tests - it's optional
         suggestions.push('💡 Consider calling run_test() to verify UI/UX changes work correctly');

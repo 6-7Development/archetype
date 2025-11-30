@@ -542,7 +542,7 @@ export function UniversalChat({
             credentials: 'include',
           }).catch(err => console.error('Rejection failed:', err));
           
-          toast({ title: 'Guidance rejected', description: 'HexadAI will try a different approach' });
+          toast({ title: 'Guidance rejected', description: 'BeeHiveAI will try a different approach' });
           setArchitectGuidance(null);
         }}
       />
@@ -623,7 +623,7 @@ export function UniversalChat({
                         AI
                       </div>
                       <div className="flex-1 min-w-0 flex flex-col items-start">
-                        <div className="text-sm font-bold mb-1 text-[hsl(var(--secondary))]">HexadAI</div>
+                        <div className="text-sm font-bold mb-1 text-[hsl(var(--secondary))]">BeeHiveAI</div>
                         <div className="bg-[hsl(var(--card))]/60 rounded-2xl rounded-bl-none px-4 py-3 flex items-center gap-2 border border-[hsl(var(--secondary))]/20">
                           <Loader2 className="h-5 w-5 animate-spin text-[hsl(var(--secondary))]" />
                           <span className="text-base text-[hsl(var(--secondary))] font-semibold">Thinking...</span>
@@ -737,7 +737,7 @@ export function UniversalChat({
                       AI
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col items-start">
-                      <div className="text-xs font-bold mb-1 text-blue-600 dark:text-blue-400">Hexad</div>
+                      <div className="text-xs font-bold mb-1 text-blue-600 dark:text-blue-400">BeeHive</div>
                       <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl rounded-bl-none px-4 py-2.5 flex items-center gap-2 border border-slate-300 dark:border-slate-700">
                         <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
                         <span className="text-sm text-slate-700 dark:text-slate-200 font-semibold">Thinking...</span>

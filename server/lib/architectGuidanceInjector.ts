@@ -1,15 +1,15 @@
 /**
  * Architect Guidance Injector
  * 
- * Real-time feedback loop between Hexad (Gemini Flash) and I AM Architect (Gemini with advanced settings).
- * When Hexad makes mistakes, I AM provides corrective guidance DURING THE ACTIVE SESSION.
+ * Real-time feedback loop between BeeHive (Gemini Flash) and I AM Architect (Gemini with advanced settings).
+ * When BeeHive makes mistakes, I AM provides corrective guidance DURING THE ACTIVE SESSION.
  * 
  * CRITICAL FEATURES:
  * - Detects violations in real-time (not post-job)
  * - Calls I AM Architect for expert guidance
- * - Injects guidance back into Hexad conversation as system message
- * - Hexad reads correction and fixes behavior immediately
- * - TRUE TEAMWORK: Hexad + I AM work together
+ * - Injects guidance back into BeeHive conversation as system message
+ * - BeeHive reads correction and fixes behavior immediately
+ * - TRUE TEAMWORK: BeeHive + I AM work together
  */
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -50,7 +50,7 @@ export class ArchitectGuidanceInjector {
   }
   
   /**
-   * Request guidance from I AM Architect when Hexad violates workflow
+   * Request guidance from I AM Architect when BeeHive violates workflow
    */
   async requestGuidance(request: GuidanceRequest): Promise<GuidanceResponse> {
     if (!this.genai) {
@@ -68,9 +68,9 @@ export class ArchitectGuidanceInjector {
     console.log('[ARCHITECT-GUIDANCE] Phase:', request.context.phase);
     console.log('[ARCHITECT-GUIDANCE] Quality Score:', request.qualityScore);
     
-    const systemPrompt = `You are I AM ARCHITECT, an expert supervisor guiding Hexad (Gemini Flash) to follow strict workflow rules.
+    const systemPrompt = `You are I AM ARCHITECT, an expert supervisor guiding BeeHive (Gemini Flash) to follow strict workflow rules.
 
-Hexad just violated a workflow rule. Your job is to provide BRIEF, DIRECT corrective guidance that will be injected into Hexad's conversation as a system message.
+BeeHive just violated a workflow rule. Your job is to provide BRIEF, DIRECT corrective guidance that will be injected into BeeHive's conversation as a system message.
 
 GUIDANCE RULES:
 1. Be CONCISE (max 100 words)
@@ -97,7 +97,7 @@ EXAMPLE BAD GUIDANCE:
 CONTEXT:
 - Phase: ${request.context.phase}
 - User Request: "${request.context.userMessage.slice(0, 200)}..."
-- Hexad Response: "${request.context.lomuResponse.slice(0, 300)}..."
+- BeeHive Response: "${request.context.lomuResponse.slice(0, 300)}..."
 - Tool Calls Made: ${request.context.toolCalls.length}
 - Quality Score: ${request.qualityScore}/100
 

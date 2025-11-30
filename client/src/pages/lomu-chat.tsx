@@ -2,9 +2,9 @@ import { useEffect } from "react";
 import { UniversalChat } from "@/components/universal-chat";
 import { ChatLayout } from "@/components/chat-layout";
 import { ChatSidebar } from "@/components/chat-sidebar";
-import { HexadSidebar } from "@/components/lomu-sidebar";
+import { BeeHiveSidebar } from "@/components/lomu-sidebar";
 
-export default function HexadChat() {
+export default function BeeHiveChat() {
   // Clear chat history on page load to avoid showing stale messages
   useEffect(() => {
     const MESSAGES_STORAGE_KEY = `lomu-chat-messages:project:lomu-standalone`;
@@ -13,7 +13,7 @@ export default function HexadChat() {
 
   return (
     <ChatLayout 
-      leftSidebar={<HexadSidebar />}
+      leftSidebar={<BeeHiveSidebar />}
       rightSidebar={<ChatSidebar />}
       showLeftSidebar={true}
       showRightSidebar={true}

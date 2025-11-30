@@ -154,7 +154,7 @@ export function ProjectUpload() {
           </div>
           
           <p className="text-sm text-muted-foreground">
-            Upload a ZIP file of your project to continue working on it with Hexad AI
+            Upload a ZIP file of your project to continue working on it with BeeHive AI
           </p>
 
         {!file ? (

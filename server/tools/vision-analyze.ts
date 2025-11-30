@@ -16,7 +16,7 @@ interface VisionAnalyzeResult {
 
 /**
  * Analyze images using Gemini Vision API
- * Allows Hexad to understand screenshots, UI mockups, and visual designs
+ * Allows BeeHive to understand screenshots, UI mockups, and visual designs
  */
 export async function executeVisionAnalysis(params: VisionAnalyzeParams): Promise<VisionAnalyzeResult> {
   try {

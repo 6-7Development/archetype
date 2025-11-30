@@ -1,5 +1,5 @@
 /**
- * Intent Classification for Hexad
+ * Intent Classification for BeeHive
  * Re-exports shared functions from server/shared/chatConfig.ts
  */
 

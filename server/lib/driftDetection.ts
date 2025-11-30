@@ -1,7 +1,7 @@
 /**
  * Phase B: Source⇄Artifact Fidelity Guardrails
  * 
- * Detects drift between source code and compiled artifacts to ensure Hexad
+ * Detects drift between source code and compiled artifacts to ensure BeeHive
  * diagnoses the correct code version in production.
  */
 
@@ -263,7 +263,7 @@ export async function performDriftDetection(githubService?: any): Promise<DriftR
   // Add summary
   if (report.overallDriftDetected) {
     report.warnings.push(
-      'Hexad diagnosis may reference outdated code. Recommendation: Rebuild and redeploy to sync artifacts.'
+      'BeeHive diagnosis may reference outdated code. Recommendation: Rebuild and redeploy to sync artifacts.'
     );
   } else {
     report.warnings.push('✓ No drift detected - build artifacts match source code');
@@ -273,7 +273,7 @@ export async function performDriftDetection(githubService?: any): Promise<DriftR
 }
 
 /**
- * Get drift status summary for Hexad chat
+ * Get drift status summary for BeeHive chat
  */
 export async function getDriftStatusSummary(githubService?: any): Promise<string> {
   const report = await performDriftDetection(githubService);

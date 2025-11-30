@@ -2,7 +2,7 @@
  * Smart Code Tools - Intelligence-enhanced file reading and searching
  * 
  * These tools leverage CodeIndexer, FileRelevanceDetector, and SmartChunker
- * to provide Hexad with much smarter context retrieval.
+ * to provide BeeHive with much smarter context retrieval.
  */
 
 import { CodeIndexer } from '../services/codeIndexer';

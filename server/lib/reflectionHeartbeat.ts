@@ -1,7 +1,7 @@
 /**
  * ReflectionHeartbeat
  * 
- * Periodic system-side prompt injection that forces Hexad to self-check workflow compliance.
+ * Periodic system-side prompt injection that forces BeeHive to self-check workflow compliance.
  * Triggers every N tool calls to ensure agent stays on track.
  * 
  * Benefits:

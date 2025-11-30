@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import type { IncomingMessage } from "http";
 import { storage } from "../storage.ts";
-import { hexadAIBrain } from "../services/lomuAIBrain.ts";
+import { beehiveAIBrain } from "../services/lomuAIBrain.ts";
 import { sessionStore } from "../universalAuth.ts";
 import cookieSignature from "cookie-signature";
 
@@ -161,7 +161,7 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
     if (isTerminal) {
       ws.send(JSON.stringify({
         type: 'welcome',
-        message: '🔌 HexadAI Terminal Ready\nType commands to interact with your project...'
+        message: '🔌 BeeHiveAI Terminal Ready\nType commands to interact with your project...'
       }));
       console.log(`[TERMINAL] Welcome message sent for user: ${ws.userId}`);
     }
@@ -216,7 +216,7 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
           ws.sessionId = data.sessionId;
           
           // Get or create session in brain (must create to register WebSocket)
-          const session = await hexadAIBrain.getOrCreateSession({
+          const session = await beehiveAIBrain.getOrCreateSession({
             userId: ws.userId, // Use validated userId from session
             sessionId: ws.sessionId,
             targetContext: data.targetContext || 'project',
@@ -224,7 +224,7 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
           });
           
           // Register WebSocket connection with brain
-          hexadAIBrain.registerWebSocket(ws.userId, ws.sessionId, ws, `project_${ws.sessionId}`);
+          beehiveAIBrain.registerWebSocket(ws.userId, ws.sessionId, ws, `project_${ws.sessionId}`);
           
           console.log(`✅ [WS] Session registered: userId=${ws.userId}, sessionId=${ws.sessionId}`);
           
@@ -347,7 +347,7 @@ export function setupWebSocket(app: Express): { httpServer: Server, wss: WebSock
     ws.on('close', () => {
       // Unregister WebSocket from brain (pass ws instance to prevent stale unregister)
       if (ws.userId && ws.sessionId) {
-        hexadAIBrain.unregisterWebSocket(ws.userId, ws.sessionId, ws);
+        beehiveAIBrain.unregisterWebSocket(ws.userId, ws.sessionId, ws);
       }
       
       console.log(`❌ WebSocket client disconnected${ws.userId ? ` (user: ${ws.userId})` : ''}`);

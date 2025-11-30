@@ -1,5 +1,5 @@
 /**
- * Hexad Integration Tests
+ * BeeHive Integration Tests
  * Comprehensive test suite covering core workflows, error recovery, and streaming
  */
 
@@ -13,7 +13,7 @@ import {
 } from '../routes/lomuChat/billing';
 import { validateToolExecution, formatToolResult } from '../routes/lomuChat/tools';
 
-describe('Hexad Integration Tests', () => {
+describe('BeeHive Integration Tests', () => {
   describe('Configuration System', () => {
     it('should have LOMU_LIMITS defined', () => {
       expect(LOMU_LIMITS).toBeDefined();
@@ -185,7 +185,7 @@ describe('Hexad Integration Tests', () => {
   });
 });
 
-describe('Hexad Workflow Scenarios', () => {
+describe('BeeHive Workflow Scenarios', () => {
   it('should handle simple fix workflow', () => {
     const intent = 'fix';
     const maxIterations = getMaxIterationsForIntent(intent);

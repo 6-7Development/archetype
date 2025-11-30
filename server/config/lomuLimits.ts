@@ -1,5 +1,5 @@
 /**
- * Dynamic configuration system for HexadAI limits
+ * Dynamic configuration system for BeeHiveAI limits
  * Centralized location for all hardcoded limits that were scattered throughout lomuChat.ts
  * Can be adjusted without code changes via environment or dynamic reload
  */

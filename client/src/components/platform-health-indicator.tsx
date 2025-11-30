@@ -53,7 +53,7 @@ export function PlatformHealthIndicator() {
       
       toast({ 
         title: "🤖 Autonomous Healing Started", 
-        description: "Watch HexadAI analyze and fix issues in real-time...",
+        description: "Watch BeeHiveAI analyze and fix issues in real-time...",
         duration: 3000,
       });
       

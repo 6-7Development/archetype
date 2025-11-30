@@ -134,9 +134,9 @@ export default function ChatPage() {
       <div className="h-screen flex flex-col items-center justify-center bg-background p-4">
         <div className="text-center space-y-4">
           <Sparkles className="h-12 w-12 text-primary mx-auto" />
-          <h1 className="text-2xl font-bold">Hexad Chat</h1>
+          <h1 className="text-2xl font-bold">BeeHive Chat</h1>
           <p className="text-muted-foreground max-w-sm">
-            Sign in to start chatting with Hexad and build amazing things together.
+            Sign in to start chatting with BeeHive and build amazing things together.
           </p>
           <Button asChild className="mt-4">
             <Link href="/auth">Sign In</Link>
@@ -174,7 +174,7 @@ export default function ChatPage() {
           
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
-            <span className="font-semibold text-sm">Hexad</span>
+            <span className="font-semibold text-sm">BeeHive</span>
             {projectId && project && (
               <Badge variant="secondary" className="text-xs">
                 {(project as any).name || 'Project'}

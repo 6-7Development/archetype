@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Zap, CheckCircle2, XCircle, Clock } from "lucide-react";
 
-interface HexadJob {
+interface BeeHiveJob {
   id: string;
   jobId: string;
   status: 'completed' | 'failed' | 'interrupted';
@@ -16,8 +16,8 @@ interface HexadJob {
 }
 
 export function JobHistory() {
-  const { data: jobs, isLoading } = useQuery<HexadJob[]>({
-    queryKey: ['/api/hexad-ai/jobs'],
+  const { data: jobs, isLoading } = useQuery<BeeHiveJob[]>({
+    queryKey: ['/api/beehive-ai/jobs'],
     refetchInterval: 30000,
   });
 

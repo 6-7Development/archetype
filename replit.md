@@ -1,19 +1,20 @@
-# Hexad - Collaborative Hive Intelligence for Code
+# BeeHive - Collaborative Hive Intelligence for Code
 
 ## Overview
-Hexad is an AI-powered platform for rapid web development, featuring the autonomous AI coding agent Hexad Core. It offers a console-first interface, real-time preview, and comprehensive workspace features across desktop (Hexad Desktop) and mobile (Hexad Mobile) IDEs. The platform aims for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. Hexad's key capability is autonomous self-healing, bug fixing, and UI/UX improvements to its own source code, complete with rollback and audit logging. The business vision is to provide a comprehensive, AI-driven platform that simplifies web development through collaborative hive intelligence, making it accessible and efficient for a wide range of users.
+BeeHive is an AI-powered platform for rapid web development, featuring the autonomous AI coding agent Scout. It offers a console-first interface, real-time preview, and comprehensive workspace features across desktop (BeeHive Desktop, 4-panel layout) and mobile (BeeHive Mobile, bottom tab navigation) IDEs. The platform aims for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. Scout's key capability is autonomous self-healing, bug fixing, and UI/UX improvements to the platform's source code, complete with rollback and audit logging. The business vision is to provide a comprehensive, AI-driven platform that simplifies web development through collaborative swarm intelligence, making it accessible and efficient for a wide range of users.
 
 ## User Preferences
 ### API Configuration
 **Google Gemini Unified Architecture**:
-- **Hexad Core & Platform Healing**: Gemini 2.5 Flash via GEMINI_API_KEY
+- **Scout (Worker Agent)**: Gemini 2.5 Flash via GEMINI_API_KEY
   - Model: gemini-2.5-flash
   - Cost: $0.075 input / $0.30 output per 1M tokens
   - 1M token context window
   - **18+ core tools** with proper function calling
   - Used for: Regular development, platform healing, job management, all work orders
+  - Mode: SWARM (fast parallel execution)
   
-- **I AM Architect & Advanced Tasks**: Gemini 2.5 Pro via GEMINI_API_KEY
+- **Scout Advanced (Strategic Tasks)**: Gemini 2.5 Pro via GEMINI_API_KEY
   - Model: gemini-2.5-pro (or -pro-exp for experimental features)
   - Cost: $1.50 input / $6.00 output per 1M tokens (within budget, cheaper than Claude)
   - 2M token context window
@@ -30,6 +31,7 @@ Hexad is an AI-powered platform for rapid web development, featuring the autonom
 
 ### Design Preferences
 -   **Brand Identity**: Professional swarm/hive intelligence theme with collaborative AI energy
+-   **Agent Name**: Scout (worker bee, fast executor, SWARM mode coordinator)
 -   **Color Palette (Hive Theme)**:
     -   Honey (40 97% 50% / #F7B500) - Primary warm golden
     -   Nectar (48 100% 65% / #FFD34D) - Accent light golden
@@ -47,20 +49,20 @@ Hexad is an AI-powered platform for rapid web development, featuring the autonom
 -   **Swarm/Hive Elements**:
     -   Honeycomb patterns for organizational structures
     -   Warm golden accents throughout the UI
-    -   Collaborative AI agent indicators
-    -   Interconnected network visualizations
+    -   Scout agent indicators with worker bee motifs
+    -   Interconnected swarm network visualizations
 
 ## System Architecture
-The platform is built with a React frontend, an Express.js backend, and PostgreSQL for data persistence. It uses a unified codebase for Hexad (Desktop, 4-panel layout) and Hexad5 (Mobile, bottom tab navigation), sharing backend APIs, WebSockets, authentication, and database access.
+The platform is built with a React frontend, an Express.js backend, and PostgreSQL for data persistence. It uses a unified codebase for BeeHive (Desktop, 4-panel layout) and BeeHive Mobile (bottom tab navigation), sharing backend APIs, WebSockets, authentication, and database access.
 
 ### Universal RBAC System
 A dynamic role-based access control system (`shared/rbac.ts`) serves as a single source of truth for permissions, supporting 'user', 'admin', 'owner' roles, five resources (platform, projects, healing, admin, billing, team), and five actions (read, write, delete, execute, manage).
 
 ### UI/UX Decisions
-The UI features a tab-based workspace with a command console and real-time live preview, adhering to a professional swarm/hive theme with honey-gold and mint-teal accents. It uses card-based layouts, warm shadows, smooth transitions, and ADA/WCAG accessibility. Chat interfaces utilize semantic theme tokens for consistent messaging and display Hexad's thought process inline with responses using `EnhancedMessageDisplay` and collapsible, color-coded blocks for thinking, tool calls, and results. A comprehensive Agent Chatroom interface includes real-time progress tracking via SSE events, managed by a `UniversalChat` component. A Replit Agent-style Testing UI with a `TestingPanel` provides live browser previews, AI narration, and step progress tracking. A functional Terminal component is integrated into the WorkspaceLayout.
+The UI features a tab-based workspace with a command console and real-time live preview, adhering to a professional swarm/hive theme with honey-gold and mint-teal accents. It uses card-based layouts, warm shadows, smooth transitions, and ADA/WCAG accessibility. Chat interfaces utilize semantic theme tokens for consistent messaging and display Scout's thought process inline with responses using `EnhancedMessageDisplay` and collapsible, color-coded blocks for thinking, tool calls, and results. A comprehensive Agent Chatroom interface includes real-time progress tracking via SSE events, managed by a `UniversalChat` component. A Replit Agent-style Testing UI with a `TestingPanel` provides live browser previews, AI narration, and step progress tracking. A functional Terminal component is integrated into the WorkspaceLayout.
 
 ### System Design Choices
-Hexad operates as an autonomous worker using a 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). I AM Architect is a manually-triggered premium consultant, providing strategic guidance without committing code. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing. Hexad incorporates efficiency rules like SEARCH BEFORE CODING and ITERATION BUDGET AWARENESS.
+Scout operates as an autonomous worker using a 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). Scout Advanced is a manually-triggered premium consultant, providing strategic guidance without committing code. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing. Scout incorporates efficiency rules like SEARCH BEFORE CODING and ITERATION BUDGET AWARENESS.
 
 **SWARM Mode - Parallel Multi-Agent Execution**:
 -   **SwarmModeCoordinator**: 8-step safety pipeline with automatic rollback on failure
@@ -72,15 +74,15 @@ Hexad operates as an autonomous worker using a 7-phase workflow (ASSESS → PLAN
 -   **UI Components**: SwarmModeButton, SwarmDashboard (react-query, data-testid attributes, real-time SSE updates)
 
 **Platform Healing Architecture**:
--   **Hexad**: Autonomous worker executing changes (Gemini 2.5 Flash).
--   **I AM Architect**: Owner-triggered consultant for strategic guidance (Gemini 2.5 Pro), requiring manual activation and owner approval for changes.
--   **Autonomous Healing Button**: One-click background healing process with toast notifications and incident count updates.
--   **HealOrchestrator**: Monitors health incidents and can auto-trigger workflows.
--   **Incident System**: Logs failures for owner review and manual I AM Architect triggering.
+-   **Scout**: Autonomous worker executing changes (Gemini 2.5 Flash)
+-   **Scout Advanced**: Owner-triggered consultant for strategic guidance (Gemini 2.5 Pro), requiring manual activation and owner approval for changes
+-   **Autonomous Healing Button**: One-click background healing process with toast notifications and incident count updates
+-   **HealOrchestrator**: Monitors health incidents and can auto-trigger workflows
+-   **Incident System**: Logs failures for owner review and manual Scout Advanced triggering
 
-A centralized session management system (`server/services/lomuAIBrain.ts`) combines in-memory and database persistence. The access model provides owner-only access for platform healing, usage-based billing for Hexad, and premium consulting for I AM Architect.
+A centralized session management system (`server/services/lomuAIBrain.ts`) combines in-memory and database persistence. The access model provides owner-only access for platform healing, usage-based billing for Scout, and premium consulting for Scout Advanced.
 
-Key features include optimized tool distribution, universal RBAC, GitHub integration, environment variable management, AST-based code intelligence, production-ready monetization with Stripe, robust security measures, vision analysis, strict JSON function calling, a 3-layer code validation system, telemetry, reflection and structured retry mechanisms, an anti-paralysis system, and priority safety mechanisms like auto-rollback and server startup integration tests. Phase 1 multi-user safety includes workspace isolation, stale session cleanup, and crash recovery. All API calls include `credentials: 'include'` for proper session cookie authentication. New services include Consultation Refine, Conflict Resolution, Performance Tracking, Architect Versioning, Failure Recovery, Skill-Based Routing, Token Budget, Adaptive Parallelization, and Concurrent Rate Limiting.
+Key features include optimized tool distribution, universal RBAC, GitHub integration, environment variable management, AST-based code intelligence, production-ready monetization with Stripe, robust security measures, vision analysis, strict JSON function calling, a 3-layer code validation system, telemetry, reflection and structured retry mechanisms, an anti-paralysis system, and priority safety mechanisms like auto-rollback and server startup integration tests. Phase 1 multi-user safety includes workspace isolation, stale session cleanup, and crash recovery. All API calls include `credentials: 'include'` for proper session cookie authentication. New services include Consultation Refine, Conflict Resolution, Performance Tracking, Scout Versioning, Failure Recovery, Skill-Based Routing, Token Budget, Adaptive Parallelization, and Concurrent Rate Limiting.
 
 ### Configuration System
 The platform uses a centralized configuration approach including `app.config.ts` for global settings, `constants.ts` for routes and validation, `classNameHelper.ts` for Tailwind CSS, `api-utils.ts` for API utilities, `useAppConfig.ts` hook, `ConfigProvider.tsx` context provider, and `shared/rbac.ts`.
@@ -101,10 +103,12 @@ The system is highly modularized for maintainability and self-healing, with refa
 -   **Web Search**: Tavily API
 
 ## Recent Changes (Nov 30, 2025)
-- ✅ Completed Anthropic-to-Gemini migration (ALL agents now use Gemini)
+- ✅ Completed Anthropic-to-Gemini migration (all agents now use Gemini)
 - ✅ Removed deprecated anthropic.ts, architect-review.ts, sub-agent.ts files
 - ✅ Updated FEATURES flags to use GEMINI_API_KEY
 - ✅ Removed ANTHROPIC_API_KEY from all env validation
 - ✅ Chat scrolling fix: Triple-method scroll (direct + deferred + scrollIntoView)
 - ✅ Agent limits removed: maxContinuations 3→15, maxTokens 4096→32000
 - ✅ Agent tool dispatcher fixed: Now handles 18+ tools correctly
+- ✅ Rebranded platform to BeeHive with Scout agent
+- ✅ SWARM mode integrated as Fast Mode executor

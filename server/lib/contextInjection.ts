@@ -1,7 +1,7 @@
 /**
  * Phase C: Conversational Awareness Layer
  * 
- * Context injection utilities for Hexad chat to provide:
+ * Context injection utilities for BeeHive chat to provide:
  * - Task board snapshot
  * - Recent platform changes (git history)
  * - Diagnosis report summaries
@@ -106,14 +106,14 @@ export async function getRecentPlatformChanges(
 
 /**
  * Get last diagnosis summary from chat history
- * Looks for recent diagnosis results in Hexad messages
+ * Looks for recent diagnosis results in BeeHive messages
  */
 export async function getLastDiagnosisSummary(
   userId: string,
   sessionId?: string
 ): Promise<DiagnosisSummary | undefined> {
   try {
-    // Query recent Hexad messages
+    // Query recent BeeHive messages
     const recentMessages = await db
       .select()
       .from(chatMessages)
@@ -155,7 +155,7 @@ export async function getLastDiagnosisSummary(
 }
 
 /**
- * Get conversation history for Hexad session
+ * Get conversation history for BeeHive session
  */
 export async function getConversationHistory(
   userId: string,
@@ -189,7 +189,7 @@ export async function getConversationHistory(
 }
 
 /**
- * Build complete Hexad context
+ * Build complete BeeHive context
  */
 export async function buildMetaSysopContext(
   userId: string,

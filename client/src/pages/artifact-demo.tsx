@@ -17,7 +17,7 @@ const mockArtifacts: Artifact[] = [
 }
 
 // Usage
-const message = greet("Hexad");
+const message = greet("BeeHive");
 console.log(message);`,
     language: "typescript",
     metadata: {
@@ -79,7 +79,7 @@ async function fetchUserData(userId) {
     type: "code",
     title: "config.json",
     content: `{
-  "appName": "Hexad",
+  "appName": "BeeHive",
   "version": "2.6.0",
   "features": {
     "artifacts": true,

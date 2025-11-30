@@ -1,7 +1,7 @@
 /**
  * VALIDATION HELPERS - Reusable utilities for code validation and retry logic
  * 
- * Extracted from geminiOrchestrator.ts for use across HexadAI workflows.
+ * Extracted from geminiOrchestrator.ts for use across BeeHiveAI workflows.
  * Provides:
  * - File existence validation
  * - TypeScript compilation checking

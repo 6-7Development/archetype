@@ -1,5 +1,5 @@
 /**
- * Billing module for Hexad
+ * Billing module for BeeHive
  * Handles token estimation, credit reservation, and usage tracking
  * Extracted from massive lomuChat.ts for maintainability
  */

@@ -1,4 +1,4 @@
-// Emergency limits and constants for Hexad Chat
+// Emergency limits and constants for BeeHive Chat
 
 export const EMERGENCY_LIMITS = {
   MAX_WALL_CLOCK_TIME: 10 * 60 * 1000, // 10 minutes

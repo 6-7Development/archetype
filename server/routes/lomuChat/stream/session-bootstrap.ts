@@ -5,7 +5,7 @@ import { storage } from '../../../storage.ts';
 import { chatMessages, lomuAttachments, conversationStates, users } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
-import { hexadAIBrain } from '../../../services/lomuAIBrain.ts';
+import { beehiveAIBrain } from '../../../services/lomuAIBrain.ts';
 import { traceLogger } from '../../../services/traceLogger.ts';
 import { FileChangeTracker } from '../../../services/validationHelpers.ts';
 import { 
@@ -50,7 +50,7 @@ export interface BootstrapSessionParams {
  */
 export interface BootstrapSessionResult {
   // Session and conversation context
-  session: any; // Hexad Brain session
+  session: any; // BeeHive Brain session
   conversationState: any; // Database conversation state
   userMsg: any; // Saved user message record
   traceId: string | null;
@@ -107,10 +107,10 @@ const AUTONOMY_LEVEL_CONFIG: Record<string, AutonomyLevelConfig> = {
 /**
  * Bootstrap a new stream session with SSE setup, session creation, and user message handling
  * 
- * This function handles all initialization logic for a Hexad chat stream:
+ * This function handles all initialization logic for a BeeHive chat stream:
  * - Prevents concurrent streams per user
  * - Sets up SSE headers and heartbeat
- * - Creates or retrieves session via hexadAIBrain
+ * - Creates or retrieves session via beehiveAIBrain
  * - Saves user message and attachments to database
  * - Initializes trace logging
  * - Detects and handles @RESET/@NEWPROJECT commands
@@ -182,7 +182,7 @@ export async function bootstrapStreamSession(
   // ============================================================================
   // STEP 6: CREATE OR RETRIEVE LOMU BRAIN SESSION
   // ============================================================================
-  const session = await hexadAIBrain.getOrCreateSession({
+  const session = await beehiveAIBrain.getOrCreateSession({
     userId,
     sessionId: sessionId || nanoid(),
     targetContext,
@@ -190,7 +190,7 @@ export async function bootstrapStreamSession(
   });
   
   // Update session activity timestamp
-  hexadAIBrain.touchSession(userId, session.sessionId);
+  beehiveAIBrain.touchSession(userId, session.sessionId);
   
   // Get conversation state for backward compatibility with existing code
   // Brain tracks session, but we still use conversationState for some DB operations

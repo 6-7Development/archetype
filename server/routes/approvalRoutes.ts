@@ -1,7 +1,7 @@
 /**
  * Approval API Routes
  * 
- * Handles user approval/rejection of file modification requests from HexadAI.
+ * Handles user approval/rejection of file modification requests from BeeHiveAI.
  * 
  * Endpoints:
  * - POST /api/approve/:messageId - Approve pending modification

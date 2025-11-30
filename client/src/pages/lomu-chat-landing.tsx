@@ -1,12 +1,12 @@
 /**
- * Redirect page to help users navigate to HexadChat
+ * Redirect page to help users navigate to BeeHiveChat
  * Shows clear instructions and auto-redirects to /lomu
  */
 
 import { useEffect } from 'react';
 import { useLocation } from 'wouter';
 
-export default function HexadChatLanding() {
+export default function BeeHiveChatLanding() {
   const [, setLocation] = useLocation();
 
   useEffect(() => {
@@ -20,7 +20,7 @@ export default function HexadChatLanding() {
   return (
     <div className="h-screen w-full flex items-center justify-center bg-gradient-to-br from-background to-card">
       <div className="text-center space-y-4 p-8 max-w-md">
-        <h1 className="text-3xl font-bold">Loading Hexad Chat...</h1>
+        <h1 className="text-3xl font-bold">Loading BeeHive Chat...</h1>
         <p className="text-muted-foreground">Redirecting to chat interface</p>
         <div className="pt-4">
           <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />

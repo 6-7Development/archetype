@@ -34,7 +34,7 @@ const COMMON_TECH_WORDS = new Set([
   'postgres', 'postgresql', 'python', 'react', 'redis', 'regex', 'replit',
   'rest', 'restful', 'sdk', 'sql', 'ssr', 'ssl', 'svg', 'tsx', 'typescript',
   'ui', 'url', 'uuid', 'vite', 'webpack', 'websocket', 'yaml', 'yml',
-  'hexad', 'lomu', 'drizzle', 'zod', 'tanstack', 'shadcn', 'tailwind',
+  'beehive', 'lomu', 'drizzle', 'zod', 'tanstack', 'shadcn', 'tailwind',
 ]);
 
 const COMMON_ABBREVIATIONS = new Set([
@@ -312,7 +312,7 @@ export function useSpellCheck(content: string, enabled = true) {
   const [customDictionary, setCustomDictionary] = useState<string[]>([]);
   
   useEffect(() => {
-    const saved = localStorage.getItem('hexad-spell-dictionary');
+    const saved = localStorage.getItem('beehive-spell-dictionary');
     if (saved) {
       try {
         setCustomDictionary(JSON.parse(saved));
@@ -323,7 +323,7 @@ export function useSpellCheck(content: string, enabled = true) {
   const addToDictionary = useCallback((word: string) => {
     setCustomDictionary(prev => {
       const next = [...prev, word.toLowerCase()];
-      localStorage.setItem('hexad-spell-dictionary', JSON.stringify(next));
+      localStorage.setItem('beehive-spell-dictionary', JSON.stringify(next));
       return next;
     });
   }, []);

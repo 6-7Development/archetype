@@ -318,7 +318,7 @@ export function ChatDialogs({
             <AlertDialogTitle>Insufficient Credits</AlertDialogTitle>
             <AlertDialogDescription>
               You don't have enough credits to complete this request. 
-              Please purchase more credits to continue using Hexad.
+              Please purchase more credits to continue using BeeHive.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

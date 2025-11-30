@@ -1,7 +1,7 @@
 /**
  * Reusable Error Page Template
  * Provides consistent styling for all error pages (404, 403, 500, etc.)
- * Uses hive/honey theme from Hexad branding
+ * Uses hive/honey theme from BeeHive branding
  */
 
 import { Button } from "@/components/ui/button";
@@ -47,7 +47,7 @@ export function ErrorPageTemplate({
           <LogoEnhancedBadge size={64} />
           <div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Hexad
+              BeeHive
             </h1>
             <p className="text-sm text-muted-foreground">Collaborative Hive Intelligence for Code</p>
           </div>

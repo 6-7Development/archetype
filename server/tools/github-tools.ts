@@ -1,7 +1,7 @@
 /**
- * GitHub Tools - Version control and repository management for Hexad
+ * GitHub Tools - Version control and repository management for BeeHive
  * 
- * These tools allow Hexad to commit code, create branches, and push to GitHub
+ * These tools allow BeeHive to commit code, create branches, and push to GitHub
  */
 
 import { GitHubService } from '../githubService';
@@ -204,7 +204,7 @@ export async function exportProjectToGitHub(params: {
   excludePatterns?: string[];
 }): Promise<string> {
   try {
-    const { message = 'Initial commit from Hexad', excludePatterns = [] } = params;
+    const { message = 'Initial commit from BeeHive', excludePatterns = [] } = params;
     
     const github = new GitHubService();
     

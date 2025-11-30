@@ -11,7 +11,7 @@ export function configureSSEHeaders(res: Response) {
 }
 
 export function sendInitialHeartbeat(res: Response) {
-  res.write('data: { "type": "heartbeat", "message": "Hexad stream active" }\n\n');
+  res.write('data: { "type": "heartbeat", "message": "BeeHive stream active" }\n\n');
 }
 
 export function createEventSender(res: Response) {

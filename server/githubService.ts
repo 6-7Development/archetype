@@ -600,7 +600,7 @@ export class GitHubService {
       const { data: newCommit } = await this.octokit.git.createCommit({
         owner: this.owner,
         repo: this.repo,
-        message: `[Hexad PR] ${commitMessage}`,
+        message: `[BeeHive PR] ${commitMessage}`,
         tree: newTree.sha,
         parents: [latestCommitSha],
       });

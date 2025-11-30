@@ -1,8 +1,8 @@
-// Hexad Tagline Variety - Fresh alternatives to avoid overuse
+// BeeHive Tagline Variety - Fresh alternatives to avoid overuse
 
 export const taglines = {
   // Primary tagline (classic)
-  primary: "When code throws you lemons, you get Hexad",
+  primary: "When code throws you lemons, you get BeeHive",
   
   // Hero variations
   hero: [

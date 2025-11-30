@@ -1,6 +1,6 @@
 /**
  * Gap #19: Unified Metrics Dashboard
- * Compare performance across HexadAI, I AM Architect, Subagents
+ * Compare performance across BeeHiveAI, I AM Architect, Subagents
  */
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +19,7 @@ interface AgentMetrics {
 
 const mockMetrics: AgentMetrics[] = [
   {
-    name: 'HexadAI',
+    name: 'BeeHiveAI',
     tasksCompleted: 847,
     successRate: 94,
     avgDuration: 2400,
@@ -142,7 +142,7 @@ export function UnifiedMetricsDashboard() {
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
           <p>
-            ✅ <strong>HexadAI</strong> is most cost-effective for general tasks (${(423 / 847).toFixed(3)} per task)
+            ✅ <strong>BeeHiveAI</strong> is most cost-effective for general tasks (${(423 / 847).toFixed(3)} per task)
           </p>
           <p>
             ✅ <strong>I AM Architect</strong> has perfect success rate - use for critical decisions

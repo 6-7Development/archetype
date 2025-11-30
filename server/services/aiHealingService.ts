@@ -77,15 +77,15 @@ export class AIHealingService {
       console.log('[AI-HEALING] Starting Gemini diagnosis...');
       console.log('[AI-HEALING] Prompt:', diagnosticPrompt.substring(0, 200) + '...');
       
-      const { buildHexadSuperCorePrompt } = await import('../lomuSuperCore');
+      const { buildBeeHiveSuperCorePrompt } = await import('../lomuSuperCore');
       
       const contextPrompt = `Current incident:
 - Type: ${incident.type}
 - Severity: ${incident.severity}
 - Description: ${incident.description}`;
 
-      const systemPrompt = buildHexadSuperCorePrompt({
-        platform: 'HexadAI Platform (Self-Healing Mode)',
+      const systemPrompt = buildBeeHiveSuperCorePrompt({
+        platform: 'BeeHiveAI Platform (Self-Healing Mode)',
         autoCommit: false,
         intent: 'task',
         contextPrompt,

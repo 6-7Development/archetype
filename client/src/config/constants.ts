@@ -39,7 +39,7 @@ export const NAVIGATION = {
   main: [
     { label: 'Dashboard', path: ROUTES.DASHBOARD, testId: 'nav-dashboard' },
     { label: 'Builder', path: ROUTES.BUILDER, testId: 'nav-builder' },
-    { label: 'Hexad Chat', path: ROUTES.HEXAD_CHAT, testId: 'nav-lomu-chat' },
+    { label: 'BeeHive Chat', path: ROUTES.HEXAD_CHAT, testId: 'nav-lomu-chat' },
     { label: 'Marketplace', path: ROUTES.MARKETPLACE, testId: 'nav-marketplace' },
   ],
   platform: [
@@ -62,7 +62,7 @@ export const API_ROUTES = {
   CHAT_SESSION: '/api/chat/session',
   PLATFORM_HEALTH: '/api/platform-health',
   INCIDENTS: '/api/incidents',
-  JOBS: '/api/hexad-ai/jobs',
+  JOBS: '/api/beehive-ai/jobs',
   HEALING_START: '/api/healing/start',
   COMMANDS: '/api/commands',
   PROJECTS: '/api/projects',
@@ -115,7 +115,7 @@ export const MESSAGES = {
   PROCESSING: 'Processing...',
   READY: 'Ready to help',
   THINKING: 'Thinking...',
-  WELCOME: 'Welcome to Hexad',
+  WELCOME: 'Welcome to BeeHive',
 } as const;
 
 export const TIME_CONSTANTS = {

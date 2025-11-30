@@ -95,7 +95,7 @@ export function DeploymentStatusModal({
               </div>
               
               <DialogTitle className="text-base font-medium text-foreground mb-1" data-testid="text-commit-message">
-                [HexadAI] {commitMessage}
+                [BeeHiveAI] {commitMessage}
               </DialogTitle>
               
               <div className="flex items-center gap-2 text-xs text-muted-foreground">

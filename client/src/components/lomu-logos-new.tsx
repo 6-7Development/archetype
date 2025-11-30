@@ -1,7 +1,7 @@
 // Simple SVG-based logos (no external image dependencies)
 
 // Icon Logo - Lemon "L" symbol
-export function HexadIconLogo({ size = 40, className = "" }: { size?: number; className?: string }) {
+export function BeeHiveIconLogo({ size = 40, className = "" }: { size?: number; className?: string }) {
   return (
     <div
       className={`relative overflow-hidden rounded-full bg-gradient-to-br from-[hsl(50,98%,58%)] to-[hsl(45,95%,52%)] ${className}`}
@@ -38,7 +38,7 @@ export function HexadIconLogo({ size = 40, className = "" }: { size?: number; cl
 }
 
 // Word Logo - "LOMU" text
-export function HexadWordLogo({ height = 60, className = "" }: { height?: number; className?: string }) {
+export function BeeHiveWordLogo({ height = 60, className = "" }: { height?: number; className?: string }) {
   return (
     <div
       className={`relative flex items-center ${className}`}
@@ -68,7 +68,7 @@ export function HexadWordLogo({ height = 60, className = "" }: { height?: number
 }
 
 // Combined Logo - Icon + Text
-export function HexadFullLogo({
+export function BeeHiveFullLogo({
   iconSize = 40,
   textHeight = 32,
   className = ""
@@ -79,8 +79,8 @@ export function HexadFullLogo({
 }) {
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <HexadIconLogo size={iconSize} />
-      <HexadWordLogo height={textHeight} />
+      <BeeHiveIconLogo size={iconSize} />
+      <BeeHiveWordLogo height={textHeight} />
     </div>
   );
 }

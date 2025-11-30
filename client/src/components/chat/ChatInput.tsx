@@ -75,7 +75,7 @@ export function ChatInput({
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKeyDown}
             onPaste={onPaste}
-            placeholder="Message Hexad..."
+            placeholder="Message BeeHive..."
             className="min-h-[50px] md:min-h-[56px] max-h-[180px] resize-none text-base md:text-lg bg-background/80 border border-border/70 focus-visible:ring-1 focus-visible:ring-primary/60 focus-visible:border-primary/50 rounded-lg px-3 md:px-4 py-2.5 md:py-3 pr-10 transition-all"
             disabled={isGenerating}
             data-testid="input-chat-message"

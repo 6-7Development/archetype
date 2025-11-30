@@ -31,7 +31,7 @@ export interface BillingSetupParams {
 }
 
 /**
- * Setup billing and credit reservation for Hexad stream
+ * Setup billing and credit reservation for BeeHive stream
  * 
  * This function orchestrates the billing workflow:
  * 1. Validates user access based on context (platform = owner-only, project = ownership check)

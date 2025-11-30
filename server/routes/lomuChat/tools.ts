@@ -1,5 +1,5 @@
 /**
- * Tool execution module for Hexad
+ * Tool execution module for BeeHive
  * Handles tool invocation, validation, and result processing
  * Extracted from massive lomuChat.ts for maintainability
  */

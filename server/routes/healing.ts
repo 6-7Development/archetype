@@ -79,7 +79,7 @@ export function registerHealingRoutes(app: Express, deps?: { wss?: WebSocketServ
           repositoryUrl: process.env.GITHUB_REPO ? `https://github.com/${process.env.GITHUB_REPO}` : null,
           status: "active",
           metadata: {
-            description: "Heal and improve the HexadAI platform itself",
+            description: "Heal and improve the BeeHiveAI platform itself",
             autoCreated: true,
           },
         });
@@ -217,7 +217,7 @@ export function registerHealingRoutes(app: Express, deps?: { wss?: WebSocketServ
     }
   });
 
-  // POST /api/healing/messages - Send message to Hexad (CLAUDE-POWERED with multi-turn tool execution)
+  // POST /api/healing/messages - Send message to BeeHive (CLAUDE-POWERED with multi-turn tool execution)
   // TEMPORARY BYPASS: Removed isOwner check to debug auth issue
   app.post("/api/healing/messages", isAuthenticated, async (req, res) => {
     let userMessage: any = null;
@@ -265,10 +265,10 @@ export function registerHealingRoutes(app: Express, deps?: { wss?: WebSocketServ
       console.log(`[HEALING-CHAT] Loaded ${messages.length} messages from history (last 10)`);
       
       // Build Platform Healing system prompt - Conversational like Replit Agent
-      const systemPrompt = `You are HexadAI 🍋 - the autonomous coding agent for the Hexad platform.
+      const systemPrompt = `You are BeeHiveAI 🍋 - the autonomous coding agent for the BeeHive platform.
 
 **WHO I AM:**
-I'm the platform's self-healing system - I fix and improve the Hexad platform itself. I work independently and execute changes autonomously.
+I'm the platform's self-healing system - I fix and improve the BeeHive platform itself. I work independently and execute changes autonomously.
 
 **MY RELATIONSHIP WITH I AM ARCHITECT:**
 I AM Architect is my senior consultant - a premium expert advisor. I execute the work; I AM provides strategic guidance only when I'm truly stuck or users explicitly request premium consultation. I default to working independently.
@@ -350,7 +350,7 @@ Your role:
 - Be conversational and helpful - explain what you're doing
 - Work autonomously like Replit Agent - show task progress with animated task lists
 
-Available tools (13 tools - IDENTICAL to regular HexadAI - Google Gemini optimized):
+Available tools (13 tools - IDENTICAL to regular BeeHiveAI - Google Gemini optimized):
 - start_subagent(task, files) - Delegate complex multi-file work
 - create_task_list(title, tasks) - **OPTIONAL** - use for complex work (5+ steps)
 - read_task_list() - Check task status
@@ -365,7 +365,7 @@ Available tools (13 tools - IDENTICAL to regular HexadAI - Google Gemini optimiz
 - search_integrations(query) - Search Replit integrations
 - web_search(query) - Search web for docs
 
-⚠️ **TOOL PARITY NOTE**: Platform Healing now has IDENTICAL 13 core tools to regular HexadAI. All other tools (Git, DB, env vars, smart code) delegated to sub-agents or I AM Architect for optimal Gemini performance (40x cost savings).
+⚠️ **TOOL PARITY NOTE**: Platform Healing now has IDENTICAL 13 core tools to regular BeeHiveAI. All other tools (Git, DB, env vars, smart code) delegated to sub-agents or I AM Architect for optimal Gemini performance (40x cost savings).
 
 Platform info:
 - Stack: React, TypeScript, Express, PostgreSQL
@@ -426,7 +426,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
       let fullResponse = '';
       
       // Multi-turn tool execution loop
-      // 🎯 SHARED LOGIC: Use same intent classification and iteration limits as regular HexadAI
+      // 🎯 SHARED LOGIC: Use same intent classification and iteration limits as regular BeeHiveAI
       const userIntent = classifyUserIntent(validated.content);
       const MAX_ITERATIONS = getMaxIterationsForIntent(userIntent);
       console.log(`[HEALING-CHAT] User intent: ${userIntent}, max iterations: ${MAX_ITERATIONS}`);
@@ -689,7 +689,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   try {
                     const entry = await storage.createScratchpadEntry({
                       sessionId: validated.conversationId,
-                      author: 'HexadAI',
+                      author: 'BeeHiveAI',
                       role: 'agent',
                       content: thought,
                       entryType: 'thought',
@@ -720,7 +720,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   try {
                     const entry = await storage.createScratchpadEntry({
                       sessionId: validated.conversationId,
-                      author: 'HexadAI',
+                      author: 'BeeHiveAI',
                       role: 'agent',
                       content: action,
                       entryType: 'action',
@@ -799,7 +799,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                   const jobId = toolUse.input.job_id;
                   const reason = toolUse.input.reason || 'Cancelled by I AM Architect';
                   
-                  console.log(`[HEALING-CHAT] 🛑 Cancelling HexadAI job: ${jobId}`);
+                  console.log(`[HEALING-CHAT] 🛑 Cancelling BeeHiveAI job: ${jobId}`);
                   
                   const cancelledJob = await cancelJob(jobId, reason);
                   
@@ -1683,7 +1683,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
           });
 
           // Send initial context to Claude for autonomous healing
-          const systemPrompt = `You are HexadAI's Platform Healing Agent. The user has initiated AUTONOMOUS healing mode.
+          const systemPrompt = `You are BeeHiveAI's Platform Healing Agent. The user has initiated AUTONOMOUS healing mode.
 
 Your mission: Analyze and fix ALL platform issues autonomously. Focus on:
 1. Bug fixes
@@ -1706,10 +1706,10 @@ Execute tools directly. Work autonomously without waiting for user input.`;
             content: systemPrompt,
           });
 
-          // 🔥 CRITICAL: Actually trigger HexadAI to process the healing conversation
+          // 🔥 CRITICAL: Actually trigger BeeHiveAI to process the healing conversation
           const { createJob, startJobWorker } = await import('../services/lomuJobManager');
           
-          // Create HexadAI job for autonomous healing
+          // Create BeeHiveAI job for autonomous healing
           const healingMessage = `Autonomous Platform Healing initiated. Analyze and fix all ${47} open incidents.
 
 Priority areas:
@@ -1721,11 +1721,11 @@ Priority areas:
 Use your tools to diagnose, fix, test, and commit all improvements autonomously.`;
 
           const job = await createJob(userId, healingMessage);
-          console.log(`[HEALING-AUTO] HexadAI job created: ${job.id}`);
+          console.log(`[HEALING-AUTO] BeeHiveAI job created: ${job.id}`);
           
           // Start the job worker in background
           await startJobWorker(job.id);
-          console.log(`[HEALING-AUTO] HexadAI job started - autonomous healing in progress`);
+          console.log(`[HEALING-AUTO] BeeHiveAI job started - autonomous healing in progress`);
 
           // Notify via WebSocket that autonomous healing started
           if (deps?.wss) {

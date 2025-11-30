@@ -81,7 +81,7 @@ ${relevantFiles.map(f => `- ${f}`).join('\n')}
 - Medium tasks: Aim for 4-6 iterations  
 - Complex tasks: Use up to ${MAX_ITERATIONS} if needed
 
-🛠️ AVAILABLE TOOLS (23 tools - same as Hexad):
+🛠️ AVAILABLE TOOLS (23 tools - same as BeeHive):
 **Core Execution:** read/write/list/edit, grep, search_codebase, bash, get_latest_lsp_diagnostics
 **Verification:** run_test, perform_diagnosis, verify_fix, validate_before_commit, read_logs, execute_sql
 **Knowledge:** web_search, search_integrations, knowledge_store/search/recall, code_search

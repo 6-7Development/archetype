@@ -3,7 +3,7 @@
  * 
  * This module provides cross-agent communication patterns for:
  * - SySop (The Coder) - Builds user projects
- * - Hexad - Platform self-healing system
+ * - BeeHive - Platform self-healing system
  * - I AM (The Architect) - Architectural consultant
  * 
  * COMMUNICATION PATTERNS:
@@ -715,7 +715,7 @@ export function processEscalationResponse(params: {
  * 
  * @example
  * ```typescript
- * // Hexad delegates database migration to specialist sub-agent
+ * // BeeHive delegates database migration to specialist sub-agent
  * const delegation = delegateToSubAgent({
  *   delegatedBy: 'lomu-ai',
  *   subAgentType: 'specialist',

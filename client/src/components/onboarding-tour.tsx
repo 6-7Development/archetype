@@ -12,7 +12,7 @@ interface OnboardingTourProps {
 
 const steps = [
   {
-    title: "Welcome to Hexad",
+    title: "Welcome to BeeHive",
     description: "Your AI-powered development platform for building professional web applications instantly.",
     icon: Sparkles,
     features: [
@@ -24,7 +24,7 @@ const steps = [
   },
   {
     title: "Start Building",
-    description: "Use the Build tab to chat with Hexad AI and generate your first project.",
+    description: "Use the Build tab to chat with BeeHive AI and generate your first project.",
     icon: Code,
     features: [
       'Try: "Build a modern landing page"',
@@ -50,7 +50,7 @@ const steps = [
     icon: Rocket,
     features: [
       "Choose a template below",
-      "Or chat with Hexad AI",
+      "Or chat with BeeHive AI",
       "Build anything you can imagine",
       "Deploy in minutes, not days"
     ]

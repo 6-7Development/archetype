@@ -1,7 +1,7 @@
 /**
  * Phase A: Diagnosis Integration Test Harness
  * 
- * Tests that Hexad's diagnosis system works correctly in production mode:
+ * Tests that BeeHive's diagnosis system works correctly in production mode:
  * - Diagnoses compiled dist/ artifacts (not source TypeScript)
  * - Falls back to GitHub source when needed
  * - Handles edge cases gracefully
@@ -33,7 +33,7 @@ class TestRunner {
 
   async run() {
     console.log('\n' + '='.repeat(70));
-    console.log('  Hexad Diagnosis Integration Tests (Phase A)');
+    console.log('  BeeHive Diagnosis Integration Tests (Phase A)');
     console.log('='.repeat(70) + '\n');
 
     for (const test of this.tests) {
@@ -313,7 +313,7 @@ runner.test('Test 10: Source maps exist for debugging', async () => {
 // Run all tests
 // ============================================================================
 
-console.log('\n🧪 Running Hexad Integration Tests...\n');
+console.log('\n🧪 Running BeeHive Integration Tests...\n');
 console.log('These tests verify that:');
 console.log('  • Production builds create proper dist/ artifacts');
 console.log('  • Diagnosis analyzes compiled code (not source)');

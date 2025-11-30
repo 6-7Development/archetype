@@ -299,7 +299,7 @@ export function ChatMessages({
         {isGenerating && (
           <div className="flex items-center gap-2 text-muted-foreground" data-testid="typing-indicator">
             <Loader2 className="w-4 h-4 animate-spin" />
-            <span className="text-base md:text-lg">Hexad is thinking...</span>
+            <span className="text-base md:text-lg">BeeHive is thinking...</span>
           </div>
         )}
 

@@ -30,7 +30,7 @@ export interface BuildPromptOptions {
 }
 
 /**
- * Build the complete Hexad system prompt
+ * Build the complete BeeHive system prompt
  * Assembles all modular sections into a cohesive prompt
  */
 export function buildLomuSuperCorePrompt(options: BuildPromptOptions): string {

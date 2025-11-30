@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 // Enhanced Lemonade-Inspired Text Logo with Detailed Lemon
-export function HexadTextLogo({ className = "", size = "default" }: { className?: string; size?: "sm" | "default" | "lg" }) {
+export function BeeHiveTextLogo({ className = "", size = "default" }: { className?: string; size?: "sm" | "default" | "lg" }) {
 
   const sizeClasses = {
     sm: "text-xl",
@@ -137,7 +137,7 @@ export function LogoEnhancedBadge({ size = 40 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 120 120" className="shrink-0">
       <defs>
-        {/* Enhanced color scheme using Hexad palette */}
+        {/* Enhanced color scheme using BeeHive palette */}
         <radialGradient id="enhanced-badge-outer">
           <stop offset="0%" stopColor="hsl(50, 98%, 70%)" />
           <stop offset="40%" stopColor="hsl(50, 98%, 58%)" />
@@ -308,7 +308,7 @@ export function LogoAnimatedWordmark({ size = 140, variant = "default" }: { size
             backgroundSize: '200% 200%'
           }}
         >
-          Hexad
+          BeeHive
         </span>
       </div>
     );
@@ -381,7 +381,7 @@ export function LogoAnimatedWordmark({ size = 140, variant = "default" }: { size
       {/* Animated Wordmark with wave effect */}
       <div className="flex flex-col">
         <div className="flex leading-none" style={{ fontSize: size / 4.5 }}>
-          {"Hexad".split('').map((letter, i) => (
+          {"BeeHive".split('').map((letter, i) => (
             <span
               key={i}
               className="font-bold inline-block"

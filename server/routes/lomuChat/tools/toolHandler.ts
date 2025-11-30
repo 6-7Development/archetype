@@ -1,6 +1,6 @@
 /**
  * TOOL HANDLER MODULE
- * Implements all 18 Hexad core tools
+ * Implements all 18 BeeHive core tools
  * Called by AgentExecutor.executeTool() dispatcher
  */
 

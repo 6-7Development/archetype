@@ -113,7 +113,7 @@ export const SENSITIVE_CONFIG = {
 } as const;
 
 // ============================================================================
-// EDITABLE - Can be changed by Hexad or users (not critical)
+// EDITABLE - Can be changed by BeeHive or users (not critical)
 // ============================================================================
 export const EDITABLE_CONFIG = [
   // UI/UX (fully editable)

@@ -39,8 +39,8 @@ export { refreshAllLogs } from './logs';
 export { glob, ls, read, write } from './file-operations';
 
 /**
- * Hexad Tool Definitions
- * Complete toolset for Hexad's autonomous development capabilities
+ * BeeHive Tool Definitions
+ * Complete toolset for BeeHive's autonomous development capabilities
  */
 export const LOMU_TOOLS = [
   {
@@ -1169,7 +1169,7 @@ export const LOMU_TOOLS = [
       properties: {
         message: {
           type: 'string',
-          description: 'Commit message (default: "Initial commit from Hexad")',
+          description: 'Commit message (default: "Initial commit from BeeHive")',
         },
         excludePatterns: {
           type: 'array',
@@ -1322,9 +1322,9 @@ export {
 } from './tool-distribution';
 
 /**
- * Essential Hexad Tools (18 tools for Gemini)
+ * Essential BeeHive Tools (18 tools for Gemini)
  * Balanced tool distribution strategy:
- * - Hexad: 18 core tools (cost-effective Gemini)
+ * - BeeHive: 18 core tools (cost-effective Gemini)
  * - I AM Architect: 16 strategic tools (Claude for complex reasoning)
  * - Subagents: ~33 specialized tools (domain experts)
  * This ensures all 67 tools are utilized while respecting Gemini's ≤20 recommendation

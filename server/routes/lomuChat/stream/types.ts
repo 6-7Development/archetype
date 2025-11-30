@@ -5,7 +5,7 @@ import type { ConversationState } from '@shared/schema';
 import type { SessionState } from '../../../services/lomuAIBrain.ts';
 
 /**
- * Request body parameters for Hexad stream endpoint
+ * Request body parameters for BeeHive stream endpoint
  * Contains all user-provided inputs for initiating a chat stream
  */
 export interface StreamRequest {

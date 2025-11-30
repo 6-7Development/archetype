@@ -229,7 +229,7 @@ export class GDPRExportService {
         .from(architectConsultations)
         .where(eq(architectConsultations.userId, userId));
 
-      // Fetch HexadAI jobs
+      // Fetch BeeHiveAI jobs
       const jobRecords = await db
         .select({
           id: lomuJobs.id,

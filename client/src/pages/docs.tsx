@@ -12,7 +12,7 @@ export default function Documentation() {
           <div className="space-y-2">
             <h1 className="text-4xl font-bold">Documentation</h1>
             <p className="text-lg text-muted-foreground">
-              Learn how to use Hexad to build amazing applications with AI assistance
+              Learn how to use BeeHive to build amazing applications with AI assistance
             </p>
           </div>
 
@@ -23,11 +23,11 @@ export default function Documentation() {
               <h2 className="text-2xl font-semibold">Quick Start Guide</h2>
             </div>
             <div className="space-y-3 text-muted-foreground">
-              <p>Get started with Hexad in just a few minutes:</p>
+              <p>Get started with BeeHive in just a few minutes:</p>
               <ol className="list-decimal list-inside space-y-2">
                 <li>Create a new project in the Builder</li>
                 <li>Write your requirements or let AI generate code</li>
-                <li>Use Hexad Chat for real-time assistance</li>
+                <li>Use BeeHive Chat for real-time assistance</li>
                 <li>Deploy your project with one click</li>
               </ol>
             </div>
@@ -83,7 +83,7 @@ export default function Documentation() {
               <h2 className="text-2xl font-semibold">Security & Compliance</h2>
             </div>
             <div className="space-y-2 text-muted-foreground">
-              <p>Hexad is built with enterprise-grade security:</p>
+              <p>BeeHive is built with enterprise-grade security:</p>
               <ul className="list-disc list-inside space-y-1 ml-2">
                 <li>End-to-end encryption for sensitive data</li>
                 <li>Role-based access control (RBAC)</li>

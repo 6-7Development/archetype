@@ -53,8 +53,8 @@ import {
   type SatisfactionSurvey,
   type InsertSatisfactionSurvey,
   type MaintenanceMode,
-  type HexadTask,
-  type InsertHexadTask,
+  type BeeHiveTask,
+  type InsertBeeHiveTask,
   type UserAvatarState,
   type InsertUserAvatarState,
   type HealingTarget,
@@ -241,11 +241,11 @@ export interface IStorage {
   createCommand(command: InsertCommandWithUser): Promise<Command>;
   updateCommand(id: string, userId: string, status: string, response: string | null, projectId?: string | null): Promise<Command>;
   
-  // Hexad Task operations
-  getTasks(commandId: string): Promise<HexadTask[]>;
-  getTasksByProject(projectId: string, userId: string): Promise<HexadTask[]>;
-  createTask(task: InsertHexadTask & { userId: string }): Promise<HexadTask>;
-  updateTaskStatus(taskId: string, status: string): Promise<HexadTask>;
+  // BeeHive Task operations
+  getTasks(commandId: string): Promise<BeeHiveTask[]>;
+  getTasksByProject(projectId: string, userId: string): Promise<BeeHiveTask[]>;
+  createTask(task: InsertBeeHiveTask & { userId: string }): Promise<BeeHiveTask>;
+  updateTaskStatus(taskId: string, status: string): Promise<BeeHiveTask>;
   
   // Subscription operations
   getSubscription(userId: string): Promise<Subscription | undefined>;
@@ -727,12 +727,12 @@ export class DatabaseStorage implements IStorage {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hexad Project</title>
+    <title>BeeHive Project</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="root">
-        <h1>Welcome to Your Hexad Project</h1>
+        <h1>Welcome to Your BeeHive Project</h1>
         <p>Start building with AI-powered development!</p>
     </div>
     <script src="main.js"></script>
@@ -746,8 +746,8 @@ export class DatabaseStorage implements IStorage {
         projectId,
         userId,
         filename: 'main.js',
-        content: `// Your Hexad project starts here!
-console.log('Welcome to Hexad - AI-powered development platform');
+        content: `// Your BeeHive project starts here!
+console.log('Welcome to BeeHive - AI-powered development platform');
 
 // Add your JavaScript code here
 document.addEventListener('DOMContentLoaded', () => {
@@ -873,7 +873,7 @@ body {
     return command;
   }
 
-  async getTasks(commandId: string): Promise<HexadTask[]> {
+  async getTasks(commandId: string): Promise<BeeHiveTask[]> {
     return await db
       .select()
       .from(lomuAITasks)
@@ -881,7 +881,7 @@ body {
       .orderBy(lomuAITasks.priority);
   }
 
-  async getTasksByProject(projectId: string, userId: string): Promise<HexadTask[]> {
+  async getTasksByProject(projectId: string, userId: string): Promise<BeeHiveTask[]> {
     return await db
       .select()
       .from(lomuAITasks)
@@ -889,7 +889,7 @@ body {
       .orderBy(desc(lomuAITasks.createdAt));
   }
 
-  async createTask(task: InsertHexadTask & { userId: string }): Promise<HexadTask> {
+  async createTask(task: InsertBeeHiveTask & { userId: string }): Promise<BeeHiveTask> {
     const [created] = await db
       .insert(lomuAITasks)
       .values(task)
@@ -897,7 +897,7 @@ body {
     return created;
   }
 
-  async updateTaskStatus(taskId: string, status: string): Promise<HexadTask> {
+  async updateTaskStatus(taskId: string, status: string): Promise<BeeHiveTask> {
     const updateData: any = {
       status,
       updatedAt: new Date(),

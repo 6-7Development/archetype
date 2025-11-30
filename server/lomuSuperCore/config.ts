@@ -1,6 +1,6 @@
 /**
  * LOMU SUPER CORE Configuration Module
- * Central configuration and constants for Hexad system prompt
+ * Central configuration and constants for BeeHive system prompt
  */
 
 export interface LomuCoreConfig {

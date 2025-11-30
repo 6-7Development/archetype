@@ -12,7 +12,7 @@
 
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import { fileLockManager } from '../services/fileLockManager';
-import { hexadAIBrain } from '../services/lomuAIBrain';
+import { beehiveAIBrain } from '../services/lomuAIBrain';
 
 describe('Phase 1 Safety - FileLockManager (Simplified FIFO)', () => {
   const userId = 'test-user';
@@ -284,26 +284,26 @@ describe('Phase 1 Safety - FileLockManager (Simplified FIFO)', () => {
   });
 });
 
-describe('Phase 1 Safety - HexadBrain (Resilient Cleanup)', () => {
+describe('Phase 1 Safety - BeeHiveBrain (Resilient Cleanup)', () => {
   const userId = 'test-brain-user';
   const sessionId = 'test-brain-session';
   
   beforeEach(async () => {
     vi.useFakeTimers();
-    const existing = hexadAIBrain.getSession(userId, sessionId);
+    const existing = beehiveAIBrain.getSession(userId, sessionId);
     if (existing) {
-      await hexadAIBrain.closeSession(userId, sessionId);
+      await beehiveAIBrain.closeSession(userId, sessionId);
     }
   });
   
   afterEach(async () => {
     vi.useRealTimers();
-    await hexadAIBrain.closeSession(userId, sessionId);
+    await beehiveAIBrain.closeSession(userId, sessionId);
   });
   
   test('Idle session cleanup releases locks AND removes session', async () => {
     // Create session
-    const session = await hexadAIBrain.createSession({
+    const session = await beehiveAIBrain.createSession({
       userId,
       sessionId,
       targetContext: 'project',
@@ -333,13 +333,13 @@ describe('Phase 1 Safety - HexadBrain (Resilient Cleanup)', () => {
     console.log('[TEST] ✅ Two locks acquired');
     
     // Mark session as idle
-    hexadAIBrain.markSessionIdle(userId, sessionId);
-    const idleSession = hexadAIBrain.getSession(userId, sessionId);
+    beehiveAIBrain.markSessionIdle(userId, sessionId);
+    const idleSession = beehiveAIBrain.getSession(userId, sessionId);
     expect(idleSession?.status).toBe('idle');
     console.log('[TEST] ✅ Session marked idle');
     
     // Run cleanup
-    const cleaned = await hexadAIBrain.cleanupIdleSessions();
+    const cleaned = await beehiveAIBrain.cleanupIdleSessions();
     expect(cleaned).toBeGreaterThan(0);
     console.log('[TEST] ✅ Cleanup ran');
     
@@ -349,7 +349,7 @@ describe('Phase 1 Safety - HexadBrain (Resilient Cleanup)', () => {
     console.log('[TEST] ✅ Locks released');
     
     // Verify session removed
-    const sessionAfter = hexadAIBrain.getSession(userId, sessionId);
+    const sessionAfter = beehiveAIBrain.getSession(userId, sessionId);
     expect(sessionAfter).toBeNull();
     console.log('[TEST] ✅ Session removed from registry');
   });
@@ -357,36 +357,36 @@ describe('Phase 1 Safety - HexadBrain (Resilient Cleanup)', () => {
   test('Cleanup continues despite lock release timeout', async () => {
     // This tests the Promise.race timeout protection
     
-    const session1 = await hexadAIBrain.createSession({
+    const session1 = await beehiveAIBrain.createSession({
       userId,
       sessionId: 'session-1',
       targetContext: 'platform',
     });
     
-    const session2 = await hexadAIBrain.createSession({
+    const session2 = await beehiveAIBrain.createSession({
       userId,
       sessionId: 'session-2',
       targetContext: 'platform',
     });
     
-    hexadAIBrain.markSessionIdle(userId, 'session-1');
-    hexadAIBrain.markSessionIdle(userId, 'session-2');
+    beehiveAIBrain.markSessionIdle(userId, 'session-1');
+    beehiveAIBrain.markSessionIdle(userId, 'session-2');
     console.log('[TEST] ✅ Two sessions marked idle');
     
     // Run cleanup (should handle timeout gracefully)
-    const cleaned = await hexadAIBrain.cleanupIdleSessions();
+    const cleaned = await beehiveAIBrain.cleanupIdleSessions();
     expect(cleaned).toBeGreaterThanOrEqual(2);
     console.log('[TEST] ✅ Both sessions cleaned despite any timeouts');
     
     // Verify both removed
-    expect(hexadAIBrain.getSession(userId, 'session-1')).toBeNull();
-    expect(hexadAIBrain.getSession(userId, 'session-2')).toBeNull();
+    expect(beehiveAIBrain.getSession(userId, 'session-1')).toBeNull();
+    expect(beehiveAIBrain.getSession(userId, 'session-2')).toBeNull();
     console.log('[TEST] ✅ Sessions removed (resilient cleanup)');
   });
   
   test('Stale session scheduler marks idle sessions', async () => {
     // Create session
-    const session = await hexadAIBrain.createSession({
+    const session = await beehiveAIBrain.createSession({
       userId,
       sessionId,
       targetContext: 'platform',
@@ -396,29 +396,29 @@ describe('Phase 1 Safety - HexadBrain (Resilient Cleanup)', () => {
     console.log('[TEST] ✅ Session created (active)');
     
     // Touch session to reset activity
-    hexadAIBrain.touchSession(userId, sessionId);
+    beehiveAIBrain.touchSession(userId, sessionId);
     
     // Advance time past stale threshold (60s)
     console.log('[TEST] ⏱️  Advancing time past stale threshold...');
     vi.advanceTimersByTime(61000);
     
     // Trigger stale detection
-    const markedIdle = hexadAIBrain.checkStaleSessionsAndMarkIdle();
+    const markedIdle = beehiveAIBrain.checkStaleSessionsAndMarkIdle();
     expect(markedIdle).toBeGreaterThan(0);
     console.log('[TEST] ✅ Stale session detected and marked idle');
     
     // Verify session is now idle
-    const sessionAfter = hexadAIBrain.getSession(userId, sessionId);
+    const sessionAfter = beehiveAIBrain.getSession(userId, sessionId);
     expect(sessionAfter?.status).toBe('idle');
     console.log('[TEST] ✅ Session status: idle');
     
     // Cleanup
-    await hexadAIBrain.closeSession(userId, sessionId);
+    await beehiveAIBrain.closeSession(userId, sessionId);
   });
   
   test('End-to-end: Session lifecycle with fake timers', async () => {
     // Create session
-    const session = await hexadAIBrain.createSession({
+    const session = await beehiveAIBrain.createSession({
       userId,
       sessionId,
       targetContext: 'project',
@@ -438,26 +438,26 @@ describe('Phase 1 Safety - HexadBrain (Resilient Cleanup)', () => {
     console.log('[TEST] ✅ Lock acquired');
     
     // Touch session (simulate activity)
-    hexadAIBrain.touchSession(userId, sessionId);
+    beehiveAIBrain.touchSession(userId, sessionId);
     
     // Advance time to make session stale (60s)
     vi.advanceTimersByTime(61000);
     
     // Run stale detection
-    hexadAIBrain.checkStaleSessionsAndMarkIdle();
+    beehiveAIBrain.checkStaleSessionsAndMarkIdle();
     
-    const idleSession = hexadAIBrain.getSession(userId, sessionId);
+    const idleSession = beehiveAIBrain.getSession(userId, sessionId);
     expect(idleSession?.status).toBe('idle');
     console.log('[TEST] ✅ Session marked idle after inactivity');
     
     // Run cleanup
-    const cleaned = await hexadAIBrain.cleanupIdleSessions();
+    const cleaned = await beehiveAIBrain.cleanupIdleSessions();
     expect(cleaned).toBeGreaterThan(0);
     console.log('[TEST] ✅ Cleanup ran');
     
     // Verify locks released and session removed
     expect(fileLockManager.hasActiveLocks(sessionId)).toBe(false);
-    expect(hexadAIBrain.getSession(userId, sessionId)).toBeNull();
+    expect(beehiveAIBrain.getSession(userId, sessionId)).toBeNull();
     console.log('[TEST] ✅ End-to-end lifecycle complete');
   });
 });
@@ -470,7 +470,7 @@ describe('Phase 1 Safety - Integration Tests', () => {
     const sessionId = 'integration-session';
     
     // Create session
-    const session = await hexadAIBrain.createSession({
+    const session = await beehiveAIBrain.createSession({
       userId,
       sessionId,
       targetContext: 'project',
@@ -499,27 +499,27 @@ describe('Phase 1 Safety - Integration Tests', () => {
     console.log('[INTEGRATION] ✅ Locks acquired');
     
     // Track activity
-    hexadAIBrain.trackFileModified(userId, sessionId, 'src/main.ts');
-    hexadAIBrain.touchSession(userId, sessionId);
+    beehiveAIBrain.trackFileModified(userId, sessionId, 'src/main.ts');
+    beehiveAIBrain.touchSession(userId, sessionId);
     
     // Simulate inactivity (61s)
     vi.advanceTimersByTime(61000);
     
     // Mark stale sessions as idle
-    hexadAIBrain.checkStaleSessionsAndMarkIdle();
+    beehiveAIBrain.checkStaleSessionsAndMarkIdle();
     
-    const idleSession = hexadAIBrain.getSession(userId, sessionId);
+    const idleSession = beehiveAIBrain.getSession(userId, sessionId);
     expect(idleSession?.status).toBe('idle');
     console.log('[INTEGRATION] ✅ Session marked idle');
     
     // Cleanup idle sessions
-    const cleaned = await hexadAIBrain.cleanupIdleSessions();
+    const cleaned = await beehiveAIBrain.cleanupIdleSessions();
     expect(cleaned).toBeGreaterThan(0);
     console.log('[INTEGRATION] ✅ Cleanup complete');
     
     // Verify everything cleaned up
     expect(fileLockManager.hasActiveLocks(sessionId)).toBe(false);
-    expect(hexadAIBrain.getSession(userId, sessionId)).toBeNull();
+    expect(beehiveAIBrain.getSession(userId, sessionId)).toBeNull();
     expect(fileLockManager.getLockStatus('src/main.ts').isLocked).toBe(false);
     expect(fileLockManager.getLockStatus('src/utils.ts').isLocked).toBe(false);
     

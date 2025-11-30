@@ -17,7 +17,7 @@ export default function Terms() {
             <section className="space-y-3">
               <h2 className="text-2xl font-semibold">1. Agreement to Terms</h2>
               <p className="text-muted-foreground">
-                By accessing and using the Hexad platform, you accept and agree to be bound by 
+                By accessing and using the BeeHive platform, you accept and agree to be bound by 
                 and comply with these Terms and Conditions and our Privacy Policy.
               </p>
             </section>
@@ -26,7 +26,7 @@ export default function Terms() {
               <h2 className="text-2xl font-semibold">2. Use License</h2>
               <p className="text-muted-foreground">
                 Permission is granted to temporarily download one copy of the materials (information 
-                or software) on Hexad for personal, non-commercial transitory viewing only. This is 
+                or software) on BeeHive for personal, non-commercial transitory viewing only. This is 
                 the grant of a license, not a transfer of title, and under this license you may not:
               </p>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
@@ -40,7 +40,7 @@ export default function Terms() {
             <section className="space-y-3">
               <h2 className="text-2xl font-semibold">3. Disclaimer</h2>
               <p className="text-muted-foreground">
-                The materials on Hexad are provided "as is". Hexad makes no warranties, expressed 
+                The materials on BeeHive are provided "as is". BeeHive makes no warranties, expressed 
                 or implied, and hereby disclaims and negates all other warranties including, without 
                 limitation, implied warranties or conditions of merchantability, fitness for a 
                 particular purpose, or non-infringement of intellectual property or other violation of rights.
@@ -50,17 +50,17 @@ export default function Terms() {
             <section className="space-y-3">
               <h2 className="text-2xl font-semibold">4. Limitations</h2>
               <p className="text-muted-foreground">
-                In no event shall Hexad or its suppliers be liable for any damages (including, 
+                In no event shall BeeHive or its suppliers be liable for any damages (including, 
                 without limitation, damages for loss of data or profit, or due to business interruption) 
-                arising out of the use or inability to use the materials on Hexad.
+                arising out of the use or inability to use the materials on BeeHive.
               </p>
             </section>
 
             <section className="space-y-3">
               <h2 className="text-2xl font-semibold">5. Accuracy of Materials</h2>
               <p className="text-muted-foreground">
-                The materials appearing on Hexad could include technical, typographical, or 
-                photographic errors. Hexad does not warrant that any of the materials on Hexad 
+                The materials appearing on BeeHive could include technical, typographical, or 
+                photographic errors. BeeHive does not warrant that any of the materials on BeeHive 
                 are accurate, complete, or current.
               </p>
             </section>
@@ -68,7 +68,7 @@ export default function Terms() {
             <section className="space-y-3">
               <h2 className="text-2xl font-semibold">6. Modifications</h2>
               <p className="text-muted-foreground">
-                Hexad may revise these Terms of Service for the platform at any time without notice. 
+                BeeHive may revise these Terms of Service for the platform at any time without notice. 
                 By using this platform, you are agreeing to be bound by the then current version of 
                 these Terms of Service.
               </p>

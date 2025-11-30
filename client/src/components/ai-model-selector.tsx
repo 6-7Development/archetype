@@ -17,13 +17,13 @@ export function AIModelSelector() {
     },
   });
   
-  // Always use Hexad/Gemini for chat
+  // Always use BeeHive/Gemini for chat
   const currentModel = "gemini";
   
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary/10" data-testid="hexad-model-badge">
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary/10" data-testid="beehive-model-badge">
       <Zap className="h-3 w-3 text-primary" />
-      <span className="text-sm font-medium">Hexad</span>
+      <span className="text-sm font-medium">BeeHive</span>
     </div>
   );
 }
