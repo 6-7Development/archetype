@@ -7,7 +7,7 @@ import { ArchitectApprovalModal } from "@/components/architect-approval-modal";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { API_ENDPOINTS, getQueryKey, buildApiUrl } from "@/lib/api-utils";
-import { Send, Loader2, User, Key, AlertCircle, Square, ChevronDown, Copy, Check, ChevronRight, Menu, Zap, AlertTriangle } from "lucide-react";
+import { Send, Loader2, User, Key, AlertCircle, Square, ChevronDown, Copy, Check, ChevronRight, Menu, Zap, AlertTriangle, PanelRightClose, PanelRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -42,7 +42,6 @@ import { StatusStrip } from "@/components/agent/StatusStrip";
 import { ArtifactsDrawer, type Artifact as ArtifactItem } from "@/components/agent/ArtifactsDrawer";
 import { EnhancedMessageDisplay } from "@/components/enhanced-message-display";
 import { TestingPanel } from "@/components/testing-panel";
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { ContextRail } from "@/components/chat/ContextRail";
 import { MessageHistory } from "@/components/chat/MessageHistory";
@@ -145,6 +144,9 @@ export function UniversalChat({
   const [consoleOutput, setConsoleOutput] = useState<string>("");
   const [showConsole, setShowConsole] = useState<boolean>(false);
   const [showEnvBrowser, setShowEnvBrowser] = useState<boolean>(false);
+  
+  // Context Rail - collapsed by default for chat-first layout (Replit style)
+  const [showContextRail, setShowContextRail] = useState<boolean>(false);
   
   // Token & Rate Limit Tracking
   const [sessionTokens, setSessionTokens] = useState({ inputTokens: 0, outputTokens: 0, totalTokens: 0, estimatedCost: 0 });
@@ -559,16 +561,30 @@ export function UniversalChat({
         }}
       />
 
-      {/* Compact Chat Header */}
-      <ChatHeader
-        targetContext={targetContext}
-        creditBalance={user?.credits || 0}
-        isFreeAccess={targetContext === 'platform'}
-        isConnected={true}
-        sessionTokens={sessionTokens}
-        onHistoryClick={() => window.location.href = '/consultation-history'}
-        onSettingsClick={() => setShowModelSelector(true)}
-      />
+      {/* Compact Chat Header with Context Rail Toggle */}
+      <div className="flex items-center justify-between border-b bg-muted/10 px-3 py-1.5">
+        <ChatHeader
+          targetContext={targetContext}
+          creditBalance={user?.credits || 0}
+          isFreeAccess={targetContext === 'platform'}
+          isConnected={true}
+          sessionTokens={sessionTokens}
+          onHistoryClick={() => window.location.href = '/consultation-history'}
+          onSettingsClick={() => setShowModelSelector(true)}
+        />
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => setShowContextRail(!showContextRail)}
+          className="h-7 px-2 text-xs text-muted-foreground hover:text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/10"
+          data-testid="button-toggle-context-rail-header"
+          aria-pressed={showContextRail}
+          title={showContextRail ? "Hide context panel" : "Show context panel"}
+        >
+          {showContextRail ? <PanelRightClose className="h-4 w-4 mr-1" /> : <PanelRight className="h-4 w-4 mr-1" />}
+          <span className="hidden sm:inline">{showContextRail ? "Hide Panel" : "Context"}</span>
+        </Button>
+      </div>
 
       {/* Chat Container - Full Height */}
       <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
@@ -657,10 +673,10 @@ export function UniversalChat({
             </div>
           </div>
 
-          {/* Desktop: Resizable panels */}
-          <ResizablePanelGroup direction="horizontal" className="flex-1 hidden md:flex">
-        {/* Left Panel: Chat Messages (88%) */}
-        <ResizablePanel defaultSize={88} minSize={70} maxSize={95} className="flex flex-col h-full">
+          {/* Desktop: Chat-first layout (Replit style) */}
+          <div className="flex-1 hidden md:flex relative">
+        {/* Main Panel: Chat Messages - flexbox driven sizing */}
+        <div className="flex-1 flex flex-col h-full min-w-0">
           <div
             ref={chatContainerRef}
             className="flex-1 overflow-y-auto px-3 py-2 space-y-2 scroll-smooth min-h-0"
@@ -781,19 +797,36 @@ export function UniversalChat({
               isGenerating={isGenerating}
             />
           </div>
-        </ResizablePanel>
+        </div>
 
-        <ResizableHandle className="hidden md:flex" />
-
-        {/* Right Panel: Context Rail (12%) - Hidden on mobile */}
-        <ResizablePanel defaultSize={12} minSize={5} maxSize={30} className="hidden md:flex flex-col overflow-hidden">
-          <ContextRail
-            tasks={agentTasks}
-            artifacts={artifacts}
-            runState={currentRun}
-          />
-        </ResizablePanel>
-      </ResizablePanelGroup>
+        {/* Right Panel: Context Rail - Collapsible slide-in panel */}
+        {showContextRail && (
+          <div 
+            className="flex flex-col overflow-hidden border-l bg-muted/30 w-80 max-w-[30%] flex-shrink-0"
+            data-testid="context-rail-container"
+          >
+            {/* Context Rail Header with Close Button */}
+            <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/20">
+              <span className="text-sm font-medium text-muted-foreground">Context Panel</span>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => setShowContextRail(false)}
+                className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                data-testid="button-close-context-rail"
+                aria-label="Close context panel"
+              >
+                <PanelRightClose className="h-4 w-4" />
+              </Button>
+            </div>
+            <ContextRail
+              tasks={agentTasks}
+              artifacts={artifacts}
+              runState={currentRun}
+            />
+          </div>
+        )}
+      </div>
 
       {/* Footer Status Bar */}
       <div className="border-t bg-muted/20 dark:border-[hsl(var(--primary))]/20 px-3 py-1 flex items-center justify-between text-xs text-muted-foreground">
