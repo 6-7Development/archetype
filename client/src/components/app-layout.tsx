@@ -256,20 +256,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                     <span className="text-sm">Admin Panel</span>
                   </Button>
                 )}
-                {(isAdmin || isOwner) && (
-                  <Button
-                    variant="ghost"
-                    className={cn(
-                      "w-full justify-start gap-3 hover-elevate active-elevate-2 pl-6",
-                      location === ROUTES.PLATFORM_HEALING && "bg-primary/10 text-primary"
-                    )}
-                    onClick={() => handleNavigation(ROUTES.PLATFORM_HEALING)}
-                    data-testid="nav-platform-healing"
-                  >
-                    <Wrench className="w-4 h-4" />
-                    <span className="text-sm">Platform Healing</span>
-                  </Button>
-                )}
+                {/* Platform Healing moved to unified /beehive chat with RBAC context switching */}
               </CollapsibleContent>
             </Collapsible>
           )}
