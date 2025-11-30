@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { MobileNav } from "@/components/mobile-nav";
 import { MotionToggle } from "@/components/motion-toggle";
 import { Check, Sparkles, Zap, Shield, TrendingUp, DollarSign, Info } from "lucide-react";
-import { LogoEnhancedBadge, BeeHiveTextLogo } from '@/components/final-logos';
+import { BeeHiveLogo, BeeHiveLogo } from "@/components/beehive-logo";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -205,12 +205,12 @@ export default function Pricing() {
                   { href: "/builder", label: "Get Started" }
                 ]}
                 logo={
-                  <BeeHiveTextLogo size="sm" />
+                  <BeeHiveLogo  />
                 }
               />
               <Link href="/" data-testid="link-home" className="hidden lg:flex">
                 <div className="hover-elevate active-elevate-2 transition-all cursor-pointer">
-                  <BeeHiveTextLogo size="default" />
+                  <BeeHiveLogo size="md" />
                 </div>
               </Link>
             </div>
@@ -219,7 +219,7 @@ export default function Pricing() {
               <Button variant="ghost" className="hidden lg:inline-flex" data-testid="button-nav-pricing" asChild>
                 <Link href="/pricing">Pricing</Link>
               </Button>
-              <Button variant="default" size="sm" data-testid="button-nav-builder" asChild>
+              <Button variant="default"  data-testid="button-nav-builder" asChild>
                 <Link href="/builder">Get Started</Link>
               </Button>
             </div>
@@ -540,7 +540,7 @@ export default function Pricing() {
       <footer className="py-12 px-6 border-t border-border">
         <div className="container mx-auto max-w-6xl text-center text-slate-500">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <BeeHiveTextLogo size="sm" />
+            <BeeHiveLogo  />
           </div>
           <p className="text-sm">© 2025 Lomu. Transparent AI-Powered Development.</p>
           <p className="text-xs mt-2">No hidden fees. No surprise bills. Pay for what you use.</p>

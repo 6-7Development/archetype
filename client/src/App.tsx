@@ -237,9 +237,15 @@ function Router() {
         </AppLayout>
       </Route>
       
+      {/* Logo Demo */}
+      <Route path="/logo-demo">
+        <AppLayout>
+          <LogoDemo />
+        </AppLayout>
+      </Route>
+
       {/* Documentation & Legal */}
       <Route path="/docs">
-      <Route path="/logo-demo" component={LogoDemo} />
         <AppLayout>
           <Documentation />
         </AppLayout>

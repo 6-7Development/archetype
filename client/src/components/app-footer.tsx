@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { BeeHiveIcon } from '@/components/beehive-logos';
+import { BeeHiveIcon } from "@/components/beehive-logo";
 import { Github, Twitter, Linkedin, Mail } from "lucide-react";
 
 export function AppFooter() {

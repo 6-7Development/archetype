@@ -6,7 +6,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { LogoEnhancedBadge } from '@/components/final-logos';
+import { BeeHiveLogo } from "@/components/beehive-logo";
 import { ReactNode } from "react";
 
 interface ErrorPageProps {
@@ -44,7 +44,7 @@ export function ErrorPageTemplate({
       <div className="max-w-2xl w-full text-center space-y-8">
         {/* Logo and Branding */}
         <div className="flex flex-col items-center gap-4">
-          <LogoEnhancedBadge size={64} />
+          <BeeHiveLogo size={64} />
           <div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
               BeeHive
