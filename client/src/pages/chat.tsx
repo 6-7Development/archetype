@@ -59,7 +59,7 @@ export default function ChatPage() {
       setChatHeight(70);
     } else {
       setPreviewPosition('right');
-      setChatWidth(55);
+      setChatWidth(65);
     }
   }, [isMobile]);
 

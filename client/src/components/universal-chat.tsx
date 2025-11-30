@@ -674,8 +674,37 @@ export function UniversalChat({
               </div>
             ) : (
               <>
+                {/* In Progress Tasks (Replit Agent 3 style) */}
+                {runState.messages.length > 0 && (
+                  <div className="mb-4 bg-slate-100 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+                    <Collapsible defaultOpen={true}>
+                      <CollapsibleTrigger className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors">
+                        <div className="flex items-center gap-2">
+                          <ChevronDown className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                          <span className="font-semibold text-slate-700 dark:text-slate-200">In progress tasks</span>
+                        </div>
+                        <span className="text-xs font-mono text-slate-500 dark:text-slate-400">{Math.min(runState.messages.filter(m => m.role === 'assistant').length, 6)} / 6</span>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="px-4 pb-3 space-y-2 border-t border-slate-200 dark:border-slate-700">
+                        {runState.messages.filter(m => m.role === 'assistant').slice(0, 6).map((msg, idx) => (
+                          <div key={idx} className="flex items-start gap-2 text-sm">
+                            <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
+                            <span className="text-slate-600 dark:text-slate-300">{msg.content.slice(0, 50)}...</span>
+                          </div>
+                        ))}
+                        {isGenerating && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Loader2 className="h-4 w-4 text-blue-500 animate-spin flex-shrink-0" />
+                            <span className="text-slate-600 dark:text-slate-300">Thinking..</span>
+                          </div>
+                        )}
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </div>
+                )}
+
                 {/* Messages with image rendering */}
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {runState.messages.map((message, index) => (
                     <MessageBubble
                       key={`${message.id || message.messageId || index}-${index}`}
@@ -689,14 +718,14 @@ export function UniversalChat({
                 {/* Loading indicator */}
                 {isGenerating && (
                   <div className="flex gap-3 group flex-row" data-testid="loading-indicator">
-                    <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center bg-[hsl(var(--secondary))]/20 text-[hsl(var(--secondary))] border-2 border-[hsl(var(--secondary))]/40 font-bold text-xs button-glow-mint">
+                    <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center bg-blue-500/20 text-blue-600 dark:text-blue-400 border-2 border-blue-500/40 font-bold text-xs">
                       AI
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col items-start">
-                      <div className="text-xs font-bold mb-1 text-[hsl(var(--secondary))]">HexadAI</div>
-                      <div className="bg-[hsl(var(--card))]/60 rounded-2xl rounded-bl-none px-4 py-2.5 flex items-center gap-2 border border-[hsl(var(--secondary))]/20 dark:border-[hsl(var(--secondary))]/30">
-                        <Loader2 className="h-4 w-4 animate-spin text-[hsl(var(--secondary))]" />
-                        <span className="text-sm text-[hsl(var(--secondary))] font-semibold">Thinking...</span>
+                      <div className="text-xs font-bold mb-1 text-blue-600 dark:text-blue-400">Hexad</div>
+                      <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl rounded-bl-none px-4 py-2.5 flex items-center gap-2 border border-slate-300 dark:border-slate-700">
+                        <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                        <span className="text-sm text-slate-700 dark:text-slate-200 font-semibold">Thinking...</span>
                       </div>
                     </div>
                   </div>

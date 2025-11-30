@@ -120,6 +120,38 @@
   animation: glow-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* Replit Agent 3 Task Progress Animations */
+@keyframes task-pulse {
+  0%, 100% {
+    background-color: rgba(59, 130, 246, 0.05);
+  }
+  50% {
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+}
+
+.task-thinking {
+  animation: task-pulse 1.5s ease-in-out infinite;
+}
+
+/* Improved scrollbar styling for chat */
+.chat-messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary)/0.3);
+  border-radius: 4px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary)/0.5);
+}
+
 /* Logo lemon breathing animation */
 @keyframes lemon-breathe {
   0%, 100% {
