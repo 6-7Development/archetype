@@ -6,7 +6,7 @@
 
 import type { Express } from "express";
 import { ProgressTracker } from "../workflows/progress-tracker.ts";
-import { isAuthenticated } from "../universalAuth.ts";
+import { isAuthenticated, isAdmin } from "../universalAuth.ts";
 
 export function registerProgressRoutes(app: Express) {
   /**
@@ -75,8 +75,7 @@ export function registerProgressRoutes(app: Express) {
   /**
    * Clear progress events (admin only)
    */
-  app.post("/api/chat/progress/clear", isAuthenticated, (req, res) => {
-    // TODO: Add admin check
+  app.post("/api/chat/progress/clear", isAuthenticated, isAdmin, (req, res) => {
     ProgressTracker.clear();
     res.json({ success: true, message: "Progress events cleared" });
   });

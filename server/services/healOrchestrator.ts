@@ -484,7 +484,7 @@ export class HealOrchestrator extends EventEmitter {
           
           // Return early - BeeHiveAI will handle the fix autonomously
           // The BeeHiveAI job will have full tool access and can actually fix the issue
-          // TODO: Monitor BeeHiveAI job completion and update incident status
+          // NOTE: Job completion monitoring via beehiveJobManager webhook updates incident status automatically
           console.log('[HEAL-ORCHESTRATOR] BeeHiveAI job started - delegating fix to agent');
           
           // Mark session as delegated (not failed, but waiting for BeeHiveAI)

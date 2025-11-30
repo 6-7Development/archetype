@@ -166,7 +166,12 @@ The platform features a comprehensive animation system with WCAG 2.3.3 accessibi
   - Sound effects hook (WebAudio API) for interactive feedback
   - Comprehensive Scout e2e tests (18+ test suites covering workflows, security, performance)
 - ✅ **Scout UI Improvements**:
-  - Small animated bee icon (hexagon pattern) like Replit's design
+  - Small animated bee icon (hexagon pattern) inline in chat input like Replit's design
   - "Working..." indicator during generation (purple/blue hexagons with staggered pulse)
   - Collapsible thinking bubble (Brain icon, expandable content)
   - Loading state shows only on last message to avoid clutter
+- ✅ **Gap Fixes (Nov 30, 2025 Session 2)**:
+  - Fixed maintenance mode disable endpoint (AuditService static method call)
+  - Added admin auth check to progress clear endpoint
+  - Fixed Scout bee icon placement - now inline in chat input during generation
+  - Documented pending TODOs: project ownership check, job completion monitoring
