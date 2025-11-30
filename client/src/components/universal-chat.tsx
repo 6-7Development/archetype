@@ -361,7 +361,7 @@ export function UniversalChat({
   const handleClearChat = () => {
     clearRunState();
     try {
-      const storageKey = `beehive-chat-messages:${targetContext || 'platform'}:${projectId || 'general'}`;
+      const storageKey = `beehive-chat-messages:${activeContext || 'platform'}:${projectId || 'general'}`;
       localStorage.removeItem(storageKey);
     } catch (e) {
       console.warn('Failed to clear chat history:', e);
@@ -907,7 +907,7 @@ export function UniversalChat({
         showScratchpad={showScratchpad}
         latestMessage={latestMessage}
         projectId={projectId}
-        targetContext={targetContext}
+        targetContext={activeContext}
       />
     </div>
   );
