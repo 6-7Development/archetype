@@ -589,7 +589,306 @@
     inset: -1px;
   }
 }
-/* ===== ACCESSIBILITY: MOTION CONTROLS ===== */
+
+/* ===== BEEHIVE MOTION SYSTEM ===== */
+/* Scout-themed micro-interactions and animations */
+
+/* Honeycomb pulse for send button and action controls */
+@keyframes honeycomb-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 8px hsl(var(--primary) / 0);
+    transform: scale(1.02);
+  }
+}
+
+.honeycomb-pulse {
+  animation: honeycomb-pulse 2s ease-in-out infinite;
+}
+
+/* Quick pulse for button interactions */
+@keyframes bee-send-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+.bee-send-pulse {
+  animation: bee-send-pulse 0.15s ease-out;
+}
+
+/* Hex orbit loading animation */
+@keyframes hex-orbit {
+  0% { transform: rotate(0deg) translateX(12px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(12px) rotate(-360deg); }
+}
+
+@keyframes hex-orbit-inner {
+  0% { transform: rotate(0deg) translateX(6px) rotate(0deg); }
+  100% { transform: rotate(-360deg) translateX(6px) rotate(360deg); }
+}
+
+.hex-orbit-loader {
+  position: relative;
+  width: 32px;
+  height: 32px;
+}
+
+.hex-orbit-loader::before,
+.hex-orbit-loader::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background: hsl(var(--primary));
+  border-radius: 50%;
+  margin: -3px 0 0 -3px;
+}
+
+.hex-orbit-loader::before {
+  animation: hex-orbit 1.2s linear infinite;
+}
+
+.hex-orbit-loader::after {
+  animation: hex-orbit-inner 0.8s linear infinite;
+  background: hsl(var(--secondary));
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+}
+
+/* Pollen trail effect */
+@keyframes pollen-float {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx, 20px), var(--ty, -30px)) scale(0.3);
+  }
+}
+
+.pollen-trail::after {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: hsl(var(--primary) / 0.6);
+  border-radius: 50%;
+  animation: pollen-float 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+/* Success shimmer effect */
+@keyframes success-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.success-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--secondary) / 0.3) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: success-shimmer 1.5s ease-out;
+}
+
+/* Row highlight sweep for status changes */
+@keyframes status-sweep {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.status-sweep {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--primary) / 0.15) 50%,
+    transparent 100%
+  );
+  background-size: 50% 100%;
+  animation: status-sweep 0.8s ease-out;
+}
+
+/* Hive warm-up animation */
+@keyframes hive-warmup {
+  0% {
+    opacity: 0.5;
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+.hive-warmup {
+  animation: hive-warmup 0.3s ease-out;
+}
+
+/* Tab/panel slide transitions */
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in-right {
+  animation: slide-in-right 0.25s ease-out;
+}
+
+.slide-in-left {
+  animation: slide-in-left 0.25s ease-out;
+}
+
+.slide-in-up {
+  animation: slide-in-up 0.2s ease-out;
+}
+
+/* Badge pulse for new status */
+@keyframes badge-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 4px hsl(var(--primary) / 0);
+  }
+}
+
+.badge-pulse {
+  animation: badge-pulse 0.6s ease-out;
+}
+
+/* Thinking dots animation */
+@keyframes thinking-dot {
+  0%, 80%, 100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.thinking-dots span {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin: 0 2px;
+  background: hsl(var(--primary));
+  border-radius: 50%;
+  animation: thinking-dot 1.4s ease-in-out infinite;
+}
+
+.thinking-dots span:nth-child(1) { animation-delay: 0s; }
+.thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+.thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+/* Swarm activity indicator */
+@keyframes swarm-buzz {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-1px) rotate(-1deg); }
+  75% { transform: translateX(1px) rotate(1deg); }
+}
+
+.swarm-buzz {
+  animation: swarm-buzz 0.15s ease-in-out infinite;
+}
+
+/* Completion checkmark animation */
+@keyframes check-draw {
+  0% {
+    stroke-dashoffset: 24;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.check-animated {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: check-draw 0.3s ease-out forwards;
+}
+
+/* Hover glow for interactive elements */
+@keyframes hover-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px hsl(var(--primary) / 0.2);
+  }
+  50% {
+    box-shadow: 0 0 15px hsl(var(--primary) / 0.4);
+  }
+}
+
+.hover-glow:hover {
+  animation: hover-glow 1.5s ease-in-out infinite;
+}
+
+/* Content fade in for chat messages */
+@keyframes content-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.content-fade-in {
+  animation: content-fade-in 0.2s ease-out;
+}
+
+/* ===== ACCESSIBILITY: MOTION CONTROLS =====
 /* Respect system-level reduced motion preference (WCAG 2.3.3) */
 @media (prefers-reduced-motion: reduce) {
   *,

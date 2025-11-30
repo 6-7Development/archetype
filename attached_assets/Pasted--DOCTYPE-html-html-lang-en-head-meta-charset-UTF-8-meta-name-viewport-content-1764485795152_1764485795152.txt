@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixed Layout</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-main: #1c1c1c; /* Dark background match */
+            --bg-header: #2b2b2b; /* Slightly lighter header */
+            --accent-yellow: #f59e0b;
+            --text-grey: #a1a1aa;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* FIX 1: HEADER GRID
+           Prevents elements from crushing into each other.
+           Columns: [Left Content] [Center Badge] [Right Controls]
+        */
+        .header-grid {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr; /* Center stays centered */
+            align-items: center;
+            padding: 12px 16px;
+            background-color: #2e2e2e; /* Matches top bar */
+            border-bottom: 1px solid #3f3f3f;
+            gap: 8px;
+        }
+
+        /* Forces text to cut off with "..." instead of overlapping */
+        .truncate-fix {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
+
+        /* FIX 2: SCROLLABLE TABS 
+           Allows tabs to scroll horizontally instead of shrinking 
+        */
+        .tabs-container {
+            display: flex;
+            overflow-x: auto;
+            white-space: nowrap;
+            background-color: #262626;
+            border-bottom: 1px solid #3f3f3f;
+            /* Hide scrollbar but keep functionality */
+            scrollbar-width: none; 
+            -ms-overflow-style: none;
+        }
+        .tabs-container::-webkit-scrollbar { display: none; }
+
+        .tab-item {
+            padding: 12px 16px;
+            color: #d4d4d4;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            font-size: 14px;
+        }
+        .tab-item.active {
+            color: white;
+            border-bottom: 2px solid var(--accent-yellow);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* BADGES */
+        .badge-swarm {
+            background-color: #2b2b2b;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 4px 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOP HEADER -->
+    <header class="header-grid">
+        <!-- Left: Project Name (Will Truncate) -->
+        <div class="flex items-center gap-2 truncate-fix">
+            <span class="font-bold text-lg truncate-fix">Test Project</span>
+        </div>
+
+        <!-- Center: Swarm Badge (Fixed Width) -->
+        <div class="flex justify-center">
+            <div class="badge-swarm text-white">
+                <i data-lucide="zap" class="w-3 h-3 text-white"></i>
+                <span>SWARM</span>
+            </div>
+        </div>
+
+        <!-- Right: Status (Right aligned) -->
+        <div class="flex justify-end gap-2 items-center">
+            <span class="text-xs text-gray-400 font-mono hidden sm:block">Ready</span>
+            <i data-lucide="more-vertical" class="w-5 h-5 text-gray-400"></i>
+        </div>
+    </header>
+
+    <!-- TABS (Scrollable Fix) -->
+    <div class="tabs-container">
+        <div class="tab-item active">Project</div>
+        <div class="tab-item">Editor</div>
+        <div class="tab-item">Preview</div>
+        <div class="tab-item">Files</div>
+        <div class="tab-item">Database</div>
+        <div class="tab-item">Settings</div>
+    </div>
+
+    <!-- SUB-HEADER (Environment) -->
+    <div class="p-4 flex flex-wrap gap-3 items-center border-b border-gray-700 bg-[#262626]">
+        <button class="bg-[#333] hover:bg-[#444] text-white px-3 py-1.5 rounded flex items-center gap-2 text-sm border border-gray-600">
+            <i data-lucide="flask-conical" class="w-4 h-4 text-green-400"></i>
+            <span>Test...</span>
+            <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400"></i>
+        </button>
+        
+        <button class="text-gray-300 hover:text-white px-2 py-1.5 rounded flex items-center gap-2 text-sm">
+            <i data-lucide="pencil" class="w-4 h-4 text-blue-400"></i>
+            <span>Test Project</span>
+        </button>
+    </div>
+
+    <!-- MAIN CONTENT (Empty State) -->
+    <main class="flex-1 flex flex-col items-center justify-center p-6 text-center">
+        
+        <!-- Large Icon Circle -->
+        <div class="w-16 h-16 rounded-full bg-[#2a2a2a] flex items-center justify-center mb-6">
+            <i data-lucide="zap" class="w-8 h-8 text-[#f59e0b]"></i>
+        </div>
+
+        <!-- Heading -->
+        <h1 class="text-2xl font-bold text-[#f59e0b] mb-2">
+            Start your project
+        </h1>
+
+        <!-- Subtext -->
+        <p class="text-gray-400 text-lg mb-8">
+            Send a message to get started
+        </p>
+
+    </main>
+
+    <!-- BOTTOM BAR (Context) -->
+    <div class="p-3 bg-[#262626] border-t border-gray-700 text-xs text-gray-400 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <i data-lucide="package" class="w-4 h-4 text-[#d4a276]"></i>
+            <span>Project</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span>Role: Owner</span>
+            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+            <span>Connected</span>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
+
+

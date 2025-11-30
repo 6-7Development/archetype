@@ -1,7 +1,10 @@
+import { useState, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ChatInputToolbar } from "@/components/ui/chat-input-toolbar";
 import { Send, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface ChatInputProps {
   input: string;
@@ -88,20 +91,46 @@ export function ChatInput({
             />
           </div>
         </div>
-        <Button
-          onClick={onSend}
-          disabled={!input.trim() || isGenerating}
-          size="icon"
-          variant="default"
-          className="flex-shrink-0 h-10 w-10 rounded-lg hover:shadow-sm transition-all"
-          data-testid="button-send-chat"
+        <motion.div
+          whileTap={{ scale: 0.92 }}
+          transition={{ duration: 0.1 }}
         >
-          {isGenerating ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Send className="w-4 h-4" />
-          )}
-        </Button>
+          <Button
+            onClick={onSend}
+            disabled={!input.trim() || isGenerating}
+            size="icon"
+            variant="default"
+            className={cn(
+              "flex-shrink-0 h-10 w-10 rounded-lg transition-all",
+              input.trim() && !isGenerating && "honeycomb-pulse hover-glow"
+            )}
+            data-testid="button-send-chat"
+          >
+            <AnimatePresence mode="wait">
+              {isGenerating ? (
+                <motion.div
+                  key="loading"
+                  initial={{ opacity: 0, rotate: 0 }}
+                  animate={{ opacity: 1, rotate: 360 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ rotate: { duration: 1, repeat: Infinity, ease: "linear" } }}
+                >
+                  <Loader2 className="w-4 h-4" />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="send"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <Send className="w-4 h-4" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </Button>
+        </motion.div>
       </div>
     </div>
   );
