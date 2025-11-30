@@ -3272,3 +3272,251 @@ export const insertPlatformSettingsSchema = createInsertSchema(platformSettings)
 
 export type InsertPlatformSettings = z.infer<typeof insertPlatformSettingsSchema>;
 export type PlatformSettings = typeof platformSettings.$inferSelect;
+
+// ============================================================================
+// BEEHIVE IDE ENHANCEMENT TABLES
+// ============================================================================
+
+// CODE EXECUTION RUNS - Persists sandbox execution history for audit and analytics
+export const codeExecutionRuns = pgTable('code_execution_runs', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar('user_id').notNull(),
+  projectId: varchar('project_id'),
+  
+  // Execution details
+  language: varchar('language', { length: 20 }).notNull(), // 'javascript' | 'typescript' | 'python' | 'bash'
+  code: text('code').notNull(),
+  stdin: text('stdin'),
+  
+  // Results
+  success: boolean('success').notNull().default(false),
+  stdout: text('stdout'),
+  stderr: text('stderr'),
+  exitCode: integer('exit_code'),
+  durationMs: integer('duration_ms'),
+  
+  // Security
+  killed: boolean('killed').notNull().default(false),
+  killedReason: varchar('killed_reason', { length: 20 }), // 'timeout' | 'memory' | 'manual'
+  securityViolations: jsonb('security_violations').$type<string[]>(),
+  
+  // Timestamps
+  executedAt: timestamp('executed_at').notNull().defaultNow(),
+}, (table) => [
+  index('idx_code_exec_user').on(table.userId),
+  index('idx_code_exec_project').on(table.projectId),
+  index('idx_code_exec_date').on(table.executedAt),
+]);
+
+export const insertCodeExecutionRunSchema = createInsertSchema(codeExecutionRuns).omit({
+  id: true,
+  executedAt: true,
+});
+export type InsertCodeExecutionRun = z.infer<typeof insertCodeExecutionRunSchema>;
+export type CodeExecutionRun = typeof codeExecutionRuns.$inferSelect;
+
+// CONVERSATION SESSIONS - Groups chat messages into logical conversations
+export const conversationSessions = pgTable('conversation_sessions', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar('user_id').notNull(),
+  projectId: varchar('project_id'),
+  
+  // Session metadata
+  title: varchar('title', { length: 255 }).notNull().default('New Conversation'),
+  summary: text('summary'), // AI-generated summary of the conversation
+  messageCount: integer('message_count').notNull().default(0),
+  
+  // Status
+  isActive: boolean('is_active').notNull().default(true),
+  isPinned: boolean('is_pinned').notNull().default(false),
+  
+  // Context
+  agentMode: varchar('agent_mode', { length: 20 }).default('scout'), // 'scout' | 'scout_advanced'
+  contextFiles: jsonb('context_files').$type<string[]>(),
+  
+  // Timestamps
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  lastMessageAt: timestamp('last_message_at'),
+}, (table) => [
+  index('idx_conv_session_user').on(table.userId),
+  index('idx_conv_session_project').on(table.projectId),
+  index('idx_conv_session_active').on(table.isActive),
+  index('idx_conv_session_pinned').on(table.isPinned),
+]);
+
+export const insertConversationSessionSchema = createInsertSchema(conversationSessions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertConversationSession = z.infer<typeof insertConversationSessionSchema>;
+export type ConversationSession = typeof conversationSessions.$inferSelect;
+
+// PINNED ITEMS - Quick access to important messages and code snippets
+export const pinnedItems = pgTable('pinned_items', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar('user_id').notNull(),
+  projectId: varchar('project_id'),
+  
+  // Item type and reference
+  itemType: varchar('item_type', { length: 20 }).notNull(), // 'message' | 'code_snippet' | 'file' | 'url'
+  referenceId: varchar('reference_id'), // ID of the referenced item (messageId, fileId, etc.)
+  
+  // Content (for standalone pins)
+  title: varchar('title', { length: 255 }),
+  content: text('content'),
+  language: varchar('language', { length: 20 }), // For code snippets
+  filePath: varchar('file_path', { length: 500 }), // For file references
+  lineStart: integer('line_start'),
+  lineEnd: integer('line_end'),
+  
+  // Metadata
+  tags: jsonb('tags').$type<string[]>(),
+  color: varchar('color', { length: 20 }), // Visual color coding
+  sortOrder: integer('sort_order').notNull().default(0),
+  
+  // Timestamps
+  pinnedAt: timestamp('pinned_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => [
+  index('idx_pinned_user').on(table.userId),
+  index('idx_pinned_project').on(table.projectId),
+  index('idx_pinned_type').on(table.itemType),
+  index('idx_pinned_order').on(table.sortOrder),
+]);
+
+export const insertPinnedItemSchema = createInsertSchema(pinnedItems).omit({
+  id: true,
+  pinnedAt: true,
+  updatedAt: true,
+});
+export type InsertPinnedItem = z.infer<typeof insertPinnedItemSchema>;
+export type PinnedItem = typeof pinnedItems.$inferSelect;
+
+// LAYOUT PREFERENCES - User customizable IDE panel layouts
+export const layoutPreferences = pgTable('layout_preferences', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar('user_id').notNull(),
+  projectId: varchar('project_id'), // null = global default
+  
+  // Layout configuration
+  layoutName: varchar('layout_name', { length: 100 }).notNull().default('Default'),
+  isDefault: boolean('is_default').notNull().default(false),
+  
+  // Panel configuration - stores complete layout state
+  panelConfig: jsonb('panel_config').$type<{
+    panels: Array<{
+      id: string;
+      type: string;
+      position: 'left' | 'center' | 'right' | 'bottom';
+      size: number;
+      minSize?: number;
+      maxSize?: number;
+      collapsed?: boolean;
+      order: number;
+    }>;
+    splitRatios: Record<string, number>;
+    collapsedPanels: string[];
+  }>().notNull(),
+  
+  // Timestamps
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => [
+  index('idx_layout_user').on(table.userId),
+  index('idx_layout_project').on(table.projectId),
+  index('idx_layout_default').on(table.isDefault),
+]);
+
+export const insertLayoutPreferenceSchema = createInsertSchema(layoutPreferences).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertLayoutPreference = z.infer<typeof insertLayoutPreferenceSchema>;
+export type LayoutPreference = typeof layoutPreferences.$inferSelect;
+
+// TUTORIAL PROGRESS - Tracks user onboarding and feature discovery
+export const tutorialProgress = pgTable('tutorial_progress', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar('user_id').notNull().unique(),
+  
+  // Tutorial completion state
+  completedSteps: jsonb('completed_steps').$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+  currentStep: varchar('current_step', { length: 100 }),
+  
+  // Feature discovery
+  featuresDiscovered: jsonb('features_discovered').$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+  tooltipsShown: jsonb('tooltips_shown').$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+  
+  // Progress metrics
+  tutorialStartedAt: timestamp('tutorial_started_at'),
+  tutorialCompletedAt: timestamp('tutorial_completed_at'),
+  totalTimeSpentSeconds: integer('total_time_spent_seconds').notNull().default(0),
+  
+  // Preferences
+  showTutorial: boolean('show_tutorial').notNull().default(true),
+  showTooltips: boolean('show_tooltips').notNull().default(true),
+  
+  // Timestamps
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => [
+  index('idx_tutorial_user').on(table.userId),
+]);
+
+export const insertTutorialProgressSchema = createInsertSchema(tutorialProgress).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertTutorialProgress = z.infer<typeof insertTutorialProgressSchema>;
+export type TutorialProgress = typeof tutorialProgress.$inferSelect;
+
+// IDE PREFERENCES - Extended user settings including sound and accessibility
+export const idePreferences = pgTable('ide_preferences', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar('user_id').notNull().unique(),
+  
+  // Sound settings
+  soundEnabled: boolean('sound_enabled').notNull().default(true),
+  soundVolume: integer('sound_volume').notNull().default(50), // 0-100
+  soundEffects: jsonb('sound_effects').$type<{
+    messageSent: boolean;
+    messageReceived: boolean;
+    taskComplete: boolean;
+    error: boolean;
+    notification: boolean;
+  }>().notNull().default(sql`'{"messageSent":true,"messageReceived":true,"taskComplete":true,"error":true,"notification":true}'::jsonb`),
+  
+  // Accessibility
+  reduceMotion: boolean('reduce_motion').notNull().default(false),
+  highContrast: boolean('high_contrast').notNull().default(false),
+  fontSize: varchar('font_size', { length: 20 }).notNull().default('medium'), // 'small' | 'medium' | 'large'
+  
+  // Editor preferences
+  editorTheme: varchar('editor_theme', { length: 50 }).notNull().default('vs-dark'),
+  editorFontSize: integer('editor_font_size').notNull().default(14),
+  editorTabSize: integer('editor_tab_size').notNull().default(2),
+  editorWordWrap: boolean('editor_word_wrap').notNull().default(true),
+  
+  // Chat preferences
+  chatCompact: boolean('chat_compact').notNull().default(false),
+  showTimestamps: boolean('show_timestamps').notNull().default(true),
+  showAvatars: boolean('show_avatars').notNull().default(true),
+  
+  // Timestamps
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => [
+  index('idx_ide_prefs_user').on(table.userId),
+]);
+
+export const insertIdePreferencesSchema = createInsertSchema(idePreferences).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertIdePreferences = z.infer<typeof insertIdePreferencesSchema>;
+export type IdePreferences = typeof idePreferences.$inferSelect;

@@ -193,6 +193,28 @@ export async function registerRoutes(app: Express): Promise<Server & { wss?: Web
     console.warn("[IMAGE-GEN] Failed to load image generation router:", (e as any).message);
   }
 
+  // Code Execution Sandbox
+  try {
+    const { default: sandboxRouter } = await import("./sandbox.js");
+    if (sandboxRouter) {
+      app.use("/api/sandbox", sandboxRouter);
+      console.log("[SANDBOX] Code execution sandbox router mounted at /api/sandbox");
+    }
+  } catch (e) {
+    console.warn("[SANDBOX] Failed to load sandbox router:", (e as any).message);
+  }
+
+  // Pinned Items
+  try {
+    const { default: pinnedRouter } = await import("./pinned.js");
+    if (pinnedRouter) {
+      app.use("/api/pinned", pinnedRouter);
+      console.log("[PINNED] Pinned items router mounted at /api/pinned");
+    }
+  } catch (e) {
+    console.warn("[PINNED] Failed to load pinned items router:", (e as any).message);
+  }
+
   // API Documentation (OpenAPI/Swagger)
   try {
     const { default: apiDocsRouter } = await import("./api-docs.js");

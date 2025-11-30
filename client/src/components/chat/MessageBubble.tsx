@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Copy, Check, User, ChevronDown, Brain, CheckCircle, AlertCircle } from "lucide-react";
+import { Copy, Check, User, ChevronDown, Brain, CheckCircle, AlertCircle, Pin, PinOff, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -7,24 +7,26 @@ import { MarkdownMessage } from "./MarkdownMessage";
 import { InlineReasoning, type ReasoningStep } from "@/components/inline-reasoning";
 import { ParallelExecutionBadge } from "@/components/parallel-execution-badge";
 import { ConsultationCostBadge } from "@/components/consultation-cost-badge";
+import { cn } from "@/lib/utils";
 
 interface Message {
   role: "user" | "assistant" | "system";
   content: string;
-  thinking?: string; // Internal monologue/thought block
-  reasoning?: ReasoningStep[]; // IDE-style reasoning steps
+  thinking?: string;
+  reasoning?: ReasoningStep[];
   timestamp?: Date;
   id?: string;
   messageId?: string;
   images?: string[];
-  filesChanged?: string[]; // Files modified in this response
-  status?: 'success' | 'error' | 'pending'; // Operation status
-  tokenUsage?: { input: number; output: number }; // Token consumption
-  parallelExecution?: { // FAST mode execution data
+  filesChanged?: string[];
+  status?: 'success' | 'error' | 'pending';
+  tokenUsage?: { input: number; output: number };
+  parallelExecution?: {
     tools: Array<{ name: string; duration: number; status: 'completed' | 'running' | 'pending' }>;
     totalDuration: number;
     estimatedSequentialDuration: number;
   };
+  isPinned?: boolean;
   [key: string]: any;
 }
 
@@ -32,19 +34,22 @@ interface MessageBubbleProps {
   message: Message;
   index: number;
   totalMessages: number;
+  onPin?: (messageId: string, isPinned: boolean) => void;
+  showAvatar?: boolean;
+  compact?: boolean;
 }
 
-export function MessageBubble({ message, index, totalMessages }: MessageBubbleProps) {
+export function MessageBubble({ message, index, totalMessages, onPin, showAvatar = true, compact = false }: MessageBubbleProps) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const [showThinking, setShowThinking] = useState(false);
+  const [isPinned, setIsPinned] = useState(message.isPinned || false);
 
   const isUser = message.role === 'user';
   const isLast = index === totalMessages - 1;
   const hasThinking = message.thinking && message.thinking.trim().length > 0;
   const hasContent = message.content && message.content.trim().length > 0;
   
-  // Skip rendering empty assistant messages (these are placeholder messages)
   if (!isUser && !hasContent && !hasThinking) {
     return null;
   }
@@ -53,31 +58,51 @@ export function MessageBubble({ message, index, totalMessages }: MessageBubblePr
     navigator.clipboard.writeText(message.content);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    toast({ title: "Message copied!" });
+    toast({ title: "Message copied!", variant: "success" });
+  };
+
+  const handlePin = () => {
+    const newPinned = !isPinned;
+    setIsPinned(newPinned);
+    onPin?.(message.id || message.messageId || '', newPinned);
+    toast({ 
+      title: newPinned ? "Message pinned" : "Message unpinned",
+      description: newPinned ? "Find it in your pinned items" : undefined,
+      variant: newPinned ? "success" : "default"
+    });
   };
 
   return (
     <div 
       key={message.id || message.messageId} 
-      className={`flex gap-2.5 group ${isUser ? 'flex-row-reverse' : 'flex-row'} pb-1`}
+      className={cn(
+        "flex gap-3 group transition-all duration-200",
+        isUser ? 'flex-row-reverse' : 'flex-row',
+        compact ? 'pb-2' : 'pb-4',
+        isPinned && "bg-amber-50/50 dark:bg-amber-950/20 -mx-2 px-2 py-1 rounded-lg border-l-2 border-amber-400"
+      )}
       data-testid={`message-container-${message.id}`}
     >
-      {/* Avatar */}
-      <div 
-        className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all ${
-          isUser 
-            ? 'bg-primary/15 text-primary' 
-            : 'bg-secondary/20 text-secondary-foreground'
-        }`}
-        data-testid={`avatar-${message.role}`}
-        title={isUser ? 'You' : 'BeeHive'}
-      >
-        {isUser ? (
-          <User className="w-4 h-4" />
-        ) : (
-          <span className="font-bold text-xs">AI</span>
-        )}
-      </div>
+      {/* Avatar - Enhanced BeeHive themed */}
+      {showAvatar && (
+        <div 
+          className={cn(
+            "flex-shrink-0 rounded-full flex items-center justify-center font-medium transition-all shadow-sm",
+            compact ? "w-7 h-7" : "w-9 h-9",
+            isUser 
+              ? 'bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-600' 
+              : 'bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-900/50 dark:to-amber-800/50 text-amber-700 dark:text-amber-300 ring-1 ring-amber-300 dark:ring-amber-700'
+          )}
+          data-testid={`avatar-${message.role}`}
+          title={isUser ? 'You' : 'Scout'}
+        >
+          {isUser ? (
+            <User className={cn(compact ? "w-3.5 h-3.5" : "w-4 h-4")} />
+          ) : (
+            <Sparkles className={cn(compact ? "w-3.5 h-3.5" : "w-4 h-4")} />
+          )}
+        </div>
+      )}
 
       {/* Message Content */}
       <div className={`flex-1 min-w-0 flex flex-col ${isUser ? 'items-end' : 'items-start'} gap-2`}>
@@ -122,16 +147,25 @@ export function MessageBubble({ message, index, totalMessages }: MessageBubblePr
           </div>
         )}
 
-        {/* Main message bubble */}
+        {/* Main message bubble - Enhanced with BeeHive theming */}
         <div 
-          className={`px-3 py-2 max-w-2xl break-words transition-all ${
+          className={cn(
+            "max-w-[85%] break-words transition-all shadow-sm",
+            compact ? "px-3 py-2" : "px-4 py-3",
             isUser
-              ? 'bg-primary text-primary-foreground rounded-lg rounded-tr-sm'
-              : 'bg-secondary/50 text-foreground font-medium rounded-lg rounded-tl-sm'
-          }`}
+              ? 'bg-gradient-to-br from-slate-700 to-slate-800 dark:from-slate-600 dark:to-slate-700 text-white rounded-2xl rounded-tr-md'
+              : 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-2xl rounded-tl-md border border-slate-200 dark:border-slate-700'
+          )}
           data-testid={`message-bubble-${message.id}`}
         >
-          <div className="text-sm leading-relaxed">
+          {/* Role label for accessibility */}
+          <div className={cn(
+            "text-[10px] font-semibold uppercase tracking-wider mb-1.5",
+            isUser ? "text-slate-300" : "text-amber-600 dark:text-amber-400"
+          )}>
+            {isUser ? "You" : "Scout"}
+          </div>
+          <div className={cn("leading-relaxed", compact ? "text-sm" : "text-[15px]")}>
             <MarkdownMessage content={message.content} isUser={isUser} />
           </div>
 
@@ -189,27 +223,58 @@ export function MessageBubble({ message, index, totalMessages }: MessageBubblePr
           </div>
         )}
 
-        {/* Timestamp + Actions - Always visible but subtle */}
-        <div className={`flex items-center gap-1 mt-1.5 px-1 ${isUser ? 'flex-row-reverse' : 'flex-row'} text-xs text-muted-foreground/75`}>
+        {/* Timestamp + Actions - Enhanced with pin button */}
+        <div className={cn(
+          "flex items-center gap-1.5 mt-2 px-1",
+          isUser ? 'flex-row-reverse' : 'flex-row',
+          "text-xs text-muted-foreground/75"
+        )}>
           {message.timestamp && (
-            <span className="text-xs text-muted-foreground/70">
+            <span className="text-[11px] text-muted-foreground/60">
               {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity hover:opacity-100"
-            onClick={copyMessage}
-            data-testid={`button-copy-message-${message.id}`}
-            title="Copy message"
-          >
-            {copied ? (
-              <Check className="w-3 h-3 text-green-600" />
-            ) : (
-              <Copy className="w-3 h-3" />
-            )}
-          </Button>
+          
+          {/* Action buttons - visible on hover */}
+          <div className={cn(
+            "flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity",
+            isPinned && "opacity-100"
+          )}>
+            {/* Pin button */}
+            <Button
+              size="icon"
+              variant="ghost"
+              className={cn(
+                "h-6 w-6 rounded-full",
+                isPinned ? "text-amber-500 hover:text-amber-600" : "hover:text-amber-500"
+              )}
+              onClick={handlePin}
+              data-testid={`button-pin-message-${message.id}`}
+              title={isPinned ? "Unpin message" : "Pin message"}
+            >
+              {isPinned ? (
+                <PinOff className="w-3.5 h-3.5" />
+              ) : (
+                <Pin className="w-3.5 h-3.5" />
+              )}
+            </Button>
+            
+            {/* Copy button */}
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-6 w-6 rounded-full"
+              onClick={copyMessage}
+              data-testid={`button-copy-message-${message.id}`}
+              title="Copy message"
+            >
+              {copied ? (
+                <Check className="w-3.5 h-3.5 text-green-500" />
+              ) : (
+                <Copy className="w-3.5 h-3.5" />
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
