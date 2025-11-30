@@ -1,33 +1,20 @@
-import { AIModelSelector } from "@/components/ai-model-selector";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Coins, History, Settings, Wifi, WifiOff, BarChart3 } from "lucide-react";
-import { TokenMeter } from "@/components/token-meter";
-import { RateLimitIndicator } from "@/components/rate-limit-indicator";
+import { History, WifiOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ChatHeaderProps {
   targetContext: 'platform' | 'project' | 'architect';
-  creditBalance?: number;
-  isFreeAccess?: boolean;
   isConnected?: boolean;
   onHistoryClick?: () => void;
-  onSettingsClick?: () => void;
   className?: string;
-  sessionTokens?: { inputTokens: number; outputTokens: number; totalTokens: number; estimatedCost: number };
-  monthlyTokens?: { inputTokens: number; outputTokens: number; totalTokens: number; estimatedCost: number };
 }
 
 export function ChatHeader({
   targetContext,
-  creditBalance = 0,
-  isFreeAccess = false,
   isConnected = true,
   onHistoryClick,
-  onSettingsClick,
-  className,
-  sessionTokens,
-  monthlyTokens
+  className
 }: ChatHeaderProps) {
   return (
     <header 
@@ -37,65 +24,26 @@ export function ChatHeader({
       )}
       data-testid="chat-header"
     >
-      <div className="flex items-center justify-between gap-3 p-3 sm:p-4">
-        <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div className="flex-shrink-0" data-testid="header-model-selector">
-            <AIModelSelector />
-          </div>
-          
+      <div className="flex items-center justify-between gap-2 px-3 py-2 sm:px-4 sm:py-3">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           {!isConnected && (
-            <Badge variant="destructive" className="flex gap-1.5 items-center" data-testid="header-disconnected">
+            <Badge variant="destructive" className="flex gap-1 items-center text-xs" data-testid="header-disconnected">
               <WifiOff className="h-3 w-3" />
               <span className="hidden sm:inline">Disconnected</span>
             </Badge>
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Token Meter */}
-          {sessionTokens && <TokenMeter sessionTokens={sessionTokens} monthlyTokens={monthlyTokens} />}
-
-          <Badge 
-            variant={isFreeAccess ? "default" : "secondary"}
-            className="hidden sm:flex gap-1.5 items-center"
-            data-testid="header-credit-badge"
-          >
-            <Coins className="h-3.5 w-3.5" />
-            {isFreeAccess ? "FREE" : `${creditBalance} credits`}
-          </Badge>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => window.location.href = '/consultation-history'}
-            className="h-8 w-8"
-            title="Architect Consultations"
-            data-testid="button-consultations"
-          >
-            <BarChart3 className="h-4 w-4" />
-            <span className="sr-only">Architect Consultations</span>
-          </Button>
-
+        <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon"
             onClick={onHistoryClick}
-            className="h-8 w-8"
+            className="h-7 w-7"
+            title="Chat History"
             data-testid="button-history"
           >
-            <History className="h-4 w-4" />
-            <span className="sr-only">Chat History</span>
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onSettingsClick}
-            className="h-8 w-8 hidden sm:flex"
-            data-testid="button-settings"
-          >
-            <Settings className="h-4 w-4" />
-            <span className="sr-only">Settings</span>
+            <History className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
