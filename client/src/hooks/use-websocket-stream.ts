@@ -72,7 +72,7 @@ export interface DeploymentStep {
 }
 
 interface StreamMessage {
-  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'chat-error' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics' | 'heal:init' | 'heal:thought' | 'heal:tool' | 'heal:write-pending' | 'heal:approved' | 'heal:rejected' | 'heal:completed' | 'heal:error' | 'approval_requested' | 'progress' | 'platform_preview_ready' | 'platform_preview_error' | 'lomu_ai_job_update' | 'scratchpad_entry' | 'scratchpad_cleared' | 'deploy.started' | 'deploy.step_update' | 'deploy.complete' | 'deploy.failed' | 'billing.estimate' | 'billing.update' | 'billing.reconciled' | 'billing.warning' | 'file-change';
+  type: 'ai-status' | 'ai-chunk' | 'ai-thought' | 'ai-action' | 'ai-complete' | 'ai-error' | 'session-registered' | 'file_status' | 'file_summary' | 'chat-progress' | 'chat-complete' | 'chat-error' | 'task_plan' | 'task_update' | 'task_recompile' | 'sub_agent_spawn' | 'platform-metrics' | 'heal:init' | 'heal:thought' | 'heal:tool' | 'heal:write-pending' | 'heal:approved' | 'heal:rejected' | 'heal:completed' | 'heal:error' | 'approval_requested' | 'progress' | 'platform_preview_ready' | 'platform_preview_error' | 'beehive_ai_job_update' | 'scratchpad_entry' | 'scratchpad_cleared' | 'deploy.started' | 'deploy.step_update' | 'deploy.complete' | 'deploy.failed' | 'billing.estimate' | 'billing.update' | 'billing.reconciled' | 'billing.warning' | 'file-change';
   roomId?: string;
   commandId?: string;
   data?: any;  // Generic data field for billing events
@@ -574,7 +574,7 @@ export function useWebSocketStream(sessionId: string, userId: string = 'anonymou
               }));
               break;
 
-            case 'lomu_ai_job_update':
+            case 'beehive_ai_job_update':
               // Handle task management updates from BeeHiveAI
               console.log(`📋 [TASK-MGMT] ${message.updateType}:`, message);
               if (message.updateType === 'task_list_created' && message.tasks) {

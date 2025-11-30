@@ -418,7 +418,7 @@ export default function Pricing() {
         <div className="container mx-auto max-w-6xl">
           <h2 className="text-3xl font-bold text-center mb-12">
             <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              What Makes Lomu Different
+              What Makes BeeHive Different
             </span>
           </h2>
           
@@ -542,7 +542,7 @@ export default function Pricing() {
           <div className="flex items-center justify-center gap-3 mb-4">
             <BeeHiveLogo  />
           </div>
-          <p className="text-sm">© 2025 Lomu. Transparent AI-Powered Development.</p>
+          <p className="text-sm">© 2025 BeeHive. Transparent AI-Powered Development.</p>
           <p className="text-xs mt-2">No hidden fees. No surprise bills. Pay for what you use.</p>
         </div>
       </footer>

@@ -206,7 +206,7 @@ export default function ArtifactDemo() {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-fresh-mint">✓</span>
-              <span>Dark code background (consistent with Lomu design)</span>
+              <span>Dark code background (consistent with BeeHive design)</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-fresh-mint">✓</span>
@@ -218,7 +218,7 @@ export default function ArtifactDemo() {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-fresh-mint">✓</span>
-              <span>Integrated with lomu-chat component</span>
+              <span>Integrated with beehive-chat component</span>
             </li>
           </ul>
         </Card>

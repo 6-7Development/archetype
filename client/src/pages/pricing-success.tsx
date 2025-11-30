@@ -30,7 +30,7 @@ export default function PricingSuccess() {
             className="text-4xl font-bold mb-4"
           >
             <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Welcome to Lomu Pro!
+              Welcome to BeeHive Pro!
             </span>
           </motion.h1>
 

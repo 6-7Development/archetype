@@ -119,7 +119,7 @@ export function ChatMessages({
   const handleCopyChatHistory = () => {
     const chatHistory = messages
       .filter(m => !m.isSummary)
-      .map(m => `${m.role === 'user' ? 'USER' : 'LOMU AI'}:\n${m.content}\n`)
+      .map(m => `${m.role === 'user' ? 'USER' : 'SCOUT'}:\n${m.content}\n`)
       .join('\n---\n\n');
     navigator.clipboard.writeText(chatHistory);
     setCopiedChatHistory(true);

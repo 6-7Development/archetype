@@ -115,7 +115,7 @@ export function GitPanel() {
           message: commitMessage,
           author: {
             name: "Platform User",
-            email: "user@lomu.ai",
+            email: "user@beehive.dev",
           },
         }),
       });

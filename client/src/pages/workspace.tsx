@@ -584,7 +584,7 @@ export default function Workspace() {
           </div>
         )}
 
-        {/* CENTER-LEFT: AI Chat (Lomu) - Always Visible */}
+        {/* CENTER-LEFT: AI Chat (Scout) - Always Visible */}
         <div className="w-80 border-r flex flex-col bg-card overflow-hidden">
           <div className="h-full flex flex-col">
             <div className="border-b px-4 py-3">
@@ -724,7 +724,7 @@ export default function Workspace() {
         </div>
         <div className="flex items-center gap-3">
           <span>{files.length} files</span>
-          <span>Lomu IDE</span>
+          <span>BeeHive IDE</span>
         </div>
       </footer>
     </div>

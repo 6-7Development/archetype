@@ -222,7 +222,7 @@ export default function Builder() {
           <Badge 
             variant="secondary" 
             className="hidden md:inline-flex bg-primary/10 text-primary border-primary/20 font-mono text-xs"
-            data-testid="badge-lomu-ai"
+            data-testid="badge-beehive-ai"
           >
             BeeHive
           </Badge>

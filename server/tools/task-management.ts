@@ -10,7 +10,7 @@ export function setWebSocketServer(websocketServer: any) {
 
 /**
  * Broadcast task updates to the user via WebSocket
- * Matches the same format as lomu_ai_job_update for consistency
+ * Matches the same format as beehive_ai_job_update for consistency
  */
 function broadcastTaskUpdate(userId: string, updateType: string, data: any) {
   if (!wss) {
@@ -21,7 +21,7 @@ function broadcastTaskUpdate(userId: string, updateType: string, data: any) {
   wss.clients.forEach((client: any) => {
     if (client.readyState === 1 && client.userId === userId) {
       client.send(JSON.stringify({
-        type: 'lomu_ai_job_update',  // Match the existing event type
+        type: 'beehive_ai_job_update',  // Match the existing event type
         updateType,  // This will be 'task_list_created' or 'task_updated'
         ...data,
       }));

@@ -224,7 +224,7 @@ export default function APIKeysPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">
-                Upgrade your plan to create and manage API keys for programmatic access to Lomu.
+                Upgrade your plan to create and manage API keys for programmatic access to BeeHive.
               </p>
               <Button data-testid="button-upgrade-for-api-keys">
                 Upgrade to Pro

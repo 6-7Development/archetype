@@ -414,7 +414,7 @@ let wss: WebSocketServer | null = null;
  */
 export function initializeJobManager(websocketServer: WebSocketServer) {
   wss = websocketServer;
-  console.log('[LOMU-AI-JOB-MANAGER] Initialized with WebSocket support');
+  console.log('[BEEHIVE-AI-JOB-MANAGER] Initialized with WebSocket support');
 }
 
 /**
@@ -422,14 +422,14 @@ export function initializeJobManager(websocketServer: WebSocketServer) {
  */
 function broadcast(userId: string, jobId: string, type: string, data: any) {
   if (!wss) {
-    console.warn('[LOMU-AI-JOB-MANAGER] WebSocket not initialized, skipping broadcast');
+    console.warn('[BEEHIVE-AI-JOB-MANAGER] WebSocket not initialized, skipping broadcast');
     return;
   }
 
   wss.clients.forEach((client: any) => {
     if (client.readyState === 1 && client.userId === userId) {
       client.send(JSON.stringify({
-        type: 'lomu_ai_job_update',
+        type: 'beehive_ai_job_update',
         jobId,
         updateType: type,
         ...data,
@@ -467,7 +467,7 @@ export async function createJob(userId: string, initialMessage: string) {
     metadata: { initialMessage },
   }).returning();
 
-  console.log('[LOMU-AI-JOB-MANAGER] Created job:', job.id, 'for user:', userId);
+  console.log('[BEEHIVE-AI-JOB-MANAGER] Created job:', job.id, 'for user:', userId);
   return job;
 }
 

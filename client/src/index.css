@@ -187,7 +187,7 @@
   }
 }
 
-/* LIGHT MODE - Lomu Fresh & Bright Theme */
+/* LIGHT MODE - BeeHive Fresh & Bright Theme */
 :root {
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
@@ -199,7 +199,7 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  /* Lomu Hive/Swarm Brand Colors - Light Mode */
+  /* BeeHive Hive/Swarm Brand Colors - Light Mode */
   --honey: 40 97% 50%;             /* Vibrant honey #F7B500 */
   --nectar: 48 100% 65%;           /* Bright nectar #FFD34D */
   --mint: 171 100% 42%;            /* Vibrant mint-teal #00D4B3 */
@@ -327,7 +327,7 @@
   --elevate-1: rgba(255,255,255, .03);
   --elevate-2: rgba(255,255,255, .08);
 
-  /* Lomu Hive/Swarm Brand Colors - Dark Mode */
+  /* BeeHive Hive/Swarm Brand Colors - Dark Mode */
   --honey: 40 97% 50%;             /* Vibrant honey #F7B500 */
   --nectar: 48 100% 65%;           /* Bright nectar #FFD34D */
   --mint: 171 100% 42%;            /* Vibrant mint-teal #00D4B3 */
