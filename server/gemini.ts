@@ -904,7 +904,8 @@ Please try:
             // Stream immediately to frontend
             if (onChunk) {
               try {
-                // ✅ CRITICAL FIX: Use 'content' type (NOT 'chunk') so orchestrator.ts recognizes it
+                // ✅ CRITICAL FIX: Use 'content' type for orchestrator/event-emitter compatibility
+                // chat.ts now handles both 'text' and 'content' types
                 onChunk({ type: 'content', content: text });
                 console.log('[GEMINI-TEXT-STREAM] ✅ Streamed:', text.substring(0, 80) + '...');
               } catch (chunkError) {

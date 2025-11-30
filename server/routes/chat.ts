@@ -1114,12 +1114,13 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
               },
               onChunk: (chunk: any) => {
                 try {
-                  // Handle Gemini text chunks
-                  if (chunk.type === 'text') {
-                    fullResponse += chunk.text || '';
+                  // Handle Gemini text chunks (support both 'text' and 'content' formats for compatibility)
+                  if (chunk.type === 'text' || chunk.type === 'content') {
+                    const textContent = chunk.text || chunk.content || '';
+                    fullResponse += textContent;
                     // Stream chunk to client
-                    res.write(`data: ${JSON.stringify({ type: 'text_delta', text: chunk.text })}\n\n`);
-                    console.log(`✅ [GEMINI-CHAT] Streamed text: +${chunk.text?.length || 0} chars`);
+                    res.write(`data: ${JSON.stringify({ type: 'text_delta', text: textContent })}\n\n`);
+                    console.log(`✅ [GEMINI-CHAT] Streamed text: +${textContent?.length || 0} chars`);
                   }
                   // Handle Gemini thinking chunks
                   else if (chunk.type === 'thinking') {
