@@ -376,50 +376,6 @@ export const LOMU_TOOLS = [
       required: ['task', 'relevantFiles', 'projectId'],
     },
   },
-  {
-        task: {
-          type: 'string',
-          description: 'Clear, specific task for the sub-agent to complete',
-        },
-        context: {
-          type: 'object',
-          description: 'Relevant context and data for the sub-agent',
-        },
-        systemPrompt: {
-          type: 'string',
-          description: 'Optional custom system prompt for the sub-agent',
-        },
-      },
-      required: ['agentType', 'task'],
-    },
-  },
-  {
-      },
-      required: ['subAgentId'],
-    },
-  },
-  // Architect Review Tool
-  {
-        workDescription: {
-          type: 'string',
-          description: 'Clear description of the work to review',
-        },
-        codeChanges: {
-          type: 'string',
-          description: 'Code changes made (use git diff or file contents)',
-        },
-        currentApproach: {
-          type: 'string',
-          description: 'Your current approach/implementation strategy',
-        },
-        constraints: {
-          type: 'string',
-          description: 'Comma-separated constraints to consider (e.g., "Must not break existing auth | Performance critical")',
-        },
-      },
-      required: ['reviewType', 'workDescription'],
-    },
-  },
   // Knowledge Management Tools
   {
     name: 'knowledge_store',
