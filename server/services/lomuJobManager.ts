@@ -3,9 +3,6 @@ import { lomuJobs, lomuWorkflowMetrics, users, subscriptions, chatMessages, task
 import { eq, and, inArray } from 'drizzle-orm';
 import type { WebSocketServer } from 'ws';
 import { streamGeminiResponse } from '../gemini';
-import { streamAnthropicResponse } from '../anthropic';
-import { createSafeAnthropicRequest } from '../lib/anthropic-wrapper';
-import Anthropic from '@anthropic-ai/sdk';
 import { platformHealing } from '../platformHealing';
 import { platformAudit } from '../platformAudit';
 import { trackAIUsage } from '../usage-tracking';

@@ -1,6 +1,6 @@
 import { platformHealing } from './platformHealing';
 import { platformAudit } from './platformAudit';
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 /**
  * Automatic Self-Healing System
@@ -19,20 +19,16 @@ interface ErrorLog {
 class AutoHealingService {
   private errorBuffer: ErrorLog[] = [];
   private isHealing = false;
-  private readonly ERROR_THRESHOLD = 5; // Number of errors before auto-healing, increased from 3
-  private readonly BUFFER_TIME = 10000; // Wait 10s to collect related errors, increased from 5s
+  private readonly ERROR_THRESHOLD = 5;
+  private readonly BUFFER_TIME = 10000;
   private healingTimer: NodeJS.Timeout | null = null;
-  private knowledgeBase: Map<string, string> = new Map(); // Store learned fixes
+  private knowledgeBase: Map<string, string> = new Map();
 
-  /**
-   * Report an error for potential auto-healing
-   */
   async reportError(error: ErrorLog): Promise<void> {
     console.log('[AUTO-HEAL] Error detected:', error.type, error.message);
     
     this.errorBuffer.push(error);
     
-    // Check if we've seen this error before and have a fix
     const knownFix = this.getKnownFix(error);
     if (knownFix) {
       console.log('[AUTO-HEAL] Known fix found, applying immediately...');
@@ -40,62 +36,44 @@ class AutoHealingService {
       return;
     }
 
-    // Clear existing timer
     if (this.healingTimer) {
       clearTimeout(this.healingTimer);
     }
 
-    // Set new timer to trigger healing
     this.healingTimer = setTimeout(() => {
       this.triggerAutoHealing();
     }, this.BUFFER_TIME);
   }
 
-  /**
-   * Check knowledge base for known fixes
-   */
   private getKnownFix(error: ErrorLog): string | null {
     const errorSignature = this.getErrorSignature(error);
     return this.knowledgeBase.get(errorSignature) || null;
   }
 
-  /**
-   * Create unique signature for error to match against knowledge base
-   */
   private getErrorSignature(error: ErrorLog): string {
-    // Use error type, file, and key parts of message
     const messageKey = error.message
-      .replace(/\d+/g, 'N') // Replace numbers
-      .replace(/['\"]/g, '') // Remove quotes
+      .replace(/\d+/g, 'N')
+      .replace(/['\"]/g, '')
       .slice(0, 100);
     
     return `${error.type}:${error.file || 'unknown'}:${messageKey}`;
   }
 
-  /**
-   * Store a successful fix in knowledge base
-   */
   private learnFix(error: ErrorLog, fix: string): void {
     const signature = this.getErrorSignature(error);
     this.knowledgeBase.set(signature, fix);
     console.log('[AUTO-HEAL] Learned new fix:', signature);
   }
 
-  /**
-   * Apply a known fix from knowledge base
-   */
   private async applyKnownFix(error: ErrorLog, fix: string): Promise<void> {
     try {
       console.log('[AUTO-HEAL] Applying known fix...');
       
-      // Create backup
       const backup = await platformHealing.createBackup('Auto-heal: Known fix');
       
-      // Apply fix (fix contains the file path and content to write)
       const fixData = JSON.parse(fix);
       await platformHealing.writePlatformFile(fixData.path, fixData.content);
       
-      // Validate safety
       const safety = await platformHealing.validateSafety();
       if (!safety.safe) {
         await platformHealing.rollback(backup.id);
@@ -103,23 +81,19 @@ class AutoHealingService {
         return;
       }
       
-      // Commit the known fix
       await platformHealing.commitChanges(
         `Auto-heal: Known fix for ${error.type} error`,
         [{ path: fixData.path, operation: 'modify' as const }]
       );
       
       console.log('[AUTO-HEAL] Known fix applied and committed successfully');
-      this.errorBuffer = []; // Clear buffer
+      this.errorBuffer = [];
       
     } catch (error) {
       console.error('[AUTO-HEAL] Failed to apply known fix:', error);
     }
   }
 
-  /**
-   * Trigger automatic healing process
-   */
   private async triggerAutoHealing(): Promise<void> {
     if (this.isHealing) {
       console.log('[AUTO-HEAL] Already healing, skipping...');
@@ -136,14 +110,12 @@ class AutoHealingService {
     console.log('[AUTO-HEAL] Triggering automatic healing for', this.errorBuffer.length, 'errors');
 
     try {
-      // Aggregate error information
       const errorSummary = this.errorBuffer
         .map(e => `[${e.type}] ${e.file}:${e.line} - ${e.message}`)
         .join('\n');
 
       const issue = `Automatic healing triggered by errors:\n${errorSummary}`;
 
-      // Use Hexad to fix
       await this.executeHealing(issue);
 
       this.errorBuffer = [];
@@ -154,22 +126,17 @@ class AutoHealingService {
     }
   }
 
-  /**
-   * Execute healing using Hexad
-   */
   private async executeHealing(issue: string): Promise<void> {
-    const anthropicKey = process.env.ANTHROPIC_API_KEY;
-    if (!anthropicKey) {
-      console.error('[AUTO-HEAL] Anthropic API key not configured');
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (!geminiKey) {
+      console.error('[AUTO-HEAL] Gemini API key not configured');
       return;
     }
 
     try {
-      // Create backup
       const backup = await platformHealing.createBackup(`Auto-heal: ${issue.slice(0, 50)}`);
       console.log('[AUTO-HEAL] Backup created:', backup.id);
 
-      // Get platform files
       const platformFiles = await platformHealing.listPlatformFiles('.');
       const relevantFiles = platformFiles
         .filter(f => 
@@ -180,123 +147,145 @@ class AutoHealingService {
         )
         .slice(0, 15);
 
-      const client = new Anthropic({ apiKey: anthropicKey });
+      const genai = new GoogleGenerativeAI(geminiKey);
 
-      const systemPrompt = `You are Hexad's AUTO-HEALING module. You fix platform errors automatically.\n\nCRITICAL: This is AUTOMATIC healing - be conservative and surgical. Only fix what's broken.\n\nAVAILABLE TOOLS:\n1. readPlatformFile(path) - Read source code\n2. writePlatformFile(path, content) - Fix code\n3. listPlatformFiles(directory) - List files\n\nHEALING STRATEGY:\n1. Analyze error messages\n2. Identify root cause\n3. Apply minimal fix\n4. Verify safety\n5. Test the fix\n\nERRORS TO FIX:\n${issue}\n\nFix these errors with minimal changes. Explain each fix clearly.`;
+      const systemPrompt = `You are Hexad's AUTO-HEALING module. You fix platform errors automatically.
 
-      let conversationMessages: any[] = [{
-        role: 'user',
-        content: issue,
+CRITICAL: This is AUTOMATIC healing - be conservative and surgical. Only fix what's broken.
+
+AVAILABLE TOOLS:
+1. readPlatformFile(path) - Read source code
+2. writePlatformFile(path, content) - Fix code
+3. listPlatformFiles(directory) - List files
+
+HEALING STRATEGY:
+1. Analyze error messages
+2. Identify root cause
+3. Apply minimal fix
+4. Verify safety
+5. Test the fix
+
+ERRORS TO FIX:
+${issue}
+
+Fix these errors with minimal changes. Explain each fix clearly.`;
+
+      const tools = [{
+        functionDeclarations: [
+          {
+            name: 'readPlatformFile',
+            description: 'Read a platform source file',
+            parameters: {
+              type: 'OBJECT' as const,
+              properties: {
+                path: { type: 'STRING' as const, description: 'Path to the file' },
+              },
+              required: ['path'],
+            },
+          },
+          {
+            name: 'writePlatformFile',
+            description: 'Write content to a platform file',
+            parameters: {
+              type: 'OBJECT' as const,
+              properties: {
+                path: { type: 'STRING' as const, description: 'Path to the file' },
+                content: { type: 'STRING' as const, description: 'New file content' },
+              },
+              required: ['path', 'content'],
+            },
+          },
+          {
+            name: 'listPlatformFiles',
+            description: 'List files in a directory',
+            parameters: {
+              type: 'OBJECT' as const,
+              properties: {
+                directory: { type: 'STRING' as const, description: 'Directory path' },
+              },
+              required: ['directory'],
+            },
+          },
+        ]
       }];
 
-      const tools = [
-        {
-          name: 'readPlatformFile',
-          description: 'Read a platform source file',
-          input_schema: {
-            type: 'object' as const,
-            properties: {
-              path: { type: 'string' as const },
-            },
-            required: ['path'],
-          },
-        },
-        {
-          name: 'writePlatformFile',
-          description: 'Write content to a platform file',
-          input_schema: {
-            type: 'object' as const,
-            properties: {
-              path: { type: 'string' as const },
-              content: { type: 'string' as const },
-            },
-            required: ['path', 'content'],
-          },
-        },
-        {
-          name: 'listPlatformFiles',
-          description: 'List files in a directory',
-          input_schema: {
-            type: 'object' as const,
-            properties: {
-              directory: { type: 'string' as const },
-            },
-            required: ['directory'],
-          },
-        },
-      ];
+      const model = genai.getGenerativeModel({
+        model: 'gemini-2.5-flash',
+        systemInstruction: systemPrompt,
+      });
+
+      const chat = model.startChat({
+        tools,
+        generationConfig: {
+          maxOutputTokens: 8000,
+        }
+      });
 
       let changes: Array<{ path: string; content: string }> = [];
       let continueLoop = true;
       let iterationCount = 0;
-      const MAX_ITERATIONS = 3; // Decreased from 5
+      const MAX_ITERATIONS = 3;
+
+      let response = await chat.sendMessage(issue);
 
       while (continueLoop && iterationCount < MAX_ITERATIONS) {
         iterationCount++;
 
-        const response = await client.messages.create({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 8000,
-          system: systemPrompt,
-          messages: conversationMessages,
-          tools,
-        });
+        const result = response.response;
+        const candidates = result.candidates || [];
+        const parts = candidates[0]?.content?.parts || [];
+        
+        const functionCalls = parts.filter((p: any) => p.functionCall);
+        
+        if (functionCalls.length === 0) {
+          continueLoop = false;
+          break;
+        }
 
-        conversationMessages.push({
-          role: 'assistant',
-          content: response.content,
-        });
+        const functionResponses = [];
+        
+        for (const part of functionCalls) {
+          const call = (part as any).functionCall;
+          const name = call.name;
+          const args = call.args;
 
-        const toolResults: any[] = [];
+          try {
+            let toolResult: any = null;
 
-        for (const block of response.content) {
-          if (block.type === 'tool_use') {
-            const { name, input, id } = block;
-
-            try {
-              let toolResult: any = null;
-
-              if (name === 'readPlatformFile') {
-                const typedInput = input as { path: string };
-                toolResult = await platformHealing.readPlatformFile(typedInput.path);
-              } else if (name === 'writePlatformFile') {
-                const typedInput = input as { path: string; content: string };
-                await platformHealing.writePlatformFile(typedInput.path, typedInput.content);
-                changes.push({ path: typedInput.path, content: typedInput.content });
-                toolResult = 'File written successfully';
-              } else if (name === 'listPlatformFiles') {
-                const typedInput = input as { directory: string };
-                const files = await platformHealing.listPlatformFiles(typedInput.directory);
-                toolResult = files.join('\n');
-              }
-
-              toolResults.push({
-                type: 'tool_result',
-                tool_use_id: id,
-                content: toolResult || 'Success',
-              });
-            } catch (error: any) {
-              toolResults.push({
-                type: 'tool_result',
-                tool_use_id: id,
-                is_error: true,
-                content: error.message,
-              });
+            if (name === 'readPlatformFile') {
+              toolResult = await platformHealing.readPlatformFile(args.path);
+            } else if (name === 'writePlatformFile') {
+              await platformHealing.writePlatformFile(args.path, args.content);
+              changes.push({ path: args.path, content: args.content });
+              toolResult = 'File written successfully';
+            } else if (name === 'listPlatformFiles') {
+              const files = await platformHealing.listPlatformFiles(args.directory);
+              toolResult = files.join('\n');
             }
+
+            functionResponses.push({
+              functionResponse: {
+                name: name,
+                response: { result: toolResult || 'Success' }
+              }
+            });
+          } catch (error: any) {
+            functionResponses.push({
+              functionResponse: {
+                name: name,
+                response: { error: error.message }
+              }
+            });
           }
         }
 
-        if (toolResults.length > 0) {
-          conversationMessages.push({
-            role: 'user',
-            content: toolResults,
-          });
+        if (functionResponses.length > 0) {
+          response = await chat.sendMessage(functionResponses);
         } else {
           continueLoop = false;
         }
       }
 
-      // Validate safety
       const safety = await platformHealing.validateSafety();
       if (!safety.safe) {
         await platformHealing.rollback(backup.id);
@@ -313,7 +302,6 @@ class AutoHealingService {
         return;
       }
 
-      // Auto-commit the fix
       if (changes.length > 0) {
         const commitHash = await platformHealing.commitChanges(
           `Auto-heal: ${issue.slice(0, 50)}`,
@@ -322,14 +310,12 @@ class AutoHealingService {
 
         console.log('[AUTO-HEAL] Fix committed:', commitHash);
 
-        // Learn this fix for future use - CRITICAL: Store the solution
         if (this.errorBuffer.length > 0 && changes.length > 0) {
           const primaryError = this.errorBuffer[0];
-          // Store the complete fix pattern
           const fixData = JSON.stringify({
             path: changes[0].path,
             content: changes[0].content,
-            issue: issue.slice(0, 200), // Include context
+            issue: issue.slice(0, 200),
           });
           this.learnFix(primaryError, fixData);
           console.log('[AUTO-HEAL] Learned fix for future use:', this.getErrorSignature(primaryError));
@@ -359,16 +345,10 @@ class AutoHealingService {
     }
   }
 
-  /**
-   * Export knowledge base (for persistence)
-   */
   exportKnowledge(): Record<string, string> {
     return Object.fromEntries(this.knowledgeBase);
   }
 
-  /**
-   * Import knowledge base (from persistence)
-   */
   importKnowledge(knowledge: Record<string, string>): void {
     this.knowledgeBase = new Map(Object.entries(knowledge));
     console.log('[AUTO-HEAL] Imported', this.knowledgeBase.size, 'known fixes');
@@ -377,7 +357,6 @@ class AutoHealingService {
 
 export const autoHealing = new AutoHealingService();
 
-// Global error handlers for automatic healing
 if (process.env.NODE_ENV === 'production') {
   process.on('uncaughtException', (error) => {
     autoHealing.reportError({

@@ -1,8 +1,6 @@
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || 'dummy-key',
-});
+const genai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'dummy-key');
 
 interface VisionAnalyzeParams {
   imageBase64: string;
@@ -17,53 +15,43 @@ interface VisionAnalyzeResult {
 }
 
 /**
- * Analyze images using Claude Vision API
- * Allows SySop to understand screenshots, UI mockups, and visual designs
+ * Analyze images using Gemini Vision API
+ * Allows Hexad to understand screenshots, UI mockups, and visual designs
  */
 export async function executeVisionAnalysis(params: VisionAnalyzeParams): Promise<VisionAnalyzeResult> {
   try {
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 2048,
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: params.imageMediaType,
-                data: params.imageBase64,
-              },
+    const model = genai.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    
+    const result = await model.generateContent({
+      contents: [{
+        role: 'user',
+        parts: [
+          {
+            inlineData: {
+              mimeType: params.imageMediaType,
+              data: params.imageBase64,
             },
-            {
-              type: 'text',
-              text: params.prompt,
-            },
-          ],
-        },
-      ],
+          },
+          {
+            text: params.prompt,
+          },
+        ],
+      }],
+      generationConfig: {
+        maxOutputTokens: 2048,
+      }
     });
     
-    const content = message.content[0];
-    if (content.type !== 'text') {
-      throw new Error('Unexpected response type from Claude Vision');
-    }
+    const analysis = result.response.text() || '';
     
-    const analysis = content.text;
-    
-    // Parse structured response
     const suggestions: string[] = [];
     const issues: string[] = [];
     
-    // Extract suggestions (lines starting with "Suggestion:" or similar)
     const suggestionMatches = analysis.match(/(?:Suggestion|Recommendation|Improvement):\s*(.+)/gi);
     if (suggestionMatches) {
       suggestions.push(...suggestionMatches.map(m => m.replace(/^(?:Suggestion|Recommendation|Improvement):\s*/i, '')));
     }
     
-    // Extract issues (lines starting with "Issue:" or "Problem:")
     const issueMatches = analysis.match(/(?:Issue|Problem|Error|Bug):\s*(.+)/gi);
     if (issueMatches) {
       issues.push(...issueMatches.map(m => m.replace(/^(?:Issue|Problem|Error|Bug):\s*/i, '')));
@@ -103,52 +91,71 @@ Provide specific, actionable feedback.`,
 export async function compareDesignToImplementation(
   mockupBase64: string,
   implementationBase64: string,
-  mediaType: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'
-): Promise<string> {
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 2048,
-    messages: [
-      {
+  mediaType: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp' = 'image/png'
+): Promise<VisionAnalyzeResult> {
+  const model = genai.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  
+  try {
+    const result = await model.generateContent({
+      contents: [{
         role: 'user',
-        content: [
+        parts: [
           {
-            type: 'text',
-            text: 'Design Mockup:',
+            text: 'Compare these two images - the first is the design mockup, the second is the implementation:'
           },
           {
-            type: 'image',
-            source: {
-              type: 'base64',
-              media_type: mediaType,
+            inlineData: {
+              mimeType: mediaType,
               data: mockupBase64,
             },
           },
           {
-            type: 'text',
-            text: 'Current Implementation:',
-          },
-          {
-            type: 'image',
-            source: {
-              type: 'base64',
-              media_type: mediaType,
+            inlineData: {
+              mimeType: mediaType,
               data: implementationBase64,
             },
           },
           {
-            type: 'text',
-            text: 'Compare these two images and list:\n1. What matches the design\n2. What differs from the design\n3. Specific changes needed to match the mockup',
+            text: `Please analyze:
+1. Visual fidelity - How closely does the implementation match the design?
+2. Missing elements - What design elements are missing in the implementation?
+3. Spacing/alignment differences
+4. Color accuracy
+5. Typography differences
+
+Format your response with:
+- Overall match score (percentage)
+- List of discrepancies with suggestions to fix each`
           },
         ],
-      },
-    ],
-  });
-  
-  const content = message.content[0];
-  if (content.type !== 'text') {
-    throw new Error('Unexpected response type from Claude Vision');
+      }],
+      generationConfig: {
+        maxOutputTokens: 2048,
+      }
+    });
+    
+    const analysis = result.response.text() || '';
+    
+    const suggestions: string[] = [];
+    const issues: string[] = [];
+    
+    const suggestionMatches = analysis.match(/(?:Suggestion|Fix|Recommendation):\s*(.+)/gi);
+    if (suggestionMatches) {
+      suggestions.push(...suggestionMatches.map(m => m.replace(/^(?:Suggestion|Fix|Recommendation):\s*/i, '')));
+    }
+    
+    const issueMatches = analysis.match(/(?:Discrepancy|Issue|Missing|Difference):\s*(.+)/gi);
+    if (issueMatches) {
+      issues.push(...issueMatches.map(m => m.replace(/^(?:Discrepancy|Issue|Missing|Difference):\s*/i, '')));
+    }
+    
+    return {
+      analysis,
+      suggestions,
+      issues,
+    };
+  } catch (error) {
+    console.error('Design comparison error:', error);
+    throw new Error(`Design comparison failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-  
-  return content.text;
 }
