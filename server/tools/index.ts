@@ -7,8 +7,6 @@ export { performDiagnosis } from './diagnosis';
 export { executePlatformRead, executePlatformWrite, executePlatformList } from './platform-tools';
 export { executeProjectList, executeProjectRead, executeProjectWrite, executeProjectDelete } from './project-tools';
 export { createTaskList, updateTask, readTaskList } from './task-management';
-export { spawnSubAgent, checkSubAgentStatus } from './sub-agent';
-export { requestArchitectReview } from './architect-review';
 export { knowledge_search, knowledge_store, knowledge_recall, code_search } from './knowledge';
 
 // NEW: Smart Code Intelligence Tools - AST-based file analysis and context detection
@@ -379,16 +377,6 @@ export const LOMU_TOOLS = [
     },
   },
   {
-    name: 'spawn_sub_agent',
-    description: 'Delegate specialized work to a sub-agent. Use this for parallel execution, specialized analysis, or isolated tasks. Sub-agents are autonomous and will complete the work independently.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        agentType: {
-          type: 'string',
-          enum: ['architect', 'specialist', 'tester', 'reviewer', 'analyzer'],
-          description: 'Type of sub-agent to spawn',
-        },
         task: {
           type: 'string',
           description: 'Clear, specific task for the sub-agent to complete',
@@ -406,31 +394,12 @@ export const LOMU_TOOLS = [
     },
   },
   {
-    name: 'check_sub_agent_status',
-    description: 'Check the status and results of a spawned sub-agent.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        subAgentId: {
-          type: 'string',
-          description: 'Sub-agent ID to check',
-        },
       },
       required: ['subAgentId'],
     },
   },
   // Architect Review Tool
   {
-    name: 'request_architect_review',
-    description: 'Request proactive code review and improvement suggestions from The Architect. Use this BEFORE completing tasks (not just when stuck) to get expert feedback. Architect can suggest better approaches that align with goals without breaking the app.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        reviewType: {
-          type: 'string',
-          enum: ['proactive', 'requested', 'post_completion'],
-          description: 'Type of review (use proactive for continuous improvement)',
-        },
         workDescription: {
           type: 'string',
           description: 'Clear description of the work to review',

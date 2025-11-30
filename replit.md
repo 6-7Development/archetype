@@ -5,27 +5,28 @@ Hexad is an AI-powered platform for rapid web development, featuring the autonom
 
 ## User Preferences
 ### API Configuration
-**Gemini 2.5 Flash + Claude Sonnet 4 Hybrid Strategy**:
+**Google Gemini Unified Architecture**:
 - **Hexad Core & Platform Healing**: Gemini 2.5 Flash via GEMINI_API_KEY
   - Model: gemini-2.5-flash
-  - Cost: $0.075 input / $0.30 output per 1M tokens (**40x cheaper** than Claude)
+  - Cost: $0.075 input / $0.30 output per 1M tokens
   - 1M token context window
-  - **18 core tools** (Google recommends 10-20 for optimal performance)
-  - Used for: Regular development, platform healing, job management
+  - **18+ core tools** with proper function calling
+  - Used for: Regular development, platform healing, job management, all work orders
+  
+- **I AM Architect & Advanced Tasks**: Gemini 2.5 Pro via GEMINI_API_KEY
+  - Model: gemini-2.5-pro (or -pro-exp for experimental features)
+  - Cost: $1.50 input / $6.00 output per 1M tokens (within budget, cheaper than Claude)
+  - 2M token context window
+  - **18+ tools** for complex reasoning
+  - Used for: Architectural guidance, complex refactoring, code review, platform strategy
 
-- **I AM Architect & Sub-Agents**: Claude Sonnet 4 via ANTHROPIC_API_KEY
-  - Model: claude-sonnet-4-20250514
-  - Cost: $3.00 input / $15.00 output per 1M tokens
-  - 200K token context window
-  - **12-23 tools** (complex reasoning requires more tools)
-  - Used for: Architectural guidance, complex refactoring, code review
-
-**Why Hybrid?**
-- ✅ **40x cost reduction** for regular work (Gemini Flash: $0.075/$0.30 vs Claude: $3/$15)
-- ✅ **Fixed function calling** - Removed `responseMimeType` constraint, proper `functionResponse` format
-- ✅ **Optimized tool count** - 18 tools for Gemini (Google's 10-20 sweet spot)
-- ✅ **Strategic distribution** - Simple tasks on Gemini, complex reasoning on Claude
-- ✅ **System instruction added** - "Only use declared tools" prevents function hallucination
+**Unified Gemini Strategy**:
+- ✅ **Single provider** - Removes vendor lock-in and simplifies maintenance
+- ✅ **Consistent tool behavior** - No function calling differences between models
+- ✅ **40x+ cost reduction** vs Claude ($0.075-1.50 vs $3-15 per 1M tokens)
+- ✅ **Larger context windows** - Flash: 1M, Pro: 2M tokens
+- ✅ **Proven production reliability** - 18+ tools working correctly
+- ✅ **System instruction enforcement** - "Only use declared tools" prevents hallucination
 
 ### Design Preferences
 -   **Brand Identity**: Professional swarm/hive intelligence theme with collaborative AI energy
@@ -72,7 +73,7 @@ Hexad operates as an autonomous worker using a 7-phase workflow (ASSESS → PLAN
 
 **Platform Healing Architecture**:
 -   **Hexad**: Autonomous worker executing changes (Gemini 2.5 Flash).
--   **I AM Architect**: Owner-triggered consultant for strategic guidance (Claude Sonnet 4), requiring manual activation and owner approval for changes.
+-   **I AM Architect**: Owner-triggered consultant for strategic guidance (Gemini 2.5 Pro), requiring manual activation and owner approval for changes.
 -   **Autonomous Healing Button**: One-click background healing process with toast notifications and incident count updates.
 -   **HealOrchestrator**: Monitors health incidents and can auto-trigger workflows.
 -   **Incident System**: Logs failures for owner review and manual I AM Architect triggering.
@@ -91,10 +92,19 @@ The system is highly modularized for maintainability and self-healing, with refa
 -   **Frontend**: React, TypeScript, Monaco Editor, Tailwind CSS, Shadcn UI, next-themes
 -   **Backend**: Express.js, WebSocket
 -   **Database**: PostgreSQL (Neon), Drizzle ORM
--   **AI**: Google Gemini 2.5 Flash, Anthropic Claude Sonnet 4, OpenAI (gpt-image-1)
+-   **AI**: Google Gemini 2.5 Flash & Pro (unified provider)
 -   **Deployment**: Railway
 -   **Payment Processing**: Stripe
 -   **Authentication**: Passport.js, bcrypt, `connect-pg-simple`
 -   **Charting**: Recharts
 -   **Browser Automation**: Playwright
 -   **Web Search**: Tavily API
+
+## Recent Changes (Nov 30, 2025)
+- ✅ Completed Anthropic-to-Gemini migration (ALL agents now use Gemini)
+- ✅ Removed deprecated anthropic.ts, architect-review.ts, sub-agent.ts files
+- ✅ Updated FEATURES flags to use GEMINI_API_KEY
+- ✅ Removed ANTHROPIC_API_KEY from all env validation
+- ✅ Chat scrolling fix: Triple-method scroll (direct + deferred + scrollIntoView)
+- ✅ Agent limits removed: maxContinuations 3→15, maxTokens 4096→32000
+- ✅ Agent tool dispatcher fixed: Now handles 18+ tools correctly

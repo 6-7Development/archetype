@@ -84,12 +84,6 @@ const AVAILABLE_INTEGRATIONS: Integration[] = [
     documentation: 'https://ai.google.dev/docs',
   },
   {
-    id: 'connector:anthropic',
-    name: 'Anthropic Claude',
-    description: 'Use Claude AI models from Anthropic',
-    category: 'AI & ML',
-    setupRequired: true,
-    documentation: 'https://docs.anthropic.com',
   },
 ];
 

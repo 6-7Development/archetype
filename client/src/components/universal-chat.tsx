@@ -317,13 +317,22 @@ export function UniversalChat({
 
   // Auto-scroll to bottom of chat - ALWAYS scroll on new messages
   useEffect(() => {
-    // Scroll to bottom immediately on new messages
+    // Scroll to bottom using both methods for reliability
     if (chatContainerRef.current) {
+      // Method 1: Direct scroll (works immediately)
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      
+      // Method 2: Defer scroll after DOM fully renders (handles async rendering)
       setTimeout(() => {
         if (chatContainerRef.current) {
           chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
         }
-      }, 0);
+      }, 50);
+      
+      // Method 3: Scroll latest message into view if ref available
+      if (latestMessageRef.current) {
+        latestMessageRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
     }
   }, [runState.messages]);
 

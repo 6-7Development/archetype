@@ -182,7 +182,7 @@ export const DISTRIBUTION_SUMMARY = {
     delegation: 'Asks I AM Architect for complex decisions, spawns subagents for specialized work',
   },
   architect: {
-    agent: 'I AM Architect (Claude Sonnet 4)',
+    agent: 'I AM Architect (Gemini 2.5 Pro)',
     toolCount: ARCHITECT_TOOL_NAMES.length,
     tools: ARCHITECT_TOOL_NAMES,
     purpose: 'Strategic guidance, code review, platform decisions',

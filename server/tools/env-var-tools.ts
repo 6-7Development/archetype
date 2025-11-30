@@ -192,7 +192,6 @@ export async function getEnvVarTemplates(): Promise<string> {
     ],
     'API Keys': [
       'OPENAI_API_KEY - OpenAI API key',
-      'ANTHROPIC_API_KEY - Anthropic Claude API key',
       'STRIPE_SECRET_KEY - Stripe secret key',
       'STRIPE_PUBLISHABLE_KEY - Stripe publishable key',
       'SENDGRID_API_KEY - SendGrid email API key',

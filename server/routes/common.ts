@@ -3,10 +3,10 @@ import { responseCache } from '../cache.ts';
 
 // Feature flags for graceful degradation
 export const FEATURES = {
-  AI_GENERATION: !!process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY !== 'dummy-key-for-development',
+  AI_GENERATION: !!process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'dummy-key-for-development',
   WEB_SEARCH: !!process.env.TAVILY_API_KEY,
   BROWSER_TEST: true, // Always available (uses Playwright)
-  VISION_ANALYSIS: !!process.env.ANTHROPIC_API_KEY, // Uses Claude Vision
+  VISION_ANALYSIS: !!process.env.GEMINI_API_KEY, // Uses Gemini Vision
   STRIPE_BILLING: !!process.env.STRIPE_SECRET_KEY,
 };
 
