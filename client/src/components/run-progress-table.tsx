@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import type { RunState, Task, RunPhase } from '@shared/agentEvents';
 import { PHASE_EMOJIS, PHASE_MESSAGES } from '@shared/agentEvents';
 import { Clock, CheckCircle, Loader2, AlertCircle, XCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface RunProgressTableProps {
   runState: RunState;
@@ -20,10 +21,22 @@ export function RunProgressTable({ runState }: RunProgressTableProps) {
   return (
     <Card className="p-4" data-testid="run-progress-table">
       {/* Phase Header */}
-      <div className="flex items-center gap-3 mb-4 pb-4 border-b border-border">
-        <span className="text-2xl" aria-label={`Phase: ${runState.phase}`}>
+      <motion.div 
+        className="flex items-center gap-3 mb-4 pb-4 border-b border-border"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
+      >
+        <motion.span 
+          key={runState.phase}
+          className="text-2xl" 
+          aria-label={`Phase: ${runState.phase}`}
+          initial={{ scale: 0.5, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        >
           {PHASE_EMOJIS[runState.phase]}
-        </span>
+        </motion.span>
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-base">
             Phase: {runState.phase.charAt(0).toUpperCase() + runState.phase.slice(1)}
@@ -36,20 +49,43 @@ export function RunProgressTable({ runState }: RunProgressTableProps) {
           <div className="font-medium">
             Iteration {runState.metrics.currentIteration}/{runState.metrics.maxIterations}
           </div>
-          <div>
+          <motion.div
+            key={runState.metrics.completedTasks}
+            initial={{ scale: 1.2, color: "hsl(var(--primary))" }}
+            animate={{ scale: 1, color: "hsl(var(--muted-foreground))" }}
+            transition={{ duration: 0.3 }}
+          >
             {runState.metrics.completedTasks}/{runState.metrics.totalTasks} tasks done
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Kanban Columns */}
-      <div className="grid grid-cols-5 gap-3">
-        <TaskColumn title="Backlog" tasks={backlog} status="backlog" />
-        <TaskColumn title="In Progress" tasks={inProgress} status="in_progress" />
-        <TaskColumn title="Verifying" tasks={verifying} status="verifying" />
-        <TaskColumn title="Done" tasks={done} status="done" />
-        <TaskColumn title="Blocked" tasks={blocked} status="blocked" />
-      </div>
+      <motion.div 
+        className="grid grid-cols-5 gap-3"
+        initial="hidden"
+        animate="visible"
+        variants={{
+          visible: { transition: { staggerChildren: 0.05 } },
+          hidden: {}
+        }}
+      >
+        <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
+          <TaskColumn title="Backlog" tasks={backlog} status="backlog" />
+        </motion.div>
+        <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
+          <TaskColumn title="In Progress" tasks={inProgress} status="in_progress" />
+        </motion.div>
+        <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
+          <TaskColumn title="Verifying" tasks={verifying} status="verifying" />
+        </motion.div>
+        <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
+          <TaskColumn title="Done" tasks={done} status="done" />
+        </motion.div>
+        <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
+          <TaskColumn title="Blocked" tasks={blocked} status="blocked" />
+        </motion.div>
+      </motion.div>
 
       {/* Error Display */}
       {runState.errors.length > 0 && (
@@ -127,17 +163,32 @@ function TaskColumn({ title, tasks, status }: TaskColumnProps) {
         </Badge>
       </div>
       
-      <div className="space-y-2 min-h-[60px]">
-        {tasks.length === 0 ? (
-          <div className="text-xs text-muted-foreground text-center py-4 px-2">
-            No tasks
-          </div>
-        ) : (
-          tasks.map((task) => (
-            <TaskCard key={task.id} task={task} status={status} />
-          ))
-        )}
-      </div>
+      <AnimatePresence mode="popLayout">
+        <div className="space-y-2 min-h-[60px]">
+          {tasks.length === 0 ? (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-xs text-muted-foreground text-center py-4 px-2"
+            >
+              No tasks
+            </motion.div>
+          ) : (
+            tasks.map((task, index) => (
+              <motion.div
+                key={task.id}
+                layout
+                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                transition={{ duration: 0.2, delay: index * 0.03 }}
+              >
+                <TaskCard task={task} status={status} />
+              </motion.div>
+            ))
+          )}
+        </div>
+      </AnimatePresence>
     </div>
   );
 }
@@ -167,7 +218,8 @@ function TaskCard({ task, status }: TaskCardProps) {
     <Card 
       className={cn(
         "p-2 text-sm border transition-all duration-200",
-        getTaskColor()
+        getTaskColor(),
+        status === 'done' && "success-shimmer"
       )} 
       data-testid={`task-${task.id}`}
     >
