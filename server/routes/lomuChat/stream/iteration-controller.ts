@@ -16,7 +16,7 @@
 
 import type { ConversationState } from '@shared/schema';
 import type { EventSender, StreamContext, UserIntent } from './types.ts';
-import { LOMU_LIMITS, getMaxIterationsForIntent } from '../../../config/lomuLimits.ts';
+import { BEEHIVE_LIMITS, getMaxIterationsForIntent } from '../../../config/beehiveLimits.ts';
 import { emitProgress, emitSystemInfo } from './stream-emitter.ts';
 import { db } from '../../../db.ts';
 import { conversationStates } from '@shared/schema';
@@ -264,16 +264,16 @@ export async function shouldStopIteration(
   
   // Check 1: API call count (50 calls max per session)
   const currentApiCallCount = context.conversationState.apiCallCount || 0;
-  if (currentApiCallCount >= LOMU_LIMITS.API.MAX_API_CALLS_PER_SESSION) {
+  if (currentApiCallCount >= BEEHIVE_LIMITS.API.MAX_API_CALLS_PER_SESSION) {
     result.triggered = true;
-    result.reason = `🛑 Safety limit reached: Maximum API calls (${LOMU_LIMITS.API.MAX_API_CALLS_PER_SESSION}) exceeded. Please start a new conversation to continue.`;
+    result.reason = `🛑 Safety limit reached: Maximum API calls (${BEEHIVE_LIMITS.API.MAX_API_CALLS_PER_SESSION}) exceeded. Please start a new conversation to continue.`;
     return result;
   }
   
   // Check 2: Session token limit (500K tokens max)
-  if (currentTokens > LOMU_LIMITS.API.MAX_CONTEXT_TOKENS) {
+  if (currentTokens > BEEHIVE_LIMITS.API.MAX_CONTEXT_TOKENS) {
     result.triggered = true;
-    result.reason = `💾 Safety limit reached: Conversation memory exceeded ${LOMU_LIMITS.API.MAX_CONTEXT_TOKENS} tokens. Please start a new conversation.`;
+    result.reason = `💾 Safety limit reached: Conversation memory exceeded ${BEEHIVE_LIMITS.API.MAX_CONTEXT_TOKENS} tokens. Please start a new conversation.`;
     return result;
   }
   
@@ -334,7 +334,7 @@ export async function incrementApiCallCounter(
     })
     .where(eq(conversationStates.id, conversationStateId));
   
-  console.log(`[EMERGENCY-BRAKE] API call ${currentCount + 1}/${LOMU_LIMITS.API.MAX_API_CALLS_PER_SESSION}`);
+  console.log(`[EMERGENCY-BRAKE] API call ${currentCount + 1}/${BEEHIVE_LIMITS.API.MAX_API_CALLS_PER_SESSION}`);
 }
 
 /**
@@ -490,8 +490,8 @@ export async function executeAILoop(
     
     // Check iteration timeout
     const elapsed = Date.now() - state.iterationStartTime;
-    if (elapsed > LOMU_LIMITS.ITERATION.TIMEOUT_MS) {
-      console.warn(`[ITERATION-CONTROLLER] Iteration ${state.iterationCount} exceeded timeout (${elapsed}ms > ${LOMU_LIMITS.ITERATION.TIMEOUT_MS}ms)`);
+    if (elapsed > BEEHIVE_LIMITS.ITERATION.TIMEOUT_MS) {
+      console.warn(`[ITERATION-CONTROLLER] Iteration ${state.iterationCount} exceeded timeout (${elapsed}ms > ${BEEHIVE_LIMITS.ITERATION.TIMEOUT_MS}ms)`);
       // Non-fatal warning - allow completion
     }
   }

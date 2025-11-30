@@ -1,10 +1,10 @@
 /**
  * Dynamic configuration system for BeeHiveAI limits
- * Centralized location for all hardcoded limits that were scattered throughout lomuChat.ts
+ * Centralized location for all hardcoded limits
  * Can be adjusted without code changes via environment or dynamic reload
  */
 
-export const LOMU_LIMITS = {
+export const BEEHIVE_LIMITS = {
   // Iteration controls
   ITERATION: {
     MAX_BY_INTENT: {
@@ -56,12 +56,15 @@ export const LOMU_LIMITS = {
   },
 };
 
+// Backwards compatibility alias
+export const LOMU_LIMITS = BEEHIVE_LIMITS;
+
 /**
  * Get max iterations for a given intent
  */
 export function getMaxIterationsForIntent(intent: string): number {
-  const limit = LOMU_LIMITS.ITERATION.MAX_BY_INTENT[intent];
-  return limit || LOMU_LIMITS.ITERATION.MAX_BY_INTENT.default;
+  const limit = BEEHIVE_LIMITS.ITERATION.MAX_BY_INTENT[intent];
+  return limit || BEEHIVE_LIMITS.ITERATION.MAX_BY_INTENT.default;
 }
 
 /**
@@ -69,7 +72,7 @@ export function getMaxIterationsForIntent(intent: string): number {
  */
 export function setLimitOverride(path: string, value: any): void {
   const keys = path.split('.');
-  let obj: any = LOMU_LIMITS;
+  let obj: any = BEEHIVE_LIMITS;
   for (let i = 0; i < keys.length - 1; i++) {
     obj = obj[keys[i]];
   }
@@ -82,7 +85,7 @@ export function setLimitOverride(path: string, value: any): void {
  */
 export function getLimit(path: string): any {
   const keys = path.split('.');
-  let obj: any = LOMU_LIMITS;
+  let obj: any = BEEHIVE_LIMITS;
   for (const key of keys) {
     obj = obj[key];
   }

@@ -43,7 +43,7 @@ import { TokenTracker } from '../../../services/tokenTracker.ts';
 import { CreditManager } from '../../../services/creditManager.ts';
 import { beehiveAIBrain } from '../../../services/lomuAIBrain.ts';
 import { AgentExecutor } from '../../../services/agentExecutor.ts';
-import { LOMU_LIMITS } from '../../../config/lomuLimits.ts';
+import { BEEHIVE_LIMITS } from '../../../config/beehiveLimits.ts';
 import { waitForApproval } from '../../lomu/utils.ts';
 import type { RunConfigGovernance } from './types.ts';
 import type { ToolResult } from '../../../validation/toolResultValidators.ts';
@@ -257,7 +257,7 @@ export async function handleStreamRequest(
 
     // ✅ FIX #2: TOKEN BUDGET MANAGEMENT - Initialize token counter
     let totalTokensUsed = 0;
-    const tokenLimit = LOMU_LIMITS.API.MAX_CONTEXT_TOKENS; // 500K tokens
+    const tokenLimit = BEEHIVE_LIMITS.API.MAX_CONTEXT_TOKENS; // 500K tokens
     
     // Execute AI loop with iteration controller
     const iterationState = await executeAILoop({
@@ -287,7 +287,7 @@ export async function handleStreamRequest(
         await retryWithBackoff(async () => {
           return await streamGeminiResponse({
             model: 'gemini-2.5-flash',
-            maxTokens: runConfig.finalMaxTokens || LOMU_LIMITS.API.MAX_GEMINI_TOKENS,
+            maxTokens: runConfig.finalMaxTokens || BEEHIVE_LIMITS.API.MAX_GEMINI_TOKENS,
             system: systemPrompt,
             messages: conversationMessages,
             tools: tools as any,

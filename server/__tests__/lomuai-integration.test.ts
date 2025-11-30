@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { performanceMonitor } from '../services/performanceMonitor';
-import { LOMU_LIMITS, getMaxIterationsForIntent } from '../config/lomuLimits';
+import { BEEHIVE_LIMITS, LOMU_LIMITS, getMaxIterationsForIntent } from '../config/beehiveLimits';
 import {
   estimateTokensFromText,
   estimateConversationTokens,

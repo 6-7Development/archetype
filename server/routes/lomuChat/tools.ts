@@ -5,7 +5,7 @@
  */
 
 import { performanceMonitor } from '../../services/performanceMonitor';
-import { LOMU_LIMITS } from '../../config/lomuLimits';
+import { BEEHIVE_LIMITS } from '../../config/beehiveLimits';
 
 /**
  * Validate tool execution against limits
@@ -16,18 +16,18 @@ export function validateToolExecution(
   sessionApiCallCount: number
 ): { valid: boolean; reason?: string } {
   // Check per-iteration limit
-  if (toolCallCount >= LOMU_LIMITS.TOOL.MAX_PER_ITERATION) {
+  if (toolCallCount >= BEEHIVE_LIMITS.TOOL.MAX_PER_ITERATION) {
     return {
       valid: false,
-      reason: `Too many tools in this iteration (max ${LOMU_LIMITS.TOOL.MAX_PER_ITERATION})`,
+      reason: `Too many tools in this iteration (max ${BEEHIVE_LIMITS.TOOL.MAX_PER_ITERATION})`,
     };
   }
 
   // Check per-session limit
-  if (sessionApiCallCount >= LOMU_LIMITS.API.MAX_API_CALLS_PER_SESSION) {
+  if (sessionApiCallCount >= BEEHIVE_LIMITS.API.MAX_API_CALLS_PER_SESSION) {
     return {
       valid: false,
-      reason: `Session tool call limit reached (${LOMU_LIMITS.API.MAX_API_CALLS_PER_SESSION})`,
+      reason: `Session tool call limit reached (${BEEHIVE_LIMITS.API.MAX_API_CALLS_PER_SESSION})`,
     };
   }
 
@@ -109,5 +109,5 @@ export function getToolTimeout(toolName: string): number {
     architect_consult: 180000, // 3min for architect consultation
   };
 
-  return timeouts[toolName] || LOMU_LIMITS.TOOL.TIMEOUT_MS;
+  return timeouts[toolName] || BEEHIVE_LIMITS.TOOL.TIMEOUT_MS;
 }

@@ -3,7 +3,7 @@ import { conversationStates, users, subscriptions, projects } from '@shared/sche
 import { eq, and, sql } from 'drizzle-orm';
 import type { WebSocketServer } from 'ws';
 import { broadcastToUser, broadcastToProject } from '../websocket.ts';
-import { LOMU_LIMITS } from '../../config/lomuLimits.ts';
+import { BEEHIVE_LIMITS } from '../../config/beehiveLimits.ts';
 import { CreditManager } from '../../services/creditManager.ts';
 import { AgentExecutor } from '../../services/agentExecutor.ts';
 
