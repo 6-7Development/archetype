@@ -80,7 +80,7 @@ Scout operates as an autonomous worker using a 7-phase workflow (ASSESS → PLAN
 -   **HealOrchestrator**: Monitors health incidents and can auto-trigger workflows
 -   **Incident System**: Logs failures for owner review and manual Scout Advanced triggering
 
-A centralized session management system (`server/services/lomuAIBrain.ts`) combines in-memory and database persistence. The access model provides owner-only access for platform healing, usage-based billing for Scout, and premium consulting for Scout Advanced.
+A centralized session management system (`server/services/beehiveAIBrain.ts`) combines in-memory and database persistence. The access model provides owner-only access for platform healing, usage-based billing for Scout, and premium consulting for Scout Advanced.
 
 Key features include optimized tool distribution, universal RBAC, GitHub integration, environment variable management, AST-based code intelligence, production-ready monetization with Stripe, robust security measures, vision analysis, strict JSON function calling, a 3-layer code validation system, telemetry, reflection and structured retry mechanisms, an anti-paralysis system, and priority safety mechanisms like auto-rollback and server startup integration tests. Phase 1 multi-user safety includes workspace isolation, stale session cleanup, and crash recovery. All API calls include `credentials: 'include'` for proper session cookie authentication. New services include Consultation Refine, Conflict Resolution, Performance Tracking, Scout Versioning, Failure Recovery, Skill-Based Routing, Token Budget, Adaptive Parallelization, and Concurrent Rate Limiting.
 
@@ -112,3 +112,10 @@ The system is highly modularized for maintainability and self-healing, with refa
 - ✅ Agent tool dispatcher fixed: Now handles 18+ tools correctly
 - ✅ Rebranded platform to BeeHive with Scout agent
 - ✅ SWARM mode integrated as Fast Mode executor
+- ✅ **Complete BeeHive Naming Consistency Refactor**:
+  - Server files: beehiveSuperCore/, beehiveChat.ts, beehiveAIBrain.ts, beehiveJobManager.ts
+  - Client routes: /beehive (was /lomu), nav-beehive-chat test IDs
+  - LocalStorage keys: beehive-chat-messages, beehive-split-editor-state
+  - WebSocket events: beehive_ai_job_update (was lomu_ai_job_update)
+  - UI strings: BeeHive IDE, BeeHive Pro, .beehive.app domains
+  - 50+ files updated with zero runtime errors
