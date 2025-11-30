@@ -6,9 +6,9 @@
 export const WORKFLOW_CONFIG = {
   // Chat continuation settings
   chat: {
-    maxContinuations: 3,
-    timeoutMs: 30000,
-    maxTokens: 4096,
+    maxContinuations: 15, // increased from 3 to allow full work cycles
+    timeoutMs: 60000, // increased for complex tasks
+    maxTokens: 32000, // increased from 4096 to allow full responses
     contextWindowBuffer: 500, // tokens reserved for final response
   },
   
@@ -49,11 +49,11 @@ export const WORKFLOW_CONFIG = {
   
   // Context window management
   contextManagement: {
-    maxTotalTokens: 1000000, // Gemini 1M context
-    warningThreshold: 0.8, // warn at 80% usage
-    emergencyPreserve: 50000, // reserve 50k tokens
-    inputLimit: 4096,
-    outputLimit: 16000,
+    maxTotalTokens: 1000000, // Gemini 1M context window
+    warningThreshold: 0.95, // warn only at 95% usage (more permissive)
+    emergencyPreserve: 10000, // reduced emergency buffer
+    inputLimit: 100000, // removed artificial input limits
+    outputLimit: 100000, // removed artificial output limits
   },
   
   // Approval workflows for destructive operations
