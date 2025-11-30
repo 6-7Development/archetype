@@ -26,19 +26,28 @@ router.get('/', isAuthenticated, async (req: any, res) => {
     const userId = req.authenticatedUserId;
     const projectId = req.query.projectId as string | undefined;
 
-    let query = db
+    const { or, isNull } = await import('drizzle-orm');
+
+    let whereClause;
+    if (projectId) {
+      whereClause = and(
+        eq(pinnedItems.userId, userId),
+        or(
+          eq(pinnedItems.projectId, projectId),
+          isNull(pinnedItems.projectId)
+        )
+      );
+    } else {
+      whereClause = eq(pinnedItems.userId, userId);
+    }
+
+    const items = await db
       .select()
       .from(pinnedItems)
-      .where(eq(pinnedItems.userId, userId))
+      .where(whereClause)
       .orderBy(pinnedItems.sortOrder, desc(pinnedItems.pinnedAt));
 
-    const items = await query;
-    
-    const filtered = projectId 
-      ? items.filter(item => item.projectId === projectId || !item.projectId)
-      : items;
-
-    res.json({ success: true, items: filtered });
+    res.json({ success: true, items });
   } catch (error: any) {
     console.error('[PINNED] Error fetching items:', error);
     res.status(500).json({ success: false, error: error.message });

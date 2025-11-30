@@ -3,6 +3,7 @@ import { isAuthenticated } from '../universalAuth.js';
 import { codeExecutionService, ExecutionOptions, ExecutionResult } from '../services/codeExecutionService.js';
 import { db } from '../db.js';
 import { codeExecutionRuns } from '@shared/schema';
+import { eq, desc } from 'drizzle-orm';
 import { z } from 'zod';
 
 const router = Router();
@@ -110,8 +111,8 @@ router.get('/history', isAuthenticated, async (req: any, res) => {
         executedAt: codeExecutionRuns.executedAt,
       })
       .from(codeExecutionRuns)
-      .where(require('drizzle-orm').eq(codeExecutionRuns.userId, userId))
-      .orderBy(require('drizzle-orm').desc(codeExecutionRuns.executedAt))
+      .where(eq(codeExecutionRuns.userId, userId))
+      .orderBy(desc(codeExecutionRuns.executedAt))
       .limit(limit)
       .offset(offset);
 
