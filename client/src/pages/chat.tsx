@@ -4,31 +4,24 @@ import { useVersion } from "@/providers/version-provider";
 import { useAuth } from "@/hooks/useAuth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UniversalChat } from "@/components/universal-chat";
-import { LivePreview } from "@/components/live-preview";
+import { IDETabsPanel } from "@/components/ide-tabs-panel";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import {
-  Menu,
-  ChevronLeft,
-  ChevronRight,
-  ChevronUp,
-  ChevronDown,
   Eye,
   EyeOff,
   Sparkles,
   Home,
-  Settings,
-  FileCode,
   GripVertical,
   GripHorizontal,
   Maximize2,
   Minimize2,
   LayoutGrid,
+  PanelRightClose,
+  PanelRightOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "wouter";
@@ -39,10 +32,10 @@ export default function ChatPage() {
   const { isMobile } = useVersion();
   const { user, isLoading: authLoading } = useAuth();
 
-  const [showPreview, setShowPreview] = useState(!isMobile);
-  const [previewPosition, setPreviewPosition] = useState<'right' | 'bottom'>('right');
-  const [chatHeight, setChatHeight] = useState(65);
-  const [chatWidth, setChatWidth] = useState(50);
+  const [showPanel, setShowPanel] = useState(!isMobile);
+  const [panelPosition, setPanelPosition] = useState<'right' | 'bottom'>('right');
+  const [chatHeight, setChatHeight] = useState(60);
+  const [chatWidth, setChatWidth] = useState(45);
   const [isResizing, setIsResizing] = useState(false);
   const [resizeType, setResizeType] = useState<'vertical' | 'horizontal' | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -55,11 +48,11 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (isMobile) {
-      setPreviewPosition('bottom');
-      setChatHeight(70);
+      setPanelPosition('bottom');
+      setChatHeight(65);
     } else {
-      setPreviewPosition('right');
-      setChatWidth(65);
+      setPanelPosition('right');
+      setChatWidth(45);
     }
   }, [isMobile]);
 
@@ -147,12 +140,12 @@ export default function ChatPage() {
   }
 
   const toggleLayout = () => {
-    if (previewPosition === 'right') {
-      setPreviewPosition('bottom');
-      setChatHeight(60);
+    if (panelPosition === 'right') {
+      setPanelPosition('bottom');
+      setChatHeight(55);
     } else {
-      setPreviewPosition('right');
-      setChatWidth(55);
+      setPanelPosition('right');
+      setChatWidth(45);
     }
   };
 
@@ -190,7 +183,7 @@ export default function ChatPage() {
               size="icon"
               className="h-8 w-8"
               onClick={toggleLayout}
-              title={previewPosition === 'right' ? 'Stack vertically' : 'Side by side'}
+              title={panelPosition === 'right' ? 'Stack vertically' : 'Side by side'}
               data-testid="button-toggle-layout"
             >
               <LayoutGrid className="h-4 w-4" />
@@ -201,19 +194,21 @@ export default function ChatPage() {
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={() => setShowPreview(!showPreview)}
-            data-testid="button-toggle-preview"
+            onClick={() => setShowPanel(!showPanel)}
+            data-testid="button-toggle-panel"
+            title={showPanel ? 'Hide tools panel' : 'Show tools panel'}
           >
-            {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            {showPanel ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
           </Button>
 
-          {showPreview && (
+          {showPanel && (
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8"
               onClick={() => setIsFullscreen(!isFullscreen)}
               data-testid="button-fullscreen"
+              title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
             >
               {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
             </Button>
@@ -224,11 +219,11 @@ export default function ChatPage() {
       </header>
 
       <div className="flex-1 min-h-0 overflow-hidden">
-        {previewPosition === 'right' && !isMobile ? (
+        {panelPosition === 'right' && !isMobile ? (
           <div className="h-full flex">
             <div 
               className="flex flex-col overflow-hidden transition-all duration-200"
-              style={{ width: showPreview ? `${chatWidth}%` : '100%' }}
+              style={{ width: showPanel ? `${chatWidth}%` : '100%' }}
             >
               <UniversalChat 
                 targetContext={projectId ? 'project' : 'platform'}
@@ -241,7 +236,7 @@ export default function ChatPage() {
               />
             </div>
 
-            {showPreview && (
+            {showPanel && (
               <>
                 <div
                   className={cn(
@@ -258,7 +253,7 @@ export default function ChatPage() {
 
                 <div 
                   className={cn(
-                    "flex-1 min-w-0 bg-muted/30 overflow-hidden",
+                    "flex-1 min-w-0 overflow-hidden",
                     isFullscreen && "fixed inset-0 z-50 bg-background"
                   )}
                 >
@@ -275,7 +270,10 @@ export default function ChatPage() {
                       </Button>
                     </div>
                   )}
-                  <LivePreview projectId={projectId || undefined} />
+                  <IDETabsPanel 
+                    projectId={projectId || null}
+                    activeContext={projectId ? 'project' : 'platform'}
+                  />
                 </div>
               </>
             )}
@@ -284,7 +282,7 @@ export default function ChatPage() {
           <div className="h-full flex flex-col">
             <div 
               className="overflow-hidden transition-all duration-200"
-              style={{ height: showPreview ? `${chatHeight}%` : '100%' }}
+              style={{ height: showPanel ? `${chatHeight}%` : '100%' }}
             >
               <UniversalChat 
                 targetContext={projectId ? 'project' : 'platform'}
@@ -297,7 +295,7 @@ export default function ChatPage() {
               />
             </div>
 
-            {showPreview && (
+            {showPanel && (
               <>
                 <div
                   className={cn(
@@ -314,7 +312,7 @@ export default function ChatPage() {
 
                 <div 
                   className={cn(
-                    "flex-1 min-h-0 bg-muted/30 overflow-hidden",
+                    "flex-1 min-h-0 overflow-hidden",
                     isFullscreen && "fixed inset-0 z-50 bg-background"
                   )}
                 >
@@ -331,7 +329,10 @@ export default function ChatPage() {
                       </Button>
                     </div>
                   )}
-                  <LivePreview projectId={projectId || undefined} />
+                  <IDETabsPanel 
+                    projectId={projectId || null}
+                    activeContext={projectId ? 'project' : 'platform'}
+                  />
                 </div>
               </>
             )}

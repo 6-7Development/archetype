@@ -16,7 +16,6 @@
 import type { Role, Resource, Action } from '@shared/rbac';
 import type { LucideIcon } from 'lucide-react';
 import {
-  MessageSquare,
   Eye,
   Terminal,
   FolderOpen,
@@ -37,7 +36,6 @@ import {
 } from 'lucide-react';
 
 export type TabId = 
-  | 'chat'
   | 'preview'
   | 'terminal'
   | 'files'
@@ -82,16 +80,8 @@ export interface IDETabConfig {
 export const IDE_TABS: IDETabConfig[] = [
   // ============================================
   // CORE TABS - Available to all authenticated users
+  // Note: Chat is NOT a tab - it's in the left pane alongside these tabs
   // ============================================
-  {
-    id: 'chat',
-    label: 'Chat',
-    icon: MessageSquare,
-    description: 'Chat with Scout AI agent',
-    category: 'core',
-    defaultOpen: true,
-    testId: 'tab-chat',
-  },
   {
     id: 'preview',
     label: 'Preview',
@@ -99,6 +89,7 @@ export const IDE_TABS: IDETabConfig[] = [
     icon: Eye,
     description: 'Live preview of your application',
     category: 'core',
+    defaultOpen: true,
     testId: 'tab-preview',
   },
   {
@@ -329,7 +320,7 @@ export function getTabsByCategory(tabs: IDETabConfig[]): Record<string, IDETabCo
  */
 export function getDefaultTab(tabs: IDETabConfig[]): TabId {
   const defaultTab = tabs.find(t => t.defaultOpen);
-  return defaultTab?.id || 'chat';
+  return defaultTab?.id || tabs[0]?.id || 'preview';
 }
 
 /**

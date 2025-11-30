@@ -39,7 +39,6 @@ interface IDETabsPanelProps {
   activeContext: 'platform' | 'project' | 'architect';
   onTabChange?: (tabId: TabId) => void;
   className?: string;
-  chatContent?: React.ReactNode;
 }
 
 function TabLoadingFallback() {
@@ -59,7 +58,6 @@ export function IDETabsPanel({
   activeContext,
   onTabChange,
   className,
-  chatContent,
 }: IDETabsPanelProps) {
   const { user, isAuthenticated } = useAuth();
   const userRole = ((user as User)?.role as Role) || 'user';
@@ -82,15 +80,8 @@ export function IDETabsPanel({
 
   const renderTabContent = (tab: IDETabConfig) => {
     switch (tab.id) {
-      case 'chat':
-        return chatContent || (
-          <div className="flex items-center justify-center h-full text-muted-foreground">
-            Chat content passed via props
-          </div>
-        );
-      
       case 'preview':
-        return <LivePreview url={projectId ? `/api/preview/${projectId}` : undefined} />;
+        return <LivePreview projectId={projectId || undefined} />;
       
       case 'terminal':
         return <Terminal projectId={projectId || undefined} />;
