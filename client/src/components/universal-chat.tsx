@@ -649,11 +649,11 @@ export function UniversalChat({
 
           {/* Desktop: Resizable panels */}
           <ResizablePanelGroup direction="horizontal" className="flex-1 hidden md:flex">
-        {/* Left Panel: Chat Messages (85%) */}
-        <ResizablePanel defaultSize={85} minSize={65} maxSize={95} className="flex flex-col h-full">
+        {/* Left Panel: Chat Messages (88%) */}
+        <ResizablePanel defaultSize={88} minSize={70} maxSize={95} className="flex flex-col h-full">
           <div
             ref={chatContainerRef}
-            className="flex-1 overflow-y-auto px-6 lg:px-8 py-4 space-y-4 scroll-smooth min-h-0"
+            className="flex-1 overflow-y-auto px-3 py-2 space-y-2 scroll-smooth min-h-0"
             onScroll={handleScroll}
             data-testid="chat-messages-container"
           >
@@ -682,26 +682,26 @@ export function UniversalChat({
               <>
                 {/* In Progress Tasks (Replit Agent 3 style) */}
                 {runState.messages.length > 0 && (
-                  <div className="mb-4 bg-slate-100 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+                  <div className="mb-2 bg-slate-100 dark:bg-slate-800/50 rounded-md border border-slate-200 dark:border-slate-700 overflow-hidden">
                     <Collapsible defaultOpen={true}>
-                      <CollapsibleTrigger className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors">
-                        <div className="flex items-center gap-2">
-                          <ChevronDown className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                          <span className="font-semibold text-slate-700 dark:text-slate-200">In progress tasks</span>
+                      <CollapsibleTrigger className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors">
+                        <div className="flex items-center gap-1.5">
+                          <ChevronDown className="h-3.5 w-3.5 text-slate-600 dark:text-slate-400" />
+                          <span className="font-semibold text-xs text-slate-700 dark:text-slate-200">In progress tasks</span>
                         </div>
                         <span className="text-xs font-mono text-slate-500 dark:text-slate-400">{Math.min(runState.messages.filter(m => m.role === 'assistant').length, 6)} / 6</span>
                       </CollapsibleTrigger>
-                      <CollapsibleContent className="px-4 pb-3 space-y-2 border-t border-slate-200 dark:border-slate-700">
+                      <CollapsibleContent className="px-3 pb-1.5 space-y-1 border-t border-slate-200 dark:border-slate-700">
                         {runState.messages.filter(m => m.role === 'assistant').slice(0, 6).map((msg, idx) => (
-                          <div key={idx} className="flex items-start gap-2 text-sm">
-                            <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
-                            <span className="text-slate-600 dark:text-slate-300">{msg.content.slice(0, 50)}...</span>
+                          <div key={idx} className="flex items-start gap-1.5 text-xs">
+                            <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
+                            <span className="text-slate-600 dark:text-slate-300 line-clamp-1">{msg.content.slice(0, 40)}...</span>
                           </div>
                         ))}
                         {isGenerating && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <Loader2 className="h-4 w-4 text-blue-500 animate-spin flex-shrink-0" />
-                            <span className="text-slate-600 dark:text-slate-300">Thinking..</span>
+                          <div className="flex items-center gap-1.5 text-xs">
+                            <Loader2 className="h-3 w-3 text-blue-500 animate-spin flex-shrink-0" />
+                            <span className="text-slate-600 dark:text-slate-300">Thinking</span>
                           </div>
                         )}
                       </CollapsibleContent>
@@ -710,7 +710,7 @@ export function UniversalChat({
                 )}
 
                 {/* Messages with image rendering */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {runState.messages.map((message, index) => (
                     <MessageBubble
                       key={`${message.id || message.messageId || index}-${index}`}
@@ -742,7 +742,7 @@ export function UniversalChat({
           </div>
 
           {/* Chat Input - Fixed at bottom */}
-          <div className="flex-shrink-0 border-t bg-background dark:border-[hsl(var(--primary))]/20 p-4">
+          <div className="flex-shrink-0 border-t bg-background dark:border-[hsl(var(--primary))]/20 p-2">
             <ChatInput
               input={input}
               setInput={setInput}
@@ -764,8 +764,8 @@ export function UniversalChat({
 
         <ResizableHandle className="hidden md:flex" />
 
-        {/* Right Panel: Context Rail (15%) - Hidden on mobile */}
-        <ResizablePanel defaultSize={15} minSize={5} maxSize={35} className="hidden md:flex flex-col overflow-hidden">
+        {/* Right Panel: Context Rail (12%) - Hidden on mobile */}
+        <ResizablePanel defaultSize={12} minSize={5} maxSize={30} className="hidden md:flex flex-col overflow-hidden">
           <ContextRail
             tasks={agentTasks}
             artifacts={artifacts}
@@ -775,7 +775,7 @@ export function UniversalChat({
       </ResizablePanelGroup>
 
       {/* Footer Status Bar */}
-      <div className="border-t bg-muted/20 dark:border-[hsl(var(--primary))]/20 px-4 py-2 flex items-center justify-between text-xs text-muted-foreground">
+      <div className="border-t bg-muted/20 dark:border-[hsl(var(--primary))]/20 px-3 py-1 flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-4">
           {runState.error && (
             <div className="flex items-center gap-1 text-destructive font-semibold">
