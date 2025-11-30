@@ -140,6 +140,11 @@ export function UniversalChat({
   const [uploadingImages, setUploadingImages] = useState<Map<string, boolean>>(new Map());
   const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
   
+  // Console and Environment Browser State
+  const [consoleOutput, setConsoleOutput] = useState<string>("");
+  const [showConsole, setShowConsole] = useState<boolean>(false);
+  const [showEnvBrowser, setShowEnvBrowser] = useState<boolean>(false);
+  
   // Token & Rate Limit Tracking
   const [sessionTokens, setSessionTokens] = useState({ inputTokens: 0, outputTokens: 0, totalTokens: 0, estimatedCost: 0 });
   const [showModelSelector, setShowModelSelector] = useState(false);

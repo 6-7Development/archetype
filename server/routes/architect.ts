@@ -4,9 +4,8 @@ import { chatMessages } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { isAuthenticated } from '../universalAuth';
 import { aiLimiter } from '../rateLimiting';
-import { streamAnthropicResponse } from '../anthropic';
+import { streamGeminiResponse } from '../gemini';
 import { buildArchitectSystemPrompt } from '../lomuSuperCore';
-import Anthropic from '@anthropic-ai/sdk';
 import multer from 'multer';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -32,8 +31,8 @@ const upload = multer({
   }
 });
 
-// Architect tools - read-only consultant tools
-const ARCHITECT_TOOLS: Anthropic.Tool[] = [
+// I AM Architect tools - read-only consultant tools (Gemini format)
+const ARCHITECT_TOOLS = [
   {
     name: "readPlatformFile",
     description: "Read a file from the platform codebase to inspect code and understand implementations.",
@@ -98,13 +97,13 @@ router.post('/access-tier', isAuthenticated, async (req: any, res) => {
 
 /**
  * POST /api/architect/stream
- * Stream AI responses from I AM Architect using Claude Sonnet 4
+ * Stream AI responses from I AM Architect using Gemini (advanced advisor mode)
  */
 router.post('/stream', isAuthenticated, aiLimiter, async (req: any, res) => {
   const userId = req.authenticatedUserId;
   const { message, sessionId = nanoid(), conversationHistory = [] } = req.body;
 
-  console.log('[ARCHITECT] Stream request:', {
+  console.log('[I AM ARCHITECT] Stream request:', {
     userId,
     sessionId,
     messageLength: message?.length,
@@ -132,7 +131,7 @@ router.post('/stream', isAuthenticated, aiLimiter, async (req: any, res) => {
       isPlatformHealing: true, // Mark as architect conversation
     }).returning();
 
-    // Build conversation history for Claude
+    // Build conversation history for Gemini
     const messages: any[] = conversationHistory.map((msg: any) => ({
       role: msg.role === 'user' ? 'user' : 'assistant',
       content: msg.content
@@ -152,7 +151,7 @@ router.post('/stream', isAuthenticated, aiLimiter, async (req: any, res) => {
       codeSnapshot: undefined
     });
 
-    console.log('[ARCHITECT] Starting Claude stream with', messages.length, 'messages');
+    console.log('[I AM ARCHITECT] Starting Gemini stream with', messages.length, 'messages');
 
     let fullResponse = '';
     let assistantMessageId: string | null = null;
@@ -167,31 +166,34 @@ router.post('/stream', isAuthenticated, aiLimiter, async (req: any, res) => {
     // Send initial heartbeat
     sendEvent('heartbeat', { timestamp: Date.now() });
 
-    // Tool continuation loop - keep streaming until Claude is done
+    // Tool continuation loop - keep streaming until Gemini is done
     let needsContinuation = true;
     let iterationCount = 0;
-    const MAX_ITERATIONS = 20; // Allow thorough analysis (Claude often needs 10-15 tool calls)
+    const MAX_ITERATIONS = 20; // Allow thorough analysis
 
     while (needsContinuation && iterationCount < MAX_ITERATIONS) {
       iterationCount++;
-      console.log(`[ARCHITECT] Stream iteration ${iterationCount}`);
+      console.log(`[I AM ARCHITECT] Stream iteration ${iterationCount}`);
 
-      // Stream response from Claude
-      const result = await streamAnthropicResponse({
-        model: 'claude-sonnet-4-20250514',
-        maxTokens: 4096,
+      // Stream response from Gemini (I AM uses advanced settings for deeper analysis)
+      const result = await streamGeminiResponse({
+        model: 'gemini-2.5-flash',
+        maxTokens: 8192, // Higher token limit for thorough analysis
         system: systemPrompt,
         messages,
         tools: ARCHITECT_TOOLS,
+        userIntent: 'diagnostic', // Advanced analysis mode
         onChunk: (chunk) => {
-          if (chunk.type === 'chunk' && chunk.content) {
-            fullResponse += chunk.content;
+          // Handle both 'content' and 'text' chunk formats
+          const textContent = chunk.content || chunk.text;
+          if ((chunk.type === 'content' || chunk.type === 'text') && textContent) {
+            fullResponse += textContent;
             // Send SSE chunk to client (proper SSE format)
-            sendEvent('content', { content: chunk.content });
+            sendEvent('content', { content: textContent });
           }
         },
         onToolUse: async (toolUse) => {
-          console.log('[ARCHITECT] Tool use:', toolUse.name);
+          console.log('[I AM ARCHITECT] Tool use:', toolUse.name);
           
           // Send tool use notification to client (proper SSE format)
           sendEvent('tool_call', { 
@@ -240,9 +242,9 @@ router.post('/stream', isAuthenticated, aiLimiter, async (req: any, res) => {
         totalUsage.outputTokens += result.usage.outputTokens;
       }
 
-      // Check if we need to continue (Claude used tools)
+      // Check if we need to continue (Gemini used tools)
       if (result.needsContinuation && result.assistantContent && result.toolResults) {
-        console.log('[ARCHITECT] Tool continuation needed, appending results to conversation');
+        console.log('[I AM ARCHITECT] Tool continuation needed, appending results to conversation');
         
         // Add assistant's tool-use message to conversation
         messages.push({
@@ -261,7 +263,7 @@ router.post('/stream', isAuthenticated, aiLimiter, async (req: any, res) => {
         // No more tools, we're done
         needsContinuation = false;
         
-        console.log('[ARCHITECT] Stream complete:', {
+        console.log('[I AM ARCHITECT] Stream complete:', {
           responseLength: fullResponse.length,
           iterations: iterationCount,
           usage: totalUsage
