@@ -1,6 +1,21 @@
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Check, Loader2 } from "lucide-react";
+
+export function useMotionConfig() {
+  const shouldReduceMotion = useReducedMotion();
+  
+  return {
+    shouldReduceMotion,
+    transition: shouldReduceMotion 
+      ? { duration: 0 } 
+      : { duration: 0.2 },
+    springTransition: shouldReduceMotion
+      ? { type: "tween", duration: 0 }
+      : { type: "spring", stiffness: 400, damping: 25 },
+    noAnimation: { initial: false, animate: false, exit: false, transition: { duration: 0 } }
+  };
+}
 
 interface HexOrbitLoaderProps {
   size?: "sm" | "md" | "lg";
@@ -43,14 +58,16 @@ interface SuccessCheckProps {
 }
 
 export function SuccessCheck({ show, size = 24, className }: SuccessCheckProps) {
+  const shouldReduceMotion = useReducedMotion();
+  
   return (
     <AnimatePresence>
       {show && (
         <motion.div
-          initial={{ scale: 0, opacity: 0 }}
+          initial={shouldReduceMotion ? false : { scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0, opacity: 0 }}
-          transition={{ type: "spring", duration: 0.4 }}
+          exit={shouldReduceMotion ? { opacity: 0 } : { scale: 0, opacity: 0 }}
+          transition={shouldReduceMotion ? { duration: 0 } : { type: "spring", duration: 0.4 }}
           className={cn("inline-flex items-center justify-center", className)}
           data-testid="success-check"
         >
@@ -67,9 +84,9 @@ export function SuccessCheck({ show, size = 24, className }: SuccessCheckProps) 
           >
             <motion.path
               d="M5 12l5 5L20 7"
-              initial={{ pathLength: 0 }}
+              initial={shouldReduceMotion ? { pathLength: 1 } : { pathLength: 0 }}
               animate={{ pathLength: 1 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
+              transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.3, delay: 0.1 }}
             />
           </svg>
         </motion.div>
@@ -95,6 +112,8 @@ export function PulseButton({
   className,
   type = "button"
 }: PulseButtonProps) {
+  const shouldReduceMotion = useReducedMotion();
+  
   return (
     <motion.button
       type={type}
@@ -102,11 +121,11 @@ export function PulseButton({
       disabled={disabled}
       className={cn(
         "relative inline-flex items-center justify-center",
-        isPulsing && "honeycomb-pulse",
+        isPulsing && !shouldReduceMotion && "honeycomb-pulse",
         className
       )}
-      whileTap={{ scale: 0.95 }}
-      transition={{ duration: 0.1 }}
+      whileTap={shouldReduceMotion ? {} : { scale: 0.95 }}
+      transition={{ duration: shouldReduceMotion ? 0 : 0.1 }}
       data-testid="pulse-button"
     >
       {children}
@@ -157,6 +176,8 @@ export function SlideIn({
   delay = 0,
   className 
 }: SlideInProps) {
+  const shouldReduceMotion = useReducedMotion();
+  
   const variants = {
     left: { initial: { x: -20, opacity: 0 }, animate: { x: 0, opacity: 1 } },
     right: { initial: { x: 20, opacity: 0 }, animate: { x: 0, opacity: 1 } },
@@ -166,9 +187,9 @@ export function SlideIn({
 
   return (
     <motion.div
-      initial={variants[direction].initial}
+      initial={shouldReduceMotion ? false : variants[direction].initial}
       animate={variants[direction].animate}
-      transition={{ duration: 0.25, delay, ease: "easeOut" }}
+      transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.25, delay, ease: "easeOut" }}
       className={className}
     >
       {children}
@@ -189,11 +210,13 @@ export function FadeIn({
   duration = 0.2,
   className 
 }: FadeInProps) {
+  const shouldReduceMotion = useReducedMotion();
+  
   return (
     <motion.div
-      initial={{ opacity: 0 }}
+      initial={shouldReduceMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration, delay }}
+      transition={shouldReduceMotion ? { duration: 0 } : { duration, delay }}
       className={className}
     >
       {children}
@@ -208,16 +231,16 @@ interface ScaleInProps {
 }
 
 export function ScaleIn({ children, delay = 0, className }: ScaleInProps) {
+  const shouldReduceMotion = useReducedMotion();
+  
   return (
     <motion.div
-      initial={{ scale: 0.9, opacity: 0 }}
+      initial={shouldReduceMotion ? false : { scale: 0.9, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
-      transition={{ 
-        type: "spring", 
-        stiffness: 400, 
-        damping: 25, 
-        delay 
-      }}
+      transition={shouldReduceMotion 
+        ? { duration: 0 } 
+        : { type: "spring", stiffness: 400, damping: 25, delay }
+      }
       className={className}
     >
       {children}
@@ -253,11 +276,13 @@ interface HiveWarmupProps {
 }
 
 export function HiveWarmup({ children, isActive = false, className }: HiveWarmupProps) {
+  const shouldReduceMotion = useReducedMotion();
+  
   return (
     <motion.div
-      initial={isActive ? { opacity: 0.5, filter: "blur(2px)" } : false}
+      initial={shouldReduceMotion ? false : (isActive ? { opacity: 0.5, filter: "blur(2px)" } : false)}
       animate={{ opacity: 1, filter: "blur(0px)" }}
-      transition={{ duration: 0.3 }}
+      transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.3 }}
       className={className}
     >
       {children}

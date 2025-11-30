@@ -102,6 +102,38 @@ The system is highly modularized for maintainability and self-healing, with refa
 -   **Browser Automation**: Playwright
 -   **Web Search**: Tavily API
 
+### Bee-Themed Motion System
+The platform features a comprehensive animation system with WCAG 2.3.3 accessibility compliance:
+
+**CSS Keyframe Animations** (in `index.css`):
+- `honeycomb-pulse`: Button/control emphasis with golden glow
+- `hex-orbit` / `hex-orbit-inner`: Orbital loading spinners
+- `pollen-float`: Particle trail effects for interactions
+- `success-shimmer`: Victory shimmer for completed tasks
+- `status-sweep`: Row highlight for status changes
+- `hive-warmup`: Blur-to-focus entrance effect
+- `slide-in-*`: Directional entrance animations
+- `badge-pulse`: New status indicator pulse
+- `thinking-dots`: Loading indicator with staggered dots
+- `swarm-buzz`: Subtle activity vibration
+
+**Framer Motion Components** (in `bee-animations.tsx`):
+- `HexOrbitLoader`: Orbital spinner with size variants
+- `ThinkingDots`: Animated loading dots
+- `SuccessCheck`: Animated checkmark with path drawing
+- `PulseButton`: Click-responsive button with honeycomb pulse
+- `StatusBadge`: Status indicator with animations
+- `SlideIn` / `FadeIn` / `ScaleIn`: Entrance animations
+- `RowHighlight`: Row highlight for status changes
+- `HiveWarmup`: Blur-to-focus entrance
+- `useMotionConfig`: Hook for reduced motion detection
+
+**Accessibility Features**:
+- `prefers-reduced-motion` media query disables animations
+- `useReducedMotion` hook in Framer Motion components
+- `.motion-safe-only` class for decorative animations
+- Manual motion toggle via `body.reduce-motion` class
+
 ## Recent Changes (Nov 30, 2025)
 - ✅ Completed Anthropic-to-Gemini migration (all agents now use Gemini)
 - ✅ Removed deprecated anthropic.ts, architect-review.ts, sub-agent.ts files
@@ -119,3 +151,9 @@ The system is highly modularized for maintainability and self-healing, with refa
   - WebSocket events: beehive_ai_job_update (was lomu_ai_job_update)
   - UI strings: BeeHive IDE, BeeHive Pro, .beehive.app domains
   - 50+ files updated with zero runtime errors
+- ✅ **Bee-Themed Motion System**:
+  - 10+ CSS keyframe animations (honeycomb-pulse, hex-orbit, pollen-float, success-shimmer, etc.)
+  - Reusable Framer Motion components with accessibility hooks
+  - Status transitions with AnimatePresence for enter/exit
+  - Task card staggered animations in progress tables
+  - WCAG 2.3.3 compliance with prefers-reduced-motion support
