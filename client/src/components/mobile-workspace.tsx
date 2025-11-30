@@ -86,8 +86,8 @@ export function MobileWorkspace({
               Preview
             </TabsTrigger>
             <TabsTrigger value="chat" className="flex-1" data-testid="tab-chat-mobile">
-              <Bot className="h-4 w-4 mr-1" />
-              BeeHiveAI
+              <Sparkles className="h-4 w-4 mr-1" />
+              Scout
             </TabsTrigger>
           </TabsList>
 

@@ -30,6 +30,7 @@ import { ChangesPanel } from "@/components/changes-panel";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { AgentTaskList, type AgentTask } from "@/components/agent-task-list";
 import { AgentProgressDisplay } from "@/components/agent-progress-display";
+import { AgentBeeAnimation, mapAgentPhaseToMode } from "@/components/agent-bee-animation";
 import { RunProgressTable } from "@/components/run-progress-table";
 import { ChatInputToolbar } from "@/components/ui/chat-input-toolbar";
 import { AIModelSelector } from "@/components/ai-model-selector";
@@ -678,11 +679,13 @@ export function UniversalChat({
             {runState.messages.length === 0 ? (
               <div className="flex items-center justify-center h-full text-muted-foreground" data-testid="empty-state-chat">
                 <div className="text-center space-y-4">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[hsl(var(--primary))]/15">
-                    <Zap className="w-8 h-8 text-[hsl(var(--primary))]" />
-                  </div>
+                  <AgentBeeAnimation 
+                    mode="IDLE"
+                    size="lg"
+                    showStatus={false}
+                  />
                   <div>
-                    <p className="text-lg font-bold text-[hsl(var(--primary))]">Start your project</p>
+                    <p className="text-lg font-bold text-[hsl(var(--primary))]">Scout is ready</p>
                     <p className="text-sm text-muted-foreground/70 mt-2">Send a message to get started</p>
                   </div>
                 </div>
@@ -730,17 +733,26 @@ export function UniversalChat({
                   ))}
                 </div>
 
-                {/* Loading indicator */}
+                {/* Loading indicator with Bee Animation */}
                 {isGenerating && (
-                  <div className="flex gap-3 group flex-row" data-testid="loading-indicator">
-                    <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center bg-blue-500/20 text-blue-600 dark:text-blue-400 border-2 border-blue-500/40 font-bold text-xs">
-                      AI
+                  <div className="flex gap-3 group flex-row items-start" data-testid="loading-indicator">
+                    <div className="flex-shrink-0">
+                      <AgentBeeAnimation 
+                        mode={mapAgentPhaseToMode(runState.phase, isGenerating)}
+                        size="sm"
+                        showStatus={true}
+                      />
                     </div>
-                    <div className="flex-1 min-w-0 flex flex-col items-start">
-                      <div className="text-xs font-bold mb-1 text-blue-600 dark:text-blue-400">BeeHive</div>
-                      <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl rounded-bl-none px-4 py-2.5 flex items-center gap-2 border border-slate-300 dark:border-slate-700">
-                        <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
-                        <span className="text-sm text-slate-700 dark:text-slate-200 font-semibold">Thinking...</span>
+                    <div className="flex-1 min-w-0 flex flex-col items-start justify-center pt-4">
+                      <div className="text-xs font-bold mb-1 text-[hsl(var(--primary))]">Scout</div>
+                      <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl rounded-bl-none px-4 py-2.5 border border-[hsl(var(--primary))]/30">
+                        <span className="text-sm text-slate-700 dark:text-slate-200 font-semibold">
+                          {runState.phase === 'thinking' ? 'Thinking...' : 
+                           runState.phase === 'planning' ? 'Planning...' :
+                           runState.phase === 'working' ? 'Working...' :
+                           runState.phase === 'verifying' ? 'Verifying...' : 
+                           'Processing...'}
+                        </span>
                       </div>
                     </div>
                   </div>
