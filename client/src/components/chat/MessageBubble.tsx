@@ -7,6 +7,7 @@ import { MarkdownMessage } from "./MarkdownMessage";
 import { InlineReasoning, type ReasoningStep } from "@/components/inline-reasoning";
 import { ParallelExecutionBadge } from "@/components/parallel-execution-badge";
 import { ConsultationCostBadge } from "@/components/consultation-cost-badge";
+import { QueenBeeAnimation } from "@/components/queen-bee-animation";
 import { cn } from "@/lib/utils";
 
 interface Message {
@@ -88,19 +89,21 @@ export function MessageBubble({ message, index, totalMessages, onPin, showAvatar
       {showAvatar && (
         <div 
           className={cn(
-            "flex-shrink-0 rounded-full flex items-center justify-center font-medium transition-all shadow-sm",
-            compact ? "w-7 h-7" : "w-9 h-9",
+            "flex-shrink-0 rounded-full flex items-center justify-center font-medium transition-all shadow-md",
+            compact ? "w-7 h-7" : "w-12 h-12",
             isUser 
               ? 'bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-600' 
-              : 'bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-900/50 dark:to-amber-800/50 text-amber-700 dark:text-amber-300 ring-1 ring-amber-300 dark:ring-amber-700'
+              : 'bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-900/50 dark:to-amber-800/50 text-amber-700 dark:text-amber-300 ring-2 ring-amber-400 dark:ring-amber-600'
           )}
           data-testid={`avatar-${message.role}`}
           title={isUser ? 'You' : 'Scout'}
         >
           {isUser ? (
-            <User className={cn(compact ? "w-3.5 h-3.5" : "w-4 h-4")} />
+            <User className={cn(compact ? "w-3.5 h-3.5" : "w-5 h-5")} />
+          ) : isGenerating ? (
+            <QueenBeeAnimation isAnimating size={compact ? "sm" : "md"} />
           ) : (
-            <Sparkles className={cn(compact ? "w-3.5 h-3.5" : "w-4 h-4")} />
+            <Sparkles className={cn(compact ? "w-3.5 h-3.5" : "w-5 h-5")} />
           )}
         </div>
       )}
