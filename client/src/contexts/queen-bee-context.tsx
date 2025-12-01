@@ -5,6 +5,7 @@
  * - Connects to AI state for real-time emotion updates
  * - Cycles through animations randomly for guest users
  * - Provides responsive sizing for mobile/desktop
+ * - Supports pixel-based draggable positioning
  */
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
@@ -26,13 +27,22 @@ const GUEST_CYCLE_MODES: QueenBeeMode[] = [
   'IDLE', 'LISTENING', 'TYPING', 'THINKING', 'CODING', 'BUILDING', 'SUCCESS', 'SWARM'
 ];
 
-// Configuration for the queen bee
+// Header height buffer to prevent bee from going under headers
+const HEADER_BUFFER = 60;
+
+// Configuration for the queen bee with pixel-based positioning
 export interface QueenBeeConfig {
   size: 'sm' | 'md' | 'lg';
-  position: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
-  isMinimized: boolean;
+  position: { x: number; y: number }; // Pixel-based position
   isVisible: boolean;
 }
+
+// Size dimensions for clamping
+export const SIZE_DIMENSIONS = {
+  sm: 48,
+  md: 64,
+  lg: 80,
+};
 
 // Context state interface
 interface QueenBeeContextState {
@@ -40,19 +50,31 @@ interface QueenBeeContextState {
   setMode: (mode: QueenBeeMode) => void;
   config: QueenBeeConfig;
   setConfig: (config: Partial<QueenBeeConfig>) => void;
-  toggleMinimized: () => void;
+  updatePosition: (x: number, y: number) => void;
   toggleVisibility: () => void;
   isGuest: boolean;
   setIsGuest: (isGuest: boolean) => void;
   isAIActive: boolean;
   setIsAIActive: (active: boolean) => void;
+  clampPosition: (x: number, y: number) => { x: number; y: number };
+}
+
+// Get default position (bottom-right, above footer)
+function getDefaultPosition(): { x: number; y: number } {
+  if (typeof window === 'undefined') {
+    return { x: 100, y: 100 };
+  }
+  const size = SIZE_DIMENSIONS.md;
+  return {
+    x: window.innerWidth - size - 20,
+    y: window.innerHeight - size - 80, // Above typical footer
+  };
 }
 
 // Default configuration
 const DEFAULT_CONFIG: QueenBeeConfig = {
   size: 'md',
-  position: 'bottom-right',
-  isMinimized: false,
+  position: getDefaultPosition(),
   isVisible: true,
 };
 
@@ -80,18 +102,58 @@ export function QueenBeeProvider({
   const [isGuest, setIsGuest] = useState(initialGuest);
   const [isAIActive, setIsAIActive] = useState(false);
 
+  // Clamp position to viewport bounds
+  const clampPosition = useCallback((x: number, y: number): { x: number; y: number } => {
+    if (typeof window === 'undefined') return { x, y };
+    
+    const size = SIZE_DIMENSIONS[config.size];
+    const padding = 10;
+    
+    return {
+      x: Math.max(padding, Math.min(x, window.innerWidth - size - padding)),
+      y: Math.max(HEADER_BUFFER, Math.min(y, window.innerHeight - size - padding)),
+    };
+  }, [config.size]);
+
   // Load saved config from localStorage
   useEffect(() => {
     try {
       const saved = localStorage.getItem('queenBeeConfig');
       if (saved) {
         const parsed = JSON.parse(saved);
+        // Clamp saved position to current viewport
+        if (parsed.position) {
+          parsed.position = clampPosition(parsed.position.x, parsed.position.y);
+        }
         setConfigState(prev => ({ ...prev, ...parsed }));
+      } else {
+        // Set default position on first load
+        setConfigState(prev => ({
+          ...prev,
+          position: getDefaultPosition(),
+        }));
       }
     } catch {
-      // Ignore parse errors
+      // Set default position on error
+      setConfigState(prev => ({
+        ...prev,
+        position: getDefaultPosition(),
+      }));
     }
-  }, []);
+  }, [clampPosition]);
+
+  // Re-clamp position on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setConfigState(prev => ({
+        ...prev,
+        position: clampPosition(prev.position.x, prev.position.y),
+      }));
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [clampPosition]);
 
   // Save config to localStorage when it changes
   const setConfig = useCallback((updates: Partial<QueenBeeConfig>) => {
@@ -106,10 +168,11 @@ export function QueenBeeProvider({
     });
   }, []);
 
-  // Toggle minimized state
-  const toggleMinimized = useCallback(() => {
-    setConfig({ isMinimized: !config.isMinimized });
-  }, [config.isMinimized, setConfig]);
+  // Update position with clamping
+  const updatePosition = useCallback((x: number, y: number) => {
+    const clamped = clampPosition(x, y);
+    setConfig({ position: clamped });
+  }, [clampPosition, setConfig]);
 
   // Toggle visibility
   const toggleVisibility = useCallback(() => {
@@ -152,12 +215,13 @@ export function QueenBeeProvider({
         setMode,
         config,
         setConfig,
-        toggleMinimized,
+        updatePosition,
         toggleVisibility,
         isGuest,
         setIsGuest,
         isAIActive,
         setIsAIActive,
+        clampPosition,
       }}
     >
       {children}
