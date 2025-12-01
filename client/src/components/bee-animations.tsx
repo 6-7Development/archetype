@@ -348,9 +348,10 @@ export type BeeStatus = 'idle' | 'thinking' | 'working' | 'executing' | 'success
 
 interface BeeStatusIndicatorProps {
   status: BeeStatus;
-  size?: 'xs' | 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   showLabel?: boolean;
   label?: string;
+  showLogo?: boolean;
   className?: string;
 }
 
@@ -359,6 +360,7 @@ export function BeeStatusIndicator({
   size = 'sm', 
   showLabel = false, 
   label,
+  showLogo = false,
   className 
 }: BeeStatusIndicatorProps) {
   const shouldReduceMotion = useReducedMotion();
@@ -368,48 +370,57 @@ export function BeeStatusIndicator({
     sm: { icon: 'w-4 h-4', container: 'gap-1.5', text: 'text-sm' },
     md: { icon: 'w-5 h-5', container: 'gap-2', text: 'text-sm' },
     lg: { icon: 'w-6 h-6', container: 'gap-2', text: 'text-base' },
+    xl: { icon: 'w-8 h-8', container: 'gap-3', text: 'text-lg' },
+    '2xl': { icon: 'w-12 h-12', container: 'gap-3', text: 'text-xl font-bold' },
   };
 
   const statusConfig = {
     idle: {
       color: 'text-muted-foreground',
       bg: 'bg-muted/50',
+      borderColor: 'border-muted/50',
       animation: '',
       defaultLabel: 'Ready',
     },
     thinking: {
-      color: 'text-honey',
-      bg: 'bg-honey/10',
+      color: 'text-honey dark:text-honey',
+      bg: 'bg-honey/15 dark:bg-honey/20',
+      borderColor: 'border-honey/30 dark:border-honey/40',
       animation: 'bee-thinking',
       defaultLabel: 'Thinking...',
     },
     working: {
-      color: 'text-honey',
-      bg: 'bg-honey/10',
+      color: 'text-honey dark:text-honey',
+      bg: 'bg-honey/15 dark:bg-honey/20',
+      borderColor: 'border-honey/30 dark:border-honey/40',
       animation: 'bee-working',
       defaultLabel: 'Working...',
     },
     executing: {
-      color: 'text-mint',
-      bg: 'bg-mint/10',
+      color: 'text-mint dark:text-mint',
+      bg: 'bg-mint/15 dark:bg-mint/20',
+      borderColor: 'border-mint/30 dark:border-mint/40',
       animation: 'bee-executing',
       defaultLabel: 'Executing...',
     },
     success: {
-      color: 'text-mint',
-      bg: 'bg-mint/10',
+      color: 'text-mint dark:text-mint',
+      bg: 'bg-mint/15 dark:bg-mint/20',
+      borderColor: 'border-mint/30 dark:border-mint/40',
       animation: 'bee-success',
       defaultLabel: 'Complete',
     },
     error: {
-      color: 'text-destructive',
-      bg: 'bg-destructive/10',
+      color: 'text-destructive dark:text-destructive',
+      bg: 'bg-destructive/15 dark:bg-destructive/20',
+      borderColor: 'border-destructive/30 dark:border-destructive/40',
       animation: '',
       defaultLabel: 'Error',
     },
     warning: {
-      color: 'text-amber-500',
-      bg: 'bg-amber-500/10',
+      color: 'text-amber-500 dark:text-amber-400',
+      bg: 'bg-amber-500/15 dark:bg-amber-500/20',
+      borderColor: 'border-amber-500/30 dark:border-amber-500/40',
       animation: '',
       defaultLabel: 'Warning',
     },
@@ -429,9 +440,10 @@ export function BeeStatusIndicator({
     >
       <motion.div
         className={cn(
-          "relative flex items-center justify-center rounded-full",
+          "relative flex items-center justify-center rounded-lg border",
           sizes[size].icon,
           config.bg,
+          config.borderColor,
           !shouldReduceMotion && config.animation
         )}
         initial={false}
@@ -448,31 +460,49 @@ export function BeeStatusIndicator({
       >
         <svg 
           viewBox="0 0 24 24" 
-          className={cn("w-full h-full", config.color)}
+          className={cn("w-full h-full p-0.5", config.color)}
           fill="currentColor"
           xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Head */}
-          <circle cx="12" cy="4" r="2.5" fill="currentColor" />
-          {/* Thorax - Main body section */}
-          <ellipse cx="12" cy="10" rx="2.5" ry="3.5" fill="currentColor" />
-          {/* Abdomen stripes */}
-          <rect x="10" y="13.5" width="4" height="1.5" fill="currentColor" opacity="0.8" />
-          <ellipse cx="12" cy="16" rx="2.5" ry="2.5" fill="currentColor" opacity="0.9" />
-          <rect x="10" y="18.5" width="4" height="1.2" fill="currentColor" opacity="0.7" />
-          {/* Left wing */}
-          <path d="M9 9 Q6 6 5 4" stroke="currentColor" strokeWidth="0.8" fill="none" strokeLinecap="round" />
-          {/* Right wing */}
-          <path d="M15 9 Q18 6 19 4" stroke="currentColor" strokeWidth="0.8" fill="none" strokeLinecap="round" />
+          {/* Head with antenna */}
+          <circle cx="12" cy="3.5" r="2" fill="currentColor" />
+          <line x1="11" y1="2" x2="10" y2="0.5" stroke="currentColor" strokeWidth="0.6" strokeLinecap="round" />
+          <line x1="13" y1="2" x2="14" y2="0.5" stroke="currentColor" strokeWidth="0.6" strokeLinecap="round" />
+          
           {/* Eyes */}
-          <circle cx="11" cy="3" r="0.5" fill="currentColor" opacity="0.6" />
-          <circle cx="13" cy="3" r="0.5" fill="currentColor" opacity="0.6" />
+          <circle cx="10.5" cy="3" r="0.4" fill="currentColor" opacity="0.7" />
+          <circle cx="13.5" cy="3" r="0.4" fill="currentColor" opacity="0.7" />
+          
+          {/* Thorax (Middle body) */}
+          <ellipse cx="12" cy="9" rx="2.8" ry="3.5" fill="currentColor" />
+          
+          {/* Front legs */}
+          <path d="M10 11 L8 13" stroke="currentColor" strokeWidth="0.5" fill="none" strokeLinecap="round" />
+          <path d="M14 11 L16 13" stroke="currentColor" strokeWidth="0.5" fill="none" strokeLinecap="round" />
+          
+          {/* Middle legs */}
+          <path d="M10 12 L7 15" stroke="currentColor" strokeWidth="0.5" fill="none" strokeLinecap="round" />
+          <path d="M14 12 L17 15" stroke="currentColor" strokeWidth="0.5" fill="none" strokeLinecap="round" />
+          
+          {/* Abdomen - Stripes */}
+          <ellipse cx="12" cy="16" rx="2.5" ry="3" fill="currentColor" />
+          <rect x="10" y="14.5" width="4" height="1.2" fill="currentColor" opacity="0.6" />
+          <rect x="10" y="16" width="4" height="1" fill="currentColor" opacity="0.5" />
+          <rect x="10" y="17.2" width="4" height="1" fill="currentColor" opacity="0.6" />
+          
+          {/* Wings - Upper */}
+          <path d="M8.5 8 Q6 5 5 3" stroke="currentColor" strokeWidth="0.7" fill="none" strokeLinecap="round" opacity="0.8" />
+          <path d="M15.5 8 Q18 5 19 3" stroke="currentColor" strokeWidth="0.7" fill="none" strokeLinecap="round" opacity="0.8" />
+          
+          {/* Wings - Lower */}
+          <path d="M8 10 Q4.5 8 3 7" stroke="currentColor" strokeWidth="0.6" fill="none" strokeLinecap="round" opacity="0.6" />
+          <path d="M16 10 Q19.5 8 21 7" stroke="currentColor" strokeWidth="0.6" fill="none" strokeLinecap="round" opacity="0.6" />
         </svg>
         
         {(status === 'thinking' || status === 'working' || status === 'executing') && (
           <motion.div
             className={cn(
-              "absolute inset-0 rounded-full border-2 border-current opacity-30",
+              "absolute inset-0 rounded-lg border-2 border-current opacity-30",
               config.color
             )}
             initial={{ scale: 0.8, opacity: 0.6 }}
@@ -486,10 +516,19 @@ export function BeeStatusIndicator({
         )}
       </motion.div>
       
-      {showLabel && (
-        <span className={cn(sizes[size].text, config.color, "font-medium")}>
-          {displayLabel}
-        </span>
+      {(showLabel || showLogo) && (
+        <div className="flex flex-col items-start">
+          {showLogo && (
+            <span className={cn(sizes[size].text, config.color, "font-bold tracking-tight leading-none")}>
+              Scout
+            </span>
+          )}
+          {showLabel && (
+            <span className={cn(sizes[size].text, config.color, "font-medium", showLogo && "text-xs opacity-75")}>
+              {displayLabel}
+            </span>
+          )}
+        </div>
       )}
     </div>
   );
