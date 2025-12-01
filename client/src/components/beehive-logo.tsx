@@ -1,9 +1,7 @@
 /**
- * BeeHive Universal Logo Component
- * 
- * Queen Bee in Hexagon Design - Works everywhere (nav, hero, favicon)
- * Professional, catchy, fresh design that impresses on all screens
- * Single source of truth for BeeHive branding
+ * BeeHive Universal Queen Bee Logo
+ * Single source of truth - clean, professional design
+ * Uses brand colors (no hard-coding), proper wing animation
  */
 
 interface BeeHiveLogoProps {
@@ -20,10 +18,10 @@ const SIZE_MAP = {
 };
 
 const SIZE_TEXT = {
-  sm: '16px',
-  md: '24px',
-  lg: '36px',
-  xl: '48px',
+  sm: '14px',
+  md: '20px',
+  lg: '32px',
+  xl: '44px',
 };
 
 export function BeeHiveLogo({ size = 'md', className = '', showText = true }: BeeHiveLogoProps) {
@@ -31,145 +29,144 @@ export function BeeHiveLogo({ size = 'md', className = '', showText = true }: Be
   const textSize = SIZE_TEXT[size];
 
   return (
-    <div className={`inline-flex items-center ${showText ? 'gap-3' : ''} ${className}`} style={{ alignItems: 'center' }}>
-      {/* Queen Bee in Hexagon - SVG */}
+    <div className={`inline-flex items-center ${showText ? 'gap-2' : ''} ${className}`}>
+      {/* Queen Bee - Clean SVG */}
       <svg
         width={svgSize}
         height={svgSize}
-        viewBox="0 0 120 140"
+        viewBox="0 0 100 130"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         style={{ flexShrink: 0 }}
       >
-        <defs>
-          <linearGradient id="queenBodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#F7B500" stopOpacity="1" />
-            <stop offset="100%" stopColor="#D4A017" stopOpacity="1" />
-          </linearGradient>
-          <linearGradient id="wingGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#00D4B3" stopOpacity="0.6" />
-            <stop offset="100%" stopColor="#00D4B3" stopOpacity="0.2" />
-          </linearGradient>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-
-        {/* Hexagon Beehive Cell Background */}
+        {/* HEXAGON CELL - Decorative border */}
         <path
-          d="M60 10 L90 25 L90 55 L60 70 L30 55 L30 25 Z"
-          fill="none"
-          stroke="#D4A017"
-          strokeWidth="1.5"
-          opacity="0.4"
+          d="M50 10 L72 22 L72 46 L50 58 L28 46 L28 22 Z"
+          stroke="hsl(40, 97%, 50%)"
+          strokeWidth="1"
+          opacity="0.3"
         />
 
-        {/* WINGS - Large, translucent, diagonal */}
-        <g opacity="0.7">
-          {/* Left Wing */}
-          <ellipse
-            cx="35"
-            cy="45"
-            rx="16"
-            ry="28"
-            fill="url(#wingGrad)"
-            transform="rotate(-35 35 45)"
-            style={{ animation: 'wing-beat 0.4s ease-in-out infinite' }}
-          />
-          {/* Right Wing */}
-          <ellipse
-            cx="85"
-            cy="45"
-            rx="16"
-            ry="28"
-            fill="url(#wingGrad)"
-            transform="rotate(35 85 45)"
-            style={{ animation: 'wing-beat 0.4s ease-in-out infinite 0.2s' }}
-          />
+        {/* WINGS - LEFT */}
+        <ellipse
+          cx="25"
+          cy="42"
+          rx="12"
+          ry="20"
+          fill="hsl(171, 100%, 42%)"
+          opacity="0.6"
+          style={{
+            animation: 'wing-flap 0.4s ease-in-out infinite',
+            transformBox: 'fill-box',
+            transformOrigin: 'center',
+          }}
+        />
+
+        {/* WINGS - RIGHT */}
+        <ellipse
+          cx="75"
+          cy="42"
+          rx="12"
+          ry="20"
+          fill="hsl(171, 100%, 42%)"
+          opacity="0.6"
+          style={{
+            animation: 'wing-flap 0.4s ease-in-out infinite 0.2s',
+            transformBox: 'fill-box',
+            transformOrigin: 'center',
+          }}
+        />
+
+        {/* HEAD */}
+        <circle cx="50" cy="28" r="8" fill="hsl(216, 9%, 7%)" />
+
+        {/* CROWN - Royal mark on top of head */}
+        <g fill="hsl(40, 97%, 50%)">
+          <polygon points="48,22 50,18 52,22 51,24 49,24" />
+          <circle cx="50" cy="18" r="1" fill="hsl(40, 97%, 50%)" />
         </g>
 
-        {/* HEAD - Royal Blue for Queen */}
-        <circle cx="60" cy="32" r="10" fill="#1B1D21" />
-        
-        {/* Crown/Royal Mark - Small gold crown on head */}
-        <g>
-          <path d="M55 28 L56 24 L58 24 L60 22 L62 24 L64 24 L65 28" stroke="#F7B500" strokeWidth="1" fill="none" />
-          <circle cx="60" cy="22" r="1.5" fill="#F7B500" />
-        </g>
+        {/* EYES */}
+        <circle cx="47" cy="27" r="1.2" fill="white" />
+        <circle cx="53" cy="27" r="1.2" fill="white" />
 
-        {/* Eyes - Bright & alert */}
-        <circle cx="57" cy="31" r="1.5" fill="#FFF" />
-        <circle cx="63" cy="31" r="1.5" fill="#FFF" />
+        {/* THORAX - Middle body segment */}
+        <ellipse cx="50" cy="48" rx="10" ry="13" fill="hsl(40, 97%, 50%)" />
 
-        {/* THORAX (Middle - Worker Bee Area) */}
-        <ellipse cx="60" cy="55" rx="13" ry="16" fill="url(#queenBodyGrad)" />
+        {/* THORAX STRIPE */}
+        <rect
+          x="43"
+          y="46"
+          width="14"
+          height="1"
+          rx="0.5"
+          fill="hsl(216, 9%, 7%)"
+          opacity="0.7"
+        />
 
-        {/* Thorax Stripes - Gold bands */}
-        <g fill="#1B1D21" opacity="0.6">
-          <rect x="50" y="50" width="20" height="1.5" rx="0.5" />
-          <rect x="49" y="56" width="22" height="1.5" rx="0.5" />
-          <rect x="50" y="62" width="20" height="1.5" rx="0.5" />
-        </g>
-
-        {/* LEGS (6 total - 3 pairs, visible and dimensional) */}
-        <g stroke="#1B1D21" strokeWidth="1.8" fill="none" strokeLinecap="round" opacity="0.8">
-          {/* Front legs - angled out */}
-          <path d="M54 52 L38 42" />
-          <path d="M66 52 L82 42" />
-          {/* Middle legs - forward */}
-          <path d="M53 60 L28 68" />
-          <path d="M67 60 L92 68" />
+        {/* LEGS - 6 total (3 pairs) */}
+        <g stroke="hsl(216, 9%, 7%)" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.8">
+          {/* Front legs - out to sides */}
+          <path d="M46 45 L28 32" />
+          <path d="M54 45 L72 32" />
+          {/* Middle legs - forward diagonal */}
+          <path d="M45 52 L22 65" />
+          <path d="M55 52 L78 65" />
           {/* Back legs - down */}
-          <path d="M55 68 L36 88" />
-          <path d="M65 68 L84 88" />
+          <path d="M48 58 L28 80" />
+          <path d="M52 58 L72 80" />
         </g>
 
-        {/* ABDOMEN (Lower - Largest, with prominent stripes) */}
+        {/* ABDOMEN - Main body segment (lower, largest) */}
+        <ellipse cx="50" cy="82" rx="9" ry="18" fill="hsl(40, 97%, 50%)" />
+
+        {/* ABDOMEN STRIPES - Black bands for segmentation */}
+        <g fill="hsl(216, 9%, 7%)" opacity="0.7">
+          <rect x="44" y="66" width="12" height="1" rx="0.5" />
+          <rect x="43" y="75" width="14" height="1" rx="0.5" />
+          <rect x="44" y="84" width="12" height="1" rx="0.5" />
+          <rect x="45" y="93" width="10" height="1" rx="0.5" />
+        </g>
+
+        {/* STINGER - Sharp elegant point */}
         <g>
-          {/* Main abdomen - Tapered rounded */}
-          <ellipse cx="60" cy="95" rx="11" ry="20" fill="url(#queenBodyGrad)" />
-
-          {/* Abdomen Stripes - Bold gold/black bands */}
-          <g fill="#1B1D21" opacity="0.7">
-            <rect x="50" y="78" width="20" height="2" rx="1" />
-            <rect x="49" y="88" width="22" height="2" rx="1" />
-            <rect x="50" y="98" width="20" height="2" rx="1" />
-            <rect x="51" y="108" width="18" height="2" rx="1" />
-          </g>
+          <line
+            x1="50"
+            y1="100"
+            x2="50"
+            y2="110"
+            stroke="hsl(216, 9%, 7%)"
+            strokeWidth="1"
+            strokeLinecap="round"
+          />
+          <polygon points="50,110 47,104 53,104" fill="hsl(216, 9%, 7%)" />
         </g>
 
-        {/* STINGER - Elegant point */}
-        <g>
-          <path d="M60 115 L60 125" stroke="#1B1D21" strokeWidth="1.2" strokeLinecap="round" />
-          <polygon points="60,125 57,120 63,120" fill="#1B1D21" />
-        </g>
-
-        {/* Royal Glow Effect */}
-        <circle cx="60" cy="55" r="25" fill="url(#queenBodyGrad)" opacity="0.1" filter="url(#glow)" />
-
-        {/* Animation Styles */}
+        {/* Wing animation */}
         <style>{`
-          @keyframes wing-beat {
-            0%, 100% { transform: scaleY(1) rotateZ(-35deg); opacity: 0.7; }
-            50% { transform: scaleY(0.5) rotateZ(35deg); opacity: 1; }
+          @keyframes wing-flap {
+            0%, 100% {
+              transform: scaleY(1) rotateZ(-8deg);
+              opacity: 0.6;
+            }
+            50% {
+              transform: scaleY(0.7) rotateZ(8deg);
+              opacity: 0.8;
+            }
           }
         `}</style>
       </svg>
 
-      {/* BeeHive Text Wordmark */}
+      {/* BeeHive Wordmark */}
       {showText && (
         <span
           style={{
             fontSize: textSize,
-            fontWeight: 900,
-            color: '#1B1D21',
+            fontWeight: 800,
+            color: 'hsl(216, 9%, 7%)',
             fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
-            letterSpacing: '-0.02em',
-            lineHeight: 1,
+            letterSpacing: '-0.01em',
+            lineHeight: 1.1,
           }}
         >
           BeeHive
