@@ -7,6 +7,7 @@ import { ArchitectApprovalModal } from "@/components/architect-approval-modal";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { API_ENDPOINTS, getQueryKey, buildApiUrl } from "@/lib/api-utils";
+import { useQueenBeeAI } from "@/contexts/queen-bee-context";
 import { Send, Loader2, User, Key, AlertCircle, Square, ChevronDown, Copy, Check, ChevronRight, Menu, Zap, AlertTriangle, PanelRightClose, PanelRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -135,12 +136,37 @@ export function UniversalChat({
 }: UniversalChatProps) {
   const { toast } = useToast();
   const { user } = useAuth();
+  
+  // Connect Queen Bee to AI state for real-time emotional animations (moved up for use in setInput)
+  const queenBeeAI = useQueenBeeAI();
 
   // RBAC-based context switching - allows owners to switch between project/healing modes
   const [activeContext, setActiveContext] = useState<'platform' | 'project' | 'architect'>(initialContext);
   
-  const [input, setInput] = useState<string>("");
+  const [input, setInputState] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  
+  // Debounced typing detection for queen bee
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const setInput = useCallback((value: string) => {
+    setInputState(value);
+    // Trigger listening mode when user starts typing
+    if (value.length > 0 && !isGenerating) {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      queenBeeAI.onUserTyping();
+      // Return to idle after 2s of no typing
+      typingTimeoutRef.current = setTimeout(() => {
+        queenBeeAI.onIdle();
+      }, 2000);
+    }
+  }, [isGenerating, queenBeeAI]);
+  
+  // Cleanup typing timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    };
+  }, []);
   const [pendingImages, setPendingImages] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState<Map<string, boolean>>(new Map());
   const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
@@ -177,6 +203,43 @@ export function UniversalChat({
       setArchitectGuidance(result);
     },
   });
+
+  // Connect Queen Bee to AI run state for real-time emotional animations
+  useEffect(() => {
+    // Map runState.phase to queen bee emotional modes
+    if (runState.isLoading) {
+      switch (runState.phase) {
+        case 'thinking':
+        case 'planning':
+          queenBeeAI.onAIThinking();
+          break;
+        case 'working':
+          // Detect if coding or building based on current tasks
+          const hasCodingTask = runState.tasks?.some(t => 
+            t.title?.toLowerCase().includes('code') || 
+            t.title?.toLowerCase().includes('edit') ||
+            t.title?.toLowerCase().includes('write')
+          );
+          if (hasCodingTask) {
+            queenBeeAI.onAICoding();
+          } else {
+            queenBeeAI.onAIBuilding();
+          }
+          break;
+        case 'verifying':
+          queenBeeAI.onAITyping();
+          break;
+        default:
+          queenBeeAI.onAIThinking();
+      }
+    } else if (runState.error) {
+      queenBeeAI.onAIError();
+    } else if (runState.status === 'completed') {
+      queenBeeAI.onAISuccess();
+    } else {
+      queenBeeAI.onIdle();
+    }
+  }, [runState.phase, runState.isLoading, runState.error, runState.status, runState.tasks]);
 
   // Handle context mode change with confirmation (RBAC-gated in ChatHeader)
   const handleContextChange = (newContext: 'platform' | 'project') => {

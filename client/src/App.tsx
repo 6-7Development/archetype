@@ -14,6 +14,8 @@ import { OwnerGuard } from "@/components/owner-guard";
 import { initGA4, trackPageView } from "@/lib/ga4";
 import { useThemeManager } from "@/hooks/useThemeManager";
 import { VIBRANT_LIGHT_THEME } from "@/lib/theme/types";
+import { QueenBeeProvider } from "@/contexts/queen-bee-context";
+import { FloatingQueenBee } from "@/components/floating-queen-bee";
 import Landing from "@/pages/landing";
 import Pricing from "@/pages/pricing";
 import PricingSuccess from "@/pages/pricing-success";
@@ -307,11 +309,14 @@ function App() {
           <ThemeProvider defaultTheme="light">
             <AppWithTheme>
               <VersionProvider mobileBreakpoint={768}>
-                <TooltipProvider>
-                  <CommandPalette />
-                  <Toaster />
-                  <Router />
-                </TooltipProvider>
+                <QueenBeeProvider>
+                  <TooltipProvider>
+                    <CommandPalette />
+                    <Toaster />
+                    <FloatingQueenBee />
+                    <Router />
+                  </TooltipProvider>
+                </QueenBeeProvider>
               </VersionProvider>
             </AppWithTheme>
           </ThemeProvider>
