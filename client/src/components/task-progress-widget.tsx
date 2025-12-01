@@ -69,7 +69,7 @@ export function TaskProgressWidget({ tasks, activeTaskId }: TaskProgressWidgetPr
                 <div className="flex-1 min-w-0">
                   <div className={cn(
                     "text-sm font-medium leading-tight",
-                    isCompleted && "text-green-700
+                    isCompleted && "text-green-700",
                     isActive && "text-primary",
                     isPending && "text-muted-foreground"
                   )}>

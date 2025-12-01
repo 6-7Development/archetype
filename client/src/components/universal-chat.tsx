@@ -24,6 +24,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { AgentProgress, type ProgressStep, type ProgressMetrics } from "@/components/agent-progress";
 import { useWebSocketStream } from "@/hooks/use-websocket-stream";
 import { ConnectionStatus } from "@/components/connection-status";
+import { HexOrbitLoader } from "@/components/bee-animations";
 import { nanoid } from "nanoid";
 import CostPreview from "@/components/cost-preview";
 import { ChangesPanel } from "@/components/changes-panel";
@@ -205,11 +206,18 @@ export function UniversalChat({
     }
   }, [runState.error, toast]);
 
-  // Auto-scroll task progress to bottom when new tasks appear
+  // Auto-scroll task progress and latest message to bottom when new tasks/messages appear
   useEffect(() => {
-    if (taskProgressRef.current && isAutoScrolling.current) {
+    if (isAutoScrolling.current) {
       flushSync(() => {
-        taskProgressRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        // Scroll task progress first
+        if (taskProgressRef.current) {
+          taskProgressRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        // Then scroll latest message
+        if (latestMessageRef.current) {
+          latestMessageRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
       });
     }
   }, [runState.messages.length, isGenerating]);
@@ -770,10 +778,10 @@ export function UniversalChat({
                   ))}
                 </div>
 
-                {/* Loading indicator */}
+                {/* Loading indicator with Queen Bee animation */}
                 {isGenerating && (
-                  <div className="flex gap-2 items-center text-xs text-slate-600 dark:text-slate-300" data-testid="loading-indicator">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-[hsl(var(--primary))]" />
+                  <div className="flex gap-3 items-center text-xs text-slate-600 dark:text-slate-300" data-testid="loading-indicator">
+                    <HexOrbitLoader size="md" className="flex-shrink-0" />
                     <span className="font-semibold">
                       {runState.phase === 'thinking' ? 'Thinking...' : 
                        runState.phase === 'planning' ? 'Planning...' :
