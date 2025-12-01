@@ -114,8 +114,8 @@ export function AppLayout({ children }: AppLayoutProps) {
         "transition-transform duration-300 ease-in-out lg:translate-x-0",
         mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        {/* Logo - PROUD & PROMINENT with dark background */}
-        <div className="h-20 border-b flex items-center px-4 gap-3 bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900">
+        {/* Logo - PROUD & PROMINENT */}
+        <div className="h-20 border-b flex items-center px-4 gap-3">
           <BeeHiveLogo iconSize={32} textHeight={28} variant="dark" showText={true} />
         </div>
 
