@@ -440,11 +440,20 @@ function broadcast(userId: string, jobId: string, type: string, data: any) {
 
 /**
  * Create a new BeeHiveAI job
+ * ✅ GAP FIX: Now validates project ownership
  */
-export async function createJob(userId: string, initialMessage: string) {
+export async function createJob(userId: string, initialMessage: string, projectId?: string) {
   // 🛡️ SAFETY CHECK - Don't create jobs for simple conversational messages
   if (isSimpleMessage(initialMessage)) {
     throw new Error('Simple conversational messages should not create jobs. Please respond directly instead.');
+  }
+
+  // ✅ PROJECT OWNERSHIP CHECK - Verify user owns the project
+  if (projectId) {
+    const project = await db.select().from(projects).where(eq(projects.id, projectId)).limit(1);
+    if (!project.length || project[0].userId !== userId) {
+      throw new Error(`Access denied: You do not own project ${projectId}`);
+    }
   }
 
   // Check for existing active job
@@ -459,15 +468,15 @@ export async function createJob(userId: string, initialMessage: string) {
     throw new Error('You already have an active BeeHiveAI job. Please wait or resume it.');
   }
 
-  // Create new job
+  // Create new job with project context
   const [job] = await db.insert(lomuJobs).values({
     userId,
     status: 'pending',
     conversationState: [{ role: 'user', content: initialMessage }],
-    metadata: { initialMessage },
+    metadata: { initialMessage, projectId: projectId || null },
   }).returning();
 
-  console.log('[BEEHIVE-AI-JOB-MANAGER] Created job:', job.id, 'for user:', userId);
+  console.log('[BEEHIVE-AI-JOB-MANAGER] Created job:', job.id, 'for user:', userId, 'project:', projectId || 'platform');
   return job;
 }
 
@@ -2100,6 +2109,18 @@ Let's build! 🚀`;
         } else {
           // Nothing to do or hit max iterations
           continueLoop = false;
+        }
+        
+        // ✅ JOB COMPLETION MONITORING - Update status when job ends
+        if (!continueLoop) {
+          try {
+            await db.update(lomuJobs)
+              .set({ status: 'completed', completedAt: new Date() })
+              .where(eq(lomuJobs.id, jobId));
+            broadcast(userId, jobId, 'job_completed', { message: 'Job completed successfully' });
+          } catch (error: any) {
+            console.error('[LOMU-AI-JOB-MANAGER] Failed to update job status:', error);
+          }
         }
       } else {
         // Tools were called - continue the loop
