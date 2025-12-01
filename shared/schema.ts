@@ -1611,7 +1611,7 @@ export const costTracking = pgTable("cost_tracking", {
   userId: varchar("user_id").notNull(),
   projectId: varchar("project_id"),
   operationType: text("operation_type").notNull(), // 'ai_generation', 'ai_chat', 'storage', 'bandwidth', 'deployment'
-  resourceType: text("resource_type").notNull(), // 'claude_tokens', 'storage_gb', 'bandwidth_gb', etc.
+  resourceType: text("resource_type").notNull(), // 'gemini_tokens', 'storage_gb', 'bandwidth_gb', etc.
 
   // Token usage (for AI operations)
   inputTokens: integer("input_tokens").default(0),
@@ -3640,7 +3640,7 @@ export const aiModelCatalogue = pgTable('ai_model_catalogue', {
   id: varchar('id').primaryKey(), // 'gemini-2.5-flash', 'gpt-4', etc.
   
   // Model info
-  provider: varchar('provider', { length: 50 }).notNull(), // 'google' | 'openai' | 'anthropic'
+  provider: varchar('provider', { length: 50 }).notNull(), // 'google' (Gemini-only architecture)
   displayName: varchar('display_name', { length: 100 }).notNull(),
   description: text('description'),
   
