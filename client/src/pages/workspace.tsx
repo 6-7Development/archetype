@@ -9,9 +9,17 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { UniversalChat } from "@/components/universal-chat";
 import { MobileWorkspace } from "@/components/mobile-workspace";
 import { LivePreview } from "@/components/live-preview";
+import { GitPanel } from "@/components/git-panel";
+import { MigrationsPanel } from "@/components/migrations-panel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useVersion } from "@/providers/version-provider";
@@ -34,8 +42,13 @@ import {
   LayoutDashboard,
   ArrowLeft,
   Menu,
+  Sparkles,
+  Database,
+  GitBranch,
+  ChevronDown,
+  FolderOpen,
 } from "lucide-react";
-import type { File } from "@shared/schema";
+import type { File, Project } from "@shared/schema";
 import { cn } from "@/lib/utils";
 
 export default function Workspace() {
@@ -55,11 +68,20 @@ export default function Workspace() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const { isMobile, version } = useVersion();
 
+  // Fetch all user projects for project selector - always enabled for switching between projects
+  const { data: userProjects = [], isLoading: projectsLoading } = useQuery<Project[]>({
+    queryKey: ['/api/projects'],
+    enabled: !!user,
+  });
+
   // Fetch project data if projectId provided
   const { data: project, isLoading: projectLoading } = useQuery({
     queryKey: [`/api/projects/${projectId}`],
     enabled: !!projectId,
   });
+  
+  // Get current project name for the selector display
+  const currentProject = userProjects.find(p => p.id === projectId);
 
   // Fetch tasks for this project
   const { data: tasksData } = useQuery({
@@ -72,6 +94,15 @@ export default function Workspace() {
     queryKey: [`/api/projects/${projectId}/files`, previewRefreshKey],
     enabled: !!projectId,
   });
+
+  // Handle project selection - navigate to project workspace
+  const handleProjectSelect = (selectedProjectId: string) => {
+    if (selectedProjectId === 'new') {
+      setLocation('/dashboard?create=true');
+    } else {
+      setLocation(`/workspace/${selectedProjectId}`);
+    }
+  };
 
   // RBAC: Determine user role and access
   const isProjectOwner = projectId && project?.ownerId === user?.id;
@@ -333,6 +364,59 @@ export default function Workspace() {
               <span className="hidden sm:inline text-xs">Dashboard</span>
             </Link>
           </Button>
+          
+          {/* Project Selector - Navigate to specific project */}
+          <div className="flex items-center gap-2 pl-3 border-l">
+            <FolderOpen className="h-4 w-4 text-primary" />
+            {projectsLoading ? (
+              <div className="flex items-center gap-2 h-8 px-3 text-xs text-muted-foreground">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <span>Loading...</span>
+              </div>
+            ) : userProjects.length === 0 ? (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-8 text-xs"
+                onClick={() => setLocation('/dashboard?create=true')}
+                data-testid="button-create-first-project"
+              >
+                <Plus className="h-3.5 w-3.5 mr-1" />
+                Create Project
+              </Button>
+            ) : (
+              <Select onValueChange={handleProjectSelect} value={projectId || undefined}>
+                <SelectTrigger 
+                  className="h-8 w-[180px] text-xs" 
+                  data-testid="select-project"
+                >
+                  <SelectValue placeholder="Select a project">
+                    {currentProject?.name || "Select a project"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {userProjects.map((proj) => (
+                    <SelectItem 
+                      key={proj.id} 
+                      value={proj.id}
+                      data-testid={`select-item-project-${proj.id}`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Folder className="h-3.5 w-3.5" />
+                        <span>{proj.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="new" data-testid="select-item-new-project">
+                    <div className="flex items-center gap-2 text-primary">
+                      <Plus className="h-3.5 w-3.5" />
+                      <span>Create New Project</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          </div>
           
           {/* Hamburger menu (mobile only) */}
           {isMobile && (
