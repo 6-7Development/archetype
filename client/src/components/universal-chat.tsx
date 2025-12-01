@@ -665,6 +665,7 @@ export function UniversalChat({
                         message={message}
                         index={index}
                         totalMessages={runState.messages.length}
+                        isGenerating={isGenerating && index === runState.messages.length - 1 && message.role === 'assistant'}
                       />
                     ))}
                   </div>
@@ -739,16 +740,16 @@ export function UniversalChat({
               <>
                 {/* In Progress Tasks (Replit Agent 3 style) */}
                 {runState.messages.length > 0 && (
-                  <div ref={taskProgressRef} className="mb-2 bg-slate-100 dark:bg-slate-800/50 rounded-md border border-slate-200 dark:border-slate-700 overflow-hidden">
+                  <div ref={taskProgressRef} className="mb-4 bg-slate-100 dark:bg-slate-800/50 rounded-md border border-slate-200 dark:border-slate-700 overflow-hidden">
                     <Collapsible defaultOpen={true}>
-                      <CollapsibleTrigger className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors">
-                        <div className="flex items-center gap-1.5">
-                          <ChevronDown className="h-3.5 w-3.5 text-slate-600 dark:text-slate-400" />
-                          <span className="font-semibold text-xs text-slate-700 dark:text-slate-200">In progress tasks</span>
+                      <CollapsibleTrigger className="w-full px-4 py-2.5 flex items-center justify-between hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors gap-2">
+                        <div className="flex items-center gap-2">
+                          <ChevronDown className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                          <span className="font-semibold text-sm text-slate-700 dark:text-slate-200">In progress tasks</span>
                         </div>
                         <span className="text-xs font-mono text-slate-500 dark:text-slate-400">{Math.min(runState.messages.filter(m => m.role === 'assistant').length, 6)} / 6</span>
                       </CollapsibleTrigger>
-                      <CollapsibleContent className="px-3 pb-1.5 space-y-1 border-t border-slate-200 dark:border-slate-700">
+                      <CollapsibleContent className="px-4 py-3 space-y-2 border-t border-slate-200 dark:border-slate-700">
                         {runState.messages.filter(m => m.role === 'assistant').slice(0, 6).map((msg, idx) => (
                           <div key={idx} className="flex items-start gap-1.5 text-xs">
                             <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
@@ -767,13 +768,14 @@ export function UniversalChat({
                 )}
 
                 {/* Messages with image rendering */}
-                <div className="space-y-2">
+                <div className="space-y-4">
                   {runState.messages.map((message, index) => (
                     <MessageBubble
                       key={`${message.id || message.messageId || index}-${index}`}
                       message={message}
                       index={index}
                       totalMessages={runState.messages.length}
+                      isGenerating={isGenerating && index === runState.messages.length - 1 && message.role === 'assistant'}
                     />
                   ))}
                 </div>
