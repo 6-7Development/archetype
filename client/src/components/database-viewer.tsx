@@ -6,7 +6,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-export function DatabaseViewer() {
+interface DatabaseViewerProps {
+  refreshKey?: number;
+}
+
+export function DatabaseViewer({ refreshKey = 0 }: DatabaseViewerProps) {
   const [query, setQuery] = useState('SELECT * FROM users LIMIT 10;');
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);

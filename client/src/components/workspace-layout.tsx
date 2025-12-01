@@ -4,7 +4,7 @@
  * Supports both user projects and platform healing (admin mode)
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'wouter';
 import { Terminal as TerminalIcon, Eye, FileText, Settings, ChevronDown, Plus, X, GitBranch, TestTube, Database, Key, Zap, Package, Search, Box, Bug, AlertCircle, Zap as API, Sparkles } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -20,6 +20,7 @@ import { TestingPanel } from '@/components/testing-panel';
 import { DatabaseViewer } from '@/components/database-viewer';
 import { EnvironmentEditor } from '@/components/environment-editor';
 import { LogsViewer } from '@/components/logs-viewer';
+import { LivePreview } from '@/components/live-preview';
 import { PackageManager } from '@/components/package-manager';
 import { SearchPanel } from '@/components/search-panel';
 import { IDESettings } from '@/components/ide-settings';
@@ -75,6 +76,18 @@ export function WorkspaceLayout({
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [selectedTab, setSelectedTab] = useState<'editor' | 'preview' | 'terminal' | 'files' | 'git' | 'tests' | 'database' | 'env' | 'logs' | 'packages' | 'search' | 'deploy' | 'debugger' | 'problems' | 'api' | 'ai' | 'settings' | 'healing'>('editor');
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const prevProjectIdRef = useRef<string | null>(null);
+
+  // Detect project change and force all tabs to refresh
+  useEffect(() => {
+    if (projectId && projectId !== prevProjectIdRef.current) {
+      console.log('[WORKSPACE] 🔄 Project changed:', prevProjectIdRef.current, '→', projectId);
+      prevProjectIdRef.current = projectId;
+      setRefreshKey(prev => prev + 1);
+      console.log('[WORKSPACE] ⚡ Force refresh triggered for ALL tabs');
+    }
+  }, [projectId]);
 
   // RBAC: Only show appropriate content
   const canEditProject = userRole === 'owner' || userRole === 'admin' || userRole === 'super_admin';
@@ -423,18 +436,13 @@ export function WorkspaceLayout({
             </TabsContent>
 
             <TabsContent value="preview" className="flex-1 overflow-hidden p-0">
-              <div className="h-full flex items-center justify-center bg-card/50 text-muted-foreground">
-                <div className="text-center space-y-2">
-                  <Eye className="w-12 h-12 mx-auto opacity-50" />
-                  <p className="text-sm">Preview will be available soon</p>
-                  <p className="text-xs">Develop on the go with the mobile app</p>
-                </div>
-              </div>
+              <LivePreview projectId={projectId} refreshKey={refreshKey} />
             </TabsContent>
 
             <TabsContent value="files" className="flex-1 overflow-hidden p-0">
               <FileBrowser 
-                projectId={projectId} 
+                projectId={projectId}
+                refreshKey={refreshKey}
                 onFileSelect={(path) => console.log('[FILES] Selected:', path)}
                 onFileDoubleClick={(path) => console.log('[FILES] Double-clicked:', path)}
               />
@@ -447,19 +455,19 @@ export function WorkspaceLayout({
             </TabsContent>
 
             <TabsContent value="database" className="flex-1 overflow-hidden p-0">
-              <DatabaseViewer />
+              <DatabaseViewer refreshKey={refreshKey} />
             </TabsContent>
 
             <TabsContent value="terminal" className="flex-1 overflow-hidden p-0">
-              <Terminal projectId={projectId} />
+              <Terminal projectId={projectId} refreshKey={refreshKey} />
             </TabsContent>
 
             <TabsContent value="env" className="flex-1 overflow-hidden p-0">
-              <EnvironmentEditor />
+              <EnvironmentEditor refreshKey={refreshKey} />
             </TabsContent>
 
             <TabsContent value="logs" className="flex-1 overflow-hidden p-0">
-              <LogsViewer />
+              <LogsViewer refreshKey={refreshKey} />
             </TabsContent>
 
             <TabsContent value="tests" className="flex-1 overflow-hidden p-0">

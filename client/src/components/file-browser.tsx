@@ -19,12 +19,13 @@ interface FileBrowserProps {
   changedFiles?: string[];
   onFileDoubleClick?: (path: string) => void;
   projectId?: string;
+  refreshKey?: number;
 }
 
 // Fetch real files from API
-function useProjectFiles(projectId?: string) {
+function useProjectFiles(projectId?: string, refreshKey?: number) {
   return useQuery({
-    queryKey: ['/api/project-files', projectId],
+    queryKey: ['/api/project-files', projectId, refreshKey],
     queryFn: async () => {
       const url = projectId 
         ? `/api/project-files?projectId=${encodeURIComponent(projectId)}`
@@ -33,7 +34,7 @@ function useProjectFiles(projectId?: string) {
       if (!res.ok) throw new Error('Failed to load files');
       return res.json();
     },
-    staleTime: 30000, // 30 seconds
+    staleTime: 0, // Always fresh when refreshKey changes
   });
 }
 
@@ -111,9 +112,10 @@ export function FileBrowser({
   onFileSelect, 
   onFileDoubleClick,
   changedFiles,
-  projectId
+  projectId,
+  refreshKey = 0
 }: FileBrowserProps) {
-  const { data, isLoading } = useProjectFiles(projectId);
+  const { data, isLoading } = useProjectFiles(projectId, refreshKey);
   const files = data?.files || propFiles || [];
 
   return (

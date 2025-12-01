@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 interface TerminalProps {
   projectId: string;
+  refreshKey?: number;
 }
 
 interface TerminalLine {
@@ -15,7 +16,7 @@ interface TerminalLine {
   content: string;
 }
 
-export function Terminal({ projectId }: TerminalProps) {
+export function Terminal({ projectId, refreshKey = 0 }: TerminalProps) {
   const { user } = useAuth();
   const [lines, setLines] = useState<TerminalLine[]>([
     { type: 'output', content: 'Welcome to BeeHive Terminal' },

@@ -12,7 +12,11 @@ interface LogEntry {
   source: string;
 }
 
-export function LogsViewer() {
+interface LogsViewerProps {
+  refreshKey?: number;
+}
+
+export function LogsViewer({ refreshKey = 0 }: LogsViewerProps) {
   const [logs, setLogs] = useState<LogEntry[]>([
     { timestamp: '14:32:15', level: 'info', message: 'Server started on port 5000', source: 'Express' },
     { timestamp: '14:32:16', level: 'info', message: 'Database connected', source: 'Postgres' },

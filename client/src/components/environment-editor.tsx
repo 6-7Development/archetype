@@ -12,7 +12,11 @@ interface EnvVar {
   isSecret: boolean;
 }
 
-export function EnvironmentEditor() {
+interface EnvironmentEditorProps {
+  refreshKey?: number;
+}
+
+export function EnvironmentEditor({ refreshKey = 0 }: EnvironmentEditorProps) {
   const [vars, setVars] = useState<EnvVar[]>([
     { key: 'DATABASE_URL', value: '••••••••', isSecret: true },
     { key: 'API_KEY', value: '••••••••', isSecret: true },
