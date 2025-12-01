@@ -396,16 +396,16 @@
 /* Hero bee - slow hovering motion */
 @keyframes hero-bee-hover {
   0%, 100% {
-    transform: translate(46px, 2px);
+    transform: translate(40px, 4px);
   }
   25% {
-    transform: translate(47px, 1px);
+    transform: translate(41px, 3px);
   }
   50% {
-    transform: translate(46px, 0px);
+    transform: translate(40px, 2px);
   }
   75% {
-    transform: translate(45px, 1px);
+    transform: translate(39px, 3px);
   }
 }
 
@@ -449,11 +449,11 @@
 /* Accent bee - gentle float for depth */
 @keyframes accent-bee-float {
   0%, 100% {
-    transform: translate(2px, 48px) scale(0.6);
+    transform: translate(2px, 46px) scale(0.5);
     opacity: 1;
   }
   50% {
-    transform: translate(3px, 47px) scale(0.6);
+    transform: translate(3px, 45px) scale(0.5);
     opacity: 0.9;
   }
 }

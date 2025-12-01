@@ -1,14 +1,13 @@
 /**
- * BeeHive Logo - Professional Honeycomb Mark with Hero Bee
+ * BeeHive Logo - Professional Honeycomb Mark with Detailed Hero Bee
  * 
- * Design principles:
- * - Bold stacked honeycomb as primary focal point
- * - Single hero bee anchored at upper-right for narrative focus
- * - Precise 60° hex geometry with consistent stroke hierarchy
- * - Simplified bee anatomy: head, thorax, striped abdomen, wing pair
- * - Subtle animation that enhances rather than overwhelms
+ * Design specifications:
+ * - 7-cell honeycomb flower pattern with precise 60° flat-top hex geometry
+ * - Hero bee with full anatomy: antennae, compound eyes, thorax, 
+ *   striped abdomen, 6 legs, wings, stinger
+ * - Optimized for 64x64 viewBox, scales cleanly to all sizes
  * 
- * Brand colors: Honey (#F7B500), Nectar (#FFD34D), Mint (#00D4B3), Charcoal (#101113)
+ * Brand colors: Honey (#F7B500), Nectar (#FFD34D), Mint (#00D9A3), Charcoal (#101113)
  */
 
 interface BeeHiveLogoProps {
@@ -37,25 +36,31 @@ const SIZE_TEXT = {
 
 const VARIANT_COLORS = {
   primary: {
-    text: 'hsl(216, 9%, 7%)',
-    honey: 'hsl(40, 97%, 48%)',
-    nectar: 'hsl(48, 100%, 65%)',
-    mint: 'hsl(171, 100%, 42%)',
-    dark: 'hsl(216, 11%, 15%)',
+    text: '#101113',
+    honey: '#F7B500',
+    nectar: '#FFD34D',
+    mint: '#00D9A3',
+    stroke: '#E59B00',
+    dark: '#101113',
+    thorax: '#141B2E',
   },
   dark: {
-    text: 'hsl(47, 100%, 95%)',
-    honey: 'hsl(40, 97%, 50%)',
-    nectar: 'hsl(48, 100%, 68%)',
-    mint: 'hsl(171, 100%, 45%)',
-    dark: 'hsl(216, 11%, 25%)',
+    text: '#FFF8E6',
+    honey: '#F7B500',
+    nectar: '#FFD34D',
+    mint: '#00D9A3',
+    stroke: '#E59B00',
+    dark: '#101113',
+    thorax: '#141B2E',
   },
   light: {
-    text: 'hsl(40, 97%, 50%)',
-    honey: 'hsl(40, 97%, 52%)',
-    nectar: 'hsl(48, 100%, 70%)',
-    mint: 'hsl(171, 100%, 42%)',
-    dark: 'hsl(216, 9%, 20%)',
+    text: '#F7B500',
+    honey: '#F7B500',
+    nectar: '#FFD34D',
+    mint: '#00D9A3',
+    stroke: '#E59B00',
+    dark: '#101113',
+    thorax: '#141B2E',
   },
 };
 
@@ -74,7 +79,7 @@ export function BeeHiveLogo({
 
   return (
     <div className={`inline-flex items-center ${showText ? 'gap-3' : ''} ${className}`}>
-      {/* Professional Honeycomb Mark with Hero Bee */}
+      {/* Professional Honeycomb Mark with Detailed Hero Bee */}
       <svg
         width={svgSize}
         height={svgSize}
@@ -86,144 +91,126 @@ export function BeeHiveLogo({
       >
         <defs>
           {/* Honey gradient for cells */}
-          <linearGradient id="honeyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor={colors.nectar} />
-            <stop offset="100%" stopColor={colors.honey} />
+          <linearGradient id="honeyFill" x1="18" y1="14" x2="46" y2="50" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stopColor={colors.nectar} />
+            <stop offset="1" stopColor={colors.honey} />
           </linearGradient>
-          
-          {/* Subtle shadow for depth */}
-          <filter id="cellShadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="1" stdDeviation="1" floodOpacity="0.15"/>
-          </filter>
         </defs>
 
         {/* ========================================
-            HONEYCOMB GRID - 7 hexagons in flower pattern
-            Using precise 60° geometry
-            ======================================== */}
-        
-        {/* Center hexagon - largest, focal point */}
-        <path
-          d="M32 12 L44 20 L44 36 L32 44 L20 36 L20 20 Z"
-          fill="url(#honeyGrad)"
-          stroke={colors.honey}
-          strokeWidth="1.5"
-          filter="url(#cellShadow)"
-        />
-        
-        {/* Top-left hex */}
-        <path
-          d="M20 4 L29 9 L29 19 L20 24 L11 19 L11 9 Z"
-          fill="url(#honeyGrad)"
-          stroke={colors.honey}
-          strokeWidth="1"
-          opacity="0.85"
-        />
-        
-        {/* Top-right hex */}
-        <path
-          d="M44 4 L53 9 L53 19 L44 24 L35 19 L35 9 Z"
-          fill="url(#honeyGrad)"
-          stroke={colors.honey}
-          strokeWidth="1"
-          opacity="0.85"
-        />
-        
-        {/* Left hex */}
-        <path
-          d="M8 20 L17 25 L17 35 L8 40 L-1 35 L-1 25 Z"
-          fill="url(#honeyGrad)"
-          stroke={colors.honey}
-          strokeWidth="1"
-          opacity="0.7"
-        />
-        
-        {/* Right hex */}
-        <path
-          d="M56 20 L65 25 L65 35 L56 40 L47 35 L47 25 Z"
-          fill="url(#honeyGrad)"
-          stroke={colors.honey}
-          strokeWidth="1"
-          opacity="0.7"
-        />
-        
-        {/* Bottom-left hex */}
-        <path
-          d="M20 40 L29 45 L29 55 L20 60 L11 55 L11 45 Z"
-          fill="url(#honeyGrad)"
-          stroke={colors.honey}
-          strokeWidth="1"
-          opacity="0.6"
-        />
-        
-        {/* Bottom-right hex */}
-        <path
-          d="M44 40 L53 45 L53 55 L44 60 L35 55 L35 45 Z"
-          fill="url(#honeyGrad)"
-          stroke={colors.honey}
-          strokeWidth="1"
-          opacity="0.6"
-        />
-
-        {/* ========================================
-            HERO BEE - Upper right, narrative focus
-            Anatomically correct: head, thorax, abdomen, wings
+            HONEYCOMB GRID - 7 cells in precise flower pattern
+            Flat-top hexagons, size=8, 60° geometry
             ======================================== */}
         <g 
-          className={animated ? "hero-bee" : ""} 
-          transform="translate(46, 2)"
+          id="honeycomb" 
+          stroke={colors.stroke} 
+          strokeWidth="1.25" 
+          strokeLinejoin="round" 
+          fill="url(#honeyFill)"
         >
-          {/* Wings - translucent, behind body */}
-          <ellipse
-            className={animated ? "bee-wing-left" : ""}
-            cx="4"
-            cy="6"
-            rx="5"
-            ry="3"
-            fill={colors.mint}
-            opacity="0.5"
-            transform="rotate(-30 4 6)"
-          />
-          <ellipse
-            className={animated ? "bee-wing-right" : ""}
-            cx="12"
-            cy="6"
-            rx="5"
-            ry="3"
-            fill={colors.mint}
-            opacity="0.5"
-            transform="rotate(30 12 6)"
-          />
+          {/* Center hexagon */}
+          <path d="M36 25.072 L28 25.072 L24 32 L28 38.928 L36 38.928 L40 32 Z"/>
           
-          {/* Head - small dark circle with eyes */}
-          <circle cx="8" cy="4" r="2.5" fill={colors.dark} />
-          <circle cx="7" cy="3.5" r="0.6" fill={colors.nectar} opacity="0.9" />
-          <circle cx="9" cy="3.5" r="0.6" fill={colors.nectar} opacity="0.9" />
+          {/* Right hex */}
+          <path d="M48 32 L40 32 L36 38.928 L40 45.856 L48 45.856 L52 38.928 Z"/>
           
-          {/* Thorax - middle section */}
-          <ellipse cx="8" cy="8" rx="2.5" ry="2" fill={colors.dark} />
+          {/* Bottom-center hex */}
+          <path d="M36 38.928 L28 38.928 L24 45.856 L28 52.784 L36 52.784 L40 45.856 Z"/>
           
-          {/* Abdomen - striped pattern (3 stripes) */}
-          <ellipse cx="8" cy="13" rx="3" ry="4" fill={colors.honey} />
-          <ellipse cx="8" cy="11.5" rx="2.8" ry="1" fill={colors.dark} />
-          <ellipse cx="8" cy="14" rx="2.5" ry="0.8" fill={colors.dark} />
+          {/* Left hex */}
+          <path d="M24 32 L16 32 L12 38.928 L16 45.856 L24 45.856 L28 38.928 Z"/>
           
-          {/* Stinger */}
-          <path d="M8 16.5 L8 18" stroke={colors.dark} strokeWidth="0.8" strokeLinecap="round" />
+          {/* Top-left hex */}
+          <path d="M24 18.144 L16 18.144 L12 25.072 L16 32 L24 32 L28 25.072 Z"/>
+          
+          {/* Top-center hex */}
+          <path d="M36 11.216 L28 11.216 L24 18.144 L28 25.072 L36 25.072 L40 18.144 Z"/>
+          
+          {/* Top-right hex */}
+          <path d="M48 18.144 L40 18.144 L36 25.072 L40 32 L48 32 L52 25.072 Z"/>
         </g>
 
-        {/* Small accent bee - bottom left, adds depth */}
+        {/* ========================================
+            HERO BEE - Full anatomy
+            Antennae, compound eyes, thorax, striped abdomen,
+            6 legs, wings, stinger
+            ======================================== */}
         <g 
-          className={animated ? "accent-bee" : ""} 
-          transform="translate(2, 48) scale(0.6)"
+          id="hero-bee" 
+          className={animated ? "hero-bee" : ""}
+          transform="translate(40 4)"
         >
-          {/* Simplified mini bee */}
-          <ellipse cx="6" cy="4" rx="3" ry="2" fill={colors.mint} opacity="0.4" transform="rotate(-20 6 4)" />
-          <ellipse cx="10" cy="4" rx="3" ry="2" fill={colors.mint} opacity="0.4" transform="rotate(20 10 4)" />
-          <circle cx="8" cy="3" r="1.5" fill={colors.dark} />
-          <ellipse cx="8" cy="7" rx="2" ry="3" fill={colors.honey} />
-          <ellipse cx="8" cy="6" rx="1.8" ry="0.6" fill={colors.dark} />
-          <ellipse cx="8" cy="8" rx="1.5" ry="0.5" fill={colors.dark} />
+          {/* Wings - translucent, overlapping */}
+          <path 
+            className={animated ? "bee-wing-left" : ""}
+            d="M6.4 7.8 C1.8 4.4 1.9 1.5 7.2 2.3 C11.1 2.9 11.2 6.7 6.4 7.8 Z" 
+            fill={colors.mint} 
+            opacity="0.55"
+          />
+          <path 
+            className={animated ? "bee-wing-right" : ""}
+            d="M13.6 7.8 C18.2 4.4 18.1 1.5 12.8 2.3 C8.9 2.9 8.8 6.7 13.6 7.8 Z" 
+            fill={colors.mint} 
+            opacity="0.45"
+          />
+          
+          {/* Head */}
+          <circle cx="10" cy="6.6" r="2.2" fill={colors.dark} />
+          
+          {/* Antennae */}
+          <path d="M8.6 4.6 Q8.2 2.8 7.0 2.2" stroke={colors.dark} strokeWidth="0.6" strokeLinecap="round" fill="none" />
+          <path d="M11.4 4.6 Q11.8 2.8 13.0 2.2" stroke={colors.dark} strokeWidth="0.6" strokeLinecap="round" fill="none" />
+          
+          {/* Compound eyes */}
+          <circle cx="9.2" cy="6.0" r="0.5" fill={colors.nectar} opacity="0.9" />
+          <circle cx="10.8" cy="6.0" r="0.5" fill={colors.nectar} opacity="0.9" />
+          
+          {/* Thorax */}
+          <ellipse cx="10" cy="9.6" rx="2.4" ry="1.8" fill={colors.thorax} />
+          
+          {/* Abdomen - striped */}
+          <path 
+            d="M10 11.4 C13.2 11.4 15 13.5 15 15.8 C15 18.2 13.2 20 10 20 C6.8 20 5 18.2 5 15.8 C5 13.5 6.8 11.4 10 11.4 Z" 
+            fill={colors.honey} 
+          />
+          
+          {/* Abdomen stripes */}
+          <rect x="6.2" y="13.2" width="7.6" height="1.0" rx="0.5" fill={colors.dark} />
+          <rect x="5.8" y="15.4" width="8.4" height="1.0" rx="0.5" fill={colors.dark} />
+          <rect x="6.2" y="17.5" width="7.6" height="0.9" rx="0.45" fill={colors.dark} />
+          
+          {/* Stinger */}
+          <path d="M10 20 L10 22" stroke={colors.dark} strokeWidth="0.8" strokeLinecap="round" />
+          
+          {/* Left legs (3) */}
+          <path d="M6.2 12.4 L3.8 13.6" stroke={colors.dark} strokeWidth="0.7" strokeLinecap="round" />
+          <path d="M5.6 14.8 L3.2 16.0" stroke={colors.dark} strokeWidth="0.7" strokeLinecap="round" />
+          <path d="M5.8 17.2 L3.6 18.6" stroke={colors.dark} strokeWidth="0.7" strokeLinecap="round" />
+          
+          {/* Right legs (3) */}
+          <path d="M13.8 12.4 L16.2 13.6" stroke={colors.dark} strokeWidth="0.7" strokeLinecap="round" />
+          <path d="M14.4 14.8 L16.8 16.0" stroke={colors.dark} strokeWidth="0.7" strokeLinecap="round" />
+          <path d="M14.2 17.2 L16.4 18.6" stroke={colors.dark} strokeWidth="0.7" strokeLinecap="round" />
+        </g>
+
+        {/* Small accent bee - adds depth, bottom area */}
+        <g 
+          id="accent-bee" 
+          className={animated ? "accent-bee" : ""}
+          transform="translate(2 46) scale(0.5)"
+        >
+          {/* Mini wings */}
+          <ellipse cx="8" cy="4" rx="4" ry="2.5" fill={colors.mint} opacity="0.4" />
+          <ellipse cx="12" cy="4" rx="4" ry="2.5" fill={colors.mint} opacity="0.35" />
+          
+          {/* Mini head */}
+          <circle cx="10" cy="5" r="1.8" fill={colors.dark} />
+          
+          {/* Mini body */}
+          <ellipse cx="10" cy="9" rx="2" ry="3.5" fill={colors.honey} />
+          <rect x="8.2" y="7.5" width="3.6" height="0.7" rx="0.35" fill={colors.dark} />
+          <rect x="8" y="9.2" width="4" height="0.7" rx="0.35" fill={colors.dark} />
+          <rect x="8.2" y="10.8" width="3.6" height="0.6" rx="0.3" fill={colors.dark} />
         </g>
       </svg>
 
