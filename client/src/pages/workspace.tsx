@@ -67,9 +67,9 @@ export default function Workspace() {
     enabled: !!projectId,
   });
 
-  // Fetch project files
+  // Fetch project files - refetch when project changes or previewRefreshKey updates
   const { data: projectFiles = [] } = useQuery<File[]>({
-    queryKey: [`/api/projects/${projectId}/files`],
+    queryKey: [`/api/projects/${projectId}/files`, previewRefreshKey],
     enabled: !!projectId,
   });
 

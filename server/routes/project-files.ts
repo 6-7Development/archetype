@@ -83,20 +83,23 @@ export function registerProjectFileRoutes(app: Express) {
       // Determine the target directory
       let targetDir = PROJECT_ROOT;
       if (projectId && projectId !== 'platform-healing') {
-        // If projectId is specified (e.g., "test-project"), isolate to that directory
-        targetDir = join(PROJECT_ROOT, projectId);
-        console.log(`[PROJECT-FILES] Isolating to project: ${projectId} → ${targetDir}`);
+        // User projects are stored in /uploads/{projectId}
+        targetDir = join("/uploads", projectId);
+        console.log(`[PROJECT-FILES] 📁 Loading project "${projectId}" from: ${targetDir}`);
       } else if (projectId === 'platform-healing') {
         // Platform healing gets full workspace view
-        console.log("[PROJECT-FILES] Platform healing - showing full workspace");
+        console.log("[PROJECT-FILES] 🏥 Platform healing - showing full workspace");
+      } else {
+        // Default: workspace root
+        console.log("[PROJECT-FILES] 📁 Loading default workspace");
       }
       
-      console.log("[PROJECT-FILES] Building file tree...");
+      console.log("[PROJECT-FILES] 🔨 Building file tree...");
       const files = await buildFileTree(targetDir);
-      console.log(`[PROJECT-FILES] Found ${files.length} root items (projectId: ${projectId || 'default'})`);
+      console.log(`[PROJECT-FILES] ✅ Found ${files.length} items (projectId: ${projectId || 'workspace'})`);
       res.json({ success: true, files });
     } catch (error) {
-      console.error("[PROJECT-FILES-API] Error:", error);
+      console.error("[PROJECT-FILES-API] ❌ Error:", error);
       res.status(500).json({ success: false, error: "Failed to load project files" });
     }
   });
