@@ -7,11 +7,20 @@
 
 ## EXECUTIVE SUMMARY
 
-Scout currently covers ~60% of Replit Agent capabilities. To achieve full parity:
+Scout currently covers ~70% of Replit Agent capabilities. To achieve full parity:
 - **4 Critical gaps** block production use (design mode, integrations, real-time browser, autonomy duration)
-- **6 Major gaps** impact core productivity (health monitoring, security, performance, dependencies)
+- **3 Major gaps** remaining (performance profiling, granular rollback, code suggestions)
+- **✅ 3 Major gaps IMPLEMENTED** (security scanning, dependency audit, code health monitoring)
 - **5 Moderate gaps** affect UX (rollback granularity, parallel editing, git integration)
 - **5 Polish gaps** enhance experience (suggestions, caching, multi-language support)
+
+### Recently Implemented (Dec 2025):
+- `security_scan` - OWASP patterns, secret detection, SQL injection, XSS, CWE codes (Gap #9)
+  - File size limits, depth controls, binary file guards added
+- `dependency_audit` - npm audit integration, CVE scoring, safe upgrade paths (Gap #7)
+  - Robust error handling, package.json validation, command failure recovery
+- `check_code_health` - TypeScript errors, broken imports, test status (Gap #5)
+  - Improved import resolver with index.ts support, proper extension handling
 
 ---
 
@@ -90,25 +99,27 @@ Scout currently covers ~60% of Replit Agent capabilities. To achieve full parity
 
 ## TIER 2: MAJOR GAPS (IMPACTS CORE PRODUCTIVITY)
 
-### Gap #5: Proactive Health Monitoring & Suggestions ❌
-**Status**: Not implemented  
+### Gap #5: Proactive Health Monitoring & Suggestions ✅ IMPLEMENTED
+**Status**: Implemented (Dec 2025)  
 **Replit Capability**: Continuous background health checks, auto-fixes  
-**Scout Status**: Reactive only (responds to user requests)  
-**Impact**: Issues pile up until user notices; no early warning system
+**Scout Status**: `check_code_health` tool provides TypeScript errors, import validation, test status  
+**Impact**: Scout can now proactively detect issues before deployment
 
-**Requirements**:
-- [ ] Background scheduler (check every 5-10 minutes)
-- [ ] LSP error continuous monitoring
-- [ ] Test suite health tracking (failed tests detector)
-- [ ] Type checking daemon
-- [ ] Import validation (broken imports)
+**Implemented**:
+- [x] Background scheduler (healthMonitor.ts - every 10 seconds)
+- [x] LSP error continuous monitoring (TypeScript check via tsc --noEmit)
+- [x] Test suite health tracking (failed tests detector)
+- [x] Type checking (TypeScript errors with line numbers)
+- [x] Import validation (broken imports detection)
+- [x] Recommendations engine (actionable fix suggestions)
+
+**Remaining**:
 - [ ] Endpoint health checks (404s, 500s)
 - [ ] Performance regression detection (bundle size, build time)
-- [ ] Dependency vulnerability alerts
 - [ ] Toast notifications for critical issues
 - [ ] "Fix All Issues" quick action button
 
-**Effort**: 20 hours | **Priority**: P1 | **Impact**: High
+**Effort**: 8 hours remaining | **Priority**: P1 | **Impact**: High
 
 ---
 
@@ -131,22 +142,26 @@ Scout currently covers ~60% of Replit Agent capabilities. To achieve full parity
 
 ---
 
-### Gap #7: Dependency Update Intelligence ❌
-**Status**: Not implemented  
+### Gap #7: Dependency Update Intelligence ✅ IMPLEMENTED
+**Status**: Implemented (Dec 2025)  
 **Replit Capability**: npm audit integration, safe upgrade paths, changelogs  
-**Scout Status**: No package management awareness  
-**Impact**: Outdated/vulnerable dependencies undetected
+**Scout Status**: `dependency_audit` tool provides CVE scanning, outdated detection, upgrade paths  
+**Impact**: Scout can proactively detect vulnerable dependencies
 
-**Requirements**:
-- [ ] npm audit JSON parsing
-- [ ] CVE severity assessment
-- [ ] Breaking change detection (compare package.json)
-- [ ] Safe upgrade pathfinding (patch vs minor vs major)
+**Implemented**:
+- [x] npm audit JSON parsing
+- [x] CVE severity assessment (critical/high/moderate/low)
+- [x] Breaking change detection (major version comparison)
+- [x] Safe upgrade pathfinding (patch vs minor vs major)
+- [x] Batch update recommendations
+- [x] Actionable fix suggestions
+
+**Remaining**:
 - [ ] Changelog fetching and summarization
-- [ ] Batch update recommendations
 - [ ] "Update all safe packages" action
+- [ ] UI integration for one-click updates
 
-**Effort**: 15 hours | **Priority**: P1 | **Impact**: High
+**Effort**: 5 hours remaining | **Priority**: P1 | **Impact**: High
 
 ---
 
@@ -170,24 +185,28 @@ Scout currently covers ~60% of Replit Agent capabilities. To achieve full parity
 
 ---
 
-### Gap #9: Security Scanning & Vulnerability Detection ❌
-**Status**: Not implemented  
+### Gap #9: Security Scanning & Vulnerability Detection ✅ IMPLEMENTED
+**Status**: Implemented (Dec 2025)  
 **Replit Capability**: OWASP pattern detection, secret scanning  
-**Scout Status**: No security analysis  
-**Impact**: Vulnerable code ships to production
+**Scout Status**: `security_scan` tool provides OWASP, secret scanning, SQL injection, XSS detection  
+**Impact**: Scout can proactively detect security vulnerabilities before deployment
 
-**Requirements**:
-- [ ] OWASP Top 10 pattern detection (injection, auth, etc.)
-- [ ] Secret/API key exposure scanning (regex patterns)
-- [ ] SQL injection risk detection (string interpolation in queries)
-- [ ] XSS vulnerability detection (unsafe innerHTML)
-- [ ] CORS misconfiguration detection
-- [ ] Authentication bypass pattern detection
-- [ ] Insecure crypto detection (no bcrypt on passwords)
+**Implemented**:
+- [x] OWASP Top 10 pattern detection (injection, auth, etc.)
+- [x] Secret/API key exposure scanning (regex patterns for 8+ secret types)
+- [x] SQL injection risk detection (template literals, string concat)
+- [x] XSS vulnerability detection (dangerouslySetInnerHTML, innerHTML, document.write)
+- [x] CORS misconfiguration detection (wildcard origin)
+- [x] Authentication bypass pattern detection (ignored bcrypt results, JWT none)
+- [x] Insecure crypto detection (MD5, SHA1, deprecated createCipher)
+- [x] CWE codes for all issues
+
+**Remaining**:
 - [ ] HTTPS enforcement checks
 - [ ] CSP header validation
+- [ ] Automated fix suggestions with code patches
 
-**Effort**: 30 hours | **Priority**: P1 | **Impact**: High
+**Effort**: 5 hours remaining | **Priority**: P1 | **Impact**: High
 
 ---
 

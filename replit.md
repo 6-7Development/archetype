@@ -134,6 +134,15 @@ The platform features a comprehensive animation system with WCAG 2.3.3 accessibi
 - `.motion-safe-only` class for decorative animations
 - Manual motion toggle via `body.reduce-motion` class
 
+## Recent Changes (Dec 1, 2025)
+- ✅ **Proactive Code Intelligence Tools (Replit Agent Parity)**:
+  - `security_scan` - OWASP patterns, secret detection, SQL injection, XSS, CWE codes (server/tools/security-scanner.ts)
+  - `dependency_audit` - npm audit integration, CVE scoring, safe upgrade paths (server/tools/dependency-audit.ts)
+  - `check_code_health` - TypeScript errors, broken imports, test status (server/tools/code-health.ts)
+  - All 3 tools added to ESSENTIAL_LOMU_TOOLS and wired into dispatcher (21 core tools total)
+  - Gap #5, #7, #9 marked as IMPLEMENTED in AGENT_GAPS_ANALYSIS.md
+- ✅ Scout parity increased from ~60% → ~70% of Replit Agent capabilities
+
 ## Recent Changes (Nov 30, 2025)
 - ✅ Completed Anthropic-to-Gemini migration (all agents now use Gemini)
 - ✅ Removed deprecated anthropic.ts, architect-review.ts, sub-agent.ts files

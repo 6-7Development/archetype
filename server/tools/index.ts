@@ -39,6 +39,11 @@ export { refreshAllLogs } from './logs';
 export { glob, ls, read, write } from './file-operations';
 export { getFileMap } from './file-map';
 
+// GROUP 7: Proactive Code Intelligence (Gap Fixes)
+export { scanSecurity, SECURITY_SCAN_TOOL } from './security-scanner';
+export { auditDependencies, DEPENDENCY_AUDIT_TOOL } from './dependency-audit';
+export { checkCodeHealth, CODE_HEALTH_TOOL } from './code-health';
+
 /**
  * BeeHive Tool Definitions
  * Complete toolset for BeeHive's autonomous development capabilities
@@ -1310,6 +1315,58 @@ export const LOMU_TOOLS = [
       required: ['documentId'],
     },
   },
+  // GROUP 7: Proactive Code Intelligence (Gap #5, #7, #9)
+  {
+    name: 'security_scan',
+    description: 'Scan codebase for security vulnerabilities: OWASP patterns, hardcoded secrets, SQL injection, XSS, authentication issues. Returns detailed report with severity levels and recommendations.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        directory: {
+          type: 'string',
+          description: 'Directory to scan (defaults to project root)',
+        },
+        verbose: {
+          type: 'boolean',
+          description: 'Include detailed descriptions for each issue',
+        },
+      },
+    },
+  },
+  {
+    name: 'dependency_audit',
+    description: 'Audit dependencies for security vulnerabilities (CVEs) and outdated packages. Uses npm audit to identify issues with severity scoring and upgrade recommendations.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        checkOutdated: {
+          type: 'boolean',
+          description: 'Also check for outdated packages (default: true)',
+        },
+        verbose: {
+          type: 'boolean',
+          description: 'Include detailed vulnerability information',
+        },
+      },
+    },
+  },
+  {
+    name: 'check_code_health',
+    description: 'Comprehensive code health check: TypeScript errors, broken imports, test status. Use proactively to identify issues before they cause problems.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        skipTests: {
+          type: 'boolean',
+          description: 'Skip running tests (faster check)',
+        },
+        verbose: {
+          type: 'boolean',
+          description: 'Include detailed error information',
+        },
+      },
+    },
+  },
 ] as const;
 
 // ============================================================================
@@ -1344,6 +1401,7 @@ export const ESSENTIAL_LOMU_TOOLS = LOMU_TOOLS.filter(tool =>
     'bash', 'read', 'write', 'glob', 'ls',
     'browser_test', 'vision_analyze', 'perform_diagnosis', 'web_search',
     'architect_consult', 'start_subagent',
-    'execute_sql_tool', 'ask_secrets', 'web_fetch', 'suggest_deploy'
+    'execute_sql_tool', 'ask_secrets', 'web_fetch', 'suggest_deploy',
+    'security_scan', 'dependency_audit', 'check_code_health'
   ].includes(tool.name)
 );
