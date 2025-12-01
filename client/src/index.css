@@ -434,57 +434,6 @@
   animation-delay: 0.06s;
 }
 
-/* SWARM BEES - Micro-bees with subtle bobbing/wobble animation */
-
-@keyframes bee-buzz-micro {
-  0%, 100% { 
-    transform: translate3d(0px, 0px, 0) rotateZ(0deg);
-    opacity: 0.8;
-  }
-  25% { 
-    transform: translate3d(1px, -1px, 0) rotateZ(-8deg);
-    opacity: 0.9;
-  }
-  50% { 
-    transform: translate3d(0px, -2px, 0) rotateZ(0deg);
-    opacity: 0.85;
-  }
-  75% { 
-    transform: translate3d(-1px, -1px, 0) rotateZ(8deg);
-    opacity: 0.9;
-  }
-}
-
-.swarm-bee {
-  animation: bee-buzz-micro 1.2s ease-in-out infinite;
-  transform-origin: center;
-  transform-box: fill-box;
-}
-
-.swarm-bee-1 {
-  animation-delay: 0s;
-}
-
-.swarm-bee-2 {
-  animation-delay: 0.2s;
-}
-
-.swarm-bee-3 {
-  animation-delay: 0.4s;
-}
-
-.swarm-bee-4 {
-  animation-delay: 0.6s;
-}
-
-.swarm-bee-5 {
-  animation-delay: 0.8s;
-}
-
-.swarm-bee-6 {
-  animation-delay: 1s;
-}
-
 /* Mobile-First Responsive Images & Media */
 @layer base {
   img,

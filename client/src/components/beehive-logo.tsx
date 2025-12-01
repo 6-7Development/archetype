@@ -147,33 +147,10 @@ const CONFIG = {
     },
   },
 
-  // Swarm bee configuration
-  swarmBees: [
-    { position: { x: 50, y: 10 }, delay: 0 },
-    { position: { x: 58, y: 32 }, delay: 0.2 },
-    { position: { x: 50, y: 58 }, delay: 0.4 },
-    { position: { x: 14, y: 58 }, delay: 0.6 },
-    { position: { x: 6, y: 32 }, delay: 0.8 },
-    { position: { x: 14, y: 10 }, delay: 1.0 },
-  ],
-
-  swarmBeeSizing: {
-    wings: { rx: 3.5, ry: 2.5, opacity: 0.7 },
-    body: { r: 2, opacity: 1 },
-    head: { r: 1.2, opacity: 1 },
-    eyes: { r: 0.4, cy: 1.5, opacity: 0.8 },
-    bodyStroke: 0.5,
-  },
-
   // Animation configuration
   animations: {
     heroBee: {
       duration: 0.3,
-    },
-    swarmBee: {
-      duration: 1.2,
-      maxTranslateY: 2,
-      maxRotate: 8,
     },
   },
 
@@ -572,58 +549,6 @@ export function BeeHiveLogo({
           </g>
         </g>
 
-        {/* SWARM BEES */}
-        {CONFIG.swarmBees.map((bee, idx) => (
-          <g
-            key={`swarm-bee-${idx}`}
-            className={animated ? `swarm-bee swarm-bee-${idx + 1}` : ''}
-            transform={`translate(${bee.position.x} ${bee.position.y})`}
-            style={{
-              animationDelay: `${bee.delay}s`,
-            }}
-          >
-            {/* Wings */}
-            <ellipse
-              cx="0"
-              cy="0"
-              rx={CONFIG.swarmBeeSizing.wings.rx}
-              ry={CONFIG.swarmBeeSizing.wings.ry}
-              fill={colors.mint}
-              opacity={CONFIG.swarmBeeSizing.wings.opacity}
-            />
-            {/* Body */}
-            <circle
-              cx="0"
-              cy={CONFIG.swarmBeeSizing.body.r + 1.2}
-              r={CONFIG.swarmBeeSizing.body.r}
-              fill={colors.honey}
-              stroke={colors.stroke}
-              strokeWidth={CONFIG.swarmBeeSizing.bodyStroke}
-            />
-            {/* Head */}
-            <circle
-              cx="0"
-              cy={CONFIG.swarmBeeSizing.head.r + 0.6}
-              r={CONFIG.swarmBeeSizing.head.r}
-              fill={colors.dark}
-            />
-            {/* Eyes */}
-            <circle
-              cx={-CONFIG.swarmBeeSizing.eyes.r}
-              cy={CONFIG.swarmBeeSizing.eyes.cy}
-              r={CONFIG.swarmBeeSizing.eyes.r}
-              fill={colors.nectar}
-              opacity={CONFIG.swarmBeeSizing.eyes.opacity}
-            />
-            <circle
-              cx={CONFIG.swarmBeeSizing.eyes.r}
-              cy={CONFIG.swarmBeeSizing.eyes.cy}
-              r={CONFIG.swarmBeeSizing.eyes.r}
-              fill={colors.nectar}
-              opacity={CONFIG.swarmBeeSizing.eyes.opacity}
-            />
-          </g>
-        ))}
       </svg>
 
       {/* BeeHive Wordmark */}
