@@ -18,35 +18,42 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* Universal Chat Scrollbar - Prominent and visible */
+/* Universal Chat Scrollbar - ALWAYS VISIBLE */
 .chat-messages-container,
-[data-testid="chat-messages-container"] {
-  scrollbar-width: thin;
-  scrollbar-color: hsl(var(--primary)/.5) transparent;
+[data-testid="chat-messages-container"],
+.overflow-y-auto {
+  scrollbar-width: auto !important;
+  scrollbar-color: hsl(var(--primary) / 0.8) hsl(var(--primary) / 0.2) !important;
 }
 
-/* Chrome/Safari scrollbar styling */
+/* Chrome/Safari scrollbar styling - ALWAYS VISIBLE */
 .chat-messages-container::-webkit-scrollbar,
-[data-testid="chat-messages-container"]::-webkit-scrollbar {
-  width: 12px;
+[data-testid="chat-messages-container"]::-webkit-scrollbar,
+.overflow-y-auto::-webkit-scrollbar {
+  width: 14px !important;
 }
 
 .chat-messages-container::-webkit-scrollbar-track,
-[data-testid="chat-messages-container"]::-webkit-scrollbar-track {
-  background: transparent;
+[data-testid="chat-messages-container"]::-webkit-scrollbar-track,
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: hsl(var(--primary) / 0.1) !important;
+  border-radius: 7px;
 }
 
 .chat-messages-container::-webkit-scrollbar-thumb,
-[data-testid="chat-messages-container"]::-webkit-scrollbar-thumb {
-  background: hsl(var(--primary) / 0.6);
-  border-radius: 6px;
+[data-testid="chat-messages-container"]::-webkit-scrollbar-thumb,
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.7) !important;
+  border-radius: 7px;
   border: 2px solid transparent;
   background-clip: padding-box;
+  min-height: 40px;
 }
 
 .chat-messages-container::-webkit-scrollbar-thumb:hover,
-[data-testid="chat-messages-container"]::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--primary) / 0.8);
+[data-testid="chat-messages-container"]::-webkit-scrollbar-thumb:hover,
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.95) !important;
   background-clip: padding-box;
 }
 

@@ -22,6 +22,8 @@ import {
   LayoutGrid,
   PanelRightClose,
   PanelRightOpen,
+  ToggleLeft,
+  ToggleRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "wouter";
@@ -31,6 +33,10 @@ export default function ChatPage() {
   const [, setLocation] = useLocation();
   const { isMobile } = useVersion();
   const { user, isLoading: authLoading } = useAuth();
+  
+  // RBAC: Context switching between project and platform modes
+  const [context, setContext] = useState<'project' | 'platform'>('project');
+  const canAccessPlatformHealing = user?.role === 'owner' || user?.role === 'admin';
 
   const [showPanel, setShowPanel] = useState(!isMobile);
   const [panelPosition, setPanelPosition] = useState<'right' | 'bottom'>('right');
