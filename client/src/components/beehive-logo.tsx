@@ -11,6 +11,7 @@ interface BeeHiveLogoProps {
   iconSize?: number;
   textHeight?: number;
   animated?: boolean;
+  showHeroBee?: boolean; // Set to true to show the hero bee on the honeycomb
 }
 
 // ============================================================================
@@ -271,6 +272,7 @@ export function BeeHiveLogo({
   iconSize,
   textHeight,
   animated = true,
+  showHeroBee = false, // Disabled by default to prevent overflow issues
 }: BeeHiveLogoProps) {
   const svgSize = iconSize || SIZE_MAP[size];
   const textSize = textHeight ? `${textHeight}px` : SIZE_TEXT[size];
@@ -374,7 +376,8 @@ export function BeeHiveLogo({
           <path d="M16 18.144 L24 18.144" />
         </g>
 
-        {/* HERO BEE - Animation disabled to prevent overflow */}
+        {/* HERO BEE - Configurable via showHeroBee prop (disabled by default) */}
+        {showHeroBee && (
         <g
           id="hero-bee"
           transform={`translate(${CONFIG.heroBee.position.x} ${CONFIG.heroBee.position.y})`}
@@ -544,6 +547,7 @@ export function BeeHiveLogo({
             ))}
           </g>
         </g>
+        )}
 
       </svg>
 
