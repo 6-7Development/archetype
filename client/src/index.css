@@ -18,6 +18,38 @@
   -webkit-overflow-scrolling: touch;
 }
 
+/* Universal Chat Scrollbar - Prominent and visible */
+.chat-messages-container,
+[data-testid="chat-messages-container"] {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--primary)/.5) transparent;
+}
+
+/* Chrome/Safari scrollbar styling */
+.chat-messages-container::-webkit-scrollbar,
+[data-testid="chat-messages-container"]::-webkit-scrollbar {
+  width: 12px;
+}
+
+.chat-messages-container::-webkit-scrollbar-track,
+[data-testid="chat-messages-container"]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-messages-container::-webkit-scrollbar-thumb,
+[data-testid="chat-messages-container"]::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.6);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.chat-messages-container::-webkit-scrollbar-thumb:hover,
+[data-testid="chat-messages-container"]::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.8);
+  background-clip: padding-box;
+}
+
 /* Custom animations for chat messages */
 @keyframes fade-in-up {
   from {

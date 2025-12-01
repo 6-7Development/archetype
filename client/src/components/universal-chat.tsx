@@ -713,7 +713,7 @@ export function UniversalChat({
         <div className="flex-1 flex flex-col h-full min-w-0">
           <div
             ref={chatContainerRef}
-            className="flex-1 overflow-y-auto px-3 py-2 space-y-2 scroll-smooth min-h-0"
+            className="flex-1 overflow-y-auto px-3 py-2 space-y-2 scroll-smooth min-h-0 chat-messages-container"
             onScroll={handleScroll}
             data-testid="chat-messages-container"
           >
