@@ -1,10 +1,42 @@
-# LomuAI Platform - Design Guidelines
+# LomuAI BeeHive Platform - Design Guidelines
 
 ## Design Approach
 
-**Reference Strategy**: Modern AI platforms aesthetic inspired by Linear, Notion, and Vercel. Light, vibrant interface with honey-gold (#F7B500) and mint-teal (#00D9A3) against cream (#FFF8E6) backgrounds. Premium energy with swarm intelligence collaboration.
+**Reference Strategy**: Modern AI platforms inspired by Linear, Vercel, and GitHub Dark. Deep, sophisticated dark theme with vibrant honey-gold (#F7B500) and mint-teal (#00D9A3) accents creating premium, high-tech aesthetic that makes the queen bee logo unmistakably prominent.
 
-**Core Principle**: Intelligent collaboration through vibrant, approachable design—enterprise trust with human-centered warmth.
+**Core Principle**: Intelligent collaboration through striking visual contrast—enterprise sophistication with vibrant hive energy.
+
+---
+
+## Color System
+
+**Backgrounds**:
+- Primary: #0A0F1E (deep navy, main canvas)
+- Secondary: #141B2E (elevated surfaces, cards)
+- Tertiary: #1F2937 (subtle elevation, nested cards)
+- Pure Black: #000000 (footer, final CTA sections)
+
+**Text Colors**:
+- Primary: #F9FAFB (white, headlines/body)
+- Secondary: #D1D5DB (gray-300, supporting text)
+- Tertiary: #9CA3AF (gray-400, metadata/captions)
+
+**Accent Colors**:
+- Honey Gold: #F7B500 (primary CTA, logo glow, key highlights)
+- Mint Teal: #00D9A3 (secondary accent, success states, code highlights)
+- Gradient: Linear honey-to-mint for borders, CTAs, special elements
+
+**Interactive States**:
+- Hover backgrounds: #1F2937 (cards), rgba(247, 181, 0, 0.1) (honey overlay)
+- Focus rings: 3px #F7B500 with offset
+- Active: Honey gold with 90% opacity
+- Disabled: #4B5563 (gray-600)
+
+**Semantic Colors**:
+- Success: #00D9A3 (mint-teal)
+- Warning: #FBBF24 (amber-400)
+- Error: #EF4444 (red-500)
+- Info: #3B82F6 (blue-500)
 
 ---
 
@@ -12,25 +44,22 @@
 
 **Fonts**: 
 - Primary: Inter (500, 600, 700, 800) via Google Fonts
-- Code: JetBrains Mono for technical content
-- Display: Inter (800) for hero impact
+- Code: JetBrains Mono
+- Display: Inter (800)
 
 **Hierarchy**:
-- Hero: text-7xl font-extrabold tracking-tight (charcoal)
-- Section Headers: text-5xl font-bold tracking-tight (charcoal)
-- Feature Titles: text-3xl font-semibold (charcoal)
-- Body Large: text-xl font-medium (gray-700)
-- Body: text-base (gray-600)
-- Code: text-sm font-mono (mint-teal)
+- Hero: text-7xl font-extrabold tracking-tight (#F9FAFB)
+- Section Headers: text-5xl font-bold tracking-tight (#F9FAFB)
+- Feature Titles: text-3xl font-semibold (#F9FAFB)
+- Body Large: text-xl font-medium (#D1D5DB)
+- Body: text-base (#D1D5DB)
+- Code: text-sm font-mono (#00D9A3)
 
 ---
 
 ## Layout System
 
 **Spacing Primitives**: 4, 6, 8, 12, 16, 20, 24, 32
-- Cards: p-8, gap-6
-- Sections: py-24 desktop, py-16 mobile
-- Major gaps: space-y-32
 
 **Containers**:
 - Full-width: w-full with max-w-7xl
@@ -46,142 +75,104 @@
 
 ## Page Structure (8 Sections)
 
-### 1. Hero Section (85vh, Cream Background)
-**Layout**: Centered with immersive platform imagery
-- Headline (max-w-5xl): "Build with AI Swarm Intelligence"
-- Tagline: "10,000+ developers shipping faster with collaborative AI"
-- Dual CTAs: Primary "Start Free" (honey-gold, blurred bg) + Secondary "Watch Demo" (outline mint-teal, blurred bg)
-- Background: Large hero image showing LomuAI IDE with multiple AI agents collaborating, honey-gold and mint-teal UI accents visible, code panels with syntax highlighting
-- Treatment: Soft gradient overlay (cream to transparent top-to-bottom) for depth
-- Floating elements: Animated hexagonal particles (honey-gold, subtle drift animation)
+### 1. Hero Section (85vh, Deep Navy #0A0F1E)
+- Centered headline (max-w-5xl): "Build with AI Swarm Intelligence" with honey-gold gradient on "Swarm Intelligence"
+- Tagline (#D1D5DB): "10,000+ developers shipping faster with collaborative AI"
+- Dual CTAs: Primary "Start Free" (honey-gold solid bg, #000 text) + Secondary "Watch Demo" (mint-teal outline, blurred bg)
+- Large hero image: LomuAI IDE with glowing honey-gold and mint-teal UI panels, visible queen bee logo in top-left corner with subtle honey glow, multiple AI agent avatars collaborating, dark theme code editor
+- Floating hexagonal particles (honey-gold glow, slow drift)
 
-### 2. Stats Bar (White Background, Honey-Gold Accents)
-**Layout**: 4-column centered grid
-- Large numbers (text-6xl font-bold honey-gold gradient) + labels (gray-600)
-- Metrics: "15K+ Developers", "99.9% Uptime", "3x Faster", "6 AI Agents"
-- Subtle mint-teal divider lines between stats
+### 2. Stats Bar (#141B2E, Honey-Gold Numbers)
+4-column grid: "15K+ Developers", "99.9% Uptime", "3x Faster", "6 AI Agents"
+- Numbers: text-6xl honey-gold gradient
+- Labels: #9CA3AF
+- Mint-teal divider lines
 
-### 3. Features Grid (3-Column, Cream Background)
-**Layout**: 6 elevated cards with gradient borders
-- Card styling: White bg, gradient border (honey-gold to mint-teal, 2px), rounded-2xl, p-8, shadow-lg
-- Hover: Lift (translateY -4px) + stronger shadow with honey-gold glow
-- Each card: Gradient icon (honey to mint circle bg), bold title, 2-sentence description
-- Icons: Heroicons, 56px
+### 3. Features Grid (3-Column, #0A0F1E Background)
+6 elevated cards (#141B2E bg, gradient border honey-to-mint 2px, rounded-2xl, p-8)
+- Gradient icon backgrounds, white titles, #D1D5DB descriptions
+- Hover: Lift + honey-gold glow shadow
 - Features: Multi-Agent Collaboration, Intelligent Code Review, Context-Aware Suggestions, Real-time Team Sync, Smart Testing, Security Analysis
 
-### 4. Platform Showcase (Full-Width White, Mint-Teal Gradient Top)
-**Layout**: Large IDE screenshot with feature callouts
-- Heading: "Your Intelligent Development Hive"
-- Subheading: "Watch AI agents collaborate in real-time"
-- Center: Massive platform screenshot (rounded-3xl, shadow-2xl with subtle honey-gold border glow)
-- Screenshot shows: Multi-panel IDE, 3-4 AI agent avatars in sidebar, active code suggestions with honey highlights, collaboration chat panel
-- 5 floating annotation cards with arrows pointing to features
-- Background: White with subtle honeycomb SVG pattern (mint-teal, 4% opacity)
+### 4. Platform Showcase (#1F2937 Background)
+- Heading + subheading (white text)
+- Massive platform screenshot: Dark theme IDE with glowing honey/mint accents, queen bee logo visible in header, 4 AI agent panels, code with syntax highlighting, collaboration sidebar
+- 5 floating annotation cards (#141B2E bg) with arrows pointing to features
+- Honeycomb SVG pattern (mint-teal 6% opacity)
 
-### 5. Benefits Section (2-Column Alternating, Cream Background)
-**Layout**: 3 rows, image-text pairs
-- Row 1 (Image Right): "Ship Production Code 3x Faster" - Multi-agent code completion screenshot
-- Row 2 (Image Left): "Collaborate Like a Hive" - Team sync dashboard with agent activity
-- Row 3 (Image Right): "Intelligent Quality Assurance" - AI testing + security panel
-- Images: Rounded-2xl with gradient border (honey-to-mint), shadow-xl
-- Text: Bold headline (text-4xl) + description + key metrics in honey-gold
-- Each row includes 2-3 bullet points with mint-teal checkmarks
+### 5. Benefits Section (2-Column Alternating, #0A0F1E)
+3 rows with screenshots:
+- "Ship Production Code 3x Faster" - Multi-agent completion
+- "Collaborate Like a Hive" - Team sync dashboard
+- "Intelligent Quality Assurance" - AI testing panel
+- All screenshots: Dark theme, honey/mint UI accents, gradient borders
+- White headlines, #D1D5DB descriptions, mint checkmarks
 
-### 6. Agent Showcase (White Background, Gradient Accents)
-**Layout**: Interactive agent demonstration
-- Heading: "Meet Your AI Swarm"
-- 6 agent cards in 3-column grid
-- Each card: Agent avatar (hexagonal frame, gradient border), name, specialty, example interaction
+### 6. Agent Showcase (#141B2E Background)
+6 agent cards in 3-column grid
+- Hexagonal avatars with gradient borders, white names, #D1D5DB specialties
 - Agent types: Code Writer, Debugger, Reviewer, Tester, Security Expert, DevOps Assistant
-- Hover: Glow effect matching agent's accent gradient
+- Hover: Individual gradient glows
 
-### 7. Testimonials (3-Column Grid, Cream Background)
-**Layout**: 6 developer testimonial cards
-- Card: White bg, mint-teal left accent bar (4px), rounded-xl, p-8, shadow-md
-- Content: Quote text (text-lg gray-700), avatar (circular with honey-gold ring, 64px), name (font-semibold), title + company (gray-500)
-- GitHub star count badge (honey-gold)
-- Testimonials emphasize speed, collaboration, quality improvements
+### 7. Testimonials (3-Column, #0A0F1E)
+6 cards (#141B2E bg, mint-teal left accent, rounded-xl, p-8)
+- White quote text, circular avatars with honey-gold rings
+- White names, #9CA3AF titles
+- GitHub star badges (honey-gold)
 
-### 8. Final CTA (Full-Width, Honey-Gold to Mint-Teal Gradient)
-**Layout**: Centered, vibrant
-- Headline: "Ready to Join the Hive?" (white text-6xl)
-- Subtext: "Start building with AI swarm intelligence today" (white/90)
-- Large CTA: "Start Free Trial" (white bg, charcoal text, font-bold, shadow-xl)
-- Secondary: "Schedule Demo" (white outline)
-- Background: Smooth diagonal gradient (honey-gold to mint-teal) with animated hexagonal grid overlay (white, 8% opacity, slow pulse)
-- Decorative: Floating Lomu bee mascot (bottom right, waving animation)
+### 8. Final CTA (#000000 Background, Honey-to-Mint Gradient Overlay)
+- White headline: "Ready to Join the Hive?"
+- Large "Start Free Trial" (honey-gold solid, #000 text)
+- Secondary "Schedule Demo" (white outline)
+- Animated hexagonal grid (white 10% opacity)
+- Floating Lomu bee mascot with honey glow
 
 ---
 
 ## Component Library
 
-### Buttons
-**Primary** (Honey-Gold):
-- px-10 py-4, rounded-lg, font-semibold text-lg
-- bg-honey-gold text-white shadow-lg
-- Hover: shadow-xl shadow-honey-gold/30, slight scale
-- On images: backdrop-blur-lg bg-honey-gold/95 (no hover states)
+**Buttons**:
+- Primary: px-10 py-4, rounded-lg, bg-honey-gold, #000 text, shadow-xl shadow-honey-gold/40, hover: scale + stronger shadow
+- Secondary: border-2 border-mint-teal, mint-teal text, hover: bg-mint-teal/20
+- On images: backdrop-blur-lg bg-honey-gold/90 (no hover states)
 
-**Secondary** (Outline):
-- border-2 border-mint-teal text-mint-teal
-- Hover: bg-mint-teal/10
+**Cards**:
+- Standard: #141B2E bg, rounded-2xl, gradient border (2px), shadow-xl
+- Hover: shadow-2xl shadow-honey-gold/30 + translateY(-4px)
+- Testimonial: #141B2E bg, mint-teal left border (4px)
 
-### Cards
-**Feature Card**:
-- White bg, rounded-2xl, p-8
-- Gradient border (honey-to-mint, 2px via border-image or pseudo-element)
-- shadow-lg, hover: shadow-2xl shadow-honey-gold/20 + translateY(-4px)
-
-**Testimonial Card**:
-- White bg, rounded-xl, p-6, shadow-md
-- 4px mint-teal left border accent
-
-### Navigation
-**Header**: Sticky, white/95 backdrop-blur-xl, border-b border-gray-200
-- Logo left (honey-gold accent), nav center (gray-700, hover:honey-gold), CTA right
-- Mobile: Hamburger with smooth slide menu
-
-**Footer**: 4-column cream background
-- Columns: Product, Developers, Company, Community
-- Newsletter: Honey-gold CTA button
-- Social icons with mint-teal hover
+**Navigation**:
+- Header: Sticky, #0A0F1E/95 backdrop-blur-xl, border-b #1F2937
+- Logo with honey-gold glow, white nav links (hover: honey-gold)
+- Footer: #000000, 4-column, honey-gold newsletter CTA
 
 ---
 
 ## Images Required
 
-1. **Hero Background**: Full LomuAI IDE showing 4-5 AI agent panels collaborating, syntax highlighting with honey-gold/mint-teal accents, live code completion, chat panel with agent avatars
-2. **Platform Showcase**: Detailed multi-panel IDE with agent sidebar, collaborative coding session, real-time suggestions, team activity feed
-3. **Benefit Screenshots** (3): Multi-agent autocomplete demo, team collaboration dashboard, AI testing/security panel
-4. **Agent Avatars**: 6 unique AI agent hexagonal portraits with gradient frames
-5. **Testimonial Photos**: 6 developer headshots
-6. **Company Logos**: 10 tech company logos (grayscale, honey-gold on hover)
+1. **Hero**: Full LomuAI dark theme IDE, queen bee logo prominent with glow, 4-5 agent panels, honey/mint UI accents, code completion
+2. **Platform Showcase**: Multi-panel IDE with visible logo, agent sidebar, syntax highlighting, collaboration chat
+3. **Benefit Screenshots** (3): Dark theme demos of autocomplete, team dashboard, testing panel
+4. **Agent Avatars**: 6 hexagonal portraits with gradient frames
+5. **Testimonial Photos**: 6 developer headshots with honey-gold rings
 
-**Treatment**: All screenshots rounded-2xl minimum, shadow-xl, subtle gradient borders (honey-to-mint)
+Treatment: All screenshots rounded-2xl, shadow-2xl, gradient borders
 
 ---
 
 ## Visual Enhancements
 
-**Honeycomb Motifs**: SVG hexagonal patterns in backgrounds (mint-teal or honey-gold, 3-6% opacity), section transitions with hex grid dividers
-
-**Gradients**: Smooth linear/radial blends (honey-gold to mint-teal) for CTAs, accents, backgrounds. Never harsh transitions.
-
-**Animations** (Minimal):
-- Cards: Hover lift + shadow (250ms ease-out)
-- Hero hexagons: Slow float drift (30s loop)
-- CTA gradient: Subtle shimmer (4s)
-- Stats: Count-up on viewport entry
-- Agent cards: Glow pulse on hover
-
-**Glow Effects**: Soft, generous shadows with honey-gold or mint-teal tint on interactive elements
+- Honeycomb patterns: Mint-teal or honey-gold at 6-8% opacity
+- Gradients: Smooth honey-to-mint blends for borders, CTAs, accents
+- Glows: Honey-gold soft shadows on interactive elements, queen bee logo
+- Animations: Card hover lifts (250ms), hexagon float (30s), stats count-up, subtle CTA shimmer (4s)
 
 ---
 
 ## Accessibility
 
-- Contrast: 7:1 minimum for body text
-- Focus: 3px honey-gold ring with offset
-- Reduced motion: Disable animations
-- Semantic HTML, ARIA labels
-- Form inputs: Consistent styling with mint-teal focus rings
+- Contrast: White text on #0A0F1E = 17:1, meets WCAG AAA
+- Honey-gold (#F7B500) on dark = 8.2:1
+- Mint-teal (#00D9A3) on dark = 10.5:1
+- Focus: 3px honey-gold rings, reduced motion support
+- Form inputs: #141B2E bg, white text, mint-teal focus rings
