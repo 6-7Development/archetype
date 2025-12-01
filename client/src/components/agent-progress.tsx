@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Check, ChevronDown, ChevronRight, Square, Loader2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -35,10 +35,19 @@ interface AgentProgressProps {
 
 export function AgentProgress({ steps, isWorking, onStop, showTeachingEmojis = false, metrics }: AgentProgressProps) {
   const [isOpen, setIsOpen] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const lastStepRef = useRef<HTMLDivElement>(null);
 
   // Calculate completed tasks
   const completedCount = steps.filter(s => s.type === "success").length;
   const totalCount = steps.length;
+
+  // ✅ FIX: Auto-scroll to latest step when steps change
+  useEffect(() => {
+    if (lastStepRef.current && isOpen) {
+      lastStepRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [steps.length, completedCount, isOpen]);
 
   // Determine if task is completed
   const isCompleted = (step: ProgressStep) => step.type === "success";
@@ -83,16 +92,18 @@ export function AgentProgress({ steps, isWorking, onStop, showTeachingEmojis = f
 
         {/* Collapsible task list */}
         <CollapsibleContent>
-          <div className="border-t border-border/50 px-3 py-2 space-y-2">
+          <div ref={scrollContainerRef} className="border-t border-border/50 px-3 py-2 space-y-2 max-h-64 overflow-y-auto">
             {steps.map((step, index) => {
               const completed = isCompleted(step);
               const inProgress = isInProgress(step, index);
               const hasError = step.type === "error";
               const progress = step.progress || 0;
+              const isLastStep = index === steps.length - 1;
 
               return (
                 <div
                   key={step.id}
+                  ref={isLastStep ? lastStepRef : null}
                   className="space-y-1.5"
                   data-testid={`progress-step-${step.id}`}
                 >

@@ -112,9 +112,26 @@ export function ChatMessages({
   const activeScrollRef = scrollRef || localScrollRef;
   const activeMessagesEndRef = messagesEndRef || localMessagesEndRef;
 
+  // ✅ FIX: Enhanced auto-scroll - triggers on messages, generating state, and progress changes
   useEffect(() => {
-    activeMessagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, activeMessagesEndRef]);
+    // Triple-method scroll for reliability
+    const scrollToBottom = () => {
+      // Method 1: scrollIntoView on end marker
+      activeMessagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      
+      // Method 2: Direct scroll on container (backup)
+      if (activeScrollRef.current) {
+        activeScrollRef.current.scrollTop = activeScrollRef.current.scrollHeight;
+      }
+      
+      // Method 3: Deferred scroll for dynamic content
+      setTimeout(() => {
+        activeMessagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    };
+    
+    scrollToBottom();
+  }, [messages, messages.length, isGenerating, currentProgress.length, activeMessagesEndRef, activeScrollRef]);
 
   const handleCopyChatHistory = () => {
     const chatHistory = messages
@@ -191,10 +208,49 @@ export function ChatMessages({
               message.role === 'user' ? 'justify-end' : 'justify-start'
             )}
           >
-            {/* Assistant Avatar */}
+            {/* Assistant Avatar - Animated Bee inside circle */}
             {message.role === 'assistant' && (
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
-                AI
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[hsl(48,100%,90%)] dark:bg-[hsl(40,60%,15%)] flex items-center justify-center overflow-hidden">
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 100 130"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  {/* Wings */}
+                  <ellipse
+                    cx="25"
+                    cy="42"
+                    rx="10"
+                    ry="16"
+                    fill="hsl(171, 100%, 42%)"
+                    opacity="0.6"
+                    style={{ animation: 'wing-flap 0.4s ease-in-out infinite' }}
+                  />
+                  <ellipse
+                    cx="75"
+                    cy="42"
+                    rx="10"
+                    ry="16"
+                    fill="hsl(171, 100%, 42%)"
+                    opacity="0.6"
+                    style={{ animation: 'wing-flap 0.4s ease-in-out infinite 0.2s' }}
+                  />
+                  {/* Head */}
+                  <circle cx="50" cy="28" r="8" fill="hsl(216, 9%, 7%)" />
+                  {/* Eyes */}
+                  <circle cx="47" cy="27" r="1.5" fill="white" />
+                  <circle cx="53" cy="27" r="1.5" fill="white" />
+                  {/* Body */}
+                  <ellipse cx="50" cy="48" rx="10" ry="12" fill="hsl(40, 97%, 50%)" />
+                  <ellipse cx="50" cy="78" rx="9" ry="16" fill="hsl(40, 97%, 50%)" />
+                  {/* Stripes */}
+                  <rect x="43" y="46" width="14" height="2" rx="1" fill="hsl(216, 9%, 7%)" opacity="0.7" />
+                  <rect x="43" y="70" width="14" height="2" rx="1" fill="hsl(216, 9%, 7%)" opacity="0.7" />
+                  <rect x="44" y="78" width="12" height="2" rx="1" fill="hsl(216, 9%, 7%)" opacity="0.7" />
+                  <rect x="45" y="86" width="10" height="2" rx="1" fill="hsl(216, 9%, 7%)" opacity="0.7" />
+                </svg>
               </div>
             )}
 

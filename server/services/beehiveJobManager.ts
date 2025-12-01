@@ -1409,11 +1409,14 @@ Let's build! 🚀`;
             broadcast(userId, jobId, 'file_change', { file: { path: typedInput.path, operation: 'delete' } });
             toolResult = `✅ File deleted successfully`;
           } else if (name === 'read_project_file') {
-            if (!projectId) {
-              toolResult = '❌ No project selected';
+            const typedInput = input as { path: string };
+            const validatedPath = validateProjectPath(typedInput.path);
+            
+            // ✅ SECURITY FIX: For platform healing, use read_platform_file tool instead
+            // read_project_file requires a valid projectId for tenant isolation
+            if (!projectId || projectId === 'default') {
+              toolResult = '⚠️ For platform files, use read_platform_file tool instead. read_project_file requires a project context.';
             } else {
-              const typedInput = input as { path: string };
-              const validatedPath = validateProjectPath(typedInput.path);
               const projectFiles = await storage.getProjectFiles(projectId);
               const targetFile = projectFiles.find(f =>
                 (f.path ? `${f.path}/${f.filename}` : f.filename) === validatedPath ||
@@ -1447,8 +1450,10 @@ Let's build! 🚀`;
               }
             }
           } else if (name === 'list_project_files') {
-            if (!projectId) {
-              toolResult = '❌ No project selected';
+            // ✅ SECURITY FIX: For platform healing, use list_platform_files tool instead
+            // list_project_files requires a valid projectId for tenant isolation
+            if (!projectId || projectId === 'default') {
+              toolResult = '⚠️ For platform files, use list_platform_files tool instead. list_project_files requires a project context.';
             } else {
               const projectFiles = await storage.getProjectFiles(projectId);
               if (projectFiles.length === 0) {

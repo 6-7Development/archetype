@@ -620,6 +620,12 @@
   animation: bee-send-pulse 0.15s ease-out;
 }
 
+/* Wing flap animation for Scout avatar */
+@keyframes wing-flap {
+  0%, 100% { transform: scaleX(1); }
+  50% { transform: scaleX(0.7); }
+}
+
 /* Hex orbit loading animation */
 @keyframes hex-orbit {
   0% { transform: rotate(0deg) translateX(12px) rotate(0deg); }
