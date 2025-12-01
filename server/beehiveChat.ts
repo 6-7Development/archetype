@@ -4,7 +4,6 @@ import { chatMessages, architectConsultations, insertArchitectConsultationSchema
 import { eq, and, desc } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from './universalAuth.js';
 import { requirePaymentMethod, requireSufficientCredits } from './middleware/creditValidation.js';
-import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { platformHealing } from './platformHealing.js';
 import { platformAudit } from './platformAudit.js';
@@ -143,23 +142,14 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
     
     const activeProjectId = activeProject?.activeProjectId || null;
 
-    // Get AI model configuration
+    // Get AI model configuration - Gemini only
     const aiConfig = getAIModelConfig();
-    console.log(`[LOMU-CHAT] Using ${aiConfig.provider.toUpperCase()}: ${aiConfig.model}`);
+    console.log(`[SCOUT] Using Gemini: ${aiConfig.model}`);
     
-    // Retrieve API keys OUTSIDE conditionals to fix scoping bug
-    const anthropicKey = process.env.ANTHROPIC_API_KEY;
+    // Check for Gemini API key
     const geminiKey = process.env.GEMINI_API_KEY;
-    
-    // Check for required API keys
-    if (aiConfig.provider === 'claude') {
-      if (!anthropicKey) {
-        return res.status(503).json({ error: ERROR_MESSAGES.anthropicKeyMissing() });
-      }
-    } else if (aiConfig.provider === 'gemini') {
-      if (!geminiKey) {
-        return res.status(503).json({ error: 'Gemini API key not configured. Set GEMINI_API_KEY environment variable.' });
-      }
+    if (!geminiKey) {
+      return res.status(503).json({ error: 'Gemini API key not configured. Set GEMINI_API_KEY environment variable.' });
     }
 
     // Set up Server-Sent Events
@@ -236,7 +226,7 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
       .orderBy(chatMessages.createdAt)
       .limit(10); // REDUCED from 20 to save ~5K tokens
 
-    // Build conversation for Claude
+    // Build conversation history
     const conversationMessages: any[] = history
       .filter(msg => msg.id !== userMsg.id) // Exclude the message we just added
       .map(msg => ({
@@ -419,16 +409,9 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
     // TOKEN EFFICIENCY: Use appropriate tool set based on task complexity
     const tools = isSimpleTask ? basicTools : allTools;
 
-    // Initialize AI client based on provider
-    let anthropicClient: Anthropic | null = null;
-    let geminiModel: any = null;
-    
-    if (aiConfig.provider === 'claude') {
-      anthropicClient = new Anthropic({ apiKey: anthropicKey! });
-    } else if (aiConfig.provider === 'gemini') {
-      const genAI = new GoogleGenerativeAI(geminiKey!);
-      geminiModel = genAI.getGenerativeModel({ model: aiConfig.model });
-    }
+    // Initialize Gemini client
+    const genAI = new GoogleGenerativeAI(geminiKey);
+    const geminiModel = genAI.getGenerativeModel({ model: aiConfig.model });
     
     let fullContent = '';
     const fileChanges: Array<{ path: string; operation: string; contentAfter?: string }> = [];
@@ -464,7 +447,7 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
       
       // Chat-related issues
       if (msg.includes('chat') || msg.includes('message') || msg.includes('conversation')) {
-        return ['client/src/components/Chat.tsx', 'server/routes.ts', 'server/anthropic.ts'];
+        return ['client/src/components/Chat.tsx', 'server/routes.ts', 'server/beehiveChat.ts'];
       }
       
       // Task board issues
@@ -503,81 +486,58 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
 
       let responseContent: any[] = [];
       
-      // Provider-specific API calls
-      if (aiConfig.provider === 'claude' && anthropicClient) {
-        const response = await anthropicClient.messages.create({
-          model: aiConfig.model,
-          max_tokens: isSimpleTask ? aiConfig.maxTokens.simple : aiConfig.maxTokens.complex,
-          system: systemPrompt,
-          messages: conversationMessages,
-          tools,
-          stream: false,
-        });
-        
-        responseContent = response.content;
-        
-        // Track token usage from Claude response
-        if (response.usage) {
-          totalInputTokens += response.usage.input_tokens || 0;
-          totalOutputTokens += response.usage.output_tokens || 0;
-        }
-        
-      } else if (aiConfig.provider === 'gemini' && geminiModel) {
-        // Convert tools to Gemini format
-        const geminiTools = tools.map(tool => ({
-          name: tool.name,
-          description: tool.description,
-          parameters: tool.input_schema,
-        }));
-        
-        // Build Gemini-format chat
-        const geminiChat = geminiModel.startChat({
-          history: conversationMessages.slice(0, -1).map(msg => ({
-            role: msg.role === 'user' ? 'user' : 'model',
-            parts: typeof msg.content === 'string' ? [{ text: msg.content }] : msg.content.map((c: any) => {
-              if (c.type === 'text') return { text: c.text };
-              if (c.type === 'tool_result') return { text: `Tool ${c.tool_use_id}: ${c.content}` };
-              return { text: '' };
-            }),
-          })),
-          generationConfig: {
-            maxOutputTokens: isSimpleTask ? aiConfig.maxTokens.simple : aiConfig.maxTokens.complex,
-          },
-          tools: [{ functionDeclarations: geminiTools }],
-        });
-        
-        const currentMessage = conversationMessages[conversationMessages.length - 1];
-        const prompt = typeof currentMessage.content === 'string' 
-          ? currentMessage.content 
-          : currentMessage.content.map((c: any) => c.text || c.content || '').join('\n');
-        
-        const result = await geminiChat.sendMessage(`${systemPrompt}\n\n${prompt}`);
-        const geminiResponse = result.response;
-        
-        // Track token usage from Gemini response
-        if (geminiResponse.usageMetadata) {
-          totalInputTokens += geminiResponse.usageMetadata.promptTokenCount || 0;
-          totalOutputTokens += geminiResponse.usageMetadata.candidatesTokenCount || 0;
-        }
-        
-        // Convert Gemini response to Claude format for compatibility
-        responseContent = [];
-        
-        if (geminiResponse.text()) {
-          responseContent.push({ type: 'text', text: geminiResponse.text() });
-        }
-        
-        // Handle function calls from Gemini
-        const functionCalls = geminiResponse.functionCalls();
-        if (functionCalls && functionCalls.length > 0) {
-          for (const call of functionCalls) {
-            responseContent.push({
-              type: 'tool_use',
-              id: `gemini-${Date.now()}-${call.name}`,
-              name: call.name,
-              input: call.args,
-            });
-          }
+      // Convert tools to Gemini format
+      const geminiTools = tools.map(tool => ({
+        name: tool.name,
+        description: tool.description,
+        parameters: tool.input_schema,
+      }));
+      
+      // Build Gemini-format chat
+      const geminiChat = geminiModel.startChat({
+        history: conversationMessages.slice(0, -1).map(msg => ({
+          role: msg.role === 'user' ? 'user' : 'model',
+          parts: typeof msg.content === 'string' ? [{ text: msg.content }] : msg.content.map((c: any) => {
+            if (c.type === 'text') return { text: c.text };
+            if (c.type === 'tool_result') return { text: `Tool ${c.tool_use_id}: ${c.content}` };
+            return { text: '' };
+          }),
+        })),
+        generationConfig: {
+          maxOutputTokens: isSimpleTask ? aiConfig.maxTokens.simple : aiConfig.maxTokens.complex,
+        },
+        tools: [{ functionDeclarations: geminiTools }],
+      });
+      
+      const currentMessage = conversationMessages[conversationMessages.length - 1];
+      const prompt = typeof currentMessage.content === 'string' 
+        ? currentMessage.content 
+        : currentMessage.content.map((c: any) => c.text || c.content || '').join('\n');
+      
+      const result = await geminiChat.sendMessage(`${systemPrompt}\n\n${prompt}`);
+      const geminiResponse = result.response;
+      
+      // Track token usage
+      if (geminiResponse.usageMetadata) {
+        totalInputTokens += geminiResponse.usageMetadata.promptTokenCount || 0;
+        totalOutputTokens += geminiResponse.usageMetadata.candidatesTokenCount || 0;
+      }
+      
+      // Build response content
+      if (geminiResponse.text()) {
+        responseContent.push({ type: 'text', text: geminiResponse.text() });
+      }
+      
+      // Handle function calls
+      const functionCalls = geminiResponse.functionCalls();
+      if (functionCalls && functionCalls.length > 0) {
+        for (const call of functionCalls) {
+          responseContent.push({
+            type: 'tool_use',
+            id: `gemini-${Date.now()}-${call.name}`,
+            name: call.name,
+            input: call.args,
+          });
         }
       }
 
@@ -815,10 +775,10 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
                     type: 'architect_consultation',
                     inputTokens: architectResult.inputTokens,
                     outputTokens: architectResult.outputTokens,
-                    model: 'claude',
+                    model: 'gemini',
                     billingMode: 'premium',
                     metadata: {
-                      owner_exempt: true, // FREE for owner
+                      owner_exempt: true,
                       consultation: 'free',
                       question: typedInput.question,
                       responseTime,
@@ -826,7 +786,7 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
                     },
                   });
                   
-                  sendEvent('progress', { message: 'I AM Architect consultation (FREE - owner privilege)' });
+                  sendEvent('progress', { message: 'Scout Advanced consultation (FREE - owner privilege)' });
                 } else {
                   // Regular users pay premium rate
                   await trackAIUsage({
@@ -835,7 +795,7 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
                     type: 'architect_consultation',
                     inputTokens: architectResult.inputTokens,
                     outputTokens: architectResult.outputTokens,
-                    model: 'claude',
+                    model: 'gemini',
                     billingMode: 'premium',
                     metadata: {
                       consultation: 'premium',
@@ -1256,7 +1216,7 @@ router.post('/stream', isAuthenticated, isAdmin, requirePaymentMethod, requireSu
         type: 'lomu_chat',
         inputTokens: totalInputTokens,
         outputTokens: totalOutputTokens,
-        model: aiConfig.provider === 'gemini' ? 'gemini' : 'claude',
+        model: 'gemini',
         billingMode: 'plan', // CRITICAL: BeeHive counts against plan limit, not premium
         metadata: {
           iterations: iterationCount,
