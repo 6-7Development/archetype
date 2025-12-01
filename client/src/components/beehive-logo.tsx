@@ -1,6 +1,6 @@
 /**
- * BeeHive Queen Bee Logo - Clean Geometric Design
- * Modern bee with animated wings via universal CSS animations
+ * BeeHive Queen Bee Logo - Realistic Compact Design
+ * Professional bee with animated wings via universal CSS animations
  * Uses brand colors (Honey, Nectar, Mint, Charcoal)
  * 
  * Wing animations are defined in index.css for easy holiday customization
@@ -36,18 +36,21 @@ const VARIANT_COLORS = {
     accent: 'hsl(40, 97%, 50%)',
     highlight: 'hsl(48, 100%, 65%)',
     wing: 'hsl(171, 100%, 42%)',
+    secondary: 'hsl(265, 50%, 35%)',
   },
   dark: {
     text: 'hsl(47, 100%, 95%)',
     accent: 'hsl(40, 97%, 50%)',
     highlight: 'hsl(48, 100%, 65%)',
     wing: 'hsl(171, 100%, 42%)',
+    secondary: 'hsl(265, 50%, 55%)',
   },
   light: {
     text: 'hsl(40, 97%, 50%)',
     accent: 'hsl(171, 100%, 42%)',
     highlight: 'hsl(48, 100%, 65%)',
     wing: 'hsl(171, 100%, 42%)',
+    secondary: 'hsl(265, 50%, 35%)',
   },
 };
 
@@ -66,151 +69,141 @@ export function BeeHiveLogo({
 
   return (
     <div className={`inline-flex items-center ${showText ? 'gap-3' : ''} ${className}`}>
-      {/* Queen Bee - Clean Geometric Design */}
+      {/* Queen Bee - Realistic Compact Design */}
       <svg
         width={svgSize}
         height={svgSize}
-        viewBox="0 0 100 120"
+        viewBox="0 0 100 100"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         style={{ flexShrink: 0 }}
         className="bee-wing"
       >
-        {/* LEFT WING - Large mint teal with animation */}
+        {/* UPPER LEFT WING - Front wing */}
+        <ellipse
+          className={`bee-wing-left-${wingAnimation}`}
+          cx="18"
+          cy="35"
+          rx="13"
+          ry="22"
+          fill={colors.wing}
+          opacity="0.8"
+          style={{ transformOrigin: '35px 40px' }}
+        />
+
+        {/* UPPER RIGHT WING - Front wing */}
+        <ellipse
+          className={`bee-wing-right-${wingAnimation}`}
+          cx="82"
+          cy="35"
+          rx="13"
+          ry="22"
+          fill={colors.wing}
+          opacity="0.8"
+          style={{ transformOrigin: '65px 40px' }}
+        />
+
+        {/* LOWER LEFT WING - Back wing (more transparent) */}
         <ellipse
           className={`bee-wing-left-${wingAnimation}`}
           cx="22"
-          cy="45"
-          rx="16"
-          ry="28"
+          cy="55"
+          rx="11"
+          ry="20"
           fill={colors.wing}
-          opacity="0.85"
+          opacity="0.5"
+          style={{ transformOrigin: '35px 60px', animationDelay: '0.1s' }}
         />
 
-        {/* RIGHT WING - Large mint teal with animation */}
+        {/* LOWER RIGHT WING - Back wing (more transparent) */}
         <ellipse
           className={`bee-wing-right-${wingAnimation}`}
           cx="78"
-          cy="45"
-          rx="16"
-          ry="28"
+          cy="55"
+          rx="11"
+          ry="20"
           fill={colors.wing}
-          opacity="0.85"
+          opacity="0.5"
+          style={{ transformOrigin: '65px 60px', animationDelay: '0.1s' }}
         />
 
-        {/* HEAD - Small black circle at top */}
-        <circle cx="50" cy="18" r="7" fill={colors.text} />
+        {/* HEAD - Small yellow circle at top */}
+        <circle cx="50" cy="18" r="8" fill={colors.highlight} />
 
-        {/* EYES - Simple white dots */}
-        <circle cx="46" cy="16" r="1.5" fill={colors.highlight} />
-        <circle cx="54" cy="16" r="1.5" fill={colors.highlight} />
+        {/* HEAD STRIPE - Dark band on head */}
+        <ellipse cx="50" cy="19" rx="8" ry="2.5" fill={colors.secondary} opacity="0.7" />
 
-        {/* ANTENNAE - Curved lines extending upward */}
+        {/* EYES - Large expressive eyes */}
+        <circle cx="45" cy="16" r="2" fill={colors.text} />
+        <circle cx="55" cy="16" r="2" fill={colors.text} />
+
+        {/* EYE SHINE - Highlights */}
+        <circle cx="45.5" cy="15" r="0.7" fill={colors.highlight} />
+        <circle cx="55.5" cy="15" r="0.7" fill={colors.highlight} />
+
+        {/* SMILE - Small curved smile */}
         <path
-          d="M 45 12 Q 42 6 40 2"
+          d="M 47 19 Q 50 21 53 19"
           stroke={colors.text}
-          strokeWidth="1.2"
+          strokeWidth="0.5"
           fill="none"
           strokeLinecap="round"
         />
-        <path
-          d="M 55 12 Q 58 6 60 2"
-          stroke={colors.text}
-          strokeWidth="1.2"
-          fill="none"
-          strokeLinecap="round"
-        />
 
-        {/* BODY SEGMENT 1 - Top yellow stripe */}
+        {/* THORAX - Yellow-gold middle section */}
         <ellipse
           cx="50"
           cy="32"
-          rx="10"
+          rx="11"
           ry="9"
           fill={colors.highlight}
         />
 
-        {/* Black divider line after segment 1 */}
-        <rect
-          x="40"
-          y="40"
-          width="20"
-          height="1.5"
-          fill={colors.text}
-          opacity="0.9"
-        />
+        {/* THORAX STRIPE - Dark band separator */}
+        <ellipse cx="50" cy="40" rx="11" ry="1.5" fill={colors.secondary} opacity="0.8" />
 
-        {/* BODY SEGMENT 2 - Gold stripe */}
+        {/* ABDOMEN SEGMENT 1 - Purple/Dark blue stripe */}
         <ellipse
           cx="50"
-          cy="51"
-          rx="11"
-          ry="10"
+          cy="48"
+          rx="10"
+          ry="8"
+          fill={colors.secondary}
+        />
+
+        {/* ABDOMEN STRIPE SEPARATOR 1 */}
+        <ellipse cx="50" cy="55.5" rx="10" ry="1.2" fill={colors.text} opacity="0.7" />
+
+        {/* ABDOMEN SEGMENT 2 - Gold/yellow stripe */}
+        <ellipse
+          cx="50"
+          cy="63"
+          rx="9.5"
+          ry="8"
           fill={colors.accent}
         />
 
-        {/* Black divider line after segment 2 */}
-        <rect
-          x="39"
-          y="60"
-          width="22"
-          height="1.5"
-          fill={colors.text}
-          opacity="0.9"
-        />
+        {/* ABDOMEN STRIPE SEPARATOR 2 */}
+        <ellipse cx="50" cy="70" rx="9.5" ry="1.2" fill={colors.text} opacity="0.7" />
 
-        {/* BODY SEGMENT 3 - Yellow stripe */}
+        {/* ABDOMEN SEGMENT 3 - Purple/Dark blue stripe (tapered) */}
         <ellipse
           cx="50"
-          cy="71"
-          rx="11"
-          ry="10"
-          fill={colors.highlight}
+          cy="77"
+          rx="8.5"
+          ry="7"
+          fill={colors.secondary}
         />
 
-        {/* Black divider line after segment 3 */}
-        <rect
-          x="39"
-          y="80"
-          width="22"
-          height="1.5"
-          fill={colors.text}
-          opacity="0.9"
-        />
-
-        {/* BODY SEGMENT 4 - Gold stripe (larger) */}
-        <ellipse
-          cx="50"
-          cy="92"
-          rx="12"
-          ry="11"
-          fill={colors.accent}
-        />
-
-        {/* Black divider line after segment 4 */}
-        <rect
-          x="38"
-          y="102"
-          width="24"
-          height="1.5"
-          fill={colors.text}
-          opacity="0.9"
-        />
-
-        {/* STINGER - Sharp point */}
+        {/* STINGER - Small sharp point */}
         <path
-          d="M 48 105 L 50 118 L 52 105 Z"
+          d="M 48 83 L 50 92 L 52 83 Z"
           fill={colors.text}
-          opacity="0.95"
+          opacity="0.9"
         />
 
-        {/* Subtle legs visible on sides */}
-        <g stroke={colors.text} strokeWidth="0.8" opacity="0.5">
-          <line x1="40" y1="50" x2="28" y2="48" strokeLinecap="round" />
-          <line x1="60" y1="50" x2="72" y2="48" strokeLinecap="round" />
-          <line x1="40" y1="70" x2="26" y2="75" strokeLinecap="round" />
-          <line x1="60" y1="70" x2="74" y2="75" strokeLinecap="round" />
-        </g>
+        {/* HIGHLIGHT ON THORAX - Shine effect */}
+        <ellipse cx="50" cy="30" rx="4" ry="2.5" fill={colors.highlight} opacity="0.3" />
       </svg>
 
       {/* BeeHive Wordmark - Enhanced Typography */}
