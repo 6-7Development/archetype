@@ -5,7 +5,7 @@
  */
 
 export interface RateLimitConfig {
-  provider: 'gemini' | 'claude' | 'github' | 'custom';
+  provider: 'gemini' | 'gemini-pro' | 'github' | 'custom';
   requestsPerMinute: number;
   tokensPerMinute: number;
 }
@@ -123,15 +123,15 @@ class ConcurrentRateLimiter {
 
 export const concurrentRateLimiter = new ConcurrentRateLimiter();
 
-// Initialize default limits
+// Initialize default limits (Gemini-only architecture)
 concurrentRateLimiter.registerLimit({
   provider: 'gemini',
   requestsPerMinute: 100,
-  tokensPerMinute: 1000000,
+  tokensPerMinute: 1000000, // Gemini 2.5 Flash
 });
 
 concurrentRateLimiter.registerLimit({
-  provider: 'claude',
+  provider: 'gemini-pro',
   requestsPerMinute: 50,
-  tokensPerMinute: 500000,
+  tokensPerMinute: 2000000, // Gemini 2.5 Pro (Scout Advanced)
 });

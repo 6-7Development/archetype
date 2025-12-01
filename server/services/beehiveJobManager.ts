@@ -134,11 +134,6 @@ function getMaxIterationsForIntent(intent: UserIntent): number {
   }
 }
 
-// Initialize Anthropic client for Claude streaming
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || "dummy-key-for-development",
-});
-
 interface JobContext {
   jobId: string;
   userId: string;
@@ -160,244 +155,6 @@ interface StreamOptions {
   onToolUse?: (toolUse: any) => Promise<any>;
   onComplete?: (fullText: string, usage: any) => void;
   onError?: (error: Error) => void;
-}
-
-/**
- * Stream Claude AI responses with real-time chunk processing
- * Compatible with streamGeminiResponse interface for drop-in replacement
- */
-async function streamClaudeResponse(options: StreamOptions) {
-  const {
-    model = 'claude-sonnet-4-20250514',
-    maxTokens = 4096,
-    system,
-    messages,
-    tools,
-    signal,
-    onChunk,
-    onThought,
-    onAction,
-    onToolUse,
-    onComplete,
-    onError,
-  } = options;
-
-  let fullText = '';
-  let currentThought = '';
-  let currentAction = '';
-  let usage: any = null;
-  let contentBlocks: any[] = [];
-  let abortHandler: (() => void) | null = null;
-
-  try {
-    if (signal?.aborted) {
-      throw new Error('Request aborted before starting');
-    }
-
-    // Prepare Claude API request
-    const requestParams: any = {
-      model: model || 'claude-sonnet-4-20250514',
-      max_tokens: maxTokens,
-      system,
-      messages,
-    };
-
-    // Add tools if provided
-    if (tools && tools.length > 0) {
-      requestParams.tools = tools;
-      console.log(`[CLAUDE-TOOLS] ✅ Provided ${tools.length} tools to Claude (first 3: ${tools.slice(0, 3).map((t: any) => t.name).join(', ')}...)`);
-    }
-
-    // Set up abort handler
-    if (signal) {
-      abortHandler = () => {
-        console.log('[CLAUDE-STREAM] Stream aborted by signal');
-      };
-      signal.addEventListener('abort', abortHandler);
-    }
-
-    // Start streaming with Claude
-    const stream = await anthropic.messages.stream(requestParams);
-
-    // Process stream events
-    stream.on('text', (text: string, snapshot: any) => {
-      fullText += text;
-
-      // Send chunk callback
-      if (onChunk) {
-        try {
-          onChunk({ type: 'chunk', content: text });
-        } catch (chunkError) {
-          console.error('❌ Error in onChunk callback:', chunkError);
-        }
-      }
-
-      // REPLIT-STYLE: Auto-detect code blocks and propose changes
-      const codeBlockRegex = /```(\w+)?\s*\n([\s\S]*?)\n```/g;
-      const matches = Array.from(text.matchAll(codeBlockRegex));
-      if (matches.length > 0) {
-        console.log(`[LOMU-AUTO-DETECT] Found ${matches.length} code blocks in response`);
-      }
-
-      // Detect thoughts
-      try {
-        if (text.toLowerCase().includes('thinking:') ||
-            text.includes('🤔') ||
-            /\b(analyzing|considering|evaluating)\b/i.test(text)) {
-          currentThought += text;
-          if (onThought && currentThought.trim().length > 0) {
-            onThought(currentThought.trim());
-          }
-        }
-      } catch (thoughtError) {
-        console.error('❌ Error detecting thoughts:', thoughtError);
-      }
-
-      // Detect actions
-      try {
-        if (/step \d+|action:|analyzing|generating|building|creating|optimizing|validating|testing/i.test(text)) {
-          currentAction += text;
-          if (onAction && currentAction.trim().length > 0) {
-            onAction(currentAction.trim());
-          }
-        }
-      } catch (actionError) {
-        console.error('❌ Error detecting actions:', actionError);
-      }
-    });
-
-    (stream as any).on('content_block_start', (block: any) => {
-      if (block.content_block.type === 'tool_use') {
-        const toolUse = block.content_block;
-        console.log(`[CLAUDE-TOOLS] 🔧 Claude requested tool: ${toolUse.name}`);
-
-        // Notify about tool use
-        if (onAction && toolUse.name) {
-          const toolMessages: Record<string, string> = {
-            'browser_test': '🧪 Testing in browser...',
-            'web_search': '🔍 Searching for solutions...',
-            'vision_analyze': '👁️ Analyzing visuals...',
-            'architect_consult': '🧑‍💼 Consulting architect...',
-            'readPlatformFile': '📖 Reading platform code...',
-            'writePlatformFile': '✏️ Fixing platform code...',
-          };
-          const message = toolMessages[toolUse.name] || `🔨 Working on ${toolUse.name}...`;
-          onAction(message);
-        }
-      }
-    });
-
-    // Wait for the stream to complete and get final message
-    const finalMessage = await stream.finalMessage();
-
-    // Extract usage stats
-    if (finalMessage.usage) {
-      usage = {
-        inputTokens: finalMessage.usage.input_tokens || 0,
-        outputTokens: finalMessage.usage.output_tokens || 0,
-      };
-    }
-
-    // Process content blocks for tool calls
-    const toolCalls: any[] = [];
-    finalMessage.content.forEach((block: any) => {
-      if (block.type === 'tool_use') {
-        toolCalls.push({
-          id: block.id,
-          name: block.name,
-          input: block.input
-        });
-        contentBlocks.push(block);
-      } else if (block.type === 'text') {
-        contentBlocks.push(block);
-      }
-    });
-
-    // Execute tools if Claude requested them
-    if (toolCalls.length > 0 && onToolUse) {
-      try {
-        // NOTE: Removed duplicate "Running checks..." message - individual tool actions are already reported
-
-        // Execute all tool calls
-        const toolResults = await Promise.all(
-          toolCalls.map(async (call) => {
-            try {
-              const result = await onToolUse({
-                type: 'tool_use',
-                id: call.id,
-                name: call.name,
-                input: call.input
-              });
-              return {
-                type: 'tool_result',
-                tool_use_id: call.id,
-                content: typeof result === 'string' ? result : JSON.stringify(result),
-              };
-            } catch (toolError) {
-              console.error(`❌ Tool execution error (${call.name}):`, toolError);
-              return {
-                type: 'tool_result',
-                tool_use_id: call.id,
-                content: JSON.stringify({
-                  error: toolError instanceof Error ? toolError.message : String(toolError),
-                }),
-                is_error: true,
-              };
-            }
-          })
-        );
-
-        // Return tool results in Anthropic-compatible format
-        return {
-          fullText,
-          usage: usage || { inputTokens: 0, outputTokens: 0 },
-          toolResults,
-          assistantContent: toolCalls.map(call => ({
-            type: 'tool_use',
-            id: call.id,
-            name: call.name,
-            input: call.input
-          })),
-          needsContinuation: true,
-        };
-      } catch (toolExecError) {
-        console.error('❌ Error executing tools:', toolExecError);
-      }
-    }
-
-    // Call completion callback
-    if (onComplete) {
-      try {
-        onComplete(fullText, usage);
-      } catch (completeError) {
-        console.error('❌ Error in onComplete callback:', completeError);
-      }
-    }
-
-    return { fullText, usage: usage || { inputTokens: 0, outputTokens: 0 } };
-
-  } catch (error) {
-    console.error('❌ Fatal error in Claude streaming:', error);
-
-    if (onError) {
-      try {
-        onError(error instanceof Error ? error : new Error(String(error)));
-      } catch (callbackError) {
-        console.error('❌ Error in onError callback:', callbackError);
-      }
-    }
-
-    return {
-      fullText: fullText || '',
-      usage: usage || { inputTokens: 0, outputTokens: 0 },
-      error: error instanceof Error ? error.message : String(error)
-    };
-  } finally {
-    // Clean up abort event listener
-    if (signal && abortHandler) {
-      signal.removeEventListener('abort', abortHandler);
-    }
-  }
 }
 
 // In-memory active jobs (prevent concurrent jobs per user)
@@ -1175,13 +932,13 @@ Let's build! 🚀`;
       // ⚡ Use ultra-compressed prompt (no extra platform knowledge - read files when needed)
       const finalSystemPrompt = systemPrompt;
 
-      // CLAUDE context-limit protection (200K token limit)
+      // Gemini context-limit protection (1M token limit)
       const { messages: safeMessages, systemPrompt: safeSystemPrompt, estimatedTokens, truncated, originalTokens, removedMessages } =
         createSafeAnthropicRequest(conversationMessages, finalSystemPrompt);
 
       // Log truncation results for monitoring (only on first iteration)
       if (iterationCount === 1 && truncated) {
-        console.log(`[CLAUDE-WRAPPER] Truncated context: ${originalTokens} → ${estimatedTokens} tokens (removed ${removedMessages} messages)`);
+        console.log(`[GEMINI-WRAPPER] Truncated context: ${originalTokens} → ${estimatedTokens} tokens (removed ${removedMessages} messages)`);
       }
 
       // ✅ REAL-TIME STREAMING: Stream text to user AS IT ARRIVES while building content blocks
@@ -1237,7 +994,7 @@ Let's build! 🚀`;
           }
         },
         onError: (error: Error) => {
-          console.error('[LOMU-AI] Claude stream error:', error);
+          console.error('[LOMU-AI] Gemini stream error:', error);
           throw error;
         }
       });
@@ -1784,7 +1541,7 @@ Let's build! 🚀`;
       }
 
       // 🔧 CRITICAL FIX: Add assistant message with content blocks, THEN user message with tool results
-      // This matches Claude's expected conversation structure
+      // This matches the AI model's expected conversation structure
       if (contentBlocks.length > 0) {
         conversationMessages.push({
           role: 'assistant',
@@ -1793,7 +1550,7 @@ Let's build! 🚀`;
       }
 
       if (toolResults.length > 0) {
-        // Add tool results as a user message (Claude requirement)
+        // Add tool results as a user message (API format requirement)
         conversationMessages.push({
           role: 'user',
           content: toolResults,
@@ -1945,7 +1702,7 @@ Let's build! 🚀`;
 
           // Broadcast escalation to user
           broadcast(userId, jobId, 'job_escalated', {
-            message: '🚨 After 3 workflow violations, this job has been escalated to I AM Architect (Claude Sonnet 4) for expert handling. Please check the Platform Healing tab for updates.',
+            message: '🚨 After 3 workflow violations, this job has been escalated to I AM Architect (Scout Advanced) for expert handling. Please check the Platform Healing tab for updates.',
             violations: validationResult.violations
           });
 
@@ -1976,7 +1733,7 @@ Let's build! 🚀`;
       });
 
       // 🔧 CRITICAL FIX: Add assistant message with content blocks, THEN user message with tool results
-      // This matches Claude's expected conversation structure
+      // This matches the AI model's expected conversation structure
       if (contentBlocks.length > 0) {
         conversationMessages.push({
           role: 'assistant',
@@ -1985,7 +1742,7 @@ Let's build! 🚀`;
       }
 
       if (toolResults.length > 0) {
-        // Add tool results as a user message (Claude requirement)
+        // Add tool results as a user message (API format requirement)
         conversationMessages.push({
           role: 'user',
           content: toolResults,
@@ -2191,7 +1948,7 @@ Let's build! 🚀`;
     // CRITICAL FIX: Log the actual content being saved
     console.log(`[LOMU-AI-JOB-MANAGER] Saving assistant message (${finalMessage.length} chars)`);
     if (finalMessage.length === 0 || finalMessage === '✅ Done!') {
-      console.warn('[LOMU-AI-JOB-MANAGER] WARNING: No content was generated by Claude!');
+      console.warn('[LOMU-AI-JOB-MANAGER] WARNING: No content was generated by Gemini!');
     }
 
     const [assistantMsg] = await db

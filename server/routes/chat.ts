@@ -224,7 +224,7 @@ async function dispatchTool(toolName: string, input: any, conversationId?: strin
   }
 }
 
-// Helper function to parse task plans from Claude's response
+// Helper function to parse task plans from Scout's response
 function parseTaskPlan(text: string): { tasks: any[] } | null {
   try {
     // STRATEGY 1: Look for ```json code blocks (most reliable)
@@ -525,7 +525,7 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
       // Check if AI generation is available (graceful degradation)
       if (!FEATURES.AI_GENERATION) {
         return res.status(503).json({ 
-          error: "AI generation temporarily unavailable. Anthropic API key not configured.",
+          error: "AI generation temporarily unavailable. Gemini API key not configured.",
           feature: 'AI_GENERATION',
           available: false
         });
@@ -623,7 +623,7 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
         const baseSystemPrompt = buildSystemPrompt(mode, existingFiles, chatHistory, secrets);
         const systemPrompt = `${baseSystemPrompt}\n\n${contextPrompt}`;
 
-        // SySop interprets the command and generates project structure using Claude
+        // Scout interprets the command and generates project structure using Gemini
         const computeStartTime = Date.now();
         
         // Get user's subscription plan
@@ -631,40 +631,33 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
         const plan = subscription?.plan || 'free';
 
         // Wrap AI call in priority queue
+        const model = genai.getGenerativeModel({ model: 'gemini-2.5-flash' });
         const completion = await aiQueue.enqueue(userId, plan, async () => {
-          const result = await anthropic.messages.create({
-            model: DEFAULT_MODEL,
-            max_tokens: 8192,
-            system: systemPrompt,
-            messages: [
-              {
-                role: "user",
-                content: command,
-              },
-            ],
+          const result = await model.generateContent({
+            contents: [{
+              role: 'user',
+              parts: [{ text: command }]
+            }],
+            systemInstruction: systemPrompt,
+            generationConfig: {
+              maxOutputTokens: 8192,
+            }
           });
           return result;
         });
         
         const computeTimeMs = Date.now() - computeStartTime;
 
-        const responseText = completion.content[0].type === 'text' ? completion.content[0].text : "{}";
+        const responseText = completion.response?.text() || "{}";
         
-        console.log("=== Claude Response (first 200 chars) ===");
+        console.log("=== Gemini Response (first 200 chars) ===");
         console.log(responseText.substring(0, 200));
         console.log(`=== Response length: ${responseText.length} chars ===`);
-        console.log(`=== Stop reason: ${completion.stop_reason} ===`);
         
-        // Log if response was truncated (but don't block - just proceed)
-        if (completion.stop_reason === 'max_tokens') {
-          console.warn('⚠️ Response truncated due to max_tokens limit - continuing anyway (autonomous mode)');
-          // Note: We proceed with partial response instead of blocking
-        }
-        
-        // 📋 TASK MANAGEMENT: Parse and store tasks from Claude's response
+        // 📋 TASK MANAGEMENT: Parse and store tasks from Scout's response
         // This implements Replit Agent-style task tracking
         try {
-          console.log('🔍 [TASK-PARSER] Attempting to parse task plan from Claude response...');
+          console.log('🔍 [TASK-PARSER] Attempting to parse task plan from Scout response...');
           console.log('📄 [TASK-PARSER] Response preview (first 800 chars):', responseText.substring(0, 800));
           console.log('📄 [TASK-PARSER] Searching for task_plan or tasks array...');
           
@@ -1320,7 +1313,7 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
       // Check if AI generation is available (graceful degradation)
       if (!FEATURES.AI_GENERATION) {
         return res.status(503).json({ 
-          error: "AI chat temporarily unavailable. Anthropic API key not configured.",
+          error: "AI chat temporarily unavailable. Gemini API key not configured.",
           feature: 'AI_GENERATION',
           available: false
         });
@@ -1397,13 +1390,13 @@ You return (NO code generation needed):
 
 Remember: **You're a BUILDER first, conversationalist second!**`;
 
-      // Call Claude API
+      // Call Gemini API
       const computeStartTime = Date.now();
       
       const subscription = await storage.getSubscription(userId);
       const plan = subscription?.plan || 'free';
 
-      // Filter out messages with empty content (Claude API requirement)
+      // Filter out messages with empty content
       const validMessages = chatHistory.filter((m: any) => {
         const hasContent = m.content && typeof m.content === 'string' && m.content.trim().length > 0;
         if (!hasContent) {
@@ -1412,30 +1405,36 @@ Remember: **You're a BUILDER first, conversationalist second!**`;
         return hasContent;
       });
 
-      console.log(`🤖 [AI-CHAT-CONVERSATION] Calling Claude API with ${validMessages.length} valid messages (filtered ${chatHistory.length - validMessages.length} empty)...`);
+      console.log(`🤖 [AI-CHAT-CONVERSATION] Calling Gemini API with ${validMessages.length} valid messages (filtered ${chatHistory.length - validMessages.length} empty)...`);
+      
+      // Build Gemini-compatible message history
+      const geminiHistory = validMessages.map((m: any) => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }]
+      }));
+      
+      const chatModel = genai.getGenerativeModel({ model: 'gemini-2.5-flash' });
       const completion = await aiQueue.enqueue(userId, plan, async () => {
-        const result = await anthropic.messages.create({
-          model: DEFAULT_MODEL,
-          max_tokens: 4096,
-          system: systemPrompt,
-          messages: [
-            ...validMessages.map((m: any) => ({
-              role: m.role === 'system' ? 'user' : m.role,
-              content: m.content
-            })),
+        const result = await chatModel.generateContent({
+          contents: [
+            ...geminiHistory,
             {
-              role: "user",
-              content: message,
-            },
+              role: 'user',
+              parts: [{ text: message }]
+            }
           ],
+          systemInstruction: systemPrompt,
+          generationConfig: {
+            maxOutputTokens: 4096,
+          }
         });
         return result;
       });
 
       const computeTimeMs = Date.now() - computeStartTime;
-      const responseText = completion.content[0].type === 'text' ? completion.content[0].text : "";
+      const responseText = completion.response?.text() || "";
 
-      console.log(`✅ [AI-CHAT-CONVERSATION] Claude responded in ${computeTimeMs}ms (${responseText.length} chars)`);
+      console.log(`✅ [AI-CHAT-CONVERSATION] Gemini responded in ${computeTimeMs}ms (${responseText.length} chars)`);
 
       // Parse response - check if SySop wants to build something (ROBUST PARSING)
       let parsedResponse: any = { response: responseText };

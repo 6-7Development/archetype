@@ -376,7 +376,7 @@ async function diagnosePerformance(
       }
 
       // Check system prompt size
-      if (file.includes('routes.ts') || file.includes('anthropic.ts')) {
+      if (file.includes('routes.ts') || file.includes('gemini.ts')) {
         const promptMatches = content.match(/const\s+\w*[Pp]rompt\w*\s*=\s*`[\s\S]*?`/g) || [];
         for (const prompt of promptMatches) {
           const size = prompt.length;

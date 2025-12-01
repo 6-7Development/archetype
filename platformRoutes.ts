@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { platformHealing } from './platformHealing';
 import { platformAudit } from './platformAudit';
 import { isAuthenticated, isAdmin } from './universalAuth';
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI, FunctionDeclarationSchemaType } from '@google/generative-ai';
 
 const router = Router();
 
@@ -15,9 +15,9 @@ router.post('/heal', isAuthenticated, isAdmin, async (req: any, res) => {
       return res.status(400).json({ error: 'Issue description is required' });
     }
 
-    const anthropicKey = process.env.ANTHROPIC_API_KEY;
-    if (!anthropicKey) {
-      return res.status(503).json({ error: 'Anthropic API key not configured' });
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (!geminiKey) {
+      return res.status(503).json({ error: 'Gemini API key not configured' });
     }
 
     await platformAudit.log({
@@ -48,9 +48,10 @@ router.post('/heal', isAuthenticated, isAdmin, async (req: any, res) => {
       }
     }
 
-    const client = new Anthropic({ apiKey: anthropicKey });
-
-    const systemPrompt = `You are Meta-SySop, an elite AI agent that fixes the Archetype platform itself.
+    const genAI = new GoogleGenerativeAI(geminiKey);
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-2.5-flash',
+      systemInstruction: `You are Meta-SySop, an elite AI agent that fixes the Archetype platform itself.
 
 CRITICAL: You are modifying the PRODUCTION PLATFORM CODE, not user projects. Be extremely careful.
 
@@ -80,49 +81,54 @@ ${issue}
 CURRENT FILES (first 20):
 ${Object.keys(fileContents).map(f => `- ${f}`).join('\n')}
 
-Analyze the issue, identify the root cause, and provide the fix.`;
-
-    let conversationMessages: any[] = [{
-      role: 'user',
-      content: `Fix this platform issue: ${issue}\n\nAvailable files:\n${Object.entries(fileContents).slice(0, 3).map(([path, content]) => `\n=== ${path} ===\n${content.slice(0, 1000)}`).join('\n')}`,
-    }];
+Analyze the issue, identify the root cause, and provide the fix.`,
+    });
 
     const tools = [
       {
-        name: 'readPlatformFile',
-        description: 'Read a platform source file',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            path: { type: 'string' as const, description: 'File path relative to project root' },
+        functionDeclarations: [
+          {
+            name: 'readPlatformFile',
+            description: 'Read a platform source file',
+            parameters: {
+              type: FunctionDeclarationSchemaType.OBJECT,
+              properties: {
+                path: { type: FunctionDeclarationSchemaType.STRING, description: 'File path relative to project root' },
+              },
+              required: ['path'],
+            },
           },
-          required: ['path'],
-        },
-      },
-      {
-        name: 'writePlatformFile',
-        description: 'Write content to a platform file',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            path: { type: 'string' as const, description: 'File path relative to project root' },
-            content: { type: 'string' as const, description: 'New file content' },
+          {
+            name: 'writePlatformFile',
+            description: 'Write content to a platform file',
+            parameters: {
+              type: FunctionDeclarationSchemaType.OBJECT,
+              properties: {
+                path: { type: FunctionDeclarationSchemaType.STRING, description: 'File path relative to project root' },
+                content: { type: FunctionDeclarationSchemaType.STRING, description: 'New file content' },
+              },
+              required: ['path', 'content'],
+            },
           },
-          required: ['path', 'content'],
-        },
-      },
-      {
-        name: 'listPlatformFiles',
-        description: 'List files in a directory',
-        input_schema: {
-          type: 'object' as const,
-          properties: {
-            directory: { type: 'string' as const, description: 'Directory path' },
+          {
+            name: 'listPlatformFiles',
+            description: 'List files in a directory',
+            parameters: {
+              type: FunctionDeclarationSchemaType.OBJECT,
+              properties: {
+                directory: { type: FunctionDeclarationSchemaType.STRING, description: 'Directory path' },
+              },
+              required: ['directory'],
+            },
           },
-          required: ['directory'],
-        },
+        ],
       },
     ];
+
+    const chat = model.startChat({
+      tools,
+      history: [],
+    });
 
     const changes: Array<{ path: string; operation: string }> = [];
     let fixDescription = '';
@@ -130,10 +136,13 @@ Analyze the issue, identify the root cause, and provide the fix.`;
     let iterationCount = 0;
     const MAX_ITERATIONS = 5;
 
+    const initialMessage = `Fix this platform issue: ${issue}\n\nAvailable files:\n${Object.entries(fileContents).slice(0, 3).map(([path, content]) => `\n=== ${path} ===\n${content.slice(0, 1000)}`).join('\n')}`;
+
+    let response = await chat.sendMessage(initialMessage);
+
     while (continueLoop && iterationCount < MAX_ITERATIONS) {
       iterationCount++;
 
-      // Log progress update
       await platformAudit.log({
         userId,
         action: 'heal',
@@ -141,80 +150,77 @@ Analyze the issue, identify the root cause, and provide the fix.`;
         status: 'pending',
       });
 
-      const response = await client.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 8000,
-        system: systemPrompt,
-        messages: conversationMessages,
-        tools,
-      });
+      const candidate = response.response.candidates?.[0];
+      if (!candidate?.content?.parts) {
+        continueLoop = false;
+        break;
+      }
 
-      conversationMessages.push({
-        role: 'assistant',
-        content: response.content,
-      });
-
-      const toolResults: any[] = [];
-
-      for (const block of response.content) {
-        if (block.type === 'text') {
-          fixDescription += block.text;
-        } else if (block.type === 'tool_use') {
-          const { name, input, id } = block;
-
-          try {
-            let toolResult: any = null;
-
-            if (name === 'readPlatformFile') {
-              const typedInput = input as { path: string };
-              toolResult = await platformHealing.readPlatformFile(typedInput.path);
-            } else if (name === 'writePlatformFile') {
-              const typedInput = input as { path: string; content: string };
-              await platformHealing.writePlatformFile(typedInput.path, typedInput.content);
-              changes.push({ path: typedInput.path, operation: 'modify' });
-              
-              // Log file modification
-              await platformAudit.log({
-                userId,
-                action: 'heal',
-                description: `Modified file: ${typedInput.path}`,
-                status: 'pending',
-              });
-              
-              toolResult = 'File written successfully';
-            } else if (name === 'listPlatformFiles') {
-              const typedInput = input as { directory: string };
-              const files = await platformHealing.listPlatformFiles(typedInput.directory);
-              toolResult = files.join('\n');
-            }
-
-            toolResults.push({
-              type: 'tool_result',
-              tool_use_id: id,
-              content: toolResult || 'Success',
-            });
-          } catch (error: any) {
-            toolResults.push({
-              type: 'tool_result',
-              tool_use_id: id,
-              is_error: true,
-              content: error.message,
-            });
-          }
+      const functionCalls: any[] = [];
+      
+      for (const part of candidate.content.parts) {
+        if (part.text) {
+          fixDescription += part.text;
+        } else if (part.functionCall) {
+          functionCalls.push(part.functionCall);
         }
       }
 
-      if (toolResults.length > 0) {
-        conversationMessages.push({
-          role: 'user',
-          content: toolResults,
-        });
+      if (functionCalls.length === 0) {
+        continueLoop = false;
+        break;
+      }
+
+      const functionResponses: any[] = [];
+      
+      for (const fc of functionCalls) {
+        const { name, args } = fc;
+
+        try {
+          let toolResult: any = null;
+
+          if (name === 'readPlatformFile') {
+            toolResult = await platformHealing.readPlatformFile(args.path);
+          } else if (name === 'writePlatformFile') {
+            await platformHealing.writePlatformFile(args.path, args.content);
+            changes.push({ path: args.path, operation: 'modify' });
+            
+            await platformAudit.log({
+              userId,
+              action: 'heal',
+              description: `Modified file: ${args.path}`,
+              status: 'pending',
+            });
+            
+            toolResult = 'File written successfully';
+          } else if (name === 'listPlatformFiles') {
+            const files = await platformHealing.listPlatformFiles(args.directory);
+            toolResult = files.join('\n');
+          }
+
+          functionResponses.push({
+            functionResponse: {
+              name,
+              response: { result: toolResult || 'Success' },
+            },
+          });
+        } catch (error: any) {
+          functionResponses.push({
+            functionResponse: {
+              name,
+              response: { error: error.message },
+            },
+          });
+        }
+      }
+
+      if (functionResponses.length > 0) {
+        response = await chat.sendMessage(functionResponses);
       } else {
         continueLoop = false;
       }
     }
 
-    // Log safety check
     await platformAudit.log({
       userId,
       action: 'heal',
@@ -244,7 +250,6 @@ Analyze the issue, identify the root cause, and provide the fix.`;
 
     let commitHash = '';
     if (autoCommit && changes.length > 0) {
-      // Log commit
       await platformAudit.log({
         userId,
         action: 'heal',
@@ -255,7 +260,6 @@ Analyze the issue, identify the root cause, and provide the fix.`;
       commitHash = await platformHealing.commitChanges(`Fix: ${issue}`, changes as any);
 
       if (autoPush) {
-        // Log push
         await platformAudit.log({
           userId,
           action: 'heal',
@@ -388,14 +392,12 @@ router.get('/tasks', isAuthenticated, isAdmin, async (req: any, res) => {
     const userId = req.authenticatedUserId;
     const { readTaskList } = await import('./tools/task-management');
     
-    // Get actual task lists from task management system
     const result = await readTaskList({ userId });
     
     if (!result.success || !result.taskLists) {
       return res.json({ tasks: [] });
     }
     
-    // Find the most recent active task list
     const activeList = result.taskLists
       .filter((list: any) => list.status === 'active')
       .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
@@ -404,7 +406,6 @@ router.get('/tasks', isAuthenticated, isAdmin, async (req: any, res) => {
       return res.json({ tasks: [] });
     }
     
-    // Convert tasks to AgentProgress format
     const tasks = activeList.tasks.map((task: any) => {
       let type: 'thinking' | 'action' | 'success' | 'error' | 'warning' = 'action';
       let progress = 0;
@@ -435,7 +436,7 @@ router.get('/tasks', isAuthenticated, isAdmin, async (req: any, res) => {
     res.json({ tasks });
   } catch (error: any) {
     console.error('[PLATFORM-TASKS] Error fetching tasks:', error);
-    res.json({ tasks: [] }); // Return empty array on error, don't fail
+    res.json({ tasks: [] });
   }
 });
 

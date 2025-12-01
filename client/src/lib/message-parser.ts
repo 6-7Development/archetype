@@ -1,6 +1,6 @@
 /**
  * Parse message content to extract clean text
- * Handles both string content and Anthropic's content block arrays
+ * Handles both string content and AI content block arrays (Gemini format)
  * Filters out tool_use and tool_result blocks to show only user-facing text
  */
 
@@ -31,7 +31,7 @@ type ContentBlock = TextBlock | ToolUseBlock | ToolResultBlock | string;
 export function parseMessageContent(content: string | ContentBlock[]): string {
   // If it's already a string, check if it's JSON-encoded content blocks
   if (typeof content === 'string') {
-    // Try to parse as JSON array (Anthropic format)
+    // Try to parse as JSON array (content block format)
     if (content.trim().startsWith('[') && content.trim().endsWith(']')) {
       try {
         const parsed = JSON.parse(content);

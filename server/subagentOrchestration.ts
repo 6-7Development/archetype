@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI, FunctionDeclarationSchemaType } from '@google/generative-ai';
 import { platformHealing } from './platformHealing';
 import { 
   executeBrowserTest,
@@ -35,9 +35,9 @@ interface SubagentResult {
 export async function startSubagent(params: SubagentParams): Promise<SubagentResult> {
   const { task, relevantFiles, userId, sendEvent, fileChangeTracker } = params;
 
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  if (!anthropicKey) {
-    throw new Error('Anthropic API key not configured');
+  const geminiKey = process.env.GEMINI_API_KEY;
+  if (!geminiKey) {
+    throw new Error('Gemini API key not configured');
   }
 
   sendEvent('progress', { message: `🤖 Sub-agent started: ${task.slice(0, 60)}...` });
@@ -96,11 +96,16 @@ ${relevantFiles.map(f => `- ${f}`).join('\n')}
 
 Work systematically, verify your changes, and report completion when done!`;
 
-  const client = new Anthropic({ apiKey: anthropicKey });
-  const conversationMessages: any[] = [
+  const genai = new GoogleGenerativeAI(geminiKey);
+  const model = genai.getGenerativeModel({ 
+    model: 'gemini-2.5-flash',
+    systemInstruction: systemPrompt,
+  });
+  
+  const conversationHistory: { role: 'user' | 'model'; parts: any[] }[] = [
     {
       role: 'user',
-      content: `Begin work on your assigned task. Read the relevant files and make the necessary changes.`,
+      parts: [{ text: `Begin work on your assigned task. Read the relevant files and make the necessary changes.` }],
     },
   ];
 
@@ -708,73 +713,117 @@ Work systematically, verify your changes, and report completion when done!`;
     },
   };
 
+  // Convert Anthropic-style tools to Gemini format
+  const geminiTools = [{
+    functionDeclarations: tools.map(tool => ({
+      name: tool.name,
+      description: tool.description,
+      parameters: {
+        type: FunctionDeclarationSchemaType.OBJECT,
+        properties: Object.fromEntries(
+          Object.entries(tool.input_schema.properties || {}).map(([key, value]: [string, any]) => [
+            key,
+            {
+              type: value.type === 'array' ? FunctionDeclarationSchemaType.ARRAY : 
+                    value.type === 'number' ? FunctionDeclarationSchemaType.NUMBER :
+                    value.type === 'boolean' ? FunctionDeclarationSchemaType.BOOLEAN :
+                    FunctionDeclarationSchemaType.STRING,
+              description: value.description || key,
+              ...(value.enum ? { enum: value.enum } : {}),
+              ...(value.items ? { items: { type: FunctionDeclarationSchemaType.STRING } } : {}),
+            }
+          ])
+        ),
+        required: tool.input_schema.required || [],
+      }
+    }))
+  }];
+
+  // Start chat session with tools
+  const chat = model.startChat({
+    history: [],
+    tools: geminiTools,
+  });
+
   while (continueLoop && iterationCount < MAX_ITERATIONS) {
     iterationCount++;
 
     sendEvent('progress', { message: `🤖 Sub-agent working (iteration ${iterationCount}/${MAX_ITERATIONS})...` });
 
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 8000,
-      system: systemPrompt,
-      messages: conversationMessages,
-      tools,
-      stream: false,
-    });
+    // Build message from conversation history
+    const lastMessage = conversationHistory[conversationHistory.length - 1];
+    const messageContent = lastMessage.parts.map((p: any) => 
+      p.text || (p.functionResponse ? JSON.stringify(p.functionResponse) : '')
+    ).join('\n');
 
-    conversationMessages.push({
-      role: 'assistant',
-      content: response.content,
+    const response = await chat.sendMessage(messageContent);
+    const result = response.response;
+    const candidates = result.candidates;
+    
+    if (!candidates || candidates.length === 0) {
+      console.error('[SUBAGENT] No candidates in Gemini response');
+      continueLoop = false;
+      continue;
+    }
+
+    const content = candidates[0].content;
+    const parts = content?.parts || [];
+
+    // Add assistant response to history
+    conversationHistory.push({
+      role: 'model',
+      parts: parts,
     });
 
     const toolResults: any[] = [];
-    const hasToolUse = response.content.some(block => block.type === 'tool_use');
+    const functionCalls = parts.filter((part: any) => part.functionCall);
 
-    for (const block of response.content) {
-      if (block.type === 'tool_use') {
-        const { name, input, id } = block;
+    for (const part of functionCalls) {
+      const functionCall = part.functionCall;
+      const name = functionCall.name;
+      const input = functionCall.args || {};
 
-        try {
-          // 🎯 Map-based dispatcher - clean and maintainable
-          const executor = toolExecutors[name];
-          if (!executor) {
-            throw new Error(`Unknown tool: ${name}`);
-          }
-
-          const { result, trackFile } = await executor(input);
-          
-          // Track modified files
-          if (trackFile && !filesModified.includes(trackFile)) {
-            filesModified.push(trackFile);
-            
-            // T5: Record change in FileChangeTracker if provided
-            if (fileChangeTracker) {
-              fileChangeTracker.recordChange(trackFile, 'modify');
-              console.log(`[SUBAGENT] Tracked file change: ${trackFile}`);
-            }
-          }
-
-          toolResults.push({
-            type: 'tool_result',
-            tool_use_id: id,
-            content: result || 'Success',
-          });
-        } catch (error: any) {
-          console.error(`[SUBAGENT] Tool ${name} failed:`, error);
-          toolResults.push({
-            type: 'tool_result',
-            tool_use_id: id,
-            is_error: true,
-            content: `Error in ${name}: ${error.message}`,
-          });
+      try {
+        // 🎯 Map-based dispatcher - clean and maintainable
+        const executor = toolExecutors[name];
+        if (!executor) {
+          throw new Error(`Unknown tool: ${name}`);
         }
+
+        const { result: execResult, trackFile } = await executor(input);
+        
+        // Track modified files
+        if (trackFile && !filesModified.includes(trackFile)) {
+          filesModified.push(trackFile);
+          
+          // T5: Record change in FileChangeTracker if provided
+          if (fileChangeTracker) {
+            fileChangeTracker.recordChange(trackFile, 'modify');
+            console.log(`[SUBAGENT] Tracked file change: ${trackFile}`);
+          }
+        }
+
+        toolResults.push({
+          functionResponse: {
+            name: name,
+            response: { result: execResult || 'Success' },
+          }
+        });
+      } catch (error: any) {
+        console.error(`[SUBAGENT] Tool ${name} failed:`, error);
+        toolResults.push({
+          functionResponse: {
+            name: name,
+            response: { error: `Error in ${name}: ${error.message}` },
+          }
+        });
       }
     }
 
     if (toolResults.length > 0) {
-      conversationMessages.push({
+      conversationHistory.push({
         role: 'user',
-        content: toolResults,
+        parts: toolResults,
       });
     } else {
       // No tools called, end loop
@@ -784,14 +833,15 @@ Work systematically, verify your changes, and report completion when done!`;
 
   // If sub-agent didn't report completion, extract summary from final message
   if (!finalSummary) {
-    const lastAssistantMessage = conversationMessages
+    const lastAssistantMessage = conversationHistory
+      .slice()
       .reverse()
-      .find((msg: any) => msg.role === 'assistant');
+      .find((msg: any) => msg.role === 'model');
 
     if (lastAssistantMessage) {
-      const textBlocks = lastAssistantMessage.content.filter((block: any) => block.type === 'text');
-      if (textBlocks.length > 0) {
-        finalSummary = textBlocks.map((block: any) => block.text).join('\n\n');
+      const textParts = lastAssistantMessage.parts.filter((part: any) => part.text);
+      if (textParts.length > 0) {
+        finalSummary = textParts.map((part: any) => part.text).join('\n\n');
       }
     }
   }

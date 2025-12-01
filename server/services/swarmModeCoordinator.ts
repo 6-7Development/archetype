@@ -28,7 +28,7 @@ export interface SwarmExecution {
   endTime?: number;
   status: 'pending' | 'running' | 'completed' | 'failed' | 'rolled_back';
   progress: number; // 0-100
-  usedAgents: Array<'gemini-flash' | 'claude-sonnet-4'>;
+  usedAgents: Array<'gemini-flash' | 'gemini-pro'>;
   totalCost: number;
   executionLog: string[];
   errors: string[];
@@ -131,7 +131,7 @@ export class SwarmModeCoordinator {
         reason: 'All pre-flight checks passed',
       });
 
-      execution.usedAgents.push('claude-sonnet-4'); // I AM Architect initiates
+      execution.usedAgents.push('gemini-pro'); // I AM Architect initiates
       execution.progress = 60;
 
       // STEP 6: Execute Tools (with Gemini Flash sub-agents)

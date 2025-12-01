@@ -9,7 +9,7 @@
 // Google Gemini 2.5 Flash Pricing (2025)
 export const PROVIDER_COSTS = {
   // AI Token Costs (per million tokens)
-  gemini_input: 0.075,           // $0.075/M tokens (40x cheaper than Claude)
+  gemini_input: 0.075,           // $0.075/M tokens
   gemini_output: 0.30,           // $0.30/M tokens
   gemini_input_cached: 0.01875,  // $0.01875/M tokens (75% savings with caching)
   
@@ -21,7 +21,7 @@ export const PROVIDER_COSTS = {
 
 // User Pricing (sustainable competitive model)
 // Strategy: 3x markup on Gemini's low costs = still very affordable for users
-// Much better margins than Claude while being cheaper for users
+// Great margins with Gemini's competitive pricing
 export const USER_PRICING = {
   // AI Token Pricing (per million tokens) - 3x markup on Gemini
   gemini_input: 0.225,           // 3x markup: $0.075 → $0.225

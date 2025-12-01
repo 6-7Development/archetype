@@ -259,7 +259,7 @@ export class WorkflowValidator {
 
   /**
    * Validate tool call based on current phase (PASSIVE MONITORING MODE)
-   * Logs violations but NEVER blocks tools - lets Claude work naturally
+   * Logs violations but NEVER blocks tools - lets Scout work naturally
    */
   validateToolCall(toolName: string, phase?: WorkflowPhase): PhaseValidationResult {
     if (!this.enabled) return { allowed: true };

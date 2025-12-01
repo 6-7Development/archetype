@@ -1409,7 +1409,7 @@ export {
  * Essential BeeHive Tools (18 tools for Gemini)
  * Balanced tool distribution strategy:
  * - BeeHive: 18 core tools (cost-effective Gemini)
- * - I AM Architect: 16 strategic tools (Claude for complex reasoning)
+ * - I AM Architect: 16 strategic tools (Gemini Pro for complex reasoning)
  * - Subagents: ~33 specialized tools (domain experts)
  * This ensures all 67 tools are utilized while respecting Gemini's ≤20 recommendation
  */

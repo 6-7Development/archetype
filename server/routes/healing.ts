@@ -8,7 +8,7 @@ import { createTaskList, updateTask, readTaskList } from "../tools/task-manageme
 import { classifyUserIntent, getMaxIterationsForIntent } from "../shared/chatConfig";
 import { broadcastToUser } from "./websocket";
 
-// 🔄 EXPONENTIAL BACKOFF RETRY LOGIC for Anthropic API overload errors
+// 🔄 EXPONENTIAL BACKOFF RETRY LOGIC for API overload errors
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
   maxRetries: number = 3,
@@ -18,14 +18,14 @@ async function retryWithBackoff<T>(
     try {
       return await fn();
     } catch (error: any) {
-      // Check if it's an Anthropic overload error
+      // Check if it's an API overload error
       const isOverloadError = error.error?.type === 'overloaded_error' || 
                               error.message?.includes('overloaded') ||
                               error.type === 'overloaded_error';
       
       if (isOverloadError && i < maxRetries - 1) {
         const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s exponential backoff
-        console.log(`[HEALING-RETRY] ${context} - Anthropic API overloaded, retry ${i + 1}/${maxRetries} after ${delay}ms...`);
+        console.log(`[HEALING-RETRY] ${context} - Gemini API overloaded, retry ${i + 1}/${maxRetries} after ${delay}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
         continue;
       }
@@ -417,7 +417,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
           content: m.content,  // Let convertMessagesToGemini handle formatting
         }));
 
-      console.log(`🤖 [HEALING-CHAT] Starting Claude conversation with ${conversationMessages.length} messages...`);
+      console.log(`🤖 [HEALING-CHAT] Starting Gemini conversation with ${conversationMessages.length} messages...`);
       
       const computeStartTime = Date.now();
       let totalInputTokens = 0;
@@ -833,7 +833,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
                     return {
                       success: true,
                       taskListId: result.taskListId,
-                      tasks: result.tasks, // ← CRITICAL FIX: Return actual task IDs so Claude can update them!
+                      tasks: result.tasks, // ← CRITICAL FIX: Return actual task IDs so Scout can update them!
                       message: `✓ Task list created! Use these task IDs for update_task(): ${result.tasks?.map(t => `"${t.id}"`).join(', ')}`
                     };
                   } else {
@@ -1342,17 +1342,17 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
             }
           });
           }, 3, `Healing API call (iteration ${iterationCount})`); // Close retry wrapper
-        } catch (claudeError: any) {
-          console.error(`[HEALING-CHAT] ❌ Claude API error on iteration ${iterationCount}:`, claudeError);
+        } catch (geminiError: any) {
+          console.error(`[HEALING-CHAT] ❌ Gemini API error on iteration ${iterationCount}:`, geminiError);
           
-          // On Claude API error, break the loop and return what we have
+          // On Gemini API error, break the loop and return what we have
           if (fullResponse.trim().length > 0) {
             // We have a partial response from previous iterations
             console.log(`[HEALING-CHAT] 🔄 Using partial response from ${iterationCount - 1} successful iterations`);
             break;
           } else {
             // First iteration failed, throw error
-            throw new Error(`Claude API error: ${claudeError.message || 'Unknown error'}`);
+            throw new Error(`Gemini API error: ${geminiError.message || 'Unknown error'}`);
           }
         }
         
@@ -1372,10 +1372,10 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
         // Append AI response to conversation
         fullResponse += response.fullText;
         
-        // FIX #1: Check if Claude wants to continue (has tool results to process)
+        // FIX #1: Check if Gemini wants to continue (has tool results to process)
         if (response.needsContinuation && response.toolResults) {
           if (isDev) {
-            console.log(`[HEALING-CHAT] 🔨 Claude used ${response.toolResults.length} tools, saving to DB and continuing...`);
+            console.log(`[HEALING-CHAT] 🔨 Gemini used ${response.toolResults.length} tools, saving to DB and continuing...`);
           }
           
           // PERSISTENCE FIX: Save intermediate assistant message (tool calls) to database
@@ -1416,7 +1416,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
             console.error(`[HEALING-CHAT] ⚠️ Failed to save tool results:`, dbError.message);
           }
           
-          // CRITICAL: Proper tool_use/tool_result pairing for Claude
+          // CRITICAL: Proper tool_use/tool_result pairing for Gemini
           // This happens AFTER tool execution to ensure proper message structure
           // Assistant message contains tool_use blocks
           conversationMessages.push({
@@ -1432,15 +1432,15 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
           
           continueLoop = true;
         } else {
-          // Claude is done
+          // Gemini is done
           continueLoop = false;
-          console.log(`[HEALING-CHAT] ✅ Claude completed in ${iterationCount} iterations`);
+          console.log(`[HEALING-CHAT] ✅ Gemini completed in ${iterationCount} iterations`);
         }
       }
 
-      // 🔧 SMART RECOVERY: If Claude executed tools but didn't provide final text, retry once
+      // 🔧 SMART RECOVERY: If Gemini executed tools but didn't provide final text, retry once
       if (fullResponse.trim().length === 0 && iterationCount > 1 && continueLoop === false) {
-        console.log(`[HEALING-CHAT-RECOVERY] 🔄 Claude executed ${iterationCount - 1} tool iterations but provided no final text`);
+        console.log(`[HEALING-CHAT-RECOVERY] 🔄 Gemini executed ${iterationCount - 1} tool iterations but provided no final text`);
         console.log(`[HEALING-CHAT-RECOVERY] 📝 Tools used: ${filesModified.length > 0 ? filesModified.join(', ') : 'none modified'}`);
         console.log(`[HEALING-CHAT-RECOVERY] 🔨 Making recovery call to force completion...`);
         
@@ -1535,7 +1535,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
             conversationId: validated.conversationId,
             filesModified,
             healingChat: true,
-            model: "claude-sonnet-4-20250514",
+            model: "gemini-2.5-flash",
             iterations: iterationCount,
           },
         });
@@ -1572,7 +1572,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
       // Handle specific error types
       if (error.message?.includes('API key')) {
         return res.status(500).json({ 
-          error: "Claude API configuration error. Please check API key.",
+          error: "Gemini API configuration error. Please check API key.",
           type: 'CONFIG_ERROR',
         });
       }
@@ -1586,7 +1586,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
       
       if (error.code === 'ENOTFOUND' || error.code === 'ETIMEDOUT') {
         return res.status(503).json({ 
-          error: "Network error connecting to Claude API. Please try again.",
+          error: "Network error connecting to Gemini API. Please try again.",
           type: 'NETWORK_ERROR',
         });
       }
@@ -1682,7 +1682,7 @@ REMEMBER: Every task MUST go: pending ○ → in_progress ⏳ → completed ✓`
             },
           });
 
-          // Send initial context to Claude for autonomous healing
+          // Send initial context to Gemini for autonomous healing
           const systemPrompt = `You are BeeHiveAI's Platform Healing Agent. The user has initiated AUTONOMOUS healing mode.
 
 Your mission: Analyze and fix ALL platform issues autonomously. Focus on:

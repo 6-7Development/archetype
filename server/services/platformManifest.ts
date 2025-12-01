@@ -41,7 +41,7 @@ export const PLATFORM_STRUCTURE = {
       "server/tools/tool-distributions.ts": "LOMU_CORE_TOOLS (18), SUBAGENT_TOOLS (12), ARCHITECT_TOOLS (23)",
       "server/tools/file-operations.ts": "read/write/glob file tools, grep search, smart file reading",
       "server/tools/diagnosis.ts": "Automated diagnostic tool, identifies platform issues, security/perf/db checks",
-      "server/tools/architect-consult.ts": "Calls I AM Architect (Claude Sonnet 4) for strategic guidance",
+      "server/tools/architect-consult.ts": "Calls I AM Architect (Gemini 2.5 Pro) for strategic guidance",
       "server/tools/sub-agent.ts": "Spawns parallel sub-agents for complex tasks",
       "server/tools/github-tools.ts": "Git operations, commits, branch operations, file changes",
       "server/tools/web-search.ts": "Tavily API integration, real-time web search",
@@ -50,7 +50,7 @@ export const PLATFORM_STRUCTURE = {
 
     config: {
       "server/config/beehiveLimits.ts": "Rate limiting, safety thresholds, anti-paralysis settings",
-      "server/config/modelConfig.ts": "AI model configuration (Gemini 2.5 Flash, Claude Sonnet 4)",
+      "server/config/modelConfig.ts": "AI model configuration (Gemini 2.5 Flash, Gemini 2.5 Pro)",
     },
 
     workflows: {
@@ -77,7 +77,7 @@ export const PLATFORM_STRUCTURE = {
       "client/src/components/enhanced-message-display.tsx": "Displays BeeHiveAI thinking blocks, tool calls, results inline",
       "client/src/components/agent-progress-display.tsx": "Real-time task/phase progress visualization",
       "client/src/components/run-progress-table.tsx": "Task execution table with status tracking",
-      "client/src/components/ai-model-selector.tsx": "Choose Gemini (fast) vs Claude (smart) AI",
+      "client/src/components/ai-model-selector.tsx": "Choose Gemini Flash (fast) vs Gemini Pro (smart) AI",
       "client/src/components/testing-panel.tsx": "Browser testing UI, Playwright integration",
       "client/src/components/changes-panel.tsx": "File changes preview, git diff visualization",
     },

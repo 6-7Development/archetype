@@ -272,7 +272,7 @@ When I use tools (read files, search, etc.), I execute them silently in the back
 - **Frontend:** React + TypeScript (client/src/)
 - **Backend:** Express.js (server/)
 - **Database:** PostgreSQL + Drizzle ORM
-- **AI:** Anthropic Claude Sonnet 4
+- **AI:** Google Gemini 2.5 Flash
 - **Deployment:** Railway (auto-deploys from GitHub)
 
 Alright, let's turn these lemons into lemonade! 🍋✨`;
@@ -307,8 +307,8 @@ export const ERROR_MESSAGES = {
     `My ${toolName} tool hit a little snag. No big deal - let me try a different approach!`,
   
   // API errors
-  anthropicKeyMissing: () => 
-    `Oops! I need my Anthropic API key to work my magic, but it's not set up. Could you add it as ANTHROPIC_API_KEY in your environment? I'll be ready to go once that's there! ✨`,
+  geminiKeyMissing: () => 
+    `Oops! I need my Gemini API key to work my magic, but it's not set up. Could you add it as GEMINI_API_KEY in your environment? I'll be ready to go once that's there! ✨`,
   
   // Architecture errors
   architectRejection: (reason: string) => 

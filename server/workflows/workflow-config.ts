@@ -38,12 +38,12 @@ export const WORKFLOW_CONFIG = {
     VERIFY: { timeout: 5000, maxRetries: 0 },
   },
   
-  // Cost tracking
+  // Cost tracking (Gemini-only architecture)
   costs: {
     gemini2_5FlashInput: 0.075 / 1000000, // per token
     gemini2_5FlashOutput: 0.30 / 1000000,
-    claudeSonnetInput: 3.0 / 1000000,
-    claudeSonnetOutput: 15.0 / 1000000,
+    gemini2_5ProInput: 1.50 / 1000000, // Scout Advanced
+    gemini2_5ProOutput: 6.00 / 1000000,
     trackPerTool: true, // track cost per tool execution
   },
   
