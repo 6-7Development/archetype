@@ -25,14 +25,21 @@ interface FileBrowserProps {
 // Fetch real files from API
 function useProjectFiles(projectId?: string, refreshKey?: number) {
   return useQuery({
-    queryKey: ['/api/project-files', projectId, refreshKey],
+    queryKey: ['/api/projects', projectId, 'files', refreshKey],
     queryFn: async () => {
-      const url = projectId 
-        ? `/api/project-files?projectId=${encodeURIComponent(projectId)}`
-        : '/api/project-files';
+      if (!projectId) {
+        // If no projectId, return empty
+        return { files: [] };
+      }
+      // Use the correct database-backed endpoint
+      const url = `/api/projects/${encodeURIComponent(projectId)}/files`;
+      console.log('[FILES-BROWSER] 📁 Fetching files from:', url);
       const res = await fetch(url, { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to load files');
-      return res.json();
+      const data = await res.json();
+      console.log('[FILES-BROWSER] ✅ Got files:', data?.length || 0, 'files');
+      // If it's an array, wrap it; if it's an object with files property, use that
+      return Array.isArray(data) ? { files: data } : { files: data.files || [] };
     },
     staleTime: 0, // Always fresh when refreshKey changes
   });
@@ -116,7 +123,8 @@ export function FileBrowser({
   refreshKey = 0
 }: FileBrowserProps) {
   const { data, isLoading } = useProjectFiles(projectId, refreshKey);
-  const files = data?.files || propFiles || [];
+  // Extract files array from response
+  const files = Array.isArray(data) ? data : (data?.files || propFiles || []);
 
   return (
     <div className="flex flex-col h-full bg-card border-r border-border">
