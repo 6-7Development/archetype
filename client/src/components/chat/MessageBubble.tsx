@@ -107,17 +107,19 @@ export function MessageBubble({ message, index, totalMessages, onPin, showAvatar
 
       {/* Message Content */}
       <div className={`flex-1 min-w-0 flex flex-col ${isUser ? 'items-end' : 'items-start'} gap-2`}>
-        {/* Thinking bubble (collapsible, for assistant only) */}
+        {/* Thinking bubble (collapsible, for assistant only) - always visible inline */}
         {!isUser && hasThinking && (
-          <button
-            onClick={() => setShowThinking(!showThinking)}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/30 hover:bg-secondary/40 transition-colors text-foreground max-w-2xl group/thinking font-medium"
-            data-testid={`button-toggle-thinking-${message.id}`}
-          >
-            <Brain className="w-3.5 h-3.5 flex-shrink-0" />
-            <span className="text-xs">Thinking</span>
-            <ChevronDown className={`w-3 h-3 flex-shrink-0 transition-transform ${showThinking ? 'rotate-180' : ''}`} />
-          </button>
+          <div className="w-full max-w-2xl">
+            <button
+              onClick={() => setShowThinking(!showThinking)}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-50 dark:bg-purple-950/30 hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors text-purple-700 dark:text-purple-300 group/thinking font-medium border border-purple-200 dark:border-purple-800/50"
+              data-testid={`button-toggle-thinking-${message.id}`}
+            >
+              <Brain className="w-4 h-4 flex-shrink-0" />
+              <span className="text-xs font-semibold">Thinking Process</span>
+              <ChevronDown className={`w-3.5 h-3.5 flex-shrink-0 transition-transform ml-auto ${showThinking ? 'rotate-180' : ''}`} />
+            </button>
+          </div>
         )}
         
         {/* Thinking content (hidden by default) */}
