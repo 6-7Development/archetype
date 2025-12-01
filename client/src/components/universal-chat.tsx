@@ -30,7 +30,6 @@ import { ChangesPanel } from "@/components/changes-panel";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { AgentTaskList, type AgentTask } from "@/components/agent-task-list";
 import { AgentProgressDisplay } from "@/components/agent-progress-display";
-import { AgentBeeAnimation, mapAgentPhaseToMode } from "@/components/agent-bee-animation";
 import { RunProgressTable } from "@/components/run-progress-table";
 import { ChatInputToolbar } from "@/components/ui/chat-input-toolbar";
 import { AIModelSelector } from "@/components/ai-model-selector";
@@ -712,11 +711,6 @@ export function UniversalChat({
             {runState.messages.length === 0 ? (
               <div className="flex items-center justify-center h-full text-muted-foreground" data-testid="empty-state-chat">
                 <div className="text-center space-y-4">
-                  <AgentBeeAnimation 
-                    mode="IDLE"
-                    size="lg"
-                    showStatus={false}
-                  />
                   <div>
                     <p className="text-lg font-bold text-[hsl(var(--primary))]">Scout is ready</p>
                     <p className="text-sm text-muted-foreground/70 mt-2">Send a message to get started</p>
@@ -766,28 +760,17 @@ export function UniversalChat({
                   ))}
                 </div>
 
-                {/* Loading indicator with Bee Animation */}
+                {/* Loading indicator */}
                 {isGenerating && (
-                  <div className="flex gap-3 group flex-row items-start" data-testid="loading-indicator">
-                    <div className="flex-shrink-0">
-                      <AgentBeeAnimation 
-                        mode={mapAgentPhaseToMode(runState.phase, isGenerating)}
-                        size="sm"
-                        showStatus={true}
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0 flex flex-col items-start justify-center pt-4">
-                      <div className="text-xs font-bold mb-1 text-[hsl(var(--primary))]">Scout</div>
-                      <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl rounded-bl-none px-4 py-2.5 border border-[hsl(var(--primary))]/30">
-                        <span className="text-sm text-slate-700 dark:text-slate-200 font-semibold">
-                          {runState.phase === 'thinking' ? 'Thinking...' : 
-                           runState.phase === 'planning' ? 'Planning...' :
-                           runState.phase === 'working' ? 'Working...' :
-                           runState.phase === 'verifying' ? 'Verifying...' : 
-                           'Processing...'}
-                        </span>
-                      </div>
-                    </div>
+                  <div className="flex gap-2 items-center text-xs text-slate-600 dark:text-slate-300" data-testid="loading-indicator">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-[hsl(var(--primary))]" />
+                    <span className="font-semibold">
+                      {runState.phase === 'thinking' ? 'Thinking...' : 
+                       runState.phase === 'planning' ? 'Planning...' :
+                       runState.phase === 'working' ? 'Working...' :
+                       runState.phase === 'verifying' ? 'Verifying...' : 
+                       'Processing...'}
+                    </span>
                   </div>
                 )}
                 <div ref={latestMessageRef} />
