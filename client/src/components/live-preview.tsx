@@ -17,7 +17,7 @@ export function LivePreview({ projectId, fileCount = 0, refreshKey = 0 }: LivePr
   const [previewStatus, setPreviewStatus] = useState<'loading' | 'ready' | 'error'>('ready');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<string | null>(null);
-  const [previewUrl] = useState<string>('about:blank');
+  const [previewUrl] = useState<string>('http://localhost:5000');
   
   // Watch for refreshKey changes and reload preview
   useEffect(() => {
@@ -128,11 +128,11 @@ export function LivePreview({ projectId, fileCount = 0, refreshKey = 0 }: LivePr
 
   if (!projectId) {
     return (
-      <div className="h-full flex items-center justify-center p-6">
+      <div className="h-full flex items-center justify-center p-6 bg-gradient-to-br from-amber-50 to-white dark:from-slate-900 dark:to-slate-800">
         <div className="text-center max-w-md">
-          <Eye className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="text-lg font-semibold mb-2">No Project Selected</h3>
-          <p className="text-sm text-muted-foreground">
+          <Eye className="w-16 h-16 mx-auto mb-4 text-amber-600 dark:text-amber-400" />
+          <h3 className="text-lg font-semibold mb-2 text-slate-900 dark:text-white">No Project Selected</h3>
+          <p className="text-sm text-slate-600 dark:text-slate-300">
             Select or create a project to see a live preview
           </p>
         </div>
@@ -205,12 +205,12 @@ export function LivePreview({ projectId, fileCount = 0, refreshKey = 0 }: LivePr
 
       {/* Error Display */}
       {previewStatus === 'error' && errorMessage && (
-        <div className="mx-4 mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+        <div className="mx-4 mt-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg">
           <div className="flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
+            <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-destructive">Preview Error</p>
-              <p className="text-xs text-muted-foreground mt-1">{errorMessage}</p>
+              <p className="text-sm font-medium text-red-700 dark:text-red-300">Preview Error</p>
+              <p className="text-xs text-red-600 dark:text-red-400 mt-1">{errorMessage}</p>
             </div>
           </div>
         </div>
@@ -218,12 +218,12 @@ export function LivePreview({ projectId, fileCount = 0, refreshKey = 0 }: LivePr
 
       {/* Preview Frame */}
       <div className="flex-1 p-4 overflow-hidden">
-        <Card className="h-full overflow-hidden border-primary/10 bg-white">
+        <Card className="h-full overflow-hidden border-primary/10 bg-white dark:bg-slate-900">
           <div className="flex flex-col h-full">
             {/* Browser Address Bar Simulation */}
-            <div className="border-b bg-gray-50 px-4 py-3 flex items-center gap-3">
-              <div className="text-xs text-gray-500 font-medium">BeeHive Preview</div>
-              <div className="flex-1 bg-white border border-gray-200 rounded px-3 py-2 text-xs text-gray-600 font-mono">
+            <div className="border-b bg-amber-50 dark:bg-slate-800 px-4 py-3 flex items-center gap-3">
+              <div className="text-xs text-amber-700 dark:text-amber-400 font-medium">BeeHive Preview</div>
+              <div className="flex-1 bg-white dark:bg-slate-700 border border-amber-200 dark:border-amber-800/50 rounded px-3 py-2 text-xs text-amber-900 dark:text-amber-200 font-mono">
                 {previewUrl}
               </div>
             </div>
