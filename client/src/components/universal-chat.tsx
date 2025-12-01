@@ -26,6 +26,7 @@ import { AgentProgress, type ProgressStep, type ProgressMetrics } from "@/compon
 import { useWebSocketStream } from "@/hooks/use-websocket-stream";
 import { ConnectionStatus } from "@/components/connection-status";
 import { HexOrbitLoader } from "@/components/bee-animations";
+import { AnimatedBeeLoading } from "@/components/animated-bee-with-text";
 import { SwarmModeButton, SwarmVisualization } from "@/components/swarm-mode-button";
 import { nanoid } from "nanoid";
 import CostPreview from "@/components/cost-preview";
@@ -881,15 +882,8 @@ export function UniversalChat({
 
                 {/* Loading indicator with Queen Bee animation */}
                 {isGenerating && (
-                  <div className="flex gap-3 items-center text-xs text-slate-600 dark:text-slate-300" data-testid="loading-indicator">
-                    <HexOrbitLoader size="md" className="flex-shrink-0" />
-                    <span className="font-semibold">
-                      {runState.phase === 'thinking' ? 'Thinking...' : 
-                       runState.phase === 'planning' ? 'Planning...' :
-                       runState.phase === 'working' ? 'Working...' :
-                       runState.phase === 'verifying' ? 'Verifying...' : 
-                       'Processing...'}
-                    </span>
+                  <div className="flex gap-3 items-start" data-testid="loading-indicator">
+                    <AnimatedBeeLoading size="md" />
                   </div>
                 )}
                 <div ref={latestMessageRef} />

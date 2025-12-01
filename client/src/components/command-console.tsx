@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { CheckpointUsage } from "@/components/checkpoint-usage";
 import { AiStreamingIndicator } from "@/components/ai-streaming-indicator";
+import { AnimatedBeeLoading } from "@/components/animated-bee-with-text";
 import { useWebSocketStream } from "@/hooks/use-websocket-stream";
 import { ConnectionStatus } from "@/components/connection-status";
 import { nanoid } from "nanoid";
@@ -466,10 +467,12 @@ export function CommandConsole({ onProjectGenerated, viewMode = "desktop" }: Com
             data-testid="button-submit-command"
           >
             {commandMutation.isPending ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                <span className="lg:hidden">Processing...</span>
-              </>
+              <div className="flex items-center gap-2 justify-center">
+                <div className="w-5 h-5">
+                  <AnimatedBeeLoading size="sm" />
+                </div>
+                <span className="lg:hidden text-xs">Processing...</span>
+              </div>
             ) : (
               <>
                 <Send className="w-5 h-5 lg:mr-0 mr-2" />
