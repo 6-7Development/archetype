@@ -11,6 +11,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, Copy, Check, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { QueenBeeCanvas } from "@/components/queen-bee-canvas";
+import { useQueenBeeAI } from "@/contexts/queen-bee-context";
 import type { RunState, RunPhase } from "@shared/agentEvents";
 import type { ScratchpadEntry } from "@/hooks/use-websocket-stream";
 
@@ -108,6 +110,7 @@ export function ChatMessages({
   const localMessagesEndRef = useRef<HTMLDivElement>(null);
   const [copiedChatHistory, setCopiedChatHistory] = useState(false);
   const { toast } = useToast();
+  const queenBeeAI = useQueenBeeAI();
   
   const activeScrollRef = scrollRef || localScrollRef;
   const activeMessagesEndRef = messagesEndRef || localMessagesEndRef;
@@ -192,6 +195,23 @@ export function ChatMessages({
         className="flex-1 min-h-0 overflow-y-auto px-3 md:px-6 py-4 md:py-6 space-y-4 md:space-y-6"
         data-testid="chat-messages-container"
       >
+        {/* Queen Bee Processing Animation */}
+        {isGenerating && (
+          <div className="flex justify-start gap-3">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[hsl(48,100%,90%)] dark:bg-[hsl(40,60%,15%)] flex items-center justify-center overflow-hidden">
+              <QueenBeeCanvas mode={queenBeeAI.mode || 'THINKING'} width={24} height={24} />
+            </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>Scout is working</span>
+              <span className="flex gap-1">
+                <span className="animate-bounce" style={{ animationDelay: '0ms' }}>•</span>
+                <span className="animate-bounce" style={{ animationDelay: '150ms' }}>•</span>
+                <span className="animate-bounce" style={{ animationDelay: '300ms' }}>•</span>
+              </span>
+            </div>
+          </div>
+        )}
+        
         {messages.filter((msg) => {
           // Always show user messages
           if (msg.role === 'user') return true;
