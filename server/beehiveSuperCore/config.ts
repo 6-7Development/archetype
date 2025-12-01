@@ -21,11 +21,11 @@ export const LOMU_CORE_CONFIG: LomuCoreConfig = {
   autoPlanReview: process.env.AUTO_PLAN_REVIEW !== 'false',
 };
 
-// Model configuration
+// Model configuration - Gemini only
 export const MODEL_CONFIG = {
   DEFAULT_MODEL: 'gemini-2.5-flash',
-  ARCHITECT_MODEL: 'claude-sonnet-4-20250514',
-  MAX_CONTEXT: 1000000, // 1M tokens for Gemini
+  ARCHITECT_MODEL: 'gemini-2.5-pro',
+  MAX_CONTEXT: 1000000,
   MAX_TOKENS_OUTPUT: 16000,
 } as const;
 

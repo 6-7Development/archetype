@@ -100,7 +100,7 @@ export const LOMU_TOOLS = [
   },
   {
     name: 'vision_analyze',
-    description: 'Analyze images using Claude Vision. Can analyze UI screenshots, design mockups, diagrams, or any visual content.',
+    description: 'Analyze images using Gemini Vision. Can analyze UI screenshots, design mockups, diagrams, or any visual content.',
     input_schema: {
       type: 'object',
       properties: {
