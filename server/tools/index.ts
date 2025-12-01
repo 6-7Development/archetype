@@ -43,6 +43,7 @@ export { getFileMap } from './file-map';
 export { scanSecurity, SECURITY_SCAN_TOOL } from './security-scanner';
 export { auditDependencies, DEPENDENCY_AUDIT_TOOL } from './dependency-audit';
 export { checkCodeHealth, CODE_HEALTH_TOOL } from './code-health';
+export { analyzePerformance, PERFORMANCE_ANALYSIS_TOOL } from './performance-analyzer';
 
 /**
  * BeeHive Tool Definitions
@@ -1367,6 +1368,23 @@ export const LOMU_TOOLS = [
       },
     },
   },
+  {
+    name: 'analyze_performance',
+    description: 'Analyze application performance including bundle size, build time, test coverage, and code complexity. Provides optimization recommendations for faster, smaller, and more maintainable apps.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        includeBuild: {
+          type: 'boolean',
+          description: 'Run build process to measure build time (may be slow, default: false)',
+        },
+        verbose: {
+          type: 'boolean',
+          description: 'Include detailed performance breakdown',
+        },
+      },
+    },
+  },
 ] as const;
 
 // ============================================================================
@@ -1402,6 +1420,6 @@ export const ESSENTIAL_LOMU_TOOLS = LOMU_TOOLS.filter(tool =>
     'browser_test', 'vision_analyze', 'perform_diagnosis', 'web_search',
     'architect_consult', 'start_subagent',
     'execute_sql_tool', 'ask_secrets', 'web_fetch', 'suggest_deploy',
-    'security_scan', 'dependency_audit', 'check_code_health'
+    'security_scan', 'dependency_audit', 'check_code_health', 'analyze_performance'
   ].includes(tool.name)
 );

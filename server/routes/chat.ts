@@ -25,6 +25,7 @@ import { healOrchestrator } from '../services/healOrchestrator.ts';
 import { scanSecurity } from '../tools/security-scanner.ts';
 import { auditDependencies } from '../tools/dependency-audit.ts';
 import { checkCodeHealth } from '../tools/code-health.ts';
+import { analyzePerformance } from '../tools/performance-analyzer.ts';
 // WORKFLOW INFRASTRUCTURE - Replit FAST Mode Parity
 import { WORKFLOW_CONFIG, WorkflowPhase } from '../workflows/workflow-config.ts';
 import { WorkflowStateManager } from '../workflows/workflow-state.ts';
@@ -147,13 +148,15 @@ async function dispatchTool(toolName: string, input: any, conversationId?: strin
         } else if (toolName === 'perform_diagnosis') {
           return await performDiagnosis(input);
         }
-        // Proactive Code Intelligence Tools (Gap #5, #7, #9)
+        // Proactive Code Intelligence Tools (Gap #5, #7, #8, #9)
         else if (toolName === 'security_scan') {
           return await scanSecurity(input);
         } else if (toolName === 'dependency_audit') {
           return await auditDependencies(input);
         } else if (toolName === 'check_code_health') {
           return await checkCodeHealth(input);
+        } else if (toolName === 'analyze_performance') {
+          return await analyzePerformance(input);
         }
         // FALLBACK: For any unimplemented tools, return mock success to allow continuation
         else {
