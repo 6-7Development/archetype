@@ -21,7 +21,7 @@ import { Loader2, Zap, Brain, Crown } from "lucide-react";
 
 interface AIModel {
   id: string;
-  provider: 'google' | 'openai' | 'anthropic';
+  provider: 'google';
   displayName: string;
   description: string;
   contextWindow: number;
@@ -39,8 +39,6 @@ interface ModelsResponse {
   defaultModelId: string;
   providers: {
     google: boolean;
-    openai: boolean;
-    anthropic: boolean;
   };
 }
 
@@ -52,15 +50,11 @@ interface AIModelSelectorProps {
 }
 
 const PROVIDER_ICONS = {
-  google: '🌐',
-  openai: '🤖',
-  anthropic: '🧠',
+  google: '🐝',
 };
 
 const PROVIDER_LABELS = {
-  google: 'Google',
-  openai: 'OpenAI',
-  anthropic: 'Anthropic',
+  google: 'Google Gemini',
 };
 
 export function AIModelSelector({ value, onChange, compact = false, disabled = false }: AIModelSelectorProps) {

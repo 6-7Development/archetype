@@ -2,14 +2,16 @@
  * Cost Calculator Service
  * Calculates actual costs for AI operations and infrastructure
  * with transparent markup for profitability
+ * 
+ * Gemini-Only Architecture (December 2025)
  */
 
-// Anthropic Claude Sonnet 4 Pricing (2025)
+// Google Gemini 2.5 Flash Pricing (2025)
 export const PROVIDER_COSTS = {
   // AI Token Costs (per million tokens)
-  claude_input: 3.00,           // $3/M tokens
-  claude_output: 15.00,          // $15/M tokens
-  claude_input_cached: 0.30,     // $0.30/M tokens (90% savings with prompt caching)
+  gemini_input: 0.075,           // $0.075/M tokens (40x cheaper than Claude)
+  gemini_output: 0.30,           // $0.30/M tokens
+  gemini_input_cached: 0.01875,  // $0.01875/M tokens (75% savings with caching)
   
   // Infrastructure Costs
   storage_gb_month: 0.115,       // $0.115/GB/month (AWS RDS gp3)
@@ -18,17 +20,13 @@ export const PROVIDER_COSTS = {
 } as const;
 
 // User Pricing (sustainable competitive model)
-// Strategy: Modest markup (2-3x) on variable costs, profit from volume + premium features
-// Overage pricing per tier:
-// - Starter: $4/project (28% margin at avg usage)
-// - Pro: $3/project (competitive with market)
-// - Business: $2.75/project (volume discount)
-// - Enterprise: $2.50/project (best rate, encourages commitment)
+// Strategy: 3x markup on Gemini's low costs = still very affordable for users
+// Much better margins than Claude while being cheaper for users
 export const USER_PRICING = {
-  // AI Token Pricing (per million tokens) - Market-competitive with small markup
-  claude_input: 9.00,            // 3x markup: $3 → $9 (reasonable)
-  claude_output: 45.00,          // 3x markup: $15 → $45 (reasonable)
-  claude_input_cached: 0.90,     // 3x markup: $0.30 → $0.90 (with caching savings)
+  // AI Token Pricing (per million tokens) - 3x markup on Gemini
+  gemini_input: 0.225,           // 3x markup: $0.075 → $0.225
+  gemini_output: 0.90,           // 3x markup: $0.30 → $0.90
+  gemini_input_cached: 0.056,    // 3x markup: $0.01875 → $0.056
   
   // Infrastructure Pricing - 3x markup
   storage_gb_month: 0.35,        // 3x markup: $0.115 → $0.35
@@ -69,26 +67,26 @@ export function calculateTokenCost(params: {
   // Calculate provider costs (what we pay)
   const uncachedInputTokens = inputTokens - cachedTokens;
   const inputCost = usePromptCaching && cachedTokens > 0
-    ? (uncachedInputTokens / 1_000_000) * PROVIDER_COSTS.claude_input +
-      (cachedTokens / 1_000_000) * PROVIDER_COSTS.claude_input_cached
-    : (inputTokens / 1_000_000) * PROVIDER_COSTS.claude_input;
+    ? (uncachedInputTokens / 1_000_000) * PROVIDER_COSTS.gemini_input +
+      (cachedTokens / 1_000_000) * PROVIDER_COSTS.gemini_input_cached
+    : (inputTokens / 1_000_000) * PROVIDER_COSTS.gemini_input;
   
-  const outputCost = (outputTokens / 1_000_000) * PROVIDER_COSTS.claude_output;
+  const outputCost = (outputTokens / 1_000_000) * PROVIDER_COSTS.gemini_output;
   const totalCost = inputCost + outputCost;
   
-  // Calculate user price (what they pay) - 10x markup for 90% margin
+  // Calculate user price (what they pay) - 3x markup for sustainable margins
   const userInputPrice = usePromptCaching && cachedTokens > 0
-    ? (uncachedInputTokens / 1_000_000) * USER_PRICING.claude_input +
-      (cachedTokens / 1_000_000) * USER_PRICING.claude_input_cached
-    : (inputTokens / 1_000_000) * USER_PRICING.claude_input;
+    ? (uncachedInputTokens / 1_000_000) * USER_PRICING.gemini_input +
+      (cachedTokens / 1_000_000) * USER_PRICING.gemini_input_cached
+    : (inputTokens / 1_000_000) * USER_PRICING.gemini_input;
   
-  const userOutputPrice = (outputTokens / 1_000_000) * USER_PRICING.claude_output;
+  const userOutputPrice = (outputTokens / 1_000_000) * USER_PRICING.gemini_output;
   const userPrice = userInputPrice + userOutputPrice;
   
   const breakdown = `
-    Input: ${inputTokens.toLocaleString()} tokens × $${USER_PRICING.claude_input}/M = $${userInputPrice.toFixed(4)}
-    Output: ${outputTokens.toLocaleString()} tokens × $${USER_PRICING.claude_output}/M = $${userOutputPrice.toFixed(4)}
-    ${cachedTokens > 0 ? `Cached: ${cachedTokens.toLocaleString()} tokens (90% savings)` : ''}
+    Input: ${inputTokens.toLocaleString()} tokens × $${USER_PRICING.gemini_input}/M = $${userInputPrice.toFixed(4)}
+    Output: ${outputTokens.toLocaleString()} tokens × $${USER_PRICING.gemini_output}/M = $${userOutputPrice.toFixed(4)}
+    ${cachedTokens > 0 ? `Cached: ${cachedTokens.toLocaleString()} tokens (75% savings)` : ''}
   `.trim();
   
   return {
@@ -293,9 +291,9 @@ export function getPricingTransparency(): {
   
   return {
     aiCosts: {
-      input: `$${USER_PRICING.claude_input}/M tokens (provider: $${PROVIDER_COSTS.claude_input}/M)`,
-      output: `$${USER_PRICING.claude_output}/M tokens (provider: $${PROVIDER_COSTS.claude_output}/M)`,
-      cached: `$${USER_PRICING.claude_input_cached}/M tokens (provider: $${PROVIDER_COSTS.claude_input_cached}/M)`,
+      input: `$${USER_PRICING.gemini_input}/M tokens (provider: $${PROVIDER_COSTS.gemini_input}/M)`,
+      output: `$${USER_PRICING.gemini_output}/M tokens (provider: $${PROVIDER_COSTS.gemini_output}/M)`,
+      cached: `$${USER_PRICING.gemini_input_cached}/M tokens (provider: $${PROVIDER_COSTS.gemini_input_cached}/M)`,
     },
     infrastructureCosts: {
       storage: `$${USER_PRICING.storage_gb_month}/GB/month (provider: $${PROVIDER_COSTS.storage_gb_month}/GB)`,

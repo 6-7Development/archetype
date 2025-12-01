@@ -287,7 +287,7 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
     console.log('✅ Database connected successfully');
     
     // 🧹 STARTUP CLEANUP: Remove chat messages with incorrect camelCase tool names
-    // This prevents old incorrect tool calls from polluting Claude's context
+    // This prevents old incorrect tool calls from polluting Scout's context
     console.log('🧹 Running startup cleanup for chat history...');
     try {
       // NOTE: The 'like' clauses below use hardcoded strings and are not subject to SQL injection
@@ -372,7 +372,7 @@ const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'upl
     console.log('   ⏱️ Rate limit: Max 3 healing sessions per hour');
     console.log('   📋 Audit trail: All attempts logged to platformHealAttempts');
     console.log('   🔄 Rollback: Automatic rollback on verification/deployment failure');
-    console.log('   💰 WARNING: This uses YOUR Anthropic credits!');
+    console.log('   💰 WARNING: This uses YOUR Gemini API credits!');
   } else {
     console.log('💡 Platform Healing: OWNER-ONLY access (manual trigger via UI)');
     console.log('   👑 Owner uses BeeHive to fix the platform itself - FREE');
