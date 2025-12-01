@@ -1230,8 +1230,6 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
               console.log(`✅ [CONTINUATION-LOOP] Prepared continuation turn ${continuationCount}`);
             } else {
               console.log(`✅ [CONTINUATION-LOOP] No continuation needed - response complete`);
-              // PHASE 2 FIX: Update to VERIFY phase when all tools are done
-              WorkflowStateManager.updatePhase(conversationId, WorkflowPhase.VERIFY);
               needsContinuation = false;
             }
           }
@@ -1240,8 +1238,7 @@ export function registerChatRoutes(app: Express, dependencies: { wss: any }) {
           const computeTimeMs = Date.now() - computeStartTime;
           console.log(`✅ [GEMINI-CHAT] Conversation complete after ${continuationCount} continuations: ${fullResponse.length} chars (thinking: ${fullThinking.length} chars)`);
 
-          // PHASE 2 FIX: Mark workflow as complete and get diagnostics
-          WorkflowStateManager.updatePhase(conversationId, WorkflowPhase.COMPLETE);
+          // Get final diagnostics
           const diagnostics = WorkflowStateManager.getDiagnostics(conversationId);
           console.log(`📊 [WORKFLOW-DIAGNOSTICS]`, diagnostics);
 
