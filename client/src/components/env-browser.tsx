@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Copy, Check, Eye, EyeOff, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { api, environment } from "@/config/app.config";
 
 interface EnvVar {
   key: string;
@@ -17,14 +18,15 @@ interface EnvBrowserProps {
   envVars?: EnvVar[];
 }
 
-const DEFAULT_ENV: EnvVar[] = [
-  { key: "VITE_API_URL", value: "http://localhost:5000", isSecret: false },
-  { key: "DATABASE_URL", value: "postgres://...", isSecret: true },
-  { key: "NODE_ENV", value: "development", isSecret: false },
-  { key: "SESSION_SECRET", value: "***", isSecret: true },
+// Get default env from configuration - no hardcoded values
+const getDefaultEnv = (): EnvVar[] => [
+  { key: "VITE_API_URL", value: api.baseURL || window.location.origin, isSecret: false },
+  { key: "NODE_ENV", value: environment.isDevelopment ? "development" : "production", isSecret: false },
 ];
 
-export function EnvBrowser({ isOpen, onClose, envVars = DEFAULT_ENV }: EnvBrowserProps) {
+export function EnvBrowser({ isOpen, onClose, envVars }: EnvBrowserProps) {
+  const defaultEnv = getDefaultEnv();
+  const displayEnvVars = envVars || defaultEnv;
   const [visibleSecrets, setVisibleSecrets] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState<string>("");
 
@@ -51,7 +53,7 @@ export function EnvBrowser({ isOpen, onClose, envVars = DEFAULT_ENV }: EnvBrowse
           <DialogTitle className="flex items-center gap-3 text-lg font-bold text-amber-900 dark:text-amber-100">
             <span>⚙️ Environment Variables</span>
             <Badge variant="secondary" className="ml-auto text-xs bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100">
-              {envVars.length} vars
+              {displayEnvVars.length} vars
             </Badge>
           </DialogTitle>
           <button
@@ -64,7 +66,7 @@ export function EnvBrowser({ isOpen, onClose, envVars = DEFAULT_ENV }: EnvBrowse
         </DialogHeader>
 
         <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-          {envVars.map((env) => (
+          {displayEnvVars.map((env) => (
             <div
               key={env.key}
               className="flex items-center gap-3 p-3 rounded-lg border-2 border-amber-200 dark:border-amber-700/40 bg-white dark:bg-slate-800/80 hover:bg-amber-50 dark:hover:bg-slate-700/80 transition-colors"

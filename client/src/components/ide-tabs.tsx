@@ -11,6 +11,7 @@ import { SearchPanel } from "@/components/search-panel";
 import { EnvBrowser } from "@/components/env-browser";
 import { LogsViewer } from "@/components/logs-viewer";
 import { PackageManager } from "@/components/package-manager";
+import { api } from "@/config/app.config";
 
 interface IDETabsProps {
   projectId: string;
@@ -122,7 +123,7 @@ export function IDETabs({ projectId, selectedFile, onFileSelect, onFileChange }:
         <TabsContent value="preview" className="h-full m-0 flex flex-col" data-testid="content-preview">
           <iframe
             key={`preview-${projectId}`}
-            src="http://localhost:5000"
+            src={api.baseURL || '/'}
             className="flex-1 border-0 w-full"
             title="Live Preview"
             data-testid="iframe-preview"
