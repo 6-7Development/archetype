@@ -26,11 +26,11 @@ export default function Landing() {
       <nav className="fixed top-0 w-full z-50 border-b border-honey/10 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto px-3 sm:px-6 py-2 sm:py-3 md:py-4 min-h-[60px] sm:min-h-[70px] md:min-h-[140px]">
           <div className="flex flex-wrap items-center justify-between gap-4 md:gap-6">
-            {/* Logo - Responsive sizing with high-contrast styling */}
+            {/* Logo - Responsive sizing */}
             <Link 
               href="/" 
               data-testid="link-home"
-              className="inline-flex items-center hover-elevate rounded-lg flex-shrink-0 bg-gradient-to-br from-amber-400 to-amber-500 px-4 py-2"
+              className="inline-flex items-center hover-elevate flex-shrink-0"
             >
               <BeeHiveLogo size="lg" className="hidden lg:block" variant="dark" showText={true} />
               <BeeHiveLogo size="md" className="lg:hidden" variant="dark" showText={true} />
