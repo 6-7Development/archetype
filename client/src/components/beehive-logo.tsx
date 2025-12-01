@@ -1,7 +1,8 @@
 /**
  * BeeHive Logo Component
- * Professional bee illustration with proper anatomy + elegant typography
- * Scout emotional states: idle (gold), thinking (blue), working (purple), complete (mint)
+ * Professional marketing bee with realistic anatomy + elegant "BeeHive" wordmark
+ * Designed for excellent contrast on light (cream/tan) backgrounds
+ * Scout emotional states: idle (charcoal), thinking (blue), working (purple), complete (mint)
  */
 
 interface BeeHiveLogoProps {
@@ -21,9 +22,9 @@ export function BeeHiveLogo({
   isWorking = false,
   emotion = 'idle',
 }: BeeHiveLogoProps) {
-  // Size presets for SVG
+  // Size presets
   const sizeMap = {
-    sm: { svg: 40, text: '16px' },
+    sm: { svg: 44, text: '18px' },
     md: { svg: 56, text: '28px' },
     lg: { svg: 80, text: '42px' },
   };
@@ -32,137 +33,149 @@ export function BeeHiveLogo({
   const svgSize = dims.svg;
   const textSize = dims.text;
 
-  // Color tokens from design system
-  const honeyColor = '#F7B500'; // Honey gold
-  const mintColor = '#00D4B3'; // Mint teal
-  const charcoalColor = '#101113'; // Deep dark
-  const graphiteColor = '#1B1D21'; // Slightly lighter dark
-  const purpleColor = '#A855F7'; // Working state purple
-  const blueColor = '#3B82F6'; // Thinking state
+  // Color palette - optimized for light backgrounds
+  const charcoalColor = '#1B1D21'; // Deep charcoal for main body (excellent contrast on tan/cream)
+  const honeyGold = '#D4A017'; // Rich gold for accents (deeper than before)
+  const mintColor = '#00D4B3'; // Vibrant mint for highlights
+  const purpleColor = '#9333EA'; // Rich purple for working state
+  const blueColor = '#2563EB'; // Deep blue for thinking state
+  const creamBg = '#FFF8E6'; // Reference for light backgrounds
 
-  // Emotional state bee color
-  const beeColor = 
-    isWorking || emotion === 'working' ? purpleColor : 
-    emotion === 'thinking' ? blueColor : 
-    emotion === 'complete' ? mintColor : 
-    honeyColor;
+  // Get bee body color based on emotion
+  const beeBodyColor =
+    isWorking || emotion === 'working' ? purpleColor :
+    emotion === 'thinking' ? blueColor :
+    emotion === 'complete' ? mintColor :
+    charcoalColor;
+
+  // Stripe accent color (contrasts well with body)
+  const stripeColor = emotion === 'complete' ? charcoalColor : honeyGold;
 
   return (
-    <div className={`inline-flex items-center ${variant === 'stacked' ? 'flex-col' : 'gap-3'} ${className}`}>
-      {/* Professional Bee SVG with Full Anatomy */}
+    <div className={`inline-flex items-center ${variant === 'stacked' ? 'flex-col' : 'gap-4'} ${className}`}>
+      {/* Professional Bee SVG - Marketing Quality */}
       <svg
         width={svgSize}
         height={svgSize}
-        viewBox="0 0 100 100"
+        viewBox="0 0 120 140"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         style={{ flexShrink: 0 }}
       >
+        <defs>
+          <linearGradient id="beeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor={beeBodyColor} stopOpacity="1" />
+            <stop offset="100%" stopColor={beeBodyColor} stopOpacity="0.9" />
+          </linearGradient>
+          <linearGradient id="wingGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor={mintColor} stopOpacity="0.7" />
+            <stop offset="100%" stopColor={mintColor} stopOpacity="0.3" />
+          </linearGradient>
+        </defs>
+
         <style>{`
-          @keyframes bee-bob { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-1px); } }
-          @keyframes bee-wing-flap { 0%, 100% { transform: scaleY(0.8); opacity: 0.9; } 50% { transform: scaleY(1); opacity: 1; } }
-          .bee-body { ${isWorking ? 'animation: bee-bob 1.5s ease-in-out infinite;' : ''} }
-          .bee-wings { ${isWorking ? 'animation: bee-wing-flap 0.3s ease-in-out infinite;' : ''} }
+          @keyframes bee-hover { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-3px); } }
+          @keyframes wing-beat { 0%, 100% { transform: scaleY(1) rotateZ(-15deg); opacity: 0.7; } 50% { transform: scaleY(0.6) rotateZ(15deg); opacity: 1; } }
+          .bee-container { ${isWorking ? 'animation: bee-hover 1.6s ease-in-out infinite;' : ''} }
+          .bee-wings { ${isWorking ? 'animation: wing-beat 0.35s ease-in-out infinite;' : 'opacity: 0.65;'} transform-origin: center; }
         `}</style>
 
-        {/* Head */}
-        <circle cx="50" cy="25" r="7" fill={beeColor} style={{ transition: 'fill 0.3s ease' }} />
+        <g className="bee-container">
+          {/* LEFT WING */}
+          <g className="bee-wings" style={{ transformOrigin: '55px 50px' }}>
+            <ellipse cx="35" cy="50" rx="14" ry="22" fill="url(#wingGradient)" style={{ transition: 'opacity 0.3s ease' }} />
+            {/* Wing vein detail */}
+            <path d="M 35 35 L 35 65 M 25 50 L 45 50" stroke={mintColor} strokeWidth="0.8" opacity="0.4" />
+          </g>
 
-        {/* Antennae */}
-        <g stroke={beeColor} strokeWidth="1.2" strokeLinecap="round" style={{ transition: 'stroke 0.3s ease' }}>
-          <path d="M 48 18 Q 44 12 42 8" fill="none" />
-          <path d="M 52 18 Q 56 12 58 8" fill="none" />
-        </g>
+          {/* RIGHT WING */}
+          <g className="bee-wings" style={{ transformOrigin: '65px 50px' }}>
+            <ellipse cx="85" cy="50" rx="14" ry="22" fill="url(#wingGradient)" style={{ transition: 'opacity 0.3s ease' }} />
+            {/* Wing vein detail */}
+            <path d="M 85 35 L 85 65 M 75 50 L 95 50" stroke={mintColor} strokeWidth="0.8" opacity="0.4" />
+          </g>
 
-        {/* Eyes */}
-        <circle cx="47" cy="23" r="1" fill={charcoalColor} />
-        <circle cx="53" cy="23" r="1" fill={charcoalColor} />
+          {/* HEAD - Golden yellow with dark details */}
+          <circle cx="60" cy="28" r="8" fill={beeBodyColor} style={{ transition: 'fill 0.3s ease' }} />
+          {/* Head shine */}
+          <circle cx="62" cy="26" r="2.5" fill={stripeColor} opacity="0.6" />
+          {/* Eyes - large and prominent */}
+          <circle cx="56" cy="26" r="2" fill={charcoalColor} />
+          <circle cx="64" cy="26" r="2" fill={charcoalColor} />
+          {/* Mouth/mandible detail */}
+          <path d="M 60 32 Q 58 34 60 35 Q 62 34 60 32" fill={stripeColor} opacity="0.7" />
 
-        {/* Thorax (middle body segment) - animated */}
-        <g className="bee-body">
-          <ellipse cx="50" cy="42" rx="8" ry="11" fill={beeColor} style={{ transition: 'fill 0.3s ease' }} />
+          {/* ANTENNAE - Elegant curves */}
+          <g stroke={beeBodyColor} strokeWidth="1.5" fill="none" strokeLinecap="round" style={{ transition: 'stroke 0.3s ease' }}>
+            <path d="M 56 22 Q 48 14 45 8" />
+            <path d="M 64 22 Q 72 14 75 8" />
+            {/* Antenna tips */}
+            <circle cx="45" cy="8" r="1.2" fill={stripeColor} />
+            <circle cx="75" cy="8" r="1.2" fill={stripeColor} />
+          </g>
 
-          {/* Thorax stripes for detail */}
-          <rect x="44" y="38" width="12" height="1.5" fill={charcoalColor} opacity="0.6" />
-          <rect x="44" y="43" width="12" height="1.5" fill={charcoalColor} opacity="0.6" />
-        </g>
+          {/* THORAX (middle segment) - Larger, with segmented look */}
+          <ellipse cx="60" cy="55" rx="11" ry="15" fill={beeBodyColor} style={{ transition: 'fill 0.3s ease' }} />
 
-        {/* Upper Legs (attached to thorax - 3 pairs) */}
-        <g stroke={graphiteColor} strokeWidth="1.2" strokeLinecap="round" fill="none">
-          {/* Front left leg */}
-          <path d="M 43 38 L 35 32" />
-          {/* Front right leg */}
-          <path d="M 57 38 L 65 32" />
-          {/* Middle left leg */}
-          <path d="M 42 43 L 32 45" />
-          {/* Middle right leg */}
-          <path d="M 58 43 L 68 45" />
-        </g>
+          {/* Thorax stripes for dimension */}
+          <g fill={stripeColor} opacity="0.65">
+            <rect x="50" y="48" width="20" height="2" rx="1" />
+            <rect x="49" y="55" width="22" height="2" rx="1" />
+            <rect x="50" y="62" width="20" height="2" rx="1" />
+          </g>
 
-        {/* Abdomen (lower body segment with segments) - animated */}
-        <g className="bee-body">
-          {/* Main abdomen */}
-          <ellipse cx="50" cy="62" rx="7" ry="14" fill={beeColor} style={{ transition: 'fill 0.3s ease' }} />
+          {/* LEGS (6 total - 3 pairs) */}
+          <g stroke={charcoalColor} strokeWidth="1.8" fill="none" strokeLinecap="round" opacity="0.8">
+            {/* Front legs - pair 1 */}
+            <path d="M 51 50 L 30 42" />
+            <path d="M 69 50 L 90 42" />
+            {/* Middle legs - pair 2 */}
+            <path d="M 50 57 L 24 62" />
+            <path d="M 70 57 L 96 62" />
+            {/* Back legs - pair 3 */}
+            <path d="M 52 68 L 32 85" />
+            <path d="M 68 68 L 88 85" />
+          </g>
 
-          {/* Abdominal stripes for realism */}
-          <rect x="45" y="52" width="10" height="1.5" fill={charcoalColor} opacity="0.5" />
-          <rect x="45" y="58" width="10" height="1.5" fill={charcoalColor} opacity="0.5" />
-          <rect x="45" y="64" width="10" height="1.5" fill={charcoalColor} opacity="0.5" />
-          <rect x="45" y="70" width="10" height="1.5" fill={charcoalColor} opacity="0.5" />
-        </g>
+          {/* ABDOMEN (lower segment with dramatic stripes) */}
+          <g>
+            {/* Main abdomen shape - tapered */}
+            <ellipse cx="60" cy="85" rx="9.5" ry="18" fill={beeBodyColor} style={{ transition: 'fill 0.3s ease' }} />
+            
+            {/* Abdomen segments - bold stripes for visual impact */}
+            <g fill={stripeColor} opacity="0.75">
+              <rect x="51" y="72" width="18" height="2.5" rx="1" />
+              <rect x="50.5" y="80" width="19" height="2.5" rx="1" />
+              <rect x="51" y="88" width="18" height="2.5" rx="1" />
+              <rect x="52" y="96" width="16" height="2.5" rx="1" />
+            </g>
+          </g>
 
-        {/* Back Legs (attached to abdomen) */}
-        <g stroke={graphiteColor} strokeWidth="1.2" strokeLinecap="round" fill="none">
-          {/* Back left leg */}
-          <path d="M 43 60 L 32 70" />
-          {/* Back right leg */}
-          <path d="M 57 60 L 68 70" />
-        </g>
+          {/* STINGER - Fine detail */}
+          <g>
+            <path d="M 60 102 L 60 110" stroke={charcoalColor} strokeWidth="1.2" strokeLinecap="round" />
+            <polygon points="60,110 57,107 63,107" fill={charcoalColor} />
+          </g>
 
-        {/* Wings - semi-transparent, animated */}
-        <g className="bee-wings" style={{ transformOrigin: '50px 45px' }}>
-          {/* Left wing */}
-          <ellipse cx="35" cy="45" rx="6" ry="12" fill={mintColor} opacity="0.65" style={{ transition: 'opacity 0.3s ease' }} />
-          {/* Right wing */}
-          <ellipse cx="65" cy="45" rx="6" ry="12" fill={mintColor} opacity="0.65" style={{ transition: 'opacity 0.3s ease' }} />
-        </g>
-
-        {/* Wing detail lines for realism */}
-        <g stroke={mintColor} strokeWidth="0.8" opacity="0.4" fill="none">
-          <path d="M 35 35 L 35 55" />
-          <path d="M 30 45 L 40 45" />
-          <path d="M 65 35 L 65 55" />
-          <path d="M 60 45 L 70 45" />
+          {/* Body shine/highlight for depth */}
+          <ellipse cx="62" cy="48" rx="3" ry="5" fill={stripeColor} opacity="0.4" />
         </g>
       </svg>
 
-      {/* Logo Text - Clean, Modern */}
+      {/* Logo Text - Modern Wordmark */}
       {showText && variant !== 'icon-only' && (
-        <div className={variant === 'stacked' ? 'flex flex-col items-center gap-1' : 'flex items-baseline'}>
-          {/* Main Text */}
-          <span
-            className="font-extrabold tracking-tight leading-none"
-            style={{
-              fontSize: textSize,
-              color: honeyColor,
-              fontFamily: 'Inter, system-ui, sans-serif',
-              letterSpacing: '-0.015em',
-            }}
-          >
-            BeeHive
-          </span>
-
-          {/* Tagline */}
-          <span
-            className="text-xs font-semibold tracking-widest"
-            style={{
-              color: mintColor,
-              letterSpacing: '0.1em',
-            }}
-          >
-            SWARM MODE
-          </span>
-        </div>
+        <span
+          className="font-black tracking-tight leading-none"
+          style={{
+            fontSize: textSize,
+            color: charcoalColor,
+            fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+            letterSpacing: '-0.02em',
+            fontWeight: 900,
+          }}
+        >
+          BeeHive
+        </span>
       )}
     </div>
   );

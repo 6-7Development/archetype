@@ -70,7 +70,7 @@ export default function LogoDemo() {
               </ul>
             </div>
             <p>
-              <strong>Text:</strong> Change "BeeHive" text or SWARM MODE tagline directly in the component
+              <strong>Text:</strong> Change "BeeHive" wordmark directly in the component
             </p>
             <p>
               <strong>Size Presets:</strong> Modify the <code className="bg-slate-100 dark:bg-slate-800 px-1">sizeMap</code> object to adjust hex and icon dimensions
