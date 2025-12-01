@@ -6,7 +6,7 @@
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
-export type BeeMode = "IDLE" | "THINKING" | "CODING" | "BUILDING" | "SWARM";
+export type BeeMode = "IDLE" | "LISTENING" | "TYPING" | "THINKING" | "CODING" | "BUILDING" | "SUCCESS" | "ERROR" | "SWARM";
 
 interface QueenBeeCanvasProps {
   mode?: BeeMode;
@@ -36,6 +36,10 @@ class AgentBeeAnimation {
         CODING: "#00ff41",
         BUILDING: "#ffae00",
         SWARM: "#ff0055",
+        LISTENING: "#a855f7",
+        TYPING: "#38bdf8",
+        SUCCESS: "#10b981",
+        ERROR: "#ef4444",
       },
       workerCount: 8,
     };

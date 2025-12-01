@@ -3,6 +3,8 @@
  * Fully configurable - edit CONFIG objects below for easy customization
  */
 
+import { QueenBeeCanvas, type BeeMode } from '@/components/queen-bee-canvas';
+
 interface BeeHiveLogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
@@ -11,7 +13,9 @@ interface BeeHiveLogoProps {
   iconSize?: number;
   textHeight?: number;
   animated?: boolean;
-  showHeroBee?: boolean; // Set to true to show the hero bee on the honeycomb
+  showHeroBee?: boolean;
+  showQueenBee?: boolean; // Show animated queen bee overlay
+  queenBeeMode?: BeeMode; // Emotional state of queen bee
 }
 
 // ============================================================================
@@ -272,7 +276,9 @@ export function BeeHiveLogo({
   iconSize,
   textHeight,
   animated = true,
-  showHeroBee = false, // Disabled by default to prevent overflow issues
+  showHeroBee = false,
+  showQueenBee = false,
+  queenBeeMode = 'IDLE',
 }: BeeHiveLogoProps) {
   const svgSize = iconSize || SIZE_MAP[size];
   const textSize = textHeight ? `${textHeight}px` : SIZE_TEXT[size];
@@ -550,6 +556,18 @@ export function BeeHiveLogo({
         )}
 
       </svg>
+
+      {/* Animated Queen Bee with Emotions Overlay */}
+      {showQueenBee && (
+        <div className="relative" style={{ width: svgSize, height: svgSize, marginLeft: '-4px' }}>
+          <QueenBeeCanvas
+            mode={queenBeeMode}
+            width={svgSize}
+            height={svgSize}
+            className="absolute inset-0"
+          />
+        </div>
+      )}
 
       {/* BeeHive Wordmark */}
       {showText && (
