@@ -88,7 +88,6 @@ export function BeeHiveLogo({
         width={svgSize}
         height={svgSize}
         viewBox="0 0 64 64"
-        fill="none"
         xmlns="http://www.w3.org/2000/svg"
         style={{ flexShrink: 0 }}
         className="beehive-logo-mark"
@@ -137,31 +136,30 @@ export function BeeHiveLogo({
           id="honeycomb" 
           stroke={colors.stroke} 
           strokeWidth="1.25" 
-          strokeLinejoin="round" 
-          fill="url(#honeyFill)"
+          strokeLinejoin="round"
         >
           {/* Center hexagon */}
-          <path d="M36 25.072 L28 25.072 L24 32 L28 38.928 L36 38.928 L40 32 Z"/>
+          <path d="M36 25.072 L28 25.072 L24 32 L28 38.928 L36 38.928 L40 32 Z" fill="url(#honeyFill)" />
           {/* Inner shadow for center */}
           <path d="M36 25.072 L28 25.072 L24 32 L28 38.928 L36 38.928 L40 32 Z" fill="url(#cellShadow)" opacity="0.3" />
           
           {/* Right hex */}
-          <path d="M48 32 L40 32 L36 38.928 L40 45.856 L48 45.856 L52 38.928 Z"/>
+          <path d="M48 32 L40 32 L36 38.928 L40 45.856 L48 45.856 L52 38.928 Z" fill="url(#honeyFill)" />
           
           {/* Bottom-center hex */}
-          <path d="M36 38.928 L28 38.928 L24 45.856 L28 52.784 L36 52.784 L40 45.856 Z"/>
+          <path d="M36 38.928 L28 38.928 L24 45.856 L28 52.784 L36 52.784 L40 45.856 Z" fill="url(#honeyFill)" />
           
           {/* Left hex */}
-          <path d="M24 32 L16 32 L12 38.928 L16 45.856 L24 45.856 L28 38.928 Z"/>
+          <path d="M24 32 L16 32 L12 38.928 L16 45.856 L24 45.856 L28 38.928 Z" fill="url(#honeyFill)" />
           
           {/* Top-left hex */}
-          <path d="M24 18.144 L16 18.144 L12 25.072 L16 32 L24 32 L28 25.072 Z"/>
+          <path d="M24 18.144 L16 18.144 L12 25.072 L16 32 L24 32 L28 25.072 Z" fill="url(#honeyFill)" />
           
           {/* Top-center hex */}
-          <path d="M36 11.216 L28 11.216 L24 18.144 L28 25.072 L36 25.072 L40 18.144 Z"/>
+          <path d="M36 11.216 L28 11.216 L24 18.144 L28 25.072 L36 25.072 L40 18.144 Z" fill="url(#honeyFill)" />
           
           {/* Top-right hex */}
-          <path d="M48 18.144 L40 18.144 L36 25.072 L40 32 L48 32 L52 25.072 Z"/>
+          <path d="M48 18.144 L40 18.144 L36 25.072 L40 32 L48 32 L52 25.072 Z" fill="url(#honeyFill)" />
         </g>
 
         {/* Highlight on top edges for polish */}
