@@ -99,7 +99,7 @@ export function MessageBubble({ message, index, totalMessages, onPin, showAvatar
       )}
       data-testid={`message-container-${message.id}`}
     >
-      {/* Avatar - Enhanced BeeHive themed */}
+      {/* Avatar - Enhanced BeeHive themed with strong contrast for queen bee */}
       {showAvatar && (
         <div 
           className={cn(
@@ -107,7 +107,7 @@ export function MessageBubble({ message, index, totalMessages, onPin, showAvatar
             compact ? "w-7 h-7" : "w-12 h-12",
             isUser 
               ? 'bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-600' 
-              : 'bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-900/50 dark:to-amber-800/50 text-amber-700 dark:text-amber-300 ring-2 ring-amber-400 dark:ring-amber-600'
+              : 'bg-gradient-to-br from-amber-400 to-amber-500 dark:from-amber-600 dark:to-amber-700 text-white dark:text-amber-50 ring-2 ring-amber-500 dark:ring-amber-600 shadow-lg'
           )}
           data-testid={`avatar-${message.role}`}
           title={isUser ? 'You' : 'Scout'}
