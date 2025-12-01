@@ -16,10 +16,10 @@ interface BeeHiveLogoProps {
 }
 
 const SIZE_MAP = {
-  sm: 40,
-  md: 60,
-  lg: 100,
-  xl: 140,
+  sm: 80,
+  md: 140,
+  lg: 200,
+  xl: 280,
 };
 
 const SIZE_TEXT = {
@@ -75,7 +75,7 @@ export function BeeHiveLogo({
       <svg
         width={svgSize}
         height={svgSize}
-        viewBox="0 0 100 100"
+        viewBox="0 0 200 200"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         style={{ flexShrink: 0 }}
@@ -91,38 +91,38 @@ export function BeeHiveLogo({
 
         {/* Outer hexagon hive border */}
         <path
-          d="M 50 15 L 72 27 L 72 51 L 50 63 L 28 51 L 28 27 Z"
+          d="M 100 30 L 144 54 L 144 102 L 100 126 L 56 102 L 56 54 Z"
           fill="url(#hiveGlow)"
           stroke={colors.accent}
-          strokeWidth="1.5"
+          strokeWidth="3"
           opacity="0.9"
         />
 
         {/* Inner hexagon pattern (honeycomb cells) */}
-        <g stroke={colors.accent} strokeWidth="0.8" fill="none" opacity="0.5">
+        <g stroke={colors.accent} strokeWidth="1.6" fill="none" opacity="0.5">
           {/* Center hexagon */}
-          <path d="M 42 35 L 50 30 L 58 35 L 58 45 L 50 50 L 42 45 Z" />
+          <path d="M 84 70 L 100 60 L 116 70 L 116 90 L 100 100 L 84 90 Z" />
           
           {/* Top hexagons */}
-          <path d="M 34 30 L 42 25 L 50 30 L 42 35 L 34 35 Z" />
-          <path d="M 50 30 L 58 25 L 66 30 L 58 35 L 50 35 Z" />
+          <path d="M 68 60 L 84 50 L 100 60 L 84 70 L 68 70 Z" />
+          <path d="M 100 60 L 116 50 L 132 60 L 116 70 L 100 70 Z" />
           
           {/* Bottom hexagons */}
-          <path d="M 34 45 L 42 50 L 50 55 L 42 60 L 34 55 Z" />
-          <path d="M 50 45 L 58 50 L 66 55 L 58 60 L 50 55 Z" />
+          <path d="M 68 90 L 84 100 L 100 110 L 84 120 L 68 110 Z" />
+          <path d="M 100 90 L 116 100 L 132 110 L 116 120 L 100 110 Z" />
         </g>
 
         {/* Center glow effect */}
-        <circle cx="50" cy="39" r="8" fill={colors.highlight} opacity="0.3" />
+        <circle cx="100" cy="78" r="16" fill={colors.highlight} opacity="0.3" />
 
         {/* Orbit circles (invisible reference for bee movement) */}
         <circle
-          cx="50"
-          cy="50"
-          r="38"
+          cx="100"
+          cy="100"
+          r="76"
           fill="none"
           stroke={colors.accent}
-          strokeWidth="0.3"
+          strokeWidth="0.6"
           opacity="0.1"
         />
 
@@ -134,27 +134,27 @@ export function BeeHiveLogo({
             style={{ animationDelay: `${pos.delay}s` }}
           >
             {/* Bee body */}
-            <g transform={`rotate(${pos.angle} 50 50) translate(88 50)`}>
+            <g transform={`rotate(${pos.angle} 100 100) translate(176 100)`}>
               {/* Bee head - small yellow circle */}
-              <circle cx="2" cy="0" r="1.2" fill={colors.highlight} />
+              <circle cx="4" cy="0" r="2.4" fill={colors.highlight} />
 
               {/* Bee body - tiny gold ellipse */}
-              <ellipse cx="0" cy="0" rx="1" ry="1.8" fill={colors.accent} />
+              <ellipse cx="0" cy="0" rx="2" ry="3.6" fill={colors.accent} />
 
               {/* Bee wings - small curved wings */}
               <ellipse
-                cx="-1.5"
-                cy="-0.8"
-                rx="0.6"
-                ry="1.2"
+                cx="-3"
+                cy="-1.6"
+                rx="1.2"
+                ry="2.4"
                 fill={colors.highlight}
                 opacity="0.6"
               />
               <ellipse
-                cx="1.5"
-                cy="-0.8"
-                rx="0.6"
-                ry="1.2"
+                cx="3"
+                cy="-1.6"
+                rx="1.2"
+                ry="2.4"
                 fill={colors.highlight}
                 opacity="0.6"
               />

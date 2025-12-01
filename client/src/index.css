@@ -394,10 +394,10 @@
 
 @keyframes orbit-hive {
   0% {
-    transform: rotate(0deg) translateX(38px) rotate(0deg);
+    transform: rotate(0deg) translateX(76px) rotate(0deg);
   }
   100% {
-    transform: rotate(360deg) translateX(38px) rotate(-360deg);
+    transform: rotate(360deg) translateX(76px) rotate(-360deg);
   }
 }
 
