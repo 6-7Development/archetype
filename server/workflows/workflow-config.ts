@@ -68,17 +68,27 @@ export const WORKFLOW_CONFIG = {
 } as const;
 
 /**
- * Workflow Phase Enum - 7-Phase Workflow
- * ASSESS → PLAN → EXECUTE → TEST → VERIFY → COMPLETE
+ * Workflow Phase Enum - 7-Phase Workflow (Complete Linear Flow)
+ * ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT
+ * 
+ * Each phase is mandatory and must complete in order:
+ * 1. ASSESS - Analyze & gather context
+ * 2. PLAN - Create task list & strategy
+ * 3. EXECUTE - Write/modify code
+ * 4. TEST - Run tests & verify
+ * 5. VERIFY - Final verification (LSP, build check)
+ * 6. CONFIRM - Confirm completion ready
+ * 7. COMMIT - Mark as done
  */
 export enum WorkflowPhase {
   ASSESS = 'ASSESS',      // 1. Analyze requirements & gather context
   PLAN = 'PLAN',          // 2. Create task list & plan approach
-  EXECUTE = 'EXECUTE',    // 3. Execute planned tasks
+  EXECUTE = 'EXECUTE',    // 3. Execute planned tasks (write/edit code)
   TEST = 'TEST',          // 4. Run tests & verify changes
-  VERIFY = 'VERIFY',      // 5. Final verification before completion
-  COMPLETE = 'COMPLETE',  // 6. Workflow complete
-  ERROR = 'ERROR',        // Recovery state
+  VERIFY = 'VERIFY',      // 5. Final verification (LSP diagnostics)
+  CONFIRM = 'CONFIRM',    // 6. Confirm all checks pass
+  COMMIT = 'COMMIT',      // 7. Workflow complete - mark done
+  ERROR = 'ERROR',        // Recovery state (can happen at any phase)
 }
 
 /**

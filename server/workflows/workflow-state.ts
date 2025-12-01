@@ -38,17 +38,36 @@ export class WorkflowStateManager {
 
   /**
    * Valid phase transitions (7-phase workflow state machine)
-   * COMPLETE WORKFLOW: ASSESS → PLAN → EXECUTE → TEST → VERIFY → COMPLETE
-   * Error can occur at any phase with recovery paths
+   * COMPLETE LINEAR WORKFLOW: ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT
+   * 
+   * Forward progression: Each phase flows to the next
+   * Backward recovery: Most phases can retry EXECUTE if needed
+   * Error recovery: Any phase can go to ERROR for handling
    */
   private static readonly VALID_TRANSITIONS: Record<WorkflowPhase, WorkflowPhase[]> = {
+    // Phase 1: ASSESS - gather context
     [WorkflowPhase.ASSESS]: [WorkflowPhase.PLAN, WorkflowPhase.ERROR],
+    
+    // Phase 2: PLAN - create task list
     [WorkflowPhase.PLAN]: [WorkflowPhase.EXECUTE, WorkflowPhase.ERROR],
+    
+    // Phase 3: EXECUTE - write/modify code
     [WorkflowPhase.EXECUTE]: [WorkflowPhase.TEST, WorkflowPhase.EXECUTE, WorkflowPhase.ERROR], // Can retry EXECUTE
+    
+    // Phase 4: TEST - run tests
     [WorkflowPhase.TEST]: [WorkflowPhase.VERIFY, WorkflowPhase.EXECUTE, WorkflowPhase.ERROR], // Can go back to EXECUTE if tests fail
-    [WorkflowPhase.VERIFY]: [WorkflowPhase.COMPLETE, WorkflowPhase.EXECUTE, WorkflowPhase.ERROR], // Can go back to EXECUTE if verification fails
-    [WorkflowPhase.COMPLETE]: [WorkflowPhase.ASSESS], // Allow restart only
-    [WorkflowPhase.ERROR]: [WorkflowPhase.ASSESS, WorkflowPhase.PLAN, WorkflowPhase.EXECUTE], // Recovery paths
+    
+    // Phase 5: VERIFY - final verification (LSP, build)
+    [WorkflowPhase.VERIFY]: [WorkflowPhase.CONFIRM, WorkflowPhase.EXECUTE, WorkflowPhase.ERROR], // Can go back to EXECUTE if verification fails
+    
+    // Phase 6: CONFIRM - confirm ready
+    [WorkflowPhase.CONFIRM]: [WorkflowPhase.COMMIT, WorkflowPhase.ERROR],
+    
+    // Phase 7: COMMIT - mark complete
+    [WorkflowPhase.COMMIT]: [WorkflowPhase.ASSESS], // Allow restart only
+    
+    // ERROR - recovery paths
+    [WorkflowPhase.ERROR]: [WorkflowPhase.ASSESS, WorkflowPhase.PLAN, WorkflowPhase.EXECUTE],
   };
 
   /**
