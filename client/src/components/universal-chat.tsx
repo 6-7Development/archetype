@@ -51,6 +51,7 @@ import { ChatMessages } from "./chat/ChatMessages";
 import { ChatInput } from "./chat/ChatInput";
 import { StatusBar } from "./chat/StatusBar";
 import { ChatDialogs } from "./chat/ChatDialogs";
+import { AgentThinkingProgress } from "@/components/agent-thinking-progress";
 import { PlatformHealthIndicator } from "@/components/platform-health-indicator";
 import { MarkdownMessage } from "./chat/MarkdownMessage";
 import { MessageBubble } from "./chat/MessageBubble";
@@ -759,30 +760,46 @@ export function UniversalChat({
               <>
                 {/* In Progress Tasks (Replit Agent 3 style) */}
                 {runState.messages.length > 0 && (
-                  <div ref={taskProgressRef} className="mb-4 bg-slate-100 dark:bg-slate-800/50 rounded-md border border-slate-200 dark:border-slate-700 overflow-hidden">
-                    <Collapsible defaultOpen={true}>
-                      <CollapsibleTrigger className="w-full px-4 py-2.5 flex items-center justify-between hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors gap-2">
-                        <div className="flex items-center gap-2">
-                          <ChevronDown className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                          <span className="font-semibold text-sm text-slate-700 dark:text-slate-200">In progress tasks</span>
-                        </div>
-                        <span className="text-xs font-mono text-slate-500 dark:text-slate-400">{Math.min(runState.messages.filter(m => m.role === 'assistant').length, 6)} / 6</span>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="px-4 py-3 space-y-2 border-t border-slate-200 dark:border-slate-700">
-                        {runState.messages.filter(m => m.role === 'assistant').slice(0, 6).map((msg, idx) => (
-                          <div key={idx} className="flex items-start gap-1.5 text-xs">
-                            <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
-                            <span className="text-slate-600 dark:text-slate-300 line-clamp-1">{msg.content.slice(0, 40)}...</span>
-                          </div>
-                        ))}
-                        {isGenerating && (
-                          <div className="flex items-center gap-1.5 text-xs">
-                            <Loader2 className="h-3 w-3 text-blue-500 animate-spin flex-shrink-0" />
-                            <span className="text-slate-600 dark:text-slate-300">Thinking</span>
-                          </div>
-                        )}
-                      </CollapsibleContent>
-                    </Collapsible>
+                  <div ref={taskProgressRef}>
+                    <AgentThinkingProgress
+                      taskCount={Math.min(runState.messages.filter(m => m.role === 'assistant').length + (isGenerating ? 1 : 0), 8)}
+                      totalTasks={8}
+                      tasks={[
+                        ...runState.messages.filter(m => m.role === 'assistant').slice(0, 7).map((msg, idx) => ({
+                          id: `task-${idx}`,
+                          title: msg.content.slice(0, 60),
+                          completed: true,
+                          isCurrently: false,
+                        })),
+                        ...(isGenerating ? [{
+                          id: 'task-current',
+                          title: 'Thinking...',
+                          completed: false,
+                          isCurrently: true,
+                        }] : []),
+                      ]}
+                      isLoading={isGenerating}
+                      onRollback={() => {
+                        toast({
+                          title: 'Rollback initiated',
+                          description: 'Rolling back to previous checkpoint...',
+                        });
+                      }}
+                      onShowChanges={() => {
+                        // This would typically show a changes panel
+                        toast({
+                          title: 'Changes panel',
+                          description: 'View all file changes here',
+                        });
+                      }}
+                      onPreview={() => {
+                        // This would typically show a preview panel
+                        toast({
+                          title: 'Preview',
+                          description: 'Live preview of changes',
+                        });
+                      }}
+                    />
                   </div>
                 )}
 
