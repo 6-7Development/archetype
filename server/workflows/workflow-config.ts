@@ -68,16 +68,17 @@ export const WORKFLOW_CONFIG = {
 } as const;
 
 /**
- * Workflow Phase Enum
+ * Workflow Phase Enum - 7-Phase Workflow
+ * ASSESS → PLAN → EXECUTE → TEST → VERIFY → COMPLETE
  */
 export enum WorkflowPhase {
-  ASSESS = 'ASSESS',
-  PLAN = 'PLAN',
-  EXECUTE = 'EXECUTE',
-  TEST = 'TEST',
-  VERIFY = 'VERIFY',
-  COMPLETE = 'COMPLETE',
-  ERROR = 'ERROR',
+  ASSESS = 'ASSESS',      // 1. Analyze requirements & gather context
+  PLAN = 'PLAN',          // 2. Create task list & plan approach
+  EXECUTE = 'EXECUTE',    // 3. Execute planned tasks
+  TEST = 'TEST',          // 4. Run tests & verify changes
+  VERIFY = 'VERIFY',      // 5. Final verification before completion
+  COMPLETE = 'COMPLETE',  // 6. Workflow complete
+  ERROR = 'ERROR',        // Recovery state
 }
 
 /**
