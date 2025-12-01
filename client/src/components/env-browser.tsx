@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Copy, Check, Eye, EyeOff } from "lucide-react";
+import { Copy, Check, Eye, EyeOff, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 interface EnvVar {
@@ -46,59 +46,66 @@ export function EnvBrowser({ isOpen, onClose, envVars = DEFAULT_ENV }: EnvBrowse
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md" data-testid="env-browser-modal">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            Environment Variables
-            <Badge variant="outline" className="ml-auto text-xs">
+      <DialogContent className="max-w-md bg-gradient-to-br from-amber-50 to-white dark:from-slate-900 dark:to-slate-800 border-2 border-amber-300 dark:border-amber-700/50" data-testid="env-browser-modal">
+        <DialogHeader className="relative pb-2 border-b-2 border-amber-300 dark:border-amber-700/30">
+          <DialogTitle className="flex items-center gap-3 text-lg font-bold text-amber-900 dark:text-amber-100">
+            <span>⚙️ Environment Variables</span>
+            <Badge variant="secondary" className="ml-auto text-xs bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100">
               {envVars.length} vars
             </Badge>
           </DialogTitle>
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-4 text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200 transition-colors"
+            data-testid="button-close-env-browser"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </DialogHeader>
 
-        <div className="space-y-3 max-h-96 overflow-y-auto">
+        <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
           {envVars.map((env) => (
             <div
               key={env.key}
-              className="flex items-center gap-2 p-2 rounded border border-border bg-muted/30 text-sm"
+              className="flex items-center gap-3 p-3 rounded-lg border-2 border-amber-200 dark:border-amber-700/40 bg-white dark:bg-slate-800/80 hover:bg-amber-50 dark:hover:bg-slate-700/80 transition-colors"
               data-testid={`env-var-${env.key}`}
             >
               <div className="flex-1 min-w-0">
-                <div className="font-mono text-xs font-semibold text-foreground truncate">
+                <div className="font-mono text-xs font-bold text-amber-900 dark:text-amber-100 truncate">
                   {env.key}
                 </div>
-                <div className="font-mono text-xs text-muted-foreground truncate">
+                <div className="font-mono text-xs text-slate-600 dark:text-slate-400 truncate mt-0.5">
                   {env.isSecret && !visibleSecrets.has(env.key) ? "••••••••" : env.value}
                 </div>
               </div>
 
-              <div className="flex gap-1 flex-shrink-0">
+              <div className="flex gap-2 flex-shrink-0">
                 {env.isSecret && (
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="h-6 w-6"
+                    className="h-8 w-8 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30"
                     onClick={() => toggleSecret(env.key)}
                     data-testid={`button-toggle-secret-${env.key}`}
                   >
                     {visibleSecrets.has(env.key) ? (
-                      <Eye className="w-3 h-3" />
+                      <Eye className="w-4 h-4" />
                     ) : (
-                      <EyeOff className="w-3 h-3" />
+                      <EyeOff className="w-4 h-4" />
                     )}
                   </Button>
                 )}
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-6 w-6"
+                  className="h-8 w-8 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30"
                   onClick={() => copyToClipboard(env.key, env.value)}
                   data-testid={`button-copy-env-${env.key}`}
                 >
                   {copied === env.key ? (
-                    <Check className="w-3 h-3 text-green-600" />
+                    <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   ) : (
-                    <Copy className="w-3 h-3" />
+                    <Copy className="w-4 h-4" />
                   )}
                 </Button>
               </div>
@@ -106,9 +113,16 @@ export function EnvBrowser({ isOpen, onClose, envVars = DEFAULT_ENV }: EnvBrowse
           ))}
         </div>
 
-        <Button variant="outline" onClick={onClose} className="w-full">
-          Close
-        </Button>
+        <div className="flex gap-2 pt-4 border-t-2 border-amber-300 dark:border-amber-700/30">
+          <Button 
+            variant="outline" 
+            onClick={onClose} 
+            className="flex-1 border-2 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-100 hover:bg-amber-100 dark:hover:bg-amber-900/40 font-semibold"
+            data-testid="button-close-env"
+          >
+            Close
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
