@@ -447,13 +447,10 @@ export async function handleStreamRequest(
               
               console.log(`[TOOL-EXECUTION] Executing: ${toolName}`);
               
-              // ✅ EMIT TASK CREATED: Notify frontend that a new task is starting
-              const taskId = `task_${toolId}`;
-              try {
-                emitTaskUpdate(emitContext, taskId, 'in_progress');
-              } catch (taskError: any) {
-                console.error('[ORCHESTRATOR] emitTaskUpdate (created) failed:', taskError);
-              }
+              // ✅ SKIP TOOL-LEVEL TASK TRACKING: Tools are internal operations, not user-facing tasks
+              // Individual tools should not create task entries - only write_task_list() should
+              // const taskId = `task_${toolId}`;
+              // emitTaskUpdate(emitContext, taskId, 'in_progress');
               
               // Track tool call in brain
               const toolCallId = userId ? beehiveAIBrain.recordToolCall(userId, sessionId || 'default', toolName, input) : nanoid();
@@ -533,12 +530,9 @@ export async function handleStreamRequest(
                     console.error('[ORCHESTRATOR] emitToolResult failed:', emitError);
                   }
                   
-                  // ✅ EMIT TASK UPDATED: Mark task as complete with success
-                  try {
-                    emitTaskUpdate(emitContext, taskId, 'done');
-                  } catch (taskError: any) {
-                    console.error('[ORCHESTRATOR] emitTaskUpdate (done) failed:', taskError);
-                  }
+                  // ✅ SKIP TOOL SUCCESS: Tool-level task tracking disabled
+                  // Tools complete but don't emit task updates
+                  // emitTaskUpdate(emitContext, taskId, 'done');
                   
                 } catch (toolError: any) {
                   // ✅ ROLLBACK MECHANISM: Track tool failures for potential rollback
@@ -552,12 +546,8 @@ export async function handleStreamRequest(
                     category: 'result'
                   });
                   
-                  // ✅ EMIT TASK UPDATED: Mark task as failed
-                  try {
-                    emitTaskUpdate(emitContext, taskId, 'blocked');
-                  } catch (taskError: any) {
-                    console.error('[ORCHESTRATOR] emitTaskUpdate (blocked) failed:', taskError);
-                  }
+                  // ✅ SKIP TOOL FAILURE: Tool-level task tracking disabled
+                  // emitTaskUpdate(emitContext, taskId, 'blocked');
                   
                   // ✅ PHASE 2: Create error ToolResult
                   const errorMsg = `Tool execution failed: ${toolError.message}`;
