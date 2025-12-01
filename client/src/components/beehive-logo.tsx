@@ -1,7 +1,7 @@
 /**
  * BeeHive Universal Queen Bee Logo
- * Professional hive-themed branding with animated bee and enhanced wordmark
- * Uses brand colors (Honey, Nectar, Mint, Charcoal) with premium styling
+ * Professional hive-themed branding with clean, clear bee rendering
+ * Uses brand colors (Honey, Nectar, Mint, Charcoal)
  */
 
 interface BeeHiveLogoProps {
@@ -52,144 +52,62 @@ export function BeeHiveLogo({ size = 'md', className = '', showText = true, vari
 
   return (
     <div className={`inline-flex items-center ${showText ? 'gap-3' : ''} ${className}`}>
-      {/* Queen Bee - Enhanced SVG with premium styling */}
+      {/* Queen Bee - Clean, Clear SVG */}
       <svg
         width={svgSize}
         height={svgSize}
-        viewBox="0 0 100 130"
+        viewBox="0 0 100 120"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ flexShrink: 0, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.08))' }}
+        style={{ flexShrink: 0 }}
       >
-        <defs>
-          <linearGradient id="honeyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{ stopColor: colors.highlight, stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: colors.accent, stopOpacity: 1 }} />
-          </linearGradient>
-          <radialGradient id="bodyGrad" cx="50%" cy="30%">
-            <stop offset="0%" style={{ stopColor: colors.highlight, stopOpacity: 0.8 }} />
-            <stop offset="100%" style={{ stopColor: colors.accent, stopOpacity: 1 }} />
-          </radialGradient>
-        </defs>
-
-        {/* HEXAGON CELL - Premium border with gradient */}
-        <path
-          d="M50 10 L72 22 L72 46 L50 58 L28 46 L28 22 Z"
-          stroke={colors.accent}
-          strokeWidth="1.5"
-          opacity="0.4"
-        />
-
-        {/* GLOW EFFECT - Subtle aura */}
-        <circle cx="50" cy="60" r="38" fill={colors.accent} opacity="0.05" />
-
-        {/* WINGS - LEFT (enhanced with glow) */}
-        <ellipse
-          cx="25"
-          cy="42"
-          rx="12"
-          ry="20"
-          fill="hsl(171, 100%, 42%)"
-          opacity="0.7"
-          style={{
-            animation: 'wing-flap 0.4s ease-in-out infinite',
-            transformBox: 'fill-box',
-            transformOrigin: 'center',
-            filter: 'drop-shadow(0 1px 2px rgba(0, 212, 179, 0.3))',
-          }}
-        />
-
-        {/* WINGS - RIGHT */}
-        <ellipse
-          cx="75"
-          cy="42"
-          rx="12"
-          ry="20"
-          fill="hsl(171, 100%, 42%)"
-          opacity="0.7"
-          style={{
-            animation: 'wing-flap 0.4s ease-in-out infinite 0.2s',
-            transformBox: 'fill-box',
-            transformOrigin: 'center',
-            filter: 'drop-shadow(0 1px 2px rgba(0, 212, 179, 0.3))',
-          }}
-        />
-
         {/* HEAD */}
-        <circle cx="50" cy="28" r="8" fill={colors.text} />
+        <circle cx="50" cy="25" r="7" fill={colors.text} />
 
-        {/* CROWN - Royal mark with gradient */}
-        <g fill={colors.accent}>
-          <polygon points="48,22 50,18 52,22 51,24 49,24" />
-          <circle cx="50" cy="18" r="1.2" fill={colors.highlight} />
-        </g>
+        {/* CROWN - Royal mark */}
+        <polygon points="48,19 50,15 52,19" fill={colors.accent} />
+        <circle cx="50" cy="14" r="1.5" fill={colors.highlight} />
 
-        {/* EYES - Bright and expressive */}
-        <circle cx="47" cy="27" r="1.2" fill={colors.highlight} />
-        <circle cx="53" cy="27" r="1.2" fill={colors.highlight} />
+        {/* EYES */}
+        <circle cx="47" cy="25" r="1.5" fill={colors.highlight} />
+        <circle cx="53" cy="25" r="1.5" fill={colors.highlight} />
 
-        {/* THORAX - Gradient body */}
-        <ellipse cx="50" cy="48" rx="10" ry="13" fill="url(#bodyGrad)" />
+        {/* LEFT WING */}
+        <ellipse cx="30" cy="40" rx="10" ry="16" fill="hsl(171, 100%, 42%)" opacity="0.75" />
 
-        {/* THORAX STRIPE */}
-        <rect
-          x="43"
-          y="46"
-          width="14"
-          height="1.5"
-          rx="0.5"
-          fill={colors.text}
-          opacity="0.5"
-        />
+        {/* RIGHT WING */}
+        <ellipse cx="70" cy="40" rx="10" ry="16" fill="hsl(171, 100%, 42%)" opacity="0.75" />
 
-        {/* LEGS - Professional styling */}
-        <g stroke={colors.text} strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.7">
-          <path d="M46 45 L28 32" />
-          <path d="M54 45 L72 32" />
-          <path d="M45 52 L22 65" />
-          <path d="M55 52 L78 65" />
-          <path d="M48 58 L28 80" />
-          <path d="M52 58 L72 80" />
-        </g>
+        {/* THORAX */}
+        <ellipse cx="50" cy="45" rx="9" ry="12" fill={colors.accent} />
+        <rect x="44" y="43" width="12" height="1" fill={colors.text} opacity="0.4" />
 
-        {/* ABDOMEN - Main body with gradient */}
-        <ellipse cx="50" cy="82" rx="9" ry="18" fill="url(#honeyGrad)" />
+        {/* ABDOMEN SEGMENT 1 */}
+        <ellipse cx="50" cy="62" rx="8" ry="11" fill={colors.highlight} />
+        <rect x="44" y="60" width="12" height="1" fill={colors.text} opacity="0.3" />
 
-        {/* ABDOMEN STRIPES */}
-        <g fill={colors.text} opacity="0.6">
-          <rect x="44" y="66" width="12" height="1.5" rx="0.5" />
-          <rect x="43" y="75" width="14" height="1.5" rx="0.5" />
-          <rect x="44" y="84" width="12" height="1.5" rx="0.5" />
-          <rect x="45" y="93" width="10" height="1.5" rx="0.5" />
-        </g>
+        {/* ABDOMEN SEGMENT 2 */}
+        <ellipse cx="50" cy="77" rx="7" ry="10" fill={colors.accent} />
+        <rect x="45" y="75" width="10" height="1" fill={colors.text} opacity="0.3" />
 
-        {/* STINGER - Elegant point */}
-        <g>
-          <line
-            x1="50"
-            y1="100"
-            x2="50"
-            y2="110"
-            stroke={colors.text}
-            strokeWidth="1.2"
-            strokeLinecap="round"
-          />
-          <polygon points="50,110 47,104 53,104" fill={colors.accent} />
-        </g>
+        {/* ABDOMEN SEGMENT 3 */}
+        <ellipse cx="50" cy="90" rx="6" ry="8" fill={colors.highlight} />
 
-        {/* Wing animation */}
-        <style>{`
-          @keyframes wing-flap {
-            0%, 100% {
-              transform: scaleY(1) rotateZ(-8deg);
-              opacity: 0.7;
-            }
-            50% {
-              transform: scaleY(0.7) rotateZ(8deg);
-              opacity: 0.9;
-            }
-          }
-        `}</style>
+        {/* STINGER */}
+        <line x1="50" y1="98" x2="50" y2="108" stroke={colors.text} strokeWidth="1.2" />
+        <polygon points="50,108 47,103 53,103" fill={colors.accent} />
+
+        {/* FRONT LEGS */}
+        <line x1="44" y1="48" x2="28" y2="35" stroke={colors.text} strokeWidth="1" opacity="0.6" />
+        <line x1="56" y1="48" x2="72" y2="35" stroke={colors.text} strokeWidth="1" opacity="0.6" />
+
+        {/* MIDDLE LEGS */}
+        <line x1="43" y1="58" x2="25" y2="60" stroke={colors.text} strokeWidth="1" opacity="0.6" />
+        <line x1="57" y1="58" x2="75" y2="60" stroke={colors.text} strokeWidth="1" opacity="0.6" />
+
+        {/* BACK LEGS */}
+        <line x1="45" y1="75" x2="30" y2="95" stroke={colors.text} strokeWidth="1" opacity="0.6" />
+        <line x1="55" y1="75" x2="70" y2="95" stroke={colors.text} strokeWidth="1" opacity="0.6" />
       </svg>
 
       {/* BeeHive Wordmark - Enhanced Typography */}
