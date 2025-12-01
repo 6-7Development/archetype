@@ -254,26 +254,60 @@ export function BeeHiveLogo({
           </g>
         </g>
 
-        {/* Small accent bee - adds depth and movement sense */}
+        {/* SWARMING BEES - Micro bees orbiting the honeycomb */}
+        
+        {/* Swarm bee 1 - top right */}
         <g 
-          id="accent-bee" 
-          className={animated ? "accent-bee" : ""}
-          transform="translate(2 46) scale(0.5)"
+          className={animated ? "swarm-bee swarm-bee-1" : ""}
         >
-          {/* Mini wings */}
-          <ellipse cx="8" cy="3.6" rx="4.2" ry="2.8" fill={colors.mint} opacity="0.42" />
-          <ellipse cx="12" cy="3.6" rx="4.2" ry="2.8" fill={colors.mint} opacity="0.36" />
-          
-          {/* Mini head */}
-          <circle cx="10" cy="5.2" r="1.8" fill={colors.dark} />
-          <circle cx="9.2" cy="4.8" r="0.45" fill={colors.nectar} opacity="0.85" />
-          <circle cx="10.8" cy="4.8" r="0.45" fill={colors.nectar} opacity="0.85" />
-          
-          {/* Mini body */}
-          <ellipse cx="10" cy="9.4" rx="2.2" ry="3.8" fill={colors.honey} />
-          <rect x="8.2" y="7.8" width="3.6" height="0.8" rx="0.4" fill={colors.dark} opacity="0.35" />
-          <rect x="7.8" y="9.6" width="4.4" height="0.9" rx="0.45" fill={colors.dark} opacity="0.3" />
-          <rect x="8.2" y="11.4" width="3.6" height="0.75" rx="0.35" fill={colors.dark} opacity="0.35" />
+          <ellipse cx="44" cy="12" rx="2.2" ry="1.6" fill={colors.mint} opacity="0.45" />
+          <circle cx="44" cy="14" r="1.2" fill={colors.honey} />
+          <circle cx="44" cy="13" r="0.7" fill={colors.dark} />
+        </g>
+
+        {/* Swarm bee 2 - right */}
+        <g 
+          className={animated ? "swarm-bee swarm-bee-2" : ""}
+        >
+          <ellipse cx="55" cy="30" rx="2.2" ry="1.6" fill={colors.mint} opacity="0.45" />
+          <circle cx="55" cy="32" r="1.2" fill={colors.honey} />
+          <circle cx="55" cy="31" r="0.7" fill={colors.dark} />
+        </g>
+
+        {/* Swarm bee 3 - bottom right */}
+        <g 
+          className={animated ? "swarm-bee swarm-bee-3" : ""}
+        >
+          <ellipse cx="46" cy="50" rx="2.2" ry="1.6" fill={colors.mint} opacity="0.45" />
+          <circle cx="46" cy="52" r="1.2" fill={colors.honey} />
+          <circle cx="46" cy="51" r="0.7" fill={colors.dark} />
+        </g>
+
+        {/* Swarm bee 4 - bottom left */}
+        <g 
+          className={animated ? "swarm-bee swarm-bee-4" : ""}
+        >
+          <ellipse cx="16" cy="50" rx="2.2" ry="1.6" fill={colors.mint} opacity="0.45" />
+          <circle cx="16" cy="52" r="1.2" fill={colors.honey} />
+          <circle cx="16" cy="51" r="0.7" fill={colors.dark} />
+        </g>
+
+        {/* Swarm bee 5 - left */}
+        <g 
+          className={animated ? "swarm-bee swarm-bee-5" : ""}
+        >
+          <ellipse cx="8" cy="30" rx="2.2" ry="1.6" fill={colors.mint} opacity="0.45" />
+          <circle cx="8" cy="32" r="1.2" fill={colors.honey} />
+          <circle cx="8" cy="31" r="0.7" fill={colors.dark} />
+        </g>
+
+        {/* Swarm bee 6 - top left */}
+        <g 
+          className={animated ? "swarm-bee swarm-bee-6" : ""}
+        >
+          <ellipse cx="18" cy="12" rx="2.2" ry="1.6" fill={colors.mint} opacity="0.45" />
+          <circle cx="18" cy="14" r="1.2" fill={colors.honey} />
+          <circle cx="18" cy="13" r="0.7" fill={colors.dark} />
         </g>
       </svg>
 
