@@ -393,73 +393,63 @@
    Accent bee: Gentle float for depth
 */
 
-/* Hero bee - slow hovering motion */
+/* Hero bee - slow hovering motion (relative offsets from SVG position) */
 @keyframes hero-bee-hover {
   0%, 100% {
-    transform: translate(40px, 4px);
+    transform: translate3d(0px, 0px, 0);
   }
   25% {
-    transform: translate(41px, 3px);
+    transform: translate3d(0.8px, -0.6px, 0);
   }
   50% {
-    transform: translate(40px, 2px);
+    transform: translate3d(0px, -1.4px, 0);
   }
   75% {
-    transform: translate(39px, 3px);
+    transform: translate3d(-0.8px, -0.6px, 0);
   }
 }
 
 .hero-bee {
   animation: hero-bee-hover 4s ease-in-out infinite;
+  transform-origin: center;
+  transform-box: fill-box;
 }
 
-/* Wing flutter - subtle figure-eight motion */
-@keyframes wing-flutter-left {
+/* Wing flutter - subtle opacity pulse (no transform to avoid position issues) */
+@keyframes wing-flutter {
   0%, 100% {
-    transform: rotate(-30deg) scaleY(1);
-    opacity: 0.5;
+    opacity: 0.55;
   }
   50% {
-    transform: rotate(-20deg) scaleY(0.85);
-    opacity: 0.65;
-  }
-}
-
-@keyframes wing-flutter-right {
-  0%, 100% {
-    transform: rotate(30deg) scaleY(1);
-    opacity: 0.5;
-  }
-  50% {
-    transform: rotate(20deg) scaleY(0.85);
-    opacity: 0.65;
+    opacity: 0.7;
   }
 }
 
 .bee-wing-left {
-  animation: wing-flutter-left 0.15s ease-in-out infinite;
-  transform-origin: center right;
+  animation: wing-flutter 0.12s ease-in-out infinite;
 }
 
 .bee-wing-right {
-  animation: wing-flutter-right 0.15s ease-in-out infinite;
-  transform-origin: center left;
+  animation: wing-flutter 0.12s ease-in-out infinite;
+  animation-delay: 0.06s;
 }
 
-/* Accent bee - gentle float for depth */
+/* Accent bee - gentle float for depth (relative offsets from SVG position) */
 @keyframes accent-bee-float {
   0%, 100% {
-    transform: translate(2px, 46px) scale(0.5);
+    transform: translate3d(0px, 0px, 0);
     opacity: 1;
   }
   50% {
-    transform: translate(3px, 45px) scale(0.5);
+    transform: translate3d(0.8px, -0.8px, 0);
     opacity: 0.9;
   }
 }
 
 .accent-bee {
   animation: accent-bee-float 3s ease-in-out infinite;
+  transform-origin: center;
+  transform-box: fill-box;
 }
 
 /* Mobile-First Responsive Images & Media */
