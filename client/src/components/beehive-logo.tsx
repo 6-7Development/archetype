@@ -1,14 +1,6 @@
 /**
  * BeeHive Logo - Premium Honeycomb Mark with Polished Hero Bee
- * 
- * Design specifications:
- * - 7-cell honeycomb with inner shading, highlights, and depth effects
- * - Hero bee with enhanced anatomy: antennae, compound eyes with shine,
- *   detailed thorax, striped abdomen, articulated legs, translucent wings
- * - Professional polish: gradients, shadows, highlights
- * - Optimized for 64x64 viewBox, scales cleanly to all sizes
- * 
- * Brand colors: Honey (#F7B500), Nectar (#FFD34D), Mint (#00D9A3), Charcoal (#101113)
+ * Fully configurable - edit CONFIG objects below for easy customization
  */
 
 interface BeeHiveLogoProps {
@@ -20,6 +12,188 @@ interface BeeHiveLogoProps {
   textHeight?: number;
   animated?: boolean;
 }
+
+// ============================================================================
+// CONFIGURATION OBJECTS - Edit these for easy customization
+// ============================================================================
+
+// SVG viewBox and overall dimensions
+const CONFIG = {
+  viewBox: { width: 64, height: 64 },
+  
+  // Honeycomb configuration
+  honeycomb: {
+    size: 8, // Cell size (affects all positions)
+    centerX: 32,
+    centerY: 32,
+    cells: [
+      { x: 36, y: 25.072, label: 'center' },
+      { x: 48, y: 32, label: 'right' },
+      { x: 36, y: 38.928, label: 'bottom-center' },
+      { x: 24, y: 32, label: 'left' },
+      { x: 24, y: 18.144, label: 'top-left' },
+      { x: 36, y: 11.216, label: 'top-center' },
+      { x: 48, y: 18.144, label: 'top-right' },
+    ],
+    strokeWidth: 1.25,
+    highlightOpacity: 0.6,
+  },
+
+  // Hero bee configuration
+  heroBee: {
+    position: { x: 38, y: 2 },
+    
+    // Head
+    head: {
+      x: 10,
+      y: 6.4,
+      radius: 2.3,
+    },
+    
+    // Eyes
+    eyes: {
+      leftX: 9.0,
+      rightX: 11.0,
+      y: 5.8,
+      radius: 0.55,
+      shineRadius: 0.25,
+      shineY: 5.55,
+    },
+    
+    // Antennae
+    antennae: {
+      leftBase: { x: 8.4, y: 4.2 },
+      leftTip: { x: 6.6, y: 1.8 },
+      rightBase: { x: 11.6, y: 4.2 },
+      rightTip: { x: 13.4, y: 1.8 },
+      tipRadius: 0.35,
+      strokeWidth: 0.7,
+    },
+    
+    // Wings
+    wings: {
+      left: {
+        path: "M5.8 7.4 C1.2 4.2 1.4 1.2 6.8 2.0 C11.0 2.6 11.2 6.4 5.8 7.4 Z",
+        opacity: 0.58,
+        strokeOpacity: 0.3,
+        strokeWidth: 0.4,
+      },
+      right: {
+        path: "M14.2 7.4 C18.8 4.2 18.6 1.2 13.2 2.0 C9.0 2.6 8.8 6.4 14.2 7.4 Z",
+        opacity: 0.48,
+        strokeOpacity: 0.3,
+        strokeWidth: 0.4,
+      },
+    },
+    
+    // Thorax
+    thorax: {
+      cx: 10,
+      cy: 9.2,
+      rx: 2.6,
+      ry: 2.0,
+      shadowCy: 9.0,
+      shadowRx: 2.4,
+      shadowRy: 0.6,
+      shadowOpacity: 0.3,
+    },
+    
+    // Abdomen
+    abdomen: {
+      cx: 10,
+      cy: 15.9,
+      pathStart: 11.2,
+      pathEnd: 20.4,
+      width: 10.8,
+      stripes: [
+        {
+          ellipse: { cx: 10, cy: 12.9, rx: 3.6, ry: 1.0, opacity: 0.35 },
+          rect: { x: 6.2, y: 13.2, width: 7.6, height: 1.1, rx: 0.55 },
+        },
+        {
+          ellipse: { cx: 10, cy: 15.2, rx: 3.8, ry: 1.1, opacity: 0.25 },
+          rect: { x: 5.8, y: 15.2, width: 8.4, height: 1.2, rx: 0.6 },
+        },
+        {
+          ellipse: { cx: 10, cy: 17.6, rx: 3.5, ry: 0.95, opacity: 0.3 },
+          rect: { x: 6.2, y: 17.8, width: 7.6, height: 1.0, rx: 0.5 },
+        },
+      ],
+    },
+    
+    // Stinger
+    stinger: {
+      startX: 10,
+      startY: 20.4,
+      tipY: 22.2,
+      forkY: 23.0,
+      strokeWidth: 0.9,
+      forkStrokeWidth: 0.7,
+    },
+    
+    // Legs
+    legs: {
+      strokeWidth: 0.75,
+      left: [
+        { paths: ["M6.2 12.6 L3.8 13.9 L3.4 14.8"] },
+        { paths: ["M5.6 15.0 L3.0 16.3 L2.4 17.4"] },
+        { paths: ["M5.8 17.6 L3.4 19.1 L2.8 20.2"] },
+      ],
+      right: [
+        { paths: ["M13.8 12.6 L16.2 13.9 L16.6 14.8"] },
+        { paths: ["M14.4 15.0 L17.0 16.3 L17.6 17.4"] },
+        { paths: ["M14.2 17.6 L16.6 19.1 L17.2 20.2"] },
+      ],
+    },
+  },
+
+  // Swarm bee configuration
+  swarmBees: [
+    { position: { x: 50, y: 10 }, delay: 0 },
+    { position: { x: 58, y: 32 }, delay: 0.2 },
+    { position: { x: 50, y: 58 }, delay: 0.4 },
+    { position: { x: 14, y: 58 }, delay: 0.6 },
+    { position: { x: 6, y: 32 }, delay: 0.8 },
+    { position: { x: 14, y: 10 }, delay: 1.0 },
+  ],
+
+  swarmBeeSizing: {
+    wings: { rx: 3.5, ry: 2.5, opacity: 0.7 },
+    body: { r: 2, opacity: 1 },
+    head: { r: 1.2, opacity: 1 },
+    eyes: { r: 0.4, cy: 1.5, opacity: 0.8 },
+    bodyStroke: 0.5,
+  },
+
+  // Animation configuration
+  animations: {
+    heroBee: {
+      duration: 0.3,
+    },
+    swarmBee: {
+      duration: 1.2,
+      maxTranslateY: 2,
+      maxRotate: 8,
+    },
+  },
+
+  // Gradients and effects
+  gradients: {
+    honeyFill: {
+      x1: 18,
+      y1: 14,
+      x2: 46,
+      y2: 50,
+    },
+    cellShadow: {
+      cx: "40%",
+      cy: "40%",
+    },
+    beeGlow: {
+      blur: 0.8,
+    },
+  },
+};
 
 const SIZE_MAP = {
   sm: 48,
@@ -68,12 +242,56 @@ const VARIANT_COLORS = {
   },
 };
 
-export function BeeHiveLogo({ 
-  size = 'md', 
-  className = '', 
-  showText = true, 
-  variant = 'primary', 
-  iconSize, 
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Generate honeycomb hex path
+ * Flat-top hexagon with center at (x,y)
+ */
+function generateHexPath(x: number, y: number, size: number = 8): string {
+  const h = (size * Math.sqrt(3)) / 2; // height
+  const v = size / 2; // vertical offset
+  return [
+    `M${x + size / 2} ${y - h}`,
+    `L${x + size} ${y - v}`,
+    `L${x + size} ${y + v}`,
+    `L${x + size / 2} ${y + h}`,
+    `L${x - size / 2} ${y + h}`,
+    `L${x - size} ${y + v}`,
+    `L${x - size} ${y - v}`,
+    `Z`,
+  ].join(' ');
+}
+
+/**
+ * Generate shadow layer hex path (darker, offset)
+ */
+function generateShadowHexPath(
+  x: number,
+  y: number,
+  size: number = 8
+): string {
+  const h = (size * Math.sqrt(3)) / 2;
+  return [
+    `M${x + size / 2} ${y - h}`,
+    `L${x + size} ${y - size / 2}`,
+    `L${x + size} ${y + size / 2}`,
+    `L${x + size / 2} ${y + h}`,
+    `L${x - size / 2} ${y + h}`,
+    `L${x - size} ${y + size / 2}`,
+    `L${x - size} ${y - size / 2}`,
+    `Z`,
+  ].join(' ');
+}
+
+export function BeeHiveLogo({
+  size = 'md',
+  className = '',
+  showText = true,
+  variant = 'primary',
+  iconSize,
   textHeight,
   animated = true,
 }: BeeHiveLogoProps) {
@@ -81,255 +299,332 @@ export function BeeHiveLogo({
   const textSize = textHeight ? `${textHeight}px` : SIZE_TEXT[size];
   const colors = VARIANT_COLORS[variant];
 
+  // Render honeycomb cells
+  const honeycombPaths = CONFIG.honeycomb.cells.map((cell) =>
+    generateHexPath(cell.x, cell.y, CONFIG.honeycomb.size)
+  );
+
+  const honeycombShadows = CONFIG.honeycomb.cells.map((cell) =>
+    generateShadowHexPath(cell.x, cell.y, CONFIG.honeycomb.size)
+  );
+
   return (
-    <div className={`inline-flex items-center ${showText ? 'gap-3' : ''} ${className}`}>
+    <div
+      className={`inline-flex items-center ${showText ? 'gap-3' : ''} ${className}`}
+    >
       {/* Professional Honeycomb Mark with Polished Hero Bee */}
       <svg
         width={svgSize}
         height={svgSize}
-        viewBox="0 0 64 64"
+        viewBox={`0 0 ${CONFIG.viewBox.width} ${CONFIG.viewBox.height}`}
         xmlns="http://www.w3.org/2000/svg"
         style={{ flexShrink: 0 }}
         className="beehive-logo-mark"
       >
         <defs>
           {/* Primary honey gradient */}
-          <linearGradient id="honeyFill" x1="18" y1="14" x2="46" y2="50" gradientUnits="userSpaceOnUse">
+          <linearGradient
+            id="honeyFill"
+            x1={CONFIG.gradients.honeyFill.x1}
+            y1={CONFIG.gradients.honeyFill.y1}
+            x2={CONFIG.gradients.honeyFill.x2}
+            y2={CONFIG.gradients.honeyFill.y2}
+            gradientUnits="userSpaceOnUse"
+          >
             <stop offset="0" stopColor={colors.nectar} />
             <stop offset="1" stopColor={colors.honey} />
           </linearGradient>
-          
+
           {/* Inner cell shadow gradient */}
-          <radialGradient id="cellShadow" cx="40%" cy="40%">
+          <radialGradient
+            id="cellShadow"
+            cx={CONFIG.gradients.cellShadow.cx}
+            cy={CONFIG.gradients.cellShadow.cy}
+          >
             <stop offset="0" stopColor={colors.nectar} stopOpacity="0.4" />
             <stop offset="1" stopColor={colors.honey} stopOpacity="0" />
           </radialGradient>
 
           {/* Bee glow effect */}
           <filter id="beeGlow">
-            <feGaussianBlur stdDeviation="0.8" result="coloredBlur"/>
+            <feGaussianBlur
+              stdDeviation={CONFIG.gradients.beeGlow.blur}
+              result="coloredBlur"
+            />
             <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
         </defs>
 
-        {/* ========================================
-            HONEYCOMB GRID - 7 cells with polish
-            Flat-top hexagons, size=8, 60° geometry
-            ======================================== */}
-        
-        {/* Shadow/depth layer */}
+        {/* HONEYCOMB SHADOW LAYER */}
         <g opacity="0.15">
-          <path d="M36 25.072 L28 25.072 L24 32 L28 38.928 L36 38.928 L40 32 Z" fill="#000" />
-          <path d="M48 32 L40 32 L36 38.928 L40 45.856 L48 45.856 L52 38.928 Z" fill="#000" />
-          <path d="M36 38.928 L28 38.928 L24 45.856 L28 52.784 L36 52.784 L40 45.856 Z" fill="#000" />
-          <path d="M24 32 L16 32 L12 38.928 L16 45.856 L24 45.856 L28 38.928 Z" fill="#000" />
-          <path d="M24 18.144 L16 18.144 L12 25.072 L16 32 L24 32 L28 25.072 Z" fill="#000" />
-          <path d="M36 11.216 L28 11.216 L24 18.144 L28 25.072 L36 25.072 L40 18.144 Z" fill="#000" />
-          <path d="M48 18.144 L40 18.144 L36 25.072 L40 32 L48 32 L52 25.072 Z" fill="#000" />
+          {honeycombShadows.map((path, idx) => (
+            <path key={`shadow-${idx}`} d={path} fill="#000" />
+          ))}
         </g>
 
-        {/* Honeycomb cells with inner details */}
-        <g 
-          id="honeycomb" 
-          stroke={colors.stroke} 
-          strokeWidth="1.25" 
+        {/* HONEYCOMB CELLS WITH POLISH */}
+        <g
+          id="honeycomb"
+          stroke={colors.stroke}
+          strokeWidth={CONFIG.honeycomb.strokeWidth}
           strokeLinejoin="round"
         >
-          {/* Center hexagon */}
-          <path d="M36 25.072 L28 25.072 L24 32 L28 38.928 L36 38.928 L40 32 Z" fill="url(#honeyFill)" />
-          {/* Inner shadow for center */}
-          <path d="M36 25.072 L28 25.072 L24 32 L28 38.928 L36 38.928 L40 32 Z" fill="url(#cellShadow)" opacity="0.3" />
-          
-          {/* Right hex */}
-          <path d="M48 32 L40 32 L36 38.928 L40 45.856 L48 45.856 L52 38.928 Z" fill="url(#honeyFill)" />
-          
-          {/* Bottom-center hex */}
-          <path d="M36 38.928 L28 38.928 L24 45.856 L28 52.784 L36 52.784 L40 45.856 Z" fill="url(#honeyFill)" />
-          
-          {/* Left hex */}
-          <path d="M24 32 L16 32 L12 38.928 L16 45.856 L24 45.856 L28 38.928 Z" fill="url(#honeyFill)" />
-          
-          {/* Top-left hex */}
-          <path d="M24 18.144 L16 18.144 L12 25.072 L16 32 L24 32 L28 25.072 Z" fill="url(#honeyFill)" />
-          
-          {/* Top-center hex */}
-          <path d="M36 11.216 L28 11.216 L24 18.144 L28 25.072 L36 25.072 L40 18.144 Z" fill="url(#honeyFill)" />
-          
-          {/* Top-right hex */}
-          <path d="M48 18.144 L40 18.144 L36 25.072 L40 32 L48 32 L52 25.072 Z" fill="url(#honeyFill)" />
+          {honeycombPaths.map((path, idx) => (
+            <g key={`cell-${idx}`}>
+              <path d={path} fill="url(#honeyFill)" />
+              {/* Inner shadow for depth */}
+              {idx === 0 && (
+                <path d={path} fill="url(#cellShadow)" opacity="0.3" />
+              )}
+            </g>
+          ))}
         </g>
 
-        {/* Highlight on top edges for polish */}
-        <g stroke={colors.nectar} strokeWidth="0.6" fill="none" opacity="0.6">
+        {/* HIGHLIGHT EDGES */}
+        <g
+          stroke={colors.nectar}
+          strokeWidth="0.6"
+          fill="none"
+          opacity={CONFIG.honeycomb.highlightOpacity}
+        >
           <path d="M28 25.072 L36 25.072" />
           <path d="M40 18.144 L48 18.144" />
           <path d="M16 18.144 L24 18.144" />
         </g>
 
-        {/* ========================================
-            HERO BEE - Enhanced anatomy with polish
-            Larger scale, more detail, professional finish
-            ======================================== */}
-        <g 
-          id="hero-bee" 
-          className={animated ? "hero-bee" : ""}
-          transform="translate(38 2)"
-          filter={animated ? "url(#beeGlow)" : ""}
+        {/* HERO BEE */}
+        <g
+          id="hero-bee"
+          className={animated ? 'hero-bee' : ''}
+          transform={`translate(${CONFIG.heroBee.position.x} ${CONFIG.heroBee.position.y})`}
+          filter={animated ? 'url(#beeGlow)' : ''}
         >
-          {/* Wings - detailed, translucent with polish */}
-          <path 
-            className={animated ? "bee-wing-left" : ""}
-            d="M5.8 7.4 C1.2 4.2 1.4 1.2 6.8 2.0 C11.0 2.6 11.2 6.4 5.8 7.4 Z" 
-            fill={colors.mint} 
-            opacity="0.58"
-            strokeWidth="0.4"
+          {/* Wings */}
+          <path
+            className={animated ? 'bee-wing-left' : ''}
+            d={CONFIG.heroBee.wings.left.path}
+            fill={colors.mint}
+            opacity={CONFIG.heroBee.wings.left.opacity}
+            strokeWidth={CONFIG.heroBee.wings.left.strokeWidth}
             stroke={colors.mint}
-            strokeOpacity="0.3"
+            strokeOpacity={CONFIG.heroBee.wings.left.strokeOpacity}
           />
-          <path 
-            className={animated ? "bee-wing-right" : ""}
-            d="M14.2 7.4 C18.8 4.2 18.6 1.2 13.2 2.0 C9.0 2.6 8.8 6.4 14.2 7.4 Z" 
-            fill={colors.mint} 
-            opacity="0.48"
-            strokeWidth="0.4"
+          <path
+            className={animated ? 'bee-wing-right' : ''}
+            d={CONFIG.heroBee.wings.right.path}
+            fill={colors.mint}
+            opacity={CONFIG.heroBee.wings.right.opacity}
+            strokeWidth={CONFIG.heroBee.wings.right.strokeWidth}
             stroke={colors.mint}
-            strokeOpacity="0.3"
+            strokeOpacity={CONFIG.heroBee.wings.right.strokeOpacity}
           />
-          
-          {/* Head with full detail */}
-          <circle cx="10" cy="6.4" r="2.3" fill={colors.dark} />
-          <circle cx="10" cy="6.4" r="2.3" fill={colors.dark} />
-          
-          {/* Eye shine/highlights */}
-          <circle cx="9.0" cy="5.8" r="0.55" fill={colors.nectar} opacity="0.95" />
-          <circle cx="11.0" cy="5.8" r="0.55" fill={colors.nectar} opacity="0.95" />
-          <circle cx="8.75" cy="5.55" r="0.25" fill="#FFF" opacity="0.7" />
-          <circle cx="10.75" cy="5.55" r="0.25" fill="#FFF" opacity="0.7" />
-          
-          {/* Antennae - more articulated */}
-          <path d="M8.4 4.2 Q7.8 2.6 6.6 1.8" stroke={colors.dark} strokeWidth="0.7" strokeLinecap="round" fill="none" />
-          <path d="M11.6 4.2 Q12.2 2.6 13.4 1.8" stroke={colors.dark} strokeWidth="0.7" strokeLinecap="round" fill="none" />
-          <circle cx="6.6" cy="1.8" r="0.35" fill={colors.dark} />
-          <circle cx="13.4" cy="1.8" r="0.35" fill={colors.dark} />
-          
-          {/* Thorax with shading */}
-          <ellipse cx="10" cy="9.2" rx="2.6" ry="2.0" fill={colors.thorax} />
-          <ellipse cx="10" cy="9.0" rx="2.4" ry="0.6" fill={colors.dark} opacity="0.3" />
-          
-          {/* Abdomen - professional striping */}
-          <path 
-            d="M10 11.2 C13.5 11.2 15.4 13.4 15.4 15.9 C15.4 18.5 13.5 20.4 10 20.4 C6.5 20.4 4.6 18.5 4.6 15.9 C4.6 13.4 6.5 11.2 10 11.2 Z" 
-            fill={colors.honey} 
+
+          {/* Head */}
+          <circle
+            cx={CONFIG.heroBee.head.x}
+            cy={CONFIG.heroBee.head.y}
+            r={CONFIG.heroBee.head.radius}
+            fill={colors.dark}
           />
-          
-          {/* Abdomen stripes - premium look */}
-          <ellipse cx="10" cy="12.9" rx="3.6" ry="1.0" fill={colors.dark} opacity="0.35" />
-          <rect x="6.2" y="13.2" width="7.6" height="1.1" rx="0.55" fill={colors.honeyDark} />
-          
-          <ellipse cx="10" cy="15.2" rx="3.8" ry="1.1" fill={colors.dark} opacity="0.25" />
-          <rect x="5.8" y="15.2" width="8.4" height="1.2" rx="0.6" fill={colors.dark} opacity="0.4" />
-          
-          <ellipse cx="10" cy="17.6" rx="3.5" ry="0.95" fill={colors.dark} opacity="0.3" />
-          <rect x="6.2" y="17.8" width="7.6" height="1.0" rx="0.5" fill={colors.honeyDark} />
-          
-          {/* Stinger - pointed */}
-          <path d="M10 20.4 L10 22.2" stroke={colors.dark} strokeWidth="0.9" strokeLinecap="round" />
-          <path d="M10 22.2 L9.3 23.0" stroke={colors.dark} strokeWidth="0.7" strokeLinecap="round" />
-          <path d="M10 22.2 L10.7 23.0" stroke={colors.dark} strokeWidth="0.7" strokeLinecap="round" />
-          
-          {/* Legs - articulated detail */}
-          <g stroke={colors.dark} strokeWidth="0.75" fill="none" strokeLinecap="round">
-            {/* Left legs */}
-            <path d="M6.2 12.6 L3.8 13.9 L3.4 14.8" />
-            <path d="M5.6 15.0 L3.0 16.3 L2.4 17.4" />
-            <path d="M5.8 17.6 L3.4 19.1 L2.8 20.2" />
-            
-            {/* Right legs */}
-            <path d="M13.8 12.6 L16.2 13.9 L16.6 14.8" />
-            <path d="M14.4 15.0 L17.0 16.3 L17.6 17.4" />
-            <path d="M14.2 17.6 L16.6 19.1 L17.2 20.2" />
+
+          {/* Eyes */}
+          <circle
+            cx={CONFIG.heroBee.eyes.leftX}
+            cy={CONFIG.heroBee.eyes.y}
+            r={CONFIG.heroBee.eyes.radius}
+            fill={colors.nectar}
+            opacity="0.95"
+          />
+          <circle
+            cx={CONFIG.heroBee.eyes.rightX}
+            cy={CONFIG.heroBee.eyes.y}
+            r={CONFIG.heroBee.eyes.radius}
+            fill={colors.nectar}
+            opacity="0.95"
+          />
+          <circle
+            cx={CONFIG.heroBee.eyes.leftX - 0.25}
+            cy={CONFIG.heroBee.eyes.shineY}
+            r={CONFIG.heroBee.eyes.shineRadius}
+            fill="#FFF"
+            opacity="0.7"
+          />
+          <circle
+            cx={CONFIG.heroBee.eyes.rightX - 0.25}
+            cy={CONFIG.heroBee.eyes.shineY}
+            r={CONFIG.heroBee.eyes.shineRadius}
+            fill="#FFF"
+            opacity="0.7"
+          />
+
+          {/* Antennae */}
+          <path
+            d={`Q${CONFIG.heroBee.antennae.leftBase.x - 0.6} ${CONFIG.heroBee.antennae.leftBase.y - 1.6} ${CONFIG.heroBee.antennae.leftTip.x} ${CONFIG.heroBee.antennae.leftTip.y}`}
+            stroke={colors.dark}
+            strokeWidth={CONFIG.heroBee.antennae.strokeWidth}
+            strokeLinecap="round"
+            fill="none"
+          />
+          <path
+            d={`Q${CONFIG.heroBee.antennae.rightBase.x + 0.6} ${CONFIG.heroBee.antennae.rightBase.y - 1.6} ${CONFIG.heroBee.antennae.rightTip.x} ${CONFIG.heroBee.antennae.rightTip.y}`}
+            stroke={colors.dark}
+            strokeWidth={CONFIG.heroBee.antennae.strokeWidth}
+            strokeLinecap="round"
+            fill="none"
+          />
+          <circle
+            cx={CONFIG.heroBee.antennae.leftTip.x}
+            cy={CONFIG.heroBee.antennae.leftTip.y}
+            r={CONFIG.heroBee.antennae.tipRadius}
+            fill={colors.dark}
+          />
+          <circle
+            cx={CONFIG.heroBee.antennae.rightTip.x}
+            cy={CONFIG.heroBee.antennae.rightTip.y}
+            r={CONFIG.heroBee.antennae.tipRadius}
+            fill={colors.dark}
+          />
+
+          {/* Thorax */}
+          <ellipse
+            cx={CONFIG.heroBee.thorax.cx}
+            cy={CONFIG.heroBee.thorax.cy}
+            rx={CONFIG.heroBee.thorax.rx}
+            ry={CONFIG.heroBee.thorax.ry}
+            fill={colors.thorax}
+          />
+          <ellipse
+            cx={CONFIG.heroBee.thorax.cx}
+            cy={CONFIG.heroBee.thorax.shadowCy}
+            rx={CONFIG.heroBee.thorax.shadowRx}
+            ry={CONFIG.heroBee.thorax.shadowRy}
+            fill={colors.dark}
+            opacity={CONFIG.heroBee.thorax.shadowOpacity}
+          />
+
+          {/* Abdomen */}
+          <path
+            d={`M${CONFIG.heroBee.abdomen.cx} ${CONFIG.heroBee.abdomen.pathStart} C${CONFIG.heroBee.abdomen.cx + CONFIG.heroBee.abdomen.width / 2} ${CONFIG.heroBee.abdomen.pathStart} ${CONFIG.heroBee.abdomen.cx + CONFIG.heroBee.abdomen.width / 2 - 0.4} ${CONFIG.heroBee.abdomen.cy} ${CONFIG.heroBee.abdomen.cx} ${CONFIG.heroBee.abdomen.pathEnd} C${CONFIG.heroBee.abdomen.cx - CONFIG.heroBee.abdomen.width / 2 + 0.4} ${CONFIG.heroBee.abdomen.cy} ${CONFIG.heroBee.abdomen.cx - CONFIG.heroBee.abdomen.width / 2} ${CONFIG.heroBee.abdomen.pathStart} ${CONFIG.heroBee.abdomen.cx} ${CONFIG.heroBee.abdomen.pathStart} Z`}
+            fill={colors.honey}
+          />
+
+          {/* Abdomen stripes */}
+          {CONFIG.heroBee.abdomen.stripes.map((stripe, idx) => (
+            <g key={`stripe-${idx}`}>
+              <ellipse
+                cx={stripe.ellipse.cx}
+                cy={stripe.ellipse.cy}
+                rx={stripe.ellipse.rx}
+                ry={stripe.ellipse.ry}
+                fill={colors.dark}
+                opacity={stripe.ellipse.opacity}
+              />
+              <rect
+                x={stripe.rect.x}
+                y={stripe.rect.y}
+                width={stripe.rect.width}
+                height={stripe.rect.height}
+                rx={stripe.rect.rx}
+                fill={idx % 2 === 0 ? colors.honeyDark : colors.dark}
+                opacity={idx % 2 === 0 ? 1 : 0.4}
+              />
+            </g>
+          ))}
+
+          {/* Stinger */}
+          <path
+            d={`M${CONFIG.heroBee.stinger.startX} ${CONFIG.heroBee.stinger.startY} L${CONFIG.heroBee.stinger.startX} ${CONFIG.heroBee.stinger.tipY}`}
+            stroke={colors.dark}
+            strokeWidth={CONFIG.heroBee.stinger.strokeWidth}
+            strokeLinecap="round"
+          />
+          <path
+            d={`M${CONFIG.heroBee.stinger.startX} ${CONFIG.heroBee.stinger.tipY} L${CONFIG.heroBee.stinger.startX - 0.7} ${CONFIG.heroBee.stinger.forkY}`}
+            stroke={colors.dark}
+            strokeWidth={CONFIG.heroBee.stinger.forkStrokeWidth}
+            strokeLinecap="round"
+          />
+          <path
+            d={`M${CONFIG.heroBee.stinger.startX} ${CONFIG.heroBee.stinger.tipY} L${CONFIG.heroBee.stinger.startX + 0.7} ${CONFIG.heroBee.stinger.forkY}`}
+            stroke={colors.dark}
+            strokeWidth={CONFIG.heroBee.stinger.forkStrokeWidth}
+            strokeLinecap="round"
+          />
+
+          {/* Legs */}
+          <g
+            stroke={colors.dark}
+            strokeWidth={CONFIG.heroBee.legs.strokeWidth}
+            fill="none"
+            strokeLinecap="round"
+          >
+            {CONFIG.heroBee.legs.left.map((leg, idx) => (
+              <path key={`leg-left-${idx}`} d={leg.paths[0]} />
+            ))}
+            {CONFIG.heroBee.legs.right.map((leg, idx) => (
+              <path key={`leg-right-${idx}`} d={leg.paths[0]} />
+            ))}
           </g>
         </g>
 
-        {/* SWARMING BEES - Visible bees around honeycomb */}
-        
-        {/* Swarm bee 1 - top right */}
-        <g 
-          className={animated ? "swarm-bee swarm-bee-1" : ""}
-          transform="translate(50 10)"
-        >
-          <ellipse cx="0" cy="0" rx="3.5" ry="2.5" fill={colors.mint} opacity="0.7" />
-          <circle cx="0" cy="3.2" r="2" fill={colors.honey} stroke={colors.stroke} strokeWidth="0.5" />
-          <circle cx="0" cy="1.8" r="1.2" fill={colors.dark} />
-          <circle cx="-0.5" cy="1.5" r="0.4" fill={colors.nectar} opacity="0.8" />
-          <circle cx="0.5" cy="1.5" r="0.4" fill={colors.nectar} opacity="0.8" />
-        </g>
-
-        {/* Swarm bee 2 - right */}
-        <g 
-          className={animated ? "swarm-bee swarm-bee-2" : ""}
-          transform="translate(58 32)"
-        >
-          <ellipse cx="0" cy="0" rx="3.5" ry="2.5" fill={colors.mint} opacity="0.7" />
-          <circle cx="0" cy="3.2" r="2" fill={colors.honey} stroke={colors.stroke} strokeWidth="0.5" />
-          <circle cx="0" cy="1.8" r="1.2" fill={colors.dark} />
-          <circle cx="-0.5" cy="1.5" r="0.4" fill={colors.nectar} opacity="0.8" />
-          <circle cx="0.5" cy="1.5" r="0.4" fill={colors.nectar} opacity="0.8" />
-        </g>
-
-        {/* Swarm bee 3 - bottom right */}
-        <g 
-          className={animated ? "swarm-bee swarm-bee-3" : ""}
-          transform="translate(50 58)"
-        >
-          <ellipse cx="0" cy="0" rx="3.5" ry="2.5" fill={colors.mint} opacity="0.7" />
-          <circle cx="0" cy="3.2" r="2" fill={colors.honey} stroke={colors.stroke} strokeWidth="0.5" />
-          <circle cx="0" cy="1.8" r="1.2" fill={colors.dark} />
-          <circle cx="-0.5" cy="1.5" r="0.4" fill={colors.nectar} opacity="0.8" />
-          <circle cx="0.5" cy="1.5" r="0.4" fill={colors.nectar} opacity="0.8" />
-        </g>
-
-        {/* Swarm bee 4 - bottom left */}
-        <g 
-          className={animated ? "swarm-bee swarm-bee-4" : ""}
-          transform="translate(14 58)"
-        >
-          <ellipse cx="0" cy="0" rx="3.5" ry="2.5" fill={colors.mint} opacity="0.7" />
-          <circle cx="0" cy="3.2" r="2" fill={colors.honey} stroke={colors.stroke} strokeWidth="0.5" />
-          <circle cx="0" cy="1.8" r="1.2" fill={colors.dark} />
-          <circle cx="-0.5" cy="1.5" r="0.4" fill={colors.nectar} opacity="0.8" />
-          <circle cx="0.5" cy="1.5" r="0.4" fill={colors.nectar} opacity="0.8" />
-        </g>
-
-        {/* Swarm bee 5 - left */}
-        <g 
-          className={animated ? "swarm-bee swarm-bee-5" : ""}
-          transform="translate(6 32)"
-        >
-          <ellipse cx="0" cy="0" rx="3.5" ry="2.5" fill={colors.mint} opacity="0.7" />
-          <circle cx="0" cy="3.2" r="2" fill={colors.honey} stroke={colors.stroke} strokeWidth="0.5" />
-          <circle cx="0" cy="1.8" r="1.2" fill={colors.dark} />
-          <circle cx="-0.5" cy="1.5" r="0.4" fill={colors.nectar} opacity="0.8" />
-          <circle cx="0.5" cy="1.5" r="0.4" fill={colors.nectar} opacity="0.8" />
-        </g>
-
-        {/* Swarm bee 6 - top left */}
-        <g 
-          className={animated ? "swarm-bee swarm-bee-6" : ""}
-          transform="translate(14 10)"
-        >
-          <ellipse cx="0" cy="0" rx="3.5" ry="2.5" fill={colors.mint} opacity="0.7" />
-          <circle cx="0" cy="3.2" r="2" fill={colors.honey} stroke={colors.stroke} strokeWidth="0.5" />
-          <circle cx="0" cy="1.8" r="1.2" fill={colors.dark} />
-          <circle cx="-0.5" cy="1.5" r="0.4" fill={colors.nectar} opacity="0.8" />
-          <circle cx="0.5" cy="1.5" r="0.4" fill={colors.nectar} opacity="0.8" />
-        </g>
+        {/* SWARM BEES */}
+        {CONFIG.swarmBees.map((bee, idx) => (
+          <g
+            key={`swarm-bee-${idx}`}
+            className={animated ? `swarm-bee swarm-bee-${idx + 1}` : ''}
+            transform={`translate(${bee.position.x} ${bee.position.y})`}
+            style={{
+              animationDelay: `${bee.delay}s`,
+            }}
+          >
+            {/* Wings */}
+            <ellipse
+              cx="0"
+              cy="0"
+              rx={CONFIG.swarmBeeSizing.wings.rx}
+              ry={CONFIG.swarmBeeSizing.wings.ry}
+              fill={colors.mint}
+              opacity={CONFIG.swarmBeeSizing.wings.opacity}
+            />
+            {/* Body */}
+            <circle
+              cx="0"
+              cy={CONFIG.swarmBeeSizing.body.r + 1.2}
+              r={CONFIG.swarmBeeSizing.body.r}
+              fill={colors.honey}
+              stroke={colors.stroke}
+              strokeWidth={CONFIG.swarmBeeSizing.bodyStroke}
+            />
+            {/* Head */}
+            <circle
+              cx="0"
+              cy={CONFIG.swarmBeeSizing.head.r + 0.6}
+              r={CONFIG.swarmBeeSizing.head.r}
+              fill={colors.dark}
+            />
+            {/* Eyes */}
+            <circle
+              cx={-CONFIG.swarmBeeSizing.eyes.r}
+              cy={CONFIG.swarmBeeSizing.eyes.cy}
+              r={CONFIG.swarmBeeSizing.eyes.r}
+              fill={colors.nectar}
+              opacity={CONFIG.swarmBeeSizing.eyes.opacity}
+            />
+            <circle
+              cx={CONFIG.swarmBeeSizing.eyes.r}
+              cy={CONFIG.swarmBeeSizing.eyes.cy}
+              r={CONFIG.swarmBeeSizing.eyes.r}
+              fill={colors.nectar}
+              opacity={CONFIG.swarmBeeSizing.eyes.opacity}
+            />
+          </g>
+        ))}
       </svg>
 
-      {/* BeeHive Wordmark - Clean Premium Typography */}
+      {/* BeeHive Wordmark */}
       {showText && (
         <div className="flex flex-col" style={{ lineHeight: 1 }}>
           <span
