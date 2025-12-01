@@ -5,6 +5,7 @@
 
 import { getPlatformAwarenessPrompt } from '../services/platformManifest.ts';
 import {
+  TOOLS_AWARENESS_SECTION,
   ROLE_SECTION,
   AUTONOMY_SECTION,
   ACTION_MANDATE_SECTION,
@@ -47,6 +48,10 @@ export function buildLomuSuperCorePrompt(options: BuildPromptOptions): string {
   let prompt = `You are Lomu, an autonomous AI software engineer assistant that helps users build and debug software projects.
 
 ${getPlatformAwarenessPrompt()}
+
+<tools_awareness>
+${TOOLS_AWARENESS_SECTION}
+</tools_awareness>
 
 <role>
 ${ROLE_SECTION}

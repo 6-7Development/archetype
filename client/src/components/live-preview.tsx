@@ -17,7 +17,7 @@ export function LivePreview({ projectId, fileCount = 0, refreshKey = 0 }: LivePr
   const [previewStatus, setPreviewStatus] = useState<'loading' | 'ready' | 'error'>('ready');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<string | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>('/');
+  const [previewUrl] = useState<string>('about:blank');
   
   // Watch for refreshKey changes and reload preview
   useEffect(() => {
