@@ -94,12 +94,31 @@ export function LivePreview({ projectId, fileCount = 0, refreshKey = 0 }: LivePr
     };
   }, [projectId, isConnected]);
 
-  // Auto-refresh when projectId changes
+  // Track previous projectId to detect actual changes
+  const prevProjectIdRef = useRef<string | null>(null);
+  
+  // Auto-refresh when projectId changes - force complete reload with cache busting
   useEffect(() => {
-    if (projectId) {
+    const prevProjectId = prevProjectIdRef.current;
+    prevProjectIdRef.current = projectId;
+    
+    if (projectId && projectId !== prevProjectId) {
+      console.log('[LIVE-PREVIEW] 🔄 Project changed:', prevProjectId, '→', projectId);
+      
+      // Clear all state for clean slate
       setPreviewStatus('loading');
       setErrorMessage(null);
-      setIframeKey(prev => prev + 1);
+      setLastUpdate(null);
+      
+      // Force iframe reload with timestamp for cache busting
+      setIframeKey(Date.now());
+      
+      // Show brief loading indicator
+      setTimeout(() => {
+        if (previewStatus === 'loading') {
+          console.log('[LIVE-PREVIEW] 📡 Waiting for new project preview...');
+        }
+      }, 1000);
     }
   }, [projectId]);
 
@@ -236,6 +255,12 @@ export function LivePreview({ projectId, fileCount = 0, refreshKey = 0 }: LivePr
         <div className="flex items-center gap-2">
           <Eye className="w-4 h-4 text-primary" />
           <span className="text-sm font-semibold">Live Preview</span>
+          
+          {projectId && (
+            <Badge variant="outline" className="text-xs border-amber-500/20 text-amber-600 dark:text-amber-400 font-mono">
+              {projectId.slice(0, 8)}...
+            </Badge>
+          )}
           
           {previewStatus === 'loading' && (
             <Badge variant="outline" className="text-xs border-blue-500/20 text-blue-600 flex items-center gap-1">
