@@ -29,6 +29,7 @@ import { registerConsultationRoutes } from "./consultations";
 import { registerRateLimitRoutes } from "./rate-limit-status";
 import { registerProgressRoutes } from "./progress";
 import { registerGdprRoutes } from "./gdpr";
+import { registerShareRoutes } from "./share";
 
 /**
  * Main route registration function
@@ -73,6 +74,7 @@ export async function registerRoutes(app: Express): Promise<Server & { wss?: Web
   registerRateLimitRoutes(app);
   registerProgressRoutes(app);
   registerGdprRoutes(app);
+  registerShareRoutes(app);
   
   // Register WebSocket terminal routes (must be after HTTP routes)
   console.log("[ROUTES] Registering WebSocket terminal routes...");

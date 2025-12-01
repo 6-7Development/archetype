@@ -432,6 +432,30 @@ export const insertProjectSessionSchema = createInsertSchema(projectSessions).om
 export type InsertProjectSession = z.infer<typeof insertProjectSessionSchema>;
 export type ProjectSession = typeof projectSessions.$inferSelect;
 
+// Share Links - Shareable project links with expiry and access control
+export const shareLinks = pgTable("share_links", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  shortCode: varchar("short_code").notNull().unique(),
+  expiresAt: timestamp("expires_at"),
+  isPublic: boolean("is_public").notNull().default(true),
+  accessCount: integer("access_count").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_share_links_project_id").on(table.projectId),
+  index("idx_share_links_short_code").on(table.shortCode),
+]);
+
+export const insertShareLinkSchema = createInsertSchema(shareLinks).omit({
+  id: true,
+  createdAt: true,
+  accessCount: true,
+});
+
+export type InsertShareLink = z.infer<typeof insertShareLinkSchema>;
+export type ShareLink = typeof shareLinks.$inferSelect;
+
 // Architect Notes - I AM → BeeHiveAI collaboration notes
 export const architectNotes = pgTable("architect_notes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

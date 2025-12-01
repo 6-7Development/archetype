@@ -19,7 +19,9 @@ export function LivePreview({ projectId, fileCount = 0, refreshKey = 0 }: LivePr
   const [previewStatus, setPreviewStatus] = useState<'loading' | 'ready' | 'error'>('ready');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<string | null>(null);
-  const [previewUrl] = useState<string>('http://localhost:5000');
+  
+  // Use proper project preview URL - renders project files from database
+  const previewUrl = projectId ? `/api/preview/${projectId}?t=${iframeKey}` : null;
   
   // Watch for refreshKey changes and reload preview
   useEffect(() => {
@@ -139,12 +141,14 @@ export function LivePreview({ projectId, fileCount = 0, refreshKey = 0 }: LivePr
 
   const handleIframeError = () => {
     setPreviewStatus('error');
-    setErrorMessage('Failed to load preview - ensure the app is running on localhost:5000');
+    setErrorMessage('Failed to load preview - project may not have valid entry files (index.html, index.tsx, App.tsx)');
     setIsRefreshing(false);
   };
 
   const openInNewTab = () => {
-    window.open(previewUrl, '_blank');
+    if (previewUrl) {
+      window.open(previewUrl, '_blank');
+    }
   };
 
   if (!projectId) {
@@ -343,16 +347,22 @@ export function LivePreview({ projectId, fileCount = 0, refreshKey = 0 }: LivePr
             </div>
             
             {/* Live App Preview */}
-            <iframe
-              key={iframeKey}
-              src={previewUrl}
-              className="flex-1 border-0 bg-white w-full"
-              sandbox="allow-scripts allow-same-origin allow-modals allow-forms allow-popups allow-top-navigation"
-              title="Live Preview"
-              data-testid="iframe-preview"
-              onLoad={handleIframeLoad}
-              onError={handleIframeError}
-            />
+            {previewUrl ? (
+              <iframe
+                key={iframeKey}
+                src={previewUrl}
+                className="flex-1 border-0 bg-white w-full"
+                sandbox="allow-scripts allow-same-origin allow-modals allow-forms allow-popups allow-top-navigation"
+                title="Live Preview"
+                data-testid="iframe-preview"
+                onLoad={handleIframeLoad}
+                onError={handleIframeError}
+              />
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-muted-foreground">
+                Select a project to preview
+              </div>
+            )}
           </div>
         </Card>
       </div>

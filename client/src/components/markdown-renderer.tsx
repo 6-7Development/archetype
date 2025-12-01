@@ -3,10 +3,56 @@ import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import { cn } from "@/lib/utils";
+import { useState, useCallback } from "react";
+import { Check, Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface MarkdownRendererProps {
   content: string;
   className?: string;
+}
+
+function CodeBlockWithCopy({ children }: { children: any }) {
+  const [copied, setCopied] = useState(false);
+  
+  const handleCopy = useCallback(() => {
+    const codeContent = extractTextFromChildren(children);
+    navigator.clipboard.writeText(codeContent);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [children]);
+  
+  return (
+    <div className="relative group">
+      <pre className="rounded-md bg-muted p-4 overflow-x-auto my-2 pr-12">
+        {children}
+      </pre>
+      <Button
+        size="icon"
+        variant="ghost"
+        className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background"
+        onClick={handleCopy}
+        data-testid="button-copy-code"
+      >
+        {copied ? (
+          <Check className="h-3.5 w-3.5 text-green-500" />
+        ) : (
+          <Copy className="h-3.5 w-3.5" />
+        )}
+      </Button>
+    </div>
+  );
+}
+
+function extractTextFromChildren(children: any): string {
+  if (typeof children === 'string') return children;
+  if (Array.isArray(children)) {
+    return children.map(extractTextFromChildren).join('');
+  }
+  if (children?.props?.children) {
+    return extractTextFromChildren(children.props.children);
+  }
+  return '';
 }
 
 export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
@@ -52,13 +98,9 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             </code>
           );
         },
-        // Custom styling for pre blocks
+        // Custom styling for pre blocks with copy button
         pre({ children }: any) {
-          return (
-            <pre className="rounded-md bg-muted p-4 overflow-x-auto my-2">
-              {children}
-            </pre>
-          );
+          return <CodeBlockWithCopy>{children}</CodeBlockWithCopy>;
         },
         // Headings
         h1({ children }: any) {
