@@ -114,11 +114,10 @@ export function AppLayout({ children }: AppLayoutProps) {
         "transition-transform duration-300 ease-in-out lg:translate-x-0",
         mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        {/* Logo - PROUD & PROMINENT! */}
-        <div className="h-20 border-b flex items-center px-4 gap-4">
-          <BeeHiveLogo iconSize={32} textHeight={28} />
-          {/* Brigido was here */}
-          {/* Brigido was here */}
+        {/* Logo - PROUD & PROMINENT with high contrast! */}
+        <div className="h-20 border-b flex items-center px-3 gap-2">
+          <BeeHiveLogo iconSize={32} textHeight={28} containerVariant="highlight" variant="dark" showText={false} />
+          <span className="font-bold text-amber-500 dark:text-amber-400">BeeHive</span>
         </div>
 
         {/* Navigation - Scrollable */}

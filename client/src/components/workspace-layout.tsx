@@ -98,6 +98,16 @@ export function WorkspaceLayout({
       {/* Header Bar */}
       <header className="border-b bg-card/50 backdrop-blur-sm px-4 py-2 flex items-center justify-between h-12">
         <div className="flex items-center gap-3">
+          {/* High-contrast bee logo */}
+          <div className="w-8 h-8 rounded-md bg-gradient-to-br from-amber-400 to-amber-500 dark:from-amber-600 dark:to-amber-700 flex items-center justify-center flex-shrink-0 shadow-md">
+            <svg width="20" height="20" viewBox="0 0 100 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="50" cy="48" rx="10" ry="13" fill="#FFD34D" opacity="0.8"/>
+              <ellipse cx="50" cy="82" rx="9" ry="18" fill="#F7B500"/>
+              <circle cx="50" cy="28" r="8" fill="white"/>
+              <ellipse cx="25" cy="42" rx="12" ry="20" fill="#00D4B3" opacity="0.7"/>
+              <ellipse cx="75" cy="42" rx="12" ry="20" fill="#00D4B3" opacity="0.7"/>
+            </svg>
+          </div>
           {mode === 'platform-healing' && (
             <Badge variant="destructive" className="text-xs">Platform Healing</Badge>
           )}
