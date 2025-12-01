@@ -393,46 +393,7 @@
    Accent bee: Gentle float for depth
 */
 
-/* Hero bee - slow hovering motion (relative offsets from SVG position) */
-@keyframes hero-bee-hover {
-  0%, 100% {
-    transform: translate3d(0px, 0px, 0);
-  }
-  25% {
-    transform: translate3d(0.8px, -0.6px, 0);
-  }
-  50% {
-    transform: translate3d(0px, -1.4px, 0);
-  }
-  75% {
-    transform: translate3d(-0.8px, -0.6px, 0);
-  }
-}
-
-.hero-bee {
-  animation: hero-bee-hover 4s ease-in-out infinite;
-  transform-origin: center;
-  transform-box: fill-box;
-}
-
-/* Wing flutter - subtle opacity pulse (no transform to avoid position issues) */
-@keyframes wing-flutter {
-  0%, 100% {
-    opacity: 0.55;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-.bee-wing-left {
-  animation: wing-flutter 0.12s ease-in-out infinite;
-}
-
-.bee-wing-right {
-  animation: wing-flutter 0.12s ease-in-out infinite;
-  animation-delay: 0.06s;
-}
+/* Bee animations removed - static logo for clean rendering */
 
 /* Mobile-First Responsive Images & Media */
 @layer base {

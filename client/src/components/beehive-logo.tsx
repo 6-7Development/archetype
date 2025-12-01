@@ -374,16 +374,13 @@ export function BeeHiveLogo({
           <path d="M16 18.144 L24 18.144" />
         </g>
 
-        {/* HERO BEE */}
+        {/* HERO BEE - Animation disabled to prevent overflow */}
         <g
           id="hero-bee"
-          className={animated ? 'hero-bee' : ''}
           transform={`translate(${CONFIG.heroBee.position.x} ${CONFIG.heroBee.position.y})`}
-          filter={animated ? 'url(#beeGlow)' : ''}
         >
           {/* Wings */}
           <path
-            className={animated ? 'bee-wing-left' : ''}
             d={CONFIG.heroBee.wings.left.path}
             fill={colors.mint}
             opacity={CONFIG.heroBee.wings.left.opacity}
@@ -392,7 +389,6 @@ export function BeeHiveLogo({
             strokeOpacity={CONFIG.heroBee.wings.left.strokeOpacity}
           />
           <path
-            className={animated ? 'bee-wing-right' : ''}
             d={CONFIG.heroBee.wings.right.path}
             fill={colors.mint}
             opacity={CONFIG.heroBee.wings.right.opacity}
