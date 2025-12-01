@@ -153,22 +153,26 @@ export function MessageBubble({ message, index, totalMessages, onPin, showAvatar
         {/* Main message bubble - Enhanced with BeeHive theming */}
         <div 
           className={cn(
-            "max-w-[85%] break-words transition-all shadow-sm",
+            "max-w-[85%] break-words transition-all shadow-md",
             compact ? "px-3 py-2" : "px-4 py-3",
             isUser
-              ? 'bg-gradient-to-br from-slate-700 to-slate-800 dark:from-slate-600 dark:to-slate-700 text-white rounded-2xl rounded-tr-md'
-              : 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-2xl rounded-tl-md border border-slate-200 dark:border-slate-700'
+              ? 'bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800 text-white rounded-2xl rounded-tr-md'
+              : 'bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/40 dark:to-amber-900/30 text-slate-900 dark:text-slate-50 rounded-2xl rounded-tl-md border-2 border-amber-300 dark:border-amber-700/50'
           )}
           data-testid={`message-bubble-${message.id}`}
         >
           {/* Role label for accessibility */}
           <div className={cn(
-            "text-[10px] font-semibold uppercase tracking-wider mb-1.5",
-            isUser ? "text-slate-300" : "text-amber-600 dark:text-amber-400"
+            "text-[10px] font-bold uppercase tracking-wider mb-1.5 opacity-90",
+            isUser ? "text-blue-100" : "text-amber-700 dark:text-amber-200"
           )}>
             {isUser ? "You" : "Scout"}
           </div>
-          <div className={cn("leading-relaxed", compact ? "text-sm" : "text-[15px]")}>
+          <div className={cn(
+            "leading-relaxed font-medium",
+            compact ? "text-sm" : "text-[15px]",
+            isUser ? "text-blue-50" : "text-slate-950 dark:text-slate-100"
+          )}>
             <MarkdownMessage content={message.content} isUser={isUser} />
           </div>
 

@@ -534,7 +534,7 @@ export function UniversalChat({
   }, [architectGuidance]);
 
   return (
-    <div className="flex h-full flex-col bg-background dark:from-[hsl(var(--background))] dark:to-[hsl(220,25%,10%)]">
+    <div className="flex h-full flex-col bg-gradient-to-br from-white to-blue-50 dark:from-slate-900 dark:to-slate-950">
       {/* Architect Approval Modal */}
       <ArchitectApprovalModal
         open={showArchitectApproval}

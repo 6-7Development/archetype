@@ -32,7 +32,7 @@ export function ChatInput({
   isGenerating,
 }: ChatInputProps) {
   return (
-    <div className="border-t border-border/50 bg-background/50 backdrop-blur-sm px-4 py-3" data-testid="chat-input-container">
+    <div className="border-t-2 border-amber-300 dark:border-amber-700 bg-gradient-to-br from-amber-50 to-white dark:from-slate-900 dark:to-slate-800 px-4 py-3" data-testid="chat-input-container">
       {/* Image Preview Section */}
       {(pendingImages.length > 0 || uploadingImages.size > 0) && (
         <div className="mb-3 flex flex-wrap gap-2">
@@ -79,7 +79,7 @@ export function ChatInput({
             onKeyDown={onKeyDown}
             onPaste={onPaste}
             placeholder={isGenerating ? "" : "Message BeeHive..."}
-            className="min-h-[50px] md:min-h-[56px] max-h-[180px] resize-none text-base md:text-lg bg-background/80 border border-border/70 focus-visible:ring-1 focus-visible:ring-primary/60 focus-visible:border-primary/50 rounded-lg px-3 md:px-4 py-2.5 md:py-3 pr-10 transition-all"
+            className="min-h-[50px] md:min-h-[56px] max-h-[180px] resize-none text-base md:text-lg bg-white dark:bg-slate-800 border-2 border-amber-300 dark:border-amber-700 focus-visible:ring-2 focus-visible:ring-amber-500 dark:focus-visible:ring-amber-400 focus-visible:border-amber-400 dark:focus-visible:border-amber-400 rounded-lg px-3 md:px-4 py-2.5 md:py-3 pr-10 transition-all font-medium text-slate-900 dark:text-slate-50"
             disabled={isGenerating}
             data-testid="input-chat-message"
             rows={2}
