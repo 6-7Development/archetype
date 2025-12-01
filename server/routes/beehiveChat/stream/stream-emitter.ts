@@ -477,13 +477,13 @@ export function emitDone(
 }
 
 /**
- * Detect and emit thinking blocks from streaming content
+ * Detect and REMOVE thinking blocks from streaming content
  * 
  * Scans incoming text chunks for markdown-formatted thinking blocks.
  * Pattern: **Title**\n\nContent\n\n\n
  * 
- * When a complete thinking block is detected, it's emitted as an
- * assistant_progress event and removed from the buffer.
+ * ⚠️ FIX: Thinking blocks are now REMOVED from output, not emitted to users.
+ * Users should only see actions and results, not internal monologue.
  * 
  * @param context - Emit context
  * @param chunkState - Chunk assembly state
@@ -501,14 +501,11 @@ export function detectAndEmitThinkingBlocks(
   
   if (match) {
     const thinkingTitle = match[1];
-    const thinkingContent = match[2];
     
-    console.log(`[THINKING-DETECTED] Emitting progress for: ${thinkingTitle}`);
+    // ⚠️ FIX: Log for debugging but DON'T emit to users
+    console.log(`[THINKING-FILTERED] Removing thinking block from output: ${thinkingTitle}`);
     
-    // Emit as structured progress message
-    emitThinking(context, thinkingTitle, thinkingContent, progressMessages);
-    
-    // Remove the matched thinking block from buffer
+    // Remove the matched thinking block from buffer - DON'T emit it
     chunkState.currentTextBlock = chunkState.currentTextBlock.slice(match[0].length);
   }
   

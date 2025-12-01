@@ -532,11 +532,11 @@ Your available functions are declared in the tools schema. Use them directly.`);
         topP: 0.8,        // Slightly reduced randomness for consistency
         // ✅ REMOVED: responseMimeType - INCOMPATIBLE with function calling per Gemini API error
         // Error: "Function calling with a response mime type: 'application/json' is unsupported"
-        // ✅ GEMINI BEST PRACTICE: Enable dynamic thinking for optimal performance
-        // ✅ GAP 1 FIX: Enable thought visibility (Gemini's recommendation)
+        // ✅ GEMINI BEST PRACTICE: Dynamic thinking for optimal performance
+        // ⚠️ FIX: Hide thinking from users - they only see actions and results
         thinkingConfig: {
           thinkingBudget: -1,  // -1 = dynamic thinking budget (adapts to complexity)
-          includeThoughts: true  // ✅ Return thought summaries for frontend display
+          includeThoughts: false  // ❌ Hide thinking from users - action-first communication
         },
       },
     };
