@@ -97,10 +97,10 @@ export function WorkspaceLayout({
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       {/* Header Bar */}
-      <header className="border-b bg-card/50 backdrop-blur-sm px-4 py-2 flex items-center justify-between h-12">
+      <header className="border-b bg-gradient-to-r from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900 backdrop-blur-sm px-4 py-2 flex items-center justify-between h-12">
         <div className="flex items-center gap-3">
           {/* Queen Bee Logo */}
-          <BeeHiveLogo iconSize={24} variant="primary" showText={false} />
+          <BeeHiveLogo iconSize={24} variant="dark" showText={false} />
           {mode === 'platform-healing' && (
             <Badge variant="destructive" className="text-xs">Platform Healing</Badge>
           )}
