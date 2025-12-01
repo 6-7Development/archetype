@@ -311,6 +311,7 @@ export function BeeHiveLogo({
   return (
     <div
       className={`inline-flex items-center ${showText ? 'gap-3' : ''} ${className}`}
+      style={{ overflow: 'hidden' }}
     >
       {/* Professional Honeycomb Mark with Polished Hero Bee */}
       <svg
@@ -318,7 +319,8 @@ export function BeeHiveLogo({
         height={svgSize}
         viewBox={`0 0 ${CONFIG.viewBox.width} ${CONFIG.viewBox.height}`}
         xmlns="http://www.w3.org/2000/svg"
-        style={{ flexShrink: 0 }}
+        style={{ flexShrink: 0, overflow: 'hidden' }}
+        overflow="hidden"
         className="beehive-logo-mark"
       >
         <defs>
