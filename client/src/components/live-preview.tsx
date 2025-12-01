@@ -14,9 +14,10 @@ interface LivePreviewProps {
 export function LivePreview({ projectId, fileCount = 0, refreshKey = 0 }: LivePreviewProps) {
   const [iframeKey, setIframeKey] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [previewStatus, setPreviewStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [previewStatus, setPreviewStatus] = useState<'loading' | 'ready' | 'error'>('ready');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('/');
   
   // Watch for refreshKey changes and reload preview
   useEffect(() => {
@@ -117,14 +118,12 @@ export function LivePreview({ projectId, fileCount = 0, refreshKey = 0 }: LivePr
 
   const handleIframeError = () => {
     setPreviewStatus('error');
-    setErrorMessage('Failed to load preview');
+    setErrorMessage('Failed to load preview - ensure the app is running on localhost:5000');
     setIsRefreshing(false);
   };
 
   const openInNewTab = () => {
-    if (projectId) {
-      window.open(`/api/preview/${projectId}`, '_blank');
-    }
+    window.open(previewUrl, '_blank');
   };
 
   if (!projectId) {
@@ -219,17 +218,28 @@ export function LivePreview({ projectId, fileCount = 0, refreshKey = 0 }: LivePr
 
       {/* Preview Frame */}
       <div className="flex-1 p-4 overflow-hidden">
-        <Card className="h-full overflow-hidden border-primary/10">
-          <iframe
-            key={iframeKey}
-            src={`/api/preview/${projectId}`}
-            className="w-full h-full border-0 bg-white"
-            sandbox="allow-scripts allow-same-origin allow-modals allow-forms allow-popups"
-            title="Live Preview"
-            data-testid="iframe-preview"
-            onLoad={handleIframeLoad}
-            onError={handleIframeError}
-          />
+        <Card className="h-full overflow-hidden border-primary/10 bg-white">
+          <div className="flex flex-col h-full">
+            {/* Browser Address Bar Simulation */}
+            <div className="border-b bg-gray-50 px-4 py-3 flex items-center gap-3">
+              <div className="text-xs text-gray-500 font-medium">BeeHive Preview</div>
+              <div className="flex-1 bg-white border border-gray-200 rounded px-3 py-2 text-xs text-gray-600 font-mono">
+                {previewUrl}
+              </div>
+            </div>
+            
+            {/* Live App Preview */}
+            <iframe
+              key={iframeKey}
+              src={previewUrl}
+              className="flex-1 border-0 bg-white w-full"
+              sandbox="allow-scripts allow-same-origin allow-modals allow-forms allow-popups allow-top-navigation"
+              title="Live Preview"
+              data-testid="iframe-preview"
+              onLoad={handleIframeLoad}
+              onError={handleIframeError}
+            />
+          </div>
         </Card>
       </div>
     </div>
