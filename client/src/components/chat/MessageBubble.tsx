@@ -7,7 +7,7 @@ import { MarkdownMessage } from "./MarkdownMessage";
 import { InlineReasoning, type ReasoningStep } from "@/components/inline-reasoning";
 import { ParallelExecutionBadge } from "@/components/parallel-execution-badge";
 import { ConsultationCostBadge } from "@/components/consultation-cost-badge";
-import { QueenBeeAnimation } from "@/components/queen-bee-animation";
+import { QueenBeeAnimation, type BeeEmotion } from "@/components/queen-bee-animation";
 import { cn } from "@/lib/utils";
 
 interface Message {
@@ -28,6 +28,7 @@ interface Message {
     estimatedSequentialDuration: number;
   };
   isPinned?: boolean;
+  scoutEmotion?: BeeEmotion;
   [key: string]: any;
 }
 
@@ -41,6 +42,17 @@ interface MessageBubbleProps {
   isGenerating?: boolean;
 }
 
+const detectEmotion = (content: string): BeeEmotion => {
+  const lower = content.toLowerCase();
+  if (lower.includes('error') || lower.includes('failed') || lower.includes('bug')) return 'error';
+  if (lower.includes('success') || lower.includes('done') || lower.includes('✅')) return 'success';
+  if (lower.includes('test') || lower.includes('verify')) return 'testing';
+  if (lower.includes('writing') || lower.includes('implement') || lower.includes('file')) return 'coding';
+  if (lower.includes('search') || lower.includes('look') || lower.includes('find')) return 'searching';
+  if (lower.includes('think') || lower.includes('consider') || lower.includes('analyze')) return 'thinking';
+  return 'idle';
+};
+
 export function MessageBubble({ message, index, totalMessages, onPin, showAvatar = true, compact = false, isGenerating = false }: MessageBubbleProps) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
@@ -51,6 +63,7 @@ export function MessageBubble({ message, index, totalMessages, onPin, showAvatar
   const isLast = index === totalMessages - 1;
   const hasThinking = message.thinking && message.thinking.trim().length > 0;
   const hasContent = message.content && message.content.trim().length > 0;
+  const beeEmotion = message.scoutEmotion || (isGenerating ? detectEmotion(message.content) : 'idle');
   
   if (!isUser && !hasContent && !hasThinking) {
     return null;
@@ -101,7 +114,7 @@ export function MessageBubble({ message, index, totalMessages, onPin, showAvatar
           {isUser ? (
             <User className={cn(compact ? "w-3.5 h-3.5" : "w-5 h-5")} />
           ) : isGenerating ? (
-            <QueenBeeAnimation isAnimating size={compact ? "sm" : "md"} />
+            <QueenBeeAnimation isAnimating size={compact ? "sm" : "md"} emotion={beeEmotion} />
           ) : (
             <Sparkles className={cn(compact ? "w-3.5 h-3.5" : "w-5 h-5")} />
           )}
