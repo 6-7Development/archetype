@@ -161,6 +161,7 @@ export function UniversalChat({
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const latestMessageRef = useRef<HTMLDivElement>(null);
+  const taskProgressRef = useRef<HTMLDivElement>(null);
   const isAutoScrolling = useRef(true);
 
   const { runState, sendMessage, stopRun, clearRunState, setRunState, clearChatHistory } = useStreamEvents({
@@ -203,6 +204,15 @@ export function UniversalChat({
       });
     }
   }, [runState.error, toast]);
+
+  // Auto-scroll task progress to bottom when new tasks appear
+  useEffect(() => {
+    if (taskProgressRef.current && isAutoScrolling.current) {
+      flushSync(() => {
+        taskProgressRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    }
+  }, [runState.messages.length, isGenerating]);
 
   const handleSend = async () => {
     if (!input.trim() && uploadedImageUrls.length === 0) return;
@@ -721,7 +731,7 @@ export function UniversalChat({
               <>
                 {/* In Progress Tasks (Replit Agent 3 style) */}
                 {runState.messages.length > 0 && (
-                  <div className="mb-2 bg-slate-100 dark:bg-slate-800/50 rounded-md border border-slate-200 dark:border-slate-700 overflow-hidden">
+                  <div ref={taskProgressRef} className="mb-2 bg-slate-100 dark:bg-slate-800/50 rounded-md border border-slate-200 dark:border-slate-700 overflow-hidden">
                     <Collapsible defaultOpen={true}>
                       <CollapsibleTrigger className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors">
                         <div className="flex items-center gap-1.5">
