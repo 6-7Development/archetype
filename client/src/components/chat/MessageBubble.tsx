@@ -8,6 +8,7 @@ import { InlineReasoning, type ReasoningStep } from "@/components/inline-reasoni
 import { ParallelExecutionBadge } from "@/components/parallel-execution-badge";
 import { ConsultationCostBadge } from "@/components/consultation-cost-badge";
 import { QueenBeeAnimation, type BeeEmotion } from "@/components/queen-bee-animation";
+import { AnimatedBeeWithText } from "@/components/animated-bee-with-text";
 import { cn } from "@/lib/utils";
 
 interface Message {
@@ -114,7 +115,12 @@ export function MessageBubble({ message, index, totalMessages, onPin, showAvatar
           {isUser ? (
             <User className={cn(compact ? "w-3.5 h-3.5" : "w-5 h-5")} />
           ) : isGenerating ? (
-            <QueenBeeAnimation isAnimating size={compact ? "sm" : "md"} emotion={beeEmotion} />
+            <QueenBeeAnimation 
+              isAnimating 
+              size={compact ? "sm" : "md"} 
+              emotion={beeEmotion}
+              data-testid="message-bee-animation"
+            />
           ) : (
             <Sparkles className={cn(compact ? "w-3.5 h-3.5" : "w-5 h-5")} />
           )}

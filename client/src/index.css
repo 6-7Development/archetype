@@ -751,6 +751,34 @@
   50% { transform: scaleX(0.7); }
 }
 
+/* Animated bee text with emotion */
+@keyframes animated-bee-text-glow {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+.animated-bee-text {
+  animation: animated-bee-text-glow 2s ease-in-out infinite;
+}
+
+/* Emotion-specific animations */
+@keyframes bee-text-thinking {
+  0%, 100% { transform: translateY(0px); opacity: 0.7; }
+  50% { transform: translateY(-2px); opacity: 1; }
+}
+
+@keyframes bee-text-searching {
+  0%, 100% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+@keyframes bee-text-coding {
+  0%, 100% { transform: rotate(0deg); opacity: 0.8; }
+  25% { transform: rotate(-1deg); opacity: 1; }
+  75% { transform: rotate(1deg); opacity: 1; }
+  100% { transform: rotate(0deg); opacity: 0.8; }
+}
+
 /* Hex orbit loading animation */
 @keyframes hex-orbit {
   0% { transform: rotate(0deg) translateX(12px) rotate(0deg); }
