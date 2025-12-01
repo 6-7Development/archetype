@@ -206,6 +206,185 @@
   animation: lemon-breathe 4s ease-in-out infinite;
 }
 
+/* ============================================================
+   UNIVERSAL QUEEN BEE WING ANIMATIONS - Holiday Customizable
+   ============================================================
+   Edit these CSS variables and keyframes to customize wing movement
+   for different holidays and seasons. All animations are defined here
+   making it easy to switch themes without touching component code.
+*/
+
+/* CSS VARIABLES FOR WING ANIMATIONS - Customize These! */
+:root {
+  /* Standard bee wing flap animation */
+  --bee-wing-duration: 0.35s;                     /* How fast wings flap */
+  --bee-wing-angle-left: -12deg;                  /* Left rotation angle */
+  --bee-wing-angle-right: 12deg;                  /* Right rotation angle */
+  --bee-wing-scale-min: 0.8;                      /* Scale at peak flap */
+  --bee-wing-scale-max: 1;                        /* Scale at rest */
+  --bee-wing-opacity-min: 0.75;                   /* Opacity at flap */
+  --bee-wing-opacity-max: 0.9;                    /* Opacity at rest */
+  --bee-wing-timing: ease-in-out;                 /* Animation easing */
+}
+
+/* ============================================================
+   STANDARD WING FLAP - Default Bee Movement
+   ============================================================ */
+@keyframes bee-wing-flap-standard {
+  0%, 100% {
+    transform: rotateZ(var(--bee-wing-angle-left)) scaleY(var(--bee-wing-scale-max));
+    opacity: var(--bee-wing-opacity-max);
+  }
+  50% {
+    transform: rotateZ(var(--bee-wing-angle-right)) scaleY(var(--bee-wing-scale-min));
+    opacity: var(--bee-wing-opacity-min);
+  }
+}
+
+.bee-wing-left-standard {
+  animation: bee-wing-flap-standard var(--bee-wing-duration) var(--bee-wing-timing) infinite;
+  transform-origin: center;
+}
+
+.bee-wing-right-standard {
+  animation: bee-wing-flap-standard var(--bee-wing-duration) var(--bee-wing-timing) infinite 
+             calc(var(--bee-wing-duration) / 2);
+  transform-origin: center;
+}
+
+/* ============================================================
+   HOLIDAY: CHRISTMAS WINGS - Slower, Wider, Festive Movement
+   ============================================================ */
+@keyframes bee-wing-flap-christmas {
+  0%, 100% {
+    transform: rotateZ(-20deg) scaleY(1);
+    opacity: 0.85;
+  }
+  25% {
+    transform: rotateZ(-5deg) scaleY(0.95);
+    opacity: 0.9;
+  }
+  50% {
+    transform: rotateZ(20deg) scaleY(0.75);
+    opacity: 0.8;
+  }
+  75% {
+    transform: rotateZ(5deg) scaleY(0.95);
+    opacity: 0.9;
+  }
+}
+
+.bee-wing-left-christmas {
+  animation: bee-wing-flap-christmas 0.5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.bee-wing-right-christmas {
+  animation: bee-wing-flap-christmas 0.5s ease-in-out infinite 0.25s;
+  transform-origin: center;
+}
+
+/* ============================================================
+   HOLIDAY: HALLOWEEN WINGS - Erratic, Spooky Movement
+   ============================================================ */
+@keyframes bee-wing-flap-halloween {
+  0%, 100% {
+    transform: rotateZ(-15deg) scaleY(1) skewY(-2deg);
+    opacity: 0.7;
+  }
+  20% {
+    transform: rotateZ(20deg) scaleY(0.7) skewY(3deg);
+    opacity: 0.95;
+  }
+  40% {
+    transform: rotateZ(-8deg) scaleY(0.85) skewY(-1deg);
+    opacity: 0.75;
+  }
+  60% {
+    transform: rotateZ(18deg) scaleY(0.68) skewY(2deg);
+    opacity: 0.92;
+  }
+  80% {
+    transform: rotateZ(-10deg) scaleY(0.82) skewY(-2deg);
+    opacity: 0.78;
+  }
+}
+
+.bee-wing-left-halloween {
+  animation: bee-wing-flap-halloween 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+  transform-origin: center;
+}
+
+.bee-wing-right-halloween {
+  animation: bee-wing-flap-halloween 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) infinite 0.14s;
+  transform-origin: center;
+}
+
+/* ============================================================
+   HOLIDAY: SUMMER/4TH OF JULY WINGS - Smooth, Hypnotic Pulse
+   ============================================================ */
+@keyframes bee-wing-flap-summer {
+  0%, 100% {
+    transform: rotateZ(-8deg) scaleY(1);
+    opacity: 0.8;
+  }
+  33% {
+    transform: rotateZ(8deg) scaleY(0.88);
+    opacity: 0.87;
+  }
+  66% {
+    transform: rotateZ(-6deg) scaleY(0.92);
+    opacity: 0.85;
+  }
+}
+
+.bee-wing-left-summer {
+  animation: bee-wing-flap-summer 0.4s cubic-bezier(0.44, 0.15, 0.56, 0.85) infinite;
+  transform-origin: center;
+}
+
+.bee-wing-right-summer {
+  animation: bee-wing-flap-summer 0.4s cubic-bezier(0.44, 0.15, 0.56, 0.85) infinite 0.2s;
+  transform-origin: center;
+}
+
+/* ============================================================
+   HOLIDAY: SPRING/EASTER WINGS - Gentle, Delicate Movement
+   ============================================================ */
+@keyframes bee-wing-flap-spring {
+  0%, 100% {
+    transform: rotateZ(-6deg) scaleY(1);
+    opacity: 0.82;
+  }
+  50% {
+    transform: rotateZ(6deg) scaleY(0.92);
+    opacity: 0.88;
+  }
+}
+
+.bee-wing-left-spring {
+  animation: bee-wing-flap-spring 0.45s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.bee-wing-right-spring {
+  animation: bee-wing-flap-spring 0.45s ease-in-out infinite 0.225s;
+  transform-origin: center;
+}
+
+/* ============================================================
+   ACTIVE THEME SELECTOR - Set Current Holiday Theme
+   ============================================================
+   To activate a holiday theme, uncomment the CSS below and 
+   it will override all wing animations across the platform:
+*/
+
+/* UNCOMMENT TO ACTIVATE: */
+/* .bee-wing { --bee-theme: christmas; } */
+/* .bee-wing { --bee-theme: halloween; } */
+/* .bee-wing { --bee-theme: summer; } */
+/* .bee-wing { --bee-theme: spring; } */
+
 /* Mobile-First Responsive Images & Media */
 @layer base {
   img,

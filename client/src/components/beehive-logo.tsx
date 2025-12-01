@@ -1,7 +1,9 @@
 /**
- * BeeHive Queen Bee Logo - Professional Thorax-Based Design
- * Graphic bee with animated wings and premium proportions
+ * BeeHive Queen Bee Logo - Professional Thorax Design
+ * Graphic bee with animated wings via universal CSS animations
  * Uses brand colors (Honey, Nectar, Mint, Charcoal)
+ * 
+ * Wing animations are defined in index.css for easy holiday customization
  */
 
 interface BeeHiveLogoProps {
@@ -11,6 +13,7 @@ interface BeeHiveLogoProps {
   variant?: 'primary' | 'dark' | 'light';
   iconSize?: number;
   textHeight?: number;
+  wingAnimation?: 'standard' | 'christmas' | 'halloween' | 'summer' | 'spring';
 }
 
 const SIZE_MAP = {
@@ -45,15 +48,24 @@ const VARIANT_COLORS = {
   },
 };
 
-export function BeeHiveLogo({ size = 'md', className = '', showText = true, variant = 'primary', iconSize, textHeight }: BeeHiveLogoProps) {
+export function BeeHiveLogo({ 
+  size = 'md', 
+  className = '', 
+  showText = true, 
+  variant = 'primary', 
+  iconSize, 
+  textHeight,
+  wingAnimation = 'standard'
+}: BeeHiveLogoProps) {
   const svgSize = iconSize || SIZE_MAP[size];
   const textSize = textHeight ? `${textHeight}px` : SIZE_TEXT[size];
   const colors = VARIANT_COLORS[variant];
-  const animId = `wing-flap-${Math.random()}`;
+  const gradId = `honeyGrad-${Math.random().toString(36).substr(2, 9)}`;
+  const thoraxGradId = `thoraxGrad-${Math.random().toString(36).substr(2, 9)}`;
 
   return (
     <div className={`inline-flex items-center ${showText ? 'gap-3' : ''} ${className}`}>
-      {/* Queen Bee - Professional Thorax Design with Animated Wings */}
+      {/* Queen Bee - Professional Thorax Design with Universal CSS Animated Wings */}
       <svg
         width={svgSize}
         height={svgSize}
@@ -61,36 +73,17 @@ export function BeeHiveLogo({ size = 'md', className = '', showText = true, vari
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         style={{ flexShrink: 0 }}
+        className="bee-wing"
       >
         <defs>
-          <linearGradient id={`honeyGrad-${animId}`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor={colors.highlight} />
             <stop offset="100%" stopColor={colors.accent} />
           </linearGradient>
-          <radialGradient id={`thoraxGrad-${animId}`} cx="50%" cy="30%">
+          <radialGradient id={thoraxGradId} cx="50%" cy="30%">
             <stop offset="0%" stopColor={colors.highlight} />
             <stop offset="100%" stopColor={colors.accent} />
           </radialGradient>
-          <style>{`
-            @keyframes ${animId} {
-              0%, 100% {
-                transform: rotateZ(-12deg) scaleY(1);
-                opacity: 0.75;
-              }
-              50% {
-                transform: rotateZ(12deg) scaleY(0.8);
-                opacity: 0.9;
-              }
-            }
-            .wing-left-${animId} {
-              animation: ${animId} 0.35s ease-in-out infinite;
-              transform-origin: 28px 42px;
-            }
-            .wing-right-${animId} {
-              animation: ${animId} 0.35s ease-in-out infinite 0.175s;
-              transform-origin: 72px 42px;
-            }
-          `}</style>
         </defs>
 
         {/* Honeycomb Hexagon - Background accent */}
@@ -102,9 +95,9 @@ export function BeeHiveLogo({ size = 'md', className = '', showText = true, vari
           opacity="0.3"
         />
 
-        {/* LEFT WING - Animated with mint teal */}
+        {/* LEFT WING - Uses universal CSS animation from index.css */}
         <ellipse
-          className={`wing-left-${animId}`}
+          className={`bee-wing-left-${wingAnimation}`}
           cx="28"
           cy="42"
           rx="11"
@@ -113,9 +106,9 @@ export function BeeHiveLogo({ size = 'md', className = '', showText = true, vari
           opacity="0.75"
         />
 
-        {/* RIGHT WING - Animated with mint teal */}
+        {/* RIGHT WING - Uses universal CSS animation from index.css */}
         <ellipse
-          className={`wing-right-${animId}`}
+          className={`bee-wing-right-${wingAnimation}`}
           cx="72"
           cy="42"
           ry="19"
@@ -143,7 +136,7 @@ export function BeeHiveLogo({ size = 'md', className = '', showText = true, vari
           cy="48"
           rx="10"
           ry="13"
-          fill={`url(#thoraxGrad-${animId})`}
+          fill={`url(#${thoraxGradId})`}
         />
 
         {/* Thorax highlight stripe */}
