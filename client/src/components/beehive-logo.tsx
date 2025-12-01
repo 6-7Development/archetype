@@ -259,7 +259,7 @@ export function BeeHiveLogo({
         {/* Swarm bee 1 - top right */}
         <g 
           className={animated ? "swarm-bee swarm-bee-1" : ""}
-          transform="translate(50 4)"
+          transform="translate(50 10)"
         >
           <ellipse cx="0" cy="0" rx="3.5" ry="2.5" fill={colors.mint} opacity="0.7" />
           <circle cx="0" cy="3.2" r="2" fill={colors.honey} stroke={colors.stroke} strokeWidth="0.5" />
@@ -319,7 +319,7 @@ export function BeeHiveLogo({
         {/* Swarm bee 6 - top left */}
         <g 
           className={animated ? "swarm-bee swarm-bee-6" : ""}
-          transform="translate(14 4)"
+          transform="translate(14 10)"
         >
           <ellipse cx="0" cy="0" rx="3.5" ry="2.5" fill={colors.mint} opacity="0.7" />
           <circle cx="0" cy="3.2" r="2" fill={colors.honey} stroke={colors.stroke} strokeWidth="0.5" />
