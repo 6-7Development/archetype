@@ -1,9 +1,9 @@
 /**
- * BeeHive Queen Bee Logo - Realistic Compact Design
- * Professional bee with animated wings via universal CSS animations
+ * BeeHive Logo - Hexagon Honeycomb with Animated Buzzing Bees
+ * Central hive comb with small bees orbiting around
  * Uses brand colors (Honey, Nectar, Mint, Charcoal)
  * 
- * Wing animations are defined in index.css for easy holiday customization
+ * Bee animations are defined in index.css for easy customization
  */
 
 interface BeeHiveLogoProps {
@@ -13,7 +13,6 @@ interface BeeHiveLogoProps {
   variant?: 'primary' | 'dark' | 'light';
   iconSize?: number;
   textHeight?: number;
-  wingAnimation?: 'standard' | 'christmas' | 'halloween' | 'summer' | 'spring';
 }
 
 const SIZE_MAP = {
@@ -35,22 +34,19 @@ const VARIANT_COLORS = {
     text: 'hsl(216, 9%, 7%)',
     accent: 'hsl(40, 97%, 50%)',
     highlight: 'hsl(48, 100%, 65%)',
-    wing: 'hsl(171, 100%, 42%)',
-    secondary: 'hsl(265, 50%, 35%)',
+    hive: 'hsl(40, 97%, 48%)',
   },
   dark: {
     text: 'hsl(47, 100%, 95%)',
     accent: 'hsl(40, 97%, 50%)',
     highlight: 'hsl(48, 100%, 65%)',
-    wing: 'hsl(171, 100%, 42%)',
-    secondary: 'hsl(265, 50%, 55%)',
+    hive: 'hsl(40, 97%, 50%)',
   },
   light: {
     text: 'hsl(40, 97%, 50%)',
     accent: 'hsl(171, 100%, 42%)',
     highlight: 'hsl(48, 100%, 65%)',
-    wing: 'hsl(171, 100%, 42%)',
-    secondary: 'hsl(265, 50%, 35%)',
+    hive: 'hsl(40, 97%, 50%)',
   },
 };
 
@@ -61,15 +57,21 @@ export function BeeHiveLogo({
   variant = 'primary', 
   iconSize, 
   textHeight,
-  wingAnimation = 'standard'
 }: BeeHiveLogoProps) {
   const svgSize = iconSize || SIZE_MAP[size];
   const textSize = textHeight ? `${textHeight}px` : SIZE_TEXT[size];
   const colors = VARIANT_COLORS[variant];
 
+  // Generate bee positions around the hive (8 bees in orbit)
+  const beeCount = 8;
+  const beePositions = Array.from({ length: beeCount }, (_, i) => ({
+    angle: (i / beeCount) * 360,
+    delay: i * 0.1,
+  }));
+
   return (
     <div className={`inline-flex items-center ${showText ? 'gap-3' : ''} ${className}`}>
-      {/* Queen Bee - Realistic Compact Design */}
+      {/* Honeycomb Hive with Buzzing Bees */}
       <svg
         width={svgSize}
         height={svgSize}
@@ -77,133 +79,88 @@ export function BeeHiveLogo({
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         style={{ flexShrink: 0 }}
-        className="bee-wing"
+        className="beehive-container"
       >
-        {/* UPPER LEFT WING - Front wing */}
-        <ellipse
-          className={`bee-wing-left-${wingAnimation}`}
-          cx="18"
-          cy="35"
-          rx="13"
-          ry="22"
-          fill={colors.wing}
-          opacity="0.8"
-          style={{ transformOrigin: '35px 40px' }}
-        />
+        {/* CENTRAL HEXAGON HONEYCOMB - Main hive */}
+        <defs>
+          <radialGradient id="hiveGlow" cx="50%" cy="50%">
+            <stop offset="0%" stopColor={colors.highlight} />
+            <stop offset="100%" stopColor={colors.hive} />
+          </radialGradient>
+        </defs>
 
-        {/* UPPER RIGHT WING - Front wing */}
-        <ellipse
-          className={`bee-wing-right-${wingAnimation}`}
-          cx="82"
-          cy="35"
-          rx="13"
-          ry="22"
-          fill={colors.wing}
-          opacity="0.8"
-          style={{ transformOrigin: '65px 40px' }}
-        />
-
-        {/* LOWER LEFT WING - Back wing (more transparent) */}
-        <ellipse
-          className={`bee-wing-left-${wingAnimation}`}
-          cx="22"
-          cy="55"
-          rx="11"
-          ry="20"
-          fill={colors.wing}
-          opacity="0.5"
-          style={{ transformOrigin: '35px 60px', animationDelay: '0.1s' }}
-        />
-
-        {/* LOWER RIGHT WING - Back wing (more transparent) */}
-        <ellipse
-          className={`bee-wing-right-${wingAnimation}`}
-          cx="78"
-          cy="55"
-          rx="11"
-          ry="20"
-          fill={colors.wing}
-          opacity="0.5"
-          style={{ transformOrigin: '65px 60px', animationDelay: '0.1s' }}
-        />
-
-        {/* HEAD - Small yellow circle at top */}
-        <circle cx="50" cy="18" r="8" fill={colors.highlight} />
-
-        {/* HEAD STRIPE - Dark band on head */}
-        <ellipse cx="50" cy="19" rx="8" ry="2.5" fill={colors.secondary} opacity="0.7" />
-
-        {/* EYES - Large expressive eyes */}
-        <circle cx="45" cy="16" r="2" fill={colors.text} />
-        <circle cx="55" cy="16" r="2" fill={colors.text} />
-
-        {/* EYE SHINE - Highlights */}
-        <circle cx="45.5" cy="15" r="0.7" fill={colors.highlight} />
-        <circle cx="55.5" cy="15" r="0.7" fill={colors.highlight} />
-
-        {/* SMILE - Small curved smile */}
+        {/* Outer hexagon hive border */}
         <path
-          d="M 47 19 Q 50 21 53 19"
-          stroke={colors.text}
-          strokeWidth="0.5"
-          fill="none"
-          strokeLinecap="round"
-        />
-
-        {/* THORAX - Yellow-gold middle section */}
-        <ellipse
-          cx="50"
-          cy="32"
-          rx="11"
-          ry="9"
-          fill={colors.highlight}
-        />
-
-        {/* THORAX STRIPE - Dark band separator */}
-        <ellipse cx="50" cy="40" rx="11" ry="1.5" fill={colors.secondary} opacity="0.8" />
-
-        {/* ABDOMEN SEGMENT 1 - Purple/Dark blue stripe */}
-        <ellipse
-          cx="50"
-          cy="48"
-          rx="10"
-          ry="8"
-          fill={colors.secondary}
-        />
-
-        {/* ABDOMEN STRIPE SEPARATOR 1 */}
-        <ellipse cx="50" cy="55.5" rx="10" ry="1.2" fill={colors.text} opacity="0.7" />
-
-        {/* ABDOMEN SEGMENT 2 - Gold/yellow stripe */}
-        <ellipse
-          cx="50"
-          cy="63"
-          rx="9.5"
-          ry="8"
-          fill={colors.accent}
-        />
-
-        {/* ABDOMEN STRIPE SEPARATOR 2 */}
-        <ellipse cx="50" cy="70" rx="9.5" ry="1.2" fill={colors.text} opacity="0.7" />
-
-        {/* ABDOMEN SEGMENT 3 - Purple/Dark blue stripe (tapered) */}
-        <ellipse
-          cx="50"
-          cy="77"
-          rx="8.5"
-          ry="7"
-          fill={colors.secondary}
-        />
-
-        {/* STINGER - Small sharp point */}
-        <path
-          d="M 48 83 L 50 92 L 52 83 Z"
-          fill={colors.text}
+          d="M 50 15 L 72 27 L 72 51 L 50 63 L 28 51 L 28 27 Z"
+          fill="url(#hiveGlow)"
+          stroke={colors.accent}
+          strokeWidth="1.5"
           opacity="0.9"
         />
 
-        {/* HIGHLIGHT ON THORAX - Shine effect */}
-        <ellipse cx="50" cy="30" rx="4" ry="2.5" fill={colors.highlight} opacity="0.3" />
+        {/* Inner hexagon pattern (honeycomb cells) */}
+        <g stroke={colors.accent} strokeWidth="0.8" fill="none" opacity="0.5">
+          {/* Center hexagon */}
+          <path d="M 42 35 L 50 30 L 58 35 L 58 45 L 50 50 L 42 45 Z" />
+          
+          {/* Top hexagons */}
+          <path d="M 34 30 L 42 25 L 50 30 L 42 35 L 34 35 Z" />
+          <path d="M 50 30 L 58 25 L 66 30 L 58 35 L 50 35 Z" />
+          
+          {/* Bottom hexagons */}
+          <path d="M 34 45 L 42 50 L 50 55 L 42 60 L 34 55 Z" />
+          <path d="M 50 45 L 58 50 L 66 55 L 58 60 L 50 55 Z" />
+        </g>
+
+        {/* Center glow effect */}
+        <circle cx="50" cy="39" r="8" fill={colors.highlight} opacity="0.3" />
+
+        {/* Orbit circles (invisible reference for bee movement) */}
+        <circle
+          cx="50"
+          cy="50"
+          r="38"
+          fill="none"
+          stroke={colors.accent}
+          strokeWidth="0.3"
+          opacity="0.1"
+        />
+
+        {/* ANIMATED BUZZING BEES - 8 bees orbiting */}
+        {beePositions.map((pos, idx) => (
+          <g
+            key={idx}
+            className={`buzzing-bee bee-orbit-${idx}`}
+            style={{ animationDelay: `${pos.delay}s` }}
+          >
+            {/* Bee body */}
+            <g transform={`rotate(${pos.angle} 50 50) translate(88 50)`}>
+              {/* Bee head - small yellow circle */}
+              <circle cx="2" cy="0" r="1.2" fill={colors.highlight} />
+
+              {/* Bee body - tiny gold ellipse */}
+              <ellipse cx="0" cy="0" rx="1" ry="1.8" fill={colors.accent} />
+
+              {/* Bee wings - small curved wings */}
+              <ellipse
+                cx="-1.5"
+                cy="-0.8"
+                rx="0.6"
+                ry="1.2"
+                fill={colors.highlight}
+                opacity="0.6"
+              />
+              <ellipse
+                cx="1.5"
+                cy="-0.8"
+                rx="0.6"
+                ry="1.2"
+                fill={colors.highlight}
+                opacity="0.6"
+              />
+            </g>
+          </g>
+        ))}
       </svg>
 
       {/* BeeHive Wordmark - Enhanced Typography */}
