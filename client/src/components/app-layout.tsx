@@ -115,9 +115,8 @@ export function AppLayout({ children }: AppLayoutProps) {
         mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Logo - PROUD & PROMINENT with high contrast! */}
-        <div className="h-20 border-b flex items-center px-3 gap-2">
-          <BeeHiveLogo iconSize={32} textHeight={28} containerVariant="highlight" variant="dark" showText={false} />
-          <span className="font-bold text-amber-500 dark:text-amber-400">BeeHive</span>
+        <div className="h-20 border-b flex items-center px-3 gap-3 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-slate-800 dark:to-slate-900">
+          <BeeHiveLogo iconSize={32} textHeight={28} variant="primary" showText={true} />
         </div>
 
         {/* Navigation - Scrollable */}

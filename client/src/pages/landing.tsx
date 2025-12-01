@@ -30,10 +30,10 @@ export default function Landing() {
             <Link 
               href="/" 
               data-testid="link-home"
-              className="inline-flex items-center hover-elevate rounded-lg flex-shrink-0"
+              className="inline-flex items-center hover-elevate rounded-lg flex-shrink-0 bg-gradient-to-br from-amber-400 to-amber-500 px-4 py-2"
             >
-              <BeeHiveLogo size="lg" className="hidden lg:block" containerVariant="highlight" variant="dark" />
-              <BeeHiveLogo size="md" className="lg:hidden" containerVariant="highlight" variant="dark" />
+              <BeeHiveLogo size="lg" className="hidden lg:block" variant="dark" showText={true} />
+              <BeeHiveLogo size="md" className="lg:hidden" variant="dark" showText={true} />
             </Link>
             
             {/* Desktop Navigation - Hidden on mobile */}

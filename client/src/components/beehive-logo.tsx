@@ -9,7 +9,6 @@ interface BeeHiveLogoProps {
   className?: string;
   showText?: boolean;
   variant?: 'primary' | 'dark' | 'light';
-  containerVariant?: 'none' | 'highlight' | 'dark-highlight';
   iconSize?: number;
   textHeight?: number;
 }
@@ -46,20 +45,13 @@ const VARIANT_COLORS = {
   },
 };
 
-export function BeeHiveLogo({ size = 'md', className = '', showText = true, variant = 'primary', containerVariant = 'none', iconSize, textHeight }: BeeHiveLogoProps) {
+export function BeeHiveLogo({ size = 'md', className = '', showText = true, variant = 'primary', iconSize, textHeight }: BeeHiveLogoProps) {
   const svgSize = iconSize || SIZE_MAP[size];
   const textSize = textHeight ? `${textHeight}px` : SIZE_TEXT[size];
   const colors = VARIANT_COLORS[variant];
 
-  // Container styling for high-contrast backgrounds
-  const containerClass = containerVariant === 'highlight' 
-    ? 'inline-flex items-center gap-3 bg-gradient-to-br from-amber-400 to-amber-500 dark:from-amber-600 dark:to-amber-700 px-3 py-2 rounded-lg shadow-lg'
-    : containerVariant === 'dark-highlight'
-    ? 'inline-flex items-center gap-3 bg-gradient-to-br from-slate-800 to-slate-900 dark:from-slate-700 dark:to-slate-800 px-3 py-2 rounded-lg shadow-lg'
-    : `inline-flex items-center ${showText ? 'gap-3' : ''}`;
-
   return (
-    <div className={`${containerClass} ${className}`}>
+    <div className={`inline-flex items-center ${showText ? 'gap-3' : ''} ${className}`}>
       {/* Queen Bee - Enhanced SVG with premium styling */}
       <svg
         width={svgSize}
