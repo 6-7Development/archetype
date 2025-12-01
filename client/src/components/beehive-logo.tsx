@@ -1,6 +1,6 @@
 /**
- * BeeHive Queen Bee Logo - Professional Thorax Design
- * Graphic bee with animated wings via universal CSS animations
+ * BeeHive Queen Bee Logo - Realistic Bee Design
+ * Authentic bee anatomy with animated wings via universal CSS animations
  * Uses brand colors (Honey, Nectar, Mint, Charcoal)
  * 
  * Wing animations are defined in index.css for easy holiday customization
@@ -60,177 +60,202 @@ export function BeeHiveLogo({
   const svgSize = iconSize || SIZE_MAP[size];
   const textSize = textHeight ? `${textHeight}px` : SIZE_TEXT[size];
   const colors = VARIANT_COLORS[variant];
-  const gradId = `honeyGrad-${Math.random().toString(36).substr(2, 9)}`;
-  const thoraxGradId = `thoraxGrad-${Math.random().toString(36).substr(2, 9)}`;
+  const wingGradId = `wingGrad-${Math.random().toString(36).substr(2, 9)}`;
 
   return (
     <div className={`inline-flex items-center ${showText ? 'gap-3' : ''} ${className}`}>
-      {/* Queen Bee - Professional Thorax Design with Universal CSS Animated Wings */}
+      {/* Queen Bee - Realistic Design with Striped Body */}
       <svg
         width={svgSize}
         height={svgSize}
-        viewBox="0 0 100 130"
+        viewBox="0 0 100 140"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         style={{ flexShrink: 0 }}
         className="bee-wing"
       >
         <defs>
-          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor={colors.highlight} />
-            <stop offset="100%" stopColor={colors.accent} />
+          <linearGradient id={wingGradId} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={colors.highlight} stopOpacity="0.6" />
+            <stop offset="100%" stopColor={colors.accent} stopOpacity="0.4" />
           </linearGradient>
-          <radialGradient id={thoraxGradId} cx="50%" cy="30%">
-            <stop offset="0%" stopColor={colors.highlight} />
-            <stop offset="100%" stopColor={colors.accent} />
-          </radialGradient>
         </defs>
 
-        {/* Honeycomb Hexagon - Background accent */}
+        {/* ANTENNAE - Curved antenna for realistic bee */}
         <path
-          d="M50 12 L68 22 L68 42 L50 52 L32 42 L32 22 Z"
-          stroke={colors.accent}
-          strokeWidth="1"
-          fill="none"
-          opacity="0.3"
-        />
-
-        {/* LEFT WING - Uses universal CSS animation from index.css */}
-        <ellipse
-          className={`bee-wing-left-${wingAnimation}`}
-          cx="28"
-          cy="42"
-          rx="11"
-          ry="19"
-          fill="hsl(171, 100%, 42%)"
-          opacity="0.75"
-        />
-
-        {/* RIGHT WING - Uses universal CSS animation from index.css */}
-        <ellipse
-          className={`bee-wing-right-${wingAnimation}`}
-          cx="72"
-          cy="42"
-          ry="19"
-          rx="11"
-          fill="hsl(171, 100%, 42%)"
-          opacity="0.75"
-        />
-
-        {/* HEAD - Dark charcoal with gradient sheen */}
-        <circle cx="50" cy="28" r="8" fill={colors.text} />
-
-        {/* CROWN - Royal marking with honey accent */}
-        <g fill={colors.accent}>
-          <polygon points="48,21 50,17 52,21 51,23 49,23" />
-          <circle cx="50" cy="16" r="1.5" fill={colors.highlight} />
-        </g>
-
-        {/* EYES - Bright nectar highlights */}
-        <circle cx="47" cy="27" r="1.8" fill={colors.highlight} />
-        <circle cx="53" cy="27" r="1.8" fill={colors.highlight} />
-
-        {/* THORAX (MIDDLE BODY) - Premium segment with gradient */}
-        <ellipse
-          cx="50"
-          cy="48"
-          rx="10"
-          ry="13"
-          fill={`url(#${thoraxGradId})`}
-        />
-
-        {/* Thorax highlight stripe */}
-        <rect
-          x="43"
-          y="46"
-          width="14"
-          height="2"
-          rx="1"
-          fill={colors.text}
-          opacity="0.4"
-        />
-
-        {/* LEGS - Professional rendering (6 total) */}
-        <g stroke={colors.text} strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.7">
-          {/* Front pair */}
-          <path d="M46 45 L28 32" />
-          <path d="M54 45 L72 32" />
-          {/* Middle pair */}
-          <path d="M45 52 L22 65" />
-          <path d="M55 52 L78 65" />
-          {/* Back pair */}
-          <path d="M48 58 L28 80" />
-          <path d="M52 58 L72 80" />
-        </g>
-
-        {/* ABDOMEN SEGMENT 1 - Nectar gradient */}
-        <ellipse
-          cx="50"
-          cy="68"
-          rx="8.5"
-          ry="10"
-          fill={colors.highlight}
-        />
-        <rect
-          x="44"
-          y="66"
-          width="12"
-          height="1.5"
-          rx="0.5"
-          fill={colors.text}
-          opacity="0.5"
-        />
-
-        {/* ABDOMEN SEGMENT 2 - Honey gold */}
-        <ellipse
-          cx="50"
-          cy="83"
-          rx="8"
-          ry="11"
-          fill={colors.accent}
-        />
-        <rect
-          x="44"
-          y="81"
-          width="12"
-          height="1.5"
-          rx="0.5"
-          fill={colors.text}
-          opacity="0.4"
-        />
-
-        {/* ABDOMEN SEGMENT 3 - Gradient transition */}
-        <ellipse
-          cx="50"
-          cy="97"
-          rx="7"
-          ry="9"
-          fill={colors.highlight}
-        />
-        <rect
-          x="45"
-          y="95"
-          width="10"
-          height="1.5"
-          rx="0.5"
-          fill={colors.text}
-          opacity="0.3"
-        />
-
-        {/* STINGER - Elegant point with accent */}
-        <line
-          x1="50"
-          y1="106"
-          x2="50"
-          y2="116"
+          d="M 45 12 Q 40 8 38 2"
           stroke={colors.text}
           strokeWidth="1.2"
+          fill="none"
           strokeLinecap="round"
         />
-        <polygon points="50,116 47,109 53,109" fill={colors.accent} />
+        <path
+          d="M 55 12 Q 60 8 62 2"
+          stroke={colors.text}
+          strokeWidth="1.2"
+          fill="none"
+          strokeLinecap="round"
+        />
+        {/* Antenna tips */}
+        <circle cx="38" cy="2" r="0.8" fill={colors.text} />
+        <circle cx="62" cy="2" r="0.8" fill={colors.text} />
 
-        {/* Subtle glow effect around body */}
-        <circle cx="50" cy="65" r="32" fill={colors.accent} opacity="0.04" />
+        {/* HEAD - Small dark head */}
+        <circle cx="50" cy="22" r="6" fill={colors.text} />
+
+        {/* EYES - Large compound eyes */}
+        <circle cx="46" cy="20" r="1.5" fill={colors.highlight} />
+        <circle cx="54" cy="20" r="1.5" fill={colors.highlight} />
+
+        {/* MOUTH - Small marking */}
+        <ellipse cx="50" cy="24" rx="2" ry="1.2" fill={colors.accent} opacity="0.7" />
+
+        {/* THORAX - Compact middle section (where legs attach) */}
+        <ellipse cx="50" cy="36" rx="9" ry="11" fill={colors.text} />
+
+        {/* LEGS - Realistic 6 legs attached to thorax */}
+        <g stroke={colors.text} strokeWidth="1" fill="none" strokeLinecap="round">
+          {/* Front left leg */}
+          <path d="M 44 32 L 28 25" />
+          <circle cx="28" cy="25" r="0.5" fill={colors.text} />
+          
+          {/* Front right leg */}
+          <path d="M 56 32 L 72 25" />
+          <circle cx="72" cy="25" r="0.5" fill={colors.text} />
+          
+          {/* Middle left leg */}
+          <path d="M 43 37 L 18 38" />
+          <circle cx="18" cy="38" r="0.5" fill={colors.text} />
+          
+          {/* Middle right leg */}
+          <path d="M 57 37 L 82 38" />
+          <circle cx="82" cy="38" r="0.5" fill={colors.text} />
+          
+          {/* Back left leg */}
+          <path d="M 44 44 L 25 55" />
+          <circle cx="25" cy="55" r="0.5" fill={colors.text} />
+          
+          {/* Back right leg */}
+          <path d="M 56 44 L 75 55" />
+          <circle cx="75" cy="55" r="0.5" fill={colors.text} />
+        </g>
+
+        {/* LEFT WING - Realistic wing shape with animation */}
+        <g className={`bee-wing-left-${wingAnimation}`}>
+          <path
+            d="M 38 28 Q 25 15 20 35 Q 22 50 35 48 Q 40 35 38 28"
+            fill={`url(#${wingGradId})`}
+            stroke={colors.accent}
+            strokeWidth="0.5"
+            opacity="0.8"
+          />
+          {/* Wing venation detail */}
+          <path d="M 30 28 Q 28 35 32 42" stroke={colors.accent} strokeWidth="0.3" opacity="0.4" fill="none" />
+          <path d="M 35 25 Q 33 35 36 45" stroke={colors.accent} strokeWidth="0.3" opacity="0.4" fill="none" />
+        </g>
+
+        {/* RIGHT WING - Realistic wing shape with animation */}
+        <g className={`bee-wing-right-${wingAnimation}`}>
+          <path
+            d="M 62 28 Q 75 15 80 35 Q 78 50 65 48 Q 60 35 62 28"
+            fill={`url(#${wingGradId})`}
+            stroke={colors.accent}
+            strokeWidth="0.5"
+            opacity="0.8"
+          />
+          {/* Wing venation detail */}
+          <path d="M 70 28 Q 72 35 68 42" stroke={colors.accent} strokeWidth="0.3" opacity="0.4" fill="none" />
+          <path d="M 65 25 Q 67 35 64 45" stroke={colors.accent} strokeWidth="0.3" opacity="0.4" fill="none" />
+        </g>
+
+        {/* ABDOMEN - Striped body segments (classic bee look!) */}
+        
+        {/* Stripe 1 - Yellow (nectar) */}
+        <ellipse
+          cx="50"
+          cy="62"
+          rx="8.5"
+          ry="8"
+          fill={colors.highlight}
+        />
+
+        {/* Stripe 1 divider line */}
+        <line x1="42" y1="70" x2="58" y2="70" stroke={colors.text} strokeWidth="0.8" opacity="0.6" />
+
+        {/* Stripe 2 - Gold (honey) */}
+        <ellipse
+          cx="50"
+          cy="79"
+          rx="8"
+          ry="8"
+          fill={colors.accent}
+        />
+
+        {/* Stripe 2 divider line */}
+        <line x1="42" y1="87" x2="58" y2="87" stroke={colors.text} strokeWidth="0.8" opacity="0.6" />
+
+        {/* Stripe 3 - Yellow (nectar) */}
+        <ellipse
+          cx="50"
+          cy="96"
+          rx="7.5"
+          ry="8"
+          fill={colors.highlight}
+        />
+
+        {/* Stripe 3 divider line */}
+        <line x1="43" y1="104" x2="57" y2="104" stroke={colors.text} strokeWidth="0.8" opacity="0.6" />
+
+        {/* Stripe 4 - Gold (honey) */}
+        <ellipse
+          cx="50"
+          cy="112"
+          rx="7"
+          ry="7"
+          fill={colors.accent}
+        />
+
+        {/* STINGER - Sharp point at end of abdomen */}
+        <path
+          d="M 48 119 L 50 128 L 52 119"
+          fill={colors.text}
+          stroke={colors.text}
+          strokeWidth="0.5"
+        />
+
+        {/* Black stripe on abdomen for realism */}
+        <ellipse
+          cx="50"
+          cy="62"
+          rx="8.5"
+          ry="1.2"
+          fill={colors.text}
+          opacity="0.8"
+        />
+        <ellipse
+          cx="50"
+          cy="79"
+          rx="8"
+          ry="1.2"
+          fill={colors.text}
+          opacity="0.8"
+        />
+        <ellipse
+          cx="50"
+          cy="96"
+          rx="7.5"
+          ry="1.2"
+          fill={colors.text}
+          opacity="0.8"
+        />
+        <ellipse
+          cx="50"
+          cy="112"
+          rx="7"
+          ry="1.2"
+          fill={colors.text}
+          opacity="0.8"
+        />
       </svg>
 
       {/* BeeHive Wordmark - Enhanced Typography */}
