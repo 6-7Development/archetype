@@ -1,7 +1,7 @@
 # BeeHive - Collaborative Hive Intelligence for Code
 
 ## Overview
-BeeHive is an AI-powered platform for rapid web development, featuring the autonomous AI coding agent Scout. It offers a console-first interface, real-time preview, and comprehensive workspace features across desktop (BeeHive Desktop, 4-panel layout) and mobile (BeeHive Mobile, bottom tab navigation) IDEs. The platform aims for production readiness with portable deployment, monetization infrastructure, a template marketplace, and professional development services. Scout's key capability is autonomous self-healing, bug fixing, and UI/UX improvements to the platform's source code, complete with rollback and audit logging. The business vision is to provide a comprehensive, AI-driven platform that simplifies web development through collaborative swarm intelligence, making it accessible and efficient for a wide range of users.
+BeeHive is an AI-powered platform for rapid web development, featuring the autonomous AI coding agent Scout. It offers a console-first interface, real-time preview, and comprehensive workspace features across desktop and mobile IDEs. The platform aims for production readiness with portable deployment, monetization, a template marketplace, and professional development services. Scout's key capability is autonomous self-healing, bug fixing, and UI/UX improvements to the platform's source code, complete with rollback and audit logging. The business vision is to provide a comprehensive, AI-driven platform that simplifies web development through collaborative swarm intelligence, making it accessible and efficient for a wide range of users.
 
 ## User Preferences
 ### API Configuration
@@ -13,7 +13,7 @@ BeeHive is an AI-powered platform for rapid web development, featuring the auton
   - **18+ core tools** with proper function calling
   - Used for: Regular development, platform healing, job management, all work orders
   - Mode: SWARM (fast parallel execution)
-  
+
 - **Scout Advanced (Strategic Tasks)**: Gemini 2.5 Pro via GEMINI_API_KEY
   - Model: gemini-2.5-pro (or -pro-exp for experimental features)
   - Cost: $1.50 input / $6.00 output per 1M tokens (within budget, cheaper than Claude)
@@ -53,13 +53,13 @@ BeeHive is an AI-powered platform for rapid web development, featuring the auton
     -   Interconnected swarm network visualizations
 
 ## System Architecture
-The platform is built with a React frontend, an Express.js backend, and PostgreSQL for data persistence. It uses a unified codebase for BeeHive (Desktop, 4-panel layout) and BeeHive Mobile (bottom tab navigation), sharing backend APIs, WebSockets, authentication, and database access.
+The platform is built with a React frontend, an Express.js backend, and PostgreSQL for data persistence. It uses a unified codebase for BeeHive Desktop (4-panel layout) and BeeHive Mobile (bottom tab navigation), sharing backend APIs, WebSockets, authentication, and database access.
 
 ### Universal RBAC System
 A dynamic role-based access control system (`shared/rbac.ts`) serves as a single source of truth for permissions, supporting 'user', 'admin', 'owner' roles, five resources (platform, projects, healing, admin, billing, team), and five actions (read, write, delete, execute, manage).
 
 ### UI/UX Decisions
-The UI features a tab-based workspace with a command console and real-time live preview, adhering to a professional swarm/hive theme with honey-gold and mint-teal accents. It uses card-based layouts, warm shadows, smooth transitions, and ADA/WCAG accessibility. Chat interfaces utilize semantic theme tokens for consistent messaging and display Scout's thought process inline with responses using `EnhancedMessageDisplay` and collapsible, color-coded blocks for thinking, tool calls, and results. A comprehensive Agent Chatroom interface includes real-time progress tracking via SSE events, managed by a `UniversalChat` component. A Replit Agent-style Testing UI with a `TestingPanel` provides live browser previews, AI narration, and step progress tracking. A functional Terminal component is integrated into the WorkspaceLayout.
+The UI features a tab-based workspace with a command console and real-time live preview, adhering to a professional swarm/hive theme with honey-gold and mint-teal accents. It uses card-based layouts, warm shadows, smooth transitions, and ADA/WCAG accessibility. Chat interfaces utilize semantic theme tokens for consistent messaging and display Scout's thought process inline with responses using `EnhancedMessageDisplay` and collapsible, color-coded blocks for thinking, tool calls, and results. A comprehensive Agent Chatroom interface includes real-time progress tracking via SSE events, managed by a `UniversalChat` component. A Replit Agent-style Testing UI with a `TestingPanel` provides live browser previews, AI narration, and step progress tracking. A functional Terminal component is integrated into the WorkspaceLayout. The platform incorporates a comprehensive animation system with WCAG 2.3.3 accessibility compliance using CSS keyframe animations and Framer Motion components, including `prefers-reduced-motion` support.
 
 ### System Design Choices
 Scout operates as an autonomous worker using a 7-phase workflow (ASSESS → PLAN → EXECUTE → TEST → VERIFY → CONFIRM → COMMIT). Scout Advanced is a manually-triggered premium consultant, providing strategic guidance without committing code. The system supports parallel subagent execution, real-time streaming, usage-based billing, and self-testing. Scout incorporates efficiency rules like SEARCH BEFORE CODING and ITERATION BUDGET AWARENESS.
@@ -70,8 +70,6 @@ Scout operates as an autonomous worker using a 7-phase workflow (ASSESS → PLAN
 -   **ToolOrchestrator**: Dependency-aware parallel execution with topological sorting, max 4 concurrent tasks, 2.5-3.2x speedup over serial execution
 -   **AIDecisionLogger**: Complete audit trail storing all AI decisions
 -   **ToolResponseValidator**: JSON schema validation, response caching, health monitoring
--   **API Endpoints**: `/api/swarm/execute`, `/api/swarm/stats`, `/api/swarm/history`, `/api/swarm/rollback/:taskId`
--   **UI Components**: SwarmModeButton, SwarmDashboard (react-query, data-testid attributes, real-time SSE updates)
 
 **Platform Healing Architecture**:
 -   **Scout**: Autonomous worker executing changes (Gemini 2.5 Flash)
@@ -101,87 +99,3 @@ The system is highly modularized for maintainability and self-healing, with refa
 -   **Charting**: Recharts
 -   **Browser Automation**: Playwright
 -   **Web Search**: Tavily API
-
-### Bee-Themed Motion System
-The platform features a comprehensive animation system with WCAG 2.3.3 accessibility compliance:
-
-**CSS Keyframe Animations** (in `index.css`):
-- `honeycomb-pulse`: Button/control emphasis with golden glow
-- `hex-orbit` / `hex-orbit-inner`: Orbital loading spinners
-- `pollen-float`: Particle trail effects for interactions
-- `success-shimmer`: Victory shimmer for completed tasks
-- `status-sweep`: Row highlight for status changes
-- `hive-warmup`: Blur-to-focus entrance effect
-- `slide-in-*`: Directional entrance animations
-- `badge-pulse`: New status indicator pulse
-- `thinking-dots`: Loading indicator with staggered dots
-- `swarm-buzz`: Subtle activity vibration
-
-**Framer Motion Components** (in `bee-animations.tsx`):
-- `HexOrbitLoader`: Orbital spinner with size variants
-- `ThinkingDots`: Animated loading dots
-- `SuccessCheck`: Animated checkmark with path drawing
-- `PulseButton`: Click-responsive button with honeycomb pulse
-- `StatusBadge`: Status indicator with animations
-- `SlideIn` / `FadeIn` / `ScaleIn`: Entrance animations
-- `RowHighlight`: Row highlight for status changes
-- `HiveWarmup`: Blur-to-focus entrance
-- `useMotionConfig`: Hook for reduced motion detection
-
-**Accessibility Features**:
-- `prefers-reduced-motion` media query disables animations
-- `useReducedMotion` hook in Framer Motion components
-- `.motion-safe-only` class for decorative animations
-- Manual motion toggle via `body.reduce-motion` class
-
-## Recent Changes (Dec 1, 2025 - Session 2)
-- ✅ **Proactive Code Intelligence Tools (Replit Agent Parity - 4 tools)**:
-  - `security_scan` - OWASP patterns, secret detection, SQL injection, XSS, CWE codes (Gap #9)
-  - `dependency_audit` - npm audit integration, CVE scoring, safe upgrade paths (Gap #7)
-  - `check_code_health` - TypeScript errors, broken imports, test status (Gap #5)
-  - `analyze_performance` - Bundle size, build time, test coverage, code complexity (Gap #8)
-  - All 4 tools added to ESSENTIAL_LOMU_TOOLS and wired into dispatcher (22 core tools total)
-  - Tools feature robust error handling, file size/depth limits, and actionable recommendations
-- ✅ Scout parity increased from ~60% → ~73% of Replit Agent capabilities
-
-## Recent Changes (Nov 30, 2025)
-- ✅ Completed Anthropic-to-Gemini migration (all agents now use Gemini)
-- ✅ Removed deprecated anthropic.ts, architect-review.ts, sub-agent.ts files
-- ✅ Updated FEATURES flags to use GEMINI_API_KEY
-- ✅ Removed ANTHROPIC_API_KEY from all env validation
-- ✅ Chat scrolling fix: Triple-method scroll (direct + deferred + scrollIntoView)
-- ✅ Agent limits removed: maxContinuations 3→15, maxTokens 4096→32000
-- ✅ Agent tool dispatcher fixed: Now handles 18+ tools correctly
-- ✅ Rebranded platform to BeeHive with Scout agent
-- ✅ SWARM mode integrated as Fast Mode executor
-- ✅ **Complete BeeHive Naming Consistency Refactor**:
-  - Server files: beehiveSuperCore/, beehiveChat.ts, beehiveAIBrain.ts, beehiveJobManager.ts
-  - Client routes: /beehive (was /lomu), nav-beehive-chat test IDs
-  - LocalStorage keys: beehive-chat-messages, beehive-split-editor-state
-  - WebSocket events: beehive_ai_job_update (was lomu_ai_job_update)
-  - UI strings: BeeHive IDE, BeeHive Pro, .beehive.app domains
-  - 50+ files updated with zero runtime errors
-- ✅ **Bee-Themed Motion System**:
-  - 10+ CSS keyframe animations (honeycomb-pulse, hex-orbit, pollen-float, success-shimmer, etc.)
-  - Reusable Framer Motion components with accessibility hooks
-  - Status transitions with AnimatePresence for enter/exit
-  - Task card staggered animations in progress tables
-  - WCAG 2.3.3 compliance with prefers-reduced-motion support
-- ✅ **Core Features Completed (MVP)**:
-  - Secure code execution sandbox at `/api/sandbox/run` with resource limits & audit logging
-  - Chat history persistence with PostgreSQL (conversation_sessions, code_execution_runs tables)
-  - Pinned items with sorting & project filtering at `/api/pinned`
-  - Enhanced message bubbles with BeeHive golden/amber theming
-  - Syntax highlighting with Prism (language detection for 20+ languages)
-  - Sound effects hook (WebAudio API) for interactive feedback
-  - Comprehensive Scout e2e tests (18+ test suites covering workflows, security, performance)
-- ✅ **Scout UI Improvements**:
-  - Small animated bee icon (hexagon pattern) inline in chat input like Replit's design
-  - "Working..." indicator during generation (purple/blue hexagons with staggered pulse)
-  - Collapsible thinking bubble (Brain icon, expandable content)
-  - Loading state shows only on last message to avoid clutter
-- ✅ **Gap Fixes (Nov 30, 2025 Session 2)**:
-  - Fixed maintenance mode disable endpoint (AuditService static method call)
-  - Added admin auth check to progress clear endpoint
-  - Fixed Scout bee icon placement - now inline in chat input during generation
-  - Documented pending TODOs: project ownership check, job completion monitoring
