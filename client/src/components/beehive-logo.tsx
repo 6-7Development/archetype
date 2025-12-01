@@ -1,59 +1,38 @@
 /**
- * BeeHive Logo Component
- * Professional marketing bee with realistic anatomy + elegant "BeeHive" wordmark
- * Designed for excellent contrast on light (cream/tan) backgrounds
- * Scout emotional states: idle (charcoal), thinking (blue), working (purple), complete (mint)
+ * BeeHive Universal Logo Component
+ * 
+ * Queen Bee in Hexagon Design - Works everywhere (nav, hero, favicon)
+ * Professional, catchy, fresh design that impresses on all screens
+ * Single source of truth for BeeHive branding
  */
 
 interface BeeHiveLogoProps {
-  size?: 'sm' | 'md' | 'lg';
-  showText?: boolean;
-  variant?: 'icon-only' | 'with-text' | 'stacked';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
-  isWorking?: boolean;
-  emotion?: 'idle' | 'working' | 'thinking' | 'complete';
+  showText?: boolean;
 }
 
-export function BeeHiveLogo({
-  size = 'md',
-  showText = true,
-  variant = 'with-text',
-  className = '',
-  isWorking = false,
-  emotion = 'idle',
-}: BeeHiveLogoProps) {
-  // Size presets
-  const sizeMap = {
-    sm: { svg: 44, text: '18px' },
-    md: { svg: 56, text: '28px' },
-    lg: { svg: 80, text: '42px' },
-  };
+const SIZE_MAP = {
+  sm: 40,
+  md: 60,
+  lg: 100,
+  xl: 140,
+};
 
-  const dims = sizeMap[size] || sizeMap.md;
-  const svgSize = dims.svg;
-  const textSize = dims.text;
+const SIZE_TEXT = {
+  sm: '16px',
+  md: '24px',
+  lg: '36px',
+  xl: '48px',
+};
 
-  // Color palette - optimized for light backgrounds
-  const charcoalColor = '#1B1D21'; // Deep charcoal for main body (excellent contrast on tan/cream)
-  const honeyGold = '#D4A017'; // Rich gold for accents (deeper than before)
-  const mintColor = '#00D4B3'; // Vibrant mint for highlights
-  const purpleColor = '#9333EA'; // Rich purple for working state
-  const blueColor = '#2563EB'; // Deep blue for thinking state
-  const creamBg = '#FFF8E6'; // Reference for light backgrounds
-
-  // Get bee body color based on emotion
-  const beeBodyColor =
-    isWorking || emotion === 'working' ? purpleColor :
-    emotion === 'thinking' ? blueColor :
-    emotion === 'complete' ? mintColor :
-    charcoalColor;
-
-  // Stripe accent color (contrasts well with body)
-  const stripeColor = emotion === 'complete' ? charcoalColor : honeyGold;
+export function BeeHiveLogo({ size = 'md', className = '', showText = true }: BeeHiveLogoProps) {
+  const svgSize = SIZE_MAP[size];
+  const textSize = SIZE_TEXT[size];
 
   return (
-    <div className={`inline-flex items-center ${variant === 'stacked' ? 'flex-col' : 'gap-4'} ${className}`}>
-      {/* Professional Bee SVG - Marketing Quality */}
+    <div className={`inline-flex items-center ${showText ? 'gap-3' : ''} ${className}`} style={{ alignItems: 'center' }}>
+      {/* Queen Bee in Hexagon - SVG */}
       <svg
         width={svgSize}
         height={svgSize}
@@ -63,115 +42,134 @@ export function BeeHiveLogo({
         style={{ flexShrink: 0 }}
       >
         <defs>
-          <linearGradient id="beeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor={beeBodyColor} stopOpacity="1" />
-            <stop offset="100%" stopColor={beeBodyColor} stopOpacity="0.9" />
+          <linearGradient id="queenBodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#F7B500" stopOpacity="1" />
+            <stop offset="100%" stopColor="#D4A017" stopOpacity="1" />
           </linearGradient>
-          <linearGradient id="wingGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={mintColor} stopOpacity="0.7" />
-            <stop offset="100%" stopColor={mintColor} stopOpacity="0.3" />
+          <linearGradient id="wingGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#00D4B3" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="#00D4B3" stopOpacity="0.2" />
           </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
         </defs>
 
-        <style>{`
-          @keyframes bee-hover { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-3px); } }
-          @keyframes wing-beat { 0%, 100% { transform: scaleY(1) rotateZ(-15deg); opacity: 0.7; } 50% { transform: scaleY(0.6) rotateZ(15deg); opacity: 1; } }
-          .bee-container { ${isWorking ? 'animation: bee-hover 1.6s ease-in-out infinite;' : ''} }
-          .bee-wings { ${isWorking ? 'animation: wing-beat 0.35s ease-in-out infinite;' : 'opacity: 0.65;'} transform-origin: center; }
-        `}</style>
+        {/* Hexagon Beehive Cell Background */}
+        <path
+          d="M60 10 L90 25 L90 55 L60 70 L30 55 L30 25 Z"
+          fill="none"
+          stroke="#D4A017"
+          strokeWidth="1.5"
+          opacity="0.4"
+        />
 
-        <g className="bee-container">
-          {/* LEFT WING */}
-          <g className="bee-wings" style={{ transformOrigin: '55px 50px' }}>
-            <ellipse cx="35" cy="50" rx="14" ry="22" fill="url(#wingGradient)" style={{ transition: 'opacity 0.3s ease' }} />
-            {/* Wing vein detail */}
-            <path d="M 35 35 L 35 65 M 25 50 L 45 50" stroke={mintColor} strokeWidth="0.8" opacity="0.4" />
-          </g>
-
-          {/* RIGHT WING */}
-          <g className="bee-wings" style={{ transformOrigin: '65px 50px' }}>
-            <ellipse cx="85" cy="50" rx="14" ry="22" fill="url(#wingGradient)" style={{ transition: 'opacity 0.3s ease' }} />
-            {/* Wing vein detail */}
-            <path d="M 85 35 L 85 65 M 75 50 L 95 50" stroke={mintColor} strokeWidth="0.8" opacity="0.4" />
-          </g>
-
-          {/* HEAD - Golden yellow with dark details */}
-          <circle cx="60" cy="28" r="8" fill={beeBodyColor} style={{ transition: 'fill 0.3s ease' }} />
-          {/* Head shine */}
-          <circle cx="62" cy="26" r="2.5" fill={stripeColor} opacity="0.6" />
-          {/* Eyes - large and prominent */}
-          <circle cx="56" cy="26" r="2" fill={charcoalColor} />
-          <circle cx="64" cy="26" r="2" fill={charcoalColor} />
-          {/* Mouth/mandible detail */}
-          <path d="M 60 32 Q 58 34 60 35 Q 62 34 60 32" fill={stripeColor} opacity="0.7" />
-
-          {/* ANTENNAE - Elegant curves */}
-          <g stroke={beeBodyColor} strokeWidth="1.5" fill="none" strokeLinecap="round" style={{ transition: 'stroke 0.3s ease' }}>
-            <path d="M 56 22 Q 48 14 45 8" />
-            <path d="M 64 22 Q 72 14 75 8" />
-            {/* Antenna tips */}
-            <circle cx="45" cy="8" r="1.2" fill={stripeColor} />
-            <circle cx="75" cy="8" r="1.2" fill={stripeColor} />
-          </g>
-
-          {/* THORAX (middle segment) - Larger, with segmented look */}
-          <ellipse cx="60" cy="55" rx="11" ry="15" fill={beeBodyColor} style={{ transition: 'fill 0.3s ease' }} />
-
-          {/* Thorax stripes for dimension */}
-          <g fill={stripeColor} opacity="0.65">
-            <rect x="50" y="48" width="20" height="2" rx="1" />
-            <rect x="49" y="55" width="22" height="2" rx="1" />
-            <rect x="50" y="62" width="20" height="2" rx="1" />
-          </g>
-
-          {/* LEGS (6 total - 3 pairs) */}
-          <g stroke={charcoalColor} strokeWidth="1.8" fill="none" strokeLinecap="round" opacity="0.8">
-            {/* Front legs - pair 1 */}
-            <path d="M 51 50 L 30 42" />
-            <path d="M 69 50 L 90 42" />
-            {/* Middle legs - pair 2 */}
-            <path d="M 50 57 L 24 62" />
-            <path d="M 70 57 L 96 62" />
-            {/* Back legs - pair 3 */}
-            <path d="M 52 68 L 32 85" />
-            <path d="M 68 68 L 88 85" />
-          </g>
-
-          {/* ABDOMEN (lower segment with dramatic stripes) */}
-          <g>
-            {/* Main abdomen shape - tapered */}
-            <ellipse cx="60" cy="85" rx="9.5" ry="18" fill={beeBodyColor} style={{ transition: 'fill 0.3s ease' }} />
-            
-            {/* Abdomen segments - bold stripes for visual impact */}
-            <g fill={stripeColor} opacity="0.75">
-              <rect x="51" y="72" width="18" height="2.5" rx="1" />
-              <rect x="50.5" y="80" width="19" height="2.5" rx="1" />
-              <rect x="51" y="88" width="18" height="2.5" rx="1" />
-              <rect x="52" y="96" width="16" height="2.5" rx="1" />
-            </g>
-          </g>
-
-          {/* STINGER - Fine detail */}
-          <g>
-            <path d="M 60 102 L 60 110" stroke={charcoalColor} strokeWidth="1.2" strokeLinecap="round" />
-            <polygon points="60,110 57,107 63,107" fill={charcoalColor} />
-          </g>
-
-          {/* Body shine/highlight for depth */}
-          <ellipse cx="62" cy="48" rx="3" ry="5" fill={stripeColor} opacity="0.4" />
+        {/* WINGS - Large, translucent, diagonal */}
+        <g opacity="0.7">
+          {/* Left Wing */}
+          <ellipse
+            cx="35"
+            cy="45"
+            rx="16"
+            ry="28"
+            fill="url(#wingGrad)"
+            transform="rotate(-35 35 45)"
+            style={{ animation: 'wing-beat 0.4s ease-in-out infinite' }}
+          />
+          {/* Right Wing */}
+          <ellipse
+            cx="85"
+            cy="45"
+            rx="16"
+            ry="28"
+            fill="url(#wingGrad)"
+            transform="rotate(35 85 45)"
+            style={{ animation: 'wing-beat 0.4s ease-in-out infinite 0.2s' }}
+          />
         </g>
+
+        {/* HEAD - Royal Blue for Queen */}
+        <circle cx="60" cy="32" r="10" fill="#1B1D21" />
+        
+        {/* Crown/Royal Mark - Small gold crown on head */}
+        <g>
+          <path d="M55 28 L56 24 L58 24 L60 22 L62 24 L64 24 L65 28" stroke="#F7B500" strokeWidth="1" fill="none" />
+          <circle cx="60" cy="22" r="1.5" fill="#F7B500" />
+        </g>
+
+        {/* Eyes - Bright & alert */}
+        <circle cx="57" cy="31" r="1.5" fill="#FFF" />
+        <circle cx="63" cy="31" r="1.5" fill="#FFF" />
+
+        {/* THORAX (Middle - Worker Bee Area) */}
+        <ellipse cx="60" cy="55" rx="13" ry="16" fill="url(#queenBodyGrad)" />
+
+        {/* Thorax Stripes - Gold bands */}
+        <g fill="#1B1D21" opacity="0.6">
+          <rect x="50" y="50" width="20" height="1.5" rx="0.5" />
+          <rect x="49" y="56" width="22" height="1.5" rx="0.5" />
+          <rect x="50" y="62" width="20" height="1.5" rx="0.5" />
+        </g>
+
+        {/* LEGS (6 total - 3 pairs, visible and dimensional) */}
+        <g stroke="#1B1D21" strokeWidth="1.8" fill="none" strokeLinecap="round" opacity="0.8">
+          {/* Front legs - angled out */}
+          <path d="M54 52 L38 42" />
+          <path d="M66 52 L82 42" />
+          {/* Middle legs - forward */}
+          <path d="M53 60 L28 68" />
+          <path d="M67 60 L92 68" />
+          {/* Back legs - down */}
+          <path d="M55 68 L36 88" />
+          <path d="M65 68 L84 88" />
+        </g>
+
+        {/* ABDOMEN (Lower - Largest, with prominent stripes) */}
+        <g>
+          {/* Main abdomen - Tapered rounded */}
+          <ellipse cx="60" cy="95" rx="11" ry="20" fill="url(#queenBodyGrad)" />
+
+          {/* Abdomen Stripes - Bold gold/black bands */}
+          <g fill="#1B1D21" opacity="0.7">
+            <rect x="50" y="78" width="20" height="2" rx="1" />
+            <rect x="49" y="88" width="22" height="2" rx="1" />
+            <rect x="50" y="98" width="20" height="2" rx="1" />
+            <rect x="51" y="108" width="18" height="2" rx="1" />
+          </g>
+        </g>
+
+        {/* STINGER - Elegant point */}
+        <g>
+          <path d="M60 115 L60 125" stroke="#1B1D21" strokeWidth="1.2" strokeLinecap="round" />
+          <polygon points="60,125 57,120 63,120" fill="#1B1D21" />
+        </g>
+
+        {/* Royal Glow Effect */}
+        <circle cx="60" cy="55" r="25" fill="url(#queenBodyGrad)" opacity="0.1" filter="url(#glow)" />
+
+        {/* Animation Styles */}
+        <style>{`
+          @keyframes wing-beat {
+            0%, 100% { transform: scaleY(1) rotateZ(-35deg); opacity: 0.7; }
+            50% { transform: scaleY(0.5) rotateZ(35deg); opacity: 1; }
+          }
+        `}</style>
       </svg>
 
-      {/* Logo Text - Modern Wordmark */}
-      {showText && variant !== 'icon-only' && (
+      {/* BeeHive Text Wordmark */}
+      {showText && (
         <span
-          className="font-black tracking-tight leading-none"
           style={{
             fontSize: textSize,
-            color: charcoalColor,
+            fontWeight: 900,
+            color: '#1B1D21',
             fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
             letterSpacing: '-0.02em',
-            fontWeight: 900,
+            lineHeight: 1,
           }}
         >
           BeeHive

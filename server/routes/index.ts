@@ -215,6 +215,39 @@ export async function registerRoutes(app: Express): Promise<Server & { wss?: Web
     console.warn("[PINNED] Failed to load pinned items router:", (e as any).message);
   }
 
+  // AI Models Catalogue
+  try {
+    const { default: modelsRouter } = await import("./models.js");
+    if (modelsRouter) {
+      app.use("/api/models", modelsRouter);
+      console.log("[MODELS] AI Models router mounted at /api/models");
+    }
+  } catch (e) {
+    console.warn("[MODELS] Failed to load models router:", (e as any).message);
+  }
+
+  // Chat/Code Exports
+  try {
+    const { default: exportsRouter } = await import("./exports.js");
+    if (exportsRouter) {
+      app.use("/api/exports", exportsRouter);
+      console.log("[EXPORTS] Exports router mounted at /api/exports");
+    }
+  } catch (e) {
+    console.warn("[EXPORTS] Failed to load exports router:", (e as any).message);
+  }
+
+  // AI Suggestions (Suggest Next Steps)
+  try {
+    const { default: suggestionsRouter } = await import("./suggestions.js");
+    if (suggestionsRouter) {
+      app.use("/api/ai", suggestionsRouter);
+      console.log("[SUGGESTIONS] AI Suggestions router mounted at /api/ai");
+    }
+  } catch (e) {
+    console.warn("[SUGGESTIONS] Failed to load suggestions router:", (e as any).message);
+  }
+
   // API Documentation (OpenAPI/Swagger)
   try {
     const { default: apiDocsRouter } = await import("./api-docs.js");

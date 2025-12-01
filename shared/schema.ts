@@ -3332,6 +3332,7 @@ export const conversationSessions = pgTable('conversation_sessions', {
   
   // Context
   agentMode: varchar('agent_mode', { length: 20 }).default('scout'), // 'scout' | 'scout_advanced'
+  selectedModel: varchar('selected_model', { length: 50 }).default('gemini-2.5-flash'), // AI model for this session
   contextFiles: jsonb('context_files').$type<string[]>(),
   
   // Timestamps
@@ -3500,6 +3501,10 @@ export const idePreferences = pgTable('ide_preferences', {
   editorFontSize: integer('editor_font_size').notNull().default(14),
   editorTabSize: integer('editor_tab_size').notNull().default(2),
   editorWordWrap: boolean('editor_word_wrap').notNull().default(true),
+  editorMinimapEnabled: boolean('editor_minimap_enabled').notNull().default(true),
+  
+  // AI Model preferences
+  preferredAiModel: varchar('preferred_ai_model', { length: 50 }).notNull().default('gemini-2.5-flash'),
   
   // Chat preferences
   chatCompact: boolean('chat_compact').notNull().default(false),
@@ -3520,3 +3525,127 @@ export const insertIdePreferencesSchema = createInsertSchema(idePreferences).omi
 });
 export type InsertIdePreferences = z.infer<typeof insertIdePreferencesSchema>;
 export type IdePreferences = typeof idePreferences.$inferSelect;
+
+// AI SUGGESTIONS - Store project analysis and recommended next steps
+export const aiSuggestions = pgTable('ai_suggestions', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar('user_id').notNull(),
+  projectId: varchar('project_id'),
+  sessionId: varchar('session_id'), // Links to conversation_sessions
+  
+  // Suggestion content
+  category: varchar('category', { length: 50 }).notNull(), // 'feature' | 'bugfix' | 'refactor' | 'test' | 'documentation' | 'performance'
+  title: varchar('title', { length: 255 }).notNull(),
+  description: text('description').notNull(),
+  priority: integer('priority').notNull().default(5), // 1-10, lower = higher priority
+  
+  // Context
+  relatedFiles: jsonb('related_files').$type<string[]>(),
+  codeSnippet: text('code_snippet'), // Suggested code change
+  reasoning: text('reasoning'), // AI's reasoning for this suggestion
+  
+  // Status tracking
+  status: varchar('status', { length: 20 }).notNull().default('pending'), // 'pending' | 'accepted' | 'rejected' | 'completed'
+  acceptedAt: timestamp('accepted_at'),
+  completedAt: timestamp('completed_at'),
+  
+  // AI metadata
+  modelUsed: varchar('model_used', { length: 50 }),
+  confidence: integer('confidence').default(80), // 0-100 confidence score
+  tokensUsed: integer('tokens_used').default(0),
+  
+  // Timestamps
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  expiresAt: timestamp('expires_at'), // Auto-expire old suggestions
+}, (table) => [
+  index('idx_ai_suggestions_user').on(table.userId),
+  index('idx_ai_suggestions_project').on(table.projectId),
+  index('idx_ai_suggestions_status').on(table.status),
+  index('idx_ai_suggestions_priority').on(table.priority),
+]);
+
+export const insertAiSuggestionSchema = createInsertSchema(aiSuggestions).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertAiSuggestion = z.infer<typeof insertAiSuggestionSchema>;
+export type AiSuggestion = typeof aiSuggestions.$inferSelect;
+
+// CHAT EXPORTS - Track exported chat conversations and code
+export const chatExports = pgTable('chat_exports', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar('user_id').notNull(),
+  projectId: varchar('project_id'),
+  sessionId: varchar('session_id'), // Links to conversation_sessions
+  
+  // Export configuration
+  exportType: varchar('export_type', { length: 20 }).notNull(), // 'markdown' | 'pdf' | 'json'
+  contentType: varchar('content_type', { length: 20 }).notNull(), // 'chat' | 'code' | 'full'
+  
+  // Export result
+  fileName: varchar('file_name', { length: 255 }).notNull(),
+  fileSize: integer('file_size'), // bytes
+  downloadUrl: text('download_url'), // Temporary URL for download
+  
+  // Content summary
+  messageCount: integer('message_count').default(0),
+  codeBlockCount: integer('code_block_count').default(0),
+  
+  // Status
+  status: varchar('status', { length: 20 }).notNull().default('pending'), // 'pending' | 'processing' | 'completed' | 'failed'
+  error: text('error'),
+  
+  // Timestamps
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  expiresAt: timestamp('expires_at'), // Auto-delete old exports
+}, (table) => [
+  index('idx_chat_exports_user').on(table.userId),
+  index('idx_chat_exports_session').on(table.sessionId),
+  index('idx_chat_exports_status').on(table.status),
+]);
+
+export const insertChatExportSchema = createInsertSchema(chatExports).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertChatExport = z.infer<typeof insertChatExportSchema>;
+export type ChatExport = typeof chatExports.$inferSelect;
+
+// AI MODEL CATALOGUE - Available AI models for user selection
+export const aiModelCatalogue = pgTable('ai_model_catalogue', {
+  id: varchar('id').primaryKey(), // 'gemini-2.5-flash', 'gpt-4', etc.
+  
+  // Model info
+  provider: varchar('provider', { length: 50 }).notNull(), // 'google' | 'openai' | 'anthropic'
+  displayName: varchar('display_name', { length: 100 }).notNull(),
+  description: text('description'),
+  
+  // Capabilities
+  contextWindow: integer('context_window').notNull(), // Max tokens
+  supportsVision: boolean('supports_vision').notNull().default(false),
+  supportsStreaming: boolean('supports_streaming').notNull().default(true),
+  supportsFunctionCalling: boolean('supports_function_calling').notNull().default(true),
+  
+  // Pricing (per 1M tokens)
+  costInputPer1M: integer('cost_input_per_1m').notNull(), // cents
+  costOutputPer1M: integer('cost_output_per_1m').notNull(), // cents
+  
+  // Availability
+  isEnabled: boolean('is_enabled').notNull().default(true),
+  isPremium: boolean('is_premium').notNull().default(false), // Requires paid tier
+  
+  // Performance hints
+  speedRating: integer('speed_rating').default(5), // 1-10, higher = faster
+  qualityRating: integer('quality_rating').default(5), // 1-10, higher = better
+  
+  // Timestamps
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const insertAiModelCatalogueSchema = createInsertSchema(aiModelCatalogue).omit({
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertAiModelCatalogue = z.infer<typeof insertAiModelCatalogueSchema>;
+export type AiModelCatalogue = typeof aiModelCatalogue.$inferSelect;

@@ -43,7 +43,6 @@ import ConsultationHistory from "@/pages/consultation-history";
 import SwarmDashboard from "@/pages/swarm-dashboard";
 import Monitoring from "@/pages/monitoring";
 import Documentation from "@/pages/docs";
-import LogoDemo from "@/pages/logo-demo";
 import Privacy from "@/pages/privacy";
 import Terms from "@/pages/terms";
 import Blog from "@/pages/blog";
@@ -247,12 +246,6 @@ function Router() {
         </AppLayout>
       </Route>
       
-      {/* Logo Demo */}
-      <Route path="/logo-demo">
-        <AppLayout>
-          <LogoDemo />
-        </AppLayout>
-      </Route>
 
       {/* Documentation & Legal */}
       <Route path="/docs">

@@ -8,13 +8,27 @@ interface MonacoEditorProps {
   language: string;
   readOnly?: boolean;
   compact?: boolean;
+  showMinimap?: boolean;
+  fontSize?: number;
+  tabSize?: number;
+  wordWrap?: boolean;
 }
 
-export function MonacoEditor({ value, onChange, language, readOnly = false, compact = false }: MonacoEditorProps) {
+export function MonacoEditor({ 
+  value, 
+  onChange, 
+  language, 
+  readOnly = false, 
+  compact = false,
+  showMinimap = true,
+  fontSize,
+  tabSize = 2,
+  wordWrap = true,
+}: MonacoEditorProps) {
   const { theme } = useTheme();
 
-  // Log when value changes to help debug content loading issues
-  console.log(`📝 [MONACO] Rendering editor - Language: ${language}, Value length: ${value?.length || 0}, ReadOnly: ${readOnly}, Compact: ${compact}`);
+  const effectiveFontSize = fontSize ?? (compact ? 13 : 14);
+  const effectiveMinimap = compact ? false : showMinimap;
 
   return (
     <Editor
@@ -24,17 +38,24 @@ export function MonacoEditor({ value, onChange, language, readOnly = false, comp
       onChange={onChange}
       theme={theme === "dark" ? "vs-dark" : "light"}
       options={{
-        minimap: { enabled: !compact },
-        fontSize: compact ? 13 : 14,
+        minimap: { 
+          enabled: effectiveMinimap,
+          scale: 1,
+          showSlider: 'mouseover',
+        },
+        fontSize: effectiveFontSize,
         lineNumbers: "on",
         roundedSelection: false,
         scrollBeyondLastLine: false,
         readOnly,
         automaticLayout: true,
-        tabSize: 2,
-        wordWrap: "on",
+        tabSize,
+        wordWrap: wordWrap ? "on" : "off",
         fontFamily: "var(--font-mono)",
         padding: { top: compact ? 8 : 16, bottom: compact ? 8 : 16 },
+        smoothScrolling: true,
+        cursorBlinking: "smooth",
+        cursorSmoothCaretAnimation: "on",
       }}
       loading={
         <div className="flex items-center justify-center h-full">
