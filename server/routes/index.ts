@@ -30,6 +30,7 @@ import { registerRateLimitRoutes } from "./rate-limit-status";
 import { registerProgressRoutes } from "./progress";
 import { registerGdprRoutes } from "./gdpr";
 import { registerShareRoutes } from "./share";
+import { registerScoutWorkflowRoutes } from "./scout-workflow";
 
 /**
  * Main route registration function
@@ -259,6 +260,46 @@ export async function registerRoutes(app: Express): Promise<Server & { wss?: Web
     }
   } catch (e) {
     console.warn("[API-DOCS] Failed to load API documentation router:", (e as any).message);
+  }
+
+  // Smart Code Completion
+  try {
+    const { default: codeCompletionRouter } = await import("./codeCompletion.js");
+    if (codeCompletionRouter) {
+      app.use("/api/code-completion", codeCompletionRouter);
+      console.log("[CODE-COMPLETION] Smart Code Completion router mounted at /api/code-completion");
+    }
+  } catch (e) {
+    console.warn("[CODE-COMPLETION] Failed to load code completion router:", (e as any).message);
+  }
+
+  // Project Health Dashboard
+  try {
+    const { default: projectHealthRouter } = await import("./projectHealth.js");
+    if (projectHealthRouter) {
+      app.use("/api/project-health", projectHealthRouter);
+      console.log("[PROJECT-HEALTH] Project Health Dashboard router mounted at /api/project-health");
+    }
+  } catch (e) {
+    console.warn("[PROJECT-HEALTH] Failed to load project health router:", (e as any).message);
+  }
+
+  // Walkthrough/Tutorial System
+  try {
+    const { default: walkthroughRouter } = await import("./walkthrough.js");
+    if (walkthroughRouter) {
+      app.use("/api/walkthroughs", walkthroughRouter);
+      console.log("[WALKTHROUGH] Walkthrough/Tutorial router mounted at /api/walkthroughs");
+    }
+  } catch (e) {
+    console.warn("[WALKTHROUGH] Failed to load walkthrough router:", (e as any).message);
+  }
+
+  // Scout Workflow Routes
+  try {
+    registerScoutWorkflowRoutes(app);
+  } catch (e) {
+    console.warn("[SCOUT-WORKFLOW] Failed to register Scout workflow routes:", (e as any).message);
   }
 
   console.log("✅ All routes registered successfully");

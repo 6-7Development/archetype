@@ -198,6 +198,17 @@ app.use((req, res, next) => {
 const upload = multer({ dest: 'uploads/' }); // Files will be stored in the 'uploads/' directory
 
 (async () => {
+  // Initialize Scout Agent Configuration & Tool Registry
+  const { initializeDeploymentValidation } = await import('./config/deployment-validation.js');
+  const { initializeScoutTools } = await import('./services/scoutToolRegistry.js');
+  try {
+    initializeDeploymentValidation();
+    initializeScoutTools();
+    console.log('✅ Scout Agent initialized with all tools');
+  } catch (error: any) {
+    console.warn('⚠️ Scout Agent initialization warning:', error.message);
+  }
+
   // CRITICAL: Setup authentication BEFORE registering routes
   // This initializes Passport strategies (local, OIDC) that routes depend on
   const { setupAuth } = await import('./universalAuth.js');
