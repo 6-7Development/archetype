@@ -1,8 +1,9 @@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronRight, Brain, Wrench, CheckCircle2, Loader2 } from "lucide-react"; // Added Loader2
+import { ChevronRight, Brain, Wrench, CheckCircle2, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { cn } from "@/lib/utils";
+import { BeeStatusIndicator } from "@/components/bee-animations";
 
 interface ProgressBlock {
   id: string;
@@ -85,36 +86,39 @@ export function EnhancedMessageDisplay({ content, progressMessages = [], isStrea
     switch (category) {
       case 'thinking':
         return {
-          bg: 'bg-purple-50/50
-          border: 'border-purple-200/50
-          hover: 'hover:bg-purple-100/50
+          bg: 'bg-honey/5 dark:bg-honey/10',
+          border: 'border-honey/20 dark:border-honey/30',
+          hover: 'hover:bg-honey/10 dark:hover:bg-honey/15',
           icon: Brain,
-          iconColor: 'text-purple-600
-          badgeBg: 'bg-purple-500/10',
-          badgeBorder: 'border-purple-500/20',
-          badgeText: 'text-purple-700
+          iconColor: 'text-honey',
+          badgeBg: 'bg-honey/10',
+          badgeBorder: 'border-honey/20',
+          badgeText: 'text-honey',
+          beeStatus: 'thinking' as const,
         };
       case 'action':
         return {
-          bg: 'bg-blue-50/50
-          border: 'border-blue-200/50
-          hover: 'hover:bg-blue-100/50
+          bg: 'bg-mint/5 dark:bg-mint/10',
+          border: 'border-mint/20 dark:border-mint/30',
+          hover: 'hover:bg-mint/10 dark:hover:bg-mint/15',
           icon: Wrench,
-          iconColor: 'text-blue-600
-          badgeBg: 'bg-blue-500/10',
-          badgeBorder: 'border-blue-500/20',
-          badgeText: 'text-blue-700
+          iconColor: 'text-mint',
+          badgeBg: 'bg-mint/10',
+          badgeBorder: 'border-mint/20',
+          badgeText: 'text-mint',
+          beeStatus: 'executing' as const,
         };
       case 'result':
         return {
-          bg: 'bg-green-50/50
-          border: 'border-green-200/50
-          hover: 'hover:bg-green-100/50
+          bg: 'bg-mint/5 dark:bg-mint/10',
+          border: 'border-mint/20 dark:border-mint/30',
+          hover: 'hover:bg-mint/10 dark:hover:bg-mint/15',
           icon: CheckCircle2,
-          iconColor: 'text-green-600
-          badgeBg: 'bg-green-500/10',
-          badgeBorder: 'border-green-500/20',
-          badgeText: 'text-green-700
+          iconColor: 'text-mint',
+          badgeBg: 'bg-mint/10',
+          badgeBorder: 'border-mint/20',
+          badgeText: 'text-mint',
+          beeStatus: 'success' as const,
         };
     }
   };
@@ -123,24 +127,24 @@ export function EnhancedMessageDisplay({ content, progressMessages = [], isStrea
     <div className="space-y-4">
       {blocks.length > 0 && (
         <div className="space-y-2 pb-3 border-b border-border/50">
-          {/* Summary header - Show counts for all categories */}
+          {/* Summary header - Show counts with BeeStatusIndicator */}
           <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground flex-wrap">
             {thinkingCount > 0 && (
-              <span className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-purple-500/10 border border-purple-500/20">
-                <Brain className="w-3.5 h-3.5 text-purple-600 />
-                {thinkingCount} Thinking
+              <span className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-honey/10 border border-honey/20">
+                <BeeStatusIndicator status="thinking" size="xs" />
+                <span className="text-honey">{thinkingCount} Thinking</span>
               </span>
             )}
             {actionCount > 0 && (
-              <span className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-blue-500/10 border border-blue-500/20">
-                <Wrench className="w-3.5 h-3.5 text-blue-600 />
-                {actionCount} Actions
+              <span className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-mint/10 border border-mint/20">
+                <BeeStatusIndicator status="executing" size="xs" />
+                <span className="text-mint">{actionCount} Actions</span>
               </span>
             )}
             {resultCount > 0 && (
-              <span className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-green-500/10 border border-green-500/20">
-                <CheckCircle2 className="w-3.5 h-3.5 text-green-600 />
-                {resultCount} Results
+              <span className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-mint/10 border border-mint/20">
+                <BeeStatusIndicator status="success" size="xs" />
+                <span className="text-mint">{resultCount} Results</span>
               </span>
             )}
           </div>
@@ -148,9 +152,9 @@ export function EnhancedMessageDisplay({ content, progressMessages = [], isStrea
           {/* Individual progress blocks */}
           <div className="space-y-2">
             {visibleBlocks.map((block, index) => {
-              const { bg, border, hover, icon: Icon, iconColor, badgeBg, badgeBorder, badgeText } = getCategoryStyles(block.category);
+              const { bg, border, hover, badgeText, beeStatus } = getCategoryStyles(block.category);
               const isLastVisibleBlock = index === visibleBlocks.length - 1;
-              const showStreamingIndicator = isStreaming && isLastVisibleBlock; // Only show on the last visible block if streaming
+              const showStreamingIndicator = isStreaming && isLastVisibleBlock;
 
               return (
                 <Collapsible
@@ -166,15 +170,15 @@ export function EnhancedMessageDisplay({ content, progressMessages = [], isStrea
                 >
                   <CollapsibleTrigger className="flex w-full items-center justify-between text-sm font-medium">
                     <div className="flex items-center gap-2">
-                      <Icon className={cn("h-4 w-4", iconColor)} />
+                      <BeeStatusIndicator 
+                        status={showStreamingIndicator ? 'working' : beeStatus} 
+                        size="sm" 
+                      />
                       <span className={cn("font-semibold", badgeText)}>
                         {block.category.charAt(0).toUpperCase() + block.category.slice(1)}
                       </span>
-                      {showStreamingIndicator && (
-                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> // Streaming indicator
-                      )}
                     </div>
-                    <ChevronRight className={cn("h-4 w-4 transition-transform", expandedBlocks.has(block.id) && "rotate-90")} />
+                    <ChevronRight className={cn("h-4 w-4 transition-transform text-muted-foreground", expandedBlocks.has(block.id) && "rotate-90")} />
                   </CollapsibleTrigger>
                   <CollapsibleContent className="pt-2 text-sm text-muted-foreground">
                     <MarkdownRenderer content={block.content} />

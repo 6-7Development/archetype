@@ -226,7 +226,7 @@
   }
 }
 
-/* LIGHT MODE - BeeHive Fresh & Bright Theme */
+/* LIGHT MODE - BeeHive Professional Clean Theme */
 :root {
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
@@ -239,60 +239,60 @@
   --elevate-2: rgba(0,0,0, .08);
 
   /* BeeHive Hive/Swarm Brand Colors - Light Mode */
-  --honey: 40 97% 50%;             /* Vibrant honey #F7B500 */
+  --honey: 40 97% 48%;             /* Vibrant honey #F7B500 */
   --nectar: 48 100% 65%;           /* Bright nectar #FFD34D */
-  --mint: 171 100% 42%;            /* Vibrant mint-teal #00D4B3 */
-  --charcoal: 216 9% 7%;           /* Deep charcoal #101113 */
-  --graphite: 216 11% 12%;         /* Professional text #1B1D21 */
-  --cream: 47 100% 95%;            /* Soft warm white */
+  --mint: 168 84% 40%;             /* Vibrant mint-teal #00D9A3 */
+  --charcoal: 220 15% 8%;          /* Deep navy #0A0F1E */
+  --graphite: 222 14% 10%;         /* Professional text #141B2E */
+  --cream: 0 0% 98%;               /* Clean white */
 
-  --background: 40 30% 88%;        /* Soft warm tan background - easy on eyes */
+  --background: 220 15% 98%;       /* Very light navy-tinted background */
 
-  --foreground: 216 11% 12%;       /* Dark graphite text */
+  --foreground: 220 15% 12%;       /* Dark navy text for contrast */
 
-  --border: 40 25% 82%;            /* Softer tan border */
+  --border: 220 13% 90%;           /* Subtle gray border */
 
-  --card: 40 28% 90%;              /* Soft tan cards */
+  --card: 0 0% 100%;               /* White cards for contrast */
 
-  --card-foreground: 216 11% 12%;  /* Dark text on cards */
+  --card-foreground: 220 15% 12%;  /* Dark text on cards */
 
-  --card-border: 40 25% 84%;
+  --card-border: 220 13% 88%;
 
-  --sidebar: 40 30% 87%;           /* Soft tan sidebar */
+  --sidebar: 220 15% 96%;          /* Light gray-blue sidebar */
 
-  --sidebar-foreground: 216 11% 12%;
+  --sidebar-foreground: 220 15% 12%;
 
-  --sidebar-border: 0 0% 89%;
+  --sidebar-border: 220 13% 88%;
 
-  --sidebar-primary: 40 97% 50%;   /* Honey primary - VIBRANT */
+  --sidebar-primary: 40 97% 48%;   /* Honey primary - VIBRANT */
 
-  --sidebar-primary-foreground: 0 0% 100%; /* White text on honey */
+  --sidebar-primary-foreground: 220 15% 8%; /* Dark text on honey for readability */
 
-  --sidebar-accent: 171 100% 42%;  /* Mint accent */
+  --sidebar-accent: 168 84% 40%;   /* Mint accent */
 
   --sidebar-accent-foreground: 0 0% 100%;
 
-  --sidebar-ring: 40 97% 50%;
+  --sidebar-ring: 40 97% 48%;
 
   --popover: 0 0% 100%;
 
-  --popover-foreground: 216 11% 12%;
+  --popover-foreground: 220 15% 8%;
 
-  --popover-border: 0 0% 89%;
+  --popover-border: 220 13% 91%;
 
-  --primary: 40 97% 50%;           /* Honey primary - VIBRANT */
+  --primary: 40 97% 48%;           /* Honey primary - VIBRANT */
 
-  --primary-foreground: 0 0% 100%; /* White text on honey */
+  --primary-foreground: 0 0% 0%;   /* Black text on honey */
 
-  --secondary: 171 100% 42%;       /* Mint secondary - VIBRANT */
+  --secondary: 168 84% 40%;        /* Mint secondary - VIBRANT */
 
   --secondary-foreground: 0 0% 100%;
 
-  --muted: 40 25% 86%;             /* Soft tan muted background */
+  --muted: 220 14% 96%;            /* Light muted background */
 
-  --muted-foreground: 216 11% 20%;  /* Dark grey text - stronger contrast on tan */
+  --muted-foreground: 220 9% 46%;  /* Medium gray text */
 
-  --accent: 171 100% 42%;          /* Mint accent */
+  --accent: 168 84% 40%;           /* Mint accent */
 
   --accent-foreground: 0 0% 100%;
 
@@ -300,8 +300,8 @@
 
   --destructive-foreground: 0 0% 100%;
 
-  --input: 40 28% 88%;
-  --ring: 40 97% 50%;
+  --input: 220 14% 96%;
+  --ring: 40 97% 48%;
   --chart-1: 220 85% 42%;
   --chart-2: 142 65% 48%;
   --chart-3: 38 88% 52%;
@@ -354,7 +354,7 @@
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
 
-/* DARK MODE - Eye-Friendly Charcoal Theme */
+/* DARK MODE - Deep Navy Premium Theme */
 .dark {
   --button-outline: rgba(255,255,255, .10);
   --badge-outline: rgba(255,255,255, .05);
@@ -363,73 +363,73 @@
   --opaque-button-border-intensity: 8;
 
   /* Backgrounds applied on top of other backgrounds when hovered/active */
-  --elevate-1: rgba(255,255,255, .03);
-  --elevate-2: rgba(255,255,255, .08);
+  --elevate-1: rgba(255,255,255, .04);
+  --elevate-2: rgba(255,255,255, .10);
 
   /* BeeHive Hive/Swarm Brand Colors - Dark Mode */
-  --honey: 40 97% 50%;             /* Vibrant honey #F7B500 */
+  --honey: 40 97% 48%;             /* Vibrant honey #F7B500 */
   --nectar: 48 100% 65%;           /* Bright nectar #FFD34D */
-  --mint: 171 100% 42%;            /* Vibrant mint-teal #00D4B3 */
-  --charcoal: 216 9% 7%;           /* Deep charcoal #101113 */
-  --graphite: 216 11% 12%;         /* Professional text #1B1D21 */
-  --cream: 45 20% 98%;             /* Subtle warm white */
+  --mint: 168 84% 40%;             /* Vibrant mint-teal #00D9A3 */
+  --charcoal: 220 15% 8%;          /* Deep navy #0A0F1E */
+  --graphite: 222 14% 10%;         /* Professional text #141B2E */
+  --cream: 0 0% 98%;               /* Clean white */
 
-  --background: 40 30% 18%;        /* Dark tan background - warm and comfortable */
+  --background: 220 15% 8%;        /* Deep navy background #0A0F1E */
 
-  --foreground: 0 0% 95%;          /* Light text for dark background */
+  --foreground: 0 0% 98%;          /* White text for contrast */
 
-  --border: 40 25% 30%;            /* Dark tan border */
+  --border: 222 14% 18%;           /* Navy border */
 
-  --card: 40 30% 22%;              /* Slightly lighter tan cards */
+  --card: 222 14% 10%;             /* Elevated navy cards #141B2E */
 
-  --card-foreground: 0 0% 95%;
+  --card-foreground: 0 0% 98%;
 
-  --card-border: 40 25% 35%;
+  --card-border: 222 14% 18%;
 
-  --sidebar: 40 30% 20%;           /* Dark tan sidebar */
+  --sidebar: 222 14% 10%;          /* Elevated sidebar #141B2E */
 
-  --sidebar-foreground: 0 0% 95%;
+  --sidebar-foreground: 0 0% 98%;
 
-  --sidebar-border: 216 12% 25%;
+  --sidebar-border: 222 14% 18%;
 
-  --sidebar-primary: 40 97% 50%;   /* Honey primary - VIBRANT */
+  --sidebar-primary: 40 97% 48%;   /* Honey primary - VIBRANT */
 
-  --sidebar-primary-foreground: 216 11% 12%; /* Graphite text on honey */
+  --sidebar-primary-foreground: 0 0% 0%; /* Black text on honey */
 
-  --sidebar-accent: 171 100% 42%;  /* Mint accent */
+  --sidebar-accent: 168 84% 40%;   /* Mint accent #00D9A3 */
 
   --sidebar-accent-foreground: 0 0% 100%;
 
-  --sidebar-ring: 40 97% 50%;
+  --sidebar-ring: 40 97% 48%;
 
-  --popover: 218 14% 15%;
+  --popover: 222 14% 10%;
 
-  --popover-foreground: 0 0% 95%;
+  --popover-foreground: 0 0% 98%;
 
-  --popover-border: 216 12% 25%;
+  --popover-border: 222 14% 18%;
 
-  --primary: 40 97% 50%;           /* Honey primary - VIBRANT */
+  --primary: 40 97% 48%;           /* Honey primary - VIBRANT */
 
-  --primary-foreground: 216 11% 12%; /* Graphite text for contrast */
+  --primary-foreground: 0 0% 0%;   /* Black text on honey */
 
-  --secondary: 171 100% 42%;       /* Mint secondary - VIBRANT */
+  --secondary: 168 84% 40%;        /* Mint secondary - VIBRANT #00D9A3 */
 
   --secondary-foreground: 0 0% 100%;
 
-  --muted: 218 14% 20%;            /* Muted dark tone */
+  --muted: 222 14% 14%;            /* Muted elevated navy */
 
-  --muted-foreground: 0 0% 88%;    /* Bright text - strong contrast on dark */
+  --muted-foreground: 0 0% 82%;    /* Light gray text */
 
-  --accent: 171 100% 42%;          /* Mint accent - energetic */
+  --accent: 168 84% 40%;           /* Mint accent - energetic */
 
-  --accent-foreground: 216 11% 12%;
+  --accent-foreground: 0 0% 100%;
 
   --destructive: 0 85% 60%;
 
   --destructive-foreground: 0 0% 100%;
 
-  --input: 40 30% 25%;
-  --ring: 40 97% 50%;
+  --input: 222 14% 14%;
+  --ring: 40 97% 48%;
   --chart-1: 220 85% 42%;
   --chart-2: 142 65% 48%;
   --chart-3: 38 88% 52%;
@@ -440,14 +440,14 @@
   --font-serif: Georgia, serif;
   --font-mono: 'JetBrains Mono', Consolas, 'Courier New', monospace;
   --radius: .5rem;
-  --shadow-2xs: 0px 1px 2px 0px hsl(220 13% 9% / 0.05);
-  --shadow-xs: 0px 1px 2px 0px hsl(220 13% 9% / 0.06);
-  --shadow-sm: 0px 1px 3px 0px hsl(220 13% 9% / 0.1), 0px 1px 2px -1px hsl(220 13% 9% / 0.1);
-  --shadow: 0px 1px 3px 0px hsl(220 13% 9% / 0.1), 0px 1px 2px -1px hsl(220 13% 9% / 0.1);
-  --shadow-md: 0px 4px 6px -1px hsl(220 13% 9% / 0.1), 0px 2px 4px -2px hsl(220 13% 9% / 0.1);
-  --shadow-lg: 0px 10px 15px -3px hsl(220 13% 9% / 0.1), 0px 4px 6px -4px hsl(220 13% 9% / 0.1);
-  --shadow-xl: 0px 20px 25px -5px hsl(220 13% 9% / 0.1), 0px 8px 10px -6px hsl(220 13% 9% / 0.1);
-  --shadow-2xl: 0px 25px 50px -12px hsl(220 13% 9% / 0.25);
+  --shadow-2xs: 0px 1px 2px 0px hsl(220 13% 4% / 0.3);
+  --shadow-xs: 0px 1px 2px 0px hsl(220 13% 4% / 0.4);
+  --shadow-sm: 0px 1px 3px 0px hsl(220 13% 4% / 0.5), 0px 1px 2px -1px hsl(220 13% 4% / 0.5);
+  --shadow: 0px 1px 3px 0px hsl(220 13% 4% / 0.5), 0px 1px 2px -1px hsl(220 13% 4% / 0.5);
+  --shadow-md: 0px 4px 6px -1px hsl(220 13% 4% / 0.5), 0px 2px 4px -2px hsl(220 13% 4% / 0.5);
+  --shadow-lg: 0px 10px 15px -3px hsl(220 13% 4% / 0.5), 0px 4px 6px -4px hsl(220 13% 4% / 0.5);
+  --shadow-xl: 0px 20px 25px -5px hsl(220 13% 4% / 0.5), 0px 8px 10px -6px hsl(220 13% 4% / 0.5);
+  --shadow-2xl: 0px 25px 50px -12px hsl(220 13% 4% / 0.6);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 
@@ -515,6 +515,92 @@
 
 .button-glow-mint {
   animation: glow-mint 3s ease-in-out infinite;
+}
+
+/* Bee Status Indicator Animations */
+@keyframes bee-thinking {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-2px) rotate(3deg);
+  }
+  50% {
+    transform: translateY(0) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-2px) rotate(-3deg);
+  }
+}
+
+@keyframes bee-working {
+  0%, 100% {
+    transform: scale(1) translateX(0);
+  }
+  25% {
+    transform: scale(1.05) translateX(1px);
+  }
+  50% {
+    transform: scale(1) translateX(0);
+  }
+  75% {
+    transform: scale(1.05) translateX(-1px);
+  }
+}
+
+@keyframes bee-executing {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes bee-success {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.bee-thinking {
+  animation: bee-thinking 1.2s ease-in-out infinite;
+}
+
+.bee-working {
+  animation: bee-working 0.8s ease-in-out infinite;
+}
+
+.bee-executing {
+  animation: bee-executing 1s ease-in-out infinite;
+}
+
+.bee-success {
+  animation: bee-success 0.4s ease-out;
+}
+
+/* Queen Bee Pulse Ring */
+@keyframes bee-pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.bee-pulse-ring {
+  animation: bee-pulse-ring 1.2s ease-out infinite;
 }
 
 /**
