@@ -179,10 +179,21 @@ function Navigation({ menuOpen, setMenuOpen }: NavigationProps) {
 function HeroSection() {
   const HeroBadgeIcon = HERO.badge.icon;
   const PrimaryCtaIcon = HERO.cta.primary.icon;
+  const [queenBeeMode] = useState<'IDLE' | 'LISTENING' | 'TYPING' | 'THINKING' | 'CODING' | 'BUILDING' | 'SUCCESS' | 'ERROR' | 'SWARM'>('THINKING');
 
   return (
     <section className="pt-32 sm:pt-36 md:pt-44 pb-12 sm:pb-20 md:pb-24 px-3 sm:px-6 relative z-10">
       <div className={`container mx-auto ${LAYOUT.container.lg} text-center`}>
+        {/* Queen Bee Logo Display */}
+        <div className="flex justify-center mb-8">
+          <BeeHiveLogo
+            size="lg"
+            showText={false}
+            showQueenBee={true}
+            queenBeeMode={queenBeeMode}
+            variant="primary"
+          />
+        </div>
         {/* Badge */}
         <div
           className={`mb-6 sm:mb-8 inline-flex items-center gap-2 px-4 py-2 sm:gap-3 sm:px-6 sm:py-3 rounded-full bg-gradient-to-r ${THEME.gradients.hero} border border-honey/20 backdrop-blur-sm shadow-sm hover-elevate transition-all ${ANIMATIONS.duration.normal}`}

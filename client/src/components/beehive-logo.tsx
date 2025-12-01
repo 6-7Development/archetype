@@ -296,10 +296,11 @@ export function BeeHiveLogo({
   return (
     <div
       className={`inline-flex items-center ${showText ? 'gap-3' : ''} ${className}`}
-      style={{ overflow: 'hidden' }}
+      style={{ overflow: 'visible' }}
     >
       {/* Professional Honeycomb Mark with Polished Hero Bee */}
-      <svg
+      <div style={{ position: 'relative', display: 'inline-flex', flexShrink: 0 }}>
+        <svg
         width={svgSize}
         height={svgSize}
         viewBox={`0 0 ${CONFIG.viewBox.width} ${CONFIG.viewBox.height}`}
@@ -557,17 +558,27 @@ export function BeeHiveLogo({
 
       </svg>
 
-      {/* Animated Queen Bee with Emotions Overlay */}
-      {showQueenBee && (
-        <div className="relative" style={{ width: svgSize, height: svgSize, marginLeft: '-4px' }}>
-          <QueenBeeCanvas
-            mode={queenBeeMode}
-            width={svgSize}
-            height={svgSize}
-            className="absolute inset-0"
-          />
-        </div>
-      )}
+        {/* Animated Queen Bee with Emotions Overlay */}
+        {showQueenBee && (
+          <div 
+            style={{ 
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: svgSize,
+              height: svgSize,
+              zIndex: 10,
+              pointerEvents: 'none'
+            }}
+          >
+            <QueenBeeCanvas
+              mode={queenBeeMode}
+              width={svgSize}
+              height={svgSize}
+            />
+          </div>
+        )}
+      </div>
 
       {/* BeeHive Wordmark */}
       {showText && (
