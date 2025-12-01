@@ -25,6 +25,7 @@ import { AgentProgress, type ProgressStep, type ProgressMetrics } from "@/compon
 import { useWebSocketStream } from "@/hooks/use-websocket-stream";
 import { ConnectionStatus } from "@/components/connection-status";
 import { HexOrbitLoader } from "@/components/bee-animations";
+import { SwarmModeButton, SwarmVisualization } from "@/components/swarm-mode-button";
 import { nanoid } from "nanoid";
 import CostPreview from "@/components/cost-preview";
 import { ChangesPanel } from "@/components/changes-panel";
@@ -158,6 +159,7 @@ export function UniversalChat({
   const [activeTasks, setActiveTasks] = useState<SubagentTask[]>([]);
   const [showArchitectApproval, setShowArchitectApproval] = useState(false);
   const [architectGuidance, setArchitectGuidance] = useState<any>(null);
+  const [swarmModeActive, setSwarmModeActive] = useState(false);
   const { status: rateLimitStatus } = useRateLimitPolling(true);
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -597,7 +599,7 @@ export function UniversalChat({
       />
 
       {/* Compact Chat Header with RBAC Context Switcher + Context Rail Toggle */}
-      <div className="flex items-center justify-between border-b bg-muted/10 px-3 py-1.5">
+      <div className="flex items-center justify-between border-b bg-muted/10 px-3 py-1.5 gap-2">
         <ChatHeader
           targetContext={activeContext}
           isConnected={true}
@@ -606,19 +608,36 @@ export function UniversalChat({
           onHistoryClick={() => window.location.href = '/consultation-history'}
           onContextChange={handleContextChange}
         />
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => setShowContextRail(!showContextRail)}
-          className="h-7 px-2 text-xs text-muted-foreground hover:text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/10"
-          data-testid="button-toggle-context-rail-header"
-          aria-pressed={showContextRail}
-          title={showContextRail ? "Hide context panel" : "Show context panel"}
-        >
-          {showContextRail ? <PanelRightClose className="h-4 w-4 mr-1" /> : <PanelRight className="h-4 w-4 mr-1" />}
-          <span className="hidden sm:inline">{showContextRail ? "Hide Panel" : "Context"}</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <SwarmModeButton
+            isActive={swarmModeActive}
+            onActivate={() => {
+              setSwarmModeActive(!swarmModeActive);
+              toast({
+                title: swarmModeActive ? 'SWARM Mode Disabled' : 'SWARM Mode Enabled',
+                description: swarmModeActive ? 'Switched to sequential execution' : 'Parallel multi-agent execution enabled',
+              });
+            }}
+            disabled={isGenerating}
+            data-testid="button-swarm-mode"
+          />
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setShowContextRail(!showContextRail)}
+            className="h-7 px-2 text-xs text-muted-foreground hover:text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/10"
+            data-testid="button-toggle-context-rail-header"
+            aria-pressed={showContextRail}
+            title={showContextRail ? "Hide context panel" : "Show context panel"}
+          >
+            {showContextRail ? <PanelRightClose className="h-4 w-4 mr-1" /> : <PanelRight className="h-4 w-4 mr-1" />}
+            <span className="hidden sm:inline">{showContextRail ? "Hide Panel" : "Context"}</span>
+          </Button>
+        </div>
       </div>
+
+      {/* SWARM Visualization Overlay */}
+      {(swarmModeActive && isGenerating) && <SwarmVisualization />}
 
       {/* Chat Container - Full Height */}
       <div className="flex flex-col flex-1 min-h-0 overflow-hidden">

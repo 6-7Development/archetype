@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, Maximize2, Eye, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { RefreshCw, Maximize2, Eye, CheckCircle2, AlertCircle, Loader2, Zap, Code, Wand2, FileCode, TestTube } from "lucide-react";
 import { useWebSocketStream, addWebSocketListener, sendWebSocketMessage } from "@/hooks/use-websocket-stream";
+import { motion } from "framer-motion";
+import { QueenBeeAnimation } from "@/components/queen-bee-animation";
 
 interface LivePreviewProps {
   projectId: string | null;
@@ -128,14 +130,101 @@ export function LivePreview({ projectId, fileCount = 0, refreshKey = 0 }: LivePr
 
   if (!projectId) {
     return (
-      <div className="h-full flex items-center justify-center p-6 bg-gradient-to-br from-amber-50 to-white dark:from-slate-900 dark:to-slate-800">
-        <div className="text-center max-w-md">
-          <Eye className="w-16 h-16 mx-auto mb-4 text-amber-600 dark:text-amber-400" />
-          <h3 className="text-lg font-semibold mb-2 text-slate-900 dark:text-white">No Project Selected</h3>
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            Select or create a project to see a live preview
+      <div className="h-full flex flex-col p-6 bg-gradient-to-br from-amber-50 via-white to-teal-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 overflow-auto">
+        {/* SWARM Animation Header */}
+        <div className="text-center mb-6">
+          <div className="relative w-20 h-20 mx-auto mb-4">
+            <QueenBeeAnimation isAnimating emotion="thinking" size="lg" />
+            {/* SWARM particles around bee */}
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-2 h-2 rounded-full bg-amber-400"
+                style={{
+                  left: '50%',
+                  top: '50%',
+                }}
+                animate={{
+                  x: [0, Math.cos(i * 60 * Math.PI / 180) * 40, 0],
+                  y: [0, Math.sin(i * 60 * Math.PI / 180) * 40, 0],
+                  opacity: [0, 1, 0],
+                  scale: [0.5, 1, 0.5],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  delay: i * 0.3,
+                  ease: "easeInOut",
+                }}
+              />
+            ))}
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+            BeeHive Preview
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-300 max-w-sm mx-auto">
+            Start a project or ask Scout to build something to see it here
           </p>
         </div>
+
+        {/* Feature Cards */}
+        <div className="grid grid-cols-2 gap-3 max-w-lg mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="p-4 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-amber-200 dark:border-amber-800/50 shadow-sm"
+          >
+            <Code className="w-6 h-6 text-amber-600 dark:text-amber-400 mb-2" />
+            <h4 className="font-semibold text-sm text-slate-900 dark:text-white">Code Generation</h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Scout writes production code</p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="p-4 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-teal-200 dark:border-teal-800/50 shadow-sm"
+          >
+            <Zap className="w-6 h-6 text-teal-600 dark:text-teal-400 mb-2" />
+            <h4 className="font-semibold text-sm text-slate-900 dark:text-white">SWARM Mode</h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Parallel multi-agent execution</p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="p-4 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-purple-200 dark:border-purple-800/50 shadow-sm"
+          >
+            <Wand2 className="w-6 h-6 text-purple-600 dark:text-purple-400 mb-2" />
+            <h4 className="font-semibold text-sm text-slate-900 dark:text-white">Auto Healing</h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Self-fixing platform</p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="p-4 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-blue-200 dark:border-blue-800/50 shadow-sm"
+          >
+            <TestTube className="w-6 h-6 text-blue-600 dark:text-blue-400 mb-2" />
+            <h4 className="font-semibold text-sm text-slate-900 dark:text-white">Browser Testing</h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Playwright integration</p>
+          </motion.div>
+        </div>
+
+        {/* Demo CTA */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-6 text-center"
+        >
+          <Badge className="bg-gradient-to-r from-amber-500 to-teal-500 text-white border-0">
+            Ask Scout: "Build me a todo app"
+          </Badge>
+        </motion.div>
       </div>
     );
   }
