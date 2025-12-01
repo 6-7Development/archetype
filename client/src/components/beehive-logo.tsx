@@ -259,55 +259,61 @@ export function BeeHiveLogo({
         {/* Swarm bee 1 - top right */}
         <g 
           className={animated ? "swarm-bee swarm-bee-1" : ""}
+          transform="translate(44 12)"
         >
-          <ellipse cx="44" cy="12" rx="2.2" ry="1.6" fill={colors.mint} opacity="0.45" />
-          <circle cx="44" cy="14" r="1.2" fill={colors.honey} />
-          <circle cx="44" cy="13" r="0.7" fill={colors.dark} />
+          <ellipse cx="0" cy="0" rx="2.2" ry="1.6" fill={colors.mint} opacity="0.45" />
+          <circle cx="0" cy="2" r="1.2" fill={colors.honey} />
+          <circle cx="0" cy="1" r="0.7" fill={colors.dark} />
         </g>
 
         {/* Swarm bee 2 - right */}
         <g 
           className={animated ? "swarm-bee swarm-bee-2" : ""}
+          transform="translate(55 30)"
         >
-          <ellipse cx="55" cy="30" rx="2.2" ry="1.6" fill={colors.mint} opacity="0.45" />
-          <circle cx="55" cy="32" r="1.2" fill={colors.honey} />
-          <circle cx="55" cy="31" r="0.7" fill={colors.dark} />
+          <ellipse cx="0" cy="0" rx="2.2" ry="1.6" fill={colors.mint} opacity="0.45" />
+          <circle cx="0" cy="2" r="1.2" fill={colors.honey} />
+          <circle cx="0" cy="1" r="0.7" fill={colors.dark} />
         </g>
 
         {/* Swarm bee 3 - bottom right */}
         <g 
           className={animated ? "swarm-bee swarm-bee-3" : ""}
+          transform="translate(46 50)"
         >
-          <ellipse cx="46" cy="50" rx="2.2" ry="1.6" fill={colors.mint} opacity="0.45" />
-          <circle cx="46" cy="52" r="1.2" fill={colors.honey} />
-          <circle cx="46" cy="51" r="0.7" fill={colors.dark} />
+          <ellipse cx="0" cy="0" rx="2.2" ry="1.6" fill={colors.mint} opacity="0.45" />
+          <circle cx="0" cy="2" r="1.2" fill={colors.honey} />
+          <circle cx="0" cy="1" r="0.7" fill={colors.dark} />
         </g>
 
         {/* Swarm bee 4 - bottom left */}
         <g 
           className={animated ? "swarm-bee swarm-bee-4" : ""}
+          transform="translate(16 50)"
         >
-          <ellipse cx="16" cy="50" rx="2.2" ry="1.6" fill={colors.mint} opacity="0.45" />
-          <circle cx="16" cy="52" r="1.2" fill={colors.honey} />
-          <circle cx="16" cy="51" r="0.7" fill={colors.dark} />
+          <ellipse cx="0" cy="0" rx="2.2" ry="1.6" fill={colors.mint} opacity="0.45" />
+          <circle cx="0" cy="2" r="1.2" fill={colors.honey} />
+          <circle cx="0" cy="1" r="0.7" fill={colors.dark} />
         </g>
 
         {/* Swarm bee 5 - left */}
         <g 
           className={animated ? "swarm-bee swarm-bee-5" : ""}
+          transform="translate(8 30)"
         >
-          <ellipse cx="8" cy="30" rx="2.2" ry="1.6" fill={colors.mint} opacity="0.45" />
-          <circle cx="8" cy="32" r="1.2" fill={colors.honey} />
-          <circle cx="8" cy="31" r="0.7" fill={colors.dark} />
+          <ellipse cx="0" cy="0" rx="2.2" ry="1.6" fill={colors.mint} opacity="0.45" />
+          <circle cx="0" cy="2" r="1.2" fill={colors.honey} />
+          <circle cx="0" cy="1" r="0.7" fill={colors.dark} />
         </g>
 
         {/* Swarm bee 6 - top left */}
         <g 
           className={animated ? "swarm-bee swarm-bee-6" : ""}
+          transform="translate(18 12)"
         >
-          <ellipse cx="18" cy="12" rx="2.2" ry="1.6" fill={colors.mint} opacity="0.45" />
-          <circle cx="18" cy="14" r="1.2" fill={colors.honey} />
-          <circle cx="18" cy="13" r="0.7" fill={colors.dark} />
+          <ellipse cx="0" cy="0" rx="2.2" ry="1.6" fill={colors.mint} opacity="0.45" />
+          <circle cx="0" cy="2" r="1.2" fill={colors.honey} />
+          <circle cx="0" cy="1" r="0.7" fill={colors.dark} />
         </g>
       </svg>
 
