@@ -4,18 +4,97 @@
  * A draggable, persistent queen bee with complete emotional range.
  * - 18 different emotional states
  * - Interactive hints when hovering UI elements
- * - Worker bees that follow mouse
+ * - Worker bees that follow mouse (spawn near queen)
  * - Woosh trail effects when dragging
  * - Contextual messages and suggestions
+ * - Seasonal themes (Christmas decorations!)
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { QueenBeeCanvas, BeeMode } from './queen-bee-canvas';
 import { useQueenBee, SIZE_DIMENSIONS, QueenBeeMode } from '@/contexts/queen-bee-context';
-import { GripVertical, RefreshCw, Sparkles, Heart, Zap, Coffee, PartyPopper, Ear, Pencil, Brain, Code, Hammer, CheckCircle, Bell, Bug, Lightbulb, Moon, HelpCircle, Target, Hand, Keyboard, ScrollText } from 'lucide-react';
+import { GripVertical, RefreshCw, Sparkles, Heart, Zap, Coffee, PartyPopper, Ear, Pencil, Brain, Code, Hammer, CheckCircle, Bell, Bug, Lightbulb, Moon, HelpCircle, Target, Hand, Keyboard, ScrollText, Snowflake, Gift, Star, TreePine, Candy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Seasonal Detection - Check if it's Christmas season (Nov 15 - Jan 5)
+function isChristmasSeason(): boolean {
+  const now = new Date();
+  const month = now.getMonth(); // 0-indexed (0=Jan, 11=Dec)
+  const day = now.getDate();
+  
+  // November 15 - December 31
+  if (month === 10 && day >= 15) return true;
+  if (month === 11) return true;
+  // January 1-5
+  if (month === 0 && day <= 5) return true;
+  
+  return false; // Dynamic date-based detection
+}
+
+// Christmas-themed messages
+const CHRISTMAS_MESSAGES: Record<QueenBeeMode, string> = {
+  'IDLE': 'Ho ho ho! Merry coding!',
+  'LISTENING': 'Santa Bee is listening...',
+  'TYPING': 'Writing your wishlist...',
+  'THINKING': 'Checking the nice list...',
+  'CODING': 'Coding presents!',
+  'BUILDING': 'Building a toy factory!',
+  'SUCCESS': 'Gift wrapped!',
+  'ERROR': 'Uh oh, coal!',
+  'SWARM': 'Elf swarm activated!',
+  'LOADING': 'Loading the sleigh...',
+  'CURIOUS': 'Peeking at presents?',
+  'ALERT': 'Jingle alert!',
+  'EXCITED': 'Holiday cheer!',
+  'HELPFUL': 'Spreading joy!',
+  'SLEEPY': 'Dreaming of sugarplums...',
+  'CELEBRATING': 'Merry celebration!',
+  'CONFUSED': 'Tangled lights?',
+  'FOCUSED': 'Wrapping focus!',
+};
+
+// Snowflake particle component - client-safe with mounted state
+interface SnowflakeProps {
+  id: number;
+  startX: number;
+  delay: number;
+  windowHeight: number; // Pass window height as prop for SSR safety
+}
+
+function FallingSnowflake({ id, startX, delay, windowHeight }: SnowflakeProps) {
+  // Use stable scale based on id instead of random() during render
+  const scale = useMemo(() => 0.5 + (id % 10) * 0.05, [id]);
+  const duration = useMemo(() => 8 + (id % 5), [id]);
+  
+  return (
+    <motion.div
+      className="fixed pointer-events-none z-[95]"
+      initial={{ 
+        x: startX, 
+        y: -20, 
+        opacity: 0.8,
+        rotate: 0,
+        scale,
+      }}
+      animate={{ 
+        y: [null, windowHeight + 20],
+        x: [null, startX + Math.sin(id) * 50],
+        opacity: [0.8, 0.6, 0.4, 0],
+        rotate: [0, 360],
+      }}
+      transition={{ 
+        duration,
+        delay: delay,
+        repeat: Infinity,
+        ease: "linear",
+      }}
+    >
+      <Snowflake className="w-3 h-3 text-blue-200 drop-shadow-md" />
+    </motion.div>
+  );
+}
 
 // Map QueenBeeMode to canvas BeeMode
 function mapToCanvasMode(mode: QueenBeeMode): BeeMode {
@@ -161,13 +240,29 @@ interface WorkerBeeProps {
 }
 
 function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: WorkerBeeProps) {
-  const [pos, setPos] = useState({ x: queenX, y: queenY });
+  // FIX: Initialize position near queen with small offset based on ID for visual spread
+  const initialOffset = useMemo(() => ({
+    x: Math.cos(id * (Math.PI / 4)) * 15,
+    y: Math.sin(id * (Math.PI / 4)) * 15,
+  }), [id]);
+  
+  const [pos, setPos] = useState({ x: queenX + initialOffset.x, y: queenY + initialOffset.y });
   const [velocity, setVelocity] = useState({ x: 0, y: 0 });
   const [wingRotation, setWingRotation] = useState(0);
   const [behavior, setBehavior] = useState<'chase' | 'swarm' | 'evade' | 'formation'>('chase');
-  const posRef = useRef({ x: queenX, y: queenY });
+  const posRef = useRef({ x: queenX + initialOffset.x, y: queenY + initialOffset.y });
   const velRef = useRef({ x: 0, y: 0 });
   const timeRef = useRef(0);
+  const hasInitializedRef = useRef(false);
+  
+  // FIX: Reset position to near queen when queen position changes significantly
+  useEffect(() => {
+    if (!hasInitializedRef.current) {
+      posRef.current = { x: queenX + initialOffset.x, y: queenY + initialOffset.y };
+      setPos({ x: queenX + initialOffset.x, y: queenY + initialOffset.y });
+      hasInitializedRef.current = true;
+    }
+  }, [queenX, queenY, initialOffset]);
   
   // Different behavior based on mode
   const isAngry = mode === 'ERROR' || mode === 'CONFUSED' || mode === 'ALERT';
@@ -181,11 +276,26 @@ function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: Wo
   // Update bee physics and behavior
   useEffect(() => {
     if (!isChasing) {
-      // Return to queen when not active
-      const newX = queenX + (Math.random() - 0.5) * 10;
-      const newY = queenY + (Math.random() - 0.5) * 10;
-      setPos({ x: newX, y: newY });
+      // FIX: Return to near queen position (not random spots) - use consistent offset based on bee ID
+      const returnX = queenX + Math.cos(id * (Math.PI / 4)) * 20;
+      const returnY = queenY + Math.sin(id * (Math.PI / 4)) * 20;
+      
+      // Smoothly move back to queen instead of teleporting
+      const dx = returnX - posRef.current.x;
+      const dy = returnY - posRef.current.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      
+      if (dist > 5) {
+        // Gradually move towards queen
+        posRef.current.x += dx * 0.1;
+        posRef.current.y += dy * 0.1;
+        setPos({ x: posRef.current.x, y: posRef.current.y });
+      } else {
+        setPos({ x: returnX, y: returnY });
+        posRef.current = { x: returnX, y: returnY };
+      }
       setVelocity({ x: 0, y: 0 });
+      velRef.current = { x: 0, y: 0 };
       return;
     }
     
@@ -458,6 +568,7 @@ export function FloatingQueenBee() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [showTooltip, setShowTooltip] = useState(false);
+  const [isHoveringBee, setIsHoveringBee] = useState(false); // FIX: Track hover state
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isMouseNearBee, setIsMouseNearBee] = useState(false);
   const [wooshTrail, setWooshTrail] = useState<WooshParticle[]>([]);
@@ -465,8 +576,40 @@ export function FloatingQueenBee() {
   const [lastDragPos, setLastDragPos] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const wooshIdRef = useRef(0);
+  const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null); // FIX: Track tooltip timeout
   
   const NUM_WORKERS = 8;
+  
+  // SEASONAL: Christmas theme detection
+  const isChristmas = useMemo(() => isChristmasSeason(), []);
+  
+  // Client-side window dimensions for snowflakes (SSR-safe)
+  const [windowDimensions, setWindowDimensions] = useState({ width: 1000, height: 800 });
+  const [isMounted, setIsMounted] = useState(false);
+  
+  // Initialize window dimensions only on client mount
+  useEffect(() => {
+    setIsMounted(true);
+    if (typeof window !== 'undefined') {
+      setWindowDimensions({ width: window.innerWidth, height: window.innerHeight });
+      const handleResize = () => {
+        setWindowDimensions({ width: window.innerWidth, height: window.innerHeight });
+      };
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, []);
+  
+  // Generate snowflake positions for Christmas (stable based on id, not random)
+  const snowflakes = useMemo(() => {
+    if (!isChristmas || !isMounted) return [];
+    return Array.from({ length: 15 }, (_, i) => ({
+      id: i,
+      // Use stable position based on id for consistent hydration
+      startX: (i * 67) % windowDimensions.width, // Distribute across screen
+      delay: (i * 0.5) % 8, // Staggered delays
+    }));
+  }, [isChristmas, isMounted, windowDimensions.width]);
   
   const [isMobile, setIsMobile] = useState(false);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
@@ -609,14 +752,70 @@ export function FloatingQueenBee() {
     return () => clearInterval(interval);
   }, []);
 
-  // Show tooltip on mode changes
+  // FIX: Improved tooltip timing - stays visible while hovering or when there's a hint
   useEffect(() => {
+    // Clear any existing timeout
+    if (tooltipTimeoutRef.current) {
+      clearTimeout(tooltipTimeoutRef.current);
+      tooltipTimeoutRef.current = null;
+    }
+    
     if (mode !== 'IDLE' && mode !== 'SLEEPY') {
       setShowTooltip(true);
-      const timer = setTimeout(() => setShowTooltip(false), 2500);
-      return () => clearTimeout(timer);
+      
+      // Only auto-hide if NOT hovering and NO active hint
+      if (!isHoveringBee && !currentHint) {
+        tooltipTimeoutRef.current = setTimeout(() => {
+          setShowTooltip(false);
+        }, 5000); // Extended from 2500ms to 5000ms
+      }
     }
-  }, [mode]);
+    
+    return () => {
+      if (tooltipTimeoutRef.current) {
+        clearTimeout(tooltipTimeoutRef.current);
+      }
+    };
+  }, [mode, isHoveringBee, currentHint]);
+  
+  // FIX: Keep tooltip visible while there's an active hint (user hovering UI elements)
+  useEffect(() => {
+    if (currentHint) {
+      setShowTooltip(true);
+      // Clear any hide timeout while there's an active hint
+      if (tooltipTimeoutRef.current) {
+        clearTimeout(tooltipTimeoutRef.current);
+        tooltipTimeoutRef.current = null;
+      }
+    } else if (!isHoveringBee) {
+      // Only start hide timer when hint clears AND not hovering bee
+      tooltipTimeoutRef.current = setTimeout(() => {
+        if (!currentHint && !isHoveringBee) {
+          setShowTooltip(false);
+        }
+      }, 3000); // Give 3 seconds after hint clears
+    }
+  }, [currentHint, isHoveringBee]);
+  
+  // Bee hover handlers for keeping tooltip visible
+  const handleBeeMouseEnter = useCallback(() => {
+    setIsHoveringBee(true);
+    setShowTooltip(true);
+    if (tooltipTimeoutRef.current) {
+      clearTimeout(tooltipTimeoutRef.current);
+      tooltipTimeoutRef.current = null;
+    }
+  }, []);
+  
+  const handleBeeMouseLeave = useCallback(() => {
+    setIsHoveringBee(false);
+    // Start timer to hide tooltip after leaving bee
+    tooltipTimeoutRef.current = setTimeout(() => {
+      if (!currentHint) {
+        setShowTooltip(false);
+      }
+    }, 2000);
+  }, [currentHint]);
 
   if (!config.isVisible) {
     return (
@@ -698,6 +897,11 @@ export function FloatingQueenBee() {
         )}
       </AnimatePresence>
 
+      {/* CHRISTMAS: Falling Snowflakes (only render on client after mount) */}
+      {isChristmas && isMounted && snowflakes.map((flake) => (
+        <FallingSnowflake key={flake.id} {...flake} windowHeight={windowDimensions.height} />
+      ))}
+
       {/* Worker Bees */}
       {!isMobile && (
         <>
@@ -730,6 +934,8 @@ export function FloatingQueenBee() {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
+        onMouseEnter={handleBeeMouseEnter}
+        onMouseLeave={handleBeeMouseLeave}
         animate={{
           scale: isDragging ? 1.2 : isMouseNearBee ? 1.08 : mode === 'SLEEPY' ? 0.95 : 1,
           rotate: mode === 'ERROR' || mode === 'CONFUSED' 
@@ -826,7 +1032,7 @@ export function FloatingQueenBee() {
 
           {/* Helpful heart */}
           <AnimatePresence>
-            {mode === 'HELPFUL' && (
+            {mode === 'HELPFUL' && !isChristmas && (
               <motion.div
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1, y: [-5, -10, -5] }}
@@ -839,6 +1045,83 @@ export function FloatingQueenBee() {
             )}
           </AnimatePresence>
 
+          {/* CHRISTMAS: Santa Hat */}
+          {isChristmas && (
+            <motion.div
+              className="absolute -top-4 -right-1 pointer-events-none z-10"
+              animate={{ rotate: [0, 3, -3, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <svg width="24" height="20" viewBox="0 0 24 20" className="drop-shadow-md">
+                {/* Hat body */}
+                <path d="M4 18 L12 4 L20 18 Z" fill="#dc2626" stroke="#991b1b" strokeWidth="0.5"/>
+                {/* White fur trim */}
+                <ellipse cx="12" cy="18" rx="10" ry="3" fill="white" />
+                {/* Pom pom */}
+                <circle cx="12" cy="3" r="3" fill="white" />
+              </svg>
+            </motion.div>
+          )}
+
+          {/* CHRISTMAS: Festive decorations around bee */}
+          <AnimatePresence>
+            {isChristmas && (mode === 'CELEBRATING' || mode === 'SUCCESS' || mode === 'EXCITED') && (
+              <>
+                {/* Floating presents */}
+                <motion.div
+                  className="absolute -left-3 -bottom-2 pointer-events-none"
+                  animate={{ y: [0, -5, 0], rotate: [0, 5, -5, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <Gift className="w-4 h-4 text-red-500" />
+                </motion.div>
+                <motion.div
+                  className="absolute -right-3 -bottom-1 pointer-events-none"
+                  animate={{ y: [0, -3, 0], rotate: [0, -5, 5, 0] }}
+                  transition={{ duration: 1.8, repeat: Infinity, delay: 0.5 }}
+                >
+                  <Gift className="w-3 h-3 text-green-500" />
+                </motion.div>
+                {/* Star on top */}
+                <motion.div
+                  className="absolute -top-6 left-1/2 -translate-x-1/2 pointer-events-none"
+                  animate={{ scale: [1, 1.2, 1], opacity: [0.8, 1, 0.8] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+
+          {/* CHRISTMAS: Candy cane for helpful mode */}
+          <AnimatePresence>
+            {isChristmas && mode === 'HELPFUL' && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1, y: [-5, -10, -5] }}
+                exit={{ opacity: 0, scale: 0 }}
+                transition={{ y: { duration: 1, repeat: Infinity } }}
+                className="absolute -top-3 right-0 pointer-events-none"
+              >
+                <Candy className="w-4 h-4 text-red-400" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* CHRISTMAS: Tree for building mode */}
+          <AnimatePresence>
+            {isChristmas && mode === 'BUILDING' && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0 }}
+                className="absolute -bottom-3 left-1/2 -translate-x-1/2 pointer-events-none"
+              >
+                <TreePine className="w-4 h-4 text-green-500" />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Celebrating confetti */}
           <AnimatePresence>
@@ -990,25 +1273,32 @@ export function FloatingQueenBee() {
             ) : isDragging ? (
               <Badge 
                 variant="outline" 
-                className="text-xs shadow-sm border-honey/50 bg-honey/10 text-honey animate-pulse"
+                className={`text-xs shadow-sm animate-pulse ${
+                  isChristmas 
+                    ? 'border-red-500/50 bg-red-500/10 text-red-600' 
+                    : 'border-honey/50 bg-honey/10 text-honey'
+                }`}
               >
-                <Zap className="w-3 h-3 mr-1" />
-                Wheee!
+                {isChristmas ? <Star className="w-3 h-3 mr-1" /> : <Zap className="w-3 h-3 mr-1" />}
+                {isChristmas ? 'Flying through snow!' : 'Wheee!'}
               </Badge>
             ) : (
               <Badge 
                 variant="outline" 
                 className={`text-xs shadow-sm ${
+                  isChristmas ? 'border-red-500/30 bg-gradient-to-r from-red-500/10 to-green-500/10' :
                   mode === 'SUCCESS' || mode === 'CELEBRATING' ? 'border-green-500/30 bg-green-500/10 text-green-600' :
                   mode === 'ERROR' || mode === 'CONFUSED' ? 'border-honey/30 bg-honey/10 text-honey' :
                   mode === 'SWARM' || mode === 'EXCITED' ? 'border-honey/30 bg-honey/10 text-honey' :
                   mode === 'HELPFUL' ? 'border-teal-500/30 bg-teal-500/10 text-teal-600' :
                   mode === 'SLEEPY' ? 'border-indigo-500/30 bg-indigo-500/10 text-indigo-600' :
                   'border-border/50'
-                }`}
+                } ${isChristmas ? 'text-red-600 dark:text-red-400' : ''}`}
               >
-                <span className="mr-1">{modeIcon}</span>
-                {modeText}
+                <span className="mr-1">
+                  {isChristmas ? <Snowflake className="w-3 h-3 inline" /> : modeIcon}
+                </span>
+                {isChristmas ? CHRISTMAS_MESSAGES[mode] : modeText}
               </Badge>
             )}
           </motion.div>

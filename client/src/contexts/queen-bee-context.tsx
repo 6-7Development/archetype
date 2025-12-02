@@ -196,6 +196,7 @@ export function QueenBeeProvider({
   const clickResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastActivityTimeRef = useRef(Date.now());
+  const hintClearTimeoutRef = useRef<NodeJS.Timeout | null>(null); // FIX: Track hint clearing timeout
 
   // Clamp position to viewport
   const clampPosition = useCallback((x: number, y: number): { x: number; y: number } => {
@@ -389,6 +390,12 @@ export function QueenBeeProvider({
       }
       
       if (detectedHint && ELEMENT_HINTS[detectedHint]) {
+        // FIX: Cancel any pending hint clear timeout when entering a new hinted element
+        if (hintClearTimeoutRef.current) {
+          clearTimeout(hintClearTimeoutRef.current);
+          hintClearTimeoutRef.current = null;
+        }
+        
         setCurrentHint(ELEMENT_HINTS[detectedHint]);
         if (!isAIActive && !errorState.hasError) {
           setModeState('HELPFUL');
@@ -399,17 +406,46 @@ export function QueenBeeProvider({
 
     const handleMouseOut = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
+      const relatedTarget = e.relatedTarget as HTMLElement | null;
       const hintKey = target.closest('[data-bee-hint]')?.getAttribute('data-bee-hint');
       const testId = target.closest('[data-testid]')?.getAttribute('data-testid');
       
-      if (hintKey || testId) {
-        // Delay clearing hint for smoother UX
-        setTimeout(() => {
+      // FIX: Check if mouse moved to another hinted element - if so, don't clear
+      const newHintKey = relatedTarget?.closest('[data-bee-hint]')?.getAttribute('data-bee-hint');
+      const newTestId = relatedTarget?.closest('[data-testid]')?.getAttribute('data-testid');
+      
+      // FIX: Detect if newTestId would produce a valid hint (matches testid patterns)
+      const wouldNewTestIdProduceHint = newTestId && (
+        newTestId.includes('login') || newTestId.includes('signin') ||
+        newTestId.includes('signup') || newTestId.includes('register') ||
+        newTestId.includes('pricing') || newTestId.includes('preview') ||
+        newTestId.includes('chat') || newTestId.includes('message') ||
+        newTestId.includes('file') || newTestId.includes('browser') ||
+        newTestId.includes('terminal') || newTestId.includes('deploy') ||
+        newTestId.includes('publish') || newTestId.includes('setting') ||
+        newTestId.includes('theme') || newTestId.includes('dashboard') ||
+        newTestId.includes('new-project') || newTestId.includes('create-project')
+      );
+      
+      // FIX: Check if entering any valid hinted element (explicit hint OR testid-derived hint)
+      const isEnteringHintedElement = !!(newHintKey && ELEMENT_HINTS[newHintKey]) || wouldNewTestIdProduceHint;
+      
+      // Only schedule clear if leaving a hinted element AND not entering another
+      if ((hintKey || testId) && !isEnteringHintedElement) {
+        // FIX: Cancel any existing timeout before setting new one
+        if (hintClearTimeoutRef.current) {
+          clearTimeout(hintClearTimeoutRef.current);
+        }
+        
+        // FIX: Extended delay from 500ms to 2000ms for smoother UX
+        // Store timeout ID so it can be cancelled if user enters another hinted element
+        hintClearTimeoutRef.current = setTimeout(() => {
           setCurrentHint(null);
           if (!isAIActive && !errorState.hasError && mode === 'HELPFUL') {
             setModeState('IDLE');
           }
-        }, 500);
+          hintClearTimeoutRef.current = null;
+        }, 2000);
       }
     };
 
@@ -419,6 +455,10 @@ export function QueenBeeProvider({
     return () => {
       document.removeEventListener('mouseover', handleMouseOver);
       document.removeEventListener('mouseout', handleMouseOut);
+      // Cleanup timeout on unmount
+      if (hintClearTimeoutRef.current) {
+        clearTimeout(hintClearTimeoutRef.current);
+      }
     };
   }, [isAIActive, errorState.hasError, mode]);
 
