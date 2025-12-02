@@ -469,14 +469,38 @@ export function FloatingQueenBee() {
   const NUM_WORKERS = 8;
   
   const [isMobile, setIsMobile] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  
+  // Calculate dimension first (before effects that use it)
+  const currentSize = isMobile ? 'sm' : config.size;
+  const dimension = SIZE_DIMENSIONS[currentSize];
+  
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      // Scale down bee on small mobile screens
+      if (mobile && window.innerWidth < 480) {
+        // Extra small mobile
+      }
+    };
+    
+    const checkTouch = () => {
+      const hasTouch = () => {
+        return (('ontouchstart' in window) ||
+                (navigator.maxTouchPoints > 0) ||
+                (navigator.msMaxTouchPoints > 0));
+      };
+      setIsTouchDevice(hasTouch());
+    };
+    
     checkMobile();
+    checkTouch();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Track mouse position
+  // Track mouse/touch position for worker bee targeting
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePos({ x: e.clientX, y: e.clientY });
@@ -492,12 +516,31 @@ export function FloatingQueenBee() {
       setIsMouseNearBee(distance < 120);
     };
     
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        const touch = e.touches[0];
+        setMousePos({ x: touch.clientX, y: touch.clientY });
+        
+        const beeCenter = {
+          x: config.position.x + dimension / 2,
+          y: config.position.y + dimension / 2,
+        };
+        const distance = Math.sqrt(
+          Math.pow(touch.clientX - beeCenter.x, 2) + 
+          Math.pow(touch.clientY - beeCenter.y, 2)
+        );
+        setIsMouseNearBee(distance < 120);
+      }
+    };
+    
     window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [config.position]);
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [config.position, dimension]);
 
-  const currentSize = isMobile ? 'sm' : config.size;
-  const dimension = SIZE_DIMENSIONS[currentSize];
   const canvasMode = mapToCanvasMode(mode);
   const modeText = getModeLabel(mode);
   const modeIcon = getModeIcon(mode);

@@ -551,6 +551,62 @@ export function QueenBeeProvider({
     };
   }, [triggerError]);
 
+  // AI BRAIN CONNECTION: Listen for Scout activity and AI state changes
+  useEffect(() => {
+    const handleScoutActivity = (event: CustomEvent) => {
+      const { status, phase } = event.detail || {};
+      
+      if (!status) return;
+      
+      // Map Scout phases to queen bee modes
+      let newMode: QueenBeeMode = 'IDLE';
+      if (status === 'thinking' || phase === 'ASSESS' || phase === 'PLAN') {
+        newMode = 'THINKING';
+      } else if (status === 'coding' || phase === 'EXECUTE') {
+        newMode = 'CODING';
+      } else if (status === 'building' || phase === 'PLAN' || status === 'refactoring') {
+        newMode = 'BUILDING';
+      } else if (status === 'testing' || phase === 'TEST' || phase === 'VERIFY') {
+        newMode = 'LOADING';
+      } else if (status === 'success' || phase === 'COMMIT') {
+        newMode = 'SUCCESS';
+        triggerCelebration();
+      } else if (status === 'error' || status === 'failed') {
+        newMode = 'ERROR';
+      } else if (status === 'running' || status === 'active') {
+        newMode = 'SWARM';
+      }
+      
+      if (newMode !== 'IDLE') {
+        setIsAIActive(true);
+        setModeState(newMode);
+        lastActivityTimeRef.current = Date.now();
+      }
+    };
+
+    // Listen for custom Scout activity events
+    document.addEventListener('scout-activity', handleScoutActivity as EventListener);
+    
+    // Also listen for generic AI events
+    const handleAIStateChange = (event: CustomEvent) => {
+      if (event.detail?.isActive) {
+        setIsAIActive(true);
+        const mode = event.detail?.mode || 'THINKING';
+        setModeState(mode);
+      } else {
+        setIsAIActive(false);
+        setModeState('IDLE');
+      }
+    };
+    
+    document.addEventListener('ai-state-change', handleAIStateChange as EventListener);
+    
+    return () => {
+      document.removeEventListener('scout-activity', handleScoutActivity as EventListener);
+      document.removeEventListener('ai-state-change', handleAIStateChange as EventListener);
+    };
+  }, [triggerCelebration]);
+
   // Random cycling for guests when idle
   useEffect(() => {
     if (!isGuest || isAIActive || errorState.hasError || isPageLoading) return;
