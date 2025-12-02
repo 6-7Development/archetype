@@ -26,6 +26,12 @@ export interface OrbitingWorkerBeeProps {
   targetY?: number;             // Target Y for attacks
   baseOpacity?: number;         // Base opacity level (0-1), defaults to 1
   seasonColor?: string | null;  // Individual season color (Christmas lights, etc.)
+  inFormation?: boolean;        // Whether worker is in unified formation with queen
+  formationX?: number;          // Override X position for formation
+  formationY?: number;          // Override Y position for formation
+  formationAngle?: number;      // Override rotation for formation
+  emotePhase?: number;          // Synchronized emote animation phase (0-1)
+  transitionProgress?: number;  // Transition progress for smooth unity/disperse (0-1)
 }
 
 // Mode colors matching the original canvas design
@@ -68,11 +74,20 @@ export function OrbitingWorkerBee({
   targetY = 0,
   baseOpacity = 1,
   seasonColor = null,
+  inFormation = false,
+  formationX,
+  formationY,
+  formationAngle,
+  emotePhase = 0,
+  transitionProgress = 0,
 }: OrbitingWorkerBeeProps) {
   // LARGER size to match original canvas workers (was 18, now 36)
   const baseSize = 36 * size;
   const isAngry = mode === 'ERROR' || mode === 'CONFUSED' || isAttacking;
   const isHappy = mode === 'EXCITED' || mode === 'HELPFUL' || mode === 'CELEBRATING';
+  const isSleepy = mode === 'SLEEPY' || mode === 'RESTING';
+  const isThinking = mode === 'THINKING' || mode === 'LOADING';
+  const isEmoting = mode !== 'IDLE' && mode !== 'ROAM';
 
   // Mode-based accent color (matches original canvas design)
   // Use season color for Christmas lights if available
@@ -89,30 +104,62 @@ export function OrbitingWorkerBee({
   // Christmas light glow effect - pulsing light
   const hasSeasonLight = !!seasonColor && isChristmas;
   const lightPulse = hasSeasonLight ? Math.sin(Date.now() * 0.005 + id * 0.5) * 0.3 + 0.7 : 1;
+  
+  // FORMATION MODE: Synchronized emote animations with queen
+  // When in formation, workers use formation position and sync their animations
+  const useFormation = inFormation && formationX !== undefined && formationY !== undefined;
+  
+  // Lerp between patrol position and formation position based on transition progress
+  const displayX = useFormation 
+    ? x + (formationX - x) * transitionProgress 
+    : x;
+  const displayY = useFormation 
+    ? y + (formationY - y) * transitionProgress 
+    : y;
+  const displayRotation = useFormation && formationAngle !== undefined
+    ? rotation + (formationAngle - rotation) * transitionProgress
+    : rotation;
+    
+  // Formation-synced animations - all workers pulse/animate in unison
+  const formationPulse = inFormation ? Math.sin(emotePhase * Math.PI * 2) * 0.15 : 0;
+  const formationScale = inFormation ? 1 + formationPulse * transitionProgress : 1;
+  
+  // Opacity boost when in formation (workers "light up" when emoting with queen)
+  const formationOpacity = inFormation ? Math.min(1, baseOpacity + 0.3 * transitionProgress) : baseOpacity;
+  
+  // Synchronized wing speed when in formation
+  const syncedWingSpeed = inFormation 
+    ? (isHappy ? 1.5 : isAngry ? 1.3 : isSleepy ? 0.5 : 1) 
+    : 1;
 
   return (
     <motion.div
       className="fixed pointer-events-none z-[99]"
       style={{
-        left: x - baseSize / 2,
-        top: y - baseSize / 2,
+        left: displayX - baseSize / 2,
+        top: displayY - baseSize / 2,
         width: baseSize,
         height: baseSize,
       }}
       initial={{ opacity: 0, scale: 0 }}
       animate={{
-        opacity: baseOpacity,
-        scale: isAttacking ? 1.15 : 1,
-        rotate: isAttacking ? rotation + 180 : rotation,
+        opacity: formationOpacity,
+        scale: isAttacking ? 1.15 : formationScale,
+        rotate: isAttacking ? displayRotation + 180 : displayRotation,
       }}
       exit={{ opacity: 0, scale: 0 }}
       transition={{
-        opacity: { duration: 0.3 },
-        scale: { duration: isAttacking ? 0.2 : 0.3 },
+        opacity: { duration: inFormation ? 0.15 : 0.3 },
+        scale: { 
+          duration: inFormation ? 0.12 : isAttacking ? 0.2 : 0.3,
+          type: inFormation ? 'spring' : 'tween',
+          stiffness: 300,
+          damping: 20,
+        },
         rotate: {
           type: 'spring',
-          stiffness: isAttacking ? 200 : 100,
-          damping: isAttacking ? 10 : 15,
+          stiffness: inFormation ? 250 : isAttacking ? 200 : 100,
+          damping: inFormation ? 18 : isAttacking ? 10 : 15,
         },
       }}
       data-testid={`orbiting-worker-bee-${id}`}

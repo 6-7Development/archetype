@@ -1911,6 +1911,278 @@ export class SeasonEventHandler {
 }
 
 // ============================================
+// SWARM SYNC STATE - Unity & Disperse Phases
+// ============================================
+export type SwarmSyncPhase = 'PATROL' | 'UNITY_TRANSIT' | 'UNITY_ACTIVE' | 'DISPERSING';
+
+// Emote modes that trigger worker unity (vs idle/roam modes)
+const EMOTE_MODES = [
+  'EXCITED', 'ERROR', 'CONFUSED', 'HELPFUL', 'CELEBRATING', 
+  'THINKING', 'LOADING', 'SLEEPY', 'FOCUSED'
+] as const;
+
+const IDLE_MODES = ['IDLE', 'ROAM'] as const;
+
+export interface FormationTarget {
+  x: number;
+  y: number;
+  angle: number;
+  scale: number;
+}
+
+export interface WorkerPersonality {
+  wanderSpeed: number;
+  orbitRadius: number;
+  orbitSpeed: number;
+  noiseSeed: number;
+  baseOpacity: number;
+}
+
+export class SwarmUnityController {
+  private phase: SwarmSyncPhase = 'PATROL';
+  private emoteClock: number = 0;
+  private emoteStartTime: number = 0;
+  private currentEmoteMode: string = 'IDLE';
+  private formationTargets: Map<number, FormationTarget> = new Map();
+  private personalities: Map<number, WorkerPersonality> = new Map();
+  private workerCount: number;
+  
+  // Timing constants
+  private readonly TRANSIT_DURATION = 220; // ms to reach formation
+  private readonly DISPERSE_DURATION = 280; // ms to return to patrol
+  private readonly PULSE_CYCLE_DURATION = 800; // ms per pulse cycle for continuous animation
+  
+  constructor(workerCount: number = 8) {
+    this.workerCount = workerCount;
+    this.initializePersonalities();
+  }
+  
+  private initializePersonalities(): void {
+    for (let i = 0; i < this.workerCount; i++) {
+      this.personalities.set(i, {
+        wanderSpeed: 0.5 + Math.random() * 0.5,
+        orbitRadius: 60 + Math.random() * 40,
+        orbitSpeed: 0.3 + Math.random() * 0.4,
+        noiseSeed: Math.random() * 1000,
+        baseOpacity: 0.6 + Math.random() * 0.4,
+      });
+    }
+  }
+  
+  getPhase(): SwarmSyncPhase {
+    return this.phase;
+  }
+  
+  getEmoteClock(): number {
+    return this.emoteClock;
+  }
+  
+  // Continuous oscillating emote phase (0-1 cycling) for sustained pulsing animation
+  getEmotePhase(): number {
+    if (this.phase === 'PATROL') return 0;
+    const elapsed = Date.now() - this.emoteStartTime;
+    // Continuous cycling: oscillates 0->1->0 repeatedly
+    return (elapsed % this.PULSE_CYCLE_DURATION) / this.PULSE_CYCLE_DURATION;
+  }
+  
+  isEmoteMode(mode: string): boolean {
+    return EMOTE_MODES.includes(mode as typeof EMOTE_MODES[number]);
+  }
+  
+  isIdleMode(mode: string): boolean {
+    return IDLE_MODES.includes(mode as typeof IDLE_MODES[number]) || mode === 'ROAM';
+  }
+  
+  // Called when queen mode changes
+  handleModeChange(newMode: string, queenX: number, queenY: number): void {
+    const wasEmote = this.isEmoteMode(this.currentEmoteMode);
+    const isEmote = this.isEmoteMode(newMode);
+    
+    if (!wasEmote && isEmote) {
+      // Entering emote mode - start unity transit
+      this.startUnity(newMode, queenX, queenY);
+    } else if (wasEmote && !isEmote) {
+      // Exiting emote mode - start disperse
+      this.startDisperse();
+    } else if (isEmote && newMode !== this.currentEmoteMode) {
+      // Changing between emote modes - refresh formation
+      this.refreshFormation(newMode, queenX, queenY);
+    }
+    
+    this.currentEmoteMode = newMode;
+  }
+  
+  private startUnity(mode: string, queenX: number, queenY: number): void {
+    this.phase = 'UNITY_TRANSIT';
+    this.emoteStartTime = Date.now();
+    this.emoteClock = 0;
+    this.generateFormation(mode, queenX, queenY);
+    // Phase transition handled by timestamp check in updateFormation()
+  }
+  
+  private startDisperse(): void {
+    this.phase = 'DISPERSING';
+    this.emoteStartTime = Date.now(); // Reset for disperse timing
+    // Phase transition handled by timestamp check in updateFormation()
+  }
+  
+  // Check and update phase based on elapsed time (replaces setTimeout)
+  private checkPhaseTransition(): void {
+    const elapsed = Date.now() - this.emoteStartTime;
+    
+    if (this.phase === 'UNITY_TRANSIT' && elapsed >= this.TRANSIT_DURATION) {
+      this.phase = 'UNITY_ACTIVE';
+    } else if (this.phase === 'DISPERSING' && elapsed >= this.DISPERSE_DURATION) {
+      this.phase = 'PATROL';
+      this.formationTargets.clear();
+    }
+  }
+  
+  private refreshFormation(mode: string, queenX: number, queenY: number): void {
+    this.generateFormation(mode, queenX, queenY);
+    this.emoteStartTime = Date.now();
+  }
+  
+  // Generate formation positions around the queen
+  private generateFormation(mode: string, queenX: number, queenY: number): void {
+    this.formationTargets.clear();
+    
+    // Formation shape based on mode
+    let radius = 65;
+    let angleOffset = 0;
+    let scaleVariation = 0.1;
+    
+    switch (mode) {
+      case 'EXCITED':
+      case 'CELEBRATING':
+        radius = 55; // Tighter ring for excitement
+        scaleVariation = 0.15;
+        break;
+      case 'ERROR':
+      case 'CONFUSED':
+        radius = 70; // Protective arc
+        angleOffset = Math.PI * 0.25; // Front-biased
+        break;
+      case 'THINKING':
+      case 'LOADING':
+        radius = 60;
+        angleOffset = Math.PI * 0.1;
+        break;
+      case 'SLEEPY':
+        radius = 50; // Cozy cluster
+        scaleVariation = 0.2;
+        break;
+      case 'HELPFUL':
+      case 'FOCUSED':
+        radius = 65;
+        break;
+    }
+    
+    for (let i = 0; i < this.workerCount; i++) {
+      const angle = (2 * Math.PI * i / this.workerCount) + angleOffset;
+      const personalityScale = 0.9 + (this.personalities.get(i)?.noiseSeed ?? 0) % 1 * scaleVariation;
+      
+      this.formationTargets.set(i, {
+        x: queenX + Math.cos(angle) * radius * personalityScale,
+        y: queenY + Math.sin(angle) * radius * personalityScale,
+        angle: angle + Math.PI / 2, // Face outward
+        scale: 0.85 + Math.random() * 0.15,
+      });
+    }
+  }
+  
+  // Update formation positions as queen moves
+  updateFormation(queenX: number, queenY: number, deltaTime: number): void {
+    // Check for phase transitions (replaces setTimeout)
+    this.checkPhaseTransition();
+    
+    if (this.phase === 'PATROL') return;
+    
+    this.emoteClock += deltaTime;
+    
+    // Update formation targets to follow queen
+    const mode = this.currentEmoteMode;
+    let radius = 65;
+    let angleOffset = 0;
+    
+    switch (mode) {
+      case 'EXCITED':
+      case 'CELEBRATING':
+        radius = 55 + Math.sin(this.emoteClock * 0.01) * 5; // Pulsing
+        break;
+      case 'ERROR':
+      case 'CONFUSED':
+        radius = 70;
+        angleOffset = Math.PI * 0.25 + Math.sin(this.emoteClock * 0.008) * 0.1;
+        break;
+      case 'THINKING':
+      case 'LOADING':
+        angleOffset = this.emoteClock * 0.001; // Slow rotation
+        break;
+      case 'SLEEPY':
+        radius = 50 + Math.sin(this.emoteClock * 0.003) * 3; // Gentle breathing
+        break;
+    }
+    
+    for (let i = 0; i < this.workerCount; i++) {
+      const angle = (2 * Math.PI * i / this.workerCount) + angleOffset;
+      const existing = this.formationTargets.get(i);
+      const scale = existing?.scale ?? 1;
+      
+      this.formationTargets.set(i, {
+        x: queenX + Math.cos(angle) * radius * scale,
+        y: queenY + Math.sin(angle) * radius * scale,
+        angle: angle + Math.PI / 2,
+        scale,
+      });
+    }
+  }
+  
+  // Get target position for a specific worker
+  getFormationTarget(workerId: number): FormationTarget | null {
+    if (this.phase === 'PATROL') return null;
+    return this.formationTargets.get(workerId) ?? null;
+  }
+  
+  // Get personality for a worker (for patrol mode)
+  getPersonality(workerId: number): WorkerPersonality {
+    return this.personalities.get(workerId) ?? {
+      wanderSpeed: 0.5,
+      orbitRadius: 80,
+      orbitSpeed: 0.35,
+      noiseSeed: 0,
+      baseOpacity: 0.7,
+    };
+  }
+  
+  // Get transition progress (0-1) for smooth animations
+  getTransitionProgress(): number {
+    const elapsed = Date.now() - this.emoteStartTime;
+    
+    switch (this.phase) {
+      case 'UNITY_TRANSIT':
+        return Math.min(1, elapsed / this.TRANSIT_DURATION);
+      case 'DISPERSING':
+        return 1 - Math.min(1, elapsed / this.DISPERSE_DURATION);
+      case 'UNITY_ACTIVE':
+        return 1;
+      default:
+        return 0;
+    }
+  }
+  
+  // Check if workers should be in formation
+  isInFormation(): boolean {
+    return this.phase === 'UNITY_TRANSIT' || this.phase === 'UNITY_ACTIVE';
+  }
+  
+  // Check if workers are transitioning
+  isTransitioning(): boolean {
+    return this.phase === 'UNITY_TRANSIT' || this.phase === 'DISPERSING';
+  }
+}
+
+// ============================================
 // COMBINED BEE CONTROLLER
 // ============================================
 export class BeeController {
@@ -1922,6 +2194,7 @@ export class BeeController {
   public workers: IndependentWorkerHandler;
   public movement: MovementController;
   public season: SeasonEventHandler;
+  public unity: SwarmUnityController;
 
   constructor() {
     this.direction = new DirectionHandler();
@@ -1932,6 +2205,7 @@ export class BeeController {
     this.workers = new IndependentWorkerHandler(8);
     this.movement = new MovementController();
     this.season = new SeasonEventHandler();
+    this.unity = new SwarmUnityController(8);
   }
 
   // Initialize movement controller with viewport and starting position

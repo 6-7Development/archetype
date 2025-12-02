@@ -570,6 +570,9 @@ export function FloatingQueenBee() {
       // Update cursor position for attack targeting
       beeController.workers.updateCursor(mousePos.x, mousePos.y);
       
+      // Update unity formation positions (follows queen during emotes)
+      beeController.unity.updateFormation(qCenterX, qCenterY, deltaTime);
+      
       // Run independent physics update for each worker bee
       beeController.workers.update(deltaTime);
       
@@ -595,6 +598,19 @@ export function FloatingQueenBee() {
       beeController.workers.setQueenMode(mode);
     }
   }, [mode, isMounted, beeController]);
+  
+  // UNITY MODE: Sync worker formation with queen emote state
+  // When queen enters an emote mode, workers unite in formation
+  // When queen returns to IDLE/ROAM, workers disperse to patrol
+  useEffect(() => {
+    if (!isMounted) return;
+    
+    const qCenterX = config.position.x + dimension / 2;
+    const qCenterY = config.position.y + dimension / 2;
+    
+    // Notify unity controller of mode change
+    beeController.unity.handleModeChange(mode, qCenterX, qCenterY);
+  }, [mode, isMounted, config.position, dimension, beeController]);
 
   // Track mouse/touch position AND velocity for predictive evasion
   useEffect(() => {
@@ -1065,27 +1081,41 @@ export function FloatingQueenBee() {
 
       {/* Orbiting Worker Bees - ALWAYS visible orbiting queen, with varying opacity based on mode
           Workers are persistent (not "summoned") - they orbit queen constantly 
-          Each worker has individual Christmas light colors during the holiday season */}
+          Each worker has individual Christmas light colors during the holiday season
+          UNITY MODE: Workers unite with queen during emotes and disperse during idle */}
       <AnimatePresence mode="sync">
-        {orbitingWorkers.map((worker) => (
-          <OrbitingWorkerBee
-            key={`orbit-worker-${worker.id}`}
-            id={worker.id}
-            x={worker.x}
-            y={worker.y}
-            size={worker.size}
-            wingFlutter={worker.wingFlutter}
-            rotation={worker.rotation}
-            energyLevel={worker.energyLevel}
-            mode={mode}
-            isChristmas={isChristmas}
-            isAttacking={worker.isAttacking || false}
-            targetX={worker.targetX || mousePos.x}
-            targetY={worker.targetY || mousePos.y}
-            baseOpacity={workersVisible ? 1 : 0.5}
-            seasonColor={beeController.season.getWorkerSeasonColor(worker.id)}
-          />
-        ))}
+        {orbitingWorkers.map((worker) => {
+          const formationTarget = beeController.unity.getFormationTarget(worker.id);
+          const inFormation = beeController.unity.isInFormation();
+          const transitionProgress = beeController.unity.getTransitionProgress();
+          const emotePhase = beeController.unity.getEmotePhase();
+          
+          return (
+            <OrbitingWorkerBee
+              key={`orbit-worker-${worker.id}`}
+              id={worker.id}
+              x={worker.x}
+              y={worker.y}
+              size={worker.size}
+              wingFlutter={worker.wingFlutter}
+              rotation={worker.rotation}
+              energyLevel={worker.energyLevel}
+              mode={mode}
+              isChristmas={isChristmas}
+              isAttacking={worker.isAttacking || false}
+              targetX={worker.targetX || mousePos.x}
+              targetY={worker.targetY || mousePos.y}
+              baseOpacity={workersVisible ? 1 : 0.5}
+              seasonColor={beeController.season.getWorkerSeasonColor(worker.id)}
+              inFormation={inFormation}
+              formationX={formationTarget?.x}
+              formationY={formationTarget?.y}
+              formationAngle={formationTarget?.angle}
+              emotePhase={emotePhase}
+              transitionProgress={transitionProgress}
+            />
+          );
+        })}
       </AnimatePresence>
 
       {/* Main Queen Bee Container - Autonomous AI mascot, fully transparent, NON-INTERACTIVE */}
