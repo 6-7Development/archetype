@@ -108,9 +108,12 @@ export function OrbitingWorkerBee({
   
   // FORMATION MODE: Synchronized emote animations with queen
   // When in formation, workers use formation position and sync their animations
-  const useFormation = inFormation && formationX !== undefined && formationY !== undefined;
+  // PRIORITY: Attacking mouse takes precedence over formation
+  // Workers chasing the cursor should NOT join queen's formation
+  const useFormation = inFormation && !isAttacking && formationX !== undefined && formationY !== undefined;
   
   // Lerp between patrol position and formation position based on transition progress
+  // When attacking, use raw x/y (which is the chase position from IndependentWorkerHandler)
   const displayX = useFormation 
     ? x + (formationX - x) * transitionProgress 
     : x;
@@ -122,14 +125,17 @@ export function OrbitingWorkerBee({
     : rotation;
     
   // Formation-synced animations - all workers pulse/animate in unison
-  const formationPulse = inFormation ? Math.sin(emotePhase * Math.PI * 2) * 0.15 : 0;
-  const formationScale = inFormation ? 1 + formationPulse * transitionProgress : 1;
+  // Only apply formation animations when actually using formation (not attacking)
+  const formationPulse = useFormation ? Math.sin(emotePhase * Math.PI * 2) * 0.15 : 0;
+  const formationScale = useFormation ? 1 + formationPulse * transitionProgress : 1;
   
   // Opacity boost when in formation (workers "light up" when emoting with queen)
-  const formationOpacity = inFormation ? Math.min(1, baseOpacity + 0.3 * transitionProgress) : baseOpacity;
+  // Attacking workers maintain their normal opacity
+  const formationOpacity = useFormation ? Math.min(1, baseOpacity + 0.3 * transitionProgress) : baseOpacity;
   
   // Synchronized wing speed when in formation
-  const syncedWingSpeed = inFormation 
+  // Attacking workers keep attack-speed wings
+  const syncedWingSpeed = useFormation 
     ? (isHappy ? 1.5 : isAngry ? 1.3 : isSleepy ? 0.5 : 1) 
     : 1;
 
@@ -150,17 +156,17 @@ export function OrbitingWorkerBee({
       }}
       exit={{ opacity: 0, scale: 0 }}
       transition={{
-        opacity: { duration: inFormation ? 0.15 : 0.3 },
+        opacity: { duration: useFormation ? 0.15 : 0.3 },
         scale: { 
-          duration: inFormation ? 0.12 : isAttacking ? 0.2 : 0.3,
-          type: inFormation ? 'spring' : 'tween',
+          duration: useFormation ? 0.12 : isAttacking ? 0.2 : 0.3,
+          type: useFormation ? 'spring' : 'tween',
           stiffness: 300,
           damping: 20,
         },
         rotate: {
           type: 'spring',
-          stiffness: inFormation ? 250 : isAttacking ? 200 : 100,
-          damping: inFormation ? 18 : isAttacking ? 10 : 15,
+          stiffness: useFormation ? 250 : isAttacking ? 200 : 100,
+          damping: useFormation ? 18 : isAttacking ? 10 : 15,
         },
       }}
       data-testid={`orbiting-worker-bee-${id}`}
