@@ -33,7 +33,7 @@ function isChristmasSeason(): boolean {
   return false; // Dynamic date-based detection
 }
 
-// Christmas-themed messages
+// Christmas-themed messages for all 21 modes
 const CHRISTMAS_MESSAGES: Record<QueenBeeMode, string> = {
   'IDLE': 'Ho ho ho! Merry coding!',
   'LISTENING': 'Santa Bee is listening...',
@@ -53,6 +53,9 @@ const CHRISTMAS_MESSAGES: Record<QueenBeeMode, string> = {
   'CELEBRATING': 'Merry celebration!',
   'CONFUSED': 'Tangled lights?',
   'FOCUSED': 'Wrapping focus!',
+  'FRENZY': 'Naughty list attack!',
+  'HUNTING': 'Hunting for presents!',
+  'RESTING': 'Warm by the fire...',
 };
 
 // Snowflake particle component - client-safe with mounted state
@@ -105,6 +108,7 @@ function mapToCanvasMode(mode: QueenBeeMode): BeeMode {
     case 'LISTENING':
     case 'CURIOUS':
     case 'HELPFUL':
+    case 'RESTING':
       return 'IDLE';
     case 'TYPING':
       return 'THINKING';
@@ -122,7 +126,10 @@ function mapToCanvasMode(mode: QueenBeeMode): BeeMode {
       return 'SWARM';
     case 'SWARM':
     case 'EXCITED':
+    case 'HUNTING':
       return 'SWARM';
+    case 'FRENZY':
+      return 'FRENZY';
     case 'SLEEPY':
       return 'IDLE';
     default:
@@ -150,6 +157,9 @@ function getModeColor(mode: QueenBeeMode): string {
     case 'CELEBRATING': return 'bg-gradient-to-r from-pink-400 to-yellow-400';
     case 'CONFUSED': return 'bg-orange-500 animate-pulse';
     case 'FOCUSED': return 'bg-blue-500';
+    case 'FRENZY': return 'bg-red-500 animate-pulse';
+    case 'HUNTING': return 'bg-orange-400 animate-pulse';
+    case 'RESTING': return 'bg-green-300';
     default: return 'bg-gray-400';
   }
 }
@@ -174,6 +184,9 @@ function getModeLabel(mode: QueenBeeMode): string {
     case 'CELEBRATING': return 'Amazing!';
     case 'CONFUSED': return 'Hmm...';
     case 'FOCUSED': return 'Focused';
+    case 'FRENZY': return 'ATTACK!';
+    case 'HUNTING': return 'Hunting...';
+    case 'RESTING': return 'Resting...';
     default: return 'Hi!';
   }
 }
@@ -199,6 +212,9 @@ function getModeIcon(mode: QueenBeeMode): React.ReactNode {
     case 'CELEBRATING': return <PartyPopper className={iconClass} />;
     case 'CONFUSED': return null;
     case 'FOCUSED': return <Target className={iconClass} />;
+    case 'FRENZY': return <Zap className={`${iconClass} text-red-500`} />;
+    case 'HUNTING': return <Target className={`${iconClass} animate-pulse`} />;
+    case 'RESTING': return <Coffee className={iconClass} />;
     default: return <Hand className={iconClass} />;
   }
 }
@@ -216,13 +232,18 @@ function getModeGlow(mode: QueenBeeMode): string {
       return 'ring-2 ring-green-500/30 ring-offset-1 ring-offset-background';
     case 'SWARM':
     case 'EXCITED':
+    case 'HUNTING':
       return 'ring-2 ring-honey/40 ring-offset-1 ring-offset-background';
+    case 'FRENZY':
+      return 'ring-4 ring-red-500/60 ring-offset-2 ring-offset-background animate-pulse';
     case 'LOADING':
       return 'ring-1 ring-blue-400/30';
     case 'HELPFUL':
       return 'ring-2 ring-teal-400/40';
     case 'SLEEPY':
       return 'ring-1 ring-indigo-300/30';
+    case 'RESTING':
+      return 'ring-1 ring-green-300/30';
     default:
       return '';
   }
@@ -563,22 +584,28 @@ export function FloatingQueenBee() {
     recentClicks,
     currentHint,
     inactivityTime,
+    swarmState,
+    triggerSwarm,
+    endSwarm,
+    triggerFrenzy,
   } = useQueenBee();
   
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [showTooltip, setShowTooltip] = useState(false);
-  const [isHoveringBee, setIsHoveringBee] = useState(false); // FIX: Track hover state
+  const [isHoveringBee, setIsHoveringBee] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isMouseNearBee, setIsMouseNearBee] = useState(false);
   const [wooshTrail, setWooshTrail] = useState<WooshParticle[]>([]);
   const [dragVelocity, setDragVelocity] = useState({ x: 0, y: 0 });
   const [lastDragPos, setLastDragPos] = useState({ x: 0, y: 0 });
+  const [workersVisible, setWorkersVisible] = useState(false); // Worker bee visibility state
   const containerRef = useRef<HTMLDivElement>(null);
   const wooshIdRef = useRef(0);
-  const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null); // FIX: Track tooltip timeout
+  const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const workerFadeTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Worker bee fade timeout
   
-  const NUM_WORKERS = 8;
+  const NUM_WORKERS = swarmState.workerCount || 8;
   
   // SEASONAL: Christmas theme detection
   const isChristmas = useMemo(() => isChristmasSeason(), []);
@@ -817,6 +844,54 @@ export function FloatingQueenBee() {
     }, 2000);
   }, [currentHint]);
 
+  // WORKER BEE LIFECYCLE: Smooth summon → chase → disappear
+  // Show workers when swarm is active OR when user is near queen OR when dragging
+  useEffect(() => {
+    if (workerFadeTimeoutRef.current) {
+      clearTimeout(workerFadeTimeoutRef.current);
+      workerFadeTimeoutRef.current = null;
+    }
+    
+    const shouldShowWorkers = swarmState.isActive || isMouseNearBee || isDragging || 
+      mode === 'SWARM' || mode === 'FRENZY' || mode === 'HUNTING' || mode === 'EXCITED';
+    
+    if (shouldShowWorkers) {
+      // Summon workers immediately
+      setWorkersVisible(true);
+      
+      // If frenzy mode, trigger it when bees are attacking
+      if (swarmState.isFrenzy && !swarmState.isActive) {
+        triggerFrenzy();
+      }
+    } else {
+      // Fade out workers after a delay when no longer needed
+      workerFadeTimeoutRef.current = setTimeout(() => {
+        setWorkersVisible(false);
+      }, 2000); // 2 second delay before workers disappear
+    }
+    
+    return () => {
+      if (workerFadeTimeoutRef.current) {
+        clearTimeout(workerFadeTimeoutRef.current);
+      }
+    };
+  }, [swarmState.isActive, swarmState.isFrenzy, isMouseNearBee, isDragging, mode, triggerFrenzy]);
+
+  // Auto-trigger hunting/swarm when user moves near queen
+  useEffect(() => {
+    if (isMouseNearBee && !swarmState.isActive && mode !== 'SLEEPY' && mode !== 'RESTING') {
+      // Start hunting mode when user approaches
+      triggerSwarm({ frenzy: false, workerCount: 6, duration: 4000 });
+    }
+  }, [isMouseNearBee, swarmState.isActive, mode, triggerSwarm]);
+
+  // End swarm when user stops interacting
+  useEffect(() => {
+    if (!isMouseNearBee && !isDragging && swarmState.isActive) {
+      // User left - let swarm timeout naturally (handled by context)
+    }
+  }, [isMouseNearBee, isDragging, swarmState.isActive]);
+
   if (!config.isVisible) {
     return (
       <Button
@@ -834,8 +909,12 @@ export function FloatingQueenBee() {
   const queenCenterX = config.position.x + dimension / 2;
   const queenCenterY = config.position.y + dimension / 2;
 
-  // Determine if workers should chase
-  const shouldWorkersChase = isDragging || isMouseNearBee || mode === 'EXCITED' || mode === 'SWARM';
+  // Determine if workers should chase based on swarm state and user interaction
+  const shouldWorkersChase = swarmState.isActive || isDragging || isMouseNearBee || 
+    mode === 'EXCITED' || mode === 'SWARM' || mode === 'FRENZY' || mode === 'HUNTING';
+  
+  // Determine frenzy styling for queen container
+  const isFrenzyMode = mode === 'FRENZY' || swarmState.isFrenzy;
 
   return (
     <>
@@ -902,23 +981,32 @@ export function FloatingQueenBee() {
         <FallingSnowflake key={flake.id} {...flake} windowHeight={windowDimensions.height} />
       ))}
 
-      {/* Worker Bees */}
-      {!isMobile && (
-        <>
-          {[...Array(NUM_WORKERS)].map((_, i) => (
-            <WorkerBee
-              key={i}
-              id={i}
-              targetX={mousePos.x}
-              targetY={mousePos.y}
-              queenX={queenCenterX}
-              queenY={queenCenterY}
-              isChasing={shouldWorkersChase}
-              mode={mode}
-            />
-          ))}
-        </>
-      )}
+      {/* Worker Bees - Smooth lifecycle with AnimatePresence */}
+      <AnimatePresence>
+        {!isMobile && workersVisible && (
+          <>
+            {[...Array(NUM_WORKERS)].map((_, i) => (
+              <motion.div
+                key={`worker-${i}`}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0, transition: { duration: 0.5 } }}
+                transition={{ duration: 0.3, delay: i * 0.05 }}
+              >
+                <WorkerBee
+                  id={i}
+                  targetX={mousePos.x}
+                  targetY={mousePos.y}
+                  queenX={queenCenterX}
+                  queenY={queenCenterY}
+                  isChasing={shouldWorkersChase}
+                  mode={mode}
+                />
+              </motion.div>
+            ))}
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Main Queen Bee Container */}
       <motion.div
@@ -937,22 +1025,24 @@ export function FloatingQueenBee() {
         onMouseEnter={handleBeeMouseEnter}
         onMouseLeave={handleBeeMouseLeave}
         animate={{
-          scale: isDragging ? 1.2 : isMouseNearBee ? 1.08 : mode === 'SLEEPY' ? 0.95 : 1,
+          scale: isDragging ? 1.2 : isMouseNearBee ? 1.08 : mode === 'SLEEPY' ? 0.95 : isFrenzyMode ? 1.15 : 1,
           rotate: mode === 'ERROR' || mode === 'CONFUSED' 
             ? [0, -10, 10, -10, 10, 0] 
-            : isDragging 
-              ? dragVelocity.x * 0.6 
-              : mode === 'SLEEPY' 
-                ? [0, -3, 3, 0]
-                : 0,
+            : isFrenzyMode
+              ? [0, -5, 5, -5, 5, 0]
+              : isDragging 
+                ? dragVelocity.x * 0.6 
+                : mode === 'SLEEPY' 
+                  ? [0, -3, 3, 0]
+                  : 0,
           y: mode === 'SLEEPY' ? [0, 3, 0] : 0,
         }}
         transition={{
           scale: { type: 'spring', stiffness: 400, damping: 25 },
           rotate: { 
-            duration: mode === 'SLEEPY' ? 2 : 0.5, 
-            repeat: (mode === 'ERROR' || mode === 'CONFUSED' || mode === 'SLEEPY') ? Infinity : 0, 
-            repeatDelay: mode === 'SLEEPY' ? 0 : 1 
+            duration: isFrenzyMode ? 0.3 : mode === 'SLEEPY' ? 2 : 0.5, 
+            repeat: (mode === 'ERROR' || mode === 'CONFUSED' || mode === 'SLEEPY' || isFrenzyMode) ? Infinity : 0, 
+            repeatDelay: mode === 'SLEEPY' ? 0 : isFrenzyMode ? 0 : 1 
           },
           y: { duration: 2, repeat: mode === 'SLEEPY' ? Infinity : 0 },
         }}
@@ -977,14 +1067,17 @@ export function FloatingQueenBee() {
         {/* Main container */}
         <div 
           className={`relative w-full h-full rounded-full overflow-hidden 
-            bg-background/80 backdrop-blur-sm border-2 
-            ${isDragging ? 'border-honey shadow-2xl' : 'border-honey/40 shadow-md'}
+            bg-background/80 backdrop-blur-sm 
+            ${isFrenzyMode ? 'border-4 border-red-500' : 'border-2'}
+            ${isDragging ? 'border-honey shadow-2xl' : isFrenzyMode ? 'border-red-500 shadow-2xl' : 'border-honey/40 shadow-md'}
             ${getModeGlow(mode)}
             transition-all duration-150`}
           style={{
             boxShadow: isDragging 
               ? '0 0 40px rgba(247,181,0,0.6), 0 15px 50px rgba(0,0,0,0.3)' 
-              : undefined,
+              : isFrenzyMode
+                ? '0 0 50px rgba(255,50,50,0.7), 0 0 100px rgba(255,50,50,0.4)'
+                : undefined,
           }}
         >
           {/* Queen Bee Canvas */}
