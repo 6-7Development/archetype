@@ -109,7 +109,7 @@ function getModeIcon(mode: QueenBeeMode): React.ReactNode {
     case 'CODING': return <Code className={iconClass} />;
     case 'BUILDING': return <Hammer className={iconClass} />;
     case 'SUCCESS': return <CheckCircle className={iconClass} />;
-    case 'ERROR': return <XCircle className={iconClass} />;
+    case 'ERROR': return null;
     case 'ALERT': return <Bell className={iconClass} />;
     case 'SWARM': return <Bug className={iconClass} />;
     case 'LOADING': return <RefreshCw className={`${iconClass} animate-spin`} />;
@@ -118,7 +118,7 @@ function getModeIcon(mode: QueenBeeMode): React.ReactNode {
     case 'HELPFUL': return <Lightbulb className={iconClass} />;
     case 'SLEEPY': return <Moon className={iconClass} />;
     case 'CELEBRATING': return <PartyPopper className={iconClass} />;
-    case 'CONFUSED': return <HelpCircle className={iconClass} />;
+    case 'CONFUSED': return null;
     case 'FOCUSED': return <Target className={iconClass} />;
     default: return <Hand className={iconClass} />;
   }
