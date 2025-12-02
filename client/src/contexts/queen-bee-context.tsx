@@ -94,10 +94,11 @@ export interface QueenBeeConfig {
 }
 
 // Size dimensions - Increased for better visuals & holiday animations
+// LARGER for better mobile/desktop animation visibility
 export const SIZE_DIMENSIONS = {
-  sm: 68,
-  md: 100,
-  lg: 120,
+  sm: 100,
+  md: 140,
+  lg: 160,
 };
 
 // Error state tracking
