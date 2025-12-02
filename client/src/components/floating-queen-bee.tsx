@@ -1331,23 +1331,6 @@ export function FloatingQueenBee() {
             )}
           </AnimatePresence>
 
-          {/* CHRISTMAS: Santa Hat */}
-          {isChristmas && (
-            <motion.div
-              className="absolute -top-4 -right-1 pointer-events-none z-10"
-              animate={{ rotate: [0, 3, -3, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <svg width="24" height="20" viewBox="0 0 24 20" className="drop-shadow-md">
-                {/* Hat body */}
-                <path d="M4 18 L12 4 L20 18 Z" fill="#dc2626" stroke="#991b1b" strokeWidth="0.5"/>
-                {/* White fur trim */}
-                <ellipse cx="12" cy="18" rx="10" ry="3" fill="white" />
-                {/* Pom pom */}
-                <circle cx="12" cy="3" r="3" fill="white" />
-              </svg>
-            </motion.div>
-          )}
 
           {/* CHRISTMAS: Festive decorations around bee */}
           <AnimatePresence>
@@ -1594,23 +1577,24 @@ export function FloatingQueenBee() {
         )}
       </AnimatePresence>
 
-      {/* Chat Bubble - Thought near bee's mouth */}
+      {/* Chat Bubble - Thought near bee's mouth (positioned to RIGHT of bee where face is) */}
       <AnimatePresence>
         {showThought && (
           <motion.div
             className="fixed z-[102] pointer-events-none"
             style={{
-              left: config.position.x + dimension * 0.3,
-              top: config.position.y - dimension * 0.6,
+              left: config.position.x + dimension + 8,
+              top: config.position.y + dimension * 0.15,
             }}
-            initial={{ opacity: 0, scale: 0.8, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: -10 }}
+            initial={{ opacity: 0, scale: 0.8, x: -10 }}
+            animate={{ opacity: 1, scale: 1, x: 0 }}
+            exit={{ opacity: 0, scale: 0.8, x: -10 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="bg-black/80 text-white/95 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap backdrop-blur-sm shadow-lg">
+            <div className="relative bg-black/85 text-white px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap backdrop-blur-sm shadow-lg">
               {currentThought}
-              <div className="absolute -bottom-1.5 left-3 w-0 h-0 border-l-2 border-r-2 border-t-2 border-l-transparent border-r-transparent border-t-black/80" />
+              {/* Speech bubble tail pointing LEFT toward bee's mouth */}
+              <div className="absolute top-1/2 -left-2 -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-t-transparent border-b-transparent border-r-black/85" />
             </div>
           </motion.div>
         )}
