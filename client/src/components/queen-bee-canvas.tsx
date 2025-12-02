@@ -212,8 +212,8 @@ class AgentBeeAnimation {
     const { w, h, scale: s } = this.state;
     const modeColor = this.config.colors[this.state.mode];
 
-    this.ctx.fillStyle = "#050505";
-    this.ctx.fillRect(0, 0, w, h);
+    // Clear canvas with transparency (no background fill)
+    this.ctx.clearRect(0, 0, w, h);
 
     if (this.state.mode === "CODING") {
       if (Math.random() > 0.8)
