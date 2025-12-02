@@ -367,8 +367,8 @@ class AgentBeeAnimation {
     const ctx = this.ctx;
     ctx.save();
     
-    // Move to bee head position (higher for the hat)
-    ctx.translate(x, y - size * 0.5);
+    // Position hat directly on top of bee's head (centered horizontally, on head vertically)
+    ctx.translate(x, y - size * 0.65);
     
     // Santa hat cone - red body
     ctx.fillStyle = '#DC2626'; // Christmas red
