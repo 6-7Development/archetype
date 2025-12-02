@@ -93,15 +93,16 @@ export interface QueenBeeConfig {
   isVisible: boolean;
 }
 
-// Size dimensions - Compact mascot sizes (details visible, non-intrusive)
+// Size dimensions - Industry-standard mascot sizes (Zendesk ~96px, Drift ~88px, Intercom ~90px)
+// Sized for legible expressions, animations, and seasonal accessories (Santa hat, etc.)
 // Seasonal themes orchestrated by AI brain via SeasonalHandler
-// Mobile (sm): 52px - small but clear
-// Desktop (md): 64px - balanced visibility
-// Large (lg): 72px - comfortable detail viewing
+// Mobile (sm): 72px - readable on small screens
+// Desktop (md): 96px - matches common chatbot avatars
+// Large (lg): 112px - seasonal flair without dominating UI
 export const SIZE_DIMENSIONS = {
-  sm: 52,   // Mobile: small but clear details
-  md: 64,   // Desktop: balanced mascot size
-  lg: 72,   // Large desktop: comfortable visibility
+  sm: 72,   // Mobile: readable, low footprint
+  md: 96,   // Desktop: industry-standard chatbot size
+  lg: 112,  // Large desktop: clear seasonal details
 };
 
 // Error state tracking
