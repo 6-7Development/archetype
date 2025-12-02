@@ -18,6 +18,29 @@
   -webkit-overflow-scrolling: touch;
 }
 
+/* CHRISTMAS: Snow accumulation effect on any element */
+@keyframes snow-accumulate {
+  0% {
+    clip-path: inset(100% 0 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.christmas-snow-buildup::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 12%;
+  background: linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0.6) 100%);
+  border-radius: 0 0 inherit inherit;
+  pointer-events: none;
+  animation: snow-accumulate 0.6s ease-out backwards;
+}
+
 /* Universal Chat Scrollbar - ALWAYS VISIBLE */
 .chat-messages-container,
 [data-testid="chat-messages-container"],

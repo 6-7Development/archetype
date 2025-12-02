@@ -18,6 +18,7 @@ import { RefreshCw, Sparkles, Heart, Zap, Coffee, PartyPopper, Ear, Pencil, Brai
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ChristmasDecorations } from './christmas-decorations';
 
 // Seasonal Detection - Check if it's Christmas season (Nov 15 - Jan 5)
 function isChristmasSeason(): boolean {
@@ -1129,6 +1130,9 @@ export function FloatingQueenBee() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* CHRISTMAS: Festive Decorations - Bulbs, Wreaths, Ornaments */}
+      {isChristmas && <ChristmasDecorations enabled={isChristmas} bulbCount={25} wreathCount={6} />}
 
       {/* CHRISTMAS: Falling Snowflakes (only render on client after mount) */}
       {isChristmas && isMounted && snowflakes.map((flake) => (
