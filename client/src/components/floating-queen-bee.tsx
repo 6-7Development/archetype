@@ -22,7 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChristmasDecorations } from './christmas-decorations';
-import { BeeController, type FacingState, type TouchReaction, type WorkerBeeState } from '@/lib/bee-handlers';
+import { BeeController, type FacingState, type TouchReaction, type WorkerBeeState, type MovementState, type Vector2 } from '@/lib/bee-handlers';
 
 // Seasonal Detection - Check if it's Christmas season (Nov 15 - Jan 5)
 function isChristmasSeason(): boolean {
@@ -839,6 +839,26 @@ export function FloatingQueenBee() {
     beeController.swarm.setOrbitRadius(dimension * 0.6);
   }, [dimension, beeController]);
 
+  // Initialize MovementController with viewport and position
+  useEffect(() => {
+    if (isMounted && windowDimensions.width > 0) {
+      beeController.initializeMovement(
+        windowDimensions.width,
+        windowDimensions.height,
+        config.position.x,
+        config.position.y,
+        dimension
+      );
+    }
+  }, [isMounted, windowDimensions, beeController, dimension]);
+
+  // Update MovementController viewport on resize
+  useEffect(() => {
+    if (isMounted) {
+      beeController.movement.setViewport(windowDimensions.width, windowDimensions.height);
+    }
+  }, [windowDimensions, isMounted, beeController]);
+
   // Orbiting worker bees animation loop
   useEffect(() => {
     if (!workersVisible || isMobile) {
@@ -973,156 +993,90 @@ export function FloatingQueenBee() {
   const modeText = getModeLabel(mode);
   const modeIcon = getModeIcon(mode);
 
-  // AUTONOMOUS MOVEMENT ENGINE
+  // AUTONOMOUS MOVEMENT ENGINE - Physics-based steering with MovementController
   useEffect(() => {
-    const FLEE_THRESHOLD = 200;
-    const FRENZY_THRESHOLD = 50;
-    const PREDICT_FACTOR = 0.5;
-    const MAX_SPEED = 8;
-    const WANDER_SPEED = 1.5;
-    const FLEE_SPEED = 6;
-    const FRICTION = 0.92;
-    const WANDER_CHANGE_RATE = 0.03;
+    if (!isMounted) return;
     
-    let velocity = { x: beeVelocity.x, y: beeVelocity.y };
+    const FRENZY_THRESHOLD = 50;
     let lastTime = performance.now();
     
+    // Map MovementState to EmotionalState
+    const mapMovementToEmotional = (movementState: MovementState): EmotionalState => {
+      switch (movementState) {
+        case 'WANDER': return 'IDLE';
+        case 'EVADE': return 'EVADING';
+        case 'REST': return 'RESTING';
+        case 'CELEBRATE': return 'CELEBRATING';
+        case 'ALERT': return 'ALERT';
+        case 'PATROL': return 'CURIOUS';
+        case 'CHASE': return 'CURIOUS';
+        default: return 'IDLE';
+      }
+    };
+    
     const animate = (currentTime: number) => {
-      const dt = Math.min((currentTime - lastTime) / 16.67, 3);
+      const deltaTime = currentTime - lastTime;
       lastTime = currentTime;
       
       const beeCenterX = config.position.x + dimension / 2;
       const beeCenterY = config.position.y + dimension / 2;
       
-      const predictedMouseX = mousePos.x + mouseVelocity.x * PREDICT_FACTOR * 10;
-      const predictedMouseY = mousePos.y + mouseVelocity.y * PREDICT_FACTOR * 10;
-      
-      const dx = predictedMouseX - beeCenterX;
-      const dy = predictedMouseY - beeCenterY;
+      // Check for FRENZY trigger (when user gets too close)
+      const dx = mousePos.x - beeCenterX;
+      const dy = mousePos.y - beeCenterY;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      
-      const cursorSpeed = Math.sqrt(mouseVelocity.x ** 2 + mouseVelocity.y ** 2);
-      const cursorMovingTowardBee = (dx * mouseVelocity.x + dy * mouseVelocity.y) > 0;
-      
-      let newEmotionalState: EmotionalState = emotionalState;
       const now = Date.now();
       
       if (distance < FRENZY_THRESHOLD && now - lastFrenzyTime > 6000) {
-        newEmotionalState = 'FRENZY';
         setLastFrenzyTime(now);
         triggerFrenzy();
         triggerSwarm({ frenzy: true, workerCount: 10, duration: 4000 });
         setMode('FRENZY');
-      } else if (distance < FLEE_THRESHOLD) {
-        if (cursorMovingTowardBee && cursorSpeed > 0.5) {
-          newEmotionalState = 'EVADING';
-        } else if (distance < FLEE_THRESHOLD / 2) {
-          newEmotionalState = 'ALERT';
-        } else {
-          newEmotionalState = 'CURIOUS';
-        }
-      } else if (emotionalState === 'EVADING' || emotionalState === 'ALERT') {
-        newEmotionalState = 'CELEBRATING';
-        canvasRef.current?.resetRagdoll?.();
-        setTimeout(() => setEmotionalState('RESTING'), 2000);
-        setTimeout(() => setEmotionalState('IDLE'), 4000);
-      } else if (emotionalState === 'FRENZY' && now - lastFrenzyTime > 4000) {
-        newEmotionalState = 'RESTING';
-        canvasRef.current?.resetRagdoll?.();
-      } else if (emotionalState !== 'CELEBRATING' && emotionalState !== 'RESTING') {
-        newEmotionalState = 'IDLE';
+        setEmotionalState('FRENZY');
+        beeController.movement.forceState('EVADE');
       }
       
-      if (newEmotionalState !== emotionalState) {
+      // Run the physics-based movement update
+      const result = beeController.updateAutonomous(
+        deltaTime,
+        mousePos.x,
+        mousePos.y,
+        mouseVelocity.x,
+        mouseVelocity.y
+      );
+      
+      // Convert center position back to top-left for rendering
+      const newX = result.position.x - dimension / 2;
+      const newY = result.position.y - dimension / 2;
+      
+      // Update position through context
+      updatePosition(newX, newY);
+      setBeeVelocity(result.velocity);
+      updateAutonomousVelocity(result.velocity);
+      
+      // Update facing direction based on velocity
+      const newFacing = beeController.direction.getFacing();
+      setFacing(newFacing);
+      
+      // Update emotional state based on movement state
+      const newEmotionalState = mapMovementToEmotional(result.state);
+      if (newEmotionalState !== emotionalState && emotionalState !== 'FRENZY') {
         setEmotionalState(newEmotionalState);
       }
       
-      let accelX = 0;
-      let accelY = 0;
-      
-      switch (newEmotionalState) {
-        case 'IDLE': {
-          wanderAngleRef.current += (Math.random() - 0.5) * WANDER_CHANGE_RATE * dt;
-          accelX = Math.cos(wanderAngleRef.current) * WANDER_SPEED * 0.1 * dt;
-          accelY = Math.sin(wanderAngleRef.current) * WANDER_SPEED * 0.1 * dt;
-          break;
-        }
-        case 'CURIOUS': {
-          wanderAngleRef.current += (Math.random() - 0.5) * WANDER_CHANGE_RATE * dt * 2;
-          accelX = Math.cos(wanderAngleRef.current) * WANDER_SPEED * 0.15 * dt;
-          accelY = Math.sin(wanderAngleRef.current) * WANDER_SPEED * 0.15 * dt;
-          break;
-        }
-        case 'ALERT':
-        case 'EVADING': {
-          const fleeDistance = Math.max(distance, 1);
-          const fleeDirX = -dx / fleeDistance;
-          const fleeDirY = -dy / fleeDistance;
-          
-          const perpX = -fleeDirY;
-          const perpY = fleeDirX;
-          const jitter = (Math.random() - 0.5) * 0.5;
-          
-          const fleeStrength = Math.min(1, (FLEE_THRESHOLD - distance) / FLEE_THRESHOLD + 0.3);
-          const speedMultiplier = newEmotionalState === 'EVADING' ? FLEE_SPEED : FLEE_SPEED * 0.7;
-          
-          accelX = (fleeDirX + perpX * jitter) * speedMultiplier * fleeStrength * 0.3 * dt;
-          accelY = (fleeDirY + perpY * jitter) * speedMultiplier * fleeStrength * 0.3 * dt;
-          break;
-        }
-        case 'FRENZY': {
-          const fleeDistance = Math.max(distance, 1);
-          accelX = (-dx / fleeDistance) * MAX_SPEED * 0.4 * dt;
-          accelY = (-dy / fleeDistance) * MAX_SPEED * 0.4 * dt;
-          break;
-        }
-        case 'CELEBRATING': {
-          const celebrationAngle = currentTime * 0.01;
-          accelX = Math.cos(celebrationAngle) * WANDER_SPEED * 0.3 * dt;
-          accelY = Math.sin(celebrationAngle) * WANDER_SPEED * 0.3 * dt;
-          break;
-        }
-        case 'RESTING': {
-          break;
-        }
+      // Handle FRENZY timeout
+      if (emotionalState === 'FRENZY' && now - lastFrenzyTime > 4000) {
+        setEmotionalState('RESTING');
+        beeController.movement.forceState('REST');
+        canvasRef.current?.resetRagdoll?.();
       }
       
-      velocity.x = velocity.x * FRICTION + accelX;
-      velocity.y = velocity.y * FRICTION + accelY;
-      
-      const speed = Math.sqrt(velocity.x ** 2 + velocity.y ** 2);
-      if (speed > MAX_SPEED) {
-        velocity.x = (velocity.x / speed) * MAX_SPEED;
-        velocity.y = (velocity.y / speed) * MAX_SPEED;
-      }
-      
-      let newX = config.position.x + velocity.x * dt;
-      let newY = config.position.y + velocity.y * dt;
-      
-      const clamped = clampPosition(newX, newY);
-      
-      if (clamped.x !== newX) {
-        velocity.x *= -0.5;
-        wanderAngleRef.current = Math.PI - wanderAngleRef.current;
-      }
-      if (clamped.y !== newY) {
-        velocity.y *= -0.5;
-        wanderAngleRef.current = -wanderAngleRef.current;
-      }
-      
-      updatePosition(clamped.x, clamped.y);
-      setBeeVelocity({ x: velocity.x, y: velocity.y });
-      updateAutonomousVelocity({ x: velocity.x, y: velocity.y });
-      
-      // Update facing direction based on velocity
-      const newFacing = beeController.direction.update(velocity.x, velocity.y);
-      setFacing(newFacing);
-      
-      if (speed > 3) {
+      // Create woosh trail when moving fast
+      if (result.speed > 3) {
         const newParticle: WooshParticle = {
           id: wooshIdRef.current++,
-          x: clamped.x + dimension / 2,
-          y: clamped.y + dimension / 2,
+          x: result.position.x,
+          y: result.position.y,
           timestamp: Date.now(),
         };
         setWooshTrail(prev => [...prev.slice(-15), newParticle]);
@@ -1138,7 +1092,7 @@ export function FloatingQueenBee() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [config.position, dimension, mousePos, mouseVelocity, emotionalState, lastFrenzyTime, beeVelocity, clampPosition, updatePosition, updateAutonomousVelocity, triggerFrenzy, triggerSwarm, setMode]);
+  }, [isMounted, config.position, dimension, mousePos, mouseVelocity, emotionalState, lastFrenzyTime, updatePosition, updateAutonomousVelocity, triggerFrenzy, triggerSwarm, setMode, beeController]);
 
   // Clean up old woosh particles
   useEffect(() => {

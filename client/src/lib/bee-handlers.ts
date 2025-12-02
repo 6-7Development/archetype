@@ -407,6 +407,585 @@ export class ThoughtHandler {
 }
 
 // ============================================
+// MOVEMENT CONTROLLER (Autonomous Physics-Based Movement)
+// ============================================
+
+export type MovementState = 
+  | 'WANDER'        // Gentle autonomous exploration
+  | 'EVADE'         // Fleeing from cursor
+  | 'CHASE'         // Following target (rare)
+  | 'REST'          // Stationary hovering
+  | 'PATROL'        // Moving between waypoints
+  | 'CELEBRATE'     // Happy bouncy movement
+  | 'ALERT'         // Heightened awareness
+  | 'SWARM_ESCORT'; // Following with worker bees
+
+export interface Vector2 {
+  x: number;
+  y: number;
+}
+
+export interface Obstacle {
+  id: string;
+  x: number;
+  y: number;
+  radius: number;
+  type: 'snowflake' | 'ornament' | 'decoration' | 'cursor';
+}
+
+export interface MovementConfig {
+  maxSpeed: number;
+  maxAcceleration: number;
+  friction: number;
+  wanderRadius: number;
+  wanderDistance: number;
+  wanderJitter: number;
+  evadeDistance: number;
+  obstacleAvoidDistance: number;
+  boundaryPadding: number;
+}
+
+const DEFAULT_MOVEMENT_CONFIG: MovementConfig = {
+  maxSpeed: 4.5,
+  maxAcceleration: 0.15,
+  friction: 0.92,
+  wanderRadius: 40,
+  wanderDistance: 80,
+  wanderJitter: 0.4,
+  evadeDistance: 150,
+  obstacleAvoidDistance: 80,
+  boundaryPadding: 60,
+};
+
+export class MovementController {
+  private state: MovementState = 'WANDER';
+  private position: Vector2 = { x: 0, y: 0 };
+  private velocity: Vector2 = { x: 0, y: 0 };
+  private acceleration: Vector2 = { x: 0, y: 0 };
+  private targetPosition: Vector2 | null = null;
+  private config: MovementConfig;
+  private obstacles: Obstacle[] = [];
+  private cursorPosition: Vector2 = { x: 0, y: 0 };
+  private cursorVelocity: Vector2 = { x: 0, y: 0 };
+  private viewportSize: Vector2 = { x: 1200, y: 800 };
+  private dimension: number = 72;
+  
+  // Wander behavior
+  private wanderAngle: number = Math.random() * Math.PI * 2;
+  private wanderTarget: Vector2 = { x: 0, y: 0 };
+  
+  // State timers
+  private stateTimer: number = 0;
+  private stateTransitionDelay: number = 0;
+  private lastStateChange: number = 0;
+  private restDuration: number = 0;
+  private inactivityTimer: number = 0;
+  
+  // AI event triggers
+  private alertLevel: number = 0;
+  private celebrationTimer: number = 0;
+  private hasRecentError: boolean = false;
+  private isUserActive: boolean = true;
+
+  constructor(config: Partial<MovementConfig> = {}) {
+    this.config = { ...DEFAULT_MOVEMENT_CONFIG, ...config };
+  }
+
+  // ============================================
+  // INITIALIZATION & CONFIGURATION
+  // ============================================
+  
+  setPosition(x: number, y: number): void {
+    this.position = { x, y };
+  }
+
+  setViewport(width: number, height: number): void {
+    this.viewportSize = { x: width, y: height };
+  }
+
+  setDimension(dim: number): void {
+    this.dimension = dim;
+  }
+
+  setConfig(config: Partial<MovementConfig>): void {
+    this.config = { ...this.config, ...config };
+  }
+
+  // ============================================
+  // CURSOR & OBSTACLE TRACKING
+  // ============================================
+
+  updateCursor(x: number, y: number, velX: number = 0, velY: number = 0): void {
+    this.cursorVelocity = { x: velX, y: velY };
+    this.cursorPosition = { x, y };
+  }
+
+  registerObstacle(obstacle: Obstacle): void {
+    const existing = this.obstacles.findIndex(o => o.id === obstacle.id);
+    if (existing >= 0) {
+      this.obstacles[existing] = obstacle;
+    } else {
+      this.obstacles.push(obstacle);
+    }
+  }
+
+  removeObstacle(id: string): void {
+    this.obstacles = this.obstacles.filter(o => o.id !== id);
+  }
+
+  clearObstacles(): void {
+    this.obstacles = [];
+  }
+
+  // ============================================
+  // AI EVENT TRIGGERS
+  // ============================================
+
+  triggerCelebration(duration: number = 3000): void {
+    this.celebrationTimer = duration;
+    this.transitionTo('CELEBRATE');
+  }
+
+  triggerAlert(level: number = 1): void {
+    this.alertLevel = Math.min(level, 3);
+    if (this.alertLevel > 1) {
+      this.transitionTo('ALERT');
+    }
+  }
+
+  setErrorState(hasError: boolean): void {
+    this.hasRecentError = hasError;
+    if (hasError) {
+      this.triggerAlert(2);
+    }
+  }
+
+  setUserActivity(active: boolean): void {
+    if (active !== this.isUserActive) {
+      this.isUserActive = active;
+      if (!active) {
+        this.inactivityTimer = 0;
+      }
+    }
+  }
+
+  // ============================================
+  // STATE MACHINE
+  // ============================================
+
+  private transitionTo(newState: MovementState): void {
+    if (this.state === newState) return;
+    
+    const now = Date.now();
+    if (now - this.lastStateChange < 200) return; // Debounce
+    
+    this.state = newState;
+    this.lastStateChange = now;
+    this.stateTimer = 0;
+    
+    // State-specific initialization
+    switch (newState) {
+      case 'REST':
+        this.restDuration = 2000 + Math.random() * 3000;
+        break;
+      case 'WANDER':
+        this.pickNewWanderTarget();
+        break;
+      case 'CELEBRATE':
+        this.celebrationTimer = this.celebrationTimer || 2000;
+        break;
+    }
+  }
+
+  private evaluateStateTransition(deltaTime: number): void {
+    this.stateTimer += deltaTime;
+    
+    const distToCursor = this.distanceTo(this.cursorPosition);
+    const cursorSpeed = Math.sqrt(this.cursorVelocity.x ** 2 + this.cursorVelocity.y ** 2);
+    
+    // Priority-based state transitions
+    
+    // 1. Celebration (highest priority after evade)
+    if (this.celebrationTimer > 0) {
+      this.celebrationTimer -= deltaTime;
+      if (this.state !== 'CELEBRATE' && this.state !== 'EVADE') {
+        this.transitionTo('CELEBRATE');
+      }
+      if (this.celebrationTimer <= 0) {
+        this.transitionTo('WANDER');
+      }
+    }
+    
+    // 2. Evade when cursor is close and fast
+    if (distToCursor < this.config.evadeDistance && cursorSpeed > 1) {
+      if (this.state !== 'EVADE') {
+        this.transitionTo('EVADE');
+      }
+    } else if (this.state === 'EVADE' && distToCursor > this.config.evadeDistance * 1.5) {
+      this.transitionTo('WANDER');
+    }
+    
+    // 3. Rest after extended wandering or inactivity
+    if (!this.isUserActive) {
+      this.inactivityTimer += deltaTime;
+      if (this.inactivityTimer > 15000 && this.state === 'WANDER') {
+        this.transitionTo('REST');
+      }
+    }
+    
+    // 4. Resume wandering after rest
+    if (this.state === 'REST' && this.stateTimer > this.restDuration) {
+      this.transitionTo('WANDER');
+    }
+    
+    // 5. Alert state timeout
+    if (this.state === 'ALERT' && this.stateTimer > 5000) {
+      this.alertLevel = 0;
+      this.transitionTo('WANDER');
+    }
+  }
+
+  // ============================================
+  // STEERING BEHAVIORS
+  // ============================================
+
+  private seek(target: Vector2, weight: number = 1): Vector2 {
+    const desired = {
+      x: target.x - this.position.x,
+      y: target.y - this.position.y,
+    };
+    const dist = Math.sqrt(desired.x ** 2 + desired.y ** 2);
+    if (dist < 0.1) return { x: 0, y: 0 };
+    
+    const speed = Math.min(dist * 0.05, this.config.maxSpeed);
+    return {
+      x: (desired.x / dist) * speed * weight,
+      y: (desired.y / dist) * speed * weight,
+    };
+  }
+
+  private flee(target: Vector2, radius: number, weight: number = 1): Vector2 {
+    const dx = this.position.x - target.x;
+    const dy = this.position.y - target.y;
+    const dist = Math.sqrt(dx ** 2 + dy ** 2);
+    
+    if (dist > radius || dist < 0.1) return { x: 0, y: 0 };
+    
+    const strength = (1 - dist / radius) ** 2;
+    const speed = this.config.maxSpeed * strength * weight;
+    
+    return {
+      x: (dx / dist) * speed,
+      y: (dy / dist) * speed,
+    };
+  }
+
+  private arrive(target: Vector2, slowingRadius: number): Vector2 {
+    const desired = {
+      x: target.x - this.position.x,
+      y: target.y - this.position.y,
+    };
+    const dist = Math.sqrt(desired.x ** 2 + desired.y ** 2);
+    if (dist < 0.5) return { x: 0, y: 0 };
+    
+    const speed = dist < slowingRadius 
+      ? this.config.maxSpeed * (dist / slowingRadius)
+      : this.config.maxSpeed;
+    
+    return {
+      x: (desired.x / dist) * speed,
+      y: (desired.y / dist) * speed,
+    };
+  }
+
+  private wander(): Vector2 {
+    // Add jitter to wander angle
+    this.wanderAngle += (Math.random() - 0.5) * this.config.wanderJitter;
+    
+    // Calculate wander circle center (ahead of bee)
+    const vel = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
+    const heading = vel > 0.1 
+      ? { x: this.velocity.x / vel, y: this.velocity.y / vel }
+      : { x: Math.cos(this.wanderAngle), y: Math.sin(this.wanderAngle) };
+    
+    const circleCenter = {
+      x: this.position.x + heading.x * this.config.wanderDistance,
+      y: this.position.y + heading.y * this.config.wanderDistance,
+    };
+    
+    // Calculate target on wander circle
+    this.wanderTarget = {
+      x: circleCenter.x + Math.cos(this.wanderAngle) * this.config.wanderRadius,
+      y: circleCenter.y + Math.sin(this.wanderAngle) * this.config.wanderRadius,
+    };
+    
+    return this.seek(this.wanderTarget, 0.5);
+  }
+
+  private avoidObstacles(): Vector2 {
+    let avoidance = { x: 0, y: 0 };
+    
+    for (const obstacle of this.obstacles) {
+      const dx = this.position.x - obstacle.x;
+      const dy = this.position.y - obstacle.y;
+      const dist = Math.sqrt(dx ** 2 + dy ** 2);
+      const avoidRadius = obstacle.radius + this.config.obstacleAvoidDistance;
+      
+      if (dist < avoidRadius && dist > 0.1) {
+        const strength = (1 - dist / avoidRadius) ** 2;
+        avoidance.x += (dx / dist) * strength * 2;
+        avoidance.y += (dy / dist) * strength * 2;
+      }
+    }
+    
+    return avoidance;
+  }
+
+  private stayInBounds(): Vector2 {
+    const force = { x: 0, y: 0 };
+    const pad = this.config.boundaryPadding;
+    const halfDim = this.dimension / 2;
+    
+    // Soft boundaries with increasing force
+    if (this.position.x < pad + halfDim) {
+      force.x = (pad + halfDim - this.position.x) * 0.05;
+    } else if (this.position.x > this.viewportSize.x - pad - halfDim) {
+      force.x = (this.viewportSize.x - pad - halfDim - this.position.x) * 0.05;
+    }
+    
+    if (this.position.y < pad + halfDim) {
+      force.y = (pad + halfDim - this.position.y) * 0.05;
+    } else if (this.position.y > this.viewportSize.y - pad - halfDim) {
+      force.y = (this.viewportSize.y - pad - halfDim - this.position.y) * 0.05;
+    }
+    
+    return force;
+  }
+
+  private pickNewWanderTarget(): void {
+    // Pick a random point within the viewport
+    const pad = this.config.boundaryPadding + this.dimension;
+    this.targetPosition = {
+      x: pad + Math.random() * (this.viewportSize.x - pad * 2),
+      y: pad + Math.random() * (this.viewportSize.y - pad * 2),
+    };
+  }
+
+  // ============================================
+  // MAIN UPDATE LOOP
+  // ============================================
+
+  update(deltaTime: number): { 
+    position: Vector2; 
+    velocity: Vector2; 
+    state: MovementState;
+    speed: number;
+  } {
+    // Evaluate state transitions
+    this.evaluateStateTransition(deltaTime);
+    
+    // Calculate steering forces based on current state
+    let steering = { x: 0, y: 0 };
+    
+    switch (this.state) {
+      case 'WANDER':
+        const wanderForce = this.wander();
+        steering.x += wanderForce.x;
+        steering.y += wanderForce.y;
+        break;
+        
+      case 'EVADE':
+        // Predict cursor future position
+        const predictedCursor = {
+          x: this.cursorPosition.x + this.cursorVelocity.x * 10,
+          y: this.cursorPosition.y + this.cursorVelocity.y * 10,
+        };
+        const fleeForce = this.flee(predictedCursor, this.config.evadeDistance * 1.5, 2.5);
+        steering.x += fleeForce.x;
+        steering.y += fleeForce.y;
+        break;
+        
+      case 'REST':
+        // Gentle hovering - slight drift
+        steering.x += (Math.random() - 0.5) * 0.02;
+        steering.y += (Math.random() - 0.5) * 0.02;
+        break;
+        
+      case 'CELEBRATE':
+        // Bouncy figure-8 pattern
+        const celebTime = this.stateTimer * 0.005;
+        steering.x += Math.sin(celebTime * 2) * 0.8;
+        steering.y += Math.sin(celebTime * 4) * 0.4;
+        break;
+        
+      case 'ALERT':
+        // Quick back and forth scanning
+        const alertTime = this.stateTimer * 0.008;
+        steering.x += Math.sin(alertTime * 3) * 0.5;
+        // Occasionally look toward cursor
+        if (Math.random() < 0.02) {
+          const lookAt = this.seek(this.cursorPosition, 0.2);
+          steering.x += lookAt.x;
+          steering.y += lookAt.y;
+        }
+        break;
+        
+      case 'PATROL':
+        if (this.targetPosition) {
+          const arriveForce = this.arrive(this.targetPosition, 50);
+          steering.x += arriveForce.x;
+          steering.y += arriveForce.y;
+          
+          // Pick new target when arrived
+          if (this.distanceTo(this.targetPosition) < 20) {
+            this.pickNewWanderTarget();
+          }
+        }
+        break;
+        
+      case 'CHASE':
+        if (this.targetPosition) {
+          const seekForce = this.seek(this.targetPosition, 1.2);
+          steering.x += seekForce.x;
+          steering.y += seekForce.y;
+        }
+        break;
+    }
+    
+    // Always apply obstacle avoidance and boundary forces
+    const avoidForce = this.avoidObstacles();
+    const boundaryForce = this.stayInBounds();
+    
+    steering.x += avoidForce.x + boundaryForce.x;
+    steering.y += avoidForce.y + boundaryForce.y;
+    
+    // Limit steering force
+    const steerMag = Math.sqrt(steering.x ** 2 + steering.y ** 2);
+    if (steerMag > this.config.maxAcceleration) {
+      steering.x = (steering.x / steerMag) * this.config.maxAcceleration;
+      steering.y = (steering.y / steerMag) * this.config.maxAcceleration;
+    }
+    
+    // Apply steering to acceleration
+    this.acceleration.x = steering.x;
+    this.acceleration.y = steering.y;
+    
+    // Update velocity with acceleration
+    this.velocity.x += this.acceleration.x;
+    this.velocity.y += this.acceleration.y;
+    
+    // Apply friction
+    this.velocity.x *= this.config.friction;
+    this.velocity.y *= this.config.friction;
+    
+    // Limit velocity
+    const velMag = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
+    const maxSpeedForState = this.state === 'EVADE' ? this.config.maxSpeed * 2 
+                           : this.state === 'REST' ? this.config.maxSpeed * 0.2
+                           : this.config.maxSpeed;
+    if (velMag > maxSpeedForState) {
+      this.velocity.x = (this.velocity.x / velMag) * maxSpeedForState;
+      this.velocity.y = (this.velocity.y / velMag) * maxSpeedForState;
+    }
+    
+    // Update position
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
+    
+    // Hard clamp to viewport
+    const halfDim = this.dimension / 2;
+    this.position.x = Math.max(halfDim, Math.min(this.viewportSize.x - halfDim, this.position.x));
+    this.position.y = Math.max(halfDim, Math.min(this.viewportSize.y - halfDim, this.position.y));
+    
+    return {
+      position: { ...this.position },
+      velocity: { ...this.velocity },
+      state: this.state,
+      speed: velMag,
+    };
+  }
+
+  // ============================================
+  // UTILITY METHODS
+  // ============================================
+
+  private distanceTo(target: Vector2): number {
+    const dx = target.x - this.position.x;
+    const dy = target.y - this.position.y;
+    return Math.sqrt(dx ** 2 + dy ** 2);
+  }
+
+  getState(): MovementState {
+    return this.state;
+  }
+
+  getPosition(): Vector2 {
+    return { ...this.position };
+  }
+
+  getVelocity(): Vector2 {
+    return { ...this.velocity };
+  }
+
+  // Force immediate state change (for external triggers)
+  forceState(state: MovementState): void {
+    this.lastStateChange = 0;
+    this.transitionTo(state);
+  }
+}
+
+// ============================================
+// OBSTACLE REGISTRY (Seasonal Decorations)
+// ============================================
+export class ObstacleRegistry {
+  private obstacles: Map<string, Obstacle> = new Map();
+  private listeners: ((obstacles: Obstacle[]) => void)[] = [];
+
+  register(id: string, x: number, y: number, radius: number, type: Obstacle['type'] = 'decoration'): void {
+    this.obstacles.set(id, { id, x, y, radius, type });
+    this.notifyListeners();
+  }
+
+  update(id: string, x: number, y: number): void {
+    const obs = this.obstacles.get(id);
+    if (obs) {
+      obs.x = x;
+      obs.y = y;
+      this.notifyListeners();
+    }
+  }
+
+  remove(id: string): void {
+    this.obstacles.delete(id);
+    this.notifyListeners();
+  }
+
+  clear(): void {
+    this.obstacles.clear();
+    this.notifyListeners();
+  }
+
+  getAll(): Obstacle[] {
+    return Array.from(this.obstacles.values());
+  }
+
+  subscribe(listener: (obstacles: Obstacle[]) => void): () => void {
+    this.listeners.push(listener);
+    return () => {
+      this.listeners = this.listeners.filter(l => l !== listener);
+    };
+  }
+
+  private notifyListeners(): void {
+    const obstacles = this.getAll();
+    this.listeners.forEach(l => l(obstacles));
+  }
+}
+
+// Global obstacle registry instance
+export const obstacleRegistry = new ObstacleRegistry();
+
+// ============================================
 // WORKER SWARM CONTROLLER (Orbiting Worker Bees)
 // ============================================
 export interface WorkerBeeState {
@@ -567,6 +1146,7 @@ export class BeeController {
   public reaction: ReactionHandler;
   public thought: ThoughtHandler;
   public swarm: WorkerSwarmController;
+  public movement: MovementController;
 
   constructor() {
     this.direction = new DirectionHandler();
@@ -574,6 +1154,34 @@ export class BeeController {
     this.reaction = new ReactionHandler();
     this.thought = new ThoughtHandler();
     this.swarm = new WorkerSwarmController(8);
+    this.movement = new MovementController();
+  }
+
+  // Initialize movement controller with viewport and starting position
+  initializeMovement(viewportWidth: number, viewportHeight: number, startX: number, startY: number, dimension: number): void {
+    this.movement.setViewport(viewportWidth, viewportHeight);
+    this.movement.setPosition(startX + dimension / 2, startY + dimension / 2);
+    this.movement.setDimension(dimension);
+  }
+
+  // Main update loop - returns new position from movement controller
+  updateAutonomous(deltaTime: number, cursorX: number, cursorY: number, cursorVelX: number, cursorVelY: number): {
+    position: Vector2;
+    velocity: Vector2;
+    state: MovementState;
+    speed: number;
+  } {
+    // Update cursor tracking
+    this.movement.updateCursor(cursorX, cursorY, cursorVelX, cursorVelY);
+    
+    // Run physics update
+    const result = this.movement.update(deltaTime);
+    
+    // Sync direction and animation handlers with movement velocity
+    this.direction.update(result.velocity.x, result.velocity.y);
+    this.animation.update(deltaTime, result.velocity.x, result.velocity.y);
+    
+    return result;
   }
 
   update(deltaTime: number, velocityX: number, velocityY: number): void {
@@ -585,6 +1193,36 @@ export class BeeController {
     this.reaction.handleTouch(x, y, beeX, beeY);
   }
 
+  // Trigger celebration (e.g., build success)
+  celebrate(duration: number = 3000): void {
+    this.movement.triggerCelebration(duration);
+  }
+
+  // Trigger alert (e.g., error detected)
+  alert(level: number = 1): void {
+    this.movement.triggerAlert(level);
+  }
+
+  // Set error state
+  setError(hasError: boolean): void {
+    this.movement.setErrorState(hasError);
+  }
+
+  // Set user activity
+  setUserActive(active: boolean): void {
+    this.movement.setUserActivity(active);
+  }
+
+  // Register obstacle for avoidance
+  addObstacle(id: string, x: number, y: number, radius: number, type: Obstacle['type'] = 'decoration'): void {
+    this.movement.registerObstacle({ id, x, y, radius, type });
+  }
+
+  // Remove obstacle
+  removeObstacle(id: string): void {
+    this.movement.removeObstacle(id);
+  }
+
   getAnimationState(): {
     facing: FacingState;
     rotation: number;
@@ -594,6 +1232,7 @@ export class BeeController {
     bodyTilt: number;
     scale: number;
     reactionAnim: { rotation: number; scale: number; offsetX: number; offsetY: number };
+    movementState: MovementState;
   } {
     const reactionAnim = this.reaction.getReactionAnimation();
     
@@ -606,6 +1245,7 @@ export class BeeController {
       bodyTilt: this.animation.getBodyTilt(),
       scale: this.animation.getScale() * reactionAnim.scale,
       reactionAnim,
+      movementState: this.movement.getState(),
     };
   }
 }
