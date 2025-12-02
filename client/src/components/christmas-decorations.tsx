@@ -1,11 +1,21 @@
 /**
  * Christmas Decorations Component - Optimized Pure CSS
  * Pure CSS animations, no Framer Motion, no string styles
+ * Now with obstacle registry support for bee avoidance!
  */
 
-import { useMemo } from 'react';
+import { useMemo, useEffect, useCallback } from 'react';
 
 const BULB_COLORS = ['#FF1744', '#2979F3', '#00E676', '#FFD600', '#FF6E40', '#1DE9B6'];
+
+export interface DecorationObstacle {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  type: 'wreath' | 'ornament' | 'bulb';
+}
 
 interface ChristmasBulb {
   id: number;
@@ -17,6 +27,9 @@ interface ChristmasBulb {
 interface ChristmasDecorationsProps {
   enabled?: boolean;
   className?: string;
+  onObstaclesReady?: (obstacles: DecorationObstacle[]) => void;
+  viewportWidth?: number;
+  viewportHeight?: number;
 }
 
 // Minimal Christmas Bulb - Pure CSS animation
@@ -121,6 +134,9 @@ function FloatingOrnament({ index }: { index: number }) {
 export function ChristmasDecorations({
   enabled = true,
   className = '',
+  onObstaclesReady,
+  viewportWidth = 1000,
+  viewportHeight = 800,
 }: ChristmasDecorationsProps) {
   const bulbs = useMemo(() => {
     const positions: ChristmasBulb[] = [];
@@ -145,6 +161,62 @@ export function ChristmasDecorations({
 
     return positions;
   }, []);
+
+  // Calculate and report obstacle positions for bee avoidance
+  const calculateObstacles = useCallback((): DecorationObstacle[] => {
+    const obstacles: DecorationObstacle[] = [];
+    const wreathSize = 80;
+    const ornamentWidth = 28;
+    const ornamentHeight = 36;
+
+    // Corner wreaths (fixed positions)
+    const wreathPositions = [
+      { id: 'wreath-tl', x: 0, y: 0 },
+      { id: 'wreath-tr', x: viewportWidth - wreathSize, y: 0 },
+      { id: 'wreath-bl', x: 0, y: viewportHeight - wreathSize },
+      { id: 'wreath-br', x: viewportWidth - wreathSize, y: viewportHeight - wreathSize },
+    ];
+
+    wreathPositions.forEach(pos => {
+      obstacles.push({
+        id: pos.id,
+        x: pos.x,
+        y: pos.y,
+        width: wreathSize,
+        height: wreathSize,
+        type: 'wreath',
+      });
+    });
+
+    // Floating ornaments (percentage-based positions)
+    const ornamentPositions = [
+      { id: 'ornament-0', xPercent: 8, yPercent: 15 },
+      { id: 'ornament-1', xPercent: 92, yPercent: 12 },
+      { id: 'ornament-2', xPercent: 5, yPercent: 82 },
+      { id: 'ornament-3', xPercent: 88, yPercent: 85 },
+    ];
+
+    ornamentPositions.forEach(pos => {
+      obstacles.push({
+        id: pos.id,
+        x: (pos.xPercent / 100) * viewportWidth,
+        y: (pos.yPercent / 100) * viewportHeight,
+        width: ornamentWidth,
+        height: ornamentHeight,
+        type: 'ornament',
+      });
+    });
+
+    return obstacles;
+  }, [viewportWidth, viewportHeight]);
+
+  // Report obstacles when component mounts or viewport changes
+  useEffect(() => {
+    if (enabled && onObstaclesReady) {
+      const obstacles = calculateObstacles();
+      onObstaclesReady(obstacles);
+    }
+  }, [enabled, onObstaclesReady, calculateObstacles]);
 
   if (!enabled) return null;
 

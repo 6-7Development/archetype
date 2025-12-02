@@ -21,7 +21,7 @@ import { RefreshCw, Sparkles, Heart, Zap, Coffee, PartyPopper, Ear, Pencil, Brai
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChristmasDecorations } from './christmas-decorations';
+import { ChristmasDecorations, type DecorationObstacle } from './christmas-decorations';
 import { BeeController, type FacingState, type TouchReaction, type WorkerBeeState, type MovementState, type Vector2 } from '@/lib/bee-handlers';
 
 // Seasonal Detection - Check if it's Christmas season (Nov 15 - Jan 5)
@@ -762,6 +762,19 @@ export function FloatingQueenBee() {
       }, 3000);
     }
   }, [isChristmas, beeController]);
+
+  // Register decoration obstacles with the movement controller for bee avoidance
+  const handleObstaclesReady = useCallback((obstacles: DecorationObstacle[]) => {
+    beeController.movement.clearObstacles();
+    obstacles.forEach(obstacle => {
+      beeController.movement.addObstacle({
+        id: obstacle.id,
+        x: obstacle.x + obstacle.width / 2,
+        y: obstacle.y + obstacle.height / 2,
+        radius: Math.max(obstacle.width, obstacle.height) / 2 + 20,
+      });
+    });
+  }, [beeController]);
   
   // Update context based on project activity (can be expanded)
   useEffect(() => {
@@ -1333,7 +1346,14 @@ export function FloatingQueenBee() {
       </AnimatePresence>
 
       {/* CHRISTMAS: Festive Decorations - Corner Wreaths, Edge Bulbs, Ornaments */}
-      {isChristmas && <ChristmasDecorations enabled={isChristmas} />}
+      {isChristmas && (
+        <ChristmasDecorations 
+          enabled={isChristmas}
+          onObstaclesReady={handleObstaclesReady}
+          viewportWidth={windowDimensions.width}
+          viewportHeight={windowDimensions.height}
+        />
+      )}
 
       {/* CHRISTMAS: Falling Snowflakes (only render on client after mount) */}
       {isChristmas && isMounted && snowflakes.map((flake) => (
