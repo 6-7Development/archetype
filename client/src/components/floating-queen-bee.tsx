@@ -548,9 +548,10 @@ export function FloatingQueenBee() {
     beeController.thought.updateContext(contextUpdates[mode] as any);
   }, [mode, isMounted, beeController]);
 
-  // Independent worker bees animation loop - each bee moves independently
+  // Independent worker bees animation loop - ALWAYS runs so workers orbit queen constantly
+  // Workers are always visible (orbiting) to avoid "summoning" appearance during attacks
   useEffect(() => {
-    if (!workersVisible || isMobile) {
+    if (isMobile) {
       setOrbitingWorkers([]);
       return;
     }
@@ -586,7 +587,7 @@ export function FloatingQueenBee() {
         cancelAnimationFrame(swarmAnimationRef.current);
       }
     };
-  }, [workersVisible, isMobile, config.position, dimension, beeVelocity, mousePos, beeController]);
+  }, [isMobile, config.position, dimension, beeVelocity, mousePos, beeController]);
   
   // Sync queen mode to worker behaviors (attack, formation, sleep)
   useEffect(() => {
@@ -1045,7 +1046,8 @@ export function FloatingQueenBee() {
         <FallingSnowflake key={flake.id} {...flake} windowHeight={windowDimensions.height} />
       ))}
 
-      {/* Orbiting Worker Bees - Independent movement with attack, formations, idle behaviors */}
+      {/* Orbiting Worker Bees - ALWAYS visible orbiting queen, with varying opacity based on mode
+          Workers are persistent (not "summoned") - they orbit queen constantly */}
       <AnimatePresence mode="sync">
         {orbitingWorkers.map((worker) => (
           <OrbitingWorkerBee
@@ -1062,6 +1064,7 @@ export function FloatingQueenBee() {
             isAttacking={worker.isAttacking || false}
             targetX={worker.targetX || mousePos.x}
             targetY={worker.targetY || mousePos.y}
+            baseOpacity={workersVisible ? 1 : 0.5}
           />
         ))}
       </AnimatePresence>

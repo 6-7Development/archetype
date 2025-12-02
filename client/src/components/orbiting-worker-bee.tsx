@@ -28,6 +28,7 @@ export interface OrbitingWorkerBeeProps {
   isAttacking?: boolean;        // Attack/chase mode
   targetX?: number;             // Target X for attacks
   targetY?: number;             // Target Y for attacks
+  baseOpacity?: number;         // Base opacity level (0-1), defaults to 1
 }
 
 /**
@@ -52,6 +53,7 @@ export function OrbitingWorkerBee({
   isAttacking = false,
   targetX = 0,
   targetY = 0,
+  baseOpacity = 1,
 }: OrbitingWorkerBeeProps) {
   const baseSize = 18 * size;
   const isAngry = mode === 'ERROR' || mode === 'CONFUSED' || isAttacking;
@@ -80,7 +82,7 @@ export function OrbitingWorkerBee({
       }}
       initial={{ opacity: 0, scale: 0 }}
       animate={{
-        opacity: 1,
+        opacity: baseOpacity,
         scale: isAttacking ? 1.15 : 1,
         rotate: isAttacking ? rotation + 180 : rotation,
       }}
