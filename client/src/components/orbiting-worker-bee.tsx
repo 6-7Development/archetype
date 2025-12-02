@@ -1,15 +1,11 @@
 /**
  * Orbiting Worker Bee - Individual bee that orbits queen, reacts to emotions, and attacks
  * 
- * CUSTOMIZABLE PROPERTIES:
- * - bodyColor: Main bee color (golden, red for attacks, etc.)
- * - wingOpacity: How visible/opaque wings are (0-1)
- * - glowIntensity: Aura brightness around bee (0-1)
- * - wingFlutter: Wing animation speed/intensity
- * - energyLevel: How energetic the bee appears (affects glow, size)
- * - mode: Queen's emotional state (affects behavior/colors)
- * - isAttacking: Whether bee is attacking cursor (turns red, more aggressive)
- * - isChristmas: Holiday mode (red/green colors, hat)
+ * DESIGN: Matches the original canvas-drawn worker bees from queen-bee-canvas.tsx
+ * - Larger size with detailed body
+ * - 3 pairs of legs
+ * - Mode-colored eyes and wing glow
+ * - Prominent stripes on abdomen
  */
 
 import { motion } from 'framer-motion';
@@ -31,15 +27,31 @@ export interface OrbitingWorkerBeeProps {
   baseOpacity?: number;         // Base opacity level (0-1), defaults to 1
 }
 
-/**
- * Individual orbiting worker bee component
- * 
- * EDITING GUIDE:
- * 1. Change bodyColor to adjust bee coloring
- * 2. Modify wing shapes in the <ellipse> elements
- * 3. Adjust eye/antenna positions for different expressions
- * 4. Change attack colors in the conditional logic
- */
+// Mode colors matching the original canvas design
+const modeColors: Record<string, string> = {
+  IDLE: "#ffd700",
+  THINKING: "#00f0ff",
+  CODING: "#00ff41",
+  BUILDING: "#ffae00",
+  SWARM: "#ff0055",
+  LISTENING: "#a855f7",
+  TYPING: "#38bdf8",
+  SUCCESS: "#10b981",
+  ERROR: "#ffd700",
+  FRENZY: "#ff1a1a",
+  EXCITED: "#ffd700",
+  CELEBRATING: "#10b981",
+  HELPFUL: "#ffd700",
+  CURIOUS: "#00f0ff",
+  HUNTING: "#ff0055",
+  CONFUSED: "#ffae00",
+  ALERT: "#ff0055",
+  SLEEPY: "#a855f7",
+  RESTING: "#a855f7",
+  LOADING: "#38bdf8",
+  FOCUSED: "#00ff41",
+};
+
 export function OrbitingWorkerBee({
   id,
   x,
@@ -55,28 +67,28 @@ export function OrbitingWorkerBee({
   targetY = 0,
   baseOpacity = 1,
 }: OrbitingWorkerBeeProps) {
-  const baseSize = 18 * size;
+  // LARGER size to match original canvas workers (was 18, now 36)
+  const baseSize = 36 * size;
   const isAngry = mode === 'ERROR' || mode === 'CONFUSED' || isAttacking;
   const isHappy = mode === 'EXCITED' || mode === 'HELPFUL' || mode === 'CELEBRATING';
 
-  // ===== CUSTOMIZE COLORS HERE =====
-  const attackIntensity = isAttacking ? 1.5 : 1;
-  const bodyColor = isAngry ? (isAttacking ? '#FF3333' : '#E6A300') : isHappy ? '#FFD700' : '#F7B500';
-  const wingOpacity = 0.3 + wingFlutter * 0.4 + (isAttacking ? 0.2 : 0);
-  const glowIntensity = (energyLevel * 0.6 + (isAttacking ? 0.4 : 0)) * attackIntensity;
+  // Mode-based accent color (matches original canvas design)
+  const modeColor = modeColors[mode] || modeColors.IDLE;
+  
+  // Body colors - golden yellow with black stripes
+  const bodyColor = isAngry ? (isAttacking ? '#FF3333' : '#eab308') : isHappy ? '#FFD700' : '#eab308';
+  const wingOpacity = 0.2 + wingFlutter * 0.3 + (isAttacking ? 0.15 : 0);
+  const glowIntensity = (energyLevel * 0.6 + (isAttacking ? 0.4 : 0));
 
-  // During attacks, bee flies toward cursor instead of orbiting
-  const attackOffsetX = isAttacking && targetX ? (targetX - x) * 0.02 : 0;
-  const attackOffsetY = isAttacking && targetY ? (targetY - y) * 0.02 : 0;
-  const beeX = isAttacking ? x + attackOffsetX : x;
-  const beeY = isAttacking ? y + attackOffsetY : y;
+  // Wing flutter animation
+  const wingAngle = wingFlutter * 0.5;
 
   return (
     <motion.div
       className="fixed pointer-events-none z-[99]"
       style={{
-        left: beeX - baseSize / 2,
-        top: beeY - baseSize / 2,
+        left: x - baseSize / 2,
+        top: y - baseSize / 2,
         width: baseSize,
         height: baseSize,
       }}
@@ -101,184 +113,150 @@ export function OrbitingWorkerBee({
       <svg
         width={baseSize}
         height={baseSize}
-        viewBox="0 0 24 24"
-        className="drop-shadow-sm"
+        viewBox="0 0 40 48"
+        className="drop-shadow-md"
       >
-        {/* ===== GRADIENTS - CUSTOMIZE COLORS HERE ===== */}
         <defs>
+          {/* Glow effect for energy */}
           <radialGradient id={`workerGlow-${id}`}>
-            <stop offset="0%" stopColor={bodyColor} stopOpacity={glowIntensity * 0.5} />
-            <stop offset="100%" stopColor={bodyColor} stopOpacity="0" />
+            <stop offset="0%" stopColor={modeColor} stopOpacity={glowIntensity * 0.4} />
+            <stop offset="100%" stopColor={modeColor} stopOpacity="0" />
           </radialGradient>
-          <linearGradient
-            id={`workerBody-${id}`}
-            x1="0%"
-            y1="0%"
-            x2="0%"
-            y2="100%"
-          >
-            <stop
-              offset="0%"
-              stopColor={isChristmas ? '#FF6B6B' : bodyColor}
-            />
-            <stop
-              offset="100%"
-              stopColor={isChristmas ? '#CC4444' : '#D9A000'}
-            />
+          
+          {/* Body gradient - black to yellow to black (like original) */}
+          <linearGradient id={`workerBody-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#000" />
+            <stop offset="40%" stopColor={bodyColor} />
+            <stop offset="60%" stopColor={bodyColor} />
+            <stop offset="100%" stopColor="#000" />
           </linearGradient>
+          
+          {/* Wing gradient with mode color */}
+          <radialGradient id={`wingGlow-${id}`}>
+            <stop offset="0%" stopColor={modeColor} stopOpacity="0.3" />
+            <stop offset="100%" stopColor={modeColor} stopOpacity="0.05" />
+          </radialGradient>
         </defs>
 
         {/* Energy glow aura */}
-        {energyLevel > 0.6 && (
-          <circle cx="12" cy="12" r="11" fill={`url(#workerGlow-${id})`} />
+        {energyLevel > 0.4 && (
+          <circle cx="20" cy="24" r="22" fill={`url(#workerGlow-${id})`} />
         )}
 
-        {/* ===== WING CUSTOMIZATION ===== */}
-        {/* Left Wing - EDIT: Change rx/ry for wing shape, angles for flap */}
-        <ellipse
-          cx="7"
-          cy="10"
-          rx="5"
-          ry="4"
-          fill={
-            isChristmas
-              ? 'rgba(200, 220, 255, 0.6)'
-              : 'rgba(255, 255, 255, 0.5)'
-          }
-          stroke="rgba(0,0,0,0.1)"
-          strokeWidth="0.3"
-          opacity={wingOpacity}
-          style={{
-            transformOrigin: '10px 12px',
-            transform: `rotate(${-15 + wingFlutter * 30}deg)`,
-          }}
-        />
+        {/* === LEGS (3 pairs like original canvas) === */}
+        <g stroke="#000" strokeWidth="1.2" strokeLinecap="round">
+          {/* Left legs */}
+          <line x1="14" y1="22" x2="6" y2="28" />
+          <line x1="14" y1="26" x2="5" y2="32" />
+          <line x1="14" y1="30" x2="6" y2="38" />
+          {/* Right legs */}
+          <line x1="26" y1="22" x2="34" y2="28" />
+          <line x1="26" y1="26" x2="35" y2="32" />
+          <line x1="26" y1="30" x2="34" y2="38" />
+        </g>
 
-        {/* Right Wing - EDIT: Mirror values of left wing */}
+        {/* === WINGS (larger, mode-colored glow like original) === */}
+        {/* Left Wing */}
         <ellipse
-          cx="17"
-          cy="10"
-          rx="5"
-          ry="4"
-          fill={
-            isChristmas
-              ? 'rgba(200, 220, 255, 0.6)'
-              : 'rgba(255, 255, 255, 0.5)'
-          }
-          stroke="rgba(0,0,0,0.1)"
-          strokeWidth="0.3"
-          opacity={wingOpacity}
-          style={{
-            transformOrigin: '14px 12px',
-            transform: `rotate(${15 - wingFlutter * 30}deg)`,
-          }}
-        />
-
-        {/* ===== BODY PARTS ===== */}
-        {/* Thorax (chest) */}
-        <ellipse
-          cx="12"
-          cy="11"
-          rx="4"
-          ry="3.5"
-          fill={`url(#workerBody-${id})`}
-          stroke="#333"
-          strokeWidth="0.4"
-        />
-
-        {/* Abdomen (rear) */}
-        <ellipse
-          cx="12"
-          cy="15"
-          rx="3.5"
-          ry="4"
-          fill={`url(#workerBody-${id})`}
-          stroke="#333"
-          strokeWidth="0.4"
-        />
-
-        {/* ===== STRIPES (CUSTOMIZE: Change count/position) ===== */}
-        <line
-          x1="9"
-          y1="14"
-          x2="15"
-          y2="14"
-          stroke="#333"
-          strokeWidth="0.6"
-          opacity="0.6"
-        />
-        <line
-          x1="9.5"
-          y1="16"
-          x2="14.5"
-          y2="16"
-          stroke="#333"
-          strokeWidth="0.6"
-          opacity="0.6"
-        />
-        <line
-          x1="10"
-          y1="18"
-          x2="14"
-          y2="18"
-          stroke="#333"
+          cx="8"
+          cy="18"
+          rx="10"
+          ry="6"
+          fill={`url(#wingGlow-${id})`}
+          stroke="rgba(0,0,0,0.15)"
           strokeWidth="0.5"
-          opacity="0.5"
+          opacity={wingOpacity}
+          style={{
+            transformOrigin: '16px 22px',
+            transform: `rotate(${-20 + wingAngle * 40}deg)`,
+          }}
+        />
+        {/* Right Wing */}
+        <ellipse
+          cx="32"
+          cy="18"
+          rx="10"
+          ry="6"
+          fill={`url(#wingGlow-${id})`}
+          stroke="rgba(0,0,0,0.15)"
+          strokeWidth="0.5"
+          opacity={wingOpacity}
+          style={{
+            transformOrigin: '24px 22px',
+            transform: `rotate(${20 - wingAngle * 40}deg)`,
+          }}
         />
 
-        {/* Stinger */}
-        <path d="M12 19 L12 21" stroke="#333" strokeWidth="0.5" />
+        {/* === ABDOMEN (rear body with stripes like original) === */}
+        <ellipse
+          cx="20"
+          cy="32"
+          rx="8"
+          ry="10"
+          fill={`url(#workerBody-${id})`}
+        />
+        
+        {/* Black stripes on abdomen (matches original canvas) */}
+        <rect x="12" y="28" width="16" height="3" fill="rgba(0,0,0,0.85)" rx="1" />
+        <rect x="13" y="34" width="14" height="2.5" fill="rgba(0,0,0,0.85)" rx="1" />
+        <rect x="14" y="39" width="12" height="2" fill="rgba(0,0,0,0.8)" rx="1" />
 
-        {/* ===== HEAD & FACE ===== */}
-        {/* Head - CUSTOMIZE: Change fill, stroke, position */}
+        {/* === THORAX (chest - dark like original) === */}
+        <ellipse
+          cx="20"
+          cy="20"
+          rx="7"
+          ry="7"
+          fill="#111"
+        />
+
+        {/* === HEAD (dark with mode-colored eyes like original) === */}
         <circle
-          cx="12"
-          cy="7"
-          r="2.5"
-          fill={bodyColor}
-          stroke="#333"
-          strokeWidth="0.4"
+          cx="20"
+          cy="10"
+          r="6"
+          fill="#000"
         />
+        
+        {/* Mode-colored eyes (like original canvas drawRealWorker) */}
+        <circle cx="17" cy="8" r="1.8" fill={modeColor} />
+        <circle cx="23" cy="8" r="1.8" fill={modeColor} />
+        
+        {/* Eye highlights */}
+        <circle cx="17.5" cy="7.5" r="0.6" fill="#FFF" opacity="0.7" />
+        <circle cx="23.5" cy="7.5" r="0.6" fill="#FFF" opacity="0.7" />
 
-        {/* Left Eye - CUSTOMIZE: Position, size, color for expression */}
-        <circle cx="10.5" cy="6.5" r="1" fill="#000" />
-        <circle cx="10.7" cy="6.3" r="0.3" fill="#FFF" opacity="0.8" />
-
-        {/* Right Eye */}
-        <circle cx="13.5" cy="6.5" r="1" fill="#000" />
-        <circle cx="13.7" cy="6.3" r="0.3" fill="#FFF" opacity="0.8" />
-
-        {/* ===== ANTENNAE (CUSTOMIZE: angle, curve) ===== */}
-        {/* Left Antenna */}
+        {/* === ANTENNAE === */}
         <path
-          d="M10.5 5 Q9 3 8 2"
+          d="M17 5 Q14 2 12 1"
           stroke="#333"
-          strokeWidth="0.5"
+          strokeWidth="1"
           fill="none"
         />
-        <circle cx="8" cy="2" r="0.4" fill="#333" />
-
-        {/* Right Antenna */}
+        <circle cx="12" cy="1" r="1" fill="#333" />
+        
         <path
-          d="M13.5 5 Q15 3 16 2"
+          d="M23 5 Q26 2 28 1"
           stroke="#333"
-          strokeWidth="0.5"
+          strokeWidth="1"
           fill="none"
         />
-        <circle cx="16" cy="2" r="0.4" fill="#333" />
+        <circle cx="28" cy="1" r="1" fill="#333" />
 
-        {/* ===== CHRISTMAS MODE (CUSTOMIZE: hat colors, decorations) ===== */}
+        {/* === STINGER === */}
+        <path d="M20 42 L20 46" stroke="#333" strokeWidth="1.5" strokeLinecap="round" />
+
+        {/* === CHRISTMAS HAT === */}
         {isChristmas && (
           <g>
-            {/* Santa Hat */}
             <path
-              d="M9 5 L12 0 L15 5 Z"
+              d="M14 6 L20 -4 L26 6 Z"
               fill="#CC0000"
-              stroke="#660000"
-              strokeWidth="0.3"
+              stroke="#880000"
+              strokeWidth="0.5"
             />
-            <circle cx="12" cy="0" r="1" fill="white" />
-            <ellipse cx="12" cy="5.5" rx="4" ry="0.8" fill="white" />
+            <circle cx="20" cy="-4" r="2" fill="white" />
+            <ellipse cx="20" cy="6" rx="7" ry="1.5" fill="white" />
           </g>
         )}
       </svg>
