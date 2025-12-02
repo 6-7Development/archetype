@@ -2045,6 +2045,328 @@ export class IndependentWorkerHandler {
 }
 
 // ============================================
+// EMOTE WORKER HANDLER
+// Temporary bees spawned for queen emote formations
+// These do NOT interrupt regular attacking workers
+// ============================================
+export interface EmoteWorkerState {
+  id: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  // Formation target
+  targetX: number;
+  targetY: number;
+  // Lifecycle
+  spawnedAt: number;
+  lifespan: number;
+  opacity: number;
+  transitionProgress: number; // 0-1 ease into position
+  // Animation
+  size: number;
+  wingPhase: number;
+  energyLevel: number;
+  phase: number;
+  // Visual
+  rotation: number;
+}
+
+export type EmoteFormation = 'CIRCLE' | 'HEART' | 'STAR' | 'SPIRAL' | 'CROWN' | 'DIAMOND';
+
+export class EmoteWorkerHandler {
+  private emoteWorkers: EmoteWorkerState[] = [];
+  private maxEmoteBees = 10;
+  private queenX = 0;
+  private queenY = 0;
+  private time = 0;
+  private isActive = false;
+  private currentFormation: EmoteFormation | null = null;
+  
+  // Spawn temporary emote bees for a formation
+  spawnForFormation(
+    queenX: number, 
+    queenY: number, 
+    formation: EmoteFormation, 
+    count: number = 8
+  ): void {
+    this.queenX = queenX;
+    this.queenY = queenY;
+    this.currentFormation = formation;
+    this.isActive = true;
+    
+    // Clear any existing emote workers
+    this.emoteWorkers = [];
+    
+    // Get formation slots
+    const slots = this.getFormationSlots(formation, Math.min(count, this.maxEmoteBees));
+    
+    // Spawn emote workers at queen position, they will fly out to formation slots
+    for (let i = 0; i < slots.length; i++) {
+      const slot = slots[i];
+      const delay = i * 50; // Stagger spawns
+      
+      this.emoteWorkers.push({
+        id: 1000 + i, // Use high IDs to avoid collision with regular workers
+        x: queenX, // Start at queen position
+        y: queenY,
+        vx: 0,
+        vy: 0,
+        targetX: queenX + slot.x,
+        targetY: queenY + slot.y,
+        spawnedAt: this.time + delay,
+        lifespan: 5000, // 5 second lifespan by default
+        opacity: 0, // Start invisible, fade in
+        transitionProgress: 0,
+        size: 0.7 + Math.random() * 0.2, // Slightly smaller than regular workers
+        wingPhase: Math.random() * Math.PI * 2,
+        energyLevel: 0.6 + Math.random() * 0.4,
+        phase: Math.random() * Math.PI * 2,
+        rotation: 0,
+      });
+    }
+  }
+  
+  // Despawn all emote workers (fade out)
+  despawn(): void {
+    // Mark all for fade-out by setting short remaining lifespan
+    this.emoteWorkers.forEach(w => {
+      w.lifespan = Math.min(w.lifespan, 400); // Quick fade out
+    });
+    this.isActive = false;
+    this.currentFormation = null;
+  }
+  
+  // Update queen position
+  updateQueen(x: number, y: number): void {
+    const dx = x - this.queenX;
+    const dy = y - this.queenY;
+    
+    // Move all targets with queen
+    this.emoteWorkers.forEach(w => {
+      w.targetX += dx;
+      w.targetY += dy;
+    });
+    
+    this.queenX = x;
+    this.queenY = y;
+  }
+  
+  // Main update loop
+  update(deltaTime: number): void {
+    this.time += deltaTime;
+    const dt = deltaTime * 0.001;
+    
+    // Update each emote worker
+    for (let i = this.emoteWorkers.length - 1; i >= 0; i--) {
+      const w = this.emoteWorkers[i];
+      
+      // Check if spawn delay has passed
+      const timeSinceSpawn = this.time - w.spawnedAt;
+      if (timeSinceSpawn < 0) continue; // Not yet spawned
+      
+      // Update lifespan
+      w.lifespan -= deltaTime;
+      
+      // Remove if lifespan expired
+      if (w.lifespan <= 0) {
+        this.emoteWorkers.splice(i, 1);
+        continue;
+      }
+      
+      // Fade in during first 300ms
+      if (timeSinceSpawn < 300) {
+        w.opacity = timeSinceSpawn / 300;
+      } else if (w.lifespan < 300) {
+        // Fade out during last 300ms
+        w.opacity = w.lifespan / 300;
+      } else {
+        w.opacity = 1;
+      }
+      
+      // Ease into formation position
+      w.transitionProgress = Math.min(1, w.transitionProgress + dt * 2.5);
+      const easeProgress = this.easeOutBack(w.transitionProgress);
+      
+      // Move toward target with easing
+      const dx = w.targetX - w.x;
+      const dy = w.targetY - w.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      
+      if (dist > 1) {
+        // Steering force toward target
+        const steerStrength = 0.1 * easeProgress + 0.02;
+        w.vx += (dx / dist) * steerStrength * 60;
+        w.vy += (dy / dist) * steerStrength * 60;
+      }
+      
+      // Damping
+      w.vx *= 0.92;
+      w.vy *= 0.92;
+      
+      // Limit speed
+      const speed = Math.sqrt(w.vx * w.vx + w.vy * w.vy);
+      if (speed > 5) {
+        w.vx = (w.vx / speed) * 5;
+        w.vy = (w.vy / speed) * 5;
+      }
+      
+      // Update position
+      w.x += w.vx;
+      w.y += w.vy;
+      
+      // Update wing phase
+      w.wingPhase += (8 + speed * 0.5) * dt;
+      
+      // Calculate rotation from velocity
+      if (speed > 0.5) {
+        w.rotation = Math.atan2(w.vy, w.vx) * (180 / Math.PI);
+      }
+      
+      // Gentle hover bob at formation position
+      if (w.transitionProgress > 0.8) {
+        const bob = Math.sin(this.time * 0.003 + w.phase) * 2;
+        w.y += bob * dt;
+      }
+    }
+    
+    // Clean up if all workers gone
+    if (this.emoteWorkers.length === 0) {
+      this.isActive = false;
+      this.currentFormation = null;
+    }
+  }
+  
+  // Easing function for smooth arrival
+  private easeOutBack(t: number): number {
+    const c1 = 1.70158;
+    const c3 = c1 + 1;
+    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+  }
+  
+  // Get formation slot positions
+  private getFormationSlots(type: EmoteFormation, count: number): Array<{ x: number; y: number }> {
+    const slots: Array<{ x: number; y: number }> = [];
+    
+    switch (type) {
+      case 'CIRCLE':
+        for (let i = 0; i < count; i++) {
+          const angle = (i / count) * Math.PI * 2;
+          slots.push({
+            x: Math.cos(angle) * 50,
+            y: Math.sin(angle) * 50,
+          });
+        }
+        break;
+        
+      case 'HEART':
+        for (let i = 0; i < count; i++) {
+          const t = (i / count) * Math.PI * 2;
+          slots.push({
+            x: 16 * Math.pow(Math.sin(t), 3) * 3,
+            y: -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t)) * 3,
+          });
+        }
+        break;
+        
+      case 'STAR':
+        for (let i = 0; i < count; i++) {
+          const angle = (i / count) * Math.PI * 2 - Math.PI / 2;
+          const radius = i % 2 === 0 ? 55 : 28;
+          slots.push({
+            x: Math.cos(angle) * radius,
+            y: Math.sin(angle) * radius,
+          });
+        }
+        break;
+        
+      case 'SPIRAL':
+        for (let i = 0; i < count; i++) {
+          const angle = (i / count) * Math.PI * 4;
+          const radius = 20 + i * 6;
+          slots.push({
+            x: Math.cos(angle) * radius,
+            y: Math.sin(angle) * radius,
+          });
+        }
+        break;
+        
+      case 'CROWN':
+        // Crown shape with peaks
+        for (let i = 0; i < count; i++) {
+          const t = (i / count) * Math.PI * 2;
+          const baseY = 20;
+          const peakHeight = (Math.cos(t * 5) + 1) * 20;
+          slots.push({
+            x: Math.sin(t) * 45,
+            y: baseY - peakHeight,
+          });
+        }
+        break;
+        
+      case 'DIAMOND':
+        for (let i = 0; i < count; i++) {
+          const angle = (i / count) * Math.PI * 2;
+          // Diamond uses Manhattan distance instead of Euclidean
+          const absAngle = Math.abs(Math.cos(angle)) + Math.abs(Math.sin(angle));
+          const radius = 50 / absAngle;
+          slots.push({
+            x: Math.cos(angle) * radius * 0.7,
+            y: Math.sin(angle) * radius * 0.7,
+          });
+        }
+        break;
+    }
+    
+    return slots;
+  }
+  
+  // Get render state for emote workers
+  getEmoteWorkerRenderState(): Array<{
+    id: number;
+    x: number;
+    y: number;
+    size: number;
+    wingFlutter: number;
+    rotation: number;
+    energyLevel: number;
+    opacity: number;
+    isEmoteBee: true;
+  }> {
+    return this.emoteWorkers
+      .filter(w => this.time >= w.spawnedAt) // Only render spawned workers
+      .map(w => ({
+        id: w.id,
+        x: w.x,
+        y: w.y,
+        size: w.size,
+        wingFlutter: Math.sin(w.wingPhase) * 0.5 + 0.5,
+        rotation: w.rotation,
+        energyLevel: w.energyLevel * w.opacity,
+        opacity: w.opacity,
+        isEmoteBee: true as const,
+      }));
+  }
+  
+  // Check if emote formation is active
+  isEmoteActive(): boolean {
+    return this.isActive && this.emoteWorkers.length > 0;
+  }
+  
+  // Get count of active emote workers
+  getEmoteWorkerCount(): number {
+    return this.emoteWorkers.filter(w => this.time >= w.spawnedAt).length;
+  }
+  
+  // Extend lifespan of current emote formation
+  extendLifespan(additionalMs: number): void {
+    this.emoteWorkers.forEach(w => {
+      w.lifespan += additionalMs;
+    });
+  }
+}
+
+// ============================================
 // SEASON EVENT HANDLER
 // Manages holiday modes for worker bees
 // ============================================
