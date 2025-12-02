@@ -1772,8 +1772,141 @@ export class IndependentWorkerHandler {
     });
   }
   
+  // Return all workers to orbit - called when mouse leaves screen
+  returnAllToOrbit(): void {
+    this.workers.forEach(w => {
+      w.behavior = 'RETURN';
+      w.isAttacking = false;
+      w.attackTarget = null;
+      w.behaviorTimer = 0;
+    });
+  }
+  
   getWorkerCount(): number {
     return this.workers.length;
+  }
+}
+
+// ============================================
+// SEASON EVENT HANDLER
+// Manages holiday modes for worker bees
+// ============================================
+export type SeasonEvent = 'CHRISTMAS' | 'HALLOWEEN' | 'VALENTINES' | 'SUMMER' | 'NONE';
+
+// Christmas light colors for individual bees
+const CHRISTMAS_LIGHT_COLORS = [
+  '#FF0000', // Red
+  '#00FF00', // Green
+  '#0000FF', // Blue
+  '#FFD700', // Gold
+  '#FF69B4', // Pink
+  '#00FFFF', // Cyan
+  '#FF4500', // Orange-Red
+  '#ADFF2F', // Green-Yellow
+];
+
+// Halloween colors
+const HALLOWEEN_COLORS = [
+  '#FF6600', // Orange
+  '#800080', // Purple
+  '#00FF00', // Slime Green
+  '#FF0000', // Blood Red
+  '#000000', // Black
+  '#FFD700', // Candy Gold
+  '#4B0082', // Indigo
+  '#8B0000', // Dark Red
+];
+
+// Valentine's colors
+const VALENTINES_COLORS = [
+  '#FF69B4', // Hot Pink
+  '#FF1493', // Deep Pink
+  '#DC143C', // Crimson
+  '#FF6347', // Tomato
+  '#FFB6C1', // Light Pink
+  '#FF0000', // Red
+  '#FFC0CB', // Pink
+  '#DB7093', // Pale Violet Red
+];
+
+export class SeasonEventHandler {
+  private currentSeason: SeasonEvent = 'NONE';
+  
+  constructor() {
+    this.detectSeason();
+  }
+  
+  // Auto-detect current season based on date
+  detectSeason(): SeasonEvent {
+    const now = new Date();
+    const month = now.getMonth(); // 0-indexed
+    const day = now.getDate();
+    
+    // Christmas: Nov 15 - Jan 5
+    if ((month === 10 && day >= 15) || month === 11 || (month === 0 && day <= 5)) {
+      this.currentSeason = 'CHRISTMAS';
+    }
+    // Halloween: Oct 1 - Oct 31
+    else if (month === 9) {
+      this.currentSeason = 'HALLOWEEN';
+    }
+    // Valentine's: Feb 1 - Feb 14
+    else if (month === 1 && day <= 14) {
+      this.currentSeason = 'VALENTINES';
+    }
+    // Summer: Jun 1 - Aug 31
+    else if (month >= 5 && month <= 7) {
+      this.currentSeason = 'SUMMER';
+    }
+    else {
+      this.currentSeason = 'NONE';
+    }
+    
+    return this.currentSeason;
+  }
+  
+  getCurrentSeason(): SeasonEvent {
+    return this.currentSeason;
+  }
+  
+  isChristmas(): boolean {
+    return this.currentSeason === 'CHRISTMAS';
+  }
+  
+  isHalloween(): boolean {
+    return this.currentSeason === 'HALLOWEEN';
+  }
+  
+  isValentines(): boolean {
+    return this.currentSeason === 'VALENTINES';
+  }
+  
+  // Get individual light color for a worker bee based on season
+  getWorkerSeasonColor(workerId: number): string | null {
+    switch (this.currentSeason) {
+      case 'CHRISTMAS':
+        return CHRISTMAS_LIGHT_COLORS[workerId % CHRISTMAS_LIGHT_COLORS.length];
+      case 'HALLOWEEN':
+        return HALLOWEEN_COLORS[workerId % HALLOWEEN_COLORS.length];
+      case 'VALENTINES':
+        return VALENTINES_COLORS[workerId % VALENTINES_COLORS.length];
+      default:
+        return null;
+    }
+  }
+  
+  // Get all colors for the current season (for UI display)
+  getSeasonColors(): string[] {
+    switch (this.currentSeason) {
+      case 'CHRISTMAS':
+        return CHRISTMAS_LIGHT_COLORS;
+      case 'HALLOWEEN':
+        return HALLOWEEN_COLORS;
+      case 'VALENTINES':
+        return VALENTINES_COLORS;
+      default:
+        return [];
+    }
   }
 }
 
@@ -1788,6 +1921,7 @@ export class BeeController {
   public swarm: WorkerSwarmController;
   public workers: IndependentWorkerHandler;
   public movement: MovementController;
+  public season: SeasonEventHandler;
 
   constructor() {
     this.direction = new DirectionHandler();
@@ -1797,6 +1931,7 @@ export class BeeController {
     this.swarm = new WorkerSwarmController(8);
     this.workers = new IndependentWorkerHandler(8);
     this.movement = new MovementController();
+    this.season = new SeasonEventHandler();
   }
 
   // Initialize movement controller with viewport and starting position

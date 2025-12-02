@@ -25,6 +25,7 @@ export interface OrbitingWorkerBeeProps {
   targetX?: number;             // Target X for attacks
   targetY?: number;             // Target Y for attacks
   baseOpacity?: number;         // Base opacity level (0-1), defaults to 1
+  seasonColor?: string | null;  // Individual season color (Christmas lights, etc.)
 }
 
 // Mode colors matching the original canvas design
@@ -66,6 +67,7 @@ export function OrbitingWorkerBee({
   targetX = 0,
   targetY = 0,
   baseOpacity = 1,
+  seasonColor = null,
 }: OrbitingWorkerBeeProps) {
   // LARGER size to match original canvas workers (was 18, now 36)
   const baseSize = 36 * size;
@@ -73,7 +75,8 @@ export function OrbitingWorkerBee({
   const isHappy = mode === 'EXCITED' || mode === 'HELPFUL' || mode === 'CELEBRATING';
 
   // Mode-based accent color (matches original canvas design)
-  const modeColor = modeColors[mode] || modeColors.IDLE;
+  // Use season color for Christmas lights if available
+  const modeColor = seasonColor || modeColors[mode] || modeColors.IDLE;
   
   // Body colors - golden yellow with black stripes
   const bodyColor = isAngry ? (isAttacking ? '#FF3333' : '#eab308') : isHappy ? '#FFD700' : '#eab308';
@@ -82,6 +85,10 @@ export function OrbitingWorkerBee({
 
   // Wing flutter animation
   const wingAngle = wingFlutter * 0.5;
+  
+  // Christmas light glow effect - pulsing light
+  const hasSeasonLight = !!seasonColor && isChristmas;
+  const lightPulse = hasSeasonLight ? Math.sin(Date.now() * 0.005 + id * 0.5) * 0.3 + 0.7 : 1;
 
   return (
     <motion.div
@@ -233,7 +240,16 @@ export function OrbitingWorkerBee({
           strokeWidth="1"
           fill="none"
         />
-        <circle cx="12" cy="1" r="1" fill="#333" />
+        {/* Antenna tip - becomes Christmas light during season */}
+        {hasSeasonLight ? (
+          <>
+            {/* Glowing Christmas light bulb */}
+            <circle cx="12" cy="1" r="2.5" fill={seasonColor!} opacity={lightPulse} />
+            <circle cx="12" cy="1" r="1.5" fill="#FFF" opacity={0.6 * lightPulse} />
+          </>
+        ) : (
+          <circle cx="12" cy="1" r="1" fill="#333" />
+        )}
         
         <path
           d="M23 5 Q26 2 28 1"
@@ -241,7 +257,16 @@ export function OrbitingWorkerBee({
           strokeWidth="1"
           fill="none"
         />
-        <circle cx="28" cy="1" r="1" fill="#333" />
+        {/* Antenna tip - becomes Christmas light during season */}
+        {hasSeasonLight ? (
+          <>
+            {/* Glowing Christmas light bulb */}
+            <circle cx="28" cy="1" r="2.5" fill={seasonColor!} opacity={lightPulse} />
+            <circle cx="28" cy="1" r="1.5" fill="#FFF" opacity={0.6 * lightPulse} />
+          </>
+        ) : (
+          <circle cx="28" cy="1" r="1" fill="#333" />
+        )}
 
         {/* === STINGER === */}
         <path d="M20 42 L20 46" stroke="#333" strokeWidth="1.5" strokeLinecap="round" />

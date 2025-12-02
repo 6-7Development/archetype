@@ -678,15 +678,32 @@ export function FloatingQueenBee() {
       }
     };
     
+    // Mouse leave screen detection - return workers to orbit
+    const handleMouseLeave = () => {
+      setIsMouseNearBee(false);
+      // Signal workers to return to orbit immediately
+      beeController.workers.returnAllToOrbit();
+    };
+    
+    // Mouse enter screen - reset state
+    const handleMouseEnter = () => {
+      // Mouse is back on screen, normal tracking resumes
+    };
+    
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
     window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('mouseleave', handleMouseLeave);
+    document.addEventListener('mouseenter', handleMouseEnter);
+    
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('mouseleave', handleMouseLeave);
+      document.removeEventListener('mouseenter', handleMouseEnter);
     };
-  }, [config.position, dimension]);
+  }, [config.position, dimension, beeController]);
 
   const canvasMode = mapToCanvasMode(mode);
   const modeText = getModeLabel(mode);
@@ -1047,7 +1064,8 @@ export function FloatingQueenBee() {
       ))}
 
       {/* Orbiting Worker Bees - ALWAYS visible orbiting queen, with varying opacity based on mode
-          Workers are persistent (not "summoned") - they orbit queen constantly */}
+          Workers are persistent (not "summoned") - they orbit queen constantly 
+          Each worker has individual Christmas light colors during the holiday season */}
       <AnimatePresence mode="sync">
         {orbitingWorkers.map((worker) => (
           <OrbitingWorkerBee
@@ -1065,6 +1083,7 @@ export function FloatingQueenBee() {
             targetX={worker.targetX || mousePos.x}
             targetY={worker.targetY || mousePos.y}
             baseOpacity={workersVisible ? 1 : 0.5}
+            seasonColor={beeController.season.getWorkerSeasonColor(worker.id)}
           />
         ))}
       </AnimatePresence>
