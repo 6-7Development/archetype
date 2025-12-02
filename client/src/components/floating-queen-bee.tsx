@@ -350,6 +350,9 @@ export function FloatingQueenBee() {
   const thoughtTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const swarmAnimationRef = useRef<number | null>(null);
   
+  // Track if queen is nearly stationary for hover bob animation
+  const [isHovering, setIsHovering] = useState(false);
+  
   const containerRef = useRef<HTMLDivElement>(null);
   const wooshIdRef = useRef(0);
   const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -896,6 +899,14 @@ export function FloatingQueenBee() {
         setWooshTrail(prev => [...prev.slice(-15), newParticle]);
       }
       
+      // HOVER BOB: Track when queen is nearly stationary (low speed)
+      // This triggers a gentle hovering animation to prevent gliding appearance
+      const HOVER_SPEED_THRESHOLD = 0.5;
+      const newIsHovering = result.speed < HOVER_SPEED_THRESHOLD && !isEvading;
+      if (newIsHovering !== isHovering) {
+        setIsHovering(newIsHovering);
+      }
+      
       animationFrameRef.current = requestAnimationFrame(animate);
     };
     
@@ -906,7 +917,7 @@ export function FloatingQueenBee() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isMounted, config.position, dimension, mousePos, mouseVelocity, emotionalState, lastFrenzyTime, updatePosition, updateAutonomousVelocity, triggerFrenzy, triggerSwarm, setMode, beeController]);
+  }, [isMounted, config.position, dimension, mousePos, mouseVelocity, emotionalState, lastFrenzyTime, updatePosition, updateAutonomousVelocity, triggerFrenzy, triggerSwarm, setMode, beeController, isHovering, isEvading]);
 
   // Clean up old woosh particles
   useEffect(() => {
@@ -1274,7 +1285,12 @@ export function FloatingQueenBee() {
                 : mode === 'SLEEPY' 
                   ? [0, -3, 3, 0]
                   : 0,
-          y: mode === 'SLEEPY' ? [0, 3, 0] : 0,
+          // HOVER BOB: Gentle up/down when stationary to prevent gliding appearance
+          y: mode === 'SLEEPY' 
+            ? [0, 3, 0] 
+            : isHovering 
+              ? [0, -4, 0, 4, 0]  // Gentle hover bob
+              : 0,
         }}
         transition={{
           scale: { type: 'spring', stiffness: 400, damping: 25 },
@@ -1283,7 +1299,11 @@ export function FloatingQueenBee() {
             repeat: (mode === 'ERROR' || mode === 'CONFUSED' || mode === 'SLEEPY' || isFrenzyMode) ? Infinity : 0, 
             repeatDelay: mode === 'SLEEPY' ? 0 : isFrenzyMode ? 0 : 1 
           },
-          y: { duration: 2, repeat: mode === 'SLEEPY' ? Infinity : 0 },
+          y: { 
+            duration: mode === 'SLEEPY' ? 2 : isHovering ? 1.8 : 0.3, 
+            repeat: (mode === 'SLEEPY' || isHovering) ? Infinity : 0,
+            ease: isHovering ? 'easeInOut' : 'linear',
+          },
         }}
         data-testid="floating-queen-bee"
       >

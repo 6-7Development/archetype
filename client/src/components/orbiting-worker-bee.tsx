@@ -189,6 +189,11 @@ export function OrbitingWorkerBee({
   // Attack trail color - matches mode but more saturated
   const trailColor = isAttacking ? '#FF4444' : modeColor;
   
+  // CHRISTMAS BODY GLOW - entire worker bee glows like a Christmas light
+  const christmasBodyGlow = hasSeasonLight 
+    ? `0 0 ${8 + effectiveGlowRadius}px ${seasonColor}, 0 0 ${14 + effectiveGlowRadius * 1.5}px ${seasonColor}80`
+    : 'none';
+  
   return (
     <>
       {/* ATTACK SPEED TRAIL - rendered behind the bee */}
@@ -258,6 +263,7 @@ export function OrbitingWorkerBee({
           top: displayY - baseSize / 2,
           width: baseSize,
           height: baseSize,
+          filter: hasSeasonLight ? `drop-shadow(${christmasBodyGlow})` : undefined,
         }}
         initial={{ opacity: 0, scale: 0 }}
         animate={{
