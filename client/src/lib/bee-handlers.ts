@@ -1191,6 +1191,9 @@ export class IndependentWorkerHandler {
   // Current queen mode affects behavior
   private queenMode: string = 'IDLE';
   
+  // Track if workers have been positioned around queen
+  private workersPositioned = false;
+  
   // Formation state
   private activeFormation: FormationType | null = null;
   private formationProgress = 0;
@@ -1245,6 +1248,37 @@ export class IndependentWorkerHandler {
   
   // Update queen position and velocity
   updateQueen(x: number, y: number, velX: number, velY: number): void {
+    // Skip if no workers to position
+    if (!this.workers.length) {
+      this.queenX = x;
+      this.queenY = y;
+      this.queenVelX = velX;
+      this.queenVelY = velY;
+      return;
+    }
+    
+    // Check if we need to reposition workers around queen
+    // Only trigger on first valid (non-zero) position OR if workers drifted too far
+    const isValidPosition = x !== 0 || y !== 0;
+    
+    if (isValidPosition) {
+      const firstWorker = this.workers[0];
+      const distFromQueen = Math.sqrt((firstWorker.x - x) ** 2 + (firstWorker.y - y) ** 2);
+      
+      // Reposition workers if:
+      // 1. This is the first valid queen position (initial layout)
+      // 2. Workers are too far from queen (>150px means they're stuck at wrong position)
+      if (!this.workersPositioned || distFromQueen > 150) {
+        this.workersPositioned = true;
+        this.workers.forEach(w => {
+          w.x = x + Math.cos(w.orbitAngle) * w.orbitRadius;
+          w.y = y + Math.sin(w.orbitAngle) * w.orbitRadius;
+          w.vx = 0;
+          w.vy = 0;
+        });
+      }
+    }
+    
     this.queenX = x;
     this.queenY = y;
     this.queenVelX = velX;
