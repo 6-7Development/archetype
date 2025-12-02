@@ -407,6 +407,158 @@ export class ThoughtHandler {
 }
 
 // ============================================
+// WORKER SWARM CONTROLLER (Orbiting Worker Bees)
+// ============================================
+export interface WorkerBeeState {
+  id: number;
+  angle: number;           // Current orbit angle (radians)
+  radius: number;          // Distance from queen center
+  targetRadius: number;    // Target orbit radius
+  angularVelocity: number; // Rotation speed
+  phase: number;           // Noise phase offset
+  size: number;            // Size multiplier (0.4-0.7)
+  wingPhase: number;       // Wing animation phase
+  energyLevel: number;     // Affects glow intensity
+}
+
+export class WorkerSwarmController {
+  private workers: WorkerBeeState[] = [];
+  private maxWorkers = 8;
+  private queenX = 0;
+  private queenY = 0;
+  private queenVelX = 0;
+  private queenVelY = 0;
+  private time = 0;
+  private baseOrbitRadius = 50;
+
+  constructor(count: number = 8) {
+    this.maxWorkers = count;
+    this.initializeWorkers();
+  }
+
+  private initializeWorkers(): void {
+    this.workers = [];
+    for (let i = 0; i < this.maxWorkers; i++) {
+      this.workers.push(this.createWorker(i));
+    }
+  }
+
+  private createWorker(id: number): WorkerBeeState {
+    const angleSpread = (Math.PI * 2) / this.maxWorkers;
+    return {
+      id,
+      angle: id * angleSpread + (Math.random() - 0.5) * 0.5,
+      radius: this.baseOrbitRadius * (0.6 + Math.random() * 0.4),
+      targetRadius: this.baseOrbitRadius * (0.7 + Math.random() * 0.3),
+      angularVelocity: 0.8 + Math.random() * 0.4, // Base rotation speed
+      phase: Math.random() * Math.PI * 2,
+      size: 0.45 + Math.random() * 0.25, // 45-70% of base size
+      wingPhase: Math.random() * Math.PI * 2,
+      energyLevel: 0.5 + Math.random() * 0.5,
+    };
+  }
+
+  updateQueen(x: number, y: number, velX: number, velY: number): void {
+    this.queenX = x;
+    this.queenY = y;
+    this.queenVelX = velX;
+    this.queenVelY = velY;
+  }
+
+  update(deltaTime: number): WorkerBeeState[] {
+    this.time += deltaTime;
+    const queenSpeed = Math.sqrt(this.queenVelX ** 2 + this.queenVelY ** 2);
+    
+    return this.workers.map((worker, i) => {
+      // Perlin-like noise using multiple sine waves
+      const noise1 = Math.sin(this.time * 0.003 + worker.phase) * 0.3;
+      const noise2 = Math.sin(this.time * 0.007 + worker.phase * 2) * 0.2;
+      const noise3 = Math.cos(this.time * 0.005 + worker.phase * 0.5) * 0.15;
+      const combinedNoise = noise1 + noise2 + noise3;
+
+      // Angular velocity increases when queen moves fast
+      const speedBoost = 1 + queenSpeed * 0.05;
+      const baseAngularVel = worker.angularVelocity * speedBoost;
+      
+      // Update angle with noise-modulated rotation
+      worker.angle += (baseAngularVel + combinedNoise * 0.5) * deltaTime * 0.001;
+      
+      // Smoothly adjust radius with breathing effect
+      const breathe = Math.sin(this.time * 0.002 + worker.phase) * 8;
+      const radiusDrift = Math.sin(this.time * 0.004 + i * 0.7) * 10;
+      worker.radius += (worker.targetRadius + breathe + radiusDrift - worker.radius) * 0.03;
+
+      // Wing flapping speed increases with movement
+      worker.wingPhase += (8 + queenSpeed * 0.5) * deltaTime * 0.001;
+
+      // Energy fluctuates organically
+      worker.energyLevel = 0.5 + Math.sin(this.time * 0.001 + worker.phase) * 0.3 + 
+                          (queenSpeed > 5 ? 0.2 : 0);
+
+      return { ...worker };
+    });
+  }
+
+  getWorkerPositions(): Array<{ 
+    id: number; 
+    x: number; 
+    y: number; 
+    size: number; 
+    wingFlutter: number;
+    rotation: number;
+    energyLevel: number;
+  }> {
+    return this.workers.map(worker => {
+      // Calculate position relative to queen center
+      const x = this.queenX + Math.cos(worker.angle) * worker.radius;
+      const y = this.queenY + Math.sin(worker.angle) * worker.radius;
+      
+      // Calculate heading based on orbit direction + queen velocity influence
+      const tangentAngle = worker.angle + Math.PI / 2;
+      const queenInfluence = Math.atan2(this.queenVelY, this.queenVelX) * 0.3;
+      const rotation = (tangentAngle + queenInfluence) * (180 / Math.PI);
+
+      return {
+        id: worker.id,
+        x,
+        y,
+        size: worker.size,
+        wingFlutter: Math.sin(worker.wingPhase) * 0.5 + 0.5,
+        rotation,
+        energyLevel: worker.energyLevel,
+      };
+    });
+  }
+
+  spawnBurst(count: number = 3): void {
+    // Temporarily spawn extra workers in burst pattern
+    for (let i = 0; i < count; i++) {
+      const burstWorker = this.createWorker(this.workers.length);
+      burstWorker.radius = this.baseOrbitRadius * 0.3; // Start close
+      burstWorker.targetRadius = this.baseOrbitRadius * (1.0 + Math.random() * 0.5);
+      burstWorker.angularVelocity *= 2; // Faster initial spin
+      this.workers.push(burstWorker);
+    }
+    
+    // Remove extras after animation
+    setTimeout(() => {
+      this.workers = this.workers.slice(0, this.maxWorkers);
+    }, 2000);
+  }
+
+  setOrbitRadius(radius: number): void {
+    this.baseOrbitRadius = radius;
+    this.workers.forEach(w => {
+      w.targetRadius = radius * (0.7 + Math.random() * 0.3);
+    });
+  }
+
+  getWorkerCount(): number {
+    return this.workers.length;
+  }
+}
+
+// ============================================
 // COMBINED BEE CONTROLLER
 // ============================================
 export class BeeController {
@@ -414,12 +566,14 @@ export class BeeController {
   public animation: AnimationHandler;
   public reaction: ReactionHandler;
   public thought: ThoughtHandler;
+  public swarm: WorkerSwarmController;
 
   constructor() {
     this.direction = new DirectionHandler();
     this.animation = new AnimationHandler();
     this.reaction = new ReactionHandler();
     this.thought = new ThoughtHandler();
+    this.swarm = new WorkerSwarmController(8);
   }
 
   update(deltaTime: number, velocityX: number, velocityY: number): void {

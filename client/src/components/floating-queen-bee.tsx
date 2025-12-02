@@ -22,7 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChristmasDecorations } from './christmas-decorations';
-import { BeeController, type FacingState, type TouchReaction } from '@/lib/bee-handlers';
+import { BeeController, type FacingState, type TouchReaction, type WorkerBeeState } from '@/lib/bee-handlers';
 
 // Seasonal Detection - Check if it's Christmas season (Nov 15 - Jan 5)
 function isChristmasSeason(): boolean {
@@ -386,6 +386,8 @@ function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: Wo
   // Color based on phase
   const beeColor = phase === 'CHASE' ? '#F7B500' : phase === 'RETURN' ? '#E6A300' : '#FFD54F';
   const wingOpacity = 0.5 + Math.sin(wingRotation * Math.PI / 180) * 0.3;
+  const isAngry = mode === 'ERROR' || mode === 'CONFUSED';
+  const isHappy = mode === 'EXCITED' || mode === 'HELPFUL' || mode === 'CELEBRATING';
   
   // Calculate heading from movement
   const dx = phase === 'CHASE' ? targetX - pos.x : queenX - pos.x;
@@ -506,6 +508,166 @@ function WorkerBee({ id, targetX, targetY, queenX, queenY, isChasing, mode }: Wo
   );
 }
 
+// ============================================
+// ORBITING WORKER BEE - New smooth orbiting bee
+// ============================================
+interface OrbitingWorkerBeeProps {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  wingFlutter: number;
+  rotation: number;
+  energyLevel: number;
+  mode: QueenBeeMode;
+  isChristmas?: boolean;
+}
+
+function OrbitingWorkerBee({ id, x, y, size, wingFlutter, rotation, energyLevel, mode, isChristmas }: OrbitingWorkerBeeProps) {
+  const baseSize = 18 * size;
+  const isAngry = mode === 'ERROR' || mode === 'CONFUSED';
+  const isHappy = mode === 'EXCITED' || mode === 'HELPFUL' || mode === 'CELEBRATING';
+  
+  // Dynamic colors based on energy and mode
+  const bodyColor = isAngry ? '#E6A300' : isHappy ? '#FFD700' : '#F7B500';
+  const wingOpacity = 0.3 + wingFlutter * 0.4;
+  const glowIntensity = energyLevel * 0.6;
+  
+  return (
+    <motion.div
+      className="fixed pointer-events-none z-[99]"
+      style={{
+        left: x - baseSize / 2,
+        top: y - baseSize / 2,
+        width: baseSize,
+        height: baseSize,
+      }}
+      initial={{ opacity: 0, scale: 0 }}
+      animate={{ 
+        opacity: 1, 
+        scale: 1,
+        rotate: rotation,
+      }}
+      exit={{ opacity: 0, scale: 0 }}
+      transition={{
+        opacity: { duration: 0.3 },
+        scale: { duration: 0.3 },
+        rotate: { type: 'spring', stiffness: 100, damping: 15 },
+      }}
+    >
+      <svg 
+        width={baseSize} 
+        height={baseSize} 
+        viewBox="0 0 24 24" 
+        className="drop-shadow-sm"
+      >
+        {/* Glow aura */}
+        <defs>
+          <radialGradient id={`workerGlow-${id}`}>
+            <stop offset="0%" stopColor={bodyColor} stopOpacity={glowIntensity * 0.5} />
+            <stop offset="100%" stopColor={bodyColor} stopOpacity="0" />
+          </radialGradient>
+          <linearGradient id={`workerBody-${id}`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor={isChristmas ? '#FF6B6B' : bodyColor} />
+            <stop offset="100%" stopColor={isChristmas ? '#CC4444' : '#D9A000'} />
+          </linearGradient>
+        </defs>
+        
+        {/* Energy glow */}
+        {energyLevel > 0.6 && (
+          <circle cx="12" cy="12" r="11" fill={`url(#workerGlow-${id})`} />
+        )}
+        
+        {/* Left Wing */}
+        <ellipse
+          cx="7"
+          cy="10"
+          rx="5"
+          ry="4"
+          fill={isChristmas ? 'rgba(200, 220, 255, 0.6)' : 'rgba(255, 255, 255, 0.5)'}
+          stroke="rgba(0,0,0,0.1)"
+          strokeWidth="0.3"
+          opacity={wingOpacity}
+          style={{
+            transformOrigin: '10px 12px',
+            transform: `rotate(${-15 + wingFlutter * 30}deg)`,
+          }}
+        />
+        
+        {/* Right Wing */}
+        <ellipse
+          cx="17"
+          cy="10"
+          rx="5"
+          ry="4"
+          fill={isChristmas ? 'rgba(200, 220, 255, 0.6)' : 'rgba(255, 255, 255, 0.5)'}
+          stroke="rgba(0,0,0,0.1)"
+          strokeWidth="0.3"
+          opacity={wingOpacity}
+          style={{
+            transformOrigin: '14px 12px',
+            transform: `rotate(${15 - wingFlutter * 30}deg)`,
+          }}
+        />
+        
+        {/* Thorax */}
+        <ellipse
+          cx="12"
+          cy="11"
+          rx="4"
+          ry="3.5"
+          fill={`url(#workerBody-${id})`}
+          stroke="#333"
+          strokeWidth="0.4"
+        />
+        
+        {/* Abdomen with stripes */}
+        <ellipse
+          cx="12"
+          cy="15"
+          rx="3.5"
+          ry="4"
+          fill={`url(#workerBody-${id})`}
+          stroke="#333"
+          strokeWidth="0.4"
+        />
+        
+        {/* Stripes */}
+        <line x1="9" y1="14" x2="15" y2="14" stroke="#333" strokeWidth="0.6" opacity="0.6" />
+        <line x1="9.5" y1="16" x2="14.5" y2="16" stroke="#333" strokeWidth="0.6" opacity="0.6" />
+        <line x1="10" y1="18" x2="14" y2="18" stroke="#333" strokeWidth="0.5" opacity="0.5" />
+        
+        {/* Stinger */}
+        <path d="M12 19 L12 21" stroke="#333" strokeWidth="0.5" />
+        
+        {/* Head */}
+        <circle cx="12" cy="7" r="2.5" fill={bodyColor} stroke="#333" strokeWidth="0.4" />
+        
+        {/* Eyes */}
+        <circle cx="10.5" cy="6.5" r="1" fill="#000" />
+        <circle cx="13.5" cy="6.5" r="1" fill="#000" />
+        <circle cx="10.7" cy="6.3" r="0.3" fill="#FFF" opacity="0.8" />
+        <circle cx="13.7" cy="6.3" r="0.3" fill="#FFF" opacity="0.8" />
+        
+        {/* Antennae */}
+        <path d="M10.5 5 Q9 3 8 2" stroke="#333" strokeWidth="0.5" fill="none" />
+        <circle cx="8" cy="2" r="0.4" fill="#333" />
+        <path d="M13.5 5 Q15 3 16 2" stroke="#333" strokeWidth="0.5" fill="none" />
+        <circle cx="16" cy="2" r="0.4" fill="#333" />
+        
+        {/* Christmas hat for festive mode */}
+        {isChristmas && (
+          <g>
+            <path d="M9 5 L12 0 L15 5 Z" fill="#CC0000" stroke="#660000" strokeWidth="0.3" />
+            <circle cx="12" cy="0" r="1" fill="white" />
+            <ellipse cx="12" cy="5.5" rx="4" ry="0.8" fill="white" />
+          </g>
+        )}
+      </svg>
+    </motion.div>
+  );
+}
+
 // Woosh trail particle
 interface WooshParticle {
   id: number;
@@ -554,7 +716,17 @@ export function FloatingQueenBee() {
   const [showThought, setShowThought] = useState(false);
   const [facing, setFacing] = useState<FacingState>('FRONT');
   const [touchReaction, setTouchReaction] = useState<TouchReaction | null>(null);
+  const [orbitingWorkers, setOrbitingWorkers] = useState<Array<{
+    id: number;
+    x: number;
+    y: number;
+    size: number;
+    wingFlutter: number;
+    rotation: number;
+    energyLevel: number;
+  }>>([]);
   const thoughtTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const swarmAnimationRef = useRef<number | null>(null);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const wooshIdRef = useRef(0);
@@ -577,32 +749,30 @@ export function FloatingQueenBee() {
   // SEASONAL: Christmas theme detection
   const isChristmas = useMemo(() => isChristmasSeason(), []);
   
-  // Show random thought/chat bubble
+  // Show context-aware thought using ThoughtHandler
   const showRandomThought = useCallback(() => {
-    const thoughts = isChristmas ? [
-      "The snow is falling...",
-      "I love the holidays!",
-      "Time for festive coding!",
-      "Spreading cheer!",
-      "Winter code is best!",
-      "Building magic!",
-    ] : [
-      "Hello!",
-      "What's up?",
-      "Exploring...",
-      "Having fun!",
-      "Let's code!",
-      "Building things!",
-    ];
-    const thought = thoughts[Math.floor(Math.random() * thoughts.length)];
-    setCurrentThought(thought);
-    setShowThought(true);
-    
-    if (thoughtTimeoutRef.current) clearTimeout(thoughtTimeoutRef.current);
-    thoughtTimeoutRef.current = setTimeout(() => {
-      setShowThought(false);
-    }, 3000);
-  }, [isChristmas]);
+    const thought = beeController.thought.generateThought(isChristmas);
+    if (thought) {
+      setCurrentThought(thought);
+      setShowThought(true);
+      
+      if (thoughtTimeoutRef.current) clearTimeout(thoughtTimeoutRef.current);
+      thoughtTimeoutRef.current = setTimeout(() => {
+        setShowThought(false);
+      }, 3000);
+    }
+  }, [isChristmas, beeController]);
+  
+  // Update context based on project activity (can be expanded)
+  useEffect(() => {
+    const updateProjectContext = () => {
+      beeController.thought.updateContext({
+        recentActivity: 'coding',
+        buildStatus: 'success',
+      });
+    };
+    updateProjectContext();
+  }, [beeController]);
   
   // Client-side window dimensions for snowflakes (SSR-safe)
   const [windowDimensions, setWindowDimensions] = useState({ width: 1000, height: 800 });
@@ -663,6 +833,49 @@ export function FloatingQueenBee() {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Set orbit radius based on dimension
+  useEffect(() => {
+    beeController.swarm.setOrbitRadius(dimension * 0.6);
+  }, [dimension, beeController]);
+
+  // Orbiting worker bees animation loop
+  useEffect(() => {
+    if (!workersVisible || isMobile) {
+      setOrbitingWorkers([]);
+      return;
+    }
+
+    const queenCenterX = config.position.x + dimension / 2;
+    const queenCenterY = config.position.y + dimension / 2;
+    
+    let lastTime = performance.now();
+    
+    const animateSwarm = (currentTime: number) => {
+      const deltaTime = currentTime - lastTime;
+      lastTime = currentTime;
+      
+      // Update swarm controller with queen position and velocity
+      const qCenterX = config.position.x + dimension / 2;
+      const qCenterY = config.position.y + dimension / 2;
+      beeController.swarm.updateQueen(qCenterX, qCenterY, beeVelocity.x, beeVelocity.y);
+      
+      // Update and get worker positions
+      beeController.swarm.update(deltaTime);
+      const positions = beeController.swarm.getWorkerPositions();
+      setOrbitingWorkers(positions);
+      
+      swarmAnimationRef.current = requestAnimationFrame(animateSwarm);
+    };
+    
+    swarmAnimationRef.current = requestAnimationFrame(animateSwarm);
+    
+    return () => {
+      if (swarmAnimationRef.current) {
+        cancelAnimationFrame(swarmAnimationRef.current);
+      }
+    };
+  }, [workersVisible, isMobile, config.position, dimension, beeVelocity, beeController]);
 
   // Track mouse/touch position AND velocity for predictive evasion
   useEffect(() => {
@@ -1173,46 +1386,22 @@ export function FloatingQueenBee() {
         <FallingSnowflake key={flake.id} {...flake} windowHeight={windowDimensions.height} />
       ))}
 
-      {/* Worker Bees - Phase-based lifecycle: SPAWN → CHASE → RETURN → DESPAWN */}
+      {/* Orbiting Worker Bees - Smooth polar orbit around queen */}
       <AnimatePresence mode="sync">
-        {!isMobile && workersVisible && (
-          <>
-            {[...Array(NUM_WORKERS)].map((_, i) => (
-              <motion.div
-                key={`worker-${i}`}
-                initial={{ opacity: 0, scale: 0.2 }}
-                animate={{ 
-                  opacity: 1, 
-                  scale: 1,
-                }}
-                exit={{ 
-                  opacity: 0, 
-                  scale: 0,
-                  transition: { 
-                    duration: 0.4, 
-                    delay: i * 0.05,
-                    ease: "easeOut"
-                  }
-                }}
-                transition={{ 
-                  duration: 0.3, 
-                  delay: i * 0.06,
-                  ease: "easeOut"
-                }}
-              >
-                <WorkerBee
-                  id={i}
-                  targetX={mousePos.x}
-                  targetY={mousePos.y}
-                  queenX={queenCenterX}
-                  queenY={queenCenterY}
-                  isChasing={shouldWorkersChase}
-                  mode={mode}
-                />
-              </motion.div>
-            ))}
-          </>
-        )}
+        {orbitingWorkers.map((worker) => (
+          <OrbitingWorkerBee
+            key={`orbit-worker-${worker.id}`}
+            id={worker.id}
+            x={worker.x}
+            y={worker.y}
+            size={worker.size}
+            wingFlutter={worker.wingFlutter}
+            rotation={worker.rotation}
+            energyLevel={worker.energyLevel}
+            mode={mode}
+            isChristmas={isChristmas}
+          />
+        ))}
       </AnimatePresence>
 
       {/* Main Queen Bee Container - Autonomous AI mascot, fully transparent, NON-INTERACTIVE */}
